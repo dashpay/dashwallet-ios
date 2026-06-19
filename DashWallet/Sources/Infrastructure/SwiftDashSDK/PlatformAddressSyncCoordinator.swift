@@ -768,11 +768,12 @@ extension PlatformAddressSyncCoordinator {
 /// (`FundingType.assetLockShieldedAddressTopUp`).
 ///
 /// Snapshot design: `refresh()` (main actor, SwiftData `mainContext`)
-/// rebuilds an immutable `[txid: duffs]` map; `amountDuffs(forTxidHex:)`
-/// reads it under a lock so the (possibly background) transaction-list
-/// builder in `Transaction` can call in from any thread without touching
-/// SwiftData. Refreshed by `PlatformAddressSyncCoordinator` on wallet start
-/// and on each completed shielded sync pass.
+/// rebuilds an immutable `[txid: ShieldedLockInfo]` map (amount + status +
+/// vout); `amountDuffs(forTxidHex:)` / `info(forTxidHex:)` read it under a
+/// lock so the (possibly background) transaction-list builder in
+/// `Transaction` can call in from any thread without touching SwiftData.
+/// Refreshed by `PlatformAddressSyncCoordinator` on wallet start and on each
+/// completed shielded sync pass.
 final class ShieldedTxLookup {
     static let shared = ShieldedTxLookup()
 
@@ -784,9 +785,20 @@ final class ShieldedTxLookup {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.shielded-tx-lookup")
 
+    /// Snapshot value for one shielded funding tx: the locked amount plus the
+    /// asset lock's current status and funding output index. `statusRaw`
+    /// distinguishes a still-pending/stuck shield (1…3 — Broadcast/IS/CL) from
+    /// a consumed, successful one (4); `vout` + the txid form the outpoint a
+    /// recovery resume needs.
+    struct ShieldedLockInfo: Sendable {
+        let amountDuffs: UInt64
+        let statusRaw: Int
+        let vout: UInt32
+    }
+
     private let lock = NSLock()
-    /// txid (display-order hex, lowercased) → locked amount in duffs.
-    private var amountByTxid: [String: UInt64] = [:]
+    /// txid (display-order hex, lowercased) → locked amount + status + vout.
+    private var infoByTxid: [String: ShieldedLockInfo] = [:]
 
     private init() {}
 
@@ -795,10 +807,19 @@ final class ShieldedTxLookup {
     /// display-order hex (reversed wire bytes), matching the txid component
     /// of `PersistentAssetLock.outPointHex`. Thread-safe; touches no SwiftData.
     func amountDuffs(forTxidHex txidHex: String) -> UInt64? {
+        info(forTxidHex: txidHex)?.amountDuffs
+    }
+
+    /// Full snapshot entry (locked amount + asset-lock status + funding vout)
+    /// for an L1 funding txid, or `nil` if the txid is not a tracked shielded
+    /// asset lock. `txidHex` must be display-order hex (reversed wire bytes),
+    /// matching the txid component of `PersistentAssetLock.outPointHex`.
+    /// Thread-safe; touches no SwiftData.
+    func info(forTxidHex txidHex: String) -> ShieldedLockInfo? {
         let key = txidHex.lowercased()
         lock.lock()
         defer { lock.unlock() }
-        return amountByTxid[key]
+        return infoByTxid[key]
     }
 
     /// Rebuild the snapshot from the active container's shielded asset-lock
@@ -815,13 +836,22 @@ final class ShieldedTxLookup {
             // Asset locks are a tiny table; fetch all and filter in Swift
             // rather than fighting `#Predicate` local-capture rules.
             let rows = try container.mainContext.fetch(FetchDescriptor<PersistentAssetLock>())
-            var map: [String: UInt64] = [:]
+            var map: [String: ShieldedLockInfo] = [:]
             for row in rows where row.fundingTypeRaw == Self.shieldedFundingType && row.amountDuffs > 0 {
-                // outPointHex == "<txid display hex>:<vout>"; key on the txid.
+                // outPointHex == "<txid display hex>:<vout>"; key on the txid,
+                // parse the vout after the colon. One shielded asset-lock row
+                // per funding txid in practice; if one ever recurs, prefer the
+                // higher statusRaw so a consumed (4) row wins over a stale
+                // pending (1…3) one.
                 guard let colon = row.outPointHex.firstIndex(of: ":") else { continue }
                 let txid = row.outPointHex[..<colon].lowercased()
-                // One credit output per funding tx in practice; sum to be safe.
-                map[txid, default: 0] += UInt64(row.amountDuffs)
+                let vout = UInt32(row.outPointHex[row.outPointHex.index(after: colon)...]) ?? 0
+                let info = ShieldedLockInfo(
+                    amountDuffs: UInt64(row.amountDuffs),
+                    statusRaw: row.statusRaw,
+                    vout: vout)
+                if let existing = map[txid], existing.statusRaw >= info.statusRaw { continue }
+                map[txid] = info
             }
             store(map)
             Self.logger.info("🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) shielded funding tx(s)")
@@ -837,9 +867,9 @@ final class ShieldedTxLookup {
         }
     }
 
-    private func store(_ map: [String: UInt64]) {
+    private func store(_ map: [String: ShieldedLockInfo]) {
         lock.lock()
-        amountByTxid = map
+        infoByTxid = map
         lock.unlock()
     }
 }

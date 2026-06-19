@@ -222,13 +222,33 @@ class Transaction: TransactionDataItem, Identifiable {
     /// txid component of `PersistentAssetLock.outPointHex`. Drives both the
     /// "Shielded transfer" label (`stateTitle`) and the on-screen amount
     /// (`_dashAmount`).
-    private lazy var shieldedTransferAmountDuffs: UInt64? = {
+    private lazy var shieldedLockInfo: ShieldedTxLookup.ShieldedLockInfo? = {
         let displayTxid = txHashData.reversed().map { String(format: "%02x", $0) }.joined()
-        return ShieldedTxLookup.shared.amountDuffs(forTxidHex: displayTxid)
+        return ShieldedTxLookup.shared.info(forTxidHex: displayTxid)
     }()
 
+    private var shieldedTransferAmountDuffs: UInt64? { shieldedLockInfo?.amountDuffs }
+
     /// True when this is the funding tx of a "to Shielded" transfer.
-    var isShieldedTransfer: Bool { shieldedTransferAmountDuffs != nil }
+    var isShieldedTransfer: Bool { shieldedLockInfo != nil }
+
+    /// True when the shielded transfer is still pending / stuck — its asset
+    /// lock is broadcast/IS-locked/CL-locked (`statusRaw` 1…3) but the shield
+    /// state transition hasn't consumed it yet (4 = consumed = success). Drives
+    /// the "pending" history treatment and the tap-to-recover entry point.
+    var isPendingShieldedTransfer: Bool {
+        guard let status = shieldedLockInfo?.statusRaw else { return false }
+        return (1...3).contains(status)
+    }
+
+    /// Outpoint (wire-order txid + vout) of this transfer's shielded asset
+    /// lock, for a recovery resume. `txHashData` is already wire order, so it
+    /// is returned verbatim (the display↔wire reversal only happens when
+    /// keying `ShieldedTxLookup`). `nil` for non-shielded-transfer txs.
+    var shieldedOutPoint: (txidWire: Data, vout: UInt32)? {
+        guard let info = shieldedLockInfo else { return nil }
+        return (txHashData, info.vout)
+    }
 
     private lazy var _dashAmount: UInt64 = {
         // A "to Shielded" transfer's L1 funding tx is a Type-18 asset lock;
@@ -402,6 +422,10 @@ class Transaction: TransactionDataItem, Identifiable {
         // generic logic would label "Internal Transfer"; relabel it from the
         // SDK-sourced shielded lookup (see `shieldedTransferAmountDuffs`).
         if isShieldedTransfer {
+            if isPendingShieldedTransfer {
+                return NSLocalizedString("Shielded transfer (pending)",
+                                         comment: "A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet")
+            }
             return NSLocalizedString("Shielded transfer",
                                      comment: "Transfer of own funds into the private shielded balance")
         }

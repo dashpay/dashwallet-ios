@@ -178,7 +178,8 @@ struct HomeViewContent<Content: View>: View {
     @State private var shouldShowJoinDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
     @State private var giftCardTxId: Data? = nil
-    
+    @State private var pendingShieldedRecovery: Transaction? = nil
+
     @ObservedObject var viewModel: HomeViewModel
     @ObservedObject private var balanceModel = BalanceModel()
     #if DASHPAY
@@ -285,6 +286,11 @@ struct HomeViewContent<Content: View>: View {
         }
         .sheet(item: $giftCardTxId) { txId in
             GiftCardDetailsSheet(txId: txId)
+        }
+        .sheet(item: $pendingShieldedRecovery) { tx in
+            ShieldedRecoverySheet(transaction: tx) {
+                pendingShieldedRecovery = nil
+            }
         }
         .sheet(isPresented: $showFilterDialog) {
             let dialog = TransactionFilterDialog(
@@ -406,14 +412,20 @@ struct HomeViewContent<Content: View>: View {
             TransactionPreview(
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
-                details: metadata?.details?.isEmpty == false ? metadata?.details : nil,
+                details: txItem.isPendingShieldedTransfer
+                    ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
+                    : (metadata?.details?.isEmpty == false ? metadata?.details : nil),
                 icon: metadata?.icon == nil ? .custom(txItem.iconName) : .image(metadata!.icon!, effect: .rounded),
                 secondaryIcon: metadata?.icon == nil ? nil : metadata?.secondaryIcon == nil ? .custom(txItem.iconName) : metadata?.secondaryIcon,
                 dashAmount: txItem.signedDashAmount,
                 overrideFiatAmount: txItem.fiatAmount
             ) {
-                // Check if this is a gift card transaction
-                if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
+                // A stuck "to Shielded" transfer opens the recovery sheet
+                // instead of the read-only detail/gift-card sheets.
+                if txItem.isPendingShieldedTransfer {
+                    self.pendingShieldedRecovery = txItem
+                } else if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
+                    // Check if this is a gift card transaction
                     self.giftCardTxId = txItem.txHashData
                 } else {
                     self.selectedTxDataItem = txDataItem

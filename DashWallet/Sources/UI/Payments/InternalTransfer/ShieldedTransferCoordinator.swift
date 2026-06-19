@@ -71,6 +71,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
     private let authorizer = DWIdentityAuthorizer()
     private var assetLockPollingTask: Task<Void, Never>?
 
+    /// Outpoint (wire-order txid + vout) of the asset lock observed during the
+    /// most recent in-flight `performAssetLock`, captured from polling so a
+    /// failed attempt's "Try again" can RESUME the existing lock instead of
+    /// building a second one. `nil` until an asset lock reaches Broadcast (1+);
+    /// cleared on `reset()` and at the start of a fresh `performAssetLock`.
+    private(set) var lastAssetLockOutPoint: (txidWire: Data, vout: UInt32)?
+
     // MARK: - Errors
 
     enum CoordinatorError: LocalizedError {
@@ -119,6 +126,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// the SDK returns `Void` only on `Consumed`/success.
     func performAssetLock(amountDuffs: UInt64) async {
         guard beginTransfer() else { return }
+        lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route amount=\(amountDuffs)")
 
         let env: Environment
@@ -159,6 +167,87 @@ final class ShieldedTransferCoordinator: ObservableObject {
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
         phase = .success
         scheduleShieldedResync(manager: env.manager)
+    }
+
+    /// Resume a stuck "to Shielded" transfer whose asset lock is already
+    /// broadcast/locked (statusRaw 1…3) but whose shield state transition never
+    /// landed. Picks up the existing outpoint and drives the remaining stages
+    /// via `shieldedResumeFundFromAssetLock` — instead of building a SECOND
+    /// asset lock (which is what a fresh `performAssetLock` would do, stranding
+    /// the first). The recipient is re-derived (the wallet's own default
+    /// shielded address), identical to the original attempt; the SDK re-derives
+    /// an identical `shield_amount` from the on-chain lock value, so a resume
+    /// cannot desync funds and is safe to retry. Re-authorizes — this moves
+    /// real funds.
+    ///
+    /// Used by both the confirm sheet's "Try again" (in-session) and the
+    /// home-screen recovery sheet (after relaunch).
+    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32) async {
+        guard beginTransfer() else { return }
+        Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout)")
+
+        let env: Environment
+        do {
+            env = try resolveEnvironment()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        do {
+            try await authorize()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        // The lock is already broadcast/locked — only the Orchard proof + the
+        // shield ST remain, so jump straight to .proving (no .locking stage and
+        // no asset-lock polling: there's no new lock to track).
+        phase = .proving
+
+        do {
+            let recipient = ShieldedFundFromAssetLockRecipient(
+                recipientRaw43: env.shieldedRecipient,
+                credits: nil)
+            try await env.manager.shieldedResumeFundFromAssetLock(
+                walletId: env.walletId,
+                outPointTxid: outPointTxidWire,
+                outPointVout: outPointVout,
+                recipients: [recipient])
+        } catch {
+            handleFailure(CoordinatorError.transferFailed(error))
+            return
+        }
+
+        Self.logger.info("🛡️ SHIELD-TX :: resume completed")
+        // The single resume FFI call covered proof + submit; advance through
+        // .broadcasting so the step checklist completes naturally (mirrors
+        // `performShield`). No intermediate signal exists for this opaque call.
+        phase = .broadcasting
+        phase = .success
+        scheduleShieldedResync(manager: env.manager)
+    }
+
+    /// Parse a `PersistentAssetLock.outPointHex` ("<txid display hex>:<vout>")
+    /// into the (wire-order txid, vout) that `shieldedResumeFundFromAssetLock`
+    /// expects. The stored txid is display order (reversed wire); the FFI wants
+    /// 32-byte little-endian wire order, so hex-decode then reverse. `nil` on
+    /// any malformed input.
+    static func parseOutPoint(_ outPointHex: String) -> (txidWire: Data, vout: UInt32)? {
+        guard let colon = outPointHex.firstIndex(of: ":") else { return nil }
+        let txidDisplayHex = outPointHex[..<colon]
+        guard let vout = UInt32(outPointHex[outPointHex.index(after: colon)...]) else { return nil }
+        guard txidDisplayHex.count == 64 else { return nil }
+        var display = Data(capacity: 32)
+        var idx = txidDisplayHex.startIndex
+        while idx < txidDisplayHex.endIndex {
+            let next = txidDisplayHex.index(idx, offsetBy: 2)
+            guard let byte = UInt8(txidDisplayHex[idx..<next], radix: 16) else { return nil }
+            display.append(byte)
+            idx = next
+        }
+        return (Data(display.reversed()), vout)
     }
 
     /// Route 2: DIP-17 transparent Platform Payment credits → Type 15 shield.
@@ -336,6 +425,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// uncancellable, so this just resets UI state.
     func reset() {
         stopAssetLockPolling()
+        lastAssetLockOutPoint = nil
         phase = .idle
     }
 
@@ -479,6 +569,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
         do {
             let rows = try context.fetch(descriptor)
             guard let row = rows.first else { return }
+            // Capture the outpoint once the lock is at least Broadcast (1+) so
+            // a failed shield can be resumed on this exact lock rather than
+            // building a second one. Display→wire reversal happens in parse.
+            if row.statusRaw >= 1, let outPoint = Self.parseOutPoint(row.outPointHex) {
+                lastAssetLockOutPoint = outPoint
+            }
             advancePhaseForAssetLockStatus(row.statusRaw)
         } catch {
             Self.logger.warning("🛡️ SHIELD-TX :: asset-lock poll failed: \(String(describing: error), privacy: .public)")

@@ -376,20 +376,320 @@ struct InternalTransferConfirmSheet: View {
 
     // MARK: - Progress checklist
 
-    /// Vertical step list — one row per phase the route advances through.
-    /// Only the forward asset-lock route has 4 stages; the transparent shield
-    /// and the reverse withdraw routes hide `.locking` because the FFI doesn't
-    /// surface that intermediate step.
+    /// Vertical step checklist for the in-flight phases. Only the forward
+    /// asset-lock route has the `.locking` stage; the transparent shield and
+    /// the reverse withdraw routes hide it because the FFI doesn't surface that
+    /// intermediate step. Rendering is delegated to the shared
+    /// `ShieldedTransferStepList` (also used by `ShieldedRecoverySheet`).
     private var progressChecklist: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            stepRow(label: NSLocalizedString("Authorizing", comment: ""), state: stepState(for: .signing))
+        ShieldedTransferStepList(currentPhase: coordinator.phase, steps: progressSteps)
+    }
 
-            if direction == .toShielded && source == .core {
-                stepRow(label: NSLocalizedString("Locking funds", comment: ""), state: stepState(for: .locking))
+    private var progressSteps: [ShieldedTransferStepList.Step] {
+        var steps: [ShieldedTransferStepList.Step] = [
+            .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing)
+        ]
+        if direction == .toShielded && source == .core {
+            steps.append(.init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking))
+        }
+        steps.append(.init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving))
+        steps.append(.init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting))
+        return steps
+    }
+
+    // MARK: - Actions
+
+    private func confirm() {
+        Task {
+            switch direction {
+            case .toShielded:
+                switch source {
+                case .core:
+                    await coordinator.performAssetLock(amountDuffs: amountDuffsUnsigned)
+                case .platform:
+                    await coordinator.performShield(amountCredits: creditsAmount)
+                }
+            case .fromShielded:
+                switch source {
+                case .core:
+                    await coordinator.performWithdraw(amountCredits: creditsAmount)
+                case .platform:
+                    await coordinator.performUnshield(amountCredits: creditsAmount)
+                }
+            }
+        }
+    }
+
+    private func tryAgain() {
+        // If the just-failed Core→Shielded attempt already committed an asset
+        // lock, RESUME that exact outpoint instead of building a second lock
+        // (which strands the first). Capture before reset() clears it. Every
+        // other case (no committed lock — auth-cancel / preflight failure — or
+        // a non-asset-lock route) falls through to a fresh retry.
+        if direction == .toShielded, source == .core,
+           let op = coordinator.lastAssetLockOutPoint {
+            coordinator.reset()
+            Task { await coordinator.resumeAssetLock(outPointTxidWire: op.txidWire, outPointVout: op.vout) }
+        } else {
+            coordinator.reset()
+            confirm()
+        }
+    }
+}
+
+/// Recovery sheet for a stuck "to Shielded" transfer (Core→Shielded). The
+/// transfer's L1 asset lock is committed on-chain but the shield state
+/// transition never landed, so the funds sit on an unconsumed
+/// `PersistentAssetLock` — recoverable, not lost. "Finish now" resumes that
+/// exact outpoint via `ShieldedTransferCoordinator.resumeAssetLock`
+/// (re-auth → Orchard proof → ShieldFromAssetLock ST → consume), rather than
+/// building a second lock.
+///
+/// Presented from the home tx list when the user taps a row flagged
+/// `Transaction.isPendingShieldedTransfer`. Owns its own coordinator so it is
+/// independent of any live confirm-sheet flow.
+struct ShieldedRecoverySheet: View {
+
+    let transaction: Transaction
+    var onDismiss: () -> Void
+
+    @StateObject private var coordinator = ShieldedTransferCoordinator()
+
+    /// Set when "Finish now" finds the lock already consumed (a background sync
+    /// landed the shield since the history row's snapshot was captured) — shows
+    /// the success state immediately instead of paying for a doomed ~30s proof.
+    @State private var alreadyComplete = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            dragHandle
+                .padding(.top, 8)
+
+            Text(NSLocalizedString("Finish shielded transfer", comment: "InternalTransfer recovery"))
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(.primaryText)
+                .padding(.top, 20)
+
+            switch coordinator.phase {
+            case .success:
+                successBody
+            case .signing, .locking, .proving, .broadcasting:
+                inFlightBody
+            default:
+                if alreadyComplete {
+                    successBody
+                } else {
+                    idleOrFailedBody
+                }
+            }
+        }
+        .background(Color.primaryBackground)
+        .interactiveDismissDisabled(isInFlight)
+    }
+
+    private var isInFlight: Bool {
+        switch coordinator.phase {
+        case .signing, .locking, .proving, .broadcasting:
+            return true
+        default:
+            return false
+        }
+    }
+
+    // MARK: - Bodies
+
+    private var idleOrFailedBody: some View {
+        VStack(spacing: 0) {
+            DashAmount(
+                amount: Int64(transaction.dashAmount),
+                font: .largeTitle,
+                dashSymbolFactor: 0.7,
+                showDirection: false)
+                .padding(.top, 14)
+
+            infoCard
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+
+            if case let .failed(message) = coordinator.phase {
+                Text(message)
+                    .font(.system(size: 13))
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 12)
             }
 
-            stepRow(label: NSLocalizedString("Generating proof", comment: ""), state: stepState(for: .proving))
-            stepRow(label: NSLocalizedString("Broadcasting", comment: ""), state: stepState(for: .broadcasting))
+            Spacer(minLength: 12)
+
+            ButtonsGroup(
+                orientation: .horizontal,
+                size: .large,
+                positiveButtonText: NSLocalizedString("Finish now", comment: "InternalTransfer recovery"),
+                positiveButtonAction: finish,
+                negativeButtonText: NSLocalizedString("Close", comment: ""),
+                negativeButtonAction: onDismiss)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
+        }
+    }
+
+    private var inFlightBody: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Same stepped checklist as the original transfer so the user sees
+            // what's happening during the (~30s+) Orchard proof build. Resume
+            // skips `.locking` (the lock is already on-chain), so only
+            // Authorizing → Generating proof → Broadcasting are shown.
+            ShieldedTransferStepList(
+                currentPhase: coordinator.phase,
+                steps: [
+                    .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing),
+                    .init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving),
+                    .init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting),
+                ])
+
+            Text(NSLocalizedString(
+                "Building the privacy proof can take up to a minute. Keep the app open.",
+                comment: "InternalTransfer recovery"))
+                .font(.caption)
+                .foregroundColor(.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 12)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 24)
+        .padding(.top, 24)
+        .padding(.bottom, 24)
+    }
+
+    private var successBody: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "checkmark.circle.fill")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 64, height: 64)
+                .foregroundColor(.green)
+                .padding(.top, 24)
+
+            Text(NSLocalizedString("Transfer complete", comment: ""))
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundColor(.primaryText)
+
+            DashAmount(
+                amount: Int64(transaction.dashAmount),
+                font: .title,
+                dashSymbolFactor: 0.7,
+                showDirection: false)
+
+            Spacer(minLength: 12)
+
+            DashButton(
+                text: NSLocalizedString("Done", comment: ""),
+                style: .filled,
+                stretch: true,
+                action: onDismiss)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
+        }
+    }
+
+    // MARK: - Pieces
+
+    private var dragHandle: some View {
+        Rectangle()
+            .fill(Color(red: 0.83, green: 0.83, blue: 0.85))
+            .frame(width: 36, height: 5)
+            .cornerRadius(2.5)
+    }
+
+    private var infoCard: some View {
+        HStack(alignment: .top, spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(Color.dashBlue)
+                    .frame(width: 30, height: 30)
+                Image(systemName: "shield.fill")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(NSLocalizedString("Your Dash is safe", comment: "InternalTransfer recovery"))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.primaryText)
+                Text(NSLocalizedString(
+                    "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.",
+                    comment: "InternalTransfer recovery"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer()
+        }
+        .padding(14)
+        .background(Color.secondaryBackground)
+        .cornerRadius(12)
+    }
+
+    // MARK: - Action
+
+    private func finish() {
+        guard let op = transaction.shieldedOutPoint else {
+            onDismiss()
+            return
+        }
+        Task { @MainActor in
+            // Re-check live status before paying for a ~30s Orchard proof: a
+            // background shielded sync may have consumed this lock since the
+            // history row's snapshot was captured. The resume FFI builds the
+            // full proof before Platform reports "already consumed", so without
+            // this guard a just-completed transfer would dead-end after ~30s.
+            ShieldedTxLookup.shared.refresh()
+            let displayTxid = op.txidWire.reversed().map { String(format: "%02x", $0) }.joined()
+            let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: displayTxid)?.statusRaw
+            guard let statusRaw, (1...3).contains(statusRaw) else {
+                // Consumed (4) or gone → already complete; show success, no resume.
+                alreadyComplete = true
+                return
+            }
+
+            await coordinator.resumeAssetLock(outPointTxidWire: op.txidWire, outPointVout: op.vout)
+            // On success the shield ST consumed the lock; refresh the snapshot so
+            // the history row flips pending → completed even before the next
+            // scheduled shielded sync pass lands.
+            if case .success = coordinator.phase {
+                ShieldedTxLookup.shared.refresh()
+            }
+        }
+    }
+}
+
+/// Vertical step checklist shared by the shielded transfer confirm sheet and
+/// the recovery sheet. Each `Step` maps to the
+/// `ShieldedTransferCoordinator.Phase` it represents; the row's
+/// done/active/pending state is derived from where the current phase sits in
+/// the canonical ordering (signing → locking → proving → broadcasting →
+/// success). A terminal `.idle`/`.failed` phase renders every step pending (the
+/// host sheet surfaces the summary/error separately).
+struct ShieldedTransferStepList: View {
+    struct Step: Identifiable {
+        let label: String
+        let phase: ShieldedTransferCoordinator.Phase
+        var id: String { label }
+    }
+
+    let currentPhase: ShieldedTransferCoordinator.Phase
+    let steps: [Step]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ForEach(steps) { step in
+                stepRow(label: step.label, state: state(for: step.phase))
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -400,12 +700,12 @@ struct InternalTransferConfirmSheet: View {
         case complete
     }
 
-    /// Where this step sits relative to the current phase. The phase enum
-    /// is intentionally ordered .signing → .locking → .proving →
-    /// .broadcasting so a numeric comparison drives the state.
-    private func stepState(for phase: ShieldedTransferCoordinator.Phase) -> StepState {
-        let current = coordinator.phase
-        guard let currentIdx = phaseIndex(current), let targetIdx = phaseIndex(phase) else {
+    /// Where `phase` sits relative to `currentPhase`. The phase enum is ordered
+    /// .signing → .locking → .proving → .broadcasting → .success, so a numeric
+    /// comparison drives the state.
+    private func state(for phase: ShieldedTransferCoordinator.Phase) -> StepState {
+        guard let currentIdx = Self.phaseIndex(currentPhase),
+              let targetIdx = Self.phaseIndex(phase) else {
             return .pending
         }
         if targetIdx < currentIdx { return .complete }
@@ -413,7 +713,7 @@ struct InternalTransferConfirmSheet: View {
         return .pending
     }
 
-    private func phaseIndex(_ phase: ShieldedTransferCoordinator.Phase) -> Int? {
+    private static func phaseIndex(_ phase: ShieldedTransferCoordinator.Phase) -> Int? {
         switch phase {
         case .signing: return 0
         case .locking: return 1
@@ -465,33 +765,5 @@ struct InternalTransferConfirmSheet: View {
                     .foregroundColor(.white)
             }
         }
-    }
-
-    // MARK: - Actions
-
-    private func confirm() {
-        Task {
-            switch direction {
-            case .toShielded:
-                switch source {
-                case .core:
-                    await coordinator.performAssetLock(amountDuffs: amountDuffsUnsigned)
-                case .platform:
-                    await coordinator.performShield(amountCredits: creditsAmount)
-                }
-            case .fromShielded:
-                switch source {
-                case .core:
-                    await coordinator.performWithdraw(amountCredits: creditsAmount)
-                case .platform:
-                    await coordinator.performUnshield(amountCredits: creditsAmount)
-                }
-            }
-        }
-    }
-
-    private func tryAgain() {
-        coordinator.reset()
-        confirm()
     }
 }
