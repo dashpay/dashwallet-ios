@@ -43,12 +43,48 @@ class Transaction: TransactionDataItem, Identifiable {
     /// Internal source discriminator. The `.ds` case is the existing rich
     /// path (used by other consumers like CrowdNode, TaxReport that still
     /// read from DashSync). The `.sdk` case is the new path for the home
-    /// screen tx list sourced from SwiftDashSDK (function #6) — backed
-    /// directly by the SwiftData row so the input/output graph and
-    /// FFI-supplied direction are reachable without a lossy adapter.
+    /// screen tx list sourced from SwiftDashSDK (function #6).
+    ///
+    /// The `.sdk` case carries an immutable `SDKSnapshot` value — NOT the live
+    /// `PersistentTransaction` @Model. A `Transaction` wrapper is held by the
+    /// home tx list across the wallet runtime's stop/start (e.g. an SPV
+    /// restart), which tears down the `ModelContainer` and resets its context;
+    /// reading any model property afterwards traps ("instance was destroyed by
+    /// calling ModelContext.reset"). Snapshotting every UI-read field at wrap
+    /// time — on the main actor, while the model is alive — makes the wrapper
+    /// immune to that teardown.
     private enum Source {
         case ds(DSTransaction)
-        case sdk(PersistentTransaction)
+        case sdk(SDKSnapshot)
+    }
+
+    /// Frozen copy of the `PersistentTransaction` fields the UI reads, captured
+    /// once at wrap time. Holding values (not the SwiftData model) is what keeps
+    /// a `Transaction` valid after the model's context is reset/rebuilt.
+    private struct SDKSnapshot {
+        let txid: Data
+        /// FFI direction encoding: 0=incoming, 1=outgoing, 2=internal, 3=coinjoin.
+        let direction: UInt32
+        let netAmount: Int64
+        let fee: UInt64?
+        /// 0=mempool, 1=instantSend, 2=inBlock, 3=chainLocked.
+        let context: UInt32
+        /// Owned output addresses (non-empty), pre-deduped.
+        let outputAddresses: [String]
+        /// Spent-input addresses (non-empty), pre-deduped.
+        let inputAddresses: [String]
+
+        /// Must be called on the main actor — reads `p`'s relationships
+        /// (`outputs`/`inputs`), which are bound to the model-context actor.
+        init(_ p: PersistentTransaction) {
+            txid = p.txid
+            direction = p.direction
+            netAmount = p.netAmount
+            fee = p.fee
+            context = p.context
+            outputAddresses = Array(Set(p.outputs.map { $0.address }.filter { !$0.isEmpty }))
+            inputAddresses = Array(Set(p.inputs.map { $0.address }.filter { !$0.isEmpty }))
+        }
     }
 
     private let source: Source
@@ -91,7 +127,7 @@ class Transaction: TransactionDataItem, Identifiable {
     /// group yields the net wallet change (mixing rounds net ~0; denomination /
     /// fee txs net `-fee`), i.e. the total mixing fee paid (negative).
     var sdkNetAmount: Int64? {
-        if case .sdk(let p) = source { return p.netAmount }
+        if case .sdk(let snap) = source { return snap.netAmount }
         return nil
     }
 
@@ -106,7 +142,7 @@ class Transaction: TransactionDataItem, Identifiable {
     var id: String {
         switch source {
         case .ds(let dsTx): return dsTx.txHashHexString
-        case .sdk(let p): return Self.internalHex(p.txid)
+        case .sdk(let snap): return Self.internalHex(snap.txid)
         }
     }
 
@@ -114,25 +150,25 @@ class Transaction: TransactionDataItem, Identifiable {
     private lazy var _direction: DSTransactionDirection = {
         switch source {
         case .ds(let dsTx): return dsTx.direction
-        case .sdk(let p):
+        case .sdk(let snap):
             // FFI direction encoding: 0=incoming, 1=outgoing, 2=internal,
             // 3=coinjoin. Promote outgoing→moved when the wallet's net
             // change equals just the fee (self-send) — mirrors DashSync's
             // `received + fee == sent` check so the legacy code path that
             // still relies on `.moved` (e.g. CrowdNode top-up matcher,
             // "Internal Transfer" labelling) keeps working uniformly.
-            switch p.direction {
+            switch snap.direction {
             case 0: return .received
             case 2: return .moved
             case 3: return .sent
             case 1:
-                let fee = Int64(p.fee ?? 0)
-                if fee > 0 && p.netAmount == -fee {
+                let fee = Int64(snap.fee ?? 0)
+                if fee > 0 && snap.netAmount == -fee {
                     return .moved
                 }
                 return .sent
             default:
-                return p.netAmount >= 0 ? .received : .sent
+                return snap.netAmount >= 0 ? .received : .sent
             }
         }
     }()
@@ -141,7 +177,7 @@ class Transaction: TransactionDataItem, Identifiable {
     private lazy var _outputReceiveAddresses: [String] = {
         switch source {
         case .ds(let dsTx): return dsTx.outputReceiveAddresses
-        case .sdk(let p):
+        case .sdk(let snap):
             // Persistence only stores owned outputs (the FFI emits
             // `acc.utxos*` arrays — wallet UTXOs only — and external
             // recipient outputs aren't surfaced). For received txs that
@@ -149,7 +185,7 @@ class Transaction: TransactionDataItem, Identifiable {
             // semantics; for sent txs the external destination is
             // unrecoverable from the row alone.
             if direction == .received || direction == .moved {
-                return Array(Set(p.outputs.map { $0.address }.filter { !$0.isEmpty }))
+                return snap.outputAddresses
             }
             return []
         }
@@ -164,12 +200,12 @@ class Transaction: TransactionDataItem, Identifiable {
             } else {
                 return Array(Set(dsTx.inputAddresses.compactMap { $0 as? String }))
             }
-        case .sdk(let p):
+        case .sdk(let snap):
             // Reachable only when the FFI links spent UTXOs back to the
             // spending tx. Today the spent-utxo notification carries only
             // the outpoint, so `inputs` is usually empty — fine, callers
             // already tolerate empty arrays.
-            return Array(Set(p.inputs.map { $0.address }.filter { !$0.isEmpty }))
+            return snap.inputAddresses
         }
     }()
 
@@ -201,24 +237,24 @@ class Transaction: TransactionDataItem, Identifiable {
         if let shielded = shieldedTransferAmountDuffs { return shielded }
         switch source {
         case .ds(let dsTx): return dsTx.dashAmount
-        case .sdk(let p):
-            let fee = Int64(p.fee ?? 0)
+        case .sdk(let snap):
+            let fee = Int64(snap.fee ?? 0)
             switch direction {
             case .received:
-                return p.netAmount > 0 ? UInt64(p.netAmount) : 0
+                return snap.netAmount > 0 ? UInt64(snap.netAmount) : 0
             case .sent:
                 // Gross amount paid to external recipients. For an
                 // external send `netAmount = -(amount + fee)`, so the
                 // user-visible amount = `-netAmount - fee`. abs(netAmount)
                 // (the previous fallback) double-counted the fee and
                 // collapsed self-sends to a fee-sized number on screen.
-                return UInt64(max(0, -p.netAmount - fee))
+                return UInt64(max(0, -snap.netAmount - fee))
             case .moved:
                 return 0
             case .notAccountFunds:
                 return 0
             @unknown default:
-                return UInt64(abs(p.netAmount))
+                return UInt64(abs(snap.netAmount))
             }
         }
     }()
@@ -258,13 +294,13 @@ class Transaction: TransactionDataItem, Identifiable {
         switch source {
         case .ds(let dsTx):
             return computeStateFromDSTransaction(dsTx)
-        case .sdk(let p):
+        case .sdk(let snap):
             // PersistentTransaction.context: 0=mempool, 1=instantSend,
             // 2=inBlock, 3=chainLocked. Anything past mempool counts as
             // "ok" — instant-send is a strong-enough confirmation for
             // home-screen UX (matches the legacy DSTransaction codepath
             // which exits `.processing` once `instantSendReceived` flips).
-            return p.context == 0 ? .processing : .ok
+            return snap.context == 0 ? .processing : .ok
         }
     }()
 
@@ -406,7 +442,10 @@ class Transaction: TransactionDataItem, Identifiable {
     }
 
     init(persistentTransaction p: PersistentTransaction) {
-        self.source = .sdk(p)
+        // Freeze every UI-read field now, on the main actor where `p`'s model
+        // context is alive. After this the wrapper never dereferences `p`
+        // again, so it stays valid after a ModelContext reset (see SDKSnapshot).
+        self.source = .sdk(SDKSnapshot(p))
         // PersistentTransaction.blockTimestamp is 0 until mined; firstSeen
         // is set when the tx is first observed (mempool entry). Use it as
         // the mempool fallback so the home screen doesn't group these
@@ -423,7 +462,7 @@ extension Transaction {
     var feeUsed: UInt64 {
         switch source {
         case .ds(let dsTx): return dsTx.feeUsed
-        case .sdk(let p): return p.fee ?? 0
+        case .sdk(let snap): return snap.fee ?? 0
         }
     }
 
@@ -434,14 +473,14 @@ extension Transaction {
     var txHashHexString: String {
         switch source {
         case .ds(let dsTx): return dsTx.txHashHexString
-        case .sdk(let p): return Self.internalHex(p.txid)
+        case .sdk(let snap): return Self.internalHex(snap.txid)
         }
     }
 
     var txHashData: Data {
         switch source {
         case .ds(let dsTx): return dsTx.txHashData
-        case .sdk(let p): return p.txid
+        case .sdk(let snap): return snap.txid
         }
     }
 
