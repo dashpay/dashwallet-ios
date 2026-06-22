@@ -147,48 +147,64 @@ final class InternalTransferViewModel: ObservableObject {
             case .core:
                 // Asset-lock route: the Platform pool fee is carved from the
                 // locked value (not charged on top of the Core balance) and the
-                // Rust side rejects an undersized lock, so no extra fee headroom
-                // is reserved here.
+                // Rust side rejects an undersized lock, so no source-balance fee
+                // headroom is reserved here.
                 return dashDuffsUnsigned <= coreBalanceDuffs
             case .platform:
-                // Shield (Type 15): the SDK debits amount + fee from the
-                // transparent credit balance, so it must cover both.
-                return platformCredits >= feeReserveCredits
-                    && creditsPreview <= platformCredits - feeReserveCredits
+                // Shield (Type 15): the SDK's input selection requires
+                // balance ≥ amount + reserve. Fail closed if the reserve is
+                // unavailable. Subtraction keeps the UInt64 add overflow-safe.
+                guard let reserve = feeReserveCredits else { return false }
+                return platformCredits >= reserve
+                    && creditsPreview <= platformCredits - reserve
             }
         case .fromShielded:
             // Unshield/withdraw: the SDK debits amount + fee from the shielded
-            // pool (the recipient receives the full amount), so the balance must
-            // cover amount + fee. Compared via subtraction to keep the UInt64
-            // add overflow-safe.
-            return shieldedBalance >= feeReserveCredits
-                && creditsPreview <= shieldedBalance - feeReserveCredits
+            // pool (recipient receives the full amount), so the balance must
+            // cover amount + fee. Fail closed if the reserve is unavailable.
+            guard let reserve = feeReserveCredits else { return false }
+            return shieldedBalance >= reserve
+                && creditsPreview <= shieldedBalance - reserve
         }
     }
 
-    /// Flat shielded-fee estimate (credits) the SDK charges ON TOP of the
-    /// transfer amount for the active route, used by `canContinue` and Max to
-    /// reserve fee headroom in the source balance. Mirrors the confirm sheet's
-    /// `networkFeeCredits`. The `.toShielded` + `.core` asset-lock route returns
-    /// 0 — its pool fee comes out of the locked value, not the source balance.
-    /// Returns 0 when the SDK estimate is unavailable (fail-open).
-    private var feeReserveCredits: UInt64 {
+    /// Fixed input-selection reserve the Shield route requires ON TOP of the
+    /// amount — mirrors Rust `FEE_RESERVE_CREDITS = 1_000_000_000`
+    /// (rs-platform-wallet `platform_wallet.rs`; `select_shield_inputs` rejects
+    /// `balance < amount + reserve`). It is a conservative selection headroom,
+    /// NOT the on-chain fee (which is ~6× smaller); the unclaimed remainder
+    /// stays on the source address rather than being spent.
+    private static let shieldSelectionReserveCredits: UInt64 = 1_000_000_000
+
+    /// Fee/selection headroom (credits) the SDK requires ON TOP of the amount
+    /// for the active route, used by `canContinue` and Max. `nil` means the
+    /// requirement is currently unavailable for a fee-reserved route → callers
+    /// fail closed (block). A literal `0` (the asset-lock route) is NOT `nil` —
+    /// that route reserves nothing from the source balance.
+    private var feeReserveCredits: UInt64? {
         switch (direction, source) {
-        case (.toShielded, .platform):
-            return (try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)) ?? 0
-        case (.fromShielded, .core):
-            return (try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)) ?? 0
-        case (.fromShielded, .platform):
-            return (try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)) ?? 0
         case (.toShielded, .core):
             return 0
+        case (.toShielded, .platform):
+            // Shield: fixed 1e9-credit selection reserve, not the (smaller) fee.
+            return Self.shieldSelectionReserveCredits
+        case (.fromShielded, .core):
+            // The withdraw/unshield fee scales with the number of spent notes;
+            // the SDK recomputes it from real note selection (up to the
+            // 16-action `max_shielded_transition_actions` cap) at send time.
+            // Reserve that worst case so a fragmented wallet can't pass the
+            // affordability check and then fail SDK note selection.
+            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 16)
+        case (.fromShielded, .platform):
+            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 16)
         }
     }
 
     /// A credit balance minus the route's fee reserve, floored at 0 — so a Max
-    /// fill leaves room for the fee the SDK charges on top of the amount.
+    /// fill leaves room for the fee/headroom the SDK requires on top of the
+    /// amount. Fails closed (returns 0) when the reserve is unavailable.
     private func creditsMinusFeeReserve(_ balanceCredits: UInt64) -> UInt64 {
-        let fee = feeReserveCredits
+        guard let fee = feeReserveCredits else { return 0 }
         return balanceCredits > fee ? balanceCredits - fee : 0
     }
 
