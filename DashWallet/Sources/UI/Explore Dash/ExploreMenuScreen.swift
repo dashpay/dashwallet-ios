@@ -25,6 +25,7 @@ struct ExploreMenuScreen: View {
     private let onShowReceivePayment: () -> Void
     private let onShowGiftCard: (Data) -> Void
 
+    @ObservedObject private var balanceReminder = CrowdNodeBalanceReminder.shared
     @State private var showSyncingAlert = false
 
     private var isTestnet: Bool {
@@ -60,10 +61,14 @@ struct ExploreMenuScreen: View {
                 title: NSLocalizedString("Explore Dash", comment: ""),
                 subtitle: NSLocalizedString("Find merchants that accept Dash, where to buy it and how to earn income with it.", comment: "")
             )
-            .padding(.leading, 20)
-            .padding(.trailing, 60)
-            .padding(.top, 10)
-            .padding(.bottom, 20)
+
+            if balanceReminder.shouldShowOnExplore {
+                CrowdNodeBalanceReminderBanner {
+                    showCrowdNodeWithdrawal()
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
+            }
 
             // Menu list
             VStack(spacing: 2) {
@@ -188,6 +193,10 @@ struct ExploreMenuScreen: View {
         } else {
             showSyncingAlert = true
         }
+    }
+
+    private func showCrowdNodeWithdrawal() {
+        CrowdNodeWithdrawalRouter.openWithdrawal(from: vc)
     }
 }
 

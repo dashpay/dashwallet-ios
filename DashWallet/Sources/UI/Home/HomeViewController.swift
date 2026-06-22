@@ -26,6 +26,10 @@ protocol HomeViewControllerDelegate: AnyObject {
 
 class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     private var cancellableBag = Set<AnyCancellable>()
+    private var isSyncObserverRegistered = false
+    private var pendingCrowdNodeReminder = false
+    private var isCrowdNodeReminderRetryScheduled = false
+    private weak var crowdNodeBalanceReminderController: UIViewController?
     var model: DWHomeProtocol!
     var viewModel: HomeViewModel!
     private var homeView: HomeView!
@@ -50,6 +54,9 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     }
 
     deinit {
+        if isSyncObserverRegistered {
+            SyncingActivityMonitor.shared.remove(observer: self)
+        }
         print("☠️ \(String(describing: self))")
     }
 
@@ -66,6 +73,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
         assert(model != nil)
 
+        registerSyncObserverIfNeeded()
         setupView()
         performJailbreakCheck()
         configureObservers()
@@ -92,6 +100,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
         model.registerForPushNotifications()
         model.checkCrowdNodeState()
+        presentCrowdNodeBalanceReminderIfNeeded()
     }
 
     #if DASHPAY
@@ -109,7 +118,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             state.invitation = url
             state.chosenUsername = definedUsername
             invitationSetup = state
-            SyncingActivityMonitor.shared.add(observer: self)
             return
         }
 
@@ -267,6 +275,107 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
                 self?.viewModel.reclassifyTransactionShown(isShown: true)
             }
             .store(in: &cancellableBag)
+
+        CrowdNodeBalanceReminder.shared.$hasBalance
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] hasBalance in
+                guard let self = self else { return }
+
+                if hasBalance {
+                    self.presentCrowdNodeBalanceReminderIfNeeded()
+                } else {
+                    self.pendingCrowdNodeReminder = false
+                    self.dismissCrowdNodeBalanceReminder(markDismissed: false, animated: true)
+                }
+            }
+            .store(in: &cancellableBag)
+    }
+
+    private func registerSyncObserverIfNeeded() {
+        guard !isSyncObserverRegistered else { return }
+
+        SyncingActivityMonitor.shared.add(observer: self)
+        isSyncObserverRegistered = true
+    }
+
+    private func presentCrowdNodeBalanceReminderIfNeeded() {
+        guard isViewLoaded, view.window != nil else { return }
+        guard SyncingActivityMonitor.shared.state == .syncDone else { return }
+        guard CrowdNodeBalanceReminder.shared.shouldShowOnActiveScreen else {
+            pendingCrowdNodeReminder = false
+            return
+        }
+        guard crowdNodeBalanceReminderController == nil else {
+            pendingCrowdNodeReminder = false
+            return
+        }
+        guard presentedViewController == nil else {
+            pendingCrowdNodeReminder = true
+            scheduleCrowdNodeReminderRetryIfNeeded()
+            return
+        }
+
+        let sheet = CrowdNodeBalanceReminderSheet(
+            onWithdraw: { [weak self] in
+                self?.openCrowdNodeWithdrawalFromReminder()
+            },
+            onDismiss: { [weak self] in
+                self?.dismissCrowdNodeBalanceReminder(markDismissed: true, animated: true)
+            }
+        )
+        .background(Color.primaryBackground)
+
+        let hostingController = UIHostingController(rootView: sheet)
+        hostingController.modalPresentationStyle = .pageSheet
+        hostingController.presentationController?.delegate = self
+
+        if let sheet = hostingController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.preferredCornerRadius = 24
+            sheet.prefersGrabberVisible = true
+        }
+
+        pendingCrowdNodeReminder = false
+        crowdNodeBalanceReminderController = hostingController
+        present(hostingController, animated: true)
+    }
+
+    private func dismissCrowdNodeBalanceReminder(markDismissed: Bool, animated: Bool, completion: (() -> Void)? = nil) {
+        pendingCrowdNodeReminder = false
+
+        if markDismissed {
+            CrowdNodeBalanceReminder.shared.dismissActiveScreenReminder()
+        }
+
+        guard let controller = crowdNodeBalanceReminderController else {
+            completion?()
+            return
+        }
+
+        crowdNodeBalanceReminderController = nil
+        controller.dismiss(animated: animated, completion: completion)
+    }
+
+    private func openCrowdNodeWithdrawalFromReminder() {
+        dismissCrowdNodeBalanceReminder(markDismissed: false, animated: true) { [weak self] in
+            guard let self = self else { return }
+            CrowdNodeWithdrawalRouter.openWithdrawal(from: self)
+        }
+    }
+
+    private func scheduleCrowdNodeReminderRetryIfNeeded() {
+        guard pendingCrowdNodeReminder, !isCrowdNodeReminderRetryScheduled else { return }
+
+        isCrowdNodeReminderRetryScheduled = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let self = self else { return }
+
+            self.isCrowdNodeReminderRetryScheduled = false
+            guard self.pendingCrowdNodeReminder else { return }
+
+            self.presentCrowdNodeBalanceReminderIfNeeded()
+        }
     }
     
     private func showTimeSkewDialog(diffSeconds: Int64, coinjoin: Bool) {
@@ -382,14 +491,25 @@ extension HomeViewController: SyncingActivityMonitorObserver {
     }
 
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
-        #if DASHPAY
         if state == .syncDone {
+            #if DASHPAY
             if let invitationSetup = invitationSetup {
                 handleDeeplink(invitationSetup.invitation!, definedUsername: invitationSetup.chosenUsername)
                 self.invitationSetup = nil
+                return
             }
-            SyncingActivityMonitor.shared.remove(observer: self)
+            #endif
+
+            presentCrowdNodeBalanceReminderIfNeeded()
         }
-        #endif
+    }
+}
+
+extension HomeViewController: UIAdaptivePresentationControllerDelegate {
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+        guard presentationController.presentedViewController === crowdNodeBalanceReminderController else { return }
+
+        crowdNodeBalanceReminderController = nil
+        CrowdNodeBalanceReminder.shared.dismissActiveScreenReminder()
     }
 }

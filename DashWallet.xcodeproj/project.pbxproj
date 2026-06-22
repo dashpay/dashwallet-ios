@@ -522,6 +522,7 @@
 		514AF1C12FB5F02D00F9B54C /* MayaConvertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AF1BF2FB5F02D00F9B54C /* MayaConvertViewModel.swift */; };
 		514BEA012FB5F02D00F9B54C /* MayaConvertAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514BEA002FB5F02D00F9B54C /* MayaConvertAmount.swift */; };
 		514BEA022FB5F02D00F9B54C /* MayaConvertAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514BEA002FB5F02D00F9B54C /* MayaConvertAmount.swift */; };
+		514518ED2FE936FC00F9AD4C /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 514518EC2FE936FC00F9AD4C /* DashUIKit */; };
 		5151C8C62F913BF100F0A604 /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */; };
 		5151C8C72F913BF100F0A604 /* ZenLedger-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C52F913BF100F0A604 /* ZenLedger-Info.plist */; };
 		5151C8C82F913BF100F0A604 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C32F913BF100F0A604 /* GoogleService-Info.plist */; };
@@ -1775,6 +1776,14 @@
 		CC0000202DUMMYID001234567 /* PiggyCardsTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000102DUMMYID001234567 /* PiggyCardsTokenService.swift */; };
 		D0D3F0F33D9F162622F0A6E5 /* DashBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF95E0E0B636AFB810D62116 /* DashBalanceView.swift */; };
 		DA38F1C5CD32A52891D02D0E /* MayaConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7708BBFDD14AFF237FB72D71 /* MayaConstants.swift */; };
+		CNR0000012FF100000000001 /* CrowdNodeBalanceReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000072FF100000000001 /* CrowdNodeBalanceReminder.swift */; };
+		CNR0000022FF100000000001 /* CrowdNodeBalanceReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000072FF100000000001 /* CrowdNodeBalanceReminder.swift */; };
+		CNR0000032FF100000000001 /* CrowdNodeBalanceReminderSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */; };
+		CNR0000042FF100000000001 /* CrowdNodeBalanceReminderSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */; };
+		CNR0000052FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */; };
+		CNR0000062FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */; };
+		CNR0000112FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */; };
+		CNR0000122FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */; };
 		DE3A167A235B79D705C0A962 /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
 		E5767AEAEF7C4921886E915A /* BuySellPortalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */; };
 		E88FE13A3079496C9A5EA8D4 /* MayaCoinIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20554F992205428BA790F6CF /* MayaCoinIconView.swift */; };
@@ -3399,6 +3408,10 @@
 		CC0000082DUMMYID001234567 /* PiggyCardsEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsEndpoint.swift; sourceTree = "<group>"; };
 		CC0000092DUMMYID001234567 /* PiggyCardsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsRepository.swift; sourceTree = "<group>"; };
 		CC0000102DUMMYID001234567 /* PiggyCardsTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsTokenService.swift; sourceTree = "<group>"; };
+		CNR0000072FF100000000001 /* CrowdNodeBalanceReminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalanceReminder.swift; sourceTree = "<group>"; };
+		CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalanceReminderSheet.swift; sourceTree = "<group>"; };
+		CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalanceReminderBanner.swift; sourceTree = "<group>"; };
+		CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWithdrawalRouter.swift; sourceTree = "<group>"; };
 		D53435DCAF024BC82E0247F3 /* ImportPrivateKeySheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImportPrivateKeySheet.swift; sourceTree = "<group>"; };
 		D99130732DE8F2E95F635F6B /* MayaConvertCardRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConvertCardRow.swift; sourceTree = "<group>"; };
 		E2A832899A499C24C7A43E47 /* Pods-WatchApp Extension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testnet.xcconfig"; path = "Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testnet.xcconfig"; sourceTree = "<group>"; };
@@ -3508,6 +3521,7 @@
 				0FC75A8F28F03E22000E4858 /* libDashSync.a in Frameworks */,
 				2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */,
 				FB3E9F60236125F600C09C5C /* BackgroundTasks.framework in Frameworks */,
+				514518ED2FE936FC00F9AD4C /* DashUIKit in Frameworks */,
 				2AD1CE9922DE63FB00C99324 /* GameplayKit.framework in Frameworks */,
 				FB4FA9C322505DD70060B017 /* AudioToolbox.framework in Frameworks */,
 				2AA08534237D6CF500797F95 /* CloudKit.framework in Frameworks */,
@@ -3854,6 +3868,7 @@
 				11BD738028E7356100A34022 /* CrowdNode.swift */,
 				11E47BAC28EB3A7D0097CFA0 /* CrowdNode+Constants.swift */,
 				111C3C51296D620D00788E18 /* CrowdNode+UserDefaults.swift */,
+				CNR0000072FF100000000001 /* CrowdNodeBalanceReminder.swift */,
 			);
 			path = CrowdNode;
 			sourceTree = "<group>";
@@ -3863,6 +3878,7 @@
 			children = (
 				47083B392989488D0010AF71 /* Tx Details */,
 				47083B3329893E260010AF71 /* Views */,
+				CNR0000102FF100000000001 /* BalanceReminder */,
 				110C679629227895006B580C /* Extensions */,
 				117ECC7C29742A30003D798E /* Online */,
 				1141E4C3291FDC3B00ACDA9E /* Getting Started */,
@@ -8211,6 +8227,16 @@
 			path = "Sync View";
 			sourceTree = "<group>";
 		};
+		CNR0000102FF100000000001 /* BalanceReminder */ = {
+			isa = PBXGroup;
+			children = (
+				CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */,
+				CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */,
+				CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */,
+			);
+			path = BalanceReminder;
+			sourceTree = "<group>";
+		};
 		DD0000012DUMMYID001234567 /* PiggyCards */ = {
 			isa = PBXGroup;
 			children = (
@@ -8482,6 +8508,9 @@
 				uk,
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
+			packageReferences = (
+				514518EB2FE936FC00F9AD4C /* XCLocalSwiftPackageReference "../Packages/DashUIKit" */,
+			);
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -9153,6 +9182,10 @@
 				4751136C28D9A3DB00223B77 /* BuySellPortalViewController.swift in Sources */,
 				AA00000128D9A3DB00223B77 /* BuySellPortalView.swift in Sources */,
 				8DF3D24EE3B247B79AE9CAB5 /* BuySellPortalScreen.swift in Sources */,
+				CNR0000012FF100000000001 /* CrowdNodeBalanceReminder.swift in Sources */,
+				CNR0000032FF100000000001 /* CrowdNodeBalanceReminderSheet.swift in Sources */,
+				CNR0000052FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */,
+				CNR0000112FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */,
 				514AEA0F2FB31BD800F9B54C /* AddressFieldView.swift in Sources */,
 				2A7A7BD62348CB6600451078 /* SettingsScreen.swift in Sources */,
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
@@ -9905,6 +9938,10 @@
 				C9D2C6AF2A320AA000D15901 /* BuySellPortalViewController.swift in Sources */,
 				AA00000228D9A3DB00223B77 /* BuySellPortalView.swift in Sources */,
 				E5767AEAEF7C4921886E915A /* BuySellPortalScreen.swift in Sources */,
+				CNR0000022FF100000000001 /* CrowdNodeBalanceReminder.swift in Sources */,
+				CNR0000042FF100000000001 /* CrowdNodeBalanceReminderSheet.swift in Sources */,
+				CNR0000062FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */,
+				CNR0000122FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */,
 				C9D2C6B02A320AA000D15901 /* SettingsScreen.swift in Sources */,
 				751B61C52ADFFD0700D1C2EF /* IntegrationViewController+Uphold.swift in Sources */,
 				C943B5022A40A54600AF23C5 /* DWDPGenericStatusItemView.m in Sources */,
@@ -12952,6 +12989,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		514518EB2FE936FC00F9AD4C /* XCLocalSwiftPackageReference "../Packages/DashUIKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/DashUIKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		514518EC2FE936FC00F9AD4C /* DashUIKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DashUIKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 75D5F3B6191EC270004AB296 /* Project object */;
 }
