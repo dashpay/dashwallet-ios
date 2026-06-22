@@ -36,10 +36,11 @@ struct AboutDashView: View {
                 leading: { NavigationBarElement.back.button { onBack?() } }
             )
 
-            VStack(alignment: .leading, spacing: 20) {
-                Image(dash: .custom("logo"))
-                    .padding(.vertical, 20)
-                    .frame(maxWidth: .infinity, alignment: .center)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Image(dash: .custom("logo"))
+                        .padding(.vertical, 20)
+                        .frame(maxWidth: .infinity, alignment: .center)
 
                 VStack(alignment: .leading, spacing: 2) {
                     List1View(label: NSLocalizedString("App version", comment: "AboutDash"), value: viewModel.appVersion)
@@ -89,10 +90,10 @@ struct AboutDashView: View {
                 }
                 .shadow(color: Color.dash.shadow, radius: 10, x: 0, y: 5)
                 .padding(.horizontal, 20)
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
-            .padding(.horizontal, 20)
-
-            Spacer()
         }
         .background(Color.dash.primaryBackground)
     }
