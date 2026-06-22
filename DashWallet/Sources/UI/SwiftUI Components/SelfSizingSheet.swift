@@ -49,6 +49,7 @@ private struct SelfSizingSheetModifier: ViewModifier {
 
     private var detents: Set<PresentationDetent> {
         guard let height, height > 0 else { return [.medium] }
+        print("\(height)")
         return [.height(height)]
     }
 

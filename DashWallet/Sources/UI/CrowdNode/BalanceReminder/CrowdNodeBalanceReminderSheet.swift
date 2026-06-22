@@ -84,23 +84,19 @@ struct CrowdNodeBalanceReminderSheet: View {
     Color.dash.primaryBackground
         .ignoresSafeArea()
         .sheet(isPresented: .constant(true)) {
-            // Qualify the type: the project also defines a `BottomSheet`, so use the lib's one.
-            // `fillsHeight: false` + `.selfSizingSheet()` snaps the sheet to its content height.
-            let sheet = DashUIKit.BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
+            // Use the lib's qualified factory: it sets `fillsHeight: false`, self-sizes to content,
+            // and (via `cornerRadius`) fills the sheet background + rounds the corners. Being fully
+            // qualified by type, it also avoids the ambiguity with the project's `selfSizingSheet`.
+            // `fallback` avoids the `.medium` flash before the first measurement.
+            DashUIKit.BottomSheet.selfSizing(
+                showBackButton: .constant(false),
+                fallback: 540,
+                cornerRadius: 24
+            ) {
                 CrowdNodeBalanceReminderSheet(
                     onWithdraw: {},
                     onDismiss: {}
                 )
-            }
-            .selfSizingSheet()
-
-            if #available(iOS 16.4, *) {
-                sheet
-                    .presentationBackground(Color.dash.primaryBackground) // fills the bottom safe-area strip too
-                    .presentationCornerRadius(32)
-                    .presentationDragIndicator(.hidden)                   // hide native grabber — lib draws its own
-            } else {
-                sheet
             }
         }
 }
