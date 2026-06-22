@@ -527,8 +527,8 @@ extension HomeViewController: SyncingActivityMonitorObserver {
     func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
         if state == .syncDone {
             #if DASHPAY
-            if let invitationSetup = invitationSetup {
-                handleDeeplink(invitationSetup.invitation!, definedUsername: invitationSetup.chosenUsername)
+            if let invitationSetup = invitationSetup, let invitation = invitationSetup.invitation {
+                handleDeeplink(invitation, definedUsername: invitationSetup.chosenUsername)
                 self.invitationSetup = nil
                 return
             }

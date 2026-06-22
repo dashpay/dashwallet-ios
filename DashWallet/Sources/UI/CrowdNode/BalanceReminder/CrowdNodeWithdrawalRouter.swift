@@ -90,11 +90,11 @@ enum CrowdNodeWithdrawalRouter {
         controller.actionButtonText = CrowdNodeModel.shared.buyDashButtonText
 
         let navigationController = BaseNavigationController(rootViewController: controller)
-        controller.mainAction = {
+        controller.mainAction = { [weak navigationController] in
             Task {
                 if await CrowdNodeModel.shared.authenticate() {
                     let buySellController = BuySellPortalViewController.controller()
-                    navigationController.pushViewController(buySellController, animated: true)
+                    navigationController?.pushViewController(buySellController, animated: true)
                 }
             }
         }
