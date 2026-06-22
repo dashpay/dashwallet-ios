@@ -18,6 +18,7 @@
 import UIKit
 import SwiftUI
 import Combine
+import MessageUI
 
 struct SettingsScreen: View {
     private let vc: UINavigationController
@@ -196,7 +197,8 @@ struct SettingsScreen: View {
     }
     
     private func showAboutController() {
-        let controller = DWAboutViewController.create()
+        let controller = AboutDashHostingViewController()
+        controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
     
@@ -267,4 +269,36 @@ private final class LocalCurrencyHostingViewController: BaseViewController {
 extension LocalCurrencyHostingViewController: NavigationBarDisplayable {
     var isBackButtonHidden: Bool { true }
     var isNavigationBarHidden: Bool { true }
+}
+
+private final class AboutDashHostingViewController: BaseViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        view.backgroundColor = .dw_background()
+
+        let rootView = AboutDashView(
+            onBack: { [weak self] in
+                self?.navigationController?.popViewController(animated: true)
+            },
+            onContactSupport: { [weak self] in
+                self?.presentSupportEmailController()
+            }
+        )
+
+        let hostingController = UIHostingController(rootView: rootView)
+        hostingController.view.backgroundColor = .clear
+        dw_embedChild(hostingController)
+    }
+}
+
+extension AboutDashHostingViewController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
+}
+
+extension AboutDashHostingViewController: MFMailComposeViewControllerDelegate {
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+        controller.dismiss(animated: true)
+    }
 }
