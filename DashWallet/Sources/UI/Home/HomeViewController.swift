@@ -18,6 +18,7 @@
 import UIKit
 import SwiftUI
 import Combine
+import DashUIKit
 
 @objc(DWHomeViewControllerDelegate)
 protocol HomeViewControllerDelegate: AnyObject {
@@ -300,7 +301,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     }
 
     private func presentCrowdNodeBalanceReminderIfNeeded() {
-        guard isViewLoaded, view.window != nil else { return }
+        guard isViewLoaded else { return }
         guard SyncingActivityMonitor.shared.state == .syncDone else { return }
         guard CrowdNodeBalanceReminder.shared.shouldShowOnActiveScreen else {
             pendingCrowdNodeReminder = false
@@ -310,35 +311,68 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             pendingCrowdNodeReminder = false
             return
         }
-        guard presentedViewController == nil else {
+        // Present on whatever view is currently active (any tab / pushed screen), not just Home.
+        // The sync observer fires even when Home isn't the visible tab, so `self` may be off-screen.
+        guard let presenter = activeTopViewController(),
+              presenter.presentedViewController == nil,
+              !(presenter is UIAlertController) else {
             pendingCrowdNodeReminder = true
             scheduleCrowdNodeReminderRetryIfNeeded()
             return
         }
 
-        let sheet = CrowdNodeBalanceReminderSheet(
-            onWithdraw: { [weak self] in
-                self?.openCrowdNodeWithdrawalFromReminder()
-            },
-            onDismiss: { [weak self] in
-                self?.dismissCrowdNodeBalanceReminder(markDismissed: true, animated: true)
-            }
-        )
-        .background(Color.primaryBackground)
+        let bottomSheet = DashUIKit.BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
+            CrowdNodeBalanceReminderSheet(
+                onWithdraw: { [weak self] in
+                    self?.openCrowdNodeWithdrawalFromReminder()
+                },
+                onDismiss: { [weak self] in
+                    self?.dismissCrowdNodeBalanceReminder(markDismissed: true, animated: true)
+                }
+            )
+        }
 
-        let hostingController = UIHostingController(rootView: sheet)
+        let hostingController = UIHostingController(rootView: bottomSheet)
         hostingController.modalPresentationStyle = .pageSheet
         hostingController.presentationController?.delegate = self
+        // Fill the whole sheet (incl. the bottom safe-area strip) with the sheet background.
+        hostingController.view.backgroundColor = UIColor(Color.dash.primaryBackground)
 
-        if let sheet = hostingController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.preferredCornerRadius = 24
-            sheet.prefersGrabberVisible = true
+        if let sheetPC = hostingController.sheetPresentationController {
+            sheetPC.prefersGrabberVisible = false
+            // Custom corner radius only below iOS 26; iOS 26+ keeps the native sheet styling.
+            if #unavailable(iOS 26.0) {
+                sheetPC.preferredCornerRadius = 24
+            }
+
+            // SwiftUI's `.presentationDetents` (used by `.selfSizingSheet()`) does NOT bridge to a
+            // UIHostingController presented via UIKit `present()` — UIKit would fall back to `.large`.
+            // So size the sheet to its content here with a custom UIKit detent.
+            if #available(iOS 16.0, *) {
+                let width = presenter.view.bounds.width
+                let bottomInset = presenter.view.window?.safeAreaInsets.bottom ?? 0
+                let contentHeight = hostingController
+                    .sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude))
+                    .height
+                sheetPC.detents = [.custom { context in
+                    min(contentHeight + bottomInset, context.maximumDetentValue)
+                }]
+            } else {
+                sheetPC.detents = [.medium()]
+            }
         }
 
         pendingCrowdNodeReminder = false
         crowdNodeBalanceReminderController = hostingController
-        present(hostingController, animated: true)
+        // Show at most once per session — don't re-present on subsequent HomeView appearances.
+        CrowdNodeBalanceReminder.shared.markActiveScreenReminderShown()
+        presenter.present(hostingController, animated: true)
+    }
+
+    /// The active tab's top-most controller. Resolves via the tab-bar ancestor, which stays
+    /// reachable even when Home isn't the selected tab (so the reminder can appear anywhere).
+    private func activeTopViewController() -> UIViewController? {
+        (tabBarController ?? view.window?.rootViewController)?.topController()
     }
 
     private func dismissCrowdNodeBalanceReminder(markDismissed: Bool, animated: Bool, completion: (() -> Void)? = nil) {
@@ -359,8 +393,8 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     private func openCrowdNodeWithdrawalFromReminder() {
         dismissCrowdNodeBalanceReminder(markDismissed: false, animated: true) { [weak self] in
-            guard let self = self else { return }
-            CrowdNodeWithdrawalRouter.openWithdrawal(from: self)
+            guard let self = self, let presenter = self.activeTopViewController() else { return }
+            CrowdNodeWithdrawalRouter.openWithdrawal(from: presenter)
         }
     }
 

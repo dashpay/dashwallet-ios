@@ -25,6 +25,10 @@ final class CrowdNodeBalanceReminder: ObservableObject {
     @Published private(set) var hasBalance: Bool
     @Published private(set) var balance: UInt64
     @Published private(set) var activeScreenReminderDismissed: Bool = false
+    /// Set once the active-screen reminder has been shown this session. Never reset, so the
+    /// reminder sheet appears at most once per app launch (unlike the dismissed flag, which
+    /// resets when the balance clears).
+    @Published private(set) var didShowActiveScreenReminder: Bool = false
 
     private let crowdNode: CrowdNode
     private var cancellableBag = Set<AnyCancellable>()
@@ -34,7 +38,7 @@ final class CrowdNodeBalanceReminder: ObservableObject {
     }
 
     var shouldShowOnActiveScreen: Bool {
-        hasBalance && !activeScreenReminderDismissed
+        hasBalance && !activeScreenReminderDismissed && !didShowActiveScreenReminder
     }
 
     var shouldShowOnExplore: Bool {
@@ -57,6 +61,11 @@ final class CrowdNodeBalanceReminder: ObservableObject {
     func dismissActiveScreenReminder() {
         // TODO(product): persist dismissal per account if this should survive app restarts.
         activeScreenReminderDismissed = true
+    }
+
+    /// Mark the active-screen reminder as shown so it isn't presented again this session.
+    func markActiveScreenReminderShown() {
+        didShowActiveScreenReminder = true
     }
 
     private func update(balance: UInt64) {
