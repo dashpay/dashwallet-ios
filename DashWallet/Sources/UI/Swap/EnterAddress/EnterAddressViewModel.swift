@@ -36,6 +36,7 @@ class EnterAddressViewModel: ObservableObject {
 
     @Published var hasClipboardCandidate: Bool = false
     @Published var clipboardContent: String?
+    @Published var isConfirming: Bool = false
 
     // MARK: - Computed Properties
 
@@ -49,7 +50,7 @@ class EnterAddressViewModel: ObservableObject {
 
     var isContinueEnabled: Bool {
         let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return !trimmed.isEmpty && addressValidationErrorMessage == nil && errorMessage == nil
+        return !isConfirming && !trimmed.isEmpty && addressValidationErrorMessage == nil && errorMessage == nil
     }
 
     var showAddressError: Bool {

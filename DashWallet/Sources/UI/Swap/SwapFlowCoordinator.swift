@@ -45,6 +45,7 @@ final class SwapFlowCoordinator {
     }
 
     private func navigateToConvert(coin: MayaCryptoCurrency, address: String) {
+        guard !(navigationController?.topViewController is SwapConvertHostingController) else { return }
         let convertVC = SwapConvertHostingController(coin: coin, address: address, swapProvider: swapProvider)
         navigationController?.pushViewController(convertVC, animated: true)
     }

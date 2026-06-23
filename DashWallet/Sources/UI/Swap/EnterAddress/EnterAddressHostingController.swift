@@ -35,6 +35,7 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
     private let swapProvider: SwapProvider
     private let viewModel: EnterAddressViewModel
     private var authSession: ASWebAuthenticationSession?
+    private var isConfirming = false
     private lazy var keyboardDismissTapRecognizer: UITapGestureRecognizer = {
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         recognizer.cancelsTouchesInView = false
@@ -98,6 +99,9 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        // Re-arm Continue guard when returning via Back from the Convert screen.
+        isConfirming = false
+        viewModel.isConfirming = false
         // Returning from a pushed screen (QR scanner, Uphold/Coinbase login) may not re-fire
         // SwiftUI's onAppear, so refresh the clipboard card here too.
         viewModel.refreshClipboardAddress()
@@ -106,6 +110,10 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
     // MARK: - Address Validation
 
     private func validateAndContinue(address: String) {
+        guard !isConfirming else { return }
+        isConfirming = true
+        viewModel.isConfirming = true
+
         dismissKeyboard()
         viewModel.errorMessage = nil
 
@@ -117,6 +125,8 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
                     onAddressConfirmed?(coin, address)
                 } else {
                     viewModel.errorMessage = error
+                    isConfirming = false
+                    viewModel.isConfirming = false
                 }
             } else {
                 self.onAddressConfirmed?(self.coin, address)
