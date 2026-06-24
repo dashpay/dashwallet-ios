@@ -16,6 +16,7 @@
 //
 
 import Foundation
+import SwiftDashSDK
 
 // MARK: - DerivationPathKeysItem
 
@@ -37,11 +38,7 @@ struct DerivationPathKeysItem {
 // MARK: - DerivationPathInfo
 
 enum DerivationPathInfo {
-    case keyId
-    case privatePublicKeysBase64
     case address
-    case publicKey
-    case publicKeyLegacy
     case privateKey
     case wifPrivateKey
 }
@@ -49,16 +46,8 @@ enum DerivationPathInfo {
 extension DerivationPathInfo {
     var title: String {
         switch self {
-        case .keyId:
-            return NSLocalizedString("Key Id", comment: "")
-        case .privatePublicKeysBase64:
-            return NSLocalizedString("Private / Public Keys (base64)", comment: "")
         case .address:
             return NSLocalizedString("Address", comment: "")
-        case .publicKey:
-            return NSLocalizedString("Public key", comment: "")
-        case .publicKeyLegacy:
-            return NSLocalizedString("Public key (legacy)", comment: "")
         case .privateKey:
             return NSLocalizedString("Private key", comment: "")
         case .wifPrivateKey:
@@ -74,29 +63,26 @@ extension MNKey {
             return [.address, .privateKey, .wifPrivateKey]
         case .voting:
             return [.address, .privateKey, .wifPrivateKey]
-        case .operator:
-            return [.publicKey, .publicKeyLegacy, .privateKey]
-        case .hpmnOperator:
-            return [.keyId, .privatePublicKeysBase64]
         }
     }
 }
 
 // MARK: - DerivationPathKeysModel
 
+@MainActor
 final class DerivationPathKeysModel {
     let key: MNKey
-    let derivationPath: DSAuthenticationKeysDerivationPath
 
     let infoItems: [DerivationPathInfo]
 
-    var visibleIndexes: Int
+    var visibleIndexes: Int = 0
 
-    init(key: MNKey, derivationPath: DSAuthenticationKeysDerivationPath) {
+    private let deriver: MasternodeProviderKeyDeriver?
+
+    init(key: MNKey) {
         self.key = key
-        self.derivationPath = derivationPath
         infoItems = key.infos
-        visibleIndexes = Int(derivationPath.firstUnusedIndex())
+        deriver = MasternodeProviderKeyDeriver(key: key)
     }
 
     func showNextKey() {
@@ -118,88 +104,105 @@ extension DerivationPathKeysModel {
         infoItems.count
     }
 
-    func usageInfoForKey(at index: Int) -> String {
-        let used = derivationPath.addressIsUsed(at: UInt32(index))
-
-        if used {
-            if let localMasternode = derivationPath.chain.chainManager!.masternodeManager.localMasternode(using: UInt32(index), at: derivationPath) {
-                return NSLocalizedString("Used at: ", comment: "") + localMasternode.ipAddressAndIfNonstandardPortString
-            } else {
-                guard let localMasternodesArray = derivationPath.chain.chainManager!.masternodeManager.localMasternodesPreviously(using: UInt32(index), at: derivationPath) else {
-                    return NSLocalizedString("Not yet used", comment: "")
-                }
-
-                if localMasternodesArray.count == 1 {
-                    let localMasternode = localMasternodesArray.first!
-                    return NSLocalizedString("Previously used at: ", comment: "") + localMasternode.ipAddressAndIfNonstandardPortString
-                } else if localMasternodesArray.isEmpty {
-                    return NSLocalizedString("Used", comment: "")
-                } else {
-                    let localMasternode = localMasternodesArray.last!
-                    return NSLocalizedString("Previously used at: ", comment: "") + localMasternode.ipAddressAndIfNonstandardPortString
-                }
-            }
-        } else {
-            return NSLocalizedString("Not yet used", comment: "")
+    func itemForInfo(_ info: DerivationPathInfo, atIndex index: Int) -> DerivationPathKeysItem {
+        let unavailable = NSLocalizedString("Not available", comment: "")
+        let value: String
+        switch info {
+        case .address:
+            value = deriver?.address(at: UInt32(index)) ?? unavailable
+        case .privateKey:
+            value = deriver?.privateKeyHex(at: UInt32(index)) ?? unavailable
+        case .wifPrivateKey:
+            value = deriver?.wif(at: UInt32(index)) ?? unavailable
         }
+        return DerivationPathKeysItem(info: info, value: value)
     }
+}
 
-    func privateKeyAtIndex(index: UInt32, forWallet wallet: DSWallet) -> UnsafeMutablePointer<OpaqueKey>? {
-        guard let phrase = wallet.seedPhraseIfAuthenticated() else {
+// MARK: - MasternodeProviderKeyDeriver
+
+/// Derives masternode provider Owner/Voting keys (ECDSA) from SwiftDashSDK,
+/// replacing DashSync's `DSAuthenticationKeysDerivationPath`.
+///
+/// Paths match DashSync's `DSAuthenticationKeysDerivationPath` exactly:
+/// voting `m/9'/<coin>'/3'/1'`, owner `m/9'/<coin>'/3'/2'` (ECDSA, fully
+/// hardened account path, soft key index; coin = 5' mainnet / 1' testnet).
+///
+/// Only Owner/Voting are supported — Operator (BLS) and HPMN/Platform (EdDSA)
+/// were removed because the FFI doesn't export their per-index public keys.
+@MainActor
+private final class MasternodeProviderKeyDeriver {
+    private let key: MNKey
+    private let masterPath: String
+    private let accountType: AccountType
+    private let wallet: Wallet
+    private let manager: WalletManager
+    private let walletId: Data
+
+    init?(key: MNKey) {
+        guard let hostWalletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              let network = SwiftDashSDKHost.shared.runningNetwork else {
             return nil
         }
-        let seed = DSBIP39Mnemonic.sharedInstance()!.deriveKey(fromPhrase: phrase, withPassphrase: nil)
-        let opaqueKey = derivationPath.privateKey(at: index, fromSeed: seed)!
-        return opaqueKey
+
+        let coinType = (network == .mainnet) ? "5'" : "1'"
+        let path: String
+        let type: AccountType
+        switch key {
+        case .voting:
+            path = "m/9'/\(coinType)/3'/1'"
+            type = .providerVotingKeys
+        case .owner:
+            path = "m/9'/\(coinType)/3'/2'"
+            type = .providerOwnerKeys
+        }
+
+        guard let mnemonic = try? WalletStorage().retrieveMnemonic(for: hostWalletId),
+              let manager = try? WalletManager(network: network),
+              let walletId = try? manager.addWallet(mnemonic: mnemonic),
+              let wallet = (try? manager.getWallet(id: walletId)) ?? nil else {
+            return nil
+        }
+
+        // Ensure the provider account exists so the managed collection can vend
+        // its address pool.
+        _ = try? wallet.getAccount(type: type)
+
+        self.key = key
+        self.masterPath = path
+        self.accountType = type
+        self.manager = manager
+        self.wallet = wallet
+        self.walletId = walletId
     }
 
-    func itemForInfo(_ info: DerivationPathInfo, atIndex index: Int) -> DerivationPathKeysItem {
-        let wallet = DWEnvironment.sharedInstance().currentWallet
-        let index = UInt32(index)
-        return autoreleasepool {
-            switch info {
-            case .address:
-                let address = derivationPath.address(at: index)
-                return DerivationPathKeysItem(info: info, value: address)
-            case .publicKey:
-                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
-                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
-                }
-                let key = DSKeyManager.blsPublicKeySerialize(opaqueKey, legacy: false)
-                return DerivationPathKeysItem(info: info, value: key.lowercased())
-            case .publicKeyLegacy:
-                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
-                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
-                }
-                let key = DSKeyManager.blsPublicKeySerialize(opaqueKey, legacy: true)
-                return DerivationPathKeysItem(info: info, value: key.lowercased())
-            case .privateKey:
-                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
-                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
-                }
-                let key = DSKeyManager.secretKeyHexString(opaqueKey)
-                return DerivationPathKeysItem(info: info, value: key)
-            case .wifPrivateKey:
-                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
-                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
-                }
-                let key = DSKeyManager.serializedPrivateKey(opaqueKey, chainType: wallet.chain.chainType)
-                return DerivationPathKeysItem(info: info, value: key)
-            case .keyId:
-                let pubKeyData = derivationPath.publicKeyData(at: index) as NSData
-                var bytes = pubKeyData.sha256()
-                let hexString = NSData(bytes: &bytes, length: MemoryLayout<UInt160>.size).hexString()
-                return DerivationPathKeysItem(info: info, value: hexString.lowercased())
+    func wif(at index: UInt32) -> String? {
+        guard let account = try? wallet.getAccount(type: accountType) else { return nil }
+        return try? account.derivePrivateKeyWIF(wallet: wallet, masterPath: masterPath, index: index)
+    }
 
-            case .privatePublicKeysBase64:
-                guard let opaqueKey = privateKeyAtIndex(index: index, forWallet: wallet) else {
-                    return DerivationPathKeysItem(info: info, value: NSLocalizedString("Not available", comment: ""))
-                }
-                let privateKeyData = DSKeyManager.privateKeyData(opaqueKey)
-                let pubKeyData = self.derivationPath.publicKeyData(at: index)
-                let data = privateKeyData + pubKeyData
-                return DerivationPathKeysItem(info: info, value: data.base64EncodedString())
-            }
+    func privateKeyHex(at index: UInt32) -> String? {
+        guard let wif = wif(at: index), let data = WIFParser.parseWIF(wif) else { return nil }
+        return data.map { String(format: "%02x", $0) }.joined()
+    }
+
+    func address(at index: UInt32) -> String? {
+        guard let collection = manager.getManagedAccountCollection(walletId: walletId) else {
+            return nil
         }
+
+        let account: ManagedAccount?
+        switch key {
+        case .voting:
+            account = collection.getProviderVotingKeysAccount()
+        case .owner:
+            account = collection.getProviderOwnerKeysAccount()
+        }
+
+        guard let pool = account?.getAddressPool(type: .single) ?? account?.getExternalAddressPool(),
+              let info = try? pool.getAddress(at: index) else {
+            return nil
+        }
+        return info.address
     }
 }

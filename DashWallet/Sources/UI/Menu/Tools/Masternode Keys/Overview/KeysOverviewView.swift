@@ -44,11 +44,7 @@ struct KeysOverviewContentView: View {
                 // Keys list container
                 VStack(spacing: kMenuVGap) {
                     ForEach(viewModel.items, id: \.self) { item in
-                        KeyItemButton(
-                            item: item,
-                            count: viewModel.keyCount(for: item),
-                            used: viewModel.usedCount(for: item)
-                        ) {
+                        KeyItemButton(item: item) {
                             handleItemTap(item)
                         }
                     }
@@ -64,7 +60,6 @@ struct KeysOverviewContentView: View {
     }
 
     private func handleItemTap(_ item: MNKey) {
-        let derivationPath = viewModel.derivationPath(for: item)
         DSAuthenticationManager.sharedInstance().authenticate(
             withPrompt: nil,
             usingBiometricAuthentication: false,
@@ -73,7 +68,7 @@ struct KeysOverviewContentView: View {
             guard authenticated else { return }
 
             DispatchQueue.main.async {
-                let vc = DerivationPathKeysViewController(with: item, derivationPath: derivationPath)
+                let vc = DerivationPathKeysViewController(with: item)
                 vc.hidesBottomBarWhenPushed = true
                 navigationController?.pushViewController(vc, animated: true)
             }
@@ -85,37 +80,21 @@ struct KeysOverviewContentView: View {
 
 struct KeyItemButton: View {
     let item: MNKey
-    let count: Int
-    let used: Int
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 0) {
-                // Left side - key name and count
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(item.title)
-                        .font(.subheadline)
-                        .foregroundColor(Color(uiColor: .dw_label()))
-
-                    Text(keyCountText)
-                        .font(.footnote)
-                        .foregroundColor(Color(uiColor: .dw_tertiaryText()))
-                }
+                Text(item.title)
+                    .font(.subheadline)
+                    .foregroundColor(Color(uiColor: .dw_label()))
 
                 Spacer()
 
-                // Right side - used count + chevron
-                HStack(spacing: 16) {
-                    Text(usedCountText)
-                        .font(.footnote)
-                        .foregroundColor(Color(uiColor: .dw_label()))
-
-                    Image("list-chevron-right")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: 11)
-                }
+                Image("list-chevron-right")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 11)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
@@ -126,38 +105,12 @@ struct KeyItemButton: View {
         }
         .buttonStyle(PlainButtonStyle())
     }
-
-    private var keyCountText: String {
-        String.localizedStringWithFormat(NSLocalizedString("%d key(s)", comment: "#bc-ignore!"), count)
-    }
-
-    private var usedCountText: String {
-        String.localizedStringWithFormat(NSLocalizedString("%ld used", comment: "#bc-ignore!"), used)
-    }
 }
 
 // MARK: - KeysOverviewViewModel
 
 class KeysOverviewViewModel: ObservableObject {
     @Published var items: [MNKey] = MNKey.allCases
-
-    private let model: WalletKeysOverviewModel
-
-    init() {
-        model = WalletKeysOverviewModel()
-    }
-
-    func keyCount(for type: MNKey) -> Int {
-        model.keyCount(for: type)
-    }
-
-    func usedCount(for type: MNKey) -> Int {
-        model.usedCount(for: type)
-    }
-
-    func derivationPath(for type: MNKey) -> DSAuthenticationKeysDerivationPath {
-        model.derivationPath(for: type)
-    }
 }
 
 // MARK: - MNKey Identifiable

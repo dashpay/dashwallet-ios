@@ -19,11 +19,13 @@ import Foundation
 
 // MARK: - MNKey
 
+// Only Owner and Voting keys are supported. Operator (BLS) and HPMN/Platform
+// (EdDSA) keys were removed: SwiftDashSDK can derive their private keys but the
+// FFI does not export per-index BLS/EdDSA *public* keys, which the masternode
+// setup requires, so those families can't be shown DashSync-free.
 enum MNKey: CaseIterable {
     case owner
     case voting
-    case `operator`
-    case hpmnOperator
 }
 
 extension MNKey {
@@ -33,57 +35,6 @@ extension MNKey {
             return NSLocalizedString("Owner keys", comment: "")
         case .voting:
             return NSLocalizedString("Voting keys", comment: "")
-        case .operator:
-            return NSLocalizedString("Operator keys", comment: "")
-        case .hpmnOperator:
-            return NSLocalizedString("HPMN Operator keys", comment: "")
         }
-    }
-}
-
-// MARK: - WalletKeysOverviewModel
-
-final class WalletKeysOverviewModel {
-    var items: [MNKey] = MNKey.allCases
-
-    let ownerDerivationPath: DSAuthenticationKeysDerivationPath
-    let votingDerivationPath: DSAuthenticationKeysDerivationPath
-    let operatorDerivationPath: DSAuthenticationKeysDerivationPath
-    let hpmnOperatorDerivationPath: DSAuthenticationKeysDerivationPath
-
-    init() {
-        let wallet = DWEnvironment.sharedInstance().currentWallet
-        let factory = DSDerivationPathFactory.sharedInstance()!
-
-        ownerDerivationPath = factory.providerOwnerKeysDerivationPath(for: wallet)
-        votingDerivationPath = factory.providerVotingKeysDerivationPath(for: wallet)
-        operatorDerivationPath = factory.providerOperatorKeysDerivationPath(for: wallet)
-        hpmnOperatorDerivationPath = factory.platformNodeKeysDerivationPath(for: wallet)
-    }
-
-    func derivationPath(for type: MNKey) -> DSAuthenticationKeysDerivationPath {
-        switch type {
-        case .owner:
-            return ownerDerivationPath
-        case .voting:
-            return votingDerivationPath
-        case .operator:
-            return operatorDerivationPath
-        case .hpmnOperator:
-            return hpmnOperatorDerivationPath
-        }
-    }
-
-    func keyCount(for type: MNKey) -> Int {
-        let derivationPath = derivationPath(for: type)
-        let firstUnusedIndex = derivationPath.firstUnusedIndex();
-
-        // NOTE: Always show at least one key
-        return Int(max(firstUnusedIndex, 1))
-    }
-
-    func usedCount(for type: MNKey) -> Int {
-        let derivationPath = derivationPath(for: type)
-        return derivationPath.usedAddresses.count
     }
 }

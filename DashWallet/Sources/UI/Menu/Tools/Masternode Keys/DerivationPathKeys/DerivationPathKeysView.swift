@@ -22,6 +22,7 @@ import UIKit
 
 // MARK: - DerivationPathKeysViewModel
 
+@MainActor
 class DerivationPathKeysViewModel: ObservableObject {
     @Published var visibleIndexes: Int
 
@@ -39,10 +40,6 @@ class DerivationPathKeysViewModel: ObservableObject {
     func showNextKey() {
         model.showNextKey()
         visibleIndexes = model.visibleIndexes
-    }
-
-    func usageInfo(at index: Int) -> String {
-        model.usageInfoForKey(at: index)
     }
 
     func item(for info: DerivationPathInfo, at index: Int) -> DerivationPathKeysItem {
@@ -78,17 +75,12 @@ struct DerivationPathKeysContentView: View {
                         // Keypair sections
                         ForEach(0..<viewModel.numberOfSections, id: \.self) { sectionIndex in
                             VStack(alignment: .leading, spacing: 16) {
-                                // Section header: "Keypair N" + usage info
-                                HStack {
-                                    Text(NSLocalizedString("Keypair", comment: "") + " \(sectionIndex)")
-                                        .font(.callout.weight(.semibold))
-                                        .foregroundColor(Color(uiColor: .dw_label()))
-                                    Spacer()
-                                    Text(viewModel.usageInfo(at: sectionIndex))
-                                        .font(.footnote)
-                                        .foregroundColor(Color(uiColor: .dw_secondaryText()))
-                                }
-                                .padding(.horizontal, 20)
+                                // Section header: "Keypair N"
+                                Text(NSLocalizedString("Keypair", comment: "") + " \(sectionIndex)")
+                                    .font(.callout.weight(.semibold))
+                                    .foregroundColor(Color(uiColor: .dw_label()))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, 20)
 
                                 // Keys card
                                 VStack(spacing: kMenuVGap) {

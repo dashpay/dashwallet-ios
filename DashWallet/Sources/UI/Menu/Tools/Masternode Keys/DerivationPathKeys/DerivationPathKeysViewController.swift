@@ -23,8 +23,8 @@ import SwiftUI
 final class DerivationPathKeysViewController: BaseViewController, NavigationStackControllable {
     private let viewModel: DerivationPathKeysViewModel
 
-    convenience init(with key: MNKey, derivationPath: DSAuthenticationKeysDerivationPath) {
-        let model = DerivationPathKeysModel(key: key, derivationPath: derivationPath)
+    convenience init(with key: MNKey) {
+        let model = DerivationPathKeysModel(key: key)
         self.init(with: DerivationPathKeysViewModel(model: model))
     }
 
