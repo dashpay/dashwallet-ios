@@ -1,3 +1,4 @@
+import DashUIKit
 import SwiftUI
 import UIKit
 
@@ -58,6 +59,6 @@ struct FilterOption: Identifiable {
     let id = UUID()
     let mode: HomeTxDisplayMode
     let title: String
-    let icon: IconName
+    let icon: DashIconSource
 }
 

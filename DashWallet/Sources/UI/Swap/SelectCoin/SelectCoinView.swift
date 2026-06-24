@@ -130,7 +130,13 @@ struct SelectCoinView: View {
                             viewModel.willSelectCoin(item)
                             onCoinSelected?(item.coin)
                         } label: {
-                            CoinRowView(item: item)
+                            CoinSelector(
+                                name: item.displayName,
+                                code: item.coin.code,
+                                trailing: item.isHalted ? .halted : item.fiatPrice.map { .price($0) }
+                            ) {
+                                SwapCoinIconView(coin: item.coin, size: 30, cornerRadius: 6)
+                            }
                         }
                         .buttonStyle(.plain)
                         // Halted coins are shown (dimmed) but not selectable — the chain can't
