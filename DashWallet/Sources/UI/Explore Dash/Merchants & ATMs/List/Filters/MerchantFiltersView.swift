@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 struct MerchantFiltersView: View {
@@ -98,7 +99,7 @@ struct MerchantFiltersView: View {
                         FilterSection(title: NSLocalizedString("Spending options", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
                                 title: NSLocalizedString("Dash", comment: "Explore Dash: Filters"),
-                                icon: .custom("dashCurrency", maxHeight: 20),
+                                icon: .custom("dashCurrency"),
                                 isSelected: viewModel.payWithDash,
                                 style: .checkbox
                             ) {

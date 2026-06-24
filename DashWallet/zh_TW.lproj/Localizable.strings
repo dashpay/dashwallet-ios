@@ -112,9 +112,6 @@
 /* CrowdNode */
 "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "一個主節點需要 1000 達世幣作為抵押品，每個主節點目前每年獲得大約 %@ 的獎勵。";
 
-/* Shown when a pending Dash conversion blocks a regular send. */
-"A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before sending." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before sending.";
-
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
@@ -1165,9 +1162,6 @@
 
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "授予 GPS 權限，以便我們向您顯示您附近的位置。";
-
-/* Maya */
-"halted" = "halted";
 
 /* Voting */
 "Has blocked votes" = "已阻止了投票";
@@ -2547,6 +2541,9 @@
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
+/* Shown when a payment tries to reuse inputs already spent by a pending transaction. */
+"Some selected funds are still pending from a previous transaction. Please wait a moment and try again." = "Some selected funds are still pending from a previous transaction. Please wait a moment and try again.";
+
 /* Usernames */
 "Some usernames can be blocked" = "某些使用者名稱可能會被阻止";
 
@@ -2914,6 +2911,9 @@
 /* No comment provided by engineer. */
 "Unable to provide suggestions" = "無法提供建議";
 
+/* Swap */
+"Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
+
 /* No comment provided by engineer. */
 "Unable to send contact request" = "無法發送聯繫請求";
 
@@ -3114,9 +3114,6 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "等到錢包同步後完成交易";
-
-/* Maya */
-"Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins." = "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.";
 
 /* Enter Address Screen */
 "Wallet Address" = "錢包位址";
@@ -3395,8 +3392,8 @@
 /* CrowdNode */
 "Your CrowdNode address has been validated, but verification is required." = "您的 CrowdNode 地址已經過核實，但需要驗證。";
 
-/* Maya */
-"Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.";
+/* Maya/SwapKit */
+"Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
 /* CoinJoin */
 "Your Dash was mixed using these transactions." = "您的 Dash 通过这些交易被混合.";

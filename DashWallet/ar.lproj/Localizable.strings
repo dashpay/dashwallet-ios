@@ -112,9 +112,6 @@
 /* CrowdNode */
 "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.";
 
-/* Shown when a pending Dash conversion blocks a regular send. */
-"A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before sending." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before sending.";
-
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
@@ -1165,9 +1162,6 @@
 
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "امنح أذونات GPS حتى نتمكن من إظهار المواقع القريبة منك.";
-
-/* Maya */
-"halted" = "halted";
 
 /* Voting */
 "Has blocked votes" = "Has blocked votes";
@@ -2549,6 +2543,9 @@
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
+/* Shown when a payment tries to reuse inputs already spent by a pending transaction. */
+"Some selected funds are still pending from a previous transaction. Please wait a moment and try again." = "Some selected funds are still pending from a previous transaction. Please wait a moment and try again.";
+
 /* Usernames */
 "Some usernames can be blocked" = "Some usernames can be blocked";
 
@@ -2916,6 +2913,9 @@
 /* No comment provided by engineer. */
 "Unable to provide suggestions" = "Unable to provide suggestions";
 
+/* Swap */
+"Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
+
 /* No comment provided by engineer. */
 "Unable to send contact request" = "Unable to send contact request";
 
@@ -3116,9 +3116,6 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
-
-/* Maya */
-"Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins." = "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.";
 
 /* Enter Address Screen */
 "Wallet Address" = "عنوان المحفظة ";
@@ -3397,8 +3394,8 @@
 /* CrowdNode */
 "Your CrowdNode address has been validated, but verification is required." = "تم التحقق من صحة عنوان CrowdNode الخاص بك ، ولكن التحقق مطلوب.";
 
-/* Maya */
-"Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.";
+/* Maya/SwapKit */
+"Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
 /* CoinJoin */
 "Your Dash was mixed using these transactions." = "Your Dash was mixed using these transactions.";
