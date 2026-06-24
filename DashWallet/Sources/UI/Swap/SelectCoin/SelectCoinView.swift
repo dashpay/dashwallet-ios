@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 // MARK: - SelectCoinView
@@ -106,7 +107,7 @@ struct SelectCoinView: View {
 
     private var contentView: some View {
         VStack(spacing: Layout.contentSpacing) {
-            SearchBar(text: $viewModel.searchText)
+            DashUIKit.SearchBar(text: $viewModel.searchText)
 
             if viewModel.showSearchEmptyState {
                 emptyStateView
