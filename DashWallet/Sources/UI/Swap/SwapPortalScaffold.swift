@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 struct SwapPortalScaffold: View {
@@ -26,7 +27,7 @@ struct SwapPortalScaffold: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            NavigationBar(leading: {
+            DashUIKit.NavigationBar(leading: {
                 NavigationBarElement.back.button { onBack() }
             })
 
@@ -41,7 +42,7 @@ struct SwapPortalScaffold: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(Color.primaryBackground.ignoresSafeArea())
+        .background(Color.dash.primaryBackground.ignoresSafeArea())
     }
 
     private var introSection: some View {
@@ -49,36 +50,41 @@ struct SwapPortalScaffold: View {
             logoContainer
             descriptionBlock
         }
-        .padding(20)
-        .background(Color.secondaryBackground)
-        .clipShape(.rect(cornerRadius: 20))
-        .shadow(color: .shadow, radius: 10, x: 0, y: 5)
+        .modifier(MenuViewModifier(innerPadding: 20))
     }
 
     private var actionsCard: some View {
-        MenuItem(
-            title: NSLocalizedString("Convert Dash", comment: "Swap portal"),
-            subtitle: NSLocalizedString("From Dash Wallet to any crypto", comment: "Swap portal"),
-            icon: .custom("convert.crypto"),
-            action: { onConvertDash?() }
+        Button(
+            action: { onConvertDash?() },
+            label: {
+                DashUIKit.MenuItem(
+                    leadingIcon: .custom("convert.crypto"),
+                    title: NSLocalizedString("Convert Dash", comment: "Swap portal"),
+                    helpText: NSLocalizedString("From Dash Wallet to any crypto", comment: "Swap portal"),
+                    accessory: .none
+                )
+                .modifier(MenuViewModifier())
+            }
         )
-        .modifier(SwapMenuCardStyle())
+        .buttonStyle(.plain)
     }
 
     private var logoContainer: some View {
-        Icon(name: .custom(logoAssetName, maxHeight: 60))
+        Image(dash: .custom(logoAssetName))
+            .resizable()
+            .scaledToFit()
             .frame(width: 60, height: 60)
     }
 
     private var descriptionBlock: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.title2)
-                .foregroundColor(.primaryText)
+                .font(Font.dash.title2)
+                .foregroundColor(Color.dash.primaryText)
 
             Text(description)
-                .font(.footnote)
-                .foregroundColor(.secondaryText)
+                .font(Font.dash.footnote)
+                .foregroundColor(Color.dash.secondaryText)
                 .multilineTextAlignment(.leading)
                 .lineSpacing(2)
         }
