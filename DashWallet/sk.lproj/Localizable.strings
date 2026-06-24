@@ -480,11 +480,11 @@
 /* No comment provided by engineer. */
 "Clear" = "Vymazať";
 
-/* Maya */
-"Clear address" = "Clear address";
-
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Zmazať dôveryhodný uzol?";
+
+/* Maya */
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "Zatvoriť";

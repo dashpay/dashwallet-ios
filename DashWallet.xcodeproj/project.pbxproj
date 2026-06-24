@@ -512,8 +512,6 @@
 		510336DC2FEBB0C9002E0899 /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10175DFA10175DFA101 /* DashStepper.swift */; };
 		510336DD2FEBB0C9002E0899 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10275DFA10275DFA102 /* SegmentedControl.swift */; };
 		510336ED2FEBB1B4002E0899 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 510336EC2FEBB1B4002E0899 /* DashUIKit */; };
-		514AEA0F2FB31BD800F9B54C /* AddressFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */; };
-		514AEA102FB31BD800F9B54C /* AddressFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */; };
 		514AEA132FB324FA00F9B54C /* SwapConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* SwapConvertView.swift */; };
 		514AEA142FB324FA00F9B54C /* SwapConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* SwapConvertView.swift */; };
 		514AEA442FB33B4300F9B54C /* EnterAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA432FB33B4300F9B54C /* EnterAmountView.swift */; };
@@ -2650,7 +2648,6 @@
 		47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncingActivityMonitor.swift; sourceTree = "<group>"; };
 		47FA3B0129364991008D58DC /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkUnavailableStateView.swift; sourceTree = "<group>"; };
-		514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressFieldView.swift; sourceTree = "<group>"; };
 		514AEA122FB324FA00F9B54C /* SwapConvertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertView.swift; sourceTree = "<group>"; };
 		514AEA432FB33B4300F9B54C /* EnterAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAmountView.swift; sourceTree = "<group>"; };
 		514AEA472FB33B4300F9B54C /* DashPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashPickerView.swift; sourceTree = "<group>"; };
@@ -6554,7 +6551,6 @@
 			children = (
 				516983A12FCAEDD600BA91A2 /* Illustrations */,
 				516983C02FCAEDD600BA91A2 /* Icons */,
-				514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */,
 				5151CDF62F929D3F00F0A604 /* ScrollViews */,
 				5151CDF22F929C2300F0A604 /* Geometry Readers */,
 				7581B19C2CE3509A00714007 /* Dialogs */,
@@ -9192,7 +9188,6 @@
 				4751136C28D9A3DB00223B77 /* BuySellPortalViewController.swift in Sources */,
 				AA00000128D9A3DB00223B77 /* BuySellPortalView.swift in Sources */,
 				8DF3D24EE3B247B79AE9CAB5 /* BuySellPortalScreen.swift in Sources */,
-				514AEA0F2FB31BD800F9B54C /* AddressFieldView.swift in Sources */,
 				2A7A7BD62348CB6600451078 /* SettingsScreen.swift in Sources */,
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
 				47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */,
@@ -10594,7 +10589,6 @@
 				C9D2C8562A320AA000D15901 /* TransactionItemView.swift in Sources */,
 				C9D2C8572A320AA000D15901 /* UIView+Reuse.swift in Sources */,
 				C9D2C8582A320AA000D15901 /* DWUpholdClient.m in Sources */,
-				514AEA102FB31BD800F9B54C /* AddressFieldView.swift in Sources */,
 				C9D2C8592A320AA000D15901 /* CrowdNodePortalViewController.swift in Sources */,
 				C9D2C85A2A320AA000D15901 /* ConfirmOrderModel.swift in Sources */,
 				C943B53F2A40A6BE00AF23C5 /* DPAlertChildContentsView.m in Sources */,

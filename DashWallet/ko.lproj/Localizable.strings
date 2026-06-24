@@ -480,11 +480,11 @@
 /* No comment provided by engineer. */
 "Clear" = "삭제";
 
-/* Maya */
-"Clear address" = "Clear address";
-
 /* No comment provided by engineer. */
 "Clear trusted node?" = "신뢰할 수 있는 노드를 삭제하시겠습니까?";
+
+/* Maya */
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "닫기";

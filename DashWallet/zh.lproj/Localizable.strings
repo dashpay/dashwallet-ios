@@ -480,11 +480,11 @@
 /* No comment provided by engineer. */
 "Clear" = "清除";
 
-/* Maya */
-"Clear address" = "Clear address";
-
 /* No comment provided by engineer. */
 "Clear trusted node?" = "清除可信节点?";
+
+/* Maya */
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "关闭";

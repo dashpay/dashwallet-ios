@@ -480,11 +480,11 @@
 /* No comment provided by engineer. */
 "Clear" = "Εκκαθάριση";
 
-/* Maya */
-"Clear address" = "Clear address";
-
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Εκκαθάριση εμπίστου κόμβου;";
+
+/* Maya */
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "κλείσιμο";

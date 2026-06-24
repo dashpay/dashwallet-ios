@@ -480,11 +480,11 @@
 /* No comment provided by engineer. */
 "Clear" = "消去する";
 
-/* Maya */
-"Clear address" = "Clear address";
-
 /* No comment provided by engineer. */
 "Clear trusted node?" = "信頼されているノードを消去しますか？";
+
+/* Maya */
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "閉じる";
