@@ -230,19 +230,18 @@ final class SwiftDashSDKHost {
 
         let newSDK: SDK
         do {
-            // Use the SDK's default (latest) Platform protocol version.
-            // The server is now v12, which is also the floor for shielded
-            // transitions — `ShieldFromAssetLock` / `Shield` fees were
-            // introduced in v12. Pinning to v11 made the client compute a
-            // stale, too-low shielded pool fee, so the testnet rejected the
-            // asset lock as underfunded ("needs … credits to start
-            // processing"). The v11 pin originally avoided v12-protobuf
-            // decoding errors (e.g. `GetDataContractsRequest.version`)
-            // against a then-v11 server; that no longer applies now the
-            // server is v12. The version is still a `DashSDKConfig` field
-            // (dashpay/platform #3751) should a future downgrade require
-            // re-pinning.
-            newSDK = try SDK(network: network)
+            // Pin Platform protocol version 12. v12 is the current server
+            // version and the floor for shielded transitions —
+            // `ShieldFromAssetLock` / `Shield` fees were introduced in v12,
+            // and pinning v11 made the client compute a stale, too-low
+            // shielded pool fee (testnet rejected the asset lock as
+            // underfunded, "needs … credits to start processing"). Pinning
+            // explicitly rather than relying on the auto-detect default
+            // (`platformVersion: 0`, which floors at mainnet 11 / testnet 12)
+            // keeps the wire format consistent across networks. The knob is
+            // the `DashSDKConfig.platform_version` field (dashpay/platform
+            // #3751); bump this when the agreed protocol moves past v12.
+            newSDK = try SDK(network: network, platformVersion: 12)
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
