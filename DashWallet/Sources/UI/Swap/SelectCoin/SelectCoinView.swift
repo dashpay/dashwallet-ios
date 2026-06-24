@@ -149,7 +149,7 @@ struct SelectCoinView: View {
                         .id(item.id)
                     }
                 }
-                .modifier(SwapMenuCardStyle())
+                .modifier(MenuViewModifier())
             }
             .onAppear {
                 // Restore scroll position after back-navigation.
@@ -173,7 +173,7 @@ struct SelectCoinView: View {
             }
             .padding(10)
             .frame(maxWidth: .infinity, maxHeight: 100)
-            .modifier(SwapMenuCardStyle())
+            .modifier(MenuViewModifier())
 
             Spacer()
         }

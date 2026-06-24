@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 import UIKit
 
@@ -33,13 +34,17 @@ struct EnterAddressView: View {
 
     var body: some View {
         ZStack {
-            Color.primaryBackground
+            Color.dash.primaryBackground
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                NavigationBar(
-                    leading: { NavigationBarElement.back.button { onBack?() } },
-                    central: { Text(NSLocalizedString("Enter address", comment: "Maya")).font(.subheadMedium) }
+                DashUIKit.NavigationBar(
+                    leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } },
+                    central: {
+                        Text(NSLocalizedString("Enter address", comment: "Maya"))
+                            .dashFont(.subheadMedium)
+                            .foregroundColor(Color.dash.primaryText)
+                    }
                 )
 
                 // Offline: hide the whole address-entry content (address sources and the
@@ -83,7 +88,6 @@ struct EnterAddressView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 2) {
                 addressField
-
                 addressSourcesMenu
 
                 if let clipboardContent = viewModel.clipboardContent {
@@ -92,7 +96,7 @@ struct EnterAddressView: View {
                     clipboardPermissionRow
                 }
             }
-            .modifier(SwapMenuCardStyle())
+            .modifier(MenuViewModifier())
             .padding(.horizontal, 20)
             .padding(.top, 10)
         }
@@ -117,68 +121,115 @@ struct EnterAddressView: View {
     private var addressSourcesMenu: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(NSLocalizedString("Paste address from", comment: "Maya"))
-                .font(.footnote)
-                .foregroundColor(.tertiaryText)
+                .dashFont(.footnote)
+                .foregroundColor(Color.dash.tertiaryText)
                 .padding(.vertical, 10)
                 .padding(.horizontal, 14)
 
-            AddressSourceView(
-                sourceType: .uphold,
-                state: viewModel.upholdState,
-                onTap: {
-                    if case .loggedOut = viewModel.upholdState {
-                        onLoginUphold?()
-                    } else {
-                        viewModel.selectUpholdAddress()
-                    }
-                }
-            )
+            addressSourceRow(type: .uphold, state: viewModel.upholdState) {
+                if case .loggedOut = viewModel.upholdState { onLoginUphold?() }
+                else { viewModel.selectUpholdAddress() }
+            }
 
-            AddressSourceView(
-                sourceType: .coinbase,
-                state: viewModel.coinbaseState,
-                onTap: {
-                    if case .loggedOut = viewModel.coinbaseState {
-                        onLoginCoinbase?()
-                    } else {
-                        viewModel.selectCoinbaseAddress()
-                    }
-                }
-            )
+            addressSourceRow(type: .coinbase, state: viewModel.coinbaseState) {
+                if case .loggedOut = viewModel.coinbaseState { onLoginCoinbase?() }
+                else { viewModel.selectCoinbaseAddress() }
+            }
         }
     }
 
     // MARK: - Clipboard
 
     private var clipboardPermissionRow: some View {
-        MenuItem(
-            title: "Clipboard",
-            subtitle: NSLocalizedString("Show content in the clipboard", comment: "Maya"),
-            icon: .custom("masternode-keys"),
-            action: { viewModel.pasteFromClipboard() }
-        )
+        Button(action: { viewModel.pasteFromClipboard() }) {
+            DashUIKit.MenuItem(
+                leadingIcon: .custom("masternode-keys"),
+                title: NSLocalizedString("Clipboard", comment: "Maya"),
+                helpText: NSLocalizedString("Show content in the clipboard", comment: "Maya"),
+                accessory: .none
+            )
+        }
+        .buttonStyle(.plain)
     }
 
     private func clipboardContentRow(_ content: String) -> some View {
-        AddressSourceView(
-            sourceType: .clipboard,
-            state: .available(content),
-            onTap: {
-                viewModel.pasteFromClipboard()
-            }
-        )
+        addressSourceRow(type: .clipboard, state: .available(content)) {
+            viewModel.pasteFromClipboard()
+        }
+    }
+
+    // MARK: - Address Source Row (DashUIKit.MenuItem)
+
+    @ViewBuilder
+    private func addressSourceRow(
+        type: AddressSourceType,
+        state: AddressSourceState,
+        onTap: @escaping () -> Void
+    ) -> some View {
+        let isDisabled: Bool = {
+            switch state { case .loading, .notAvailable: return true; default: return false }
+        }()
+
+        Button(action: onTap) {
+            DashUIKit.MenuItem(
+                leadingIcon: leadingIcon(for: type),
+                title: type.title,
+                helpText: helpText(for: state),
+                accessory: accessory(for: state, onTap: onTap)
+            )
+        }
+        .buttonStyle(.plain)
+        .disabled(isDisabled)
+    }
+
+    private func leadingIcon(for type: AddressSourceType) -> DashIconSource {
+        switch type {
+        case .uphold:    return .custom("menu-uphold")
+        case .coinbase:  return .custom("menu-coinbase")
+        case .clipboard: return .custom("masternode-keys")
+        }
+    }
+
+    private func helpText(for state: AddressSourceState) -> String? {
+        switch state {
+        case .available(let address): return address
+        case .notAvailable:           return NSLocalizedString("Not available", comment: "Maya")
+        case .loading:                return NSLocalizedString("Loading...", comment: "Maya")
+        case .loggedOut:              return nil
+        }
+    }
+
+    private func accessory(
+        for state: AddressSourceState,
+        onTap: @escaping () -> Void
+    ) -> MenuItemAccessory {
+        switch state {
+        case .loggedOut:
+            return .button(DashUIKit.DashButton(
+                text: NSLocalizedString("Log In", comment: "Maya"),
+                size: .small,
+                style: .plainBlue,
+                action: onTap
+            ))
+        case .loading, .available, .notAvailable:
+            return .none
+        }
     }
 
     // MARK: - Continue Button
 
     private var continueButton: some View {
-        DashButton(
-            // Offline disables Continue because address validation and the quote flow both require network.
+        DashUIKit.DashButton(
             text: NSLocalizedString("Continue", comment: ""),
-            isEnabled: viewModel.isContinueEnabled && reachability.isOnline) {
+            isEnabled: viewModel.isContinueEnabled && reachability.isOnline,
+            fillsWidth: true,
+            size: .large,
+            style: .filledBlue,
+            action: {
                 guard let address = viewModel.attemptContinue() else { return }
                 onContinue?(address)
             }
+        )
     }
 }
 

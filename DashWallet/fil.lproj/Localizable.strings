@@ -480,11 +480,11 @@
 /* No comment provided by engineer. */
 "Clear" = "Burahin";
 
-/* Maya */
-"Clear address" = "Clear address";
-
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Burahin ang pinagkakatiwalaang node?";
+
+/* Maya */
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "Sarado";

@@ -480,11 +480,11 @@
 /* No comment provided by engineer. */
 "Clear" = "Rimuovere";
 
-/* Maya */
-"Clear address" = "Clear address";
-
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Rimuovere il nodo affidabile?";
+
+/* Maya */
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "Chiudi";

@@ -480,11 +480,11 @@
 /* No comment provided by engineer. */
 "Clear" = "Xoá";
 
-/* Maya */
-"Clear address" = "Clear address";
-
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Xoá nút được tin cậy?";
+
+/* Maya */
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "Đóng";
