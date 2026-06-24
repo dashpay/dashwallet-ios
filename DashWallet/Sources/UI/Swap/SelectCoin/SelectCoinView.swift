@@ -67,7 +67,11 @@ struct SelectCoinView: View {
         }
         .overlay(alignment: .bottom) {
             if viewModel.showHaltedToast {
-                HaltedToast(showHaltedToast: $viewModel.showHaltedToast)
+                Toast(
+                    style: .warning,
+                    message: NSLocalizedString("Some coins are not available because of the halted chain", comment: "Maya"),
+                    onDismiss: { viewModel.showHaltedToast = false }
+                )
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .padding(.horizontal, Layout.toastHPadding)
                     .padding(.bottom, Layout.toastBPadding)
