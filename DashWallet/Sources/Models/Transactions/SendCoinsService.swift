@@ -163,6 +163,7 @@ public final class SendCoinsService: NSObject {
         if MayaSwapPendingGate.shared.isAwaitingISLock {
             throw DashSpendError.swapAwaitingInstantLock
         }
+
         let memoByteCount = memo.utf8.count
         DSLogger.log("sendMayaSwap memo=\(memo) bytes=\(memoByteCount)")
         guard memoByteCount <= 80 else {
@@ -171,6 +172,7 @@ public final class SendCoinsService: NSObject {
 
         let chain = DWEnvironment.sharedInstance().currentChain
         let account = DWEnvironment.sharedInstance().currentAccount
+
         let transaction = DSTransaction(on: chain)
 
         let vaultScript = NSData.scriptPubKey(forAddress: vaultAddress, for: chain)

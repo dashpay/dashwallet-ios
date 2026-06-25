@@ -1,4 +1,4 @@
- //
+//
 //  NavigationBar.swift
 //  DashWallet
 //
@@ -143,45 +143,45 @@ private struct NavigationBarButtonStyle: ButtonStyle {
 /// }
 /// ```
 struct NavBarBack: View {
-    @Environment(\.colorScheme) private var colorScheme
-    let onBack: () -> Void
+   @Environment(\.colorScheme) private var colorScheme
+   let onBack: () -> Void
 
-    var body: some View {
-        HStack {
-            Button(action: onBack) {
-                ZStack {
-                    // Touch area (44x44)
-                    Color.clear
-                        .frame(width: 44, height: 44)
+   var body: some View {
+       HStack {
+           Button(action: onBack) {
+               ZStack {
+                   // Touch area (44x44)
+                   Color.clear
+                       .frame(width: 44, height: 44)
 
-                    // Circular border (34x34)
-                    Circle()
-                        .stroke(borderColor, lineWidth: 1.5)
-                        .frame(width: 34, height: 34)
+                   // Circular border (34x34)
+                   Circle()
+                       .stroke(borderColor, lineWidth: 1.5)
+                       .frame(width: 34, height: 34)
 
-                    // Chevron icon (12pt height, -1pt horizontal offset for visual centering)
-                    Image(iconName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: 12)
-                        .offset(x: -1)
-                        .foregroundColor(.primaryText)
-                }
-            }
-            .padding(.leading, 20)
+                   // Chevron icon (12pt height, -1pt horizontal offset for visual centering)
+                   Image(iconName)
+                       .resizable()
+                       .aspectRatio(contentMode: .fit)
+                       .frame(height: 12)
+                       .offset(x: -1)
+                       .foregroundColor(.primaryText)
+               }
+           }
+           .padding(.leading, 20)
 
-            Spacer()
-        }
-        .frame(height: 64)
-    }
+           Spacer()
+       }
+       .frame(height: 64)
+   }
 
-    private var borderColor: Color {
-        .gray300Alpha30
-    }
+   private var borderColor: Color {
+       .gray300Alpha30
+   }
 
-    private var iconName: String {
-        colorScheme == .dark ? "controls-back-dark-mode" : "controls-back"
-    }
+   private var iconName: String {
+       colorScheme == .dark ? "controls-back-dark-mode" : "controls-back"
+   }
 }
 
 // MARK: - NavBarBackPlus
@@ -200,63 +200,63 @@ struct NavBarBack: View {
 /// NavBarBackPlus(onBack: { dismiss() }, onAdd: { viewModel.addItem() })
 /// ```
 struct NavBarBackPlus: View {
-    @Environment(\.colorScheme) private var colorScheme
-    let onBack: () -> Void
-    let onAdd: () -> Void
+   @Environment(\.colorScheme) private var colorScheme
+   let onBack: () -> Void
+   let onAdd: () -> Void
 
-    var body: some View {
-        HStack {
-            // Back button (left)
-            Button(action: onBack) {
-                ZStack {
-                    Color.clear
-                        .frame(width: 44, height: 44)
+   var body: some View {
+       HStack {
+           // Back button (left)
+           Button(action: onBack) {
+               ZStack {
+                   Color.clear
+                       .frame(width: 44, height: 44)
 
-                    Circle()
-                        .stroke(borderColor, lineWidth: 1.5)
-                        .frame(width: 34, height: 34)
+                   Circle()
+                       .stroke(borderColor, lineWidth: 1.5)
+                       .frame(width: 34, height: 34)
 
-                    Image(backIconName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: 12)
-                        .offset(x: -1)
-                        .foregroundColor(.primaryText)
-                }
-            }
-            .padding(.leading, 20)
+                   Image(backIconName)
+                       .resizable()
+                       .aspectRatio(contentMode: .fit)
+                       .frame(height: 12)
+                       .offset(x: -1)
+                       .foregroundColor(.primaryText)
+               }
+           }
+           .padding(.leading, 20)
 
-            Spacer()
+           Spacer()
 
-            // Add button (right)
-            Button(action: onAdd) {
-                ZStack {
-                    Color.clear
-                        .frame(width: 44, height: 44)
+           // Add button (right)
+           Button(action: onAdd) {
+               ZStack {
+                   Color.clear
+                       .frame(width: 44, height: 44)
 
-                    Circle()
-                        .stroke(borderColor, lineWidth: 1.5)
-                        .frame(width: 34, height: 34)
+                   Circle()
+                       .stroke(borderColor, lineWidth: 1.5)
+                       .frame(width: 34, height: 34)
 
-                    Image("toolbar-plus")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: 11)
-                        .foregroundColor(.primaryText)
-                }
-            }
-            .padding(.trailing, 20)
-        }
-        .frame(height: 64)
-    }
+                   Image("toolbar-plus")
+                       .resizable()
+                       .aspectRatio(contentMode: .fit)
+                       .frame(height: 11)
+                       .foregroundColor(.primaryText)
+               }
+           }
+           .padding(.trailing, 20)
+       }
+       .frame(height: 64)
+   }
 
-    private var borderColor: Color {
-        .gray300Alpha30
-    }
+   private var borderColor: Color {
+       .gray300Alpha30
+   }
 
-    private var backIconName: String {
-        colorScheme == .dark ? "controls-back-dark-mode" : "controls-back"
-    }
+   private var backIconName: String {
+       colorScheme == .dark ? "controls-back-dark-mode" : "controls-back"
+   }
 }
 
 // MARK: - NavBarClose
@@ -276,33 +276,33 @@ struct NavBarBackPlus: View {
 /// }
 /// ```
 struct NavBarClose: View {
-    let onClose: () -> Void
+   let onClose: () -> Void
 
-    var body: some View {
-        HStack {
-            Spacer()
+   var body: some View {
+       HStack {
+           Spacer()
 
-            // Close button (right)
-            Button(action: onClose) {
-                ZStack {
-                    Color.clear
-                        .frame(width: 44, height: 44)
+           // Close button (right)
+           Button(action: onClose) {
+               ZStack {
+                   Color.clear
+                       .frame(width: 44, height: 44)
 
-                    Circle()
-                        .stroke(Color.gray300Alpha30, lineWidth: 1.5)
-                        .frame(width: 34, height: 34)
+                   Circle()
+                       .stroke(Color.gray300Alpha30, lineWidth: 1.5)
+                       .frame(width: 34, height: 34)
 
-                    Image("toolbar-close")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: 11)
-                        .foregroundColor(.primaryText)
-                }
-            }
-            .padding(.trailing, 20)
-        }
-        .frame(height: 64)
-    }
+                   Image("toolbar-close")
+                       .resizable()
+                       .aspectRatio(contentMode: .fit)
+                       .frame(height: 11)
+                       .foregroundColor(.primaryText)
+               }
+           }
+           .padding(.trailing, 20)
+       }
+       .frame(height: 64)
+   }
 }
 
 // MARK: - Previews

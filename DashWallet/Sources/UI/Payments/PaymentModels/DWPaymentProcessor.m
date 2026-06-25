@@ -200,8 +200,11 @@ static NSString *sanitizeString(NSString *s) {
     NSString *address = paymentOutput.address;
     DSPaymentProtocolRequest *protocolRequest = paymentOutput.protocolRequest;
 
-    // Reject only the exact pending inputs that were already consumed by another
-    // in-flight transaction; unrelated outgoing transactions remain allowed.
+    // NOTE: previously a blanket lock here blocked ANY spend while a Maya swap was still confirming
+    // (~2–5 min). That blanket lock is gone — DashSync reconciles spentOutputs on IS-lock and coin
+    // selection skips spent outputs. We keep only a NARROW per-input guard: reject the exact pending
+    // inputs already consumed by another in-flight transaction; unrelated outgoing transactions
+    // remain allowed.
     for (DSTransactionInput *input in paymentOutput.tx.inputs) {
         if ([account isInputSpent:input.inputHash atIndex:input.index]) {
             NSString *title = NSLocalizedString(@"Couldn't make payment", @"Shown when the selected inputs were already consumed by a pending transaction.");

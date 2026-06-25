@@ -12,6 +12,8 @@
 
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
+/* Maya */
+"%@ address is not valid" = "%@ address is not valid";
 
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ has accepted your contact request";
@@ -112,6 +114,9 @@
 /* CrowdNode */
 "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.";
 
+/* Shown when a pending Dash conversion blocks a regular send. */
+"A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before sending." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before sending.";
+
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
@@ -190,6 +195,9 @@
 
 /* No comment provided by engineer. */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+
+/* Shortcut selection empty state */
+"All shortcuts are already in use" = "All shortcuts are already in use";
 
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device.";
@@ -480,6 +488,9 @@
 /* No comment provided by engineer. */
 "Clear" = "Clear";
 
+/* Maya */
+"Clear address" = "Clear address";
+
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Clear trusted node?";
 
@@ -680,6 +691,9 @@
 
 /* CrowdNode */
 "CrowdNode benefits" = "CrowdNode benefits";
+
+/* CrowdNode */
+"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
 
 /* CrowdNode Portal */
 "CrowdNode Support" = "CrowdNode Support";
@@ -1162,6 +1176,9 @@
 
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
+
+/* Maya */
+"halted" = "halted";
 
 /* Voting */
 "Has blocked votes" = "Has blocked votes";
@@ -1653,6 +1670,9 @@
 /* Dash Portal
    Maya Portal */
 "Maya" = "Maya";
+
+/* Maya */
+"Maya fee" = "Maya fee";
 
 /* Maya */
 "Maya Protocol has received your transaction and is processing the swap." = "Maya Protocol has received your transaction and is processing the swap.";
@@ -2904,6 +2924,9 @@
 /* No comment provided by engineer. */
 "Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
 
+/* Maya */
+"Unable to get a quote" = "Unable to get a quote";
+
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Unable to get new QR code";
 
@@ -3116,6 +3139,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
+
+/* Maya */
+"Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins." = "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.";
 
 /* Enter Address Screen */
 "Wallet Address" = "Wallet Address";
@@ -3396,6 +3422,8 @@
 
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
+/* Maya */
+"Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.";
 
 /* CoinJoin */
 "Your Dash was mixed using these transactions." = "Your Dash was mixed using these transactions.";
@@ -3405,6 +3433,8 @@
 
 /* Swap refund message — %@ is the provider name e.g. Maya */
 "Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
+/* Maya */
+"Your DASH was refunded by Maya Protocol." = "Your DASH was refunded by Maya Protocol.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";

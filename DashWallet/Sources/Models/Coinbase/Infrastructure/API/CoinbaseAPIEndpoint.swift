@@ -168,8 +168,15 @@ extension CoinbaseEndpoint: TargetType, AccessTokenAuthorizable {
         case .getToken, .refreshToken, .revokeToken:
             return URL(string: "https://login.coinbase.com")!
         case .path(let string):
+            // `nextUri` (pagination) is a full path that may include a query string
+            // (e.g. "/v2/accounts?starting_after=...&limit=25"). It is composed into the
+            // baseURL here on purpose: routing it through `path` would let Moya
+            // percent-encode the query separators and corrupt the request. Avoid a
+            // force-unwrap crash if the (decoded) string isn't a valid URL.
             let path = string.removingPercentEncoding ?? string
-            return URL(string: "https://api.coinbase.com" + path)!
+            return URL(string: "https://api.coinbase.com" + path)
+                ?? URL(string: "https://api.coinbase.com" + string)
+                ?? kBaseURL
         default:
             return kBaseURL
         }
