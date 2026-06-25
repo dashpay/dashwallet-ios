@@ -16,6 +16,7 @@
 //
 
 import Combine
+import DashUIKit
 import Foundation
 
 @MainActor
