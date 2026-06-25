@@ -325,24 +325,80 @@ extension BaseAmountModel {
     }
 
     func pasteFromClipboard() {
-        guard let string = UIPasteboard.general.string else { return }
+        guard let rawString = UIPasteboard.general.string else { return }
 
         let originalFormatter = currentInputItem.isMain
             ? NumberFormatter.dashFormatter
             : localFormatter
-        let formatter = originalFormatter.copy() as! NumberFormatter
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = originalFormatter.maximumFractionDigits
 
-        guard let number = formatter.number(from: string) else { return }
+        // The pasted text can use a different decimal/grouping convention than the
+        // current locale (e.g. "0.12345" pasted while the locale separator is ",").
+        // A locale-bound NumberFormatter would misread the "." as a thousands
+        // separator and produce "12345". Normalize to a locale-independent form first.
+        guard let normalized = Self.normalizedPastedNumberString(from: rawString) else { return }
 
-        formatter.numberStyle = .none
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = originalFormatter.maximumFractionDigits
+        let parser = NumberFormatter()
+        parser.locale = Locale(identifier: "en_US_POSIX")
+        parser.numberStyle = .decimal
+        parser.roundingMode = .down
+        parser.minimumFractionDigits = 0
+        parser.maximumFractionDigits = originalFormatter.maximumFractionDigits
 
-        guard let string = formatter.string(from: number) else { return }
+        guard let number = parser.number(from: normalized) else { return }
+
+        // Re-emit using the current locale separators (no grouping) so AmountObject,
+        // which parses with Locale.current, reads the value back correctly.
+        let outputFormatter = originalFormatter.copy() as! NumberFormatter
+        outputFormatter.numberStyle = .none
+        outputFormatter.usesGroupingSeparator = false
+        outputFormatter.minimumFractionDigits = 0
+        outputFormatter.maximumFractionDigits = originalFormatter.maximumFractionDigits
+
+        guard let string = outputFormatter.string(from: number) else { return }
 
         updateAmountObjects(with: string)
+    }
+
+    /// Normalizes a pasted number string into a locale-independent representation that
+    /// uses "." as the decimal separator and contains no grouping separators.
+    ///
+    /// Both "." and "," are accepted as the decimal separator. When both characters are
+    /// present the right-most one is treated as the decimal separator (the other being a
+    /// grouping separator). When only one separator type is present it is treated as a
+    /// decimal separator if it occurs exactly once, otherwise as a grouping separator.
+    static func normalizedPastedNumberString(from string: String) -> String? {
+        let filtered = String(string.unicodeScalars.filter { CharacterSet(charactersIn: "0123456789.,").contains($0) })
+        if filtered.isEmpty { return nil }
+
+        let lastDot = filtered.lastIndex(of: ".")
+        let lastComma = filtered.lastIndex(of: ",")
+
+        let decimalSeparator: Character?
+        if let lastDot, let lastComma {
+            decimalSeparator = lastDot > lastComma ? "." : ","
+        } else if lastDot != nil {
+            decimalSeparator = filtered.filter { $0 == "." }.count == 1 ? "." : nil
+        } else if lastComma != nil {
+            decimalSeparator = filtered.filter { $0 == "," }.count == 1 ? "," : nil
+        } else {
+            decimalSeparator = nil
+        }
+
+        var integerPart = filtered
+        var fractionPart = ""
+
+        if let decimalSeparator, let sepIndex = filtered.lastIndex(of: decimalSeparator) {
+            integerPart = String(filtered[..<sepIndex])
+            fractionPart = String(filtered[filtered.index(after: sepIndex)...])
+        }
+
+        // Remove any remaining separators (grouping) from both parts.
+        integerPart.removeAll { $0 == "." || $0 == "," }
+        fractionPart.removeAll { $0 == "." || $0 == "," }
+
+        if integerPart.isEmpty { integerPart = "0" }
+
+        let result = fractionPart.isEmpty ? integerPart : "\(integerPart).\(fractionPart)"
+        return result.contains(where: { $0.isNumber }) ? result : nil
     }
 }
