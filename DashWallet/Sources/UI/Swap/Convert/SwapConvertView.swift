@@ -52,7 +52,7 @@ struct SwapConvertView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavigationBar(leading: { NavigationBarElement.back.button { onBack?() } })
+            DashUIKit.NavigationBar(leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } })
             TopIntro(title: NSLocalizedString("Convert Dash", comment: "Maya"))
                 .padding(.horizontal, Layout.hPadding)
                 .padding(.bottom, 6)
@@ -130,9 +130,9 @@ struct SwapConvertView: View {
             title: NSLocalizedString("Dash", comment: "Maya"),
             subtitleView: AnyView(
                 Text(NSLocalizedString("Dash Wallet", comment: "Maya"))
-                    .font(.footnote)
+                    .font(Font.dash.footnote)
                     .lineSpacing(4)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(Color.dash.primaryText)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
             ),
@@ -154,9 +154,9 @@ struct SwapConvertView: View {
             title: viewModel.coin.name,
             subtitleView: AnyView(
                 Text(viewModel.address)
-                    .font(.footnote)
+                    .font(Font.dash.footnote)
                     .lineSpacing(4)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(Color.dash.primaryText)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
             ),
@@ -174,11 +174,11 @@ struct SwapConvertView: View {
     private var arrowDivider: some View {
         ZStack {
             RoundedRectangle(cornerRadius: Layout.arrowBadgeCornerRadius, style: .continuous)
-                .fill(Color.secondaryBackground)
+                .fill(Color.dash.secondaryBackground)
                 .frame(width: Layout.arrowBadgeSize + 5, height: Layout.arrowBadgeSize + 5)
                 .overlay(
                     RoundedRectangle(cornerRadius: Layout.arrowBadgeCornerRadius, style: .continuous)
-                        .stroke(Color.primaryBackground, lineWidth: Layout.arrowBadgeInset)
+                        .stroke(Color.dash.primaryBackground, lineWidth: Layout.arrowBadgeInset)
                 )
                 .overlay(
                     ArrowDownIcon(
@@ -203,16 +203,16 @@ struct SwapConvertView: View {
                     // An error (e.g. insufficient balance after coin-mode gross-up) supersedes the
                     // receive estimate — both can be set at once, so show the error first.
                     Text(error)
-                        .font(.caption1)
-                        .foregroundStyle(Color.systemRed)
+                        .font(Font.dash.caption1)
+                        .foregroundColor(Color.dash.red)
                 } else if let amount = viewModel.receiveAmount {
                     Text(NSLocalizedString("Receive amount", comment: "Maya"))
-                        .font(.caption1)
-                        .foregroundStyle(Color.tertiaryText)
+                        .font(Font.dash.caption1)
+                        .foregroundStyle(Color.dash.tertiaryText)
 
                     Text("~ \(amount)")
-                        .font(.subhead)
-                        .foregroundStyle(Color.primaryText)
+                        .font(Font.dash.subhead)
+                        .foregroundStyle(Color.dash.primaryText)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)
@@ -236,9 +236,9 @@ struct SwapConvertView: View {
         )
         .frame(maxWidth: .infinity, maxHeight: 320)
         .padding(.horizontal, Layout.hPadding)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .clipShape(.rect(cornerRadius: 20))
-        .background(Color.secondaryBackground, ignoresSafeAreaEdges: .bottom)
+        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 }
 
@@ -251,6 +251,6 @@ struct SwapConvertView: View {
         ),
         onBack: {}
     )
-    .background(Color.primaryBackground)
+    .background(Color.dash.primaryBackground)
 }
 #endif

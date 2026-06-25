@@ -43,13 +43,13 @@ struct SwapTransactionFailureView: View {
 
             VStack(spacing: 6) {
                 Text(NSLocalizedString("Conversion failed", comment: "Maya"))
-                    .font(.title1)
-                    .foregroundColor(.primaryText)
+                    .font(Font.dash.title1)
+                    .foregroundColor(Color.dash.primaryText)
                     .multilineTextAlignment(.center)
 
                 Text(reason ?? NSLocalizedString("Your DASH was not converted and no funds were deducted. Try again, or come back later.", comment: "Maya"))
-                    .font(.subhead)
-                    .foregroundColor(.secondaryText)
+                    .font(Font.dash.subhead)
+                    .foregroundColor(Color.dash.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
             }
@@ -61,19 +61,25 @@ struct SwapTransactionFailureView: View {
             Spacer()
 
             VStack(spacing: 16) {
-                DashButton(
+                DashUIKit.DashButton(
                     text: NSLocalizedString("Retry", comment: "Maya"),
                     isEnabled: !isRetrying,
-                    isLoading: isRetrying
+                    isLoading: isRetrying,
+                    fillsWidth: true,
+                    size: .large,
+                    style: .filledBlue
                 ) {
                     onRetry()
                 }
 
-                DashButton(text: NSLocalizedString("Close", comment: "Maya")) {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Close", comment: "Maya"),
+                    fillsWidth: true,
+                    size: .large,
+                    style: .tintedGray
+                ) {
                     onCancel()
                 }
-                .overrideBackgroundColor(Color.gray300Alpha10)
-                .overrideForegroundColor(Color.black)
             }
             .padding(.vertical, 20)
             .padding(.horizontal, 60)
@@ -100,8 +106,8 @@ struct SwapTransactionFailureView: View {
             openURL(url)
         } label: {
             Text(label)
-                .font(.subheadMedium)
-                .foregroundColor(.dashBlue)
+                .font(Font.dash.subheadMedium)
+                .foregroundColor(Color.dash.blue)
         }
         .buttonStyle(.plain)
     }
@@ -115,7 +121,7 @@ struct SwapTransactionFailureView: View {
         onCancel: {}
     )
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(Color.primaryBackground)
+    .background(Color.dash.primaryBackground)
 }
 
 #Preview("After broadcast — MayaScan link") {
@@ -126,6 +132,6 @@ struct SwapTransactionFailureView: View {
         onCancel: {}
     )
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(Color.primaryBackground)
+    .background(Color.dash.primaryBackground)
 }
 #endif
