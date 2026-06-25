@@ -514,18 +514,10 @@
 		510336ED2FEBB1B4002E0899 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 510336EC2FEBB1B4002E0899 /* DashUIKit */; };
 		514AEA132FB324FA00F9B54C /* SwapConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* SwapConvertView.swift */; };
 		514AEA142FB324FA00F9B54C /* SwapConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* SwapConvertView.swift */; };
-		514AEA442FB33B4300F9B54C /* EnterAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA432FB33B4300F9B54C /* EnterAmountView.swift */; };
-		514AEA452FB33B4300F9B54C /* EnterAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA432FB33B4300F9B54C /* EnterAmountView.swift */; };
-		514AEA462FB33B4300F9B54C /* DashPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA472FB33B4300F9B54C /* DashPickerView.swift */; };
-		514AEA482FB33B4300F9B54C /* DashPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA472FB33B4300F9B54C /* DashPickerView.swift */; };
 		514AEA492FB33B4300F9B54C /* SwapConvertHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */; };
 		514AEA4B2FB33B4300F9B54C /* SwapConvertHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */; };
-		514AEA4C2FB33B4300F9B54C /* SwapAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA4D2FB33B4300F9B54C /* SwapAmountView.swift */; };
-		514AEA4E2FB33B4300F9B54C /* SwapAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA4D2FB33B4300F9B54C /* SwapAmountView.swift */; };
 		514AEAD52FB34F8600F9B54C /* OrderPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */; };
 		514AEAD62FB34F8600F9B54C /* OrderPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */; };
-		514AEB002FB33B4300F9B54C /* ScaleToFitWidth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEB012FB33B4300F9B54C /* ScaleToFitWidth.swift */; };
-		514AEB022FB33B4300F9B54C /* ScaleToFitWidth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEB012FB33B4300F9B54C /* ScaleToFitWidth.swift */; };
 		514AF1C02FB5F02D00F9B54C /* SwapConvertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AF1BF2FB5F02D00F9B54C /* SwapConvertViewModel.swift */; };
 		514AF1C12FB5F02D00F9B54C /* SwapConvertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AF1BF2FB5F02D00F9B54C /* SwapConvertViewModel.swift */; };
 		514BEA012FB5F02D00F9B54C /* SwapConvertAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514BEA002FB5F02D00F9B54C /* SwapConvertAmount.swift */; };
@@ -871,7 +863,6 @@
 		97C1167F9600BF7E489A8545 /* SwapTransactionStatusHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B5469F5588395FA0668C4B /* SwapTransactionStatusHostingController.swift */; };
 		A0795C9369A1402498C00F69 /* DerivationPathKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */; };
 		A6DB8889C5594B1988BDE0CE /* MayaCoinIconLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F0351CAD174EEB8E64012A /* MayaCoinIconLoader.swift */; };
-		A70C83C906AC1349DF3B9C98 /* DashBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF95E0E0B636AFB810D62116 /* DashBalanceView.swift */; };
 		AA00000128D9A3DB00223B77 /* BuySellPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */; };
 		AA0000012DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */; };
 		AA00000228D9A3DB00223B77 /* BuySellPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */; };
@@ -1780,7 +1771,6 @@
 		CC0000182DUMMYID001234567 /* PiggyCardsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000092DUMMYID001234567 /* PiggyCardsRepository.swift */; };
 		CC0000192DUMMYID001234567 /* PiggyCardsTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000102DUMMYID001234567 /* PiggyCardsTokenService.swift */; };
 		CC0000202DUMMYID001234567 /* PiggyCardsTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000102DUMMYID001234567 /* PiggyCardsTokenService.swift */; };
-		D0D3F0F33D9F162622F0A6E5 /* DashBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF95E0E0B636AFB810D62116 /* DashBalanceView.swift */; };
 		D5A0C001D5A0C001D5A0C001 /* DashSpendAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B001D5A0B001D5A0B001 /* DashSpendAmountView.swift */; };
 		D5A0C002D5A0C002D5A0C002 /* DashSpendDenominationRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B002D5A0B002D5A0B002 /* DashSpendDenominationRow.swift */; };
 		D5A0C003D5A0C003D5A0C003 /* DashSpendFixedContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B003D5A0B003D5A0B003 /* DashSpendFixedContent.swift */; };
@@ -2649,12 +2639,8 @@
 		47FA3B0129364991008D58DC /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkUnavailableStateView.swift; sourceTree = "<group>"; };
 		514AEA122FB324FA00F9B54C /* SwapConvertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertView.swift; sourceTree = "<group>"; };
-		514AEA432FB33B4300F9B54C /* EnterAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAmountView.swift; sourceTree = "<group>"; };
-		514AEA472FB33B4300F9B54C /* DashPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashPickerView.swift; sourceTree = "<group>"; };
 		514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertHostingController.swift; sourceTree = "<group>"; };
-		514AEA4D2FB33B4300F9B54C /* SwapAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapAmountView.swift; sourceTree = "<group>"; };
 		514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewView.swift; sourceTree = "<group>"; };
-		514AEB012FB33B4300F9B54C /* ScaleToFitWidth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScaleToFitWidth.swift; path = "DashWallet/Sources/UI/SwiftUI Components/Geometry Readers/ScaleToFitWidth.swift"; sourceTree = SOURCE_ROOT; };
 		514AF1BF2FB5F02D00F9B54C /* SwapConvertViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertViewModel.swift; sourceTree = "<group>"; };
 		514BEA002FB5F02D00F9B54C /* SwapConvertAmount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertAmount.swift; sourceTree = "<group>"; };
 		5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
@@ -2927,7 +2913,6 @@
 		AA00F1002FF0A10000A1B402 /* MayaExchangeAddressLookupContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaExchangeAddressLookupContextTests.swift; sourceTree = "<group>"; };
 		AA29A8515217AC4232F794C2 /* Pods-TodayExtension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testnet.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testnet.xcconfig"; sourceTree = "<group>"; };
 		AD6615F1246B5935365B05BD /* NavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBar.swift; sourceTree = "<group>"; };
-		AF95E0E0B636AFB810D62116 /* DashBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashBalanceView.swift; sourceTree = "<group>"; };
 		B2F0351CAD174EEB8E64012A /* MayaCoinIconLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaCoinIconLoader.swift; sourceTree = "<group>"; };
 		B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeySheet.swift; sourceTree = "<group>"; };
 		B6C652479D19F2169F565A6C /* libPods-dashpay.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashpay.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3485,8 +3470,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		5151CDF22F929C2300F0A604 /* Geometry Readers */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Geometry Readers"; sourceTree = "<group>"; };
-		5151CDF62F929D3F00F0A604 /* ScrollViews */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ScrollViews; sourceTree = "<group>"; };
 		51DFA7FB2FA8EAF2001EDB3A /* Components */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Components; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -6367,7 +6350,6 @@
 			isa = PBXGroup;
 			children = (
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
-				514AEB012FB33B4300F9B54C /* ScaleToFitWidth.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -6403,11 +6385,7 @@
 		514AEA152FB3258F00F9B54C /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				AF95E0E0B636AFB810D62116 /* DashBalanceView.swift */,
 				D99130732DE8F2E95F635F6B /* SwapConvertCardRow.swift */,
-				514AEA432FB33B4300F9B54C /* EnterAmountView.swift */,
-				514AEA472FB33B4300F9B54C /* DashPickerView.swift */,
-				514AEA4D2FB33B4300F9B54C /* SwapAmountView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -6421,13 +6399,6 @@
 				51A5774A2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift */,
 			);
 			path = OrderPreview;
-			sourceTree = "<group>";
-		};
-		516983A12FCAEDD600BA91A2 /* Illustrations */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Illustrations;
 			sourceTree = "<group>";
 		};
 		516983C02FCAEDD600BA91A2 /* Icons */ = {
@@ -6549,10 +6520,7 @@
 		7566F4882BB6CAD6005238D2 /* SwiftUI Components */ = {
 			isa = PBXGroup;
 			children = (
-				516983A12FCAEDD600BA91A2 /* Illustrations */,
 				516983C02FCAEDD600BA91A2 /* Icons */,
-				5151CDF62F929D3F00F0A604 /* ScrollViews */,
-				5151CDF22F929C2300F0A604 /* Geometry Readers */,
 				7581B19C2CE3509A00714007 /* Dialogs */,
 				75EBAA112BB99B6B004488E3 /* BottomSheet.swift */,
 				96CB7E093E994D2391D36DEC /* SelfSizingSheet.swift */,
@@ -8307,8 +8275,6 @@
 				BA913BF91BD57E4D005A7C0E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				5151CDF22F929C2300F0A604 /* Geometry Readers */,
-				5151CDF62F929D3F00F0A604 /* ScrollViews */,
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
 			);
 			name = dashwallet;
@@ -8411,8 +8377,6 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				5151CDF22F929C2300F0A604 /* Geometry Readers */,
-				5151CDF62F929D3F00F0A604 /* ScrollViews */,
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
 			);
 			name = dashpay;
@@ -9430,12 +9394,7 @@
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
 				114D16B829828BCC009A124C /* OnlineAccountConfirmationController.swift in Sources */,
 				47838B8C29068F110003E8AB /* BaseResponse.swift in Sources */,
-				A70C83C906AC1349DF3B9C98 /* DashBalanceView.swift in Sources */,
 				279C16F9AF0575C540E312E5 /* SwapConvertCardRow.swift in Sources */,
-				514AEA442FB33B4300F9B54C /* EnterAmountView.swift in Sources */,
-				514AEA462FB33B4300F9B54C /* DashPickerView.swift in Sources */,
-				514AEB002FB33B4300F9B54C /* ScaleToFitWidth.swift in Sources */,
-				514AEA4C2FB33B4300F9B54C /* SwapAmountView.swift in Sources */,
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				C9829CDE2A562822007132E4 /* TappableLabel.swift in Sources */,
 				111C3C50296D5A4700788E18 /* TxWithinTimePeriod.swift in Sources */,
@@ -10211,12 +10170,7 @@
 				C9D2C74C2A320AA000D15901 /* (null) in Sources */,
 				C9D2C74D2A320AA000D15901 /* CoinbasePlaceBuyOrderResponse.swift in Sources */,
 				C9D2C74E2A320AA000D15901 /* ExploreMapView.swift in Sources */,
-				D0D3F0F33D9F162622F0A6E5 /* DashBalanceView.swift in Sources */,
 				40AB5A54235FDE2747ECE3F5 /* SwapConvertCardRow.swift in Sources */,
-				514AEA452FB33B4300F9B54C /* EnterAmountView.swift in Sources */,
-				514AEA482FB33B4300F9B54C /* DashPickerView.swift in Sources */,
-				514AEB022FB33B4300F9B54C /* ScaleToFitWidth.swift in Sources */,
-				514AEA4E2FB33B4300F9B54C /* SwapAmountView.swift in Sources */,
 				C943B32F2A408CED00AF23C5 /* DWSaveAlertViewController.m in Sources */,
 				C930784C2A6AD59700906E4B /* TitleValueCell.swift in Sources */,
 				7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */,
