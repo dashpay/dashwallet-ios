@@ -18,33 +18,76 @@
 import SwiftUI
 
 struct ShortcutSelectionView: View {
+    let usedTypes: Set<ShortcutActionType>
     let onSelect: (ShortcutActionType) -> Void
     @Environment(\.dismiss)
     private var dismiss
 
+    private var availableActions: [ShortcutActionType] {
+        ShortcutActionType.customizableActions.filter { !usedTypes.contains($0) }
+    }
+
     var body: some View {
-        NavigationView {
-            List(ShortcutActionType.customizableActions, id: \.rawValue) { actionType in
-                Button {
-                    onSelect(actionType)
-                    dismiss()
-                } label: {
-                    HStack(spacing: 12) {
-                        Image(uiImage: actionType.icon)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 36, height: 36)
-                        Text(actionType.title)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(.dw_darkTitle()))
-                        Spacer()
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 2) {
+                if availableActions.isEmpty {
+                    Text(NSLocalizedString("All shortcuts are already in use", comment: "Shortcut selection empty state"))
+                        .font(.subheadline)
+                        .foregroundColor(.secondaryText)
+                        .padding(.vertical, 16)
+                } else {
+                    ForEach(availableActions, id: \.rawValue) { actionType in
+                        MenuItem(
+                            title: actionType.title,
+                            icon: .custom(actionType.iconName),
+                            action: {
+                                onSelect(actionType)
+                                dismiss()
+                            }
+                        )
                     }
-                    .padding(.vertical, 4)
                 }
             }
-            .listStyle(.plain)
-            .navigationTitle(NSLocalizedString("Select option", comment: ""))
-            .navigationBarTitleDisplayMode(.inline)
+            .padding(6)
+            .background(Color.secondaryBackground)
+            .clipShape(.rect(cornerRadius: 20))
+            .padding(.top, 10)
+            .padding(.horizontal, 20)
         }
     }
 }
+
+#if DEBUG
+#Preview("All available") {
+    ShortcutSelectionView(usedTypes: []) { _ in }
+}
+
+#Preview("Filtered – receive & send used") {
+    ShortcutSelectionView(usedTypes: [.receive, .send]) { _ in }
+}
+
+#Preview("All used (empty state)") {
+    ShortcutSelectionView(usedTypes: Set(ShortcutActionType.customizableActions)) { _ in }
+}
+
+#Preview("Bottom sheet") {
+    VStack {
+        Color.secondaryBackground.ignoresSafeArea()
+            .sheet(isPresented: .constant(true)) {
+                let sheet = BottomSheet(title: NSLocalizedString("Select option", comment: ""), showBackButton: .constant(false)) {
+                    ShortcutSelectionView(usedTypes: [.receive, .send, .spend]) { _ in }
+                }
+
+                if #available(iOS 16.4, *) {
+                    sheet
+                        .presentationDetents([.large])
+                        .presentationBackground(Color.primaryBackground)
+                        .presentationCornerRadius(32)
+                        .presentationDragIndicator(.hidden)
+                } else {
+                    sheet
+                }
+            }
+    }
+}
+#endif

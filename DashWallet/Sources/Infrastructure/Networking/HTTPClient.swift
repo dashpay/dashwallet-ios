@@ -153,8 +153,12 @@ public class HTTPClient<Target: TargetType> {
         // the normal error path, instead of force-unwrapping nil (TestFlight crash, HTTPClient:152).
         if let target = target as? AccessTokenAuthorizable, target.authorizationType == .bearer,
            let provider = accessTokenProvider {
+            // Token may be nil if the session expired / the user isn't signed in. Return an empty
+            // string instead of force-unwrapping (which crashed): the request goes out with an
+            // empty bearer token and the server responds 401, surfacing as a normal error.
             return provider() ?? ""
         }
+
         return ""
     }
 
