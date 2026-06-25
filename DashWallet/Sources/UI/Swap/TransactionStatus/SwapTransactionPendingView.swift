@@ -38,20 +38,20 @@ struct SwapTransactionPendingView: View {
 
             VStack(spacing: 6) {
                 Text(NSLocalizedString("Conversion in progress", comment: "Maya"))
-                    .font(.title1)
-                    .foregroundColor(.primaryText)
+                    .font(Font.dash.title1)
+                    .foregroundColor(Color.dash.primaryText)
                     .multilineTextAlignment(.center)
 
                 Text(message)
-                    .font(.subhead)
-                    .foregroundColor(.secondaryText)
+                    .font(Font.dash.subhead)
+                    .foregroundColor(Color.dash.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
 
                 if let detailMessage, !detailMessage.isEmpty {
                     Text(detailMessage)
-                        .font(.subhead)
-                        .foregroundColor(.secondaryText)
+                        .font(Font.dash.subhead)
+                        .foregroundColor(Color.dash.secondaryText)
                         .multilineTextAlignment(.center)
                         .lineSpacing(3)
                         .padding(.top, 8)
@@ -65,8 +65,8 @@ struct SwapTransactionPendingView: View {
                     openURL(trackerURL)
                 } label: {
                     Text(NSLocalizedString("View details", comment: "Maya/SwapKit"))
-                        .font(.subheadMedium)
-                        .foregroundColor(.dashBlue)
+                        .font(Font.dash.subheadMedium)
+                        .foregroundColor(Color.dash.blue)
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 60)
@@ -74,7 +74,12 @@ struct SwapTransactionPendingView: View {
 
             Spacer()
 
-            DashButton(text: NSLocalizedString("Go to Home", comment: "Maya")) {
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Go to Home", comment: "Maya"),
+                fillsWidth: true,
+                size: .large,
+                style: .filledBlue
+            ) {
                 onGoHome()
             }
             .padding(.vertical, 20)
@@ -99,6 +104,6 @@ struct SwapTransactionPendingView: View {
         onGoHome: {}
     )
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(Color.primaryBackground)
+    .background(Color.dash.primaryBackground)
 }
 #endif

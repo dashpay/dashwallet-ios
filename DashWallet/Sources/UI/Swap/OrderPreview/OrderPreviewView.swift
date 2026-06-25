@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 struct OrderPreviewView: View {
@@ -65,8 +66,8 @@ struct OrderPreviewView: View {
 
     private var orderPreviewContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavigationBar(leading: {
-                NavigationBarElement.back.button { onCancel() }
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button { onCancel() }
             })
 
             TopIntro(title: String(format: NSLocalizedString("Order preview", comment: "Maya")))
@@ -84,7 +85,7 @@ struct OrderPreviewView: View {
                     networkRow
                     totalRow
                 }
-                .modifier(SwapMenuCardStyle(shadowRadius: 20))
+                .modifier(MenuViewModifier(shadowRadius: 20))
                 .padding(.horizontal, 20)
             } else {
                 // Confirm and refresh-quote both need network — show the offline state
@@ -98,17 +99,24 @@ struct OrderPreviewView: View {
             Spacer(minLength: 0)
 
             VStack(spacing: 20) {
-                DashButton(text: viewModel.confirmButtonText) {
+                DashUIKit.DashButton(
+                    text: viewModel.confirmButtonText,
+                    isEnabled: !(viewModel.isSubmitting || viewModel.isRefreshing || !reachability.isOnline),
+                    fillsWidth: true,
+                    size: .large,
+                    style: .filledBlue
+                ) {
                     Task { await viewModel.handlePrimaryAction() }
                 }
-                // Confirm / Refresh quote require network; Cancel below stays enabled.
-                .disabled(viewModel.isSubmitting || viewModel.isRefreshing || !reachability.isOnline)
 
-                DashButton(text: NSLocalizedString("Cancel", comment: "")) {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Cancel", comment: ""),
+                    fillsWidth: true,
+                    size: .large,
+                    style: .tintedGray
+                ) {
                     onCancel()
                 }
-                .overrideForegroundColor(.primaryText)
-                .overrideBackgroundColor(.gray300Alpha10)
             }
             .padding(.horizontal, 60)
             .padding(.vertical, 20)
@@ -120,8 +128,8 @@ struct OrderPreviewView: View {
     private var fromRow: some View {
         HStack(spacing: Layout.labelSpacing) {
             Text(NSLocalizedString("From", comment: "Maya"))
-                .font(.subheadMedium)
-                .foregroundColor(.tertiaryText)
+                .font(Font.dash.subheadMedium)
+                .foregroundColor(Color.dash.tertiaryText)
                 .fixedSize()
 
             HStack(spacing: Layout.logoTextSpacing) {
@@ -130,8 +138,8 @@ struct OrderPreviewView: View {
                     .clipShape(.rect(cornerRadius: Layout.coinLogoCornerRadius))
 
                 Text(NSLocalizedString("Dash Wallet", comment: "Maya"))
-                    .font(.subhead)
-                    .foregroundColor(.primaryText)
+                    .font(Font.dash.subhead)
+                    .foregroundColor(Color.dash.primaryText)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
@@ -143,8 +151,8 @@ struct OrderPreviewView: View {
     private var toRow: some View {
         HStack(spacing: Layout.labelSpacing) {
             Text(NSLocalizedString("To", comment: "Maya"))
-                .font(.subheadMedium)
-                .foregroundColor(.tertiaryText)
+                .font(Font.dash.subheadMedium)
+                .foregroundColor(Color.dash.tertiaryText)
                 .fixedSize()
 
             HStack(spacing: Layout.logoTextSpacing) {
@@ -155,8 +163,8 @@ struct OrderPreviewView: View {
                 )
 
                 Text(viewModel.coin.name)
-                    .font(.subhead)
-                    .foregroundColor(.primaryText)
+                    .font(Font.dash.subhead)
+                    .foregroundColor(Color.dash.primaryText)
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
@@ -205,12 +213,12 @@ struct OrderPreviewView: View {
     private var totalRow: some View {
         HStack(alignment: .lastTextBaseline, spacing: Layout.labelSpacing) {
             Text(NSLocalizedString("Total", comment: "Maya"))
-                .font(.subheadMedium)
-                .foregroundColor(.tertiaryText)
+                .font(Font.dash.subheadMedium)
+                .foregroundColor(Color.dash.tertiaryText)
 
             Text(viewModel.totalAmount)
-                .font(.title3Medium)
-                .foregroundColor(.primaryText)
+                .font(Font.dash.title3Medium)
+                .foregroundColor(Color.dash.primaryText)
                 .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, Layout.rowHPadding)
@@ -253,6 +261,6 @@ struct OrderPreviewView: View {
     )
 
     OrderPreviewView(viewModel: viewModel, onCancel: {})
-        .background(Color.primaryBackground.ignoresSafeArea())
+        .background(Color.dash.primaryBackground.ignoresSafeArea())
 }
 #endif

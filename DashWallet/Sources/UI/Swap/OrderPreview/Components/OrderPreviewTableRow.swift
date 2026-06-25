@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 struct OrderPreviewTableRow: View {
@@ -29,8 +30,8 @@ struct OrderPreviewTableRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: labelSpacing) {
             Text(leading)
-                .font(.subheadMedium)
-                .foregroundColor(.tertiaryText)
+                .font(Font.dash.subheadMedium)
+                .foregroundColor(Color.dash.tertiaryText)
                 .fixedSize()
 
             VStack(alignment: .trailing, spacing: 2) {
@@ -40,8 +41,8 @@ struct OrderPreviewTableRow: View {
                     Text(secondary)
                 }
             }
-            .font(.subhead)
-            .foregroundColor(.primaryText)
+            .font(Font.dash.subhead)
+            .foregroundColor(Color.dash.primaryText)
             .multilineTextAlignment(.trailing)
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
@@ -62,6 +63,6 @@ struct OrderPreviewTableRow: View {
         rowMinHeight: 46
     )
     .padding()
-    .background(Color.secondaryBackground)
+    .background(Color.dash.secondaryBackground)
 }
 #endif

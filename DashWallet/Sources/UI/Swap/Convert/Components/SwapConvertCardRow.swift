@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 // MARK: - Card row height preference
@@ -48,7 +49,7 @@ struct SwapConvertCardRow<Content: View>: View {
         content()
             .allowsHitTesting(false)   // rows are display-only
             .padding(6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(.rect(cornerRadius: 20))
             .background(
                 GeometryReader { proxy in

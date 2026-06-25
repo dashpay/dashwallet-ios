@@ -56,11 +56,11 @@ struct SelectCoinView: View {
 
     var body: some View {
         ZStack {
-            Color.primaryBackground.ignoresSafeArea()
+            Color.dash.primaryBackground.ignoresSafeArea()
             VStack(spacing: 0) {
-                NavigationBar(
-                    leading: { NavigationBarElement.back.button { onBack?() } },
-                    central: { Text(NSLocalizedString("Select coin", comment: "Maya")).font(.subheadMedium) }
+                DashUIKit.NavigationBar(
+                    leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } },
+                    central: { Text(NSLocalizedString("Select coin", comment: "Maya")).font(Font.dash.subheadMedium) }
                 )
                 mainContent
             }
@@ -168,8 +168,8 @@ struct SelectCoinView: View {
         VStack {
             VStack(spacing: Layout.emptyStateSpacing) {
                 Text(NSLocalizedString("No coins found", comment: "Maya"))
-                    .font(.footnote)
-                    .foregroundColor(Color.gray500)
+                    .font(Font.dash.footnote)
+                    .foregroundColor(Color.dash.gray500)
             }
             .padding(10)
             .frame(maxWidth: .infinity, maxHeight: 100)
@@ -187,11 +187,11 @@ struct SelectCoinView: View {
 
             Image(systemName: "wifi.exclamationmark")
                 .font(.system(size: Layout.errorIconSize))
-                .foregroundColor(Color.secondaryText)
+                .foregroundColor(Color.dash.secondaryText)
 
             Text(message)
                 .font(.system(size: 14))
-                .foregroundColor(Color.secondaryText)
+                .foregroundColor(Color.dash.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Layout.errorTextHPadding)
 
@@ -210,7 +210,7 @@ struct SelectCoinView: View {
                 .foregroundColor(.white)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 10)
-                .background(Color.dashBlue)
+                .background(Color.dash.blue)
                 .cornerRadius(8)
         }
     }

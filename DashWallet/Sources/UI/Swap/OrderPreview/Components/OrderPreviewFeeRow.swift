@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 struct OrderPreviewFeeRow: View {
@@ -36,13 +37,13 @@ struct OrderPreviewFeeRow: View {
         HStack(alignment: .top, spacing: labelSpacing) {
             HStack(spacing: infoSpacing) {
                 Text(feeTitle)
-                    .font(.subheadMedium)
-                    .foregroundColor(.tertiaryText)
+                    .font(Font.dash.subheadMedium)
+                    .foregroundColor(Color.dash.tertiaryText)
 
                 ZStack {
                     Circle()
                         .frame(width: 15, height: 15)
-                        .foregroundStyle(Color.gray300)
+                        .foregroundStyle(Color.dash.gray300)
 
                     Icon(name: .custom("info-icon", maxHeight: 8))
                 }
@@ -57,8 +58,8 @@ struct OrderPreviewFeeRow: View {
                     Text(secondary)
                 }
             }
-            .font(.subhead)
-            .foregroundColor(.primaryText)
+            .font(Font.dash.subhead)
+            .foregroundColor(Color.dash.primaryText)
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.horizontal, rowHPadding)
@@ -89,6 +90,6 @@ struct OrderPreviewFeeRow: View {
         rowMinHeight: 46
     )
     .padding()
-    .background(Color.secondaryBackground)
+    .background(Color.dash.secondaryBackground)
 }
 #endif

@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 struct SwapFeeInfoSheet: View {
@@ -28,13 +29,13 @@ struct SwapFeeInfoSheet: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(NSLocalizedString("Fees in crypto purchases", comment: "Maya"))
-                    .font(Font.title1)
-                    .foregroundColor(.primaryText)
+                    .font(Font.dash.title1)
+                    .foregroundColor(Color.dash.primaryText)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
                 Text(infoDescription)
-                .font(Font.body)
-                .foregroundStyle(Color.gray500)
+                .font(Font.dash.body)
+                .foregroundStyle(Color.dash.gray500)
                 .multilineTextAlignment(.leading)
             }
             .padding(.top, 20)
@@ -46,16 +47,24 @@ struct SwapFeeInfoSheet: View {
                 // Using openURL (system Safari) rather than SFSafariViewController because the
                 // sheet has no UIViewController context for modal presentation.
                 if !usesGenericFeeInfo {
-                    DashButton(text: NSLocalizedString("Learn more", comment: "Maya")) {
+                    DashUIKit.DashButton(
+                        text: NSLocalizedString("Learn more", comment: "Maya"),
+                        fillsWidth: true,
+                        size: .large,
+                        style: .filledBlue
+                    ) {
                         openURL(MayaConstants.feesDocsURL)
                     }
                 }
 
-                DashButton(text: NSLocalizedString("Close", comment: "Maya")) {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Close", comment: "Maya"),
+                    fillsWidth: true,
+                    size: .large,
+                    style: .tintedGray
+                ) {
                     onDismiss()
                 }
-                .overrideBackgroundColor(Color.gray300Alpha10)
-                .overrideForegroundColor(Color.black)
             }
             .padding(.horizontal, 60)
             .padding(.vertical, 20)
@@ -80,14 +89,14 @@ struct SwapFeeInfoSheet: View {
 #if DEBUG
 #Preview("Standalone") {
     SwapFeeInfoSheet(usesGenericFeeInfo: false, onDismiss: {})
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
 }
 
 private struct SwapFeeInfoSheetPreviewHost: View {
     @State private var isPresented = true
 
     var body: some View {
-        Color.primaryBackground
+        Color.dash.primaryBackground
             .ignoresSafeArea()
             .sheet(isPresented: $isPresented) {
 //                let sheet = BottomSheet(showBackButton: .constant(false)) {
