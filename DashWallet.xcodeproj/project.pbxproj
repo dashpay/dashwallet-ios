@@ -654,8 +654,6 @@
 		7545ED582DA91AF10075F45C /* DashSpendUserAuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED562DA91AEA0075F45C /* DashSpendUserAuthViewModel.swift */; };
 		7545ED5D2DA91F590075F45C /* DashSpendTermsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED5C2DA91F590075F45C /* DashSpendTermsScreen.swift */; };
 		7545ED5E2DA91F590075F45C /* DashSpendTermsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED5C2DA91F590075F45C /* DashSpendTermsScreen.swift */; };
-		7545ED602DA91FC60075F45C /* NumericKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED5F2DA91FC60075F45C /* NumericKeyboardView.swift */; };
-		7545ED612DA91FC60075F45C /* NumericKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7545ED5F2DA91FC60075F45C /* NumericKeyboardView.swift */; };
 		7549BE532DEAEA18004F0BAF /* MetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE522DEAEA14004F0BAF /* MetadataProvider.swift */; };
 		7549BE542DEAEA18004F0BAF /* MetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE522DEAEA14004F0BAF /* MetadataProvider.swift */; };
 		7549BE572DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */; };
@@ -2727,7 +2725,6 @@
 		7545ED522DA91A2F0075F45C /* DashSpend/CTXConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTXConstants.swift; sourceTree = "<group>"; };
 		7545ED562DA91AEA0075F45C /* DashSpendUserAuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendUserAuthViewModel.swift; sourceTree = "<group>"; };
 		7545ED5C2DA91F590075F45C /* DashSpendTermsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendTermsScreen.swift; sourceTree = "<group>"; };
-		7545ED5F2DA91FC60075F45C /* NumericKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericKeyboardView.swift; sourceTree = "<group>"; };
 		7549BE522DEAEA14004F0BAF /* MetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataProvider.swift; sourceTree = "<group>"; };
 		7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomIconMetadataProvider.swift; sourceTree = "<group>"; };
 		7549BE592DEAF50D004F0BAF /* IconBitmap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconBitmap.swift; sourceTree = "<group>"; };
@@ -6543,7 +6540,6 @@
 				75CDD7822C0898FA00F433D2 /* Wrapper.swift */,
 				759609222C455B2000F3BF04 /* SendIntro.swift */,
 				75387B492E0400C300BCCC72 /* MerchantDenominations.swift */,
-				7545ED5F2DA91FC60075F45C /* NumericKeyboardView.swift */,
 				756FE7092CDCD6CD00E6C195 /* ValidationCheck.swift */,
 				75DFA10175DFA10175DFA101 /* DashStepper.swift */,
 				75DFA10275DFA10275DFA102 /* SegmentedControl.swift */,
@@ -9518,7 +9514,6 @@
 				754565CE2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift in Sources */,
 				754565CF2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendEndpoint.swift in Sources */,
 				C9F451E52A0B986E00825057 /* MainTabbarController.swift in Sources */,
-				7545ED612DA91FC60075F45C /* NumericKeyboardView.swift in Sources */,
 				47B30D78290BFCA60080C326 /* NumberFormatter+DashWallet.swift in Sources */,
 				47AF18082907B7880025803E /* BaseAmountModel.swift in Sources */,
 				4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */,
@@ -10425,7 +10420,6 @@
 				C9D2C7FA2A320AA000D15901 /* HTTPClient.swift in Sources */,
 				C956AF0C2A5B591A002FAB75 /* DashInputField.swift in Sources */,
 				C9D2C7FB2A320AA000D15901 /* DWPasteboardAddressExtractor.m in Sources */,
-				7545ED602DA91FC60075F45C /* NumericKeyboardView.swift in Sources */,
 				C943B4F22A40A54600AF23C5 /* DWDPNewIncomingRequestObject.m in Sources */,
 				C9D2C7FC2A320AA000D15901 /* ViewModel+Coinbase.swift in Sources */,
 				75DFAF2E2CF7066600CCA68B /* VoteButton.swift in Sources */,
