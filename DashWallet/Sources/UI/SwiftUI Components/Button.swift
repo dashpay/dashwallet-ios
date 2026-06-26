@@ -94,18 +94,28 @@ struct DashButton: View {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(borderColor, lineWidth: 2)
             )
-            .opacity(isEnabled ? 1.0 : 0.5)
+            .opacity(disabledOpacity)
         }
         .buttonStyle(DashButtonStyle(cornerRadius: cornerRadius))
         .disabled(!isEnabled || isLoading)
         .background(Color.clear)
     }
 
+    private var disabledOpacity: Double {
+        guard !isEnabled else { return 1.0 }
+        switch style {
+        case .filledBlue:
+            return 1.0
+        default:
+            return 0.5
+        }
+    }
+
     private var backgroundColor: Color {
         if !isEnabled {
             switch style {
-            case .filledBlue:
-                return Color.blackAlpha5
+            case .filled, .filledBlue:
+                return Color.black1000Alpha5
             default:
                 return Color.black1000Alpha5
             }

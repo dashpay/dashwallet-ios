@@ -49,8 +49,11 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
     }
 
     var balanceFormatted: String {
+        guard let decimal = balance.amount.decimal() else {
+            return balance.amount
+        }
         let nf = NumberFormatter.cryptoFormatter(currencyCode: currencyCode, exponent: currency.exponent)
-        return nf.string(from: balance.amount.decimal()! as NSNumber)!
+        return nf.string(from: decimal as NSNumber) ?? balance.amount
     }
 
     var fiatBalanceFormatted: String {

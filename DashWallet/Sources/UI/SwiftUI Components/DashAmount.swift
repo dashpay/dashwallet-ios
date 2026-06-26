@@ -30,31 +30,24 @@ struct DashAmount: View {
                 .fontWeight(.medium)
         } else {
             let formattedAbsAmount = abs(amount).formattedDashAmount
-            let dashSymbolLast = formattedAbsAmount.first!.isNumber
             let directionSymbol = directionSymbol(of: amount)
             let cleanedAbsAmount = cleanAmount(formattedAbsAmount)
-            
+
+            // Dash symbol always trails the number (e.g. "0.06791 Ð"), consistently across the app.
             HStack(spacing: 0) {
                 if showDirection {
                     Text(directionSymbol)
                         .font(font)
                         .fontWeight(.medium)
                 }
-                
-                if !dashSymbolLast {
-                    DashSymbol()
-                        .padding(.leading, 2)
-                }
-                
+
                 Text(cleanedAbsAmount)
                     .font(font)
                     .fontWeight(.medium)
                     .lineLimit(1)
+
+                DashSymbol()
                     .padding(.leading, 2)
-                
-                if dashSymbolLast {
-                    DashSymbol()
-                }
             }
         }
     }
