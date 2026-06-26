@@ -74,7 +74,7 @@ final class ProvideAmountViewController: SendAmountViewController {
         contentView.addSubview(stackView)
         
         var destination = address
-        let balanceLabel = CoinJoinService.shared.mixingState.isInProgress ? NSLocalizedString("Mixed balance", comment: "") : NSLocalizedString("Dash balance", comment: "")
+        let balanceLabel = NSLocalizedString("Dash balance", comment: "")
         var avatarView: DWDPAvatarView? = nil
         
 #if DASHPAY
@@ -195,7 +195,7 @@ struct ProvideAmountIntro<Content: View>: View {
         SendIntro(
             title: NSLocalizedString("Send", comment: "Send Screen"),
             destination: destination,
-            dashBalance: CoinJoinService.shared.mixingState.isInProgress ? model.coinJoinBalance : model.walletBalance,
+            dashBalance: model.walletBalance,
             balanceLabel: balanceLabel + ":",
             authCallback: model.auth,
             avatarView: avatarView

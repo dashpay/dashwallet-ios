@@ -61,7 +61,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     @Published var merchantTitle: String = ""
     @Published var merchantIconUrl: String = ""
     @Published var walletBalance: UInt64 = 0
-    @Published var coinJoinBalance: UInt64 = 0
     @Published var minimumAmount: Decimal = 0
     @Published var maximumAmount: Decimal = 0
     @Published var error: Error? = nil
@@ -133,8 +132,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     var hasValidLimits: Bool { minimumAmount > 0 || maximumAmount > 0 }
     var minimumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Min: %@", comment: "DashSpend"), fiatFormatter.string(for: minimumAmount) ?? "0.0" ) }
     var maximumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Max: %@", comment: "DashSpend"), fiatFormatter.string(for: maximumAmount) ?? "0.0" ) }
-    var isMixing: Bool { CoinJoinService.shared.mixingState.isInProgress }
-    
+
     init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx) {
         self.provider = provider
 
@@ -211,15 +209,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 self?.isUserSignedIn = isSignedIn
             }
             .store(in: &cancellableBag)
-        
-        if CoinJoinService.shared.mixingState.isInProgress {
-            CoinJoinService.shared.$progress
-                .removeDuplicates()
-                .sink { [weak self] progress in
-                    self?.coinJoinBalance = progress.coinJoinBalance
-                }
-                .store(in: &cancellableBag)
-        }
         
         self.refreshBalance()
         
@@ -347,7 +336,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
 
         guard !canShowInsufficientFunds else {
-            error = isMixing ? SendAmountError.insufficientMixedFunds : SendAmountError.insufficientFunds
+            error = SendAmountError.insufficientFunds
             return
         }
 
@@ -358,7 +347,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         let dashAmount = (try? CurrencyExchanger.shared.convertToDash(amount: amount, currency: kDefaultCurrencyCode)) ?? 0
 
         let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = isMixing ? coinJoinBalance : account.maxOutputAmount
+        let allAvailableFunds = account.maxOutputAmount
 
         return dashAmount.plainDashAmount > allAvailableFunds
     }

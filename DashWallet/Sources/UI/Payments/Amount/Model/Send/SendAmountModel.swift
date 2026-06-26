@@ -21,13 +21,11 @@ import Foundation
 
 enum SendAmountError: Error, ColorizedText, LocalizedError {
     case insufficientFunds
-    case insufficientMixedFunds
     case syncingChain
     case networkUnavailable
 
     var errorDescription: String? {
         switch self {
-        case .insufficientMixedFunds: return NSLocalizedString("Insufficient mixed funds. Wait for CoinJoin mixing to finish or disable this feature in the settings to complete this transaction.", comment: "Send screen")
         case .insufficientFunds: return NSLocalizedString("Insufficient funds", comment: "Send screen")
         case .syncingChain: return NSLocalizedString("Wait until wallet is synced to complete the transaction",
                                                      comment: "Send screen")
@@ -38,7 +36,6 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
     var textColor: UIColor {
         switch self {
         case .insufficientFunds: return .systemRed
-        case .insufficientMixedFunds: return .systemRed
         case .syncingChain: return .secondaryLabel
         case .networkUnavailable: return .secondaryLabel
         }
@@ -48,8 +45,6 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
 // MARK: - SendAmountModel
 
 class SendAmountModel: BaseAmountModel {
-    @Published var coinJoinBalance: UInt64 = 0
-    
     override var isAllowedToContinue: Bool {
         super.isAllowedToContinue &&
             !canShowInsufficientFunds &&
@@ -59,11 +54,7 @@ class SendAmountModel: BaseAmountModel {
 
     var canShowInsufficientFunds: Bool {
         let plainAmount = amount.plainAmount
-
-        let allAvailableFunds = CoinJoinService.shared.mixingState.isInProgress
-            ? coinJoinBalance
-            : SwiftDashSDKWalletState.shared.balance?.spendable ?? 0
-
+        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.spendable ?? 0
         return plainAmount > allAvailableFunds
     }
 
@@ -74,15 +65,6 @@ class SendAmountModel: BaseAmountModel {
 
         initializeSyncingActivityMonitor()
         checkAmountForErrors()
-        
-        if CoinJoinService.shared.mixingState.isInProgress {
-            CoinJoinService.shared.$progress
-                .removeDuplicates()
-                .sink { [weak self] progress in
-                    self?.coinJoinBalance = progress.coinJoinBalance
-                }
-                .store(in: &cancellableBag)
-        }
     }
 
     override func selectAllFunds() {
@@ -94,9 +76,7 @@ class SendAmountModel: BaseAmountModel {
     }
 
     internal func selectAllFundsWithoutAuth() {
-        let allAvailableFunds = CoinJoinService.shared.mixingState.isInProgress
-            ? coinJoinBalance
-            : SwiftDashSDKWalletState.shared.balance?.spendable ?? 0
+        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.spendable ?? 0
 
         if allAvailableFunds > 0 {
             updateCurrentAmountObject(with: allAvailableFunds)
@@ -112,7 +92,7 @@ class SendAmountModel: BaseAmountModel {
         }
 
         guard !canShowInsufficientFunds else {
-            error = CoinJoinService.shared.mixingState.isInProgress ? SendAmountError.insufficientMixedFunds : SendAmountError.insufficientFunds
+            error = SendAmountError.insufficientFunds
             return
         }
 

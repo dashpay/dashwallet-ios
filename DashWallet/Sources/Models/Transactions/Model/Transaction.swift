@@ -107,8 +107,8 @@ class Transaction: TransactionDataItem, Identifiable {
     /// account) that are bound to the model-context actor and must not be read
     /// from the background grouping queue. Defaults to false; the home tx source
     /// is the sole producer of `.sdk` wrappers and always populates it.
-    /// DS-sourced txs use the legacy `DSCoinJoinWrapper` path, so this stays
-    /// false for them.
+    /// DS-sourced txs are never grouped as mixing (the legacy classification
+    /// was removed), so this stays false for them.
     var sdkCoinJoinMixing: Bool = false
 
     /// True only for SwiftDashSDK-sourced CoinJoin mixing transactions. The flag

@@ -330,8 +330,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
                 if showTimeSkew {
                     let diffSeconds = (viewModel.timeSkew < 0 ? -1 : 1) * Int64(ceil(abs(viewModel.timeSkew)))
-                    let coinJoinOn = viewModel.coinJoinMode != .none
-                    self.showTimeSkewDialog(diffSeconds: diffSeconds, coinjoin: coinJoinOn)
+                    self.showTimeSkewDialog(diffSeconds: diffSeconds, coinjoin: false)
                 }
             }
             .store(in: &cancellableBag)

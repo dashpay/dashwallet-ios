@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
+final class CoinJoinMixingTxSet: GroupedTransactions {
     var title: String {
         NSLocalizedString("Mixing Transactions", comment: "CoinJoin")
     }
@@ -34,7 +34,6 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
     }
     
     private let chain = DWEnvironment.sharedInstance().currentChain
-    private let account = DWEnvironment.sharedInstance().currentAccount
     private let amountQueue = DispatchQueue(label: "CoinJoinMixingSet.amount", qos: .utility)
     private let amountLock = NSLock()
     private let txMapLock = NSLock()
@@ -68,68 +67,14 @@ final class CoinJoinMixingTxSet: GroupedTransactions, TransactionWrapper {
         }
     }
 
-    @discardableResult
-    func tryInclude(tx: DSTransaction) -> Bool {
-        let txHashData = tx.txHashData
-        
-        txMapLock.lock()
-        let existing = _transactionMap[txHashData] as? CoinJoinTransaction
-        
-        if existing != nil {
-            _transactionMap[txHashData] = CoinJoinTransaction(transaction: tx, type: existing!.type)
-            txMapLock.unlock()
-            // Already included, return true
-            return true
-        }
-        
-        let type = DSCoinJoinWrapper.coinJoinTxType(for: tx, account: account)
-        
-        if type == CoinJoinTransactionType_None || type == CoinJoinTransactionType_Send {
-            txMapLock.unlock()
-            return false
-        }
-        
-        let isEmpty = _transactionMap.isEmpty
-        txMapLock.unlock()
-        
-        if isEmpty {
-            groupDay = tx.date
-        } else if !Calendar.current.isDate(tx.date, inSameDayAs: groupDay) {
-            return false
-        }
-        
-        txMapLock.lock()
-        _transactionMap[txHashData] = CoinJoinTransaction(transaction: tx, type: type)
-        txMapLock.unlock()
-            
-        amountQueue.async { [weak self] in
-            guard let self = self else { return }
-            self.amountLock.lock()
-            defer { self.amountLock.unlock() }
-            
-            switch type {
-            case CoinJoinTransactionType_MixingFee,
-                 CoinJoinTransactionType_CreateDenomination,
-                 CoinJoinTransactionType_MakeCollateralInputs:
-                let fee = tx.feeUsed
-                self._amount -= (fee > 0 && fee <= Int64.max ? Int64(fee) : 0)
-            default:
-                break
-            }
-        }
-
-        return true
-    }
-
-    /// SwiftDashSDK variant of `tryInclude`. The legacy overload above needs a
-    /// `DSTransaction` (for `DSCoinJoinWrapper`'s per-tx classification); SDK
-    /// rows carry no `DSTransaction`, but the wallet already classifies them by
+    /// Includes a SwiftDashSDK-sourced CoinJoin mixing transaction. SDK rows
+    /// carry no `DSTransaction`, but the wallet already classifies them by
     /// CoinJoin-account membership, so we gate on `Transaction.isCoinJoinMixing`
     /// (a tx with ≥1 output owned by the CoinJoin account — see
     /// `SwiftDashSDKWalletSource.isCoinJoinMixingTx`) and store the wrapper directly.
-    /// Same per-calendar-day grouping as the DS path. A `CoinJoinMixingTxSet`
-    /// is rebuilt from scratch on every full `reloadTxDataSource`, so `_amount`
-    /// accumulates each tx exactly once per build (no cross-reload double count).
+    /// Per-calendar-day grouping. A `CoinJoinMixingTxSet` is rebuilt from scratch
+    /// on every full `reloadTxDataSource`, so `_amount` accumulates each tx
+    /// exactly once per build (no cross-reload double count).
     @discardableResult
     func tryInclude(_ tx: Transaction) -> Bool {
         guard tx.isCoinJoinMixing else { return false }

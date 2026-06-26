@@ -209,7 +209,6 @@ static NSString *sanitizeString(NSString *s) {
     // Existing DashSync path: sign and publish via DSTransactionManager.
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     const BOOL requiresSpendingAuthenticationPrompt = ![[DWGlobalOptions sharedInstance] spendingConfirmationDisabled];
-    BOOL mixedOnly = [CoinJoinServiceWrapper mode] != CoinJoinModeNone;
     DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
 
     [chainManager.transactionManager
@@ -221,7 +220,7 @@ static NSString *sanitizeString(NSString *s) {
         promptMessage:nil
         forAmount:paymentOutput.amount
         keepAuthenticatedIfErrorAfterAuthentication:NO
-        mixedOnly:mixedOnly
+        mixedOnly:NO
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {
             [self txManagerRequestingAdditionalInfo:additionalInfoRequestType
                                     protocolRequest:protocolRequest];
@@ -394,11 +393,10 @@ static NSString *sanitizeString(NSString *s) {
                                                   onChain:chain];
 
     self.didSendRequestDelegateNotified = NO;
-    BOOL mixedOnly = [CoinJoinServiceWrapper mode] != CoinJoinModeNone;
     BOOL hasBIP70 = protocolRequest.details.paymentURL.length > 0;
 
-    // Route non-CoinJoin, non-BIP70 sends through SwiftDashSDK.
-    if (!mixedOnly && !hasBIP70 && self.amount > 0 && address.length > 0) {
+    // Route non-BIP70 sends through SwiftDashSDK.
+    if (!hasBIP70 && self.amount > 0 && address.length > 0) {
         [self confirmProtocolRequestViaSwiftDashSDK:protocolRequest
                                             address:address];
         return;
@@ -417,7 +415,7 @@ static NSString *sanitizeString(NSString *s) {
         acceptReusingAddress:NO
         addressIsFromPasteboard:addressIsFromPasteboard
         acceptUncertifiedPayee:NO
-        mixedOnly:mixedOnly
+        mixedOnly:NO
         requiresSpendingAuthenticationPrompt:YES
         keepAuthenticatedIfErrorAfterAuthentication:NO
         requestingAdditionalInfo:^(DSRequestingAdditionalInfo additionalInfoRequestType) {

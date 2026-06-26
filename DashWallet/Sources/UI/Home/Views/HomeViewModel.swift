@@ -36,7 +36,6 @@ public enum HomeTxDisplayMode: UInt {
 class HomeViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let queue = DispatchQueue(label: "HomeViewModel", qos: .userInitiated)
-    private let coinJoinService = CoinJoinService.shared
     private var timeSkewDialogShown: Bool = false
     /// Session guard so the proactive CoinJoin-sweep popup shows at most once
     /// per launch (re-evaluated each launch while a leftover balance exists).
@@ -85,10 +84,6 @@ class HomeViewModel: ObservableObject {
 #endif
     
     private var syncModel = SyncModelImpl()
-    
-    var coinJoinMode: CoinJoinMode {
-        get { coinJoinService.mode }
-    }
     
     private var reclassifyTransactionsActivatedAt: Date {
         get { DWGlobalOptions.sharedInstance().dateReclassifyYourTransactionsFlowActivated ?? Date() }
@@ -266,19 +261,11 @@ class HomeViewModel: ObservableObject {
                     return nil
                 }
 
-                // CrowdNode + CoinJoin grouping only for DS-backed txs
-                // (matchers need DSTransaction for address comparison).
-                // SDK-sourced txs pass through as standalone rows.
+                // CrowdNode grouping only for DS-backed txs (matcher needs
+                // DSTransaction for address comparison). CoinJoin mixing grouping
+                // is handled for SDK-sourced txs in the branch below.
                 if let dsTx = wrappedTx.tx {
                     if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: dsTx) {
-                        return nil
-                    }
-
-                    let date = DWDateFormatter.sharedInstance.dateOnly(from: dsTx.date)
-                    let coinJoinTxSet = self.coinJoinTxSets[date] ?? CoinJoinMixingTxSet()
-                    self.coinJoinTxSets[date] = coinJoinTxSet
-
-                    if coinJoinTxSet.tryInclude(tx: dsTx) {
                         return nil
                     }
                 } else if wrappedTx.isCoinJoinMixing {
@@ -381,7 +368,7 @@ class HomeViewModel: ObservableObject {
             var txItem: TransactionListDataItem = .tx(wrappedTx, resolveMetadata(for: tx.txHashData))
             let newDateKey = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
 
-            // Track if this transaction was absorbed by a grouped set (CrowdNode/CoinJoin)
+            // Track if this transaction was absorbed by a grouped set (CrowdNode)
             var wasAbsorbedByGroup = false
 
             if self.crowdNodeTxSet.tryInclude(tx: tx) {
@@ -389,16 +376,6 @@ class HomeViewModel: ObservableObject {
                 txItem = .crowdnode(self.crowdNodeTxSet)
                 wasAbsorbedByGroup = true
                 DSLogger.log("HomeViewModel: Transaction \(txHashHex) absorbed by CrowdNode group")
-            } else {
-                let coinJoinTxSet = self.coinJoinTxSets[newDateKey] ?? CoinJoinMixingTxSet()
-                self.coinJoinTxSets[newDateKey] = coinJoinTxSet
-
-                if coinJoinTxSet.tryInclude(tx: tx) {
-                    itemId = coinJoinTxSet.id
-                    txItem = .coinjoin(coinJoinTxSet)
-                    wasAbsorbedByGroup = true
-                    DSLogger.log("HomeViewModel: Transaction \(txHashHex) absorbed by CoinJoin group for date \(newDateKey)")
-                }
             }
 
             // Fix: Check if this transaction exists under its original hash (not group ID)
@@ -568,15 +545,7 @@ class HomeViewModel: ObservableObject {
     private func getDeviceTimeSkew(force: Bool) async -> (Bool, TimeInterval) {
         do {
             let timeSkew = try await TimeUtils.getTimeSkew(force: force)
-            let maxAllowedTimeSkew: TimeInterval
-            
-            if coinJoinService.mode == .none {
-                maxAllowedTimeSkew = kTimeskewTolerance
-            } else {
-                maxAllowedTimeSkew = timeSkew > 0 ? kMaxAllowedAheadTimeskew * 3 : kMaxAllowedBehindTimeskew * 2
-            }
-            
-            coinJoinService.updateTimeSkew(timeSkew: timeSkew)
+            let maxAllowedTimeSkew = kTimeskewTolerance
             return (abs(timeSkew) > maxAllowedTimeSkew, timeSkew)
         } catch {
             // Ignore errors

@@ -63,8 +63,8 @@ struct DashSpendPayScreen: View {
                     title: NSLocalizedString("Buy gift card", comment: "DashSpend"),
                     preposition: NSLocalizedString("at", comment: "DashSpend"),
                     destination: viewModel.merchantTitle,
-                    dashBalance: viewModel.isMixing ? viewModel.coinJoinBalance : viewModel.walletBalance,
-                    balanceLabel: (viewModel.isMixing ? NSLocalizedString("Mixed balance", comment: "") : NSLocalizedString("Balance", comment: "")) + ":",
+                    dashBalance: viewModel.walletBalance,
+                    balanceLabel: NSLocalizedString("Balance", comment: "") + ":",
                     avatarView: {
                         WebImage(url: URL(string: viewModel.merchantIconUrl))
                             .resizable()
