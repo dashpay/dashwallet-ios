@@ -19,15 +19,13 @@
 
 import SwiftUI
 
-/// Displays a Maya coin icon with automatic remote fallback.
+/// Displays a coin icon loaded from the SwapKit CDN.
 ///
 /// Priority:
-/// 1. Local asset (when `iconAssetName != "convert.crypto"`)
-/// 2. SwapKit CDN icon fetched by full asset identifier
-/// 3. jsupa remote fallback fetched by ticker code
-/// 4. Placeholder (`convert.crypto`) if all remote loads fail
+/// 1. SwapKit CDN icon fetched by `chain.symbol` (contract suffix stripped)
+/// 2. Placeholder (`convert.crypto`) while loading or if the CDN fetch fails
 ///
-/// Remote icons crossfade in when loaded.  Fast-scrolling is safe: the
+/// Remote icons crossfade in when loaded. Fast-scrolling is safe: the
 /// `task(id: coin.mayaAsset)` modifier cancels in-flight requests when the view
 /// disappears, and `remoteImage` resets to nil on reuse (because @State is
 /// tied to view identity in LazyVStack).
@@ -38,10 +36,6 @@ struct SwapCoinIconView: View {
 
     @State private var remoteImage: UIImage? = nil
 
-    private var needsRemoteIcon: Bool {
-        coin.iconAssetName == "convert.crypto"
-    }
-
     var body: some View {
         Group {
             if let image = remoteImage {
@@ -49,19 +43,14 @@ struct SwapCoinIconView: View {
                     .resizable()
                     .scaledToFit()
             } else {
-                Icon(name: .custom(coin.iconAssetName, maxHeight: size))
+                Icon(name: .custom("convert.crypto", maxHeight: size))
             }
         }
         .frame(width: size, height: size)
         .clipShape(.rect(cornerRadius: cornerRadius))
         .task(id: coin.mayaAsset) {
             remoteImage = nil
-            guard needsRemoteIcon else { return }
-
-            var loaded = await MayaCoinIconLoader.shared.loadSwapKitIcon(for: coin.mayaAsset)
-            if loaded == nil {
-                loaded = await MayaCoinIconLoader.shared.loadJsupaIcon(for: coin.code)
-            }
+            let loaded = await MayaCoinIconLoader.shared.loadSwapKitIcon(for: coin.mayaAsset)
             withAnimation(.easeIn(duration: 0.15)) {
                 remoteImage = loaded
             }
@@ -72,32 +61,30 @@ struct SwapCoinIconView: View {
 #if DEBUG
 #Preview {
     HStack(spacing: 16) {
-        // Coin with local icon
+        // Native asset
         SwapCoinIconView(
             coin: MayaCryptoCurrency(
                 id: "btc", code: "BTC", name: "Bitcoin",
-                mayaAsset: "BTC.BTC", chain: "BTC",
-                iconAssetName: "maya.coin.btc"
+                mayaAsset: "BTC.BTC", chain: "BTC"
             ),
             size: 26, cornerRadius: 6
         )
 
-        // Coin without local icon — loads remotely
+        // Contract-suffixed token — CDN key truncated to arb.gld
         SwapCoinIconView(
             coin: MayaCryptoCurrency(
-                id: "sol", code: "SOL", name: "Solana",
-                mayaAsset: "SOL.SOL", chain: "SOL",
-                iconAssetName: "convert.crypto"
+                id: "gld", code: "GLD", name: "Goldario",
+                mayaAsset: "ARB.GLD-0XAFD091F140C21770F4E5D53D26B2859AE97555AA",
+                chain: "ARB"
             ),
             size: 26, cornerRadius: 6
         )
 
-        // Unknown coin — graceful fallback
+        // Unknown coin — shows convert.crypto placeholder
         SwapCoinIconView(
             coin: MayaCryptoCurrency(
                 id: "xyz", code: "XYZ", name: "Unknown",
-                mayaAsset: "XYZ.XYZ", chain: "XYZ",
-                iconAssetName: "convert.crypto"
+                mayaAsset: "XYZ.XYZ", chain: "XYZ"
             ),
             size: 26, cornerRadius: 6
         )

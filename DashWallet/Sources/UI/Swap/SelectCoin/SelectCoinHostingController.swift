@@ -25,9 +25,11 @@ class SelectCoinHostingController: UIViewController, NavigationBarDisplayable {
     var onCoinSelected: ((MayaCryptoCurrency) -> Void)?
 
     private let swapProvider: SwapProvider
+    private let direction: SwapDirection
 
-    init(swapProvider: SwapProvider = MayaSwapProvider()) {
+    init(swapProvider: SwapProvider = MayaSwapProvider(), direction: SwapDirection = .sell) {
         self.swapProvider = swapProvider
+        self.direction = direction
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -42,6 +44,7 @@ class SelectCoinHostingController: UIViewController, NavigationBarDisplayable {
 
         let selectCoinView = SelectCoinView(
             swapProvider: swapProvider,
+            direction: direction,
             onBack: { [weak self] in
                 self?.navigationController?.popViewController(animated: true)
             },

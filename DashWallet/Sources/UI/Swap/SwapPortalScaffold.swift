@@ -22,8 +22,10 @@ struct SwapPortalScaffold: View {
     let logoAssetName: String
     let title: String
     let description: String
+    var showBuy: Bool = false
     var onBack: () -> Void
-    var onConvertDash: (() -> Void)?
+    var onBuyDash: (() -> Void)?
+    var onSellDash: (() -> Void)?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -54,19 +56,36 @@ struct SwapPortalScaffold: View {
     }
 
     private var actionsCard: some View {
-        Button(
-            action: { onConvertDash?() },
-            label: {
-                DashUIKit.MenuItem(
-                    leadingIcon: .custom("convert.crypto"),
-                    title: NSLocalizedString("Convert Dash", comment: "Swap portal"),
-                    helpText: NSLocalizedString("From Dash Wallet to any crypto", comment: "Swap portal"),
-                    accessory: .none
+        VStack(spacing: 0) {
+            if showBuy {
+                Button(
+                    action: { onBuyDash?() },
+                    label: {
+                        DashUIKit.MenuItem(
+                            leadingIcon: .custom("dash-dex-buy"),
+                            title: NSLocalizedString("Buy Dash", comment: "Dash DEX Portal"),
+                            helpText: NSLocalizedString("From any crypto to your Dash Wallet", comment: "Dash DEX Portal"),
+                            accessory: .none
+                        )
+                    }
                 )
-                .modifier(MenuViewModifier())
+                .buttonStyle(.plain)
             }
-        )
-        .buttonStyle(.plain)
+
+            Button(
+                action: { onSellDash?() },
+                label: {
+                    DashUIKit.MenuItem(
+                        leadingIcon: .custom("dash-dex-sell"),
+                        title: NSLocalizedString("Sell Dash", comment: "Dash DEX Portal"),
+                        helpText: NSLocalizedString("From Dash Wallet to any crypto", comment: "Dash DEX Portal"),
+                        accessory: .none
+                    )
+                }
+            )
+            .buttonStyle(.plain)
+        }
+        .modifier(MenuViewModifier())
     }
 
     private var logoContainer: some View {

@@ -28,6 +28,13 @@ final class SwapKitAPIService: HTTPClient<SwapKitEndpoint> {
         try await request(.getSwapTo(sellAsset: sellAsset))
     }
 
+    /// Returns the canonical asset identifiers supported by a specific SwapKit provider.
+    /// Used for Maya/NEAR classification in the Dash DEX coin picker.
+    func tokens(provider: String) async throws -> [SwapKitTokenResponse] {
+        let response: SwapKitTokenListResponse = try await request(.getTokens(provider: provider))
+        return response.tokens
+    }
+
     // MARK: - Prices
 
     func prices(identifiers: [String]) async throws -> [SwapKitPriceResponse] {

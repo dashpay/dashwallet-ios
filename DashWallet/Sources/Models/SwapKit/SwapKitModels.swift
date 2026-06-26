@@ -57,6 +57,16 @@ struct SwapKitPriceToken: Encodable {
     let identifier: String
 }
 
+// MARK: - Token Response
+
+struct SwapKitTokenResponse: Decodable {
+    let identifier: String
+}
+
+struct SwapKitTokenListResponse: Decodable {
+    let tokens: [SwapKitTokenResponse]
+}
+
 // MARK: - Quote Response
 
 struct SwapKitQuoteResponse: Decodable {

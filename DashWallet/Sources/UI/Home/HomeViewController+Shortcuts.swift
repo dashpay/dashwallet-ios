@@ -68,6 +68,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             showUphold()
         case .topper:
             showTopper()
+        case .dashDEX:
+            dashDEXAction()
         }
     }
 
@@ -238,6 +240,25 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         guard let url = URL(string: urlString) else { return }
         let safariViewController = SFSafariViewController.dw_controller(with: url)
         present(safariViewController, animated: true)
+    }
+
+    private func dashDEXAction() {
+        DSAuthenticationManager.sharedInstance().authenticate(
+            withPrompt: nil,
+            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+            alertIfLockout: true
+        ) { [weak self] authenticated, _, _ in
+            guard authenticated else { return }
+            self?.dashDEXActionAuthenticated()
+        }
+    }
+
+    private func dashDEXActionAuthenticated() {
+        let controller = SwapKitPortalViewController()
+        controller.hidesBottomBarWhenPushed = true
+        let navigationController = BaseNavigationController(rootViewController: controller)
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true)
     }
 
     private func presentControllerModallyInNavigationController(_ controller: UIViewController) {

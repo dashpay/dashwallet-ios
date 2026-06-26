@@ -32,7 +32,7 @@ struct MayaPortalView: View {
                 comment: "Maya Portal"
             ),
             onBack: onBack,
-            onConvertDash: onConvertDash
+            onSellDash: onConvertDash
         )
     }
 }
