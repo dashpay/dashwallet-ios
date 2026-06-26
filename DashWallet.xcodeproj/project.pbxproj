@@ -271,7 +271,6 @@
 		2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417623A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m */; };
 		2AB3417A23A929B6004E37A7 /* DWAdvancedSecurityModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */; };
 		2AB3417F23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */; };
-		2AB7C907234DB82700A56795 /* About.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB7C906234DB82700A56795 /* About.storyboard */; };
 		2AB7F7E72384676200C173AD /* DWWatchDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB7F7E62384676200C173AD /* DWWatchDataManager.swift */; };
 		2AB7F7E923846F6000C173AD /* DWMainInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB7F7E823846F6000C173AD /* DWMainInterfaceController.swift */; };
 		2AB7F7EB2384752C00C173AD /* DWTxInfoDisplayableInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB7F7EA2384752C00C173AD /* DWTxInfoDisplayableInterfaceController.swift */; };
@@ -702,8 +701,6 @@
 		754D02082D155564005CA466 /* CoinJoinTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754D02062D15554D005CA466 /* CoinJoinTransaction.swift */; };
 		754D020D2D1558EB005CA466 /* GroupedTransactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754D020C2D1558EA005CA466 /* GroupedTransactions.swift */; };
 		754D020E2D1558EB005CA466 /* GroupedTransactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754D020C2D1558EA005CA466 /* GroupedTransactions.swift */; };
-		755049A92C846299008FA7EB /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 755049A72C846299008FA7EB /* DWAboutViewController.m */; };
-		755049AA2C846299008FA7EB /* DWAboutViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 755049A72C846299008FA7EB /* DWAboutViewController.m */; };
 		755049AC2C846576008FA7EB /* MenuItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755049AB2C846576008FA7EB /* MenuItemModel.swift */; };
 		755049AD2C846576008FA7EB /* MenuItemModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755049AB2C846576008FA7EB /* MenuItemModel.swift */; };
 		7556EE412DF9876B004E8093 /* ExploreSyncBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7556EE402DF9876B004E8093 /* ExploreSyncBannerView.swift */; };
@@ -1721,7 +1718,6 @@
 		C9D2C92F2A320AA000D15901 /* ReceiveContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FAC29DC115A001BC549 /* ReceiveContentView.xib */; };
 		C9D2C9302A320AA000D15901 /* VerifySeedPhrase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8522DC9B7300C99324 /* VerifySeedPhrase.storyboard */; };
 		C9D2C9312A320AA000D15901 /* DWSecurityStatusView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */; };
-		C9D2C9322A320AA000D15901 /* About.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AB7C906234DB82700A56795 /* About.storyboard */; };
 		C9D2C9332A320AA000D15901 /* SetPin.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A44312922CCC1D4009BAF7F /* SetPin.storyboard */; };
 		C9D2C9342A320AA000D15901 /* Onboarding.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A913E7023A2667E006A2A59 /* Onboarding.storyboard */; };
 		C9D2C9352A320AA000D15901 /* OperationStatus.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1193FF3D2962F1BE004EA8D7 /* OperationStatus.storyboard */; };
@@ -1817,8 +1813,6 @@
 		FBF3F42D1E42B00C00C7248E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
 		FBF3F42F1E42B01E00C7248E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */; };
 		FBF3F4311E42B02800C7248E /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4301E42B02800C7248E /* ImageIO.framework */; };
-		FE5CA1E0000000000000A002 /* ScaleToFitWidth.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CA1E0000000000000A001 /* ScaleToFitWidth.swift */; };
-		FE5CA1E0000000000000A003 /* ScaleToFitWidth.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5CA1E0000000000000A001 /* ScaleToFitWidth.swift */; };
 		FF0000012DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */; };
 		FF0000022DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */; };
 		FF0000052DUMMYID001234567 /* PiggyCardsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000062DUMMYID001234567 /* PiggyCardsModels.swift */; };
@@ -2362,7 +2356,6 @@
 		2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAdvancedSecurityModelStub.m; sourceTree = "<group>"; };
 		2AB3417D23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseAdvancedSecurityModel.h; sourceTree = "<group>"; };
 		2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseAdvancedSecurityModel.m; sourceTree = "<group>"; };
-		2AB7C906234DB82700A56795 /* About.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = About.storyboard; sourceTree = "<group>"; };
 		2AB7F7E62384676200C173AD /* DWWatchDataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DWWatchDataManager.swift; sourceTree = "<group>"; };
 		2AB7F7E823846F6000C173AD /* DWMainInterfaceController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DWMainInterfaceController.swift; sourceTree = "<group>"; };
 		2AB7F7EA2384752C00C173AD /* DWTxInfoDisplayableInterfaceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWTxInfoDisplayableInterfaceController.swift; sourceTree = "<group>"; };
@@ -2759,8 +2752,6 @@
 		754C27D02CC3C82300BA7B9F /* JoinDashPayInfoDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayInfoDialog.swift; sourceTree = "<group>"; };
 		754D02062D15554D005CA466 /* CoinJoinTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinTransaction.swift; sourceTree = "<group>"; };
 		754D020C2D1558EA005CA466 /* GroupedTransactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupedTransactions.swift; sourceTree = "<group>"; };
-		755049A72C846299008FA7EB /* DWAboutViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWAboutViewController.m; sourceTree = "<group>"; };
-		755049A82C846299008FA7EB /* DWAboutViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAboutViewController.h; sourceTree = "<group>"; };
 		755049AB2C846576008FA7EB /* MenuItemModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItemModel.swift; sourceTree = "<group>"; };
 		7556EE402DF9876B004E8093 /* ExploreSyncBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreSyncBannerView.swift; sourceTree = "<group>"; };
 		755A22BC2B1385FD001F170D /* IconAttributedText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconAttributedText.swift; sourceTree = "<group>"; };
@@ -3467,7 +3458,6 @@
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		FBF3F4301E42B02800C7248E /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
-		FE5CA1E0000000000000A001 /* ScaleToFitWidth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScaleToFitWidth.swift; path = "DashWallet/Sources/UI/SwiftUI Components/Geometry Readers/ScaleToFitWidth.swift"; sourceTree = SOURCE_ROOT; };
 		FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/PiggyCardsConstants.swift; sourceTree = "<group>"; };
 		FF0000062DUMMYID001234567 /* PiggyCardsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsModels.swift; sourceTree = "<group>"; };
 		FF0000092DUMMYID001234567 /* BarcodeScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScanner.swift; sourceTree = "<group>"; };
@@ -3478,8 +3468,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		5151CDF22F929C2300F0A604 /* Geometry Readers */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Geometry Readers"; sourceTree = "<group>"; };
-		5151CDF62F929D3F00F0A604 /* ScrollViews */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ScrollViews; sourceTree = "<group>"; };
 		51DFA7FB2FA8EAF2001EDB3A /* Components */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Components; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -4777,11 +4765,8 @@
 		2A8F420A21BEE69E00858B91 /* About */ = {
 			isa = PBXGroup;
 			children = (
-				755049A82C846299008FA7EB /* DWAboutViewController.h */,
-				755049A72C846299008FA7EB /* DWAboutViewController.m */,
 				2A8F421E21BEFEEA00858B91 /* DWAboutModel.h */,
 				2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */,
-				2AB7C906234DB82700A56795 /* About.storyboard */,
 				516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */,
 				516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */,
 			);
@@ -5458,7 +5443,6 @@
 				472D13E2299E23B7006903F1 /* BalanceNotifier.swift */,
 				51BA2E9F2F0B2E0100A1B201 /* MayaSwapPendingGate.swift */,
 				11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */,
-				FE5CA1E0000000000000A001 /* ScaleToFitWidth.swift */,
 				09950CBE38F14286AC06BB78 /* DSAccount+SpentInputCheck.h */,
 				7BC16BFBFFFA4E488C09164D /* DSAccount+SpentInputCheck.m */,
 			);
@@ -6550,8 +6534,6 @@
 				516983A12FCAEDD600BA91A2 /* Illustrations */,
 				516983C02FCAEDD600BA91A2 /* Icons */,
 				514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */,
-				5151CDF62F929D3F00F0A604 /* ScrollViews */,
-				5151CDF22F929C2300F0A604 /* Geometry Readers */,
 				7581B19C2CE3509A00714007 /* Dialogs */,
 				75EBAA112BB99B6B004488E3 /* BottomSheet.swift */,
 				96CB7E093E994D2391D36DEC /* SelfSizingSheet.swift */,
@@ -8281,8 +8263,6 @@
 				BA913BF91BD57E4D005A7C0E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				5151CDF22F929C2300F0A604 /* Geometry Readers */,
-				5151CDF62F929D3F00F0A604 /* ScrollViews */,
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
 			);
 			name = dashwallet;
@@ -8385,8 +8365,6 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				5151CDF22F929C2300F0A604 /* Geometry Readers */,
-				5151CDF62F929D3F00F0A604 /* ScrollViews */,
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
 			);
 			name = dashpay;
@@ -8555,7 +8533,6 @@
 				C9F42FAD29DC115A001BC549 /* ReceiveContentView.xib in Resources */,
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
 				2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */,
-				2AB7C907234DB82700A56795 /* About.storyboard in Resources */,
 				2A44312A22CCC1D4009BAF7F /* SetPin.storyboard in Resources */,
 				2A913E7123A2667E006A2A59 /* Onboarding.storyboard in Resources */,
 				1193FF3E2962F1BE004EA8D7 /* OperationStatus.storyboard in Resources */,
@@ -8661,7 +8638,6 @@
 				758CE59D2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
 				753FDBEC2AECF4CC0005EEC3 /* VotingHeaderView.xib in Resources */,
 				C9D2C9312A320AA000D15901 /* DWSecurityStatusView.xib in Resources */,
-				C9D2C9322A320AA000D15901 /* About.storyboard in Resources */,
 				C9D2C9332A320AA000D15901 /* SetPin.storyboard in Resources */,
 				C9D2C9342A320AA000D15901 /* Onboarding.storyboard in Resources */,
 				C9D2C9352A320AA000D15901 /* OperationStatus.storyboard in Resources */,
@@ -9651,7 +9627,6 @@
 				75CED09E2ACFD0ED0095F10C /* CoinbaseDepositRequest.swift in Sources */,
 				C94D98212A4CC78F00F3BEE1 /* DashInputField.swift in Sources */,
 				2A8B9E6822FFE4CC00FF8653 /* DWPayOptionModel.m in Sources */,
-				755049A92C846299008FA7EB /* DWAboutViewController.m in Sources */,
 				0F6EDFC928C896BD000427E7 /* CoinbaseTokenResponse.swift in Sources */,
 				C9F42FB229DD5141001BC549 /* BackupInfoViewController.swift in Sources */,
 				2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */,
@@ -9708,7 +9683,6 @@
 				471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */,
 				51BA2EA02F0B2E0100A1B201 /* MayaSwapPendingGate.swift in Sources */,
 				11E47BAB28EB38510097CFA0 /* SendCoinsService.swift in Sources */,
-				FE5CA1E0000000000000A002 /* ScaleToFitWidth.swift in Sources */,
 				EC26E6EBECE04736903F77A2 /* DSAccount+SpentInputCheck.m in Sources */,
 				C94F5E8A29D3FCCF0034FD57 /* ShortcutAction.swift in Sources */,
 				2A0C69E0231556D6001B8C90 /* DWModalChevronView.m in Sources */,
@@ -10198,7 +10172,6 @@
 				C943B4BC2A40A54600AF23C5 /* DWRootContactsViewController.m in Sources */,
 				C943B4C32A40A54600AF23C5 /* DWTitleActionHeaderView.m in Sources */,
 				7531308E2B47EC910069C9B7 /* UpholdClient.swift in Sources */,
-				755049AA2C846299008FA7EB /* DWAboutViewController.m in Sources */,
 				751C05D92D3BB6AA00475E52 /* CurrentUserProfileModel.swift in Sources */,
 				C9D2C7502A320AA000D15901 /* ServiceOverviewViewController.swift in Sources */,
 				C9D2C7512A320AA000D15901 /* AccountListModel.swift in Sources */,
@@ -10657,7 +10630,6 @@
 				C943B5062A40A54600AF23C5 /* UICollectionView+DWDPItemDequeue.m in Sources */,
 				51BA2EA12F0B2E0100A1B201 /* MayaSwapPendingGate.swift in Sources */,
 				C9D2C8A02A320AA000D15901 /* SendCoinsService.swift in Sources */,
-				FE5CA1E0000000000000A003 /* ScaleToFitWidth.swift in Sources */,
 				C049F721C394463EB97CA8FF /* DSAccount+SpentInputCheck.m in Sources */,
 				C9D2C8A12A320AA000D15901 /* ShortcutAction.swift in Sources */,
 				C956AF112A5B592E002FAB75 /* UIButton+Dash.swift in Sources */,
