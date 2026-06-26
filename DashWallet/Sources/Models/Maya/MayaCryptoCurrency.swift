@@ -30,10 +30,6 @@ struct MayaCryptoCurrency: Identifiable, Hashable {
     let mayaAsset: String
     /// Maya chain identifier used for local address validation (e.g. `"BTC"`, `"ARB"`).
     let chain: String
-    /// Name of the local image asset. `"convert.crypto"` is the generic placeholder,
-    /// used when no dedicated local icon exists — `MayaCoinIconView` falls back to
-    /// remote loading in that case.
-    let iconAssetName: String
 
     // MARK: - Supported Coins
 
@@ -177,143 +173,95 @@ struct MayaCryptoCurrency: Identifiable, Hashable {
     /// DASH is excluded — it is always the source currency.
     static let supportedCoins: [MayaCryptoCurrency] = [
         // BTC
-        MayaCryptoCurrency(
-            id: "btc", code: "BTC", name: "Bitcoin", mayaAsset: "BTC.BTC",
-            chain: "BTC", iconAssetName: "maya.coin.btc"
-        ),
+        MayaCryptoCurrency(id: "btc", code: "BTC", name: "Bitcoin", mayaAsset: "BTC.BTC", chain: "BTC"),
 
         // ADA
-        MayaCryptoCurrency(
-            id: "ada", code: "ADA", name: "Cardano", mayaAsset: "ADA.ADA",
-            chain: "ADA", iconAssetName: "convert.crypto"
-        ),
+        MayaCryptoCurrency(id: "ada", code: "ADA", name: "Cardano", mayaAsset: "ADA.ADA", chain: "ADA"),
 
         // ETH chain
-        MayaCryptoCurrency(
-            id: "eth", code: "ETH", name: "Ethereum", mayaAsset: "ETH.ETH",
-            chain: "ETH", iconAssetName: "maya.coin.eth"
-        ),
+        MayaCryptoCurrency(id: "eth", code: "ETH", name: "Ethereum", mayaAsset: "ETH.ETH", chain: "ETH"),
         MayaCryptoCurrency(
             id: "moca", code: "MOCA", name: "Mocaverse",
-            mayaAsset: "ETH.MOCA-0X53312F85BBA24C8CB99CFFC13BF82420157230D3",
-            chain: "ETH", iconAssetName: "convert.crypto"
+            mayaAsset: "ETH.MOCA-0X53312F85BBA24C8CB99CFFC13BF82420157230D3", chain: "ETH"
         ),
         MayaCryptoCurrency(
             id: "pepe", code: "PEPE", name: "PEPE",
-            mayaAsset: "ETH.PEPE-0X6982508145454CE325DDBE47A25D4EC3D2311933",
-            chain: "ETH", iconAssetName: "maya.coin.pepe"
+            mayaAsset: "ETH.PEPE-0X6982508145454CE325DDBE47A25D4EC3D2311933", chain: "ETH"
         ),
         MayaCryptoCurrency(
             id: "usdc", code: "USDC", name: "USD Coin",
-            mayaAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
-            chain: "ETH", iconAssetName: "maya.coin.usdc"
+            mayaAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48", chain: "ETH"
         ),
         MayaCryptoCurrency(
             id: "usdt", code: "USDT", name: "Tether",
-            mayaAsset: "ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7",
-            chain: "ETH", iconAssetName: "maya.coin.usdt"
+            mayaAsset: "ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7", chain: "ETH"
         ),
         MayaCryptoCurrency(
             id: "wsteth", code: "WSTETH", name: "Wrapped stETH",
-            mayaAsset: "ETH.WSTETH-0X7F39C581F595B53C5CB19BD0B3F8DA6C935E2CA0",
-            chain: "ETH", iconAssetName: "maya.coin.wsteth"
+            mayaAsset: "ETH.WSTETH-0X7F39C581F595B53C5CB19BD0B3F8DA6C935E2CA0", chain: "ETH"
         ),
 
         // ARB (Arbitrum One)
         MayaCryptoCurrency(
             id: "arb", code: "ARB", name: "Arbitrum",
-            mayaAsset: "ARB.ARB-0X912CE59144191C1204E64559FE8253A0E49E6548",
-            chain: "ARB", iconAssetName: "maya.coin.arb"
+            mayaAsset: "ARB.ARB-0X912CE59144191C1204E64559FE8253A0E49E6548", chain: "ARB"
         ),
         MayaCryptoCurrency(
-            id: "eth_arb", code: "ETH", name: "Ethereum (Arbitrum)", mayaAsset: "ARB.ETH",
-            chain: "ARB", iconAssetName: "maya.coin.eth"
+            id: "eth_arb", code: "ETH", name: "Ethereum (Arbitrum)", mayaAsset: "ARB.ETH", chain: "ARB"
         ),
         MayaCryptoCurrency(
             id: "dai", code: "DAI", name: "Dai",
-            mayaAsset: "ARB.DAI-0XDA10009CBD5D07DD0CECC66161FC93D7C9000DA1",
-            chain: "ARB", iconAssetName: "maya.coin.dai"
+            mayaAsset: "ARB.DAI-0XDA10009CBD5D07DD0CECC66161FC93D7C9000DA1", chain: "ARB"
         ),
         MayaCryptoCurrency(
             id: "gld", code: "GLD", name: "Goldario",
-            mayaAsset: "ARB.GLD-0XAFD091F140C21770F4E5D53D26B2859AE97555AA",
-            chain: "ARB", iconAssetName: "maya.coin.gld"
+            mayaAsset: "ARB.GLD-0XAFD091F140C21770F4E5D53D26B2859AE97555AA", chain: "ARB"
         ),
         MayaCryptoCurrency(
             id: "leo", code: "LEO", name: "LEO",
-            mayaAsset: "ARB.LEO-0X93864D81175095DD93360FFA2A529B8642F76A6E",
-            chain: "ARB", iconAssetName: "maya.coin.leo"
+            mayaAsset: "ARB.LEO-0X93864D81175095DD93360FFA2A529B8642F76A6E", chain: "ARB"
         ),
         MayaCryptoCurrency(
             id: "link", code: "LINK", name: "ChainLink",
-            mayaAsset: "ARB.LINK-0XF97F4DF75117A78C1A5A0DBB814AF92458539FB4",
-            chain: "ARB", iconAssetName: "maya.coin.link"
+            mayaAsset: "ARB.LINK-0XF97F4DF75117A78C1A5A0DBB814AF92458539FB4", chain: "ARB"
         ),
         MayaCryptoCurrency(
             id: "pepe_arb", code: "PEPE", name: "PEPE (Arbitrum)",
-            mayaAsset: "ARB.PEPE-0X25D887CE7A35172C62FEBFD67A1856F20FAEBB00",
-            chain: "ARB", iconAssetName: "maya.coin.pepe"
+            mayaAsset: "ARB.PEPE-0X25D887CE7A35172C62FEBFD67A1856F20FAEBB00", chain: "ARB"
         ),
         MayaCryptoCurrency(
             id: "tgt", code: "TGT", name: "THORWallet",
-            mayaAsset: "ARB.TGT-0X429FED88F10285E61B12BDF00848315FBDFCC341",
-            chain: "ARB", iconAssetName: "maya.coin.tgt"
+            mayaAsset: "ARB.TGT-0X429FED88F10285E61B12BDF00848315FBDFCC341", chain: "ARB"
         ),
         MayaCryptoCurrency(
             id: "usdc_arb", code: "USDC", name: "USD Coin (Arbitrum)",
-            mayaAsset: "ARB.USDC-0XAF88D065E77C8CC2239327C5EDB3A432268E5831",
-            chain: "ARB", iconAssetName: "maya.coin.usdc"
+            mayaAsset: "ARB.USDC-0XAF88D065E77C8CC2239327C5EDB3A432268E5831", chain: "ARB"
         ),
         MayaCryptoCurrency(
             id: "usdt_arb", code: "USDT", name: "Tether",
-            mayaAsset: "ARB.USDT-0XFD086BC7CD5C481DCC9C85EBE478A1C0B69FCBB9",
-            chain: "ARB", iconAssetName: "maya.coin.usdt"
+            mayaAsset: "ARB.USDT-0XFD086BC7CD5C481DCC9C85EBE478A1C0B69FCBB9", chain: "ARB"
         ),
         MayaCryptoCurrency(
             id: "wbtc", code: "WBTC", name: "Wrapped Bitcoin",
-            mayaAsset: "ARB.WBTC-0X2F2A2543B76A4166549F7AAB2E75BEF0AEFC5B0F",
-            chain: "ARB", iconAssetName: "maya.coin.wbtc"
+            mayaAsset: "ARB.WBTC-0X2F2A2543B76A4166549F7AAB2E75BEF0AEFC5B0F", chain: "ARB"
         ),
         MayaCryptoCurrency(
             id: "wsteth_arb", code: "WSTETH", name: "Wrapped stETH",
-            mayaAsset: "ARB.WSTETH-0X5979D7B546E38E414F7E9822514BE443A4800529",
-            chain: "ARB", iconAssetName: "maya.coin.wsteth"
+            mayaAsset: "ARB.WSTETH-0X5979D7B546E38E414F7E9822514BE443A4800529", chain: "ARB"
         ),
         MayaCryptoCurrency(
             id: "yum", code: "YUM", name: "YUM",
-            mayaAsset: "ARB.YUM-0X9F41B34F42058A7B74672055A5FAE22C4B113FD1",
-            chain: "ARB", iconAssetName: "convert.crypto"
+            mayaAsset: "ARB.YUM-0X9F41B34F42058A7B74672055A5FAE22C4B113FD1", chain: "ARB"
         ),
 
         // Other chains
-        MayaCryptoCurrency(
-            id: "kuji", code: "KUJI", name: "Kujira", mayaAsset: "KUJI.KUJI",
-            chain: "KUJI", iconAssetName: "maya.coin.kuji"
-        ),
-        MayaCryptoCurrency(
-            id: "rune", code: "RUNE", name: "Rune", mayaAsset: "THOR.RUNE",
-            chain: "THOR", iconAssetName: "maya.coin.rune"
-        ),
-        MayaCryptoCurrency(
-            id: "sol", code: "SOL", name: "Solana", mayaAsset: "SOL.SOL",
-            chain: "SOL", iconAssetName: "convert.crypto"
-        ),
-        MayaCryptoCurrency(
-            id: "near", code: "NEAR", name: "NEAR Protocol", mayaAsset: "NEAR.NEAR",
-            chain: "NEAR", iconAssetName: "convert.crypto"
-        ),
-        MayaCryptoCurrency(
-            id: "trx", code: "TRX", name: "Tron", mayaAsset: "TRON.TRX",
-            chain: "TRON", iconAssetName: "convert.crypto"
-        ),
-        MayaCryptoCurrency(
-            id: "zec", code: "ZEC", name: "Zcash", mayaAsset: "ZEC.ZEC",
-            chain: "ZEC", iconAssetName: "convert.crypto"
-        ),
-        MayaCryptoCurrency(
-            id: "xrd", code: "XRD", name: "Radix", mayaAsset: "XRD.XRD",
-            chain: "XRD", iconAssetName: "convert.crypto"
-        ),
+        MayaCryptoCurrency(id: "kuji", code: "KUJI", name: "Kujira", mayaAsset: "KUJI.KUJI", chain: "KUJI"),
+        MayaCryptoCurrency(id: "rune", code: "RUNE", name: "Rune", mayaAsset: "THOR.RUNE", chain: "THOR"),
+        MayaCryptoCurrency(id: "sol", code: "SOL", name: "Solana", mayaAsset: "SOL.SOL", chain: "SOL"),
+        MayaCryptoCurrency(id: "near", code: "NEAR", name: "NEAR Protocol", mayaAsset: "NEAR.NEAR", chain: "NEAR"),
+        MayaCryptoCurrency(id: "trx", code: "TRX", name: "Tron", mayaAsset: "TRON.TRX", chain: "TRON"),
+        MayaCryptoCurrency(id: "zec", code: "ZEC", name: "Zcash", mayaAsset: "ZEC.ZEC", chain: "ZEC"),
+        MayaCryptoCurrency(id: "xrd", code: "XRD", name: "Radix", mayaAsset: "XRD.XRD", chain: "XRD"),
     ]
 
     // MARK: - Factory
@@ -350,8 +298,7 @@ struct MayaCryptoCurrency: Identifiable, Hashable {
             code: code,
             name: synthesizedName,
             mayaAsset: mayaAsset,
-            chain: chain,
-            iconAssetName: "convert.crypto"
+            chain: chain
         )
     }
 

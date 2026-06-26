@@ -21,19 +21,17 @@ import UIKit
 
 /// Loads remote coin icons with a two-level cache: memory (`NSCache`) + disk (`URLCache`).
 ///
-/// The primary remote source is the SwapKit token-list CDN keyed by the full asset identifier
-/// (for example `ETH.USDC-...`), which avoids collisions between multi-chain tokens sharing the
-/// same ticker. A secondary fallback uses the jsupa/crypto-icons repository keyed by ticker code.
-/// Disk-cached entries survive app restarts and are served without re-downloading until the OS
-/// purges the cache.
+/// The remote source is the SwapKit token-list CDN, keyed by `chain.symbol` (the identifier
+/// truncated at the first `-`). For example `ARB.GLD-0X…` → `arb.gld.png`, and
+/// `BTC.BTC` → `btc.btc.png`. Disk-cached entries survive app restarts and are served
+/// without re-downloading until the OS purges the cache.
 ///
 /// This actor is responsible only for remote loading and caching.
-/// Local asset fallback is handled by `MayaCoinIconView`.
+/// The `convert.crypto` placeholder is shown by `SwapCoinIconView` while loading or on failure.
 actor MayaCoinIconLoader {
     static let shared = MayaCoinIconLoader()
 
     private static let swapKitCDNBaseURL = "https://storage.googleapis.com/token-list-swapkit/images/"
-    private static let jsupaBaseURL = "https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/"
 
     private let memoryCache = NSCache<NSString, UIImage>()
     private let session: URLSession
@@ -53,39 +51,41 @@ actor MayaCoinIconLoader {
         memoryCache.countLimit = 200
     }
 
-    /// Returns the icon for a full SwapKit/Maya asset identifier, or `nil` if unavailable.
+    /// Returns the icon for a SwapKit/Maya asset identifier, or `nil` if unavailable.
+    /// The CDN key is derived by truncating the identifier at the first `-`, so contract-suffixed
+    /// tokens like `ARB.GLD-0X…` correctly resolve to `arb.gld.png`.
     /// Memory cache is checked first; on miss the image is downloaded and cached.
     func loadSwapKitIcon(for identifier: String) async -> UIImage? {
-        guard let url = URL(string: Self.swapKitCDNBaseURL + "\(identifier.lowercased()).png") else {
+        let cdnKey = identifier.split(separator: "-", maxSplits: 1).first.map(String.init) ?? identifier
+        let cdnKeyLowercased = cdnKey.lowercased()
+        guard let url = URL(string: Self.swapKitCDNBaseURL + "\(cdnKeyLowercased).png") else {
             return nil
         }
-        return await loadIcon(cacheKey: "swapkit:\(identifier.lowercased())", from: url)
-    }
-
-    /// Returns the jsupa fallback icon for `code`, or `nil` if unavailable.
-    func loadJsupaIcon(for code: String) async -> UIImage? {
-        guard let url = URL(string: Self.jsupaBaseURL + "\(code.lowercased()).png") else {
-            return nil
-        }
-        return await loadIcon(cacheKey: "jsupa:\(code.lowercased())", from: url)
+        return await loadIcon(cacheKey: "swapkit:\(cdnKeyLowercased)", from: url)
     }
 
     private func loadIcon(cacheKey: String, from url: URL) async -> UIImage? {
         let key = cacheKey as NSString
 
         if let cached = memoryCache.object(forKey: key) {
+            DSLogger.log("🧭 DashDEX icon TEMP: cache hit [\(cacheKey)] \(url.absoluteString)")
             return cached
         }
 
         do {
+            DSLogger.log("🧭 DashDEX icon TEMP: GET \(url.absoluteString)")
             let (data, response) = try await session.data(from: url)
-            guard (response as? HTTPURLResponse)?.statusCode == 200,
+            let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+            guard status == 200,
                   let image = UIImage(data: data) else {
+                DSLogger.log("🧭 DashDEX icon TEMP: MISS status=\(status) bytes=\(data.count) \(url.absoluteString)")
                 return nil
             }
+            DSLogger.log("🧭 DashDEX icon TEMP: OK status=200 bytes=\(data.count) \(url.absoluteString)")
             memoryCache.setObject(image, forKey: key)
             return image
         } catch {
+            DSLogger.log("🧭 DashDEX icon TEMP: ERROR \(error.localizedDescription) \(url.absoluteString)")
             return nil
         }
     }

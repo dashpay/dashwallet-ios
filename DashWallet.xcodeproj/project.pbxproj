@@ -926,6 +926,10 @@
 		AA0020042FA0000000000004 /* SwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020022FA0000000000002 /* SwapProvider.swift */; };
 		AA0020062FA0000000000006 /* SwapBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020052FA0000000000005 /* SwapBackend.swift */; };
 		AA0020072FA0000000000007 /* SwapBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020052FA0000000000005 /* SwapBackend.swift */; };
+		AA0020342FA0000000000034 /* SwapDirection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020312FA0000000000031 /* SwapDirection.swift */; };
+		AA0020352FA0000000000035 /* SwapDirection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020312FA0000000000031 /* SwapDirection.swift */; };
+		AA0020362FA0000000000036 /* RouteProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020372FA0000000000037 /* RouteProvider.swift */; };
+		AA0020382FA0000000000038 /* RouteProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020372FA0000000000037 /* RouteProvider.swift */; };
 		AA0020092FA0000000000009 /* MayaSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020082FA0000000000008 /* MayaSwapProvider.swift */; };
 		AA00200B2FA000000000000B /* MayaSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020082FA0000000000008 /* MayaSwapProvider.swift */; };
 		AA00200E2FA000000000000E /* SwapFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00200D2FA000000000000D /* SwapFlowCoordinator.swift */; };
@@ -2913,6 +2917,8 @@
 		AA0020012FA0000000000013 /* SwapExecutionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapExecutionData.swift; sourceTree = "<group>"; };
 		AA0020022FA0000000000002 /* SwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapProvider.swift; sourceTree = "<group>"; };
 		AA0020052FA0000000000005 /* SwapBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapBackend.swift; sourceTree = "<group>"; };
+		AA0020312FA0000000000031 /* SwapDirection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapDirection.swift; sourceTree = "<group>"; };
+		AA0020372FA0000000000037 /* RouteProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteProvider.swift; sourceTree = "<group>"; };
 		AA0020082FA0000000000008 /* MayaSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaSwapProvider.swift; sourceTree = "<group>"; };
 		AA00200D2FA000000000000D /* SwapFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFlowCoordinator.swift; sourceTree = "<group>"; };
 		AA0020102FA0000000000010 /* SwapPortalScaffold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPortalScaffold.swift; sourceTree = "<group>"; };
@@ -6945,6 +6951,8 @@
 				AA0020012FA0000000000013 /* SwapExecutionData.swift */,
 				AA0020022FA0000000000002 /* SwapProvider.swift */,
 				AA0020052FA0000000000005 /* SwapBackend.swift */,
+				AA0020312FA0000000000031 /* SwapDirection.swift */,
+				AA0020372FA0000000000037 /* RouteProvider.swift */,
 			);
 			path = Swap;
 			sourceTree = "<group>";
@@ -9797,6 +9805,8 @@
 				AA0020092FA0000000000009 /* MayaSwapProvider.swift in Sources */,
 				AA0020032FA0000000000003 /* SwapProvider.swift in Sources */,
 				AA0020062FA0000000000006 /* SwapBackend.swift in Sources */,
+				AA0020342FA0000000000034 /* SwapDirection.swift in Sources */,
+				AA0020362FA0000000000036 /* RouteProvider.swift in Sources */,
 				AA00200E2FA000000000000E /* SwapFlowCoordinator.swift in Sources */,
 				AA0020112FA0000000000011 /* SwapPortalScaffold.swift in Sources */,
 				AA0010022CA0B10001A0B102 /* SwapKitEndpoint.swift in Sources */,
@@ -10772,6 +10782,8 @@
 				AA00200B2FA000000000000B /* MayaSwapProvider.swift in Sources */,
 				AA0020042FA0000000000004 /* SwapProvider.swift in Sources */,
 				AA0020072FA0000000000007 /* SwapBackend.swift in Sources */,
+				AA0020352FA0000000000035 /* SwapDirection.swift in Sources */,
+				AA0020382FA0000000000038 /* RouteProvider.swift in Sources */,
 				AA00200F2FA000000000000F /* SwapFlowCoordinator.swift in Sources */,
 				AA0020122FA0000000000012 /* SwapPortalScaffold.swift in Sources */,
 				AA0010032CA0B10001A0B103 /* SwapKitEndpoint.swift in Sources */,

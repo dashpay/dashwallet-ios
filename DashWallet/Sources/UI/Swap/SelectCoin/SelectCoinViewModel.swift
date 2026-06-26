@@ -28,14 +28,19 @@ struct CoinDisplayItem: Identifiable {
     let displayName: String
     let fiatPrice: String?
     let isHalted: Bool
+    /// Routing network label shown in the coin row (e.g. "Maya", "NEAR", "Multiple networks").
+    /// Nil for non-SwapKit providers that don't have multi-provider routing.
+    let network: String?
 }
 
 @MainActor
 class SelectCoinViewModel: ObservableObject {
     private let swapProvider: SwapProvider
+    private let direction: SwapDirection
 
-    init(swapProvider: SwapProvider = MayaSwapProvider()) {
+    init(swapProvider: SwapProvider = MayaSwapProvider(), direction: SwapDirection = .sell) {
         self.swapProvider = swapProvider
+        self.direction = direction
     }
     // MARK: - Published State
 
@@ -80,17 +85,21 @@ class SelectCoinViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            async let poolsRequest = swapProvider.fetchPools()
+            async let poolsRequest = swapProvider.fetchPools(direction: direction)
             async let inboundRequest = swapProvider.fetchInboundAddresses()
             let (pools, inboundAddresses) = try await (poolsRequest, inboundRequest)
 
             let fiatCurrency = App.fiatCurrency
             let formatter = makePriceFormatter(for: fiatCurrency)
+            let networkLabels = await swapProvider.networkLabels(for: pools)
+            let haltedAssets = await swapProvider.haltedAssets(from: inboundAddresses, pools: pools)
             let items = makeCoinItems(
                 pools: pools,
                 inboundAddresses: inboundAddresses,
                 fiatCurrency: fiatCurrency,
-                formatter: formatter
+                formatter: formatter,
+                networkLabels: networkLabels,
+                haltedAssets: haltedAssets
             )
 
             let disambiguated = disambiguateDisplayNames(items)
@@ -108,7 +117,9 @@ class SelectCoinViewModel: ObservableObject {
         pools: [MayaPool],
         inboundAddresses: [MayaInboundAddress],
         fiatCurrency: String,
-        formatter: NumberFormatter
+        formatter: NumberFormatter,
+        networkLabels: [String: String] = [:],
+        haltedAssets: Set<String> = []
     ) -> [CoinDisplayItem] {
         let inboundChains = Set(inboundAddresses.map { $0.chain.uppercased() })
         let haltedChains = Set(inboundAddresses.filter { $0.halted }.map { $0.chain.uppercased() })
@@ -119,12 +130,16 @@ class SelectCoinViewModel: ObservableObject {
             guard let coin = MayaCryptoCurrency.knownCoin(for: pool.asset) else { return nil }
             guard inboundChains.contains(coin.chain.uppercased()) else { return nil }
 
+            let isHalted = haltedAssets.contains(pool.asset.uppercased())
+                || isCoinHalted(coin, haltedChains: haltedChains)
+
             return CoinDisplayItem(
                 id: coin.id,
                 coin: coin,
-                displayName: coin.name,   // API-override point: swap in pool.name when available
+                displayName: coin.name,
                 fiatPrice: priceForCoin(pool, fiatCurrency: fiatCurrency, formatter: formatter),
-                isHalted: isCoinHalted(coin, haltedChains: haltedChains)
+                isHalted: isHalted,
+                network: networkLabels[pool.asset.uppercased()]
             )
         }
     }
@@ -157,7 +172,8 @@ class SelectCoinViewModel: ObservableObject {
             return CoinDisplayItem(
                 id: item.id, coin: item.coin,
                 displayName: qualifiedName,
-                fiatPrice: item.fiatPrice, isHalted: item.isHalted
+                fiatPrice: item.fiatPrice, isHalted: item.isHalted,
+                network: item.network
             )
         }
     }

@@ -40,6 +40,22 @@ final class SwapKitSwapProvider: SwapProvider {
     private var usdPriceCache: [String: Double] = [:]
     private let cacheMaxAge: TimeInterval = 60
 
+    // MARK: - Classification Cache (Prompt 03)
+
+    /// Maya-only asset identifiers (uppercased): routed by MAYACHAIN but not by NEAR.
+    private var mayaOnlyAssets: Set<String> = []
+    /// NEAR-only asset identifiers (uppercased): routed by NEAR but not by MAYACHAIN.
+    private var nearOnlyAssets: Set<String> = []
+    /// "both" identifiers: routed by both MAYACHAIN and NEAR.
+    private var bothAssets: Set<String> = []
+    /// Whether the classification has been attempted for this session (built or failed).
+    private var classificationBuilt = false
+    /// Whether the last classification attempt succeeded and produced a non-empty split.
+    /// Only true when `buildClassification()` ran without errors AND emitted non-empty sets.
+    /// The Buy filter is gated on this — not on `classificationBuilt` — so a failed or
+    /// empty classification causes Buy to surface an error rather than silently showing everything.
+    private var classificationUsable = false
+
     private var isCacheValid: Bool {
         guard let cachedAt = poolsCachedAt else { return false }
         return Date().timeIntervalSince(cachedAt) < cacheMaxAge
@@ -48,8 +64,13 @@ final class SwapKitSwapProvider: SwapProvider {
     // MARK: - SwapProvider
 
     func fetchPools() async throws -> [MayaPool] {
+        try await fetchPools(direction: .sell)
+    }
+
+    func fetchPools(direction: SwapDirection) async throws -> [MayaPool] {
         if isCacheValid && !cachedPools.isEmpty {
-            return cachedPools
+            if !classificationBuilt { await buildClassification() }
+            return try await filteredPools(cachedPools, for: direction)
         }
 
         // 1. Discover reachable buy-assets from DASH.
@@ -86,7 +107,68 @@ final class SwapKitSwapProvider: SwapProvider {
 
         cachedPools = pools
         poolsCachedAt = Date()
-        return pools
+
+        // 5. Build Maya/NEAR classification alongside the pool fetch.
+        await buildClassification()
+
+        return try await filteredPools(pools, for: direction)
+    }
+
+    /// Filters pools by direction.
+    /// Buy is **fail-closed**: if classification is not usable after one retry, throws an error
+    /// so `SelectCoinViewModel` shows its error/retry state rather than an unfiltered list.
+    /// Sell is always unaffected — all pools are returned regardless of classification state.
+    private func filteredPools(_ pools: [MayaPool], for direction: SwapDirection) async throws -> [MayaPool] {
+        guard direction == .buy else { return pools }
+
+        if !classificationUsable {
+            await buildClassification()
+        }
+
+        guard classificationUsable else {
+            throw NSError(
+                domain: "SwapKit",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(
+                    "Could not load Buy Dash options — please check your connection and try again",
+                    comment: "SwapKit"
+                )]
+            )
+        }
+
+        return pools.filter { !mayaOnlyAssets.contains($0.asset.uppercased()) }
+    }
+
+    func networkLabels(for pools: [MayaPool]) async -> [String: String] {
+        if !classificationBuilt { await buildClassification() }
+        var result: [String: String] = [:]
+        for pool in pools {
+            let key = pool.asset.uppercased()
+            if mayaOnlyAssets.contains(key) {
+                result[key] = RouteProvider.maya.shortLabel
+            } else if nearOnlyAssets.contains(key) {
+                result[key] = RouteProvider.near.shortLabel
+            } else if bothAssets.contains(key) {
+                result[key] = RouteProvider.multiple.shortLabel
+            }
+        }
+        return result
+    }
+
+    func haltedAssets(from inboundAddresses: [MayaInboundAddress], pools: [MayaPool]) async -> Set<String> {
+        if !classificationBuilt { await buildClassification() }
+        let haltedChains = Set(inboundAddresses.filter { $0.halted }.map { $0.chain.uppercased() })
+        guard !haltedChains.isEmpty else { return [] }
+        // Only mayaOnly assets are halted when the Maya chain is halted.
+        // Assets routed via NEAR ("both" or "nearOnly") remain available.
+        var halted = Set<String>()
+        for asset in mayaOnlyAssets {
+            let chain = asset.components(separatedBy: ".").first ?? ""
+            if haltedChains.contains(chain) {
+                halted.insert(asset)
+            }
+        }
+        return halted
     }
 
     func fetchInboundAddresses() async throws -> [MayaInboundAddress] {
@@ -259,6 +341,46 @@ final class SwapKitSwapProvider: SwapProvider {
         // change intentionally does not guess a `depositAddress` query form without proof.
         // Hide the link until a working hosted tracker format is confirmed.
         nil
+    }
+
+    // MARK: - Private: Classification
+
+    /// Builds Maya/NEAR asset classification.
+    /// `classificationBuilt` is set to true after the first attempt (success or failure) to
+    /// prevent redundant retries in Sell/label flows. `classificationUsable` is only set true
+    /// when the fetch succeeded AND produced non-empty sets — the Buy filter is gated on this.
+    private func buildClassification() async {
+        classificationBuilt = true
+        do {
+            async let mayaRequest = SwapKitAPIService.shared.tokens(provider: SwapKitConstants.providerMaya)
+            async let nearRequest = SwapKitAPIService.shared.tokens(provider: SwapKitConstants.providerNear)
+            let (mayaTokens, nearTokens) = (try await mayaRequest, try await nearRequest)
+
+            let mayaIds = Set(mayaTokens.map { $0.identifier.uppercased() })
+            let nearIds = Set(nearTokens.map { $0.identifier.uppercased() })
+
+            let newMayaOnly = mayaIds.subtracting(nearIds)
+            let newNearOnly = nearIds.subtracting(mayaIds)
+            let newBoth = mayaIds.intersection(nearIds)
+
+            // Only trust classification when it produces a non-trivial split.
+            // An empty result (network error, bad decode, empty response) is indistinguishable
+            // from "everything is both", which would wrongly pass all coins through Buy filter.
+            guard !mayaIds.isEmpty || !nearIds.isEmpty else {
+                DSLogger.log("SwapKit: classification produced empty token lists — marking unusable")
+                classificationUsable = false
+                return
+            }
+
+            mayaOnlyAssets = newMayaOnly
+            nearOnlyAssets = newNearOnly
+            bothAssets = newBoth
+            classificationUsable = true
+            DSLogger.log("SwapKit: classification built — mayaOnly=\(mayaOnlyAssets.count) nearOnly=\(nearOnlyAssets.count) both=\(bothAssets.count)")
+        } catch {
+            classificationUsable = false
+            DSLogger.log("SwapKit: classification fetch failed: \(error) — Buy will show error state")
+        }
     }
 
     // MARK: - Private: Route Selection

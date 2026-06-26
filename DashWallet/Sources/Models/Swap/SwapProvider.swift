@@ -75,6 +75,22 @@ extension SwapProvider {
     func fetchIndicativeQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
         try await fetchQuote(dashSatoshis: dashSatoshis, toAsset: toAsset, destination: destination)
     }
+
+    /// Direction-aware pool fetch. Defaults to `.sell` (all pools) for providers that
+    /// don't distinguish directions (Maya).
+    func fetchPools(direction: SwapDirection) async throws -> [MayaPool] {
+        try await fetchPools()
+    }
+
+    /// Returns a map of asset identifier (uppercased) → routing network label
+    /// for display in the coin picker ("Maya", "NEAR", "Multiple networks").
+    /// Default: empty — non-SwapKit providers don't have multi-provider routing.
+    func networkLabels(for pools: [MayaPool]) async -> [String: String] { [:] }
+
+    /// Returns the set of asset identifiers (uppercased) that are halted due to
+    /// provider-specific halt logic (e.g. Maya chain halt for mayaOnly assets).
+    /// Default: empty set (use chain-based halt from inbound addresses).
+    func haltedAssets(from inboundAddresses: [MayaInboundAddress], pools: [MayaPool]) async -> Set<String> { [] }
 }
 
 // MARK: - Protocol
@@ -93,6 +109,17 @@ protocol SwapProvider {
     func fetchPools() async throws -> [MayaPool]
     func fetchInboundAddresses() async throws -> [MayaInboundAddress]
 
+    /// Direction-aware pool fetch. MUST be a protocol requirement (not extension-only) so
+    /// that a `SwapProvider`-typed call dynamically dispatches to the concrete override
+    /// (e.g. SwapKit's Buy filtering) instead of statically using the extension default.
+    func fetchPools(direction: SwapDirection) async throws -> [MayaPool]
+
+    /// Routing network labels per asset. MUST be a protocol requirement for dynamic dispatch.
+    func networkLabels(for pools: [MayaPool]) async -> [String: String]
+
+    /// Provider-specific halted assets. MUST be a protocol requirement for dynamic dispatch.
+    func haltedAssets(from inboundAddresses: [MayaInboundAddress], pools: [MayaPool]) async -> Set<String>
+
     /// Returns `nil` if the destination address is valid, otherwise an error string.
     func validateAddress(destination: String, toAsset: String) async -> String?
 
@@ -107,4 +134,8 @@ protocol SwapProvider {
     /// Maya: queries by Dash txid via `/tx/{txid}`.
     /// SwapKit: queries via `/track`.
     func fetchSwapStatus(txid: String, depositAddress: String?) async throws -> SwapStatusResult
+
+    /// Optional hosted-tracker deep link. MUST be a protocol requirement for dynamic dispatch
+    /// (SwapKit overrides it; otherwise the extension default `nil` would always win).
+    func trackerURL(for txid: String, depositAddress: String?) -> URL?
 }
