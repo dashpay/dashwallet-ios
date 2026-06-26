@@ -85,4 +85,27 @@ class AccountRepository {
 
         return items
     }
+
+    /// Fetch all crypto accounts regardless of balance.
+    /// Used by Maya to find accounts for currencies with zero balance.
+    func allIncludingEmpty() async throws -> [CBAccount] {
+        var items: [CBAccount] = []
+        items.reserveCapacity(300)
+
+        var endpoint: CoinbaseEndpoint? = .accounts
+        while endpoint != nil {
+            let response: BasePaginationResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(endpoint!)
+            items += response.data
+                .filter { $0.currency.type == .crypto }
+                .map { .init(info: $0, authInterop: authInterop) }
+
+            if let nextUri = response.pagination.nextURI, !nextUri.isEmpty {
+                endpoint = .path(nextUri)
+            } else {
+                endpoint = nil
+            }
+        }
+
+        return items
+    }
 }

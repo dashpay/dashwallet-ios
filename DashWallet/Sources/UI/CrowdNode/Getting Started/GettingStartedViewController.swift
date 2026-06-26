@@ -122,6 +122,13 @@ extension GettingStartedViewController {
         linkAccountLabel.text = NSLocalizedString("Link Existing Account", comment: "CrowdNode")
 
         refreshCreateAccountButton()
+
+        newAccountButton.isHidden = true
+        linkAccountButton.isHidden = true
+        subtitleLabel.text = NSLocalizedString(
+            "CrowdNode sign-up and deposits are temporarily unavailable.",
+            comment: "CrowdNode"
+        )
     }
 
     private func configureObservers() {

@@ -46,6 +46,12 @@ class AccountService {
         try await accountRepository.all()
     }
 
+    /// Returns all crypto accounts regardless of balance.
+    /// Used by Maya to find accounts for currencies with zero balance.
+    public func allAccountsIncludingEmpty() async throws -> [CBAccount] {
+        try await accountRepository.allIncludingEmpty()
+    }
+
     public func retrieveAddress(for accountName: String) async throws -> String {
         let account = try await account(by: accountName)
         return try await account.retrieveAddress()

@@ -18,6 +18,7 @@
 #import "DWPaymentProcessor.h"
 
 #import "CurrencyExchanger_Objc.h"
+#import "DSAccount+SpentInputCheck.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPaymentInput+Private.h"
@@ -197,6 +198,12 @@ static NSString *sanitizeString(NSString *s) {
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     NSString *address = paymentOutput.address;
     DSPaymentProtocolRequest *protocolRequest = paymentOutput.protocolRequest;
+
+    // NOTE: previously a blanket lock here blocked ANY spend while a Maya swap was still confirming
+    // (~2–5 min), as a guard against coin selection re-using the swap's not-yet-reconciled UTXO.
+    // That is no longer needed: DashSync now reconciles spentOutputs on IS-lock, so coin selection
+    // skips spent outputs, and the swap send path keeps its own per-UTXO `isInputSpent` guard.
+    // Regular sends are therefore no longer blocked by a pending swap.
 
     self.request = protocolRequest;
     self.didSendRequestDelegateNotified = NO;

@@ -270,15 +270,32 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     // MARK: - Shortcut Customization
 
     func presentShortcutSelection(for position: Int) {
-        let selectionView = ShortcutSelectionView { [weak self] selectedType in
-            self?.applyShortcutCustomization(type: selectedType, at: position)
-        }
-        let hostingController = UIHostingController(rootView: selectionView)
-        if let sheet = hostingController.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.prefersGrabberVisible = true
-        }
+        let hostingController = UIHostingController(rootView: shortcutSelectionSheetView(for: position))
         present(hostingController, animated: true)
+    }
+
+    private func shortcutSelectionSheetView(for position: Int) -> AnyView {
+        let usedTypes = Set(HomeViewModel.shared.shortcutItems.map { $0.type })
+        let sheet = BottomSheet(title: NSLocalizedString("Select option", comment: ""),
+                                showBackButton: .constant(false)) {
+            ShortcutSelectionView(usedTypes: usedTypes) { [weak self] selectedType in
+                self?.applyShortcutCustomization(type: selectedType, at: position)
+            }
+        }
+
+        if #available(iOS 16.4, *) {
+            return AnyView(
+                sheet
+                    .presentationDetents([.large])
+                    .presentationBackground(Color.primaryBackground)
+                    .presentationCornerRadius(32)
+                    .presentationDragIndicator(.hidden)
+            )
+        } else if #available(iOS 16.0, *) {
+            return AnyView(sheet.presentationDetents([.large]))
+        } else {
+            return AnyView(sheet)
+        }
     }
 
     private func applyShortcutCustomization(type: ShortcutActionType, at position: Int) {
@@ -328,4 +345,3 @@ extension HomeViewController: DWContactsViewControllerPayDelegate {
     }
 }
 #endif
-
