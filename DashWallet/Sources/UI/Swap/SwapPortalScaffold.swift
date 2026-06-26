@@ -19,7 +19,7 @@ import DashUIKit
 import SwiftUI
 
 struct SwapPortalScaffold: View {
-    let logoAssetName: String
+    let logoIcon: DashIconSource
     let title: String
     let description: String
     var showBuy: Bool = false
@@ -62,7 +62,7 @@ struct SwapPortalScaffold: View {
                     action: { onBuyDash?() },
                     label: {
                         DashUIKit.MenuItem(
-                            leadingIcon: .custom("dash-dex-buy"),
+                            leadingIcon: .custom("menu-receive"),
                             title: NSLocalizedString("Buy Dash", comment: "Dash DEX Portal"),
                             helpText: NSLocalizedString("From any crypto to your Dash Wallet", comment: "Dash DEX Portal"),
                             accessory: .none
@@ -76,7 +76,7 @@ struct SwapPortalScaffold: View {
                 action: { onSellDash?() },
                 label: {
                     DashUIKit.MenuItem(
-                        leadingIcon: .custom("dash-dex-sell"),
+                        leadingIcon: .custom("menu-send", bundle: .dashUIKit),
                         title: NSLocalizedString("Sell Dash", comment: "Dash DEX Portal"),
                         helpText: NSLocalizedString("From Dash Wallet to any crypto", comment: "Dash DEX Portal"),
                         accessory: .none
@@ -89,7 +89,7 @@ struct SwapPortalScaffold: View {
     }
 
     private var logoContainer: some View {
-        Image(dash: .custom(logoAssetName))
+        Image(dash: logoIcon)
             .resizable()
             .scaledToFit()
             .frame(width: 60, height: 60)

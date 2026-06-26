@@ -138,4 +138,13 @@ protocol SwapProvider {
     /// Optional hosted-tracker deep link. MUST be a protocol requirement for dynamic dispatch
     /// (SwapKit overrides it; otherwise the extension default `nil` would always win).
     func trackerURL(for txid: String, depositAddress: String?) -> URL?
+
+    /// Returns the icon URL for a Maya asset identifier sourced from SwapKit `logoURI`.
+    /// Returns `nil` for providers that do not carry icon metadata or when the asset is unknown.
+    /// MUST be a protocol requirement for dynamic dispatch.
+    func logoURL(for mayaAsset: String) -> URL?
+}
+
+extension SwapProvider {
+    func logoURL(for mayaAsset: String) -> URL? { nil }
 }

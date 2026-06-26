@@ -19,14 +19,14 @@
 
 import SwiftUI
 
-/// Displays a coin icon loaded from the SwapKit CDN.
+/// Displays a coin icon loaded from the URL provided by SwapKit's `logoURI`.
 ///
 /// Priority:
-/// 1. SwapKit CDN icon fetched by `chain.symbol` (contract suffix stripped)
-/// 2. Placeholder (`convert.crypto`) while loading or if the CDN fetch fails
+/// 1. Remote icon fetched from `coin.iconURL` (sourced from SwapKit `/tokens` `logoURI`)
+/// 2. Placeholder (`convert.crypto`) while loading or if `iconURL` is nil / load fails
 ///
 /// Remote icons crossfade in when loaded. Fast-scrolling is safe: the
-/// `task(id: coin.mayaAsset)` modifier cancels in-flight requests when the view
+/// `task(id: coin.iconURL)` modifier cancels in-flight requests when the view
 /// disappears, and `remoteImage` resets to nil on reuse (because @State is
 /// tied to view identity in LazyVStack).
 struct SwapCoinIconView: View {
@@ -50,10 +50,8 @@ struct SwapCoinIconView: View {
         .clipShape(.rect(cornerRadius: cornerRadius))
         .task(id: coin.mayaAsset) {
             remoteImage = nil
-            let loaded = await MayaCoinIconLoader.shared.loadSwapKitIcon(for: coin.mayaAsset)
-            withAnimation(.easeIn(duration: 0.15)) {
-                remoteImage = loaded
-            }
+            let loaded = await MayaCoinIconLoader.shared.loadIcon(logoURI: coin.iconURL, ticker: coin.code)
+            withAnimation(.easeIn(duration: 0.15)) { remoteImage = loaded }
         }
     }
 }
@@ -61,26 +59,26 @@ struct SwapCoinIconView: View {
 #if DEBUG
 #Preview {
     HStack(spacing: 16) {
-        // Native asset
+        // Native asset with real logoURI — uses SwapKit source
         SwapCoinIconView(
             coin: MayaCryptoCurrency(
                 id: "btc", code: "BTC", name: "Bitcoin",
-                mayaAsset: "BTC.BTC", chain: "BTC"
+                mayaAsset: "BTC.BTC", chain: "BTC",
+                iconURL: "https://storage.googleapis.com/token-list-swapkit/images/btc.btc.png"
             ),
             size: 26, cornerRadius: 6
         )
 
-        // Contract-suffixed token — CDN key truncated to arb.gld
+        // No logoURI — exercises CoinCap / jsupa fallback chain
         SwapCoinIconView(
             coin: MayaCryptoCurrency(
-                id: "gld", code: "GLD", name: "Goldario",
-                mayaAsset: "ARB.GLD-0XAFD091F140C21770F4E5D53D26B2859AE97555AA",
-                chain: "ARB"
+                id: "dai", code: "DAI", name: "Dai",
+                mayaAsset: "ARB.DAI-0XDA10009CBD5D07DD0CECC66161FC93D7C9000DA1", chain: "ARB"
             ),
             size: 26, cornerRadius: 6
         )
 
-        // Unknown coin — shows convert.crypto placeholder
+        // Truly unknown ticker — shows convert.crypto placeholder
         SwapCoinIconView(
             coin: MayaCryptoCurrency(
                 id: "xyz", code: "XYZ", name: "Unknown",
