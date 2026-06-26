@@ -77,7 +77,7 @@ struct CrowdNodeBalanceReminderSheet: View {
         onWithdraw: {},
         onDismiss: {}
     )
-    .background(Color.primaryBackground)
+    .background(Color.dash.primaryBackground)
 }
 
 #Preview {

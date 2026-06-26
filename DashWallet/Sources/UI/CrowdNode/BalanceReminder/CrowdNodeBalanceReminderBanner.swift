@@ -59,5 +59,5 @@ struct CrowdNodeBalanceReminderBanner: View {
 #Preview {
     CrowdNodeBalanceReminderBanner(onWithdraw: {})
         .padding(20)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 }

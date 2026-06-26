@@ -213,6 +213,12 @@ extension CrowdNode {
             do {
                 try tryRestoreLinkedOnlineAccount(state: onlineState, address: address)
                 refreshWithdrawalLimits()
+                // Linked online accounts don't go through `setFinished`, so their balance was
+                // never fetched at restore — only when the user opened the CrowdNode portal.
+                // Refresh it proactively so the balance reminder (banner/sheet) can appear after
+                // sync without requiring the user to enter CrowdNode. `refreshBalance` self-guards
+                // on `signUpState`, so it no-ops for accounts that aren't linked yet.
+                refreshBalance()
             } catch {
                 DSLogger.log("Failure while restoring linked CrowdNode account: \(error.localizedDescription)")
             }
