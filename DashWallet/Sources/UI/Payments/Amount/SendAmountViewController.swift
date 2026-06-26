@@ -51,8 +51,7 @@ class SendAmountViewController: BaseAmountViewController {
         // If CrowdNode balance isn't empty and the user sends DASH somewhere,
         // or if the user is making a CrowdNode deposit, then we need to check the leftover balance
 
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = account.maxOutputAmount
+        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.spendable ?? 0
 
         if model.amount.plainAmount + CrowdNode.minimumLeftoverBalance > allAvailableFunds {
             let title = NSLocalizedString("Looks like you are emptying your Dash Wallet", comment: "Leftover balance warning")
