@@ -61,6 +61,7 @@ struct SwapKitPriceToken: Encodable {
 
 struct SwapKitTokenResponse: Decodable {
     let identifier: String
+    let logoURI: String?
 }
 
 struct SwapKitTokenListResponse: Decodable {

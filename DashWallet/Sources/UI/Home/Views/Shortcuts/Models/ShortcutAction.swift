@@ -104,7 +104,7 @@ extension ShortcutActionType {
         case .topper:
             return "shortcut-bar-topper"
         case .dashDEX:
-            return "shortcut-bar-dash-dex"
+            return "shortcut-dash-dex"
         }
     }
 

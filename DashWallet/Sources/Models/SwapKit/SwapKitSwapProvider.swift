@@ -55,6 +55,8 @@ final class SwapKitSwapProvider: SwapProvider {
     /// The Buy filter is gated on this — not on `classificationBuilt` — so a failed or
     /// empty classification causes Buy to surface an error rather than silently showing everything.
     private var classificationUsable = false
+    /// Identifier (uppercased) → logoURI, populated from both Maya and NEAR token lists.
+    private var logoURIByIdentifier: [String: String] = [:]
 
     private var isCacheValid: Bool {
         guard let cachedAt = poolsCachedAt else { return false }
@@ -376,11 +378,28 @@ final class SwapKitSwapProvider: SwapProvider {
             nearOnlyAssets = newNearOnly
             bothAssets = newBoth
             classificationUsable = true
+
+            // Build identifier → logoURI lookup. Maya takes priority; NEAR fills gaps.
+            var logos: [String: String] = [:]
+            for token in mayaTokens {
+                if let uri = token.logoURI { logos[token.identifier.uppercased()] = uri }
+            }
+            for token in nearTokens {
+                let key = token.identifier.uppercased()
+                if logos[key] == nil, let uri = token.logoURI { logos[key] = uri }
+            }
+            logoURIByIdentifier = logos
+
             DSLogger.log("SwapKit: classification built — mayaOnly=\(mayaOnlyAssets.count) nearOnly=\(nearOnlyAssets.count) both=\(bothAssets.count)")
         } catch {
             classificationUsable = false
             DSLogger.log("SwapKit: classification fetch failed: \(error) — Buy will show error state")
         }
+    }
+
+    func logoURL(for mayaAsset: String) -> URL? {
+        guard let s = logoURIByIdentifier[mayaAsset.uppercased()], let url = URL(string: s) else { return nil }
+        return url
     }
 
     // MARK: - Private: Route Selection

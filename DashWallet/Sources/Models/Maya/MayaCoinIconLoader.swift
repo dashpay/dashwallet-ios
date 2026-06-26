@@ -21,17 +21,14 @@ import UIKit
 
 /// Loads remote coin icons with a two-level cache: memory (`NSCache`) + disk (`URLCache`).
 ///
-/// The remote source is the SwapKit token-list CDN, keyed by `chain.symbol` (the identifier
-/// truncated at the first `-`). For example `ARB.GLD-0X…` → `arb.gld.png`, and
-/// `BTC.BTC` → `btc.btc.png`. Disk-cached entries survive app restarts and are served
-/// without re-downloading until the OS purges the cache.
+/// The URL is sourced directly from SwapKit's `logoURI` field — no CDN filename construction.
+/// Disk-cached entries survive app restarts and are served without re-downloading until the OS
+/// purges the cache.
 ///
 /// This actor is responsible only for remote loading and caching.
 /// The `convert.crypto` placeholder is shown by `SwapCoinIconView` while loading or on failure.
 actor MayaCoinIconLoader {
     static let shared = MayaCoinIconLoader()
-
-    private static let swapKitCDNBaseURL = "https://storage.googleapis.com/token-list-swapkit/images/"
 
     private let memoryCache = NSCache<NSString, UIImage>()
     private let session: URLSession
@@ -51,42 +48,47 @@ actor MayaCoinIconLoader {
         memoryCache.countLimit = 200
     }
 
-    /// Returns the icon for a SwapKit/Maya asset identifier, or `nil` if unavailable.
-    /// The CDN key is derived by truncating the identifier at the first `-`, so contract-suffixed
-    /// tokens like `ARB.GLD-0X…` correctly resolve to `arb.gld.png`.
-    /// Memory cache is checked first; on miss the image is downloaded and cached.
-    func loadSwapKitIcon(for identifier: String) async -> UIImage? {
-        let cdnKey = identifier.split(separator: "-", maxSplits: 1).first.map(String.init) ?? identifier
-        let cdnKeyLowercased = cdnKey.lowercased()
-        guard let url = URL(string: Self.swapKitCDNBaseURL + "\(cdnKeyLowercased).png") else {
-            return nil
+    /// Tries each candidate URL in order and returns the first image that loads successfully.
+    /// Order: `logoURI` (SwapKit) → CoinCap → jsupa. Returns `nil` when all fail.
+    func loadIcon(logoURI: String?, ticker: String) async -> UIImage? {
+        for url in Self.candidateURLs(logoURI: logoURI, ticker: ticker) {
+            if let image = await loadIcon(from: url) { return image }
         }
-        return await loadIcon(cacheKey: "swapkit:\(cdnKeyLowercased)", from: url)
+        return nil
     }
 
-    private func loadIcon(cacheKey: String, from url: URL) async -> UIImage? {
-        let key = cacheKey as NSString
+    /// Returns the icon at `url`, or `nil` on any non-200 status, decode failure, or network error.
+    /// Memory cache is checked first; on miss the image is downloaded and cached.
+    func loadIcon(from url: URL) async -> UIImage? {
+        let key = url.absoluteString as NSString
 
         if let cached = memoryCache.object(forKey: key) {
-            DSLogger.log("🧭 DashDEX icon TEMP: cache hit [\(cacheKey)] \(url.absoluteString)")
             return cached
         }
 
         do {
-            DSLogger.log("🧭 DashDEX icon TEMP: GET \(url.absoluteString)")
             let (data, response) = try await session.data(from: url)
             let status = (response as? HTTPURLResponse)?.statusCode ?? -1
-            guard status == 200,
-                  let image = UIImage(data: data) else {
-                DSLogger.log("🧭 DashDEX icon TEMP: MISS status=\(status) bytes=\(data.count) \(url.absoluteString)")
-                return nil
-            }
-            DSLogger.log("🧭 DashDEX icon TEMP: OK status=200 bytes=\(data.count) \(url.absoluteString)")
+            guard status == 200, let image = UIImage(data: data) else { return nil }
             memoryCache.setObject(image, forKey: key)
             return image
         } catch {
-            DSLogger.log("🧭 DashDEX icon TEMP: ERROR \(error.localizedDescription) \(url.absoluteString)")
             return nil
         }
+    }
+
+    /// Builds the ordered candidate URL list for a coin icon.
+    /// 1. SwapKit `logoURI` (authoritative, chain-qualified)
+    /// 2. CoinCap  — `assets.coincap.io/assets/icons/{ticker}@2x.png`
+    /// 3. jsupa    — `raw.githubusercontent.com/jsupa/crypto-icons/main/icons/{ticker}.png`
+    private static func candidateURLs(logoURI: String?, ticker: String) -> [URL] {
+        var urls: [URL] = []
+        if let s = logoURI, let u = URL(string: s) { urls.append(u) }
+        let t = ticker.lowercased().filter { $0.isLetter || $0.isNumber }
+        if !t.isEmpty {
+            if let u = URL(string: "https://assets.coincap.io/assets/icons/\(t)@2x.png") { urls.append(u) }
+            if let u = URL(string: "https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/\(t).png") { urls.append(u) }
+        }
+        return urls
     }
 }
