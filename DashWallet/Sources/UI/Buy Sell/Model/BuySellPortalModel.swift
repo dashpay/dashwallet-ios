@@ -24,6 +24,7 @@ enum Service: CaseIterable {
     case coinbase
     case uphold
     case topper
+    case maya
 }
 
 // MARK: - BuySellPortalModel.Section
@@ -40,22 +41,25 @@ extension Service {
         case .coinbase: return NSLocalizedString("Coinbase", comment: "Dash Portal")
         case .uphold: return NSLocalizedString("Uphold", comment: "Dash Portal")
         case .topper: return NSLocalizedString("Topper", comment: "Dash Portal")
+        case .maya: return NSLocalizedString("Maya", comment: "Dash Portal")
         }
     }
-    
+
     var subtitle: String {
         switch self {
         case .coinbase: return NSLocalizedString("Link your account", comment: "Dash Portal")
         case .uphold: return NSLocalizedString("Link your account", comment: "Dash Portal")
         case .topper: return NSLocalizedString("Buy Dash · No account needed", comment: "Dash Portal")
+        case .maya: return NSLocalizedString("Swap Dash · No account needed", comment: "Dash Portal")
         }
     }
 
     var icon: String {
         switch self {
-        case .coinbase: return "portal.coinbase"
-        case .uphold: return "portal.uphold"
-        case .topper: return "portal.topper"
+        case .coinbase: return "menu-coinbase"
+        case .uphold: return "menu-uphold"
+        case .topper: return "menu-topper"
+        case .maya: return "menu-maya"
         }
     }
 
@@ -64,6 +68,7 @@ extension Service {
         case .coinbase: return false
         case .uphold: return true
         case .topper: return true
+        case .maya: return true
         }
     }
 
@@ -111,5 +116,3 @@ class BuySellPortalModel: ObservableObject, NetworkReachabilityHandling {
         stopNetworkMonitoring()
     }
 }
-
-

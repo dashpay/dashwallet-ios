@@ -34,7 +34,7 @@ public enum HomeTxDisplayMode: UInt {
 class HomeViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let queue = DispatchQueue(label: "HomeViewModel", qos: .userInitiated)
-    private let coinJoinService = CoinJoinService.shared
+    private lazy var coinJoinService = CoinJoinService.shared
     private var timeSkewDialogShown: Bool = false
 
     static let shared: HomeViewModel = {
@@ -46,6 +46,9 @@ class HomeViewModel: ObservableObject {
     private var crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
     private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
     private var metadataProviders: [MetadataProvider] = []
+    #if DEBUG
+    var isPreviewMode: Bool = false
+    #endif
 
     /// Tracks whether a full reload is currently in progress to prevent race conditions
     /// with incremental updates (Fix #3)
@@ -78,7 +81,7 @@ class HomeViewModel: ObservableObject {
     var joinDashPayState: JoinDashPayState = .callToAction
 #endif
     
-    private var syncModel = SyncModelImpl()
+    private lazy var syncModel = SyncModelImpl()
     
     var coinJoinMode: CoinJoinMode {
         get { coinJoinService.mode }
@@ -128,6 +131,20 @@ class HomeViewModel: ObservableObject {
         self.observeDashPay()
         #endif
     }
+
+    #if DEBUG
+    /// Lightweight init used only by SwiftUI previews.
+    /// Skips wallet/sync/coinjoin wiring that depends on the Dash core runtime.
+    private init(previewShortcuts: [ShortcutAction]) {
+        self.transactionSource = HomeViewModelPreviewTransactionSource()
+        self.isPreviewMode = true
+        self.shortcutItems = previewShortcuts
+    }
+
+    static func makeForPreview(shortcuts: [ShortcutAction]) -> HomeViewModel {
+        HomeViewModel(previewShortcuts: shortcuts)
+    }
+    #endif
 
     /// Observes network changes (testnet <-> mainnet) to clear cached transaction data
     private func observeNetworkChange() {
@@ -515,7 +532,10 @@ class HomeViewModel: ObservableObject {
         }
 
         if shouldShowShortcutBanner {
-            height += 70
+            // Banner height + the gap between the bar and the banner (added via setCustomSpacing
+            // in HomeHeaderView). Without the gap term the fixed header height is too short and
+            // the .fill stack shrinks the bar, shifting its card upward.
+            height += 70 + HomeHeaderView.shortcutBarBannerSpacing
         }
 
         self.headerHeight = height
@@ -707,6 +727,9 @@ extension HomeViewModel {
     }
 
     func reloadShortcuts() {
+        #if DEBUG
+        guard !isPreviewMode else { return }
+        #endif
         let options = DWGlobalOptions.sharedInstance()
 
         // Check for custom configuration first
@@ -715,6 +738,13 @@ extension HomeViewModel {
             let items = customShortcuts.compactMap { number -> ShortcutAction? in
                 guard let type = ShortcutActionType(rawValue: number.intValue) else { return nil }
                 return ShortcutAction(type: type)
+            }
+            .filter { action in
+                if action.type == .crowdNode {
+                    let state = CrowdNode.shared.signUpState
+                    return state == .finished || state == .linkedOnline
+                }
+                return true
             }
             if items.count == maxShortcutsCount {
                 DispatchQueue.main.async {
@@ -784,6 +814,12 @@ class DSWalletSource: TransactionSource {
         return wallet.allTransactions
     }
 }
+
+#if DEBUG
+private struct HomeViewModelPreviewTransactionSource: TransactionSource {
+    var allTransactions: [DSTransaction] { [] }
+}
+#endif
 
 // MARK: - DashPay
 

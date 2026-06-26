@@ -22,7 +22,7 @@ struct TopIntro: View {
     var subtitle: String?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.title1)
                 .foregroundColor(.primaryText)
@@ -30,13 +30,10 @@ struct TopIntro: View {
             if let subtitle = subtitle {
                 Text(subtitle)
                     .font(.subhead)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.primaryText)
             }
         }
-        .padding(.leading, 20)
-        .padding(.trailing, 60)
-        .padding(.top, 10)
-        .padding(.bottom, 20)
+
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
