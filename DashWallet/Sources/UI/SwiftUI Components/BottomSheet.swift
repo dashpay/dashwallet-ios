@@ -115,7 +115,6 @@ struct BottomSheet<Content: View>: View {
 /// Bubbles a `BottomSheet`'s measured natural height up to `.selfSizingSheet()`.
 struct BottomSheetHeightPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
-
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
     }
@@ -143,7 +142,6 @@ private struct SelfSizingSheetModifier: ViewModifier {
     func body(content: Content) -> some View {
         let cap = UIScreen.main.bounds.height * maxHeightFraction
         let resolved = min(measured > 0 ? measured : fallback, cap)
-
         content
             .onPreferenceChange(BottomSheetHeightPreferenceKey.self) { measured = $0 }
             // Before the first measurement (and when nothing is provided) fall back to .medium so

@@ -16,6 +16,7 @@
 //
 
 import UIKit
+import SwiftUI
 
 class ShortcutCell: UICollectionViewCell {
 
@@ -33,13 +34,20 @@ class ShortcutCell: UICollectionViewCell {
 
     var model: ShortcutAction! {
         didSet {
-            titleLabel.text = model.title
-            titleLabel.textColor = model.textColor
-            iconImageView.image = model.icon
-            gradientLayer?.isHidden = model.showsGradientLayer
-            let alpha = model.alpha
-            titleLabel.alpha = alpha
-            iconImageView.alpha = alpha
+            if #available(iOS 16.0, *) {
+                contentConfiguration = UIHostingConfiguration {
+                    ShortcutItemView(model: model)
+                }
+                .margins(.all, 0)
+            } else {
+                titleLabel.text = model.title
+                titleLabel.textColor = model.textColor
+                iconImageView.image = model.icon
+                gradientLayer?.isHidden = model.showsGradientLayer
+                let alpha = model.alpha
+                titleLabel.alpha = alpha
+                iconImageView.alpha = alpha
+            }
         }
     }
 
@@ -50,4 +58,3 @@ class ShortcutCell: UICollectionViewCell {
         }
     }
 }
-

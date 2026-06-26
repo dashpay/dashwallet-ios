@@ -32,6 +32,9 @@ extension Font {
     /// Title 3: 20pt Bold (line height: 25pt)
     public static let title3: Font = .system(size: 20, weight: .bold)
 
+    /// Title 3 Medium: 20pt Medium (line height: 25pt)
+    public static let title3Medium: Font = .system(size: 20, weight: .medium)
+
     // MARK: - Text Styles
 
     /// Headline: 17pt Bold (line height: 22pt)

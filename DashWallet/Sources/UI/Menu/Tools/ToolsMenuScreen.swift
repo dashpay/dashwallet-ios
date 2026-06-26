@@ -44,6 +44,10 @@ struct ToolsMenuScreen: View {
             }
 
             TopIntro(title: NSLocalizedString("Tools", comment: ""))
+                .padding(.leading, 20)
+                .padding(.trailing, 60)
+                .padding(.top, 10)
+                .padding(.bottom, 20)
 
             VStack(alignment: .leading, spacing: 20) {
                 // Menu list - First group (4 buttons)

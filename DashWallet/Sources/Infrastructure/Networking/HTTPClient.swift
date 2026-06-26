@@ -149,10 +149,13 @@ public class HTTPClient<Target: TargetType> {
     private func retrieveAccessToken(for target: Target) -> String {
         if let target = target as? AccessTokenAuthorizable, target.authorizationType == .bearer,
            let provider = accessTokenProvider {
-            return provider()! // Assume that we have token when we need it
+            // Token may be nil if the session expired / the user isn't signed in. Return an empty
+            // string instead of force-unwrapping (which crashed): the request goes out with an
+            // empty bearer token and the server responds 401, surfacing as a normal error.
+            return provider() ?? ""
         }
 
-        fatalError("Token should be provided")
+        return ""
     }
 
     deinit {

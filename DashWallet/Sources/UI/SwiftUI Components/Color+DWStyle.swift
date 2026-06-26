@@ -40,10 +40,6 @@ extension Color {
     
 // System
 
-    static var blue: Color {
-        Color("Blue")
-    }
-
     static var dashBlue: Color {
         Color("DashBlueColor")
     }
@@ -72,8 +68,16 @@ extension Color {
 
 // Blue
 
+    static var blue: Color {
+        Color("Blue")
+    }
+
     static var blueAlpha5: Color {
         Color("BlueAlpha5")
+    }
+
+    static var blueAlpha10: Color {
+        Color("BlueAlpha10")
     }
 
 // Black
@@ -108,6 +112,10 @@ extension Color {
 
     static var black1000Alpha50: Color {
         Color("Black1000Alpha50")
+    }
+
+    static var black1000Alpha90: Color {
+        Color("Black1000Alpha90")
     }
 
 // Gray
@@ -171,7 +179,11 @@ extension Color {
     static var gray400: Color {
         Color("Gray400")
     }
-    
+
+    static var gray400Alpha10: Color {
+        Color("Gray400Alpha10")
+    }
+
     static var gray500: Color {
         Color("Gray500")
     }
