@@ -539,8 +539,6 @@
 		5151CDF12F928D7D00F0A604 /* LocalCurrencyCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5151CDEF2F928D7D00F0A604 /* LocalCurrencyCellView.swift */; };
 		5151CE182F9624D000F0A604 /* CurrencyItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5151CE172F9624D000F0A604 /* CurrencyItem.swift */; };
 		5151CE192F9624D000F0A604 /* CurrencyItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5151CE172F9624D000F0A604 /* CurrencyItem.swift */; };
-		51530E662FD6EB4400175308 /* SelfSizingSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E652FD6EB4400175308 /* SelfSizingSheetModifier.swift */; };
-		51530E672FD6EB4400175308 /* SelfSizingSheetModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E652FD6EB4400175308 /* SelfSizingSheetModifier.swift */; };
 		A1060800B100000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */; };
 		A1060800B200000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */; };
 		51530E6E2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */; };
@@ -2673,7 +2671,6 @@
 		5151CD612F926D1900F0A604 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		5151CDEF2F928D7D00F0A604 /* LocalCurrencyCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCurrencyCellView.swift; sourceTree = "<group>"; };
 		5151CE172F9624D000F0A604 /* CurrencyItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyItem.swift; sourceTree = "<group>"; };
-		51530E652FD6EB4400175308 /* SelfSizingSheetModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfSizingSheetModifier.swift; sourceTree = "<group>"; };
 		51530E682FD6EE1D00175308 /* MerchantCellRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantCellRow.swift; sourceTree = "<group>"; };
 		51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsView.swift; sourceTree = "<group>"; };
 		51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewController.swift; sourceTree = "<group>"; };
@@ -6646,7 +6643,6 @@
 		7566F4882BB6CAD6005238D2 /* SwiftUI Components */ = {
 			isa = PBXGroup;
 			children = (
-				51530E652FD6EB4400175308 /* SelfSizingSheetModifier.swift */,
 				51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */,
 				516983A12FCAEDD600BA91A2 /* Illustrations */,
 				516983C02FCAEDD600BA91A2 /* Icons */,
@@ -7016,7 +7012,7 @@
 		AA0005022EA0F58E00D1D602 /* SelectCoin */ = {
 			isa = PBXGroup;
 			children = (
-				514AE9F12FB2F48F00F9B54C /* Components */,
+				5193BE462F9FC05000C24A58 /* Components */,
 				AA0002132BA0F58E00A1B307 /* SelectCoinView.swift */,
 				AA00020D2BA0F58E00A1B305 /* SelectCoinViewModel.swift */,
 				AA0002162BA0F58E00A1B308 /* SelectCoinHostingController.swift */,
@@ -9282,7 +9278,6 @@
 				2A913E9C23A53B8E006A2A59 /* DWExtendedContainerViewController.m in Sources */,
 				11517C852949E6F0004FC7BF /* CrowdNodeEndpoint.swift in Sources */,
 				0F71317528F4365C0072F454 /* ServiceEntryPointModel.swift in Sources */,
-				51530E672FD6EB4400175308 /* SelfSizingSheetModifier.swift in Sources */,
 				759ADD572BF3447400767ACD /* Button.swift in Sources */,
 				47AE8B9528BFACA100490F5E /* ExploreDash.swift in Sources */,
 				4789D22F2981067C00BAFEFA /* UpholdAmountModel.swift in Sources */,
@@ -10234,7 +10229,6 @@
 				C9D2C7462A320AA000D15901 /* CBAccountManager.swift in Sources */,
 				C9D2C7472A320AA000D15901 /* FailedOperationStatusViewController.swift in Sources */,
 				C9D2C7482A320AA000D15901 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
-				51530E662FD6EB4400175308 /* SelfSizingSheetModifier.swift in Sources */,
 				A1060800B200000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */,
 				C956AF182A5C3306002FAB75 /* DWPressableButton.m in Sources */,
 				C943B50A2A40A54600AF23C5 /* DWDPContactsItemsFactory.m in Sources */,
