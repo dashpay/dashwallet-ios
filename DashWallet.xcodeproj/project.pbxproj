@@ -1817,8 +1817,6 @@
 		FBF3F42D1E42B00C00C7248E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42C1E42B00C00C7248E /* UIKit.framework */; };
 		FBF3F42F1E42B01E00C7248E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */; };
 		FBF3F4311E42B02800C7248E /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FBF3F4301E42B02800C7248E /* ImageIO.framework */; };
-		FE0000000000000000000002 /* MayaSwapPendingGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0000000000000000000001 /* MayaSwapPendingGate.swift */; };
-		FE0000000000000000000003 /* MayaSwapPendingGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0000000000000000000001 /* MayaSwapPendingGate.swift */; };
 		FE0000000000000000000062 /* ExtendedPublicKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0000000000000000000061 /* ExtendedPublicKeysView.swift */; };
 		FE0000000000000000000063 /* ExtendedPublicKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0000000000000000000061 /* ExtendedPublicKeysView.swift */; };
 		FF0000012DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */; };
@@ -3470,7 +3468,6 @@
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		FBF3F4301E42B02800C7248E /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
-		FE0000000000000000000001 /* MayaSwapPendingGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MayaSwapPendingGate.swift; path = DashWallet/Sources/Models/Transactions/MayaSwapPendingGate.swift; sourceTree = SOURCE_ROOT; };
 		FE0000000000000000000061 /* ExtendedPublicKeysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExtendedPublicKeysView.swift; path = DashWallet/Sources/UI/Menu/Tools/ExtendedKeys/ExtendedPublicKeysView.swift; sourceTree = SOURCE_ROOT; };
 		FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/PiggyCardsConstants.swift; sourceTree = "<group>"; };
 		FF0000062DUMMYID001234567 /* PiggyCardsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsModels.swift; sourceTree = "<group>"; };
@@ -5461,7 +5458,6 @@
 				472D13E2299E23B7006903F1 /* BalanceNotifier.swift */,
 				51BA2E9F2F0B2E0100A1B201 /* MayaSwapPendingGate.swift */,
 				11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */,
-				FE0000000000000000000001 /* MayaSwapPendingGate.swift */,
 				FE0000000000000000000061 /* ExtendedPublicKeysView.swift */,
 				09950CBE38F14286AC06BB78 /* DSAccount+SpentInputCheck.h */,
 				7BC16BFBFFFA4E488C09164D /* DSAccount+SpentInputCheck.m */,
@@ -9702,7 +9698,6 @@
 				471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */,
 				51BA2EA02F0B2E0100A1B201 /* MayaSwapPendingGate.swift in Sources */,
 				11E47BAB28EB38510097CFA0 /* SendCoinsService.swift in Sources */,
-				FE0000000000000000000002 /* MayaSwapPendingGate.swift in Sources */,
 				FE0000000000000000000062 /* ExtendedPublicKeysView.swift in Sources */,
 				EC26E6EBECE04736903F77A2 /* DSAccount+SpentInputCheck.m in Sources */,
 				C94F5E8A29D3FCCF0034FD57 /* ShortcutAction.swift in Sources */,
@@ -10652,7 +10647,6 @@
 				C943B5062A40A54600AF23C5 /* UICollectionView+DWDPItemDequeue.m in Sources */,
 				51BA2EA12F0B2E0100A1B201 /* MayaSwapPendingGate.swift in Sources */,
 				C9D2C8A02A320AA000D15901 /* SendCoinsService.swift in Sources */,
-				FE0000000000000000000003 /* MayaSwapPendingGate.swift in Sources */,
 				FE0000000000000000000063 /* ExtendedPublicKeysView.swift in Sources */,
 				C049F721C394463EB97CA8FF /* DSAccount+SpentInputCheck.m in Sources */,
 				C9D2C8A12A320AA000D15901 /* ShortcutAction.swift in Sources */,

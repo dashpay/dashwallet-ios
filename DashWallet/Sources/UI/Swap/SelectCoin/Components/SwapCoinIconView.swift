@@ -48,7 +48,9 @@ struct SwapCoinIconView: View {
         }
         .frame(width: size, height: size)
         .clipShape(.rect(cornerRadius: cornerRadius))
-        .task(id: coin.mayaAsset) {
+        // Key by what the loader actually fetches (iconURL + ticker), so a late-arriving or
+        // changed iconURL for the same asset cancels and reloads instead of leaving a stale icon.
+        .task(id: "\(coin.iconURL ?? "")#\(coin.code)") {
             remoteImage = nil
             let loaded = await MayaCoinIconLoader.shared.loadIcon(logoURI: coin.iconURL, ticker: coin.code)
             withAnimation(.easeIn(duration: 0.15)) { remoteImage = loaded }
