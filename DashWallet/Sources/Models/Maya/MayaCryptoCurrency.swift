@@ -33,7 +33,7 @@ struct MayaCryptoCurrency: Identifiable, Hashable {
     /// Maya chain identifier used for local address validation (e.g. `"BTC"`, `"ARB"`).
     let chain: String
     /// Remote icon URL string sourced from SwapKit `logoURI`. Nil when not yet loaded or unavailable.
-    var iconURL: String? = nil
+    var iconURL: String?
 
     // MARK: - Supported Coins
 

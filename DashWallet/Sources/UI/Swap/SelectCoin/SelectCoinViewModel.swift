@@ -85,9 +85,11 @@ class SelectCoinViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            async let poolsRequest = swapProvider.fetchPools(direction: direction)
-            async let inboundRequest = swapProvider.fetchInboundAddresses()
-            let (pools, inboundAddresses) = try await (poolsRequest, inboundRequest)
+            // Pools must resolve first: fetchInboundAddresses() reads the provider's cached pools,
+            // so running both concurrently can hit the empty-cache fallback and return [] — which
+            // would then filter out every pool via inboundChains.
+            let pools = try await swapProvider.fetchPools(direction: direction)
+            let inboundAddresses = try await swapProvider.fetchInboundAddresses()
 
             let fiatCurrency = App.fiatCurrency
             let formatter = makePriceFormatter(for: fiatCurrency)

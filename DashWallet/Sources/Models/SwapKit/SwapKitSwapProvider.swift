@@ -138,7 +138,12 @@ final class SwapKitSwapProvider: SwapProvider {
             )
         }
 
-        return pools.filter { !mayaOnlyAssets.contains($0.asset.uppercased()) }
+        // Fail closed: include only assets explicitly buyable via NEAR ("nearOnly" or "both").
+        // An asset missing from both token lists has no buy route and must not leak into Buy.
+        return pools.filter {
+            let key = $0.asset.uppercased()
+            return nearOnlyAssets.contains(key) || bothAssets.contains(key)
+        }
     }
 
     func networkLabels(for pools: [MayaPool]) async -> [String: String] {
@@ -371,6 +376,9 @@ final class SwapKitSwapProvider: SwapProvider {
             guard !mayaIds.isEmpty || !nearIds.isEmpty else {
                 DSLogger.log("SwapKit: classification produced empty token lists — marking unusable")
                 classificationUsable = false
+                // Drop any prior (now-stale) classification so networkLabels/haltedAssets,
+                // which skip rebuilding while classificationBuilt is true, can't render stale state.
+                clearClassification()
                 return
             }
 
@@ -393,8 +401,17 @@ final class SwapKitSwapProvider: SwapProvider {
             DSLogger.log("SwapKit: classification built — mayaOnly=\(mayaOnlyAssets.count) nearOnly=\(nearOnlyAssets.count) both=\(bothAssets.count)")
         } catch {
             classificationUsable = false
+            clearClassification()
             DSLogger.log("SwapKit: classification fetch failed: \(error) — Buy will show error state")
         }
+    }
+
+    /// Drops the cached Maya/NEAR classification so stale labels/halted state aren't rendered
+    /// after a failed or empty refresh (callers gate on `classificationBuilt`, which stays true).
+    private func clearClassification() {
+        mayaOnlyAssets = []
+        nearOnlyAssets = []
+        bothAssets = []
     }
 
     func logoURL(for mayaAsset: String) -> URL? {
