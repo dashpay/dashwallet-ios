@@ -62,7 +62,7 @@ struct SwapPortalScaffold: View {
                     action: { onBuyDash?() },
                     label: {
                         DashUIKit.MenuItem(
-                            leadingIcon: .custom("menu-receive"),
+                            leadingIcon: .custom("menu-receive", bundle: .dashUIKit),
                             title: NSLocalizedString("Buy Dash", comment: "Dash DEX Portal"),
                             helpText: NSLocalizedString("From any crypto to your Dash Wallet", comment: "Dash DEX Portal"),
                             accessory: .none

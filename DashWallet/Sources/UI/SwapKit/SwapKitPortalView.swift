@@ -24,7 +24,7 @@ struct SwapKitPortalView: View {
 
     var body: some View {
         SwapPortalScaffold(
-            logoIcon: .custom("dash-dex-illustration"),
+            logoIcon: .custom("illustration-dash-dex", bundle: .dashUIKit),
             title: NSLocalizedString("Dash DEX", comment: "Dash DEX Portal"),
             description: NSLocalizedString(
                 "Swap crypto into Dash, or convert Dash to any crypto supported across SwapKit networks",
@@ -39,5 +39,9 @@ struct SwapKitPortalView: View {
 }
 
 #Preview {
-    SwapKitPortalView(onBack: {}, onBuyDash: {}, onSellDash: {})
+    SwapKitPortalView(
+        onBack: {},
+        onBuyDash: {},
+        onSellDash: {}
+    )
 }
