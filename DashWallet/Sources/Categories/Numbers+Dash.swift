@@ -100,12 +100,11 @@ extension Decimal {
     /// - Returns: Formatted dash amount
     ///
     var formattedDashAmount: String {
-        NumberFormatter.dashFormatter.string(from: self as NSNumber)!
+        DashAmountFormatter.formattedDashAmount(self)
     }
 
     var formattedDashAmountWithoutCurrencySymbol: String {
-        let formatter = NumberFormatter.dashDecimalFormatter
-        return formatter.string(from: self as NSNumber)!
+        DashAmountFormatter.formattedDashAmountWithoutCurrencySymbol(self)
     }
 
     func rounded(_ mode: NSDecimalNumber.RoundingMode = .plain) -> Decimal {
@@ -158,5 +157,19 @@ extension NSDecimalNumber {
 
     var formattedDashAmount: String {
         decimalValue.formattedDashAmount
+    }
+}
+
+enum DashAmountFormatter {
+    static func formattedDashAmount(_ value: Decimal, locale: Locale = .current) -> String {
+        let formatter = NumberFormatter.dashFormatter.copy() as! NumberFormatter
+        formatter.locale = locale
+        return formatter.string(from: value as NSNumber)!
+    }
+
+    static func formattedDashAmountWithoutCurrencySymbol(_ value: Decimal, locale: Locale = .current) -> String {
+        let formatter = NumberFormatter.dashDecimalFormatter.copy() as! NumberFormatter
+        formatter.locale = locale
+        return formatter.string(from: value as NSNumber)!
     }
 }
