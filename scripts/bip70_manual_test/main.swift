@@ -69,5 +69,65 @@ check("past-expiry rejected ('Request expired')", vp.isValid == false && vp.erro
 let vf = PaymentRequestVerifier().verify(unsigned(UInt64(Date().timeIntervalSince1970) + 3600))
 check("unsigned + future expiry is valid (not secure)", vf.isValid && !vf.isSecure)
 
+print("\nL4 — script ↔ address codec")
+// The fixture's real P2PKH output: 25-byte script, testnet. Independent oracle = the
+// address the bip70-dash server / DashSync produce for it.
+let fixtureScript = d.outputs.first!.script
+let fixtureAddress = ScriptAddressCodec.address(forScript: fixtureScript, network: .testnet)
+check("fixture P2PKH script → known testnet address", fixtureAddress == "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr")
+check("testnet P2PKH address starts with 'y'", fixtureAddress?.first == "y")
+if let fixtureAddress {
+    check("ROUND-TRIP: address → scriptPubKey == original script",
+          ScriptAddressCodec.scriptPubKey(forAddress: fixtureAddress, network: .testnet) == fixtureScript)
+}
+
+// Mainnet P2PKH round-trip with a synthetic hash160 (1..20).
+let h20 = Data((1...20).map { UInt8($0) })
+let mainP2PKH = Data([0x76, 0xa9, 0x14]) + h20 + Data([0x88, 0xac])
+let mainAddr = ScriptAddressCodec.address(forScript: mainP2PKH, network: .mainnet)
+check("mainnet P2PKH address starts with 'X'", mainAddr?.first == "X")
+if let mainAddr {
+    check("mainnet P2PKH round-trip", ScriptAddressCodec.scriptPubKey(forAddress: mainAddr, network: .mainnet) == mainP2PKH)
+}
+
+// P2SH round-trip (testnet + mainnet).
+let p2sh = Data([0xa9, 0x14]) + h20 + Data([0x87])
+let p2shTestAddr = ScriptAddressCodec.address(forScript: p2sh, network: .testnet)
+let p2shMainAddr = ScriptAddressCodec.address(forScript: p2sh, network: .mainnet)
+check("P2SH testnet round-trip", p2shTestAddr.flatMap { ScriptAddressCodec.scriptPubKey(forAddress: $0, network: .testnet) } == p2sh)
+check("P2SH mainnet round-trip", p2shMainAddr.flatMap { ScriptAddressCodec.scriptPubKey(forAddress: $0, network: .mainnet) } == p2sh)
+check("mainnet P2SH address starts with '7'", p2shMainAddr?.first == "7")
+
+// Non-standard scripts → nil.
+let opReturn = Data([0x6a, 0x04, 0xde, 0xad, 0xbe, 0xef])
+let p2pk = Data([0x21]) + Data(repeating: 0x02, count: 33) + Data([0xac])
+let truncated = Data([0x76, 0xa9, 0x14] + Array(repeating: UInt8(0), count: 19) + [0x88, 0xac]) // 24 bytes
+check("OP_RETURN → nil", ScriptAddressCodec.address(forScript: opReturn, network: .testnet) == nil)
+check("bare P2PK → nil", ScriptAddressCodec.address(forScript: p2pk, network: .testnet) == nil)
+check("truncated P2PKH → nil", ScriptAddressCodec.address(forScript: truncated, network: .testnet) == nil)
+
+// Cross-network version byte is rejected on decode.
+check("mainnet-decoding a testnet address → nil",
+      fixtureAddress.flatMap { ScriptAddressCodec.scriptPubKey(forAddress: $0, network: .mainnet) } == nil)
+// Corrupted checksum → nil.
+check("corrupted address → nil", ScriptAddressCodec.scriptPubKey(forAddress: "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLX", network: .testnet) == nil)
+
+// resolveOutputs.
+let twoGood = [PaymentOutput(amount: 100000, script: fixtureScript), PaymentOutput(amount: 200000, script: mainP2PKH)]
+if let resolved = try? ScriptAddressCodec.resolveOutputs(twoGood, network: .testnet) {
+    check("resolveOutputs maps & preserves order", resolved.count == 2 && resolved[0].amount == 100000 && resolved[1].amount == 200000)
+} else {
+    check("resolveOutputs maps & preserves order", false)
+}
+func resolveThrows(_ outputs: [PaymentOutput], _ expected: BIP70Error) -> Bool {
+    do { _ = try ScriptAddressCodec.resolveOutputs(outputs, network: .testnet); return false }
+    catch let error as BIP70Error { return error == expected }
+    catch { return false }
+}
+check("one bad output → .nonStandardScript",
+      resolveThrows([PaymentOutput(amount: 1, script: fixtureScript), PaymentOutput(amount: 2, script: opReturn)], .nonStandardScript))
+check("nil amount → .malformedRequest",
+      resolveThrows([PaymentOutput(amount: nil, script: fixtureScript)], .malformedRequest))
+
 print("\n==== \(passed) passed, \(failed) failed ====")
 exit(failed == 0 ? 0 : 1)

@@ -13,6 +13,7 @@
 
 import XCTest
 import Security
+import SwiftDashSDK
 @testable import dashwallet
 
 final class PaymentProtocolTests: XCTestCase {
@@ -222,5 +223,92 @@ final class PaymentProtocolTests: XCTestCase {
         XCTAssertEqual(box.accept, "application/dash-paymentack")
         XCTAssertEqual(box.body, payment.encoded())
         XCTAssertEqual(ack.memo, "thanks")
+    }
+
+    // MARK: - L4 script ↔ address codec
+
+    // Standard P2PKH/P2SH scripts for a synthetic hash160 (1...20).
+    private static let hash160 = Data((1...20).map { UInt8($0) })
+    private var p2pkhScript: Data { Data([0x76, 0xa9, 0x14]) + Self.hash160 + Data([0x88, 0xac]) }
+    private var p2shScript: Data { Data([0xa9, 0x14]) + Self.hash160 + Data([0x87]) }
+
+    private func sdkNetwork(_ network: PaymentNetwork) -> SwiftDashSDK.Network {
+        network == .mainnet ? .mainnet : .testnet
+    }
+
+    func testFixtureScriptDecodesToKnownTestnetAddress() throws {
+        // The fixture's real 25-byte P2PKH output → the exact address the bip70-dash server /
+        // DashSync produce. This is the byte-exactness anchor for the local Base58Check.
+        let script = try XCTUnwrap(PaymentRequest(fixture)).details.outputs.first!.script
+        XCTAssertEqual(ScriptAddressCodec.address(forScript: script, network: .testnet),
+                       "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr")
+    }
+
+    func testAddressRoundTrips() {
+        for (script, network) in [(p2pkhScript, PaymentNetwork.testnet), (p2pkhScript, .mainnet),
+                                  (p2shScript, .testnet), (p2shScript, .mainnet)] {
+            let address = ScriptAddressCodec.address(forScript: script, network: network)
+            XCTAssertNotNil(address)
+            XCTAssertEqual(ScriptAddressCodec.scriptPubKey(forAddress: address!, network: network), script,
+                           "round-trip failed for \(network)")
+        }
+    }
+
+    func testProducedAddressesValidateViaSDK() {
+        // Independent oracle: every address we emit must validate against SwiftDashSDK (Rust).
+        for (script, network) in [(p2pkhScript, PaymentNetwork.testnet), (p2pkhScript, .mainnet),
+                                  (p2shScript, .testnet), (p2shScript, .mainnet)] {
+            let address = ScriptAddressCodec.address(forScript: script, network: network)!
+            XCTAssertTrue(Address.validate(address, network: sdkNetwork(network)),
+                          "SDK rejected our \(network) address \(address)")
+        }
+    }
+
+    func testAddressNetworkPrefixes() {
+        XCTAssertEqual(ScriptAddressCodec.address(forScript: p2pkhScript, network: .testnet)?.first, "y")
+        XCTAssertEqual(ScriptAddressCodec.address(forScript: p2pkhScript, network: .mainnet)?.first, "X")
+        XCTAssertEqual(ScriptAddressCodec.address(forScript: p2shScript, network: .mainnet)?.first, "7")
+    }
+
+    func testNonStandardScriptsRejected() {
+        let opReturn = Data([0x6a, 0x04, 0xde, 0xad, 0xbe, 0xef])
+        let p2pk = Data([0x21]) + Data(repeating: 0x02, count: 33) + Data([0xac])
+        let truncated = Data([0x76, 0xa9, 0x14] + Array(repeating: UInt8(0), count: 19) + [0x88, 0xac])
+        for script in [opReturn, p2pk, truncated] {
+            XCTAssertNil(ScriptAddressCodec.address(forScript: script, network: .testnet))
+        }
+    }
+
+    func testCrossNetworkAndCorruptedAddressRejected() {
+        let testnetAddress = "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr"
+        // Right address, wrong network version byte.
+        XCTAssertNil(ScriptAddressCodec.scriptPubKey(forAddress: testnetAddress, network: .mainnet))
+        // Last char flipped → checksum mismatch.
+        XCTAssertNil(ScriptAddressCodec.scriptPubKey(forAddress: "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLX", network: .testnet))
+    }
+
+    func testResolveOutputsMapsAndPreservesOrder() throws {
+        let outputs = [PaymentOutput(amount: 100_000, script: p2pkhScript),
+                       PaymentOutput(amount: 200_000, script: p2shScript)]
+        let resolved = try ScriptAddressCodec.resolveOutputs(outputs, network: .testnet)
+        XCTAssertEqual(resolved.count, 2)
+        XCTAssertEqual(resolved[0].amount, 100_000)
+        XCTAssertEqual(resolved[1].amount, 200_000)
+        XCTAssertEqual(resolved[0].address, ScriptAddressCodec.address(forScript: p2pkhScript, network: .testnet))
+    }
+
+    func testResolveOutputsThrowsOnNonStandardScript() {
+        let outputs = [PaymentOutput(amount: 1, script: p2pkhScript),
+                       PaymentOutput(amount: 2, script: Data([0x6a, 0x01, 0x00]))]
+        XCTAssertThrowsError(try ScriptAddressCodec.resolveOutputs(outputs, network: .testnet)) {
+            XCTAssertEqual($0 as? BIP70Error, .nonStandardScript)
+        }
+    }
+
+    func testResolveOutputsThrowsOnMissingAmount() {
+        let outputs = [PaymentOutput(amount: nil, script: p2pkhScript)]
+        XCTAssertThrowsError(try ScriptAddressCodec.resolveOutputs(outputs, network: .testnet)) {
+            XCTAssertEqual($0 as? BIP70Error, .malformedRequest)
+        }
     }
 }

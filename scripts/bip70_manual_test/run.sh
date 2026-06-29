@@ -18,6 +18,8 @@ swiftc \
   "$SRC/Codec/PaymentProtocolWireFormat.swift" \
   "$SRC/Codec/PaymentProtocolMessages.swift" \
   "$SRC/PaymentRequestVerifier.swift" \
+  "$SRC/BIP70Error.swift" \
+  "$SRC/ScriptAddressCodec.swift" \
   "$DIR/main.swift" \
   -o "$OUT"
 
