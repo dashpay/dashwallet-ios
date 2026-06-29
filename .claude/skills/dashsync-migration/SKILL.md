@@ -171,6 +171,8 @@ xcodebuild build \
 
 `EXCLUDED_ARCHS=x86_64` is required because the SwiftDashSDK xcframework only ships `ios-arm64-simulator` (not x86_64). On Apple Silicon this works fine; CI on Intel would need a rebuilt xcframework.
 
+**If the verify build fails on a missing SDK member** (e.g. `'ManagedCoreWallet' has no member 'X'`), it's almost never your migration — the `../platform` checkout is on a branch lacking that API, or `DashSDKFFI.xcframework` is stale. The xcframework is a **gitignored build artifact** that a platform branch switch does NOT update. Fix: switch `../platform` to the branch defining the API, then rebuild `build_ios.sh --target sim` **run with cwd inside `../platform/packages/swift-sdk`** (it invokes `cargo` from the cwd; run from dashwallet-ios it errors `could not find Cargo.toml`). Confirm with `nm <slice>/librs_unified_sdk_ffi.a | grep <symbol>` before rebuilding the app. Note: such a failure also masks app-target errors — the app module isn't compiled until the SDK package builds, so a "clean" first build can hide real errors in your changed files until the SDK builds. (Learned closing out #20 CoinJoin: sweep API lives on `feature/coinjoin-sweep-and-recovery`.)
+
 The iPhone 17 simulator runs dashwallet again as of 2026-04 — earlier sessions had to skip simulator runs because of a `[DSChain retrieveWallets]` crash on iOS 26.3, but that no longer reproduces. Exercise the migrated flow end-to-end before calling it done.
 
 ## 7. Update the migration doc on every cutover

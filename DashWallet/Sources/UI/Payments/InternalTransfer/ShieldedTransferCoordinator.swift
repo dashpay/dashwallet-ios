@@ -335,6 +335,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .broadcasting
         phase = .success
         scheduleShieldedResync(manager: env.manager)
+        // Shield debits the Platform-address balance; refresh it too (the
+        // shielded resync above only updates the shielded side).
+        schedulePlatformResync()
     }
 
     /// Route 3 (reverse): shielded Orchard notes → Core L1 transparent
@@ -443,6 +446,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .broadcasting
         phase = .success
         scheduleShieldedResync(manager: env.manager)
+        // Unshield credits the Platform-address balance; the shielded resync
+        // above only refreshes the shielded side, so kick the Platform-address
+        // (BLAST) sync to surface the credit promptly.
+        schedulePlatformResync()
     }
 
     /// Lowest-indexed unused Platform Payment address (fallback: lowest-indexed
@@ -573,6 +580,25 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 try await manager.syncShieldedNow()
             } catch {
                 Self.logger.warning("🛡️ SHIELD-TX :: syncShieldedNow failed (ignored): \(String(describing: error), privacy: .public)")
+            }
+        }
+    }
+
+    /// Kick the Platform-address (BLAST) sync after a transfer that changes the
+    /// DIP-17 Platform balance — `performShield` debits it, `performUnshield`
+    /// credits it. `scheduleShieldedResync` only refreshes the shielded side, so
+    /// without this the "Platform Payment" balance stays stale until the next
+    /// periodic BLAST pass. A few spaced kicks cover the brief indexing lag
+    /// before the credit is visible past the BLAST watermark (`syncNow()` no-ops
+    /// while a pass is already running, so a single immediate call can miss it).
+    /// Mirrors the kick `PlatformSendConfirmScreen` does after a Platform send.
+    private func schedulePlatformResync() {
+        Task {
+            for delayNanos in [UInt64(0), 4_000_000_000, 12_000_000_000] {
+                if delayNanos > 0 {
+                    try? await Task.sleep(nanoseconds: delayNanos)
+                }
+                await PlatformAddressSyncCoordinator.shared.syncNow()
             }
         }
     }
