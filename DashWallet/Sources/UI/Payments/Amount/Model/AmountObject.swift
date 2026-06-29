@@ -219,7 +219,8 @@ enum PastedAmountParser {
     private static let decimalParseLocale = Locale(identifier: "en_US_POSIX")
 
     static func parse(_ string: String, locale: Locale) -> ParsedAmount? {
-        guard let body = trimmedAmountBody(from: string) else { return nil }
+        let trimmedInput = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let body = trimmedAmountBody(from: trimmedInput) else { return nil }
         guard body.allSatisfy({ isSupportedBodyCharacter($0) }) else { return nil }
         guard body.contains(where: { $0.isASCIIAmountDigit }) else { return nil }
 
@@ -286,6 +287,13 @@ enum PastedAmountParser {
 
         if indices.count > 1 {
             return isValidGrouping(body) ? .groupingOnly : nil
+        }
+
+        if separator == ".",
+           locale.decimalSeparator?.first == ",",
+           locale.decimalSeparator?.count == 1,
+           isValidGrouping(body) {
+            return .groupingOnly
         }
 
         if locale.decimalSeparator?.first == separator, locale.decimalSeparator?.count == 1 {
