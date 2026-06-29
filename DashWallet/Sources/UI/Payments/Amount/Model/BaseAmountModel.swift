@@ -358,7 +358,17 @@ extension BaseAmountModel {
     func pasteFromClipboard() {
         guard let rawString = UIPasteboard.general.string else { return }
         guard let parsedAmount = PastedAmountParser.parse(rawString, locale: inputLocale) else { return }
-        guard let editableValue = PastedAmountParser.editableString(from: parsedAmount.decimalValue, locale: inputLocale) else { return }
+
+        // Clamp the pasted value's fraction digits to what the active input type accepts
+        // (Dash = 8, local currency per its formatter — usually 2), rounding down. Otherwise a
+        // value with too many decimals (e.g. pasting "0.1234" into a 2-dp fiat field) is
+        // rejected by the validator and the paste silently does nothing.
+        let maxFractionDigits = activeAmountType == .main ? 8 : supplementaryNumberFormatter.maximumFractionDigits
+        var value = parsedAmount.decimalValue
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &value, maxFractionDigits, .down)
+
+        guard let editableValue = PastedAmountParser.editableString(from: rounded, locale: inputLocale) else { return }
 
         updateKeyboardInputString(editableValue)
     }

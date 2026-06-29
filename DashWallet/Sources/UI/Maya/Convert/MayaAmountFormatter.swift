@@ -38,7 +38,7 @@ enum MayaAmountFormatter {
     static func coinDisplayString(_ value: Decimal, locale: Locale = .current, usesGroupingSeparator: Bool = false) -> String {
         decimalString(
             from: value,
-            maximumFractionDigits: 8,
+            maximumFractionDigits: 5,
             locale: locale,
             usesGroupingSeparator: usesGroupingSeparator,
             roundingMode: .halfUp

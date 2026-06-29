@@ -26,6 +26,22 @@ final class PastedAmountNormalizationTests: XCTestCase {
         BaseAmountModel.normalizedPastedNumberString(from: input)
     }
 
+    private func assertParsedNormalized(
+        _ input: String,
+        localeIdentifier: String,
+        expected expectedNormalizedString: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let locale = Locale(identifier: localeIdentifier)
+        guard let parsed = PastedAmountParser.parse(input, locale: locale) else {
+            XCTFail("Expected a parsed value for \(input) in \(localeIdentifier)", file: file, line: line)
+            return
+        }
+
+        XCTAssertEqual(parsed.normalizedString, expectedNormalizedString, file: file, line: line)
+    }
+
     func testDotDecimalSeparator() {
         // The originally reported bug: pasting "0.12345" produced "12345" in comma locales.
         XCTAssertEqual(normalize("0.12345"), "0.12345")
@@ -65,5 +81,59 @@ final class PastedAmountNormalizationTests: XCTestCase {
     func testInvalidInput() {
         XCTAssertNil(normalize("abc"))
         XCTAssertNil(normalize(""))
+    }
+
+    func testRegionalParserNormalizationMatrix() {
+        struct Case {
+            let localeIdentifier: String
+            let input: String
+            let expected: String
+        }
+
+        let cases: [Case] = [
+            // US
+            .init(localeIdentifier: "en_US", input: "0.1234", expected: "0.1234"),
+            .init(localeIdentifier: "en_US", input: "3.26", expected: "3.26"),
+            .init(localeIdentifier: "en_US", input: "1,234.56", expected: "1234.56"),
+            .init(localeIdentifier: "en_US", input: "1,234", expected: "1234"),
+            .init(localeIdentifier: "en_US", input: "1.234", expected: "1.234"),
+            .init(localeIdentifier: "en_US", input: "1,234,567", expected: "1234567"),
+
+            // European
+            .init(localeIdentifier: "de_DE", input: "3,26", expected: "3.26"),
+            .init(localeIdentifier: "de_DE", input: "1234,56", expected: "1234.56"),
+            .init(localeIdentifier: "de_DE", input: "0,1234", expected: "0.1234"),
+            .init(localeIdentifier: "de_DE", input: "1.234,56", expected: "1234.56"),
+            .init(localeIdentifier: "de_DE", input: "1,234", expected: "1.234"),
+            .init(localeIdentifier: "de_DE", input: "1.234", expected: "1234"),
+            .init(localeIdentifier: "de_DE", input: "1.234.567", expected: "1234567"),
+            .init(localeIdentifier: "fr_FR", input: "1 234,56", expected: "1234.56"),
+            .init(localeIdentifier: "fr_FR", input: "1.234", expected: "1234"),
+
+            // Swiss
+            .init(localeIdentifier: "de_CH", input: "1'234.56", expected: "1234.56"),
+            .init(localeIdentifier: "de_CH", input: "1'234'567", expected: "1234567"),
+            .init(localeIdentifier: "de_CH", input: "1’234.56", expected: "1234.56"),
+            .init(localeIdentifier: "de_CH", input: "1’234’567", expected: "1234567"),
+            .init(localeIdentifier: "de_CH", input: "0.1234", expected: "0.1234"),
+            .init(localeIdentifier: "de_CH", input: "3.26", expected: "3.26"),
+            .init(localeIdentifier: "de_CH", input: "1'234", expected: "1234"),
+            .init(localeIdentifier: "fr_CH", input: "1'234.56", expected: "1234.56"),
+            .init(localeIdentifier: "fr_CH", input: "1'234'567", expected: "1234567"),
+
+            // Cross-format robustness
+            .init(localeIdentifier: "en_US", input: "$1,000.50", expected: "1000.50"),
+            .init(localeIdentifier: "en_US", input: " 3,26 ", expected: "3.26"),
+            .init(localeIdentifier: "de_DE", input: "1,234.56", expected: "1234.56"),
+            .init(localeIdentifier: "de_DE", input: "1.234,56", expected: "1234.56")
+        ]
+
+        for testCase in cases {
+            assertParsedNormalized(
+                testCase.input,
+                localeIdentifier: testCase.localeIdentifier,
+                expected: testCase.expected
+            )
+        }
     }
 }
