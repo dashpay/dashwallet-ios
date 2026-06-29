@@ -17,6 +17,9 @@
 
 import Foundation
 import Combine
+#if canImport(UIKit)
+import UIKit
+#endif
 
 private let defaultCurrency = kDefaultCurrencyCode
 
@@ -126,6 +129,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             amount = input.decimal() ?? 0
             checkAmountForErrors()
         }
+    }
+
+    func pasteFromClipboard() {
+        #if canImport(UIKit)
+        guard let raw = UIPasteboard.general.string else { return }
+        let locale = Locale.current
+        guard let parsed = PastedAmountParser.parse(raw, locale: locale) else { return }
+        let pastedValue = PastedAmountParser.editableString(from: parsed.decimalValue, locale: locale) ?? parsed.normalizedString
+        input = pastedValue
+        #endif
     }
     
     var costMessage: String {

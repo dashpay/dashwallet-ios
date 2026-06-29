@@ -21,9 +21,16 @@ import SwiftUI
 struct DashSpendAmountView: View {
     let currencySymbol: String
     let amount: String
+    let onPaste: (() -> Void)?
+
+    init(currencySymbol: String, amount: String, onPaste: (() -> Void)? = nil) {
+        self.currencySymbol = currencySymbol
+        self.amount = amount
+        self.onPaste = onPaste
+    }
 
     var body: some View {
-        DashUIKit.SwapAmountView(amount: amount, symbol: currencySymbol)
+        DashUIKit.SwapAmountView(amount: amount, symbol: currencySymbol, onPaste: onPaste)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, 40)
     }
