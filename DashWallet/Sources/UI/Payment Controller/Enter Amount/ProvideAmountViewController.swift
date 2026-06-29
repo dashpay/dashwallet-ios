@@ -172,11 +172,20 @@ extension ProvideAmountViewController {
 
     private func updateInitialAmount() {
         if let details {
-            let totalAmount = details.outputAmounts.reduce(UInt64(0)) { sum, element in
+            var totalAmount: UInt64 = 0
+
+            for element in details.outputAmounts {
                 if let number = element as? NSNumber {
-                    return sum + number.uint64Value
+                    let (nextTotal, overflow) = totalAmount.addingReportingOverflow(number.uint64Value)
+                    if overflow {
+                        present(error: InlineAmountMessageError(
+                            message: NSLocalizedString("Invalid payment request amount", comment: "Payment request error"),
+                            textColor: .systemRed
+                        ))
+                        return
+                    }
+                    totalAmount = nextTotal
                 }
-                return sum
             }
             sendAmountModel.updateCurrentAmountObject(with: totalAmount)
         }

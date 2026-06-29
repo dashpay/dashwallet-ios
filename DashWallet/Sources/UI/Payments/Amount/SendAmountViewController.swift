@@ -24,8 +24,8 @@ protocol SendAmountFlowSupporting: ErrorPresentable where Self: UIViewController
 extension SendAmountFlowSupporting {
     func validateInputAmount() -> Bool {
         if sendAmountSupportModel.isEnteredAmountLessThenMinimumOutputAmount {
-            let message = String(
-                format: "Dash payments can't be less than %@",
+            let message = String.localizedStringWithFormat(
+                NSLocalizedString("Dash payments can't be less than %@", comment: "Send Dash"),
                 sendAmountSupportModel.minimumOutputAmountFormattedString
             )
             present(message: message, level: .error)
@@ -48,7 +48,7 @@ extension SendAmountFlowSupporting {
             let title = NSLocalizedString("Looks like you are emptying your Dash Wallet", comment: "Leftover balance warning")
             let message = String.localizedStringWithFormat(
                 NSLocalizedString(
-                    "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash.",
+                    "Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash.",
                     comment: "Leftover balance warning"
                 ),
                 CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol
