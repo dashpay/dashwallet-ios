@@ -126,7 +126,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 input = "0"
             }
             
-            amount = input.decimal() ?? 0
+            amount = PastedAmountParser.parse(input, locale: .current)?.decimalValue ?? input.decimal(locale: .current) ?? 0
             checkAmountForErrors()
         }
     }

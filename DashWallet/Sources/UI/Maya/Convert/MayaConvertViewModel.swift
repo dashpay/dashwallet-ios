@@ -510,8 +510,9 @@ final class MayaConvertViewModel: ObservableObject {
     }
 
     private func parseInput(_ value: String) -> Double? {
-        let normalized = value.replacingOccurrences(of: ",", with: ".")
-        guard let d = Double(normalized), d > 0 else { return nil }
+        guard let parsed = PastedAmountParser.parse(value, locale: .current) else { return nil }
+        let d = NSDecimalNumber(decimal: parsed.decimalValue).doubleValue
+        guard d > 0 else { return nil }
         return d
     }
 
@@ -607,7 +608,8 @@ final class MayaConvertViewModel: ObservableObject {
     private static func sanitize(_ raw: String, currency: CurrencyOption) -> String {
         guard !raw.isEmpty else { return raw }
 
-        let s = raw.replacingOccurrences(of: ",", with: ".")
+        let s = PastedAmountParser.canonicalEditableString(from: raw, locale: .current)
+            ?? raw.replacingOccurrences(of: ",", with: ".")
         let maxDecimals: Int
         switch currency {
         case .fiat: maxDecimals = 2
