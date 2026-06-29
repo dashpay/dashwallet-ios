@@ -81,7 +81,7 @@ extension Decimal {
     /// - Returns: Formatted fiat amount
     ///
     var formattedFiatAmount: String {
-        NumberFormatter.fiatFormatter.string(from: self as NSNumber)!
+        NumberFormatter.fiatFormatter.string(from: self as NSNumber) ?? "\(self)"
     }
 
     /// Converts `Decimal` to formatted amount string for provided currency
@@ -92,7 +92,7 @@ extension Decimal {
     /// - Returns: Formatted fiat amount
     ///
     func formattedFiatAmount(_ currency: String) -> String {
-        NumberFormatter.fiatFormatter(currencyCode: currency).string(from: self as NSNumber)!
+        NumberFormatter.fiatFormatter(currencyCode: currency).string(from: self as NSNumber) ?? "\(self)"
     }
 
     /// Converts `Decimal` to formatted dash string. 123456780 -> "DASH 1"
@@ -162,14 +162,18 @@ extension NSDecimalNumber {
 
 enum DashAmountFormatter {
     static func formattedDashAmount(_ value: Decimal, locale: Locale = .current) -> String {
-        let formatter = NumberFormatter.dashFormatter.copy() as! NumberFormatter
+        let formatter = copiedFormatter(from: NumberFormatter.dashFormatter)
         formatter.locale = locale
-        return formatter.string(from: value as NSNumber)!
+        return formatter.string(from: value as NSNumber) ?? value.string
     }
 
     static func formattedDashAmountWithoutCurrencySymbol(_ value: Decimal, locale: Locale = .current) -> String {
-        let formatter = NumberFormatter.dashDecimalFormatter.copy() as! NumberFormatter
+        let formatter = copiedFormatter(from: NumberFormatter.dashDecimalFormatter)
         formatter.locale = locale
-        return formatter.string(from: value as NSNumber)!
+        return formatter.string(from: value as NSNumber) ?? value.string
+    }
+
+    private static func copiedFormatter(from formatter: NumberFormatter) -> NumberFormatter {
+        (formatter.copy() as? NumberFormatter) ?? formatter
     }
 }

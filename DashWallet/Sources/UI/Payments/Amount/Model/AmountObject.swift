@@ -46,13 +46,13 @@ struct AmountObject: Equatable {
         self.fiatCurrencyCode = fiatCurrencyCode
         self.localFormatter = localFormatter
 
-        let dashNumber = Decimal(string: dashAmountString, locale: inputLocale)!
+        let dashNumber = Self.decimal(from: dashAmountString, locale: inputLocale) ?? 0
         let duffsNumber = Decimal(DUFFS)
         let plainAmount = dashNumber * duffsNumber
 
         self.plainAmount = NSDecimalNumber(decimal: plainAmount.whole).uint64Value
 
-        let dashFormatter = NumberFormatter.dashFormatter.copy() as! NumberFormatter
+        let dashFormatter = Self.copiedFormatter(from: NumberFormatter.dashFormatter)
         dashFormatter.locale = inputLocale
         mainFormatted = dashFormatter
             .inputString(from: dashNumber as NSNumber, and: dashAmountString, locale: inputLocale) ??
@@ -60,7 +60,7 @@ struct AmountObject: Equatable {
 
         if plainAmount == 0 {
             supplementaryAmount = 0
-            supplementaryFormatted = localFormatter.string(from: 0.0)!
+            supplementaryFormatted = localFormatter.string(from: 0.0) ?? "0"
         } else if let localAmount = try? currencyExchanger.convertDash(amount: dashNumber, to: fiatCurrencyCode),
                   let str = localFormatter.string(from: localAmount as NSNumber) {
             supplementaryAmount = localAmount
@@ -84,19 +84,22 @@ struct AmountObject: Equatable {
         self.fiatCurrencyCode = fiatCurrencyCode
         self.localFormatter = localFormatter
 
-        let localNumber = Decimal(string: localAmountString, locale: inputLocale)!
-        let localCurrencyFormatted = localFormatter.inputString(from: localNumber as NSNumber, and: localAmountString, locale: inputLocale)!
+        guard let localNumber = Self.decimal(from: localAmountString, locale: inputLocale) else {
+            return nil
+        }
+
+        let localCurrencyFormatted = localFormatter.inputString(from: localNumber as NSNumber, and: localAmountString, locale: inputLocale) ?? localAmountString
         supplementaryFormatted = localCurrencyFormatted
         supplementaryAmount = localNumber
 
         if localNumber.isZero {
             plainAmount = 0
-            let dashFormatter = NumberFormatter.dashFormatter.copy() as! NumberFormatter
+            let dashFormatter = Self.copiedFormatter(from: NumberFormatter.dashFormatter)
             dashFormatter.locale = inputLocale
-            mainFormatted = dashFormatter.string(from: 0)!
+            mainFormatted = dashFormatter.string(from: 0) ?? "0"
         } else if let dashAmount = try? currencyExchanger.convertToDash(amount: localNumber, currency: fiatCurrencyCode),
                   let str = {
-                      let dashFormatter = NumberFormatter.dashFormatter.copy() as! NumberFormatter
+                      let dashFormatter = Self.copiedFormatter(from: NumberFormatter.dashFormatter)
                       dashFormatter.locale = inputLocale
                       return dashFormatter.string(from: dashAmount as NSNumber)
                   }() {
@@ -139,19 +142,19 @@ extension AmountObject {
     var localAmount: AmountObject {
         if amountType == .supplementary { return self }
 
-        let numberFormatter = localFormatter.copy() as! NumberFormatter
+        let numberFormatter = Self.copiedFormatter(from: localFormatter)
         numberFormatter.numberStyle = .none
         numberFormatter.minimumIntegerDigits = 1
         numberFormatter.minimumFractionDigits = 0
         numberFormatter.maximumFractionDigits = localFormatter.maximumFractionDigits
 
-        guard let amountInternalRepresentation = numberFormatter.string(from: supplementaryAmount as NSDecimalNumber) else {
-            fatalError("Can't convert dash amount: \(plainAmount.formattedDashAmount) to local amount. Supplementary Amount = \(String(describing: supplementaryAmount))")
-        }
-
-        guard let formatterAmount = localFormatter.inputString(from: supplementaryAmount as NSNumber, and: amountInternalRepresentation, locale: inputLocale) else {
-            fatalError("Can't convert dash amount: \(plainAmount.formattedDashAmount) to local amount. Supplementary Amount = \(String(describing: supplementaryAmount))")
-        }
+        let amountInternalRepresentation = numberFormatter.string(from: supplementaryAmount as NSDecimalNumber)
+            ?? NSDecimalNumber(decimal: supplementaryAmount).stringValue
+        let formatterAmount = localFormatter.inputString(from: supplementaryAmount as NSNumber,
+                                                         and: amountInternalRepresentation,
+                                                         locale: inputLocale)
+            ?? localFormatter.string(from: supplementaryAmount as NSNumber)
+            ?? amountInternalRepresentation
 
         return AmountObject(amountInternalRepresentation: amountInternalRepresentation,
                             plainAmount: plainAmount,
@@ -178,9 +181,17 @@ extension AmountObject {
     }
 
     private static func dashInputString(from amount: Decimal, locale: Locale) -> String {
-        let formatter = NumberFormatter.dashDecimalFormatter.copy() as! NumberFormatter
+        let formatter = copiedFormatter(from: NumberFormatter.dashDecimalFormatter)
         formatter.locale = locale
-        return formatter.string(from: amount as NSDecimalNumber)!
+        return formatter.string(from: amount as NSDecimalNumber) ?? NSDecimalNumber(decimal: amount).stringValue
+    }
+
+    private static func decimal(from string: String, locale: Locale) -> Decimal? {
+        PastedAmountParser.parse(string, locale: locale)?.decimalValue ?? Decimal(string: string, locale: locale)
+    }
+
+    private static func copiedFormatter(from formatter: NumberFormatter) -> NumberFormatter {
+        (formatter.copy() as? NumberFormatter) ?? formatter
     }
 }
 
@@ -220,8 +231,7 @@ enum PastedAmountParser {
 
     static func parse(_ string: String, locale: Locale) -> ParsedAmount? {
         let trimmedInput = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let body = trimmedAmountBody(from: trimmedInput) else { return nil }
-        guard body.allSatisfy({ isSupportedBodyCharacter($0) }) else { return nil }
+        guard let body = normalizedAmountBody(from: trimmedInput, locale: locale) else { return nil }
         guard body.contains(where: { $0.isASCIIAmountDigit }) else { return nil }
 
         let characters = Array(body)
@@ -269,6 +279,21 @@ enum PastedAmountParser {
         return ParsedAmount(decimalValue: decimalValue, normalizedString: normalizedString)
     }
 
+    static func canonicalEditableString(from string: String, locale: Locale) -> String? {
+        let trimmedInput = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let body = normalizedAmountBody(from: trimmedInput, locale: locale),
+              let parsedAmount = parse(trimmedInput, locale: locale) else {
+            return nil
+        }
+
+        var normalizedString = parsedAmount.normalizedString
+        if body.last == ".", !normalizedString.contains(".") {
+            normalizedString += "."
+        }
+
+        return normalizedString
+    }
+
     static func editableString(from decimalValue: Decimal, locale: Locale) -> String? {
         let formatter = NumberFormatter()
         formatter.locale = locale
@@ -311,18 +336,36 @@ enum PastedAmountParser {
         return .decimal(index: singleIndex)
     }
 
-    private static func trimmedAmountBody(from string: String) -> String? {
+    private static func normalizedAmountBody(from string: String, locale: Locale) -> String? {
         guard !string.isEmpty else { return nil }
         guard !string.contains(where: { unsupportedSignCharacters.contains($0) }) else { return nil }
 
         let characters = Array(string)
-        guard let startIndex = characters.firstIndex(where: { isAllowedBodyCharacter($0) }),
-              let endIndex = characters.lastIndex(where: { isAllowedBodyCharacter($0) }),
+        guard let startIndex = characters.firstIndex(where: { isAllowedBodyCharacter($0, locale: locale) }),
+              let endIndex = characters.lastIndex(where: { isAllowedBodyCharacter($0, locale: locale) }),
               startIndex <= endIndex else {
             return nil
         }
 
-        return String(characters[startIndex...endIndex])
+        let body = characters[startIndex...endIndex]
+        var normalized = String()
+        normalized.reserveCapacity(body.count)
+
+        for character in body {
+            if let digit = character.wholeNumberValue {
+                normalized.append(String(digit))
+            } else if isLocaleDecimalSeparator(character, locale: locale) {
+                normalized.append(".")
+            } else if isLocaleGroupingSeparator(character, locale: locale) {
+                normalized.append(",")
+            } else if groupingCharacters.contains(character) || character == "." || character == "," {
+                normalized.append(character)
+            } else {
+                return nil
+            }
+        }
+
+        return normalized
     }
 
     private static func isValidGrouping(_ string: String) -> Bool {
@@ -359,7 +402,7 @@ enum PastedAmountParser {
     }
 
     private static func isSupportedBodyCharacter(_ character: Character) -> Bool {
-        isAllowedBodyCharacter(character)
+        character.isASCIIAmountDigit
     }
 }
 
@@ -367,5 +410,30 @@ private extension Character {
     var isASCIIAmountDigit: Bool {
         guard unicodeScalars.count == 1, let scalar = unicodeScalars.first else { return false }
         return scalar.value >= 48 && scalar.value <= 57
+    }
+}
+
+private extension PastedAmountParser {
+    static func isAllowedBodyCharacter(_ character: Character, locale: Locale) -> Bool {
+        character.wholeNumberValue != nil
+            || character == "."
+            || character == ","
+            || groupingCharacters.contains(character)
+            || isLocaleDecimalSeparator(character, locale: locale)
+            || isLocaleGroupingSeparator(character, locale: locale)
+    }
+
+    static func isLocaleDecimalSeparator(_ character: Character, locale: Locale) -> Bool {
+        guard let separator = locale.decimalSeparator, let separatorCharacter = separator.first, separator.count == 1 else {
+            return false
+        }
+        return character == separatorCharacter
+    }
+
+    static func isLocaleGroupingSeparator(_ character: Character, locale: Locale) -> Bool {
+        guard let separator = locale.groupingSeparator, let separatorCharacter = separator.first, separator.count == 1 else {
+            return false
+        }
+        return character == separatorCharacter
     }
 }
