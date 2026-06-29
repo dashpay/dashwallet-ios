@@ -312,3 +312,215 @@ final class PaymentProtocolTests: XCTestCase {
         }
     }
 }
+
+// MARK: - L5 orchestrator (fakes, no network/SDK)
+
+private final class FakeTransport: PaymentProtocolTransporting {
+    var request: PaymentRequest
+    var ack = PaymentACK(payment: nil, memo: "thanks")
+    var postShouldThrow: BIP70Error?
+    var onPost: (() -> Void)?
+    private(set) var postedPayment: Payment?
+    init(_ request: PaymentRequest) { self.request = request }
+    func fetchRequest(from url: URL, scheme: String) async throws -> PaymentRequest { request }
+    func postPayment(_ payment: Payment, to url: URL, scheme: String) async throws -> PaymentACK {
+        onPost?(); postedPayment = payment
+        if let e = postShouldThrow { throw e }
+        return ack
+    }
+}
+
+private final class FakeWallet: WalletSending {
+    var prepared = PreparedSend(txData: Data([0xde, 0xad, 0xbe, 0xef]), fee: 226,
+                                txHashDisplay: Data((0..<32).map { UInt8($0) }))
+    var calls: [String] = []
+    var lastRecipients: [(address: String, amountDuffs: UInt64)] = []
+    func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
+        calls.append("build"); lastRecipients = recipients; return prepared
+    }
+    func broadcast(_ p: PreparedSend) async throws -> String {
+        calls.append("broadcast"); return p.txHashDisplay.map { String(format: "%02x", $0) }.joined()
+    }
+}
+
+private final class FakeReceive: ReceiveAddressProviding {
+    var address: String? = "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr"
+    func receiveAddress() -> String? { address }
+}
+
+private final class FakeAuth: SendAuthorizing {
+    var error: Error?
+    func authorize() async throws { if let e = error { throw e } }
+}
+
+final class BIP70PaymentServiceTests: XCTestCase {
+
+    private let url = URL(string: "http://h/pr")!
+    private static let testnetAddress = "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr"
+    private var futureExpiry: UInt64 { UInt64(Date().timeIntervalSince1970) + 3600 }
+    // P2PKH for a known testnet address, so the service's script→address derivation round-trips it.
+    private var p2pkh: Data { ScriptAddressCodec.scriptPubKey(forAddress: Self.testnetAddress, network: .testnet)! }
+    private var p2sh: Data { Data([0xa9, 0x14]) + Data((1...20).map { UInt8($0) }) + Data([0x87]) }
+
+    private func unsigned(network: String? = "test", outputs: [PaymentOutput]? = nil,
+                          paymentURL: String? = "http://h/pay", expires: UInt64? = nil,
+                          merchantData: Data? = Data([0x01, 0x02, 0x03])) -> PaymentRequest {
+        let outs = outputs ?? [PaymentOutput(amount: 100_000, script: p2pkh)]
+        let details = PaymentDetails(network: network, outputs: outs, expires: expires ?? futureExpiry,
+                                     memo: "memo", paymentURL: paymentURL, merchantData: merchantData)
+        return PaymentRequest(pkiType: "none", serializedDetails: details.encoded())
+    }
+
+    private func service(_ t: FakeTransport, _ w: FakeWallet, receive: FakeReceive = FakeReceive(),
+                         auth: FakeAuth = FakeAuth(), allowUntrusted: Bool = true) -> BIP70PaymentService {
+        BIP70PaymentService(transport: t, verifier: PaymentRequestVerifier(), wallet: w,
+                            receiveAddress: receive, auth: auth, allowUntrustedUnsigned: allowUntrusted)
+    }
+
+    private func assertThrowsBIP70<T>(_ expression: @autoclosure () async throws -> T, _ expected: BIP70Error,
+                                      file: StaticString = #filePath, line: UInt = #line) async {
+        do { _ = try await expression(); XCTFail("expected throw", file: file, line: line) }
+        catch let e as BIP70Error { XCTAssertEqual(e, expected, file: file, line: line) }
+        catch { XCTFail("non-BIP70 error: \(error)", file: file, line: line) }
+    }
+
+    func testPrepareBuildsAndSpendsNothing() async throws {
+        let w = FakeWallet()
+        _ = try await service(FakeTransport(unsigned()), w).prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    func testConfirmAndSendOrderAndBytes() async throws {
+        let w = FakeWallet(); let t = FakeTransport(unsigned()); t.onPost = { w.calls.append("post") }
+        let svc = service(t, w)
+        let confirmation = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        let result = try await svc.confirmAndSend(confirmation)
+        XCTAssertEqual(w.calls, ["build", "broadcast", "post"]) // broadcast strictly before POST
+        XCTAssertEqual(t.postedPayment?.transactions, [w.prepared.txData])
+        XCTAssertEqual(result.ackMemo, "thanks")
+    }
+
+    func testMultiOutputPassthrough() async throws {
+        let w = FakeWallet()
+        let outs = [PaymentOutput(amount: 100_000, script: p2pkh), PaymentOutput(amount: 200_000, script: p2sh)]
+        let svc = service(FakeTransport(unsigned(outputs: outs)), w)
+        let confirmation = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        _ = try await svc.confirmAndSend(confirmation)
+        XCTAssertEqual(confirmation.recipients.count, 2)
+        XCTAssertEqual(confirmation.amount, 300_000)
+        XCTAssertEqual(w.lastRecipients.map { $0.amountDuffs }, [100_000, 200_000])
+    }
+
+    func testNetworkMismatchThrowsBeforeBuild() async {
+        let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned(network: "test")), w)
+        await assertThrowsBIP70(try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .mainnet),
+                                .networkMismatch(requested: "test"))
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    func testNilNetworkUsesActiveNetwork() async throws {
+        // nil details.network ⇒ no mismatch; the active .testnet drives L4 address derivation.
+        let svc = service(FakeTransport(unsigned(network: nil)), FakeWallet())
+        let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        XCTAssertEqual(c.recipients.first?.address, "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr")
+    }
+
+    func testPrepareExpiryThrows() async {
+        let svc = service(FakeTransport(unsigned(expires: 1)), FakeWallet())
+        await assertThrowsBIP70(try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet), .expired)
+    }
+
+    func testSendTimeExpiryThrowsAndDoesNotBroadcast() async throws {
+        let w = FakeWallet()
+        let expires = UInt64(Date().timeIntervalSince1970) + 30
+        let svc = service(FakeTransport(unsigned(expires: expires)), w)
+        let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        await assertThrowsBIP70(try await svc.confirmAndSend(c, now: Date(timeIntervalSince1970: Double(expires) + 100)), .expired)
+        XCTAssertFalse(w.calls.contains("broadcast"))
+    }
+
+    func testAuthCancelStopsBeforeBuild() async {
+        let w = FakeWallet(); let auth = FakeAuth(); auth.error = BIP70Error.authCancelled
+        let svc = service(FakeTransport(unsigned()), w, auth: auth)
+        await assertThrowsBIP70(try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet), .authCancelled)
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    func testSoftPostFailureAfterBroadcast() async throws {
+        let w = FakeWallet(); let t = FakeTransport(unsigned()); t.postShouldThrow = .unexpectedResponse(host: "h")
+        let svc = service(t, w)
+        let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        let result = try await svc.confirmAndSend(c) // must NOT throw — coins already moved
+        XCTAssertNil(result.ackMemo)
+        XCTAssertTrue(w.calls.contains("broadcast"))
+    }
+
+    func testRefundToFromOwnAddress() async throws {
+        let t = FakeTransport(unsigned()); let receive = FakeReceive()
+        let svc = service(t, FakeWallet(), receive: receive)
+        let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        _ = try await svc.confirmAndSend(c)
+        XCTAssertEqual(t.postedPayment?.refundTo.count, 1)
+        XCTAssertEqual(t.postedPayment?.refundTo.first?.script,
+                       ScriptAddressCodec.scriptPubKey(forAddress: receive.address!, network: .testnet))
+        XCTAssertEqual(t.postedPayment?.refundTo.first?.amount, 100_000)
+        XCTAssertEqual(t.postedPayment?.merchantData, Data([0x01, 0x02, 0x03]))
+        XCTAssertNil(t.postedPayment?.memo)
+    }
+
+    func testNilReceiveAddressGivesEmptyRefund() async throws {
+        let t = FakeTransport(unsigned()); let receive = FakeReceive(); receive.address = nil
+        let svc = service(t, FakeWallet(), receive: receive)
+        let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        _ = try await svc.confirmAndSend(c)
+        XCTAssertEqual(t.postedPayment?.refundTo.isEmpty, true)
+    }
+
+    func testUntrustedUnsignedPolicyFlag() async throws {
+        await assertThrowsBIP70(
+            try await service(FakeTransport(unsigned()), FakeWallet(), allowUntrusted: false)
+                .prepareForConfirmation(from: url, scheme: "dash", network: .testnet),
+            .untrustedCertificate(detail: "Unsigned request"))
+        _ = try await service(FakeTransport(unsigned()), FakeWallet(), allowUntrusted: true)
+            .prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+    }
+
+    func testCallbackURLFormat() async throws {
+        let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned()), w)
+        let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet, callbackScheme: "ctx")
+        let result = try await svc.confirmAndSend(c)
+        let hex = w.prepared.txHashDisplay.map { String(format: "%02x", $0) }.joined()
+        XCTAssertEqual(result.callbackURL?.absoluteString,
+                       "ctx://callback=payack&address=ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr&txid=\(hex)")
+    }
+
+    // MARK: BIP70URI
+
+    func testURIParsesPayToDashAndBIP72() {
+        let uri = BIP70URI("pay:Xabc?amount=0.001&r=http%3A%2F%2Fh%2Fpr&sender=ctx")
+        XCTAssertEqual(uri?.scheme, "dash")
+        XCTAssertEqual(uri?.isBIP70, true)
+        XCTAssertEqual(uri?.r?.absoluteString, "http://h/pr")
+        XCTAssertEqual(uri?.callbackScheme, "ctx")
+        XCTAssertEqual(uri?.amount, 100_000)
+        XCTAssertEqual(uri?.address, "Xabc")
+    }
+
+    func testURIAddressless() {
+        let uri = BIP70URI("dash:?r=http%3A%2F%2Fh%2Fpr")
+        XCTAssertEqual(uri?.isBIP70, true)
+        XCTAssertNil(uri?.address)
+    }
+
+    func testURIPlainAddressIsNotBIP70() {
+        let uri = BIP70URI("dash:Xabc?amount=1.5")
+        XCTAssertEqual(uri?.isBIP70, false)
+        XCTAssertEqual(uri?.amount, 150_000_000)
+    }
+
+    func testURIRejectsNonPaymentScheme() {
+        XCTAssertNil(BIP70URI("http://foo"))
+    }
+}

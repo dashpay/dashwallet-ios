@@ -129,5 +129,240 @@ check("one bad output → .nonStandardScript",
 check("nil amount → .malformedRequest",
       resolveThrows([PaymentOutput(amount: nil, script: fixtureScript)], .malformedRequest))
 
+// ---- L5 fakes + async helpers ----
+
+final class FakeTransport: PaymentProtocolTransporting {
+    var request: PaymentRequest
+    var ack = PaymentACK(payment: nil, memo: "thanks")
+    var postShouldThrow: BIP70Error?
+    var onPost: (() -> Void)?
+    private(set) var postedPayment: Payment?
+    init(_ request: PaymentRequest) { self.request = request }
+    func fetchRequest(from url: URL, scheme: String) async throws -> PaymentRequest { request }
+    func postPayment(_ payment: Payment, to url: URL, scheme: String) async throws -> PaymentACK {
+        onPost?(); postedPayment = payment
+        if let e = postShouldThrow { throw e }
+        return ack
+    }
+}
+final class FakeWallet: WalletSending {
+    var prepared = PreparedSend(txData: Data([0xde, 0xad, 0xbe, 0xef]), fee: 226,
+                                txHashDisplay: Data((0..<32).map { UInt8($0) }))
+    var calls: [String] = []
+    var lastRecipients: [(address: String, amountDuffs: UInt64)] = []
+    func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
+        calls.append("build"); lastRecipients = recipients; return prepared
+    }
+    func broadcast(_ p: PreparedSend) async throws -> String {
+        calls.append("broadcast"); return p.txHashDisplay.map { String(format: "%02x", $0) }.joined()
+    }
+}
+final class FakeReceive: ReceiveAddressProviding {
+    var address: String? = "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr"
+    func receiveAddress() -> String? { address }
+}
+final class FakeAuth: SendAuthorizing {
+    var error: Error?
+    private(set) var authorized = false
+    func authorize() async throws { if let e = error { throw e }; authorized = true }
+}
+
+func runSync<T>(_ body: @escaping () async throws -> T) -> Result<T, Error> {
+    let sem = DispatchSemaphore(value: 0)
+    var out: Result<T, Error>!
+    Task { do { out = .success(try await body()) } catch { out = .failure(error) }; sem.signal() }
+    sem.wait()
+    return out
+}
+func threwBIP70<T>(_ r: Result<T, Error>, _ expected: BIP70Error) -> Bool {
+    if case .failure(let e) = r, let b = e as? BIP70Error { return b == expected }
+    return false
+}
+func value<T>(_ r: Result<T, Error>) -> T? { if case .success(let v) = r { return v } ; return nil }
+
+let futureExpiry = UInt64(Date().timeIntervalSince1970) + 3600
+func unsignedRequest(network: String? = "test", outputs: [PaymentOutput]? = nil,
+                     paymentURL: String? = "http://h/pay", expires: UInt64 = futureExpiry,
+                     merchantData: Data? = Data([0x01, 0x02, 0x03])) -> PaymentRequest {
+    let outs = outputs ?? [PaymentOutput(amount: 100000, script: fixtureScript)]
+    let details = PaymentDetails(network: network, outputs: outs, expires: expires,
+                                 memo: "Test memo", paymentURL: paymentURL, merchantData: merchantData)
+    return PaymentRequest(pkiType: "none", serializedDetails: details.encoded())
+}
+func makeService(_ transport: FakeTransport, _ wallet: FakeWallet,
+                 receive: FakeReceive = FakeReceive(), auth: FakeAuth = FakeAuth(),
+                 allowUntrusted: Bool = true) -> BIP70PaymentService {
+    BIP70PaymentService(transport: transport, verifier: PaymentRequestVerifier(), wallet: wallet,
+                        receiveAddress: receive, auth: auth, allowUntrustedUnsigned: allowUntrusted)
+}
+let anyURL = URL(string: "http://h/pr")!
+
+print("\nL5 — orchestrator (fakes)")
+
+// Spend-safety: prepare alone must not build/broadcast.
+do {
+    let w = FakeWallet(); let svc = makeService(FakeTransport(unsignedRequest()), w)
+    _ = runSync { try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet) }
+    check("prepare builds/spends nothing (calls empty)", w.calls.isEmpty)
+}
+
+// Call order build → broadcast → post.
+do {
+    let w = FakeWallet(); let t = FakeTransport(unsignedRequest()); t.onPost = { w.calls.append("post") }
+    let svc = makeService(t, w)
+    let r = runSync {
+        let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
+        return try await svc.confirmAndSend(c)
+    }
+    check("confirmAndSend order == [build, broadcast, post]", w.calls == ["build", "broadcast", "post"])
+    check("POST carries the prepared signed bytes", t.postedPayment?.transactions == [w.prepared.txData])
+    check("ack memo surfaced", value(r)?.ackMemo == "thanks")
+}
+
+// Multi-output passthrough + order.
+do {
+    let w = FakeWallet()
+    let outs = [PaymentOutput(amount: 100000, script: fixtureScript), PaymentOutput(amount: 200000, script: p2sh)]
+    let svc = makeService(FakeTransport(unsignedRequest(outputs: outs)), w)
+    let r = runSync {
+        let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
+        _ = try await svc.confirmAndSend(c); return c
+    }
+    let c = value(r)
+    check("multi-output: 2 recipients, order preserved, amount 300000",
+          c?.recipients.count == 2 && c?.recipients.first?.amount == 100000 && c?.amount == 300000)
+    check("wallet got both recipients [100000, 200000]", w.lastRecipients.map { $0.amountDuffs } == [100000, 200000])
+}
+
+// Network mismatch (test request, mainnet active) → throws, no build.
+do {
+    let w = FakeWallet(); let svc = makeService(FakeTransport(unsignedRequest(network: "test")), w)
+    let r = runSync { try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .mainnet) }
+    check("network mismatch → .networkMismatch(test); no build",
+          threwBIP70(r, .networkMismatch(requested: "test")) && w.calls.isEmpty)
+}
+
+// nil network → no check (uses active network).
+do {
+    let svc = makeService(FakeTransport(unsignedRequest(network: nil)), FakeWallet())
+    let r = runSync { try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet) }
+    check("nil network accepted (no mismatch)", value(r)?.recipients.first?.address == "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr")
+}
+
+// Expiry (unsigned, past) → .expired.
+do {
+    let svc = makeService(FakeTransport(unsignedRequest(expires: 1)), FakeWallet())
+    let r = runSync { try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet) }
+    check("past expiry → .expired", threwBIP70(r, .expired))
+}
+
+// Send-time expiry re-check → .expired, no broadcast.
+do {
+    let w = FakeWallet()
+    let expires = UInt64(Date().timeIntervalSince1970) + 30
+    let svc = makeService(FakeTransport(unsignedRequest(expires: expires)), w)
+    let r = runSync {
+        let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
+        return try await svc.confirmAndSend(c, now: Date(timeIntervalSince1970: Double(expires) + 100))
+    }
+    check("send-time expiry → .expired; nothing broadcast", threwBIP70(r, .expired) && !w.calls.contains("broadcast"))
+}
+
+// Auth cancel → .authCancelled; nothing built.
+do {
+    let w = FakeWallet(); let auth = FakeAuth(); auth.error = BIP70Error.authCancelled
+    let svc = makeService(FakeTransport(unsignedRequest()), w, auth: auth)
+    let r = runSync { try await svc.confirmAndSendHeadless(from: anyURL, scheme: "dash", network: .testnet) }
+    check("auth cancel → .authCancelled; no build", threwBIP70(r, .authCancelled) && w.calls.isEmpty)
+}
+
+// Soft POST failure after broadcast → no throw, ackMemo nil, money moved.
+do {
+    let w = FakeWallet(); let t = FakeTransport(unsignedRequest()); t.postShouldThrow = .unexpectedResponse(host: "h")
+    let svc = makeService(t, w)
+    let r = runSync {
+        let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
+        return try await svc.confirmAndSend(c)
+    }
+    check("soft POST fail: succeeds, ackMemo nil, broadcast happened",
+          value(r) != nil && value(r)?.ackMemo == nil && w.calls.contains("broadcast"))
+}
+
+// Unsigned + no paymentURL → no missingPaymentURL gate (not secure); no POST.
+do {
+    let w = FakeWallet()
+    let svc = makeService(FakeTransport(unsignedRequest(paymentURL: nil)), w)
+    let r = runSync {
+        let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
+        return try await svc.confirmAndSend(c)
+    }
+    check("unsigned, no paymentURL: sends, no POST", value(r) != nil && w.calls == ["build", "broadcast"])
+}
+
+// refund_to from own receive address → single P2PKH for the full amount.
+do {
+    let w = FakeWallet(); let t = FakeTransport(unsignedRequest()); let receive = FakeReceive()
+    let svc = makeService(t, w, receive: receive)
+    _ = runSync {
+        let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
+        return try await svc.confirmAndSend(c)
+    }
+    let refund = t.postedPayment?.refundTo
+    let expectedScript = ScriptAddressCodec.scriptPubKey(forAddress: receive.address!, network: .testnet)
+    check("refund_to: 1 P2PKH of own address for full amount",
+          refund?.count == 1 && refund?.first?.script == expectedScript && refund?.first?.amount == 100000)
+    check("Payment merchantData passthrough + memo nil",
+          t.postedPayment?.merchantData == Data([0x01, 0x02, 0x03]) && t.postedPayment?.memo == nil)
+}
+
+// nil receive address → empty refund_to; still succeeds.
+do {
+    let t = FakeTransport(unsignedRequest()); let receive = FakeReceive(); receive.address = nil
+    let svc = makeService(t, FakeWallet(), receive: receive)
+    let r = runSync {
+        let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
+        return try await svc.confirmAndSend(c)
+    }
+    check("nil receive → empty refund_to; send ok", value(r) != nil && (t.postedPayment?.refundTo.isEmpty ?? false))
+}
+
+// Untrusted-cert flag: unsigned blocked when disallowed, allowed when permitted.
+do {
+    let blocked = makeService(FakeTransport(unsignedRequest()), FakeWallet(), allowUntrusted: false)
+    let rb = runSync { try await blocked.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet) }
+    let allowed = makeService(FakeTransport(unsignedRequest()), FakeWallet(), allowUntrusted: true)
+    let ra = runSync { try await allowed.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet) }
+    check("allowUntrustedUnsigned=false blocks unsigned", threwBIP70(rb, .untrustedCertificate(detail: "Unsigned request")))
+    check("allowUntrustedUnsigned=true permits unsigned", value(ra) != nil)
+}
+
+// Callback URL format.
+do {
+    let w = FakeWallet()
+    let svc = makeService(FakeTransport(unsignedRequest()), w)
+    let r = runSync {
+        let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet, callbackScheme: "ctx")
+        return try await svc.confirmAndSend(c)
+    }
+    let hex = w.prepared.txHashDisplay.map { String(format: "%02x", $0) }.joined()
+    check("callback URL format",
+          value(r)?.callbackURL?.absoluteString == "ctx://callback=payack&address=ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr&txid=\(hex)")
+}
+
+print("\nL5 — BIP70URI")
+do {
+    let uri = BIP70URI("pay:Xabc?amount=0.001&r=http%3A%2F%2Fh%2Fpr&sender=ctx")
+    check("pay:→dash, r/sender/amount parsed",
+          uri?.scheme == "dash" && uri?.isBIP70 == true && uri?.r?.absoluteString == "http://h/pr"
+              && uri?.callbackScheme == "ctx" && uri?.amount == 100000 && uri?.address == "Xabc")
+}
+check("address-less dash:?r= is BIP70 with nil address", {
+    let u = BIP70URI("dash:?r=http%3A%2F%2Fh%2Fpr"); return u?.isBIP70 == true && u?.address == nil
+}())
+check("plain dash: address (no r) is not BIP70; amount→duffs", {
+    let u = BIP70URI("dash:Xabc?amount=1.5"); return u?.isBIP70 == false && u?.amount == 150000000
+}())
+check("non-payment scheme → nil", BIP70URI("http://foo") == nil)
+
 print("\n==== \(passed) passed, \(failed) failed ====")
 exit(failed == 0 ? 0 : 1)
