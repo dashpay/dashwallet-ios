@@ -135,4 +135,92 @@ final class PaymentProtocolTests: XCTestCase {
         XCTAssertTrue(verdict.isValid)  // pki_type none, not expired
         XCTAssertFalse(verdict.isSecure) // unsigned → not "secure"
     }
+
+    // MARK: - L3 transport (MockURLProtocol — see PhraseRepairEngineTests)
+
+    override func tearDown() {
+        MockURLProtocol.responseHandler = nil
+        MockURLProtocol.handler = nil
+        super.tearDown()
+    }
+
+    private func makeTransport() -> PaymentProtocolTransport {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        return PaymentProtocolTransport(session: URLSession(configuration: config))
+    }
+
+    private var requestURL: URL { URL(string: "https://merchant.example/i/abc")! }
+
+    private func assertThrowsBIP70<T>(_ expression: @autoclosure () async throws -> T,
+                                      _ matches: (BIP70Error) -> Bool,
+                                      file: StaticString = #filePath, line: UInt = #line) async {
+        do { _ = try await expression(); XCTFail("expected a throw", file: file, line: line) }
+        catch let error as BIP70Error { XCTAssertTrue(matches(error), "wrong BIP70Error: \(error)", file: file, line: line) }
+        catch { XCTFail("non-BIP70 error: \(error)", file: file, line: line) }
+    }
+
+    func testTransportFetchHappyPath() async throws {
+        let body = fixture
+        MockURLProtocol.responseHandler = { _ in (200, ["Content-Type": "application/dash-paymentrequest"], body) }
+        let req = try await makeTransport().fetchRequest(from: requestURL, scheme: "dash")
+        XCTAssertEqual(req.pkiType, "x509+sha256")
+        XCTAssertEqual(req.details.outputs.first?.amount, 100_000)
+    }
+
+    func testTransportRejectsWrongMIME() async {
+        let body = fixture
+        MockURLProtocol.responseHandler = { _ in (200, ["Content-Type": "text/plain"], body) }
+        await assertThrowsBIP70(try await makeTransport().fetchRequest(from: requestURL, scheme: "dash")) {
+            if case .unexpectedResponse = $0 { return true }; return false
+        }
+    }
+
+    func testTransportRejectsNon2xx() async {
+        MockURLProtocol.responseHandler = { _ in (404, ["Content-Type": "application/dash-paymentrequest"], Data()) }
+        await assertThrowsBIP70(try await makeTransport().fetchRequest(from: requestURL, scheme: "dash")) {
+            if case .unexpectedResponse = $0 { return true }; return false
+        }
+    }
+
+    func testTransportRejectsOversizedPayload() async {
+        let big = Data(count: 50_001)
+        MockURLProtocol.responseHandler = { _ in (200, ["Content-Type": "application/dash-paymentrequest"], big) }
+        await assertThrowsBIP70(try await makeTransport().fetchRequest(from: requestURL, scheme: "dash")) {
+            $0 == .payloadTooLarge
+        }
+    }
+
+    func testTransportFollowsBIP73() async throws {
+        let realURL = "https://merchant.example/real"
+        let body = fixture
+        MockURLProtocol.responseHandler = { req in
+            if req.url?.absoluteString == realURL {
+                return (200, ["Content-Type": "application/dash-paymentrequest"], body)
+            }
+            return (200, ["Content-Type": "text/uri-list"], Data("# comment\n\(realURL)\n".utf8))
+        }
+        let req = try await makeTransport().fetchRequest(from: URL(string: "https://merchant.example/list")!, scheme: "dash")
+        XCTAssertEqual(req.pkiType, "x509+sha256")
+    }
+
+    func testTransportPostPaymentSendsCorrectRequestAndParsesACK() async throws {
+        let payment = Payment(transactions: [Data([0x01, 0x02])], memo: "hi")
+        let ackBytes = PaymentACK(payment: payment, memo: "thanks").encoded()
+        final class Box { var method: String?; var contentType: String?; var accept: String?; var body: Data? }
+        let box = Box()
+        MockURLProtocol.responseHandler = { req in
+            box.method = req.httpMethod
+            box.contentType = req.value(forHTTPHeaderField: "Content-Type")
+            box.accept = req.value(forHTTPHeaderField: "Accept")
+            box.body = MockURLProtocol.bodyData(of: req)
+            return (200, ["Content-Type": "application/dash-paymentack"], ackBytes)
+        }
+        let ack = try await makeTransport().postPayment(payment, to: requestURL, scheme: "dash")
+        XCTAssertEqual(box.method, "POST")
+        XCTAssertEqual(box.contentType, "application/dash-payment")
+        XCTAssertEqual(box.accept, "application/dash-paymentack")
+        XCTAssertEqual(box.body, payment.encoded())
+        XCTAssertEqual(ack.memo, "thanks")
+    }
 }

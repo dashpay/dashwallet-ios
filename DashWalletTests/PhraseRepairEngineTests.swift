@@ -348,6 +348,10 @@ final class MockURLProtocol: URLProtocol {
 
     static var handler: ((URLRequest) -> (Int, Data))?
 
+    /// Like `handler` but also supplies response header fields, so MIME / `Content-Type`
+    /// validation can be exercised. Consulted before `handler` when set.
+    static var responseHandler: ((URLRequest) -> (Int, [String: String], Data))?
+
     static func bodyString(of request: URLRequest) -> String? {
         if let body = request.httpBody {
             return String(data: body, encoding: .utf8)
@@ -367,20 +371,45 @@ final class MockURLProtocol: URLProtocol {
         return String(data: data, encoding: .utf8)
     }
 
+    /// Raw request body bytes (handles both `httpBody` and `httpBodyStream`).
+    static func bodyData(of request: URLRequest) -> Data? {
+        if let body = request.httpBody { return body }
+        guard let stream = request.httpBodyStream else { return nil }
+        stream.open()
+        defer { stream.close() }
+        var data = Data()
+        let bufferSize = 1024
+        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+        defer { buffer.deallocate() }
+        while stream.hasBytesAvailable {
+            let read = stream.read(buffer, maxLength: bufferSize)
+            guard read > 0 else { break }
+            data.append(buffer, count: read)
+        }
+        return data
+    }
+
     override class func canInit(with request: URLRequest) -> Bool { true }
 
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
-        guard let handler = MockURLProtocol.handler else {
+        let statusCode: Int
+        let headerFields: [String: String]?
+        let data: Data
+        if let responseHandler = MockURLProtocol.responseHandler {
+            (statusCode, headerFields, data) = responseHandler(request)
+        } else if let handler = MockURLProtocol.handler {
+            (statusCode, data) = handler(request)
+            headerFields = nil
+        } else {
             client?.urlProtocol(self, didFailWithError: URLError(.unsupportedURL))
             return
         }
-        let (statusCode, data) = handler(request)
         let response = HTTPURLResponse(url: request.url ?? URL(string: "https://insight.dash.org")!,
                                        statusCode: statusCode,
                                        httpVersion: "HTTP/1.1",
-                                       headerFields: nil)!
+                                       headerFields: headerFields)!
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: data)
         client?.urlProtocolDidFinishLoading(self)
