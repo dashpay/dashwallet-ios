@@ -103,13 +103,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     @Published var input: String = "0" {
         didSet {
+            let decimalSeparator = Locale.current.decimalSeparator ?? "."
+
             // Replace the initial "0" when entering a new digit
-            if oldValue == "0" && input.count > 1 && input.first == "0" && input[input.index(after: input.startIndex)] != "." {
+            if oldValue == "0" && input.count > 1 && input.first == "0" && String(input[input.index(after: input.startIndex)]) != decimalSeparator {
                 input = String(input.dropFirst())
             }
             
             // Validate input to ensure no more than 2 decimal places
-            if let decimalSeparatorIndex = input.firstIndex(of: ".") {
+            if let decimalSeparatorCharacter = decimalSeparator.first,
+               let decimalSeparatorIndex = input.firstIndex(of: decimalSeparatorCharacter) {
                 let decimalPart = input[input.index(after: decimalSeparatorIndex)...]
                 if decimalPart.count > 2 {
                     input = oldValue
