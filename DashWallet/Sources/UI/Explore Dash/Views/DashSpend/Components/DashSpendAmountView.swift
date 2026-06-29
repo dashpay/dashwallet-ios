@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 struct DashSpendAmountView: View {
@@ -22,10 +23,7 @@ struct DashSpendAmountView: View {
     let amount: String
 
     var body: some View {
-        Text("\(currencySymbol) \(amount)")
-            .font(.largeTitle)
-            .lineLimit(1)
-            .minimumScaleFactor(0.5)
+        DashUIKit.SwapAmountView(amount: amount, symbol: currencySymbol)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, 40)
     }
