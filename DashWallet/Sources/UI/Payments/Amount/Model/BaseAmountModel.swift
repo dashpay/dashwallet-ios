@@ -76,7 +76,7 @@ class BaseAmountModel: ObservableObject {
 
     var localCurrency: String {
         let locale = Locale.current as NSLocale
-        return locale.displayName(forKey: .currencySymbol, value: localCurrencyCode)!
+        return locale.displayName(forKey: .currencySymbol, value: localCurrencyCode) ?? localCurrencyCode
     }
 
     public var errorHandler: ((Error) -> Void)?
@@ -274,7 +274,7 @@ extension BaseAmountModel {
         }
 
         let nf = supplementaryNumberFormatter
-        return nf.string(from: fiatAmount as NSNumber)!
+        return nf.string(from: fiatAmount as NSNumber) ?? fiatAmount.string
     }
 
     var walletBalanceFormatted: String {
@@ -330,7 +330,7 @@ extension BaseAmountModel {
 
         if activeAmountType == .main {
             validator = mainAmountValidator
-            numberFormatter = NumberFormatter.dashFormatter.copy() as! NumberFormatter
+            numberFormatter = (NumberFormatter.dashFormatter.copy() as? NumberFormatter) ?? NumberFormatter.dashFormatter
             numberFormatter.locale = inputLocale
         } else {
             validator = supplementaryAmountValidator

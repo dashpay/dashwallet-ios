@@ -168,6 +168,40 @@ final class AmountObjectTests: XCTestCase {
             XCTAssert(localAmount.amountInternalRepresentation == input)
         }
     }
+
+    func testArabicDashAmountParsing() {
+        let locale = Locale(identifier: "ar_EG")
+        let localFormatter = NumberFormatter.fiatFormatter(currencyCode: "USD")
+        localFormatter.locale = locale
+
+        let amount = AmountObject(
+            dashAmountString: "١٢٣٫٤٥",
+            fiatCurrencyCode: "USD",
+            localFormatter: localFormatter,
+            currencyExchanger: currencyExchanger,
+            inputLocale: locale
+        )
+
+        XCTAssertEqual(amount.plainAmount, Decimal(string: "123.45")!.plainDashAmount)
+        XCTAssertEqual(amount.amountInternalRepresentation, "١٢٣٫٤٥")
+    }
+
+    func testArabicLocalAmountParsing() {
+        let locale = Locale(identifier: "ar_EG")
+        let localFormatter = NumberFormatter.fiatFormatter(currencyCode: "USD")
+        localFormatter.locale = locale
+
+        let amount = AmountObject(
+            localAmountString: "١٢٣٫٤٥",
+            fiatCurrencyCode: "USD",
+            localFormatter: localFormatter,
+            currencyExchanger: currencyExchanger,
+            inputLocale: locale
+        )
+
+        XCTAssertEqual(amount?.supplementaryAmount, Decimal(string: "123.45"))
+        XCTAssertEqual(amount?.amountInternalRepresentation, "١٢٣٫٤٥")
+    }
 }
 
 // MARK: - BaseAmountModelKeyboardInputTests

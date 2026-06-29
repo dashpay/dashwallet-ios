@@ -78,6 +78,11 @@ final class PastedAmountNormalizationTests: XCTestCase {
         XCTAssertEqual(normalize(" 3,26 "), "3.26")
     }
 
+    func testArabicDigitsAndSeparators() {
+        assertParsedNormalized("١٬٢٣٤٫٥٦", localeIdentifier: "ar_EG", expectedNormalizedString: "1234.56")
+        assertParsedNormalized("١٢٫٣٤", localeIdentifier: "ar_EG", expectedNormalizedString: "12.34")
+    }
+
     func testInvalidInput() {
         XCTAssertNil(normalize("abc"))
         XCTAssertNil(normalize(""))
