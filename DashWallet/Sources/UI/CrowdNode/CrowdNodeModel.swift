@@ -102,8 +102,7 @@ final class CrowdNodeModel {
     }
 
     var canWithdraw: Bool {
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = account.maxOutputAmount
+        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.spendable ?? 0
         return allAvailableFunds >= CrowdNode.minimumLeftoverBalance
     }
 

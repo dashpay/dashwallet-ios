@@ -403,15 +403,15 @@ extension CrowdNode {
     func deposit(amount: UInt64) async throws {
         guard !accountAddress.isEmpty else { return }
 
-        let account = DWEnvironment.sharedInstance().currentAccount
+        let maxSendable = SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
         let requiredTopUp = amount + TX_FEE_PER_INPUT
-        let finalTopUp = min(account.maxOutputAmount, requiredTopUp)
+        let finalTopUp = min(maxSendable, requiredTopUp)
 
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
         DSLogger.log("CrowdNode deposit topup tx hash: \(topUpTx.txHashHexString)")
 
         let depositTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
-                                                             amount: min(account.maxOutputAmount, amount),
+                                                             amount: min(maxSendable, amount),
                                                              inputSelector: SingleInputAddressSelector(candidates: [topUpTx],
                                                                                                        address: accountAddress))
         DSLogger.log("CrowdNode deposit tx hash: \(depositTx.txHashHexString)")

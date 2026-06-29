@@ -58,6 +58,18 @@ public struct WalletBalance: Equatable, Sendable {
 
     /// Spendable balance: confirmed minus the InstantSend-locked subset.
     public var spendable: UInt64 { confirmed > locked ? confirmed - locked : 0 }
+
+    /// Conservative fee headroom reserved on top of a fixed-amount send so a
+    /// "Max"/affordability value stays sendable. Approximate — Core has no
+    /// pre-build fee-estimate FFI yet (the send path settles the exact fee via
+    /// `adjustAmountDownwards`); sized for a realistic multi-input InstantSend
+    /// (10 × DashSync `TX_FEE_PER_INPUT` of 10_000 = 100_000 duffs ≈ 0.001 DASH).
+    public static let sendFeeReserveDuffs: UInt64 = 100_000
+
+    /// Fee-aware max single-tx output — the SwiftDashSDK replacement for
+    /// DashSync `DSAccount.maxOutputAmount`: spendable minus a reserved fee,
+    /// floored at 0. Mirrors the shielded `creditsMinusFeeReserve` pattern.
+    public var maxSendable: UInt64 { spendable > Self.sendFeeReserveDuffs ? spendable - Self.sendFeeReserveDuffs : 0 }
 }
 
 // MARK: - SwiftDashSDKWalletState

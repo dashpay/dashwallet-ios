@@ -26,8 +26,7 @@ final class BuyCreditsModel: SendAmountModel {
     }
     
     override func selectAllFundsWithoutAuth() {
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = account.maxOutputAmount
+        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
 
         if allAvailableFunds > 0 {
             let maxMultiple = allAvailableFunds / BuyCreditsModel.opCost
