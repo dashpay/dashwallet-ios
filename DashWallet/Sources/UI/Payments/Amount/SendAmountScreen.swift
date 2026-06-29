@@ -188,6 +188,7 @@ private struct SendAmountInputRow: View {
             onMax: onMax,
             onSwap: { model.amountInputControlDidSwapInputs() },
             onCurrencyTap: onSelectCurrency,
+            onPaste: model.pasteFromClipboard,
             onSelectInputType: { code in
                 if let i = model.inputItems.firstIndex(where: { $0.currencyCode == code }) {
                     model.selectInputItem(at: i)

@@ -18,6 +18,9 @@
 import Combine
 import DashUIKit
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
 
 @MainActor
 final class MayaConvertViewModel: ObservableObject {
@@ -162,6 +165,16 @@ final class MayaConvertViewModel: ObservableObject {
 
     func setInput(_ raw: String) {
         inputValue = Self.sanitize(raw, currency: selectedCurrency)
+    }
+
+    func pasteFromClipboard() {
+        #if canImport(UIKit)
+        guard let raw = UIPasteboard.general.string else { return }
+        let locale = Locale.current
+        guard let parsed = PastedAmountParser.parse(raw, locale: locale) else { return }
+        let pastedValue = PastedAmountParser.editableString(from: parsed.decimalValue, locale: locale) ?? parsed.normalizedString
+        setInput(pastedValue)
+        #endif
     }
 
     func makeOrderPreviewViewModel() -> OrderPreviewViewModel? {
@@ -599,7 +612,7 @@ final class MayaConvertViewModel: ObservableObject {
         switch currency {
         case .fiat: maxDecimals = 2
         case .dash: maxDecimals = 5
-        case .coin: maxDecimals = 8
+        case .coin: maxDecimals = 5
         }
 
         if let dotRange = s.range(of: ".") {
