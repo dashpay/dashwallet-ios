@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 // MARK: - MayaConvertView
@@ -88,7 +89,7 @@ struct MayaConvertView: View {
 
     private var amountSection: some View {
         VStack(alignment: .leading, spacing: Layout.contentSpacing) {
-            EnterAmountView(
+            DashUIKit.EnterAmountView(
                 value: $viewModel.inputValue,
                 selectedCurrency: $viewModel.selectedCurrency,
                 options: viewModel.currencyOptions,
@@ -222,12 +223,13 @@ struct MayaConvertView: View {
     // MARK: - Keyboard
 
     private var keyboard: some View {
-        NumericKeyboardView(
+        DashUIKit.NumericKeyboardView(
             value: Binding(
                 get: { viewModel.inputValue },
                 set: { viewModel.setInput($0) }
             ),
             showDecimalSeparator: true,
+            locale: .autoupdatingCurrent,
             actionButtonText: NSLocalizedString("Continue", comment: ""),
             actionEnabled: viewModel.canOpenOrderPreview,
             inProgress: viewModel.isLoading,

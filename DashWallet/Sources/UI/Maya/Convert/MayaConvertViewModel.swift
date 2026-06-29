@@ -16,6 +16,7 @@
 //
 
 import Combine
+import DashUIKit
 import Foundation
 
 @MainActor
@@ -71,7 +72,7 @@ final class MayaConvertViewModel: ObservableObject {
 
     /// Symbol-free formatted Dash balance (e.g. "1.5") for the convert source row.
     var dashBalanceFormatted: String {
-        DWEnvironment.sharedInstance().currentAccount.balance.formattedDashAmountWithoutCurrencySymbol
+        MayaAmountFormatter.dashDisplayString(DWEnvironment.sharedInstance().currentAccount.balance.dashAmount)
     }
 
     var dashBalanceFiat: String {
@@ -82,12 +83,12 @@ final class MayaConvertViewModel: ObservableObject {
     /// Symbol-free Dash amount the user has entered (the amount being converted), shown on the
     /// source row instead of the wallet balance.
     var enteredDashFormatted: String {
-        Self.dashRoundedDown(displayDashAmount).formattedDashAmountWithoutCurrencySymbol
+        MayaAmountFormatter.dashDisplayString(displayDashAmount)
     }
 
     /// Fiat value of the entered amount, in the active fiat currency.
     var enteredFiatFormatted: String {
-        MayaInputFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency)
+        MayaAmountFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency)
     }
 
     /// True when nothing meaningful has been entered yet (used to hide the fiat sub-line).
@@ -170,8 +171,8 @@ final class MayaConvertViewModel: ObservableObject {
             address: address,
             dashSatoshis: activeSellSatoshis,
             // Order Preview reflects the real (grossed-up) spend — that's where the fee is shown.
-            fromDashAmount: dashAmount(from: activeSellSatoshis).formattedDashAmountWithoutCurrencySymbol,
-            fromFiatAmount: MayaInputFormatter.fiat(dashAmount(from: activeSellSatoshis) * amount.dashFiatRate, currencyCode: currentFiatCurrency),
+            fromDashAmount: MayaAmountFormatter.dashDisplayString(dashAmount(from: activeSellSatoshis)),
+            fromFiatAmount: MayaAmountFormatter.fiat(dashAmount(from: activeSellSatoshis) * amount.dashFiatRate, currencyCode: currentFiatCurrency),
             cryptoFiatRate: amount.cryptoFiatRate,
             fiatCurrencyCode: currentFiatCurrency,
             initialQuote: quote
@@ -245,7 +246,7 @@ final class MayaConvertViewModel: ObservableObject {
     }
 
     private func applySuccessfulQuote(_ quote: MayaSwapQuote) {
-        guard let raw = quote.expectedAmountOut, let rawValue = Double(raw) else {
+        guard let raw = quote.expectedAmountOut, let expectedOut = decimalFromBaseUnits(raw) else {
             latestQuote = nil
             errorMessage = nil
             receiveAmount = selectedCurrency.isReceiveTargetMode && !isMaxFromBalance ? fixedCoinReceiveAmount : nil
@@ -254,7 +255,7 @@ final class MayaConvertViewModel: ObservableObject {
         latestQuote = quote
         receiveAmount = selectedCurrency.isReceiveTargetMode && !isMaxFromBalance
             ? fixedCoinReceiveAmount
-            : "\(coin.code) \(MayaInputFormatter.receiveAmount(rawValue / 1e8))"
+            : "\(coin.code) \(MayaAmountFormatter.coinDisplayString(expectedOut))"
         checkBalance()
         syncCoinInputToQuotedReceiveIfNeeded(quote)
     }
@@ -479,8 +480,8 @@ final class MayaConvertViewModel: ObservableObject {
     private func syncInputValueForCurrency(_ currency: CurrencyOption) {
         switch currency {
         case .dash:
-            let dash5 = Self.dashRoundedDown(amount.dash)
-            inputValue = dash5.isZero ? "" : dash5.formattedDashAmountWithoutCurrencySymbol
+            let dash5 = MayaAmountFormatter.dashRoundedDown(amount.dash)
+            inputValue = dash5.isZero ? "" : MayaAmountFormatter.dashDisplayString(dash5)
         case .fiat:
             guard !amount.fiat.isZero else { inputValue = ""; return }
             let d = (amount.fiat as NSDecimalNumber).doubleValue
@@ -491,8 +492,7 @@ final class MayaConvertViewModel: ObservableObject {
                 return
             }
             guard !amount.crypto.isZero, amount.cryptoFiatRate > 0 else { inputValue = ""; return }
-            let d = (amount.crypto as NSDecimalNumber).doubleValue
-            inputValue = MayaInputFormatter.trimTrailingZeros(String(format: "%.8f", d))
+            inputValue = MayaAmountFormatter.coinDisplayString(amount.crypto)
         }
     }
 
@@ -522,8 +522,7 @@ final class MayaConvertViewModel: ObservableObject {
 
     private var fixedCoinReceiveAmount: String? {
         guard selectedCurrency.isReceiveTargetMode, amount.crypto > 0 else { return nil }
-        let value = (amount.crypto as NSDecimalNumber).doubleValue
-        return "\(coin.code) \(MayaInputFormatter.receiveAmount(value))"
+        return "\(coin.code) \(MayaAmountFormatter.coinDisplayString(amount.crypto))"
     }
 
     private var quotedReceiveInputValue: String? {
@@ -534,8 +533,7 @@ final class MayaConvertViewModel: ObservableObject {
               expectedOut > 0 else {
             return nil
         }
-        let value = (expectedOut as NSDecimalNumber).doubleValue
-        return MayaInputFormatter.receiveAmount(value)
+        return MayaAmountFormatter.coinDisplayString(expectedOut)
     }
 
     private func dashAmount(from satoshis: Int64) -> Decimal {
@@ -573,7 +571,7 @@ final class MayaConvertViewModel: ObservableObject {
             return
         }
 
-        let displayValue = MayaInputFormatter.receiveAmount((expectedOut as NSDecimalNumber).doubleValue)
+        let displayValue = MayaAmountFormatter.coinDisplayString(expectedOut)
         guard inputValue != displayValue else { return }
 
         isSyncingQuotedInput = true
@@ -589,13 +587,8 @@ final class MayaConvertViewModel: ObservableObject {
     ///   - Leading zeros stripped from the integer part: "01" → "1", but "0." and "0.12" stay.
     ///   - Decimal precision capped: fiat → 2 places, dash → 5 places, crypto → 8 places.
     ///   - Empty string and in-progress decimals (e.g. "0.") pass through unchanged.
-    /// Dash on the convert screen is shown to at most 5 decimals. Rounds DOWN so a displayed or
-    /// Max value never exceeds the real wallet amount.
     static func dashRoundedDown(_ value: Decimal) -> Decimal {
-        var input = value
-        var result = Decimal()
-        NSDecimalRound(&result, &input, 5, .down)
-        return result
+        MayaAmountFormatter.dashRoundedDown(value)
     }
 
     private static func sanitize(_ raw: String, currency: CurrencyOption) -> String {
@@ -622,29 +615,6 @@ final class MayaConvertViewModel: ObservableObject {
         var result = s
         while result.count > 1, result.hasPrefix("0") { result.removeFirst() }
         return result
-    }
-}
-
-private struct MayaInputFormatter {
-    static func trimTrailingZeros(_ s: String) -> String {
-        var result = s
-        while result.hasSuffix("0") { result.removeLast() }
-        if result.hasSuffix(".") { result.removeLast() }
-        return result
-    }
-
-    static func receiveAmount(_ humanValue: Double) -> String {
-        let s = String(format: humanValue < 0.001 ? "%.8f" : "%.4f", humanValue)
-        return trimTrailingZeros(s)
-    }
-
-    static func fiat(_ value: Decimal, currencyCode: String) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = currencyCode
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
-        return formatter.string(from: value as NSDecimalNumber) ?? "\(value)"
     }
 }
 
