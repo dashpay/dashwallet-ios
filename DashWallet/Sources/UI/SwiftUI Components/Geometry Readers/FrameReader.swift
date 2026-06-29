@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 @available(iOS 14, *)
 /// Adds a transparent View and read it's frame.
