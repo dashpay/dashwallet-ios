@@ -172,6 +172,7 @@ private struct SpecifyAmountView: View {
                         onMax: nil,
                         onSwap: { model.amountInputControlDidSwapInputs() },
                         onCurrencyTap: onCurrencyTap,
+                        onPaste: model.pasteFromClipboard,
                         onSelectInputType: { code in
                             if let index = model.inputItems.firstIndex(where: { $0.currencyCode == code }) {
                                 model.selectInputItem(at: index)

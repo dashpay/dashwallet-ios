@@ -94,7 +94,8 @@ struct MayaConvertView: View {
                 selectedCurrency: $viewModel.selectedCurrency,
                 options: viewModel.currencyOptions,
                 onMax: { viewModel.setMax() },
-                onCurrencyTap: { showLocalCurrency = true }
+                onCurrencyTap: { showLocalCurrency = true },
+                onPaste: { viewModel.pasteFromClipboard() }
             )
             .frame(height: 70)
             conversionCard
