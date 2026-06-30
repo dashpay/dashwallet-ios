@@ -32,4 +32,8 @@ enum SwapBackend {
             return SwapKitSwapProvider()
         }
     }
+
+    /// Only SwapKit can route the Buy (any crypto → Dash) direction.
+    /// Maya can only sell Dash into other assets.
+    var supportsBuy: Bool { self == .swapKit }
 }

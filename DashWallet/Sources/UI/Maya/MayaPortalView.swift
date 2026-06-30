@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 struct MayaPortalView: View {
@@ -25,14 +26,14 @@ struct MayaPortalView: View {
 
     var body: some View {
         SwapPortalScaffold(
-            logoAssetName: "maya-illustration",
+            logoIcon: .custom("maya-illustration"),
             title: NSLocalizedString("Maya", comment: "Maya Portal"),
             description: NSLocalizedString(
                 "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet",
                 comment: "Maya Portal"
             ),
             onBack: onBack,
-            onConvertDash: onConvertDash
+            onSellDash: onConvertDash
         )
     }
 }

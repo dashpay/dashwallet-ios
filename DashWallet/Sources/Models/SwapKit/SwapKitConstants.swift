@@ -21,7 +21,12 @@ import Foundation
 
 enum SwapKitConstants {
     static let dashAsset = "DASH.DASH"
-    static let defaultSlippagePercent = 3
+    /// Default max slippage (percent) for quotes/swaps — mirrors Android
+    /// `SwapKitConstants.DEFAULT_SLIPPAGE_PERCENT = 2`.
+    static let defaultSlippagePercent = 2
+    /// SwapKit provider IDs for token-list classification (mirrors Android SwapKitConstants.kt).
+    static let providerMaya = "MAYACHAIN_STREAMING"
+    static let providerNear = "NEAR"
     /// routeId is valid 60s, cached ~5min (see SWAPKIT_PROTOCOL.md "Quote Lifecycle").
     static let routeFreshnessSeconds: TimeInterval = 60
 
