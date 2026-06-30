@@ -52,6 +52,11 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 - (uint64_t)amountToDisplay {
+    if (self.isMerchantRequest) {
+        // BIP70 is fee-on-top: the merchant receives the full `amount` and the fee is charged on
+        // top. Subtracting it would understate the headline (and underflow when amount < fee).
+        return self.amount;
+    }
     return self.amount - self.fee;
 }
 
@@ -126,7 +131,10 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 - (id<DWTitleDetailItem>)totalWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
-    NSAttributedString *detail = [NSAttributedString dw_dashAttributedStringForAmount:self.amount
+    // For a fee-on-top BIP70 merchant request the true wallet debit is amount + fee; other paths
+    // already carry the all-in amount, so leave them unchanged.
+    const uint64_t totalValue = self.isMerchantRequest ? (self.amount + self.fee) : self.amount;
+    NSAttributedString *detail = [NSAttributedString dw_dashAttributedStringForAmount:totalValue
                                                                             tintColor:tintColor
                                                                                  font:font];
     DWTitleDetailCellModel *total =
