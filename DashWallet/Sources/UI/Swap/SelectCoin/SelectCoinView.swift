@@ -46,10 +46,11 @@ struct SelectCoinView: View {
 
     init(
         swapProvider: SwapProvider = MayaSwapProvider(),
+        direction: SwapDirection = .sell,
         onBack: (() -> Void)? = nil,
         onCoinSelected: ((MayaCryptoCurrency) -> Void)? = nil
     ) {
-        _viewModel = StateObject(wrappedValue: SelectCoinViewModel(swapProvider: swapProvider))
+        _viewModel = StateObject(wrappedValue: SelectCoinViewModel(swapProvider: swapProvider, direction: direction))
         self.onBack = onBack
         self.onCoinSelected = onCoinSelected
     }
@@ -137,6 +138,7 @@ struct SelectCoinView: View {
                             CoinSelector(
                                 name: item.displayName,
                                 code: item.coin.code,
+                                network: item.network,
                                 trailing: item.isHalted ? .halted : item.fiatPrice.map { .price($0) }
                             ) {
                                 SwapCoinIconView(coin: item.coin, size: 30, cornerRadius: 6)

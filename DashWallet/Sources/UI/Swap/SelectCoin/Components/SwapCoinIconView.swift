@@ -19,16 +19,14 @@
 
 import SwiftUI
 
-/// Displays a Maya coin icon with automatic remote fallback.
+/// Displays a coin icon loaded from the URL provided by SwapKit's `logoURI`.
 ///
 /// Priority:
-/// 1. Local asset (when `iconAssetName != "convert.crypto"`)
-/// 2. SwapKit CDN icon fetched by full asset identifier
-/// 3. jsupa remote fallback fetched by ticker code
-/// 4. Placeholder (`convert.crypto`) if all remote loads fail
+/// 1. Remote icon fetched from `coin.iconURL` (sourced from SwapKit `/tokens` `logoURI`)
+/// 2. Placeholder (`convert.crypto`) while loading or if `iconURL` is nil / load fails
 ///
-/// Remote icons crossfade in when loaded.  Fast-scrolling is safe: the
-/// `task(id: coin.mayaAsset)` modifier cancels in-flight requests when the view
+/// Remote icons crossfade in when loaded. Fast-scrolling is safe: the
+/// `task(id: coin.iconURL)` modifier cancels in-flight requests when the view
 /// disappears, and `remoteImage` resets to nil on reuse (because @State is
 /// tied to view identity in LazyVStack).
 struct SwapCoinIconView: View {
@@ -38,10 +36,6 @@ struct SwapCoinIconView: View {
 
     @State private var remoteImage: UIImage? = nil
 
-    private var needsRemoteIcon: Bool {
-        coin.iconAssetName == "convert.crypto"
-    }
-
     var body: some View {
         Group {
             if let image = remoteImage {
@@ -49,22 +43,17 @@ struct SwapCoinIconView: View {
                     .resizable()
                     .scaledToFit()
             } else {
-                Icon(name: .custom(coin.iconAssetName, maxHeight: size))
+                Icon(name: .custom("convert.crypto", maxHeight: size))
             }
         }
         .frame(width: size, height: size)
         .clipShape(.rect(cornerRadius: cornerRadius))
-        .task(id: coin.mayaAsset) {
+        // Key by what the loader actually fetches (iconURL + ticker), so a late-arriving or
+        // changed iconURL for the same asset cancels and reloads instead of leaving a stale icon.
+        .task(id: "\(coin.iconURL ?? "")#\(coin.code)") {
             remoteImage = nil
-            guard needsRemoteIcon else { return }
-
-            var loaded = await MayaCoinIconLoader.shared.loadSwapKitIcon(for: coin.mayaAsset)
-            if loaded == nil {
-                loaded = await MayaCoinIconLoader.shared.loadJsupaIcon(for: coin.code)
-            }
-            withAnimation(.easeIn(duration: 0.15)) {
-                remoteImage = loaded
-            }
+            let loaded = await MayaCoinIconLoader.shared.loadIcon(logoURI: coin.iconURL, ticker: coin.code)
+            withAnimation(.easeIn(duration: 0.15)) { remoteImage = loaded }
         }
     }
 }
@@ -72,32 +61,30 @@ struct SwapCoinIconView: View {
 #if DEBUG
 #Preview {
     HStack(spacing: 16) {
-        // Coin with local icon
+        // Native asset with real logoURI — uses SwapKit source
         SwapCoinIconView(
             coin: MayaCryptoCurrency(
                 id: "btc", code: "BTC", name: "Bitcoin",
                 mayaAsset: "BTC.BTC", chain: "BTC",
-                iconAssetName: "maya.coin.btc"
+                iconURL: "https://storage.googleapis.com/token-list-swapkit/images/btc.btc.png"
             ),
             size: 26, cornerRadius: 6
         )
 
-        // Coin without local icon — loads remotely
+        // No logoURI — exercises CoinCap / jsupa fallback chain
         SwapCoinIconView(
             coin: MayaCryptoCurrency(
-                id: "sol", code: "SOL", name: "Solana",
-                mayaAsset: "SOL.SOL", chain: "SOL",
-                iconAssetName: "convert.crypto"
+                id: "dai", code: "DAI", name: "Dai",
+                mayaAsset: "ARB.DAI-0XDA10009CBD5D07DD0CECC66161FC93D7C9000DA1", chain: "ARB"
             ),
             size: 26, cornerRadius: 6
         )
 
-        // Unknown coin — graceful fallback
+        // Truly unknown ticker — shows convert.crypto placeholder
         SwapCoinIconView(
             coin: MayaCryptoCurrency(
                 id: "xyz", code: "XYZ", name: "Unknown",
-                mayaAsset: "XYZ.XYZ", chain: "XYZ",
-                iconAssetName: "convert.crypto"
+                mayaAsset: "XYZ.XYZ", chain: "XYZ"
             ),
             size: 26, cornerRadius: 6
         )

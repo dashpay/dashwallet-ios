@@ -30,10 +30,18 @@ final class SwapKitPortalViewController: UIViewController, NavigationBarDisplaya
 
         let portalView = SwapKitPortalView(
             onBack: { [weak self] in
-                self?.navigationController?.popViewController(animated: true)
+                guard let self else { return }
+                if let nav = self.navigationController, nav.viewControllers.first !== self {
+                    nav.popViewController(animated: true)
+                } else {
+                    self.dismiss(animated: true)
+                }
             },
-            onConvertDash: { [weak self] in
-                self?.flowCoordinator.start(in: self?.navigationController)
+            onBuyDash: { [weak self] in
+                self?.flowCoordinator.start(in: self?.navigationController, direction: .buy)
+            },
+            onSellDash: { [weak self] in
+                self?.flowCoordinator.start(in: self?.navigationController, direction: .sell)
             }
         )
 
