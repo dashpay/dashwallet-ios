@@ -19,22 +19,29 @@ import SwiftUI
 
 struct SwapKitPortalView: View {
     var onBack: () -> Void
-    var onConvertDash: (() -> Void)?
+    var onBuyDash: (() -> Void)?
+    var onSellDash: (() -> Void)?
 
     var body: some View {
         SwapPortalScaffold(
-            logoAssetName: "swapkit-illustration",
-            title: NSLocalizedString("SwapKit", comment: "SwapKit Portal"),
+            logoIcon: .custom("illustration-dash-dex", bundle: .dashUIKit),
+            title: NSLocalizedString("Dash DEX", comment: "Dash DEX Portal"),
             description: NSLocalizedString(
-                "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet",
-                comment: "SwapKit Portal"
+                "Swap crypto into Dash, or convert Dash to any crypto supported across SwapKit networks",
+                comment: "Dash DEX Portal"
             ),
+            showBuy: true,
             onBack: onBack,
-            onConvertDash: onConvertDash
+            onBuyDash: onBuyDash,
+            onSellDash: onSellDash
         )
     }
 }
 
 #Preview {
-    SwapKitPortalView(onBack: {}, onConvertDash: {})
+    SwapKitPortalView(
+        onBack: {},
+        onBuyDash: {},
+        onSellDash: {}
+    )
 }

@@ -28,14 +28,19 @@ struct CoinDisplayItem: Identifiable {
     let displayName: String
     let fiatPrice: String?
     let isHalted: Bool
+    /// Routing network label shown in the coin row (e.g. "Maya", "NEAR", "Multiple networks").
+    /// Nil for non-SwapKit providers that don't have multi-provider routing.
+    let network: String?
 }
 
 @MainActor
 class SelectCoinViewModel: ObservableObject {
     private let swapProvider: SwapProvider
+    private let direction: SwapDirection
 
-    init(swapProvider: SwapProvider = MayaSwapProvider()) {
+    init(swapProvider: SwapProvider = MayaSwapProvider(), direction: SwapDirection = .sell) {
         self.swapProvider = swapProvider
+        self.direction = direction
     }
     // MARK: - Published State
 
@@ -80,20 +85,26 @@ class SelectCoinViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            async let poolsRequest = swapProvider.fetchPools()
-            async let inboundRequest = swapProvider.fetchInboundAddresses()
-            let (pools, inboundAddresses) = try await (poolsRequest, inboundRequest)
+            // Pools must resolve first: fetchInboundAddresses() reads the provider's cached pools,
+            // so running both concurrently can hit the empty-cache fallback and return [] — which
+            // would then filter out every pool via inboundChains.
+            let pools = try await swapProvider.fetchPools(direction: direction)
+            let inboundAddresses = try await swapProvider.fetchInboundAddresses()
 
             let fiatCurrency = App.fiatCurrency
             let formatter = makePriceFormatter(for: fiatCurrency)
+            let networkLabels = await swapProvider.networkLabels(for: pools)
+            let haltedAssets = await swapProvider.haltedAssets(from: inboundAddresses, pools: pools)
             let items = makeCoinItems(
                 pools: pools,
                 inboundAddresses: inboundAddresses,
                 fiatCurrency: fiatCurrency,
-                formatter: formatter
+                formatter: formatter,
+                networkLabels: networkLabels,
+                haltedAssets: haltedAssets
             )
 
-            let disambiguated = disambiguateDisplayNames(items)
+            let disambiguated = appendChainLabels(items)
             coins = sortCoins(disambiguated)
             hasHaltedCoins = disambiguated.contains { $0.isHalted }
             showHaltedToast = hasHaltedCoins
@@ -108,7 +119,9 @@ class SelectCoinViewModel: ObservableObject {
         pools: [MayaPool],
         inboundAddresses: [MayaInboundAddress],
         fiatCurrency: String,
-        formatter: NumberFormatter
+        formatter: NumberFormatter,
+        networkLabels: [String: String] = [:],
+        haltedAssets: Set<String> = []
     ) -> [CoinDisplayItem] {
         let inboundChains = Set(inboundAddresses.map { $0.chain.uppercased() })
         let haltedChains = Set(inboundAddresses.filter { $0.halted }.map { $0.chain.uppercased() })
@@ -116,15 +129,20 @@ class SelectCoinViewModel: ObservableObject {
         return pools.compactMap { pool in
             guard pool.isAvailable else { return nil }
             guard pool.asset.uppercased() != "DASH.DASH" else { return nil }
-            guard let coin = MayaCryptoCurrency.knownCoin(for: pool.asset) else { return nil }
+            guard var coin = MayaCryptoCurrency.knownCoin(for: pool.asset) else { return nil }
             guard inboundChains.contains(coin.chain.uppercased()) else { return nil }
+            coin.iconURL = swapProvider.logoURL(for: pool.asset)?.absoluteString
+
+            let isHalted = haltedAssets.contains(pool.asset.uppercased())
+                || isCoinHalted(coin, haltedChains: haltedChains)
 
             return CoinDisplayItem(
                 id: coin.id,
                 coin: coin,
-                displayName: coin.name,   // API-override point: swap in pool.name when available
+                displayName: coin.name,
                 fiatPrice: priceForCoin(pool, fiatCurrency: fiatCurrency, formatter: formatter),
-                isHalted: isCoinHalted(coin, haltedChains: haltedChains)
+                isHalted: isHalted,
+                network: networkLabels[pool.asset.uppercased()]
             )
         }
     }
@@ -140,24 +158,21 @@ class SelectCoinViewModel: ObservableObject {
         return formatter
     }
 
-    // MARK: - Private: Disambiguation
+    // MARK: - Private: Chain label
 
-    /// Adds a "(ChainName)" suffix to `displayName` for every item whose coin code is shared
-    /// by at least one other item and whose name doesn't already carry a parenthetical qualifier.
-    /// This disambiguates e.g. two USDC pools: "USD Coin (Ethereum)" vs "USD Coin (Arbitrum)".
-    private func disambiguateDisplayNames(_ items: [CoinDisplayItem]) -> [CoinDisplayItem] {
-        let codeGroups = Dictionary(grouping: items, by: { $0.coin.code })
-        return items.map { item in
-            guard (codeGroups[item.coin.code]?.count ?? 0) > 1 else { return item }
+    /// Appends ` (ChainName)` to every coin's display name.
+    /// Only skipped when the name already contains `(` (avoids double-suffix on manual qualifiers
+    /// like "NEAR (Alice)") or when the chain has no display name (DASH only).
+    private func appendChainLabels(_ items: [CoinDisplayItem]) -> [CoinDisplayItem] {
+        items.map { item in
             guard !item.displayName.contains("(") else { return item }
             let chainLabel = MayaCryptoCurrency.chainDisplayName(item.coin.chain)
-            let qualifiedName = chainLabel.isEmpty
-                ? item.displayName
-                : "\(item.displayName) (\(chainLabel))"
+            guard !chainLabel.isEmpty else { return item }
             return CoinDisplayItem(
                 id: item.id, coin: item.coin,
-                displayName: qualifiedName,
-                fiatPrice: item.fiatPrice, isHalted: item.isHalted
+                displayName: "\(item.displayName) (\(chainLabel))",
+                fiatPrice: item.fiatPrice, isHalted: item.isHalted,
+                network: item.network
             )
         }
     }

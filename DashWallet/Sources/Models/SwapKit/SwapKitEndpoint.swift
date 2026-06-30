@@ -22,6 +22,7 @@ import Moya
 enum SwapKitEndpoint {
     case getSwapTo(sellAsset: String)
     case getPrices(identifiers: [String])
+    case getTokens(provider: String)
     case quote(_ request: SwapKitQuoteRequest)
     case swap(_ request: SwapKitSwapRequest)
     case track(_ request: SwapKitTrackRequest)
@@ -38,6 +39,8 @@ extension SwapKitEndpoint: TargetType {
             return "swapTo"
         case .getPrices:
             return "price"
+        case .getTokens:
+            return "tokens"
         case .quote:
             return "v3/quote"
         case .swap:
@@ -49,7 +52,7 @@ extension SwapKitEndpoint: TargetType {
 
     var method: Moya.Method {
         switch self {
-        case .getSwapTo:
+        case .getSwapTo, .getTokens:
             return .get
         case .getPrices, .quote, .swap, .track:
             return .post
@@ -61,6 +64,11 @@ extension SwapKitEndpoint: TargetType {
         case .getSwapTo(let sellAsset):
             return .requestParameters(
                 parameters: ["sellAsset": sellAsset],
+                encoding: URLEncoding.queryString
+            )
+        case .getTokens(let provider):
+            return .requestParameters(
+                parameters: ["provider": provider],
                 encoding: URLEncoding.queryString
             )
         case .getPrices(let identifiers):

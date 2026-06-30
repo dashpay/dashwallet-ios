@@ -19,19 +19,27 @@ import UIKit
 
 final class SwapFlowCoordinator {
     private let swapProvider: SwapProvider
+    private var direction: SwapDirection = .sell
     private weak var navigationController: UINavigationController?
 
     init(swapProvider: SwapProvider) {
         self.swapProvider = swapProvider
     }
 
-    func start(in navigationController: UINavigationController?) {
+    func start(in navigationController: UINavigationController?, direction: SwapDirection = .sell) {
         self.navigationController = navigationController
+        self.direction = direction
 
-        let selectCoinVC = SelectCoinHostingController(swapProvider: swapProvider)
+        let selectCoinVC = SelectCoinHostingController(swapProvider: swapProvider, direction: direction)
         selectCoinVC.onCoinSelected = { [weak self] coin in
-            DSLogger.log("Maya: Selected coin \(coin.code) (\(coin.name))")
-            self?.navigateToEnterAddress(for: coin)
+            guard let self else { return }
+            DSLogger.log("Maya: Selected coin \(coin.code) (\(coin.name)) direction=\(self.direction)")
+            switch self.direction {
+            case .sell:
+                self.navigateToEnterAddress(for: coin)
+            case .buy:
+                self.presentBuyComingSoon()
+            }
         }
         navigationController?.pushViewController(selectCoinVC, animated: true)
     }
@@ -48,5 +56,21 @@ final class SwapFlowCoordinator {
         guard !(navigationController?.topViewController is SwapConvertHostingController) else { return }
         let convertVC = SwapConvertHostingController(coin: coin, address: address, swapProvider: swapProvider)
         navigationController?.pushViewController(convertVC, animated: true)
+    }
+
+    private func presentBuyComingSoon() {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Coming soon", comment: "Dash DEX"),
+            message: NSLocalizedString(
+                "Buying Dash from other crypto isn't available yet. It's coming in a future update.",
+                comment: "Dash DEX"
+            ),
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(
+            title: NSLocalizedString("OK", comment: ""),
+            style: .default
+        ))
+        navigationController?.topViewController?.present(alert, animated: true)
     }
 }

@@ -93,7 +93,8 @@ class ServiceDataProviderImpl: ServiceDataProvider {
         case .swapKit:
             return DWEnvironment.sharedInstance().currentChain.isMainnet() && SwapKitConstants.isConfigured
         case .maya:
-            return DWEnvironment.sharedInstance().currentChain.isMainnet()
+            // Hidden from Buy & Sell — Dash DEX (SwapKit) replaces the standalone Maya entry.
+            return false
         default:
             return true
         }
