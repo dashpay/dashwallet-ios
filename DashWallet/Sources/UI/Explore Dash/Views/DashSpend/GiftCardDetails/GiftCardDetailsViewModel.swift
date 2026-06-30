@@ -24,6 +24,7 @@ struct GiftCardDetailsCardItem: Identifiable {
     let formattedPrice: String
     let cardNumber: String?
     let cardPin: String?
+    let redeemUrlChallenge: String?
     let barcodeImage: UIImage?
     let isClaimLink: Bool
 }
@@ -34,6 +35,7 @@ struct GiftCardDetailsUIState {
     var formattedPrice: String = "$0.00"
     var cardNumber: String? = nil
     var cardPin: String? = nil
+    var redeemUrlChallenge: String? = nil
     var barcodeImage: UIImage? = nil
     var merchantIcon: UIImage? = nil
     var purchaseDate: Date? = nil
@@ -56,6 +58,7 @@ private struct GiftCardPayloadEntry: Codable {
     let formattedPrice: String
     let cardNumber: String?
     let cardPin: String?
+    let redeemUrlChallenge: String?
     let barcodeValue: String?
     let barcodeFormat: String?
     let isClaimLink: Bool
@@ -165,6 +168,7 @@ class GiftCardDetailsViewModel: ObservableObject {
             self.uiState.formattedPrice = formattedPrice
             self.uiState.cardNumber = card.number
             self.uiState.cardPin = card.pin
+            self.uiState.redeemUrlChallenge = card.redeemUrlChallenge
             self.uiState.provider = card.provider
             self.uiState.isClaimLink = isClaimLink
             self.uiState.barcodeImage = barcodeImage
@@ -242,7 +246,6 @@ class GiftCardDetailsViewModel: ObservableObject {
 
     private func fetchCTXGiftCardInfo() async {
         guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              giftCard.note != nil,
               ctxSpendRepository.isUserSignedIn else {
             stopTicker()
             return
@@ -250,8 +253,16 @@ class GiftCardDetailsViewModel: ObservableObject {
 
         do {
             let base58TxId = ((txId as NSData).reverse() as NSData).base58String()
-            DSLogger.log("DashSpend: Calling CTX API - Base58TxId: \(base58TxId)")
-            let response = try await ctxSpendRepository.getGiftCardByTxid(txid: base58TxId)
+            let response: GiftCardResponse
+
+            if let orderId = giftCard.note?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !orderId.isEmpty {
+                DSLogger.log("DashSpend: Calling CTX API - OrderId: \(orderId)")
+                response = try await ctxSpendRepository.getGiftCardByOrderId(orderId: orderId)
+            } else {
+                DSLogger.log("DashSpend: Calling CTX API - Base58TxId: \(base58TxId)")
+                response = try await ctxSpendRepository.getGiftCardByTxid(txid: base58TxId)
+            }
 
             switch response.status {
             case "fulfilled":
@@ -274,10 +285,10 @@ class GiftCardDetailsViewModel: ObservableObject {
                     stopTicker()
                     DSLogger.log("DashSpend: Gift card details fetched successfully")
                 } else if let redeemUrl = response.redeemUrl, !redeemUrl.isEmpty {
-                    await giftCardsDAO.updateCardDetails(
+                    await giftCardsDAO.updateRedeemUrl(
                         txId: txId,
-                        number: redeemUrl,
-                        pin: nil
+                        url: redeemUrl,
+                        challenge: response.redeemUrlChallenge
                     )
                     stopTicker()
                     DSLogger.log("DashSpend: Gift card redeem URL fetched successfully")
@@ -356,7 +367,8 @@ class GiftCardDetailsViewModel: ObservableObject {
                     barcodeValue: firstEntry?.barcodeValue,
                     barcodeFormat: firstEntry?.barcodeFormat,
                     note: serializedNote,
-                    provider: giftCard.provider
+                    provider: giftCard.provider,
+                    redeemUrlChallenge: giftCard.redeemUrlChallenge
                 )
 
                 await giftCardsDAO.update(dto: updatedCard)
@@ -420,6 +432,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                         formattedPrice: formattedPrice,
                         cardNumber: claimCode,
                         cardPin: card.claimPin,
+                        redeemUrlChallenge: nil,
                         barcodeValue: barcodeValue,
                         barcodeFormat: barcodeFormat,
                         isClaimLink: false
@@ -431,6 +444,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                         formattedPrice: formattedPrice,
                         cardNumber: claimLink,
                         cardPin: nil,
+                        redeemUrlChallenge: nil,
                         barcodeValue: nil,
                         barcodeFormat: nil,
                         isClaimLink: true
@@ -464,6 +478,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                     formattedPrice: entry.formattedPrice,
                     cardNumber: entry.cardNumber,
                     cardPin: entry.cardPin,
+                    redeemUrlChallenge: entry.redeemUrlChallenge,
                     barcodeImage: imageFromBarcode(value: entry.barcodeValue, format: entry.barcodeFormat),
                     isClaimLink: entry.isClaimLink
                 )
@@ -477,6 +492,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                     formattedPrice: fallbackFormattedPrice,
                     cardNumber: card.number,
                     cardPin: card.pin,
+                    redeemUrlChallenge: card.redeemUrlChallenge,
                     barcodeImage: imageFromBarcode(value: card.barcodeValue, format: card.barcodeFormat),
                     isClaimLink: card.number?.starts(with: "http") ?? false
                 )
@@ -607,6 +623,7 @@ extension GiftCardDetailsViewModel {
             formattedPrice: "$75.00",
             cardNumber: "1234 5678 9012",
             cardPin: "7890",
+            redeemUrlChallenge: nil,
             barcodeImage: UIImage(systemName: "barcode.viewfinder"),
             merchantIcon: UIImage(systemName: "cart.fill"),
             purchaseDate: Date(timeIntervalSince1970: 1_713_484_800),
@@ -622,6 +639,7 @@ extension GiftCardDetailsViewModel {
                     formattedPrice: "$75.00",
                     cardNumber: "1234 5678 9012",
                     cardPin: "7890",
+                    redeemUrlChallenge: nil,
                     barcodeImage: UIImage(systemName: "barcode.viewfinder"),
                     isClaimLink: false
                 )
@@ -638,6 +656,7 @@ extension GiftCardDetailsViewModel {
             formattedPrice: "$50.00",
             cardNumber: "https://giftcards.example.com/claim/ABC123",
             cardPin: nil,
+            redeemUrlChallenge: "ABC1-2345",
             barcodeImage: nil,
             merchantIcon: UIImage(systemName: "gamecontroller.fill"),
             purchaseDate: Date(timeIntervalSince1970: 1_713_571_200),
@@ -653,6 +672,7 @@ extension GiftCardDetailsViewModel {
                     formattedPrice: "$50.00",
                     cardNumber: "https://giftcards.example.com/claim/ABC123",
                     cardPin: nil,
+                    redeemUrlChallenge: "ABC1-2345",
                     barcodeImage: nil,
                     isClaimLink: true
                 )
@@ -669,6 +689,7 @@ extension GiftCardDetailsViewModel {
             formattedPrice: "$100.00",
             cardNumber: nil,
             cardPin: nil,
+            redeemUrlChallenge: nil,
             barcodeImage: nil,
             merchantIcon: UIImage(systemName: "bag.fill"),
             purchaseDate: Date(timeIntervalSince1970: 1_713_657_600),
@@ -691,6 +712,7 @@ extension GiftCardDetailsViewModel {
             formattedPrice: "$125.00",
             cardNumber: "1111 2222 3333",
             cardPin: "1234",
+            redeemUrlChallenge: nil,
             barcodeImage: UIImage(systemName: "barcode.viewfinder"),
             merchantIcon: UIImage(systemName: "cart.fill"),
             purchaseDate: Date(timeIntervalSince1970: 1_713_484_800),
@@ -706,6 +728,7 @@ extension GiftCardDetailsViewModel {
                     formattedPrice: "$25.00",
                     cardNumber: "1111 2222 3333",
                     cardPin: "1234",
+                    redeemUrlChallenge: nil,
                     barcodeImage: UIImage(systemName: "barcode.viewfinder"),
                     isClaimLink: false
                 ),
@@ -714,6 +737,7 @@ extension GiftCardDetailsViewModel {
                     formattedPrice: "$100.00",
                     cardNumber: "4444 5555 6666",
                     cardPin: "9876",
+                    redeemUrlChallenge: nil,
                     barcodeImage: UIImage(systemName: "barcode.viewfinder"),
                     isClaimLink: false
                 )

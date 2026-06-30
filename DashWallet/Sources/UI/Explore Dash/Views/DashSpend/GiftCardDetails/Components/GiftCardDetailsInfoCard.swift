@@ -79,23 +79,30 @@ struct GiftCardDetailsInfoCard: View {
     @ViewBuilder
     private var detailsRowsSection: some View {
         if isClaimLink {
+            let actionConfig: (actionName: String, action: () -> Void)? = {
+                guard let claimLink = card?.cardNumber else { return nil }
+
+                return (
+                    actionName: NSLocalizedString("See card details", comment: "DashSpend"),
+                    action: { onOpenClaimLink(claimLink) }
+                )
+            }()
+
             VStack(spacing: 20) {
                 textValueRow(
                     title: NSLocalizedString("Original Price", comment: "DashSpend"),
-                    value: formattedPrice
+                    value: formattedPrice,
+                    actionConfig: actionConfig
                 )
 
-                if let claimLink = card?.cardNumber {
-                    Button(action: {
-                        onOpenClaimLink(claimLink)
-                    }) {
-                        Text(NSLocalizedString("See card details", comment: "DashSpend"))
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.dashBlue)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    }
-                    .buttonStyle(PlainButtonStyle())
+                if let redeemUrlChallenge = card?.redeemUrlChallenge, !redeemUrlChallenge.isEmpty {
+                    cardValueRow(
+                        title: NSLocalizedString("Challenge", comment: "DashSpend"),
+                        value: redeemUrlChallenge,
+                        onCopy: {
+                            onCopy(redeemUrlChallenge)
+                        }
+                    )
                 }
             }
             .padding(.horizontal, 14)
@@ -130,14 +137,21 @@ struct GiftCardDetailsInfoCard: View {
 
                 multilineValueRow(
                     title: NSLocalizedString("Cashier instructions", comment: "DashSpend"),
-                    value: NSLocalizedString("Tell the cashier that you'd like to pay with a gift card and share the card number and pin.", comment: "DashSpend")
+                    value: NSLocalizedString(
+                        "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.",
+                        comment: "DashSpend"
+                    )
                 )
             }
             .padding(.horizontal, 14)
         }
     }
 
-    private func textValueRow(title: String, value: String) -> some View {
+    private func textValueRow(
+        title: String,
+        value: String,
+        actionConfig: (actionName: String, action: () -> Void)? = nil
+    ) -> some View {
         HStack(alignment: .top, spacing: 0) {
             Text(title)
                 .font(.subheadMedium)
@@ -145,9 +159,23 @@ struct GiftCardDetailsInfoCard: View {
 
             Spacer()
 
-            Text(value)
-                .font(.subhead)
-                .foregroundColor(.primaryText)
+            VStack(alignment: .trailing, spacing: 0) {
+                Text(value)
+                    .font(.subhead)
+                    .foregroundColor(.primaryText)
+
+                if let actionConfig {
+                    Button(action: actionConfig.action) {
+                        Text(actionConfig.actionName)
+                            .font(.footnote)
+                            .fontWeight(.medium)
+                            .foregroundColor(.dashBlue)
+                            .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.vertical, 12)
     }
@@ -199,6 +227,7 @@ struct GiftCardDetailsInfoCard: View {
             formattedPrice: "$75.00",
             cardNumber: "1234 5678 9012",
             cardPin: "7890",
+            redeemUrlChallenge: nil,
             barcodeImage: UIImage(systemName: "barcode.viewfinder"),
             isClaimLink: false
         ),
@@ -220,6 +249,7 @@ struct GiftCardDetailsInfoCard: View {
             formattedPrice: "$50.00",
             cardNumber: "https://giftcards.example.com/claim/ABC123",
             cardPin: nil,
+            redeemUrlChallenge: "ABC1-2345",
             barcodeImage: nil,
             isClaimLink: true
         ),
