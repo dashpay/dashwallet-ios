@@ -54,7 +54,12 @@ NS_ASSUME_NONNULL_BEGIN
 
     BOOL isRemoving = string.length == 0;
 
-    if (isRemoving && lastInputString.length < range.location + range.length) {
+    // Guard against out-of-bounds ranges for all edits, not just removals.
+    // `range` is derived from the text field's selection, which can diverge in
+    // length from `lastInputString` (the model's internal representation, e.g.
+    // formatted vs. raw amount). Without this check
+    // -stringByReplacingCharactersInRange: throws an NSRangeException (crash).
+    if (NSMaxRange(range) > lastInputString.length) {
         return nil;
     }
 
