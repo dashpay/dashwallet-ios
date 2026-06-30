@@ -1,0 +1,15 @@
+{
+  "originHash" : "00a0bb943d09a60406bc7f00f82835ad5e5ba0d29f820b11071cd8c42c6de08a",
+  "pins" : [
+    {
+      "identity" : "dashuikit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/romchornyi/DashUIKit",
+      "state" : {
+        "branch" : "main",
+        "revision" : "9b1b23740802f59222b953edccff66cb3f3486c9"
+      }
+    }
+  ],
+  "version" : 3
+}
