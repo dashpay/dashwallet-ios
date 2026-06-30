@@ -76,6 +76,7 @@ class HomeViewModel: ObservableObject {
     @Published private(set) var headerHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
     @Published private(set) var showReclassifyTransaction: DSTransaction? = nil
     @Published var shouldShowShortcutBanner: Bool = false
+    @Published var giftCardTxId: Data? = nil
     
 #if DASHPAY
     var joinDashPayState: JoinDashPayState = .callToAction

@@ -16,7 +16,6 @@
 //
 
 import UIKit
-import SwiftUI
 import Combine
 import DashUIKit
 
@@ -224,30 +223,17 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     }
     
     func showGiftCardDetails(txId: Data) {
-        let hostingController = UIHostingController(rootView: 
-            GiftCardDetailsSheet(txId: txId).background(Color.primaryBackground)
-        )
-        hostingController.modalPresentationStyle = .pageSheet
-
-        if #available(iOS 16.4, *) {
-            if let sheet = hostingController.sheetPresentationController {
-                let compactId = UISheetPresentationController.Detent.Identifier("giftCardCompact")
-                let compactDetent = UISheetPresentationController.Detent.custom(identifier: compactId) { context in
-                    // Keep initial height adaptive across devices while staying close to the
-                    // compact GiftCard selection layout used in HomeView's SwiftUI sheet.
-                    let estimated = context.maximumDetentValue * 0.58
-                    return min(max(estimated, 380), 540)
-                }
-
-                sheet.detents = [compactDetent, .large()]
-                sheet.selectedDetentIdentifier = compactId
-                sheet.preferredCornerRadius = 32
-                sheet.prefersGrabberVisible = false
-                sheet.prefersScrollingExpandsWhenScrolledToEdge = false
-            }
+        let presentGiftCardSheet: () -> Void = { [weak self] in
+            self?.viewModel.giftCardTxId = txId
         }
 
-        present(hostingController, animated: true, completion: nil)
+        if let presentedViewController {
+            presentedViewController.dismiss(animated: true) {
+                DispatchQueue.main.async(execute: presentGiftCardSheet)
+            }
+        } else {
+            DispatchQueue.main.async(execute: presentGiftCardSheet)
+        }
     }
     
     private func configureObservers() {
