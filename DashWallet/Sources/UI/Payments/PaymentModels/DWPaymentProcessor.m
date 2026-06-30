@@ -360,26 +360,34 @@ static NSString *sanitizeString(NSString *s) {
             [self failedWithError:nil title:NSLocalizedString(@"Not a valid Dash address", nil) message:nil];
         }
     }
-    else if (request.r.length > 0) { // payment protocol over HTTP
+    else if (request.r.length > 0) { // payment protocol over HTTP (app-side BIP70)
         __weak typeof(self) weakSelf = self;
-        [request fetchBIP70WithTimeout:20.0
-                            completion:^(DSPaymentProtocolRequest *_Nonnull protocolRequest, NSError *_Nonnull error) {
-                                dispatch_async(dispatch_get_main_queue(), ^{
-                                    __strong typeof(weakSelf) strongSelf = weakSelf;
-                                    if (!strongSelf) {
-                                        return;
-                                    }
+        DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
+        self.bip70Coordinator = coordinator;
+        [coordinator fetchAndVerifyWithRequestURL:[NSURL URLWithString:request.r]
+                                           scheme:request.scheme
+                                   callbackScheme:request.callbackScheme
+                                       completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
+                                           __strong typeof(weakSelf) strongSelf = weakSelf;
+                                           if (!strongSelf) {
+                                               return;
+                                           }
+                                           strongSelf.bip70Coordinator = nil;
 
-                                    if (error && !([request.paymentAddress dw_isValidDashAddressOnChain:chain])) {
-                                        [strongSelf failedWithError:error
-                                                              title:NSLocalizedString(@"Couldn't make payment", nil)
-                                                            message:error.localizedDescription];
-                                    }
-                                    else {
-                                        [strongSelf confirmProtocolRequest:error ? request.protocolRequest : protocolRequest];
-                                    }
-                                });
-                            }];
+                                           if (box) {
+                                               [strongSelf confirmBIP70Output:box];
+                                           }
+                                           else if ([request.paymentAddress dw_isValidDashAddressOnChain:chain]) {
+                                               // fetch failed but there's a valid fallback address → plain send
+                                               DSPaymentProtocolRequest *protocolRequest = [strongSelf protocolRequestFromPaymentRequest:request];
+                                               [strongSelf confirmProtocolRequest:protocolRequest];
+                                           }
+                                           else {
+                                               [strongSelf failedWithError:error
+                                                                     title:NSLocalizedString(@"Couldn't make payment", nil)
+                                                                   message:error.localizedDescription];
+                                           }
+                                       }];
     }
     else {
         DSPaymentProtocolRequest *protocolRequest = [self protocolRequestFromPaymentRequest:self.paymentInput.request];
