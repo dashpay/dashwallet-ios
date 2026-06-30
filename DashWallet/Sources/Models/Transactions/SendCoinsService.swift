@@ -18,10 +18,6 @@
 public final class SendCoinsService: NSObject {
     private let walletSendService = WalletSendService.shared
 
-    // Payment processing
-    private var paymentProcessor: DWPaymentProcessor?
-    private var pendingPaymentContinuation: CheckedContinuation<DSTransaction, Swift.Error>?
-
     func sendCoins(address: String, amount: UInt64,
                    inputSelector: SingleInputAddressSelector? = nil, adjustAmountDownwards: Bool = false) async throws
         -> DSTransaction {
@@ -34,101 +30,24 @@ public final class SendCoinsService: NSObject {
     }
 
     // MARK: - BIP70
-    
+
+    /// Pays a `dash:`/BIP72 payment-request URL headlessly (CTX gift cards): parse → authorize →
+    /// fetch + verify → build → broadcast → POST the Payment. Routes entirely through the
+    /// app-side BIP70 stack (`BIP70PaymentService`) — no DashSync, no `DWPaymentProcessor`.
+    ///
+    /// Returns a `DSTransaction` constructed locally from the signed bytes (a data holder for the
+    /// caller's txid metadata), preserving the prior `async throws -> DSTransaction` contract.
     func payWithDashUrl(url paymentUrlString: String) async throws -> DSTransaction {
-        // Create payment input from the URL
-        guard let paymentUrl = URL(string: paymentUrlString) else {
-            throw DashSpendError.paymentProcessingError("Invalid payment URL")
-        }
-        
-        // Use the existing payment infrastructure
-        let payModel = DWPayModel()
-        let paymentInput = payModel.paymentInput(with: paymentUrl)
-        
-        // If we have a BIP70 payment request URL, we need to fetch it first
-        guard paymentInput.request?.r != nil else {
+        guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r else {
             throw DashSpendError.paymentProcessingError("Invalid payment request")
         }
-        
-        return try await fetchAndProcessPaymentRequest(paymentInput: paymentInput)
-    }
-    
-    private func fetchAndProcessPaymentRequest(paymentInput: DWPaymentInput) async throws -> DSTransaction {
-        return try await withCheckedThrowingContinuation { continuation in
-            self.pendingPaymentContinuation = continuation
-            
-            // Create and retain the processor
-            let processor = DWPaymentProcessor(delegate: self)
-            self.paymentProcessor = processor
-            
-            // Process the payment on the main actor to avoid Sendable issues
-            Task { @MainActor in
-                processor.processPaymentInput(paymentInput)
-            }
-        }
-    }
-    
-    private func completePayment(transaction: DSTransaction?, error: Swift.Error?) {
-        guard let continuation = pendingPaymentContinuation else { return }
-        
-        pendingPaymentContinuation = nil
-        
-        // Clean up the payment processor
-        paymentProcessor = nil
-        
-        if let error = error {
-            continuation.resume(throwing: error)
-        } else if let transaction = transaction {
-            continuation.resume(returning: transaction)
-        } else {
-            continuation.resume(throwing: DashSpendError.paymentProcessingError("No transaction returned"))
-        }
-    }
-}
 
-// MARK: - DWPaymentProcessorDelegate
+        let network = try PaymentNetworkResolver.current()
+        let service = BIP70PaymentService.makeForCurrentWallet()
+        let result = try await service.confirmAndSendHeadless(
+            from: requestURL, scheme: uri.scheme, network: network, callbackScheme: uri.callbackScheme)
 
-extension SendCoinsService: DWPaymentProcessorDelegate {
-    public func paymentProcessor(_ processor: DWPaymentProcessor, didSend protocolRequest: DSPaymentProtocolRequest, transaction: DSTransaction, contactItem: DWDPBasicUserItem?) {
-        completePayment(transaction: transaction, error: nil)
+        let chain = DWEnvironment.sharedInstance().currentChain
+        return DSTransaction(message: result.signedTxData, on: chain)
     }
-    
-    public func paymentProcessor(_ processor: DWPaymentProcessor, didFailWithError error: Swift.Error?, title: String?, message: String?) {
-        let fullError = NSError(
-            domain: "DashSpend",
-            code: -1,
-            userInfo: [
-                NSLocalizedDescriptionKey: message ?? title ?? NSLocalizedString("Payment failed", comment: "")
-            ]
-        )
-        completePayment(transaction: nil, error: error ?? fullError)
-    }
-    
-    public func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem?) {
-        completePayment(transaction: nil, error: DashSpendError.paymentProcessingError("Request is missing destination"))
-    }
-    
-    public func paymentProcessor(_ processor: DWPaymentProcessor, requestUserActionTitle title: String?, message: String?, actionTitle: String, cancel cancelBlock: (() -> Void)?, actionBlock: (() -> Void)?) {
-        actionBlock?()
-    }
-    
-    public func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
-        processor.confirmPaymentOutput(paymentOutput)
-    }
-    
-    public func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {
-        completePayment(transaction: nil, error: NSError(domain: "DashSpend", code: -2, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("Transaction cancelled", comment: "")]))
-    }
-    
-    public func paymentProcessor(_ processor: DWPaymentProcessor, didSweepRequest protocolRequest: DSPaymentRequest, transaction: DSTransaction) {
-        completePayment(transaction: transaction, error: nil)
-    }
-    
-    public func paymentProcessor(_ processor: DWPaymentProcessor, displayFileProcessResult result: String) { }
-    
-    public func paymentProcessorDidFinishProcessingFile(_ processor: DWPaymentProcessor) { }
-    
-    public func paymentProcessor(_ processor: DWPaymentProcessor, showProgressHUDWithMessage message: String?) { }
-    
-    public func paymentInputProcessorHideProgressHUD(_ processor: DWPaymentProcessor) { }
 }

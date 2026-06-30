@@ -58,8 +58,10 @@ NS_ASSUME_NONNULL_BEGIN
                    title:(nullable NSString *)title
                  message:(nullable NSString *)message;
 
+// `protocolRequest` is nil for app-side BIP70 merchant sends (no `DSPaymentProtocolRequest`);
+// consumers use only `transaction`.
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
-          didSendRequest:(DSPaymentProtocolRequest *)protocolRequest
+          didSendRequest:(nullable DSPaymentProtocolRequest *)protocolRequest
              transaction:(DSTransaction *)transaction
              contactItem:(nullable id<DWDPBasicUserItem>)contactItem;
 

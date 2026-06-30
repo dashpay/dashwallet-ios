@@ -75,6 +75,31 @@ NS_ASSUME_NONNULL_BEGIN
     return self;
 }
 
+- (instancetype)initWithMerchantName:(nullable NSString *)merchantName
+                            isSecure:(BOOL)isSecure
+                              amount:(uint64_t)amount
+                                 fee:(uint64_t)fee
+                             address:(NSString *)address
+                                memo:(nullable NSString *)memo
+                   bip70Confirmation:(id)bip70Confirmation
+                            userItem:(nullable id<DWDPBasicUserItem>)userItem {
+    self = [super init];
+    if (self) {
+        _amount = amount;
+        _fee = fee;
+        _address = address;
+        _name = merchantName;
+        _memo = memo;
+        _isSecure = isSecure;
+        _userItem = userItem;
+        _isMerchantRequest = YES;
+        _bip70Confirmation = bip70Confirmation;
+        // The tx is built later (inside confirmAndSend); auth is required at the Send tap.
+        _broadcastAuthorizationState = DWPaymentOutputBroadcastAuthorizationStateNeedsAuthentication;
+    }
+    return self;
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

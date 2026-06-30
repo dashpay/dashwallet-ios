@@ -44,7 +44,14 @@ final class SwiftDashSDKTransactionSender: NSObject {
     ///   - amount: Amount to send in duffs (1 DASH = 100_000_000 duffs).
     /// - Returns: Tuple of (serialized signed tx bytes, fee in duffs, 32-byte txHash).
     static func buildAndSign(address: String, amount: UInt64) throws -> (txData: Data, fee: UInt64, txHash: Data) {
-        logger.info("💸 TXSEND :: building+signing+broadcasting via PlatformWalletManager.coreWallet")
+        try buildAndSign(recipients: [(address: address, amountDuffs: amount)])
+    }
+
+    /// Multi-recipient variant — used by the app-side BIP70 send, where a merchant request may
+    /// carry several outputs. Build + sign + broadcast are bundled by the same
+    /// `coreWallet().sendToAddresses(...)` FFI call as the single-recipient path.
+    static func buildAndSign(recipients: [(address: String, amountDuffs: UInt64)]) throws -> (txData: Data, fee: UInt64, txHash: Data) {
+        logger.info("💸 TXSEND :: building+signing+broadcasting \(recipients.count, privacy: .public) recipient(s) via PlatformWalletManager.coreWallet")
 
         let send = { @MainActor () throws -> Data in
             guard let wallet = SwiftDashSDKHost.shared.wallet else {
@@ -54,7 +61,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             return try core.sendToAddresses(
                 accountType: .bip44,
                 accountIndex: 0,
-                recipients: [(address: address, amountDuffs: amount)])
+                recipients: recipients)
         }
 
         let txData: Data

@@ -42,6 +42,25 @@ typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
 @property (readonly, nullable, nonatomic, strong) id<DWDPBasicUserItem> userItem;
 @property (readonly, nonatomic, assign) DWPaymentOutputBroadcastAuthorizationState broadcastAuthorizationState;
 
+/// YES for an app-side BIP70 merchant request (built from a verified `Confirmation`), so the
+/// confirm screen renders the merchant name + lock instead of a plain "send to" address.
+@property (readonly, nonatomic, assign) BOOL isMerchantRequest;
+
+/// Opaque `DWBIP70ConfirmationBox` (Swift) carried so the broadcast step can call
+/// `confirmAndSend` on the same prepared confirmation. nil for non-BIP70 outputs.
+@property (readonly, nullable, nonatomic, strong) id bip70Confirmation;
+
+/// Builds a merchant (BIP70) payment output from plain fields — no `DSTransaction` /
+/// `DSPaymentProtocolRequest`. The tx is built later, inside `confirmAndSend`.
+- (instancetype)initWithMerchantName:(nullable NSString *)merchantName
+                            isSecure:(BOOL)isSecure
+                              amount:(uint64_t)amount
+                                 fee:(uint64_t)fee
+                             address:(NSString *)address
+                                memo:(nullable NSString *)memo
+                   bip70Confirmation:(id)bip70Confirmation
+                            userItem:(nullable id<DWDPBasicUserItem>)userItem;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

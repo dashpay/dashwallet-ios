@@ -206,7 +206,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         }
     }
 
-    func paymentProcessor(_ processor: DWPaymentProcessor, didSend protocolRequest: DSPaymentProtocolRequest,
+    func paymentProcessor(_ processor: DWPaymentProcessor, didSend protocolRequest: DSPaymentProtocolRequest?,
                           transaction: DSTransaction, contactItem: DWDPBasicUserItem?) {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
 

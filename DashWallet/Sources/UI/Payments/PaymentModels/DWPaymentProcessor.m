@@ -50,6 +50,9 @@ static NSString *sanitizeString(NSString *s) {
 
 @property (nullable, nonatomic, strong) DWPaymentInput *paymentInput;
 
+/// Retains the BIP70 coordinator for the duration of an async fetch/confirm-and-send.
+@property (nullable, nonatomic, strong) id bip70Coordinator;
+
 @property (nonatomic, assign) uint64_t amount;
 @property (nonatomic, assign) BOOL canChangeAmount;
 @property (nonatomic, assign) BOOL shouldClearPasteboard;
@@ -158,6 +161,11 @@ static NSString *sanitizeString(NSString *s) {
 
     self.paymentInput = paymentInput;
 
+    if (paymentInput.bip70Confirmation) {
+        [self confirmBIP70Output:paymentInput.bip70Confirmation];
+        return;
+    }
+
     if (paymentInput.request) {
         if ((paymentInput.source == DWPaymentInputSource_ScanQR || paymentInput.source == DWPaymentInputSource_DeepLink) && paymentInput.request.isValidAsNonDashpayPaymentRequest) {
             DSPaymentProtocolRequest *protocolRequest = [self protocolRequestFromPaymentRequest:self.paymentInput.request];
@@ -199,6 +207,12 @@ static NSString *sanitizeString(NSString *s) {
 
     self.request = protocolRequest;
     self.didSendRequestDelegateNotified = NO;
+
+    // App-side BIP70 path: build + broadcast + POST the Payment via the Swift orchestrator.
+    if (paymentOutput.bip70Confirmation) {
+        [self broadcastBIP70PaymentOutput:paymentOutput];
+        return;
+    }
 
     // SwiftDashSDK path: tx is already prepared, just broadcast.
     if (paymentOutput.preparedStandardSend) {
@@ -384,6 +398,81 @@ static NSString *sanitizeString(NSString *s) {
     return [request protocolRequestForBlockchainIdentity:myBlockchainIdentity
                                                onAccount:account
                                                inContext:context];
+}
+
+#pragma mark - App-side BIP70 (Swift orchestrator)
+
+/// Build the confirm-screen output from a verified BIP70 `Confirmation` box (no build, no spend).
+- (void)confirmBIP70Output:(id)bip70Confirmation {
+    DWPaymentOutput *paymentOutput = [DWBIP70PaymentOutputFactory paymentOutputFromBox:bip70Confirmation
+                                                                              userItem:self.paymentInput.userItem];
+    [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
+}
+
+/// Authenticate (PIN / biometric), then build + broadcast + POST via the Swift orchestrator.
+- (void)broadcastBIP70PaymentOutput:(DWPaymentOutput *)paymentOutput {
+    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    BOOL skipAuth = [[DWGlobalOptions sharedInstance] spendingConfirmationDisabled] ||
+                    paymentOutput.broadcastAuthorizationState == DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized;
+
+    if (skipAuth) {
+        [self performBIP70Send:paymentOutput];
+        return;
+    }
+
+    [authManager authenticateWithPrompt:nil
+           usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
+                         alertIfLockout:YES
+                             completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
+                                 if (cancelled) {
+                                     [self.delegate paymentProcessorDidCancelTransactionSigning:self];
+                                     return;
+                                 }
+                                 if (!authenticatedOrSuccess) {
+                                     [self failedWithError:nil
+                                                     title:NSLocalizedString(@"Couldn't make payment", nil)
+                                                   message:NSLocalizedString(@"Authentication failed", nil)];
+                                     return;
+                                 }
+                                 [self performBIP70Send:paymentOutput];
+                             }];
+}
+
+- (void)performBIP70Send:(DWPaymentOutput *)paymentOutput {
+    [self.delegate paymentProcessor:self showProgressHUDWithMessage:NSLocalizedString(@"Sending", nil)];
+
+    DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
+    self.bip70Coordinator = coordinator; // retain for the duration of the async send
+
+    [coordinator confirmAndSend:paymentOutput.bip70Confirmation
+                     completion:^(DWBIP70SendResultBox *_Nullable result, NSError *_Nullable error) {
+                         [self.delegate paymentInputProcessorHideProgressHUD:self];
+                         self.bip70Coordinator = nil;
+
+                         if (error || result == nil) {
+                             [self failedWithError:error
+                                             title:NSLocalizedString(@"Couldn't make payment", nil)
+                                           message:error.localizedDescription];
+                             return;
+                         }
+
+                         DSChain *chain = [DWEnvironment sharedInstance].currentChain;
+                         DSTransaction *tx = [[DSTransaction alloc] initWithMessage:result.signedTxData onChain:chain];
+
+                         if (!self.didSendRequestDelegateNotified) {
+                             self.didSendRequestDelegateNotified = YES;
+                             [self.delegate paymentProcessor:self
+                                              didSendRequest:nil
+                                                 transaction:tx
+                                                 contactItem:paymentOutput.userItem];
+                         }
+
+                         if (result.callbackURL) {
+                             [[UIApplication sharedApplication] openURL:result.callbackURL
+                                                                options:@{}
+                                                      completionHandler:nil];
+                         }
+                     }];
 }
 
 - (void)confirmProtocolRequest:(DSPaymentProtocolRequest *)protocolRequest {

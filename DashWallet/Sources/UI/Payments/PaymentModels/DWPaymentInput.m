@@ -33,7 +33,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSString *)userDetails {
     NSString *result = nil;
-    if (self.request) {
+    if (self.bip70Confirmation) {
+        result = [self.bip70Confirmation valueForKey:@"memo"];
+    }
+    else if (self.request) {
         result = self.request.string;
     }
     else if (self.protocolRequest) {

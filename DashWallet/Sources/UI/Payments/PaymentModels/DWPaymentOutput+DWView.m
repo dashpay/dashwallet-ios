@@ -82,7 +82,7 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 - (nullable id<DWTitleDetailItem>)addressWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
-    if (self.protocolRequest.commonName) {
+    if (self.isMerchantRequest || self.protocolRequest.commonName) {
         // don't show "send to" for BIP70 payment requests
         return nil;
     }
