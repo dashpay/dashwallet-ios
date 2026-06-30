@@ -17,6 +17,10 @@
 
 import UIKit
 
+#if DEBUG
+import SwiftUI
+#endif
+
 class PointOfUseLocationServicePopup: UIView {
     var continueBlock: (() -> ())?
 
@@ -138,3 +142,27 @@ class PointOfUseLocationServicePopup: UIView {
         popup.show(in: view.window!)
     }
 }
+
+#if DEBUG
+#Preview("Short text") {
+    UIViewWrapper(
+        uiView: PointOfUseLocationServicePopup(
+            title: "Enable Location Services",
+            details: "To show merchants near you."
+        )
+    )
+    .frame(width: 375, height: 600)
+}
+
+#Preview("Long text") {
+    UIViewWrapper(
+        uiView: PointOfUseLocationServicePopup(
+            title: "Enable Location Services",
+            details: "To show merchants and ATMs near you, allow access to your location. " +
+                "You can change this later in Settings if you prefer. " +
+                "We only use your location to improve nearby results."
+        )
+    )
+    .frame(width: 375, height: 600)
+}
+#endif

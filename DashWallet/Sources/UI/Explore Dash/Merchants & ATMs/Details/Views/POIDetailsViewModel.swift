@@ -20,6 +20,10 @@ import Foundation
 import CoreLocation
 import MapKit
 
+private var isRunningInPreview: Bool {
+    ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+}
+
 @MainActor
 class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, NetworkReachabilityHandling, DWLocationObserver {
     private var cancellableBag = Set<AnyCancellable>()
@@ -68,7 +72,10 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
             self.currentSearchRadius = radius
         }
 
-        setupProviders()
+        setupProviders(isPreview: isRunningInPreview)
+
+        guard !isRunningInPreview else { return }
+
         setupObservers()
         updateDistance()
         fetchLocationCount()
@@ -156,7 +163,7 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         distanceText = ExploreDash.distanceFormatter.string(from: measurement)
     }
     
-    private func setupProviders() {
+    private func setupProviders(isPreview: Bool) {
         guard case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard else {
             return
         }
@@ -209,14 +216,16 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         // Select the first provider (highest discount or PiggyCards if tied)
         selectedProvider = providerList.first?.provider
 
-        // Start observing the selected provider
-        if let selectedProvider = selectedProvider {
+        // Start observing the selected provider in the live app only.
+        if !isPreview, let selectedProvider = selectedProvider {
             observeDashSpendState(provider: selectedProvider)
         }
 
-        // Fetch merchant enabled status from API
-        Task {
-            await fetchMerchantStatus()
+        // Fetch merchant enabled status from API in the live app only.
+        if !isPreview {
+            Task {
+                await fetchMerchantStatus()
+            }
         }
     }
 
@@ -252,13 +261,12 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
 
         if shouldIgnoreRadius {
             // For "All" tab: Get total location count without any radius filtering
-            ExploreDash.shared.allLocations(for: merchant.pointOfUseId, in: nil, userPoint: nil) { [weak self] result in
+            ExploreDash.shared.allLocationsCount(for: merchant.pointOfUseId, in: nil, userPoint: nil) { [weak self] result in
                 Task { @MainActor in
                     switch result {
-                    case .success(let locations):
-                        let count = locations.items.count
+                    case .success(let count):
                         self?.locationCount = count
-                    case .failure(let error):
+                    case .failure:
                         self?.locationCount = 0
                     }
                 }
@@ -284,13 +292,12 @@ class POIDetailsViewModel: ObservableObject, SyncingActivityMonitorObserver, Net
         let bounds = ExploreMapBounds(rect: MKCircle(center: currentLocation.coordinate, radius: currentSearchRadius).boundingMapRect)
 
 
-        ExploreDash.shared.allLocations(for: merchant.pointOfUseId, in: bounds, userPoint: currentLocation.coordinate) { [weak self] result in
+        ExploreDash.shared.allLocationsCount(for: merchant.pointOfUseId, in: bounds, userPoint: currentLocation.coordinate) { [weak self] result in
             Task { @MainActor in
                 switch result {
-                case .success(let locations):
-                    let count = locations.items.count
+                case .success(let count):
                     self?.locationCount = count
-                case .failure(let error):
+                case .failure:
                     self?.locationCount = 0
                 }
             }

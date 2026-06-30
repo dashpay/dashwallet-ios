@@ -99,11 +99,37 @@ extension MerchantsListSegment {
 // MARK: - MerchantListViewController
 
 @objc
-class MerchantListViewController: ExplorePointOfUseListViewController {
+class MerchantListViewController: ExplorePointOfUseListViewController, NavigationBarDisplayable {
 
     var initialSegment: MerchantsListSegment?
 
+    /// Set to install a custom SwiftUI `NavigationBar` instead of the system UINavigationBar.
+    /// For modal `.fullScreen` presentations (e.g. shortcut bar). Push-based entry points
+    /// leave this `nil` and keep the system nav bar.
+    var customNavBar: CustomNavBarConfiguration?
+
+    struct CustomNavBarConfiguration {
+        let title: String
+        let onBack: () -> Void
+        let onInfo: (() -> Void)?
+    }
+
     private var infoButton: UIBarButtonItem!
+    private weak var customNavBarHost: UIHostingController<AnyView>?
+
+    var isBackButtonHidden: Bool { customNavBar != nil }
+    var isNavigationBarHidden: Bool { customNavBar != nil }
+    override var expandedTableTopInset: CGFloat {
+        guard customNavBar != nil else { return 0 }
+
+        let hostHeight = customNavBarHost?.view.bounds.height ?? 0
+        if hostHeight > 0 {
+            return hostHeight
+        }
+
+        let fittingHeight = customNavBarHost?.view.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height ?? 0
+        return fittingHeight > 0 ? fittingHeight : 64
+    }
 
     override var locationServicePopupTitle: String {
         NSLocalizedString("Merchant search works better with Location Services turned on.", comment: "")
@@ -323,7 +349,7 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     }
 
     override func configureHierarchy() {
-        title = NSLocalizedString("Where to Spend", comment: "");
+//        title = NSLocalizedString("Where to Spend", comment: "");
 
         super.configureHierarchy()
 
@@ -333,7 +359,11 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        setupInfoButton()
+        if let config = customNavBar {
+            installCustomNavBar(config: config)
+        } else {
+            setupInfoButton()
+        }
 
         model.itemsDidChange = { [weak self] in
             guard let wSelf = self else { return }
@@ -367,11 +397,64 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         infoButton = UIBarButtonItem(image: infoImage, style: .plain, target: self, action: #selector(infoButtonAction))
         navigationItem.rightBarButtonItem = infoButton
     }
-    
+
+    private func installCustomNavBar(config: CustomNavBarConfiguration) {
+        let navBar = MerchantListNavBar(
+            title: config.title,
+            onBack: config.onBack,
+            onInfo: config.onInfo ?? { [weak self] in self?.infoButtonAction() }
+        )
+
+        let topFillView = UIView()
+        topFillView.translatesAutoresizingMaskIntoConstraints = false
+        topFillView.backgroundColor = UIColor(named: "SecondaryBackgroundColor") ?? .systemBackground
+        view.addSubview(topFillView)
+
+        let host = UIHostingController(rootView: AnyView(navBar))
+        host.view.backgroundColor = .clear
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+
+        addChild(host)
+        view.addSubview(host.view)
+        host.didMove(toParent: self)
+        customNavBarHost = host
+
+        NSLayoutConstraint.activate([
+            topFillView.topAnchor.constraint(equalTo: view.topAnchor),
+            topFillView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            topFillView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            topFillView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+
+            host.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            host.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+
+        view.layoutIfNeeded()
+        updateTableViewInsetsForCurrentSheetPosition()
+    }
+
     @objc
     func infoButtonAction() {
         let hostingController = UIHostingController(rootView: MerchantTypesDialog())
         hostingController.setDetent(640)
         self.present(hostingController, animated: true)
+    }
+}
+
+// MARK: - SwiftUI Navigation Bar
+
+private struct MerchantListNavBar: View {
+    let title: String
+    let onBack: () -> Void
+    let onInfo: () -> Void
+
+    var body: some View {
+        NavigationBar(
+            leading: { NavigationBarElement.back.button(action: onBack) },
+            central: { Text(title).font(.subheadMedium) },
+            trailing: { NavigationBarElement.info.button(action: onInfo) }
+        )
+        .background(Color.primaryBackground)
     }
 }

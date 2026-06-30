@@ -17,6 +17,10 @@
 
 import UIKit
 
+#if DEBUG
+import SwiftUI
+#endif
+
 class PointOfUseListEmptyResultsView: UIView {
     var resetHandler: (() -> Void)?
 
@@ -66,3 +70,12 @@ class PointOfUseListEmptyResultsView: UIView {
         ])
     }
 }
+
+#if DEBUG
+#Preview("Default") {
+    UIViewWrapper(uiView: PointOfUseListEmptyResultsView(frame: .zero))
+        .frame(width: 375, height: 120)
+        .padding()
+        .background(Color(.systemBackground))
+}
+#endif

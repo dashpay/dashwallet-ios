@@ -21,10 +21,24 @@ import MapKit
 
 class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
     private let pointOfUse: ExplorePointOfUse
+    private var totalCount: Int?
+
+    override var hasNextPage: Bool {
+        if let totalCount {
+            return items.count < totalCount
+        }
+
+        return super.hasNextPage
+    }
 
     init(pointOfUse: ExplorePointOfUse) {
         self.pointOfUse = pointOfUse
         super.init()
+    }
+
+    override func clearCache() {
+        super.clearCache()
+        totalCount = nil
     }
 
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
@@ -75,8 +89,10 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
         lastBounds = bounds
         lastFilters = filters
 
-        fetch(by: query, in: bounds, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
-            self?.handle(result: result, completion: completion)
+        refreshTotalCount(in: bounds, userPoint: userPoint) { [weak self] in
+            self?.fetch(by: query, in: bounds, userPoint: userPoint, with: filters, offset: 0) { result in
+                self?.handle(result: result, completion: completion)
+            }
         }
     }
 
@@ -88,9 +104,20 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
 
     private func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, with filters: PointOfUseListFilters?, offset: Int,
                        completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-
-        dataSource.allLocations(for: pointOfUse.pointOfUseId, in: bounds, userPoint: userPoint) { result in
+        dataSource.allLocations(for: pointOfUse.pointOfUseId, in: bounds, userPoint: userPoint, offset: offset) { result in
             completion(result)
+        }
+    }
+
+    private func refreshTotalCount(in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping () -> Void) {
+        dataSource.allLocationsCount(for: pointOfUse.pointOfUseId, in: bounds, userPoint: userPoint) { [weak self] result in
+            if case .success(let count) = result {
+                self?.totalCount = count
+            } else {
+                self?.totalCount = nil
+            }
+
+            completion()
         }
     }
 }
