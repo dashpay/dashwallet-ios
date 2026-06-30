@@ -1,5 +1,65 @@
 import SwiftUI
 
+enum NumericKeyboardLocaleSupport {
+    static func decimalSeparator(for locale: Locale) -> String {
+        locale.decimalSeparator ?? "."
+    }
+
+    static func rows(showDecimalSeparator: Bool, locale: Locale) -> [[String]] {
+        let lastRow: [String]
+        if showDecimalSeparator {
+            lastRow = [decimalSeparator(for: locale), Layout.zeroKey, Layout.deleteKey]
+        } else {
+            lastRow = [Layout.emptyKey, Layout.zeroKey, Layout.deleteKey]
+        }
+
+        return [
+            ["1", "2", "3"],
+            ["4", "5", "6"],
+            ["7", "8", "9"],
+            lastRow
+        ]
+    }
+
+    static func applyKeyPress(
+        value: String,
+        key: String,
+        showDecimalSeparator: Bool,
+        locale: Locale
+    ) -> String {
+        if key == Layout.deleteKey {
+            var updatedValue = value
+            if !updatedValue.isEmpty {
+                updatedValue.removeLast()
+            }
+            return updatedValue
+        }
+
+        let decimalSeparator = decimalSeparator(for: locale)
+        let groupingSeparator = locale.groupingSeparator ?? ","
+
+        if !groupingSeparator.isEmpty, key == groupingSeparator, groupingSeparator != decimalSeparator {
+            return value
+        }
+
+        if key == decimalSeparator {
+            if showDecimalSeparator && !value.contains(decimalSeparator) {
+                return value + decimalSeparator
+            }
+            return value
+        }
+
+        guard !key.isEmpty else { return value }
+        return value + key
+    }
+
+    enum Layout {
+        static let zeroKey = "0"
+        static let emptyKey = ""
+        static let deleteKey = "⌫"
+    }
+}
+
 struct NumericKeyboardView: View {
     private enum Layout {
         static let rootSpacing: CGFloat = 20
@@ -11,15 +71,12 @@ struct NumericKeyboardView: View {
         static let disabledOpacity: CGFloat = 0.5
         static let enabledOpacity: CGFloat = 1.0
 
-        static let decimalKey = "."
-        static let zeroKey = "0"
-        static let emptyKey = ""
-        static let deleteKey = "⌫"
         static let deleteSymbol = "delete.left"
     }
 
     @Binding var value: String
     let showDecimalSeparator: Bool
+    var locale: Locale = .autoupdatingCurrent
     let actionButtonText: String
     let actionEnabled: Bool
     let inProgress: Bool
@@ -27,19 +84,7 @@ struct NumericKeyboardView: View {
     let actionHandler: () -> Void
     
     private var rows: [[String]] {
-        let lastRow: [String]
-        if showDecimalSeparator {
-            lastRow = [Layout.decimalKey, Layout.zeroKey, Layout.deleteKey]
-        } else {
-            lastRow = [Layout.emptyKey, Layout.zeroKey, Layout.deleteKey]
-        }
-        
-        return [
-            ["1", "2", "3"],
-            ["4", "5", "6"],
-            ["7", "8", "9"],
-            lastRow
-        ]
+        NumericKeyboardLocaleSupport.rows(showDecimalSeparator: showDecimalSeparator, locale: locale)
     }
     
     var body: some View {
@@ -48,7 +93,6 @@ struct NumericKeyboardView: View {
             helperTextRow(helperText)
             actionButtonView
         }
-        .background(Color.secondaryBackground)
     }
 
     private var keyboardRowsView: some View {
@@ -82,7 +126,7 @@ struct NumericKeyboardView: View {
 
     @ViewBuilder
     private func keyContentView(_ key: String) -> some View {
-        if key == Layout.deleteKey {
+        if key == NumericKeyboardLocaleSupport.Layout.deleteKey {
             Image(systemName: Layout.deleteSymbol)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .font(.system(size: Layout.keyFontSize))
@@ -119,17 +163,12 @@ struct NumericKeyboardView: View {
     }
     
     private func handleKeyPress(_ key: String) {
-        if key == Layout.deleteKey {
-            if !value.isEmpty {
-                value.removeLast()
-            }
-        } else if key == Layout.decimalKey {
-            if showDecimalSeparator && !value.contains(".") {
-                value += Layout.decimalKey
-            }
-        } else if !key.isEmpty {
-            value += key
-        }
+        value = NumericKeyboardLocaleSupport.applyKeyPress(
+            value: value,
+            key: key,
+            showDecimalSeparator: showDecimalSeparator,
+            locale: locale
+        )
     }
 }
 
@@ -141,6 +180,7 @@ struct NumericKeyboardView: View {
         NumericKeyboardView(
             value: .constant(""),
             showDecimalSeparator: true,
+            locale: Locale(identifier: "en_US"),
             actionButtonText: NSLocalizedString("Verify", comment: "Button title for numeric keyboard action"),
             actionEnabled: true,
             inProgress: false,

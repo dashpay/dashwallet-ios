@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 @available(iOS 14, *)
 /// Adds a transparent View and read it's frame.
@@ -44,16 +45,7 @@ public struct FrameReader: View {
     }
 }
 
-@available(iOS 14, *)
-public extension View {
-
-    /// Get the frame of the View
-    ///
-    /// Adds a GeometryReader to the background of a View.
-    func readingFrame(coordinateSpace: CoordinateSpace = .global, onChange: @escaping (_ frame: CGRect) -> ()) -> some View {
-        background(FrameReader(coordinateSpace: coordinateSpace, onChange: onChange))
-    }
-}
+// readingFrame(coordinateSpace:onChange:) is provided by DashUIKit — no duplicate needed here.
 
 @available(iOS 14, *)
 struct FrameReader_Previews: PreviewProvider {

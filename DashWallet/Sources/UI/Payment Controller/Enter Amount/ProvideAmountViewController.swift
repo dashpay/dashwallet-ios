@@ -17,7 +17,6 @@
 
 import UIKit
 import SwiftUI
-import Combine
 
 // MARK: - ProvideAmountViewControllerDelegate
 
@@ -25,23 +24,46 @@ protocol ProvideAmountViewControllerDelegate: AnyObject {
     func provideAmountViewControllerDidInput(amount: UInt64, selectedCurrency: String)
 }
 
+// MARK: - ProvideAmountScreenState
+
+@MainActor
+final class ProvideAmountScreenState: ObservableObject {
+    @Published var isLoading = false
+}
+
+private struct InlineAmountMessageError: Error, LocalizedError, ColorizedText {
+    let message: String
+    let textColor: UIColor
+
+    var errorDescription: String? {
+        message
+    }
+}
+
 // MARK: - ProvideAmountViewController
 
-final class ProvideAmountViewController: SendAmountViewController {
+final class ProvideAmountViewController: ActionButtonViewController, AmountProviding, SendAmountFlowSupporting {
     weak var delegate: ProvideAmountViewControllerDelegate?
 
     public var locksBalance = false
 
+    override var showsActionButton: Bool { false }
+
     private let address: String
     private let contact: DWDPBasicUserItem?
+    private let sendAmountModel = SendAmountModel()
+    private let screenState = ProvideAmountScreenState()
     private var details: DSPaymentProtocolDetails?
-    private var isBalanceHidden = true
+
+    var sendAmountSupportModel: BaseAmountModel {
+        sendAmountModel
+    }
 
     init(address: String, details: DSPaymentProtocolDetails?, contact: DWDPBasicUserItem?) {
         self.address = address
         self.contact = contact
         self.details = details
-        super.init(model: SendAmountModel())
+        super.init(nibName: nil, bundle: nil)
     }
 
     @available(*, unavailable)
@@ -49,156 +71,200 @@ final class ProvideAmountViewController: SendAmountViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func actionButtonAction(sender: UIView) {
-        guard validateInputAmount() else { return }
-
-        checkLeftoverBalance { [weak self] canContinue in
-            guard canContinue, let wSelf = self else { return }
-
-            wSelf.showActivityIndicator()
-            let paymentCurrency: DWPaymentCurrency = wSelf.sendAmountModel.activeAmountType == .main ? .dash : .fiat
-            DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
-
-            wSelf.delegate?.provideAmountViewControllerDidInput(amount: wSelf.model.amount.plainAmount,
-                                                                selectedCurrency: wSelf.model.supplementaryCurrencyCode)
-        }
-    }
-
-    override func configureHierarchy() {
-        super.configureHierarchy()
-
-        let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.spacing = UIDevice.isIphone5OrLess ? 10 : 26
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(stackView)
-        
-        var destination = address
-        let balanceLabel = CoinJoinService.shared.mixingState.isInProgress ? NSLocalizedString("Mixed balance", comment: "") : NSLocalizedString("Dash balance", comment: "")
-        var avatarView: DWDPAvatarView? = nil
-        
-#if DASHPAY
-        if let contact = contact {
-            avatarView = DWDPAvatarView()
-            destination = contact.username
-            avatarView!.blockchainIdentity = contact.blockchainIdentity
-            avatarView!.translatesAutoresizingMaskIntoConstraints = false
-            avatarView!.backgroundMode = .random
-            avatarView!.isUserInteractionEnabled = false
-            avatarView!.isSmall = true
-        }
-#endif
-        
-        let intro = ProvideAmountIntro(
-            destination: destination,
-            balanceLabel: balanceLabel,
-            model: self.model as! SendAmountModel,
-            avatarView: { 
-                if let avatarView = avatarView {
-                    UIViewWrapper(uiView: avatarView)
-                }
-            }
-        )
-        let swiftUIController = UIHostingController(rootView: intro)
-        swiftUIController.view.backgroundColor = UIColor.dw_secondaryBackground()
-        
-        addChild(swiftUIController)
-        stackView.addArrangedSubview(swiftUIController.view)
-        swiftUIController.view.translatesAutoresizingMaskIntoConstraints = false
-        swiftUIController.didMove(toParent: self)
-
-        amountView.removeFromSuperview()
-        stackView.addArrangedSubview(amountView)
-
-        NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIDevice.isIphone5OrLess ? 0 : 10),
-            stackView.leadingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.leadingAnchor),
-            stackView.trailingAnchor.constraint(equalTo: contentView.layoutMarginsGuide.trailingAnchor),
-            swiftUIController.view.heightAnchor.constraint(equalToConstant: UIDevice.isIphone5OrLess ? 84 : 100)
-        ])
-    }
-
-    @objc
-    func toggleBalanceVisibilityAction() {
-        let toggleBalance = { [weak self] in
-            guard let self else { return }
-
-            self.isBalanceHidden.toggle()
-        }
-
-        if locksBalance && isBalanceHidden {
-            DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true) { authenticatedOrSuccess, _, _ in
-
-                guard authenticatedOrSuccess else { return }
-                toggleBalance()
-            }
-        } else {
-            toggleBalance()
-        }
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = UIColor(named: "SecondaryBackground", in: .dashUIKit, compatibleWith: .current)
+        configureHierarchy()
+        updateInitialAmount()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        let standardAppearance = UINavigationBarAppearance()
-        standardAppearance.configureWithOpaqueBackground()
-        standardAppearance.backgroundColor = .dw_secondaryBackground()
-        standardAppearance.shadowColor = .clear
-
-        let compactAppearance = standardAppearance.copy()
-
-        let navigationBar = navigationController!.navigationBar
-        navigationBar.isTranslucent = true
-        navigationBar.standardAppearance = standardAppearance
-        navigationBar.scrollEdgeAppearance = standardAppearance
-        navigationBar.compactAppearance = compactAppearance
-        if #available(iOS 15.0, *) {
-            navigationBar.compactScrollEdgeAppearance = compactAppearance
-        }
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        updateInitialAmount()
+    override func showActivityIndicator() {
+        screenState.isLoading = true
     }
 
-    deinit {
-        NotificationCenter.default.removeObserver(self)
+    override func hideActivityIndicator() {
+        screenState.isLoading = false
     }
+}
+
+extension ProvideAmountViewController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+
+    var isNavigationBarHidden: Bool { true }
 }
 
 extension ProvideAmountViewController {
-    private func updateInitialAmount() {
-        if let details = details {
-            let totalAmount = details.outputAmounts.reduce(UInt64(0)) { sum, element in
-                if let number = element as? NSNumber {
-                    return sum + number.uint64Value
-                }
-                return sum
+    private func configureHierarchy() {
+        let rootView = ProvideAmountRootView(
+            model: sendAmountModel,
+            screenState: screenState,
+            destination: destination,
+            locksBalance: locksBalance,
+            avatarView: avatarView(),
+            onBack: { [weak self] in
+                self?.navigationController?.popViewController(animated: true)
+            },
+            onMax: { [weak self] in
+                self?.sendAmountModel.selectAllFunds()
+            },
+            onSelectCurrency: { [weak self] in
+                self?.showCurrencyList()
+            },
+            onSend: { [weak self] in
+                self?.performSend()
             }
-            model.updateCurrentAmountObject(with: totalAmount)
+        )
+
+        let hostingController = UIHostingController(rootView: rootView)
+        hostingController.view.backgroundColor = UIColor(named: "SecondaryBackground", in: .dashUIKit, compatibleWith: .current)
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+
+        addChild(hostingController)
+        setupContentView(hostingController.view)
+        hostingController.didMove(toParent: self)
+    }
+
+    private var destination: String {
+#if DASHPAY
+        if let contact {
+            return contact.username
         }
+#endif
+        return address
+    }
+    private func avatarView() -> AnyView {
+#if DASHPAY
+        if let contact {
+            let avatarView = DWDPAvatarView()
+            avatarView.blockchainIdentity = contact.blockchainIdentity
+            avatarView.translatesAutoresizingMaskIntoConstraints = false
+            avatarView.backgroundMode = .random
+            avatarView.isUserInteractionEnabled = false
+            avatarView.isSmall = true
+            return AnyView(UIViewWrapper(uiView: avatarView))
+        }
+#endif
+        return AnyView(EmptyView())
+    }
+
+    private func performSend() {
+        guard validateInputAmount() else { return }
+
+        checkLeftoverBalance { [weak self] canContinue in
+            guard canContinue, let self else { return }
+
+            showActivityIndicator()
+            let paymentCurrency: DWPaymentCurrency = sendAmountModel.activeAmountType == .main ? .dash : .fiat
+            DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
+
+            delegate?.provideAmountViewControllerDidInput(
+                amount: sendAmountModel.amount.plainAmount,
+                selectedCurrency: sendAmountModel.supplementaryCurrencyCode
+            )
+        }
+    }
+
+    private func updateInitialAmount() {
+        if let details {
+            var totalAmount: UInt64 = 0
+
+            for element in details.outputAmounts {
+                if let number = element as? NSNumber {
+                    let (nextTotal, overflow) = totalAmount.addingReportingOverflow(number.uint64Value)
+                    if overflow {
+                        present(error: InlineAmountMessageError(
+                            message: NSLocalizedString("Invalid payment request amount", comment: "Payment request error"),
+                            textColor: .systemRed
+                        ))
+                        return
+                    }
+                    totalAmount = nextTotal
+                }
+            }
+            sendAmountModel.updateCurrentAmountObject(with: totalAmount)
+        }
+    }
+
+    private func showCurrencyList() {
+        let currencyController = DWLocalCurrencyViewController(
+            navigationAppearance: .white,
+            presentationMode: .dialog,
+            currencyCode: sendAmountModel.localCurrencyCode
+        )
+        currencyController.isGlobal = false
+        currencyController.delegate = self
+        let navigationController = BaseNavigationController(rootViewController: currencyController)
+        present(navigationController, animated: true)
     }
 }
 
-extension Notification.Name {
-    static var balanceChangeNotification: NSNotification.Name { .init("DSWalletBalanceChangedNotification") }
+// MARK: - DWLocalCurrencyViewControllerDelegate
+
+extension ProvideAmountViewController: DWLocalCurrencyViewControllerDelegate {
+    func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
+        sendAmountModel.setupCurrencyCode(currencyCode)
+        controller.dismiss(animated: true)
+    }
+
+    func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) {
+        controller.dismiss(animated: true)
+    }
 }
 
-struct ProvideAmountIntro<Content: View>: View {
-    var destination: String? = nil
-    var balanceLabel: String
-    @StateObject var model: SendAmountModel
-    @ViewBuilder var avatarView: () -> Content
-    
+// MARK: - ErrorPresentable
+
+extension ProvideAmountViewController {
+    func present(error: Error) {
+        hideActivityIndicator()
+        sendAmountModel.error = error
+    }
+
+    func present(message: String, level: MessageLevel) {
+        hideActivityIndicator()
+        sendAmountModel.error = InlineAmountMessageError(message: message, textColor: level.textColor)
+    }
+}
+
+private struct ProvideAmountRootView: View {
+    @ObservedObject var model: SendAmountModel
+    @ObservedObject var screenState: ProvideAmountScreenState
+    let destination: String
+    let locksBalance: Bool
+    let avatarView: AnyView
+    let onBack: () -> Void
+    let onMax: () -> Void
+    let onSelectCurrency: () -> Void
+    let onSend: () -> Void
+
+    private var dashBalance: UInt64 {
+        CoinJoinService.shared.mixingState.isInProgress ? model.coinJoinBalance : model.walletBalance
+    }
+
+    private var balanceLabel: String {
+        CoinJoinService.shared.mixingState.isInProgress
+            ? NSLocalizedString("Mixed balance", comment: "")
+            : NSLocalizedString("Dash balance", comment: "")
+    }
+
     var body: some View {
-        SendIntro(
-            title: NSLocalizedString("Send", comment: "Send Screen"),
+        SendAmountView(
+            model: model,
+            onBack: onBack,
             destination: destination,
-            dashBalance: CoinJoinService.shared.mixingState.isInProgress ? model.coinJoinBalance : model.walletBalance,
-            balanceLabel: balanceLabel + ":",
-            authCallback: model.auth,
-            avatarView: avatarView
+            dashBalance: dashBalance,
+            balanceLabel: balanceLabel,
+            balanceAuthCallback: locksBalance ? model.auth : nil,
+            isLoading: screenState.isLoading,
+            onMax: onMax,
+            onSelectCurrency: onSelectCurrency,
+            onSend: onSend,
+            avatarView: { avatarView }
         )
     }
 }

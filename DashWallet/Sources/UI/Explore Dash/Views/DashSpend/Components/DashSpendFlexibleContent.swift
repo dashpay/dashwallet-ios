@@ -119,9 +119,11 @@ struct DashSpendFlexibleContent: View {
                     isMixing: viewModel.isMixing,
                     dashBalance: viewModel.isMixing ? viewModel.coinJoinBalance : viewModel.walletBalance
                 )
+
                 DashSpendAmountView(
                     currencySymbol: viewModel.currencySymbol,
-                    amount: viewModel.input
+                    amount: viewModel.input,
+                    onPaste: viewModel.pasteFromClipboard
                 )
                 .frame(height: 85)
             }
@@ -184,7 +186,8 @@ struct DashSpendFlexibleContent: View {
                 )
                 DashSpendAmountView(
                     currencySymbol: viewModel.currencySymbol,
-                    amount: segmentSelection == .multiple ? multipleTotal : viewModel.input
+                    amount: segmentSelection == .multiple ? multipleTotal : viewModel.input,
+                    onPaste: segmentSelection == .single ? { viewModel.pasteFromClipboard() } : nil
                 )
                 .frame(height: 85)
             }

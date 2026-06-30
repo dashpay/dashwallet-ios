@@ -113,7 +113,10 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
 
     internal func validateInputAmount() -> Bool {
         if model.isEnteredAmountLessThenMinimumOutputAmount {
-            let msg = String(format: "Dash payments can't be less than %@", model.minimumOutputAmountFormattedString)
+            let msg = String.localizedStringWithFormat(
+                NSLocalizedString("Dash payments can't be less than %@", comment: "Send Dash"),
+                model.minimumOutputAmountFormattedString
+            )
             present(message: msg, level: .error)
             return false
         }
@@ -301,4 +304,3 @@ extension BaseAmountViewController: AmountInputTypeSwitcherDelegate {
         return item == model.currentInputItem
     }
 }
-
