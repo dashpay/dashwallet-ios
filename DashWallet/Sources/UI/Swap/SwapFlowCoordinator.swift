@@ -30,6 +30,12 @@ final class SwapFlowCoordinator {
         self.navigationController = navigationController
         self.direction = direction
 
+        if direction == .buy, !(swapProvider is SwapKitSwapProvider) {
+            DSLogger.log("Swap flow: Buy requires SwapKit backend; got \(swapProvider.displayName)")
+            assertionFailure("Buy flow requires SwapKit backend")
+            return
+        }
+
         let selectCoinVC = SelectCoinHostingController(swapProvider: swapProvider, direction: direction)
         selectCoinVC.onCoinSelected = { [weak self] coin in
             guard let self else { return }
@@ -38,7 +44,7 @@ final class SwapFlowCoordinator {
             case .sell:
                 self.navigateToEnterAddress(for: coin)
             case .buy:
-                self.presentBuyComingSoon()
+                self.navigateToBuyEnterAmount(for: coin)
             }
         }
         navigationController?.pushViewController(selectCoinVC, animated: true)
@@ -58,19 +64,23 @@ final class SwapFlowCoordinator {
         navigationController?.pushViewController(convertVC, animated: true)
     }
 
-    private func presentBuyComingSoon() {
-        let alert = UIAlertController(
-            title: NSLocalizedString("Coming soon", comment: "Dash DEX"),
-            message: NSLocalizedString(
-                "Buying Dash from other crypto isn't available yet. It's coming in a future update.",
-                comment: "Dash DEX"
-            ),
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(
-            title: NSLocalizedString("OK", comment: ""),
-            style: .default
-        ))
-        navigationController?.topViewController?.present(alert, animated: true)
+    private func navigateToBuyEnterAmount(for coin: MayaCryptoCurrency) {
+        guard !(navigationController?.topViewController is BuyEnterAmountHostingController) else { return }
+        guard swapProvider is SwapKitSwapProvider else {
+            DSLogger.log("Swap flow: Buy requires SwapKit backend; got \(swapProvider.displayName)")
+            assertionFailure("Buy flow requires SwapKit backend")
+            return
+        }
+
+        let buyEnterAmountVC = BuyEnterAmountHostingController(coin: coin, swapProvider: swapProvider)
+        buyEnterAmountVC.onContinue = { [weak self] coin, amount in
+            self?.navigateToRefundAddress(coin: coin, amount: amount)
+        }
+        navigationController?.pushViewController(buyEnterAmountVC, animated: true)
+    }
+
+    private func navigateToRefundAddress(coin: MayaCryptoCurrency, amount: String) {
+        DSLogger.log("Maya: Buy continue \(coin.code) amount=\(amount)")
+        // TODO(prompt 02): push Refund Address screen.
     }
 }
