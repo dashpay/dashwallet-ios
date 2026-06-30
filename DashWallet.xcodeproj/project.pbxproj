@@ -82,7 +82,6 @@
 		11E47BAB28EB38510097CFA0 /* SendCoinsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */; };
 		11E47BAD28EB3A7D0097CFA0 /* CrowdNode+Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAC28EB3A7D0097CFA0 /* CrowdNode+Constants.swift */; };
 		11ED906B29681773003784F9 /* StakingInfoDialogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11ED906A29681773003784F9 /* StakingInfoDialogController.swift */; };
-		153C3E3D30BB4DB2A63DAD87 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 64C58B73936B4EE69F73994F /* DashUIKit */; };
 		19BF3F10240A082811AAC1EB /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		1AF81D8C73A81CB927C3AE0E /* libPods-DashWalletScreenshotsUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B56B94951BA51EAC9E0A6E1 /* libPods-DashWalletScreenshotsUITests.a */; };
 		1DD7BE9CD62998F12672140D /* RadioButtonRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708B9F2B4B1E4C31B5010CDF /* RadioButtonRow.swift */; };
@@ -499,7 +498,7 @@
 		47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3B0129364991008D58DC /* HTTPClient.swift */; };
 		4A36341D70A94778AF408757 /* MayaCoinIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20554F992205428BA790F6CF /* MayaCoinIconView.swift */; };
-		514518ED2FE936FC00F9AD4C /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 514518EC2FE936FC00F9AD4C /* DashUIKit */; };
+		5149DA0B2FF3DE7F00207AE5 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5149DA0A2FF3DE7F00207AE5 /* DashUIKit */; };
 		514AE85E2FB1F9DB00F9B54C /* DashSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE85D2FB1F9DB00F9B54C /* DashSwitch.swift */; };
 		514AE85F2FB1F9DB00F9B54C /* DashSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE85D2FB1F9DB00F9B54C /* DashSwitch.swift */; };
 		514AE9F32FB2F4C500F9B54C /* HaltedToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE9F22FB2F4C500F9B54C /* HaltedToast.swift */; };
@@ -3501,9 +3500,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				0FC75A8F28F03E22000E4858 /* libDashSync.a in Frameworks */,
+				5149DA0B2FF3DE7F00207AE5 /* DashUIKit in Frameworks */,
 				2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */,
 				FB3E9F60236125F600C09C5C /* BackgroundTasks.framework in Frameworks */,
-				514518ED2FE936FC00F9AD4C /* DashUIKit in Frameworks */,
 				2AD1CE9922DE63FB00C99324 /* GameplayKit.framework in Frameworks */,
 				FB4FA9C322505DD70060B017 /* AudioToolbox.framework in Frameworks */,
 				2AA08534237D6CF500797F95 /* CloudKit.framework in Frameworks */,
@@ -3564,7 +3563,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				153C3E3D30BB4DB2A63DAD87 /* DashUIKit in Frameworks */,
 				C9D2C8F62A320AA000D15901 /* libDashSync.a in Frameworks */,
 				C9D2C8F72A320AA000D15901 /* CoreNFC.framework in Frameworks */,
 				C9D2C8F82A320AA000D15901 /* BackgroundTasks.framework in Frameworks */,
@@ -8500,7 +8498,7 @@
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			packageReferences = (
-				514518EB2FE936FC00F9AD4C /* XCLocalSwiftPackageReference "../Packages/DashUIKit" */,
+				5149DA092FF3DE7F00207AE5 /* XCRemoteSwiftPackageReference "DashUIKit" */,
 			);
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
 			projectDirPath = "";
@@ -12979,20 +12977,21 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		514518EB2FE936FC00F9AD4C /* XCLocalSwiftPackageReference "../Packages/DashUIKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/DashUIKit;
+/* Begin XCRemoteSwiftPackageReference section */
+		5149DA092FF3DE7F00207AE5 /* XCRemoteSwiftPackageReference "DashUIKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/romchornyi/DashUIKit";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		514518EC2FE936FC00F9AD4C /* DashUIKit */ = {
+		5149DA0A2FF3DE7F00207AE5 /* DashUIKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = DashUIKit;
-		};
-		64C58B73936B4EE69F73994F /* DashUIKit */ = {
-			isa = XCSwiftPackageProductDependency;
+			package = 5149DA092FF3DE7F00207AE5 /* XCRemoteSwiftPackageReference "DashUIKit" */;
 			productName = DashUIKit;
 		};
 /* End XCSwiftPackageProductDependency section */
