@@ -45,6 +45,27 @@ for v: UInt64 in [0, 1, 127, 128, 300, 16384, UInt64.max] {
 }
 check("varint round-trip (incl. UInt64.max)", varintOK)
 
+// Hostile / corrupt wire input must never trap (Int(UInt64) overflow or out-of-range slice).
+// Oversized length-delimited field: field 4 (details), wire type 2, declared length > Int.max.
+var malformedW = ProtoWriter()
+malformedW.appendVarInt(UInt64(4 << 3 | 2)) // key: field 4, wire type 2 (length-delimited)
+malformedW.appendVarInt(UInt64.max)         // hostile declared length
+var malformed = malformedW.data
+malformed.append(0xAA)                       // far fewer bytes than declared
+var malformedR = ProtoReader(malformed)
+let malformedField = malformedR.readField()
+check("L1 oversized length-delim returns nil, no crash", malformedField?.data == nil && malformedR.isAtEnd)
+
+// Oversized field key/tag must not trap (raw key > Int.max before the fix).
+var keyW = ProtoWriter(); keyW.appendVarInt(UInt64.max)
+var keyR = ProtoReader(keyW.data)
+_ = keyR.readField() // reaching the next line without trapping is the assertion
+check("L1 oversized field key does not crash", true)
+
+// End-to-end: a PaymentRequest whose details (field 4) declare an oversized length decodes to
+// nil (serializedDetails never set) instead of crashing.
+check("L1 PaymentRequest(maliciousLength) is nil, no crash", PaymentRequest(malformed) == nil)
+
 print("\nL2 — verifier (crypto)")
 let leaf = SecCertificateCreateWithData(nil, X509Certificates(req.pkiData!).certificates[0] as CFData)!
 var trust: SecTrust?; SecTrustCreateWithCertificates(leaf, SecPolicyCreateBasicX509(), &trust)

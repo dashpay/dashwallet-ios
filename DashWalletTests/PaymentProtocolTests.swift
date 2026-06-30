@@ -76,6 +76,31 @@ final class PaymentProtocolTests: XCTestCase {
         XCTAssertEqual(reader.readVarInt(), 0)
     }
 
+    func testWireReaderRejectsOversizedLengthWithoutTrapping() {
+        // A length-delimited field (field 4, wire type 2) whose declared length exceeds the buffer
+        // — and Int.max — must yield a nil payload and consume the buffer, never trap on Int(UInt64).
+        var writer = ProtoWriter()
+        writer.appendVarInt(UInt64(4 << 3 | 2)) // key: field 4, wire type 2
+        writer.appendVarInt(UInt64.max)         // hostile declared length
+        var bytes = writer.data
+        bytes.append(0xAA)                       // far fewer bytes than declared
+        var reader = ProtoReader(bytes)
+        let field = reader.readField()
+        XCTAssertNil(field?.data)
+        XCTAssertTrue(reader.isAtEnd)
+        // End-to-end: a PaymentRequest with this malformed details field decodes to nil, no crash.
+        XCTAssertNil(PaymentRequest(bytes))
+    }
+
+    func testWireReaderRejectsOversizedFieldKey() {
+        // A field key/tag larger than Int.max must not trap when split into field number + wire type.
+        var writer = ProtoWriter()
+        writer.appendVarInt(UInt64.max)
+        var reader = ProtoReader(writer.data)
+        _ = reader.readField() // reaching the assertion without trapping is the test
+        XCTAssertTrue(reader.isAtEnd)
+    }
+
     // MARK: - L2 verifier (crypto)
 
     func testRealSignatureVerifiesWithCertKey() throws {

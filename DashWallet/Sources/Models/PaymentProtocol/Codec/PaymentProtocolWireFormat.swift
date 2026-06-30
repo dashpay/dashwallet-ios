@@ -52,25 +52,30 @@ struct ProtoReader {
         return (b & 0x80) != 0 ? 0 : result
     }
 
-    /// Reads a length-delimited chunk. Returns nil (but still advances by the declared
-    /// length) when the length runs past the buffer — matching the reference.
+    /// Reads a length-delimited chunk. Returns nil and consumes the rest of the buffer when the
+    /// declared length runs past the end (a truncated or hostile length, including one exceeding
+    /// Int.max). The length stays in UInt64 and is bounds-checked before any narrowing, so a
+    /// wire-controlled value can never trap (Int(UInt64) overflow) or slice out of range.
     mutating func readLengthDelimited() -> Data? {
-        let len = Int(readVarInt())
-        var result: Data?
-        if len >= 0, offset + len <= bytes.count {
-            result = Data(bytes[offset..<offset + len])
+        let len = readVarInt()
+        let remaining = UInt64(bytes.count - offset) // offset <= bytes.count here, so >= 0
+        guard len <= remaining else {
+            offset = bytes.count // overrun → end the decode loop (matches the reference)
+            return nil
         }
-        offset += len
-        return result
+        let count = Int(len) // len <= remaining <= bytes.count, safe to narrow
+        let chunk = Data(bytes[offset ..< offset + count])
+        offset += count
+        return chunk
     }
 
     /// One decoded field: its number, plus either a varint or a length-delimited payload.
     /// 64-bit / 32-bit fields are skipped (unused by BIP70). Returns nil at end of buffer.
     mutating func readField() -> (field: Int, varint: UInt64?, data: Data?)? {
         guard !isAtEnd else { return nil }
-        let key = Int(readVarInt())
-        let field = key >> 3
-        switch ProtoWireType(rawValue: key & 0x07) {
+        let key = readVarInt()
+        let field = Int(key >> 3) // >> 3 caps the value at 2^61-1, always fits in Int
+        switch ProtoWireType(rawValue: Int(key & 0x07)) { // 0...7, always fits
         case .varint:
             return (field, readVarInt(), nil)
         case .lengthDelimited:
