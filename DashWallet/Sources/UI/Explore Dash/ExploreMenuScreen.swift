@@ -25,6 +25,7 @@ struct ExploreMenuScreen: View {
     private let onShowReceivePayment: () -> Void
     private let onShowGiftCard: (Data) -> Void
 
+    @ObservedObject private var balanceReminder = CrowdNodeBalanceReminder.shared
     @State private var showSyncingAlert = false
 
     private var isTestnet: Bool {
@@ -58,7 +59,7 @@ struct ExploreMenuScreen: View {
 
             TopIntro(
                 title: NSLocalizedString("Explore Dash", comment: ""),
-                subtitle: NSLocalizedString("Find merchants that accept Dash, where to buy it and how to earn income with it.", comment: "")
+                subtitle: NSLocalizedString("Find merchants who accept Dash and where to buy it.", comment: "")
             )
             .padding(.leading, 20)
             .padding(.trailing, 60)
@@ -96,7 +97,13 @@ struct ExploreMenuScreen: View {
                 if hasCrowdNodeAccount {
                     MenuItem(
                         title: NSLocalizedString("Staking", comment: ""),
-                        subtitleView: AnyView(StakingSubtitle()),
+                        subtitleView: AnyView(
+                            Text(NSLocalizedString("Easily stake Dash and earn passive income with a few simple clicks", comment: ""))
+                                .font(.footnote)
+                                .foregroundColor(.tertiaryText)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        ),
                         icon: .custom("image-menu-staking", maxHeight: 30),
                         iconAlignment: .top,
                         action: { showStaking() }
@@ -109,6 +116,14 @@ struct ExploreMenuScreen: View {
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
             .padding(.horizontal, 20)
+
+            if balanceReminder.shouldShowOnExplore {
+                CrowdNodeBalanceReminderBanner {
+                    showCrowdNodeWithdrawal()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+            }
 
             Spacer()
         }
@@ -132,10 +147,6 @@ struct ExploreMenuScreen: View {
                 .foregroundColor(.tertiaryText)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
-
-            CrowdNodeAPYBadge()
-                .frame(height: 24)
-                .fixedSize(horizontal: true, vertical: false)
         }
         .padding(.top, 2)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -189,30 +200,8 @@ struct ExploreMenuScreen: View {
             showSyncingAlert = true
         }
     }
-}
 
-struct CrowdNodeAPYBadge: View {
-    private static let systemGreen = Color(red: 98 / 255, green: 182 / 255, blue: 125 / 255)
-
-    private var apy: String {
-        let apyValue = CrowdNode.shared.crowdnodeAPY
-        let numberFormatter = NumberFormatter()
-        numberFormatter.numberStyle = .percent
-        numberFormatter.minimumFractionDigits = 0
-        numberFormatter.maximumFractionDigits = 2
-        numberFormatter.multiplier = 1
-        return numberFormatter.string(from: NSNumber(value: apyValue)) ?? ""
-    }
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Text(String.localizedStringWithFormat(NSLocalizedString("Current APY = %@", comment: "CrowdNode"), apy))
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(Self.systemGreen)
-        }
-        .padding(.horizontal, 8)
-        .frame(height: 24)
-        .background(Self.systemGreen.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+    private func showCrowdNodeWithdrawal() {
+        CrowdNodeWithdrawalRouter.openWithdrawal(from: vc)
     }
 }

@@ -213,6 +213,15 @@ extension CrowdNode {
             do {
                 try tryRestoreLinkedOnlineAccount(state: onlineState, address: address)
                 refreshWithdrawalLimits()
+                // Linked online accounts don't go through `setFinished`, so their balance was
+                // never fetched at restore — only when the user opened the CrowdNode portal.
+                // Refresh it proactively so the balance reminder (banner/sheet) can appear after
+                // sync without requiring the user to enter CrowdNode. `refreshBalance` self-guards
+                // on `signUpState`, so it no-ops for accounts that aren't linked yet.
+                // Don't seed from cache: a stale positive `lastKnownBalance` would otherwise drive
+                // the balance reminder before the first fresh fetch, surfacing/consuming it even
+                // when the server returns 0.
+                refreshBalance(seedFromCache: false)
             } catch {
                 DSLogger.log("Failure while restoring linked CrowdNode account: \(error.localizedDescription)")
             }
@@ -529,13 +538,20 @@ extension CrowdNode {
 
 // MARK: Balance
 extension CrowdNode {
-    func refreshBalance(retries: Int = 3, afterWithdrawal: Bool = false) {
+    /// - Parameter seedFromCache: When `true` (default) the cached `lastKnownBalance` is published
+    ///   immediately so UI (e.g. the CrowdNode portal) shows a value while the fetch is in flight.
+    ///   Pass `false` for silent/background refreshes (e.g. restore) where a stale positive cache
+    ///   must not drive balance-derived UI such as `CrowdNodeBalanceReminder` before the first
+    ///   fresh fetch completes.
+    func refreshBalance(retries: Int = 3, afterWithdrawal: Bool = false, seedFromCache: Bool = true) {
         guard !accountAddress.isEmpty && signUpState != .notStarted else { return }
 
         Task {
             let lastBalance = prefs.lastKnownBalance
             var currentBalance = lastBalance
-            balance = currentBalance
+            if seedFromCache {
+                balance = currentBalance
+            }
             isBalanceLoading = true
 
             do {
@@ -551,6 +567,11 @@ extension CrowdNode {
                     let plainAmount = dashNumber * duffsNumber
                     currentBalance = NSDecimalNumber(decimal: plainAmount).uint64Value
                     prefs.lastKnownBalance = currentBalance
+                    // Publish the fresh value as soon as it arrives. The loop keeps polling (with
+                    // escalating backoff) until the balance *changes* vs. the cached baseline, which
+                    // can take minutes; without this, a non-seeded refresh (e.g. restore) wouldn't
+                    // surface the real balance — and the balance reminder — until the loop ends.
+                    balance = currentBalance
 
                     var breakDifference: UInt64 = 0
 
