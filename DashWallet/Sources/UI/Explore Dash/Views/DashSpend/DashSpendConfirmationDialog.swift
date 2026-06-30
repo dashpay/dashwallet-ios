@@ -26,7 +26,6 @@ struct DashSpendConfirmationDialog: View {
     let quantities: [Decimal: Int]?
     let onConfirm: () -> Void
     let onCancel: () -> Void
-    @Binding var contentHeight: CGFloat
 
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: kDefaultCurrencyCode)
     private var youPayAmount: Decimal { originalPrice * (1 - discount) }
@@ -153,11 +152,18 @@ struct DashSpendConfirmationDialog: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
+        // Publish the natural height so `.selfSizingSheet()` (which reads
+        // `BottomSheetHeightPreferenceKey`) can size the sheet. This dialog is not a `BottomSheet`,
+        // so without this the modifier never gets a measurement and falls back to `.medium`, which
+        // is too short and lets the content overflow above the sheet. `.fixedSize(vertical:)` keeps
+        // the measurement stable (decoupled from the offered height) like the BottomSheet does.
+        .fixedSize(horizontal: false, vertical: true)
         .background(
             GeometryReader { proxy in
-                Color.clear
-                    .onAppear { contentHeight = proxy.size.height }
-                    .onChange(of: proxy.size.height) { contentHeight = $0 }
+                Color.clear.preference(
+                    key: BottomSheetHeightPreferenceKey.self,
+                    value: proxy.size.height
+                )
             }
         )
     }
@@ -190,7 +196,6 @@ private extension String {
 
 private struct DashSpendConfirmationDialogPreview: View {
     @State private var isPresented = true
-    @State private var contentHeight: CGFloat = 0
 
     var body: some View {
         VStack {
@@ -205,15 +210,18 @@ private struct DashSpendConfirmationDialogPreview: View {
                 discount: 0.10,
                 quantities: [50: 1, 25: 2],
                 onConfirm: {},
-                onCancel: {},
-                contentHeight: $contentHeight
+                onCancel: {}
             )
 
-            if #available(iOS 18.0, *) {
+            if #available(iOS 16.4, *) {
                 content
                     .presentationBackground(Color.primaryBackground)
-                    .presentationDetents([.height(contentHeight > 0 ? contentHeight : 550)])
+                    .selfSizingSheet()
                     .presentationCornerRadius(32)
+                    .presentationDragIndicator(.hidden)
+            } else if #available(iOS 16.0, *) {
+                content
+                    .selfSizingSheet()
                     .presentationDragIndicator(.hidden)
             } else {
                 content

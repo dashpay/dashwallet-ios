@@ -31,9 +31,8 @@ private let kGeoRestrictionPiggyCardsRestrictedKey = "geo_restriction_piggycards
 /// Thread-safe check if PiggyCards is restricted (can be called from any thread)
 /// This is a free function that reads directly from UserDefaults
 func isPiggyCardsGeoRestricted() -> Bool {
-    let isRestricted = UserDefaults.standard.bool(forKey: kGeoRestrictionPiggyCardsRestrictedKey)
-    DSLogger.log("🌍 isPiggyCardsGeoRestricted() called, returning: \(isRestricted)")
-    return isRestricted
+    // Called from per-merchant DAO query loops — do NOT log here (caused 800+ duplicate log lines).
+    return UserDefaults.standard.bool(forKey: kGeoRestrictionPiggyCardsRestrictedKey)
 }
 
 /// Service to check if the user is in a geo-restricted region for PiggyCards

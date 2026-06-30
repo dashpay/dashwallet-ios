@@ -123,6 +123,7 @@ struct GiftCardPurchaseSelectionSheet: View {
                 formattedPrice: "$50.00",
                 cardNumber: "1111 2222 3333",
                 cardPin: "1234",
+                redeemUrlChallenge: nil,
                 barcodeImage: UIImage(systemName: "barcode.viewfinder"),
                 isClaimLink: false
             ),
@@ -131,6 +132,7 @@ struct GiftCardPurchaseSelectionSheet: View {
                 formattedPrice: "$50.00",
                 cardNumber: "4444 5555 6666",
                 cardPin: "9876",
+                redeemUrlChallenge: nil,
                 barcodeImage: UIImage(systemName: "barcode.viewfinder"),
                 isClaimLink: false
             )
