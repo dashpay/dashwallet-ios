@@ -516,6 +516,12 @@
 		514AEA142FB324FA00F9B54C /* SwapConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* SwapConvertView.swift */; };
 		514AEA492FB33B4300F9B54C /* SwapConvertHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */; };
 		514AEA4B2FB33B4300F9B54C /* SwapConvertHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */; };
+		B1100000B1100000B1100010 /* BuyEnterAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1100000B1100000B1100002 /* BuyEnterAmountView.swift */; };
+		B1100000B1100000B1100011 /* BuyEnterAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1100000B1100000B1100003 /* BuyEnterAmountViewModel.swift */; };
+		B1100000B1100000B1100012 /* BuyEnterAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1100000B1100000B1100004 /* BuyEnterAmountHostingController.swift */; };
+		B1100000B1100000B1100020 /* BuyEnterAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1100000B1100000B1100002 /* BuyEnterAmountView.swift */; };
+		B1100000B1100000B1100021 /* BuyEnterAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1100000B1100000B1100003 /* BuyEnterAmountViewModel.swift */; };
+		B1100000B1100000B1100022 /* BuyEnterAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1100000B1100000B1100004 /* BuyEnterAmountHostingController.swift */; };
 		514AEAD52FB34F8600F9B54C /* OrderPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */; };
 		514AEAD62FB34F8600F9B54C /* OrderPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */; };
 		514AF1C02FB5F02D00F9B54C /* SwapConvertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AF1BF2FB5F02D00F9B54C /* SwapConvertViewModel.swift */; };
@@ -2649,6 +2655,9 @@
 		514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewView.swift; sourceTree = "<group>"; };
 		514AF1BF2FB5F02D00F9B54C /* SwapConvertViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertViewModel.swift; sourceTree = "<group>"; };
 		514BEA002FB5F02D00F9B54C /* SwapConvertAmount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertAmount.swift; sourceTree = "<group>"; };
+		B1100000B1100000B1100002 /* BuyEnterAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyEnterAmountView.swift; sourceTree = "<group>"; };
+		B1100000B1100000B1100003 /* BuyEnterAmountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyEnterAmountViewModel.swift; sourceTree = "<group>"; };
+		B1100000B1100000B1100004 /* BuyEnterAmountHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyEnterAmountHostingController.swift; sourceTree = "<group>"; };
 		5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
 		5151C8C32F913BF100F0A604 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		5151C8C42F913BF100F0A604 /* Topper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Topper-Info.plist"; sourceTree = "<group>"; };
@@ -6401,6 +6410,24 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		B1100000B1100000B1100000 /* Buy */ = {
+			isa = PBXGroup;
+			children = (
+				B1100000B1100000B1100001 /* EnterAmount */,
+			);
+			path = Buy;
+			sourceTree = "<group>";
+		};
+		B1100000B1100000B1100001 /* EnterAmount */ = {
+			isa = PBXGroup;
+			children = (
+				B1100000B1100000B1100002 /* BuyEnterAmountView.swift */,
+				B1100000B1100000B1100003 /* BuyEnterAmountViewModel.swift */,
+				B1100000B1100000B1100004 /* BuyEnterAmountHostingController.swift */,
+			);
+			path = EnterAmount;
+			sourceTree = "<group>";
+		};
 		514AEA162FB3291A00F9B54C /* OrderPreview */ = {
 			isa = PBXGroup;
 			children = (
@@ -6860,6 +6887,7 @@
 				AA0020102FA0000000000010 /* SwapPortalScaffold.swift */,
 				0286D4D1CADBBD51F09BE8E8 /* SwapMenuStyles.swift */,
 				514AEA112FB324DA00F9B54C /* Convert */,
+				B1100000B1100000B1100000 /* Buy */,
 				AA0005032EA0F58E00D1D603 /* EnterAddress */,
 				514AEA162FB3291A00F9B54C /* OrderPreview */,
 				AA0005042EA0F58E00D1D604 /* QRScanner */,
@@ -9294,6 +9322,9 @@
 				ECF67981D8BA06E1323B0818 /* NetworkUnavailableStateView.swift in Sources */,
 				514AEA142FB324FA00F9B54C /* SwapConvertView.swift in Sources */,
 				514AEA492FB33B4300F9B54C /* SwapConvertHostingController.swift in Sources */,
+				B1100000B1100000B1100010 /* BuyEnterAmountView.swift in Sources */,
+				B1100000B1100000B1100011 /* BuyEnterAmountViewModel.swift in Sources */,
+				B1100000B1100000B1100012 /* BuyEnterAmountHostingController.swift in Sources */,
 				51A57C042FBB5A0000FB4097 /* SwapTransactionSuccessView.swift in Sources */,
 				51A57C062FBB5A0000FB4097 /* SwapTransactionFailureView.swift in Sources */,
 				ABA7230759067F4D4EB39AE9 /* SwapTransactionStatusHostingController.swift in Sources */,
@@ -10022,6 +10053,9 @@
 				76766A50AFDB7BC138F569DC /* NetworkUnavailableStateView.swift in Sources */,
 				514AEA132FB324FA00F9B54C /* SwapConvertView.swift in Sources */,
 				514AEA4B2FB33B4300F9B54C /* SwapConvertHostingController.swift in Sources */,
+				B1100000B1100000B1100020 /* BuyEnterAmountView.swift in Sources */,
+				B1100000B1100000B1100021 /* BuyEnterAmountViewModel.swift in Sources */,
+				B1100000B1100000B1100022 /* BuyEnterAmountHostingController.swift in Sources */,
 				51A57C052FBB5A0000FB4097 /* SwapTransactionSuccessView.swift in Sources */,
 				51A57C072FBB5A0000FB4097 /* SwapTransactionFailureView.swift in Sources */,
 				97C1167F9600BF7E489A8545 /* SwapTransactionStatusHostingController.swift in Sources */,
