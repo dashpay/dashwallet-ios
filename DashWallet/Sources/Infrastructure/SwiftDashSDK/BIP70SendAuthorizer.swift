@@ -12,34 +12,19 @@
 
 import Foundation
 
-private enum BIP70AuthResult { case ok, cancelled, failed }
-
 final class BIP70SendAuthorizer: SendAuthorizing {
     func authorize() async throws {
-        let result: BIP70AuthResult = await withCheckedContinuation { continuation in
-            DispatchQueue.main.async {
-                DSAuthenticationManager.sharedInstance().authenticate(
-                    withPrompt: nil,
-                    usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-                    alertIfLockout: true
-                ) { authenticatedOrSuccess, _, cancelled in
-                    if cancelled {
-                        continuation.resume(returning: .cancelled)
-                    } else if authenticatedOrSuccess {
-                        continuation.resume(returning: .ok)
-                    } else {
-                        continuation.resume(returning: .failed)
-                    }
-                }
-            }
-        }
+        // Routes through the shared timeout-guarded gate (in WalletSendService.swift) so a
+        // silently-non-presenting PIN prompt can never hang the headless flow forever.
+        let outcome = await AuthenticationGate.authenticate(
+            biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled)
 
-        switch result {
+        switch outcome {
         case .ok:
             return
         case .cancelled:
             throw BIP70Error.authCancelled
-        case .failed:
+        case .failed, .timedOut:
             throw NSError(domain: "org.dashfoundation.dash.bip70",
                           code: 2,
                           userInfo: [NSLocalizedDescriptionKey: "Authentication failed"])

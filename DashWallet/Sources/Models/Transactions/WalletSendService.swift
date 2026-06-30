@@ -206,27 +206,52 @@ final class WalletSendService: NSObject {
     }
 }
 
-private final class SendAuthorizer {
-    @MainActor
-    func authorizeSend() async throws {
-        let result = await withCheckedContinuation { continuation in
-            DSAuthenticationManager.sharedInstance().authenticate(
-                withPrompt: nil,
-                usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-                alertIfLockout: true
-            ) { authenticatedOrSuccess, _, cancelled in
-                if cancelled {
-                    continuation.resume(returning: AuthorizationResult.cancelled)
-                } else if authenticatedOrSuccess {
-                    continuation.resume(returning: AuthorizationResult.authorized)
-                } else {
-                    continuation.resume(returning: AuthorizationResult.failed)
+/// Timeout-guarded wrapper over `DSAuthenticationManager.authenticate(...)`. The bare
+/// completion-based API never resumes if the PIN view controller fails to present silently
+/// (no key window / app backgrounded / a sheet already presenting — DashSync's internal
+/// `NSParameterAssert` is compiled out in Release), which would hang an awaiting `async` call
+/// forever. This guarantees the continuation resumes exactly once: either from the callback or
+/// from a watchdog. The 120s timeout is generous enough never to interrupt real PIN/biometric
+/// entry — it only breaks an otherwise-infinite hang.
+enum AuthenticationGate {
+    enum Outcome { case ok, cancelled, failed, timedOut }
+
+    static func authenticate(biometric: Bool, timeout: TimeInterval = 120) async -> Outcome {
+        await withCheckedContinuation { continuation in
+            var didResume = false
+            func safeResume(_ outcome: Outcome) {
+                guard !didResume else { return }
+                didResume = true
+                continuation.resume(returning: outcome)
+            }
+
+            // Watchdog: resume after the timeout if the callback never arrives (silent
+            // non-presentation). It harmlessly no-ops once auth has resumed (safeResume is
+            // idempotent). The watchdog and the auth callback both run on the main queue, so
+            // `didResume` is accessed serially — no lock needed.
+            DispatchQueue.main.asyncAfter(deadline: .now() + timeout) { safeResume(.timedOut) }
+
+            DispatchQueue.main.async {
+                DSAuthenticationManager.sharedInstance().authenticate(
+                    withPrompt: nil,
+                    usingBiometricAuthentication: biometric,
+                    alertIfLockout: true
+                ) { authenticatedOrSuccess, _, cancelled in
+                    safeResume(cancelled ? .cancelled : (authenticatedOrSuccess ? .ok : .failed))
                 }
             }
         }
+    }
+}
 
-        switch result {
-        case .authorized:
+private final class SendAuthorizer {
+    @MainActor
+    func authorizeSend() async throws {
+        let outcome = await AuthenticationGate.authenticate(
+            biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled)
+
+        switch outcome {
+        case .ok:
             WalletSendService.logger.info("💸 TXSEND :: user authorized send")
             return
         case .cancelled:
@@ -235,19 +260,13 @@ private final class SendAuthorizer {
                 code: .authenticationCancelled,
                 description: "Authentication cancelled"
             )
-        case .failed:
-            WalletSendService.logger.error("💸 TXSEND :: authentication failed")
+        case .failed, .timedOut:
+            WalletSendService.logger.error("💸 TXSEND :: authentication failed (\(outcome == .timedOut ? "timed out" : "failed"))")
             throw WalletSendService.makeError(
                 code: .authenticationFailed,
                 description: "Authentication failed"
             )
         }
-    }
-
-    private enum AuthorizationResult {
-        case authorized
-        case cancelled
-        case failed
     }
 }
 
