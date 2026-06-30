@@ -171,8 +171,11 @@ final class FakeWallet: WalletSending {
                                 txHashDisplay: Data((0..<32).map { UInt8($0) }))
     var calls: [String] = []
     var lastRecipients: [(address: String, amountDuffs: UInt64)] = []
+    var buildErrorsRemaining = 0 // throw from build this many times before succeeding (pre-spend failure)
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
-        calls.append("build"); lastRecipients = recipients; return prepared
+        calls.append("build")
+        if buildErrorsRemaining > 0 { buildErrorsRemaining -= 1; throw BIP70Error.walletNotReady }
+        lastRecipients = recipients; return prepared
     }
     func broadcast(_ p: PreparedSend) async throws -> String {
         calls.append("broadcast"); return p.txHashDisplay.map { String(format: "%02x", $0) }.joined()
@@ -238,6 +241,33 @@ do {
     check("confirmAndSend order == [build, broadcast, post]", w.calls == ["build", "broadcast", "post"])
     check("POST carries the prepared signed bytes", t.postedPayment?.transactions == [w.prepared.txData])
     check("ack memo surfaced", value(r)?.ackMemo == "thanks")
+}
+
+// Idempotency: a second confirmAndSend on the SAME Confirmation is rejected (no second spend).
+do {
+    let w = FakeWallet(); let t = FakeTransport(unsignedRequest()); t.onPost = { w.calls.append("post") }
+    let svc = makeService(t, w)
+    let r = runSync {
+        let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
+        _ = try await svc.confirmAndSend(c)       // first send succeeds
+        return try await svc.confirmAndSend(c)    // second must be rejected
+    }
+    check("second confirmAndSend on same Confirmation → .alreadySent", threwBIP70(r, .alreadySent))
+    check("no second build/broadcast after .alreadySent", w.calls.filter { $0 == "build" }.count == 1 && w.calls.filter { $0 == "broadcast" }.count == 1)
+}
+
+// Retry: a pre-spend (build) failure releases the single-use claim so the SAME Confirmation retries.
+do {
+    let w = FakeWallet(); w.buildErrorsRemaining = 1
+    let t = FakeTransport(unsignedRequest()); t.onPost = { w.calls.append("post") }
+    let svc = makeService(t, w)
+    let r = runSync {
+        let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
+        _ = try? await svc.confirmAndSend(c)      // first build throws → guard reset, nothing spent
+        return try await svc.confirmAndSend(c)    // retry on same Confirmation now succeeds
+    }
+    check("retry after pre-spend build failure succeeds (guard reset)", value(r) != nil)
+    check("two build attempts, exactly one broadcast", w.calls.filter { $0 == "build" }.count == 2 && w.calls.filter { $0 == "broadcast" }.count == 1)
 }
 
 // Multi-output passthrough + order.

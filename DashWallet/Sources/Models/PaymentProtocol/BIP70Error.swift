@@ -37,6 +37,8 @@ enum BIP70Error: Error, Equatable {
     case walletNotReady
     /// The user cancelled the PIN/biometric prompt.
     case authCancelled
+    /// A second send was attempted on a `Confirmation` that has already been (or is being) sent.
+    case alreadySent
 }
 
 extension BIP70Error: LocalizedError {
@@ -55,6 +57,7 @@ extension BIP70Error: LocalizedError {
         case .ackRejected: return "The merchant did not acknowledge the payment."
         case .walletNotReady: return "The wallet isn't ready yet. Please try again in a moment."
         case .authCancelled: return "Authentication was cancelled."
+        case .alreadySent: return "This payment is already being processed."
         }
     }
 }

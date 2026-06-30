@@ -47,6 +47,33 @@ protocol SendAuthorizing {
     func authorize() async throws
 }
 
+// MARK: - Single-use guard
+
+/// One-shot send claim shared across copies of a `Confirmation`. `Confirmation` is a value type,
+/// but this guard is a reference, so every copy (e.g. the reused `BIP70ConfirmationBox` on an
+/// interactive retry) shares one claim — letting `confirmAndSend` reject a second send (a
+/// concurrent double-tap, or a re-tap after a successful spend) while a fresh (headless)
+/// `Confirmation` always starts unclaimed. Foundation-only; iOS-14-safe (manual `NSLock`).
+final class BIP70SendGuard {
+    private let lock = NSLock()
+    private var claimed = false
+
+    /// Atomically claims the single send slot. Throws `.alreadySent` if it is already claimed.
+    func begin() throws {
+        lock.lock()
+        defer { lock.unlock() }
+        guard !claimed else { throw BIP70Error.alreadySent }
+        claimed = true
+    }
+
+    /// Releases the claim so a pre-spend failure can be retried on the same `Confirmation`.
+    func reset() {
+        lock.lock()
+        claimed = false
+        lock.unlock()
+    }
+}
+
 // MARK: - Value types
 
 /// Opaque built-and-signed transaction handle. Mirrors the SDK tuple `(txData, fee, txHash)`.
@@ -91,6 +118,9 @@ struct Confirmation {
     let callbackScheme: String?
     /// The original request, for the send-time expiry re-check and audit.
     let request: PaymentRequest
+    /// Single-use claim so the same prepared confirmation can't be sent twice (see `confirmAndSend`).
+    /// Default-initialized: a reference shared by every value copy of this `Confirmation`.
+    let sendGuard = BIP70SendGuard()
 
     var primaryAddress: String? { recipients.first?.address }
 }
@@ -221,15 +251,27 @@ final class BIP70PaymentService {
             throw BIP70Error.missingPaymentURL
         }
 
-        // 3. Build + sign. (Interim: this also broadcasts.)
-        let sdkRecipients = confirmation.recipients.map { (address: $0.address, amountDuffs: $0.amount) }
-        let prepared = try await wallet.buildSignedTransaction(recipients: sdkRecipients)
+        // 3. Claim the single-use send slot AFTER the pre-spend checks (so an expired/no-URL
+        //    request stays freely retryable). A concurrent double-tap or a re-tap after a
+        //    successful spend — both share this confirmation's guard — is rejected with .alreadySent.
+        try confirmation.sendGuard.begin()
 
-        // 4. Broadcast. (Interim: no-op returning the prepared txid.)
-        // TODO(P0 flip): once the build-without-broadcast FFI lands, move this step AFTER a
-        // successful POST below and promote POST transport failures to a hard throw
-        // (.ackRejected / .unexpectedResponse) so a rejecting merchant aborts before any spend.
-        let txidHexDisplay = try await wallet.broadcast(prepared)
+        // 4. Build + sign (interim: also broadcasts) then broadcast (interim: no-op). On any throw
+        //    here the interim FFI guarantees nothing was broadcast, so release the claim to allow a
+        //    legitimate retry on the same confirmation.
+        // TODO(P0 flip): once the build-without-broadcast FFI lands, move broadcast AFTER a
+        //    successful POST below, promote POST failures to a hard throw, and do NOT reset the
+        //    guard once broadcast has happened (a post-broadcast failure must not re-broadcast).
+        let prepared: PreparedSend
+        let txidHexDisplay: String
+        do {
+            let sdkRecipients = confirmation.recipients.map { (address: $0.address, amountDuffs: $0.amount) }
+            prepared = try await wallet.buildSignedTransaction(recipients: sdkRecipients)
+            txidHexDisplay = try await wallet.broadcast(prepared)
+        } catch {
+            confirmation.sendGuard.reset()
+            throw error
+        }
 
         // 5. Merchant round-trip, if there's a payment_url.
         var ackMemo: String?

@@ -360,8 +360,11 @@ private final class FakeWallet: WalletSending {
                                 txHashDisplay: Data((0..<32).map { UInt8($0) }))
     var calls: [String] = []
     var lastRecipients: [(address: String, amountDuffs: UInt64)] = []
+    var buildErrorsRemaining = 0 // throw from build this many times before succeeding (pre-spend failure)
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
-        calls.append("build"); lastRecipients = recipients; return prepared
+        calls.append("build")
+        if buildErrorsRemaining > 0 { buildErrorsRemaining -= 1; throw BIP70Error.walletNotReady }
+        lastRecipients = recipients; return prepared
     }
     func broadcast(_ p: PreparedSend) async throws -> String {
         calls.append("broadcast"); return p.txHashDisplay.map { String(format: "%02x", $0) }.joined()
@@ -423,6 +426,27 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(w.calls, ["build", "broadcast", "post"]) // broadcast strictly before POST
         XCTAssertEqual(t.postedPayment?.transactions, [w.prepared.txData])
         XCTAssertEqual(result.ackMemo, "thanks")
+    }
+
+    func testSecondSendOnSameConfirmationIsRejected() async throws {
+        let w = FakeWallet(); let t = FakeTransport(unsigned()); t.onPost = { w.calls.append("post") }
+        let svc = service(t, w)
+        let confirmation = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        _ = try await svc.confirmAndSend(confirmation) // first send succeeds
+        await assertThrowsBIP70(try await svc.confirmAndSend(confirmation), .alreadySent)
+        XCTAssertEqual(w.calls.filter { $0 == "build" }.count, 1) // no second build...
+        XCTAssertEqual(w.calls.filter { $0 == "broadcast" }.count, 1) // ...and no second broadcast
+    }
+
+    func testRetryAfterPreSpendFailureSucceeds() async throws {
+        let w = FakeWallet(); w.buildErrorsRemaining = 1
+        let t = FakeTransport(unsigned()); t.onPost = { w.calls.append("post") }
+        let svc = service(t, w)
+        let confirmation = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        await assertThrowsBIP70(try await svc.confirmAndSend(confirmation), .walletNotReady) // build throws → guard reset
+        _ = try await svc.confirmAndSend(confirmation) // retry on the SAME confirmation now succeeds
+        XCTAssertEqual(w.calls.filter { $0 == "build" }.count, 2)
+        XCTAssertEqual(w.calls.filter { $0 == "broadcast" }.count, 1)
     }
 
     func testMultiOutputPassthrough() async throws {
