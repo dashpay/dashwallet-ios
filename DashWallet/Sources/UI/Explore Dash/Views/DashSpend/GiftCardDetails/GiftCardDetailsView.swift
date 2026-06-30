@@ -71,14 +71,12 @@ struct GiftCardDetailsView: View {
     }
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 20) {
-                merchantHeaderSection
-                giftCardInfoSection
-                transactionDetailsSection
-                howToUseSection
-                poweredBySection
-            }
+        VStack(spacing: 20) {
+            merchantHeaderSection
+            giftCardInfoSection
+            transactionDetailsSection
+            howToUseSection
+            poweredBySection
         }
         .padding(.horizontal, 20)
         .background(Color.primaryBackground)
@@ -142,11 +140,11 @@ struct GiftCardDetailsView: View {
                     .scaledToFit()
                     .frame(width: 12, height: 12)
             }
+            .frame(height: 46)
             .padding(6)
             .padding(.horizontal, 14)
-            .frame(height: 46)
             .background(Color.secondaryBackground)
-            .cornerRadius(20)
+            .clipShape(.rect(cornerRadius: 20))
         }
     }
 
@@ -188,6 +186,16 @@ struct GiftCardDetailsView: View {
 
     private func copyToPasteboard(_ value: String) {
         UIPasteboard.general.string = value
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+
+        // Show the same "Copied" HUD used elsewhere (Receive, CrowdNode) over the topmost
+        // controller so it appears above this gift card sheet.
+        let windowScene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first
+        let keyWindow = windowScene?.windows.first(where: { $0.isKeyWindow }) ?? windowScene?.windows.first
+        keyWindow?.rootViewController?.topController().view
+            .dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
     }
     
     private func setMaxBrightness(_ enable: Bool) {
