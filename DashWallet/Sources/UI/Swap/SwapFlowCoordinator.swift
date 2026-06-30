@@ -80,7 +80,15 @@ final class SwapFlowCoordinator {
     }
 
     private func navigateToRefundAddress(coin: MayaCryptoCurrency, amount: String) {
-        DSLogger.log("Maya: Buy continue \(coin.code) amount=\(amount)")
-        // TODO(prompt 02): push Refund Address screen.
+        let refundVC = RefundAddressHostingController(coin: coin)
+        refundVC.onRefundAddressConfirmed = { [weak self] coin, refundAddress in
+            self?.navigateToReceive(coin: coin, amount: amount, refundAddress: refundAddress)
+        }
+        navigationController?.pushViewController(refundVC, animated: true)
+    }
+
+    private func navigateToReceive(coin: MayaCryptoCurrency, amount: String, refundAddress: String) {
+        DSLogger.log("Maya: Buy receive \(coin.code) amount=\(amount) refund=\(refundAddress)")
+        // TODO(prompt 03): push Coin QR & Address (Receive) screen.
     }
 }
