@@ -497,6 +497,7 @@
 		47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3B0129364991008D58DC /* HTTPClient.swift */; };
 		4A36341D70A94778AF408757 /* MayaCoinIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20554F992205428BA790F6CF /* MayaCoinIconView.swift */; };
+		5149DA082FF3DA5200207AE5 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5149DA072FF3DA5200207AE5 /* DashUIKit */; };
 		514AE85E2FB1F9DB00F9B54C /* DashSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE85D2FB1F9DB00F9B54C /* DashSwitch.swift */; };
 		514AE85F2FB1F9DB00F9B54C /* DashSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE85D2FB1F9DB00F9B54C /* DashSwitch.swift */; };
 		514AE9F32FB2F4C500F9B54C /* HaltedToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE9F22FB2F4C500F9B54C /* HaltedToast.swift */; };
@@ -559,7 +560,6 @@
 		516C63D12FE9BCC600DD6BC3 /* DashSpendSinglePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B007D5A0B007D5A0B007 /* DashSpendSinglePanel.swift */; };
 		516C63D22FE9BCC600DD6BC3 /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10175DFA10175DFA101 /* DashStepper.swift */; };
 		516C63D32FE9BCC600DD6BC3 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10275DFA10275DFA102 /* SegmentedControl.swift */; };
-		516C63E32FE9BD7100DD6BC3 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 516C63E22FE9BD7100DD6BC3 /* DashUIKit */; };
 		516C63E52FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */; };
 		516C63E62FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */; };
 		516C63E82FE9BE0A00DD6BC3 /* AboutDashViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */; };
@@ -3485,7 +3485,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0FC75A8F28F03E22000E4858 /* libDashSync.a in Frameworks */,
-				516C63E32FE9BD7100DD6BC3 /* DashUIKit in Frameworks */,
+				5149DA082FF3DA5200207AE5 /* DashUIKit in Frameworks */,
 				2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */,
 				FB3E9F60236125F600C09C5C /* BackgroundTasks.framework in Frameworks */,
 				2AD1CE9922DE63FB00C99324 /* GameplayKit.framework in Frameworks */,
@@ -8464,7 +8464,7 @@
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			packageReferences = (
-				516C63E12FE9BD7100DD6BC3 /* XCLocalSwiftPackageReference "../Packages/DashUIKit" */,
+				5149DA062FF3DA5200207AE5 /* XCRemoteSwiftPackageReference "DashUIKit" */,
 			);
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
 			projectDirPath = "";
@@ -12935,16 +12935,21 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		516C63E12FE9BD7100DD6BC3 /* XCLocalSwiftPackageReference "../Packages/DashUIKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/DashUIKit;
+/* Begin XCRemoteSwiftPackageReference section */
+		5149DA062FF3DA5200207AE5 /* XCRemoteSwiftPackageReference "DashUIKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/romchornyi/DashUIKit";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		516C63E22FE9BD7100DD6BC3 /* DashUIKit */ = {
+		5149DA072FF3DA5200207AE5 /* DashUIKit */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 5149DA062FF3DA5200207AE5 /* XCRemoteSwiftPackageReference "DashUIKit" */;
 			productName = DashUIKit;
 		};
 /* End XCSwiftPackageProductDependency section */
