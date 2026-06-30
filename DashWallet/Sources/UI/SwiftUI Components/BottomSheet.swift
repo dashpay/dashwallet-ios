@@ -46,14 +46,21 @@ struct BottomSheet<Content: View>: View {
             // Publish the natural content height for `.selfSizingSheet()`. The bottom safe area is
             // intentionally NOT ignored here, so the measured height excludes the home-indicator
             // inset — `.presentationDetents([.height])` adds that inset itself.
-            sheet.background(
-                GeometryReader { proxy in
-                    Color.clear.preference(
-                        key: BottomSheetHeightPreferenceKey.self,
-                        value: proxy.size.height
-                    )
-                }
-            )
+            //
+            // `.fixedSize(vertical:)` is critical: it makes the sheet report its *ideal* height
+            // independent of the height the sheet currently offers. Without it the measurement is
+            // coupled to the detent (detent ← measured ← offered height ← detent), so it ping-pongs
+            // by ~the safe-area inset and the presenting view (HomeView) jitters up/down.
+            sheet
+                .fixedSize(horizontal: false, vertical: true)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear.preference(
+                            key: BottomSheetHeightPreferenceKey.self,
+                            value: proxy.size.height
+                        )
+                    }
+                )
         }
     }
 
