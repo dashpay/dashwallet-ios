@@ -250,12 +250,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
 
         do {
-            let highest = try wallet.coreWallet().setCoinJoinGapLimit(
+            // Widen the CoinJoin account's gap limit so the SPV scan re-discovers
+            // mixed coins scattered beyond the default gap on BOTH the external
+            // `/0/` and internal `/1/` pools. Core clamps to [1, MAX_GAP_LIMIT].
+            try wallet.coreWallet().setGapLimit(
+                accountType: .coinJoin,
                 accountIndex: 0,
                 gapLimit: CoinJoinRecovery.recoveryGapLimit)
             coinJoinRecoveryWidenedNetwork = network
             Self.logger.info(
-                "🛰️ SPVCOORD :: CJTEST coinjoin recovery gap widened on \(network.rawValue, privacy: .public) to \(CoinJoinRecovery.recoveryGapLimit, privacy: .public) (highest idx \(highest, privacy: .public))")
+                "🛰️ SPVCOORD :: CJTEST coinjoin recovery gap widened on \(network.rawValue, privacy: .public) to \(CoinJoinRecovery.recoveryGapLimit, privacy: .public)")
         } catch {
             Self.logger.error(
                 "🛰️ SPVCOORD :: coinjoin recovery widen failed: \(String(describing: error), privacy: .public)")
