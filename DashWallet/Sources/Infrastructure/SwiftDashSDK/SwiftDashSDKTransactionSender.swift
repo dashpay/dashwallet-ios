@@ -32,9 +32,10 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
     // MARK: - CoinJoin sweep constants (documented mirrors; core is the backstop)
 
-    /// Max inputs per sweep transaction. Mirrors key-wallet `MAX_INPUTS_PER_SWEEP`;
-    /// the builder independently rejects any chunk over `MAX_STANDARD_TX_INPUTS`,
-    /// so a drifted value fails safe (an error) rather than mis-signing.
+    /// Max inputs per sweep transaction. 500 matches key-wallet's
+    /// `MAX_STANDARD_TX_INPUTS`, which the builder hard-rejects if exceeded — so
+    /// this cap is a proactive split, and a drifted value still fails safe (an
+    /// error) rather than mis-signing.
     private static let maxInputsPerSweep = 500
     /// Relay-minimum fee rate: 1 duff/byte == 1000 duffs per kB.
     private static let feeRateSatPerKb: UInt64 = 1000
@@ -154,11 +155,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
             let utxos = manager.accountUtxos(for: walletId, balance: cjBalance)
             guard !utxos.isEmpty else { return [] }
 
-            // Chain tip for the builder. We add inputs explicitly instead of
-            // `setFunding`, so set the height ourselves; 0 is harmless for the
-            // non-coinbase CoinJoin coins.
-            let height = (try? manager.syncProgress())?.headers?.currentHeight ?? 0
-
             // Drain each balanced ≤500-input chunk to `address`. `SelectionStrategy.all`
             // makes core compute output = Σinputs − fee with no change (the addOutput
             // amount is ignored); `buildSigned` resolves dual-chain `/0/`+`/1/` signing.
@@ -174,7 +170,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
                         accountIndex: Self.coinJoinAccountIndex, utxos: chunk)
                     try builder.setSelectionStrategy(.all)
                     try builder.setFeeRate(satPerKb: Self.feeRateSatPerKb)
-                    try builder.setCurrentHeight(height)
+                    // No setCurrentHeight: build_signed sets the height from the
+                    // wallet's last_processed_height, overriding anything set here.
                     try builder.addOutput(address: address, amountDuffs: 0)
                     let tx = try builder.buildSigned(
                         wallet: core, accountType: .coinJoin,
@@ -232,8 +229,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
     // MARK: - Helpers
 
     /// Partition `utxos` into balanced chunks each ≤ `maxInputsPerSweep`,
-    /// preserving order. Mirrors key-wallet `sweep_chunk_size`: `ceil(n / 500)`
-    /// near-equal chunks, so no chunk is a lone sub-fee input.
+    /// preserving order — app-side chunking (no upstream key-wallet counterpart):
+    /// `ceil(n / 500)` near-equal chunks, so no chunk is a lone sub-fee input.
     /// Examples: 500 → [500]; 501 → [251, 250]; 1000 → [500, 500].
     private static func balancedChunks(
         _ utxos: [PlatformWalletManager.AccountUtxo]
