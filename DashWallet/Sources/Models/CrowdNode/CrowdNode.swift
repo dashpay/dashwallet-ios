@@ -109,7 +109,6 @@ public final class CrowdNode {
     private lazy var sendCoinsService = SendCoinsService()
     private lazy var txObserver = TransactionObserver()
     private lazy var webService = CrowdNodeService()
-    private lazy var transactionManager = DWEnvironment.sharedInstance().currentChainManager.transactionManager
     private let prefs = CrowdNodeDefaults.shared
     private var timer: Timer? = nil
 
@@ -168,15 +167,13 @@ public final class CrowdNode {
     }
 
     private func topUpAccount(_ accountAddress: String, _ amount: UInt64) async throws -> DSTransaction {
-        let topUpTx = try await sendCoinsService.sendCoins(address: accountAddress,
-                                                           amount: amount)
-        let filter = SpendableTransaction(transactionManager: transactionManager, txHashData: topUpTx.txHashData)
-
-        if filter.matches(tx: topUpTx) {
-            return topUpTx
-        } else {
-            return await txObserver.first(filters: filter)
-        }
+        // sendCoins broadcasts via SwiftDashSDK and throws on failure, and the
+        // follow-up signal send polls the SDK's UTXO set itself before spending
+        // the top-up, so the legacy SpendableTransaction wait is obsolete here.
+        // It was also a permanent hang: it gated on DashSync's
+        // relayCount/DSTransactionManagerTransactionStatusDidChange, and with
+        // DashSync sync stopped that notification never fires.
+        return try await sendCoinsService.sendCoins(address: accountAddress, amount: amount)
     }
 }
 
