@@ -32,6 +32,25 @@ final class CoinJoinWithdrawalTxSet: GroupedTransactions {
         NSLocalizedString("Your mixed Dash was moved to your spendable balance using these transactions.", comment: "CoinJoin")
     }
 
+    /// "N transactions · M UTXOs" — makes the sweep's scale visible: a single
+    /// transaction can consolidate hundreds of mixed UTXOs, so the row count
+    /// alone doesn't convey how many coins were actually moved.
+    var summaryText: String? {
+        let txs = transactions
+        guard !txs.isEmpty else { return nil }
+        let txCount = txs.count
+        let utxoCount = txs.reduce(0) { $0 + $1.inputCount }
+        let txPart = String(
+            format: NSLocalizedString(
+                txCount == 1 ? "%d transaction" : "%d transactions", comment: "CoinJoin"),
+            txCount)
+        let utxoPart = String(
+            format: NSLocalizedString(
+                utxoCount == 1 ? "%d UTXO" : "%d UTXOs", comment: "CoinJoin"),
+            utxoCount)
+        return "\(txPart) · \(utxoPart)"
+    }
+
     var fiatAmount: String {
         (try? CurrencyExchanger.shared.convertDash(amount: UInt64(abs(amount)).dashAmount, to: App.fiatCurrency).formattedFiatAmount) ??
             NSLocalizedString("Updating Price", comment: "Updating Price")

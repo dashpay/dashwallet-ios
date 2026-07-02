@@ -22,4 +22,11 @@ protocol GroupedTransactions {
     var fiatAmount: String { get }
     var amount: Int64 { get }
     var transactions: [Transaction] { get }
+    /// Optional one-line summary shown under the header amount (e.g. a
+    /// transaction/UTXO count). Defaults to `nil` (no line) — conformers opt in.
+    var summaryText: String? { get }
+}
+
+extension GroupedTransactions {
+    var summaryText: String? { nil }
 }

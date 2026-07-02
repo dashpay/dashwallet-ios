@@ -73,6 +73,8 @@ class Transaction: TransactionDataItem, Identifiable {
         let outputAddresses: [String]
         /// Spent-input addresses (non-empty), pre-deduped.
         let inputAddresses: [String]
+        /// Raw number of inputs (UTXOs consumed) — NOT deduped by address.
+        let inputCount: Int
 
         /// Must be called on the main actor — reads `p`'s relationships
         /// (`outputs`/`inputs`), which are bound to the model-context actor.
@@ -84,6 +86,7 @@ class Transaction: TransactionDataItem, Identifiable {
             context = p.context
             outputAddresses = Array(Set(p.outputs.map { $0.address }.filter { !$0.isEmpty }))
             inputAddresses = Array(Set(p.inputs.map { $0.address }.filter { !$0.isEmpty }))
+            inputCount = p.inputs.count
         }
     }
 
@@ -96,6 +99,16 @@ class Transaction: TransactionDataItem, Identifiable {
     var tx: DSTransaction? {
         if case .ds(let dsTx) = source { return dsTx }
         return nil
+    }
+
+    /// Number of inputs (UTXOs consumed) in this transaction. For a CoinJoin
+    /// sweep this is the count of mixed coins the tx moved. Raw count — not
+    /// deduped by address.
+    var inputCount: Int {
+        switch source {
+        case .ds(let dsTx): return dsTx.inputs.count
+        case .sdk(let snap): return snap.inputCount
+        }
     }
 
     /// CoinJoin "mixing operation" flag for SwiftDashSDK-sourced txs — drives

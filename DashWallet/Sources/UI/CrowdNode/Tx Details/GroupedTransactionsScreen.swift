@@ -41,6 +41,14 @@ struct GroupedTransactionsScreen: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .font(.caption)
                                 .foregroundColor(.tertiaryText)
+
+                            if let summary = model.summaryText {
+                                Text(summary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .font(.caption)
+                                    .foregroundColor(.tertiaryText)
+                                    .padding(.top, 2)
+                            }
                         }
                         .frame(maxWidth: .infinity)
                         
