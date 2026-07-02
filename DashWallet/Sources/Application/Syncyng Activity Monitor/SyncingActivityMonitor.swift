@@ -239,8 +239,20 @@ extension SyncingActivityMonitor {
             mapped = .syncDone
         case .error:
             mapped = .syncFailed
-        case .syncing, .waitForEvents:
+        case .syncing:
             mapped = .syncing
+        case .waitForEvents:
+            // dash-spv's steady state for a fully-synced client: sub-managers
+            // drop from Synced to WaitForEvents once they switch to listening
+            // for new blocks, so the overall Synced state is only a transient
+            // window (progress.rs — overall is Synced only while ALL managers
+            // are simultaneously Synced). WaitForEvents is also the pre-start
+            // default, so disambiguate on progress: fully caught up → done.
+            if sdkProgress >= 0.999 {
+                mapped = .syncDone
+            } else {
+                mapped = (state == .syncing) ? .syncing : .unknown
+            }
         case .waitingForConnections, .idle:
             // Pre-sync states — hold .syncing if we were already syncing,
             // otherwise show .unknown so the UI doesn't flash.
