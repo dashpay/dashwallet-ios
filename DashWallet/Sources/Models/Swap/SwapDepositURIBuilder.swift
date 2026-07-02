@@ -21,7 +21,7 @@ import Foundation
 
 /// Builds the deposit payment URI encoded in the Buy "Send {COIN}" QR code.
 ///
-/// Mirrors Android (`MayaCryptoCurrency.getPaymentRequestURI`):
+/// Mirrors Android (`SwapCryptoCurrency.getPaymentRequestURI`):
 /// - UTXO chains (BTC/BCH/LTC/DOGE/ZEC) → BIP21 `bitcoin:<addr>?amount=…`.
 /// - EVM chains → EIP-681:
 ///     - native gas coin → `ethereum:<addr>@<chainId>?value=<amount·1e18>`
@@ -31,7 +31,7 @@ enum SwapDepositURIBuilder {
 
     // MARK: - Public
 
-    static func uri(for coin: MayaCryptoCurrency, address: String, amount: String, memo: String?) -> String {
+    static func uri(for coin: SwapCryptoCurrency, address: String, amount: String, memo: String?) -> String {
         let trimmedAddress = address.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedAddress.isEmpty else { return "" }
 
@@ -62,7 +62,7 @@ enum SwapDepositURIBuilder {
     /// The amount to display in the "Amount to send" row, truncated to the asset's real on-chain
     /// decimals so a token like USDC (6 decimals) never shows an un-sendable 8-decimal value.
     /// Matches the truncation used for the URI's base-unit amount. Non-EVM chains are shown as-is.
-    static func displaySendAmount(for coin: MayaCryptoCurrency, amount: String) -> String {
+    static func displaySendAmount(for coin: SwapCryptoCurrency, amount: String) -> String {
         let trimmed = amount.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let places = displayDecimals(for: coin),
               let value = Decimal(string: trimmed) else {
@@ -93,7 +93,7 @@ enum SwapDepositURIBuilder {
         "BERA": 80094,
     ]
 
-    private static func evmURI(for coin: MayaCryptoCurrency, address: String, amount: String, chainID: Int) -> String {
+    private static func evmURI(for coin: SwapCryptoCurrency, address: String, amount: String, chainID: Int) -> String {
         let contract = tokenContract(for: coin)
 
         // No contract → native gas coin (e.g. ARB.ETH): EIP-681 native value form.
@@ -109,13 +109,13 @@ enum SwapDepositURIBuilder {
 
     /// ERC-20 contract = the part after the first "-" in the SwapKit asset id
     /// (e.g. `ARB.USDC-0xaf88…` → `0xaf88…`), lower-cased. Empty for native-coin entries.
-    private static func tokenContract(for coin: MayaCryptoCurrency) -> String {
-        guard let range = coin.mayaAsset.range(of: "-") else { return "" }
-        return String(coin.mayaAsset[range.upperBound...]).lowercased()
+    private static func tokenContract(for coin: SwapCryptoCurrency) -> String {
+        guard let range = coin.swapAsset.range(of: "-") else { return "" }
+        return String(coin.swapAsset[range.upperBound...]).lowercased()
     }
 
     /// Token base-unit exponent (mirrors Android `defaultDecimals`).
-    private static func tokenDecimals(for coin: MayaCryptoCurrency) -> Int {
+    private static func tokenDecimals(for coin: SwapCryptoCurrency) -> Int {
         switch coin.code.uppercased() {
         case "USDC", "USDT":
             // Binance-Peg USDC/USDT on BSC are 18 decimals; elsewhere these stablecoins are 6.
@@ -130,7 +130,7 @@ enum SwapDepositURIBuilder {
     }
 
     /// On-chain decimals used to round the *displayed* send amount. EVM only; nil elsewhere.
-    private static func displayDecimals(for coin: MayaCryptoCurrency) -> Int? {
+    private static func displayDecimals(for coin: SwapCryptoCurrency) -> Int? {
         guard evmChainIDs[coin.chain.uppercased()] != nil else { return nil }
         return tokenContract(for: coin).isEmpty ? nativeDecimals : tokenDecimals(for: coin)
     }

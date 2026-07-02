@@ -25,11 +25,11 @@ final class MayaSwapProvider: SwapProvider {
     var displayName: String { "Maya" }
     var onBuyRoutabilityChanged: (() -> Void)?
 
-    func fetchPools() async throws -> [MayaPool] {
+    func fetchPools() async throws -> [SwapPool] {
         try await MayaAPIService.shared.fetchPools()
     }
 
-    func fetchInboundAddresses() async throws -> [MayaInboundAddress] {
+    func fetchInboundAddresses() async throws -> [SwapInboundAddress] {
         try await MayaAPIService.shared.fetchInboundAddresses()
     }
 
