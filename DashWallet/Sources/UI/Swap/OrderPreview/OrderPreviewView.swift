@@ -250,7 +250,7 @@ struct OrderPreviewView: View {
     )
 
     let viewModel = OrderPreviewViewModel(
-        coin: MayaCryptoCurrency.supportedCoins[0],
+        coin: SwapCryptoCurrency.supportedCoins[0],
         address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
         dashSatoshis: 10_000_000,
         fromDashAmount: "0.1",
