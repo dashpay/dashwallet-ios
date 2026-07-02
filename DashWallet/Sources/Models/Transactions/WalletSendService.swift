@@ -2,8 +2,7 @@
 //  WalletSendService.swift
 //  DashWallet
 //
-//  Shared send boundary for standard SwiftDashSDK sends and the remaining
-//  DashSync-only selected-input fallback.
+//  Shared send boundary for standard and selected-input SwiftDashSDK sends.
 //
 
 import Foundation
@@ -49,7 +48,6 @@ final class WalletSendService: NSObject {
         category: "swift-sdk-migration.wallet-send-service")
 
     private let sendAuthorizer = SendAuthorizer()
-    private let legacySelectedInputSendExecutor = LegacySelectedInputSendExecutor()
 
     private override init() {
         super.init()
@@ -70,14 +68,25 @@ final class WalletSendService: NSObject {
         adjustAmountDownwards: Bool = false
     ) async throws -> DSTransaction {
         if let inputSelector {
-            Self.logger.info("💸 TXSEND :: routing to selected-input (DashSync) path")
+            Self.logger.info("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
             try await sendAuthorizer.authorizeSend()
-            return try await legacySelectedInputSendExecutor.send(
-                address: address,
-                amount: amount,
-                inputSelector: inputSelector,
-                adjustAmountDownwards: adjustAmountDownwards
-            )
+            do {
+                let (txData, _, _) = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
+                    fromAddress: inputSelector.address,
+                    to: address,
+                    amount: amount,
+                    adjustAmountDownwards: adjustAmountDownwards
+                )
+                // Same synthesis as the standard path (`buildPreparedStandardSend`):
+                // callers only read `.txHashHexString` from the returned object.
+                let chain = DWEnvironment.sharedInstance().currentChain
+                return DSTransaction(message: txData, on: chain)
+            } catch SwiftDashSDKTransactionSender.SendError.insufficientSelectedFunds(let selected, let amount, let fee) {
+                throw Self.makeError(
+                    code: .insufficientSelectedFunds,
+                    description: "Not enough funds. Selected: \(selected), Amount: \(amount), Fee: \(fee)"
+                )
+            }
         }
 
         let preparedSend = try await prepareStandardSendForConfirmation(address: address, amount: amount)
@@ -265,52 +274,6 @@ private final class SendAuthorizer {
                 description: "Authentication failed"
             )
         }
-    }
-}
-
-private final class LegacySelectedInputSendExecutor {
-    func send(
-        address: String,
-        amount: UInt64,
-        inputSelector: SingleInputAddressSelector,
-        adjustAmountDownwards: Bool
-    ) async throws -> DSTransaction {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let transactionManager = DWEnvironment.sharedInstance().currentChainManager.transactionManager
-        let transaction = DSTransaction(on: chain)
-
-        let balance = inputSelector.selectFor(tx: transaction)
-        transaction.addOutputAddress(address, amount: amount)
-        let feeAmount = chain.fee(forTxSize: UInt(transaction.size) + UInt(TX_OUTPUT_SIZE))
-
-        if amount + feeAmount > balance {
-            if adjustAmountDownwards && amount > feeAmount {
-                return try await send(
-                    address: address,
-                    amount: amount - feeAmount,
-                    inputSelector: inputSelector,
-                    adjustAmountDownwards: false
-                )
-            }
-
-            throw WalletSendService.makeError(
-                code: .insufficientSelectedFunds,
-                description: "Not enough funds. Selected: \(balance), Amount: \(amount), Fee: \(feeAmount)"
-            )
-        }
-
-        let change = balance - (amount + feeAmount)
-        if change > 0 {
-            transaction.addOutputAddress(inputSelector.address, amount: change)
-            transaction.sortOutputsAccordingToBIP69()
-        }
-
-        account.sign(transaction)
-        account.register(transaction, saveImmediately: false)
-        WalletSendService.logger.info("💸 TXSEND :: publishing selected-input tx via DashSync")
-        try await transactionManager.publishTransaction(transaction)
-        return transaction
     }
 }
 

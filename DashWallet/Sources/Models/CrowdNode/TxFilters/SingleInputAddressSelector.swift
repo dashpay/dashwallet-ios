@@ -15,6 +15,14 @@
 //  limitations under the License.
 //
 
+/// Call-site seam for CrowdNode's selected-input signal sends.
+///
+/// Since the send path moved to SwiftDashSDK
+/// (`SwiftDashSDKTransactionSender.buildAndSignFromAddress`), only `address`
+/// is consumed — the SDK path funds the tx from that address's UTXO pool.
+/// `candidates` and `selectFor(tx:)` are inert legacy carriers kept so the
+/// four CrowdNode call sites don't churn; their removal travels with the
+/// CrowdNode tracking-side migration (DSTransaction-based tx matching).
 public final class SingleInputAddressSelector {
     let candidates: [DSTransaction]
     let address: String
