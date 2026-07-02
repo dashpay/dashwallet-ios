@@ -35,7 +35,7 @@ final class SwapKitSwapProvider: SwapProvider {
 
     // MARK: - Cache
 
-    private var cachedPools: [MayaPool] = []
+    private var cachedPools: [SwapPool] = []
     private var poolsCachedAt: Date?
     // Asset identifier → USD price, seeded during fetchPools.
     private var usdPriceCache: [String: Double] = [:]
@@ -79,11 +79,11 @@ final class SwapKitSwapProvider: SwapProvider {
 
     // MARK: - SwapProvider
 
-    func fetchPools() async throws -> [MayaPool] {
+    func fetchPools() async throws -> [SwapPool] {
         try await fetchPools(direction: .sell)
     }
 
-    func fetchPools(direction: SwapDirection) async throws -> [MayaPool] {
+    func fetchPools(direction: SwapDirection) async throws -> [SwapPool] {
         if isCacheValid && !cachedPools.isEmpty {
             if !classificationBuilt { await buildClassification() }
             return try await filteredPools(cachedPools, for: direction)
@@ -111,10 +111,10 @@ final class SwapKitSwapProvider: SwapProvider {
         // 3. Seed the USD price cache for currency-switch re-conversion without re-fetching.
         usdPriceCache = priceMap
 
-        // 4. Map to MayaPool — `status = "available"` (lowercase) because `isAvailable` checks that.
-        let pools = identifiers.map { identifier -> MayaPool in
+        // 4. Map to SwapPool — `status = "available"` (lowercase) because `isAvailable` checks that.
+        let pools = identifiers.map { identifier -> SwapPool in
             let priceUsd = priceMap[identifier.uppercased()] ?? 0.0
-            return MayaPool(
+            return SwapPool(
                 asset: identifier,
                 status: "available",
                 assetPriceUSD: priceUsd > 0 ? String(priceUsd) : "0"
@@ -134,7 +134,7 @@ final class SwapKitSwapProvider: SwapProvider {
     /// Buy is **fail-closed**: if classification is not usable after one retry, throws an error
     /// so `SelectCoinViewModel` shows its error/retry state rather than an unfiltered list.
     /// Sell is always unaffected — all pools are returned regardless of classification state.
-    private func filteredPools(_ pools: [MayaPool], for direction: SwapDirection) async throws -> [MayaPool] {
+    private func filteredPools(_ pools: [SwapPool], for direction: SwapDirection) async throws -> [SwapPool] {
         guard direction == .buy else { return pools }
 
         if !classificationUsable {
@@ -167,7 +167,7 @@ final class SwapKitSwapProvider: SwapProvider {
         }
     }
 
-    func networkLabels(for pools: [MayaPool]) async -> [String: String] {
+    func networkLabels(for pools: [SwapPool]) async -> [String: String] {
         if !classificationBuilt { await buildClassification() }
         var result: [String: String] = [:]
         for pool in pools {
@@ -183,7 +183,7 @@ final class SwapKitSwapProvider: SwapProvider {
         return result
     }
 
-    func haltedAssets(from inboundAddresses: [MayaInboundAddress], pools: [MayaPool]) async -> Set<String> {
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String> {
         if !classificationBuilt { await buildClassification() }
         let haltedChains = Set(inboundAddresses.filter { $0.halted }.map { $0.chain.uppercased() })
         guard !haltedChains.isEmpty else { return [] }
@@ -199,9 +199,9 @@ final class SwapKitSwapProvider: SwapProvider {
         return halted
     }
 
-    func fetchInboundAddresses() async throws -> [MayaInboundAddress] {
+    func fetchInboundAddresses() async throws -> [SwapInboundAddress] {
         // SwapKit returns vault address inline per-swap; no vault-list endpoint.
-        // Synthesise one MayaInboundAddress(chain:, halted: false) per reachable chain
+        // Synthesise one SwapInboundAddress(chain:, halted: false) per reachable chain
         // so SelectCoinViewModel's "halted?" filter works without modification.
         let identifiers: [String]
         if !cachedPools.isEmpty {
@@ -212,7 +212,7 @@ final class SwapKitSwapProvider: SwapProvider {
 
         let chains = Set(identifiers.compactMap { $0.components(separatedBy: ".").first })
         return chains.map { chain in
-            MayaInboundAddress(
+            SwapInboundAddress(
                 chain: chain,
                 halted: false,
                 address: nil,

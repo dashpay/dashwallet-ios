@@ -89,19 +89,19 @@ extension SwapProvider {
 
     /// Direction-aware pool fetch. Defaults to `.sell` (all pools) for providers that
     /// don't distinguish directions (Maya).
-    func fetchPools(direction: SwapDirection) async throws -> [MayaPool] {
+    func fetchPools(direction: SwapDirection) async throws -> [SwapPool] {
         try await fetchPools()
     }
 
     /// Returns a map of asset identifier (uppercased) → routing network label
     /// for display in the coin picker ("Maya", "NEAR", "Multiple networks").
     /// Default: empty — non-SwapKit providers don't have multi-provider routing.
-    func networkLabels(for pools: [MayaPool]) async -> [String: String] { [:] }
+    func networkLabels(for pools: [SwapPool]) async -> [String: String] { [:] }
 
     /// Returns the set of asset identifiers (uppercased) that are halted due to
     /// provider-specific halt logic (e.g. Maya chain halt for mayaOnly assets).
     /// Default: empty set (use chain-based halt from inbound addresses).
-    func haltedAssets(from inboundAddresses: [MayaInboundAddress], pools: [MayaPool]) async -> Set<String> { [] }
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String> { [] }
 }
 
 // MARK: - Protocol
@@ -118,19 +118,19 @@ protocol SwapProvider {
     var buildsSwapKitDeposit: Bool { get }
     var onBuyRoutabilityChanged: (() -> Void)? { get set }
 
-    func fetchPools() async throws -> [MayaPool]
-    func fetchInboundAddresses() async throws -> [MayaInboundAddress]
+    func fetchPools() async throws -> [SwapPool]
+    func fetchInboundAddresses() async throws -> [SwapInboundAddress]
 
     /// Direction-aware pool fetch. MUST be a protocol requirement (not extension-only) so
     /// that a `SwapProvider`-typed call dynamically dispatches to the concrete override
     /// (e.g. SwapKit's Buy filtering) instead of statically using the extension default.
-    func fetchPools(direction: SwapDirection) async throws -> [MayaPool]
+    func fetchPools(direction: SwapDirection) async throws -> [SwapPool]
 
     /// Routing network labels per asset. MUST be a protocol requirement for dynamic dispatch.
-    func networkLabels(for pools: [MayaPool]) async -> [String: String]
+    func networkLabels(for pools: [SwapPool]) async -> [String: String]
 
     /// Provider-specific halted assets. MUST be a protocol requirement for dynamic dispatch.
-    func haltedAssets(from inboundAddresses: [MayaInboundAddress], pools: [MayaPool]) async -> Set<String>
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String>
 
     /// Returns `nil` if the destination address is valid, otherwise an error string.
     func validateAddress(destination: String, toAsset: String) async -> String?
