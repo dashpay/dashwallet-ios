@@ -50,7 +50,7 @@ final class SwapFlowCoordinator {
         navigationController?.pushViewController(selectCoinVC, animated: true)
     }
 
-    private func navigateToEnterAddress(for coin: MayaCryptoCurrency) {
+    private func navigateToEnterAddress(for coin: SwapCryptoCurrency) {
         let enterAddressVC = EnterAddressHostingController(coin: coin, swapProvider: swapProvider)
         enterAddressVC.onAddressConfirmed = { [weak self] coin, address in
             self?.navigateToConvert(coin: coin, address: address)
@@ -58,13 +58,13 @@ final class SwapFlowCoordinator {
         navigationController?.pushViewController(enterAddressVC, animated: true)
     }
 
-    private func navigateToConvert(coin: MayaCryptoCurrency, address: String) {
+    private func navigateToConvert(coin: SwapCryptoCurrency, address: String) {
         guard !(navigationController?.topViewController is SwapConvertHostingController) else { return }
         let convertVC = SwapConvertHostingController(coin: coin, address: address, swapProvider: swapProvider)
         navigationController?.pushViewController(convertVC, animated: true)
     }
 
-    private func navigateToBuyEnterAmount(for coin: MayaCryptoCurrency) {
+    private func navigateToBuyEnterAmount(for coin: SwapCryptoCurrency) {
         guard !(navigationController?.topViewController is BuyEnterAmountHostingController) else { return }
         guard swapProvider is SwapKitSwapProvider else {
             DSLogger.log("Swap flow: Buy requires SwapKit backend; got \(swapProvider.displayName)")
@@ -79,7 +79,7 @@ final class SwapFlowCoordinator {
         navigationController?.pushViewController(buyEnterAmountVC, animated: true)
     }
 
-    private func navigateToRefundAddress(coin: MayaCryptoCurrency, sellAmount: String) {
+    private func navigateToRefundAddress(coin: SwapCryptoCurrency, sellAmount: String) {
         let refundVC = RefundAddressHostingController(coin: coin)
         refundVC.onRefundAddressConfirmed = { [weak self] coin, refundAddress in
             self?.navigateToReceive(coin: coin, sellAmount: sellAmount, refundAddress: refundAddress)
@@ -87,7 +87,7 @@ final class SwapFlowCoordinator {
         navigationController?.pushViewController(refundVC, animated: true)
     }
 
-    private func navigateToReceive(coin: MayaCryptoCurrency, sellAmount: String, refundAddress: String) {
+    private func navigateToReceive(coin: SwapCryptoCurrency, sellAmount: String, refundAddress: String) {
         DSLogger.log("Swap: Buy receive \(coin.code) amount=\(sellAmount) refund=\(refundAddress)")
         guard let swapKitProvider = swapProvider as? SwapKitSwapProvider else {
             DSLogger.log("Swap flow: Buy receive requires SwapKit backend")
