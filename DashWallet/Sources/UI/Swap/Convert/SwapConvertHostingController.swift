@@ -21,12 +21,12 @@ import UIKit
 class SwapConvertHostingController: UIViewController, NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
 
-    private let coin: MayaCryptoCurrency
+    private let coin: SwapCryptoCurrency
     private let address: String
     private let swapProvider: SwapProvider
     private lazy var viewModel = SwapConvertViewModel(coin: coin, address: address, swapProvider: swapProvider)
 
-    init(coin: MayaCryptoCurrency, address: String, swapProvider: SwapProvider = MayaSwapProvider()) {
+    init(coin: SwapCryptoCurrency, address: String, swapProvider: SwapProvider = MayaSwapProvider()) {
         self.coin = coin
         self.address = address
         self.swapProvider = swapProvider
