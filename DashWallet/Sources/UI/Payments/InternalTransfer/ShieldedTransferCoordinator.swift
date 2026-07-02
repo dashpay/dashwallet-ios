@@ -362,8 +362,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // advancing the phase — same ordering as `resolveEnvironment()`. The
         // reader is main-actor-safe and we're already on @MainActor, so call it
         // directly (no GCD hop).
-        guard let coreAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(
-                on: DWEnvironment.sharedInstance().currentChain),
+        guard let coreAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(),
               !coreAddress.isEmpty else {
             handleFailure(CoordinatorError.noReceiveAddress)
             return

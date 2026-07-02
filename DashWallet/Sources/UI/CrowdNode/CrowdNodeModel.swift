@@ -135,8 +135,7 @@ final class CrowdNodeModel {
 
     func getAccountAddress() {
         if crowdNode.accountAddress.isEmpty {
-            let chain = DWEnvironment.sharedInstance().currentChain
-            accountAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(on: chain) ?? ""
+            accountAddress = SwiftDashSDKReceiveAddressReader.receiveAddress() ?? ""
         }
         else {
             accountAddress = crowdNode.accountAddress

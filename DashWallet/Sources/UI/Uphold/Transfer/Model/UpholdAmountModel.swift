@@ -83,8 +83,7 @@ final class UpholdAmountModel: BaseAmountModel {
     }
 
     private func createTransaction(for amount: String, feeWasDeductedFromAmount: Bool, otpToken: String?) {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        guard let receiveAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(on: chain) else {
+        guard let receiveAddress = SwiftDashSDKReceiveAddressReader.receiveAddress() else {
             fatalError("Address should exist")
         }
 

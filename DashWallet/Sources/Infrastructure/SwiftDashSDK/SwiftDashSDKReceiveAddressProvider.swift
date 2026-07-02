@@ -12,6 +12,6 @@ import Foundation
 
 final class SwiftDashSDKReceiveAddressProvider: ReceiveAddressProviding {
     func receiveAddress() -> String? {
-        SwiftDashSDKReceiveAddressReader.receiveAddress(on: DWEnvironment.sharedInstance().currentChain)
+        SwiftDashSDKReceiveAddressReader.receiveAddress()
     }
 }

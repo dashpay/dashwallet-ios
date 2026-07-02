@@ -30,8 +30,7 @@ class ZenLedgerViewModel: ObservableObject {
         var addresses: [String] = []
 
         if allTransaction.isEmpty {
-            let chain = DWEnvironment.sharedInstance().currentChain
-            addresses.append(SwiftDashSDKReceiveAddressReader.receiveAddress(on: chain) ?? "")
+            addresses.append(SwiftDashSDKReceiveAddressReader.receiveAddress() ?? "")
         } else {
             for tx in allTransaction {
                 addresses.append(contentsOf:

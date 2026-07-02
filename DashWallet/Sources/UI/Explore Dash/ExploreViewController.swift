@@ -103,9 +103,7 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
     // MARK: - Actions
     
     private func getTestDashAction() {
-        let chain = DWEnvironment.sharedInstance().currentChain
-
-        if let paymentAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(on: chain) {
+        if let paymentAddress = SwiftDashSDKReceiveAddressReader.receiveAddress() {
             UIPasteboard.general.string = paymentAddress
         }
         

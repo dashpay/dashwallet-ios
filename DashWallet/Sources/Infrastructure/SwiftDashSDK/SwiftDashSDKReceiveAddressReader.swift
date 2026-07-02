@@ -39,13 +39,11 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
     /// account (index 0). Returns nil when the host hasn't bound a wallet
     /// yet or the FFI call fails. Never throws.
     ///
-    /// The `chain` argument is preserved on the public surface for legacy
-    /// `@objc` callers; the underlying lookup goes through
-    /// `SwiftDashSDKHost.shared` which is already bound to the active
+    /// Takes no network argument: the lookup goes through
+    /// `SwiftDashSDKHost.shared`, which is already bound to the active
     /// network at the time `start(network:)` ran.
-    @objc(receiveAddressOnChain:)
-    static func receiveAddress(on chain: DSChain) -> String? {
-        _ = chain
+    @objc
+    static func receiveAddress() -> String? {
         if Thread.isMainThread {
             return MainActor.assumeIsolated { readOnMain() }
         }

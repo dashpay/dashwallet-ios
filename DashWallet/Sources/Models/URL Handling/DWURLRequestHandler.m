@@ -93,8 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
                       alertIfLockout:YES
                           completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
                               if (authenticatedOrSuccess) {
-                                  DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-                                  NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddressOnChain:account.wallet.chain];
+                                  NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
 
                                   NSString *urlString =
                                       [NSString stringWithFormat:

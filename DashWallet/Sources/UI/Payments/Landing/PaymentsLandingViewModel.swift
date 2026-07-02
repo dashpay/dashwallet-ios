@@ -79,8 +79,7 @@ final class PaymentsLandingViewModel: ObservableObject {
     }
 
     private func reloadCoreAddress() {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        coreAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(on: chain)
+        coreAddress = SwiftDashSDKReceiveAddressReader.receiveAddress()
     }
 
     private static func pickNextPlatformAddress(

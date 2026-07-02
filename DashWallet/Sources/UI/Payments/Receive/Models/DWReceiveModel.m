@@ -171,7 +171,7 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
         DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-        NSString *paymentAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddressOnChain:chain];
+        NSString *paymentAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
 
 
         DWAppGroupOptions *appGroupOptions = [DWAppGroupOptions sharedInstance];

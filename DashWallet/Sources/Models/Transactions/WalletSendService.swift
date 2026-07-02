@@ -108,9 +108,7 @@ final class WalletSendService: NSObject {
         Self.logger.info("💸 TXSEND :: CJTEST preparing CoinJoin sweep — balance \(amount, privacy: .public) duffs (\(Double(amount) / 1e8, privacy: .public) DASH)")
         try await sendAuthorizer.authorizeSend()
 
-        guard let destination = SwiftDashSDKReceiveAddressReader.receiveAddress(
-            on: DWEnvironment.sharedInstance().currentChain
-        ) else {
+        guard let destination = SwiftDashSDKReceiveAddressReader.receiveAddress() else {
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
                 description: "Could not resolve a destination address for the CoinJoin sweep"
