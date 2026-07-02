@@ -21,7 +21,7 @@ import Foundation
 
 @MainActor
 final class SwapConvertViewModel: ObservableObject {
-    let coin: MayaCryptoCurrency
+    let coin: SwapCryptoCurrency
     let address: String
 
     @Published var inputValue: String = ""
@@ -99,7 +99,7 @@ final class SwapConvertViewModel: ObservableObject {
 
     /// Fiat value of the entered amount, in the active fiat currency.
     var enteredFiatFormatted: String {
-        MayaInputFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency)
+        SwapInputFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency)
     }
 
     /// True when nothing meaningful has been entered yet (used to hide the fiat sub-line).
@@ -123,7 +123,7 @@ final class SwapConvertViewModel: ObservableObject {
 
     // MARK: - Init
 
-    init(coin: MayaCryptoCurrency, address: String, swapProvider: SwapProvider = MayaSwapProvider()) {
+    init(coin: SwapCryptoCurrency, address: String, swapProvider: SwapProvider = MayaSwapProvider()) {
         self.coin = coin
         self.address = address
         self.swapProvider = swapProvider
@@ -184,7 +184,7 @@ final class SwapConvertViewModel: ObservableObject {
             dashSatoshis: activeSellSatoshis,
             // Order Preview reflects the real (grossed-up) spend — that's where the fee is shown.
             fromDashAmount: dashAmount(from: activeSellSatoshis).formattedDashAmountWithoutCurrencySymbol,
-            fromFiatAmount: MayaInputFormatter.fiat(dashAmount(from: activeSellSatoshis) * amount.dashFiatRate, currencyCode: currentFiatCurrency),
+            fromFiatAmount: SwapInputFormatter.fiat(dashAmount(from: activeSellSatoshis) * amount.dashFiatRate, currencyCode: currentFiatCurrency),
             cryptoFiatRate: amount.cryptoFiatRate,
             fiatCurrencyCode: currentFiatCurrency,
             targetReceiveAmount: selectedCurrency.isReceiveTargetMode && !isMaxFromBalance ? amount.crypto : nil,
@@ -203,7 +203,7 @@ final class SwapConvertViewModel: ObservableObject {
     private func fetchCryptoRate() async {
         do {
             let pools = try await swapProvider.fetchPools()
-            guard let pool = pools.first(where: { $0.asset.uppercased() == coin.mayaAsset.uppercased() }),
+            guard let pool = pools.first(where: { $0.asset.uppercased() == coin.swapAsset.uppercased() }),
                   let cryptoUsdPrice = pool.priceUSD,
                   cryptoUsdPrice > 0 else { return }
 
@@ -271,7 +271,7 @@ final class SwapConvertViewModel: ObservableObject {
         latestQuote = quote
         receiveAmount = selectedCurrency.isReceiveTargetMode && !isMaxFromBalance
             ? fixedTargetReceiveAmount
-            : "\(MayaInputFormatter.receiveAmount(rawValue / 1e8)) \(coin.code)"
+            : "\(SwapInputFormatter.receiveAmount(rawValue / 1e8)) \(coin.code)"
         checkBalance()
         syncCoinInputToQuotedReceiveIfNeeded(quote)
     }
@@ -284,7 +284,7 @@ final class SwapConvertViewModel: ObservableObject {
         } else if apiError.localizedCaseInsensitiveContains("noRoutesFound") {
             errorMessage = NSLocalizedString("No routes available for this coin right now", comment: "Swap")
         } else if apiError.localizedCaseInsensitiveContains("invalidDestinationAddress") {
-            let chainLabel = MayaCryptoCurrency.chainDisplayName(coin.chain)
+            let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
             errorMessage = String(
                 format: NSLocalizedString(
                     "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address.",
@@ -382,7 +382,7 @@ final class SwapConvertViewModel: ObservableObject {
         do {
             let firstQuote = try await swapProvider.fetchIndicativeQuote(
                 dashSatoshis: snapshot.dashSatoshis,
-                toAsset: coin.mayaAsset,
+                toAsset: coin.swapAsset,
                 destination: address
             )
             guard quoteRequestID == snapshot.id else { return }
@@ -462,7 +462,7 @@ final class SwapConvertViewModel: ObservableObject {
         if cappedSellSatoshis != snapshot.dashSatoshis {
             let requote = try await swapProvider.fetchIndicativeQuote(
                 dashSatoshis: cappedSellSatoshis,
-                toAsset: coin.mayaAsset,
+                toAsset: coin.swapAsset,
                 destination: address
             )
             if requote.error == nil {
@@ -507,7 +507,7 @@ final class SwapConvertViewModel: ObservableObject {
             }
             guard !amount.crypto.isZero, amount.cryptoFiatRate > 0 else { inputValue = ""; return }
             let d = (amount.crypto as NSDecimalNumber).doubleValue
-            inputValue = MayaInputFormatter.trimTrailingZeros(String(format: "%.8f", d))
+            inputValue = SwapInputFormatter.trimTrailingZeros(String(format: "%.8f", d))
         }
     }
 
@@ -538,7 +538,7 @@ final class SwapConvertViewModel: ObservableObject {
     private var fixedTargetReceiveAmount: String? {
         guard selectedCurrency.isReceiveTargetMode, amount.crypto > 0 else { return nil }
         let value = (amount.crypto as NSDecimalNumber).doubleValue
-        return "\(MayaInputFormatter.receiveAmount(value)) \(coin.code)"
+        return "\(SwapInputFormatter.receiveAmount(value)) \(coin.code)"
     }
 
     private var quotedReceiveInputValue: String? {
@@ -550,7 +550,7 @@ final class SwapConvertViewModel: ObservableObject {
             return nil
         }
         let value = (expectedOut as NSDecimalNumber).doubleValue
-        return MayaInputFormatter.receiveAmount(value)
+        return SwapInputFormatter.receiveAmount(value)
     }
 
     private func dashAmount(from satoshis: Int64) -> Decimal {
@@ -588,7 +588,7 @@ final class SwapConvertViewModel: ObservableObject {
             return
         }
 
-        let displayValue = MayaInputFormatter.receiveAmount((expectedOut as NSDecimalNumber).doubleValue)
+        let displayValue = SwapInputFormatter.receiveAmount((expectedOut as NSDecimalNumber).doubleValue)
         guard inputValue != displayValue else { return }
 
         isSyncingQuotedInput = true
@@ -640,7 +640,7 @@ final class SwapConvertViewModel: ObservableObject {
     }
 }
 
-private struct MayaInputFormatter {
+private struct SwapInputFormatter {
     static func trimTrailingZeros(_ s: String) -> String {
         var result = s
         while result.hasSuffix("0") { result.removeLast() }
