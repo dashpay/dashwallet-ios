@@ -27,12 +27,12 @@ private extension Error {
     }
 }
 
-// MARK: - MayaSuccessTrigger
+// MARK: - SwapSuccessTrigger
 
 /// Controls when the success screen is shown to the user.
 ///
 /// **ONE-LINER Product switch** — change `OrderPreviewViewModel.successTrigger`.
-enum MayaSuccessTrigger {
+enum SwapSuccessTrigger {
     /// Optimistic (default). Show success as soon as the Dash tx is InstantSend-locked
     /// (~5-10 s after broadcast). Mirrors Android's intent. Polling continues in background
     /// to track the real backend outcome (`backendOutcome`).
@@ -54,21 +54,21 @@ enum MayaSuccessTrigger {
     case onDashConfirmation
 }
 
-// MARK: - MayaBackendOutcome
+// MARK: - SwapBackendOutcome
 
 /// The true backend state of the swap as reported by Maya's API.
 /// Never causes the user-facing `swapStatus` to regress — it is updated AFTER
 /// success has already been shown, so the UI is never yanked away.
 /// A post-success refund is recorded here for future surfacing in tx history.
-enum MayaBackendOutcome: Equatable {
+enum SwapBackendOutcome: Equatable {
     case pending                          // Maya has not reached a terminal state yet
     case done(outHashes: [String])        // funds arrived at destination chain
     case refunded                         // Maya returned DASH to sender ("refunded"/"aborted")
 }
 
-// MARK: - MayaSwapStatus
+// MARK: - SwapStatus
 
-enum MayaSwapStatus: Equatable {
+enum SwapStatus: Equatable {
     case idle
     case pendingConfirmation    // Dash tx broadcast, waiting for block
     case processingSwap         // Maya has observed the Dash tx, swap running
@@ -93,10 +93,10 @@ final class OrderPreviewViewModel: ObservableObject {
 
     // ── PRODUCT CONFIG ──────────────────────────────────────────────────────
     /// Change this ONE LINE to control when the success screen appears.
-    static let successTrigger: MayaSuccessTrigger = .onISLock
+    static let successTrigger: SwapSuccessTrigger = .onISLock
     // ────────────────────────────────────────────────────────────────────────
 
-    let coin: MayaCryptoCurrency
+    let coin: SwapCryptoCurrency
     let address: String
     let fromDashAmount: String
     let fromFiatAmount: String
@@ -116,12 +116,12 @@ final class OrderPreviewViewModel: ObservableObject {
     // Records that the Dash transaction was submitted to the blockchain network.
     // This does NOT confirm Maya swap completion — that requires separate on-chain confirmation.
     @Published var submittedTxId: String?
-    @Published var swapStatus: MayaSwapStatus = .idle
+    @Published var swapStatus: SwapStatus = .idle
     @Published var pendingSwapAlertMessage: String?
     /// The true backend outcome from Maya's API, tracked independently of `swapStatus`.
     /// Updated by background polling after early success is shown.
     /// Never causes the success screen to be removed — only recorded for tx history.
-    @Published var backendOutcome: MayaBackendOutcome = .pending
+    @Published var backendOutcome: SwapBackendOutcome = .pending
 
     /// Deep-link to the provider's hosted transaction tracker (nil for Maya).
     var trackerURL: URL? {
@@ -188,7 +188,7 @@ final class OrderPreviewViewModel: ObservableObject {
     private var lastDepositAddress: String?
 
     init(
-        coin: MayaCryptoCurrency,
+        coin: SwapCryptoCurrency,
         address: String,
         dashSatoshis: Int64,
         fromDashAmount: String,
@@ -343,7 +343,7 @@ final class OrderPreviewViewModel: ObservableObject {
     private func fetchFreshQuote(dashSatoshis: Int64) async throws -> SwapQuoteResult {
         try await swapProvider.fetchQuote(
             dashSatoshis: dashSatoshis,
-            toAsset: coin.mayaAsset,
+            toAsset: coin.swapAsset,
             destination: address
         )
     }
@@ -401,8 +401,8 @@ final class OrderPreviewViewModel: ObservableObject {
         if let quoteMemo = quote.memo, !quoteMemo.isEmpty {
             memo = quoteMemo
         } else if swapProvider.buildsSwapKitDeposit {
-            let shortAsset = coin.mayaAsset.uppercased().components(separatedBy: "-").first
-                ?? coin.mayaAsset.uppercased()
+            let shortAsset = coin.swapAsset.uppercased().components(separatedBy: "-").first
+                ?? coin.swapAsset.uppercased()
             memo = "=:\(shortAsset):\(address)"
         } else {
             throw mayaFieldError(NSLocalizedString("Swap memo is missing. Please refresh and try again.", comment: "Maya"))
@@ -451,7 +451,7 @@ final class OrderPreviewViewModel: ObservableObject {
 
     private func userFacingErrorMessage(for message: String) -> String {
         if message.localizedCaseInsensitiveContains("invalidDestinationAddress") {
-            let chainLabel = MayaCryptoCurrency.chainDisplayName(coin.chain)
+            let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
             return String(
                 format: NSLocalizedString(
                     "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address.",
@@ -621,7 +621,7 @@ final class OrderPreviewViewModel: ObservableObject {
 
     /// Applies a single polled Maya outcome to the view-model state.
     /// - Returns: `true` when a terminal state was reached and polling should stop.
-    private func handlePollingOutcome(_ outcome: MayaBackendOutcome, txid: String) -> Bool {
+    private func handlePollingOutcome(_ outcome: SwapBackendOutcome, txid: String) -> Bool {
         // Success already on screen — NEVER regress swapStatus; only record backendOutcome.
         if isSuccessAlreadyShown {
             switch outcome {
@@ -682,13 +682,13 @@ final class OrderPreviewViewModel: ObservableObject {
         return false
     }
 
-    /// Maps a `SwapStatusResult` to a `MayaBackendOutcome`.
+    /// Maps a `SwapStatusResult` to a `SwapBackendOutcome`.
     ///
     /// Normalised status strings:
     /// - `"done"`               — funds arrived at destination chain (terminal success)
     /// - `"refunded"/"aborted"` — sent DASH was returned (terminal, treated as failure for UX)
     /// - anything else          → `.pending`
-    private static func classifyStatus(_ result: SwapStatusResult) -> MayaBackendOutcome {
+    private static func classifyStatus(_ result: SwapStatusResult) -> SwapBackendOutcome {
         switch result.observedStatus {
         case "done":
             return .done(outHashes: result.outHashes ?? [])
@@ -864,7 +864,7 @@ final class OrderPreviewViewModel: ObservableObject {
         value > 0 ? formatCryptoAmount(value) : "—"
     }
 
-    /// Formats a fiat value in `fiatCurrencyCode`. Mirrors `MayaInputFormatter.fiat(_:currencyCode:)`
+    /// Formats a fiat value in `fiatCurrencyCode`. Mirrors `SwapInputFormatter.fiat(_:currencyCode:)`
     /// so the Purchase/fee fiat lines match the source-side fiat format.
     private func formatFiat(_ value: Decimal) -> String {
         NumberFormatter.fiatDisplayFormatter(currencyCode: fiatCurrencyCode)

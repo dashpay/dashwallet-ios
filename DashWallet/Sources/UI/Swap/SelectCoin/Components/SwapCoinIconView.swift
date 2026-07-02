@@ -30,7 +30,7 @@ import SwiftUI
 /// disappears, and `remoteImage` resets to nil on reuse (because @State is
 /// tied to view identity in LazyVStack).
 struct SwapCoinIconView: View {
-    let coin: MayaCryptoCurrency
+    let coin: SwapCryptoCurrency
     let size: CGFloat
     let cornerRadius: CGFloat
 
@@ -52,7 +52,7 @@ struct SwapCoinIconView: View {
         // changed iconURL for the same asset cancels and reloads instead of leaving a stale icon.
         .task(id: "\(coin.iconURL ?? "")#\(coin.code)") {
             remoteImage = nil
-            let loaded = await MayaCoinIconLoader.shared.loadIcon(logoURI: coin.iconURL, ticker: coin.code)
+            let loaded = await SwapCoinIconLoader.shared.loadIcon(logoURI: coin.iconURL, ticker: coin.code)
             withAnimation(.easeIn(duration: 0.15)) { remoteImage = loaded }
         }
     }
@@ -63,9 +63,9 @@ struct SwapCoinIconView: View {
     HStack(spacing: 16) {
         // Native asset with real logoURI — uses SwapKit source
         SwapCoinIconView(
-            coin: MayaCryptoCurrency(
+            coin: SwapCryptoCurrency(
                 id: "btc", code: "BTC", name: "Bitcoin",
-                mayaAsset: "BTC.BTC", chain: "BTC",
+                swapAsset: "BTC.BTC", chain: "BTC",
                 iconURL: "https://storage.googleapis.com/token-list-swapkit/images/btc.btc.png"
             ),
             size: 26, cornerRadius: 6
@@ -73,18 +73,18 @@ struct SwapCoinIconView: View {
 
         // No logoURI — exercises CoinCap / jsupa fallback chain
         SwapCoinIconView(
-            coin: MayaCryptoCurrency(
+            coin: SwapCryptoCurrency(
                 id: "dai", code: "DAI", name: "Dai",
-                mayaAsset: "ARB.DAI-0XDA10009CBD5D07DD0CECC66161FC93D7C9000DA1", chain: "ARB"
+                swapAsset: "ARB.DAI-0XDA10009CBD5D07DD0CECC66161FC93D7C9000DA1", chain: "ARB"
             ),
             size: 26, cornerRadius: 6
         )
 
         // Truly unknown ticker — shows convert.crypto placeholder
         SwapCoinIconView(
-            coin: MayaCryptoCurrency(
+            coin: SwapCryptoCurrency(
                 id: "xyz", code: "XYZ", name: "Unknown",
-                mayaAsset: "XYZ.XYZ", chain: "XYZ"
+                swapAsset: "XYZ.XYZ", chain: "XYZ"
             ),
             size: 26, cornerRadius: 6
         )

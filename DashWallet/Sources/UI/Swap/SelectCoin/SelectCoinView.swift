@@ -42,13 +42,13 @@ struct SelectCoinView: View {
     @StateObject private var viewModel: SelectCoinViewModel
     @StateObject private var reachability = NetworkReachabilityMonitor()
     var onBack: (() -> Void)?
-    var onCoinSelected: ((MayaCryptoCurrency) -> Void)?
+    var onCoinSelected: ((SwapCryptoCurrency) -> Void)?
 
     init(
         swapProvider: SwapProvider = MayaSwapProvider(),
         direction: SwapDirection = .sell,
         onBack: (() -> Void)? = nil,
-        onCoinSelected: ((MayaCryptoCurrency) -> Void)? = nil
+        onCoinSelected: ((SwapCryptoCurrency) -> Void)? = nil
     ) {
         _viewModel = StateObject(wrappedValue: SelectCoinViewModel(swapProvider: swapProvider, direction: direction))
         self.onBack = onBack

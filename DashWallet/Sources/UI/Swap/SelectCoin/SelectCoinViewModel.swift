@@ -22,7 +22,7 @@ import Foundation
 
 struct CoinDisplayItem: Identifiable {
     let id: String
-    let coin: MayaCryptoCurrency
+    let coin: SwapCryptoCurrency
     /// Effective display name for the coin row.
     /// Equals `coin.name` today; structured to accept an API-provided override in future.
     let displayName: String
@@ -137,8 +137,8 @@ class SelectCoinViewModel: ObservableObject {
     // MARK: - Private: Item Creation
 
     private func makeCoinItems(
-        pools: [MayaPool],
-        inboundAddresses: [MayaInboundAddress],
+        pools: [SwapPool],
+        inboundAddresses: [SwapInboundAddress],
         fiatCurrency: String,
         formatter: NumberFormatter,
         networkLabels: [String: String] = [:],
@@ -150,7 +150,7 @@ class SelectCoinViewModel: ObservableObject {
         return pools.compactMap { pool in
             guard pool.isAvailable else { return nil }
             guard pool.asset.uppercased() != "DASH.DASH" else { return nil }
-            guard var coin = MayaCryptoCurrency.knownCoin(for: pool.asset) else { return nil }
+            guard var coin = SwapCryptoCurrency.knownCoin(for: pool.asset) else { return nil }
             guard inboundChains.contains(coin.chain.uppercased()) else { return nil }
             coin.iconURL = swapProvider.logoURL(for: pool.asset)?.absoluteString
 
@@ -192,7 +192,7 @@ class SelectCoinViewModel: ObservableObject {
     private func appendChainLabels(_ items: [CoinDisplayItem]) -> [CoinDisplayItem] {
         items.map { item in
             guard !item.displayName.contains("(") else { return item }
-            let chainLabel = MayaCryptoCurrency.chainDisplayName(item.coin.chain)
+            let chainLabel = SwapCryptoCurrency.chainDisplayName(item.coin.chain)
             guard !chainLabel.isEmpty else { return item }
             return CoinDisplayItem(
                 id: item.id, coin: item.coin,
@@ -233,11 +233,11 @@ class SelectCoinViewModel: ObservableObject {
 
     // MARK: - Private: Helpers
 
-    private func isCoinHalted(_ coin: MayaCryptoCurrency, haltedChains: Set<String>) -> Bool {
+    private func isCoinHalted(_ coin: SwapCryptoCurrency, haltedChains: Set<String>) -> Bool {
         haltedChains.contains(coin.chain.uppercased())
     }
 
-    private func priceForCoin(_ pool: MayaPool, fiatCurrency: String, formatter: NumberFormatter) -> String? {
+    private func priceForCoin(_ pool: SwapPool, fiatCurrency: String, formatter: NumberFormatter) -> String? {
         guard let priceUSD = pool.priceUSD, priceUSD > 0 else { return nil }
         guard let fiatAmount = convertUSDToFiat(usdAmount: priceUSD, fiatCurrency: fiatCurrency) else { return nil }
         // Locale currency symbol + amount (e.g. "$0.18", "₴44,54"); the shared fiat formatter
