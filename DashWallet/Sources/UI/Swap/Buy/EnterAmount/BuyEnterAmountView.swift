@@ -31,12 +31,12 @@ struct BuyEnterAmountView: View {
     @StateObject private var reachability = NetworkReachabilityMonitor()
     @State private var showLocalCurrency = false
     private let onBack: (() -> Void)?
-    private let onContinue: (MayaCryptoCurrency, String) -> Void
+    private let onContinue: (SwapCryptoCurrency, String) -> Void
 
     init(
         viewModel: BuyEnterAmountViewModel,
         onBack: (() -> Void)? = nil,
-        onContinue: @escaping (MayaCryptoCurrency, String) -> Void = { _, _ in }
+        onContinue: @escaping (SwapCryptoCurrency, String) -> Void = { _, _ in }
     ) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.onBack = onBack
@@ -162,7 +162,7 @@ struct BuyEnterAmountView: View {
 #Preview {
     BuyEnterAmountView(
         viewModel: BuyEnterAmountViewModel(
-            coin: MayaCryptoCurrency.supportedCoins[0],
+            coin: SwapCryptoCurrency.supportedCoins[0],
             swapProvider: SwapBackend.swapKit.makeProvider()
         ),
         onBack: {}

@@ -23,13 +23,13 @@ import UIKit
 final class BuyEnterAmountHostingController: UIViewController, NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
 
-    var onContinue: ((MayaCryptoCurrency, String) -> Void)?
+    var onContinue: ((SwapCryptoCurrency, String) -> Void)?
 
-    private let coin: MayaCryptoCurrency
+    private let coin: SwapCryptoCurrency
     private let swapProvider: SwapProvider
     private lazy var viewModel = BuyEnterAmountViewModel(coin: coin, swapProvider: swapProvider)
 
-    init(coin: MayaCryptoCurrency, swapProvider: SwapProvider) {
+    init(coin: SwapCryptoCurrency, swapProvider: SwapProvider) {
         self.coin = coin
         self.swapProvider = swapProvider
         super.init(nibName: nil, bundle: nil)

@@ -23,9 +23,9 @@ import UIKit
 final class RefundAddressHostingController: UIViewController, NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
 
-    var onRefundAddressConfirmed: ((MayaCryptoCurrency, String) -> Void)?
+    var onRefundAddressConfirmed: ((SwapCryptoCurrency, String) -> Void)?
 
-    private let coin: MayaCryptoCurrency
+    private let coin: SwapCryptoCurrency
     private let viewModel: RefundAddressViewModel
     private lazy var keyboardDismissTapRecognizer: UITapGestureRecognizer = {
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
@@ -33,7 +33,7 @@ final class RefundAddressHostingController: UIViewController, NavigationBarDispl
         return recognizer
     }()
 
-    init(coin: MayaCryptoCurrency) {
+    init(coin: SwapCryptoCurrency) {
         self.coin = coin
         self.viewModel = RefundAddressViewModel(coin: coin)
         super.init(nibName: nil, bundle: nil)
