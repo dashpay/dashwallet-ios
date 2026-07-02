@@ -528,6 +528,26 @@
 		B1200000B1200000B1200020 /* RefundAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1200000B1200000B1200002 /* RefundAddressView.swift */; };
 		B1200000B1200000B1200021 /* RefundAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1200000B1200000B1200003 /* RefundAddressViewModel.swift */; };
 		B1200000B1200000B1200022 /* RefundAddressHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1200000B1200000B1200004 /* RefundAddressHostingController.swift */; };
+		B1300000B1300000B1300010 /* BuyReceiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300002 /* BuyReceiveView.swift */; };
+		B1300000B1300000B1300011 /* BuyReceiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300002 /* BuyReceiveView.swift */; };
+		B1300000B1300000B1300012 /* BuyReceiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300002 /* BuyReceiveView.swift */; };
+		B1300000B1300000B1300013 /* BuyReceiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300002 /* BuyReceiveView.swift */; };
+		B1300000B1300000B1300020 /* BuyReceiveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300001 /* BuyReceiveViewModel.swift */; };
+		B1300000B1300000B1300021 /* BuyReceiveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300001 /* BuyReceiveViewModel.swift */; };
+		B1300000B1300000B1300022 /* BuyReceiveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300001 /* BuyReceiveViewModel.swift */; };
+		B1300000B1300000B1300023 /* BuyReceiveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300001 /* BuyReceiveViewModel.swift */; };
+		B1300000B1300000B1300030 /* BuyReceiveHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300003 /* BuyReceiveHostingController.swift */; };
+		B1300000B1300000B1300031 /* BuyReceiveHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300003 /* BuyReceiveHostingController.swift */; };
+		B1300000B1300000B1300032 /* BuyReceiveHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300003 /* BuyReceiveHostingController.swift */; };
+		B1300000B1300000B1300033 /* BuyReceiveHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300003 /* BuyReceiveHostingController.swift */; };
+		B1500000B1500000B1500010 /* BuyOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1500000B1500000B1500001 /* BuyOrder.swift */; };
+		B1500000B1500000B1500011 /* BuyOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1500000B1500000B1500001 /* BuyOrder.swift */; };
+		B1500000B1500000B1500012 /* BuyOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1500000B1500000B1500001 /* BuyOrder.swift */; };
+		B1500000B1500000B1500013 /* BuyOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1500000B1500000B1500001 /* BuyOrder.swift */; };
+		B1500000B1500000B1500020 /* SwapDepositURIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1500000B1500000B1500002 /* SwapDepositURIBuilder.swift */; };
+		B1500000B1500000B1500021 /* SwapDepositURIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1500000B1500000B1500002 /* SwapDepositURIBuilder.swift */; };
+		B1500000B1500000B1500022 /* SwapDepositURIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1500000B1500000B1500002 /* SwapDepositURIBuilder.swift */; };
+		B1500000B1500000B1500023 /* SwapDepositURIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1500000B1500000B1500002 /* SwapDepositURIBuilder.swift */; };
 		514AEAD52FB34F8600F9B54C /* OrderPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */; };
 		514AEAD62FB34F8600F9B54C /* OrderPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */; };
 		514AF1C02FB5F02D00F9B54C /* SwapConvertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AF1BF2FB5F02D00F9B54C /* SwapConvertViewModel.swift */; };
@@ -2667,6 +2687,9 @@
 		B1200000B1200000B1200002 /* RefundAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefundAddressView.swift; sourceTree = "<group>"; };
 		B1200000B1200000B1200003 /* RefundAddressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefundAddressViewModel.swift; sourceTree = "<group>"; };
 		B1200000B1200000B1200004 /* RefundAddressHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefundAddressHostingController.swift; sourceTree = "<group>"; };
+		B1300000B1300000B1300001 /* BuyReceiveViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveViewModel.swift; sourceTree = "<group>"; };
+		B1300000B1300000B1300002 /* BuyReceiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveView.swift; sourceTree = "<group>"; };
+		B1300000B1300000B1300003 /* BuyReceiveHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveHostingController.swift; sourceTree = "<group>"; };
 		5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
 		5151C8C32F913BF100F0A604 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		5151C8C42F913BF100F0A604 /* Topper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Topper-Info.plist"; sourceTree = "<group>"; };
@@ -2932,6 +2955,8 @@
 		AA0020052FA0000000000005 /* SwapBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapBackend.swift; sourceTree = "<group>"; };
 		AA0020082FA0000000000008 /* MayaSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaSwapProvider.swift; sourceTree = "<group>"; };
 		AA00200D2FA000000000000D /* SwapFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFlowCoordinator.swift; sourceTree = "<group>"; };
+		B1500000B1500000B1500001 /* BuyOrder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyOrder.swift; sourceTree = "<group>"; };
+		B1500000B1500000B1500002 /* SwapDepositURIBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapDepositURIBuilder.swift; sourceTree = "<group>"; };
 		AA0020102FA0000000000010 /* SwapPortalScaffold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPortalScaffold.swift; sourceTree = "<group>"; };
 		AA0020132FA0000000000013 /* SwapKitPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitPortalView.swift; sourceTree = "<group>"; };
 		AA0020162FA0000000000016 /* SwapKitPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitPortalViewController.swift; sourceTree = "<group>"; };
@@ -6424,6 +6449,7 @@
 			children = (
 				B1100000B1100000B1100001 /* EnterAmount */,
 				B1200000B1200000B1200000 /* RefundAddress */,
+				B1300000B1300000B1300000 /* Receive */,
 			);
 			path = Buy;
 			sourceTree = "<group>";
@@ -6446,6 +6472,16 @@
 				B1200000B1200000B1200004 /* RefundAddressHostingController.swift */,
 			);
 			path = RefundAddress;
+			sourceTree = "<group>";
+		};
+		B1300000B1300000B1300000 /* Receive */ = {
+			isa = PBXGroup;
+			children = (
+				B1300000B1300000B1300001 /* BuyReceiveViewModel.swift */,
+				B1300000B1300000B1300002 /* BuyReceiveView.swift */,
+				B1300000B1300000B1300003 /* BuyReceiveHostingController.swift */,
+			);
+			path = Receive;
 			sourceTree = "<group>";
 		};
 		514AEA162FB3291A00F9B54C /* OrderPreview */ = {
@@ -6990,6 +7026,8 @@
 			isa = PBXGroup;
 			children = (
 				AA0020012FA0000000000013 /* SwapExecutionData.swift */,
+				B1500000B1500000B1500001 /* BuyOrder.swift */,
+				B1500000B1500000B1500002 /* SwapDepositURIBuilder.swift */,
 				AA0020022FA0000000000002 /* SwapProvider.swift */,
 				AA0020052FA0000000000005 /* SwapBackend.swift */,
 				AA0020312FA0000000000031 /* SwapDirection.swift */,
@@ -9345,6 +9383,11 @@
 				B1100000B1100000B1100010 /* BuyEnterAmountView.swift in Sources */,
 				B1100000B1100000B1100011 /* BuyEnterAmountViewModel.swift in Sources */,
 				B1100000B1100000B1100012 /* BuyEnterAmountHostingController.swift in Sources */,
+				B1300000B1300000B1300010 /* BuyReceiveView.swift in Sources */,
+				B1300000B1300000B1300020 /* BuyReceiveViewModel.swift in Sources */,
+				B1300000B1300000B1300030 /* BuyReceiveHostingController.swift in Sources */,
+				B1500000B1500000B1500010 /* BuyOrder.swift in Sources */,
+				B1500000B1500000B1500020 /* SwapDepositURIBuilder.swift in Sources */,
 				51A57C042FBB5A0000FB4097 /* SwapTransactionSuccessView.swift in Sources */,
 				51A57C062FBB5A0000FB4097 /* SwapTransactionFailureView.swift in Sources */,
 				ABA7230759067F4D4EB39AE9 /* SwapTransactionStatusHostingController.swift in Sources */,
@@ -10079,6 +10122,11 @@
 				B1100000B1100000B1100020 /* BuyEnterAmountView.swift in Sources */,
 				B1100000B1100000B1100021 /* BuyEnterAmountViewModel.swift in Sources */,
 				B1100000B1100000B1100022 /* BuyEnterAmountHostingController.swift in Sources */,
+				B1300000B1300000B1300011 /* BuyReceiveView.swift in Sources */,
+				B1300000B1300000B1300021 /* BuyReceiveViewModel.swift in Sources */,
+				B1300000B1300000B1300031 /* BuyReceiveHostingController.swift in Sources */,
+				B1500000B1500000B1500011 /* BuyOrder.swift in Sources */,
+				B1500000B1500000B1500021 /* SwapDepositURIBuilder.swift in Sources */,
 				B1200000B1200000B1200020 /* RefundAddressView.swift in Sources */,
 				B1200000B1200000B1200021 /* RefundAddressViewModel.swift in Sources */,
 				B1200000B1200000B1200022 /* RefundAddressHostingController.swift in Sources */,
