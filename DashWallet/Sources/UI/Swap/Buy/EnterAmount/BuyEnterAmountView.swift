@@ -112,7 +112,16 @@ struct BuyEnterAmountView: View {
             }
             .frame(maxWidth: .infinity, alignment: .center)
             .transition(.opacity)
-        } else if let error = viewModel.errorMessage {
+        } else if viewModel.isValidating {
+            HStack(spacing: 8) {
+                SwiftUI.ProgressView()
+                Text(NSLocalizedString("Checking amount…", comment: "Dash DEX"))
+                    .font(Font.dash.caption1)
+                    .foregroundStyle(Color.dash.tertiaryText)
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            .transition(.opacity)
+        } else if let error = viewModel.inlineMessage {
             Text(error)
                 .font(Font.dash.caption1)
                 .foregroundColor(Color.dash.red)
@@ -132,9 +141,13 @@ struct BuyEnterAmountView: View {
             showDecimalSeparator: true,
             actionButtonText: NSLocalizedString("Continue", comment: ""),
             actionEnabled: viewModel.isActionEnabled,
-            inProgress: viewModel.isLoading,
+            inProgress: viewModel.isLoading || viewModel.isValidating,
             actionHandler: {
-                onContinue(viewModel.coin, viewModel.inputValue)
+                Task {
+                    await viewModel.attemptContinue { coin, amount in
+                        onContinue(coin, amount)
+                    }
+                }
             }
         )
         .frame(maxWidth: .infinity, maxHeight: 320)

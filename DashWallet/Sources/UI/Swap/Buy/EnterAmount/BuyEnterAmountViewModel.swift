@@ -29,13 +29,17 @@ final class BuyEnterAmountViewModel: ObservableObject {
     @Published var selectedCurrency: CurrencyOption
     @Published private(set) var currentFiatCurrency: String
     @Published var isLoading: Bool = false
-    @Published var errorMessage: String?
+    @Published var isValidating: Bool = false
+    @Published private(set) var rateErrorMessage: String?
+    @Published private(set) var validationErrorMessage: String?
     @Published var statusMessage: String?
 
     private let swapProvider: SwapProvider
     private var amount = SwapConvertAmount()
     private var cancellables = Set<AnyCancellable>()
     private var rateRequestID = 0
+    // Monotonically increasing; stale validation responses are ignored after edits.
+    private var validationRequestID = 0
     private var isSwitchingCurrency = false
 
     var title: String {
@@ -48,8 +52,16 @@ final class BuyEnterAmountViewModel: ObservableObject {
         [.fiat(currentFiatCurrency), .dash, .coin(coin.code)]
     }
 
+    var cryptoAmountString: String {
+        Self.formattedCryptoAmount(amount.crypto)
+    }
+
     var isActionEnabled: Bool {
-        parseInput(inputValue) != nil && errorMessage == nil
+        amount.crypto > 0 && !isValidating
+    }
+
+    var inlineMessage: String? {
+        validationErrorMessage ?? rateErrorMessage
     }
 
     init(coin: MayaCryptoCurrency, swapProvider: SwapProvider) {
@@ -66,6 +78,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
 
     func selectFiatCurrency(_ code: String) {
         guard code != currentFiatCurrency else { return }
+        invalidateValidationState()
         App.shared.fiatCurrency = code
         currentFiatCurrency = code
 
@@ -80,7 +93,54 @@ final class BuyEnterAmountViewModel: ObservableObject {
     }
 
     func setInput(_ raw: String) {
-        inputValue = Self.sanitize(raw, currency: selectedCurrency)
+        let sanitized = Self.sanitize(raw, currency: selectedCurrency)
+        if raw != inputValue {
+            invalidateValidationState()
+        }
+        inputValue = sanitized
+    }
+
+    func attemptContinue(onSuccess: @escaping (MayaCryptoCurrency, String) -> Void) async {
+        guard !isValidating else { return }
+
+        let sellAmount = Self.formattedCryptoAmount(amount.crypto)
+        guard !sellAmount.isEmpty else { return }
+
+        let asset = coin.mayaAsset.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !asset.isEmpty else {
+            DSLogger.log("Swap: Buy validation skipped for \(coin.code) because the asset is blank")
+            onSuccess(coin, sellAmount)
+            return
+        }
+
+        guard let exampleAddress = coin.exampleAddress?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !exampleAddress.isEmpty else {
+            DSLogger.log("Swap: Buy validation skipped for \(coin.code) because no example address is available")
+            onSuccess(coin, sellAmount)
+            return
+        }
+
+        validationRequestID += 1
+        let requestID = validationRequestID
+        isValidating = true
+        validationErrorMessage = nil
+
+        do {
+            try await swapProvider.validateBuyOrder(
+                sellAsset: asset,
+                sellAmount: sellAmount,
+                refundAddress: exampleAddress
+            )
+
+            guard requestID == validationRequestID else { return }
+            isValidating = false
+            validationErrorMessage = nil
+            onSuccess(coin, sellAmount)
+        } catch {
+            guard requestID == validationRequestID else { return }
+            isValidating = false
+            validationErrorMessage = Self.validationMessage(from: error)
+        }
     }
 
     // MARK: - Private: Rate setup
@@ -96,7 +156,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
 
         isLoading = true
         statusMessage = NSLocalizedString("Loading rates…", comment: "Dash DEX")
-        errorMessage = nil
+        rateErrorMessage = nil
         defer {
             if requestID == rateRequestID {
                 isLoading = false
@@ -127,7 +187,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
             }
         } catch {
             guard requestID == rateRequestID else { return }
-            errorMessage = NSLocalizedString(
+            rateErrorMessage = NSLocalizedString(
                 "Unable to load rate data",
                 comment: "Dash DEX"
             )
@@ -213,6 +273,12 @@ final class BuyEnterAmountViewModel: ObservableObject {
         return d
     }
 
+    private func invalidateValidationState() {
+        validationRequestID += 1
+        isValidating = false
+        validationErrorMessage = nil
+    }
+
     // MARK: - Private: Sanitization
 
     static func dashRoundedDown(_ value: Decimal) -> Decimal {
@@ -246,6 +312,27 @@ final class BuyEnterAmountViewModel: ObservableObject {
         var result = s
         while result.count > 1, result.hasPrefix("0") { result.removeFirst() }
         return result
+    }
+
+    private static func formattedCryptoAmount(_ value: Decimal) -> String {
+        guard value > 0 else { return "" }
+
+        var rounded = Decimal()
+        var input = value
+        NSDecimalRound(&rounded, &input, 8, .plain)
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.decimalSeparator = "."
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 8
+
+        return formatter.string(from: rounded as NSDecimalNumber) ?? rounded.string
+    }
+
+    private static func validationMessage(from error: Error) -> String {
+        (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
     }
 
     private enum RateError: Error {
