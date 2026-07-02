@@ -35,12 +35,22 @@ struct CoinDisplayItem: Identifiable {
 
 @MainActor
 class SelectCoinViewModel: ObservableObject {
-    private let swapProvider: SwapProvider
+    private var swapProvider: SwapProvider
     private let direction: SwapDirection
+    private var lastLoadedCoinSignature: [String] = []
 
     init(swapProvider: SwapProvider = MayaSwapProvider(), direction: SwapDirection = .sell) {
         self.swapProvider = swapProvider
         self.direction = direction
+        if direction == .buy {
+            self.swapProvider.onBuyRoutabilityChanged = { [weak self] in
+                Task { await self?.loadCoins(force: true) }
+            }
+        }
+    }
+
+    deinit {
+        swapProvider.onBuyRoutabilityChanged = nil
     }
     // MARK: - Published State
 
@@ -80,9 +90,16 @@ class SelectCoinViewModel: ObservableObject {
     /// which prevents the `.task` re-fire on back-navigation from resetting the scroll position.
     func loadCoins(force: Bool = false) async {
         guard force || coins.isEmpty || errorMessage != nil else { return }
-        isLoading = true
+        let shouldShowLoading = coins.isEmpty || errorMessage != nil
+        if shouldShowLoading {
+            isLoading = true
+        }
         errorMessage = nil
-        defer { isLoading = false }
+        defer {
+            if shouldShowLoading {
+                isLoading = false
+            }
+        }
 
         do {
             // Pools must resolve first: fetchInboundAddresses() reads the provider's cached pools,
@@ -93,7 +110,7 @@ class SelectCoinViewModel: ObservableObject {
 
             let fiatCurrency = App.fiatCurrency
             let formatter = makePriceFormatter(for: fiatCurrency)
-            let networkLabels = await swapProvider.networkLabels(for: pools)
+            let networkLabels = normalizedNetworkLabels(await swapProvider.networkLabels(for: pools))
             let haltedAssets = await swapProvider.haltedAssets(from: inboundAddresses, pools: pools)
             let items = makeCoinItems(
                 pools: pools,
@@ -105,8 +122,12 @@ class SelectCoinViewModel: ObservableObject {
             )
 
             let disambiguated = appendChainLabels(items)
-            coins = sortCoins(disambiguated)
-            hasHaltedCoins = disambiguated.contains { $0.isHalted }
+            let sorted = sortCoins(disambiguated)
+            let signature = coinSignature(sorted)
+            guard signature != lastLoadedCoinSignature else { return }
+            lastLoadedCoinSignature = signature
+            coins = sorted
+            hasHaltedCoins = sorted.contains { $0.isHalted }
             showHaltedToast = hasHaltedCoins
         } catch {
             errorMessage = error.localizedDescription
@@ -158,6 +179,11 @@ class SelectCoinViewModel: ObservableObject {
         return formatter
     }
 
+    private func normalizedNetworkLabels(_ labels: [String: String]) -> [String: String] {
+        guard direction == .buy else { return labels }
+        return labels.mapValues { $0 == RouteProvider.multiple.shortLabel ? RouteProvider.near.shortLabel : $0 }
+    }
+
     // MARK: - Private: Chain label
 
     /// Appends ` (ChainName)` to every coin's display name.
@@ -191,6 +217,17 @@ class SelectCoinViewModel: ObservableObject {
             if codeComparison != .orderedSame { return codeComparison == .orderedAscending }
             // Match Android's primary sort by code while keeping equal-code rows stable.
             return a.displayName.localizedCaseInsensitiveCompare(b.displayName) == .orderedAscending
+        }
+    }
+
+    private func coinSignature(_ items: [CoinDisplayItem]) -> [String] {
+        items.map { item in
+            [
+                item.id,
+                item.network ?? "",
+                item.isHalted ? "1" : "0",
+                item.fiatPrice ?? ""
+            ].joined(separator: "|")
         }
     }
 

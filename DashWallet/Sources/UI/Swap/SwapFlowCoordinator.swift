@@ -73,22 +73,34 @@ final class SwapFlowCoordinator {
         }
 
         let buyEnterAmountVC = BuyEnterAmountHostingController(coin: coin, swapProvider: swapProvider)
-        buyEnterAmountVC.onContinue = { [weak self] coin, amount in
-            self?.navigateToRefundAddress(coin: coin, amount: amount)
+        buyEnterAmountVC.onContinue = { [weak self] coin, sellAmount in
+            self?.navigateToRefundAddress(coin: coin, sellAmount: sellAmount)
         }
         navigationController?.pushViewController(buyEnterAmountVC, animated: true)
     }
 
-    private func navigateToRefundAddress(coin: MayaCryptoCurrency, amount: String) {
+    private func navigateToRefundAddress(coin: MayaCryptoCurrency, sellAmount: String) {
         let refundVC = RefundAddressHostingController(coin: coin)
         refundVC.onRefundAddressConfirmed = { [weak self] coin, refundAddress in
-            self?.navigateToReceive(coin: coin, amount: amount, refundAddress: refundAddress)
+            self?.navigateToReceive(coin: coin, sellAmount: sellAmount, refundAddress: refundAddress)
         }
         navigationController?.pushViewController(refundVC, animated: true)
     }
 
-    private func navigateToReceive(coin: MayaCryptoCurrency, amount: String, refundAddress: String) {
-        DSLogger.log("Maya: Buy receive \(coin.code) amount=\(amount) refund=\(refundAddress)")
-        // TODO(prompt 03): push Coin QR & Address (Receive) screen.
+    private func navigateToReceive(coin: MayaCryptoCurrency, sellAmount: String, refundAddress: String) {
+        DSLogger.log("Swap: Buy receive \(coin.code) amount=\(sellAmount) refund=\(refundAddress)")
+        guard let swapKitProvider = swapProvider as? SwapKitSwapProvider else {
+            DSLogger.log("Swap flow: Buy receive requires SwapKit backend")
+            assertionFailure("Buy flow requires SwapKit backend")
+            return
+        }
+
+        let receiveVC = BuyReceiveHostingController(
+            coin: coin,
+            refundAddress: refundAddress,
+            sellAmount: sellAmount,
+            swapProvider: swapKitProvider
+        )
+        navigationController?.pushViewController(receiveVC, animated: true)
     }
 }
