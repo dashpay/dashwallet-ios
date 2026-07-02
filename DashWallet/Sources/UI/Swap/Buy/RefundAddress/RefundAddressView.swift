@@ -41,7 +41,7 @@ struct RefundAddressView: View {
                 VStack(spacing: 20) {
                     TopIntro(
                         title: NSLocalizedString("Enter refund address", comment: "Dash DEX"),
-                        subtitle: NSLocalizedString("If the swap fails, your BNB will be returned to this address. Make sure it's a BNB address from a wallet you control. Your swap cannot be processed without a refund address.", comment: "Dash DEX")
+                        subtitle: viewModel.subtitle
                     )
 
                     if reachability.isOnline {

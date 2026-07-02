@@ -34,6 +34,19 @@ final class RefundAddressViewModel: ObservableObject {
         String(format: NSLocalizedString("%@ refund address", comment: "Dash DEX"), coin.code)
     }
 
+    var subtitle: String {
+        let chainLabel = MayaCryptoCurrency.chainDisplayName(coin.chain)
+        return String(
+            format: NSLocalizedString(
+                "If the swap fails, your %@ will be returned to this address. Make sure it's a %@ address on the %@ network, from a wallet you control. Your swap can't be processed without a refund address.",
+                comment: "Dash DEX"
+            ),
+            coin.code,
+            coin.code,
+            chainLabel
+        )
+    }
+
     var placeholderText: String {
         NSLocalizedString("Enter refund address", comment: "Dash DEX")
     }
