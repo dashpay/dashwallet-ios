@@ -247,7 +247,8 @@ extension CrowdNodeModel {
 
     private func observeBalances() {
         checkBalance()
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+        SwiftDashSDKWalletState.shared.$balance
+            .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.checkBalance() }
             .store(in: &cancellableBag)
 
@@ -261,7 +262,7 @@ extension CrowdNodeModel {
     }
 
     private func checkBalance() {
-        walletBalance = DWEnvironment.sharedInstance().currentAccount.balance
+        walletBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         hasEnoughWalletBalance = walletBalance >= CrowdNode.minimumRequiredDash
     }
 }
