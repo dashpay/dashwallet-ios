@@ -160,7 +160,7 @@ public final class SendCoinsService: NSObject {
     /// requirement from MayaBlockchainApi.kt.
     func sendMayaSwap(vaultAddress: String, dashAmount: UInt64, memo: String) async throws -> DSTransaction {
         // Serialise swaps: don't start a new one until the previous swap tx is InstantSend-locked.
-        if MayaSwapPendingGate.shared.isAwaitingISLock {
+        if SwapPendingGate.shared.isAwaitingISLock {
             throw DashSpendError.swapAwaitingInstantLock
         }
 
@@ -282,7 +282,7 @@ public final class SendCoinsService: NSObject {
         account.register(transaction, saveImmediately: true)
         try await transactionManager.publishTransaction(transaction)
         DSLogger.log("sendMayaSwap published txid=\(transaction.txHashHexString)")
-        MayaSwapPendingGate.shared.register(txid: transaction.txHashHexString)
+        SwapPendingGate.shared.register(txid: transaction.txHashHexString)
         return transaction
     }
 
@@ -293,7 +293,7 @@ public final class SendCoinsService: NSObject {
     /// diverge for memo-less routes such as NEAR intents.
     func sendSwapKitSwap(depositAddress: String, dashAmount: UInt64, memo: String?) async throws -> DSTransaction {
         // Serialise swaps: don't start a new one until the previous swap tx is InstantSend-locked.
-        if MayaSwapPendingGate.shared.isAwaitingISLock {
+        if SwapPendingGate.shared.isAwaitingISLock {
             throw DashSpendError.swapAwaitingInstantLock
         }
         let chain = DWEnvironment.sharedInstance().currentChain
@@ -497,7 +497,7 @@ public final class SendCoinsService: NSObject {
         account.sign(transaction)
         account.register(transaction, saveImmediately: true)
         try await transactionManager    .publishTransaction(transaction)
-        MayaSwapPendingGate.shared.register(txid: transaction.txHashHexString)
+        SwapPendingGate.shared.register(txid: transaction.txHashHexString)
         return transaction
     }
     

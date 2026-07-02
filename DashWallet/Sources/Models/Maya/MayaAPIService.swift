@@ -24,13 +24,13 @@ final class MayaAPIService: HTTPClient<MayaEndpoint> {
 
     // MARK: - Pools and Prices (Midgard)
 
-    func fetchPools() async throws -> [MayaPool] {
+    func fetchPools() async throws -> [SwapPool] {
         try await request(.getPools)
     }
 
     // MARK: - Inbound Addresses (mayanode)
 
-    func fetchInboundAddresses() async throws -> [MayaInboundAddress] {
+    func fetchInboundAddresses() async throws -> [SwapInboundAddress] {
         try await request(.getInboundAddresses)
     }
 
@@ -80,7 +80,7 @@ final class MayaAPIService: HTTPClient<MayaEndpoint> {
 
 // MARK: - Inbound Address Model
 
-struct MayaInboundAddress: Decodable {
+struct SwapInboundAddress: Decodable {
     let chain: String
     let halted: Bool
     let address: String?
