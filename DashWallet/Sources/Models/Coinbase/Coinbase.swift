@@ -265,7 +265,7 @@ extension Coinbase {
         try await auth.signOut()
         accountService.removeStoredAccount()
         await MainActor.run {
-            MayaExchangeAddressProvider.clearCoinbaseCache()
+            ExchangeAddressProvider.clearCoinbaseCache()
         }
     }
 
