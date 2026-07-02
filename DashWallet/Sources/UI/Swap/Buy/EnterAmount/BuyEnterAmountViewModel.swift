@@ -23,7 +23,7 @@ import Foundation
 
 @MainActor
 final class BuyEnterAmountViewModel: ObservableObject {
-    let coin: MayaCryptoCurrency
+    let coin: SwapCryptoCurrency
 
     @Published var inputValue: String = ""
     @Published var selectedCurrency: CurrencyOption
@@ -64,7 +64,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
         validationErrorMessage ?? rateErrorMessage
     }
 
-    init(coin: MayaCryptoCurrency, swapProvider: SwapProvider) {
+    init(coin: SwapCryptoCurrency, swapProvider: SwapProvider) {
         self.coin = coin
         self.swapProvider = swapProvider
         let initialFiat = App.fiatCurrency
@@ -100,13 +100,13 @@ final class BuyEnterAmountViewModel: ObservableObject {
         inputValue = sanitized
     }
 
-    func attemptContinue(onSuccess: @escaping (MayaCryptoCurrency, String) -> Void) async {
+    func attemptContinue(onSuccess: @escaping (SwapCryptoCurrency, String) -> Void) async {
         guard !isValidating else { return }
 
         let sellAmount = Self.formattedCryptoAmount(amount.crypto)
         guard !sellAmount.isEmpty else { return }
 
-        let asset = coin.mayaAsset.trimmingCharacters(in: .whitespacesAndNewlines)
+        let asset = coin.swapAsset.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !asset.isEmpty else {
             DSLogger.log("Swap: Buy validation skipped for \(coin.code) because the asset is blank")
             onSuccess(coin, sellAmount)
@@ -168,7 +168,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
             let pools = try await swapProvider.fetchPools(direction: .buy)
             guard requestID == rateRequestID else { return }
 
-            guard let pool = pools.first(where: { $0.asset.uppercased() == coin.mayaAsset.uppercased() }),
+            guard let pool = pools.first(where: { $0.asset.uppercased() == coin.swapAsset.uppercased() }),
                   let cryptoUsdPrice = pool.priceUSD,
                   cryptoUsdPrice > 0 else {
                 throw RateError.unavailable
@@ -261,7 +261,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
                 return
             }
             let d = (amount.crypto as NSDecimalNumber).doubleValue
-            inputValue = MayaInputFormatter.trimTrailingZeros(String(format: "%.8f", d))
+            inputValue = SwapInputFormatter.trimTrailingZeros(String(format: "%.8f", d))
         }
     }
 
@@ -340,7 +340,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
     }
 }
 
-private enum MayaInputFormatter {
+private enum SwapInputFormatter {
     static func trimTrailingZeros(_ s: String) -> String {
         var result = s
         while result.hasSuffix("0") { result.removeLast() }

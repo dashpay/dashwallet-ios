@@ -25,7 +25,7 @@ final class BuyReceiveHostingController: UIViewController, NavigationBarDisplaya
 
     private let viewModel: BuyReceiveViewModel
 
-    init(coin: MayaCryptoCurrency, refundAddress: String, sellAmount: String, swapProvider: SwapProvider) {
+    init(coin: SwapCryptoCurrency, refundAddress: String, sellAmount: String, swapProvider: SwapProvider) {
         self.viewModel = BuyReceiveViewModel(
             coin: coin,
             refundAddress: refundAddress,

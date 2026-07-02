@@ -22,7 +22,7 @@ import UIKit
 
 @MainActor
 final class BuyReceiveViewModel: ObservableObject {
-    let coin: MayaCryptoCurrency
+    let coin: SwapCryptoCurrency
     let coinCode: String
 
     @Published var depositAddress: String = ""
@@ -36,7 +36,7 @@ final class BuyReceiveViewModel: ObservableObject {
     private let sellAmount: String
     private let swapProvider: SwapProvider
 
-    init(coin: MayaCryptoCurrency, refundAddress: String, sellAmount: String, swapProvider: SwapProvider) {
+    init(coin: SwapCryptoCurrency, refundAddress: String, sellAmount: String, swapProvider: SwapProvider) {
         self.coin = coin
         self.coinCode = coin.code
         self.refundAddress = refundAddress.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -45,7 +45,7 @@ final class BuyReceiveViewModel: ObservableObject {
     }
 
     var title: String {
-        let network = MayaCryptoCurrency.chainDisplayName(coin.chain)
+        let network = SwapCryptoCurrency.chainDisplayName(coin.chain)
         guard !network.isEmpty else {
             return String(format: NSLocalizedString("Send %@ to this address", comment: "Dash DEX"), coinCode)
         }
@@ -77,7 +77,7 @@ final class BuyReceiveViewModel: ObservableObject {
         qrImage = nil
         defer { isLoading = false }
 
-        guard !coin.mayaAsset.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+        guard !coin.swapAsset.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
               !refundAddress.isEmpty,
               !sellAmount.isEmpty else {
             errorMessage = NSLocalizedString("Missing swap details", comment: "Dash DEX")
@@ -91,7 +91,7 @@ final class BuyReceiveViewModel: ObservableObject {
 
         do {
             let order = try await swapProvider.createBuyOrder(
-                sellAsset: coin.mayaAsset,
+                sellAsset: coin.swapAsset,
                 sellAmount: sellAmount,
                 destination: destinationAddress,
                 refundAddress: refundAddress

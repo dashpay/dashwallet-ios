@@ -140,7 +140,7 @@ struct RefundAddressView: View {
 
 #Preview("Default") {
     RefundAddressView(
-        viewModel: RefundAddressViewModel(coin: MayaCryptoCurrency.supportedCoins[0]),
+        viewModel: RefundAddressViewModel(coin: SwapCryptoCurrency.supportedCoins[0]),
         onBack: {}
     )
 }
