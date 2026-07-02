@@ -35,6 +35,48 @@ struct MayaCryptoCurrency: Identifiable, Hashable {
     /// Remote icon URL string sourced from SwapKit `logoURI`. Nil when not yet loaded or unavailable.
     var iconURL: String?
 
+    /// Sample address used for buy-flow quote validation.
+    /// Mirrors Android parser `exampleAddress` values; returns `nil` when a chain does not
+    /// have a known sample address, in which case the validation step is skipped.
+    var exampleAddress: String? {
+        switch chain.uppercased() {
+        case "ADA":
+            return "addr1q9c8e2wjwj4uxsmrk2lqkkpqalwzvxgyx7uxjkfeg7xc3xa07c6qzwrcfh2x4f4z4uyez5lpd07v3jkh3ttn0xc2x7qspewtaa"
+        case "ARB", "AVAX", "BASE", "BSC", "BERA", "ETH", "GNO", "MONAD", "OP", "POL", "XLAYER":
+            return "0x51a1449b3B6D635EddeC781cD47a99221712De97"
+        case "BCH":
+            return "qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a"
+        case "BTC":
+            return "bc1qxhgnnp745zryn2ud8hm6k3mygkkpkm35020js0"
+        case "DOGE":
+            return "DH5yaieqoZN36fDVciNyRueRGvGLR3mr7L"
+        case "LTC":
+            return "ltc1qd5wm03t5kcdupjuyq5jffpuacnaqahvfsdu8smf8z0u0pqdqpatqsdrn8h"
+        case "MAYA":
+            return "maya1x9jj85ugrpf8j0nhq9p7c4qjn9a2ufnhmlvt5e"
+        case "THOR":
+            return "thor166n4w5039meulfa3p6ydg60ve6ueac7tlt0jws"
+        case "NEAR":
+            return "alice.near"
+        case "SOL":
+            return "DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK"
+        case "STRK":
+            return "0x05dcaeae5fde9a4cdb44ea21cba29ad9e6e0c1e9ae7e7e2b6b2f0f6e2e3e4e5e6"
+        case "SUI":
+            return "0xd1b72982e40348d069bb1ff701e634c117bb5f741f44dff91e472d3b01461e55"
+        case "TON":
+            return "EQDrjaLahLkMB-hMCmkzOyBuHJ139ZUYmPHu6RRBKnbdLIYI"
+        case "TRON":
+            return "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+        case "XRP":
+            return "rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh"
+        case "ZEC":
+            return "t1K79TgQbqu74d6rBmsMu2oFEXEwAmdYiT7"
+        default:
+            return nil
+        }
+    }
+
     // MARK: - Supported Coins
 
     /// Curated set of Maya/SwapKit assets the wallet exposes in the Select Coin picker.
