@@ -332,7 +332,11 @@ final class BuyEnterAmountViewModel: ObservableObject {
     }
 
     private static func validationMessage(from error: Error) -> String {
-        (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+        let raw = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+        if raw.localizedCaseInsensitiveContains("noRoutesFound") {
+            return NSLocalizedString("Entered amount is lower than the allowed minimum", comment: "Dash DEX")
+        }
+        return NSLocalizedString("This amount can't be swapped right now", comment: "Dash DEX")
     }
 
     private enum RateError: Error {
