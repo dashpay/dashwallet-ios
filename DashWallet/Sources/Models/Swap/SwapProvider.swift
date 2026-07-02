@@ -53,6 +53,17 @@ struct SwapStatusResult {
     let outHashes: [String]?
 }
 
+enum SwapProviderError: LocalizedError {
+    case unsupportedBuyOrder
+
+    var errorDescription: String? {
+        switch self {
+        case .unsupportedBuyOrder:
+            return NSLocalizedString("Buy flow is not supported by this swap backend", comment: "Swap")
+        }
+    }
+}
+
 // MARK: - Protocol
 
 // MARK: - Protocol extension helpers
@@ -105,6 +116,7 @@ protocol SwapProvider {
     var displayName: String { get }
     var usesGenericFeeLabel: Bool { get }
     var buildsSwapKitDeposit: Bool { get }
+    var onBuyRoutabilityChanged: (() -> Void)? { get set }
 
     func fetchPools() async throws -> [MayaPool]
     func fetchInboundAddresses() async throws -> [MayaInboundAddress]
@@ -135,6 +147,19 @@ protocol SwapProvider {
     /// SwapKit: queries via `/track`.
     func fetchSwapStatus(txid: String, depositAddress: String?) async throws -> SwapStatusResult
 
+    func createBuyOrder(
+        sellAsset: String,
+        sellAmount: String,
+        destination: String,
+        refundAddress: String
+    ) async throws -> BuyOrder
+
+    func validateBuyOrder(
+        sellAsset: String,
+        sellAmount: String,
+        refundAddress: String
+    ) async throws
+
     /// Optional hosted-tracker deep link. MUST be a protocol requirement for dynamic dispatch
     /// (SwapKit overrides it; otherwise the extension default `nil` would always win).
     func trackerURL(for txid: String, depositAddress: String?) -> URL?
@@ -147,4 +172,21 @@ protocol SwapProvider {
 
 extension SwapProvider {
     func logoURL(for mayaAsset: String) -> URL? { nil }
+
+    func createBuyOrder(
+        sellAsset: String,
+        sellAmount: String,
+        destination: String,
+        refundAddress: String
+    ) async throws -> BuyOrder {
+        throw SwapProviderError.unsupportedBuyOrder
+    }
+
+    func validateBuyOrder(
+        sellAsset: String,
+        sellAmount: String,
+        refundAddress: String
+    ) async throws {
+        throw SwapProviderError.unsupportedBuyOrder
+    }
 }
