@@ -31,6 +31,7 @@ final class SwapKitSwapProvider: SwapProvider {
     var displayName: String { "SwapKit" }
     var usesGenericFeeLabel: Bool { true }
     var buildsSwapKitDeposit: Bool { true }
+    var onBuyRoutabilityChanged: (() -> Void)?
 
     // MARK: - Cache
 
@@ -57,6 +58,19 @@ final class SwapKitSwapProvider: SwapProvider {
     private var classificationUsable = false
     /// Identifier (uppercased) → logoURI, populated from both Maya and NEAR token lists.
     private var logoURIByIdentifier: [String: String] = [:]
+    /// Cached NEAR→DASH buy routability decisions for buy-list pruning.
+    private var buyRoutabilityCache: [String: (value: BuyRoutability, checkedAt: Date)] = [:]
+    /// Prevents duplicate probes while a candidate is already being checked.
+    private var buyRoutabilityInFlight: Set<String> = []
+    /// Buy routability cache TTL, mirroring Android's preferred-route cache cadence.
+    private let buyRoutabilityTTL: TimeInterval = 600
+    /// Small batch size to keep verification bounded without spamming the quote endpoint.
+    private let buyRoutabilityProbeBatchSize: Int = 8
+
+    private enum BuyRoutability {
+        case routable
+        case notRoutable
+    }
 
     private var isCacheValid: Bool {
         guard let cachedAt = poolsCachedAt else { return false }
@@ -138,11 +152,18 @@ final class SwapKitSwapProvider: SwapProvider {
             )
         }
 
-        // Fail closed: include only assets explicitly buyable via NEAR ("nearOnly" or "both").
-        // An asset missing from both token lists has no buy route and must not leak into Buy.
-        return pools.filter {
+        // Cheap pre-filter: only assets that classification says can reach NEAR.
+        let candidates = pools.filter {
             let key = $0.asset.uppercased()
             return nearOnlyAssets.contains(key) || bothAssets.contains(key)
+        }
+
+        scheduleBuyRoutabilityVerification(for: candidates.map { $0.asset.uppercased() })
+
+        // Optimistic filter: show until a probe conclusively proves the asset cannot route
+        // NEAR→DASH. This keeps first-open responsive while background verification prunes.
+        return candidates.filter { pool in
+            cachedBuyRoutability(for: pool.asset.uppercased()) != .notRoutable
         }
     }
 
@@ -226,6 +247,74 @@ final class SwapKitSwapProvider: SwapProvider {
             DSLogger.log("SwapKit: address validation request failed: \(error)")
             return NSLocalizedString("Address validation unavailable — please check your connection", comment: "SwapKit")
         }
+    }
+
+    func createBuyOrder(
+        sellAsset: String,
+        sellAmount: String,
+        destination: String,
+        refundAddress: String
+    ) async throws -> BuyOrder {
+        let route = try await requestBuyRoute(
+            sellAsset: sellAsset,
+            sellAmount: sellAmount,
+            destination: destination,
+            refundAddress: refundAddress
+        )
+
+        let swapRequest = SwapKitSwapRequest(
+            routeId: route.routeId,
+            sourceAddress: refundAddress,
+            destinationAddress: destination,
+            disableBalanceCheck: true,
+            disableBuildTx: true,
+            overrideSlippage: nil
+        )
+
+        let swapResponse: SwapKitSwapResponse
+        do {
+            swapResponse = try await SwapKitAPIService.shared.swap(swapRequest)
+        } catch {
+            if let apiError = decodeSwapError(from: error) {
+                throw NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: apiError])
+            }
+            throw error
+        }
+
+        if let err = swapResponse.error {
+            let detail = swapResponse.message.map { ": \($0)" } ?? ""
+            throw NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: "\(err)\(detail)"])
+        }
+
+        guard let depositAddress = swapResponse.inboundAddress ?? swapResponse.targetAddress, !depositAddress.isEmpty else {
+            throw NSError(
+                domain: "SwapKit",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("No deposit address returned by SwapKit", comment: "SwapKit")]
+            )
+        }
+
+        let expectedDashAmount = Decimal(string: swapResponse.expectedBuyAmount ?? route.expectedBuyAmount) ?? 0
+        return BuyOrder(
+            depositAddress: depositAddress,
+            memo: swapResponse.memo,
+            expectedDashAmount: expectedDashAmount,
+            sellAsset: sellAsset,
+            sellAmount: sellAmount
+        )
+    }
+
+    func validateBuyOrder(
+        sellAsset: String,
+        sellAmount: String,
+        refundAddress: String
+    ) async throws {
+        _ = try await requestBuyRoute(
+            sellAsset: sellAsset,
+            sellAmount: sellAmount,
+            destination: walletSourceAddress(),
+            refundAddress: refundAddress
+        )
     }
 
     func fetchIndicativeQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
@@ -457,6 +546,190 @@ final class SwapKitSwapProvider: SwapProvider {
         }
     }
 
+    private func requestBuyRoute(
+        sellAsset: String,
+        sellAmount: String,
+        destination: String,
+        refundAddress: String
+    ) async throws -> SwapKitRoute {
+        let quoteRequest = SwapKitQuoteRequest(
+            sellAsset: sellAsset,
+            buyAsset: SwapKitConstants.dashAsset,
+            sellAmount: sellAmount,
+            slippage: SwapKitConstants.defaultSlippagePercent,
+            sourceAddress: refundAddress,
+            destinationAddress: destination,
+            providers: [SwapKitConstants.providerNear],
+            affiliateFee: nil
+        )
+
+        let quoteResponse: SwapKitQuoteResponse
+        do {
+            quoteResponse = try await SwapKitAPIService.shared.quote(quoteRequest)
+        } catch {
+            if let apiError = decodeQuoteError(from: error) {
+                throw NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: apiError])
+            }
+            throw error
+        }
+
+        if let err = quoteResponse.error {
+            let detail = quoteResponse.message.map { ": \($0)" } ?? ""
+            throw NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: "\(err)\(detail)"])
+        }
+
+        guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
+            let message = quoteResponse.providerErrors?.first?.message
+                ?? quoteResponse.message
+                ?? quoteResponse.error
+                ?? NSLocalizedString("No route available", comment: "SwapKit")
+            throw NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
+        }
+
+        return best
+    }
+
+    // MARK: - Private: Buy Routability
+
+    private func scheduleBuyRoutabilityVerification(for assets: [String]) {
+        let pending = assets.filter { shouldProbeBuyRoutability(for: $0) }
+        guard !pending.isEmpty else { return }
+
+        pending.forEach { buyRoutabilityInFlight.insert($0) }
+
+        Task(priority: .utility) { [weak self] in
+            guard let self else { return }
+            await self.verifyBuyRoutability(for: pending)
+        }
+    }
+
+    private func verifyBuyRoutability(for assets: [String]) async {
+        var updatedAny = false
+
+        for chunk in assets.chunked(into: buyRoutabilityProbeBatchSize) {
+            let probeResults = await withTaskGroup(of: (String, BuyRoutability?).self) { group -> [(String, BuyRoutability?)] in
+                for asset in chunk {
+                    let sellAmount = buyProbeSellAmount(for: asset)
+                    group.addTask { [sellAmount] in
+                        (asset, await Self.probeBuyRoutability(for: asset, sellAmount: sellAmount))
+                    }
+                }
+
+                var results: [(String, BuyRoutability?)] = []
+                results.reserveCapacity(chunk.count)
+                for await result in group {
+                    results.append(result)
+                }
+                return results
+            }
+
+            let chunkChanged = await MainActor.run { [weak self, probeResults] in
+                guard let self else { return false }
+                let now = Date()
+                var changed = false
+                for (asset, result) in probeResults {
+                    self.buyRoutabilityInFlight.remove(asset)
+                    guard let result else { continue }
+
+                    let previous = self.buyRoutabilityCache[asset]?.value
+                    self.buyRoutabilityCache[asset] = (value: result, checkedAt: now)
+                    if previous != result {
+                        changed = true
+                    }
+                }
+                return changed
+            }
+
+            updatedAny = updatedAny || chunkChanged
+        }
+
+        guard updatedAny else { return }
+        await MainActor.run { [weak self] in
+            self?.onBuyRoutabilityChanged?()
+        }
+    }
+
+    private func shouldProbeBuyRoutability(for asset: String) -> Bool {
+        guard cachedBuyRoutability(for: asset) == nil else { return false }
+        return !buyRoutabilityInFlight.contains(asset)
+    }
+
+    private func cachedBuyRoutability(for asset: String) -> BuyRoutability? {
+        guard let entry = buyRoutabilityCache[asset] else { return nil }
+        guard Date().timeIntervalSince(entry.checkedAt) < buyRoutabilityTTL else { return nil }
+        return entry.value
+    }
+
+    private func buyProbeSellAmount(for asset: String) -> String {
+        guard let priceUSD = usdPriceCache[asset.uppercased()], priceUSD > 0 else {
+            return "1"
+        }
+
+        let nominal = Decimal(50) / Decimal(priceUSD)
+        return Self.plainDecimalString(nominal, scale: 8)
+    }
+
+    private static func probeBuyRoutability(for asset: String, sellAmount: String) async -> BuyRoutability? {
+        let request = SwapKitQuoteRequest(
+            sellAsset: asset,
+            buyAsset: SwapKitConstants.dashAsset,
+            sellAmount: sellAmount,
+            slippage: SwapKitConstants.defaultSlippagePercent,
+            sourceAddress: nil,
+            destinationAddress: nil,
+            providers: [SwapKitConstants.providerNear],
+            affiliateFee: nil
+        )
+
+        do {
+            let response = try await SwapKitAPIService.shared.quote(request)
+            return routability(from: response)
+        } catch {
+            if let response = decodedQuoteResponse(from: error) {
+                return routability(from: response)
+            }
+            return nil
+        }
+    }
+
+    private static func routability(from response: SwapKitQuoteResponse) -> BuyRoutability? {
+        if response.routes?.isEmpty == false {
+            return .routable
+        }
+
+        let message = [response.error, response.message, response.providerErrors?.first?.message]
+            .compactMap { $0 }
+            .joined(separator: " ")
+
+        if isConfirmedNoRoute(message) {
+            return .notRoutable
+        }
+
+        if isMinimumOrAmountError(message) {
+            return .routable
+        }
+
+        return nil
+    }
+
+    private static func decodedQuoteResponse(from error: Error) -> SwapKitQuoteResponse? {
+        guard case HTTPClientError.statusCode(let response) = error else { return nil }
+        return try? JSONDecoder().decode(SwapKitQuoteResponse.self, from: response.data)
+    }
+
+    private static func isConfirmedNoRoute(_ message: String) -> Bool {
+        let normalized = message.lowercased()
+        return normalized.contains("noroutesfound") || normalized.contains("no routes found")
+    }
+
+    private static func isMinimumOrAmountError(_ message: String) -> Bool {
+        let normalized = message.lowercased()
+        return normalized.contains("below minimum")
+            || normalized.contains("amount too small")
+            || normalized.contains("too small")
+            || normalized.contains("minimum")
+    }
+
     private func decodeQuoteError(from error: Error) -> String? {
         guard case HTTPClientError.statusCode(let response) = error,
               let body = try? JSONDecoder().decode(SwapKitQuoteResponse.self, from: response.data)
@@ -516,6 +789,13 @@ final class SwapKitSwapProvider: SwapProvider {
         var rounded = Decimal()
         NSDecimalRound(&rounded, &scaled, 0, .plain)
         return NSDecimalNumber(decimal: rounded).int64Value.description
+    }
+
+    private static func plainDecimalString(_ value: Decimal, scale: Int) -> String {
+        var input = value
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &input, scale, .plain)
+        return NSDecimalNumber(decimal: rounded).stringValue
     }
 
     /// Total SwapKit fee, summed across categories, expressed in the target asset.
@@ -632,7 +912,24 @@ final class SwapKitSwapProvider: SwapProvider {
 
     // MARK: - Private: Helpers
 
-    private func errorResult(_ message: String) -> SwapQuoteResult {
+private func errorResult(_ message: String) -> SwapQuoteResult {
         SwapQuoteResult(error: message, expectedAmountOut: nil, fees: nil, inboundAddress: nil, memo: nil, executionNetwork: nil)
+    }
+}
+
+private extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        guard size > 0, !isEmpty else { return [self] }
+        var result: [[Element]] = []
+        result.reserveCapacity((count + size - 1) / size)
+
+        var index = startIndex
+        while index < endIndex {
+            let nextIndex = self.index(index, offsetBy: size, limitedBy: endIndex) ?? endIndex
+            result.append(Array(self[index..<nextIndex]))
+            index = nextIndex
+        }
+
+        return result
     }
 }

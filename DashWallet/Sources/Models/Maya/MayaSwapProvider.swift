@@ -23,6 +23,7 @@ import Foundation
 /// Maps Maya-specific DTOs (`MayaSwapQuote`, `MayaSwapTransactionInfo`) to the neutral result types.
 final class MayaSwapProvider: SwapProvider {
     var displayName: String { "Maya" }
+    var onBuyRoutabilityChanged: (() -> Void)?
 
     func fetchPools() async throws -> [MayaPool] {
         try await MayaAPIService.shared.fetchPools()
