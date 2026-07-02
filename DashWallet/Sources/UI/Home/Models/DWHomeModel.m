@@ -71,8 +71,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        [self startSyncIfNeeded];
-
         _queue = dispatch_queue_create("DWHomeModel.queue", DISPATCH_QUEUE_SERIAL);
 
         _reachability = [DWNetworkReachability shared];
@@ -100,14 +98,6 @@ NS_ASSUME_NONNULL_BEGIN
         _payModel = [[DWPayModel alloc] init];
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-        [notificationCenter addObserver:self
-                               selector:@selector(reachabilityDidChangeNotification)
-                                   name:DWNetworkReachability.didChangeNotification
-                                 object:nil];
-        [notificationCenter addObserver:self
-                               selector:@selector(applicationWillEnterForegroundNotification)
-                                   name:UIApplicationWillEnterForegroundNotification
-                                 object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(walletBalanceDidChangeNotification)
                                    name:DWSwiftDashSDKWalletState.balanceDidChangeNotification
@@ -182,8 +172,6 @@ NS_ASSUME_NONNULL_BEGIN
         [self.reachability stopMonitoring];
         [self.reachability startMonitoring];
     }
-
-    [self startSyncIfNeeded];
 }
 
 - (id<DWTransactionListDataProviderProtocol>)getDataProvider {
@@ -283,20 +271,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Notifications
 
-- (void)reachabilityDidChangeNotification {
-    if (self.reachability.isReachable &&
-        [UIApplication sharedApplication].applicationState != UIApplicationStateBackground) {
-
-        [self startSyncIfNeeded];
-    }
-}
-
 - (void)walletBalanceDidChangeNotification {
     [self.receiveModel updateReceivingInfo];
-}
-
-- (void)applicationWillEnterForegroundNotification {
-    [self startSyncIfNeeded];
 }
 
 - (void)fiatCurrencyDidChangeNotification {
@@ -316,16 +292,6 @@ NS_ASSUME_NONNULL_BEGIN
 #if DASHPAY
     [[DWDashPayContactsUpdater sharedInstance] endUpdating];
 #endif
-}
-
-#pragma mark - Private
-
-- (void)startSyncIfNeeded {
-    // This method might be called from init. Don't use any instance variables
-
-    // SPV is driven by SwiftDashSDKSPVCoordinator (started at app launch in
-    // AppDelegate). The coordinator is idempotent and already running by
-    // the time the home view appears, so no kick is needed here.
 }
 
 #pragma mark SyncingActivityMonitorObserver
