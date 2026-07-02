@@ -190,7 +190,7 @@ struct BuyReceiveView: View {
 private struct BuyReceivePreviewHost: View {
     @StateObject private var viewModel: BuyReceiveViewModel
 
-    init(coin: MayaCryptoCurrency = MayaCryptoCurrency.supportedCoins.first { $0.code == "BTC" } ?? MayaCryptoCurrency.supportedCoins[0]) {
+    init(coin: SwapCryptoCurrency = SwapCryptoCurrency.supportedCoins.first { $0.code == "BTC" } ?? SwapCryptoCurrency.supportedCoins[0]) {
         let viewModel = BuyReceiveViewModel(
             coin: coin,
             refundAddress: "bc1qxhgnnp745zryn2ud8hm6k3mygkkpkm35020js0",
@@ -223,9 +223,9 @@ private struct BuyReceivePreviewHost: View {
 
 #Preview("Non-UTXO") {
     BuyReceivePreviewHost(
-        coin: MayaCryptoCurrency.supportedCoins.first { $0.code == "USDC" && $0.chain == "ETH" }
-            ?? MayaCryptoCurrency.supportedCoins.first { $0.code == "USDC" }
-            ?? MayaCryptoCurrency.supportedCoins[0]
+        coin: SwapCryptoCurrency.supportedCoins.first { $0.code == "USDC" && $0.chain == "ETH" }
+            ?? SwapCryptoCurrency.supportedCoins.first { $0.code == "USDC" }
+            ?? SwapCryptoCurrency.supportedCoins[0]
     )
 }
 
@@ -235,11 +235,11 @@ private final class BuyReceivePreviewSwapProvider: SwapProvider {
     var buildsSwapKitDeposit: Bool { true }
     var onBuyRoutabilityChanged: (() -> Void)?
 
-    func fetchPools() async throws -> [MayaPool] { [] }
-    func fetchInboundAddresses() async throws -> [MayaInboundAddress] { [] }
-    func fetchPools(direction: SwapDirection) async throws -> [MayaPool] { [] }
-    func networkLabels(for pools: [MayaPool]) async -> [String: String] { [:] }
-    func haltedAssets(from inboundAddresses: [MayaInboundAddress], pools: [MayaPool]) async -> Set<String> { [] }
+    func fetchPools() async throws -> [SwapPool] { [] }
+    func fetchInboundAddresses() async throws -> [SwapInboundAddress] { [] }
+    func fetchPools(direction: SwapDirection) async throws -> [SwapPool] { [] }
+    func networkLabels(for pools: [SwapPool]) async -> [String: String] { [:] }
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String> { [] }
     func validateAddress(destination: String, toAsset: String) async -> String? { nil }
     func fetchQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
         SwapQuoteResult(error: nil, expectedAmountOut: "1000000", fees: nil, inboundAddress: nil, memo: nil, executionNetwork: "NEAR")

@@ -23,7 +23,7 @@ import UIKit
 
 @MainActor
 final class RefundAddressViewModel: ObservableObject {
-    let coin: MayaCryptoCurrency
+    let coin: SwapCryptoCurrency
 
     @Published var addressText: String = ""
     @Published var hasClipboardCandidate: Bool = false
@@ -35,7 +35,7 @@ final class RefundAddressViewModel: ObservableObject {
     }
 
     var subtitle: String {
-        let chainLabel = MayaCryptoCurrency.chainDisplayName(coin.chain)
+        let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
         return String(
             format: NSLocalizedString(
                 "If the swap fails, your %@ will be returned to this address. Make sure it's a %@ address on the %@ network, from a wallet you control. Your swap can't be processed without a refund address.",
@@ -61,7 +61,7 @@ final class RefundAddressViewModel: ObservableObject {
 
     var addressValidationErrorMessage: String? {
         guard showAddressError else { return nil }
-        let chainLabel = MayaCryptoCurrency.chainDisplayName(coin.chain)
+        let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
         return String(
             format: NSLocalizedString(
                 "Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work.",
@@ -73,7 +73,7 @@ final class RefundAddressViewModel: ObservableObject {
         )
     }
 
-    init(coin: MayaCryptoCurrency) {
+    init(coin: SwapCryptoCurrency) {
         self.coin = coin
     }
 
@@ -119,7 +119,7 @@ final class RefundAddressViewModel: ObservableObject {
         guard !candidate.isEmpty else { return nil }
 
         shouldShowAddressValidationError = true
-        guard MayaAddressValidator.isValid(address: candidate, for: coin) else { return nil }
+        guard SwapAddressValidator.isValid(address: candidate, for: coin) else { return nil }
         return candidate
     }
 
@@ -127,7 +127,7 @@ final class RefundAddressViewModel: ObservableObject {
         let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         let candidate = Self.extractAddressFromURI(trimmed)
         guard !candidate.isEmpty else { return false }
-        return MayaAddressValidator.isValid(address: candidate, for: coin)
+        return SwapAddressValidator.isValid(address: candidate, for: coin)
     }
 
     private func clearValidationError() {
