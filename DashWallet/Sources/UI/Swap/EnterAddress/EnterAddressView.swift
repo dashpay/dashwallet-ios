@@ -234,13 +234,13 @@ struct EnterAddressView: View {
 }
 
 #Preview("Default") {
-    EnterAddressView(viewModel: EnterAddressViewModel(coin: MayaCryptoCurrency.supportedCoins[0]), onBack: {})
+    EnterAddressView(viewModel: EnterAddressViewModel(coin: SwapCryptoCurrency.supportedCoins[0]), onBack: {})
 }
 
 #Preview("Clipboard Revealed") {
     EnterAddressView(
         viewModel: {
-            let viewModel = EnterAddressViewModel(coin: MayaCryptoCurrency.supportedCoins[0])
+            let viewModel = EnterAddressViewModel(coin: SwapCryptoCurrency.supportedCoins[0])
             viewModel.clipboardContent = "dash:Xq9M8LkYh6sQa7u7pVv3mY8i7fQ5j8m4Kc?amount=0.1"
             return viewModel
         }(),

@@ -23,7 +23,7 @@ import UIKit
 
 @MainActor
 class EnterAddressViewModel: ObservableObject {
-    let coin: MayaCryptoCurrency
+    let coin: SwapCryptoCurrency
 
     // MARK: - Published State
 
@@ -59,7 +59,7 @@ class EnterAddressViewModel: ObservableObject {
 
     var addressValidationErrorMessage: String? {
         guard showAddressError else { return nil }
-        let chainLabel = MayaCryptoCurrency.chainDisplayName(coin.chain)
+        let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
         return String(
             format: NSLocalizedString(
                 "Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work.",
@@ -73,7 +73,7 @@ class EnterAddressViewModel: ObservableObject {
 
     // MARK: - Private
 
-    private let addressProvider = MayaExchangeAddressProvider()
+    private let addressProvider = ExchangeAddressProvider()
     private var upholdAddress: String?
     private var coinbaseAddress: String?
     /// True once the user has opted in to reading the clipboard (tapped the clipboard row).
@@ -83,7 +83,7 @@ class EnterAddressViewModel: ObservableObject {
 
     // MARK: - Init
 
-    init(coin: MayaCryptoCurrency) {
+    init(coin: SwapCryptoCurrency) {
         self.coin = coin
     }
 
@@ -173,7 +173,7 @@ class EnterAddressViewModel: ObservableObject {
     private var isAddressValid: Bool {
         let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
-        return MayaAddressValidator.isValid(address: trimmed, for: coin)
+        return SwapAddressValidator.isValid(address: trimmed, for: coin)
     }
 
     @discardableResult

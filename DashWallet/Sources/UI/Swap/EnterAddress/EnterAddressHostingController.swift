@@ -29,9 +29,9 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
     private let isDemoValidationBypassEnabled = false
     #endif
 
-    var onAddressConfirmed: ((MayaCryptoCurrency, String) -> Void)?
+    var onAddressConfirmed: ((SwapCryptoCurrency, String) -> Void)?
 
-    private let coin: MayaCryptoCurrency
+    private let coin: SwapCryptoCurrency
     private let swapProvider: SwapProvider
     private let viewModel: EnterAddressViewModel
     private var authSession: ASWebAuthenticationSession?
@@ -42,7 +42,7 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
         return recognizer
     }()
 
-    init(coin: MayaCryptoCurrency, swapProvider: SwapProvider = MayaSwapProvider()) {
+    init(coin: SwapCryptoCurrency, swapProvider: SwapProvider = MayaSwapProvider()) {
         self.coin = coin
         self.swapProvider = swapProvider
         self.viewModel = EnterAddressViewModel(coin: coin)
@@ -118,7 +118,7 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
         viewModel.errorMessage = nil
 
         Task {
-            let error = await swapProvider.validateAddress(destination: address, toAsset: coin.mayaAsset)
+            let error = await swapProvider.validateAddress(destination: address, toAsset: coin.swapAsset)
 
             if let error = error {
                 if isDemoValidationBypassEnabled {
