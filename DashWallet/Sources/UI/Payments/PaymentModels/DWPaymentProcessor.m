@@ -567,10 +567,14 @@ static NSString *sanitizeString(NSString *s) {
                                                    return;
                                                }
 
+                                               // Legacy parity: the confirm sheet's display math assumes `amount` is the
+                                               // all-in wallet debit (DashSync passed amountSent − amountReceived), so the
+                                               // headline (`amount − fee`) shows what the recipient gets and "Total" shows
+                                               // the true debit. `preparedSend.amount` keeps the recipient amount.
                                                DWPaymentOutput *paymentOutput = [[DWPaymentOutput alloc]
                                                                     initWithTx:preparedSend.transaction
                                                                protocolRequest:protocolRequest
-                                                                        amount:self.amount
+                                                                        amount:self.amount + preparedSend.fee
                                                                            fee:preparedSend.fee
                                                                        address:address
                                                                           name:protocolRequest.commonName

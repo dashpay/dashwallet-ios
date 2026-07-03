@@ -2,16 +2,21 @@
 //  SwiftDashSDKTransactionSender.swift
 //  DashWallet
 //
-//  Adapter around the SwiftDashSDK Core send path. Build + sign + broadcast
-//  are done together via the core `CoreTransactionBuilder` (setFunding →
-//  addOutput → buildSigned → broadcastTransaction). The legacy two-step
-//  `buildAndSign` then `broadcast` shape used by `WalletSendService` /
-//  `DWPaymentProcessor` is preserved here by routing the entire send through
-//  `buildAndSign` and turning `broadcast(_:)` into a no-op. The user has
-//  already authenticated by the time the build path runs (PIN auth fires in
+//  Adapter around the SwiftDashSDK Core send path. Standard sends are a real
+//  two-step: `buildAndSign` builds + signs via the core `CoreTransactionBuilder`
+//  (setFunding → addOutput → buildSigned) and returns the held `CoreTransaction`;
+//  nothing is broadcast until the explicit `broadcast(_:)` call — made when the
+//  user confirms on the payment sheet, or immediately after build for
+//  programmatic sends. Discarding a built-but-unconfirmed transaction is safe:
+//  the build reserves no UTXOs (its only residue is one internal change-address
+//  index advance, reclaimed by the gap-limit scan). The user has already
+//  authenticated by the time the build path runs (PIN auth fires in
 //  `WalletSendService.prepareStandardSendForConfirmation`), and the
 //  payment-output broadcast path stamps `alreadyAuthorized` so it doesn't
 //  re-prompt.
+//
+//  The selected-input (CrowdNode) and CoinJoin-sweep paths below broadcast
+//  inline — post-auth programmatic flows with no confirmation UI.
 //
 //  This file intentionally does NOT import DashSync.
 //
@@ -60,33 +65,33 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// Poll interval for the UTXO wait above.
     private static let selectedInputPollInterval: TimeInterval = 0.5
 
-    // MARK: - Build & Sign (and broadcast)
+    // MARK: - Build & Sign
 
-    /// Build, sign, and broadcast a transaction that sends `amount` duffs to
-    /// `address` via the core `CoreTransactionBuilder`. Exposed as the existing
-    /// `WalletSendService` two-step API so it keeps working without surgery into
-    /// the surrounding ObjC payment processor.
+    /// Build and sign a transaction that sends `amount` duffs to `address` via
+    /// the core `CoreTransactionBuilder`. Nothing is broadcast — pass the
+    /// returned `CoreTransaction` to `broadcast(_:)` once the send is confirmed.
     ///
     /// - Parameters:
     ///   - address: Destination Dash address (Base58Check).
     ///   - amount: Amount to send in duffs (1 DASH = 100_000_000 duffs).
-    /// - Returns: Tuple of (serialized signed tx bytes, fee in duffs, 32-byte txHash).
-    static func buildAndSign(address: String, amount: UInt64) throws -> (txData: Data, fee: UInt64, txHash: Data) {
+    /// - Returns: Tuple of (the built transaction — carries the serialized bytes
+    ///   in `.data` and the exact FFI fee in `.fee`, 32-byte display-order txHash).
+    static func buildAndSign(address: String, amount: UInt64) throws -> (tx: CoreTransaction, txHash: Data) {
         try buildAndSign(recipients: [(address: address, amountDuffs: amount)])
     }
 
     /// Multi-recipient variant — used by the app-side BIP70 send, where a merchant request may
-    /// carry several outputs. Build + sign + broadcast via the same
-    /// `CoreTransactionBuilder` path as the single-recipient variant.
-    static func buildAndSign(recipients: [(address: String, amountDuffs: UInt64)]) throws -> (txData: Data, fee: UInt64, txHash: Data) {
-        logger.info("💸 TXSEND :: building+signing+broadcasting \(recipients.count, privacy: .public) recipient(s) via PlatformWalletManager.coreWallet")
+    /// carry several outputs. Build + sign via the same `CoreTransactionBuilder`
+    /// path as the single-recipient variant; broadcast is deferred to `broadcast(_:)`.
+    static func buildAndSign(recipients: [(address: String, amountDuffs: UInt64)]) throws -> (tx: CoreTransaction, txHash: Data) {
+        logger.info("💸 TXSEND :: building+signing \(recipients.count, privacy: .public) recipient(s) via PlatformWalletManager.coreWallet")
 
-        let send = { @MainActor () throws -> Data in
+        let build = { @MainActor () throws -> CoreTransaction in
             guard let wallet = SwiftDashSDKHost.shared.wallet else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
             let core = try wallet.coreWallet()
-            // Build + sign + broadcast a standard BIP44 payment via the core
+            // Build + sign a standard BIP44 payment via the core
             // TransactionBuilder. `setFunding` auto-selects inputs and routes
             // change to the account's next internal address (single tx — normal
             // sends don't need chunking).
@@ -95,32 +100,23 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 try builder.addOutput(address: recipient.address, amountDuffs: recipient.amountDuffs)
             }
             try builder.setFunding(wallet: core, accountType: .bip44, accountIndex: 0)
-            let tx = try builder.buildSigned(wallet: core, accountType: .bip44, accountIndex: 0)
-            _ = try core.broadcastTransaction(tx)
-            return tx.data
+            return try builder.buildSigned(wallet: core, accountType: .bip44, accountIndex: 0)
         }
 
-        let txData: Data
+        let tx: CoreTransaction
         if Thread.isMainThread {
-            txData = try MainActor.assumeIsolated { try send() }
+            tx = try MainActor.assumeIsolated { try build() }
         } else {
-            var captured: Result<Data, Error> = .failure(SendError.walletNotReady("uninitialized result"))
+            var captured: Result<CoreTransaction, Error> = .failure(SendError.walletNotReady("uninitialized result"))
             DispatchQueue.main.sync {
-                captured = Result { try MainActor.assumeIsolated { try send() } }
+                captured = Result { try MainActor.assumeIsolated { try build() } }
             }
-            txData = try captured.get()
+            tx = try captured.get()
         }
 
-        let txHash = computeTxHash(from: txData)
-        // Approximate fee at the standard 1000 duff/kB rate (1 duff/byte).
-        // The actual fee — settled by the FFI when constructing the tx —
-        // is within ±a few duffs of `txData.count` for typical 1-in-2-out
-        // sends. We expose this for the preview UI; callers that need the
-        // exact value can parse it from `DSTransaction.feeUsed` once the
-        // tx is registered with DashSync's chain context.
-        let fee = UInt64(txData.count)
-        logger.info("💸 TXSEND :: send broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee≈\(fee, privacy: .public) duffs")
-        return (txData, fee, txHash)
+        let txHash = computeTxHash(from: tx.data)
+        logger.info("💸 TXSEND :: built+signed — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(tx.fee, privacy: .public) duffs size=\(tx.data.count, privacy: .public) bytes")
+        return (tx, txHash)
     }
 
     // MARK: - CoinJoin Sweep
@@ -371,18 +367,38 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
     // MARK: - Broadcast
 
-    /// No-op. The transaction was already broadcast by `buildAndSign` —
-    /// the SDK's send path bundles build + sign + broadcast into a single
-    /// FFI call, so there is nothing left to do here. Kept around so the
-    /// legacy two-step caller surface (`PreparedStandardSend.broadcast()`,
-    /// `DWPaymentProcessor.performSwiftDashSDKBroadcast`) stays
-    /// compilable. If a future SDK exposes a separated build/broadcast
-    /// pair, this becomes the broadcast call.
+    /// Broadcast a transaction previously built by `buildAndSign`. Resolves the
+    /// core wallet fresh at call time (never cached in the prepared object) and
+    /// submits the held `CoreTransaction`'s bytes to the network.
     ///
-    /// - Parameter txData: Serialized signed transaction bytes (ignored).
-    static func broadcast(_ txData: Data) throws {
-        _ = txData
-        logger.info("💸 TXSEND :: broadcast no-op — tx was already broadcast at buildAndSign time")
+    /// - Parameter tx: The built transaction returned by `buildAndSign`.
+    /// - Returns: The txid string reported by the SDK.
+    @discardableResult
+    static func broadcast(_ tx: CoreTransaction) throws -> String {
+        let submit = { @MainActor () throws -> String in
+            guard let wallet = SwiftDashSDKHost.shared.wallet else {
+                throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
+            }
+            let core = try wallet.coreWallet()
+            return try core.broadcastTransaction(tx)
+        }
+
+        let txid: String
+        if Thread.isMainThread {
+            txid = try MainActor.assumeIsolated { try submit() }
+        } else {
+            var captured: Result<String, Error> = .failure(SendError.walletNotReady("uninitialized result"))
+            DispatchQueue.main.sync {
+                captured = Result { try MainActor.assumeIsolated { try submit() } }
+            }
+            txid = try captured.get()
+        }
+
+        // Log both: the SDK-reported txid string and the app-computed
+        // display-order hash (the SDK string's byte order is unverified).
+        let displayHash = computeTxHash(from: tx.data).map { String(format: "%02x", $0) }.joined()
+        logger.info("💸 TXSEND :: broadcast — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public)")
+        return txid
     }
 
     // MARK: - Helpers

@@ -15,13 +15,14 @@
 //  network arrives as a `PaymentNetwork` token resolved at the L5/L6 boundary.
 //
 //  Spend-safety invariant: `prepareForConfirmation` NEVER builds and NEVER spends — building
-//  (which, in the interim build-bundles-broadcast world, also broadcasts) happens ONLY inside
-//  `confirmAndSend`. No consumer can move money before it explicitly calls `confirmAndSend`.
+//  and broadcasting happen ONLY inside `confirmAndSend`. No consumer can move money before it
+//  explicitly calls `confirmAndSend`.
 //
-//  Ordering (interim): build+sign → broadcast → POST Payment (best-effort, soft-fail because
-//  the coins have already moved). When the additive build-without-broadcast FFI lands, flip to
-//  the BIP70-correct build → POST → broadcast — a localized reorder inside `confirmAndSend`
-//  (see the TODO there). The `WalletSending` seam is shaped for that flip.
+//  Ordering: build+sign → broadcast → POST Payment (best-effort, soft-fail because the coins
+//  have already moved by POST time). The SDK build/broadcast split is real (`buildSignedTransaction`
+//  returns a held tx; `broadcast(_:)` submits it), so the BIP70-correct build → POST → broadcast
+//  reorder is now unblocked — a localized reorder inside `confirmAndSend` plus promoting POST
+//  failures to a hard throw (see the TODO there). The `WalletSending` seam is shaped for that flip.
 //
 
 import Foundation
@@ -30,10 +31,10 @@ import Foundation
 
 /// Build/sign/broadcast over the funded SwiftDashSDK wallet.
 protocol WalletSending {
-    /// Build + sign a multi-recipient tx. (Interim L6 impl also broadcasts — see file header.)
+    /// Build + sign a multi-recipient tx. Does NOT broadcast — the returned `PreparedSend`
+    /// carries the built transaction handle for a later `broadcast(_:)`.
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend
     /// Broadcast a previously-prepared tx; returns the display-order txid hex.
-    /// (Interim L6 impl is a no-op returning the prepared txid — the tx is already live.)
     func broadcast(_ prepared: PreparedSend) async throws -> String
 }
 
@@ -76,19 +77,28 @@ final class BIP70SendGuard {
 
 // MARK: - Value types
 
-/// Opaque built-and-signed transaction handle. Mirrors the SDK tuple `(txData, fee, txHash)`.
+/// Opaque built-and-signed transaction handle.
 struct PreparedSend: Equatable {
     /// Serialized signed tx bytes — become `Payment.transactions[0]` and feed the L6 `DSTransaction` shim.
     let txData: Data
-    /// Fee in duffs (preview-grade: the SDK approximates it as the tx byte count).
+    /// Exact fee in duffs, settled by the SDK's coin selection when the tx was built.
     let fee: UInt64
     /// 32-byte txid in **display order** (double-SHA256, byte-reversed). Logging / callback only.
     let txHashDisplay: Data
+    /// Opaque SDK transaction handle (the built `CoreTransaction`), carried so the L6 adapter
+    /// can broadcast the exact built tx. Kept as `AnyObject` so this module stays Foundation-only.
+    /// nil in test fakes. Excluded from equality.
+    let sdkTransaction: AnyObject?
 
-    init(txData: Data, fee: UInt64, txHashDisplay: Data) {
+    init(txData: Data, fee: UInt64, txHashDisplay: Data, sdkTransaction: AnyObject? = nil) {
         self.txData = txData
         self.fee = fee
         self.txHashDisplay = txHashDisplay
+        self.sdkTransaction = sdkTransaction
+    }
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.txData == rhs.txData && lhs.fee == rhs.fee && lhs.txHashDisplay == rhs.txHashDisplay
     }
 }
 
@@ -256,12 +266,14 @@ final class BIP70PaymentService {
         //    successful spend — both share this confirmation's guard — is rejected with .alreadySent.
         try confirmation.sendGuard.begin()
 
-        // 4. Build + sign (interim: also broadcasts) then broadcast (interim: no-op). On any throw
-        //    here the interim FFI guarantees nothing was broadcast, so release the claim to allow a
-        //    legitimate retry on the same confirmation.
-        // TODO(P0 flip): once the build-without-broadcast FFI lands, move broadcast AFTER a
-        //    successful POST below, promote POST failures to a hard throw, and do NOT reset the
-        //    guard once broadcast has happened (a post-broadcast failure must not re-broadcast).
+        // 4. Build + sign, then broadcast. A throw from the build means nothing was broadcast;
+        //    a throw from the broadcast means no peer accepted it and the local UTXO view is
+        //    unchanged — either way, releasing the claim allows a legitimate retry on the same
+        //    confirmation (a retry re-broadcasts the same bytes: network-idempotent, same txid).
+        // TODO(P0 flip): the build/broadcast split now exists — the remaining flip is to move
+        //    broadcast AFTER a successful POST below, promote POST failures to a hard throw,
+        //    and NOT reset the guard once broadcast has happened (a post-broadcast failure
+        //    must not re-broadcast).
         let prepared: PreparedSend
         let txidHexDisplay: String
         do {

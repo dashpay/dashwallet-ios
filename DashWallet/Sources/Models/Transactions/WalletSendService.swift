@@ -7,6 +7,7 @@
 
 import Foundation
 import OSLog
+import SwiftDashSDK
 
 @objc(DWPreparedStandardSend)
 final class PreparedStandardSend: NSObject {
@@ -17,13 +18,26 @@ final class PreparedStandardSend: NSObject {
     @objc let address: String
     @objc let amount: UInt64
 
+    /// The built+signed SDK transaction, held (not broadcast) until the user
+    /// confirms. Swift-only: `CoreTransaction` is not ObjC-representable.
+    private let coreTransaction: CoreTransaction
+
+    /// One-shot guard: set once `broadcast()` succeeds. Defense-in-depth behind
+    /// the confirm sheet's self-disabling button — a duplicate call errors
+    /// instead of re-firing the success flow. A *failed* broadcast releases the
+    /// claim so the same prepared object can be retried (re-broadcasting
+    /// identical bytes is network-idempotent: same txid).
+    private let claimLock = NSLock()
+    private var broadcastClaimed = false
+
     init(
         txData: Data,
         txHash: Data,
         fee: UInt64,
         transaction: DSTransaction,
         address: String,
-        amount: UInt64
+        amount: UInt64,
+        coreTransaction: CoreTransaction
     ) {
         self.txData = txData
         self.txHash = txHash
@@ -31,11 +45,30 @@ final class PreparedStandardSend: NSObject {
         self.transaction = transaction
         self.address = address
         self.amount = amount
+        self.coreTransaction = coreTransaction
     }
 
     @objc(broadcastAndReturnError:)
     func broadcast() throws {
-        try SwiftDashSDKTransactionSender.broadcast(txData)
+        claimLock.lock()
+        guard !broadcastClaimed else {
+            claimLock.unlock()
+            throw WalletSendService.makeError(
+                code: .alreadyBroadcast,
+                description: "Transaction was already broadcast"
+            )
+        }
+        broadcastClaimed = true
+        claimLock.unlock()
+
+        do {
+            _ = try SwiftDashSDKTransactionSender.broadcast(coreTransaction)
+        } catch {
+            claimLock.lock()
+            broadcastClaimed = false
+            claimLock.unlock()
+            throw error
+        }
     }
 }
 
@@ -198,17 +231,19 @@ final class WalletSendService: NSObject {
     }
 
     private func buildPreparedStandardSend(address: String, amount: UInt64) throws -> PreparedStandardSend {
-        let (txData, fee, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
+        let (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
+        let txData = tx.data
         let chain = DWEnvironment.sharedInstance().currentChain
         let transaction = DSTransaction(message: txData, on: chain)
 
         return PreparedStandardSend(
             txData: txData,
             txHash: txHash,
-            fee: fee,
+            fee: tx.fee,
             transaction: transaction,
             address: address,
-            amount: amount
+            amount: amount,
+            coreTransaction: tx
         )
     }
 }
@@ -283,6 +318,7 @@ private extension WalletSendService {
         case authenticationFailed = 2
         case insufficientSelectedFunds = 3
         case coinJoinSweepUnavailable = 4
+        case alreadyBroadcast = 5
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"
