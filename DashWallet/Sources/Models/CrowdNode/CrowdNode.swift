@@ -402,13 +402,18 @@ extension CrowdNode {
         let requiredTopUp = amount + TX_FEE_PER_INPUT
         let finalTopUp = min(maxSendable, requiredTopUp)
 
+        // One PIN per deposit action: the top-up (the flow's first send) keeps
+        // the default per-send prompt — a successful entry sets
+        // DSAuthenticationManager.didAuthenticate — and the deposit signal a
+        // moment later rides that session instead of prompting a second time.
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
         DSLogger.log("CrowdNode deposit topup tx hash: \(topUpTx.txHashHexString)")
 
         let requestSentAt = Date()
         let depositTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                              amount: min(maxSendable, amount),
-                                                             inputSelector: SingleInputAddressSelector(address: accountAddress))
+                                                             inputSelector: SingleInputAddressSelector(address: accountAddress),
+                                                             sessionAuthSufficient: true)
         DSLogger.log("CrowdNode deposit tx hash: \(depositTx.txHashHexString)")
 
         Task {
