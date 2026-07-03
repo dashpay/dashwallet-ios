@@ -55,6 +55,7 @@ Suggested order: **T1 + T2 today** (small diffs, outsized blast radius) → **T6
 ## P1 — Architecture debt to burn down before it hardens
 
 ### T6. Four-to-six PIN/biometric gates; the newest ones dropped the hang-prevention watchdog
+> **Status: FIXED 2026-07-03.** All migration-era auth sites now route through `AuthenticationGate`: `DWIdentityAuthorizer` (covers identity, profile, and shielded-transfer flows) reimplemented over the gate; DWPaymentProcessor's two inline ObjC blocks replaced by a new `DWWalletSendService authenticateSpendWithCompletion:` facade; PlatformSendConfirmScreen switched to the gate and aligned to biometrics-when-enabled (approved). Thin per-context error adapters (BIP70SendAuthorizer, DWIdentityAuthorizer) remain by design.
 - `AuthenticationGate` (`DashWallet/Sources/Models/Transactions/WalletSendService.swift:223-252`) exists specifically because a non-presenting PIN prompt hangs an awaiting continuation forever. Its `SendAuthorizer` is `private`, so the branch cloned it:
   - `Infrastructure/SwiftDashSDK/BIP70SendAuthorizer.swift` — header admits "Mirrors the private `SendAuthorizer` in WalletSendService.swift".
   - `Infrastructure/SwiftDashSDK/Identity/DWIdentityAuthorizer.swift:54-69` — raw `withCheckedContinuation`, **no watchdog**; reintroduces the exact hang. Header cites stale line numbers ("129-172"; real code at 254-278).

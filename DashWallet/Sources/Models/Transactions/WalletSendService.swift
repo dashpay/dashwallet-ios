@@ -221,6 +221,21 @@ final class WalletSendService: NSObject {
         error.domain == errorDomain && error.code == ErrorCode.authenticationCancelled.rawValue
     }
 
+    /// ObjC facade over `AuthenticationGate` for completion-based callers
+    /// (DWPaymentProcessor's broadcast paths). Reads the user's biometric
+    /// preference like every other spend gate, and guarantees the completion
+    /// fires exactly once, on the main actor — a silently-non-presenting PIN
+    /// prompt reports as not-authenticated after the watchdog instead of
+    /// never calling back.
+    @objc(authenticateSpendWithCompletion:)
+    static func authenticateSpend(completion: @escaping (_ authenticated: Bool, _ cancelled: Bool) -> Void) {
+        Task { @MainActor in
+            let outcome = await AuthenticationGate.authenticate(
+                biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled)
+            completion(outcome == .ok, outcome == .cancelled)
+        }
+    }
+
     /// User-facing message for a CoinJoin sweep failure, or nil if the user
     /// simply cancelled authentication (callers stay silent). Centralizes the
     /// cancel predicate + copy so every sweep entry point behaves identically.

@@ -2,9 +2,9 @@
 //  PlatformSendConfirmScreen.swift
 //  DashWallet
 //
-//  Minimal Platform send confirm. Collects amount, authenticates via
-//  DSAuthenticationManager (parity with Core send), then hands off to
-//  `PlatformSendExecutor` for the actual transferFunds call.
+//  Minimal Platform send confirm. Collects amount, authenticates via the
+//  shared watchdog-guarded `AuthenticationGate` (parity with Core send),
+//  then hands off to `PlatformSendExecutor` for the actual transferFunds call.
 //
 
 import SwiftDashSDK
@@ -140,20 +140,17 @@ struct PlatformSendConfirmScreen: View {
         errorMessage = nil
         successMessage = nil
 
-        DSAuthenticationManager.sharedInstance()
-            .authenticate(
-                withPrompt: NSLocalizedString("Authorize Platform transfer", comment: ""),
-                usingBiometricAuthentication: false,
-                alertIfLockout: true
-            ) { authenticated, _, _ in
-                guard authenticated else {
-                    isWorking = false
-                    return
-                }
-                Task { @MainActor in
-                    await executeTransfer(amount: amount)
-                }
+        Task { @MainActor in
+            // Shared watchdog-guarded gate — biometrics honored like every other
+            // spend surface (Core send parity). Cancel/failure resets silently.
+            let outcome = await AuthenticationGate.authenticate(
+                biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled)
+            guard outcome == .ok else {
+                isWorking = false
+                return
             }
+            await executeTransfer(amount: amount)
+        }
     }
 
     @MainActor

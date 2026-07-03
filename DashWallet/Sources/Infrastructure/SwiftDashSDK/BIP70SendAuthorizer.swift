@@ -2,12 +2,11 @@
 //  BIP70SendAuthorizer.swift
 //  DashWallet
 //
-//  BIP70 Layer 6 adapter — implements the protocol-core `SendAuthorizing` over the app's
-//  PIN/biometric gate (`DSAuthenticationManager`), mapping user-cancel to
-//  `BIP70Error.authCancelled`. Used by the headless (CTX) path; the interactive path
-//  authenticates inside `DWPaymentProcessor` before calling the coordinator.
-//
-//  Mirrors the private `SendAuthorizer` in WalletSendService.swift (which isn't visible here).
+//  BIP70 Layer 6 adapter — implements the protocol-core `SendAuthorizing` as a thin
+//  BIP70-error-namespace adapter over the shared internal `AuthenticationGate`
+//  (WalletSendService.swift), mapping user-cancel to `BIP70Error.authCancelled`.
+//  Used by the headless (CTX) path; the interactive path authenticates inside
+//  `DWPaymentProcessor` (via the same gate) before calling the coordinator.
 //
 
 import Foundation

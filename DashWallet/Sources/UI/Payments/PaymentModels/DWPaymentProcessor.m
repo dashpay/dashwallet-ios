@@ -285,7 +285,6 @@ static NSString *sanitizeString(NSString *s) {
 /// Authenticate user, then broadcast the pre-signed SwiftDashSDK transaction.
 - (void)broadcastSwiftDashSDKPaymentOutput:(DWPaymentOutput *)paymentOutput {
     // Authenticate before broadcasting (PIN / biometric).
-    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
     BOOL skipAuth = [[DWGlobalOptions sharedInstance] spendingConfirmationDisabled] ||
                     paymentOutput.broadcastAuthorizationState == DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized;
 
@@ -294,22 +293,19 @@ static NSString *sanitizeString(NSString *s) {
         return;
     }
 
-    [authManager authenticateWithPrompt:nil
-           usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
-                         alertIfLockout:YES
-                             completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
-                                 if (cancelled) {
-                                     [self.delegate paymentProcessorDidCancelTransactionSigning:self];
-                                     return;
-                                 }
-                                 if (!authenticatedOrSuccess) {
-                                     [self failedWithError:nil
-                                                     title:NSLocalizedString(@"Couldn't make payment", nil)
-                                                   message:NSLocalizedString(@"Authentication failed", nil)];
-                                     return;
-                                 }
-                                 [self performSwiftDashSDKBroadcast:paymentOutput];
-                             }];
+    [DWWalletSendService authenticateSpendWithCompletion:^(BOOL authenticated, BOOL cancelled) {
+        if (cancelled) {
+            [self.delegate paymentProcessorDidCancelTransactionSigning:self];
+            return;
+        }
+        if (!authenticated) {
+            [self failedWithError:nil
+                            title:NSLocalizedString(@"Couldn't make payment", nil)
+                          message:NSLocalizedString(@"Authentication failed", nil)];
+            return;
+        }
+        [self performSwiftDashSDKBroadcast:paymentOutput];
+    }];
 }
 
 - (void)performSwiftDashSDKBroadcast:(DWPaymentOutput *)paymentOutput {
@@ -419,7 +415,6 @@ static NSString *sanitizeString(NSString *s) {
 
 /// Authenticate (PIN / biometric), then build + broadcast + POST via the Swift orchestrator.
 - (void)broadcastBIP70PaymentOutput:(DWPaymentOutput *)paymentOutput {
-    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
     BOOL skipAuth = [[DWGlobalOptions sharedInstance] spendingConfirmationDisabled] ||
                     paymentOutput.broadcastAuthorizationState == DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized;
 
@@ -428,22 +423,19 @@ static NSString *sanitizeString(NSString *s) {
         return;
     }
 
-    [authManager authenticateWithPrompt:nil
-           usingBiometricAuthentication:[DWGlobalOptions sharedInstance].biometricAuthEnabled
-                         alertIfLockout:YES
-                             completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
-                                 if (cancelled) {
-                                     [self.delegate paymentProcessorDidCancelTransactionSigning:self];
-                                     return;
-                                 }
-                                 if (!authenticatedOrSuccess) {
-                                     [self failedWithError:nil
-                                                     title:NSLocalizedString(@"Couldn't make payment", nil)
-                                                   message:NSLocalizedString(@"Authentication failed", nil)];
-                                     return;
-                                 }
-                                 [self performBIP70Send:paymentOutput];
-                             }];
+    [DWWalletSendService authenticateSpendWithCompletion:^(BOOL authenticated, BOOL cancelled) {
+        if (cancelled) {
+            [self.delegate paymentProcessorDidCancelTransactionSigning:self];
+            return;
+        }
+        if (!authenticated) {
+            [self failedWithError:nil
+                            title:NSLocalizedString(@"Couldn't make payment", nil)
+                          message:NSLocalizedString(@"Authentication failed", nil)];
+            return;
+        }
+        [self performBIP70Send:paymentOutput];
+    }];
 }
 
 - (void)performBIP70Send:(DWPaymentOutput *)paymentOutput {
