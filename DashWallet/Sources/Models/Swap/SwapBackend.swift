@@ -24,7 +24,7 @@ enum SwapBackend {
     case maya
     case swapKit
 
-    func makeProvider() -> SwapProvider {
+    @MainActor func makeProvider() -> SwapProvider {
         switch self {
         case .maya:
             return MayaSwapProvider()

@@ -27,10 +27,14 @@ import Foundation
 /// - Best route is RECOMMENDED → CHEAPEST → first from `/v3/quote` which aggregates
 ///   MAYACHAIN, NEAR, Chainflip, etc. — AC#4 "choose best price (Maya vs NEAR)".
 /// - The DASH tx is still built locally from `vaultAddress + memo` — no PSBT parsing.
+///
+/// @MainActor ensures all mutable caches (classification sets, routability cache, price cache,
+/// etc.) are accessed from a single isolation domain, eliminating concurrent read/write races.
+@MainActor
 final class SwapKitSwapProvider: SwapProvider {
-    var displayName: String { "SwapKit" }
-    var usesGenericFeeLabel: Bool { true }
-    var buildsSwapKitDeposit: Bool { true }
+    nonisolated var displayName: String { "SwapKit" }
+    nonisolated var usesGenericFeeLabel: Bool { true }
+    nonisolated var buildsSwapKitDeposit: Bool { true }
     var onBuyRoutabilityChanged: (() -> Void)?
 
     // MARK: - Cache
@@ -158,12 +162,15 @@ final class SwapKitSwapProvider: SwapProvider {
             return nearOnlyAssets.contains(key) || bothAssets.contains(key)
         }
 
-        scheduleBuyRoutabilityVerification(for: candidates.map { $0.asset.uppercased() })
+        // Pass original-case identifiers — uppercased contract addresses differ from what
+        // the quote endpoint accepts, causing all contract-token probes to error → never pruned.
+        // Uppercasing is kept only for the Set-membership keys (nearOnlyAssets / bothAssets above).
+        scheduleBuyRoutabilityVerification(for: candidates.map { $0.asset })
 
         // Optimistic filter: show until a probe conclusively proves the asset cannot route
         // NEAR→DASH. This keeps first-open responsive while background verification prunes.
         return candidates.filter { pool in
-            cachedBuyRoutability(for: pool.asset.uppercased()) != .notRoutable
+            cachedBuyRoutability(for: pool.asset) != .notRoutable
         }
     }
 
@@ -432,7 +439,7 @@ final class SwapKitSwapProvider: SwapProvider {
         }
     }
 
-    func trackerURL(for _: String, depositAddress _: String?) -> URL? {
+    nonisolated func trackerURL(for _: String, depositAddress _: String?) -> URL? {
         // The hosted tracker URL verified for `?hash=` 500s on NEAR-routed swaps, and this
         // change intentionally does not guess a `depositAddress` query form without proof.
         // Hide the link until a working hosted tracker format is confirmed.
@@ -623,30 +630,24 @@ final class SwapKitSwapProvider: SwapProvider {
                 return results
             }
 
-            let chunkChanged = await MainActor.run { [weak self, probeResults] in
-                guard let self else { return false }
-                let now = Date()
-                var changed = false
-                for (asset, result) in probeResults {
-                    self.buyRoutabilityInFlight.remove(asset)
-                    guard let result else { continue }
+            // @MainActor class — caches are already on the main actor; no MainActor.run hop needed.
+            let now = Date()
+            var changed = false
+            for (asset, result) in probeResults {
+                buyRoutabilityInFlight.remove(asset)
+                guard let result else { continue }
 
-                    let previous = self.buyRoutabilityCache[asset]?.value
-                    self.buyRoutabilityCache[asset] = (value: result, checkedAt: now)
-                    if previous != result {
-                        changed = true
-                    }
+                let previous = buyRoutabilityCache[asset]?.value
+                buyRoutabilityCache[asset] = (value: result, checkedAt: now)
+                if previous != result {
+                    changed = true
                 }
-                return changed
             }
-
-            updatedAny = updatedAny || chunkChanged
+            updatedAny = updatedAny || changed
         }
 
         guard updatedAny else { return }
-        await MainActor.run { [weak self] in
-            self?.onBuyRoutabilityChanged?()
-        }
+        onBuyRoutabilityChanged?()
     }
 
     private func shouldProbeBuyRoutability(for asset: String) -> Bool {
