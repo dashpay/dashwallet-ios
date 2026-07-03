@@ -114,6 +114,10 @@ NS_ASSUME_NONNULL_BEGIN
                                selector:@selector(fiatCurrencyDidChangeNotification)
                                    name:DWApp.fiatCurrencyDidChangeNotification
                                  object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(appDidUnlockNotification)
+                                   name:DWAppDidUnlockNotification
+                                 object:nil];
 
         NSDate *date = [NSDate new];
         [[DWGlobalOptions sharedInstance] setActivationDateForReclassifyYourTransactionsFlowIfNeeded:date];
@@ -225,10 +229,25 @@ NS_ASSUME_NONNULL_BEGIN
         [CrowdNodeObjcWrapper restoreState];
 
         if ([CrowdNodeObjcWrapper isInterrupted]) {
+            DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+            // Mirrors the didAuthenticate / lockScreenDisabled reads of
+            // -[DWRootModel shouldShowLockScreen]: before the first unlock the
+            // lock screen is (or is about to be) up, and the signup resume's
+            // PIN gate must never stack a DashSync alert on top of it. The
+            // deferred resume re-runs via DWAppDidUnlockNotification below.
+            BOOL awaitingFirstUnlock = authManager.usesAuthentication && !authManager.didAuthenticate && ![[DWGlobalOptions sharedInstance] lockScreenDisabled];
+            if (awaitingFirstUnlock) {
+                return;
+            }
+
             // Continue signup
             [CrowdNodeObjcWrapper continueInterrupted];
         }
     }
+}
+
+- (void)appDidUnlockNotification {
+    [self checkCrowdNodeState];
 }
 
 #pragma mark - DWDashPayReadyProtocol

@@ -166,11 +166,13 @@ public final class CrowdNode {
             .store(in: &cancellableBag)
     }
 
-    private func topUpAccount(_ accountAddress: String, _ amount: UInt64) async throws -> DSTransaction {
+    private func topUpAccount(_ accountAddress: String, _ amount: UInt64,
+                              sessionAuthSufficient: Bool = false) async throws -> DSTransaction {
         // sendCoins broadcasts via SwiftDashSDK and throws on failure, and the
         // follow-up signal send polls the SDK's UTXO set itself before
         // spending the top-up — no extra spendability wait is needed here.
-        return try await sendCoinsService.sendCoins(address: accountAddress, amount: amount)
+        return try await sendCoinsService.sendCoins(address: accountAddress, amount: amount,
+                                                    sessionAuthSufficient: sessionAuthSufficient)
     }
 }
 
@@ -316,7 +318,8 @@ extension CrowdNode {
         do {
             if signUpState < SignUpState.acceptTermsRequired {
                 signUpState = SignUpState.fundingWallet
-                let topUpTx = try await topUpAccount(accountAddress, CrowdNode.requiredForSignup)
+                let topUpTx = try await topUpAccount(accountAddress, CrowdNode.requiredForSignup,
+                                                     sessionAuthSufficient: true)
                 DSLogger.log("CrowdNode TopUp tx hash: \(topUpTx.txHashHexString)")
 
                 signUpState = SignUpState.signingUp
@@ -327,7 +330,8 @@ extension CrowdNode {
             }
             else {
                 signUpState = SignUpState.acceptingTerms
-                let _ = try await topUpAccount(accountAddress, CrowdNode.requiredForAcceptTerms)
+                let _ = try await topUpAccount(accountAddress, CrowdNode.requiredForAcceptTerms,
+                                               sessionAuthSufficient: true)
                 try await acceptTerms(accountAddress)
             }
 
@@ -349,7 +353,8 @@ extension CrowdNode {
         let requestSentAt = Date()
         let signUpTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                             amount: requestValue,
-                                                            inputSelector: SingleInputAddressSelector(address: accountAddress))
+                                                            inputSelector: SingleInputAddressSelector(address: accountAddress),
+                                                            sessionAuthSufficient: true)
         DSLogger.log("CrowdNode SignUp tx hash: \(signUpTx.txHashHexString)")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms,
@@ -370,7 +375,8 @@ extension CrowdNode {
         let requestSentAt = Date()
         let termsAcceptedTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                                    amount: requestValue,
-                                                                   inputSelector: SingleInputAddressSelector(address: accountAddress))
+                                                                   inputSelector: SingleInputAddressSelector(address: accountAddress),
+                                                                   sessionAuthSufficient: true)
         DSLogger.log("CrowdNode Terms Accepted tx hash: \(termsAcceptedTx.txHashHexString)")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.welcomeToApi,

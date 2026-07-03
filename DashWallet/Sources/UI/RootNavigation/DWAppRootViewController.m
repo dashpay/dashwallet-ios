@@ -20,6 +20,7 @@
 #import <DashSync/DashSync.h>
 #import <DashSync/UIWindow+DSUtils.h>
 
+#import "DWEnvironment.h"
 #import "DWLockScreenViewController.h"
 #import "DWRootModel.h"
 #import "DWSetupViewController.h"
@@ -344,6 +345,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             }
             self.deferredDeeplinkToProcess = nil;
             self.deferredURLToProcess = nil;
+
+            [[NSNotificationCenter defaultCenter] postNotificationName:DWAppDidUnlockNotification
+                                                                object:nil];
         }];
 }
 

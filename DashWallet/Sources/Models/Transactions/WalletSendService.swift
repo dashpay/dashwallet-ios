@@ -86,9 +86,9 @@ final class WalletSendService: NSObject {
         super.init()
     }
 
-    func prepareStandardSendForConfirmation(address: String, amount: UInt64) async throws -> PreparedStandardSend {
+    func prepareStandardSendForConfirmation(address: String, amount: UInt64, sessionAuthSufficient: Bool = false) async throws -> PreparedStandardSend {
         Self.logger.info("💸 TXSEND :: preparing standard send")
-        try await sendAuthorizer.authorizeSend()
+        try await sendAuthorizer.authorizeSend(sessionAuthSufficient: sessionAuthSufficient)
         let prepared = try buildPreparedStandardSend(address: address, amount: amount)
         Self.logger.info("💸 TXSEND :: standard send prepared")
         return prepared
@@ -98,11 +98,12 @@ final class WalletSendService: NSObject {
         address: String,
         amount: UInt64,
         inputSelector: SingleInputAddressSelector? = nil,
-        adjustAmountDownwards: Bool = false
+        adjustAmountDownwards: Bool = false,
+        sessionAuthSufficient: Bool = false
     ) async throws -> DSTransaction {
         if let inputSelector {
             Self.logger.info("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
-            try await sendAuthorizer.authorizeSend()
+            try await sendAuthorizer.authorizeSend(sessionAuthSufficient: sessionAuthSufficient)
             do {
                 let (txData, _, _) = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
                     fromAddress: inputSelector.address,
@@ -122,7 +123,8 @@ final class WalletSendService: NSObject {
             }
         }
 
-        let preparedSend = try await prepareStandardSendForConfirmation(address: address, amount: amount)
+        let preparedSend = try await prepareStandardSendForConfirmation(
+            address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
         try preparedSend.broadcast()
         return preparedSend.transaction
     }
@@ -273,8 +275,17 @@ final class WalletSendService: NSObject {
 enum AuthenticationGate {
     enum Outcome { case ok, cancelled, failed, timedOut }
 
-    static func authenticate(biometric: Bool, timeout: TimeInterval = 120) async -> Outcome {
-        await withCheckedContinuation { continuation in
+    /// `sessionAuthSufficient` restores the legacy `seedWithPrompt` semantic
+    /// (`DSWallet.seedPhraseIfAuthenticated`, DSWallet.m:797) for programmatic
+    /// protocol sends: an already-authenticated session (`didAuthenticate`,
+    /// set by the lock-screen PIN/biometric unlock) passes without presenting
+    /// any UI. Interactive gates keep the default `false` and prompt per send.
+    static func authenticate(biometric: Bool, sessionAuthSufficient: Bool = false, timeout: TimeInterval = 120) async -> Outcome {
+        if sessionAuthSufficient, DSAuthenticationManager.sharedInstance().didAuthenticate {
+            WalletSendService.logger.info("💸 TXSEND :: session-authenticated — skipping auth prompt")
+            return .ok
+        }
+        return await withCheckedContinuation { continuation in
             var didResume = false
             func safeResume(_ outcome: Outcome) {
                 guard !didResume else { return }
@@ -303,9 +314,10 @@ enum AuthenticationGate {
 
 private final class SendAuthorizer {
     @MainActor
-    func authorizeSend() async throws {
+    func authorizeSend(sessionAuthSufficient: Bool = false) async throws {
         let outcome = await AuthenticationGate.authenticate(
-            biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled)
+            biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+            sessionAuthSufficient: sessionAuthSufficient)
 
         switch outcome {
         case .ok:

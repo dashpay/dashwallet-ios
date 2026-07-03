@@ -22,6 +22,7 @@
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
 NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotification";
+NSNotificationName const DWAppDidUnlockNotification = @"DWAppDidUnlockNotification";
 static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
 @implementation DWEnvironment

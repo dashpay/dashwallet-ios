@@ -19,13 +19,15 @@ public final class SendCoinsService: NSObject {
     private let walletSendService = WalletSendService.shared
 
     func sendCoins(address: String, amount: UInt64,
-                   inputSelector: SingleInputAddressSelector? = nil, adjustAmountDownwards: Bool = false) async throws
+                   inputSelector: SingleInputAddressSelector? = nil, adjustAmountDownwards: Bool = false,
+                   sessionAuthSufficient: Bool = false) async throws
         -> DSTransaction {
         return try await walletSendService.send(
             address: address,
             amount: amount,
             inputSelector: inputSelector,
-            adjustAmountDownwards: adjustAmountDownwards
+            adjustAmountDownwards: adjustAmountDownwards,
+            sessionAuthSufficient: sessionAuthSufficient
         )
     }
 
