@@ -143,6 +143,19 @@ struct BuyReceiveView: View {
                 .scaledToFit()
                 .frame(minWidth: 200, maxWidth: 200, minHeight: 200, maxHeight: 200, alignment: .center)
                 .padding(10)
+        } else if let errorMessage = viewModel.errorMessage {
+            VStack(spacing: 16) {
+                Text(errorMessage)
+                    .font(.footnote)
+                    .foregroundColor(Color.dash.red)
+                    .multilineTextAlignment(.center)
+                Button {
+                    Task { await viewModel.load() }
+                } label: {
+                    Text(NSLocalizedString("Retry", comment: "Dash DEX"))
+                }
+            }
+            .frame(minWidth: 200, maxWidth: 200, minHeight: 200, maxHeight: 200)
         } else {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(Color.dash.primaryBackground.opacity(0.8))
