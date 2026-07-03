@@ -62,6 +62,27 @@ final class BuyReceiveViewModel: ObservableObject {
         return depositAddress.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
+    /// True when the deposit URI is a bare address with no amount or memo embedded.
+    /// This covers both non-EVM/non-UTXO chains (Solana, NEAR, XRP…) and EVM tokens
+    /// whose decimals are unknown (URI falls back to bare address per SwapDepositURIBuilder).
+    var isBareURI: Bool {
+        // After loading: a bare URI equals the deposit address exactly.
+        if !isLoading, !depositAddress.isEmpty {
+            return uri == depositAddress
+        }
+        // Before loading: use chain-level heuristic (non-EVM, non-UTXO).
+        return SwapDepositURIBuilder.isBareURI(for: coin)
+    }
+
+    /// Amount string to display when the URI cannot carry it (bare-address chains only).
+    var displaySendAmount: String? {
+        guard isBareURI else { return nil }
+        let trimmed = sellAmount.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        let amount = SwapDepositURIBuilder.displaySendAmount(for: coin, amount: trimmed)
+        return amount.isEmpty ? nil : "\(amount) \(coinCode)"
+    }
+
     var qrContent: String {
         // Encode the full payment URI (BIP21 for UTXO, EIP-681 for EVM, bare address elsewhere),
         // matching Android so a scanning wallet auto-fills token + network + recipient + amount.

@@ -163,9 +163,13 @@ final class RefundAddressViewModel: ObservableObject {
             return trimmed
         }
 
-        let scheme = trimmed[..<colonIndex]
-        let knownSchemes: Set<String> = ["bitcoin", "ethereum", "kujira", "thorchain", "dash"]
-        guard knownSchemes.contains(scheme.lowercased()) else {
+        // Accept any RFC 3986 URI scheme: starts with a letter, then letters/digits/+/-/.
+        // This handles bitcoin:, litecoin:, dogecoin:, solana:, near:, ripple:, etc. without
+        // a fixed allowlist that must be updated whenever a new chain is supported.
+        let scheme = String(trimmed[..<colonIndex])
+        guard let firstChar = scheme.first, firstChar.isLetter,
+              scheme.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "+" || $0 == "-" || $0 == "." }),
+              scheme.count <= 30 else {
             return trimmed
         }
 
