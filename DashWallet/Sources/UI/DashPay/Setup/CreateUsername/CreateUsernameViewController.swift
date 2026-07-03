@@ -329,17 +329,25 @@ struct CreateUsernameView: View {
     }
 
     private func getMessageForBlockedRule() -> String {
-        // After PR 2.5 the only rule state the user ever sees here is
-        // `.valid` (set by `CreateUsernameViewModel.checkIfBlocked`);
-        // `.loading` shows briefly before that. The `.warning`,
-        // `.invalid`, `.invalidCritical` rule states no longer fire
-        // because the SDK v1 doesn't surface contested-username or
-        // already-taken checks in the SwiftUI form's pipeline.
+        // States set by `CreateUsernameViewModel.checkIfBlocked` (the real
+        // debounced DPNS availability check). The first four strings reuse
+        // the exact legacy literals from DWCheckExistenceUsernameValidationRule
+        // so translations stay unified.
         switch viewModel.uiState.usernameBlockedRule {
         case .loading:
-            return ""
-        default:
-            return NSLocalizedString("Username is available", comment: "Usernames")
+            return NSLocalizedString("Validating username…", comment: "Usernames")
+        case .valid:
+            return NSLocalizedString("Username available", comment: "Usernames")
+        case .invalidCritical:
+            return NSLocalizedString("Username taken", comment: "Usernames")
+        case .error:
+            return NSLocalizedString("Validating username failed", comment: "Usernames")
+        case .warning:
+            // The user's own contested submission — taken on-chain while
+            // masternode voting decides the owner.
+            return NSLocalizedString("Username is in voting. You will be notified when voting ends.", comment: "Usernames")
+        case .empty, .invalid, .hidden:
+            return "" // rule row is hidden for these states
         }
     }
 }

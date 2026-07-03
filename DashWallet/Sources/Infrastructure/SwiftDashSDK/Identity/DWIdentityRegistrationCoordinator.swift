@@ -115,6 +115,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     private var controller: DWIdentityRegistrationController?
     private var phaseSubscription: AnyCancellable?
     private var assetLockPollingTask: Task<Void, Never>?
+    /// Single-flight handle for `checkPendingContestResolution()`.
+    private var contestResolutionTask: Task<Void, Never>?
 
     private let authorizer = DWIdentityAuthorizer()
 
@@ -391,9 +393,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         //      label (otherwise we'd race against the next idle
         //      sync).
         //   3. Skip the DWGlobalOptions mirror writes in
-        //      `handlePhaseChange` — those run on resolution
-        //      (DWContestedNameStatusService.finalizeWon) once the
-        //      vote actually grants the name.
+        //      `handlePhaseChange` — they run when
+        //      `checkPendingContestResolution()` detects the win and
+        //      calls `DWContestedNameStatusService.finalizeWon(username:)`.
         let isContestedSubmission = DWContestedNameStatusService.isContestedLabel(username)
         Self.logger.info("🪪 IDENT-COORD :: contested=\(isContestedSubmission, privacy: .public) label=\(username, privacy: .public)")
         if isContestedSubmission {
@@ -441,7 +443,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     }
 
     /// Forward DPNS availability checks to the SDK. Used by
-    /// `DWCheckExistenceUsernameValidationRule` to replace
+    /// `DWCheckExistenceUsernameValidationRule` (legacy form) and
+    /// `CreateUsernameViewModel.checkIfBlocked` (SwiftUI form) to replace
     /// `DSIdentitiesManager.searchIdentityByDashpayUsername:`.
     func dpnsCheckAvailability(_ name: String) async throws -> Bool {
         guard let sdk = SwiftDashSDKHost.shared.sdk else {
@@ -452,6 +455,115 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: dpns availability check failed: \(String(describing: error), privacy: .public)")
             throw CoordinatorError.availabilityCheck(error)
+        }
+    }
+
+    // MARK: - Contested-name resolution
+
+    /// Fire-and-forget reconciliation of the pending contested-DPNS
+    /// submission (recorded by `recordSubmission` at submit time) against
+    /// Platform's resolved state. Triggered from Home appear / app
+    /// foreground; O(1) no-op when nothing is pending. Never throws — a
+    /// failed check logs and retries on the next trigger.
+    ///
+    /// Outcomes: the label appears in `getDpnsNames`, or
+    /// `ContestVoteState.winner` is us → `finalizeWon(username:)` performs
+    /// the DWGlobalOptions mirror writes deferred by `handlePhaseChange`;
+    /// another winner / locked / contest pruned → `clearPending()` so the
+    /// user can register a different name (the identity-resume skip in
+    /// `startCreateUsername` makes a second attempt viable); still voting
+    /// → nothing.
+    ///
+    /// Deliberate omission: no in-session timer — appear/foreground covers
+    /// the testnet (~45 min) and mainnet (~2 week) voting windows.
+    func checkPendingContestResolution() {
+        guard DWContestedNameStatusService.shared.pendingLabel != nil else { return }
+        guard contestResolutionTask == nil else { return } // single-flight
+        switch phase {
+        case .preparingKeys, .inFlight:
+            return // don't reconcile mid-registration
+        case .idle, .completed, .failed:
+            break
+        }
+        contestResolutionTask = Task { [weak self] in
+            await self?.runPendingContestResolution()
+            self?.contestResolutionTask = nil
+        }
+    }
+
+    private enum ContestOutcome { case won, lost }
+
+    private func runPendingContestResolution() async {
+        guard let label = DWContestedNameStatusService.shared.pendingLabel else { return }
+
+        // Bounded wait for host hydration — the Home-appear trigger can
+        // fire before SwiftDashSDKWalletRuntime finishes starting. Give up
+        // quietly; the next trigger retries.
+        var attempts = 0
+        while SwiftDashSDKHost.shared.wallet == nil || SwiftDashSDKHost.shared.modelContainer == nil {
+            attempts += 1
+            if attempts > 30 {
+                Self.logger.info("🪪 IDENT-COORD :: contest check — host never hydrated, retry on next trigger")
+                return
+            }
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+        }
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let modelContainer = SwiftDashSDKHost.shared.modelContainer else { return }
+
+        // nil can be the cold-launch SwiftData inverse-edge miss (see
+        // DWCurrentUserIdentityInfo's wallet-side lookup rationale) —
+        // transient, so never clear the bookmark on it.
+        guard let identityId = lookupExistingIdentityId(
+            walletId: wallet.walletId, modelContainer: modelContainer)
+        else {
+            Self.logger.info("🪪 IDENT-COORD :: contest check — no identity row yet, retry on next trigger")
+            return
+        }
+
+        let outcome: ContestOutcome
+        do {
+            _ = try await wallet.syncDpnsNames(identityId: identityId)
+            let owned = try wallet.managedIdentity(identityId: identityId).getDpnsNames()
+            if owned.contains(where: { $0 == label || $0 == "\(label).dash" }) {
+                outcome = .won
+            } else if let state = try await wallet.fetchContestVoteState(identityId: identityId, label: label) {
+                switch state.winner {
+                case .none:
+                    return // still voting
+                case .wonByIdentity(let winner):
+                    outcome = (winner == identityId) ? .won : .lost
+                case .locked:
+                    outcome = .lost
+                }
+            } else {
+                // No vote state: contest pruned, or it never existed for
+                // this identity. Re-sync the contested cache; if the label
+                // dropped out (and it isn't in getDpnsNames — checked
+                // above), the contest resolved against us.
+                _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
+                let contested = try wallet.managedIdentity(identityId: identityId).getContestedDpnsNames()
+                if contested.contains(label) {
+                    return // transient inconsistency — retry next trigger
+                }
+                outcome = .lost
+            }
+        } catch {
+            Self.logger.warning("🪪 IDENT-COORD :: contest check failed (retry on next trigger): \(String(describing: error), privacy: .public)")
+            return
+        }
+
+        // Freshness guard: a new submission may have replaced the bookmark
+        // while our awaits were in flight. Same MainActor stretch as the
+        // mutation below, so it's atomic against recordSubmission.
+        guard DWContestedNameStatusService.shared.pendingLabel == label else { return }
+        switch outcome {
+        case .won:
+            Self.logger.info("🪪 IDENT-COORD :: contest WON for \(label, privacy: .public) — finalizing")
+            DWContestedNameStatusService.shared.finalizeWon(username: label)
+        case .lost:
+            Self.logger.info("🪪 IDENT-COORD :: contest lost/locked for \(label, privacy: .public) — clearing bookmark; a new registration attempt is viable")
+            DWContestedNameStatusService.shared.clearPending()
         }
     }
 
@@ -478,8 +590,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // (~45 min testnet, ~2 weeks mainnet). The pending-submission
         // bookmark is the signal: `DWContestedNameStatusService.shared.pendingLabel`
         // matches `currentUsername` iff Step 3.5 wrote it just now.
-        // `DWContestedNameStatusService.finalizeWon(...)` does the
-        // mirror writes when the vote resolves in our favor.
+        // `checkPendingContestResolution()` (Home appear/foreground)
+        // calls `DWContestedNameStatusService.finalizeWon(username:)`
+        // to perform them when the vote resolves in our favor.
         if case .completed = newPhase, let username = currentUsername {
             let isContestedSubmission = DWContestedNameStatusService.shared.pendingLabel == username
             if isContestedSubmission {

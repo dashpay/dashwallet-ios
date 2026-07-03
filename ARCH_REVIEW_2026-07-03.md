@@ -1,4 +1,4 @@
-# Architecture & Vibecoding Review — `swift-sdk-integration`
+# Architecture Review — `swift-sdk-integration`
 
 **Date:** 2026-07-03
 **Scope:** entire branch vs `master` (merge-base `bce2e51be`) — 204 commits, 209 files, +22,051/−6,303 lines
@@ -39,12 +39,14 @@ Suggested order: **T1 + T2 today** (small diffs, outsized blast radius) → **T6
 **Action:** implement the request flow or remove the menu item.
 
 ### T4. The contested-username success path defers to a method that doesn't exist
+> **Status: FIXED 2026-07-03.** `finalizeWon(username:)` is now real (mirror writes + canonical notification, following the `DWProfileUpdateCoordinator` pattern), and `DWIdentityRegistrationCoordinator.checkPendingContestResolution()` reconciles the pending bookmark on Home appear/foreground via `getDpnsNames`/`fetchContestVoteState` — win finalizes, loss/locked/pruned clears (the upstream SDK bug that forced the original removal was fixed in the v11 pin). A contested-status UI screen remains future work.
 - `DashWallet/Sources/Infrastructure/SwiftDashSDK/Identity/DWIdentityRegistrationCoordinator.swift:395` and `:481` claim `DWContestedNameStatusService.finalizeWon(...)` "does the mirror writes when the vote resolves in our favor" — `finalizeWon` exists only in those two comments (repo-wide grep).
 - `handlePhaseChange` skips the `DWGlobalOptions.dashpayUsername` / `dashpayRegistrationCompleted` writes for contested submissions on that basis; nothing ever clears the pending bookmark; `DWCurrentUserIdentityInfo` filters the pending name out of every username source indefinitely.
 
 **Action:** implement resolution detection, or stop skipping the mirror writes; delete the phantom references.
 
 ### T5. The SwiftUI username form asserts "Username is available" without checking
+> **Status: FIXED 2026-07-03.** `checkIfBlocked` now runs the real debounced `dpnsCheckAvailability` (0.4 s debounce + task cancellation + trimmed stale-guard, mirroring the legacy rule): available → "Username available", taken → "Username taken" (Continue disabled), RPC failure → "Validating username failed", own pending contested name → "in voting" warning. Legacy localized strings reused.
 - `DashWallet/Sources/UI/DashPay/Setup/CreateUsername/CreateUsernameViewModel.swift:270-284` — `checkIfBlocked` unconditionally sets `.valid` (comment admits "by then the user has already committed to submit").
 - The real async check exists on the same bridge (`DWIdentityRegistrationBridge.checkAvailability`) and is used by the legacy `DWCheckExistenceUsernameValidationRule` path migrated in this same branch.
 

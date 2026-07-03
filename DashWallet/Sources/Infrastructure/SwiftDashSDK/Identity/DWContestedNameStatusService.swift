@@ -18,20 +18,24 @@
 //    - `pendingLabel` — read by `DWCurrentUserIdentityInfo` to
 //      suppress the leak into Edit Profile / SDK profile sheet /
 //      invitation links / payment-side username memo.
-//    - `clearPending()` — manual escape hatch (e.g. debug tool,
-//      a future resolution-detection path).
+//    - `clearPending()` — consumed by the LOST branch of
+//      `DWIdentityRegistrationCoordinator.checkPendingContestResolution()`.
+//    - `finalizeWon(username:)` — the WON branch: performs the
+//      DWGlobalOptions mirror writes that `handlePhaseChange`
+//      deferred at submission time, then broadcasts the canonical
+//      registration notification.
 //    - `isContestedLabel(_:)` — static deterministic predicate via
 //      the SDK's FFI helper. Shared between the viewmodel (warning
 //      badge) and the coordinator (branch on submission).
 //
 //  Notes:
-//    - The blockchain-side status view + per-vote refresh that
-//      previously lived here was removed once we hit the upstream
-//      SwiftDashSDK `GetDataContractsRequest.version = None` bug
-//      that blocks `syncDpnsNames` and `fetchContestVoteState`
-//      (same family as the profile-write bug — see
-//      `DASHSYNC_MIGRATION.md → Known SDK issues`). Status UI can
-//      come back when that bug is fixed upstream.
+//    - Resolution detection lives in
+//      `DWIdentityRegistrationCoordinator.checkPendingContestResolution()`,
+//      triggered from Home appear/foreground. (The upstream
+//      `GetDataContractsRequest.version = None` bug that once blocked
+//      `syncDpnsNames`/`fetchContestVoteState` was fixed in the v11
+//      pin, 2026-05-27.) A user-facing contest-status VIEW remains
+//      future work.
 //    - Single UserDefaults slot — v1 pins to one in-flight
 //      contested submission per identity. NOT read by any
 //      carveout viewmodel (`JoinDashPayViewModel`, `HomeViewModel`).
@@ -81,13 +85,32 @@ public final class DWContestedNameStatusService: NSObject {
         Self.logger.info("🪪 CONTEST-SVC :: recordSubmission label=\(label, privacy: .public)")
     }
 
-    /// Clear the pending bookmark. No internal callers in v1 — the
-    /// resolution-detection path that previously consumed this was
-    /// removed alongside the status view. Kept as an escape hatch
-    /// for future surfaces (debug tool, manual resolution check).
+    /// Clear the pending bookmark. Called by the LOST/pruned branches of
+    /// `DWIdentityRegistrationCoordinator.checkPendingContestResolution()`
+    /// (and by `finalizeWon` on the WON branch).
     public func clearPending() {
         UserDefaults.standard.removeObject(forKey: Self.pendingLabelKey)
         Self.logger.info("🪪 CONTEST-SVC :: clearPending")
+    }
+
+    /// Resolution-side counterpart of the DWGlobalOptions mirror writes
+    /// that `DWIdentityRegistrationCoordinator.handlePhaseChange` skips
+    /// for contested submissions. Called by
+    /// `checkPendingContestResolution()` when the vote resolved in our
+    /// favor. Mirrors the post-write broadcast pattern in
+    /// `DWProfileUpdateCoordinator`: mirror writes → clear the bookmark →
+    /// rebuild the identity-info snapshot (no longer filtered) → post the
+    /// canonical registration notification so the home avatar / tab
+    /// config / join-banner observers re-read state live.
+    public func finalizeWon(username: String) {
+        DWGlobalOptions.sharedInstance().dashpayUsername = username
+        DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
+        clearPending()
+        Self.logger.info("🪪 CONTEST-SVC :: finalizeWon label=\(username, privacy: .public)")
+        DWCurrentUserIdentityInfo.shared.refreshFromSDK()
+        NotificationCenter.default.post(
+            name: Notification.Name("DWDashPayRegistrationStatusUpdatedNotification"),
+            object: nil)
     }
 
     /// Client-side contested-eligibility predicate. Deterministic

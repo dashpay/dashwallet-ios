@@ -54,6 +54,12 @@ class CreateUsernameViewModel: ObservableObject {
     private var submittedRegistrationUsername: String?
     private var didNotifyRegistrationStarted = false
     private var onRegistrationStarted: (@MainActor () -> Void)?
+    /// In-flight DPNS availability check. Cancelled and replaced on
+    /// every revalidation so only the newest input hits the network.
+    private var availabilityCheckTask: Task<Void, Never>?
+    /// Mirrors the legacy `VALIDATION_DEBOUNCE_DELAY`
+    /// (DWCheckExistenceUsernameValidationRule.m).
+    private static let availabilityDebounceNanos: UInt64 = 400_000_000
     static let shared = CreateUsernameViewModel()
     
     var shouldRequestPayment: Bool {
@@ -219,6 +225,10 @@ class CreateUsernameViewModel: ObservableObject {
     private func validateUsername(username: String) {
         let username = username.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        // Kill any in-flight availability check — its result belongs to
+        // an input the user has already changed (including changed-to-empty).
+        availabilityCheckTask?.cancel()
+
         guard !username.isEmpty else {
             uiState = CreateUsernameUIState()
             isContestedCandidate = false
@@ -261,26 +271,54 @@ class CreateUsernameViewModel: ObservableObject {
         )
 
         if canContinue {
-            Task {
+            availabilityCheckTask = Task {
                 await checkIfBlocked(username: username)
             }
         }
     }
-    
+
+    /// Debounced real DPNS availability check (same coordinator call the
+    /// legacy `DWCheckExistenceUsernameValidationRule` path uses). Maps:
+    /// available → `.valid`; taken → `.invalidCritical` — including names
+    /// in an ACTIVE contest, because `registerDpnsName` creates the domain
+    /// document immediately and voting only decides who keeps it (matches
+    /// the legacy rule's behavior); our OWN pending contested submission →
+    /// `.warning` ("in voting"); RPC failure → `.error` (re-runs on the
+    /// next keystroke or balance publish). `canContinue` is true only for
+    /// `.valid` — the submit-time `registerDpnsName` failure remains the
+    /// second line of defense.
     private func checkIfBlocked(username: String) async {
-        // SDK path: contested-username voting is not exercised in v1.
-        // Treat all locally-valid names as immediately available so
-        // Continue hits the simple submit path (skipping the
-        // verify-identity sheet). Real DPNS availability detection
-        // lives in `DWIdentityRegistrationBridge.checkAvailability`
-        // (used by the legacy `DWCheckExistenceUsernameValidationRule`
-        // flow). For the SwiftUI form we rely on the actual DPNS
-        // registration call to surface a "name taken" failure if it
-        // happens — by then the user has already committed to submit.
-        if self.username == username {
-            uiState.usernameBlockedRule = .valid
-            uiState.canContinue = true
+        // Debounce: sleep throws on cancellation (the user kept typing).
+        do { try await Task.sleep(nanoseconds: Self.availabilityDebounceNanos) }
+        catch { return }
+        guard !Task.isCancelled else { return }
+
+        let result: UsernameValidationRuleResult
+        do {
+            let available = try await DWIdentityRegistrationCoordinator.shared.dpnsCheckAvailability(username)
+            if available {
+                result = .valid
+            } else if let pending = DWContestedNameStatusService.shared.pendingLabel,
+                      pending.caseInsensitiveCompare(username) == .orderedSame {
+                // Our own contested submission — reads as taken on-chain
+                // while masternode voting is still deciding the owner.
+                result = .warning
+            } else {
+                result = .invalidCritical
+            }
+        } catch {
+            result = .error
         }
+
+        // Drop stale results: the input changed while the RPC was in
+        // flight. Compare against the trimmed live value — validateUsername
+        // trims before calling us.
+        guard !Task.isCancelled,
+              self.username.trimmingCharacters(in: .whitespacesAndNewlines) == username
+        else { return }
+
+        uiState.usernameBlockedRule = result
+        uiState.canContinue = (result == .valid)
     }
     
     private func observeBalance() {

@@ -414,7 +414,11 @@ NS_ASSUME_NONNULL_END
         // permanently nil. Keep the cached username; row #17 will
         // eventually migrate the read sites off DashSync.
         [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge = YES;
-        NSAssert(self.username != nil, @"SDK identity has an empty username");
+        // Contested submissions complete with the username deliberately
+        // unmirrored (masternode voting pending) — self.username is nil by
+        // construction until checkPendingContestResolution finalizes the win.
+        BOOL contestedPending = [DWContestedNameStatusService.shared.pendingLabel isEqualToString:bridgeUsername];
+        NSAssert(contestedPending || self.username != nil, @"SDK identity has an empty username");
         self.registrationStatus = nil;
         [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayRegistrationStatusUpdatedNotification object:nil];
         return;

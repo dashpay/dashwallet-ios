@@ -104,6 +104,10 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         // next read picks up new names automatically.
         DWCurrentUserIdentityInfo.shared.syncFromNetwork()
 
+        // Reconcile a pending contested-username submission against the
+        // resolved vote state (O(1) early-out when nothing is pending).
+        DWIdentityRegistrationCoordinator.shared.checkPendingContestResolution()
+
         let upgrading = model.performOnSetupUpgrades()
         if !upgrading {
             // since these both methods might display modals, don't allow running them simultaneously
@@ -345,6 +349,14 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         
         NotificationCenter.default.publisher(for: .NSSystemClockDidChange)
             .sink { [weak self] _ in self?.viewModel.checkTimeSkew(force: true) }
+            .store(in: &cancellableBag)
+
+        // Background→foreground is the primary way a user returns after a
+        // contested-name voting window (~45 min testnet / ~2 weeks mainnet).
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .sink { _ in
+                DWIdentityRegistrationCoordinator.shared.checkPendingContestResolution()
+            }
             .store(in: &cancellableBag)
         
         viewModel.$showReclassifyTransaction
