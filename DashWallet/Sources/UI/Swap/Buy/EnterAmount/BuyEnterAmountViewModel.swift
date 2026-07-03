@@ -325,6 +325,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
         formatter.numberStyle = .decimal
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.decimalSeparator = "."
+        formatter.usesGroupingSeparator = false
         formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 8
 
