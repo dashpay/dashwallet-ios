@@ -88,7 +88,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     private func pushSpecifyAmount() {
         let specify = SpecifyAmountViewController.controller()
-        specify.delegate = ReceiveSpecifyAmountRouter.shared
+        specify.delegate = self
         navigationController?.pushViewController(specify, animated: true)
     }
 
@@ -135,6 +135,33 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         case 1: return PaymentsLandingTab.internalTransfer.rawValue
         case 2: return PaymentsLandingTab.send.rawValue
         default: return PaymentsLandingTab.send.rawValue
+        }
+    }
+}
+
+// MARK: SpecifyAmountViewControllerDelegate
+
+extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate {
+    func specifyAmountViewController(_ vc: SpecifyAmountViewController, didInput amount: UInt64) {
+        let model = DWReceiveModel(amount: amount)
+
+        let requestController = DWRequestAmountViewController(model: model)
+        requestController.delegate = self
+        present(requestController, animated: true)
+    }
+}
+
+// MARK: DWRequestAmountViewControllerDelegate
+
+extension PaymentsLandingHostingController: DWRequestAmountViewControllerDelegate {
+    func requestAmountViewController(_ controller: DWRequestAmountViewController, didReceiveAmountWithInfo info: String) {
+        controller.dismiss(animated: true) {
+            self.navigationController?.popViewController(animated: true)
+
+            let popAnimationDuration = 300
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(popAnimationDuration)) {
+                self.navigationController?.view.dw_showInfoHUD(withText: info)
+            }
         }
     }
 }

@@ -26,11 +26,13 @@ Suggested order: **T1 + T2 today** (small diffs, outsized blast radius) → **T6
 **Action:** move `core.broadcastTransaction` into `broadcast()`; surface the real FFI fee (the selected-input CrowdNode path already gets exact fees); correct DASHSYNC_MIGRATION.md #8/#9.
 
 ### T2. Fresh installs default to TestNet in every build configuration, including Release/TestFlight
+> **Status: ACCEPTED (descoped 2026-07-03 by owner decision).** Testnet default stays until the migration fully lands — mainnet Platform DAPI is unreachable in the current SDK build anyway. Revisit before any release branch is cut.
 - `DashWallet/Sources/Models/DWEnvironment.m:48-54` — master set `ChainType_MainNet`; the branch sets `ChainType_TestNet` as unlabeled migration scaffolding, gated by neither `#if DEBUG` nor the existing `DASH_TESTNET` configuration flag.
 
 **Action:** gate to Debug/TestNet configs now; add a tracking issue so it cannot silently reach a release build.
 
 ### T3. "Specify amount" silently discards the amount the user enters
+> **Status: FIXED 2026-07-03.** `PaymentsLandingHostingController` now implements the specify-amount and request-amount delegates itself (legacy-parity mirror of `ReceiveViewController`); the stub `ReceiveSpecifyAmountRouter` is no longer referenced from live code (its deletion travels with T17).
 - `DashWallet/Sources/UI/Payments/Receive/ReceiveScreen.swift:170-179` — `ReceiveSpecifyAmountRouter.shared` implements `specifyAmountViewController(_:didInput:)` by popping the nav controller; `amount` is unused.
 - Wired to the live payments entry at `DashWallet/Sources/UI/Payments/Landing/PaymentsLandingHostingController.swift:91`. The legacy delegate built a `DWReceiveModel(amount:)` payment request from it.
 
