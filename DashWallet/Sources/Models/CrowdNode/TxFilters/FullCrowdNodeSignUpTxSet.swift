@@ -35,7 +35,10 @@ final class FullCrowdNodeSignUpTxSet: GroupedTransactions, TransactionWrapper {
     
     static let id = "FullCrowdNodeSignUpTxSet"
     private let savedAccountAddress = CrowdNodeDefaults.shared.accountAddress
-    private let januaryFirst2022 = 1640995200.0 // Safe to assume there weren't any CrowdNode accounts before this point
+    /// Safe to assume there weren't any CrowdNode accounts before this point.
+    /// Also reused as the SwiftData fetch floor by `tryRestoreSignUp`.
+    static let januaryFirst2022Epoch: UInt64 = 1_640_995_200
+    private static let januaryFirst2022 = TimeInterval(januaryFirst2022Epoch)
     private var matchedFilters: [CoinsToAddressTxFilter] = []
     private let txMapLock = NSLock()
 
@@ -89,16 +92,16 @@ final class FullCrowdNodeSignUpTxSet: GroupedTransactions, TransactionWrapper {
     }
 
     @discardableResult
-    func tryInclude(tx: DSTransaction) -> Bool {
-        if tx.timestamp < januaryFirst2022 {
+    func tryInclude(_ tx: ObservedTransaction) -> Bool {
+        guard let ts = tx.timestamp, ts.timeIntervalSince1970 >= Self.januaryFirst2022 else {
             return false
         }
 
-        let txHashData = tx.txHashData
+        let txHashData = tx.txid
 
         txMapLock.lock()
         if _transactionMap[txHashData] != nil {
-            _transactionMap[txHashData] = Transaction(transaction: tx)
+            _transactionMap[txHashData] = tx.wrapped
             txMapLock.unlock()
             // Already included, return true
             return true
@@ -116,14 +119,14 @@ final class FullCrowdNodeSignUpTxSet: GroupedTransactions, TransactionWrapper {
             crowdNodeTxFilters.append(CrowdNodeTopUpTx(address: accountAddress))
         }
 
-        if let matchedFilter = crowdNodeTxFilters.first(where: { $0.matches(tx: tx) }) {
+        if let matchedFilter = crowdNodeTxFilters.first(where: { $0.matches(tx) }) {
             txMapLock.lock()
-            _transactionMap[txHashData] = Transaction(transaction: tx)
+            _transactionMap[txHashData] = tx.wrapped
             txMapLock.unlock()
             
             matchedFilters.append(matchedFilter)
             
-            let dashAmount = tx.dashAmount
+            let dashAmount = tx.wrapped.dashAmount
             switch tx.direction {
             case .sent:
                 _amount -= Int64(dashAmount)

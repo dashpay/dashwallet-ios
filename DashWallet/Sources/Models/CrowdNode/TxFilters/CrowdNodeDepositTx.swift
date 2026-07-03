@@ -22,9 +22,12 @@ final class CrowdNodeDepositTx: TransactionFilter {
         self.accountAddress = accountAddress
     }
 
-    func matches(tx: DSTransaction) -> Bool {
-        let allFromAccount = tx.inputAddresses.allSatisfy { $0 as? String == accountAddress }
-        guard allFromAccount else { return false }
+    func matches(_ tx: ObservedTransaction) -> Bool {
+        // Non-empty guard: decoded input addresses are best-effort (P2PKH
+        // only) — an empty set must not vacuously satisfy `allSatisfy`.
+        guard !tx.inputAddresses.isEmpty,
+              tx.inputAddresses.allSatisfy({ $0 == accountAddress })
+        else { return false }
         let crowdNodeAddress = CrowdNode.crowdNodeAddress
 
         for output in tx.outputs {

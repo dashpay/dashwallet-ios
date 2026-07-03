@@ -16,10 +16,21 @@
 //
 
 public class CoinsToAddressTxFilter: TransactionFilter {
+    /// TODO(B4): tolerance window replaces DashSync's `tx.feeUsed`
+    /// reconstruction for `withFee` matches — the fee of a CrowdNode-built
+    /// transaction is unrecoverable from its raw bytes alone (it needs the
+    /// previous outputs' amounts). A fee-deducted amount is accepted when it
+    /// falls within `feeTolerance` below the expected value.
+    static let feeTolerance: UInt64 = 10_000
+
     private let matchingAddress: String?
     private var withFee: Bool
     private(set) final var coins: UInt64
     private(set) final var toAddress: String?
+    /// The matched output's exact amount (differs from `coins` on a
+    /// fee-tolerance match); consumed by `CrowdNodeErrorResponse`'s
+    /// known-code exclusion.
+    private(set) final var matchedAmount: UInt64?
     private(set) final var fromAddresses = Set<String>()
 
     init(coins: UInt64, address: String?, withFee: Bool = false) {
@@ -28,33 +39,25 @@ public class CoinsToAddressTxFilter: TransactionFilter {
         self.withFee = withFee
     }
 
-    func matches(tx: DSTransaction) -> Bool {
+    func matches(_ tx: ObservedTransaction) -> Bool {
         fromAddresses.removeAll()
 
-        // TODO: if CrowdNode inputs aren't from our own transaction, the fee might not be present.
-        // Need another way to detect an error response in this case.
-        var feeUsed = UInt64(0)
-
-        if withFee {
-            let fee = tx.feeUsed // Warning: expensive operation
-            feeUsed = fee == UInt64.max ? 0 : fee
-        }
+        let lowerBound = withFee ? coins - min(coins, Self.feeTolerance) : coins
 
         let output = tx.outputs.first(where: { output in
-            let amountToMatch = output.amount + feeUsed
-            return amountToMatch == coins &&
+            let amountMatches = withFee
+                ? (output.amount >= lowerBound && output.amount < coins)
+                : output.amount == coins
+            return amountMatches &&
                 (matchingAddress == nil || output.address == matchingAddress)
         })
 
         toAddress = output?.address ?? toAddress
+        matchedAmount = output?.amount ?? matchedAmount
         let doesMatch = output != nil
 
         if doesMatch {
-            tx.inputAddresses.forEach {
-                if let address = $0 as? String {
-                    fromAddresses.insert(address)
-                }
-            }
+            fromAddresses = tx.inputAddresses
         }
 
         return doesMatch

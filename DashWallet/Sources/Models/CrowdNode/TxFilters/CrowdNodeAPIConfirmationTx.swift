@@ -25,8 +25,8 @@ final class CrowdNodeAPIConfirmationTx: CoinsToAddressTxFilter {
         self.primaryAddress = primaryAddress
     }
 
-    override func matches(tx: DSTransaction) -> Bool {
-        super.matches(tx: tx) && fromAddresses.contains(primaryAddress)
+    override func matches(_ tx: ObservedTransaction) -> Bool {
+        super.matches(tx) && fromAddresses.contains(primaryAddress)
     }
 }
 

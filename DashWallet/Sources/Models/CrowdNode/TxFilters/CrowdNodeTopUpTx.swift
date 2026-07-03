@@ -20,8 +20,8 @@ public final class CrowdNodeTopUpTx: CoinsToAddressTxFilter {
         super.init(coins: CrowdNode.requiredForSignup, address: address)
     }
 
-    override func matches(tx: DSTransaction) -> Bool {
+    override func matches(_ tx: ObservedTransaction) -> Bool {
         tx.direction == DSTransactionDirection.moved &&
-            super.matches(tx: tx)
+            super.matches(tx)
     }
 }

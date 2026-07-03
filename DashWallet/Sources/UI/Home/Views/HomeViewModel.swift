@@ -261,14 +261,13 @@ class HomeViewModel: ObservableObject {
                     return nil
                 }
 
-                // CrowdNode grouping only for DS-backed txs (matcher needs
-                // DSTransaction for address comparison). CoinJoin mixing grouping
-                // is handled for SDK-sourced txs in the branch below.
-                if let dsTx = wrappedTx.tx {
-                    if !self.crowdNodeTxSet.isComplete && self.crowdNodeTxSet.tryInclude(tx: dsTx) {
-                        return nil
-                    }
-                } else if wrappedTx.isCoinJoinMixing {
+                // TODO(crowdnode-home-grouping): the "CrowdNode · Account" group
+                // needs decode-based ObservedTransaction matching (the SDK
+                // snapshot here doesn't carry transactionData); ports separately.
+                // Until then CrowdNode txs render as individual rows — the
+                // current behavior (the old DS-backed branch was dead: the
+                // pure-SDK source never populates wrappedTx.tx).
+                if wrappedTx.isCoinJoinMixing {
                     // SDK-sourced CoinJoin mixing tx — no DSTransaction, so the
                     // DSCoinJoinWrapper path above can't see it. Group it into the
                     // same per-day "Mixing Transactions" set via the SDK overload.
@@ -364,54 +363,14 @@ class HomeViewModel: ObservableObject {
 
             Tx.shared.updateRateIfNeeded(for: tx)
             let txHashHex = tx.txHashHexString
-            var itemId = txHashHex
-            var txItem: TransactionListDataItem = .tx(wrappedTx, resolveMetadata(for: tx.txHashData))
+            let itemId = txHashHex
+            let txItem: TransactionListDataItem = .tx(wrappedTx, resolveMetadata(for: tx.txHashData))
             let newDateKey = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
 
-            // Track if this transaction was absorbed by a grouped set (CrowdNode)
-            var wasAbsorbedByGroup = false
-
-            if self.crowdNodeTxSet.tryInclude(tx: tx) {
-                itemId = FullCrowdNodeSignUpTxSet.id
-                txItem = .crowdnode(self.crowdNodeTxSet)
-                wasAbsorbedByGroup = true
-                DSLogger.log("HomeViewModel: Transaction \(txHashHex) absorbed by CrowdNode group")
-            }
-
-            // Fix: Check if this transaction exists under its original hash (not group ID)
-            // This handles the case where a transaction was previously shown individually
-            // but is now being absorbed by a CoinJoin/CrowdNode group
-            if wasAbsorbedByGroup && self.txByHash[txHashHex] != nil {
-                DSLogger.log("HomeViewModel: Removing individual transaction \(txHashHex) as it's now in a group")
-
-                // Perform iteration and removal entirely on main thread to avoid race conditions
-                // where txItems could change between finding indices and performing removal
-                DispatchQueue.main.async {
-                    // Find the group containing this transaction by searching current state
-                    for groupIndex in 0..<self.txItems.count {
-                        guard groupIndex < self.txItems.count else { break }
-
-                        if let itemIndex = self.txItems[groupIndex].items.firstIndex(where: { $0.id == txHashHex }) {
-                            // Verify bounds are still valid before removal
-                            guard groupIndex < self.txItems.count,
-                                  itemIndex < self.txItems[groupIndex].items.count else { break }
-
-                            self.txItems[groupIndex].items.remove(at: itemIndex)
-
-                            // Remove empty groups (re-check bounds after item removal)
-                            if groupIndex < self.txItems.count && self.txItems[groupIndex].items.isEmpty {
-                                self.txItems.remove(at: groupIndex)
-                            }
-
-                            // Only remove from cache after confirming UI removal succeeded
-                            self.queue.async {
-                                self.txByHash.removeValue(forKey: txHashHex)
-                            }
-                            break
-                        }
-                    }
-                }
-            }
+            // TODO(crowdnode-home-grouping): the CrowdNode absorb-into-group
+            // branch that lived here was dead (this path is fed by DashSync's
+            // DSTransactionManagerTransactionStatusDidChange, which no longer
+            // fires post-M6) and was removed with the CrowdNode tracking port.
 
             if let existingItem = self.txByHash[itemId] {
                 // Updating existing item

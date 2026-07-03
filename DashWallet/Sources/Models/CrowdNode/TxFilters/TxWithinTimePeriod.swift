@@ -26,7 +26,8 @@ public final class TxWithinTimePeriod: TransactionFilter {
         self.to = to
     }
 
-    func matches(tx: DSTransaction) -> Bool {
-        tx.timestamp >= from.timeIntervalSince1970 && tx.timestamp <= to.timeIntervalSince1970
+    func matches(_ tx: ObservedTransaction) -> Bool {
+        guard let ts = tx.timestamp else { return false }
+        return ts >= from && ts <= to
     }
 }

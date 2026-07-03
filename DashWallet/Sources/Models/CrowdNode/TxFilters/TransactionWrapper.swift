@@ -18,5 +18,6 @@
 protocol TransactionWrapper {
     var transactionMap: [Data: Transaction] { get }
     var amount: Int64 { get }
-    func tryInclude(tx: DSTransaction) -> Bool
+    @discardableResult
+    func tryInclude(_ tx: ObservedTransaction) -> Bool
 }

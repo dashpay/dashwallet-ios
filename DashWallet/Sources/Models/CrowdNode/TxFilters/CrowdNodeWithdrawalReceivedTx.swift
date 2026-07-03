@@ -20,20 +20,13 @@ import Foundation
 final class CrowdNodeWithdrawalReceivedTx: TransactionFilter {
     private var joinedFilters: [TransactionFilter] = []
 
-    func matches(tx: DSTransaction) -> Bool {
-        if joinedFilters.contains(where: { filter in !filter.matches(tx: tx) }) {
+    func matches(_ tx: ObservedTransaction) -> Bool {
+        if joinedFilters.contains(where: { filter in !filter.matches(tx) }) {
             return false
         }
 
-        let fromAddress = CrowdNode.crowdNodeAddress
-
-        for address in tx.inputAddresses {
-            if address as? String == fromAddress {
-                return tx.outputs.allSatisfy { output in !isApiResponse(coin: output.amount) }
-            }
-        }
-
-        return false
+        guard tx.inputAddresses.contains(CrowdNode.crowdNodeAddress) else { return false }
+        return tx.outputs.allSatisfy { output in !isApiResponse(coin: output.amount) }
     }
 
     func and(txFilter: TransactionFilter) -> CrowdNodeWithdrawalReceivedTx {

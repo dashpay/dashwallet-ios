@@ -168,11 +168,8 @@ public final class CrowdNode {
 
     private func topUpAccount(_ accountAddress: String, _ amount: UInt64) async throws -> DSTransaction {
         // sendCoins broadcasts via SwiftDashSDK and throws on failure, and the
-        // follow-up signal send polls the SDK's UTXO set itself before spending
-        // the top-up, so the legacy SpendableTransaction wait is obsolete here.
-        // It was also a permanent hang: it gated on DashSync's
-        // relayCount/DSTransactionManagerTransactionStatusDidChange, and with
-        // DashSync sync stopped that notification never fires.
+        // follow-up signal send polls the SDK's UTXO set itself before
+        // spending the top-up — no extra spendability wait is needed here.
         return try await sendCoinsService.sendCoins(address: accountAddress, amount: amount)
     }
 }
@@ -220,10 +217,9 @@ extension CrowdNode {
 
     private func tryRestoreSignUp() -> Bool {
         let fullSet = FullCrowdNodeSignUpTxSet()
-        let wallet = DWEnvironment.sharedInstance().currentWallet
-        wallet.allTransactions.forEach { transaction in
-            fullSet.tryInclude(tx: transaction)
-        }
+        TransactionObserver
+            .fetchObserved(firstSeenAtOrAfter: FullCrowdNodeSignUpTxSet.januaryFirst2022Epoch)
+            .forEach { fullSet.tryInclude($0) }
 
         if let welcomeResponse = fullSet.welcomeToApiResponse {
             precondition(welcomeResponse.toAddress != nil)
@@ -324,15 +320,15 @@ extension CrowdNode {
                 DSLogger.log("CrowdNode TopUp tx hash: \(topUpTx.txHashHexString)")
 
                 signUpState = SignUpState.signingUp
-                let (signUpTx, acceptTermsResponse) = try await makeSignUpRequest(accountAddress, [topUpTx])
+                try await makeSignUpRequest(accountAddress)
 
                 signUpState = SignUpState.acceptingTerms
-                let _ = try await acceptTerms(accountAddress, [signUpTx, acceptTermsResponse])
+                try await acceptTerms(accountAddress)
             }
             else {
                 signUpState = SignUpState.acceptingTerms
-                let topUpTx = try await topUpAccount(accountAddress, CrowdNode.requiredForAcceptTerms)
-                let _ = try await acceptTerms(accountAddress, [topUpTx])
+                let _ = try await topUpAccount(accountAddress, CrowdNode.requiredForAcceptTerms)
+                try await acceptTerms(accountAddress)
             }
 
             notifyIfNeeded(message: NSLocalizedString("Your CrowdNode account is set up and ready to use!", comment: "CrowdNode"))
@@ -346,13 +342,14 @@ extension CrowdNode {
         }
     }
 
-    private func makeSignUpRequest(_ accountAddress: String,
-                                   _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
+    private func makeSignUpRequest(_ accountAddress: String) async throws {
         let requestValue = CrowdNode.apiOffset + ApiCode.signUp.rawValue
+        // Capture BEFORE broadcast: the response always postdates the request,
+        // and the observer's freshness floor keys off this instant.
+        let requestSentAt = Date()
         let signUpTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                             amount: requestValue,
-                                                            inputSelector: SingleInputAddressSelector(candidates: inputs,
-                                                                                                      address: accountAddress))
+                                                            inputSelector: SingleInputAddressSelector(address: accountAddress))
         DSLogger.log("CrowdNode SignUp tx hash: \(signUpTx.txHashHexString)")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms,
@@ -360,23 +357,20 @@ extension CrowdNode {
         let errorResponse = CrowdNodeErrorResponse(errorValue: requestValue,
                                                    accountAddress: accountAddress)
 
-        let responseTx = await txObserver.first(filters: errorResponse, successResponse)
-        DSLogger.log("CrowdNode AcceptTerms response tx hash: \(responseTx.txHashHexString)")
+        let responseTx = await txObserver.first(filters: errorResponse, successResponse, after: requestSentAt)
+        DSLogger.log("CrowdNode AcceptTerms response tx: \(responseTx.txidHexDisplay)")
 
-        if errorResponse.matches(tx: responseTx) {
+        if errorResponse.matches(responseTx) {
             throw CrowdNode.Error.signUp
         }
-
-        return (req: signUpTx, resp: responseTx)
     }
 
-    private func acceptTerms(_ accountAddress: String,
-                             _ inputs: [DSTransaction]) async throws -> (req: DSTransaction, resp: DSTransaction) {
+    private func acceptTerms(_ accountAddress: String) async throws {
         let requestValue = CrowdNode.apiOffset + ApiCode.acceptTerms.rawValue
+        let requestSentAt = Date()
         let termsAcceptedTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                                    amount: requestValue,
-                                                                   inputSelector: SingleInputAddressSelector(candidates: inputs,
-                                                                                                             address: accountAddress))
+                                                                   inputSelector: SingleInputAddressSelector(address: accountAddress))
         DSLogger.log("CrowdNode Terms Accepted tx hash: \(termsAcceptedTx.txHashHexString)")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.welcomeToApi,
@@ -384,14 +378,12 @@ extension CrowdNode {
         let errorResponse = CrowdNodeErrorResponse(errorValue: requestValue,
                                                    accountAddress: accountAddress)
 
-        let responseTx = await txObserver.first(filters: errorResponse, successResponse)
-        DSLogger.log("CrowdNode Welcome response tx hash: \(responseTx.txHashHexString)")
+        let responseTx = await txObserver.first(filters: errorResponse, successResponse, after: requestSentAt)
+        DSLogger.log("CrowdNode Welcome response tx: \(responseTx.txidHexDisplay)")
 
-        if errorResponse.matches(tx: responseTx) {
+        if errorResponse.matches(responseTx) {
             throw CrowdNode.Error.signUp
         }
-
-        return (req: termsAcceptedTx, resp: responseTx)
     }
 }
 
@@ -407,10 +399,10 @@ extension CrowdNode {
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
         DSLogger.log("CrowdNode deposit topup tx hash: \(topUpTx.txHashHexString)")
 
+        let requestSentAt = Date()
         let depositTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                              amount: min(maxSendable, amount),
-                                                             inputSelector: SingleInputAddressSelector(candidates: [topUpTx],
-                                                                                                       address: accountAddress))
+                                                             inputSelector: SingleInputAddressSelector(address: accountAddress))
         DSLogger.log("CrowdNode deposit tx hash: \(depositTx.txHashHexString)")
 
         Task {
@@ -419,10 +411,12 @@ extension CrowdNode {
             let errorResponse = CrowdNodeErrorResponse(errorValue: amount,
                                                        accountAddress: accountAddress)
 
-            let responseTx = await txObserver.first(filters: errorResponse, successResponse)
-            DSLogger.log("CrowdNode deposit response tx hash: \(responseTx.txHashHexString)")
+            // The freshness floor is what keeps a PREVIOUS deposit's ack row
+            // from instantly satisfying this wait on the initial scan.
+            let responseTx = await txObserver.first(filters: errorResponse, successResponse, after: requestSentAt)
+            DSLogger.log("CrowdNode deposit response tx: \(responseTx.txidHexDisplay)")
 
-            if errorResponse.matches(tx: responseTx) {
+            if errorResponse.matches(responseTx) {
                 handleError(error: CrowdNode.Error.deposit)
             } else {
                 refreshBalance()
@@ -469,12 +463,8 @@ extension CrowdNode {
 
     func hasAnyDeposits() -> Bool {
         guard !accountAddress.isEmpty else { return false }
-        let wallet = DWEnvironment.sharedInstance().currentWallet
         let filter = CrowdNodeDepositTx(accountAddress: accountAddress)
-
-        return wallet.allTransactions.contains {
-            tx in filter.matches(tx: tx)
-        }
+        return TransactionObserver.fetchObserved().contains { filter.matches($0) }
     }
 
     private func checkWithdrawalLimits(_ amount: UInt64) throws {
@@ -765,7 +755,7 @@ extension CrowdNode {
             // First check or wait for the confirmation tx.
             // No need to make web requests if it isn't found.
             let confirmationTx = await waitForApiAddressConfirmation(primaryAddress: primaryAddress!, apiAddress: accountAddress)
-            DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txHashHexString)")
+            DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txidHexDisplay)")
 
             if hasDepositConfirmations() {
                 // If a deposit confirmation was received, the address has been confirmed already
@@ -779,19 +769,14 @@ extension CrowdNode {
                 return
             }
 
-            let account = DWEnvironment.sharedInstance().currentAccount
-
-            if account.transactionIsValid(confirmationTx) {
-                do {
-                    prefs.shouldShowConfirmedNotification = true
-                    let forwarded = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress, amount: CrowdNode.apiConfirmationDashAmount,
-                                                                         inputSelector: SingleInputAddressSelector(candidates: [confirmationTx], address: address),
-                                                                         adjustAmountDownwards: true)
-                    DSLogger.log("CrowdNode: confirmation tx forwarded: \(forwarded.txHashHexString)")
-                } catch {
-                    DSLogger.log("CrowdNode error during confirmation forwarding: \(error)")
-                }
-            }
+            // TODO(online-account port): confirmation forwarding disabled. The
+            // legacy gate was DashSync's account.transactionIsValid — no SDK
+            // equivalent yet. Forwarding has been de-facto dead since M6 (this
+            // await never resumed); silently re-enabling a money-moving forward
+            // without its validity gate is the wrong default. Re-enable the
+            // SwiftDashSDK selected-input forward with the online-account port;
+            // the web-polling path (checkAddressStatus) still completes linking.
+            DSLogger.log("CrowdNode: confirmation tx seen; forwarding skipped (online-account port pending)")
         }
     }
 
@@ -871,11 +856,10 @@ extension CrowdNode {
         }
     }
 
-    private func waitForApiAddressConfirmation(primaryAddress: String, apiAddress: String) async -> DSTransaction {
+    private func waitForApiAddressConfirmation(primaryAddress: String, apiAddress: String) async -> ObservedTransaction {
         let filter = CrowdNodeAPIConfirmationTx(primaryAddress: primaryAddress, apiAddress: apiAddress)
-        let wallet = DWEnvironment.sharedInstance().currentWallet
 
-        if let tx = wallet.allTransactions.first(where: { filter.matches(tx: $0) }) {
+        if let tx = TransactionObserver.fetchObserved().first(where: { filter.matches($0) }) {
             return tx
         }
         else {

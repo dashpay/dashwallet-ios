@@ -16,7 +16,7 @@
 //
 
 @objc
-enum ApiCode: UInt64 {
+enum ApiCode: UInt64, CaseIterable {
     case pleaseAcceptTerms = 2
     case welcomeToApi = 4
     case depositReceived = 8

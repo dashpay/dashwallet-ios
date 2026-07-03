@@ -17,12 +17,23 @@
 
 /// CrowdNode returns the sent amount - fee as the indication of an error
 public final class CrowdNodeErrorResponse: CoinsToAddressTxFilter {
+    /// Every well-known API response amount (apiOffset + code). The
+    /// fee-tolerance window of the base class can overlap these (e.g. a
+    /// 25 000-duff error window contains 20 002/20 004/20 008), and a known
+    /// response code must never be classified as an error payout. TODO(B4)
+    private static let knownApiAmounts: Set<UInt64> =
+        Set(ApiCode.allCases.map { CrowdNode.apiOffset + $0.rawValue })
+
     init(errorValue: UInt64, accountAddress: String?) {
         let accountAddress = accountAddress
         super.init(coins: errorValue, address: accountAddress, withFee: true)
     }
 
-    override func matches(tx: DSTransaction) -> Bool {
-        super.matches(tx: tx) && fromAddresses.first == CrowdNode.crowdNodeAddress
+    override func matches(_ tx: ObservedTransaction) -> Bool {
+        guard super.matches(tx),
+              fromAddresses.contains(CrowdNode.crowdNodeAddress),
+              let amount = matchedAmount
+        else { return false }
+        return !Self.knownApiAmounts.contains(amount)
     }
 }

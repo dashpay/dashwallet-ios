@@ -26,7 +26,10 @@ public final class CrowdNodeResponse: CoinsToAddressTxFilter {
         super.init(coins: responseAmount, address: accountAddress)
     }
 
-    override func matches(tx: DSTransaction) -> Bool {
-        super.matches(tx: tx) && fromAddresses.first == CrowdNode.crowdNodeAddress && toAddress != CrowdNode.crowdNodeAddress
+    override func matches(_ tx: ObservedTransaction) -> Bool {
+        // `.contains` (was `.first ==` on an unordered Set — nondeterministic):
+        // the response must be paid FROM CrowdNode's address. Input addresses
+        // are best-effort P2PKH recovery; CrowdNode pays from P2PKH.
+        super.matches(tx) && fromAddresses.contains(CrowdNode.crowdNodeAddress) && toAddress != CrowdNode.crowdNodeAddress
     }
 }
