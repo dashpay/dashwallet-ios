@@ -50,6 +50,13 @@ enum SwapDepositURIBuilder {
         return trimmedAddress
     }
 
+    /// True when the URI for this coin is a bare deposit address with no amount/memo embedded
+    /// (i.e. non-EVM, non-UTXO chains such as Solana, NEAR, Cosmos, TON, XRP…).
+    static func isBareURI(for coin: SwapCryptoCurrency) -> Bool {
+        let chain = coin.chain.uppercased()
+        return !isUTXOChain(chain) && evmChainIDs[chain] == nil
+    }
+
     static func isUTXOChain(_ chain: String) -> Bool {
         switch chain.uppercased() {
         case "BTC", "BCH", "DOGE", "LTC", "ZEC":
@@ -102,8 +109,13 @@ enum SwapDepositURIBuilder {
             return "ethereum:\(address)@\(chainID)?value=\(value)"
         }
 
-        // ERC-20 token: EIP-681 /transfer form.
-        let value = baseUnits(amount, decimals: tokenDecimals(for: coin))
+        // ERC-20 token: only emit EIP-681 /transfer when decimals are known with certainty.
+        // A guessed default (e.g. 18 for a 6-decimal token) would produce a uint256 off by
+        // 10^12 — safer to fall back to the bare deposit address.
+        guard let decimals = tokenDecimals(for: coin) else {
+            return address
+        }
+        let value = baseUnits(amount, decimals: decimals)
         return "ethereum:\(contract)@\(chainID)/transfer?address=\(address)&uint256=\(value)"
     }
 
@@ -114,8 +126,9 @@ enum SwapDepositURIBuilder {
         return String(coin.swapAsset[range.upperBound...]).lowercased()
     }
 
-    /// Token base-unit exponent (mirrors Android `defaultDecimals`).
-    private static func tokenDecimals(for coin: SwapCryptoCurrency) -> Int {
+    /// Token base-unit exponent for known ERC-20s. Returns nil when the decimals are not
+    /// known with certainty — callers must treat nil as "unsafe to build URI".
+    private static func tokenDecimals(for coin: SwapCryptoCurrency) -> Int? {
         switch coin.code.uppercased() {
         case "USDC", "USDT":
             // Binance-Peg USDC/USDT on BSC are 18 decimals; elsewhere these stablecoins are 6.
@@ -125,19 +138,26 @@ enum SwapDepositURIBuilder {
         case "WBTC", "CBBTC":
             return 8
         default:
-            return 18
+            // Returning nil causes evmURI to fall back to a bare address rather than emitting
+            // a uint256 computed from an incorrect assumed-18 exponent.
+            return nil
         }
     }
 
     /// On-chain decimals used to round the *displayed* send amount. EVM only; nil elsewhere.
     private static func displayDecimals(for coin: SwapCryptoCurrency) -> Int? {
         guard evmChainIDs[coin.chain.uppercased()] != nil else { return nil }
-        return tokenContract(for: coin).isEmpty ? nativeDecimals : tokenDecimals(for: coin)
+        if tokenContract(for: coin).isEmpty { return nativeDecimals }
+        return tokenDecimals(for: coin)
     }
 
     /// `amount × 10^decimals`, truncated toward zero, as a plain integer string (no exponent).
     private static func baseUnits(_ amount: String, decimals: Int) -> String {
         let trimmed = amount.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Reject anything containing grouping separators, currency symbols, or other
+        // non-decimal characters — Decimal(string:) silently truncates at the first
+        // non-numeric character (e.g. "2,000" → 2), which would under-encode the amount.
+        guard trimmed.range(of: #"^\d*\.?\d+$"#, options: .regularExpression) != nil else { return "0" }
         guard let value = Decimal(string: trimmed), value > 0 else { return "0" }
 
         var multiplier = Decimal(1)
