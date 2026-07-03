@@ -100,6 +100,26 @@ struct BuyReceiveView: View {
                 displayValue: addressDisplayValue,
                 copyValue: viewModel.copyText
             )
+
+            if let amount = viewModel.displaySendAmount {
+                Divider()
+                copyableDetailRow(
+                    title: NSLocalizedString("Amount to send", comment: "Dash DEX"),
+                    displayValue: amount,
+                    copyValue: amount
+                )
+            }
+
+            if let memo = viewModel.memoText {
+                Divider()
+                copyableDetailRow(
+                    title: NSLocalizedString("Memo / Tag", comment: "Dash DEX"),
+                    displayValue: memo,
+                    copyValue: memo,
+                    helper: NSLocalizedString("Required — include this memo or your funds may be lost", comment: "Dash DEX"),
+                    helperColor: Color.dash.orange
+                )
+            }
         }
         .padding(20)
         .background(Color.dash.secondaryBackground)
