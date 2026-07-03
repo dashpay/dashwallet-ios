@@ -7,6 +7,8 @@ description: Use when migrating any function from DashSync (legacy ObjC) to Swif
 
 This skill is the entry point for **all** DashSync removal work in dashwallet-ios, regardless of which function you're migrating. Most sections apply universally; §3 is the default path for functions that fit a straightforward replacement. For everything else, §2 + §3a route you to the right alternative.
 
+**Division of labor across the three migration docs:** `DASHSYNC_MIGRATION.md` = status (what's migrated, per function). `CLAUDE.md` §"DashSync → SwiftDashSDK Migration" + §"Architecture Guardrails" = invariants that must always hold (frozen DashSync reads, sync gating, send boundary, mnemonic ownership, no copy-then-adapt, comments state behavior not intent). This file = procedure (how to run the next cutover). Don't duplicate content across them — link.
+
 ## 0. Deployment model: one-shot, single-release migration
 
 **The entire DashSync → SwiftDashSDK migration ships in a single App Store release.** No interim release ever ships with the migration partially done. The cutover work, the key/storage migrators, and DashSync's removal all land on the development branch and ship together.
@@ -45,12 +47,12 @@ If any are false, **STOP and re-plan**. Go to §3a, find the function's category
 
 **Functions where the direct cutover pattern fits cleanly** (per `DASHSYNC_MIGRATION.md`):
 
-- #2 address validation (✅ done — reference implementation in `DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKAddressValidator.swift`)
+- #2 address validation (✅ done — the standalone `SwiftDashSDKAddressValidator` adapter was retired; the final shape is the NSString category extension at `DashWallet/Sources/UI/Payments/PaymentModels/NSString+SwiftDashSDKAddress.swift`)
 - #3 mnemonic generation
 - #4 mnemonic validation
 - #13 backup seed phrase
 - #15 provider keys derivation
-- #1 receive address (with the index-parameter trick)
+- #1 receive address (✅ done — no-arg `SwiftDashSDKReceiveAddressReader`, kept as a permanent SDK-only helper)
 
 ## 3. One-stage cutover
 
@@ -80,7 +82,7 @@ guard /* validate input */ else { return false }
 return SwiftDashSDKModule.theMethod(...)
 ```
 
-Reference implementation: `SwiftDashSDKAddressValidator.swift` (~15 lines). Reference commit for this final shape: `3c87467e5`. If the shim adds no real value after the cutover, delete it and call SwiftDashSDK directly from the final call sites.
+Reference implementation: `SwiftDashSDKReceiveAddressReader.swift` (the canonical *kept* shim: main-thread hop + host resolution + nil-on-failure logging that ObjC callers can't inline). If the shim adds no real value after the cutover, delete it and call SwiftDashSDK directly from the final call sites — precedent: `SwiftDashSDKAddressValidator` was retired in favor of an NSString category extension once verification completed.
 
 ## 3a. When the direct cutover doesn't fit — alternative shapes
 
@@ -133,7 +135,7 @@ Concrete locations:
 - **SwiftDashSDK revision source of truth**: `/Users/bartoszrozwarski/Documents/Developer/platform/Cargo.toml`
 - **SwiftDashSDK Swift wrappers**: `/Users/bartoszrozwarski/Documents/Developer/platform/packages/swift-sdk/Sources/SwiftDashSDK/`
 
-Most of the time the two libraries already behave the same way and the fallback is dead code. The devnet check (commit `3c87467e5`) is the canonical example: assumed `.devnet` might differ from evonet, added a fallback, then found they use byte-identical logic and the fallback was deletable in the very next PR. Do the read first.
+Most of the time the two libraries already behave the same way and the fallback is dead code. The devnet check (commit `3c87467e5`) is the canonical example: assumed `.devnet` might differ from evonet, added a fallback, then found they use byte-identical logic and the fallback was deletable in the very next PR. The inverse failure also happened: the send path *assumed* the SDK bundles build+sign+broadcast into one FFI call and shipped a no-op `broadcast()` on that basis — `buildSigned` and `broadcastTransaction` were always separate calls, and the wrong assumption shipped a decorative confirm sheet (arch-review T1, fixed `ee9901696`). Do the read first, in both directions: before adding a fallback AND before claiming a constraint exists.
 
 ## 6. Verification flow
 
@@ -148,32 +150,16 @@ LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pod install
 # 1. pbxproj sanity
 plutil -lint DashWallet.xcodeproj/project.pbxproj
 
-# 2. dashwallet target builds
-xcodebuild build \
-  -workspace DashWallet.xcworkspace \
-  -scheme dashwallet \
-  -configuration Debug \
-  -destination 'platform=iOS Simulator,name=iPhone 17' \
-  CODE_SIGNING_ALLOWED=NO \
-  EXCLUDED_ARCHS=x86_64 \
-  ONLY_ACTIVE_ARCH=YES
-
-# 3. dashpay target builds (same flags, different scheme)
-xcodebuild build \
-  -workspace DashWallet.xcworkspace \
-  -scheme dashpay \
-  -configuration Debug \
-  -destination 'platform=iOS Simulator,name=iPhone 17' \
-  CODE_SIGNING_ALLOWED=NO \
-  EXCLUDED_ARCHS=x86_64 \
-  ONLY_ACTIVE_ARCH=YES
+# 2. the build gate — dashpay is the scheme kept green during the migration
+xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' ARCHS=arm64 build
 ```
 
-`EXCLUDED_ARCHS=x86_64` is required because the SwiftDashSDK xcframework only ships `ios-arm64-simulator` (not x86_64). On Apple Silicon this works fine; CI on Intel would need a rebuilt xcframework.
+`ARCHS=arm64` is required because the SwiftDashSDK xcframework only ships `ios-arm64-simulator` (not x86_64). On Apple Silicon this works fine; CI on Intel would need a rebuilt xcframework. The `dashwallet` scheme is **not kept green on this branch** (as of 2026-07) — build it additionally only when your change touches dashwallet-only surfaces, and don't treat its pre-existing breakage as your regression.
 
 **If the verify build fails on a missing SDK member** (e.g. `'ManagedCoreWallet' has no member 'X'`), it's almost never your migration — the `../platform` checkout is on a branch lacking that API, or `DashSDKFFI.xcframework` is stale. The xcframework is a **gitignored build artifact** that a platform branch switch does NOT update. Fix: switch `../platform` to the branch defining the API, then rebuild `build_ios.sh --target sim` **run with cwd inside `../platform/packages/swift-sdk`** (it invokes `cargo` from the cwd; run from dashwallet-ios it errors `could not find Cargo.toml`). Confirm with `nm <slice>/librs_unified_sdk_ffi.a | grep <symbol>` before rebuilding the app. Note: such a failure also masks app-target errors — the app module isn't compiled until the SDK package builds, so a "clean" first build can hide real errors in your changed files until the SDK builds. (Learned closing out #20 CoinJoin: sweep API lives on `feature/coinjoin-sweep-and-recovery`.)
 
-The iPhone 17 simulator runs dashwallet again as of 2026-04 — earlier sessions had to skip simulator runs because of a `[DSChain retrieveWallets]` crash on iOS 26.3, but that no longer reproduces. Exercise the migrated flow end-to-end before calling it done.
+Exercise the migrated flow end-to-end on the simulator (dashpay scheme, testnet) before calling it done — the unit-test target is currently broken, so the runtime smoke IS the second gate.
 
 ## 7. Update the migration doc on every cutover
 
