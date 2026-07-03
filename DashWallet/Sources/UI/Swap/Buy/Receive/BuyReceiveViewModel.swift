@@ -31,6 +31,7 @@ final class BuyReceiveViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var qrImage: UIImage?
+    @Published private var confirmedSellAmount: String = ""
 
     private let refundAddress: String
     private let sellAmount: String
@@ -75,9 +76,10 @@ final class BuyReceiveViewModel: ObservableObject {
     }
 
     /// Amount string to display when the URI cannot carry it (bare-address chains only).
+    /// Driven by order.sellAmount (set after createBuyOrder), not the raw pre-order input.
     var displaySendAmount: String? {
         guard isBareURI else { return nil }
-        let trimmed = sellAmount.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = confirmedSellAmount.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
         let amount = SwapDepositURIBuilder.displaySendAmount(for: coin, amount: trimmed)
         return amount.isEmpty ? nil : "\(amount) \(coinCode)"
@@ -119,6 +121,7 @@ final class BuyReceiveViewModel: ObservableObject {
             )
 
             depositAddress = order.depositAddress
+            confirmedSellAmount = order.sellAmount
             uri = SwapDepositURIBuilder.uri(
                 for: coin,
                 address: order.depositAddress,

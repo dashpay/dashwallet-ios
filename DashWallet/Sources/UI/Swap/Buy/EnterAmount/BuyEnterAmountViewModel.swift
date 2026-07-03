@@ -226,12 +226,11 @@ final class BuyEnterAmountViewModel: ObservableObject {
     // MARK: - Private: Amount handling
 
     private func updateAmountModel(input: String, currency: CurrencyOption) {
-        guard let d = parseInput(input) else {
+        let normalized = input.replacingOccurrences(of: ",", with: ".")
+        guard let decimal = Decimal(string: normalized), decimal > 0 else {
             amount.setDash(0)
             return
         }
-
-        let decimal = Decimal(d)
         switch currency {
         case .dash:
             amount.setDash(decimal)
