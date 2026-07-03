@@ -61,15 +61,13 @@ final class RefundAddressViewModel: ObservableObject {
 
     var addressValidationErrorMessage: String? {
         guard showAddressError else { return nil }
-        let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
         return String(
             format: NSLocalizedString(
-                "Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work.",
-                comment: "Swap"
+                "Enter a valid %@ address for the %@ network.",
+                comment: "Dash DEX"
             ),
-            chainLabel,
             coin.code,
-            chainLabel
+            SwapCryptoCurrency.chainDisplayName(coin.chain)
         )
     }
 
@@ -116,7 +114,10 @@ final class RefundAddressViewModel: ObservableObject {
     func attemptContinue() -> String? {
         let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         let candidate = Self.extractAddressFromURI(trimmed)
-        guard !candidate.isEmpty else { return nil }
+        guard !candidate.isEmpty else {
+            shouldShowAddressValidationError = true
+            return nil
+        }
 
         shouldShowAddressValidationError = true
         guard SwapAddressValidator.isValid(address: candidate, for: coin) else { return nil }

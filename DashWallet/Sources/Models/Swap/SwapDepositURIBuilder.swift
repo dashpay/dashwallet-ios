@@ -105,7 +105,9 @@ enum SwapDepositURIBuilder {
 
         // No contract → native gas coin (e.g. ARB.ETH): EIP-681 native value form.
         guard !contract.isEmpty else {
-            let value = baseUnits(amount, decimals: nativeDecimals)
+            guard let value = baseUnits(amount, decimals: nativeDecimals) else {
+                return address
+            }
             return "ethereum:\(address)@\(chainID)?value=\(value)"
         }
 
@@ -115,7 +117,9 @@ enum SwapDepositURIBuilder {
         guard let decimals = tokenDecimals(for: coin) else {
             return address
         }
-        let value = baseUnits(amount, decimals: decimals)
+        guard let value = baseUnits(amount, decimals: decimals) else {
+            return address
+        }
         return "ethereum:\(contract)@\(chainID)/transfer?address=\(address)&uint256=\(value)"
     }
 
@@ -152,13 +156,15 @@ enum SwapDepositURIBuilder {
     }
 
     /// `amount × 10^decimals`, truncated toward zero, as a plain integer string (no exponent).
-    private static func baseUnits(_ amount: String, decimals: Int) -> String {
+    /// Returns nil when the amount is unparseable or ≤ 0 — callers must omit the amount
+    /// parameter from the URI rather than encoding a zero-value payment request.
+    private static func baseUnits(_ amount: String, decimals: Int) -> String? {
         let trimmed = amount.trimmingCharacters(in: .whitespacesAndNewlines)
         // Reject anything containing grouping separators, currency symbols, or other
         // non-decimal characters — Decimal(string:) silently truncates at the first
         // non-numeric character (e.g. "2,000" → 2), which would under-encode the amount.
-        guard trimmed.range(of: #"^\d*\.?\d+$"#, options: .regularExpression) != nil else { return "0" }
-        guard let value = Decimal(string: trimmed), value > 0 else { return "0" }
+        guard trimmed.range(of: #"^\d*\.?\d+$"#, options: .regularExpression) != nil else { return nil }
+        guard let value = Decimal(string: trimmed), value > 0 else { return nil }
 
         var multiplier = Decimal(1)
         for _ in 0..<decimals { multiplier *= 10 }
@@ -186,7 +192,9 @@ enum SwapDepositURIBuilder {
 
         var items = [URLQueryItem]()
         let trimmedAmount = amount.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmedAmount.isEmpty {
+        let amountIsValid = trimmedAmount.range(of: #"^\d*\.?\d+$"#, options: .regularExpression) != nil
+            && Decimal(string: trimmedAmount).map { $0 > 0 } == true
+        if amountIsValid {
             items.append(URLQueryItem(name: "amount", value: trimmedAmount))
         }
         if let memo = memo?.trimmingCharacters(in: .whitespacesAndNewlines), !memo.isEmpty {

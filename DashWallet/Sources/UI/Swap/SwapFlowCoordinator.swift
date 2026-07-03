@@ -51,6 +51,7 @@ final class SwapFlowCoordinator {
     }
 
     private func navigateToEnterAddress(for coin: SwapCryptoCurrency) {
+        guard !(navigationController?.topViewController is EnterAddressHostingController) else { return }
         let enterAddressVC = EnterAddressHostingController(coin: coin, swapProvider: swapProvider)
         enterAddressVC.onAddressConfirmed = { [weak self] coin, address in
             self?.navigateToConvert(coin: coin, address: address)
@@ -80,6 +81,7 @@ final class SwapFlowCoordinator {
     }
 
     private func navigateToRefundAddress(coin: SwapCryptoCurrency, sellAmount: String) {
+        guard !(navigationController?.topViewController is RefundAddressHostingController) else { return }
         let refundVC = RefundAddressHostingController(coin: coin)
         refundVC.onRefundAddressConfirmed = { [weak self] coin, refundAddress in
             self?.navigateToReceive(coin: coin, sellAmount: sellAmount, refundAddress: refundAddress)
@@ -88,6 +90,7 @@ final class SwapFlowCoordinator {
     }
 
     private func navigateToReceive(coin: SwapCryptoCurrency, sellAmount: String, refundAddress: String) {
+        guard !(navigationController?.topViewController is BuyReceiveHostingController) else { return }
         DSLogger.log("Swap: Buy receive \(coin.code) amount=\(sellAmount) refund=\(refundAddress)")
         guard let swapKitProvider = swapProvider as? SwapKitSwapProvider else {
             DSLogger.log("Swap flow: Buy receive requires SwapKit backend")
