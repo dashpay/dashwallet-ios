@@ -33,6 +33,86 @@ protocol TransactionDataItem {
     var shortDateString: String { get }
 }
 
+// MARK: - DSTransactionDirection UI formatting
+// (Lives here with the rest of the tx-row formatting. The direction enum is
+// still DashSync's — replacing it with an app-owned enum is a separate,
+// repo-wide step tracked in the teardown plan.)
+
+extension DSTransactionDirection {
+    var title: String {
+        switch self {
+        case .sent:
+            return NSLocalizedString("Amount Sent", comment: "");
+        case .received:
+            return NSLocalizedString("Amount received", comment: "");
+        case .moved:
+            return NSLocalizedString("Moved to Address", comment: "");
+        case .notAccountFunds:
+            return NSLocalizedString("Registered Masternode", comment: "");
+        @unknown default:
+            fatalError()
+        }
+    }
+
+    var tintColor: UIColor {
+        switch self {
+        case .sent:
+            return .dw_dashBlue()
+        case .received:
+            return .dw_green()
+        case .moved:
+            return .dw_orange()
+        case .notAccountFunds:
+            return .dw_label()
+        @unknown default:
+            return .dw_label()
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .moved:
+            return "tx.item.internal.icon"
+        case .sent:
+            return "tx.item.sent.icon"
+        case .received:
+            return "tx.item.received.icon"
+        case .notAccountFunds:
+            return "tx.item.received.icon"
+        @unknown default:
+            fatalError()
+        }
+    }
+
+    var icon: UIImage {
+        return UIImage(named: iconName)!
+    }
+
+    var directionSymbol: String {
+        switch self {
+        case .received:
+            return "+";
+        case .sent:
+            return "-";
+        default:
+            return "";
+        }
+    }
+
+    var dashAmountTintColor: UIColor {
+        switch self {
+        case .moved:
+            return .dw_quaternaryText()
+        case .sent:
+            return .dw_darkTitle()
+        case .received, .notAccountFunds:
+            return .dw_dashBlue()
+        @unknown default:
+            fatalError()
+        }
+    }
+}
+
 extension TransactionDataItem {
     var formattedDashAmountWithDirectionalSymbol: String {
         guard dashAmount != UInt64.max else {

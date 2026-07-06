@@ -152,19 +152,6 @@ extension DSTransactionDirection {
     }
 }
 
-@objc
-extension DSTransaction {
-    @objc
-    func defaultTaxCategory() -> TxMetadataTaxCategory {
-        direction.defaultTaxCategory
-    }
-
-    @objc
-    func defaultTaxCategoryString() -> String {
-        defaultTaxCategory().stringValue
-    }
-}
-
 extension Transaction {
     func defaultTaxCategoryString() -> String {
         direction.defaultTaxCategory.stringValue

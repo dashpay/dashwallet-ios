@@ -17,6 +17,11 @@
 
 import Foundation
 
+// TODO(dashpay-e2e): these survive solely for the DashPay-frozen ObjC
+// surfaces (DWTransactionListDataProvider(+Stub), DWUserProfileDataSourceObject),
+// which still format DSTransaction couriers directly. They fall with those
+// surfaces when the DashPay tx UI migrates to SDK rows. The app's own
+// `Transaction` wrapper no longer touches any of this.
 @objc
 extension DSTransaction {
     var date: Date {
@@ -29,64 +34,7 @@ extension DSTransaction {
         let txDate = Date(timeIntervalSince1970: timestamp)
         return txDate;
     }
-}
 
-extension DSTransaction {
-    var type: Transaction.`Type` {
-        if self is DSCoinbaseTransaction {
-            return .reward;
-        } else if self is DSProviderRegistrationTransaction {
-            return .masternodeRegistration;
-        } else if self is DSProviderUpdateRegistrarTransaction {
-            return .masternodeUpdate;
-        } else if self is DSProviderUpdateServiceTransaction {
-            return .masternodeUpdate;
-        } else if self is DSProviderUpdateRevocationTransaction {
-            return .masternodeRevoke;
-        } else if self is DSCreditFundingTransaction {
-            return .blockchainIdentityRegistration;
-        }
-
-        return .classic;
-    }
-
-    var outputReceiveAddresses: [String] {
-        var outputReceiveAddresses: [String] = []
-
-        let currentAccount = DWEnvironment.sharedInstance().currentAccount;
-        let account = accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
-
-        switch direction {
-        case .moved, .sent, .received:
-            outputReceiveAddresses = account?.externalAddresses(of: self) ?? []
-        default:
-            break
-        }
-
-        return outputReceiveAddresses
-    }
-
-    var specialInfoAddresses: [String: Int] {
-        var specialInfoAddresses: [String: Int] = [:]
-
-        switch direction {
-        case .notAccountFunds:
-            if let tx = self as? DSProviderRegistrationTransaction {
-                specialInfoAddresses = [tx.ownerAddress!: 0, tx.operatorAddress: 1, tx.votingAddress: 2]
-            } else if let tx = self as? DSProviderUpdateRegistrarTransaction {
-                specialInfoAddresses = [tx.operatorAddress: 0, tx.votingAddress: 1]
-            }
-        default:
-            break
-        }
-
-        return specialInfoAddresses
-    }
-}
-
-// MARK: UI
-@objc
-extension DSTransaction {
     var formattedShortTxDate: String {
         DWDateFormatter.sharedInstance.dateOnly(from: date)
     }
@@ -97,104 +45,5 @@ extension DSTransaction {
 
     var formattedISO8601TxDate: String {
         DWDateFormatter.sharedInstance.iso8601String(from: date)
-    }
-    
-    var formattedShortTxTime: String {
-        DWDateFormatter.sharedInstance.timeOnly(from: date)
-    }
-
-    var formattedDashAmountWithDirectionalSymbol: String {
-        let formatted = dashAmount.formattedDashAmount
-
-        if formatted.isCurrencySymbolAtTheBeginning {
-            return direction.directionSymbol + " " + dashAmount.formattedDashAmount
-        } else {
-            return direction.directionSymbol + dashAmount.formattedDashAmount
-        }
-    }
-
-    func attributedDashAmount(with font: UIFont, color: UIColor = .dw_label()) -> NSAttributedString {
-        let formatted = formattedDashAmountWithDirectionalSymbol
-        return formatted.attributedAmountStringWithDashSymbol(tintColor: color, dashSymbolColor: color, font: font)
-    }
-}
-
-extension DSTransactionDirection {
-    var title: String {
-        switch self {
-        case .sent:
-            return NSLocalizedString("Amount Sent", comment: "");
-        case .received:
-            return NSLocalizedString("Amount received", comment: "");
-        case .moved:
-            return NSLocalizedString("Moved to Address", comment: "");
-        case .notAccountFunds:
-            return NSLocalizedString("Registered Masternode", comment: "");
-        @unknown default:
-            fatalError()
-        }
-    }
-
-    var tintColor: UIColor {
-        switch self {
-        case .sent:
-            return .dw_dashBlue()
-        case .received:
-            return .dw_green()
-        case .moved:
-            return .dw_orange()
-        case .notAccountFunds:
-            return .dw_label()
-        @unknown default:
-            return .dw_label()
-        }
-    }
-    
-    var iconName: String {
-        switch self {
-        case .moved:
-            return "tx.item.internal.icon"
-        case .sent:
-            return "tx.item.sent.icon"
-        case .received:
-            return "tx.item.received.icon"
-        case .notAccountFunds:
-            return "tx.item.received.icon"
-        @unknown default:
-            fatalError()
-        }
-    }
-
-    var icon: UIImage {
-        return UIImage(named: iconName)!
-    }
-
-    private func systemImage(_ name: String) -> UIImage {
-        let iconConfig = UIImage.SymbolConfiguration(pointSize: 50, weight: .regular, scale: .large)
-        return UIImage(systemName: name, withConfiguration: iconConfig)!
-    }
-
-    var directionSymbol: String {
-        switch self {
-        case .received:
-            return "+";
-        case .sent:
-            return "-";
-        default:
-            return "";
-        }
-    }
-
-    var dashAmountTintColor: UIColor {
-        switch self {
-        case .moved:
-            return .dw_quaternaryText()
-        case .sent:
-            return .dw_darkTitle()
-        case .received, .notAccountFunds:
-            return .dw_dashBlue()
-        @unknown default:
-            fatalError()
-        }
     }
 }

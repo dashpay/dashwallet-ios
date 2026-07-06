@@ -58,36 +58,10 @@ class Taxes: NSObject {
         addressesUserInfos.create(dto: AddressUserInfo(address: address, taxCategory: taxCategory))
     }
 
-    func taxCategory(for tx: DSTransaction) -> TxMetadataTaxCategory {
-        var taxCategory: TxMetadataTaxCategory = tx.defaultTaxCategory()
-
-        for outputAddress in tx.outputAddresses {
-            if let address = outputAddress as? String, let txCategory = self.taxCategory(for: address) {
-                // Some transactions might have output that returns change
-                // to the input same address, so need to check that directions match.
-                let txDirection = tx.direction
-
-                if (txDirection == .sent && txCategory.isOutgoing) ||
-                    (txDirection == .received && txCategory.isIncoming) {
-                    taxCategory = txCategory
-                    break
-                }
-            }
-        }
-
-        taxCategory = txUserInfos.get(by: tx.txHashData)?.taxCategory ?? taxCategory
-
-        return taxCategory
-    }
-
     func taxCategory(for tx: Transaction) -> TxMetadataTaxCategory {
-        if let dsTx = tx.tx {
-            return taxCategory(for: dsTx)
-        }
-
-        // SDK-sourced rows: a stored .unknown means the user never classified
-        // the tx (rows persisted before the direction default existed), so it
-        // must not shadow the direction-derived default.
+        // A stored .unknown means the user never classified the tx (rows
+        // persisted before the direction default existed), so it must not
+        // shadow the direction-derived default.
         if let stored = txUserInfos.get(by: tx.txHashData)?.taxCategory, stored != .unknown {
             return stored
         }

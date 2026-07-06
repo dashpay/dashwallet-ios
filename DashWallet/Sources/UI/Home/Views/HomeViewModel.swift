@@ -253,12 +253,11 @@ class HomeViewModel: ObservableObject {
                 // needs decode-based ObservedTransaction matching (the SDK
                 // snapshot here doesn't carry transactionData); ports separately.
                 // Until then CrowdNode txs render as individual rows — the
-                // current behavior (the old DS-backed branch was dead: the
-                // pure-SDK source never populates wrappedTx.tx).
+                // current behavior (the old DS-backed grouping branch was dead
+                // long before the .ds source case was deleted).
                 if wrappedTx.isCoinJoinMixing {
-                    // SDK-sourced CoinJoin mixing tx — no DSTransaction, so the
-                    // DSCoinJoinWrapper path above can't see it. Group it into the
-                    // same per-day "Mixing Transactions" set via the SDK overload.
+                    // CoinJoin mixing tx — group it into the per-day
+                    // "Mixing Transactions" set.
                     let date = DWDateFormatter.sharedInstance.dateOnly(from: wrappedTx.date)
                     let coinJoinTxSet = self.coinJoinTxSets[date] ?? CoinJoinMixingTxSet()
                     self.coinJoinTxSets[date] = coinJoinTxSet

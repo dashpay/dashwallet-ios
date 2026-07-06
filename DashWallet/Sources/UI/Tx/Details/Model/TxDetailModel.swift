@@ -136,12 +136,17 @@ extension TxDetailModel {
 }
 
 extension TxDetailModel {
+    // TODO(dashpay-e2e): contact attribution for a tx (source/destination
+    // identity) returns once the DashPay migration models it on SDK rows.
+    // Constant false is today's actual behavior — the legacy reads went
+    // through the DSTransaction escape hatch, which was nil for every
+    // reachable row.
     var hasSourceUser: Bool {
-        !(transaction.tx?.sourceBlockchainIdentities.isEmpty ?? true)
+        false
     }
 
     var hasDestinationUser: Bool {
-        !(transaction.tx?.destinationBlockchainIdentities.isEmpty ?? true)
+        false
     }
 
     var hasFee: Bool {
@@ -219,32 +224,14 @@ extension TxDetailModel {
         return models
     }
 
+    // TODO(dashpay-e2e): user rows come back with contact attribution —
+    // unreachable today (`hasSourceUser`/`hasDestinationUser` are false).
     private func sourceUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
-        guard let blockchainIdentity = transaction.tx?.sourceBlockchainIdentities.first else {
-            return []
-        }
-
-        #if DASHPAY
-        let user = DWDPUserObject(blockchainIdentity: blockchainIdentity)
-        let model = DWTitleDetailCellModel(title: title, userItem: user, copyableData: nil)
-        return [model]
-        #endif
-
-        return []
+        []
     }
 
     private func destinationUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
-        guard let blockchainIdentity = transaction.tx?.destinationBlockchainIdentities.first else {
-            return []
-        }
-
-        #if DASHPAY
-        let user = DWDPUserObject(blockchainIdentity: blockchainIdentity)
-        let model = DWTitleDetailCellModel(title: title, userItem: user, copyableData: nil)
-        return [model]
-        #endif
-
-        return []
+        []
     }
 
 
@@ -344,7 +331,7 @@ extension TxDetailModel {
 
     var date: DWTitleDetailCellModel {
         let title = NSLocalizedString("Date", comment: "")
-        let detail = transaction.tx?.formattedLongTxDate ?? DWDateFormatter.sharedInstance.longString(from: transaction.date)
+        let detail = DWDateFormatter.sharedInstance.longString(from: transaction.date)
         let model = DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         return model
     }

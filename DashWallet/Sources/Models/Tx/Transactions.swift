@@ -19,59 +19,12 @@ import Foundation
 
 // MARK: - Tx
 
-/// This class should be used from UI to obtain transactions. In the future most of the logic from DWHomeModel will migrate here.
-/// 'Transactions' object will provade an interface to fetch and monitor transactions
-///
+/// Historical-rate stamping for transaction metadata.
 @objc
 final class Tx: NSObject {
-    public var all: Tx.Transactions {
-        .init()
-    }
-
     private var txUserInfos: TransactionMetadataDAO = TransactionMetadataDAOImpl.shared
 
-    @objc
-    func updateRateIfNeeded(for transaction: DSTransaction) {
-        guard let activationDate = DWGlobalOptions.sharedInstance().dateHistoricalRatesActivated,
-              transaction.date > activationDate else {
-            return
-        }
-
-        guard let decimalRate = try? CurrencyExchanger.shared.rate(for: App.fiatCurrency) else {
-            return
-        }
-
-        let maximumFractionDigits = decimalRate.fractionDigits
-        let rate = (decimalRate*pow(10, maximumFractionDigits) as NSDecimalNumber).intValue
-
-        guard let userInfo = txUserInfos.get(by: transaction.txHashData) else {
-            set(rate: rate, currency: App.fiatCurrency, maximumFractionDigits: maximumFractionDigits, for: transaction)
-            return
-        }
-
-        guard userInfo.rate != nil else {
-            set(rate: rate, currency: App.fiatCurrency, maximumFractionDigits: maximumFractionDigits, for: userInfo)
-            return
-        }
-    }
-
-    private func set(rate: Int, currency: String, maximumFractionDigits: Int, for transaction: DSTransaction) {
-        set(rate: rate, currency: currency, maximumFractionDigits: maximumFractionDigits, for: .init(txHash: transaction.txHashData, taxCategory: transaction.defaultTaxCategory()))
-    }
-
-    private func set(rate: Int, currency: String, maximumFractionDigits: Int, for userInfo: TransactionMetadata) {
-        var userInfo = userInfo
-        userInfo.update(rate: rate, currency: currency, maximumFractionDigits: maximumFractionDigits)
-        txUserInfos.update(dto: userInfo)
-    }
-
-    /// Overload for the Transaction wrapper (SDK-sourced txs).
     func updateRateIfNeeded(for transaction: Transaction) {
-        if let dsTx = transaction.tx {
-            updateRateIfNeeded(for: dsTx)
-            return
-        }
-
         guard let activationDate = DWGlobalOptions.sharedInstance().dateHistoricalRatesActivated,
               transaction.date > activationDate else {
             return
@@ -96,29 +49,12 @@ final class Tx: NSObject {
         }
     }
 
+    private func set(rate: Int, currency: String, maximumFractionDigits: Int, for userInfo: TransactionMetadata) {
+        var userInfo = userInfo
+        userInfo.update(rate: rate, currency: currency, maximumFractionDigits: maximumFractionDigits)
+        txUserInfos.update(dto: userInfo)
+    }
+
     @objc
     static let shared = Tx()
 }
-
-// MARK: Tx.Transactions
-
-extension Tx {
-    struct Transactions: AsyncSequence, AsyncIteratorProtocol {
-        // Obtain all transactions here and monitor for the new ones
-
-        typealias Element = DSTransaction
-
-        mutating func next() async throws -> Element? {
-            guard !Task.isCancelled else {
-                return nil
-            }
-
-            return nil
-        }
-
-        func makeAsyncIterator() -> Transactions {
-            self
-        }
-    }
-}
-
