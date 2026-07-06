@@ -141,8 +141,15 @@ struct SendResult {
     let signedTxData: Data
     /// Display-order txid hex — logging / UI / callback only (NOT the CTX authoritative txid).
     let txidHexDisplay: String
+    /// Display-order txid bytes (the same value as `txidHexDisplay`, binary) —
+    /// L6 reverses these to wire order for the recent-sends registry key.
+    let txHashDisplay: Data
     /// The actual built fee in duffs.
     let fee: UInt64
+    /// Σ recipient amounts (duffs) — what the merchant receives, fee excluded.
+    let amount: UInt64
+    /// First recipient address, for the send-success screen's "Sent to" line.
+    let primaryAddress: String?
     /// Merchant ACK memo, if any. nil when there was no POST or the POST/ACK soft-failed.
     let ackMemo: String?
     /// Ready-to-open x-callback-url, or nil. L6 performs `UIApplication.open`.
@@ -311,7 +318,10 @@ final class BIP70PaymentService {
                                                txidHexDisplay: txidHexDisplay)
         return SendResult(signedTxData: prepared.txData,
                           txidHexDisplay: txidHexDisplay,
+                          txHashDisplay: prepared.txHashDisplay,
                           fee: prepared.fee,
+                          amount: confirmation.amount,
+                          primaryAddress: confirmation.primaryAddress,
                           ackMemo: ackMemo,
                           callbackURL: callbackURL)
     }

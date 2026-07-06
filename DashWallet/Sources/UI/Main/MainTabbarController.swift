@@ -394,7 +394,9 @@ extension MainTabbarController: PaymentsViewControllerDelegate {
     }
 
     private func presentTxDetails(for tx: DSTransaction, contact: DWDPBasicUserItem?) {
-        let model = TxDetailModel(transaction: Transaction(transaction: tx))
+        // Resolves the DSTransaction courier to the SDK-backed row (or the
+        // recent-send registry entry) — see TxDetailModel.init(transaction:).
+        let model = TxDetailModel(transaction: tx)
         let vc = SuccessTxDetailViewController(model: model)
         vc.modalPresentationStyle = .fullScreen
         vc.contactItem = contact

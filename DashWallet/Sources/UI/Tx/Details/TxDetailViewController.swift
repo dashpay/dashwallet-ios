@@ -116,10 +116,6 @@ class TXDetailViewController: BaseTxDetailsViewController {
     }
 
     enum Item: Hashable {
-        static func == (lhs: TXDetailViewController.Item, rhs: TXDetailViewController.Item) -> Bool {
-            lhs.hashValue == rhs.hashValue
-        }
-
         case header
         case receivedAt([DWTitleDetailItem])
         case sentFrom([DWTitleDetailItem])
@@ -131,26 +127,36 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case taxCategory(DWTitleDetailItem)
         case explorer
 
-        func hash(into hasher: inout Hasher) {
+        /// Per-case identity strings — the diffable-identifier content. The
+        /// leading case tag keeps two different cases with identical (notably
+        /// empty) payloads distinct: `.sentFrom([])` and `.sentTo([])` used to
+        /// hash to the same value, which is a duplicate-identifier crash once
+        /// both land in one snapshot.
+        private var identity: [String] {
             switch self {
-            case .header:
-                hasher.combine("Header")
-            case .sentTo(let items), .sentFrom(let items), .movedTo(let items), .movedFrom(let items), .receivedAt(let items):
-                for item in items {
-                    hasher.combine(item.title)
-                    if let value = item.plainDetail ?? item.attributedDetail?.string {
-                        hasher.combine(value)
-                    }
-                }
-            case .date(let item), .taxCategory(let item), .networkFee(let item):
-                hasher.combine(item.title?.hashValue)
-                if let value = item.plainDetail ?? item.attributedDetail?.string {
-                    hasher.combine(value.hashValue)
-                }
-
-            case .explorer:
-                hasher.combine("Explorer")
+            case .header: return ["Header"]
+            case .receivedAt(let items): return ["ReceivedAt"] + Self.identity(of: items)
+            case .sentFrom(let items): return ["SentFrom"] + Self.identity(of: items)
+            case .sentTo(let items): return ["SentTo"] + Self.identity(of: items)
+            case .movedFrom(let items): return ["MovedFrom"] + Self.identity(of: items)
+            case .movedTo(let items): return ["MovedTo"] + Self.identity(of: items)
+            case .networkFee(let item): return ["NetworkFee"] + Self.identity(of: [item])
+            case .date(let item): return ["Date"] + Self.identity(of: [item])
+            case .taxCategory(let item): return ["TaxCategory"] + Self.identity(of: [item])
+            case .explorer: return ["Explorer"]
             }
+        }
+
+        private static func identity(of items: [DWTitleDetailItem]) -> [String] {
+            items.flatMap { [$0.title ?? "", $0.plainDetail ?? $0.attributedDetail?.string ?? ""] }
+        }
+
+        static func == (lhs: Item, rhs: Item) -> Bool {
+            lhs.identity == rhs.identity
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(identity)
         }
     }
 
@@ -262,23 +268,37 @@ extension TXDetailViewController {
         currentSnapshot.appendSections([.header, .info, .taxCategory, .explorer])
         currentSnapshot.appendItems([.header], toSection: .header)
 
+        // Empty address groups are skipped: SDK rows often carry no linked
+        // input addresses and a sent row's external outputs may be unknown —
+        // an empty .sentFrom/.sentTo would render a blank cell.
         switch model.direction {
         case .moved:
             let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)
-            currentSnapshot.appendItems([
-                .movedFrom(model.inputAddresses(with: detailFont)),
-                .movedTo(model.outputAddresses(with: detailFont)),
-            ], toSection: .info)
+            let movedFrom = model.inputAddresses(with: detailFont)
+            if !movedFrom.isEmpty {
+                currentSnapshot.appendItems([.movedFrom(movedFrom)], toSection: .info)
+            }
+            let movedTo = model.outputAddresses(with: detailFont)
+            if !movedTo.isEmpty {
+                currentSnapshot.appendItems([.movedTo(movedTo)], toSection: .info)
+            }
             currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)
         case .sent:
             let fee: DWTitleDetailItem = model.fee(with: detailFont, tintColor: UIColor.label)
-            currentSnapshot.appendItems([
-                .sentFrom(model.inputAddresses(with: detailFont)),
-                .sentTo(model.outputAddresses(with: detailFont)),
-            ], toSection: .info)
+            let sentFrom = model.inputAddresses(with: detailFont)
+            if !sentFrom.isEmpty {
+                currentSnapshot.appendItems([.sentFrom(sentFrom)], toSection: .info)
+            }
+            let sentTo = model.outputAddresses(with: detailFont)
+            if !sentTo.isEmpty {
+                currentSnapshot.appendItems([.sentTo(sentTo)], toSection: .info)
+            }
             currentSnapshot.appendItems([.networkFee(fee)], toSection: .info)
         case .received:
-            currentSnapshot.appendItems([.receivedAt(model.outputAddresses(with: detailFont))], toSection: .info)
+            let receivedAt = model.outputAddresses(with: detailFont)
+            if !receivedAt.isEmpty {
+                currentSnapshot.appendItems([.receivedAt(receivedAt)], toSection: .info)
+            }
         case .notAccountFunds:
             break
         default:

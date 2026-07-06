@@ -75,6 +75,15 @@ final class BIP70InteractiveCoordinator: NSObject {
         Task {
             do {
                 let result = try await service.confirmAndSend(box.confirmation)
+                // Record BEFORE the ObjC completion mints the DSTransaction courier
+                // and fires the send-success delegate, so the success screen's
+                // registry fallback is already populated. The pure BIP70 layer
+                // can't write the registry itself (it is deliberately SDK/DW-free).
+                WalletSendService.shared.recentSends.record(
+                    txidWire: Data(result.txHashDisplay.reversed()),
+                    address: result.primaryAddress,
+                    amount: result.amount,
+                    fee: result.fee)
                 await MainActor.run { completion(BIP70SendResultBox(result), nil) }
             } catch {
                 await MainActor.run { completion(nil, Self.nsError(error)) }

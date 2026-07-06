@@ -49,6 +49,15 @@ public final class SendCoinsService: NSObject {
         let result = try await service.confirmAndSendHeadless(
             from: requestURL, scheme: uri.scheme, network: network, callbackScheme: uri.callbackScheme)
 
+        // Defensive registry write (the headless caller shows no success
+        // screen today, but a courier resolved later should still find the
+        // send facts if the persister row hasn't landed).
+        WalletSendService.shared.recentSends.record(
+            txidWire: Data(result.txHashDisplay.reversed()),
+            address: result.primaryAddress,
+            amount: result.amount,
+            fee: result.fee)
+
         let chain = DWEnvironment.sharedInstance().currentChain
         return DSTransaction(message: result.signedTxData, on: chain)
     }

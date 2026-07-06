@@ -41,9 +41,47 @@ class TxDetailModel: NSObject {
         transaction.fiatAmount
     }
 
+    /// ObjC resolver seam: the send-success delegate chains (and the DashPay
+    /// profile popup) still hand over a `DSTransaction` courier, whose only
+    /// load-bearing datum is its txid — everything it would derive itself
+    /// (state, date, amount) comes from the frozen DashSync chain and is wrong
+    /// post-M6. Resolve it to an SDK-backed `Transaction` instead:
+    /// the persisted row when it exists, else the recent-sends registry
+    /// (a just-broadcast send the Rust persister hasn't written yet).
     @objc
     convenience init(transaction: DSTransaction) {
-        self.init(transaction: Transaction(transaction: transaction))
+        self.init(transaction: Self.resolve(courier: transaction))
+    }
+
+    private static func resolve(courier: DSTransaction) -> Transaction {
+        let txidWire = courier.txHashData
+        if let row = SwiftDashSDKWalletSource.fetch(txid: txidWire) {
+            return row
+        }
+        if let sent = WalletSendService.shared.recentSends.entry(forTxidWire: txidWire) {
+            return Transaction(
+                syntheticTxid: txidWire,
+                directionRaw: 1, // outgoing — the registry records only our own sends
+                netAmount: -Int64(sent.amount + sent.fee),
+                fee: sent.fee,
+                contextRaw: 0, // mempool — just broadcast
+                date: sent.date,
+                externalSentAddresses: sent.address.map { [$0] } ?? [])
+        }
+        // Last resort — in practice unreachable: every synced tx has a row and
+        // every fresh send has a registry entry. Render the courier's identity
+        // honestly (txid + its own timestamp when it has one); the unknown
+        // amount is modeled as 0/mempool rather than fabricated from the
+        // frozen chain.
+        return Transaction(
+            syntheticTxid: txidWire,
+            directionRaw: 1,
+            netAmount: 0,
+            fee: nil,
+            contextRaw: 0,
+            date: courier.timestamp > 1
+                ? Date(timeIntervalSince1970: courier.timestamp)
+                : Date())
     }
 
     init(transaction: Transaction) {

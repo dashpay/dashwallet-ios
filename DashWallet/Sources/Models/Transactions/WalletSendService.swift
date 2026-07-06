@@ -69,6 +69,54 @@ final class PreparedStandardSend: NSObject {
             claimLock.unlock()
             throw error
         }
+
+        // `txHash` is display order (see `buildAndSign`); the registry keys
+        // by wire order to match `Transaction.txHashData`.
+        WalletSendService.shared.recentSends.record(
+            txidWire: Data(txHash.reversed()), address: address, amount: amount, fee: fee)
+    }
+}
+
+/// In-memory record of just-broadcast sends, keyed by wire-order txid.
+/// Written at every broadcast-success point (standard, selected-input and
+/// BIP70 sends); read by the send-success screen (`TxDetailModel`) as the
+/// fallback while the Rust persister hasn't written the `PersistentTransaction`
+/// row yet. Display-only data — never persisted, never fed back into the SDK.
+final class RecentSendsRegistry {
+    struct Entry {
+        let address: String?
+        let amount: UInt64
+        let fee: UInt64
+        /// Broadcast time — the honest "date" for a success screen shown
+        /// before the row exists.
+        let date: Date
+    }
+
+    private let lock = NSLock()
+    private var entries: [Data: Entry] = [:]
+    private var insertionOrder: [Data] = []
+    /// Oldest-entry eviction bound; a session can't stack more success
+    /// screens than this, and rows supersede entries within seconds anyway.
+    private let capacity = 16
+
+    /// - Parameter txidWire: wire-order txid (`Transaction.txHashData` byte
+    ///   order). Broadcast callers hold display-order hashes — reverse first.
+    func record(txidWire: Data, address: String?, amount: UInt64, fee: UInt64) {
+        lock.lock()
+        defer { lock.unlock() }
+        if entries[txidWire] == nil {
+            insertionOrder.append(txidWire)
+            if insertionOrder.count > capacity {
+                entries.removeValue(forKey: insertionOrder.removeFirst())
+            }
+        }
+        entries[txidWire] = Entry(address: address, amount: amount, fee: fee, date: Date())
+    }
+
+    func entry(forTxidWire txid: Data) -> Entry? {
+        lock.lock()
+        defer { lock.unlock() }
+        return entries[txid]
     }
 }
 
@@ -79,6 +127,9 @@ final class WalletSendService: NSObject {
     fileprivate static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.wallet-send-service")
+
+    /// See `RecentSendsRegistry` — the send-success screen's fallback source.
+    let recentSends = RecentSendsRegistry()
 
     private let sendAuthorizer = SendAuthorizer()
 
@@ -105,12 +156,16 @@ final class WalletSendService: NSObject {
             Self.logger.info("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
             try await sendAuthorizer.authorizeSend(sessionAuthSufficient: sessionAuthSufficient)
             do {
-                let (txData, _, _) = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
+                let (txData, fee, txHash) = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
                     fromAddress: inputSelector.address,
                     to: address,
                     amount: amount,
                     adjustAmountDownwards: adjustAmountDownwards
                 )
+                // buildAndSignFromAddress broadcasts internally; txHash is
+                // display order — reverse to the wire-order registry key.
+                recentSends.record(
+                    txidWire: Data(txHash.reversed()), address: address, amount: amount, fee: fee)
                 // Same synthesis as the standard path (`buildPreparedStandardSend`):
                 // callers only read `.txHashHexString` from the returned object.
                 let chain = DWEnvironment.sharedInstance().currentChain
