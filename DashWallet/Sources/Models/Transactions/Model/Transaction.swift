@@ -69,6 +69,10 @@ class Transaction: TransactionDataItem, Identifiable {
         let fee: UInt64?
         /// 0=mempool, 1=instantSend, 2=inBlock, 3=chainLocked.
         let context: UInt32
+        /// The Rust transaction router's typed discriminant
+        /// (`SwiftDashSDK.TransactionTypeKind` raw value; 0xFF = pre-feature
+        /// sentinel for rows not yet re-persisted by SPV).
+        let typeKind: UInt8
         /// Owned output addresses (non-empty), pre-deduped.
         let outputAddresses: [String]
         /// Spent-input addresses (non-empty), pre-deduped.
@@ -89,6 +93,7 @@ class Transaction: TransactionDataItem, Identifiable {
             netAmount = p.netAmount
             fee = p.fee
             context = p.context
+            typeKind = p.transactionTypeKind
             outputAddresses = Array(Set(p.outputs.map { $0.address }.filter { !$0.isEmpty }))
             inputAddresses = Array(Set(p.inputs.map { $0.address }.filter { !$0.isEmpty }))
             inputCount = p.inputs.count
@@ -106,6 +111,8 @@ class Transaction: TransactionDataItem, Identifiable {
             self.netAmount = netAmount
             self.fee = fee
             self.context = context
+            // Synthetics are only ever demo rows or our own standard sends.
+            typeKind = TransactionTypeKind.standard.rawValue
             outputAddresses = []
             inputAddresses = []
             inputCount = 0
@@ -356,8 +363,23 @@ class Transaction: TransactionDataItem, Identifiable {
     private lazy var _transactionType: `Type` = {
         switch source {
         case .ds(let dsTx): return dsTx.type
-        // TODO(core-spv-neuter): WalletTransaction no longer exposes txType.
-        case .sdk: return .classic
+        case .sdk(let snap):
+            switch TransactionTypeKind(rawValue: snap.typeKind) {
+            case .coinbase: return .reward
+            case .providerRegistration: return .masternodeRegistration
+            case .providerUpdateRegistrar, .providerUpdateService: return .masternodeUpdate
+            case .providerUpdateRevocation: return .masternodeRevoke
+            // assetLock/assetUnlock: a shielded transfer's label comes live
+            // from ShieldedTxLookup (stateTitle checks it before this type
+            // switch); other locks keep the classic label rather than guess
+            // identity registration. TODO(dashpay-e2e): map identity-funding
+            // locks to .blockchainIdentityRegistration once the DashPay
+            // migration models them.
+            case .assetLock, .assetUnlock: return .classic
+            // standard / coinJoin (mixing rows label via isCoinJoinMixing) /
+            // ignored / nil (0xFF pre-feature sentinel or future variants).
+            case .standard, .coinJoin, .ignored, .none: return .classic
+            }
         }
     }()
 
@@ -586,7 +608,7 @@ extension Transaction {
     var isCoinbaseTransaction: Bool {
         switch source {
         case .ds(let dsTx): return dsTx is DSCoinbaseTransaction
-        case .sdk: return false
+        case .sdk(let snap): return TransactionTypeKind(rawValue: snap.typeKind) == .coinbase
         }
     }
 }
