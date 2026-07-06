@@ -236,27 +236,6 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         else { throw SendError.noFundedAddress }
         let senderAccountIndex = senderRow.accountIndex
 
-        // Lowest-indexed unused zero-balance row scoped to the sender's
-        // account, matching ReceiveAddressView's selection rule. Exclude
-        // the recipient hash — a self-send to the wallet's own next-unused
-        // address would otherwise pick that same row for change, and
-        // `ManagedPlatformAddressWallet.transfer` rejects collisions with
-        // a `changeAddress collides with a recipient address` error.
-        // Nil falls back to the wrapper's internal "smallest non-recipient"
-        // pick — workable but lands change on an existing balance row.
-        let recipientHash = recipient.hash
-        let changeRow = allRows
-            .filter { $0.accountIndex == senderAccountIndex
-                      && !$0.isUsed
-                      && $0.balance == 0
-                      && $0.addressHash != recipientHash }
-            .min(by: { $0.addressIndex < $1.addressIndex })
-        let change = changeRow.map {
-            ManagedPlatformAddressWallet.ChangeAddress(
-                addressType: $0.addressType,
-                hash: $0.addressHash)
-        }
-
         let output = ManagedPlatformAddressWallet.TransferOutput(
             addressType: recipient.ffiAddressType,
             hash: recipient.hash,
@@ -267,12 +246,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             network: network)
 
         Self.logger.info(
-            "🛰️ PLATFORM-SEND :: → \(destination, privacy: .public) :: amount=\(amount) account=\(senderAccountIndex) change=\(changeRow?.address ?? "fallback", privacy: .public)")
+            "🛰️ PLATFORM-SEND :: → \(destination, privacy: .public) :: amount=\(amount) account=\(senderAccountIndex)")
 
+        // No change routing since the SDK's credit-balance transfer model:
+        // the Rust auto-selector partially consumes the last input and the
+        // surplus stays on the source address (no change output exists).
         let updated = try await addressWallet.transfer(
             accountIndex: senderAccountIndex,
             outputs: [output],
-            changeAddress: change,
             signer: signer)
 
         // Idempotent with the Rust persister callback; keeps @Query-bound
@@ -640,7 +621,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         if !cached.isEmpty {
             var total: UInt64 = 0
             var nonZero = 0
-            for (_, _, balance, _, _, _) in cached {
+            for (_, _, balance, _, _, _, _) in cached {
                 total += balance
                 if balance > 0 { nonZero += 1 }
             }

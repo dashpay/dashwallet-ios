@@ -87,7 +87,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
         logger.info("💸 TXSEND :: building+signing \(recipients.count, privacy: .public) recipient(s) via PlatformWalletManager.coreWallet")
 
         let build = { @MainActor () throws -> CoreTransaction in
-            guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            guard let wallet = SwiftDashSDKHost.shared.wallet,
+                  let network = SwiftDashSDKHost.shared.runningNetwork else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
             let core = try wallet.coreWallet()
@@ -95,7 +96,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             // TransactionBuilder. `setFunding` auto-selects inputs and routes
             // change to the account's next internal address (single tx — normal
             // sends don't need chunking).
-            let builder = try CoreTransactionBuilder()
+            let builder = try CoreTransactionBuilder(network: network)
             for recipient in recipients {
                 try builder.addOutput(address: recipient.address, amountDuffs: recipient.amountDuffs)
             }
@@ -146,7 +147,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
         let sweep = { @MainActor () throws -> [Data] in
             let host = SwiftDashSDKHost.shared
-            guard let wallet = host.wallet, let manager = host.manager else {
+            guard let wallet = host.wallet, let manager = host.manager,
+                  let network = host.runningNetwork else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
             let core = try wallet.coreWallet()
@@ -175,7 +177,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             var firstError: Error?
             for (index, chunk) in Self.balancedChunks(utxos).enumerated() {
                 do {
-                    let builder = try CoreTransactionBuilder()
+                    let builder = try CoreTransactionBuilder(network: network)
                     try builder.addInputs(
                         wallet: core, accountType: .coinJoin,
                         accountIndex: Self.coinJoinAccountIndex, utxos: chunk)
@@ -292,11 +294,12 @@ final class SwiftDashSDKTransactionSender: NSObject {
         let sendAmount = adjusted ? amount - feeEstimate : amount
 
         let (txData, exactFee): (Data, UInt64) = try await MainActor.run {
-            guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            guard let wallet = SwiftDashSDKHost.shared.wallet,
+                  let network = SwiftDashSDKHost.shared.runningNetwork else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
             let core = try wallet.coreWallet()
-            let builder = try CoreTransactionBuilder()
+            let builder = try CoreTransactionBuilder(network: network)
             try builder.addInputs(
                 wallet: core, accountType: .bip44,
                 accountIndex: Self.bip44AccountIndex, utxos: utxos)
