@@ -44,16 +44,9 @@ public struct FrameReader: View {
     }
 }
 
-@available(iOS 14, *)
-public extension View {
-
-    /// Get the frame of the View
-    ///
-    /// Adds a GeometryReader to the background of a View.
-    func readingFrame(coordinateSpace: CoordinateSpace = .global, onChange: @escaping (_ frame: CGRect) -> ()) -> some View {
-        background(FrameReader(coordinateSpace: coordinateSpace, onChange: onChange))
-    }
-}
+// NOTE: `readingFrame(coordinateSpace:onChange:)` now lives in DashUIKit. The app-level `View`
+// extension was removed to avoid an ambiguous-modifier clash in files that `import DashUIKit`.
+// `FrameReader` above is kept because it is still referenced directly (e.g. `LocationReader`).
 
 @available(iOS 14, *)
 struct FrameReader_Previews: PreviewProvider {
@@ -71,9 +64,9 @@ struct FrameReader_Previews: PreviewProvider {
                         .cornerRadius(10)
                         .background(Color.green)
                         .padding()
-                        .readingFrame { frame in
+                        .background(FrameReader(coordinateSpace: .global) { frame in
                             yOffset = frame.minY
-                        }
+                        })
 
                     ForEach(0..<30) { x in
                         Text("")
