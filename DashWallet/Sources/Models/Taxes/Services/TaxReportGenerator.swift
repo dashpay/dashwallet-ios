@@ -52,7 +52,7 @@ enum TaxReportGenerator {
 
     static func generateCSVReport(completionHandler: @escaping (_ fileName: String, _ file: URL) -> Void,
                                   errorHandler: @escaping (_ error: Error) -> Void) {
-        guard DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced else {
+        guard SyncingActivityMonitor.shared.state == .syncDone else {
             let error = NSError(domain: "DashWallet",
                                 code: 500,
                                 userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("Please wait until the wallet is fully synced before exporting your transaction history",
@@ -68,7 +68,7 @@ enum TaxReportGenerator {
                 partialResult[dto.txHash] = dto
             }
 
-            let csv = CSVBuilder<ReportColumns, DSTransaction>()
+            let csv = CSVBuilder<ReportColumns, Transaction>()
                 .set(columns: ReportColumns.allCases)
                 .build(from: transactions) { column, tx in
                     let userInfo = userInfos[tx.txHashData]
@@ -96,14 +96,14 @@ enum TaxReportGenerator {
         }
     }
 
-    private static var transactions: [DSTransaction] {
-        let wallet = DWEnvironment.sharedInstance().currentWallet
-        let transactions = wallet
-            .allTransactions
-            .filter { $0.direction != .moved && $0.direction != .notAccountFunds }
-            .sorted(by: { $0.timestamp < $1.timestamp })
-
-        return transactions
+    /// Chronological history rows for the CSV, from the SDK's persisted
+    /// transactions. Mixing operations are excluded explicitly: DashSync
+    /// classified CoinJoin self-sends as `.moved`, while SDK rows surface
+    /// them as `.sent` with the `sdkCoinJoinMixing` flag set.
+    private static var transactions: [Transaction] {
+        SwiftDashSDKWalletSource.fetchAll()
+            .filter { $0.direction != .moved && !$0.sdkCoinJoinMixing }
+            .sorted(by: { $0.date < $1.date })
     }
 
     private static func generateFileName() -> String {
@@ -119,7 +119,7 @@ enum TaxReportGenerator {
         return fileName
     }
 
-    private static func value(for column: ReportColumns, transaction: DSTransaction, andUserInfo userInfo: TransactionMetadata?) -> String {
+    private static func value(for column: ReportColumns, transaction: Transaction, andUserInfo userInfo: TransactionMetadata?) -> String {
         let transactionDirection = transaction.direction
         let isOutcoming = transactionDirection == .sent
 
@@ -128,7 +128,7 @@ enum TaxReportGenerator {
 
         switch column {
         case .dateAndTime:
-            return transaction.formattedISO8601TxDate
+            return DWDateFormatter.sharedInstance.iso8601String(from: transaction.date)
         case .txType:
             let taxCategoryString = userInfo?.taxCategoryString() ?? transaction.defaultTaxCategoryString()
             return taxCategoryString

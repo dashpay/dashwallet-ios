@@ -134,11 +134,10 @@ extension TransactionMetadata {
     static var customIconId: SQLite.Expression<Data?> { Expression<Data?>("customIconId") }
 }
 
-@objc
-extension DSTransaction {
-    @objc
-    func defaultTaxCategory() -> TxMetadataTaxCategory {
-        switch direction {
+extension DSTransactionDirection {
+    /// Fallback tax category when the user hasn't classified the transaction.
+    var defaultTaxCategory: TxMetadataTaxCategory {
+        switch self {
         case .moved:
             return .expense
         case .sent:
@@ -151,11 +150,24 @@ extension DSTransaction {
             return .unknown
         }
     }
+}
+
+@objc
+extension DSTransaction {
+    @objc
+    func defaultTaxCategory() -> TxMetadataTaxCategory {
+        direction.defaultTaxCategory
+    }
 
     @objc
     func defaultTaxCategoryString() -> String {
-        let category = defaultTaxCategory()
-        return category.stringValue
+        defaultTaxCategory().stringValue
+    }
+}
+
+extension Transaction {
+    func defaultTaxCategoryString() -> String {
+        direction.defaultTaxCategory.stringValue
     }
 }
 
