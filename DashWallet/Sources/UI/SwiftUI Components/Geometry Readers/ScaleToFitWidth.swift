@@ -69,9 +69,6 @@ struct ScaleToFitWidth: ViewModifier {
     }
 }
 
-extension View {
-    /// Scales the view uniformly to fit the available width on one line, down to `minScale`.
-    func scaleToFitWidth(minScale: CGFloat = 0.35) -> some View {
-        modifier(ScaleToFitWidth(minScale: minScale))
-    }
-}
+// NOTE: `scaleToFitWidth(minScale:)` now lives in DashUIKit. The app-level `View` extension was
+// removed to avoid an ambiguous-modifier clash in files that `import DashUIKit`. The
+// `ScaleToFitWidth` modifier above is kept only for any remaining internal reference.
