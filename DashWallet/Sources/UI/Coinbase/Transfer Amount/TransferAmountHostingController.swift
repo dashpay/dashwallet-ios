@@ -24,6 +24,11 @@ final class TransferAmountHostingController: BaseViewController, NavigationBarDi
 
     var isNavigationBarHidden: Bool { true }
 
+    private static let transferSuccessText = NSLocalizedString(
+        "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
+        comment: "Coinbase"
+    )
+
     private let viewModel = TransferAmountViewModel()
     private var paymentController: PaymentController!
     weak var codeConfirmationController: TwoFactorAuthViewController?
@@ -62,11 +67,6 @@ final class TransferAmountHostingController: BaseViewController, NavigationBarDi
     }
 
     private func wireCallbacks() {
-        let successText = NSLocalizedString(
-            "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
-            comment: "Coinbase"
-        )
-
         viewModel.onInitiatePayment = { [weak self] input in
             guard let self else { return }
             self.paymentController = PaymentController()
@@ -84,7 +84,7 @@ final class TransferAmountHostingController: BaseViewController, NavigationBarDi
         }
 
         viewModel.onTransferSucceeded = { [weak self] in
-            self?.showSuccessTransactionStatus(text: successText)
+            self?.showSuccessTransactionStatus(text: Self.transferSuccessText)
         }
 
         viewModel.onTransferFailed = { [weak self] msg in
@@ -150,11 +150,7 @@ extension TransferAmountHostingController: CoinbaseCodeConfirmationPreviewing {
 
 extension TransferAmountHostingController: PaymentControllerDelegate {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction) {
-        let successText = NSLocalizedString(
-            "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
-            comment: "Coinbase"
-        )
-        showSuccessTransactionStatus(text: successText)
+        showSuccessTransactionStatus(text: Self.transferSuccessText)
     }
 
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) {}
