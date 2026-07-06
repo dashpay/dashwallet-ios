@@ -130,7 +130,7 @@ public final class CrowdNode {
     public static let shared: CrowdNode = .init()
 
     init() {
-        masternodeAPY = DWEnvironment.sharedInstance().apy.doubleValue
+        masternodeAPY = MasternodeAPYCalculator.estimatedAPY()
         crowdnodeAPY = masternodeAPY * (1 - prefs.feePercentage)
         print("CrowdNode: masternodeAPY: \(masternodeAPY), crowdnodeAPY: \(crowdnodeAPY)")
 
@@ -299,14 +299,11 @@ extension CrowdNode {
     }
     
     private func checkAPY() {
-        let chain = DWEnvironment.sharedInstance().currentChain
-    
-        if let apy = chain.calculateMasternodeAPY()?.doubleValue {
-            masternodeAPY = apy
-            let multiplier = 1 - prefs.feePercentage
-            crowdnodeAPY = masternodeAPY * multiplier
-            chain.apy = NSNumber(value: apy)
-        }
+        // Estimated figure at the current SPV tip; recomputing is cheap.
+        // TODO(masternode-stats-ffi): use the live virtual masternode count
+        // once the upstream stats FFI lands (DASHSYNC_TEARDOWN_PLAN.md C5).
+        masternodeAPY = MasternodeAPYCalculator.estimatedAPY()
+        crowdnodeAPY = masternodeAPY * (1 - prefs.feePercentage)
     }
 }
 
