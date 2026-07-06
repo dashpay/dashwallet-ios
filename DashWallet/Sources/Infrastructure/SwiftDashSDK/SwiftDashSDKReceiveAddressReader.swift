@@ -26,6 +26,7 @@
 
 import Foundation
 import OSLog
+import SwiftData
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKReceiveAddressReader)
@@ -34,6 +35,17 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.receive-address-reader")
+
+    /// Main-thread trampoline: `SwiftDashSDKHost.shared` and `mainContext`
+    /// are main-bound; Obj-C callers reach here from background queues.
+    private static func onMain<T>(_ body: @MainActor () -> T) -> T {
+        if Thread.isMainThread {
+            return MainActor.assumeIsolated(body)
+        }
+        return DispatchQueue.main.sync {
+            MainActor.assumeIsolated(body)
+        }
+    }
 
     /// Returns the next unused BIP44 external receive address on the primary
     /// account (index 0). Returns nil when the host hasn't bound a wallet
@@ -44,14 +56,52 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
     /// network at the time `start(network:)` ran.
     @objc
     static func receiveAddress() -> String? {
-        if Thread.isMainThread {
-            return MainActor.assumeIsolated { readOnMain() }
+        onMain { readOnMain() }
+    }
+
+    // MARK: Request-amount receive detection (DWReceiveModel)
+
+    /// Whether `address` has ever received an output. The SDK's TXO rows are
+    /// exactly the wallet's own outputs, so a row existing for the address is
+    /// DashSync's `addressIsUsed:`. Safe from any thread.
+    @objc
+    static func isAddressUsed(_ address: String) -> Bool {
+        onMain {
+            guard let container = SwiftDashSDKHost.shared.modelContainer else { return false }
+            var descriptor = FetchDescriptor<PersistentTxo>(
+                predicate: #Predicate { $0.address == address })
+            descriptor.fetchLimit = 1
+            let rows = (try? container.mainContext.fetch(descriptor)) ?? []
+            return !rows.isEmpty
         }
-        var result: String?
-        DispatchQueue.main.sync {
-            result = MainActor.assumeIsolated { readOnMain() }
+    }
+
+    /// Received duffs summed for the request-amount check, ported 1:1 from
+    /// the DashSync loop in `DWReceiveModel` (inherited unchanged from
+    /// breadwallet): per transaction, sum the wallet's own outputs, skipping
+    /// transactions that pay `address` and mempool-only rows (`context == 0`
+    /// — neither InstantSend-locked, mined, nor chainlocked — standing in for
+    /// the old `relayCount` propagation gate). Safe from any thread.
+    @objc(receivedTotalExcludingAddress:)
+    static func receivedTotal(excludingAddress address: String) -> UInt64 {
+        onMain {
+            guard let container = SwiftDashSDKHost.shared.modelContainer else { return 0 }
+            let descriptor = FetchDescriptor<PersistentTransaction>()
+            guard let rows = try? container.mainContext.fetch(descriptor) else { return 0 }
+
+            var total: UInt64 = 0
+            for row in rows {
+                let ownOutputs = row.outputs
+                if ownOutputs.contains(where: { $0.address == address }) {
+                    continue
+                }
+                if row.context == 0 {
+                    continue
+                }
+                total += ownOutputs.reduce(0) { $0 + $1.amount }
+            }
+            return total
         }
-        return result
     }
 
     @MainActor

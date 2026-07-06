@@ -115,39 +115,26 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable NSString *)requestAmountReceivedInfoIfReceived {
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
     DSPaymentRequest *request = self.paymentRequest;
-    uint64_t total = 0;
     const uint64_t fuzz = [CurrencyExchangerObjcWrapper amountForLocalCurrency:[CurrencyExchangerObjcWrapper localCurrencyNumberForDashAmount:1].decimalValue] * 2;
 
-    if (![wallet addressIsUsed:request.paymentAddress]) {
+    if (![DWSwiftDashSDKReceiveAddressReader isAddressUsed:request.paymentAddress]) {
         return nil;
     }
 
-    for (DSTransaction *tx in wallet.allTransactions) {
-        if ([tx.outputAddresses containsObject:request.paymentAddress]) {
-            continue;
-        }
-        if (tx.blockHeight == TX_UNCONFIRMED &&
-            [chainManager.transactionManager relayCountForTransaction:tx.txHash] < PEER_MAX_CONNECTIONS) {
-            continue;
-        }
+    const uint64_t total = [DWSwiftDashSDKReceiveAddressReader receivedTotalExcludingAddress:request.paymentAddress];
 
-        total += [wallet amountReceivedFromTransaction:tx];
+    if (total + fuzz >= request.amount) {
+        DSLog(@"DWReceiveModel: Received %@", @(total));
 
-        if (total + fuzz >= request.amount) {
-            DSLog(@"DWReceiveModel: Received %@", @(total));
+        // TODO: Fix me. Using `self.amount` here is a workaround and we should use `total` instead.
+        // (`total` is not calculated properly for very small amounts like 0.000257)
 
-            // TODO: Fix me. Using `self.amount` here is a workaround and we should use `total` instead.
-            // (`total` is not calculated properly for very small amounts like 0.000257)
+        NSString *info = [NSString stringWithFormat:NSLocalizedString(@"Received %@ (%@)", nil),
+                                                    [CurrencyExchangerObjcWrapper stringForDashAmount:self.amount],
+                                                    [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:self.amount]];
 
-            NSString *info = [NSString stringWithFormat:NSLocalizedString(@"Received %@ (%@)", nil),
-                                                        [CurrencyExchangerObjcWrapper stringForDashAmount:self.amount],
-                                                        [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:self.amount]];
-
-            return info;
-        }
+        return info;
     }
 
     return nil;

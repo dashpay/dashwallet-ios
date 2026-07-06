@@ -56,11 +56,6 @@ NS_ASSUME_NONNULL_BEGIN
                            selector:@selector(checkRequestStatus)
                                name:DWSwiftDashSDKWalletState.balanceDidChangeNotification
                              object:nil];
-
-    [notificationCenter addObserver:self
-                           selector:@selector(checkRequestStatus)
-                               name:DSTransactionManagerTransactionStatusDidChangeNotification
-                             object:nil];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
