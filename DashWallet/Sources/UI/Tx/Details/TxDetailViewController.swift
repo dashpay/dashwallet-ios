@@ -383,13 +383,7 @@ struct TXDetailVCWrapper: UIViewControllerRepresentable {
         self._navigateBack = navigateBack
         self.onDismissed = onDismissed
     }
-    
-    init(transaction: DSTransaction, navigateBack: Binding<Bool>, onDismissed: (() -> Void)? = nil) {
-        self.tx = Transaction(transaction: transaction)
-        self._navigateBack = navigateBack
-        self.onDismissed = onDismissed
-    }
-    
+
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }

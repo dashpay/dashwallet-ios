@@ -285,14 +285,14 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         homeView.model = model
     }
 
-    private func showReclassifyTransaction(with transaction: DSTransaction?) {
+    private func showReclassifyTransaction(with transaction: Transaction?) {
         let vc = TxReclassifyTransactionsInfoViewController.controller()
         vc.delegate = self
         vc.transaction = transaction
         self.present(vc, animated: true, completion: nil)
     }
 
-    private func presentTransactionDetails(_ transaction: DSTransaction) {
+    private func presentTransactionDetails(_ transaction: Transaction) {
         let model = TxDetailModel(transaction: transaction)
         let controller = TXDetailViewController(model: model)
         let nvc = BaseNavigationController(rootViewController: controller)
@@ -516,7 +516,7 @@ extension HomeViewController: HomeViewDelegate {
 // MARK: - TxReclassifyTransactionsInfoViewControllerDelegate
 
 extension HomeViewController: TxReclassifyTransactionsInfoViewControllerDelegate {
-    func txReclassifyTransactionsFlowDidClose(controller: TxReclassifyTransactionsInfoViewController, transaction: DSTransaction) {
+    func txReclassifyTransactionsFlowDidClose(controller: TxReclassifyTransactionsInfoViewController, transaction: Transaction) {
         presentTransactionDetails(transaction)
     }
 }

@@ -76,7 +76,7 @@ class HomeViewModel: ObservableObject {
     }
 
     @Published private(set) var headerHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
-    @Published private(set) var showReclassifyTransaction: DSTransaction? = nil
+    @Published private(set) var showReclassifyTransaction: Transaction? = nil
     @Published var shouldShowShortcutBanner: Bool = false
     
 #if DASHPAY
@@ -211,14 +211,6 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
         
-        NotificationCenter.default.publisher(for: .DSTransactionManagerTransactionStatusDidChange)
-            .sink { [weak self] notification in
-                if let tx = notification.userInfo?[DSTransactionManagerNotificationTransactionKey] as? DSTransaction {
-                    self?.onTransactionStatusChanged(tx: tx)
-                }
-            }
-            .store(in: &cancellableBag)
-        
         syncModel.$state
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
@@ -331,7 +323,7 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    private func onTransactionStatusChanged(tx: DSTransaction) {
+    private func onTransactionStatusChanged(tx: Transaction) {
         self.queue.async { [weak self] in
             guard let self = self else { return }
 
@@ -352,21 +344,22 @@ class HomeViewModel: ObservableObject {
                 return
             }
 
-            let wrappedTx = Transaction(transaction: tx)
-            if !self.passesFilter(transaction: wrappedTx, displayMode: self.displayMode) {
+            if !self.passesFilter(transaction: tx, displayMode: self.displayMode) {
                 return
             }
 
             Tx.shared.updateRateIfNeeded(for: tx)
             let txHashHex = tx.txHashHexString
             let itemId = txHashHex
-            let txItem: TransactionListDataItem = .tx(wrappedTx, resolveMetadata(for: tx.txHashData))
+            let txItem: TransactionListDataItem = .tx(tx, resolveMetadata(for: tx.txHashData))
             let newDateKey = DWDateFormatter.sharedInstance.dateOnly(from: tx.date)
 
             // TODO(crowdnode-home-grouping): the CrowdNode absorb-into-group
-            // branch that lived here was dead (this path is fed by DashSync's
+            // branch that lived here was dead (it was fed by DashSync's
             // DSTransactionManagerTransactionStatusDidChange, which no longer
             // fires post-M6) and was removed with the CrowdNode tracking port.
+            // Today this path is fed by the metadata-provider refresh below
+            // (gift-card / custom-icon updates re-rendering an existing row).
 
             if let existingItem = self.txByHash[itemId] {
                 // Updating existing item
@@ -606,8 +599,10 @@ extension HomeViewModel {
                 .sink { [weak self] txHash in
                     guard let self = self else { return }
 
-                    let wallet = DWEnvironment.sharedInstance().currentWallet
-                    if let transaction = wallet.transaction(forHash: txHash.withUnsafeBytes { $0.load(as: UInt256.self) }) {
+                    // Providers emit the wire-order txid (`Transaction.txHashData`),
+                    // which is the SDK row key. A miss (persister race) is a no-op —
+                    // the NSManagedObjectContextDidSave full reload covers it.
+                    if let transaction = SwiftDashSDKWalletSource.fetch(txid: txHash) {
                         self.onTransactionStatusChanged(tx: transaction)
                     }
                 }

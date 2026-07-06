@@ -19,11 +19,9 @@ import UIKit
 
 // MARK: - TxReclassifyTransactionsInfoViewControllerDelegate
 
-@objc
 protocol TxReclassifyTransactionsInfoViewControllerDelegate: AnyObject {
-    @objc
     func txReclassifyTransactionsFlowDidClose(controller: TxReclassifyTransactionsInfoViewController,
-                                             transaction: DSTransaction)
+                                              transaction: Transaction)
 }
 
 // MARK: - TxReclassifyTransactionsInfoViewController
@@ -54,9 +52,9 @@ class TxReclassifyTransactionsInfoViewController: BasePageSheetViewController {
     @IBOutlet var transactionScreenContainer: UIView!
     private var transactionScreenImage: UIImage!
 
-    @objc var transaction: DSTransaction!
+    var transaction: Transaction!
 
-    @objc weak var delegate: TxReclassifyTransactionsInfoViewControllerDelegate?
+    weak var delegate: TxReclassifyTransactionsInfoViewControllerDelegate?
 
     @IBAction
     func iUndersandAction() {

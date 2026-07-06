@@ -155,7 +155,7 @@ class Transaction: TransactionDataItem, Identifiable {
     var id: String {
         switch source {
         case .ds(let dsTx): return dsTx.txHashHexString
-        case .sdk(let snap): return Self.internalHex(snap.txid)
+        case .sdk(let snap): return Self.displayHex(snap.txid)
         }
     }
 
@@ -237,8 +237,7 @@ class Transaction: TransactionDataItem, Identifiable {
     /// (`_dashAmount`).
     /// Display-order txid (reversed wire bytes) — the `ShieldedTxLookup` key.
     /// Stable for this tx, so cache it; the lookup itself is read live.
-    private lazy var shieldedDisplayTxid: String =
-        txHashData.reversed().map { String(format: "%02x", $0) }.joined()
+    private lazy var shieldedDisplayTxid: String = Self.displayHex(txHashData)
 
     /// Live shielded-funding info for this tx. Computed (not cached) so a row
     /// reflects pending → consumed transitions as soon as `ShieldedTxLookup`
@@ -418,8 +417,12 @@ class Transaction: TransactionDataItem, Identifiable {
         return account!.transactionIsVerified(tx)
     }
 
-    private static func internalHex(_ data: Data) -> String {
-        data.map { String(format: "%02x", $0) }.joined()
+    /// Display-order txid hex from wire-order bytes (block explorers, copy-to-
+    /// pasteboard, and `DSTransaction.txHashHexString` all use display order).
+    /// The wire-order `Data` itself stays the storage/metadata key — only the
+    /// human-facing hex string is byte-reversed.
+    private static func displayHex(_ wireTxid: Data) -> String {
+        wireTxid.reversed().map { String(format: "%02x", $0) }.joined()
     }
 
     private lazy var _shortDateString: String = {
@@ -526,7 +529,7 @@ extension Transaction {
     var txHashHexString: String {
         switch source {
         case .ds(let dsTx): return dsTx.txHashHexString
-        case .sdk(let snap): return Self.internalHex(snap.txid)
+        case .sdk(let snap): return Self.displayHex(snap.txid)
         }
     }
 
