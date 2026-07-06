@@ -341,19 +341,32 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
 
     static func sanitize(_ raw: String, currency: DashUIKit.CurrencyOption) -> String {
         guard !raw.isEmpty else { return raw }
-        let s = raw.replacingOccurrences(of: ",", with: ".")
+
+        let separator = Locale.current.decimalSeparator ?? "."
         let maxDecimals: Int
         switch currency {
         case .fiat: maxDecimals = 2
-        case .dash: maxDecimals = 8
-        case .coin: maxDecimals = 8
+        case .dash, .coin: maxDecimals = 8
         }
-        if let dotRange = s.range(of: ".") {
-            let intPart = String(s[s.startIndex..<dotRange.lowerBound])
-            let decPart = String(s[dotRange.upperBound...].prefix(maxDecimals))
-            return normalizeLeadingZeros(intPart) + "." + decPart
+
+        var intPart = ""
+        var decPart = ""
+        var sawSeparator = false
+        for ch in raw {
+            if String(ch) == separator {
+                sawSeparator = true
+                continue
+            }
+            guard ch.isNumber, ch.isASCII else { continue }
+            if sawSeparator {
+                if decPart.count < maxDecimals { decPart.append(ch) }
+            } else {
+                intPart.append(ch)
+            }
         }
-        return normalizeLeadingZeros(s)
+
+        let normalizedInt = normalizeLeadingZeros(intPart)
+        return sawSeparator ? normalizedInt + separator + decPart : normalizedInt
     }
 
     private static func normalizeLeadingZeros(_ s: String) -> String {
