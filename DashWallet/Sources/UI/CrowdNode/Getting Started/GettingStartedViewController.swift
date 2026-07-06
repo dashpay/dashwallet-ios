@@ -85,7 +85,7 @@ final class GettingStartedViewController: BaseViewController {
                                       preferredStyle: UIAlertController.Style.alert)
 
 
-        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+        if WalletEnvironment.isMainnet {
             alert
                 .addAction(UIAlertAction(title: NSLocalizedString("Buy Dash", comment: ""), style: UIAlertAction.Style.default,
                                          handler: { [weak self] _ in

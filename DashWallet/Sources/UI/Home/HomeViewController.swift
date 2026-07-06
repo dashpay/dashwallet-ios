@@ -239,7 +239,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     private func setupView() {
         let logoImage: UIImage?
         let logoHeight: CGFloat
-        if DWEnvironment.sharedInstance().currentChain.chainType.tag == ChainType_TestNet {
+        if WalletEnvironment.isTestnet {
             logoImage = UIImage(named: "dash_logo_testnet")
             logoHeight = 40.0
         } else {

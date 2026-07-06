@@ -20,7 +20,7 @@ extension CrowdNode {
     private static let crowdNodeMainNetAddress = "XjbaGWaGnvEtuQAUoBgDxJWe8ZNv45upG2"
 
     static var crowdNodeAddress: String {
-        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+        if WalletEnvironment.isMainnet {
             return crowdNodeMainNetAddress
         }
         else {
@@ -43,7 +43,7 @@ extension CrowdNode {
     private static let testnetBaseUrl = "https://test.crowdnode.io/"
 
     static var baseUrl: String {
-        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+        if WalletEnvironment.isMainnet {
             return mainnetBaseUrl
         }
         else {
@@ -59,7 +59,7 @@ extension CrowdNode {
     private static let testnetLoginUrl = "https://logintest.crowdnode.io"
 
     static var loginUrl: String {
-        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+        if WalletEnvironment.isMainnet {
             return mainnetLoginUrl
         }
         else {

@@ -661,10 +661,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     // MARK: - Helpers
 
     private func resolveCurrentNetwork() -> Network? {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        if chain.isMainnet() { return .mainnet }
-        if chain.isTestnet() { return .testnet }
-        return nil
+        WalletEnvironment.network
     }
 
     struct PlatformRecipient {

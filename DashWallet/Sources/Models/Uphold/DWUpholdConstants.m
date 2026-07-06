@@ -17,68 +17,68 @@
 
 #import "DWUpholdConstants.h"
 
-#import "DWEnvironment.h"
 #import "DWUpholdMainnetConstants.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWUpholdConstants
 
 + (NSString *)authorizeURLFormat {
-    if ([[DWEnvironment sharedInstance].currentChain isTestnet]) {
+    if (DWWalletEnvironment.isTestnet) {
         return @"https://sandbox.uphold.com/authorize/7aadd33b84e942632ed7ffd9b09578bd64be2099?scope=accounts:read%%20cards:read%%20cards:write%%20transactions:deposit%%20transactions:read%%20transactions:transfer:application%%20transactions:transfer:others%%20transactions:transfer:self%%20transactions:withdraw%%20transactions:commit:otp%%20user:read&state=%@";
     }
-    else if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
+    else if (DWWalletEnvironment.isMainnet) {
         return [DWUpholdMainnetConstants authorizeURLFormat];
     }
     return @"";
 }
 
 + (NSString *)baseURLString {
-    if ([[DWEnvironment sharedInstance].currentChain isTestnet]) {
+    if (DWWalletEnvironment.isTestnet) {
         return @"https://api-sandbox.uphold.com/";
     }
-    else if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
+    else if (DWWalletEnvironment.isMainnet) {
         return [DWUpholdMainnetConstants baseURLString];
     }
     return @"";
 }
 
 + (NSString *)clientID {
-    if ([[DWEnvironment sharedInstance].currentChain isTestnet]) {
+    if (DWWalletEnvironment.isTestnet) {
         return @"7aadd33b84e942632ed7ffd9b09578bd64be2099";
     }
-    else if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
+    else if (DWWalletEnvironment.isMainnet) {
         return [DWUpholdMainnetConstants clientID];
     }
     return @"";
 }
 
 + (NSString *)clientSecret {
-    if ([[DWEnvironment sharedInstance].currentChain isTestnet]) {
+    if (DWWalletEnvironment.isTestnet) {
         return @"7db0b6bbf766233c0eafcad6b9d8667d526c899e";
     }
-    else if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
+    else if (DWWalletEnvironment.isMainnet) {
         return [DWUpholdMainnetConstants clientSecret];
     }
     return @"";
 }
 
 + (NSString *)buyCardURLFormat {
-    if ([[DWEnvironment sharedInstance].currentChain isTestnet]) {
+    if (DWWalletEnvironment.isTestnet) {
         return @"https://sandbox.uphold.com/dashboard/cards/%@/add";
     }
-    else if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
+    else if (DWWalletEnvironment.isMainnet) {
         return [DWUpholdMainnetConstants buyCardURLFormat];
     }
     return @"";
 }
 
 + (NSString *)transactionURLFormat {
-    if ([[DWEnvironment sharedInstance].currentChain isTestnet]) {
+    if (DWWalletEnvironment.isTestnet) {
         return @"https://sandbox.uphold.com/reserve/transactions/%@";
     }
-    else if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
+    else if (DWWalletEnvironment.isMainnet) {
         return [DWUpholdMainnetConstants transactionURLFormat];
     }
     return @"";

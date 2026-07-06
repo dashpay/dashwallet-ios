@@ -84,9 +84,9 @@ extension TxDetailModel {
     func getExplorerURL(explorer: BlockExplorer) -> URL? {
         switch explorer {
         case .insight:
-            if DWEnvironment.sharedInstance().currentChain.isTestnet() {
+            if WalletEnvironment.isTestnet {
                 return URL(string: "https://insight.testnet.networks.dash.org:3002/insight/tx/\(transactionId)")
-            } else if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+            } else if WalletEnvironment.isMainnet {
                 return URL(string: "https://insight.dash.org/insight/tx/\(transactionId)")
             }
         case .blockchair:

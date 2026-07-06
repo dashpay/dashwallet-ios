@@ -22,11 +22,8 @@ class CTXConstants {
     /// - Mainnet: https://spend.ctx.com/
     /// - Testnet: https://staging.spend.ctx.com/
     static var baseURI: String {
-        let environment = DWEnvironment.sharedInstance()
-        let isTestnet = environment.currentChain.isTestnet()
-
         let url: String
-        if isTestnet {
+        if WalletEnvironment.isTestnet {
             url = "https://staging.spend.ctx.com/"  // Changed from http to https
         } else {
             url = "https://spend.ctx.com/"

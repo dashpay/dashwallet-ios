@@ -201,16 +201,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// scanner to render decoded addresses for the active network — reuse, not
     /// a copy, per the repo's no-copy-then-adapt guardrail.
     func resolveCurrentNetwork() -> Result<Network, RuntimeError> {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        if chain.isMainnet() {
-            return .success(.mainnet)
+        guard let network = WalletEnvironment.network else {
+            return .failure(.unsupportedCurrentNetwork("devnet"))
         }
-        if chain.isTestnet() {
-            return .success(.testnet)
-        }
-
-        let name = chain.name.isEmpty ? "unsupported network" : chain.name
-        return .failure(.unsupportedCurrentNetwork(name))
+        return .success(network)
     }
 
     private func waitForSeedMigratorIfNeeded() async -> Bool {

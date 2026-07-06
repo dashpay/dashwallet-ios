@@ -22,7 +22,7 @@ class TopperViewModel {
     public static let shared = TopperViewModel()
     
     private init() {
-        let isSandbox = !DWEnvironment.sharedInstance().currentChain.isMainnet()
+        let isSandbox = !WalletEnvironment.isMainnet
         var keyId = ""
         var widgetId = ""
         var privateKey = ""

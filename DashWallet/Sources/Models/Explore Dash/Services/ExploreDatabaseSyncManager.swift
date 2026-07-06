@@ -54,7 +54,7 @@ public class ExploreDatabaseSyncManager {
 
     // Network-specific filename to prevent mainnet/testnet database conflicts
     private var networkSpecificFileName: String {
-        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
+        let isMainnet = WalletEnvironment.isMainnet
         return isMainnet ? "explore-mainnet" : "explore-testnet"
     }
 
@@ -63,7 +63,7 @@ public class ExploreDatabaseSyncManager {
 
         // Initialize storageRef with computed database path
         let databasePath: String
-        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
+        let isMainnet = WalletEnvironment.isMainnet
         if isMainnet {
             databasePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v4.db"
         } else {
@@ -187,12 +187,12 @@ private let kExploreDatabaseLastVersion = "kExploreDatabaseLastVersion"
 extension ExploreDatabaseSyncManager {
     // Network-specific UserDefaults keys
     private var syncTimestampKey: String {
-        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
+        let isMainnet = WalletEnvironment.isMainnet
         return isMainnet ? "kExploreDatabaseLastSyncTimestampKey_Mainnet" : "kExploreDatabaseLastSyncTimestampKey_Testnet"
     }
 
     private var versionKey: String {
-        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
+        let isMainnet = WalletEnvironment.isMainnet
         return isMainnet ? "kExploreDatabaseLastVersion_Mainnet" : "kExploreDatabaseLastVersion_Testnet"
     }
 

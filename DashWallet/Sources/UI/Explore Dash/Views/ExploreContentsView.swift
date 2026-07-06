@@ -35,7 +35,7 @@ class ExploreContentsView: UIView {
     }
     
     private var isTestnet: Bool {
-        return DWEnvironment.sharedInstance().currentChain.isTestnet()
+        return WalletEnvironment.isTestnet
     }
     
     private func setupView() {

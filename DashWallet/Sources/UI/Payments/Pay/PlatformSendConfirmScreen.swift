@@ -162,17 +162,10 @@ struct PlatformSendConfirmScreen: View {
                 amount: amount)
             successMessage = NSLocalizedString("Transfer submitted", comment: "")
             PlatformAddressSyncCoordinator.shared.start(
-                for: currentNetwork() ?? .testnet)
+                for: WalletEnvironment.network ?? .testnet)
             Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
         } catch {
             errorMessage = error.localizedDescription
         }
-    }
-
-    private func currentNetwork() -> Network? {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        if chain.isMainnet() { return .mainnet }
-        if chain.isTestnet() { return .testnet }
-        return nil
     }
 }
