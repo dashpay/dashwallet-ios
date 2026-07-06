@@ -1,4 +1,4 @@
-//  
+//
 //  Created by Andrei Ashikhmin
 //  Copyright © 2024 Dash Core Group. All rights reserved.
 //
@@ -16,29 +16,39 @@
 //
 
 import Foundation
+import SwiftData
+import SwiftDashSDK
 
 class ZenLedgerViewModel: ObservableObject {
     private let zenLedger = ZenLedger()
-    private let account = DWEnvironment.sharedInstance().currentAccount
-    
+
     var isSynced: Bool {
         SyncingActivityMonitor.shared.state == .syncDone
     }
-    
-    func export() async throws -> String? {
-        let allTransaction = account.allTransactions
-        var addresses: [String] = []
 
-        if allTransaction.isEmpty {
-            addresses.append(SwiftDashSDKReceiveAddressReader.receiveAddress() ?? "")
-        } else {
-            for tx in allTransaction {
-                addresses.append(contentsOf:
-                    tx.outputs.compactMap { $0.address }.filter { account.containsAddress($0) }
-                )
-            }
+    func export() async throws -> String? {
+        let addresses = await Self.walletOutputAddresses()
+
+        return try await zenLedger.createPortfolio(
+            addresses: addresses.isEmpty
+                ? [SwiftDashSDKReceiveAddressReader.receiveAddress() ?? ""]
+                : addresses)
+    }
+
+    /// Every address this wallet has ever received to, first-seen order.
+    /// `PersistentTxo` rows are exactly the wallet's own outputs, so no
+    /// per-transaction decode or ownership check is needed. Deduped —
+    /// ZenLedger only needs each address once.
+    @MainActor
+    private static func walletOutputAddresses() -> [String] {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else { return [] }
+        let descriptor = FetchDescriptor<PersistentTxo>(
+            sortBy: [SortDescriptor(\.createdAt, order: .forward)])
+        guard let rows = try? container.mainContext.fetch(descriptor) else { return [] }
+
+        var seen = Set<String>()
+        return rows.compactMap { txo in
+            seen.insert(txo.address).inserted ? txo.address : nil
         }
-        
-        return try await zenLedger.createPortfolio(addresses: addresses)
     }
 }
