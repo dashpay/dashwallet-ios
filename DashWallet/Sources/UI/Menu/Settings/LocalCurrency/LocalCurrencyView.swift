@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // MARK: - LocalCurrencyView
 
