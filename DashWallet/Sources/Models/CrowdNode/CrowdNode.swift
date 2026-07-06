@@ -780,14 +780,30 @@ extension CrowdNode {
                 return
             }
 
-            // TODO(online-account port): confirmation forwarding disabled. The
-            // legacy gate was DashSync's account.transactionIsValid — no SDK
-            // equivalent yet. Forwarding has been de-facto dead since M6 (this
-            // await never resumed); silently re-enabling a money-moving forward
-            // without its validity gate is the wrong default. Re-enable the
-            // SwiftDashSDK selected-input forward with the online-account port;
-            // the web-polling path (checkAddressStatus) still completes linking.
-            DSLogger.log("CrowdNode: confirmation tx seen; forwarding skipped (online-account port pending)")
+            // Chain acceptance (IS-lock or mined) was enforced by the gated
+            // filter in waitForApiAddressConfirmation — the SDK stand-in for
+            // the legacy DashSync account.transactionIsValid gate (stronger:
+            // legacy accepted mempool txs).
+            let forwardedFilter = CrowdNodeAPIConfirmationTxForwarded()
+            if TransactionObserver.fetchObserved().contains(where: { forwardedFilter.matches($0) }) {
+                DSLogger.log("CrowdNode: confirmation already forwarded — skipping")
+                return
+            }
+
+            do {
+                let forwardTx = try await sendCoinsService.sendCoins(
+                    address: CrowdNode.crowdNodeAddress,
+                    amount: CrowdNode.apiConfirmationDashAmount,
+                    inputSelector: SingleInputAddressSelector(address: address),
+                    adjustAmountDownwards: true,
+                    sessionAuthSufficient: true
+                )
+                DSLogger.log("CrowdNode: forwarded confirmation tx: \(forwardTx.txHashHexString)")
+            } catch {
+                // Legacy parity: log only — the 20s web poll (checkAddressStatus)
+                // is the fallback that completes linking.
+                DSLogger.log("CrowdNode: error forwarding confirmation tx: \(error)")
+            }
         }
     }
 
@@ -868,13 +884,26 @@ extension CrowdNode {
     }
 
     private func waitForApiAddressConfirmation(primaryAddress: String, apiAddress: String) async -> ObservedTransaction {
-        let filter = CrowdNodeAPIConfirmationTx(primaryAddress: primaryAddress, apiAddress: apiAddress)
+        // Chain-accepted only: the caller forwards money on match, so a
+        // mempool-only sighting must not resolve this wait (the gate lives in
+        // the filter — the observer's txid dedupe runs after the filters, so
+        // the same row re-matches once the persister upgrades its context).
+        let filter = CrowdNodeAPIConfirmationTx(primaryAddress: primaryAddress, apiAddress: apiAddress,
+                                                requireChainAccepted: true)
 
         if let tx = TransactionObserver.fetchObserved().first(where: { filter.matches($0) }) {
             return tx
         }
         else {
-            return await txObserver.first(filters: filter)
+            // Deep floor instead of the default now−120s: a confirmation row
+            // first seen before this wait started (e.g. mempool at restore
+            // time) must still match when its context flips to accepted.
+            // Safe for this filter — it is unique per link (primary+api
+            // pair), and the caller's already-forwarded guard covers a
+            // re-link's historic confirmation.
+            return await txObserver.first(
+                filters: filter,
+                after: Date(timeIntervalSince1970: TimeInterval(FullCrowdNodeSignUpTxSet.januaryFirst2022Epoch)))
         }
     }
 

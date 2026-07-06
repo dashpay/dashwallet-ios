@@ -51,6 +51,7 @@ extension ObservedTransaction {
         let ownAddresses = Set(row.outputs.map(\.address))
         ownOutputsAmount = row.outputs.reduce(0) { $0 + $1.amount }
         ownOutputAddresses = decoded.outputs.compactMap { $0.address }.filter { ownAddresses.contains($0) }
+        isChainAccepted = row.context >= 1 || row.blockHeight > 0
         // firstSeen first (device-clock stamp at first observation — the
         // ordering key the observer's freshness floor uses), blockTimestamp
         // as the fallback for rows restored from chain data.

@@ -50,6 +50,10 @@ struct ObservedTransaction {
     /// `externalAddresses(of:)` stand-in for "which of our addresses this tx
     /// paid" (own TXO rows projected onto the decoded output order).
     let ownOutputAddresses: [String]
+    /// True once the row is past mempool — IS-locked, mined, or chain-locked
+    /// (context ≥ 1) or carrying a block height (rows restored from chain
+    /// data). SDK-side stand-in for DashSync's `account.transactionIsValid`.
+    let isChainAccepted: Bool
     /// Display wrapper; supplies direction/dashAmount with the existing
     /// FFI → DSTransactionDirection mapping (including the outgoing → moved
     /// fee-only promotion the top-up matcher relies on).

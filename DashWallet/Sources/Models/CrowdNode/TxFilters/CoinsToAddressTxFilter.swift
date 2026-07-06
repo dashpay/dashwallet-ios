@@ -25,6 +25,10 @@ public class CoinsToAddressTxFilter: TransactionFilter {
 
     private let matchingAddress: String?
     private var withFee: Bool
+    /// When set, only chain-accepted rows (IS-locked/mined — see
+    /// `ObservedTransaction.isChainAccepted`) can match. Used by waits that
+    /// trigger a spend on match.
+    private let requireChainAccepted: Bool
     private(set) final var coins: UInt64
     private(set) final var toAddress: String?
     /// The matched output's exact amount (differs from `coins` on a
@@ -33,13 +37,21 @@ public class CoinsToAddressTxFilter: TransactionFilter {
     private(set) final var matchedAmount: UInt64?
     private(set) final var fromAddresses = Set<String>()
 
-    init(coins: UInt64, address: String?, withFee: Bool = false) {
+    init(coins: UInt64, address: String?, withFee: Bool = false, requireChainAccepted: Bool = false) {
         matchingAddress = address
         self.coins = coins
         self.withFee = withFee
+        self.requireChainAccepted = requireChainAccepted
     }
 
     func matches(_ tx: ObservedTransaction) -> Bool {
+        // Acceptance gate FIRST — no side effects for unaccepted rows, so a
+        // mempool-first sighting re-matches cleanly on the acceptance rescan
+        // (the observer's txid dedupe runs after the filters).
+        if requireChainAccepted && !tx.isChainAccepted {
+            return false
+        }
+
         fromAddresses.removeAll()
 
         let lowerBound = withFee ? coins - min(coins, Self.feeTolerance) : coins

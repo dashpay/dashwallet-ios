@@ -20,8 +20,9 @@
 final class CrowdNodeAPIConfirmationTx: CoinsToAddressTxFilter {
     private var primaryAddress: String!
 
-    init(primaryAddress: String, apiAddress: String) {
-        super.init(coins: CrowdNode.apiConfirmationDashAmount, address: apiAddress)
+    init(primaryAddress: String, apiAddress: String, requireChainAccepted: Bool = false) {
+        super.init(coins: CrowdNode.apiConfirmationDashAmount, address: apiAddress,
+                   requireChainAccepted: requireChainAccepted)
         self.primaryAddress = primaryAddress
     }
 
