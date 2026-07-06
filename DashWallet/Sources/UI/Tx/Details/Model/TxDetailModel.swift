@@ -55,7 +55,7 @@ class TxDetailModel: NSObject {
 
     func toggleTaxCategoryOnCurrentTransaction() {
         if txTaxCategory == .unknown {
-            txTaxCategory = transaction.tx?.defaultTaxCategory() ?? .unknown
+            txTaxCategory = transaction.direction.defaultTaxCategory
         }
 
         txTaxCategory = txTaxCategory.nextTaxCategory

@@ -81,8 +81,18 @@ class Taxes: NSObject {
     }
 
     func taxCategory(for tx: Transaction) -> TxMetadataTaxCategory {
-        guard let dsTx = tx.tx else { return .unknown }
-        return taxCategory(for: dsTx)
+        if let dsTx = tx.tx {
+            return taxCategory(for: dsTx)
+        }
+
+        // SDK-sourced rows: a stored .unknown means the user never classified
+        // the tx (rows persisted before the direction default existed), so it
+        // must not shadow the direction-derived default.
+        if let stored = txUserInfos.get(by: tx.txHashData)?.taxCategory, stored != .unknown {
+            return stored
+        }
+
+        return tx.direction.defaultTaxCategory
     }
 
     func taxCategory(for address: String) -> TxMetadataTaxCategory? {

@@ -66,8 +66,6 @@ final class Tx: NSObject {
     }
 
     /// Overload for the Transaction wrapper (SDK-sourced txs).
-    /// Uses .unknown tax category when no DSTransaction is available
-    /// for defaultTaxCategory(). Function #6 follow-up.
     func updateRateIfNeeded(for transaction: Transaction) {
         if let dsTx = transaction.tx {
             updateRateIfNeeded(for: dsTx)
@@ -88,7 +86,7 @@ final class Tx: NSObject {
 
         guard let userInfo = txUserInfos.get(by: transaction.txHashData) else {
             set(rate: rate, currency: App.fiatCurrency, maximumFractionDigits: maximumFractionDigits,
-                for: TransactionMetadata(txHash: transaction.txHashData, taxCategory: .unknown))
+                for: TransactionMetadata(txHash: transaction.txHashData, taxCategory: transaction.direction.defaultTaxCategory))
             return
         }
 
