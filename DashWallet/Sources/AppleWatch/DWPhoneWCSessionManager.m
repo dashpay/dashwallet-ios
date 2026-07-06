@@ -39,10 +39,10 @@ static CGSize const QR_SIZE = {240.0, 240.0};
 static CGSize const HOLE_SIZE = {58.0, 58.0};
 static CGSize const LOGO_SIZE = {54.0, 54.0};
 
-@interface DWPhoneWCSessionManager () <WCSessionDelegate>
+@interface DWPhoneWCSessionManager () <WCSessionDelegate, SyncingActivityMonitorObserver>
 
 @property WCSession *session;
-@property id balanceObserver, syncFinishedObserver, syncFailedObserver;
+@property id balanceObserver;
 
 @end
 
@@ -75,21 +75,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                                                                       [self sendApplicationContext];
                                                               }];
 
-            self.syncFinishedObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncFinishedNotification
-                                                                  object:nil
-                                                                   queue:nil
-                                                              usingBlock:^(NSNotification *_Nonnull note) {
-                                                                  [self sendApplicationContext];
-                                                              }];
-
-            self.syncFailedObserver =
-                [[NSNotificationCenter defaultCenter] addObserverForName:DSChainManagerSyncFailedNotification
-                                                                  object:nil
-                                                                   queue:nil
-                                                              usingBlock:^(NSNotification *_Nonnull note) {
-                                                                  [self sendApplicationContext];
-                                                              }];
+            [[SyncingActivityMonitor shared] addObserver:self];
         }
     }
 
@@ -99,10 +85,18 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 - (void)dealloc {
     if (self.balanceObserver)
         [[NSNotificationCenter defaultCenter] removeObserver:self.balanceObserver];
-    if (self.syncFinishedObserver)
-        [[NSNotificationCenter defaultCenter] removeObserver:self.syncFinishedObserver];
-    if (self.syncFailedObserver)
-        [[NSNotificationCenter defaultCenter] removeObserver:self.syncFailedObserver];
+    [[SyncingActivityMonitor shared] removeObserver:self];
+}
+
+#pragma mark - SyncingActivityMonitorObserver
+
+- (void)syncingActivityMonitorProgressDidChange:(double)progress {
+}
+
+- (void)syncingActivityMonitorStateDidChangeWithPreviousState:(enum SyncingActivityMonitorState)previousState state:(enum SyncingActivityMonitorState)state {
+    if (state == SyncingActivityMonitorStateSyncDone || state == SyncingActivityMonitorStateSyncFailed) {
+        [self sendApplicationContext];
+    }
 }
 
 - (BOOL)reachable {

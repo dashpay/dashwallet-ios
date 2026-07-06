@@ -100,7 +100,7 @@ NS_ASSUME_NONNULL_BEGIN
                              object:nil];
     [notificationCenter addObserver:self
                            selector:@selector(updateStatusNotification:)
-                               name:DSChainManagerSyncStateDidChangeNotification
+                               name:SyncingActivityMonitor.syncStateChangedNotificationName
                              object:nil];
     [notificationCenter addObserver:self
                            selector:@selector(updateStatusNotification:)

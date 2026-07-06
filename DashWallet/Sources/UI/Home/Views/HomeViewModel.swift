@@ -219,21 +219,17 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
         
-        // Fix #1: Always reload transactions when sync starts, not just during resync.
-        // Previously, this only reloaded if isResyncingWallet was true, which meant
-        // normal sync operations wouldn't refresh the transaction list.
-        NotificationCenter.default.publisher(for: Notification.Name.DSChainManagerSyncWillStart)
-            .sink { [weak self] _ in
-                DSLogger.log("HomeViewModel: Sync will start, reloading transactions")
-                self?.reloadTxsAndShortcuts()
-            }
-            .store(in: &cancellableBag)
-        
         syncModel.$state
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 guard let self = self else { return }
+                if state == .syncing {
+                    // Reload once per transition into .syncing — replaces the
+                    // legacy sync-will-start notification observer.
+                    DSLogger.log("HomeViewModel: Sync started, reloading transactions")
+                    self.reloadTxsAndShortcuts()
+                }
                 self.onSyncStateChanged()
                 self.maybeShowCoinJoinSweepDialog()
             }

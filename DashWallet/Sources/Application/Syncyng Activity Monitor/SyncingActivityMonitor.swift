@@ -151,7 +151,6 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     }
 
     private var lastPeakDate: Date?
-    private var lastPostedLegacyState: State = .unknown
     private var cancellables = Set<AnyCancellable>()
 
     private lazy var observers: [SyncingActivityMonitorObserver] = []
@@ -186,6 +185,10 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
         NotificationCenter.default.removeObserver(self)
         NotificationCenter.default.removeObserver(reachabilityObserver!)
     }
+
+    /// ObjC-visible accessor for `.syncStateChangedNotification` (same
+    /// pattern as `DWSwiftDashSDKWalletState.balanceDidChangeNotification`).
+    @objc public static let syncStateChangedNotificationName = Notification.Name.syncStateChangedNotification
 
     @objc public static let shared = SyncingActivityMonitor()
 }
@@ -228,7 +231,6 @@ extension SyncingActivityMonitor {
             applyProgressWithPeakSmoothing(sdkProgress)
             isSyncing = false
             state = .noConnection
-            postLegacyNotifications(forNewState: .noConnection)
             return
         }
 
@@ -264,7 +266,6 @@ extension SyncingActivityMonitor {
         applyProgressWithPeakSmoothing(sdkProgress)
         isSyncing = (mapped == .syncing)
         state = mapped
-        postLegacyNotifications(forNewState: mapped)
     }
 
     /// Map SwiftDashSDK's per-phase progress to the snapshot fields the
@@ -308,30 +309,6 @@ extension SyncingActivityMonitor {
             estimatedBlockHeight: peersBestHeight,
             masternodeListsReceived: mnReceived,
             masternodeListsTotal: mnTotal)
-    }
-
-    /// Backward-compat: re-post the legacy DashSync notification names so
-    /// existing observers (HomeViewModel.swift, DWPhoneWCSessionManager.m,
-    /// DWAboutViewController.m) keep firing on sync state transitions
-    /// without code changes. The userInfo dict is intentionally empty —
-    /// DashSync used to put a `DSChain` object under
-    /// `kChainManagerNotificationChainKey`, but none of the current
-    /// consumers check that key. Removed in M9/M10/M14 when those
-    /// consumers are migrated directly to SwiftDashSDKSPVCoordinator.
-    private func postLegacyNotifications(forNewState newState: State) {
-        guard newState != lastPostedLegacyState else { return }
-        let center = NotificationCenter.default
-        switch newState {
-        case .syncing:
-            center.post(name: .chainManagerSyncStarted, object: nil)
-        case .syncDone:
-            center.post(name: .chainManagerSyncFinished, object: nil)
-        case .syncFailed:
-            center.post(name: .chainManagerSyncFailed, object: nil)
-        case .noConnection, .unknown:
-            break
-        }
-        lastPostedLegacyState = newState
     }
 
     /// Smooth out large progress jumps for visual continuity. Mirrors the
@@ -397,15 +374,8 @@ extension SyncingActivityMonitor {
 // MARK: - Notification name constants
 
 extension Notification.Name {
-    // TODO: unused?
+    // The typed sync-state-change surface. Posted from `state`'s didSet with
+    // the from/new states in userInfo; ObjC observers reach it through
+    // `SyncingActivityMonitor.syncStateChangedNotificationName`.
     static let syncStateChangedNotification: Notification.Name = .init(rawValue: "DWSyncStateChangedNotification")
-
-    // Legacy DashSync notification names. After M5 we POST these from
-    // `postLegacyNotifications` instead of receiving them — kept as
-    // string-literal-compatible constants so existing observers in
-    // HomeViewModel, DWPhoneWCSessionManager, DWAboutViewController etc.
-    // continue to fire without code changes. Removed in M9/M10/M14.
-    static let chainManagerSyncStarted: Notification.Name = .init(rawValue: "DSChainManagerSyncWillStartNotification")
-    static let chainManagerSyncFinished: Notification.Name = .init(rawValue: "DSChainManagerSyncFinishedNotification")
-    static let chainManagerSyncFailed: Notification.Name = .init(rawValue: "DSChainManagerSyncFailedNotification")
 }
