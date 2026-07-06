@@ -111,10 +111,6 @@ NS_ASSUME_NONNULL_BEGIN
                                name:DSPeerManagerConnectedPeersDidChangeNotification
                              object:nil];
     [notificationCenter addObserver:self
-                           selector:@selector(updateStatusNotification:)
-                               name:DSQuorumListDidChangeNotification
-                             object:nil];
-    [notificationCenter addObserver:self
                            selector:@selector(deviceDidShakeNotification:)
                                name:DWDeviceDidShakeNotification
                              object:nil];

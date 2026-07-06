@@ -139,8 +139,6 @@ NS_ASSUME_NONNULL_BEGIN
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSPeerManager *peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
-    DSMasternodeManager *masternodeManager = [DWEnvironment sharedInstance].currentChainManager.masternodeManager;
-    DSMasternodeList *currentMasternodeList = masternodeManager.currentMasternodeList;
 
     NSString *rateString = [NSString stringWithFormat:NSLocalizedString(@"Rate: %@ = %@", @"ex., Rate 1 US $ = 0.000009 Dash"),
                                                       [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue],
@@ -154,9 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                        (int)peerManager.connectedPeerCount];
     NSString *dlPeerString = [NSString stringWithFormat:NSLocalizedString(@"Download peer: %@", @"ex., Download peer: 127.0.0.1:9999"),
                                                         peerManager.downloadPeerName ? peerManager.downloadPeerName : @"-"];
-    NSString *quorumsString = [NSString stringWithFormat:NSLocalizedString(@"Quorums validated: %d/%d", nil),
-                                                         (int)[currentMasternodeList validQuorumsCountOfType:LLMQType_Llmqtype50_60],
-                                                         (int)[currentMasternodeList quorumsCountOfType:LLMQType_Llmqtype50_60]];
+    NSString *masternodeListString = [self masternodeListSyncLine];
 
     NSString *usernameString = @"";
 
@@ -167,7 +163,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 #endif
 
-    NSArray<NSString *> *statusLines = @[ rateString, updatedString, blockString, peersString, dlPeerString, quorumsString, usernameString ];
+    NSArray<NSString *> *statusLines = @[ rateString, updatedString, blockString, peersString, dlPeerString, masternodeListString, usernameString ];
 
     return [statusLines componentsJoinedByString:@"\n"];
 }

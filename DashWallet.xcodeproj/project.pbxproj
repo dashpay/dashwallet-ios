@@ -221,6 +221,8 @@
 		2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8C24B5233370A600000D43 /* QuickReceive.storyboard */; };
 		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
 		2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */; };
+		A5D5DD000000000000000204 /* DWAboutModel+MasternodeSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000206 /* DWAboutModel+MasternodeSync.swift */; };
+		A5D5DD000000000000000205 /* DWAboutModel+MasternodeSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000206 /* DWAboutModel+MasternodeSync.swift */; };
 		2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6523A11DFE006A2A59 /* DWURLActions.m */; };
 		2A913E6823A1473A006A2A59 /* DWURLRequestHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6723A14739006A2A59 /* DWURLRequestHandler.m */; };
 		2A913E6F23A26663006A2A59 /* DWOnboardingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6E23A26663006A2A59 /* DWOnboardingViewController.m */; };
@@ -2162,6 +2164,7 @@
 		2A8F420821BED16300858B91 /* DashSyncCurrentCommit */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = DashSyncCurrentCommit; sourceTree = SOURCE_ROOT; };
 		2A8F421E21BEFEEA00858B91 /* DWAboutModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAboutModel.h; sourceTree = "<group>"; };
 		2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAboutModel.m; sourceTree = "<group>"; };
+		A5D5DD000000000000000206 /* DWAboutModel+MasternodeSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DWAboutModel+MasternodeSync.swift"; sourceTree = "<group>"; };
 		2A913E6023A11DCA006A2A59 /* DWURLRequestHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWURLRequestHandler.h; sourceTree = "<group>"; };
 		2A913E6423A11DFE006A2A59 /* DWURLActions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWURLActions.h; sourceTree = "<group>"; };
 		2A913E6523A11DFE006A2A59 /* DWURLActions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWURLActions.m; sourceTree = "<group>"; };
@@ -4688,6 +4691,7 @@
 				755049A72C846299008FA7EB /* DWAboutViewController.m */,
 				2A8F421E21BEFEEA00858B91 /* DWAboutModel.h */,
 				2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */,
+				A5D5DD000000000000000206 /* DWAboutModel+MasternodeSync.swift */,
 				2AB7C906234DB82700A56795 /* About.storyboard */,
 			);
 			path = About;
@@ -9518,6 +9522,7 @@
 				4751CAD92970509600F63AC4 /* ConvertCryptoOrderPreviewViews.swift in Sources */,
 				75E2F3CA2AA4D1B900C3B458 /* Topper.swift in Sources */,
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
+				A5D5DD000000000000000204 /* DWAboutModel+MasternodeSync.swift in Sources */,
 				1141E4C5291FDC7A00ACDA9E /* WelcomeToCrowdNodeViewController.swift in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
 				7569D6892DE6DB6700768BFF /* ExploreContentsView.swift in Sources */,
@@ -10479,6 +10484,7 @@
 				7573C2E32B01105F00F4C347 /* MasternodeIPCell.swift in Sources */,
 				C9D2C8EA2A320AA000D15901 /* ConvertCryptoOrderPreviewViews.swift in Sources */,
 				C9D2C8EB2A320AA000D15901 /* DWAboutModel.m in Sources */,
+				A5D5DD000000000000000205 /* DWAboutModel+MasternodeSync.swift in Sources */,
 				753261AE2CBC1040003CDE00 /* InvitationFlowViewController.swift in Sources */,
 				C943B4B52A40A54600AF23C5 /* DWContactsFetchedDataSource.m in Sources */,
 				C9D2C8EE2A320AA000D15901 /* WelcomeToCrowdNodeViewController.swift in Sources */,
