@@ -33,7 +33,7 @@ struct TransferAmountView<ViewModel: TransferAmountViewModelProtocol>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(
-                leading: { NavigationBarElement.back.button { onBack?() } },
+                leading: { NavigationBarElement.back.button { onBack?() } }
             )
 
             VStack(alignment: .leading, spacing: 20) {
