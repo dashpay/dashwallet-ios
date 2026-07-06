@@ -160,7 +160,13 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
         model.direction = (model.direction == .toWallet) ? .toCoinbase : .toWallet
         direction = model.direction
         refreshSourceItems()
+        // Re-run checkAmountForErrors() under the new direction so model.error
+        // reflects the new validity; without this the error banner and button
+        // state diverge after a swap (review finding #1).
+        model.rebuildAmounts()
         syncCanContinue()
+        syncError()
+        syncReceiveAmount()
     }
 
     func selectFiatCurrency(_ code: String) {
@@ -267,7 +273,7 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
     /// Fiat value of a Dash amount (duffs), mirroring `BaseAmountModel.fiatWalletBalanceFormatted`.
     private func fiatString(forDuffs duffs: UInt64) -> String? {
         guard let fiatAmount = try? Coinbase.shared.currencyExchanger
-            .convertDash(amount: duffs.dashAmount, to: App.fiatCurrency) else { return nil }
+            .convertDash(amount: duffs.dashAmount, to: model.localCurrencyCode) else { return nil }
         return model.supplementaryNumberFormatter.string(from: fiatAmount as NSNumber)
     }
 
@@ -302,7 +308,7 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
         }
         let account = DWEnvironment.sharedInstance().currentAccount
         let allAvailableFunds = account.maxOutputAmount
-        if model.amount.plainAmount + CrowdNode.minimumLeftoverBalance > allAvailableFunds {
+        if (model.amount?.plainAmount ?? 0) + CrowdNode.minimumLeftoverBalance > allAvailableFunds {
             if let handler = onNeedsLeftoverWarning {
                 handler(completion)
             } else {
