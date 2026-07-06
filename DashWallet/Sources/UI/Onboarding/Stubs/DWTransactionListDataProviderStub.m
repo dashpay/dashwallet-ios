@@ -19,14 +19,14 @@
 
 #import <DashSync/DashSync.h>
 
-#import "DWTransactionStub.h"
+#import "DWTransactionListDataItemObject.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWTransactionListDataProviderStub
 
-- (NSString *)shortDateStringForTransaction:(DWTransactionStub *)transaction {
+- (NSString *)shortDateStringForTransaction:(DSTransaction *)transaction {
     return transaction.formattedShortTxDate;
 }
 
@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
     return transaction.formattedISO8601TxDate;
 }
 
-- (id<DWTransactionListDataItem>)transactionDataForTransaction:(DWTransactionStub *)transaction {
+- (id<DWTransactionListDataItem>)transactionDataForTransaction:(DSTransaction *)transaction {
     DWTransactionListDataItemObject *dataItem = [[DWTransactionListDataItemObject alloc] init];
     dataItem.direction = transaction.direction;
     dataItem.dashAmount = transaction.dashAmount;

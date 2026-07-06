@@ -20,8 +20,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWTransactionStub;
-
 @interface DWTransactionListDataProviderStub : DWBaseTransactionListDataProvider <DWTransactionListDataProviderProtocol>
 
 @end

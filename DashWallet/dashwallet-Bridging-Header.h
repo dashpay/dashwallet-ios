@@ -177,9 +177,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWDemoAdvancedSecurityViewController.h"
 #endif
 
-//MARK: Onboarding
-#import "DWTransactionStub.h"
-
 //MARK: CoinJoin
 #import "DSCoinJoinManager.h"
 

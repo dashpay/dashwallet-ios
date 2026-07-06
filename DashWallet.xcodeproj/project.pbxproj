@@ -239,7 +239,6 @@
 		2A913EA423A799F3006A2A59 /* DWTransactionListDataItemObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EA323A799F3006A2A59 /* DWTransactionListDataItemObject.m */; };
 		2A913EA823A79AD2006A2A59 /* DWTransactionListDataProviderStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EA723A79AD2006A2A59 /* DWTransactionListDataProviderStub.m */; };
 		2A913EAE23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EAD23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m */; };
-		2A913EB623A7E145006A2A59 /* DWTransactionStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EB523A7E145006A2A59 /* DWTransactionStub.m */; };
 		2A9172C425233DC50024B4C5 /* DWPhraseRepairViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9172C325233DC50024B4C5 /* DWPhraseRepairViewController.m */; };
 		2A9172D325233F4F0024B4C5 /* DWPhraseRepairChildViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9172D225233F4F0024B4C5 /* DWPhraseRepairChildViewController.m */; };
 		2A9CEBAD22E1DA4000A50237 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
@@ -1489,7 +1488,6 @@
 		C9D2C8242A320AA000D15901 /* UIViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDEECB294A2BAD008AE06D /* UIViewController+Coinbase.swift */; };
 		C9D2C8262A320AA000D15901 /* CSVBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E0299E1F2F006903F1 /* CSVBuilder.swift */; };
 		C9D2C8282A320AA000D15901 /* CoinbaseUserAuthInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDF9D28C896BC000427E7 /* CoinbaseUserAuthInformation.swift */; };
-		C9D2C8292A320AA000D15901 /* DWTransactionStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EB523A7E145006A2A59 /* DWTransactionStub.m */; };
 		C9D2C82A2A320AA000D15901 /* OnlineAccountEmailController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118C05B729928F7800717E65 /* OnlineAccountEmailController.swift */; };
 		C9D2C82B2A320AA000D15901 /* DWBaseActionButtonViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFE82305264200C475EB /* DWBaseActionButtonViewController.m */; };
 		C9D2C82C2A320AA000D15901 /* CoinbasePaymentMethodsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFA228C896BC000427E7 /* CoinbasePaymentMethodsResponse.swift */; };
@@ -2197,8 +2195,6 @@
 		2A913EA723A79AD2006A2A59 /* DWTransactionListDataProviderStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataProviderStub.m; sourceTree = "<group>"; };
 		2A913EAC23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseTransactionListDataProvider.h; sourceTree = "<group>"; };
 		2A913EAD23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseTransactionListDataProvider.m; sourceTree = "<group>"; };
-		2A913EB423A7E145006A2A59 /* DWTransactionStub.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionStub.h; sourceTree = "<group>"; };
-		2A913EB523A7E145006A2A59 /* DWTransactionStub.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionStub.m; sourceTree = "<group>"; };
 		2A9172C225233DC50024B4C5 /* DWPhraseRepairViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPhraseRepairViewController.h; sourceTree = "<group>"; };
 		2A9172C325233DC50024B4C5 /* DWPhraseRepairViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPhraseRepairViewController.m; sourceTree = "<group>"; };
 		2A9172D125233F4F0024B4C5 /* DWPhraseRepairChildViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPhraseRepairChildViewController.h; sourceTree = "<group>"; };
@@ -4749,8 +4745,6 @@
 				2A913E7E23A30609006A2A59 /* DWRootModelStub.m */,
 				2A913EA623A79AD2006A2A59 /* DWTransactionListDataProviderStub.h */,
 				2A913EA723A79AD2006A2A59 /* DWTransactionListDataProviderStub.m */,
-				2A913EB423A7E145006A2A59 /* DWTransactionStub.h */,
-				2A913EB523A7E145006A2A59 /* DWTransactionStub.m */,
 				2AB3417823A929B6004E37A7 /* DWAdvancedSecurityModelStub.h */,
 				2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */,
 			);
@@ -9331,7 +9325,6 @@
 				47CDEECC294A2BAD008AE06D /* UIViewController+Coinbase.swift in Sources */,
 				472D13E1299E1F2F006903F1 /* CSVBuilder.swift in Sources */,
 				0F6EDFC428C896BD000427E7 /* CoinbaseUserAuthInformation.swift in Sources */,
-				2A913EB623A7E145006A2A59 /* DWTransactionStub.m in Sources */,
 				118C05B829928F7800717E65 /* OnlineAccountEmailController.swift in Sources */,
 				2A74EFE92305264200C475EB /* DWBaseActionButtonViewController.m in Sources */,
 				0F6EDFC828C896BD000427E7 /* CoinbasePaymentMethodsResponse.swift in Sources */,
@@ -10242,7 +10235,6 @@
 				C943B5982A40EDEF00AF23C5 /* DWConfirmUsernameContentView.m in Sources */,
 				C943B58C2A40ED6F00AF23C5 /* DWUsernameValidationRule.m in Sources */,
 				756FE70A2CDCD6D600E6C195 /* ValidationCheck.swift in Sources */,
-				C9D2C8292A320AA000D15901 /* DWTransactionStub.m in Sources */,
 				C9D2C82A2A320AA000D15901 /* OnlineAccountEmailController.swift in Sources */,
 				C9D2C82B2A320AA000D15901 /* DWBaseActionButtonViewController.m in Sources */,
 				C9D2C82C2A320AA000D15901 /* CoinbasePaymentMethodsResponse.swift in Sources */,

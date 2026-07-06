@@ -75,6 +75,11 @@ class Transaction: TransactionDataItem, Identifiable {
         let inputAddresses: [String]
         /// Raw number of inputs (UTXOs consumed) — NOT deduped by address.
         let inputCount: Int
+        /// External recipient addresses of a *sent* tx. Persisted rows can't
+        /// recover these (persistence stores owned outputs only), so this is
+        /// always empty for them; only synthetic snapshots populate it, from
+        /// the send intent (see the synthetic initializer).
+        let externalSentAddresses: [String]
 
         /// Must be called on the main actor — reads `p`'s relationships
         /// (`outputs`/`inputs`), which are bound to the model-context actor.
@@ -87,6 +92,24 @@ class Transaction: TransactionDataItem, Identifiable {
             outputAddresses = Array(Set(p.outputs.map { $0.address }.filter { !$0.isEmpty }))
             inputAddresses = Array(Set(p.inputs.map { $0.address }.filter { !$0.isEmpty }))
             inputCount = p.inputs.count
+            externalSentAddresses = []
+        }
+
+        /// Snapshot for a transaction that has no persisted row: the
+        /// onboarding demo list and the post-broadcast fallback (the Rust
+        /// persister writes the row asynchronously). Display-only; never
+        /// persisted.
+        init(syntheticTxid: Data, direction: UInt32, netAmount: Int64,
+             fee: UInt64?, context: UInt32, externalSentAddresses: [String]) {
+            txid = syntheticTxid
+            self.direction = direction
+            self.netAmount = netAmount
+            self.fee = fee
+            self.context = context
+            outputAddresses = []
+            inputAddresses = []
+            inputCount = 0
+            self.externalSentAddresses = externalSentAddresses
         }
     }
 
@@ -196,11 +219,12 @@ class Transaction: TransactionDataItem, Identifiable {
             // recipient outputs aren't surfaced). For received txs that
             // matches DSTransaction's "addresses receiving in this tx"
             // semantics; for sent txs the external destination is
-            // unrecoverable from the row alone.
+            // unrecoverable from the row alone — only synthetic post-send
+            // snapshots carry it, from the send intent.
             if direction == .received || direction == .moved {
                 return snap.outputAddresses
             }
-            return []
+            return snap.externalSentAddresses
         }
     }()
 
@@ -353,10 +377,6 @@ class Transaction: TransactionDataItem, Identifiable {
     }()
 
     private func computeStateFromDSTransaction(_ dsTx: DSTransaction) -> State {
-        if dsTx is DWTransactionStub {
-            return .ok
-        }
-
         let chain = DWEnvironment.sharedInstance().currentChain
         let currentAccount = DWEnvironment.sharedInstance().currentAccount
         let account = dsTx.accounts.contains(where: { ($0 as! DSAccount) == currentAccount }) ? currentAccount : nil
@@ -511,6 +531,29 @@ class Transaction: TransactionDataItem, Identifiable {
         self.date = ts == 0
             ? Date()
             : Date(timeIntervalSince1970: TimeInterval(ts))
+    }
+
+    /// Synthetic SDK-shaped wrapper for a transaction that has no persisted
+    /// row: the onboarding demo list and the post-send success screen's
+    /// fallback while the Rust persister hasn't written the row yet.
+    /// Display-only — never stored, never fed back into persistence.
+    ///
+    /// - Parameters:
+    ///   - txid: wire-order txid (same byte order as `txHashData`).
+    ///   - directionRaw: FFI direction encoding (0=incoming, 1=outgoing,
+    ///     2=internal, 3=coinjoin).
+    ///   - contextRaw: 0=mempool, 1=instantSend, 2=inBlock, 3=chainLocked.
+    init(syntheticTxid txid: Data, directionRaw: UInt32, netAmount: Int64,
+         fee: UInt64?, contextRaw: UInt32, date: Date,
+         externalSentAddresses: [String] = []) {
+        self.source = .sdk(SDKSnapshot(
+            syntheticTxid: txid,
+            direction: directionRaw,
+            netAmount: netAmount,
+            fee: fee,
+            context: contextRaw,
+            externalSentAddresses: externalSentAddresses))
+        self.date = date
     }
 }
 

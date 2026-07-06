@@ -18,12 +18,10 @@
 #import <Foundation/Foundation.h>
 
 #import "DWHomeProtocol.h"
-#import "DWTransactionStub.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeModelStub : NSObject <DWHomeProtocol>
-@property (readonly, nonatomic, copy) NSArray<DWTransactionStub *> *stubTxs;
 @end
 
 NS_ASSUME_NONNULL_END

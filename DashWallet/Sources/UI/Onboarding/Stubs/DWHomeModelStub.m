@@ -47,8 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
     if (self) {
         _dataProvider = [[DWTransactionListDataProviderStub alloc] init];
 
-        _stubTxs = [DWTransactionStub stubs];
-
         _receiveModel = [[DWReceiveModelStub alloc] init];
 #ifdef DASHPAY
         _dashPayModel = [[DWDashPayModel alloc] init]; // TODO: DP consider using stub
@@ -124,7 +122,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)reloadTxDataSource {
-    self.allDataSource = self.stubTxs;
+    // The demo tx list renders via the Swift `StubTransactionSource`
+    // (synthetic SDK-shaped wrappers); `allDataSource` survives only to
+    // satisfy the DWHomeProtocol contract and has no readers.
+    self.allDataSource = @[];
 }
 
 @end

@@ -156,7 +156,7 @@ extension MainTabbarController {
         let homeVC = HomeViewController()
         homeVC.delegate = self
         homeVC.model = homeModel
-        homeVC.viewModel = homeModel is DWHomeModelStub ? HomeViewModel(transactionSource: StubTransactionSource(model: homeModel as! DWHomeModelStub)) : HomeViewModel.shared
+        homeVC.viewModel = homeModel is DWHomeModelStub ? HomeViewModel(transactionSource: StubTransactionSource()) : HomeViewModel.shared
         homeController = homeVC
 
         var nvc = BaseNavigationController(rootViewController: homeVC)
