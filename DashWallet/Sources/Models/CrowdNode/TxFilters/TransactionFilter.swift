@@ -22,9 +22,7 @@ import Foundation
 /// Built on the main actor from a `PersistentTransaction` row plus a consensus
 /// decode of its raw bytes (`TransactionDecoder`) — persistence materializes
 /// TXO rows only for the wallet's own outputs, so matching external addresses
-/// (CrowdNode's) requires decoding the stored bytes. A deprecated bridge from
-/// `DSTransaction` exists solely for the deferred online-account/withdrawal
-/// scans that still read DashSync's (empty post-M6) `allTransactions`.
+/// (CrowdNode's) requires decoding the stored bytes.
 struct ObservedTransaction {
     struct Output {
         /// nil for non-standard scripts (OP_RETURN etc.).
@@ -45,6 +43,13 @@ struct ObservedTransaction {
     let inputAddresses: Set<String>
     /// Row `firstSeen`, falling back to `blockTimestamp`; nil when both are 0.
     let timestamp: Date?
+    /// Sum of this tx's outputs paying the wallet's own addresses (the row's
+    /// materialized TXOs) — DashSync's `amountReceived(from:)`, in duffs.
+    let ownOutputsAmount: UInt64
+    /// Own destination addresses in wire output order — DashSync's
+    /// `externalAddresses(of:)` stand-in for "which of our addresses this tx
+    /// paid" (own TXO rows projected onto the decoded output order).
+    let ownOutputAddresses: [String]
     /// Display wrapper; supplies direction/dashAmount with the existing
     /// FFI → DSTransactionDirection mapping (including the outgoing → moved
     /// fee-only promotion the top-up matcher relies on).
@@ -55,28 +60,4 @@ struct ObservedTransaction {
 
 protocol TransactionFilter {
     func matches(_ tx: ObservedTransaction) -> Bool
-}
-
-extension TransactionFilter {
-    /// DashSync bridge for the deferred scans still reading DashSync's
-    /// `wallet.allTransactions` (empty post-M6): `getWithdrawalsForTheLast`,
-    /// `hasDepositConfirmations`, `getApiAddressConfirmationTx` in
-    /// CrowdNode.swift. Kept only so those flows compile until the
-    /// online-account/withdrawal port. Do not add callers.
-    @available(*, deprecated, message: "DashSync bridge for deferred CrowdNode flows; match ObservedTransaction instead")
-    func matches(tx: DSTransaction) -> Bool {
-        matches(ObservedTransaction(legacy: tx))
-    }
-}
-
-extension ObservedTransaction {
-    /// DashSync bridge — see the deprecated `matches(tx:)` adapter above.
-    init(legacy tx: DSTransaction) {
-        txid = tx.txHashData
-        txidHexDisplay = tx.txHashData.reversed().map { String(format: "%02x", $0) }.joined()
-        outputs = tx.outputs.map { Output(address: $0.address, amount: $0.amount) }
-        inputAddresses = Set(tx.inputAddresses.compactMap { $0 as? String })
-        timestamp = Date(timeIntervalSince1970: tx.timestamp)
-        wrapped = Transaction(transaction: tx)
-    }
 }

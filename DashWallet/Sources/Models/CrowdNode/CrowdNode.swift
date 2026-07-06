@@ -479,9 +479,12 @@ extension CrowdNode {
     }
 
     private func checkWithdrawalLimits(_ amount: UInt64) throws {
-        let lastSyncBlockHeight = DWEnvironment.sharedInstance().currentChain.lastSyncBlockHeight
-        
-        if lastSyncBlockHeight <= prefs.lastWithdrawalBlock {
+        // One withdrawal per block: tipHeight is the SPV synced-headers tip
+        // (0 only before the client publishes one — the staking UI is gated
+        // on syncDone, so a live height is available whenever this runs).
+        let tipHeight = SwiftDashSDKSPVCoordinator.shared.tipHeight
+
+        if tipHeight > 0, tipHeight <= prefs.lastWithdrawalBlock {
             throw CrowdNode.Error.withdrawLimit(amount: 0, period: .perBlock)
         }
         
@@ -510,18 +513,18 @@ extension CrowdNode {
         let now = Date()
         let from = Calendar.current.date(byAdding: .hour, value: -hours, to: now)!
 
-        let wallet = DWEnvironment.sharedInstance().currentWallet
         let filter = CrowdNodeWithdrawalReceivedTx()
             .and(txFilter: TxWithinTimePeriod(from: from, to: now))
-        let withdrawals = wallet.allTransactions.filter { tx in filter.matches(tx: tx) }
-        let chain = DWEnvironment.sharedInstance().currentChain
+        let floor = UInt64(max(0, from.timeIntervalSince1970))
 
-        return withdrawals.compactMap { tx in chain.amountReceived(from: tx) }.reduce(0, +)
+        return TransactionObserver.fetchObserved(firstSeenAtOrAfter: floor)
+            .filter { filter.matches($0) }
+            .map(\.ownOutputsAmount)
+            .reduce(0, +)
     }
-    
+
     private func updateLastWithdrawalBlock() {
-        let lastSyncBlockHeight = DWEnvironment.sharedInstance().currentChain.lastSyncBlockHeight
-        prefs.lastWithdrawalBlock = lastSyncBlockHeight
+        prefs.lastWithdrawalBlock = SwiftDashSDKSPVCoordinator.shared.tipHeight
     }
 }
 
@@ -879,11 +882,10 @@ extension CrowdNode {
     }
 
     private func hasDepositConfirmations() -> Bool {
-        let wallet = DWEnvironment.sharedInstance().currentWallet
         let filter = CrowdNodeResponse(responseCode: ApiCode.depositReceived,
                                        accountAddress: accountAddress)
 
-        return wallet.allTransactions.contains { filter.matches(tx: $0) }
+        return TransactionObserver.fetchObserved().contains { filter.matches($0) }
     }
 
     private func getOnlineAccountAddress(state: OnlineAccountState) -> String? {
@@ -891,43 +893,34 @@ extension CrowdNode {
 
         if savedAddress != nil && state != .none {
             return savedAddress
-        } else if let confirmationTx = getApiAddressConfirmationTx() {
-            let account = DWEnvironment.sharedInstance().currentAccount
+        } else if let confirmationTx = getApiAddressConfirmationTx(),
+                  let apiAddress = confirmationTx.ownOutputAddresses.first {
+            prefs.accountAddress = apiAddress
+            signUpState = .linkedOnline
+            prefs.savedOnlineAccountState = .linking
 
-            if let apiAddress = account.externalAddresses(of: confirmationTx).first {
-                prefs.accountAddress = apiAddress
-                signUpState = .linkedOnline
-                prefs.savedOnlineAccountState = .linking
-
-                return apiAddress
-            }
+            return apiAddress
         }
 
         return nil
     }
 
-    private func getApiAddressConfirmationTx() -> DSTransaction? {
+    private func getApiAddressConfirmationTx() -> ObservedTransaction? {
         let filter = CoinsToAddressTxFilter(coins: CrowdNode.apiConfirmationDashAmount, address: nil) // account address is unknown at this point
+        let forwardedConfirmationFilter = CrowdNodeAPIConfirmationTxForwarded()
+        let observed = TransactionObserver.fetchObserved()
 
-        let wallet = DWEnvironment.sharedInstance().currentWallet
-        let account = DWEnvironment.sharedInstance().currentAccount
-
-        for confirmationTx in wallet.allTransactions {
-            if filter.matches(tx: confirmationTx) {
-                let receivedTo = account.externalAddresses(of: confirmationTx).first
-                let forwardedConfirmationFilter = CrowdNodeAPIConfirmationTxForwarded()
-                // There might be several matching transactions. The real one will be forwarded to CrowdNode
-                let forwardedTx = wallet.allTransactions.first {
-                    forwardedConfirmationFilter.matches(tx: $0)
-                }
-
-                if forwardedTx != nil && receivedTo != nil && forwardedConfirmationFilter.fromAddresses.contains(receivedTo!) {
-                    return confirmationTx
-                }
-            }
+        // There might be several matching transactions. The real one is the
+        // one whose destination CrowdNode forwarded from.
+        guard observed.contains(where: { forwardedConfirmationFilter.matches($0) }) else {
+            return nil
         }
 
-        return nil
+        return observed.first { confirmationTx in
+            guard filter.matches(confirmationTx),
+                  let receivedTo = confirmationTx.ownOutputAddresses.first else { return false }
+            return forwardedConfirmationFilter.fromAddresses.contains(receivedTo)
+        }
     }
 
     private func restoreCreatedOnlineAccount(_ address: String) {

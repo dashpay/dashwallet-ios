@@ -47,6 +47,10 @@ extension ObservedTransaction {
         txidHexDisplay = row.txidHex
         outputs = decoded.outputs.map { Output(address: $0.address, amount: $0.valueDuffs) }
         inputAddresses = Set(decoded.inputs.compactMap { $0.address })
+        // The row's TXOs are exactly the wallet's own outputs of this tx.
+        let ownAddresses = Set(row.outputs.map(\.address))
+        ownOutputsAmount = row.outputs.reduce(0) { $0 + $1.amount }
+        ownOutputAddresses = decoded.outputs.compactMap { $0.address }.filter { ownAddresses.contains($0) }
         // firstSeen first (device-clock stamp at first observation — the
         // ordering key the observer's freshness floor uses), blockTimestamp
         // as the fallback for rows restored from chain data.
