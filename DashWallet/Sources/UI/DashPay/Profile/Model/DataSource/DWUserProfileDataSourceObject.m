@@ -20,7 +20,6 @@
 #import "DWDPAcceptedRequestNotificationObject.h"
 #import "DWDPOutgoingRequestNotificationObject.h"
 #import "DWDPTxObject.h"
-#import "DWEnvironment.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -147,18 +146,6 @@ NS_ASSUME_NONNULL_END
             NSIndexPath *txIndexPath = [NSIndexPath indexPathForItem:item inSection:0];
             DSTxOutputEntity *txOutputEntity = [self.frc objectAtIndexPath:txIndexPath];
             DSTransaction *transaction = [txOutputEntity.transaction transaction];
-
-            if (MOCK_DASHPAY) {
-                DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-                NSString *address = @"yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A"; // Testnet faucet address, used as a mocked address for a contact
-
-                for (DSTransaction *tx in wallet.allTransactions) {
-                    if ([tx.outputAddresses containsObject:address]) {
-                        transaction = tx;
-                        break;
-                    }
-                }
-            }
 
             NSDate *txDate = [transaction date];
 
