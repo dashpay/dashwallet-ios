@@ -218,8 +218,9 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
     UIImage *qrCodeImage = self.qrCode;
     BRAppleWatchData *appleWatchData = [[BRAppleWatchData alloc] init];
 
-    appleWatchData.balance = [CurrencyExchangerObjcWrapper stringForDashAmount:account.balance];
-    appleWatchData.balanceInLocalCurrency = [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:account.balance];
+    uint64_t balance = DWSwiftDashSDKWalletState.currentTotalBalance;
+    appleWatchData.balance = [CurrencyExchangerObjcWrapper stringForDashAmount:balance];
+    appleWatchData.balanceInLocalCurrency = [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:balance];
 #if SNAPSHOT
     appleWatchData.balance = [CurrencyExchangerObjcWrapper stringForDashAmount:42980000];
     appleWatchData.balanceInLocalCurrency = [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:42980000];
