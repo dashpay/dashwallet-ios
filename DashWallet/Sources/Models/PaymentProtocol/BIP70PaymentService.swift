@@ -248,9 +248,14 @@ final class BIP70PaymentService {
 
     // MARK: Send (the only spend point)
 
-    /// Build/sign → broadcast → (if a payment_url) POST the Payment + read the ACK. The merchant
-    /// round-trip is best-effort: once broadcast has happened, a POST/ACK failure is a soft-fail
-    /// (the coins have moved) — we return success with `ackMemo == nil` rather than throwing.
+    /// Build/sign → (if a payment_url) POST the Payment + read the ACK → broadcast. BIP70-correct
+    /// ordering: the merchant sees the signed transaction and acknowledges it BEFORE any coins
+    /// move, so a rejecting or unreachable merchant stops the spend with the money unspent.
+    ///
+    /// Send-guard invariant: the guard resets (retry allowed) only while nothing has been
+    /// broadcast — build/sign failures and POST/ACK failures. Once broadcast is attempted the
+    /// guard is never reset: the merchant holds the signed bytes and may broadcast them
+    /// independently, so a retry would rebuild a conflicting spend of the same inputs.
     func confirmAndSend(_ confirmation: Confirmation, now: Date = Date()) async throws -> SendResult {
 
         // 1. Expiry re-check at send time (the user may have lingered on the confirm screen).
@@ -266,26 +271,22 @@ final class BIP70PaymentService {
         //    successful spend — both share this confirmation's guard — is rejected with .alreadySent.
         try confirmation.sendGuard.begin()
 
-        // 4. Build + sign, then broadcast. A throw from the build means nothing was broadcast;
-        //    a throw from the broadcast means no peer accepted it and the local UTXO view is
-        //    unchanged — either way, releasing the claim allows a legitimate retry on the same
-        //    confirmation (a retry re-broadcasts the same bytes: network-idempotent, same txid).
-        // TODO(P0 flip): the build/broadcast split now exists — the remaining flip is to move
-        //    broadcast AFTER a successful POST below, promote POST failures to a hard throw,
-        //    and NOT reset the guard once broadcast has happened (a post-broadcast failure
-        //    must not re-broadcast).
+        // 4. Build + sign only — nothing is broadcast yet, so any throw releases the claim.
         let prepared: PreparedSend
-        let txidHexDisplay: String
         do {
             let sdkRecipients = confirmation.recipients.map { (address: $0.address, amountDuffs: $0.amount) }
             prepared = try await wallet.buildSignedTransaction(recipients: sdkRecipients)
-            txidHexDisplay = try await wallet.broadcast(prepared)
         } catch {
             confirmation.sendGuard.reset()
             throw error
         }
 
-        // 5. Merchant round-trip, if there's a payment_url.
+        // 5. Merchant round-trip BEFORE broadcast, if there's a payment_url. A decoded ACK is
+        //    the acknowledgement (BIP70 has no reject bit — rejection surfaces as an HTTP or
+        //    decode failure). A failure here is a hard throw with the money unspent; the guard
+        //    resets so the user can retry. Caveat (accepted): a POST that fails after the
+        //    merchant received the bytes leaves them able to broadcast independently while a
+        //    retry rebuilds a conflicting tx.
         var ackMemo: String?
         if let url = confirmation.paymentURL {
             let refundTo = makeRefundOutputs(amount: confirmation.amount, network: confirmation.network)
@@ -297,11 +298,13 @@ final class BIP70PaymentService {
                 let ack = try await transport.postPayment(payment, to: url, scheme: confirmation.scheme)
                 ackMemo = ack.memo
             } catch {
-                // Soft-fail: the tx is already on the network; do NOT roll back. The merchant
-                // can reconcile from chain. (Becomes a hard failure in the post-P0 flip above.)
-                ackMemo = nil
+                confirmation.sendGuard.reset()
+                throw (error as? BIP70Error) ?? BIP70Error.ackRejected
             }
         }
+
+        // 6. Broadcast. From this point the guard is never reset — see the invariant above.
+        let txidHexDisplay = try await wallet.broadcast(prepared)
 
         let callbackURL = Self.makeCallbackURL(scheme: confirmation.callbackScheme,
                                                address: confirmation.primaryAddress,
