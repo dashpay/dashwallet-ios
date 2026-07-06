@@ -30,7 +30,7 @@ struct GiftCardDetailsUIState {
     var purchaseDate: Date? = nil
     var isLoadingCardDetails: Bool = false
     var loadingError: Error? = nil
-    var transaction: DSTransaction? = nil
+    var transaction: Transaction? = nil
     var isClaimLink: Bool = false
     var hasBeenPollingForLongTime: Bool = false
     var provider: String? = nil
@@ -112,14 +112,12 @@ class GiftCardDetailsViewModel: ObservableObject {
     private func loadTransaction() {
         Task.detached { [weak self] in
             guard let self = self else { return }
-            
-            let transaction = DWEnvironment.sharedInstance().currentWallet.allTransactions.first { transaction in
-                return transaction.txHashData == self.txId
-            }
-            
+
+            let transaction = SwiftDashSDKWalletSource.fetch(txid: self.txId)
+
             await MainActor.run {
                 if let tx = transaction {
-                    self.uiState.purchaseDate = Date(timeIntervalSince1970: TimeInterval(tx.timestamp))
+                    self.uiState.purchaseDate = tx.date
                     self.uiState.transaction = tx
                 }
             }

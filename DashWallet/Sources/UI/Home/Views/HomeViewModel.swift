@@ -780,25 +780,52 @@ protocol TransactionSource {
 /// briefly is acceptable.
 class SwiftDashSDKWalletSource: TransactionSource {
     var allTransactions: Array<Transaction> {
-        let wrapped: [Transaction]
-        if Thread.isMainThread {
-            wrapped = MainActor.assumeIsolated { Self.fetchAndWrapOnMain() }
-        } else {
-            var fetched: [Transaction] = []
-            DispatchQueue.main.sync {
-                fetched = MainActor.assumeIsolated { Self.fetchAndWrapOnMain() }
-            }
-            wrapped = fetched
-        }
-        return wrapped.sorted { $0.date > $1.date }
+        Self.fetchAll().sorted { $0.date > $1.date }
     }
 
-    /// Fetch + wrap on the main actor. Wrapping (and the per-tx CoinJoin
-    /// membership computation it performs) must run here, not on the caller's
-    /// background queue: `Transaction.sdkCoinJoinMixing` is derived by walking
-    /// SwiftData relationships (outputs → coreAddress → account), which are
-    /// bound to `mainContext`'s actor. The fetch is fast (<10ms for a few
-    /// hundred rows) so briefly blocking the worker queue is acceptable.
+    /// All persisted SDK transactions wrapped for the app (`firstSeen` desc).
+    /// Safe from any thread. Shared read for every tx-history consumer that
+    /// used to enumerate DashSync's `DSWallet.allTransactions`.
+    static func fetchAll() -> [Transaction] {
+        onMain { fetchAndWrapOnMain() }
+    }
+
+    /// Single transaction by txid (wire order — the same `Data` as
+    /// `DSTransaction.txHashData`). Safe from any thread.
+    static func fetch(txid: Data) -> Transaction? {
+        onMain { fetchOnMain(txid: txid) }
+    }
+
+    /// Main-thread trampoline: `mainContext` and the `Transaction` wrapping
+    /// (the per-tx CoinJoin membership walk over SwiftData relationships —
+    /// outputs → coreAddress → account) are main-bound, while callers run on
+    /// background queues. Fetches are fast (<10ms for a few hundred rows), so
+    /// briefly blocking the worker queue is acceptable.
+    private static func onMain<T>(_ body: @MainActor () -> T) -> T {
+        if Thread.isMainThread {
+            return MainActor.assumeIsolated(body)
+        }
+        return DispatchQueue.main.sync {
+            MainActor.assumeIsolated(body)
+        }
+    }
+
+    @MainActor
+    private static func fetchOnMain(txid: Data) -> Transaction? {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            return nil
+        }
+        var descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { $0.txid == txid })
+        descriptor.fetchLimit = 1
+        guard let row = (try? container.mainContext.fetch(descriptor))?.first else {
+            return nil
+        }
+        let tx = Transaction(persistentTransaction: row)
+        tx.sdkCoinJoinMixing = isCoinJoinMixingTx(row)
+        return tx
+    }
+
     @MainActor
     private static func fetchAndWrapOnMain() -> [Transaction] {
         guard let container = SwiftDashSDKHost.shared.modelContainer else {

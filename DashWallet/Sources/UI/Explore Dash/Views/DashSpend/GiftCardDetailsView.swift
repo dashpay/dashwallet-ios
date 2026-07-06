@@ -356,7 +356,7 @@ struct GiftCardDetailsView: View {
                 NavigationLink(
                     destination:
                         TXDetailVCWrapper(
-                            transaction: transaction,
+                            tx: transaction,
                             navigateBack: $backNavigationRequested,
                             onDismissed: {
                                 onShowBackButton(false)
