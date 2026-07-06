@@ -49,7 +49,7 @@ class SendAmountModel: BaseAmountModel {
         super.isAllowedToContinue &&
             !canShowInsufficientFunds &&
             (DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
-                DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced)
+                SyncingActivityMonitor.shared.state == .syncDone)
     }
 
     var canShowInsufficientFunds: Bool {
@@ -85,7 +85,7 @@ class SendAmountModel: BaseAmountModel {
 
     override func checkAmountForErrors() {
         guard DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
-            DWEnvironment.sharedInstance().currentChainManager.syncPhase == .synced
+            SyncingActivityMonitor.shared.state == .syncDone
         else {
             error = SendAmountError.syncingChain
             return

@@ -396,11 +396,12 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
 - (void)startViewController:(DWStartViewController *)controller didFinishWithDeferredLaunchOptions:(NSDictionary *)launchOptions shouldRescanBlockchain:(BOOL)shouldRescanBlockchain {
     [self performNormalStartWithLaunchOptions:launchOptions wasDeferred:YES];
-    
-    if (shouldRescanBlockchain) {
-        DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
-        [chainManager masternodeListAndBlocksRescan];
-    }
+
+    // TODO(teardown C1): `shouldRescanBlockchain` is ignored — the DashSync
+    // rescan it used to trigger is dead post-M6 (and would start DashSync
+    // networking). The migration-cancel launch proceeds without a rescan;
+    // the delegate parameter travels with the DWStartModel legacy-upgrade
+    // funnel decision.
 }
 
 #pragma mark - Notifications

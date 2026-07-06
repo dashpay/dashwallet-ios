@@ -22,12 +22,13 @@ import Combine
 struct SettingsScreen: View {
     private let vc: UINavigationController
     private let delegateInternal: DelegateInternal
+    // Retained solely for the frozen MainMenuViewController call site; the
+    // rescan controls were removed with the dead DashSync rescan actions
+    // (post-M6 there is no SDK rescan API), so this closure is never invoked.
     private let onDidRescan: () -> ()
-    
+
     @StateObject private var viewModel = SettingsMenuViewModel()
     @State private var showNetworkAlert = false
-    @State private var showRescanWarningAlert = false
-    @State private var showRescanActionAlert = false
     @State private var showCSVExportActivity = false
     
     init(vc: UINavigationController, onDidRescan: @escaping () -> ()) {
@@ -108,34 +109,6 @@ struct SettingsScreen: View {
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
         }
-        .alert(NSLocalizedString("You will lose all your manually reclassified transactions types", comment: ""), isPresented: $showRescanWarningAlert) {
-            Button(NSLocalizedString("Export CSV", comment: "")) {
-                handleCSVExport()
-            }
-            Button(NSLocalizedString("Continue", comment: "")) {
-                showRescanActionAlert = true
-            }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-        } message: {
-            Text(NSLocalizedString("If you would like to save manually reclassified types for transactions you should export a CSV transaction file.", comment: ""))
-        }
-        .alert(NSLocalizedString("Rescan Blockchain", comment: ""), isPresented: $showRescanActionAlert) {
-            Button(NSLocalizedString("Rescan Transactions (Suggested)", comment: "")) {
-                viewModel.rescanTransactions()
-                onDidRescan()
-            }
-            Button(NSLocalizedString("Full Resync", comment: "")) {
-                viewModel.fullResync()
-                onDidRescan()
-            }
-            #if DEBUG
-            Button(NSLocalizedString("Resync Masternode List", comment: "")) {
-                viewModel.resyncMasternodeList()
-                onDidRescan()
-            }
-            #endif
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-        }
         .alert(NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
             Button(NSLocalizedString("Move funds", comment: "CoinJoin")) {
                 Task { await viewModel.performCoinJoinSweep() }
@@ -169,8 +142,6 @@ struct SettingsScreen: View {
             showCurrencySelector()
         case .network:
             showNetworkAlert = true
-        case .rescan:
-            showRescanWarningAlert = true
         case .about:
             showAboutController()
         case .exportCSV:

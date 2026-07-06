@@ -38,7 +38,7 @@ struct SyncingHeaderView: View {
                         Text(NSLocalizedString("Syncing", comment: ""))
                             .font(.subheadline)
                         
-                        if DWEnvironment.sharedInstance().currentChainManager.peerManager.connected || model.progress > 0 {
+                        if model.progress > 0 {
                             Text(String(format: "%.1f%%", model.progress * 100.0))
                                 .font(.body)
                                 .fontWeight(.medium)

@@ -21,7 +21,6 @@ import UIKit
 enum SettingsMenuNavigationDestination {
     case currencySelector
     case network
-    case rescan
     case about
     case exportCSV
 }
@@ -136,13 +135,6 @@ class SettingsMenuViewModel: ObservableObject {
                 }
             ),
             MenuItemModel(
-                title: NSLocalizedString("Rescan Blockchain", comment: ""),
-                icon: .custom("image.rescan", maxHeight: 22),
-                action: { [weak self] in
-                    self?.navigationDestination = .rescan
-                }
-            ),
-            MenuItemModel(
                 title: NSLocalizedString("About", comment: ""),
                 icon: .custom("image.about", maxHeight: 22),
                 action: { [weak self] in
@@ -210,28 +202,6 @@ class SettingsMenuViewModel: ObservableObject {
     func switchToEvonet() async -> Bool {
         await DWEnvironment.sharedInstance().switchToEvonet()
     }
-    
-    // MARK: - Blockchain Rescan Actions
-    
-    func rescanTransactions() {
-        DWGlobalOptions.sharedInstance().isResyncingWallet = true
-        let chainManager = DWEnvironment.sharedInstance().currentChainManager
-        chainManager.syncBlocksRescan()
-    }
-    
-    func fullResync() {
-        DWGlobalOptions.sharedInstance().isResyncingWallet = true
-        let chainManager = DWEnvironment.sharedInstance().currentChainManager
-        chainManager.masternodeListAndBlocksRescan()
-    }
-    
-    #if DEBUG
-    func resyncMasternodeList() {
-        DWGlobalOptions.sharedInstance().isResyncingWallet = true
-        let chainManager = DWEnvironment.sharedInstance().currentChainManager
-        chainManager.masternodeListRescan()
-    }
-    #endif
     
     // MARK: - CSV Report Generation
     
