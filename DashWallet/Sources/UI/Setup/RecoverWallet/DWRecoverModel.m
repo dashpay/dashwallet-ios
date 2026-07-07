@@ -45,7 +45,7 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 }
 
 - (BOOL)hasWallet {
-    return [DWEnvironment sharedInstance].currentChain.hasAWallet;
+    return DWWalletEnvironment.hasWallet;
 }
 
 - (BOOL)isWalletEmpty {

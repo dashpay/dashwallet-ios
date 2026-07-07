@@ -37,7 +37,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (DWSeedPhraseModel *)getOrCreateNewWallet {
-    BOOL hasAWallet = [DWEnvironment sharedInstance].currentWallet != nil;
+    // TODO(C6-E): a union-true here with DashSync's `currentWallet` nil would
+    // skip the `standardWalletWithSeedPhrase` dual-write below — unreachable
+    // pre-C6-E (no SDK-only wallets exist outside the transient post-wipe
+    // window, during which this screen can't be on screen).
+    BOOL hasAWallet = DWWalletEnvironment.hasWallet;
     NSString *seedPhrase;
 
     if (!hasAWallet) {

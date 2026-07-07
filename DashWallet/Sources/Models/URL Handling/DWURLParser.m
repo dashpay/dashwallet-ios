@@ -17,7 +17,7 @@
 
 #import "DWURLParser.h"
 
-#import "DWEnvironment.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (BOOL)allowsURLHandling {
     // Don't allow URL handling without a wallet
-    return [DWEnvironment sharedInstance].currentChain.hasAWallet;
+    return DWWalletEnvironment.hasWallet;
 }
 
 + (BOOL)canHandleURL:(NSURL *)url {

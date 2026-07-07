@@ -96,14 +96,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onboardingViewControllerDidFinish:(DWOnboardingViewController *)controller {
     [self onboardingDidFinish];
 
-    // Reinstall detection: if DashSync's keychain survived the wipe but
-    // UserDefaults didn't, `chain.hasAWallet` is YES at this exact moment
-    // and the default transition to `DWAppRootViewController` would jump
-    // straight to the wallet home without ever asking the user. Gate the
-    // transition behind a Keep/Delete prompt, mirroring the SwiftExampleApp
-    // orphan-mnemonic UX.
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    if (!chain.hasAWallet) {
+    // Reinstall detection: if wallet keychain material survived the wipe
+    // (DashSync's registration or the SDK mnemonic — `hasWallet` unions both)
+    // while UserDefaults didn't, the default transition to
+    // `DWAppRootViewController` would jump straight to the wallet home
+    // without ever asking the user. Gate the transition behind a Keep/Delete
+    // prompt, mirroring the SwiftExampleApp orphan-mnemonic UX. (Delete
+    // clears the SDK keychain too, via DWWillWipeWalletNotification → wiper;
+    // Keep rides the KeyMigrator re-run until C6-C makes it first-class.)
+    if (!DWWalletEnvironment.hasWallet) {
         [self transitionToAppRoot];
         return;
     }
