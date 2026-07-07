@@ -242,9 +242,9 @@ enum PastedAmountParser {
         if !dotIndices.isEmpty && !commaIndices.isEmpty {
             decision = .decimal(index: max(dotIndices.last!, commaIndices.last!))
         } else if !dotIndices.isEmpty {
-            decision = Self.decision(for: ".", indices: dotIndices, body: body, locale: locale)
+            decision = Self.decision(indices: dotIndices, body: body)
         } else if !commaIndices.isEmpty {
-            decision = Self.decision(for: ",", indices: commaIndices, body: body, locale: locale)
+            decision = Self.decision(indices: commaIndices, body: body)
         } else {
             decision = .groupingOnly
         }
@@ -307,30 +307,16 @@ enum PastedAmountParser {
         return formatter.string(from: decimalValue as NSDecimalNumber)
     }
 
-    private static func decision(for separator: Character, indices: [Int], body: String, locale: Locale) -> SeparatorDecision? {
+    /// Decides whether a run of a single mark type (`.` or `,`) is a decimal or a grouping
+    /// separator. This is intentionally **region-agnostic** — `.` and `,` are interchangeable:
+    /// a single occurrence is ALWAYS the decimal separator (so `0,001` ≡ `0.001` → `0.001`,
+    /// and `1,234` ≡ `1.234` → `1.234`), while multiple occurrences are grouping
+    /// (`1.234.567` ≡ `1,234,567` → `1234567`). The device locale must not influence this.
+    private static func decision(indices: [Int], body: String) -> SeparatorDecision? {
         guard let singleIndex = indices.first else { return nil }
 
         if indices.count > 1 {
             return isValidGrouping(body) ? .groupingOnly : nil
-        }
-
-        if separator == ".",
-           locale.decimalSeparator?.first == ",",
-           locale.decimalSeparator?.count == 1,
-           isValidGrouping(body) {
-            return .groupingOnly
-        }
-
-        if locale.decimalSeparator?.first == separator, locale.decimalSeparator?.count == 1 {
-            return .decimal(index: singleIndex)
-        }
-
-        if locale.groupingSeparator?.first == separator, locale.groupingSeparator?.count == 1, isValidGrouping(body) {
-            return .groupingOnly
-        }
-
-        if groupingCharacters.contains(separator), isValidGrouping(body) {
-            return .groupingOnly
         }
 
         return .decimal(index: singleIndex)

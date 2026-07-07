@@ -68,6 +68,18 @@ final class PastedAmountNormalizationTests: XCTestCase {
         XCTAssertEqual(normalize("0"), "0")
     }
 
+    func testSmallFractionalAmountsAreNotTreatedAsGrouping() {
+        // Regression: "0,001" and "0.001" produced "1" (the fractional part was mistaken for a
+        // 3-digit thousands group). A single separator must always be the decimal mark.
+        XCTAssertEqual(normalize("0,001"), "0.001")
+        XCTAssertEqual(normalize("0.001"), "0.001")
+
+        for localeIdentifier in ["en_US", "de_DE", "fr_FR", "de_CH"] {
+            assertParsedNormalized("0,001", localeIdentifier: localeIdentifier, expected: "0.001")
+            assertParsedNormalized("0.001", localeIdentifier: localeIdentifier, expected: "0.001")
+        }
+    }
+
     func testLeadingSeparator() {
         XCTAssertEqual(normalize(".5"), "0.5")
         XCTAssertEqual(normalize(",5"), "0.5")
@@ -79,8 +91,8 @@ final class PastedAmountNormalizationTests: XCTestCase {
     }
 
     func testArabicDigitsAndSeparators() {
-        assertParsedNormalized("١٬٢٣٤٫٥٦", localeIdentifier: "ar_EG", expectedNormalizedString: "1234.56")
-        assertParsedNormalized("١٢٫٣٤", localeIdentifier: "ar_EG", expectedNormalizedString: "12.34")
+        assertParsedNormalized("١٬٢٣٤٫٥٦", localeIdentifier: "ar_EG", expected: "1234.56")
+        assertParsedNormalized("١٢٫٣٤", localeIdentifier: "ar_EG", expected: "12.34")
     }
 
     func testInvalidInput() {
@@ -100,7 +112,8 @@ final class PastedAmountNormalizationTests: XCTestCase {
             .init(localeIdentifier: "en_US", input: "0.1234", expected: "0.1234"),
             .init(localeIdentifier: "en_US", input: "3.26", expected: "3.26"),
             .init(localeIdentifier: "en_US", input: "1,234.56", expected: "1234.56"),
-            .init(localeIdentifier: "en_US", input: "1,234", expected: "1234"),
+            // Region-agnostic: a single separator is ALWAYS the decimal mark (`.` ≡ `,`).
+            .init(localeIdentifier: "en_US", input: "1,234", expected: "1.234"),
             .init(localeIdentifier: "en_US", input: "1.234", expected: "1.234"),
             .init(localeIdentifier: "en_US", input: "1,234,567", expected: "1234567"),
 
@@ -110,10 +123,10 @@ final class PastedAmountNormalizationTests: XCTestCase {
             .init(localeIdentifier: "de_DE", input: "0,1234", expected: "0.1234"),
             .init(localeIdentifier: "de_DE", input: "1.234,56", expected: "1234.56"),
             .init(localeIdentifier: "de_DE", input: "1,234", expected: "1.234"),
-            .init(localeIdentifier: "de_DE", input: "1.234", expected: "1234"),
+            .init(localeIdentifier: "de_DE", input: "1.234", expected: "1.234"),
             .init(localeIdentifier: "de_DE", input: "1.234.567", expected: "1234567"),
             .init(localeIdentifier: "fr_FR", input: "1 234,56", expected: "1234.56"),
-            .init(localeIdentifier: "fr_FR", input: "1.234", expected: "1234"),
+            .init(localeIdentifier: "fr_FR", input: "1.234", expected: "1.234"),
 
             // Swiss
             .init(localeIdentifier: "de_CH", input: "1'234.56", expected: "1234.56"),
