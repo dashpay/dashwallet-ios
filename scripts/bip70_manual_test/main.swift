@@ -461,5 +461,21 @@ check("dash:// strip via paymentString", {
 }())
 check("uppercase DASH: normalized via paymentString", BIP70URI(paymentString: "DASH:Xabc")?.scheme == "dash")
 
+print("\nL5 — PaymentURIBuilder (dash: serializer, DSPaymentRequest parity)")
+let bAddr = "yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A"
+check("bare address", PaymentURIBuilder(address: bAddr).string == "dash:\(bAddr)")
+check("amount 0.25", PaymentURIBuilder(address: bAddr, amount: 25_000_000).string == "dash:\(bAddr)?amount=0.25")
+check("amount 1 drops trailing zeros", PaymentURIBuilder(address: bAddr, amount: 100_000_000).string == "dash:\(bAddr)?amount=1")
+check("amount 1 duff", PaymentURIBuilder(address: bAddr, amount: 1).string == "dash:\(bAddr)?amount=0.00000001")
+check("amount + label with space → %20", PaymentURIBuilder(address: bAddr, amount: 10_000_000, label: "Sticker Pack", message: nil, requestURL: nil, fiatCurrencyCode: nil, fiatAmount: 0, dashpayUsername: nil).string == "dash:\(bAddr)?amount=0.1&label=Sticker%20Pack")
+check("currency + local always two dp", PaymentURIBuilder(address: bAddr, amount: 0, label: nil, message: nil, requestURL: nil, fiatCurrencyCode: "USD", fiatAmount: 25.5, dashpayUsername: nil).string == "dash:\(bAddr)?currency=USD&local=25.50")
+check("user appended raw", PaymentURIBuilder(address: bAddr, amount: 50_000_000, label: nil, message: nil, requestURL: nil, fiatCurrencyCode: nil, fiatAmount: 0, dashpayUsername: "alice").string == "dash:\(bAddr)?amount=0.5&user=alice")
+check("data == utf8(string)", PaymentURIBuilder(address: bAddr, amount: 25_000_000).data == Data("dash:\(bAddr)?amount=0.25".utf8))
+check("round-trip builder → parser", {
+    let s = PaymentURIBuilder(address: bAddr, amount: 25_000_000).string
+    let u = BIP70URI(paymentString: s)
+    return u?.address == bAddr && u?.amount == 25_000_000
+}())
+
 print("\n==== \(passed) passed, \(failed) failed ====")
 exit(failed == 0 ? 0 : 1)

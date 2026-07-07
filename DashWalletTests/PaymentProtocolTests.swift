@@ -673,4 +673,51 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(box.dashpayUsername, "bob")
         XCTAssertTrue(box.hasExplicitScheme)
     }
+
+    // MARK: - PaymentURIBuilder (dash: serializer — DSPaymentRequest parity)
+
+    private static let builderAddr = "yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A"
+
+    func testBuilderBareAddress() {
+        XCTAssertEqual(PaymentURIBuilder(address: Self.builderAddr).string, "dash:\(Self.builderAddr)")
+    }
+
+    func testBuilderAmountTrailingZerosDropped() {
+        XCTAssertEqual(PaymentURIBuilder(address: Self.builderAddr, amount: 25_000_000).string, "dash:\(Self.builderAddr)?amount=0.25")
+        XCTAssertEqual(PaymentURIBuilder(address: Self.builderAddr, amount: 100_000_000).string, "dash:\(Self.builderAddr)?amount=1")
+        XCTAssertEqual(PaymentURIBuilder(address: Self.builderAddr, amount: 1).string, "dash:\(Self.builderAddr)?amount=0.00000001")
+    }
+
+    func testBuilderLabelPercentEncoded() {
+        let uri = PaymentURIBuilder(address: Self.builderAddr, amount: 10_000_000, label: "Sticker Pack",
+                                    message: nil, requestURL: nil, fiatCurrencyCode: nil, fiatAmount: 0,
+                                    dashpayUsername: nil).string
+        XCTAssertEqual(uri, "dash:\(Self.builderAddr)?amount=0.1&label=Sticker%20Pack")
+    }
+
+    func testBuilderCurrencyLocalTwoDecimalsRaw() {
+        let uri = PaymentURIBuilder(address: Self.builderAddr, amount: 0, label: nil, message: nil,
+                                    requestURL: nil, fiatCurrencyCode: "USD", fiatAmount: 25.5,
+                                    dashpayUsername: nil).string
+        XCTAssertEqual(uri, "dash:\(Self.builderAddr)?currency=USD&local=25.50")
+    }
+
+    func testBuilderUserRaw() {
+        let uri = PaymentURIBuilder(address: Self.builderAddr, amount: 50_000_000, label: nil, message: nil,
+                                    requestURL: nil, fiatCurrencyCode: nil, fiatAmount: 0,
+                                    dashpayUsername: "alice").string
+        XCTAssertEqual(uri, "dash:\(Self.builderAddr)?amount=0.5&user=alice")
+    }
+
+    func testBuilderDataIsUTF8OfString() {
+        let b = PaymentURIBuilder(address: Self.builderAddr, amount: 25_000_000)
+        XCTAssertEqual(b.data, Data(b.string.utf8))
+    }
+
+    func testBuilderRoundTripsThroughParser() {
+        let s = PaymentURIBuilder(address: Self.builderAddr, amount: 25_000_000).string
+        let parsed = BIP70URI(paymentString: s)
+        XCTAssertEqual(parsed?.address, Self.builderAddr)
+        XCTAssertEqual(parsed?.amount, 25_000_000)
+    }
 }

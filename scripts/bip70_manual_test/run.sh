@@ -23,6 +23,7 @@ swiftc \
   "$SRC/ScriptAddressCodec.swift" \
   "$SRC/BIP70PaymentService.swift" \
   "$SRC/BIP70URI.swift" \
+  "$SRC/PaymentURIBuilder.swift" \
   "$DIR/main.swift" \
   -o "$OUT"
 
