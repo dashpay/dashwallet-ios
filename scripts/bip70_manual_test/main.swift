@@ -415,5 +415,51 @@ check("plain dash: address (no r) is not BIP70; amount→duffs", {
 }())
 check("non-payment scheme → nil", BIP70URI("http://foo") == nil)
 
+// New parse-side params carried on the strict init (parity with DSPaymentRequest.m:159-164).
+do {
+    let u = BIP70URI("dash:Xabc?user=alice&currency=USD&local=12.5&req-sender=ctx")
+    check("user/currency/local/req-sender parsed",
+          u?.dashpayUsername == "alice" && u?.fiatCurrencyCode == "USD"
+              && u?.fiatAmount == 12.5 && u?.callbackScheme == "ctx")
+}
+check("label with no '=' → empty string", BIP70URI("dash:Xabc?label")?.label == "")
+check("amount round-up: sub-duff → 1 duff", BIP70URI("dash:X?amount=0.000000001")?.amount == 1)
+check("amount negative → absent", BIP70URI("dash:X?amount=-5")?.amount == nil)
+check("amount exponent 1e2 → 1e10 duffs", BIP70URI("dash:X?amount=1e2")?.amount == 10_000_000_000)
+
+print("\nL5 — BIP70URI(paymentString:)")
+check("bare address → implicit dash, .bareAddress, not BIP70", {
+    let u = BIP70URI(paymentString: "yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A")
+    return u?.kind == .bareAddress && u?.scheme == "dash" && u?.isBIP70 == false
+        && u?.address == "yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A"
+}())
+check("bare garbage → carried, not nil", {
+    let u = BIP70URI(paymentString: "certainly not dash")
+    return u?.kind == .bareAddress && u?.address == "certainly not dash" && u?.isBIP70 == false
+}())
+check("bare WIF-shaped string → carried as address", {
+    let u = BIP70URI(paymentString: "cVjz...testnetWIF")
+    return u?.kind == .bareAddress && u?.address == "cVjz...testnetWIF"
+}())
+check("http:// → BIP73, r = input, scheme http", {
+    let u = BIP70URI(paymentString: "http://h/pr")
+    return u?.kind == .bip73URL && u?.scheme == "http" && u?.r?.absoluteString == "http://h/pr"
+}())
+check("https:// → BIP73, scheme https", {
+    let u = BIP70URI(paymentString: "https://h/pr")
+    return u?.kind == .bip73URL && u?.scheme == "https" && u?.r?.absoluteString == "https://h/pr"
+}())
+check("BIP73 URL with interior space → %20, r non-nil", {
+    let u = BIP70URI(paymentString: "http://h/pr with space")
+    return u?.kind == .bip73URL && u?.r?.absoluteString == "http://h/pr%20with%20space"
+}())
+check("mailto: (unknown colon scheme) → nil", BIP70URI(paymentString: "mailto:foo@bar") == nil)
+check("empty string → nil", BIP70URI(paymentString: "   ") == nil)
+check("dash:// strip via paymentString", {
+    let u = BIP70URI(paymentString: "dash://Xabc?amount=1.5")
+    return u?.kind == .paymentURI && u?.address == "Xabc" && u?.amount == 150_000_000
+}())
+check("uppercase DASH: normalized via paymentString", BIP70URI(paymentString: "DASH:Xabc")?.scheme == "dash")
+
 print("\n==== \(passed) passed, \(failed) failed ====")
 exit(failed == 0 ? 0 : 1)

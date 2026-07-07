@@ -572,4 +572,105 @@ final class BIP70PaymentServiceTests: XCTestCase {
     func testURIRejectsNonPaymentScheme() {
         XCTAssertNil(BIP70URI("http://foo"))
     }
+
+    // MARK: - L5 URI — new parse-side params + amount parity
+
+    func testURICarriesUserCurrencyLocalSender() {
+        let uri = BIP70URI("dash:Xabc?user=alice&currency=USD&local=12.5&req-sender=ctx")
+        XCTAssertEqual(uri?.dashpayUsername, "alice")
+        XCTAssertEqual(uri?.fiatCurrencyCode, "USD")
+        XCTAssertEqual(uri?.fiatAmount, 12.5)
+        XCTAssertEqual(uri?.callbackScheme, "ctx")
+    }
+
+    func testURIAmountRoundsUpSubDuff() {
+        // 0.000000001 DASH = 0.1 duff → rounds up to 1 (DSPaymentRequest.m:146 NSRoundUp parity).
+        XCTAssertEqual(BIP70URI("dash:X?amount=0.000000001")?.amount, 1)
+    }
+
+    func testURIAmountNegativeIsAbsent() {
+        XCTAssertNil(BIP70URI("dash:X?amount=-5")?.amount)
+    }
+
+    func testURIAmountExponent() {
+        XCTAssertEqual(BIP70URI("dash:X?amount=1e2")?.amount, 10_000_000_000)
+    }
+
+    // MARK: - L5 URI — paymentString init (bare address / BIP73)
+
+    func testPaymentStringBareAddress() {
+        let uri = BIP70URI(paymentString: "yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A")
+        XCTAssertEqual(uri?.kind, .bareAddress)
+        XCTAssertEqual(uri?.scheme, "dash")
+        XCTAssertEqual(uri?.isBIP70, false)
+        XCTAssertEqual(uri?.address, "yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A")
+    }
+
+    func testPaymentStringBareGarbageIsCarriedNotNil() {
+        let uri = BIP70URI(paymentString: "certainly not dash")
+        XCTAssertEqual(uri?.kind, .bareAddress)
+        XCTAssertEqual(uri?.address, "certainly not dash")
+        XCTAssertEqual(uri?.isBIP70, false)
+    }
+
+    func testPaymentStringHTTPBIP73() {
+        let uri = BIP70URI(paymentString: "http://h/pr")
+        XCTAssertEqual(uri?.kind, .bip73URL)
+        XCTAssertEqual(uri?.scheme, "http")
+        XCTAssertEqual(uri?.r?.absoluteString, "http://h/pr")
+    }
+
+    func testPaymentStringBIP73SpaceEncoded() {
+        let uri = BIP70URI(paymentString: "http://h/pr with space")
+        XCTAssertEqual(uri?.r?.absoluteString, "http://h/pr%20with%20space")
+    }
+
+    func testPaymentStringMailtoIsNil() {
+        XCTAssertNil(BIP70URI(paymentString: "mailto:foo@bar"))
+    }
+
+    func testPaymentStringEmptyIsNil() {
+        XCTAssertNil(BIP70URI(paymentString: "   "))
+    }
+
+    func testPaymentStringStripsDashSlashes() {
+        let uri = BIP70URI(paymentString: "dash://Xabc?amount=1.5")
+        XCTAssertEqual(uri?.kind, .paymentURI)
+        XCTAssertEqual(uri?.address, "Xabc")
+        XCTAssertEqual(uri?.amount, 150_000_000)
+    }
+
+    // MARK: - DWParsedPaymentURI box (structural; the address verdict is network-dependent)
+
+    func testParsedBoxIsTotalForUnparseable() {
+        let box = ParsedPaymentURI.parse(paymentString: "mailto:foo@bar")
+        XCTAssertEqual(box.rawString, "mailto:foo@bar")
+        XCTAssertNil(box.scheme)
+        XCTAssertFalse(box.hasExplicitScheme)
+        XCTAssertFalse(box.isValidDashPaymentIntent)
+    }
+
+    func testParsedBoxBIP72IsValidIntentViaRURL() {
+        // Address-less `dash:?r=` is a valid intent regardless of the network address verdict.
+        let box = ParsedPaymentURI.parse(paymentString: "dash:?r=http%3A%2F%2Fh%2Fpr")
+        XCTAssertEqual(box.scheme, "dash")
+        XCTAssertNotNil(box.rURL)
+        XCTAssertTrue(box.isValidDashPaymentIntent)
+        XCTAssertTrue(box.hasExplicitScheme)
+    }
+
+    func testParsedBoxClearRequestURLCollapsesIntent() {
+        let cleared = ParsedPaymentURI.parse(paymentString: "dash:?r=http%3A%2F%2Fh%2Fpr").byClearingRequestURL()
+        XCTAssertNil(cleared.rURL)
+        // No address + no r ⇒ not a valid intent (mirrors the fetch-failed `request.r = nil` re-eval).
+        XCTAssertFalse(cleared.isValidDashPaymentIntent)
+    }
+
+    func testParsedBoxBareCarriesAddressAndAmount() {
+        let box = ParsedPaymentURI.parse(paymentString: "dash:Xabc?amount=1.5&user=bob")
+        XCTAssertEqual(box.address, "Xabc")
+        XCTAssertEqual(box.amount, 150_000_000)
+        XCTAssertEqual(box.dashpayUsername, "bob")
+        XCTAssertTrue(box.hasExplicitScheme)
+    }
 }
