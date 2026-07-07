@@ -868,8 +868,6 @@
 		A5D5DD000000000000000272 /* SwiftDashSDKHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */; };
 		A5D5DD000000000000000301 /* DWRecoverModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000300 /* DWRecoverModel+Mnemonic.swift */; };
 		A5D5DD000000000000000302 /* DWRecoverModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000300 /* DWRecoverModel+Mnemonic.swift */; };
-		A5D5DD000000000000000311 /* NSString+SwiftDashSDKAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000310 /* NSString+SwiftDashSDKAddress.swift */; };
-		A5D5DD000000000000000312 /* NSString+SwiftDashSDKAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000310 /* NSString+SwiftDashSDKAddress.swift */; };
 		A5D5DD000000000000000315 /* DWParsedPaymentURI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000317 /* DWParsedPaymentURI.swift */; };
 		A5D5DD000000000000000316 /* DWParsedPaymentURI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000317 /* DWParsedPaymentURI.swift */; };
 		A5D5DD000000000000000321 /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000320 /* DWPreviewSeedPhraseModel+Mnemonic.swift */; };
@@ -2806,7 +2804,6 @@
 		A5D5DD000000000000000268 /* KeychainWalletRecoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainWalletRecoveryCoordinator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKHost.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000300 /* DWRecoverModel+Mnemonic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DWRecoverModel+Mnemonic.swift"; sourceTree = "<group>"; };
-		A5D5DD000000000000000310 /* NSString+SwiftDashSDKAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSString+SwiftDashSDKAddress.swift"; sourceTree = "<group>"; };
 		A5D5DD000000000000000317 /* DWParsedPaymentURI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWParsedPaymentURI.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000320 /* DWPreviewSeedPhraseModel+Mnemonic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DWPreviewSeedPhraseModel+Mnemonic.swift"; sourceTree = "<group>"; };
 		A5D5DD000000000000000402 /* PaymentsLandingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsLandingScreen.swift; sourceTree = "<group>"; };
@@ -3793,7 +3790,6 @@
 				2A0C69A2231048DA001B8C90 /* DWPaymentProcessor.m */,
 				2A63003D2327B4BB00827825 /* DWPaymentOutput+DWView.h */,
 				2A63003E2327B4BB00827825 /* DWPaymentOutput+DWView.m */,
-				A5D5DD000000000000000310 /* NSString+SwiftDashSDKAddress.swift */,
 				A5D5DD000000000000000317 /* DWParsedPaymentURI.swift */,
 				64E2F5BF93A746B4ABE95B1D /* BIP70InteractiveCoordinator.swift */,
 				C04F0D4870232E4E3259D65B /* BIP70PaymentOutputFactory.swift */,
@@ -9212,7 +9208,6 @@
 				C94D982A2A53038400F3BEE1 /* EnterAddressModel.swift in Sources */,
 				47AE8BA628BFADD900490F5E /* AtmDAO.swift in Sources */,
 				475AE2B92974348F009A1055 /* App.swift in Sources */,
-				A5D5DD000000000000000311 /* NSString+SwiftDashSDKAddress.swift in Sources */,
 				A5D5DD000000000000000315 /* DWParsedPaymentURI.swift in Sources */,
 				A5D5DD000000000000000301 /* DWRecoverModel+Mnemonic.swift in Sources */,
 				A5D5DD0000000000000000F8 /* SwiftDashSDKKeyMigrator.swift in Sources */,
@@ -10116,7 +10111,6 @@
 				C943B3202A408CED00AF23C5 /* DWImgurInfoChildView.m in Sources */,
 				C9D2C7E92A320AA000D15901 /* AtmDAO.swift in Sources */,
 				C9D2C7EA2A320AA000D15901 /* App.swift in Sources */,
-				A5D5DD000000000000000312 /* NSString+SwiftDashSDKAddress.swift in Sources */,
 				A5D5DD000000000000000316 /* DWParsedPaymentURI.swift in Sources */,
 				A5D5DD000000000000000302 /* DWRecoverModel+Mnemonic.swift in Sources */,
 				A5D5DD0000000000000000F9 /* SwiftDashSDKKeyMigrator.swift in Sources */,

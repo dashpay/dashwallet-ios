@@ -17,6 +17,9 @@
 
 #import "DWPaymentInput+Private.h"
 
+#import "DWEnvironment.h"
+#import "dashwallet-Swift.h"
+
 #import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -29,6 +32,29 @@ NS_ASSUME_NONNULL_BEGIN
         _source = source;
     }
     return self;
+}
+
+- (void)attachParsedURI:(DWParsedPaymentURI *)parsedURI {
+    self.parsedURI = parsedURI;
+
+    // Mint the write-only DSPaymentRequest courier from the already-parsed fields. Nothing reads it
+    // for a decision — the box owns those. It exists only to feed DashSync's protocol-request
+    // conversion (`protocolRequestFromPaymentRequest:`, C8 step 4), the sweep path, and the
+    // `userDetails` reconstruction below. This is the single residual `currentChain` read on the
+    // URI path (the courier constructor requires a chain).
+    DSPaymentRequest *courier = [DSPaymentRequest requestWithString:@""
+                                                            onChain:[DWEnvironment sharedInstance].currentChain];
+    courier.scheme = parsedURI.scheme;
+    courier.paymentAddress = parsedURI.address;
+    courier.amount = parsedURI.amount;
+    courier.label = parsedURI.label;
+    courier.message = parsedURI.message;
+    courier.r = parsedURI.rURL.absoluteString;
+    courier.callbackScheme = parsedURI.callbackScheme;
+    courier.dashpayUsername = parsedURI.dashpayUsername;
+    courier.requestedFiatCurrencyCode = parsedURI.fiatCurrencyCode;
+    courier.requestedFiatCurrencyAmount = parsedURI.fiatAmount;
+    self.request = courier;
 }
 
 - (nullable NSString *)userDetails {

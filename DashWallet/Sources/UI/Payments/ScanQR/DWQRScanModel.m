@@ -163,8 +163,8 @@ NS_ASSUME_NONNULL_END
 
         DSChain *chain = [DWEnvironment sharedInstance].currentChain;
         NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:chain];
-        if (request.isValidAsNonDashpayPaymentRequest || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
+        DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:addr];
+        if (parsed.isValidDashPaymentIntent || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
             return codeObject;
         }
         else if (!anyObject) {
@@ -197,12 +197,11 @@ NS_ASSUME_NONNULL_END
 
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    if ([addr hasPrefix:@"pay:"]) {
-        addr = [addr stringByReplacingOccurrencesOfString:@"pay:" withString:@"dash:" options:0 range:NSMakeRange(0, 4)];
-    }
-    DSPaymentRequest *request = [DSPaymentRequest requestWithString:addr onChain:chain];
-    if (request.isValidAsNonDashpayPaymentRequest || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
-        if (request.r.length > 0) {                     // start fetching payment protocol request right away
+    DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:addr];
+    // `chain` rides only for the D2 private-key / BIP38 checks; the URI parse, `pay:` normalization
+    // and address validity are app-side now (the box).
+    if (parsed.isValidDashPaymentIntent || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
+        if (parsed.rURL != nil) {                       // start fetching payment protocol request right away
             dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
                 QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
                 [qrCodeObject setValidPaymentRequest];
@@ -211,9 +210,9 @@ NS_ASSUME_NONNULL_END
 
             __weak typeof(self) weakSelf = self;
             DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
-            [coordinator fetchAndVerifyWithRequestURL:[NSURL URLWithString:request.r]
-                                               scheme:request.scheme
-                                       callbackScheme:request.callbackScheme
+            [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
+                                               scheme:parsed.scheme
+                                       callbackScheme:parsed.callbackScheme
                                            completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                                // The coordinator delivers on the main thread.
                                                (void)coordinator; // retain until completion
@@ -222,11 +221,10 @@ NS_ASSUME_NONNULL_END
                                                    return;
                                                }
 
-                                               if (error) {
-                                                   request.r = nil;
-                                               }
-
-                                               if (error && !request.isValidAsNonDashpayPaymentRequest) {
+                                               // Fetch failed → drop the request URL and fall back
+                                               // to the embedded address, if any (was `request.r = nil`).
+                                               DWParsedPaymentURI *cleared = [parsed uriByClearingRequestURL];
+                                               if (error && !cleared.isAddressValidForCurrentNetwork) {
                                                    [strongSelf.qrCodeObject setPaymentRequestFailedWithErrorMessage:error.localizedDescription];
                                                    [strongSelf performSelector:@selector(resumeQRCodeSearch)
                                                                     withObject:nil
@@ -238,8 +236,8 @@ NS_ASSUME_NONNULL_END
                                                DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_ScanQR];
 
                                                if (error) {
-                                                   // payment protocol fetch failed, so use standard request
-                                                   paymentInput.request = request;
+                                                   // payment protocol fetch failed, so use the plain fallback address
+                                                   [paymentInput attachParsedURI:cleared];
                                                }
                                                else {
                                                    paymentInput.bip70Confirmation = box;
@@ -256,13 +254,15 @@ NS_ASSUME_NONNULL_END
                 self.qrCodeObject = qrCodeObject;
 
                 DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_ScanQR];
-                paymentInput.request = request;
-                paymentInput.canChangeAmount = request.amount > 0;
+                [paymentInput attachParsedURI:parsed];
+                paymentInput.canChangeAmount = parsed.amount > 0;
                 [self.delegate qrScanModel:self didScanPaymentInput:paymentInput];
             });
         }
     }
-    else {
+    else if (parsed.rURL != nil) {
+        // Not a valid Dash intent, but a BIP73 http(s) request URL scanned whole → fetch it.
+        // (A non-URL invalid input no longer triggers a doomed fetch / nil-URL trap.)
         dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
             QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
             [qrCodeObject setValidPaymentRequest];
@@ -271,9 +271,9 @@ NS_ASSUME_NONNULL_END
 
         __weak __typeof__(self) weakSelf = self;
         DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
-        [coordinator fetchAndVerifyWithRequestURL:[NSURL URLWithString:request.r]
-                                           scheme:request.scheme
-                                   callbackScheme:request.callbackScheme
+        [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
+                                           scheme:parsed.scheme
+                                   callbackScheme:parsed.callbackScheme
                                        completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                            (void)coordinator; // retain until completion
                                            __strong __typeof__(weakSelf) strongSelf = weakSelf;
@@ -285,24 +285,36 @@ NS_ASSUME_NONNULL_END
                                                [strongSelf.delegate qrScanModel:strongSelf didScanPaymentInput:paymentInput];
                                            }
                                            else {
-                                               NSString *errorMessage = nil;
-                                               if ((([request.scheme isEqual:@"dash"] || [request.scheme isEqual:@"pay"]) && request.paymentAddress.length > 1) ||
-                                                   [request.paymentAddress hasPrefix:@"X"] || [request.paymentAddress hasPrefix:@"7"]) {
-                                                   errorMessage =
-                                                       [NSString stringWithFormat:@"%@:\n%@",
-                                                                                  NSLocalizedString(@"Not a valid Dash address", nil),
-                                                                                  request.paymentAddress];
-                                               }
-                                               else {
-                                                   errorMessage = NSLocalizedString(@"Not a Dash QR code", nil);
-                                               }
-                                               [strongSelf.qrCodeObject setInvalidWithErrorMessage:errorMessage];
+                                               [strongSelf.qrCodeObject setInvalidWithErrorMessage:[strongSelf invalidQRErrorMessageForURI:parsed]];
                                                [strongSelf performSelector:@selector(resumeQRCodeSearch)
                                                                 withObject:nil
                                                                 afterDelay:kResumeSearchTimeInterval];
                                            }
                                        }];
     }
+    else {
+        // Not payable and no request URL to try → straight to the error message (no fetch).
+        dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
+            QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
+            [qrCodeObject setInvalidWithErrorMessage:[self invalidQRErrorMessageForURI:parsed]];
+            self.qrCodeObject = qrCodeObject;
+            [self performSelector:@selector(resumeQRCodeSearch)
+                       withObject:nil
+                       afterDelay:kResumeSearchTimeInterval];
+        });
+    }
+}
+
+/// The invalid-QR message. Mirrors DashSync's: an explicit `dash:<something>` that failed
+/// validation reads as a malformed address; anything else (bare, garbage, foreign scheme) is
+/// "not a Dash QR code".
+- (NSString *)invalidQRErrorMessageForURI:(DWParsedPaymentURI *)parsed {
+    if (parsed.hasExplicitScheme && [parsed.scheme isEqualToString:@"dash"] && parsed.address.length > 1) {
+        return [NSString stringWithFormat:@"%@:\n%@",
+                                          NSLocalizedString(@"Not a valid Dash address", nil),
+                                          parsed.address];
+    }
+    return NSLocalizedString(@"Not a Dash QR code", nil);
 }
 
 @end

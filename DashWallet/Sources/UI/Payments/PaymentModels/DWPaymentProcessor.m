@@ -167,7 +167,7 @@ static NSString *sanitizeString(NSString *s) {
     }
 
     if (paymentInput.request) {
-        if ((paymentInput.source == DWPaymentInputSource_ScanQR || paymentInput.source == DWPaymentInputSource_DeepLink) && paymentInput.request.isValidAsNonDashpayPaymentRequest) {
+        if ((paymentInput.source == DWPaymentInputSource_ScanQR || paymentInput.source == DWPaymentInputSource_DeepLink) && paymentInput.parsedURI.isValidDashPaymentIntent) {
             DSPaymentProtocolRequest *protocolRequest = [self protocolRequestFromPaymentRequest:self.paymentInput.request];
             [self txManagerRequestingAdditionalInfo:DSRequestingAdditionalInfo_Amount
                                     protocolRequest:protocolRequest];
@@ -345,24 +345,38 @@ static NSString *sanitizeString(NSString *s) {
 
 - (void)confirmRequest:(DSPaymentRequest *)request {
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    if (!request.isValidAsNonDashpayPaymentRequest) {
+    DWParsedPaymentURI *parsed = self.paymentInput.parsedURI;
+
+    if (parsed == nil) {
+        // BlockchainUser inputs (friendship-derived address) carry no parsed URI — their courier is a
+        // bare valid address that goes straight to conversion. TODO(C10): fold DashPay sends into the box.
+        if (request.isValidAsNonDashpayPaymentRequest) {
+            [self confirmProtocolRequest:[self protocolRequestFromPaymentRequest:request]];
+        }
+        else {
+            [self failedWithError:nil title:NSLocalizedString(@"Not a valid Dash address", nil) message:nil];
+        }
+        return;
+    }
+
+    if (!parsed.isValidDashPaymentIntent) {
+        // D2: WIF/BIP38 detection stays on the DashSync NSString categories; sweep is byte-identical.
         if ([request.paymentAddress isValidDashPrivateKeyOnChain:chain] ||
             [request.paymentAddress isValidDashBIP38Key]) {
             [self confirmSweep:request];
         }
         else {
-            // Currently, only errors from DashSync are handled.
             // TODO: provide an error (app-specific domain)
             [self failedWithError:nil title:NSLocalizedString(@"Not a valid Dash address", nil) message:nil];
         }
     }
-    else if (request.r.length > 0) { // payment protocol over HTTP (app-side BIP70)
+    else if (parsed.rURL != nil) { // payment protocol over HTTP (app-side BIP70)
         __weak typeof(self) weakSelf = self;
         DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
         self.bip70Coordinator = coordinator;
-        [coordinator fetchAndVerifyWithRequestURL:[NSURL URLWithString:request.r]
-                                           scheme:request.scheme
-                                   callbackScheme:request.callbackScheme
+        [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
+                                           scheme:parsed.scheme
+                                   callbackScheme:parsed.callbackScheme
                                        completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                            __strong typeof(weakSelf) strongSelf = weakSelf;
                                            if (!strongSelf) {
@@ -373,7 +387,7 @@ static NSString *sanitizeString(NSString *s) {
                                            if (box) {
                                                [strongSelf confirmBIP70Output:box];
                                            }
-                                           else if ([request.paymentAddress dw_isValidDashAddressOnChain:chain]) {
+                                           else if (parsed.isAddressValidForCurrentNetwork) {
                                                // fetch failed but there's a valid fallback address → plain send
                                                DSPaymentProtocolRequest *protocolRequest = [strongSelf protocolRequestFromPaymentRequest:request];
                                                [strongSelf confirmProtocolRequest:protocolRequest];

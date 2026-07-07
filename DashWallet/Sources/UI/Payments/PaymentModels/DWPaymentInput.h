@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DSPaymentRequest;
 @class DSPaymentProtocolRequest;
+@class DWParsedPaymentURI;
 
 typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
     DWPaymentInputSource_Pasteboard,
@@ -37,6 +38,9 @@ typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
 @interface DWPaymentInput : NSObject
 
 @property (readonly, nonatomic, assign) DWPaymentInputSource source;
+/// The app-side parse of the payment string (QR / pasteboard / NFC / deeplink). Carries every
+/// routing/validity decision; `request` below is its write-only DashSync courier.
+@property (nullable, readonly, nonatomic, strong) DWParsedPaymentURI *parsedURI;
 @property (nullable, readonly, nonatomic, strong) DSPaymentRequest *request;
 @property (nullable, readonly, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
 /// Opaque `DWBIP70ConfirmationBox` (Swift) for an app-side BIP70 request fetched + verified at

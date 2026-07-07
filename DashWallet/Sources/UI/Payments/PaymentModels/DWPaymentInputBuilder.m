@@ -38,8 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
-    DSPaymentRequest *request = [DSPaymentRequest requestWithString:address onChain:chain];
-    request.amount = amount;
+    DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:address];
 
     NSData *data = address.hexToData.reverse;
 
@@ -47,12 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
         return nil;
     }
 
-    if ([request.paymentAddress dw_isValidDashAddressOnChain:chain] || [address isValidDashPrivateKeyOnChain:chain] || [address isValidDashBIP38Key] ||
-        (request.r.length > 0 && ([request.scheme isEqual:@"dash:"]))) {
+    if (parsed.isAddressValidForCurrentNetwork || [address isValidDashPrivateKeyOnChain:chain] || [address isValidDashBIP38Key]) {
         DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_PlainAddress];
-        paymentInput.request = request;
-
-
+        [paymentInput attachParsedURI:parsed];
+        paymentInput.request.amount = amount; // a send parameter (courier-only), not a parse fact
         return paymentInput;
     }
 
@@ -66,11 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
     DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     for (NSString *str in array) {
-        NSString *requestString = str;
-        if ([requestString hasPrefix:@"pay:"]) {
-            requestString = [str stringByReplacingOccurrencesOfString:@"pay:" withString:@"dash:" options:0 range:NSMakeRange(0, 4)];
-        }
-        DSPaymentRequest *request = [DSPaymentRequest requestWithString:requestString onChain:chain];
+        DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:str];
         NSData *data = str.hexToData.reverse;
 
         i++;
@@ -80,21 +73,20 @@ NS_ASSUME_NONNULL_BEGIN
             continue;
         }
 
-        if ([request.paymentAddress dw_isValidDashAddressOnChain:chain] || [str isValidDashPrivateKeyOnChain:chain] || [str isValidDashBIP38Key] ||
-            (request.r.length > 0 && ([request.scheme isEqual:@"dash:"]))) {
+        if (parsed.isAddressValidForCurrentNetwork || [str isValidDashPrivateKeyOnChain:chain] || [str isValidDashBIP38Key]) {
             if (completion) {
                 DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:source];
-                paymentInput.request = request;
+                [paymentInput attachParsedURI:parsed];
                 completion(paymentInput);
             }
 
             return;
         }
-        else if (request.r.length > 0) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
+        else if (parsed.rURL != nil) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
             DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
-            [coordinator fetchAndVerifyWithRequestURL:[NSURL URLWithString:request.r]
-                                               scheme:request.scheme
-                                       callbackScheme:request.callbackScheme
+            [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
+                                               scheme:parsed.scheme
+                                       callbackScheme:parsed.callbackScheme
                                            completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                                (void)coordinator;         // retain until completion
                                                if (error || box == nil) { // don't try any more BIP73 urls
@@ -125,28 +117,16 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (DWPaymentInput *)paymentInputWithURL:(NSURL *)url {
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    DSPaymentRequest *request = nil;
-    DWPaymentInputSource sourceType = DWPaymentInputSource_URL;
+    // The parser normalizes `pay:`/`dashwallet:` → `dash:` natively, so the scheme fork is gone.
+    DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:url.absoluteString];
 
-    if ([url.scheme isEqualToString:@"pay"]) {
-        NSString *path = url.absoluteString;
-        if ([path hasPrefix:@"pay:"]) {
-            path = [path stringByReplacingOccurrencesOfString:@"pay:" withString:@"dash:" options:0 range:NSMakeRange(0, 4)];
-        }
-        request = [DSPaymentRequest requestWithString:path onChain:chain];
-    }
-    else {
-        request = [DSPaymentRequest requestWithURL:url onChain:chain];
-    }
-
-    // Check if the request contains a valid Dash address to determine if this is a deep link
-    if (request && [request.paymentAddress dw_isValidDashAddressOnChain:chain]) {
-        sourceType = DWPaymentInputSource_DeepLink;
-    }
+    // A deep link carrying a valid Dash address is a "deep link"; otherwise it's a generic URL.
+    DWPaymentInputSource sourceType = parsed.isAddressValidForCurrentNetwork
+                                          ? DWPaymentInputSource_DeepLink
+                                          : DWPaymentInputSource_URL;
 
     DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:sourceType];
-    paymentInput.request = request;
+    [paymentInput attachParsedURI:parsed];
 
     return paymentInput;
 }
