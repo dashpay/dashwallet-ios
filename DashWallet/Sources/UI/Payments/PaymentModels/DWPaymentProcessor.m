@@ -187,10 +187,6 @@ static NSString *sanitizeString(NSString *s) {
         self.canChangeAmount = paymentInput.canChangeAmount;
         [self confirmRequest:paymentInput.request];
     }
-    else if (paymentInput.protocolRequest) {
-        self.canChangeAmount = paymentInput.canChangeAmount;
-        [self confirmProtocolRequest:paymentInput.protocolRequest];
-    }
     else if (paymentInput.source == DWPaymentInputSource_BlockchainUser) {
         self.canChangeAmount = paymentInput.canChangeAmount;
         [self confirmRequest:paymentInput.request];
@@ -808,8 +804,6 @@ static NSString *sanitizeString(NSString *s) {
                          actionTitle:NSLocalizedString(@"Change", @"A verb. Action button title for an alert 'Change payment amount?'")
                          cancelBlock:cancelBlock
                          actionBlock:changeBlock];
-
-        self.amount = UINT64_MAX;
     }
     else {
         [self cancelPayment];
