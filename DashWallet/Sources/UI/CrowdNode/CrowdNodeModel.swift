@@ -299,15 +299,21 @@ extension CrowdNodeModel {
         return false
     }
 
-    func adjustedWithdrawalAmount(requestedAmount: UInt64) -> UInt64 {
-        let chain = DWEnvironment.sharedInstance().currentChain
+    /// Fee for an average-size tx at the app's 1 duff/byte rate — the same
+    /// figure DashSync's `feeForTxSize:` produced (`size × TX_FEE_PER_B`, the
+    /// FEE_PER_KB_URL branch is compiled out) and the rate
+    /// `SwiftDashSDKTransactionSender` builds with (1000 sat/kB).
+    private static func estimatedFee(forTxSize size: UInt64) -> UInt64 {
+        size
+    }
 
+    func adjustedWithdrawalAmount(requestedAmount: UInt64) -> UInt64 {
         let requestPermil = crowdNode.calculateWithdrawalPermil(forAmount: requestedAmount)
         let requestValue = CrowdNode.apiOffset + UInt64(requestPermil)
 
         let inQueueResponse = CrowdNode.apiOffset + ApiCode.withdrawalQueue.rawValue
-        let inQueueResponseFee = chain.fee(forTxSize: 372) // Average size of the response tx.
-        let withdrawalTxFee = chain.fee(forTxSize: 225) // Average size of the withdrawal tx.
+        let inQueueResponseFee = Self.estimatedFee(forTxSize: 372) // Average size of the response tx.
+        let withdrawalTxFee = Self.estimatedFee(forTxSize: 225) // Average size of the withdrawal tx.
 
         // CrowdNode gets the withdrawal request, adds it to the balance,
         // sends the InQueue response and then calculates withdrawal amount from what's left.

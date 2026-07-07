@@ -36,4 +36,36 @@ extension DWAboutModel {
         return String(format: NSLocalizedString("Masternode list: synced at %u", comment: "About screen tech info"),
                       masternodes.currentHeight)
     }
+
+    /// The block line of the About tech-info status, sourced from SwiftDashSDK
+    /// SPV state. Replaces the DashSync `lastSyncBlockHeight`/
+    /// `estimatedBlockHeight` read, frozen post-M6.
+    @objc(blockSyncLine)
+    func blockSyncLine() -> String {
+        let spv = SwiftDashSDKSPVCoordinator.shared
+        return String(format: NSLocalizedString("Block #%d of %d", comment: ""),
+                      spv.tipHeight, spv.bestPeerHeight)
+    }
+
+    /// The SPV connection line of the About tech-info status. Replaces the
+    /// DashSync "Connected peers" + "Download peer" rows — those read
+    /// `DSPeerManager`, dead post-M6 (0 / nil), and the SDK exposes no peer
+    /// count or identity, so the honest diagnostic is its sync state.
+    @objc(spvConnectionLine)
+    func spvConnectionLine() -> String {
+        let spv = SwiftDashSDKSPVCoordinator.shared
+        let stateName: String
+        switch spv.state {
+        case .idle: stateName = NSLocalizedString("idle", comment: "About screen tech info: SPV state")
+        case .waitingForConnections: stateName = NSLocalizedString("connecting", comment: "About screen tech info: SPV state")
+        case .syncing: stateName = NSLocalizedString("syncing", comment: "About screen tech info: SPV state")
+        // dash-spv's steady state when fully synced is waitForEvents
+        // (`.synced` is a transient window) — render both as synced.
+        case .synced, .waitForEvents: stateName = NSLocalizedString("synced", comment: "About screen tech info: SPV state")
+        case .error: stateName = NSLocalizedString("error", comment: "About screen tech info: SPV state")
+        case .unknown: stateName = NSLocalizedString("unknown", comment: "About screen tech info: SPV state")
+        }
+        return String(format: NSLocalizedString("SPV: %@ (%d%%)", comment: "ex., SPV: syncing (87%)"),
+                      stateName, Int((spv.progress * 100).rounded()))
+    }
 }

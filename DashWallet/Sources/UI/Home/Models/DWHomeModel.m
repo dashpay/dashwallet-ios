@@ -137,10 +137,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)isWalletEmpty {
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    const BOOL hasFunds = (wallet.totalReceived + wallet.totalSent > 0);
-
-    return !hasFunds;
+    // Gate for the jailbreak warning copy. The old DashSync read
+    // (wallet.totalReceived + totalSent) froze at M6 and never saw SDK-era
+    // funds; the live SDK balance answers the same "anything at stake?"
+    // question.
+    return DWSwiftDashSDKWalletState.currentTotalBalance == 0;
 }
 
 - (BOOL)shouldShowWalletBackupReminder {

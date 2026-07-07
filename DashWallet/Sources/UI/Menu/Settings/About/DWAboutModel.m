@@ -137,21 +137,16 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    DSPeerManager *peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
 
     NSString *rateString = [NSString stringWithFormat:NSLocalizedString(@"Rate: %@ = %@", @"ex., Rate 1 US $ = 0.000009 Dash"),
                                                       [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue],
                                                       [CurrencyExchangerObjcWrapper stringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue]];
     NSString *updatedString = [NSString stringWithFormat:NSLocalizedString(@"Updated: %@", @"ex., Updated: 27.12, 8:30"),
                                                          [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:authenticationManager.secureTime]].lowercaseString];
-    NSString *blockString = [NSString stringWithFormat:NSLocalizedString(@"Block #%d of %d", nil),
-                                                       chain.lastSyncBlockHeight,
-                                                       chain.estimatedBlockHeight];
-    NSString *peersString = [NSString stringWithFormat:NSLocalizedString(@"Connected peers: %d", nil),
-                                                       (int)peerManager.connectedPeerCount];
-    NSString *dlPeerString = [NSString stringWithFormat:NSLocalizedString(@"Download peer: %@", @"ex., Download peer: 127.0.0.1:9999"),
-                                                        peerManager.downloadPeerName ? peerManager.downloadPeerName : @"-"];
+    // Block + connection lines read SwiftDashSDK SPV state (C1 cat 4) — the
+    // DashSync chain heights and DSPeerManager are frozen/dead post-M6.
+    NSString *blockString = [self blockSyncLine];
+    NSString *spvString = [self spvConnectionLine];
     NSString *masternodeListString = [self masternodeListSyncLine];
 
     NSString *usernameString = @"";
@@ -163,7 +158,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 #endif
 
-    NSArray<NSString *> *statusLines = @[ rateString, updatedString, blockString, peersString, dlPeerString, masternodeListString, usernameString ];
+    NSArray<NSString *> *statusLines = @[ rateString, updatedString, blockString, spvString, masternodeListString, usernameString ];
 
     return [statusLines componentsJoinedByString:@"\n"];
 }
