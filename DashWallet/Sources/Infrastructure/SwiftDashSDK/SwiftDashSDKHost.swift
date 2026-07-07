@@ -87,6 +87,25 @@ final class SwiftDashSDKHost {
         }
     }
 
+    /// Every persisted SDK wallet mnemonic, keyed by its stored walletId —
+    /// the same `WalletStorage` keychain surface `hasPersistedSDKWallet` reads.
+    /// Consumers: reinstall recovery (`start`'s `walletNotFound` retry) and
+    /// the wipe-with-phrase comparison. A keychain error reads as empty
+    /// (logged); an entry whose mnemonic can't be retrieved is skipped.
+    nonisolated static func persistedMnemonics() -> [(walletId: Data, mnemonic: String)] {
+        do {
+            let storage = WalletStorage()
+            return try storage.listWalletIdsWithMnemonic().compactMap { walletId in
+                guard let mnemonic = try? storage.retrieveMnemonic(for: walletId),
+                      !mnemonic.isEmpty else { return nil }
+                return (walletId: walletId, mnemonic: mnemonic)
+            }
+        } catch {
+            logger.error("🪺 HOST :: mnemonic keychain enumeration failed: \(String(describing: error), privacy: .public)")
+            return []
+        }
+    }
+
     // MARK: - Lifecycle
 
     enum HostError: LocalizedError {
@@ -151,6 +170,16 @@ final class SwiftDashSDKHost {
         let resolvedWallet: ManagedPlatformWallet
         do {
             resolvedWallet = try loadPersistedWallet(manager: handles.manager, network: network)
+        } catch HostError.walletNotFound {
+            // Reinstall recovery (C6-C): the SwiftData store dies with the app
+            // but WalletStorage mnemonics live in the keychain — rebuild the
+            // wallet rows from them instead of failing the start. Before this,
+            // reinstall+Keep only worked when the KeyMigrator's async re-import
+            // happened to win the race against this load.
+            guard let recovered = recoverPersistedWallet(handles: handles) else {
+                throw HostError.walletNotFound(network)
+            }
+            resolvedWallet = recovered
         } catch let error as HostError {
             throw error
         } catch {
@@ -300,6 +329,44 @@ final class SwiftDashSDKHost {
         }
 
         throw HostError.walletNotFound(network)
+    }
+
+    /// `walletNotFound` retry: re-create wallet rows from the keychain
+    /// mnemonics (`persistedMnemonics`). One attempt per entry, no retry loop —
+    /// `createWallet` is idempotent by walletId (`Wallet(mnemonic:network:).id`),
+    /// so a re-run after a partial failure converges. The mnemonic is re-stored
+    /// under the created walletId when the stored key was derived for a
+    /// different network (mnemonics are network-agnostic; ids aren't).
+    /// Wipe race note: the wiper deletes mnemonics before `handleWalletWiped`,
+    /// so a refresh racing a wipe finds an empty list here and fails the start
+    /// — and the next refresh's `hasSDKWallet` gate stays closed.
+    private func recoverPersistedWallet(handles: RuntimeHandles) -> ManagedPlatformWallet? {
+        let entries = Self.persistedMnemonics()
+        guard !entries.isEmpty else { return nil }
+
+        let storage = WalletStorage()
+        for entry in entries {
+            guard Mnemonic.validate(entry.mnemonic) else {
+                Self.logger.error("🪺 HOST :: skipping keychain mnemonic for \(entry.walletId.prefix(4).map { String(format: "%02x", $0) }.joined(), privacy: .public)… — failed validation")
+                continue
+            }
+            do {
+                let created = try handles.manager.createWallet(
+                    mnemonic: entry.mnemonic,
+                    network: handles.network,
+                    name: "dashwallet",
+                    createDefaultAccounts: true)
+                if created.walletId != entry.walletId {
+                    try? storage.storeMnemonic(entry.mnemonic, for: created.walletId)
+                }
+            } catch {
+                Self.logger.error("🪺 HOST :: keychain wallet recovery failed for one entry: \(String(describing: error), privacy: .public)")
+            }
+        }
+
+        guard let first = handles.manager.firstWallet else { return nil }
+        Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); entries=\(entries.count, privacy: .public)")
+        return first
     }
 
     private func publish(handles: RuntimeHandles, wallet resolvedWallet: ManagedPlatformWallet) {
