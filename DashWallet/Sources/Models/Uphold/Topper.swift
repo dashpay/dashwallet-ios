@@ -71,7 +71,7 @@ class Topper {
     func refreshPaymentMethods() {
         URLSession.shared.dataTask(with: URL(string: Topper.supportedPaymentMethodsUrl)!) { [weak self] data, _, error in
             guard let data = data, error == nil else {
-                DSLogger.log("Failed to get supported assets from Topper: \(String(describing: error))")
+                DWLogger.log("Failed to get supported assets from Topper: \(String(describing: error))")
                 return
             }
             
@@ -80,7 +80,7 @@ class Topper {
                 let paymentMethods = root.paymentMethods.filter { $0.type == "credit-card" && $0.billingAsset == "USD" }
                 self?.supportedPaymentMethods = paymentMethods
             } catch {
-                DSLogger.log("Failed to decode supported assets from Topper: \(String(describing: error))")
+                DWLogger.log("Failed to decode supported assets from Topper: \(String(describing: error))")
             }
         }.resume()
     }
@@ -88,13 +88,13 @@ class Topper {
     func refreshSupportedAssets() {
         URLSession.shared.dataTask(with: URL(string: Topper.supportedAssetsUrl)!) { [weak self] data, _, error in
             if error != nil || data == nil {
-                DSLogger.log("Topper: request failed. \(String(describing: error))")
+                DWLogger.log("Topper: request failed. \(String(describing: error))")
             } else {
                 do {
                     let root = try JSONDecoder().decode(SupportedTopperAssets.self, from: data!)
                     self?.supportedAssets = Set(root.assets.source.map { $0.code })
                 } catch {
-                    DSLogger.log("Topper: failed to decode JSON. \(error)")
+                    DWLogger.log("Topper: failed to decode JSON. \(error)")
                 }
             }
         }.resume()
@@ -125,7 +125,7 @@ class Topper {
             var jwt = JWT(header: header, claims: claims)
             return try jwt.sign(using: JWTSigner.es256(privateKey: privateKeyData))
         } catch {
-            DSLogger.log("Topper: failed to generate a JWT token. \(error)")
+            DWLogger.log("Topper: failed to generate a JWT token. \(error)")
             return ""
         }
     }

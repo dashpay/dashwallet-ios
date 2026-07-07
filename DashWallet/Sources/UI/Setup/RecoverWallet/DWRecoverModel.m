@@ -41,7 +41,7 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 }
 
 - (void)dealloc {
-    DSLog(@"☠️ %@", NSStringFromClass(self.class));
+    DWLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (BOOL)hasWallet {

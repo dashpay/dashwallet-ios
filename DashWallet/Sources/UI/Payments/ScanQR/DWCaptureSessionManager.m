@@ -136,7 +136,7 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
             [device unlockForConfiguration];
         }
         else {
-            DSLog(@"DWCaptureSessionManager: %@", error);
+            DWLog(@"DWCaptureSessionManager: %@", error);
         }
     });
 }
@@ -174,13 +174,13 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
 #pragma mark Private
 
 - (void)stopPreviewInternal {
-    DSLog(@"DWCaptureSessionManager: Stopping preview...");
+    DWLog(@"DWCaptureSessionManager: Stopping preview...");
     dispatch_async(self.sessionQueue, ^{
         if (self.captureSession.isRunning) {
             [self.captureSession stopRunning];
 
             dispatch_async(dispatch_get_main_queue(), ^{
-                DSLog(@"DWCaptureSessionManager: Preview has been stopped");
+                DWLog(@"DWCaptureSessionManager: Preview has been stopped");
                 [self performSelector:@selector(tearDown) withObject:nil afterDelay:SESSION_KEEPALIVE];
             });
         }
@@ -198,7 +198,7 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
         AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
         AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
         if (error) {
-            DSLog(@"DWCaptureSessionManager: %@", error);
+            DWLog(@"DWCaptureSessionManager: %@", error);
         }
         if ([device lockForConfiguration:&error]) {
             if (device.isAutoFocusRangeRestrictionSupported) {
@@ -212,7 +212,7 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
             [device unlockForConfiguration];
         }
         else {
-            DSLog(@"DWCaptureSessionManager: %@", error);
+            DWLog(@"DWCaptureSessionManager: %@", error);
         }
 
         [self.captureSession beginConfiguration];
@@ -240,7 +240,7 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
             [self.captureSession addOutput:videoOutput];
         }
         else {
-            DSLog(@"DWCaptureSessionManager: can't add AVCaptureVideoDataOutput");
+            DWLog(@"DWCaptureSessionManager: can't add AVCaptureVideoDataOutput");
         }
 
         AVCaptureConnection *connection = [videoOutput connectionWithMediaType:AVMediaTypeVideo];
@@ -253,7 +253,7 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
 }
 
 - (void)tearDown {
-    DSLog(@"DWCaptureSessionManager: Tearing down...");
+    DWLog(@"DWCaptureSessionManager: Tearing down...");
     self.captureSession = nil;
     self.sessionQueue = nil;
     self.metadataQueue = nil;

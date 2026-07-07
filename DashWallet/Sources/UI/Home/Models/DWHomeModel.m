@@ -129,7 +129,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)dealloc {
     [_syncMonitor removeObserver:self];
 
-    DSLog(@"☠️ %@", NSStringFromClass(self.class));
+    DWLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (void)setUpdatesObserver:(nullable id<DWHomeModelUpdatesObserver>)updatesObserver {

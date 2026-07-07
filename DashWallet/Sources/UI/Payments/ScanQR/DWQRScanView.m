@@ -26,11 +26,11 @@
 #import <AVFoundation/AVFoundation.h>
 
 #import "DWCaptureSessionFrameDelegate.h"
+#import "DWLogger.h"
 #import "DWQRScanModel.h"
 #import "DWQRScanStatusView.h"
 #import "DWQRScanView.h"
 #import "DWUIKit.h"
-#import <DashSync/DSLogger.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -196,7 +196,7 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     if (self.sampleBufferDisplayLayer.status == AVQueuedSampleBufferRenderingStatusFailed) {
-        DSLog(@"Failed to display frame: %@", self.sampleBufferDisplayLayer.error);
+        DWLog(@"Failed to display frame: %@", self.sampleBufferDisplayLayer.error);
         [self.sampleBufferDisplayLayer flush];
     }
 

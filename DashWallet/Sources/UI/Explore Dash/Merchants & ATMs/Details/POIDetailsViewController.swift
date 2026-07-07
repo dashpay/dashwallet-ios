@@ -348,7 +348,7 @@ extension POIDetailsViewController {
             return false
         } catch {
             // Network or other transient error - show error but don't log out
-            DSLogger.log("PiggyCards: Token refresh failed with error: \(error.localizedDescription)")
+            DWLogger.log("PiggyCards: Token refresh failed with error: \(error.localizedDescription)")
             await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Connection Error", comment: "DashSpend"), textBlock1: NSLocalizedString("Unable to verify your session. Please check your internet connection and try again.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
             return false
         }

@@ -58,7 +58,7 @@ class CTXSpendTokenService {
                 tokenRefreshTask = nil
             }
 
-            DSLogger.log("CTXSpend: Attempting to refresh access token")
+            DWLogger.log("CTXSpend: Attempting to refresh access token")
 
             do {
                 let request = RefreshTokenRequest(refreshToken: refreshToken)
@@ -67,9 +67,9 @@ class CTXSpendTokenService {
                 // Update tokens through the service
                 tokenProvider.updateTokens(accessToken: response.accessToken, refreshToken: response.refreshToken)
 
-                DSLogger.log("CTXSpend: Token refresh successful")
+                DWLogger.log("CTXSpend: Token refresh successful")
             } catch {
-                DSLogger.log("CTXSpend: Token refresh failed: \(error)")
+                DWLogger.log("CTXSpend: Token refresh failed: \(error)")
 
                 // Clear tokens on refresh failure
                 tokenProvider.clearTokensOnRefreshFailure()

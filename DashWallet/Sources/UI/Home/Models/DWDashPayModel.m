@@ -21,10 +21,10 @@
 #import "DWDashPayConstants.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "DWLogger.h"
 #import "DWNotificationsData.h"
 #import "DWNotificationsProvider.h"
 #import "dashwallet-Swift.h"
-#import <DashSync/DSLogger.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_END
             [self updateRegistrationStatusForBlockchainIdentity:blockchainIdentity username:username];
         }
 
-        DSLogPrivate(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].dashpayUsername);
+        DWLogPrivate(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].dashpayUsername);
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
@@ -281,7 +281,7 @@ NS_ASSUME_NONNULL_END
 
                                       [myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:blockchainIdentity
                                                                                           completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
-                                                                                              DSLog(@"Friend request sent %i", success);
+                                                                                              DWLog(@"Friend request sent %i", success);
                                                                                           }];
                                   }
                               }];

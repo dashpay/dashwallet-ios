@@ -12,7 +12,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import <DashSync/DSLogger.h>
+#import "DWLogger.h"
 
 // Compile-time check for keypaths
 // More info: https://pspdfkit.com/blog/2017/even-swiftier-objective-c/

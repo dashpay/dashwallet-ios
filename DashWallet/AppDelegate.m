@@ -113,7 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
         bannerOptions.shortcutBannerState = 2;
     }
 
-    [DSLogger sharedInstance];
+    [DWLogger sharedInstance];
     [FIRApp configure];
     [ExploreDashObjcWrapper configure];
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
@@ -292,7 +292,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     }
     else {
         // TODO: defer action when start controller finish
-        DSLog(@"Ignoring handle URL: %@. Root controller hasn't been set up yet", url);
+        DWLog(@"Ignoring handle URL: %@. Root controller hasn't been set up yet", url);
     }
 
     return YES;
@@ -330,7 +330,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
             }
             else {
                 // TODO: defer action when start controller finish
-                DSLog(@"Ignoring handle file. Root controller hasn't been set up yet");
+                DWLog(@"Ignoring handle file. Root controller hasn't been set up yet");
             }
         }
     }

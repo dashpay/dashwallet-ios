@@ -92,7 +92,7 @@ extension CrowdNodeService {
             let message = messages.first { $0.id == id }
 
             if message == nil {
-                DSLogger.log("CrowdNode: got \(messages.count) messages, none with id \(id)")
+                DWLogger.log("CrowdNode: got \(messages.count) messages, none with id \(id)")
                 return nil
             } else {
                 return message

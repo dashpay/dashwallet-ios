@@ -226,7 +226,7 @@ NS_ASSUME_NONNULL_END
 
 - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-    DSLog(@"DWDP: Notification provider's FRC did update");
+    DWLog(@"DWDP: Notification provider's FRC did update");
 
     [self reload];
 }

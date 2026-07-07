@@ -127,14 +127,14 @@ class CustomIconMetadataProvider: MetadataProvider, @unchecked Sendable {
         Task {
             do {
                 guard let url = URL(string: iconUrl) else {
-                    DSLogger.log("CustomIconMetadataProvider: Invalid icon URL '\(iconUrl)' for txId: \(txId.hexEncodedString())")
+                    DWLogger.log("CustomIconMetadataProvider: Invalid icon URL '\(iconUrl)' for txId: \(txId.hexEncodedString())")
                     return
                 }
                 
                 let (data, _) = try await URLSession.shared.data(from: url)
                 
                 guard let image = UIImage(data: data) else {
-                    DSLogger.log("CustomIconMetadataProvider: Failed to create image from data for URL '\(iconUrl)' (txId: \(txId.hexEncodedString()))")
+                    DWLogger.log("CustomIconMetadataProvider: Failed to create image from data for URL '\(iconUrl)' (txId: \(txId.hexEncodedString()))")
                     return
                 }
                 
@@ -173,7 +173,7 @@ class CustomIconMetadataProvider: MetadataProvider, @unchecked Sendable {
                     self.metadataUpdated.send(txId)
                 }
             } catch {
-                DSLogger.log("CustomIconMetadataProvider: Failed to fetch icon from URL '\(iconUrl)' for txId \(txId.hexEncodedString()): \(error)")
+                DWLogger.log("CustomIconMetadataProvider: Failed to fetch icon from URL '\(iconUrl)' for txId \(txId.hexEncodedString()): \(error)")
             }
         }
     }

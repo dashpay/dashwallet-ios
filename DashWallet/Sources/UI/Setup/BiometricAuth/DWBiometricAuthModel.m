@@ -31,7 +31,7 @@ static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DUFFS / 2; // 0.5 Dash
 @implementation DWBiometricAuthModel
 
 - (void)dealloc {
-    DSLog(@"☠️ %@", NSStringFromClass(self.class));
+    DWLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 + (BOOL)shouldEnableBiometricAuthentication {

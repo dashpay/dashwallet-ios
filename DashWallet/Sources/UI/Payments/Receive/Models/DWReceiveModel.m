@@ -67,7 +67,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)dealloc {
-    DSLog(@"☠️ %@", NSStringFromClass(self.class));
+    DWLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (NSString *)paymentAddressOrRequestToShare {
@@ -125,7 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
     const uint64_t total = [DWSwiftDashSDKReceiveAddressReader receivedTotalExcludingAddress:request.paymentAddress];
 
     if (total + fuzz >= request.amount) {
-        DSLog(@"DWReceiveModel: Received %@", @(total));
+        DWLog(@"DWReceiveModel: Received %@", @(total));
 
         // TODO: Fix me. Using `self.amount` here is a workaround and we should use `total` instead.
         // (`total` is not calculated properly for very small amounts like 0.000257)

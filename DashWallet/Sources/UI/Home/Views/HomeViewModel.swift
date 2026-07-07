@@ -137,7 +137,7 @@ class HomeViewModel: ObservableObject {
 
     /// Clears all cached transaction data when switching networks
     private func clearCachedData() {
-        DSLogger.log("HomeViewModel: Network changed, clearing cached transaction data")
+        DWLogger.log("HomeViewModel: Network changed, clearing cached transaction data")
 
         // Dispatch to self.queue to ensure thread-safe access to txByHash, crowdNodeTxSet, coinJoinTxSets
         // These properties are also accessed/modified in reloadTxDataSource() on self.queue
@@ -196,7 +196,7 @@ class HomeViewModel: ObservableObject {
         NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                DSLogger.log("HomeViewModel: SwiftData saved, reloading tx list")
+                DWLogger.log("HomeViewModel: SwiftData saved, reloading tx list")
                 self?.reloadTxsAndShortcuts()
             }
             .store(in: &cancellableBag)
@@ -206,7 +206,7 @@ class HomeViewModel: ObservableObject {
         // transactions appear in the UI promptly.
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .sink { [weak self] _ in
-                DSLogger.log("HomeViewModel: Wallet balance changed, reloading transactions and shortcuts")
+                DWLogger.log("HomeViewModel: Wallet balance changed, reloading transactions and shortcuts")
                 self?.reloadTxsAndShortcuts()
             }
             .store(in: &cancellableBag)
@@ -219,7 +219,7 @@ class HomeViewModel: ObservableObject {
                 if state == .syncing {
                     // Reload once per transition into .syncing — replaces the
                     // legacy sync-will-start notification observer.
-                    DSLogger.log("HomeViewModel: Sync started, reloading transactions")
+                    DWLogger.log("HomeViewModel: Sync started, reloading transactions")
                     self.reloadTxsAndShortcuts()
                 }
                 self.onSyncStateChanged()
@@ -235,7 +235,7 @@ class HomeViewModel: ObservableObject {
 
             // Fix #3: Set reload flag to prevent race conditions with incremental updates
             self.isReloading = true
-            DSLogger.log("HomeViewModel: Starting full transaction reload")
+            DWLogger.log("HomeViewModel: Starting full transaction reload")
 
             let transactions = transactionSource.allTransactions
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
@@ -314,7 +314,7 @@ class HomeViewModel: ObservableObject {
             self.hasCompletedInitialLoad = true
             self.isReloading = false
 
-            DSLogger.log("HomeViewModel: Full reload complete, \(array.count) groups, \(self.txByHash.count) transactions cached")
+            DWLogger.log("HomeViewModel: Full reload complete, \(array.count) groups, \(self.txByHash.count) transactions cached")
 
             DispatchQueue.main.async {
                 self.txItems = array
@@ -329,14 +329,14 @@ class HomeViewModel: ObservableObject {
             // Fix #3: Skip incremental updates while a full reload is in progress
             // to prevent race conditions that could cause missing transactions
             if self.isReloading {
-                DSLogger.log("HomeViewModel: Skipping incremental update during full reload for tx: \(tx.txHashHexString)")
+                DWLogger.log("HomeViewModel: Skipping incremental update during full reload for tx: \(tx.txHashHexString)")
                 return
             }
 
             // Fix #2: If initial load hasn't completed yet, the cache is empty and
             // incremental updates won't work correctly. Trigger a full reload instead.
             if !self.hasCompletedInitialLoad {
-                DSLogger.log("HomeViewModel: Initial load not complete, triggering full reload for tx: \(tx.txHashHexString)")
+                DWLogger.log("HomeViewModel: Initial load not complete, triggering full reload for tx: \(tx.txHashHexString)")
                 DispatchQueue.main.async {
                     self.reloadTxsAndShortcuts()
                 }
@@ -386,7 +386,7 @@ class HomeViewModel: ObservableObject {
 
                 // Fix: Handle transaction moving between date groups (e.g., unconfirmed -> confirmed)
                 if let oldDateKey = oldDateKey, oldDateKey != newDateKey {
-                    DSLogger.log("HomeViewModel: Transaction \(itemId) date changed from \(oldDateKey) to \(newDateKey)")
+                    DWLogger.log("HomeViewModel: Transaction \(itemId) date changed from \(oldDateKey) to \(newDateKey)")
 
                     // Remove from old group
                     if let oldGIdx = oldGroupIndex, let oldIIdx = oldItemIndex {
@@ -397,7 +397,7 @@ class HomeViewModel: ObservableObject {
                                   oldGIdx < self.txItems.count,
                                   oldIIdx >= 0,
                                   oldIIdx < self.txItems[oldGIdx].items.count else {
-                                DSLogger.log("HomeViewModel: Skipping removal - indices out of bounds (groupIdx: \(oldGIdx), itemIdx: \(oldIIdx))")
+                                DWLogger.log("HomeViewModel: Skipping removal - indices out of bounds (groupIdx: \(oldGIdx), itemIdx: \(oldIIdx))")
                                 return
                             }
 
@@ -510,7 +510,7 @@ extension HomeViewModel {
 
         let workItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
-            DSLogger.log("HomeViewModel: Sync state changed (debounced), reloading")
+            DWLogger.log("HomeViewModel: Sync state changed (debounced), reloading")
             self.reloadTxsAndShortcuts()
             #if DASHPAY
             self.checkJoinDashPay()
@@ -560,7 +560,7 @@ extension HomeViewModel {
     /// launch until the user sweeps, then self-stops (balance → 0). The durable
     /// Settings row covers the same action for users who dismiss it.
     func maybeShowCoinJoinSweepDialog() {
-        DSLogger.log("CJTEST HomeViewModel: sweep dialog check — \(coinJoinSweepAmountDuffs) duffs (\(String(format: "%.6f", Double(coinJoinSweepAmountDuffs) / Double(DUFFS))) DASH), threshold \(CoinJoinRecovery.recoveryDustThresholdDuffs), above=\(coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
+        DWLogger.log("CJTEST HomeViewModel: sweep dialog check — \(coinJoinSweepAmountDuffs) duffs (\(String(format: "%.6f", Double(coinJoinSweepAmountDuffs) / Double(DUFFS))) DASH), threshold \(CoinJoinRecovery.recoveryDustThresholdDuffs), above=\(coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
         guard !coinJoinSweepDialogShown,
               syncModel.state == .syncDone,
               coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs else { return }
@@ -577,7 +577,7 @@ extension HomeViewModel {
             _ = try await WalletSendService.shared.sweepCoinJoin()
             return nil
         } catch {
-            DSLogger.log("CJTEST HomeViewModel: sweep (home popup) failed: \(error)")
+            DWLogger.log("CJTEST HomeViewModel: sweep (home popup) failed: \(error)")
             // nil when the user cancelled auth; a message on real failures.
             return WalletSendService.coinJoinSweepUserMessage(for: error)
         }
@@ -827,7 +827,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
         do {
             rows = try container.mainContext.fetch(descriptor)
         } catch {
-            DSLogger.log("HomeViewModel: PersistentTransaction fetch failed: \(error)")
+            DWLogger.log("HomeViewModel: PersistentTransaction fetch failed: \(error)")
             return []
         }
         return rows.map { row -> Transaction in

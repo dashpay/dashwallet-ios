@@ -198,7 +198,7 @@ final class UpholdPortalModel: BaseIntegrationModel {
                     requirements[capability.key] = capability.requirements
                 }
             } catch {
-                DSLogger.log("Error obtaining capabilities: \(error)")
+                DWLogger.log("Error obtaining capabilities: \(error)")
             }
         }
     }

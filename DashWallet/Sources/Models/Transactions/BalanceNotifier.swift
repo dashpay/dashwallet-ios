@@ -64,7 +64,7 @@ class DWBalanceNotifier: NSObject {
                 NotificationCenter.default.post(name: NSNotification.Name("org.dash.did-request-permission-notification"), object: nil)
             }
             DWGlobalOptions.sharedInstance().localNotificationsEnabled = granted
-            DSLogger.log("DWBalanceNotifier: register for notifications result \(granted), error \(String(describing: error))")
+            DWLogger.log("DWBalanceNotifier: register for notifications result \(granted), error \(String(describing: error))")
         }
     }
 
@@ -94,7 +94,7 @@ class DWBalanceNotifier: NSObject {
                 noteText = String(format: NSLocalizedString("Received %@ (%@)", comment: ""), receivedAmountText, receivedInFiatText)
             }
 
-            DSLogger.log("DWBalanceNotifier: local notifications enabled = \(notificationsEnabled)")
+            DWLogger.log("DWBalanceNotifier: local notifications enabled = \(notificationsEnabled)")
 
             // send a local notification if in the background or it's a CrowdNode notification
             if application.applicationState == .background || application.applicationState == .inactive || isCrowdNode {
@@ -112,9 +112,9 @@ class DWBalanceNotifier: NSObject {
                     let center = UNUserNotificationCenter.current()
                     center.add(request) { error in
                         if let error {
-                            DSLogger.log("DWBalanceNotifier: failed to send local notification: \(error)")
+                            DWLogger.log("DWBalanceNotifier: failed to send local notification: \(error)")
                         } else {
-                            DSLogger.log("DWBalanceNotifier: sent local notification")
+                            DWLogger.log("DWBalanceNotifier: sent local notification")
                         }
                     }
                 }

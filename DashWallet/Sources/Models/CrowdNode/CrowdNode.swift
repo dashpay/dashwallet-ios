@@ -186,7 +186,7 @@ extension CrowdNode {
             return
         }
 
-        DSLogger.log("restoring CrowdNode state")
+        DWLogger.log("restoring CrowdNode state")
         signUpState = SignUpState.notStarted
         validatePrefs()
 
@@ -210,10 +210,10 @@ extension CrowdNode {
                 try tryRestoreLinkedOnlineAccount(state: onlineState, address: address)
                 refreshWithdrawalLimits()
             } catch {
-                DSLogger.log("Failure while restoring linked CrowdNode account: \(error.localizedDescription)")
+                DWLogger.log("Failure while restoring linked CrowdNode account: \(error.localizedDescription)")
             }
         } else {
-            DSLogger.log("CrowdNode: account not found")
+            DWLogger.log("CrowdNode: account not found")
         }
     }
 
@@ -252,7 +252,7 @@ extension CrowdNode {
 
     private func setFinished(address: String) {
         prefs.accountAddress = address
-        DSLogger.log("found finished CrowdNode sign up, account: \(address)")
+        DWLogger.log("found finished CrowdNode sign up, account: \(address)")
         signUpState = SignUpState.finished
         refreshBalance(retries: 1)
         setTaxCategories()
@@ -260,19 +260,19 @@ extension CrowdNode {
 
     private func setAcceptingTerms(address: String) {
         prefs.accountAddress = address
-        DSLogger.log("found accept terms CrowdNode response, account: \(address)")
+        DWLogger.log("found accept terms CrowdNode response, account: \(address)")
         signUpState = SignUpState.acceptingTerms
     }
 
     private func setAcceptTermsRequired(address: String) {
         prefs.accountAddress = address
-        DSLogger.log("found accept terms CrowdNode response, account: \(address)")
+        DWLogger.log("found accept terms CrowdNode response, account: \(address)")
         signUpState = SignUpState.acceptTermsRequired
     }
 
     private func setSigningUp(address: String) {
         prefs.accountAddress = address
-        DSLogger.log("found signUp CrowdNode request, account: \(address)")
+        DWLogger.log("found signUp CrowdNode request, account: \(address)")
         signUpState = SignUpState.signingUp
     }
 
@@ -281,14 +281,14 @@ extension CrowdNode {
             let wallet = DWEnvironment.sharedInstance().currentWallet
 
             if !wallet.containsAddress(accountAddress) {
-                DSLogger.log("Found alien address in CrowdNode prefs")
+                DWLogger.log("Found alien address in CrowdNode prefs")
                 reset()
             }
         }
     }
 
     private func reset() {
-        DSLogger.log("CrowdNode reset triggered")
+        DWLogger.log("CrowdNode reset triggered")
         signUpState = .notStarted
         onlineAccountState = .none
         linkingApiAddress = nil
@@ -317,7 +317,7 @@ extension CrowdNode {
                 signUpState = SignUpState.fundingWallet
                 let topUpTx = try await topUpAccount(accountAddress, CrowdNode.requiredForSignup,
                                                      sessionAuthSufficient: true)
-                DSLogger.log("CrowdNode TopUp tx hash: \(topUpTx.txHashHexString)")
+                DWLogger.log("CrowdNode TopUp tx hash: \(topUpTx.txHashHexString)")
 
                 signUpState = SignUpState.signingUp
                 try await makeSignUpRequest(accountAddress)
@@ -337,7 +337,7 @@ extension CrowdNode {
             refreshBalance()
         }
         catch {
-            DSLogger.log("CrowdNode error: \(error)")
+            DWLogger.log("CrowdNode error: \(error)")
             signUpState = SignUpState.error
             apiError = error
         }
@@ -352,7 +352,7 @@ extension CrowdNode {
                                                             amount: requestValue,
                                                             inputSelector: SingleInputAddressSelector(address: accountAddress),
                                                             sessionAuthSufficient: true)
-        DSLogger.log("CrowdNode SignUp tx hash: \(signUpTx.txHashHexString)")
+        DWLogger.log("CrowdNode SignUp tx hash: \(signUpTx.txHashHexString)")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms,
                                                 accountAddress: accountAddress)
@@ -360,7 +360,7 @@ extension CrowdNode {
                                                    accountAddress: accountAddress)
 
         let responseTx = await txObserver.first(filters: errorResponse, successResponse, after: requestSentAt)
-        DSLogger.log("CrowdNode AcceptTerms response tx: \(responseTx.txidHexDisplay)")
+        DWLogger.log("CrowdNode AcceptTerms response tx: \(responseTx.txidHexDisplay)")
 
         if errorResponse.matches(responseTx) {
             throw CrowdNode.Error.signUp
@@ -374,7 +374,7 @@ extension CrowdNode {
                                                                    amount: requestValue,
                                                                    inputSelector: SingleInputAddressSelector(address: accountAddress),
                                                                    sessionAuthSufficient: true)
-        DSLogger.log("CrowdNode Terms Accepted tx hash: \(termsAcceptedTx.txHashHexString)")
+        DWLogger.log("CrowdNode Terms Accepted tx hash: \(termsAcceptedTx.txHashHexString)")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.welcomeToApi,
                                                 accountAddress: accountAddress)
@@ -382,7 +382,7 @@ extension CrowdNode {
                                                    accountAddress: accountAddress)
 
         let responseTx = await txObserver.first(filters: errorResponse, successResponse, after: requestSentAt)
-        DSLogger.log("CrowdNode Welcome response tx: \(responseTx.txidHexDisplay)")
+        DWLogger.log("CrowdNode Welcome response tx: \(responseTx.txidHexDisplay)")
 
         if errorResponse.matches(responseTx) {
             throw CrowdNode.Error.signUp
@@ -404,14 +404,14 @@ extension CrowdNode {
         // DSAuthenticationManager.didAuthenticate — and the deposit signal a
         // moment later rides that session instead of prompting a second time.
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
-        DSLogger.log("CrowdNode deposit topup tx hash: \(topUpTx.txHashHexString)")
+        DWLogger.log("CrowdNode deposit topup tx hash: \(topUpTx.txHashHexString)")
 
         let requestSentAt = Date()
         let depositTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                              amount: min(maxSendable, amount),
                                                              inputSelector: SingleInputAddressSelector(address: accountAddress),
                                                              sessionAuthSufficient: true)
-        DSLogger.log("CrowdNode deposit tx hash: \(depositTx.txHashHexString)")
+        DWLogger.log("CrowdNode deposit tx hash: \(depositTx.txHashHexString)")
 
         Task {
             let successResponse = CrowdNodeResponse(responseCode: ApiCode.depositReceived,
@@ -422,7 +422,7 @@ extension CrowdNode {
             // The freshness floor is what keeps a PREVIOUS deposit's ack row
             // from instantly satisfying this wait on the initial scan.
             let responseTx = await txObserver.first(filters: errorResponse, successResponse, after: requestSentAt)
-            DSLogger.log("CrowdNode deposit response tx: \(responseTx.txidHexDisplay)")
+            DWLogger.log("CrowdNode deposit response tx: \(responseTx.txidHexDisplay)")
 
             if errorResponse.matches(responseTx) {
                 handleError(error: CrowdNode.Error.deposit)
@@ -438,15 +438,15 @@ extension CrowdNode {
 
         try checkWithdrawalLimits(amount)
 
-        DSLogger.log("CrowdNode: request withdrawal")
+        DWLogger.log("CrowdNode: request withdrawal")
         let result = try await webService.requestWithdrawal(address: accountAddress, amount: amount, signature: signature)
 
         if result.messageStatus.lowercased() == kMessageReceivedStatus {
-            DSLogger.log("CrowdNode: withdrawal request sent successfully")
+            DWLogger.log("CrowdNode: withdrawal request sent successfully")
             refreshBalance(afterWithdrawal: true)
             updateLastWithdrawalBlock()
         } else {
-            DSLogger.log("CrowdNode: sendMessage not received, status: \(String(describing: result.messageStatus)). Result: \(String(describing: result.result))")
+            DWLogger.log("CrowdNode: sendMessage not received, status: \(String(describing: result.messageStatus)). Result: \(String(describing: result.result))")
             
             if let msg = result.result {
                 handleError(error: CrowdNode.Error.messageStatus(error: msg))
@@ -574,7 +574,7 @@ extension CrowdNode {
     private func handleError(error: CrowdNode.Error) {
         apiError = error
         notifyIfNeeded(message: error.errorDescription)
-        DSLogger.log("CrowdNode error: \(error.errorDescription)")
+        DWLogger.log("CrowdNode error: \(error.errorDescription)")
     }
 
     private func notifyIfNeeded(message: String) {
@@ -609,7 +609,7 @@ extension CrowdNode {
                     prefs.crowdNodeWithdrawalLimitPerDay = perDay
                 }
             } catch {
-                DSLogger.log("CrowdNode refreshWithdrawalLimits error: \(error.localizedDescription)")
+                DWLogger.log("CrowdNode refreshWithdrawalLimits error: \(error.localizedDescription)")
             }
         }
     }
@@ -623,7 +623,7 @@ extension CrowdNode {
                     prefs.feePercentage = value.fee / 100
                 }
             } catch {
-                DSLogger.log("CrowdNode refreshFees error: \(error.localizedDescription)")
+                DWLogger.log("CrowdNode refreshFees error: \(error.localizedDescription)")
             }
         }
     }
@@ -652,7 +652,7 @@ extension CrowdNode {
 
     func stopTrackingLinked() {
         if signUpState == .notStarted && onlineAccountState <= .linking {
-            DSLogger.log("CrowdNode: stopTrackingLinked")
+            DWLogger.log("CrowdNode: stopTrackingLinked")
             changeOnlineState(to: .none)
 
             if let address = linkingApiAddress {
@@ -668,15 +668,15 @@ extension CrowdNode {
     func registerEmailForAccount(email: String, signature: String) async throws {
         guard !accountAddress.isEmpty else { return }
 
-        DSLogger.log("CrowdNode: sending signed email message")
+        DWLogger.log("CrowdNode: sending signed email message")
         let result = try await webService.registerEmail(address: accountAddress, email: email, signature: signature)
 
         if result.messageStatus.lowercased() == kMessageReceivedStatus {
-            DSLogger.log("CrowdNode: signed email sent successfully")
+            DWLogger.log("CrowdNode: signed email sent successfully")
             prefs.signedEmailMessageId = result.id
             changeOnlineState(to: .creating)
         } else {
-            DSLogger.log("CrowdNode: sendMessage not received, status: \(String(describing: result.messageStatus)). Result: \(String(describing: result.result))")
+            DWLogger.log("CrowdNode: sendMessage not received, status: \(String(describing: result.messageStatus)). Result: \(String(describing: result.result))")
             apiError = CrowdNode.Error.messageStatus(error: result.result ?? "")
         }
     }
@@ -715,20 +715,20 @@ extension CrowdNode {
         case .none:
             break
         case .linking:
-            DSLogger.log("CrowdNode: found linking online account in progress, account: \(address), primary: \(String(describing: primaryAddress))")
+            DWLogger.log("CrowdNode: found linking online account in progress, account: \(address), primary: \(String(describing: primaryAddress))")
             checkIfAddressIsInUse(address: address)
         case .creating, .signingUp:
             // This should not happen - this method is reachable only for a linked account case
             throw CrowdNode.Error.restoreLinked(state: state)
         default:
             changeOnlineState(to: state, save: false)
-            DSLogger.log("CrowdNode: found online account, state: \(state), account: \(address), primary: \(String(describing: primaryAddress))")
+            DWLogger.log("CrowdNode: found online account, state: \(state), account: \(address), primary: \(String(describing: primaryAddress))")
             break
         }
     }
 
     private func startTrackingLinked(address: String) {
-        DSLogger.log("CrowdNode: startTrackingLinked, account: \(address)")
+        DWLogger.log("CrowdNode: startTrackingLinked, account: \(address)")
         let timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
             self?.checkIfAddressIsInUse(address: address)
         }
@@ -737,7 +737,7 @@ extension CrowdNode {
     }
 
     private func startTrackingValidated(address: String, fireImmediately: Bool) {
-        DSLogger.log("CrowdNode: startTrackingValidated, account: \(address)")
+        DWLogger.log("CrowdNode: startTrackingValidated, account: \(address)")
         let timer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
             self?.checkAddressStatus(address: address)
         }
@@ -761,12 +761,12 @@ extension CrowdNode {
         }
 
         Task {
-            DSLogger.log("CrowdNode: startTrackingConfirmed, account: \(address)")
+            DWLogger.log("CrowdNode: startTrackingConfirmed, account: \(address)")
 
             // First check or wait for the confirmation tx.
             // No need to make web requests if it isn't found.
             let confirmationTx = await waitForApiAddressConfirmation(primaryAddress: primaryAddress!, apiAddress: accountAddress)
-            DSLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txidHexDisplay)")
+            DWLogger.log("CrowdNode: confirmation tx found: \(confirmationTx.txidHexDisplay)")
 
             if hasDepositConfirmations() {
                 // If a deposit confirmation was received, the address has been confirmed already
@@ -786,7 +786,7 @@ extension CrowdNode {
             // legacy accepted mempool txs).
             let forwardedFilter = CrowdNodeAPIConfirmationTxForwarded()
             if TransactionObserver.fetchObserved().contains(where: { forwardedFilter.matches($0) }) {
-                DSLogger.log("CrowdNode: confirmation already forwarded — skipping")
+                DWLogger.log("CrowdNode: confirmation already forwarded — skipping")
                 return
             }
 
@@ -798,17 +798,17 @@ extension CrowdNode {
                     adjustAmountDownwards: true,
                     sessionAuthSufficient: true
                 )
-                DSLogger.log("CrowdNode: forwarded confirmation tx: \(forwardTx.txHashHexString)")
+                DWLogger.log("CrowdNode: forwarded confirmation tx: \(forwardTx.txHashHexString)")
             } catch {
                 // Legacy parity: log only — the 20s web poll (checkAddressStatus)
                 // is the fallback that completes linking.
-                DSLogger.log("CrowdNode: error forwarding confirmation tx: \(error)")
+                DWLogger.log("CrowdNode: error forwarding confirmation tx: \(error)")
             }
         }
     }
 
     private func startTrackingCreating(address: String, fireImmediately: Bool) {
-        DSLogger.log("CrowdNode: startTrackingCreating, account: \(address)")
+        DWLogger.log("CrowdNode: startTrackingCreating, account: \(address)")
         let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
             self?.checkIfEmailRegistered(address: address)
         }

@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWPreviewSeedPhraseModel
 
 - (void)dealloc {
-    DSLog(@"☠️ %@", NSStringFromClass(self.class));
+    DWLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 + (BOOL)shouldVerifyPassphrase {

@@ -11,7 +11,7 @@ static const bool _SNAPSHOT = 0;
 #endif /* SNAPSHOT */
 
 //MARK: DashSync
-#import <DashSync/DSLogger.h>
+#import "DWLogger.h"
 #import "DSTransaction.h"
 #import "DSCoinbaseTransaction.h"
 #import "DSWallet.h"

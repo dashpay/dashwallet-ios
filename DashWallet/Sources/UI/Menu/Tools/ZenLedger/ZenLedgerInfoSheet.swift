@@ -88,7 +88,7 @@ struct ZenLedgerInfoSheet: View {
                     presentationMode.wrappedValue.dismiss()
                 }
             } catch {
-                DSLogger.log("ZenLedger error: \(error)")
+                DWLogger.log("ZenLedger error: \(error)")
                 errorAlert = true
                 showAlert = true
             }

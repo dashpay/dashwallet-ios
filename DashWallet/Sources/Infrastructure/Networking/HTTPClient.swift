@@ -181,7 +181,7 @@ extension HTTPClient {
                     completion(.failure(.statusCode(response)))
                 }
             case .failure(let error):
-                DSLogger.log("HTTPClient failure: \(String(describing: error))")
+                DWLogger.log("HTTPClient failure: \(String(describing: error))")
                 completion(.failure(.moya(error)))
             }
         }

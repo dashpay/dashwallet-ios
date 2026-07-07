@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWSetPinModel
 
 - (void)dealloc {
-    DSLog(@"☠️ %@", NSStringFromClass(self.class));
+    DWLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 + (BOOL)shouldSetPin {

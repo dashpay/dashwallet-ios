@@ -150,7 +150,7 @@ extension ExploreDatabaseSyncManager {
                         NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
                         try? FileManager.default.removeItem(at: URL(fileURLWithPath: urlToSave.path))
                     } catch {
-                        DSLogger.log("ExploreDash: failed to open DB archive: \(String(describing: error))")
+                        DWLogger.log("ExploreDash: failed to open DB archive: \(String(describing: error))")
                         self?.syncState = .error(Date(), error)
                     }
                 }

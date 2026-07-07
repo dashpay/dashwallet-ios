@@ -86,7 +86,7 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
     
     func verifyEmail(code: String) async throws -> Bool {
         guard let email = userEmail else {
-            DSLogger.log("CTX: email is missing while trying to verify")
+            DWLogger.log("CTX: email is missing while trying to verify")
             throw DashSpendError.unknown
         }
         
@@ -230,7 +230,7 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
     func getGiftCardByTxid(txid: String) async throws -> GiftCardResponse {
         do {
             let baseURL = CTXConstants.baseURI
-            DSLogger.log("DashSpend: CTX API request - BaseURL: \(baseURL), Endpoint: gift-cards, TxId: \(txid)")
+            DWLogger.log("DashSpend: CTX API request - BaseURL: \(baseURL), Endpoint: gift-cards, TxId: \(txid)")
             return try await CTXSpendAPI.shared.request(.getGiftCard(txid))
         } catch {
             throw mapError(error)

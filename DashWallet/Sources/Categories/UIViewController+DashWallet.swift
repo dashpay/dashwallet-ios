@@ -55,7 +55,7 @@ extension UIViewController {
     }
 
     @objc func presentSupportEmailController() {
-        let logFiles = DSLogger.sharedInstance().logFiles()
+        let logFiles = DWLogger.sharedInstance().logFiles()
         
         if MFMailComposeViewController.canSendMail() {
             let mailComposer = MFMailComposeViewController()

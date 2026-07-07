@@ -169,7 +169,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSArray<NSURL *> *)logFiles {
-    return [[DSLogger sharedInstance] logFiles];
+    return [[DWLogger sharedInstance] logFiles];
 }
 
 - (void)setFixedPeer:(NSString *)fixedPeer {

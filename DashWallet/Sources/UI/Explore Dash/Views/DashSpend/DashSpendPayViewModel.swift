@@ -528,7 +528,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         let roundedAmount = NSDecimalNumber(decimal: amount)
         let fiatAmountString = formatter.string(from: roundedAmount) ?? "0.00"
 
-        DSLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
+        DWLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
 
         do {
             let response = try await ctxSpendRepository.purchaseGiftCard(
@@ -544,7 +544,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     private func saveGiftCardDummy(txHashData: Data, giftCardId: String) {
-        DSLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), giftCardId: \(giftCardId)")
+        DWLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), giftCardId: \(giftCardId)")
 
         let giftCard = GiftCard(
             txId: txHashData,

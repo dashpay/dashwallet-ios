@@ -50,16 +50,16 @@ final class PiggyCardsTokenService {
         let password = KeychainService.load(key: PiggyCardsRepository.Keys.password)
 
         if let userId = userId, let password = password {
-            DSLogger.log("PiggyCards: Attempting auto-login for user \(userId)")
+            DWLogger.log("PiggyCards: Attempting auto-login for user \(userId)")
             let response: PiggyCardsLoginResponse = try await PiggyCardsAPI.shared.request(.login(userId: userId, password: password))
             KeychainService.save(key: PiggyCardsRepository.Keys.accessToken, data: response.accessToken)
             let expiresAt = Date().addingTimeInterval(TimeInterval(response.expiresIn))
             UserDefaults.standard.set(expiresAt.timeIntervalSince1970, forKey: PiggyCardsRepository.Keys.tokenExpiresAt)
 
-            DSLogger.log("PiggyCards: Auto-login successful, token expires at \(expiresAt)")
+            DWLogger.log("PiggyCards: Auto-login successful, token expires at \(expiresAt)")
             return !response.accessToken.isEmpty
         } else {
-            DSLogger.log("PiggyCards: Auto-login failed - missing userId or password")
+            DWLogger.log("PiggyCards: Auto-login failed - missing userId or password")
             return false
         }
     }
@@ -67,7 +67,7 @@ final class PiggyCardsTokenService {
     /// Proactive token refresh before expiration
     func refreshTokenIfNeeded() async throws {
         if isTokenExpired {
-            DSLogger.log("PiggyCards: Token expired, refreshing...")
+            DWLogger.log("PiggyCards: Token expired, refreshing...")
             try await refreshAccessToken()
         } else {
             // Check if token will expire soon (within 5 minutes)
@@ -76,7 +76,7 @@ final class PiggyCardsTokenService {
             let timeUntilExpiration = expirationDate.timeIntervalSinceNow
 
             if timeUntilExpiration < 300 { // 5 minutes
-                DSLogger.log("PiggyCards: Token expiring soon, proactively refreshing...")
+                DWLogger.log("PiggyCards: Token expiring soon, proactively refreshing...")
                 try await refreshAccessToken()
             }
         }
@@ -94,7 +94,7 @@ private actor TokenRefreshActor {
     func refreshToken(_ performRefresh: @escaping () async throws -> Bool) async throws {
         // If already refreshing, wait for the existing task
         if let existingTask = refreshTask {
-            DSLogger.log("PiggyCards: Token refresh already in progress, waiting...")
+            DWLogger.log("PiggyCards: Token refresh already in progress, waiting...")
             _ = try await existingTask.value
             return
         }
@@ -110,9 +110,9 @@ private actor TokenRefreshActor {
             let success = try await performRefresh()
 
             if success {
-                DSLogger.log("PiggyCards: Token refresh completed successfully")
+                DWLogger.log("PiggyCards: Token refresh completed successfully")
             } else {
-                DSLogger.log("PiggyCards: Token refresh failed")
+                DWLogger.log("PiggyCards: Token refresh failed")
                 throw DashSpendError.tokenRefreshFailed
             }
 

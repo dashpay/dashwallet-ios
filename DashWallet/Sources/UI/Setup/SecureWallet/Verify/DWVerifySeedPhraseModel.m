@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)dealloc {
-    DSLog(@"☠️ %@", NSStringFromClass(self.class));
+    DWLog(@"☠️ %@", NSStringFromClass(self.class));
 }
 
 - (BOOL)allowedToSelectWord:(DWSeedWordModel *)sampleWordModel {

@@ -142,7 +142,7 @@ NS_ASSUME_NONNULL_END
             return;
         }
 
-        DSLog(@"DWDP: Fetch contact requests %@: %@",
+        DWLog(@"DWDP: Fetch contact requests %@: %@",
               success ? @"Succeeded" : @"Failed",
               errors.count == 0 ? @"" : errors);
 

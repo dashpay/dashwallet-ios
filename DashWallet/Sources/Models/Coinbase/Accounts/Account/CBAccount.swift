@@ -138,7 +138,7 @@ extension CBAccount {
 
             return result.data
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
-            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
+            DWLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
             if let err = r.error?.errors.first {
                 if err.id == .twoFactorRequired {
                     throw Coinbase.Error.transactionFailed(.twoFactorRequired(idem: currentIdem))
@@ -149,7 +149,7 @@ extension CBAccount {
 
             throw Coinbase.Error.unknownError
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 && verificationCode != nil {
-            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
+            DWLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
             throw Coinbase.Error.transactionFailed(.invalidVerificationCode)
         } catch HTTPClientError.statusCode(let r) where r.error?.errors.first != nil {
             if let error = r.error?.errors.first {
@@ -158,7 +158,7 @@ extension CBAccount {
                 throw HTTPClientError.statusCode(r)
             }
         } catch {
-            DSLogger.log("Tranfer from coinbase: transferToWallet - failure - \(error)")
+            DWLogger.log("Tranfer from coinbase: transferToWallet - failure - \(error)")
             throw Coinbase.Error.transactionFailed(.unknown(error))
         }
     }

@@ -197,7 +197,7 @@ class GiftCardDetailsViewModel: ObservableObject {
         // Log provider decision for debugging upgrade issues
         let providerName = giftCard.provider ?? "nil (defaulting to CTX)"
         let txIdHex = txId.map { String(format: "%02x", $0) }.joined()
-        DSLogger.log("DashSpend: Fetching gift card - Provider: \(providerName), TxId: \(txIdHex)")
+        DWLogger.log("DashSpend: Fetching gift card - Provider: \(providerName), TxId: \(txIdHex)")
 
         // Check provider and call appropriate API
         if giftCard.provider == "PiggyCards" {
@@ -218,7 +218,7 @@ class GiftCardDetailsViewModel: ObservableObject {
 
         do {
             let base58TxId = ((txId as NSData).reverse() as NSData).base58String()
-            DSLogger.log("DashSpend: Calling CTX API - Base58TxId: \(base58TxId)")
+            DWLogger.log("DashSpend: Calling CTX API - Base58TxId: \(base58TxId)")
             let response = try await ctxSpendRepository.getGiftCardByTxid(txid: base58TxId)
             
             switch response.status {
@@ -242,7 +242,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                         )
                     }
                     stopTicker()
-                    DSLogger.log("DashSpend: Gift card details fetched successfully")
+                    DWLogger.log("DashSpend: Gift card details fetched successfully")
                 }
                 
             case "rejected":
@@ -265,7 +265,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                 }
                 stopTicker()
             }
-            DSLogger.log("DashSpend: Failed to fetch gift card info: \(error)")
+            DWLogger.log("DashSpend: Failed to fetch gift card info: \(error)")
         }
     }
 
@@ -278,7 +278,7 @@ class GiftCardDetailsViewModel: ObservableObject {
         }
 
         do {
-            DSLogger.log("DashSpend: Calling PiggyCards API - OrderId: \(orderId)")
+            DWLogger.log("DashSpend: Calling PiggyCards API - OrderId: \(orderId)")
             let orderStatus = try await piggyCardsRepository.getOrderStatus(orderId: orderId)
 
             switch orderStatus.data.status.lowercased() {
@@ -373,7 +373,7 @@ class GiftCardDetailsViewModel: ObservableObject {
         if let customIconId = metadata.customIconId,
             let iconBitmap = await self.customIconDAO.getBitmap(id: customIconId) {
             guard let image = UIImage(data: iconBitmap.imageData) else {
-                DSLogger.log("Failed to create image from data for tx icon: \(metadata.txHash.hexEncodedString())")
+                DWLogger.log("Failed to create image from data for tx icon: \(metadata.txHash.hexEncodedString())")
                 return
             }
             
