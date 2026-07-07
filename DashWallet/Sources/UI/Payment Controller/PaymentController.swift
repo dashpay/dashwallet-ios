@@ -131,9 +131,9 @@ extension PaymentController: DWPaymentProcessorDelegate {
         }
     }
 
-    func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, details: DSPaymentProtocolDetails?, contactItem: DWDPBasicUserItem?) {
+    func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, amount: UInt64, contactItem: DWDPBasicUserItem?) {
         provideAmountViewController = nil
-        let vc = ProvideAmountViewController(address: sendingDestination, details: details, contact: contactItem)
+        let vc = ProvideAmountViewController(address: sendingDestination, amount: amount, contact: contactItem)
         vc.locksBalance = locksBalance
         vc.delegate = self
         vc.hidesBottomBarWhenPushed = true

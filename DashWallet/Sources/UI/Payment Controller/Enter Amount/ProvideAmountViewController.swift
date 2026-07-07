@@ -34,13 +34,15 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     private let address: String
     private let contact: DWDPBasicUserItem?
-    private var details: DSPaymentProtocolDetails?
+    /// Pre-fill amount in duffs (0 ⇒ empty). Replaces the old `DSPaymentProtocolDetails` — the only
+    /// thing this screen read from it was the output-amount sum (C8 step 4).
+    private let initialAmount: UInt64
     private var isBalanceHidden = true
 
-    init(address: String, details: DSPaymentProtocolDetails?, contact: DWDPBasicUserItem?) {
+    init(address: String, amount: UInt64, contact: DWDPBasicUserItem?) {
         self.address = address
         self.contact = contact
-        self.details = details
+        self.initialAmount = amount
         super.init(model: SendAmountModel())
     }
 
@@ -169,14 +171,8 @@ final class ProvideAmountViewController: SendAmountViewController {
 
 extension ProvideAmountViewController {
     private func updateInitialAmount() {
-        if let details = details {
-            let totalAmount = details.outputAmounts.reduce(UInt64(0)) { sum, element in
-                if let number = element as? NSNumber {
-                    return sum + number.uint64Value
-                }
-                return sum
-            }
-            model.updateCurrentAmountObject(with: totalAmount)
+        if initialAmount > 0 {
+            model.updateCurrentAmountObject(with: initialAmount)
         }
     }
 }

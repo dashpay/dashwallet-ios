@@ -31,7 +31,9 @@ typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
 @interface DWPaymentOutput : NSObject
 
 @property (readonly, nonatomic, strong) DSTransaction *tx;
-@property (readonly, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
+/// nil for app-side sends built from a `DWPaymentIntent` (plain-dash:) or a BIP70 merchant
+/// `Confirmation` — those carry no `DSPaymentProtocolRequest`. Set only on the DashSync / C10 paths.
+@property (readonly, nullable, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
 @property (readonly, nonatomic, assign) uint64_t amount;
 @property (readonly, nonatomic, assign) uint64_t fee;
 @property (readonly, nonatomic, copy) NSString *address;

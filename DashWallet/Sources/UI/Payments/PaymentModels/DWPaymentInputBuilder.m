@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (parsed.isAddressValidForCurrentNetwork || [address isValidDashPrivateKeyOnChain:chain] || [address isValidDashBIP38Key]) {
         DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_PlainAddress];
         [paymentInput attachParsedURI:parsed];
-        paymentInput.request.amount = amount; // a send parameter (courier-only), not a parse fact
+        paymentInput.paymentIntent.amount = amount; // a send parameter, not a parse fact
         return paymentInput;
     }
 

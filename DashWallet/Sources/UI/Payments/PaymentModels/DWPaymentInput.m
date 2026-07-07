@@ -37,11 +37,21 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)attachParsedURI:(DWParsedPaymentURI *)parsedURI {
     self.parsedURI = parsedURI;
 
+    // Build the app-side send carrier the processor consumes for a plain-dash: send (C8 step 4).
+    // Its `amount` is settable — `payToAddress:amount:` supplies a fixed send amount on top.
+    self.paymentIntent = [[DWPaymentIntent alloc] initWithAddress:parsedURI.address
+                                                           amount:parsedURI.amount
+                                                            label:parsedURI.label
+                                                          message:parsedURI.message
+                                                   callbackScheme:parsedURI.callbackScheme
+                                                 fiatCurrencyCode:parsedURI.fiatCurrencyCode
+                                                       fiatAmount:parsedURI.fiatAmount
+                                                  dashpayUsername:parsedURI.dashpayUsername];
+
     // Mint the write-only DSPaymentRequest courier from the already-parsed fields. Nothing reads it
-    // for a decision — the box owns those. It exists only to feed DashSync's protocol-request
-    // conversion (`protocolRequestFromPaymentRequest:`, C8 step 4), the sweep path, and the
-    // `userDetails` reconstruction below. This is the single residual `currentChain` read on the
-    // URI path (the courier constructor requires a chain).
+    // for a decision — the box owns those. It now survives only for the sweep path (D2) and the C10
+    // DashPay conversion; the URI send path reads `paymentIntent` above. This is the single residual
+    // `currentChain` read on the URI path (the courier constructor requires a chain).
     DSPaymentRequest *courier = [DSPaymentRequest requestWithString:@""
                                                             onChain:[DWEnvironment sharedInstance].currentChain];
     courier.scheme = parsedURI.scheme;

@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable, nonatomic, strong) DWPreparedStandardSend *preparedStandardSend;
 
 - (instancetype)initWithTx:(DSTransaction *)tx
-           protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
+           protocolRequest:(nullable DSPaymentProtocolRequest *)protocolRequest
                     amount:(uint64_t)amount
                        fee:(uint64_t)fee
                    address:(NSString *)address
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
                   userItem:(id<DWDPBasicUserItem>)userItem;
 
 - (instancetype)initWithTx:(DSTransaction *)tx
-                protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
+                protocolRequest:(nullable DSPaymentProtocolRequest *)protocolRequest
                          amount:(uint64_t)amount
                             fee:(uint64_t)fee
                         address:(NSString *)address

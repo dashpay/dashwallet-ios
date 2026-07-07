@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWPaymentOutput
 
 - (instancetype)initWithTx:(DSTransaction *)tx
-           protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
+           protocolRequest:(nullable DSPaymentProtocolRequest *)protocolRequest
                     amount:(uint64_t)amount
                        fee:(uint64_t)fee
                    address:(NSString *)address
@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (instancetype)initWithTx:(DSTransaction *)tx
-                protocolRequest:(DSPaymentProtocolRequest *)protocolRequest
+                protocolRequest:(nullable DSPaymentProtocolRequest *)protocolRequest
                          amount:(uint64_t)amount
                             fee:(uint64_t)fee
                         address:(NSString *)address

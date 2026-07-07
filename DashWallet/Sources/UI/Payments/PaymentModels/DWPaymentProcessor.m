@@ -57,6 +57,9 @@ static NSString *sanitizeString(NSString *s) {
 @property (nonatomic, assign) BOOL canChangeAmount;
 @property (nonatomic, assign) BOOL shouldClearPasteboard;
 @property (nullable, nonatomic, strong) DSPaymentProtocolRequest *request;
+/// The app-side send carrier for a plain-dash: send. Set on the URI path (mutually exclusive with
+/// `request`, which survives for the C10 DashPay / real-BIP70 / file paths). C8 step 4.
+@property (nullable, nonatomic, strong) DWPaymentIntent *paymentIntent;
 
 // Tx Manager blocks
 @property (nonatomic, assign) BOOL didSendRequestDelegateNotified;
@@ -166,16 +169,23 @@ static NSString *sanitizeString(NSString *s) {
         return;
     }
 
-    if (paymentInput.request) {
+    if (paymentInput.paymentIntent) {
+        // App-side URI send path (scan / deeplink / pasteboard / plain-address). The scan/deeplink
+        // case shows the amount screen (prefilled); everything else routes through confirmRequest:
+        // (sweep D2 / BIP70 rURL / plain send → confirmPaymentIntent:). C8 step 4 — no synthetic
+        // DSPaymentProtocolRequest here.
         if ((paymentInput.source == DWPaymentInputSource_ScanQR || paymentInput.source == DWPaymentInputSource_DeepLink) && paymentInput.parsedURI.isValidDashPaymentIntent) {
-            DSPaymentProtocolRequest *protocolRequest = [self protocolRequestFromPaymentRequest:self.paymentInput.request];
-            [self txManagerRequestingAdditionalInfo:DSRequestingAdditionalInfo_Amount
-                                    protocolRequest:protocolRequest];
+            [self requestAmountForPaymentIntent:paymentInput.paymentIntent];
         }
         else {
             self.canChangeAmount = paymentInput.canChangeAmount;
             [self confirmRequest:paymentInput.request];
         }
+    }
+    else if (paymentInput.request) {
+        // C10 DashPay BlockchainUser (no parsedURI / no intent): the synthetic conversion survives.
+        self.canChangeAmount = paymentInput.canChangeAmount;
+        [self confirmRequest:paymentInput.request];
     }
     else if (paymentInput.protocolRequest) {
         self.canChangeAmount = paymentInput.canChangeAmount;
@@ -195,6 +205,11 @@ static NSString *sanitizeString(NSString *s) {
 
 - (void)provideAmount:(uint64_t)amount {
     self.amount = amount;
+
+    if (self.paymentIntent) {
+        [self confirmPaymentIntent:self.paymentIntent];
+        return;
+    }
 
     NSParameterAssert(self.request);
 
@@ -388,9 +403,8 @@ static NSString *sanitizeString(NSString *s) {
                                                [strongSelf confirmBIP70Output:box];
                                            }
                                            else if (parsed.isAddressValidForCurrentNetwork) {
-                                               // fetch failed but there's a valid fallback address → plain send
-                                               DSPaymentProtocolRequest *protocolRequest = [strongSelf protocolRequestFromPaymentRequest:request];
-                                               [strongSelf confirmProtocolRequest:protocolRequest];
+                                               // fetch failed but there's a valid fallback address → plain send (app-side, C8 step 4)
+                                               [strongSelf confirmPaymentIntent:strongSelf.paymentInput.paymentIntent];
                                            }
                                            else {
                                                [strongSelf failedWithError:error
@@ -399,9 +413,8 @@ static NSString *sanitizeString(NSString *s) {
                                            }
                                        }];
     }
-    else {
-        DSPaymentProtocolRequest *protocolRequest = [self protocolRequestFromPaymentRequest:self.paymentInput.request];
-        [self confirmProtocolRequest:protocolRequest];
+    else { // plain send (valid dash intent, no BIP70 request URL) → app-side (C8 step 4)
+        [self confirmPaymentIntent:self.paymentInput.paymentIntent];
     }
 }
 
@@ -554,12 +567,69 @@ static NSString *sanitizeString(NSString *s) {
         errorNotificationBlock:self.errorNotificationBlock];
 }
 
-/// Build+sign via SwiftDashSDK, then show the confirmation UI with the real fee.
+/// Build+sign the synthetic (C10 / file) protocol request via SwiftDashSDK, then confirm.
 - (void)confirmProtocolRequestViaSwiftDashSDK:(DSPaymentProtocolRequest *)protocolRequest
                                       address:(NSString *)address {
+    [self confirmSwiftDashSDKSendToAddress:address
+                                    amount:self.amount
+                                      name:protocolRequest.commonName
+                                      memo:protocolRequest.details.memo
+                             localCurrency:protocolRequest.requestedFiatAmountCurrencyCode
+                           protocolRequest:protocolRequest];
+}
+
+/// App-side plain-dash: send (C8 step 4): read address/amount/display straight off the intent and
+/// hand to the shared SwiftDashSDK build+confirm — no synthetic DSPaymentProtocolRequest, so no
+/// `protocolRequestForBlockchainIdentity:onAccount:inContext:` (wallet-identity + CoreData) drag.
+- (void)confirmPaymentIntent:(DWPaymentIntent *)intent {
+    self.paymentIntent = intent;
+
+    // A fixed send amount (payToAddress:) rides on the intent; the amount screen sets self.amount.
+    if (self.amount == 0) {
+        self.amount = intent.amount;
+    }
+
+    // Still no amount (a bare pasted/entered address) → ask, mirroring DashSync's amount round-trip.
+    if (self.amount == 0) {
+        [self requestAmountForPaymentIntent:intent];
+        return;
+    }
+
+    NSString *address = intent.address;
+    if (address.length == 0) {
+        [self failedWithError:nil title:NSLocalizedString(@"Not a valid Dash address", nil) message:nil];
+        return;
+    }
+
+    self.didSendRequestDelegateNotified = NO;
+    [self confirmSwiftDashSDKSendToAddress:address
+                                    amount:self.amount
+                                      name:intent.label
+                                      memo:intent.message
+                             localCurrency:intent.fiatCurrencyCode
+                           protocolRequest:nil];
+}
+
+/// Push the amount screen for an intent-driven send (destination is the plain address — no PKI/lock).
+- (void)requestAmountForPaymentIntent:(DWPaymentIntent *)intent {
+    self.paymentIntent = intent;
+    [self.delegate paymentProcessor:self
+        requestAmountWithDestination:intent.address ?: @""
+                              amount:intent.amount
+                         contactItem:self.paymentInput.userItem];
+}
+
+/// Shared SwiftDashSDK build+sign then show the confirmation UI with the real fee. `protocolRequest`
+/// is nil for the app-side intent path, the real request on the DashSync / C10 / file path.
+- (void)confirmSwiftDashSDKSendToAddress:(NSString *)address
+                                  amount:(uint64_t)amount
+                                    name:(nullable NSString *)name
+                                    memo:(nullable NSString *)memo
+                           localCurrency:(nullable NSString *)localCurrency
+                         protocolRequest:(nullable DSPaymentProtocolRequest *)protocolRequest {
     [[DWWalletSendService sharedService]
         prepareStandardSendForConfirmationWithAddress:address
-                                               amount:self.amount
+                                               amount:amount
                                            completion:^(DWPreparedStandardSend *_Nullable preparedSend, NSError *_Nullable error) {
                                                if (error || !preparedSend) {
                                                    if (error && [DWWalletSendService isAuthenticationCancelledError:error]) {
@@ -580,13 +650,13 @@ static NSString *sanitizeString(NSString *s) {
                                                DWPaymentOutput *paymentOutput = [[DWPaymentOutput alloc]
                                                                     initWithTx:preparedSend.transaction
                                                                protocolRequest:protocolRequest
-                                                                        amount:self.amount + preparedSend.fee
+                                                                        amount:amount + preparedSend.fee
                                                                            fee:preparedSend.fee
                                                                        address:address
-                                                                          name:protocolRequest.commonName
-                                                                          memo:protocolRequest.details.memo
+                                                                          name:name
+                                                                          memo:memo
                                                                       isSecure:NO
-                                                                 localCurrency:protocolRequest.requestedFiatAmountCurrencyCode
+                                                                 localCurrency:localCurrency
                                                                       userItem:self.paymentInput.userItem
                                                           preparedStandardSend:preparedSend
                                                    broadcastAuthorizationState:DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized];
@@ -735,7 +805,11 @@ static NSString *sanitizeString(NSString *s) {
 
         self.didSendRequestDelegateNotified = YES;
 
-        [self handleCallbackSchemeIfNeeded:self.request address:address tx:tx];
+        // callbackScheme rides on whichever carrier drove this send (intent for plain-dash:, the
+        // synthetic/real request for C10/file).
+        [self handleCallbackSchemeIfNeeded:(self.request.callbackScheme ?: self.paymentIntent.callbackScheme)
+                                   address:address
+                                        tx:tx];
 
         [self reset];
     }
@@ -750,7 +824,7 @@ static NSString *sanitizeString(NSString *s) {
             [self.delegate paymentProcessor:self didSendRequest:protocolRequest transaction:tx contactItem:self.paymentInput.userItem];
         }
 
-        [self handleCallbackSchemeIfNeeded:protocolRequest
+        [self handleCallbackSchemeIfNeeded:protocolRequest.callbackScheme
                                    address:address
                                         tx:tx];
     }
@@ -803,9 +877,16 @@ static NSString *sanitizeString(NSString *s) {
                                                        onChain:chain];
     }
 
+    // The amount screen only ever read the output-amount sum off `details` for its pre-fill; compute
+    // it here and pass the scalar (C8 step 4 dropped DSPaymentProtocolDetails from the delegate).
+    uint64_t prefillAmount = 0;
+    for (NSNumber *outputAmount in request.details.outputAmounts) {
+        prefillAmount += outputAmount.unsignedLongLongValue;
+    }
+
     [self.delegate paymentProcessor:self
         requestAmountWithDestination:sendingDestination
-                             details:request.details
+                              amount:prefillAmount
                          contactItem:self.paymentInput.userItem];
 }
 
@@ -825,13 +906,18 @@ static NSString *sanitizeString(NSString *s) {
 - (void)cancelOrChangeAmount {
     [self.delegate paymentProcessorDidCancelTransactionSigning:self];
 
-    if (self.canChangeAmount && self.request && self.amount == 0) {
+    if (self.canChangeAmount && (self.request || self.paymentIntent) && self.amount == 0) {
         void (^cancelBlock)(void) = ^{
             [self cancelPayment];
         };
 
         void (^changeBlock)(void) = ^{
-            [self confirmProtocolRequest:self.request];
+            if (self.paymentIntent) {
+                [self confirmPaymentIntent:self.paymentIntent];
+            }
+            else {
+                [self confirmProtocolRequest:self.request];
+            }
         };
 
         [self requestUserActionTitle:NSLocalizedString(@"Change payment amount?", nil)
@@ -905,14 +991,14 @@ static NSString *sanitizeString(NSString *s) {
     }
 }
 
-- (void)handleCallbackSchemeIfNeeded:(DSPaymentProtocolRequest *)protocolRequest
+- (void)handleCallbackSchemeIfNeeded:(nullable NSString *)callbackScheme
                              address:(NSString *)address
                                   tx:(DSTransaction *)tx {
-    if (protocolRequest.callbackScheme) {
+    if (callbackScheme) {
         NSData *txidData = [NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)].reverse;
         NSString *txid = [NSString hexWithData:txidData];
         NSString *encodedAddress = [address stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-        NSString *callbackString = [protocolRequest.callbackScheme
+        NSString *callbackString = [callbackScheme
             stringByAppendingFormat:@"://callback=payack&address=%@&txid=%@",
                                     encodedAddress,
                                     txid];
@@ -943,6 +1029,7 @@ static NSString *sanitizeString(NSString *s) {
 - (void)reset {
     self.paymentInput = nil;
     self.request = nil;
+    self.paymentIntent = nil;
     if (self.shouldClearPasteboard) {
         UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
         pasteboard.string = @"";

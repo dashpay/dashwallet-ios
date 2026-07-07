@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWPaymentInput;
 @class DWPaymentProcessor;
-@class DSPaymentProtocolDetails;
 @class DSPaymentProtocolRequest;
 @class DSPaymentRequest;
 @class DSTransaction;
@@ -32,9 +31,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 // User Actions
 
+// `amount` is the pre-fill for the amount screen in duffs (0 ⇒ empty). Replaces the old
+// `DSPaymentProtocolDetails` carrier — the only thing the UI read from it was the output-amount sum.
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     requestAmountWithDestination:(NSString *)sendingDestination
-                         details:(nullable DSPaymentProtocolDetails *)details
+                          amount:(uint64_t)amount
                      contactItem:(nullable id<DWDPBasicUserItem>)contactItem;
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor

@@ -19,9 +19,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWPaymentIntent;
+
 @interface DWPaymentInput ()
 
 @property (nullable, nonatomic, strong) DWParsedPaymentURI *parsedURI;
+/// App-side send carrier projected from `parsedURI`. The processor consumes THIS for a plain-`dash:`
+/// send (C8 step 4); it replaces the synthetic `DSPaymentProtocolRequest` the courier used to feed.
+@property (nullable, nonatomic, strong) DWPaymentIntent *paymentIntent;
 @property (nullable, nonatomic, strong) DSPaymentRequest *request;
 @property (nullable, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
 @property (nullable, nonatomic, strong) id bip70Confirmation;
@@ -29,9 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithSource:(DWPaymentInputSource)source;
 
-/// Attach the parsed URI and mint its write-only `DSPaymentRequest` courier from the parsed
-/// fields. The box owns all decisions; the courier only feeds DashSync's protocol-request
-/// conversion (C8 step 4), the sweep path, and the `userDetails` reconstruction.
+/// Attach the parsed URI, build its send-side `DWPaymentIntent`, and mint the write-only
+/// `DSPaymentRequest` courier from the parsed fields. The box owns all decisions; the intent drives
+/// the send; the courier now only feeds the sweep path and the C10 DashPay conversion.
 - (void)attachParsedURI:(DWParsedPaymentURI *)parsedURI;
 
 @end
