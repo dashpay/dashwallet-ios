@@ -335,8 +335,13 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         }
     }
     
+    // The app fetches fiat exchange rates itself now (BaseRatesProvider →
+    // rates.ctx.com). Disable DashSync's own price poll BEFORE setupDashSyncOnce
+    // reads this flag, otherwise both poll CTX and both write PRICESBYCODE_KEY.
+    [[DSOptionsManager sharedInstance] setRetrievePriceInfo:NO];
+
     [[DashSync sharedSyncController] setupDashSyncOnce];
-    
+
     [DWEnvironment sharedInstance]; //starts up the environment, this is needed here
     
 #if FRESH_INSTALL
