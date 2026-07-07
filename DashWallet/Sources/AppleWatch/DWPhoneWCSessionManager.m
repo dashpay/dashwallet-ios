@@ -144,11 +144,9 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                 break;
 
             case AWSessionRquestDataTypeQRCodeBits: {
-                DSChain *chain = [DWEnvironment sharedInstance].currentChain;
                 NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
-                DSPaymentRequest *req = [DSPaymentRequest requestWithString:receiveAddress onChain:chain];
-
-                req.amount = [message[AW_SESSION_QR_CODE_BITS_KEY] integerValue];
+                DWPaymentURIBuilder *req = [[DWPaymentURIBuilder alloc] initWithAddress:receiveAddress
+                                                                                 amount:[message[AW_SESSION_QR_CODE_BITS_KEY] integerValue]];
                 NSLog(@"watch requested a qr code amount %lld", req.amount);
 
                 NSUserDefaults *defs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
@@ -292,7 +290,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
     }
 
     NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
-    NSData *req = [DSPaymentRequest requestWithString:receiveAddress onChain:account.wallet.chain].data;
+    NSData *req = [[DWPaymentURIBuilder alloc] initWithAddress:receiveAddress].data;
     if (!req) {
         return nil;
     }

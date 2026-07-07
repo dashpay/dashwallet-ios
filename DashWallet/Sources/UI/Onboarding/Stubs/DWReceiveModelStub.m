@@ -17,8 +17,6 @@
 
 #import "DWReceiveModelStub.h"
 
-#import <DashSync/DashSync.h>
-
 #import "UIImage+Utils.h"
 #import "dashwallet-Swift.h"
 
@@ -28,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, strong) UIImage *qrCodeImage;
 @property (nullable, nonatomic, copy) NSString *paymentAddress;
-@property (nullable, nonatomic, strong) DSPaymentRequest *paymentRequest;
+@property (nullable, nonatomic, strong) DWPaymentURIBuilder *paymentRequest;
 
 @end
 
@@ -66,20 +64,25 @@ NS_ASSUME_NONNULL_BEGIN
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *paymentAddress = @"XrUv3aniSvZEKx2VoFe5fTqFfYL5JYFkbg";
 
-        DSChain *chain = nil;
-        DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:paymentAddress onChain:chain];
-
         const uint64_t amount = self.amount;
         const BOOL hasAmount = amount > 0;
+        NSString *fiatCode = nil;
+        float fiatAmount = 0;
         if (hasAmount) {
-            paymentRequest.amount = amount;
-
             NSNumber *number = [CurrencyExchangerObjcWrapper localCurrencyNumberForDashAmount:amount];
             if (number) {
-                paymentRequest.requestedFiatCurrencyAmount = number.floatValue;
+                fiatAmount = number.floatValue;
             }
-            paymentRequest.requestedFiatCurrencyCode = CurrencyExchangerObjcWrapper.localCurrencyCode;
+            fiatCode = CurrencyExchangerObjcWrapper.localCurrencyCode;
         }
+        DWPaymentURIBuilder *paymentRequest = [[DWPaymentURIBuilder alloc] initWithAddress:paymentAddress
+                                                                                    amount:amount
+                                                                                     label:nil
+                                                                                   message:nil
+                                                                                requestURL:nil
+                                                                          fiatCurrencyCode:fiatCode
+                                                                                fiatAmount:fiatAmount
+                                                                           dashpayUsername:nil];
         self.paymentRequest = paymentRequest;
 
         UIImage *rawQRImage = nil;

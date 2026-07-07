@@ -25,9 +25,9 @@ final class ConfirmationTransactionQRController: UIViewController {
     @IBOutlet var qrImage: UIImageView!
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var messageLabel: UILabel!
-    private var paymentRequest: DSPaymentRequest!
+    private var paymentRequest: PaymentURIBuilder!
 
-    static func controller(_ paymentRequest: DSPaymentRequest) -> ConfirmationTransactionQRController {
+    static func controller(_ paymentRequest: PaymentURIBuilder) -> ConfirmationTransactionQRController {
         let vc = vc(ConfirmationTransactionQRController.self, from: sb("CrowdNode"))
         vc.modalPresentationStyle = .pageSheet
         vc.paymentRequest = paymentRequest
@@ -63,7 +63,7 @@ extension ConfirmationTransactionQRController {
     }
 
     private func configureQrImage() {
-        let rawQRImage = UIImage.dw_image(withQRCodeData: paymentRequest.data!, color: CIColor(color: UIColor.label))
+        let rawQRImage = UIImage.dw_image(withQRCodeData: paymentRequest.data, color: CIColor(color: UIColor.label))
 
         let overlayImage = UIImage(named: "dash_logo_qr")!.withTintColor(.label)
         let screenWidth = CGRectGetWidth(UIScreen.main.bounds)

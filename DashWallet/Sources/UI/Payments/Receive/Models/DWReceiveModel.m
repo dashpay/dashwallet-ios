@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 #if DASHPAY
 @property (nullable, nonatomic, copy) NSString *username;
 #endif
-@property (nullable, nonatomic, strong) DSPaymentRequest *paymentRequest;
+@property (nullable, nonatomic, strong) DWPaymentURIBuilder *paymentRequest;
 @property (nonatomic, strong) dispatch_queue_t updateQueue;
 
 @end
@@ -115,14 +115,14 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (nullable NSString *)requestAmountReceivedInfoIfReceived {
-    DSPaymentRequest *request = self.paymentRequest;
+    DWPaymentURIBuilder *request = self.paymentRequest;
     const uint64_t fuzz = [CurrencyExchangerObjcWrapper amountForLocalCurrency:[CurrencyExchangerObjcWrapper localCurrencyNumberForDashAmount:1].decimalValue] * 2;
 
-    if (![DWSwiftDashSDKReceiveAddressReader isAddressUsed:request.paymentAddress]) {
+    if (![DWSwiftDashSDKReceiveAddressReader isAddressUsed:request.address]) {
         return nil;
     }
 
-    const uint64_t total = [DWSwiftDashSDKReceiveAddressReader receivedTotalExcludingAddress:request.paymentAddress];
+    const uint64_t total = [DWSwiftDashSDKReceiveAddressReader receivedTotalExcludingAddress:request.address];
 
     if (total + fuzz >= request.amount) {
         DWLog(@"DWReceiveModel: Received %@", @(total));
@@ -157,27 +157,34 @@ NS_ASSUME_NONNULL_BEGIN
 
             return;
         }
-        DSChain *chain = [DWEnvironment sharedInstance].currentChain;
         NSString *paymentAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
 
-
         DWAppGroupOptions *appGroupOptions = [DWAppGroupOptions sharedInstance];
-        DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:paymentAddress onChain:chain];
 
         const uint64_t amount = self.amount;
         const BOOL hasAmount = amount > 0;
-        if (hasAmount) {
-            paymentRequest.amount = amount;
 
+        NSString *fiatCode = nil;
+        float fiatAmount = 0;
+        if (hasAmount) {
             NSNumber *number = [CurrencyExchangerObjcWrapper localCurrencyNumberForDashAmount:amount];
             if (number) {
-                paymentRequest.requestedFiatCurrencyAmount = number.floatValue;
+                fiatAmount = number.floatValue;
             }
-            paymentRequest.requestedFiatCurrencyCode = CurrencyExchangerObjcWrapper.localCurrencyCode;
+            fiatCode = CurrencyExchangerObjcWrapper.localCurrencyCode;
         }
+        NSString *dashpayUsername = nil;
 #if DASHPAY
-        paymentRequest.dashpayUsername = [DWGlobalOptions sharedInstance].dashpayUsername;
+        dashpayUsername = [DWGlobalOptions sharedInstance].dashpayUsername;
 #endif
+        DWPaymentURIBuilder *paymentRequest = [[DWPaymentURIBuilder alloc] initWithAddress:paymentAddress
+                                                                                    amount:amount
+                                                                                     label:nil
+                                                                                   message:nil
+                                                                                requestURL:nil
+                                                                          fiatCurrencyCode:fiatCode
+                                                                                fiatAmount:fiatAmount
+                                                                           dashpayUsername:dashpayUsername];
 
         UIImage *rawQRImage = nil;
         if (!hasAmount && [paymentRequest.data isEqual:appGroupOptions.receiveRequestData]) {
@@ -195,7 +202,8 @@ NS_ASSUME_NONNULL_BEGIN
         UIImage *qrCodeImage = [self qrCodeImageWithRawQRImage:rawQRImage hasAmount:hasAmount];
 
         NSData *rawQRImageData = UIImagePNGRepresentation(rawQRImage);
-        if (paymentRequest && paymentRequest.isValidAsNonDashpayPaymentRequest && rawQRImageData) {
+        const BOOL addressValid = [[DWParsedPaymentURI parsePaymentString:paymentAddress] isAddressValidForCurrentNetwork];
+        if (addressValid && rawQRImageData) {
             if (!hasAmount) {
                 appGroupOptions.receiveQRImageData = rawQRImageData;
                 appGroupOptions.receiveAddress = paymentAddress;

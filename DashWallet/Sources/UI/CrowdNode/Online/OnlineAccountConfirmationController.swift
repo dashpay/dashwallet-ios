@@ -22,11 +22,8 @@ import Combine
 final class OnlineAccountConfirmationController: BaseViewController {
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel = CrowdNode.shared
-    private var paymentRequest: DSPaymentRequest {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        let paymentRequest = DSPaymentRequest(string: viewModel.accountAddress, on: chain)
-        paymentRequest.amount = CrowdNode.apiConfirmationDashAmount
-        return paymentRequest
+    private var paymentRequest: PaymentURIBuilder {
+        PaymentURIBuilder(address: viewModel.accountAddress, amount: CrowdNode.apiConfirmationDashAmount)
     }
 
     @IBOutlet var titleLabel: UILabel!

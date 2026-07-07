@@ -20,7 +20,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class UIImage;
-@class DSPaymentRequest;
 
 @protocol DWReceiveModelDelegate <NSObject>
 - (void)receivingInfoDidUpdate;
