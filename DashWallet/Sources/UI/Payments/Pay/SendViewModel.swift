@@ -37,12 +37,11 @@ final class SendViewModel: ObservableObject {
     }
 
     func refreshClipboardSuggestion() {
-        let chain = DWEnvironment.sharedInstance().currentChain
         guard let raw = UIPasteboard.general.string else {
             clipboardSuggestion = nil
             return
         }
-        clipboardSuggestion = Self.detect(in: raw, chain: chain)
+        clipboardSuggestion = Self.detect(in: raw)
     }
 
     func useClipboardSuggestion() {
@@ -52,12 +51,11 @@ final class SendViewModel: ObservableObject {
     }
 
     func ingestScannedInput(_ paymentInput: DWPaymentInput) {
-        let chain = DWEnvironment.sharedInstance().currentChain
         // Read the parse box, not the DSPaymentRequest courier (C8 step 4); `.address` is the same
         // string the courier carried, then validated for the current network below.
         if let address = paymentInput.parsedURI?.address,
            !address.isEmpty,
-           address.isValidDashAddress(on: chain) {
+           address.isValidDashAddressForCurrentNetwork {
             addressText = address
             network = .core
             return
@@ -75,8 +73,7 @@ final class SendViewModel: ObservableObject {
         let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
-        let chain = DWEnvironment.sharedInstance().currentChain
-        let matchesCore = trimmed.isValidDashAddress(on: chain)
+        let matchesCore = trimmed.isValidDashAddressForCurrentNetwork
         let matchesPlatform = Self.looksLikePlatformAddress(trimmed)
 
         if matchesPlatform && !matchesCore && network != .platform {
@@ -91,8 +88,7 @@ final class SendViewModel: ObservableObject {
         guard !trimmed.isEmpty else { return false }
         switch network {
         case .core:
-            let chain = DWEnvironment.sharedInstance().currentChain
-            return trimmed.isValidDashAddress(on: chain)
+            return trimmed.isValidDashAddressForCurrentNetwork
         case .platform:
             return Self.looksLikePlatformAddress(trimmed)
         }
@@ -113,7 +109,7 @@ final class SendViewModel: ObservableObject {
         return Bech32m.decode(s) != nil
     }
 
-    private static func detect(in raw: String, chain: DSChain) -> ClipboardSuggestion? {
+    private static func detect(in raw: String) -> ClipboardSuggestion? {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return nil }
 
@@ -122,7 +118,7 @@ final class SendViewModel: ObservableObject {
             if Bech32m.isValidPlatformAddress(word) {
                 return ClipboardSuggestion(address: word, network: .platform)
             }
-            if word.isValidDashAddress(on: chain) {
+            if word.isValidDashAddressForCurrentNetwork {
                 return ClipboardSuggestion(address: word, network: .core)
             }
         }

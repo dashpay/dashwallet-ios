@@ -23,8 +23,7 @@ final class EnterAddressModel: DWPayModel {
     }
 
     public func validate(address: String) -> Bool {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        return address.isValidDashAddress(on: chain)
+        address.isValidDashAddressForCurrentNetwork
     }
 
     public func extraxtPasteboardStrings() -> String? {

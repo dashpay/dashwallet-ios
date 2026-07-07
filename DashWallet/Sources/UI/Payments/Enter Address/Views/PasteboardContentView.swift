@@ -60,13 +60,11 @@ final class PasteboardContentView: UIView {
         textView.setNeedsLayout()
         textView.layoutIfNeeded()
 
-        let chain = DWEnvironment.sharedInstance().currentChain
-
         let words = string.split(separator: " ")
         for word in words {
             let word = String(word).trimmingCharacters(in: .punctuationCharacters)
 
-            guard word.isValidDashAddress(on: chain) else { continue }
+            guard word.isValidDashAddressForCurrentNetwork else { continue }
 
             textView.setAction(for: word) { [weak self] address in
                 self?.addressHandler?(address)

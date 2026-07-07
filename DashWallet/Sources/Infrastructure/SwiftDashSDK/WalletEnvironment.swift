@@ -77,3 +77,16 @@ public final class WalletEnvironment: NSObject {
 
     private override init() {}
 }
+
+extension String {
+    /// Dash address validity for the app's CURRENT network, via SwiftDashSDK's
+    /// `Address.validate` (P2PKH + P2SH version bytes) against
+    /// `WalletEnvironment.network`. devnet/unsupported network ⇒ `false`
+    /// (fail-fast, same contract as the wallet runtime). The app's single
+    /// expression of this rule — replaces DashSync's
+    /// `isValidDashAddress(on: DSChain)` at every call site.
+    var isValidDashAddressForCurrentNetwork: Bool {
+        guard let network = WalletEnvironment.network else { return false }
+        return Address.validate(self, network: network)
+    }
+}

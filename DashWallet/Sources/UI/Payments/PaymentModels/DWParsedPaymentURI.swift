@@ -15,7 +15,6 @@
 //
 
 import Foundation
-import SwiftDashSDK
 
 @objc(DWParsedPaymentURI)
 final class ParsedPaymentURI: NSObject {
@@ -43,7 +42,7 @@ final class ParsedPaymentURI: NSObject {
     @objc let fiatAmount: Float
     /// false for bare schemeless inputs (implicit dash) — drives the invalid-QR error copy.
     @objc let hasExplicitScheme: Bool
-    /// `Address.validate` against `WalletEnvironment.network`, computed at parse time.
+    /// `String.isValidDashAddressForCurrentNetwork`, computed at parse time.
     @objc let isAddressValidForCurrentNetwork: Bool
 
     /// Mirrors `DSPaymentRequest.isValidAsNonDashpayPaymentRequest` (dash-only arm; the `bitcoin:`
@@ -93,9 +92,7 @@ final class ParsedPaymentURI: NSObject {
                                     hasExplicitScheme: false, isAddressValidForCurrentNetwork: false)
         }
 
-        let addressValid = uri.address.flatMap { addr in
-            WalletEnvironment.network.map { Address.validate(addr, network: $0) }
-        } ?? false
+        let addressValid = uri.address?.isValidDashAddressForCurrentNetwork ?? false
 
         return ParsedPaymentURI(rawString: raw,
                                 scheme: uri.scheme,

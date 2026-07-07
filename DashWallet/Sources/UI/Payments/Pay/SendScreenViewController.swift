@@ -52,8 +52,7 @@ final class SendScreenViewController: DWBasePayViewController {
     // MARK: - Routing
 
     private func continueCore(address: String) {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        guard address.isValidDashAddress(on: chain) else { return }
+        guard address.isValidDashAddressForCurrentNetwork else { return }
         guard let url = URL(string: "dash:\(address)") else { return }
         performPay(to: url)
     }
