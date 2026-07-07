@@ -167,7 +167,7 @@ public final class CrowdNode {
     }
 
     private func topUpAccount(_ accountAddress: String, _ amount: UInt64,
-                              sessionAuthSufficient: Bool = false) async throws -> DSTransaction {
+                              sessionAuthSufficient: Bool = false) async throws -> Data {
         // sendCoins broadcasts via SwiftDashSDK and throws on failure, and the
         // follow-up signal send polls the SDK's UTXO set itself before
         // spending the top-up — no extra spendability wait is needed here.
@@ -317,7 +317,7 @@ extension CrowdNode {
                 signUpState = SignUpState.fundingWallet
                 let topUpTx = try await topUpAccount(accountAddress, CrowdNode.requiredForSignup,
                                                      sessionAuthSufficient: true)
-                DWLogger.log("CrowdNode TopUp tx hash: \(topUpTx.txHashHexString)")
+                DWLogger.log("CrowdNode TopUp tx hash: \(Transaction.displayHex(topUpTx))")
 
                 signUpState = SignUpState.signingUp
                 try await makeSignUpRequest(accountAddress)
@@ -352,7 +352,7 @@ extension CrowdNode {
                                                             amount: requestValue,
                                                             inputSelector: SingleInputAddressSelector(address: accountAddress),
                                                             sessionAuthSufficient: true)
-        DWLogger.log("CrowdNode SignUp tx hash: \(signUpTx.txHashHexString)")
+        DWLogger.log("CrowdNode SignUp tx hash: \(Transaction.displayHex(signUpTx))")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.pleaseAcceptTerms,
                                                 accountAddress: accountAddress)
@@ -374,7 +374,7 @@ extension CrowdNode {
                                                                    amount: requestValue,
                                                                    inputSelector: SingleInputAddressSelector(address: accountAddress),
                                                                    sessionAuthSufficient: true)
-        DWLogger.log("CrowdNode Terms Accepted tx hash: \(termsAcceptedTx.txHashHexString)")
+        DWLogger.log("CrowdNode Terms Accepted tx hash: \(Transaction.displayHex(termsAcceptedTx))")
 
         let successResponse = CrowdNodeResponse(responseCode: ApiCode.welcomeToApi,
                                                 accountAddress: accountAddress)
@@ -404,14 +404,14 @@ extension CrowdNode {
         // DSAuthenticationManager.didAuthenticate — and the deposit signal a
         // moment later rides that session instead of prompting a second time.
         let topUpTx = try await topUpAccount(accountAddress, finalTopUp)
-        DWLogger.log("CrowdNode deposit topup tx hash: \(topUpTx.txHashHexString)")
+        DWLogger.log("CrowdNode deposit topup tx hash: \(Transaction.displayHex(topUpTx))")
 
         let requestSentAt = Date()
         let depositTx = try await sendCoinsService.sendCoins(address: CrowdNode.crowdNodeAddress,
                                                              amount: min(maxSendable, amount),
                                                              inputSelector: SingleInputAddressSelector(address: accountAddress),
                                                              sessionAuthSufficient: true)
-        DWLogger.log("CrowdNode deposit tx hash: \(depositTx.txHashHexString)")
+        DWLogger.log("CrowdNode deposit tx hash: \(Transaction.displayHex(depositTx))")
 
         Task {
             let successResponse = CrowdNodeResponse(responseCode: ApiCode.depositReceived,
@@ -798,7 +798,7 @@ extension CrowdNode {
                     adjustAmountDownwards: true,
                     sessionAuthSufficient: true
                 )
-                DWLogger.log("CrowdNode: forwarded confirmation tx: \(forwardTx.txHashHexString)")
+                DWLogger.log("CrowdNode: forwarded confirmation tx: \(Transaction.displayHex(forwardTx))")
             } catch {
                 // Legacy parity: log only — the 20s web poll (checkAddressStatus)
                 // is the fallback that completes linking.

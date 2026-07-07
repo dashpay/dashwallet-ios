@@ -332,7 +332,9 @@ class Transaction: TransactionDataItem, Identifiable {
     /// Display-order txid hex from wire-order bytes (block explorers, copy-to-
     /// pasteboard convention). The wire-order `Data` itself stays the
     /// storage/metadata key — only the human-facing hex string is byte-reversed.
-    private static func displayHex(_ wireTxid: Data) -> String {
+    /// Internal: also the log/UI formatter for the wire-order txids the send
+    /// boundary returns (WalletSendService/SendCoinsService).
+    static func displayHex(_ wireTxid: Data) -> String {
         wireTxid.reversed().map { String(format: "%02x", $0) }.joined()
     }
 

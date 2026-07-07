@@ -137,7 +137,8 @@ struct Confirmation {
 
 /// Outcome of a completed send: the tx was broadcast; the merchant round-trip was attempted.
 struct SendResult {
-    /// Signed tx bytes, so L6 can build `DSTransaction(message:on:)` for `payWithDashUrl`'s return.
+    /// Signed tx bytes. Sole remaining reader: `performBIP70Send:`'s DSTransaction
+    /// courier — TODO(C1-c3): delete this field with that courier.
     let signedTxData: Data
     /// Display-order txid hex — logging / UI / callback only (NOT the CTX authoritative txid).
     let txidHexDisplay: String

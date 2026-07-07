@@ -18,6 +18,12 @@ final class PreparedStandardSend: NSObject {
     @objc let address: String
     @objc let amount: UInt64
 
+    /// Wire-order txid (`Transaction.txHashData` convention — the storage/
+    /// metadata key order). `txHash` stays DISPLAY order (see `buildAndSign`);
+    /// this accessor and the registry `record` calls are the only conversion
+    /// points.
+    @objc var txidWire: Data { Data(txHash.reversed()) }
+
     /// The built+signed SDK transaction, held (not broadcast) until the user
     /// confirms. Swift-only: `CoreTransaction` is not ObjC-representable.
     private let coreTransaction: CoreTransaction
@@ -145,18 +151,20 @@ final class WalletSendService: NSObject {
         return prepared
     }
 
+    /// - Returns: the wire-order txid of the broadcast transaction
+    ///   (`Transaction.txHashData` convention).
     func send(
         address: String,
         amount: UInt64,
         inputSelector: SingleInputAddressSelector? = nil,
         adjustAmountDownwards: Bool = false,
         sessionAuthSufficient: Bool = false
-    ) async throws -> DSTransaction {
+    ) async throws -> Data {
         if let inputSelector {
             Self.logger.info("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
             try await sendAuthorizer.authorizeSend(sessionAuthSufficient: sessionAuthSufficient)
             do {
-                let (txData, fee, txHash) = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
+                let (_, fee, txHash) = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
                     fromAddress: inputSelector.address,
                     to: address,
                     amount: amount,
@@ -164,12 +172,10 @@ final class WalletSendService: NSObject {
                 )
                 // buildAndSignFromAddress broadcasts internally; txHash is
                 // display order — reverse to the wire-order registry key.
+                let txidWire = Data(txHash.reversed())
                 recentSends.record(
-                    txidWire: Data(txHash.reversed()), address: address, amount: amount, fee: fee)
-                // Same synthesis as the standard path (`buildPreparedStandardSend`):
-                // callers only read `.txHashHexString` from the returned object.
-                let chain = DWEnvironment.sharedInstance().currentChain
-                return DSTransaction(message: txData, on: chain)
+                    txidWire: txidWire, address: address, amount: amount, fee: fee)
+                return txidWire
             } catch SwiftDashSDKTransactionSender.SendError.insufficientSelectedFunds(let selected, let amount, let fee) {
                 throw Self.makeError(
                     code: .insufficientSelectedFunds,
@@ -181,7 +187,7 @@ final class WalletSendService: NSObject {
         let preparedSend = try await prepareStandardSendForConfirmation(
             address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
         try preparedSend.broadcast()
-        return preparedSend.transaction
+        return preparedSend.txidWire
     }
 
     /// Sweep the entire CoinJoin-account balance into the user's own BIP44

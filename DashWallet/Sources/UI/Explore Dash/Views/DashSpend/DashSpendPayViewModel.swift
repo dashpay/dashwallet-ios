@@ -222,7 +222,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         isProcessingPayment = true
         defer { isProcessingPayment = false }
 
-        let transaction: DSTransaction
+        // Wire-order txid (`Transaction.txHashData` convention) — the gift-card
+        // metadata key.
+        let txidWire: Data
         let giftCardId: String
 
         switch provider {
@@ -237,7 +239,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             giftCardId = response.paymentId
 
             // CTX uses BIP70 payment request URLs
-            transaction = try await sendCoinsService.payWithDashUrl(url: url)
+            txidWire = try await sendCoinsService.payWithDashUrl(url: url)
 
         #if PIGGYCARDS_ENABLED
         case .piggyCards:
@@ -264,7 +266,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // Use sendCoins directly with address and amount
             // This will properly trigger PIN authorization
 
-            transaction = try await sendCoinsService.sendCoins(
+            txidWire = try await sendCoinsService.sendCoins(
                 address: giftCardInfo.paymentAddress,
                 amount: dashAmountInSatoshis
             )
@@ -275,11 +277,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
 
         // Payment successful - save gift card information
-        markGiftCardTransaction(txId: transaction.txHashData, provider: provider.displayName)
-        customIconProvider.updateIcon(txId: transaction.txHashData, iconUrl: merchantIconUrl)
-        saveGiftCardDummy(txHashData: transaction.txHashData, giftCardId: giftCardId)
+        markGiftCardTransaction(txId: txidWire, provider: provider.displayName)
+        customIconProvider.updateIcon(txId: txidWire, iconUrl: merchantIconUrl)
+        saveGiftCardDummy(txHashData: txidWire, giftCardId: giftCardId)
 
-        return transaction.txHashData
+        return txidWire
     }
 
     var contactSupportButtonText: String {

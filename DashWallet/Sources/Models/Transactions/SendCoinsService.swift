@@ -18,10 +18,12 @@
 public final class SendCoinsService: NSObject {
     private let walletSendService = WalletSendService.shared
 
+    /// - Returns: the wire-order txid of the broadcast transaction
+    ///   (`Transaction.txHashData` convention).
     func sendCoins(address: String, amount: UInt64,
                    inputSelector: SingleInputAddressSelector? = nil, adjustAmountDownwards: Bool = false,
                    sessionAuthSufficient: Bool = false) async throws
-        -> DSTransaction {
+        -> Data {
         return try await walletSendService.send(
             address: address,
             amount: amount,
@@ -37,9 +39,9 @@ public final class SendCoinsService: NSObject {
     /// fetch + verify → build → broadcast → POST the Payment. Routes entirely through the
     /// app-side BIP70 stack (`BIP70PaymentService`) — no DashSync, no `DWPaymentProcessor`.
     ///
-    /// Returns a `DSTransaction` constructed locally from the signed bytes (a data holder for the
-    /// caller's txid metadata), preserving the prior `async throws -> DSTransaction` contract.
-    func payWithDashUrl(url paymentUrlString: String) async throws -> DSTransaction {
+    /// - Returns: the wire-order txid of the broadcast transaction
+    ///   (`Transaction.txHashData` convention — the caller's metadata key).
+    func payWithDashUrl(url paymentUrlString: String) async throws -> Data {
         guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r else {
             throw DashSpendError.paymentProcessingError("Invalid payment request")
         }
@@ -49,16 +51,17 @@ public final class SendCoinsService: NSObject {
         let result = try await service.confirmAndSendHeadless(
             from: requestURL, scheme: uri.scheme, network: network, callbackScheme: uri.callbackScheme)
 
+        let txidWire = Data(result.txHashDisplay.reversed())
+
         // Defensive registry write (the headless caller shows no success
         // screen today, but a courier resolved later should still find the
         // send facts if the persister row hasn't landed).
         WalletSendService.shared.recentSends.record(
-            txidWire: Data(result.txHashDisplay.reversed()),
+            txidWire: txidWire,
             address: result.primaryAddress,
             amount: result.amount,
             fee: result.fee)
 
-        let chain = DWEnvironment.sharedInstance().currentChain
-        return DSTransaction(message: result.signedTxData, on: chain)
+        return txidWire
     }
 }
