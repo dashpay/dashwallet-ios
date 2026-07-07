@@ -355,10 +355,6 @@ extension MainTabbarController {
 // MARK: MainMenuViewControllerDelegate
 
 extension MainTabbarController: MainMenuViewControllerDelegate {
-    func mainMenuViewControllerImportPrivateKey() {
-        performScanQRCodeAction()
-    }
-    
     func mainMenuViewControllerOpenHomeScreen() {
         selectedIndex = MainTabbarTabs.home.rawValue
     }
@@ -395,12 +391,6 @@ extension MainTabbarController: PaymentsViewControllerDelegate {
         vc.contactItem = contact
         vc.delegate = self
         selectedViewController?.topController().present(vc, animated: true)
-    }
-
-    func paymentsViewControllerWantsToImportPrivateKey(_ controller: PaymentsViewController) {
-        controller.dismiss(animated: true) {
-            self.performScanQRCodeAction()
-        }
     }
 
     func paymentsViewControllerDidCancel(_ controller: PaymentsViewController) {

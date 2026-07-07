@@ -19,7 +19,6 @@ import Foundation
 import Combine
 
 enum ToolsMenuNavigationDestination {
-    case importPrivateKey
     case extendedPublicKeys
     case masternodeKeys
     case csvExport
@@ -81,13 +80,6 @@ class ToolsMenuViewModel: ObservableObject {
     
     private func setupMenuItems() {
         items = [
-            MenuItemModel(
-                title: NSLocalizedString("Import Private Key", comment: ""),
-                icon: .custom("image.import.private.key", maxHeight: 22),
-                action: { [weak self] in
-                    self?.navigationDestination = .importPrivateKey
-                }
-            ),
             MenuItemModel(
                 title: NSLocalizedString("Extended public key (BIP44)", comment: ""),
                 icon: .custom("image.extend.public.key", maxHeight: 22),

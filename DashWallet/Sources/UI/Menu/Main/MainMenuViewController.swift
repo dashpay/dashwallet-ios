@@ -335,10 +335,7 @@ struct MainMenuScreen: View {
             }
             
             NavigationLink(
-                destination: ToolsMenuScreen(vc: vc, onImportPrivateKey: {
-                    self.vc.popToRootViewController(animated: false)
-                    self.delegateInternal.mainMenuViewControllerImportPrivateKey()
-                }),
+                destination: ToolsMenuScreen(vc: vc),
                 isActive: $showTools
             ) {
                 EmptyView()
@@ -527,12 +524,6 @@ extension MainMenuScreen {
         func mainMenuViewControllerOpenHomeScreen() {
             if let delegate = delegate {
                 delegate.mainMenuViewControllerOpenHomeScreen()
-            }
-        }
-        
-        func mainMenuViewControllerImportPrivateKey() {
-            if let delegate = delegate {
-                delegate.mainMenuViewControllerImportPrivateKey()
             }
         }
         

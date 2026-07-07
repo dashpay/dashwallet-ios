@@ -16,14 +16,12 @@
 //
 
 import Foundation
-import SwiftUI
 
 
 // MARK: - ReceiveViewControllerDelegate
 
 @objc(DWReceiveViewControllerDelegate)
 protocol ReceiveViewControllerDelegate: AnyObject {
-    func importPrivateKeyButtonAction(_ controller: ReceiveViewController)
 }
 
 // MARK: - ReceiveViewController
@@ -36,37 +34,9 @@ class ReceiveViewController: BaseViewController {
     weak var delegate: ReceiveViewControllerDelegate?
 
     @objc
-    var allowedToImportPrivateKey = true
-
-    @objc
     init(model: DWReceiveModelProtocol) {
         self.model = model
         super.init(nibName: nil, bundle: nil)
-    }
-
-    @objc
-    func importPrivateKeyButtonAction() {
-        let sheetView = ImportPrivateKeySheet { [weak self] in
-            // When scan button is tapped, trigger the delegate method
-            self?.delegate?.importPrivateKeyButtonAction(self!)
-        }
-
-        let hostingController = UIHostingController(rootView: sheetView)
-
-        if #available(iOS 16.4, *) {
-            hostingController.sheetPresentationController?.detents = [.custom(resolver: { context in
-                return 460
-            })]
-            hostingController.sheetPresentationController?.preferredCornerRadius = 32
-        } else if #available(iOS 16.0, *) {
-            hostingController.sheetPresentationController?.detents = [.custom(resolver: { context in
-                return 460
-            })]
-        } else if #available(iOS 15.0, *) {
-            hostingController.sheetPresentationController?.detents = [.medium()]
-        }
-
-        present(hostingController, animated: true)
     }
 
     required init?(coder: NSCoder) {
@@ -104,41 +74,6 @@ extension ReceiveViewController {
         receiveContentView.backgroundColor = .dw_background()
         receiveContentView.layer.cornerRadius = radius
         mainStackView.addArrangedSubview(receiveContentView)
-
-        // Import Private Key menu item (SwiftUI)
-        let importMenuItem = UIHostingController(rootView:
-            VStack(spacing: 0) {
-                MenuItem(
-                    title: NSLocalizedString("Import Private Key", comment: "Import Private Key"),
-                    subtitle: nil as String?,
-                    details: nil,
-                    topText: nil,
-                    icon: .custom("image.import.private.key", maxHeight: 22),
-                    secondaryIcon: nil,
-                    showInfo: false,
-                    showChevron: false,
-                    badgeText: nil,
-                    dashAmount: nil,
-                    overrideFiatAmount: nil,
-                    showToggle: false,
-                    isToggled: false,
-                    action: { [weak self] in
-                        self?.importPrivateKeyButtonAction()
-                    }
-                )
-                .frame(minHeight: 60)
-            }
-            .padding(.vertical, 5)
-            .background(Color(uiColor: .dw_background()))
-            .cornerRadius(CGFloat(radius))
-        )
-        importMenuItem.view.translatesAutoresizingMaskIntoConstraints = false
-        importMenuItem.view.backgroundColor = UIColor.clear
-        importMenuItem.view.isHidden = !allowedToImportPrivateKey
-
-        addChild(importMenuItem)
-        mainStackView.addArrangedSubview(importMenuItem.view)
-        importMenuItem.didMove(toParent: self)
 
         mainStackView.addArrangedSubview(EmptyUIView())
 

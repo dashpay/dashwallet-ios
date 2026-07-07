@@ -66,10 +66,6 @@ NS_ASSUME_NONNULL_BEGIN
              transaction:(DSTransaction *)transaction
              contactItem:(nullable id<DWDPBasicUserItem>)contactItem;
 
-- (void)paymentProcessor:(DWPaymentProcessor *)processor
-         didSweepRequest:(DSPaymentRequest *)protocolRequest
-             transaction:(DSTransaction *)transaction;
-
 // Progress HUD
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor

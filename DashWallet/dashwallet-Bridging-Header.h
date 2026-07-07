@@ -73,7 +73,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWQRScanViewController.h"
 #import "DWRequestAmountViewController.h"
 #import "UIViewController+DWShareReceiveInfo.h"
-#import "DWImportWalletInfoViewController.h"
 #import "DWPaymentProcessor.h"
 #import "DWPaymentOutput.h"
 #import "DWPaymentOutput+DWView.h"

@@ -35,7 +35,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable DWPaymentInput *)payToAddress:(NSString *)address
                                    amount:(uint64_t)amount {
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
 
     DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:address];
@@ -46,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
         return nil;
     }
 
-    if (parsed.isAddressValidForCurrentNetwork || [address isValidDashPrivateKeyOnChain:chain] || [address isValidDashBIP38Key]) {
+    if (parsed.isAddressValidForCurrentNetwork) {
         DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_PlainAddress];
         [paymentInput attachParsedURI:parsed];
         paymentInput.paymentIntent.amount = amount; // a send parameter, not a parse fact
@@ -60,7 +59,6 @@ NS_ASSUME_NONNULL_BEGIN
                    source:(DWPaymentInputSource)source
                completion:(void (^)(DWPaymentInput *paymentInput))completion {
     NSUInteger i = 0;
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     for (NSString *str in array) {
         DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:str];
@@ -73,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
             continue;
         }
 
-        if (parsed.isAddressValidForCurrentNetwork || [str isValidDashPrivateKeyOnChain:chain] || [str isValidDashBIP38Key]) {
+        if (parsed.isAddressValidForCurrentNetwork) {
             if (completion) {
                 DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:source];
                 [paymentInput attachParsedURI:parsed];

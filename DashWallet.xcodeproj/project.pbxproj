@@ -117,8 +117,6 @@
 		2A0C69E323155A0E001B8C90 /* DWModalContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69E223155A0E001B8C90 /* DWModalContentView.m */; };
 		2A0C69F22316B93F001B8C90 /* DWTitleDetailCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69F12316B93F001B8C90 /* DWTitleDetailCellView.m */; };
 		2A0C6C472362E25E00C86F37 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
-		2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A10EB342358996700C38B61 /* DWImportWalletInfoViewController.m */; };
-		2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A10EB3D2358BDA500C38B61 /* ImportWalletInfo.storyboard */; };
 		2A10EB412358D2A900C38B61 /* ResetWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A10EB402358D2A900C38B61 /* ResetWalletInfo.storyboard */; };
 		2A10EB442358D2CA00C38B61 /* DWResetWalletInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A10EB432358D2CA00C38B61 /* DWResetWalletInfoViewController.m */; };
 		2A11F59F2194BD6200E7B563 /* DWDataMigrationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A11F59E2194BD6200E7B563 /* DWDataMigrationManager.m */; };
@@ -331,7 +329,6 @@
 		3198E8048E48954CD87BAD11 /* libPods-DashWalletTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C56BFBBABD008D06578BDD9C /* libPods-DashWalletTests.a */; };
 		3273119C01D12519F397B465 /* PaymentProtocolMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = E958CDC551E44D353E2C2089 /* PaymentProtocolMessages.swift */; };
 		335C4A274D3D31888C301C0C /* SwiftDashSDKWalletSending.swift in Sources */ = {isa = PBXBuildFile; fileRef = D459E9A66A00CF069AA64FB8 /* SwiftDashSDKWalletSending.swift */; };
-		3A0C6A2A57DFF02865E36200 /* ImportPrivateKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53435DCAF024BC82E0247F3 /* ImportPrivateKeySheet.swift */; };
 		3BCC8D1E7E9C2356A1B2E622 /* PaymentProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 328D8D5EF7D75440B3D9B83B /* PaymentProtocolTests.swift */; };
 		40E95C8539D80D6001ED0E72 /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8081505E0E9F335B395C4FA /* CoinJoinRecovery.swift */; };
 		465F5CCC4B6DCA5DC18356FA /* BIP70PaymentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C7824FC6973A35725CC25D5 /* BIP70PaymentService.swift */; };
@@ -782,8 +779,6 @@
 		75FFD6BF2BF491FC0032879E /* HomeViewController+BackupReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6BD2BF491FC0032879E /* HomeViewController+BackupReminder.swift */; };
 		75FFD6C12BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C02BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift */; };
 		75FFD6C22BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C02BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift */; };
-		75FFD6C42BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C32BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift */; };
-		75FFD6C52BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C32BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift */; };
 		75FFD6C72BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		7693765F8C30C6360AEC37EE /* BIP70PaymentService+App.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24DFC83835B9AC1E3301A95 /* BIP70PaymentService+App.swift */; };
@@ -792,7 +787,6 @@
 		80DB0096461E395994F4637F /* PaymentNetworkResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38F280EBDC8928F6E189AF95 /* PaymentNetworkResolver.swift */; };
 		85ACE88D5CB4C6A41DFC8204 /* CoinJoinWithdrawalTxSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A063B43468112BA7E93B79A /* CoinJoinWithdrawalTxSet.swift */; };
 		87F5E25E16A9E8BA934EA197 /* ScriptAddressCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8050D6FEC0C0A811053724CB /* ScriptAddressCodec.swift */; };
-		893AE6F535290DD1CEE89219 /* ImportPrivateKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53435DCAF024BC82E0247F3 /* ImportPrivateKeySheet.swift */; };
 		8A7607606A594C6E99A2FAC7 /* DerivationPathKeysView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */; };
 		8D2CB87B75AE5271FF2EB655 /* BIP70URI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD978D08F2EAAC983C6009F3 /* BIP70URI.swift */; };
 		A5D5DD000000000000000319 /* PaymentURIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000318 /* PaymentURIBuilder.swift */; };
@@ -1582,7 +1576,6 @@
 		C9D2C8982A320AA000D15901 /* CBAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2E8293E612900938DB7 /* CBAuth.swift */; };
 		C9D2C8992A320AA000D15901 /* BuildFile in Sources */ = {isa = PBXBuildFile; };
 		C9D2C89A2A320AA000D15901 /* CoinbaseCreateAddressesRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAE28C896BC000427E7 /* CoinbaseCreateAddressesRequest.swift */; };
-		C9D2C89B2A320AA000D15901 /* DWImportWalletInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A10EB342358996700C38B61 /* DWImportWalletInfoViewController.m */; };
 		C9D2C89D2A320AA000D15901 /* SyncingAlertContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451ED2A0BF1F500825057 /* SyncingAlertContentView.swift */; };
 		C9D2C89E2A320AA000D15901 /* AddressUserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471A2604289ACD5C0056B7B2 /* AddressUserInfo.swift */; };
 		C9D2C8A02A320AA000D15901 /* SendCoinsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */; };
@@ -1690,7 +1683,6 @@
 		C9D2C92A2A320AA000D15901 /* explore.db in Resources */ = {isa = PBXBuildFile; fileRef = 47AE8BAF28BFF28400490F5E /* explore.db */; };
 		C9D2C92B2A320AA000D15901 /* BuildFile in Resources */ = {isa = PBXBuildFile; };
 		C9D2C92C2A320AA000D15901 /* Coinbase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0F3693812919A70B007F4E91 /* Coinbase.storyboard */; };
-		C9D2C92E2A320AA000D15901 /* ImportWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A10EB3D2358BDA500C38B61 /* ImportWalletInfo.storyboard */; };
 		C9D2C92F2A320AA000D15901 /* ReceiveContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FAC29DC115A001BC549 /* ReceiveContentView.xib */; };
 		C9D2C9302A320AA000D15901 /* VerifySeedPhrase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8522DC9B7300C99324 /* VerifySeedPhrase.storyboard */; };
 		C9D2C9312A320AA000D15901 /* DWSecurityStatusView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */; };
@@ -1967,9 +1959,6 @@
 		2A0C69F02316B93F001B8C90 /* DWTitleDetailCellView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTitleDetailCellView.h; sourceTree = "<group>"; };
 		2A0C69F12316B93F001B8C90 /* DWTitleDetailCellView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTitleDetailCellView.m; sourceTree = "<group>"; };
 		2A0C6C852362EFAE00C86F37 /* libDashSync-Shared.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libDashSync-Shared.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2A10EB332358996700C38B61 /* DWImportWalletInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWImportWalletInfoViewController.h; sourceTree = "<group>"; };
-		2A10EB342358996700C38B61 /* DWImportWalletInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWImportWalletInfoViewController.m; sourceTree = "<group>"; };
-		2A10EB3D2358BDA500C38B61 /* ImportWalletInfo.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ImportWalletInfo.storyboard; sourceTree = "<group>"; };
 		2A10EB402358D2A900C38B61 /* ResetWalletInfo.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ResetWalletInfo.storyboard; sourceTree = "<group>"; };
 		2A10EB422358D2CA00C38B61 /* DWResetWalletInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWResetWalletInfoViewController.h; sourceTree = "<group>"; };
 		2A10EB432358D2CA00C38B61 /* DWResetWalletInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWResetWalletInfoViewController.m; sourceTree = "<group>"; };
@@ -2762,7 +2751,6 @@
 		75FFD6BA2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+JailbreakCheck.swift"; sourceTree = "<group>"; };
 		75FFD6BD2BF491FC0032879E /* HomeViewController+BackupReminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+BackupReminder.swift"; sourceTree = "<group>"; };
 		75FFD6C02BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+SecureWalletDelegateImpl.swift"; sourceTree = "<group>"; };
-		75FFD6C32BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+ImportPrivateKeyDelegateImpl.swift"; sourceTree = "<group>"; };
 		75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeViewController+Shortcuts.swift"; sourceTree = "<group>"; };
 		77215C3978EE089C06A41979 /* Pods-DashWalletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.debug.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.debug.xcconfig"; sourceTree = "<group>"; };
 		796FA2121E7FAFF357D918BE /* BIP70Error.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BIP70Error.swift; path = PaymentProtocol/BIP70Error.swift; sourceTree = "<group>"; };
@@ -3327,7 +3315,6 @@
 		D18D0D69B7365947239D4F97 /* libPods-TodayExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TodayExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D4452DA61A01DB7919E385D0 /* PaymentProtocolWireFormat.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaymentProtocolWireFormat.swift; path = PaymentProtocol/Codec/PaymentProtocolWireFormat.swift; sourceTree = "<group>"; };
 		D459E9A66A00CF069AA64FB8 /* SwiftDashSDKWalletSending.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletSending.swift; sourceTree = "<group>"; };
-		D53435DCAF024BC82E0247F3 /* ImportPrivateKeySheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImportPrivateKeySheet.swift; sourceTree = "<group>"; };
 		D6E23A2DA41FE189E773C705 /* libPods-dashpay.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashpay.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D8081505E0E9F335B395C4FA /* CoinJoinRecovery.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoinJoinRecovery.swift; sourceTree = "<group>"; };
 		D8BD81810F2B0C11C86E7A5E /* Pods-DashWalletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.release.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -3896,10 +3883,6 @@
 		2A10EB322358994400C38B61 /* ImportWallet */ = {
 			isa = PBXGroup;
 			children = (
-				2A10EB332358996700C38B61 /* DWImportWalletInfoViewController.h */,
-				2A10EB342358996700C38B61 /* DWImportWalletInfoViewController.m */,
-				2A10EB3D2358BDA500C38B61 /* ImportWalletInfo.storyboard */,
-				D53435DCAF024BC82E0247F3 /* ImportPrivateKeySheet.swift */,
 			);
 			path = ImportWallet;
 			sourceTree = "<group>";
@@ -4862,7 +4845,6 @@
 				75FFD6BA2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift */,
 				75FFD6BD2BF491FC0032879E /* HomeViewController+BackupReminder.swift */,
 				75FFD6C02BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift */,
-				75FFD6C32BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift */,
 				75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */,
 			);
 			path = Home;
@@ -8320,7 +8302,6 @@
 				47AE8BB028BFF28700490F5E /* explore.db in Resources */,
 				0F36937F2919A70B007F4E91 /* Coinbase.storyboard in Resources */,
 				758CE59C2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
-				2A10EB3E2358BDA500C38B61 /* ImportWalletInfo.storyboard in Resources */,
 				C9F42FAD29DC115A001BC549 /* ReceiveContentView.xib in Resources */,
 				2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */,
 				2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */,
@@ -8418,7 +8399,6 @@
 				C9D2C92A2A320AA000D15901 /* explore.db in Resources */,
 				C9D2C92B2A320AA000D15901 /* BuildFile in Resources */,
 				C9D2C92C2A320AA000D15901 /* Coinbase.storyboard in Resources */,
-				C9D2C92E2A320AA000D15901 /* ImportWalletInfo.storyboard in Resources */,
 				C9D2C92F2A320AA000D15901 /* ReceiveContentView.xib in Resources */,
 				C9D2C9302A320AA000D15901 /* VerifySeedPhrase.storyboard in Resources */,
 				753CD87A2E2E218800BCF070 /* mixing_anim.json in Resources */,
@@ -9066,7 +9046,6 @@
 				2A913E7F23A30609006A2A59 /* DWRootModelStub.m in Sources */,
 				2A2CD6EE22F48159008C7BC9 /* UIDevice+DashWallet.m in Sources */,
 				47CF46AC2965B65B0067B6EE /* CBAccountManager.swift in Sources */,
-				75FFD6C42BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift in Sources */,
 				47522F522927CBEE00EE143E /* FailedOperationStatusViewController.swift in Sources */,
 				2A0C69C32314126D001B8C90 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
 				2AA87CFA26E5681100F0CEA6 /* DWCurrencyObject.m in Sources */,
@@ -9453,7 +9432,6 @@
 				47A2A2E9293E612900938DB7 /* CBAuth.swift in Sources */,
 				7566F48A2BB6CAF2005238D2 /* MenuItem.swift in Sources */,
 				0F6EDFD128C896BD000427E7 /* CoinbaseCreateAddressesRequest.swift in Sources */,
-				2A10EB352358996700C38B61 /* DWImportWalletInfoViewController.m in Sources */,
 				C9F451EE2A0BF1F500825057 /* SyncingAlertContentView.swift in Sources */,
 				471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */,
 				11E47BAB28EB38510097CFA0 /* SendCoinsService.swift in Sources */,
@@ -9536,7 +9514,6 @@
 				477F501729543834003C7508 /* BaseViewController+NetworkReachability.swift in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 				2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */,
-				893AE6F535290DD1CEE89219 /* ImportPrivateKeySheet.swift in Sources */,
 				B79BF2D3B0AA8CCD0E43D4FB /* SwiftDashSDKCoinJoinBalanceReader.swift in Sources */,
 				1757908E42D241CC48B277ED /* CoinJoinRecovery.swift in Sources */,
 				99E48BDCD767A5233189CC59 /* CoinJoinWithdrawalStore.swift in Sources */,
@@ -9670,7 +9647,6 @@
 				C943B32A2A408CED00AF23C5 /* DWAvatarExternalSourceView.m in Sources */,
 				C9D2C6BC2A320AA000D15901 /* WalletKeysOverviewModel.swift in Sources */,
 				C9D2C6BD2A320AA000D15901 /* UIAssembly.swift in Sources */,
-				75FFD6C52BF494E20032879E /* HomeViewController+ImportPrivateKeyDelegateImpl.swift in Sources */,
 				C943B4B32A40A54600AF23C5 /* DWContactsSearchDataSourceObject.m in Sources */,
 				C9D2C6BE2A320AA000D15901 /* DWLocationManager.swift in Sources */,
 				75D2B4A22D9D28AC00228DB0 /* BlockExplorerSelectionView.swift in Sources */,
@@ -10392,7 +10368,6 @@
 				C9D2C89A2A320AA000D15901 /* CoinbaseCreateAddressesRequest.swift in Sources */,
 				C943B3382A408CED00AF23C5 /* DWEditProfileAvatarView.m in Sources */,
 				C943B5582A40DA3700AF23C5 /* DWFullScreenModalControllerViewController.m in Sources */,
-				C9D2C89B2A320AA000D15901 /* DWImportWalletInfoViewController.m in Sources */,
 				7569D6872DE6DB2200768BFF /* ExploreHeaderView.swift in Sources */,
 				C9D2C89D2A320AA000D15901 /* SyncingAlertContentView.swift in Sources */,
 				C9D2C89E2A320AA000D15901 /* AddressUserInfo.swift in Sources */,
@@ -10507,7 +10482,6 @@
 				C9D2C8F42A320AA000D15901 /* DWQuickReceiveViewController.m in Sources */,
 				75A8C1692AE6A1AC0042256E /* VotingViewModel.swift in Sources */,
 				1DD7BE9CD62998F12672140D /* RadioButtonRow.swift in Sources */,
-				3A0C6A2A57DFF02865E36200 /* ImportPrivateKeySheet.swift in Sources */,
 				103055A5122610EE8ACB5CA2 /* SwiftDashSDKCoinJoinBalanceReader.swift in Sources */,
 				40E95C8539D80D6001ED0E72 /* CoinJoinRecovery.swift in Sources */,
 				A8990032BA8C9AF46AA51EFA /* CoinJoinWithdrawalStore.swift in Sources */,

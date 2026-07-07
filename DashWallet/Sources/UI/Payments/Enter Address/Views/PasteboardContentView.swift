@@ -66,8 +66,7 @@ final class PasteboardContentView: UIView {
         for word in words {
             let word = String(word).trimmingCharacters(in: .punctuationCharacters)
 
-            guard word.isValidDashAddress(on: chain) ||
-                word.isValidDashPrivateKey(on: chain) else { continue }
+            guard word.isValidDashAddress(on: chain) else { continue }
 
             textView.setAction(for: word) { [weak self] address in
                 self?.addressHandler?(address)

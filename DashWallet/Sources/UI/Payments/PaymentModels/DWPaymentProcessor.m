@@ -353,7 +353,6 @@ static NSString *sanitizeString(NSString *s) {
 #pragma mark - Private
 
 - (void)confirmRequest:(DSPaymentRequest *)request {
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     DWParsedPaymentURI *parsed = self.paymentInput.parsedURI;
 
     if (parsed == nil) {
@@ -369,15 +368,9 @@ static NSString *sanitizeString(NSString *s) {
     }
 
     if (!parsed.isValidDashPaymentIntent) {
-        // D2: WIF/BIP38 detection stays on the DashSync NSString categories; sweep is byte-identical.
-        if ([request.paymentAddress isValidDashPrivateKeyOnChain:chain] ||
-            [request.paymentAddress isValidDashBIP38Key]) {
-            [self confirmSweep:request];
-        }
-        else {
-            // TODO: provide an error (app-specific domain)
-            [self failedWithError:nil title:NSLocalizedString(@"Not a valid Dash address", nil) message:nil];
-        }
+        // Not a payable dash: intent and no BIP70 request URL → reject. (Paper-wallet sweep — the old
+        // WIF/BIP38 arm here — was dropped in C8 step 5; it needs an arbitrary-address UTXO FFI to return.)
+        [self failedWithError:nil title:NSLocalizedString(@"Not a valid Dash address", nil) message:nil];
     }
     else if (parsed.rURL != nil) { // payment protocol over HTTP (app-side BIP70)
         __weak typeof(self) weakSelf = self;
@@ -659,37 +652,6 @@ static NSString *sanitizeString(NSString *s) {
                                            }];
 }
 
-- (void)confirmSweep:(DSPaymentRequest *)request {
-    NSString *privateKey = request.paymentAddress;
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    const BOOL valid = [privateKey isValidDashPrivateKeyOnChain:chain] || [privateKey isValidDashBIP38Key];
-    NSAssert(valid, @"Inconsistent state");
-    if (!valid) {
-        return;
-    }
-
-    [self.delegate paymentProcessor:self
-         showProgressHUDWithMessage:@"Checking private key balance..."];
-
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-
-    __weak typeof(self) weakSelf = self;
-    [account
-        sweepPrivateKey:privateKey
-                withFee:YES
-             completion:^(DSTransaction *_Nullable tx, uint64_t fee, NSError *_Nullable error) {
-                 dispatch_async(dispatch_get_main_queue(), ^{
-                     __strong typeof(weakSelf) strongSelf = weakSelf;
-                     if (!strongSelf) {
-                         return;
-                     }
-
-                     [strongSelf.delegate paymentInputProcessorHideProgressHUD:strongSelf];
-                     [strongSelf handleSweepResultTx:tx error:error fee:fee request:request];
-                 });
-             }];
-}
-
 #pragma mark - Transaction Manager Callbacks
 
 - (void)txManagerRequestingAdditionalInfo:(DSRequestingAdditionalInfo)additionalInfoRequestType
@@ -848,64 +810,6 @@ static NSString *sanitizeString(NSString *s) {
                          actionBlock:changeBlock];
 
         self.amount = UINT64_MAX;
-    }
-    else {
-        [self cancelPayment];
-    }
-}
-
-- (void)handleSweepResultTx:(nullable DSTransaction *)tx
-                      error:(nullable NSError *)error
-                        fee:(uint64_t)fee
-                    request:(DSPaymentRequest *)request {
-    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
-
-    if (error) {
-        [self failedWithError:error
-                        title:NSLocalizedString(@"Couldn't sweep balance", nil)
-                      message:error.localizedDescription];
-    }
-    else if (tx) {
-        uint64_t amount = fee;
-        for (DSTransactionOutput *output in tx.outputs) {
-            amount += output.amount;
-        }
-        NSString *format =
-            NSLocalizedString(@"Send %@ (%@) from this private key into your wallet? The Dash network will receive a fee of %@ (%@).", nil);
-        NSString *message = [NSString stringWithFormat:format,
-                                                       [CurrencyExchanger_Objc stringForDashAmount:amount],
-                                                       [CurrencyExchanger_Objc localCurrencyStringForDashAmount:amount],
-                                                       [CurrencyExchanger_Objc stringForDashAmount:fee],
-                                                       [CurrencyExchanger_Objc localCurrencyStringForDashAmount:fee]];
-
-        NSString *actionTitle = [NSString stringWithFormat:@"%@ (%@)",
-                                                           [CurrencyExchanger_Objc stringForDashAmount:amount],
-                                                           [CurrencyExchanger_Objc localCurrencyStringForDashAmount:amount]];
-
-        [self
-            requestUserActionTitle:nil
-            message:message
-            actionTitle:actionTitle
-            cancelBlock:^{
-                [self cancelOrChangeAmount];
-            }
-            actionBlock:^{
-                [chainManager.transactionManager
-                    publishTransaction:tx
-                            completion:^(NSError *error) {
-                                if (error) {
-                                    [self failedWithError:error
-                                                    title:NSLocalizedString(@"Couldn't sweep balance", nil)
-                                                  message:error.localizedDescription];
-                                }
-                                else {
-                                    [self.delegate paymentProcessor:self
-                                                    didSweepRequest:request
-                                                        transaction:tx];
-                                    [self reset];
-                                }
-                            }];
-            }];
     }
     else {
         [self cancelPayment];

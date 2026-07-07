@@ -90,7 +90,6 @@ static NSString *const DASH_WEBSITE = @"https://dash.org";
 
     DWReceiveViewController *receiveController = [[DWReceiveViewController alloc] initWithModel:self.receiveModel];
     receiveController.delegate = self;
-    receiveController.allowedToImportPrivateKey = NO;
 
     [self dw_embedChild:receiveController inContainer:self.receiveContentView];
     self.receiveController = receiveController;

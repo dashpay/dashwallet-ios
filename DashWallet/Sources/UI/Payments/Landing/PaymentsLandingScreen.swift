@@ -13,7 +13,6 @@ struct PaymentsLandingScreen: View {
     var onCopyAddress: () -> Void
     var onShareAddress: () -> Void
     var onSpecifyAmount: () -> Void
-    var onImportPrivateKey: () -> Void
     var onScanQR: () -> Void
     var onSendToAddress: () -> Void
     var onShieldedBalance: () -> Void
@@ -123,12 +122,6 @@ struct PaymentsLandingScreen: View {
                 .disabled(viewModel.currentAddress == nil || viewModel.network != .core)
             }
             .padding(.horizontal, 20)
-
-            actionRow(
-                iconSystemName: "key.fill",
-                title: NSLocalizedString("Import private key", comment: ""),
-                action: onImportPrivateKey)
-                .padding(.horizontal, 20)
         }
     }
 

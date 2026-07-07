@@ -161,10 +161,9 @@ NS_ASSUME_NONNULL_END
 
         AVMetadataMachineReadableCodeObject *codeObject = object;
 
-        DSChain *chain = [DWEnvironment sharedInstance].currentChain;
         NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:addr];
-        if (parsed.isValidDashPaymentIntent || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
+        if (parsed.isValidDashPaymentIntent) {
             return codeObject;
         }
         else if (!anyObject) {
@@ -195,12 +194,11 @@ NS_ASSUME_NONNULL_END
 
     NSAssert(![NSThread isMainThread], nil);
 
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:addr];
-    // `chain` rides only for the D2 private-key / BIP38 checks; the URI parse, `pay:` normalization
-    // and address validity are app-side now (the box).
-    if (parsed.isValidDashPaymentIntent || [addr isValidDashPrivateKeyOnChain:chain] || [addr isValidDashBIP38Key]) {
+    // The URI parse, `pay:` normalization and address validity are app-side now (the box). (Paper-wallet
+    // sweep — the old WIF/BIP38 arm — was dropped in C8 step 5.)
+    if (parsed.isValidDashPaymentIntent) {
         if (parsed.rURL != nil) {                       // start fetching payment protocol request right away
             dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
                 QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];

@@ -38,7 +38,6 @@ enum PaymentsViewControllerState: Int {
 
 @objc(DWPaymentsViewControllerDelegate)
 protocol PaymentsViewControllerDelegate: AnyObject {
-    func paymentsViewControllerWantsToImportPrivateKey(_ controller: PaymentsViewController)
     func paymentsViewControllerDidCancel(_ controller: PaymentsViewController)
     func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, tx: DSTransaction, contact: DWDPBasicUserItem?)
 }
@@ -203,9 +202,5 @@ extension PaymentsViewController: PayViewControllerDelegate {
 extension PaymentsViewController: ReceiveViewControllerDelegate {
     func receiveViewControllerExitButtonAction(_ controller: ReceiveViewController) {
         // NOP
-    }
-
-    func importPrivateKeyButtonAction(_ controller: ReceiveViewController) {
-        delegate?.paymentsViewControllerWantsToImportPrivateKey(self)
     }
 }

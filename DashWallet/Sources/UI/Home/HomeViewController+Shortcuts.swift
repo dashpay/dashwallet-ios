@@ -35,7 +35,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
         case .localCurrency:
             showLocalCurrencyAction()
         case .importPrivateKey:
-            showImportPrivateKey()
+            break
         case .switchToTestnet:
             Task {
                 await DWEnvironment.sharedInstance().switchToTestnet()
@@ -105,12 +105,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
 
     private func showLocalCurrencyAction() {
         let controller = DWLocalCurrencyViewController(navigationAppearance: .white, presentationMode: .dialog, currencyCode: nil)
-        controller.delegate = self
-        presentControllerModallyInNavigationController(controller)
-    }
-
-    private func showImportPrivateKey() {
-        let controller = DWImportWalletInfoViewController.createController()
         controller.delegate = self
         presentControllerModallyInNavigationController(controller)
     }

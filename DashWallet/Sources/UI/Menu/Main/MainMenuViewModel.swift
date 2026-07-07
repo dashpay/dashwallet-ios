@@ -32,7 +32,6 @@ enum MainMenuNavigationDestination {
 }
 
 protocol MainMenuViewModelDelegate: AnyObject {
-    func mainMenuViewModelImportPrivateKey()
     func mainMenuViewModelOpenHomeScreen()
     func showPaymentsController(with pageIndex: Int)
     func showGiftCard(_ txId: Data)

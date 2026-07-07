@@ -25,7 +25,6 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             onCopyAddress: { [weak self] in self?.copyCurrentAddress() },
             onShareAddress: { [weak self] in self?.shareCurrentAddress() },
             onSpecifyAmount: { [weak self] in self?.pushSpecifyAmount() },
-            onImportPrivateKey: { [weak self] in self?.performScanQRCodeAction() },
             onScanQR: { [weak self] in self?.performScanQRCodeAction() },
             onSendToAddress: { [weak self] in self?.pushSendScreen() },
             onShieldedBalance: { [weak self] in self?.handleShieldedBalanceTap() })

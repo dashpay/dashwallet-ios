@@ -115,16 +115,6 @@ extension PaymentController: ConfirmPaymentViewControllerDelegate {
 // MARK: DWPaymentProcessorDelegate
 
 extension PaymentController: DWPaymentProcessorDelegate {
-    func paymentProcessor(_ processor: DWPaymentProcessor, didSweepRequest protocolRequest: DSPaymentRequest,
-                          transaction: DSTransaction) {
-        presentationAnchor?.topController().view.dw_showInfoHUD(withText: NSLocalizedString("Swept!", comment: ""))
-
-        if let vc = presentationContextProvider as? UIViewController,
-           vc.navigationController?.topViewController is ProvideAmountViewController {
-            vc.navigationController?.popViewController(animated: true)
-        }
-    }
-
     func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, amount: UInt64, contactItem: DWDPBasicUserItem?) {
         provideAmountViewController = nil
         let vc = ProvideAmountViewController(address: sendingDestination, amount: amount, contact: contactItem)
