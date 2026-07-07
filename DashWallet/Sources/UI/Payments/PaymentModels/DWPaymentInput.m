@@ -48,10 +48,11 @@ NS_ASSUME_NONNULL_BEGIN
                                                        fiatAmount:parsedURI.fiatAmount
                                                   dashpayUsername:parsedURI.dashpayUsername];
 
-    // Mint the write-only DSPaymentRequest courier from the already-parsed fields. Nothing reads it
-    // for a decision — the box owns those. It now survives only for the sweep path (D2) and the C10
-    // DashPay conversion; the URI send path reads `paymentIntent` above. This is the single residual
-    // `currentChain` read on the URI path (the courier constructor requires a chain).
+    // Mint the write-only DSPaymentRequest courier from the already-parsed fields. The URI SEND path
+    // is fully off it now (it reads `paymentIntent`); the only remaining readers are the sweep path
+    // (`request.paymentAddress`, D2) and the DashPay `?user=` rebuild (`request.dashpayUsername`,
+    // C10). Removing this mint waits on migrating those — it is the last `currentChain` read on the
+    // URI path (the courier constructor requires a chain). TODO(D2/C10): drop when sweep + DashPay move.
     DSPaymentRequest *courier = [DSPaymentRequest requestWithString:@""
                                                             onChain:[DWEnvironment sharedInstance].currentChain];
     courier.scheme = parsedURI.scheme;
@@ -71,6 +72,12 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *result = nil;
     if (self.bip70Confirmation) {
         result = [self.bip70Confirmation valueForKey:@"memo"];
+    }
+    else if (self.parsedURI) {
+        // URI path reads the parse box, not the DSPaymentRequest courier (C8 step 4). The verbatim
+        // input stands in for the old `request.string` re-serialization; the sole consumer only
+        // asks whether it looks like a Platform address, which the raw string answers identically.
+        result = self.parsedURI.rawString;
     }
     else if (self.request) {
         result = self.request.string;
