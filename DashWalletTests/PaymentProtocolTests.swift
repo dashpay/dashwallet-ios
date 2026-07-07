@@ -720,4 +720,29 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(parsed?.address, Self.builderAddr)
         XCTAssertEqual(parsed?.amount, 25_000_000)
     }
+
+    // MARK: - PaymentIntent (send carrier)
+
+    func testPaymentIntentCarriesFields() {
+        let intent = PaymentIntent(address: Self.builderAddr, amount: 10_000_000, label: "Coffee",
+                                   message: "thanks", callbackScheme: "myapp", fiatCurrencyCode: "USD",
+                                   fiatAmount: 25.5, dashpayUsername: "alice")
+        XCTAssertEqual(intent.address, Self.builderAddr)
+        XCTAssertEqual(intent.amount, 10_000_000)
+        XCTAssertEqual(intent.label, "Coffee")
+        XCTAssertEqual(intent.message, "thanks")
+        XCTAssertEqual(intent.callbackScheme, "myapp")
+        XCTAssertEqual(intent.fiatCurrencyCode, "USD")
+        XCTAssertEqual(intent.fiatAmount, 25.5)
+        XCTAssertEqual(intent.dashpayUsername, "alice")
+    }
+
+    func testPaymentIntentAmountIsSettableForSendOverride() {
+        // `payToAddress:amount:` supplies a fixed send amount that is not a parse fact.
+        let intent = PaymentIntent(address: Self.builderAddr, amount: 0, label: nil, message: nil,
+                                   callbackScheme: nil, fiatCurrencyCode: nil, fiatAmount: 0,
+                                   dashpayUsername: nil)
+        intent.amount = 42_000_000
+        XCTAssertEqual(intent.amount, 42_000_000)
+    }
 }

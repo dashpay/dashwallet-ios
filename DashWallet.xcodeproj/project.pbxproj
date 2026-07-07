@@ -797,6 +797,8 @@
 		8D2CB87B75AE5271FF2EB655 /* BIP70URI.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD978D08F2EAAC983C6009F3 /* BIP70URI.swift */; };
 		A5D5DD000000000000000319 /* PaymentURIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000318 /* PaymentURIBuilder.swift */; };
 		A5D5DD00000000000000031A /* PaymentURIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000318 /* PaymentURIBuilder.swift */; };
+		A5D5DD00000000000000031C /* PaymentIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000031B /* PaymentIntent.swift */; };
+		A5D5DD00000000000000031D /* PaymentIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000031B /* PaymentIntent.swift */; };
 		91F0B8B92F3FAB7C00E713AE /* KeysOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F0B8B82F3FAB7C00E713AE /* KeysOverviewView.swift */; };
 		91F0B8BA2F3FAB7C00E713AE /* KeysOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F0B8B82F3FAB7C00E713AE /* KeysOverviewView.swift */; };
 		99E48BDCD767A5233189CC59 /* CoinJoinWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13AA99A0E952A99D1C22EA1 /* CoinJoinWithdrawalStore.swift */; };
@@ -3380,6 +3382,7 @@
 		FC016B99DFFB0CBAC3D19290 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
 		FD978D08F2EAAC983C6009F3 /* BIP70URI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BIP70URI.swift; path = PaymentProtocol/BIP70URI.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000318 /* PaymentURIBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaymentURIBuilder.swift; path = PaymentProtocol/PaymentURIBuilder.swift; sourceTree = "<group>"; };
+		A5D5DD00000000000000031B /* PaymentIntent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaymentIntent.swift; path = PaymentProtocol/PaymentIntent.swift; sourceTree = "<group>"; };
 		FF0000042DUMMYID001234567 /* PiggyCardsConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/PiggyCardsConstants.swift; sourceTree = "<group>"; };
 		FF0000062DUMMYID001234567 /* PiggyCardsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsModels.swift; sourceTree = "<group>"; };
 		FF0000092DUMMYID001234567 /* BarcodeScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScanner.swift; sourceTree = "<group>"; };
@@ -6274,6 +6277,7 @@
 				6C7824FC6973A35725CC25D5 /* BIP70PaymentService.swift */,
 				FD978D08F2EAAC983C6009F3 /* BIP70URI.swift */,
 				A5D5DD000000000000000318 /* PaymentURIBuilder.swift */,
+				A5D5DD00000000000000031B /* PaymentIntent.swift */,
 			);
 			name = PaymentProtocol;
 			sourceTree = "<group>";
@@ -9546,6 +9550,7 @@
 				CCE1830F9241F52F77BEFD38 /* BIP70PaymentService.swift in Sources */,
 				DC85B144473A3ADDF7982D77 /* BIP70URI.swift in Sources */,
 				A5D5DD000000000000000319 /* PaymentURIBuilder.swift in Sources */,
+				A5D5DD00000000000000031C /* PaymentIntent.swift in Sources */,
 				7D4EF85ADF369A5F91AF4410 /* SwiftDashSDKWalletSending.swift in Sources */,
 				2124ABA8C675E4DB86467097 /* SwiftDashSDKReceiveAddressProvider.swift in Sources */,
 				0F8E84F25A3323C20B36B1BA /* BIP70SendAuthorizer.swift in Sources */,
@@ -10516,6 +10521,7 @@
 				465F5CCC4B6DCA5DC18356FA /* BIP70PaymentService.swift in Sources */,
 				8D2CB87B75AE5271FF2EB655 /* BIP70URI.swift in Sources */,
 				A5D5DD00000000000000031A /* PaymentURIBuilder.swift in Sources */,
+				A5D5DD00000000000000031D /* PaymentIntent.swift in Sources */,
 				335C4A274D3D31888C301C0C /* SwiftDashSDKWalletSending.swift in Sources */,
 				E0AC2001B051BA08D922850F /* SwiftDashSDKReceiveAddressProvider.swift in Sources */,
 				02602B3FBCC998D73B610634 /* BIP70SendAuthorizer.swift in Sources */,
