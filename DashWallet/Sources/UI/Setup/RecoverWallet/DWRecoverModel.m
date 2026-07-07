@@ -48,44 +48,14 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
     return DWWalletEnvironment.hasWallet;
 }
 
-- (BOOL)isWalletEmpty {
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    // make sure there's no block for 60 mins
-    const NSTimeInterval lastBlockTimestamp = chain.lastSyncBlockTimestamp;
-    const NSTimeInterval delta = HOUR_TIME_INTERVAL;
-    const NSTimeInterval now = [NSDate timeIntervalSince1970];
-    const BOOL isSyncedUp = (chain.lastSyncBlockHeight == chain.lastTerminalBlockHeight);
-    return (wallet.balance == 0) && (lastBlockTimestamp + delta > now) && isSyncedUp;
-}
+// `isWalletEmpty` and `canWipeWithPhrase:` live in DWRecoverModel+Mnemonic.swift
+// (SDK balance + sync-done gate; normalized-phrase comparison) — C6-D.
 
 - (void)wipeWallet {
     [DWApp cleanUp]; // Send notificaiton
     [[DWEnvironment sharedInstance] clearAllWallets];
     [[DWGlobalOptions sharedInstance] restoreToDefaults];
     [[DWAppGroupOptions sharedInstance] restoreToDefaults];
-}
-
-- (BOOL)canWipeWithPhrase:(NSString *)phrase {
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    const NSTimeInterval creationDate = [NSDate timeIntervalSince1970];
-    DSWallet *testingWallet = [DSWallet standardWalletWithSeedPhrase:phrase
-                                                     setCreationDate:creationDate
-                                                            forChain:chain
-                                                     storeSeedPhrase:NO
-                                                         isTransient:YES];
-    DSAccount *testingAccount = [testingWallet accountWithNumber:0];
-    DSAccount *ourAccount = [DWEnvironment sharedInstance].currentAccount;
-
-    NSData *testingExtended32Data = [DSKeyManager publicKeyData:testingAccount.bip32DerivationPath.extendedPublicKey];
-    NSData *accountExtended32Data = [DSKeyManager publicKeyData:ourAccount.bip32DerivationPath.extendedPublicKey];
-    NSData *testingExtended44Data = [DSKeyManager publicKeyData:testingAccount.bip44DerivationPath.extendedPublicKey];
-    NSData *accountExtended44Data = [DSKeyManager publicKeyData:ourAccount.bip44DerivationPath.extendedPublicKey];
-
-    return ([testingExtended32Data isEqual:accountExtended32Data] ||
-            [testingExtended44Data isEqual:accountExtended44Data] ||
-            [phrase isEqual:DW_WIPE]);
 }
 
 - (NSString *)wipeAcceptPhrase {

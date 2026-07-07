@@ -34,6 +34,37 @@ private let dwAllLanguagesWordSet: Set<String> = MnemonicLanguage.allCases
     }
 
 extension DWRecoverModel {
+    /// The plain-"wipe" gate (C6-D): empty means "zero SDK balance AND the
+    /// chain is fully synced" — an unsynced wallet can't prove it's empty, so
+    /// it reads as non-empty (fail-closed; the strong accept-phrase remains
+    /// the override). Replaces the DashSync read (`wallet.balance` + frozen
+    /// `lastSyncBlockTimestamp`/`lastSyncBlockHeight`), which post-M6 never
+    /// advanced and made this permanently false — the plain-"wipe" phrase was
+    /// always refused.
+    @objc(isWalletEmpty)
+    func isWalletEmpty() -> Bool {
+        guard let balance = SwiftDashSDKWalletState.shared.balance else { return false }
+        return balance.total == 0 && SyncingActivityMonitor.shared.state == .syncDone
+    }
+
+    /// Authorizes a wipe with the wallet's own recovery phrase (C6-D): the
+    /// typed phrase, normalized, must equal a persisted SDK mnemonic
+    /// (normalized). Equivalent to the old DashSync check — a transient
+    /// wallet's BIP32/BIP44 xpub comparison — because BIP39 phrase→seed is
+    /// deterministic, but derives no key material. No persisted SDK mnemonic
+    /// ⇒ false (fail-closed; the strong accept-phrase still allows a wipe).
+    /// The literal-"wipe" arm of the old method was dead here — the caller
+    /// (`DWRecoverContentView.wipeWithPhrase:`) routes `DW_WIPE` to
+    /// `isWalletEmpty` before ever reaching this check.
+    @objc(canWipeWithPhrase:)
+    func canWipeWithPhrase(_ phrase: String) -> Bool {
+        let typed = Mnemonic.normalizePhrase(phrase)
+        guard !typed.isEmpty else { return false }
+        return SwiftDashSDKHost.persistedMnemonics().contains { entry in
+            Mnemonic.normalizePhrase(entry.mnemonic) == typed
+        }
+    }
+
     @objc(phraseIsValid:)
     func phraseIsValid(_ phrase: String?) -> Bool {
         guard let phrase, !phrase.isEmpty else { return false }
