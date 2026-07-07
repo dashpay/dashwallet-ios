@@ -103,10 +103,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 #endif
 
-- (void)handleFile:(NSData *)file {
-    [self.paymentController performPaymentWithFile:file];
-}
-
 - (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact {
     // to be overriden
 }

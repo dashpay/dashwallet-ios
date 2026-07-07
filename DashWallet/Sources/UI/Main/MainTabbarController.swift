@@ -331,13 +331,6 @@ extension MainTabbarController {
     }
 
     @objc
-    public func handleFile(_ file: Data) {
-        dismiss(animated: false, completion: nil)
-        selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.handleFile(file)
-    }
-
-    @objc
     public func openPaymentsScreen() {
         assert(isDemoMode, "Invalid usage. Should be used in Demo mode only")
         showPaymentsController(withActivePage: .pay)

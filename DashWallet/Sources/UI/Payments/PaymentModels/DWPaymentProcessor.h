@@ -70,11 +70,6 @@ NS_ASSUME_NONNULL_BEGIN
          didSweepRequest:(DSPaymentRequest *)protocolRequest
              transaction:(DSTransaction *)transaction;
 
-// Handle File
-
-- (void)paymentProcessor:(DWPaymentProcessor *)processor displayFileProcessResult:(NSString *)result;
-- (void)paymentProcessorDidFinishProcessingFile:(DWPaymentProcessor *)processor;
-
 // Progress HUD
 
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
@@ -90,7 +85,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, weak) id<DWPaymentProcessorDelegate> delegate;
 
 - (void)processPaymentInput:(DWPaymentInput *)paymentInput;
-- (void)processFile:(NSData *)file;
 
 - (void)provideAmount:(uint64_t)amount;
 

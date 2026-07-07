@@ -75,12 +75,6 @@ final class PaymentController: NSObject {
         paymentProcessor.reset()
         paymentProcessor.processPaymentInput(input)
     }
-
-    @objc(performPaymentWithFile:)
-    public func performPayment(with file: Data) {
-        paymentProcessor.reset()
-        paymentProcessor.processFile(file)
-    }
 }
 
 extension PaymentController {
@@ -230,14 +224,8 @@ extension PaymentController: DWPaymentProcessorDelegate {
         }
     }
 
-    func paymentProcessorDidFinishProcessingFile(_ processor: DWPaymentProcessor) { }
-
     func paymentInputProcessorHideProgressHUD(_ processor: DWPaymentProcessor) {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
-    }
-
-    func paymentProcessor(_ processor: DWPaymentProcessor, displayFileProcessResult message: String) {
-        showAlert(with: message, message: nil)
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, showProgressHUDWithMessage message: String?) {

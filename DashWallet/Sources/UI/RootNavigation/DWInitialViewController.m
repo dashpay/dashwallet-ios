@@ -91,10 +91,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self.rootController handleURL:url];
 }
 
-- (void)handleFile:(NSData *)file {
-    [self.rootController handleFile:file];
-}
-
 #pragma mark - DWOnboardingViewControllerDelegate
 
 - (void)onboardingViewControllerDidFinish:(DWOnboardingViewController *)controller {

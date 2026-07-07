@@ -25,7 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)handleDeeplink:(NSURL *)url;
 - (void)handleURL:(NSURL *)url;
-- (void)handleFile:(NSData *)file;
 
 @end
 

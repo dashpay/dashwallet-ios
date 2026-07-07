@@ -197,12 +197,6 @@ static NSString *sanitizeString(NSString *s) {
     }
 }
 
-- (void)processFile:(NSData *)file {
-    NSParameterAssert(self.delegate);
-
-    [self handleFile:file];
-}
-
 - (void)provideAmount:(uint64_t)amount {
     self.amount = amount;
 
@@ -694,79 +688,6 @@ static NSString *sanitizeString(NSString *s) {
                      [strongSelf handleSweepResultTx:tx error:error fee:fee request:request];
                  });
              }];
-}
-
-- (void)handleFile:(NSData *)file {
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-
-    DSPaymentProtocolRequest *request = [DSPaymentProtocolRequest requestWithData:file onChain:chain];
-    if (request) {
-        [self confirmProtocolRequest:request];
-
-        return;
-    }
-
-    // TODO: reject payments that don't match requested amounts/scripts, implement refunds
-    DSPaymentProtocolPayment *payment = [DSPaymentProtocolPayment paymentWithData:file onChain:chain];
-    DSChainManager *chainManager = [DWEnvironment sharedInstance].currentChainManager;
-    if (payment.transactions.count > 0) {
-        NSMutableArray<NSError *> *errors = [NSMutableArray array];
-        dispatch_group_t dispatchGroup = dispatch_group_create();
-
-        for (DSTransaction *tx in payment.transactions) {
-            dispatch_group_enter(dispatchGroup);
-            [chainManager.transactionManager
-                publishTransaction:tx
-                        completion:^(NSError *error) {
-                            if (error) {
-                                [errors addObject:error];
-                            }
-                            else {
-                                NSString *result = payment.memo.length > 0
-                                                       ? payment.memo
-                                                       : NSLocalizedString(@"Received", nil);
-                                [self.delegate paymentProcessor:self displayFileProcessResult:result];
-                            }
-
-                            dispatch_group_leave(dispatchGroup);
-                        }];
-        }
-
-        dispatch_group_notify(dispatchGroup, dispatch_get_main_queue(), ^{
-            if (errors.count > 0) {
-                NSArray<NSString *> *errorsDescription =
-                    [errors valueForKeyPath:@"@distinctUnionOfObjects.localizedDescription"];
-                NSString *description = [errorsDescription componentsJoinedByString:@"\n"];
-
-                [self failedWithError:errors.firstObject
-                                title:NSLocalizedString(@"Couldn't transmit payment to Dash network", nil)
-                              message:description];
-            }
-
-            [self.delegate paymentProcessorDidFinishProcessingFile:self];
-        });
-
-        return;
-    }
-
-    DSPaymentProtocolACK *ack = [DSPaymentProtocolACK ackWithData:file onChain:chain];
-    if (ack) {
-        if (ack.memo.length > 0) {
-            [self.delegate paymentProcessor:self displayFileProcessResult:ack.memo];
-        }
-
-        [self.delegate paymentProcessorDidFinishProcessingFile:self];
-
-        return;
-    }
-
-    // Currently, only errors from DashSync are handled.
-    // TODO: provide an error (app-specific domain)
-    [self failedWithError:nil
-                    title:NSLocalizedString(@"Unsupported or corrupted document", nil)
-                  message:nil];
-
-    [self.delegate paymentProcessorDidFinishProcessingFile:self];
 }
 
 #pragma mark - Transaction Manager Callbacks

@@ -320,21 +320,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)setupDashWalletComponentsWithOptions:(NSDictionary *)launchOptions {
-    if (launchOptions[UIApplicationLaunchOptionsURLKey]) {
-        NSData *file = [NSData dataWithContentsOfURL:launchOptions[UIApplicationLaunchOptionsURLKey]];
 
-        if (file.length > 0) {
-            DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
-            if ([controller isKindOfClass:DWInitialViewController.class]) {
-                [controller handleFile:file];
-            }
-            else {
-                // TODO: defer action when start controller finish
-                DWLog(@"Ignoring handle file. Root controller hasn't been set up yet");
-            }
-        }
-    }
-    
     // The app fetches fiat exchange rates itself now (BaseRatesProvider →
     // rates.ctx.com). Disable DashSync's own price poll BEFORE setupDashSyncOnce
     // reads this flag, otherwise both poll CTX and both write PRICESBYCODE_KEY.

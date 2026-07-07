@@ -45,8 +45,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performPayToUser:(id<DWDPBasicUserItem>)userItem;
 #endif
 
-- (void)handleFile:(NSData *)file;
-
 /// This method is called after dismissal of payment result controller.
 - (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact;
 

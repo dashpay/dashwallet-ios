@@ -37,7 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)handleDeeplink:(NSURL *)url;
 #endif
 - (void)handleURL:(NSURL *)url;
-- (void)handleFile:(NSData *)file;
 
 - (void)openPaymentsScreen;
 - (void)closePaymentsScreen;
