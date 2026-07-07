@@ -145,8 +145,13 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
             await fullReset(lastError: nil, forWipe: false)
 
-            guard DWEnvironment.sharedInstance().currentChain.hasAWallet else {
-                Self.logger.info("🧭 RUNTIME :: no wallet on \(network.rawValue, privacy: .public); leaving runtime stopped")
+            // Gate on SDK presence, not DashSync's hasAWallet (C6-A): the
+            // runtime consumes the SDK wallet, and every SDK-wallet writer
+            // re-triggers a refresh (the creator's and migrator's
+            // handleWalletMaterialChanged) — and the migrator is awaited
+            // above, so a legacy-upgrade launch has its mnemonic by this line.
+            guard WalletEnvironment.hasSDKWallet else {
+                Self.logger.info("🧭 RUNTIME :: no SDK wallet persisted; leaving runtime stopped for \(network.rawValue, privacy: .public)")
                 return
             }
 

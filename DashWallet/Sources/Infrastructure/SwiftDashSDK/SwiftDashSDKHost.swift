@@ -68,6 +68,25 @@ final class SwiftDashSDKHost {
 
     private init() {}
 
+    // MARK: - Wallet presence
+
+    /// True when at least one SDK wallet mnemonic is persisted in
+    /// `WalletStorage`'s keychain (global — the mnemonic is network-agnostic;
+    /// survives app reinstall). The app's sanctioned presence reader: FFI-free
+    /// (a plain SecItem query), valid before `start()` and from any thread —
+    /// the same posture as the KeyMigrator/WalletWiper storage reads. A
+    /// keychain read error reports as "no wallet" (logged); app-level checks
+    /// union this with DashSync presence (`WalletEnvironment.hasWallet`) for
+    /// the migration window.
+    nonisolated static func hasPersistedSDKWallet() -> Bool {
+        do {
+            return try !WalletStorage().listWalletIdsWithMnemonic().isEmpty
+        } catch {
+            logger.error("🪺 HOST :: wallet-presence keychain read failed: \(String(describing: error), privacy: .public)")
+            return false
+        }
+    }
+
     // MARK: - Lifecycle
 
     enum HostError: LocalizedError {

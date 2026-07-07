@@ -18,7 +18,9 @@
 import Foundation
 import SwiftDashSDK
 
-/// DashSync-free network identity for the app.
+/// DashSync-free network identity + wallet presence for the app.
+/// (One deliberate DashSync read remains: `hasWallet`'s migration-window
+/// union term — see its doc.)
 ///
 /// Reads the same persisted network selection `DWEnvironment` maintains —
 /// the `CURRENT_CHAIN_TYPE_KEY` UserDefaults integer holding a DashSync
@@ -73,6 +75,24 @@ public final class WalletEnvironment: NSObject {
         case .testnet: return .testnet
         case .devnet: return nil
         }
+    }
+
+    /// SwiftDashSDK wallet presence — a mnemonic persisted in `WalletStorage`'s
+    /// keychain (see `SwiftDashSDKHost.hasPersistedSDKWallet`). The SDK
+    /// runtime's own start gate; app-level existence checks use `hasWallet`.
+    @objc public static var hasSDKWallet: Bool {
+        SwiftDashSDKHost.hasPersistedSDKWallet()
+    }
+
+    /// App-level wallet existence. MIGRATION-WINDOW UNION: SDK presence OR
+    /// DashSync `chain.hasAWallet` — DashSync-only wallets exist transiently
+    /// (the recover flow's async SDK import; migrator-deferred multi-wallet /
+    /// unknown-chain cases), so existence checks must not flip false for them.
+    /// This is WalletEnvironment's one deliberate DashSync read.
+    /// TODO(C6-E): drop the DashSync term when the
+    /// `standardWalletWithSeedPhrase` dual-write is deleted.
+    @objc public static var hasWallet: Bool {
+        hasSDKWallet || DWEnvironment.sharedInstance().currentChain.hasAWallet
     }
 
     private override init() {}
