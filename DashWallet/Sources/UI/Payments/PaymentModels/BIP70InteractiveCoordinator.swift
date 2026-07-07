@@ -32,8 +32,10 @@ final class BIP70SendResultBox: NSObject {
     let result: SendResult
     init(_ result: SendResult) { self.result = result }
 
-    @objc var signedTxData: Data { result.signedTxData }
     @objc var txidHexDisplay: String { result.txidHexDisplay }
+    /// Wire-order txid (`Transaction.txHashData` convention) for the retyped
+    /// send-success delegate; `result.txHashDisplay` reversed.
+    @objc var txidWire: Data { Data(result.txHashDisplay.reversed()) }
     @objc var callbackURL: URL? { result.callbackURL }
     @objc var ackMemo: String? { result.ackMemo }
 }
@@ -75,10 +77,10 @@ final class BIP70InteractiveCoordinator: NSObject {
         Task {
             do {
                 let result = try await service.confirmAndSend(box.confirmation)
-                // Record BEFORE the ObjC completion mints the DSTransaction courier
-                // and fires the send-success delegate, so the success screen's
-                // registry fallback is already populated. The pure BIP70 layer
-                // can't write the registry itself (it is deliberately SDK/DW-free).
+                // Record BEFORE the ObjC completion fires the send-success
+                // delegate, so the success screen's registry fallback is
+                // already populated. The pure BIP70 layer can't write the
+                // registry itself (it is deliberately SDK/DW-free).
                 WalletSendService.shared.recentSends.record(
                     txidWire: Data(result.txHashDisplay.reversed()),
                     address: result.primaryAddress,

@@ -41,20 +41,29 @@ class TxDetailModel: NSObject {
         transaction.fiatAmount
     }
 
-    /// ObjC resolver seam: the send-success delegate chains (and the DashPay
-    /// profile popup) still hand over a `DSTransaction` courier, whose only
-    /// load-bearing datum is its txid — everything it would derive itself
-    /// (state, date, amount) comes from the frozen DashSync chain and is wrong
-    /// post-M6. Resolve it to an SDK-backed `Transaction` instead:
-    /// the persisted row when it exists, else the recent-sends registry
-    /// (a just-broadcast send the Rust persister hasn't written yet).
-    @objc
-    convenience init(transaction: DSTransaction) {
-        self.init(transaction: Self.resolve(courier: transaction))
+    /// Send-success resolver: the delegate chain hands over the broadcast
+    /// transaction's wire-order txid; resolve it to an SDK-backed
+    /// `Transaction` — the persisted row when it exists, else the recent-sends
+    /// registry (a just-broadcast send the Rust persister hasn't written yet).
+    @objc(initWithTxidWire:)
+    convenience init(txidWire: Data) {
+        self.init(transaction: Self.resolve(txidWire: txidWire))
     }
 
-    private static func resolve(courier: DSTransaction) -> Transaction {
-        let txidWire = courier.txHashData
+    /// ObjC resolver seam for the surviving `DSTransaction` courier hand-over
+    /// (the DashPay profile popup, C10). Only the courier's txid — and its
+    /// timestamp as a last-resort date — is read; everything else it would
+    /// derive itself comes from the frozen DashSync chain and is wrong post-M6.
+    @objc
+    convenience init(transaction: DSTransaction) {
+        let fallbackDate = transaction.timestamp > 1
+            ? Date(timeIntervalSince1970: transaction.timestamp)
+            : nil
+        self.init(transaction: Self.resolve(txidWire: transaction.txHashData,
+                                            fallbackDate: fallbackDate))
+    }
+
+    private static func resolve(txidWire: Data, fallbackDate: Date? = nil) -> Transaction {
         if let row = SwiftDashSDKWalletSource.fetch(txid: txidWire) {
             return row
         }
@@ -69,19 +78,15 @@ class TxDetailModel: NSObject {
                 externalSentAddresses: sent.address.map { [$0] } ?? [])
         }
         // Last resort — in practice unreachable: every synced tx has a row and
-        // every fresh send has a registry entry. Render the courier's identity
-        // honestly (txid + its own timestamp when it has one); the unknown
-        // amount is modeled as 0/mempool rather than fabricated from the
-        // frozen chain.
+        // every fresh send has a registry entry. Render the txid honestly; the
+        // unknown amount is modeled as 0/mempool rather than fabricated.
         return Transaction(
             syntheticTxid: txidWire,
             directionRaw: 1,
             netAmount: 0,
             fee: nil,
             contextRaw: 0,
-            date: courier.timestamp > 1
-                ? Date(timeIntervalSince1970: courier.timestamp)
-                : Date())
+            date: fallbackDate ?? Date())
     }
 
     init(transaction: Transaction) {

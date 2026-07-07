@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWPaymentOutput
 
-- (instancetype)initWithTx:(DSTransaction *)tx
+- (instancetype)initWithTx:(nullable DSTransaction *)tx
            protocolRequest:(nullable DSPaymentProtocolRequest *)protocolRequest
                     amount:(uint64_t)amount
                        fee:(uint64_t)fee
@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
         broadcastAuthorizationState:DWPaymentOutputBroadcastAuthorizationStateNeedsAuthentication];
 }
 
-- (instancetype)initWithTx:(DSTransaction *)tx
+- (instancetype)initWithTx:(nullable DSTransaction *)tx
                 protocolRequest:(nullable DSPaymentProtocolRequest *)protocolRequest
                          amount:(uint64_t)amount
                             fee:(uint64_t)fee

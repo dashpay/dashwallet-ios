@@ -137,9 +137,6 @@ struct Confirmation {
 
 /// Outcome of a completed send: the tx was broadcast; the merchant round-trip was attempted.
 struct SendResult {
-    /// Signed tx bytes. Sole remaining reader: `performBIP70Send:`'s DSTransaction
-    /// courier — TODO(C1-c3): delete this field with that courier.
-    let signedTxData: Data
     /// Display-order txid hex — logging / UI / callback only (NOT the CTX authoritative txid).
     let txidHexDisplay: String
     /// Display-order txid bytes (the same value as `txidHexDisplay`, binary) —
@@ -317,8 +314,7 @@ final class BIP70PaymentService {
         let callbackURL = Self.makeCallbackURL(scheme: confirmation.callbackScheme,
                                                address: confirmation.primaryAddress,
                                                txidHexDisplay: txidHexDisplay)
-        return SendResult(signedTxData: prepared.txData,
-                          txidHexDisplay: txidHexDisplay,
+        return SendResult(txidHexDisplay: txidHexDisplay,
                           txHashDisplay: prepared.txHashDisplay,
                           fee: prepared.fee,
                           amount: confirmation.amount,

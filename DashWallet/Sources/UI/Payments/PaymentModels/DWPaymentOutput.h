@@ -30,7 +30,12 @@ typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
 
 @interface DWPaymentOutput : NSObject
 
-@property (readonly, nonatomic, strong) DSTransaction *tx;
+/// The DashSync-built transaction — set only on the DashSync / C10 DashPay arm
+/// (`txManagerConfirmTx:`), where `confirmPaymentOutput:` hands it back to
+/// `signAndPublishTransaction:`. nil for SwiftDashSDK-prepared outputs (which
+/// carry `preparedStandardSend` instead) and merchant/BIP70 outputs (tx is
+/// built later, inside `confirmAndSend`).
+@property (readonly, nullable, nonatomic, strong) DSTransaction *tx;
 /// nil for app-side sends built from a `DWPaymentIntent` (plain-dash:) or a BIP70 merchant
 /// `Confirmation` — those carry no `DSPaymentProtocolRequest`. Set only on the DashSync / C10 paths.
 @property (readonly, nullable, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;

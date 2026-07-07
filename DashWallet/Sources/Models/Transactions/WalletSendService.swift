@@ -14,7 +14,6 @@ final class PreparedStandardSend: NSObject {
     @objc let txData: Data
     @objc let txHash: Data
     @objc let fee: UInt64
-    @objc let transaction: DSTransaction
     @objc let address: String
     @objc let amount: UInt64
 
@@ -40,7 +39,6 @@ final class PreparedStandardSend: NSObject {
         txData: Data,
         txHash: Data,
         fee: UInt64,
-        transaction: DSTransaction,
         address: String,
         amount: UInt64,
         coreTransaction: CoreTransaction
@@ -48,7 +46,6 @@ final class PreparedStandardSend: NSObject {
         self.txData = txData
         self.txHash = txHash
         self.fee = fee
-        self.transaction = transaction
         self.address = address
         self.amount = amount
         self.coreTransaction = coreTransaction
@@ -310,15 +307,11 @@ final class WalletSendService: NSObject {
 
     private func buildPreparedStandardSend(address: String, amount: UInt64) throws -> PreparedStandardSend {
         let (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
-        let txData = tx.data
-        let chain = DWEnvironment.sharedInstance().currentChain
-        let transaction = DSTransaction(message: txData, on: chain)
 
         return PreparedStandardSend(
-            txData: txData,
+            txData: tx.data,
             txHash: txHash,
             fee: tx.fee,
-            transaction: transaction,
             address: address,
             amount: amount,
             coreTransaction: tx

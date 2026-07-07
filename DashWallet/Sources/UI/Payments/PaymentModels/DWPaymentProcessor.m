@@ -18,6 +18,7 @@
 #import "DWPaymentProcessor.h"
 
 #import "CurrencyExchanger_Objc.h"
+#import "DSTransaction+DashWallet.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPaymentInput+Private.h"
@@ -275,7 +276,7 @@ static NSString *sanitizeString(NSString *s) {
             else {
                 [self txManagerPublishedCompletion:address
                                               sent:sent
-                                                tx:tx];
+                                          txidWire:tx.txHashData];
             }
         }
         requestRelayCompletion:^(DSTransaction *_Nonnull tx, DSPaymentProtocolACK *_Nonnull ack, BOOL relayedToServer) {
@@ -340,7 +341,7 @@ static NSString *sanitizeString(NSString *s) {
             else {
                 [self txManagerPublishedCompletion:address
                                               sent:YES
-                                                tx:paymentOutput.tx];
+                                          txidWire:preparedSend.txidWire];
             }
         });
     });
@@ -466,14 +467,11 @@ static NSString *sanitizeString(NSString *s) {
                              return;
                          }
 
-                         DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-                         DSTransaction *tx = [[DSTransaction alloc] initWithMessage:result.signedTxData onChain:chain];
-
                          if (!self.didSendRequestDelegateNotified) {
                              self.didSendRequestDelegateNotified = YES;
                              [self.delegate paymentProcessor:self
                                               didSendRequest:nil
-                                                 transaction:tx
+                                                    txidWire:result.txidWire
                                                  contactItem:paymentOutput.userItem];
                          }
 
@@ -539,7 +537,7 @@ static NSString *sanitizeString(NSString *s) {
         publishedCompletion:^(DSTransaction *_Nonnull tx, NSError *_Nullable error, BOOL sent) {
             [self txManagerPublishedCompletion:address
                                           sent:sent
-                                            tx:tx];
+                                      txidWire:tx.txHashData];
         }
         requestRelayCompletion:^(DSTransaction *_Nonnull tx, DSPaymentProtocolACK *_Nonnull ack, BOOL relayedToServer) {
             [self txManagerRequestRelayCompletion:address
@@ -631,7 +629,7 @@ static NSString *sanitizeString(NSString *s) {
                                                // headline (`amount − fee`) shows what the recipient gets and "Total" shows
                                                // the true debit. `preparedSend.amount` keeps the recipient amount.
                                                DWPaymentOutput *paymentOutput = [[DWPaymentOutput alloc]
-                                                                    initWithTx:preparedSend.transaction
+                                                                    initWithTx:nil
                                                                protocolRequest:protocolRequest
                                                                         amount:amount + preparedSend.fee
                                                                            fee:preparedSend.fee
@@ -678,17 +676,17 @@ static NSString *sanitizeString(NSString *s) {
 
 - (void)txManagerPublishedCompletion:(NSString *)address
                                 sent:(BOOL)sent
-                                  tx:(DSTransaction *_Nonnull)tx {
+                            txidWire:(NSData *)txidWire {
     if (sent) {
-        [self.delegate paymentProcessor:self didSendRequest:self.request transaction:tx contactItem:self.paymentInput.userItem];
+        [self.delegate paymentProcessor:self didSendRequest:self.request txidWire:txidWire contactItem:self.paymentInput.userItem];
 
         self.didSendRequestDelegateNotified = YES;
 
         // callbackScheme rides on whichever carrier drove this send (intent for plain-dash:, the
-        // synthetic/real request for C10/file).
+        // synthetic/real request for C10).
         [self handleCallbackSchemeIfNeeded:(self.request.callbackScheme ?: self.paymentIntent.callbackScheme)
                                    address:address
-                                        tx:tx];
+                                  txidWire:txidWire];
 
         [self reset];
     }
@@ -700,12 +698,12 @@ static NSString *sanitizeString(NSString *s) {
                                      tx:(DSTransaction *_Nonnull)tx {
     if (relayedToServer) {
         if (!self.didSendRequestDelegateNotified) {
-            [self.delegate paymentProcessor:self didSendRequest:protocolRequest transaction:tx contactItem:self.paymentInput.userItem];
+            [self.delegate paymentProcessor:self didSendRequest:protocolRequest txidWire:tx.txHashData contactItem:self.paymentInput.userItem];
         }
 
         [self handleCallbackSchemeIfNeeded:protocolRequest.callbackScheme
                                    address:address
-                                        tx:tx];
+                                  txidWire:tx.txHashData];
     }
 
     [self reset];
@@ -812,10 +810,10 @@ static NSString *sanitizeString(NSString *s) {
 
 - (void)handleCallbackSchemeIfNeeded:(nullable NSString *)callbackScheme
                              address:(NSString *)address
-                                  tx:(DSTransaction *)tx {
+                            txidWire:(NSData *)txidWire {
     if (callbackScheme) {
-        NSData *txidData = [NSData dataWithBytes:tx.txHash.u8 length:sizeof(UInt256)].reverse;
-        NSString *txid = [NSString hexWithData:txidData];
+        // Same display-order hex as before the txid retype (wire bytes reversed).
+        NSString *txid = [NSString hexWithData:txidWire.reverse];
         NSString *encodedAddress = [address stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
         NSString *callbackString = [callbackScheme
             stringByAppendingFormat:@"://callback=payack&address=%@&txid=%@",

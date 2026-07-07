@@ -138,7 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-#pragma mark - DWPaymentProcessorDelegate
+#pragma mark - PaymentControllerDelegate
 
 - (void)paymentControllerDidCancelTransaction:(PaymentController *_Nonnull)controller {
 }
@@ -146,10 +146,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)paymentControllerDidFailTransaction:(PaymentController *)controller {
 }
 
-- (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller transaction:(DSTransaction *_Nonnull)transaction {
+- (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller txidWire:(NSData *_Nonnull)txidWire {
     [self dismissViewControllerAnimated:true
                              completion:^{
-                                 DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTransaction:transaction];
+                                 DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTxidWire:txidWire];
                                  SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
                                  vc.contactItem = self->_paymentController.contactItem;
                                  vc.delegate = self;

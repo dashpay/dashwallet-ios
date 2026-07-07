@@ -39,7 +39,8 @@ enum PaymentsViewControllerState: Int {
 @objc(DWPaymentsViewControllerDelegate)
 protocol PaymentsViewControllerDelegate: AnyObject {
     func paymentsViewControllerDidCancel(_ controller: PaymentsViewController)
-    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, tx: DSTransaction, contact: DWDPBasicUserItem?)
+    /// `txidWire` is the broadcast transaction's wire-order txid (`Transaction.txHashData` convention).
+    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, txidWire: Data, contact: DWDPBasicUserItem?)
 }
 
 // MARK: - PaymentsViewController
@@ -192,8 +193,8 @@ extension PaymentsViewController: SendReceivePageControllerDelegate {
 // MARK: PayViewControllerDelegate
 
 extension PaymentsViewController: PayViewControllerDelegate {
-    func payViewControllerDidFinishPayment(_ controller: PayViewController, tx: DSTransaction, contact: DWDPBasicUserItem?) {
-        delegate?.paymentsViewControllerDidFinishPayment(self, tx: tx, contact: contact)
+    func payViewControllerDidFinishPayment(_ controller: PayViewController, txidWire: Data, contact: DWDPBasicUserItem?) {
+        delegate?.paymentsViewControllerDidFinishPayment(self, txidWire: txidWire, contact: contact)
     }
 }
 

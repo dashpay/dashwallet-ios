@@ -27,7 +27,9 @@ protocol AmountViewController where Self: BaseAmountViewController { }
 
 @objc
 protocol PaymentControllerDelegate: AnyObject {
-    func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction)
+    /// `txidWire` is the broadcast transaction's wire-order txid
+    /// (`Transaction.txHashData` convention) — resolve via `TxDetailModel(txidWire:)`.
+    func paymentControllerDidFinishTransaction(_ controller: PaymentController, txidWire: Data)
     func paymentControllerDidCancelTransaction(_ controller: PaymentController)
     func paymentControllerDidFailTransaction(_ controller: PaymentController)
 }
@@ -191,7 +193,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didSend protocolRequest: DSPaymentProtocolRequest?,
-                          transaction: DSTransaction, contactItem: DWDPBasicUserItem?) {
+                          txidWire: Data, contactItem: DWDPBasicUserItem?) {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
 
         let finishBlock = {
@@ -199,7 +201,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
                 vc.navigationController?.popViewController(animated: true)
 
                 DispatchQueue.main.async {
-                    self.delegate?.paymentControllerDidFinishTransaction(self, transaction: transaction)
+                    self.delegate?.paymentControllerDidFinishTransaction(self, txidWire: txidWire)
                 }
             }
         }
