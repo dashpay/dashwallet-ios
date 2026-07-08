@@ -152,7 +152,7 @@ class MainMenuViewModel: ObservableObject {
     // MARK: - Actions
 
     private func handleBuySellDash() {
-        DSAuthenticationManager.sharedInstance().authenticate(
+        AuthenticationService.shared.authenticate(
             withPrompt: nil,
             usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
             alertIfLockout: true

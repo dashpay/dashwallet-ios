@@ -123,7 +123,7 @@ final class BackupInfoViewController: BaseViewController {
 
     @IBAction
     func backupButtonAction() {
-        let authManager = DSAuthenticationManager.sharedInstance()
+        let authManager = AuthenticationService.shared
         
         if type == .setup && authManager.didAuthenticate {
             showSeedPhraseViewController()

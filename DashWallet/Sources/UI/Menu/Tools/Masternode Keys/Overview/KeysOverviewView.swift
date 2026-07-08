@@ -60,7 +60,7 @@ struct KeysOverviewContentView: View {
     }
 
     private func handleItemTap(_ item: MNKey) {
-        DSAuthenticationManager.sharedInstance().authenticate(
+        AuthenticationService.shared.authenticate(
             withPrompt: nil,
             usingBiometricAuthentication: false,
             alertIfLockout: true

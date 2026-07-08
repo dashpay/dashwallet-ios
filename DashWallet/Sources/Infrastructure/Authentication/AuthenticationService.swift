@@ -110,6 +110,13 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         PinStore.hasValue(for: .pin)
     }
 
+    /// The stored PIN, or nil when none is set. The pod's `getPin:` for the
+    /// callers that need the digits directly (wallet create/recover, which
+    /// hand the PIN to SwiftDashSDK).
+    @objc var currentPin: String? {
+        PinStore.string(for: .pin)
+    }
+
     /// Pod's `setupNewPin:` — write the PIN, flip the flags, stamp the
     /// biometric window.
     @objc @discardableResult
@@ -330,6 +337,29 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
             return .cancelled
         case .failed:
             return .failed
+        }
+    }
+
+    /// Pod-selector-compatible completion facade so the direct
+    /// `DSAuthenticationManager.authenticate(withPrompt:...)` call sites cut
+    /// over mechanically. `prompt` is accepted and ignored (every app caller
+    /// passes nil); `alertIfLockout` is implicit — the modal renders lockout
+    /// inline. Completion tuple: (authenticatedOrSuccess, usedBiometrics,
+    /// cancelled), matching the pod.
+    @objc(authenticateWithPrompt:usingBiometricAuthentication:alertIfLockout:completion:)
+    func authenticate(withPrompt prompt: String?,
+                      usingBiometricAuthentication biometric: Bool,
+                      alertIfLockout: Bool,
+                      completion: @escaping (Bool, Bool, Bool) -> Void) {
+        Task { @MainActor in
+            switch await authenticate(usingBiometrics: biometric, spendAmount: nil) {
+            case .authenticated(let usedBiometrics):
+                completion(true, usedBiometrics, false)
+            case .cancelled:
+                completion(false, false, true)
+            case .failed:
+                completion(false, false, false)
+            }
         }
     }
 

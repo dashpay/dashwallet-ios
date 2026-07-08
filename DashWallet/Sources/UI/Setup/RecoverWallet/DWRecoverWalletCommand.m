@@ -17,7 +17,6 @@
 
 #import "DWRecoverWalletCommand.h"
 
-#import <DashSync/DSAuthenticationManager+Private.h>
 
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
@@ -77,8 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     }
 
-    NSError *pinError = nil;
-    NSString *pin = [[DSAuthenticationManager sharedInstance] getPin:&pinError];
+    NSString *pin = [DWAuthenticationService shared].currentPin;
     if (pin.length == 0) {
         return;
     }

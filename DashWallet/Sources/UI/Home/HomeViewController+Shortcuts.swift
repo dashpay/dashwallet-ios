@@ -74,7 +74,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
     // MARK: - Private
 
     private func secureWalletAction() {
-        DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true) { [weak self] authenticated, usedBiometrics, cancelled in
+        AuthenticationService.shared.authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true) { [weak self] authenticated, usedBiometrics, cancelled in
             guard authenticated else { return }
             self?.secureWalletActionAuthenticated()
         }
@@ -89,7 +89,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
     }
 
     private func buySellDashAction() {
-        DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled, alertIfLockout: true) { [weak self] authenticated, usedBiometrics, cancelled in
+        AuthenticationService.shared.authenticate(withPrompt: nil, usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled, alertIfLockout: true) { [weak self] authenticated, usedBiometrics, cancelled in
             guard authenticated else { return }
             self?.buySellDashActionAuthenticated()
         }
@@ -185,7 +185,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
     }
 
     private func showCoinbase() {
-        DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled, alertIfLockout: true) { [weak self] authenticated, _, _ in
+        AuthenticationService.shared.authenticate(withPrompt: nil, usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled, alertIfLockout: true) { [weak self] authenticated, _, _ in
             guard authenticated else { return }
             self?.showCoinbaseAuthenticated()
         }

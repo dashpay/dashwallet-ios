@@ -165,10 +165,10 @@ final class CrowdNodeModel {
 
     func authenticate(message: String? = nil, allowBiometric: Bool = true) async -> Bool {
         let biometricEnabled = DWGlobalOptions.sharedInstance().biometricAuthEnabled
-        return await DSAuthenticationManager.sharedInstance().authenticate(withPrompt: message,
-                                                                           usingBiometricAuthentication: allowBiometric &&
-                                                                               biometricEnabled,
-                                                                           alertIfLockout: true).0
+        let outcome = await AuthenticationService.shared.authenticate(
+            usingBiometrics: allowBiometric && biometricEnabled, spendAmount: nil)
+        if case .authenticated = outcome { return true }
+        return false
     }
 
     func didShowInfoScreen() {
@@ -274,7 +274,7 @@ extension CrowdNodeModel {
     func deposit(amount: UInt64) async throws -> Bool {
         guard amount > 0 else { return false }
 
-        let usingBiometric = DSAuthenticationManager.sharedInstance().canUseBiometricAuthentication(forAmount: amount)
+        let usingBiometric = AuthenticationService.shared.canUseBiometricAuthentication(forAmount: amount)
         if await authenticate(allowBiometric: usingBiometric) {
             try await crowdNode.deposit(amount: amount)
             return true

@@ -100,7 +100,7 @@ class SendAmountModel: BaseAmountModel {
     }
 
     internal func auth(completionBlock: @escaping ((Bool) -> Void)) {
-        let authManager = DSAuthenticationManager.sharedInstance()
+        let authManager = AuthenticationService.shared
 
         if authManager.didAuthenticate {
             completionBlock(true)

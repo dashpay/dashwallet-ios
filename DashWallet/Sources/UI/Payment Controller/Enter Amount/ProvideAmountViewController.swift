@@ -129,7 +129,7 @@ final class ProvideAmountViewController: SendAmountViewController {
         }
 
         if locksBalance && isBalanceHidden {
-            DSAuthenticationManager.sharedInstance().authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true) { authenticatedOrSuccess, _, _ in
+            AuthenticationService.shared.authenticate(withPrompt: nil, usingBiometricAuthentication: false, alertIfLockout: true) { authenticatedOrSuccess, _, _ in
 
                 guard authenticatedOrSuccess else { return }
                 toggleBalance()

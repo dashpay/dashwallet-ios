@@ -36,7 +36,7 @@ class SecurityMenuViewModel: ObservableObject {
     @Published var balanceHidden = false
     
     private let biometricAuthModel = DWBiometricAuthModel()
-    private let authenticationManager = DSAuthenticationManager.sharedInstance()
+    private let authenticationManager = AuthenticationService.shared
     
     let hasTouchID: Bool
     let hasFaceID: Bool

@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)handleMasterPublicKeyRequest:(DWURLRequestAction *)action {
     NSString *prompt = [NSString stringWithFormat:NSLocalizedString(@"Application %@ would like to receive your Master Public Key.  This can be used to keep track of your wallet, this can not be used to move your Dash.", nil), action.sender];
 
-    [[DSAuthenticationManager sharedInstance]
+    [[DWAuthenticationService shared]
               authenticateWithPrompt:prompt
         usingBiometricAuthentication:NO
                       alertIfLockout:YES
@@ -87,7 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)handleAddressRequest:(DWURLRequestAction *)action {
     NSString *prompt = [NSString stringWithFormat:NSLocalizedString(@"Application %@ is requesting an address so it can pay you.  Would you like to authorize this?", nil), action.sender];
 
-    [[DSAuthenticationManager sharedInstance]
+    [[DWAuthenticationService shared]
               authenticateWithPrompt:prompt
         usingBiometricAuthentication:NO
                       alertIfLockout:YES
