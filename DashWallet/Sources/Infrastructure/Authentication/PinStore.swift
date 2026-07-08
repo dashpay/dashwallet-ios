@@ -62,9 +62,15 @@ enum LockoutPolicy {
     static let pinLength = 4
     /// Free attempts before the exponential backoff starts.
     static let allowedFailCount: UInt64 = 3
-    /// At this unique-wrong-PIN count the wallet is permanently disabled
+    /// At this wrong-PIN count the wallet is permanently disabled
     /// (wipe-with-phrase is the only recovery).
     static let maxFailCount: UInt64 = 8
+
+    /// Show the "N attempts left before your wallet is disabled" warning
+    /// once this few remain before `maxFailCount` — below it a wrong PIN
+    /// just shakes (the temporary cooldown at `allowedFailCount` is
+    /// communicated by its own countdown, not a counter).
+    static let permanentLockWarningThreshold: UInt64 = 2
 
     /// Remaining lockout in seconds:
     /// `failHeight + 6^(failCount−3)·60 − secureTime` (≤ 0 ⇒ not locked).

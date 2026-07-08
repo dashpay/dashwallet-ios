@@ -72,12 +72,23 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
     private let secureTimeService: SecureTimeService
     private let userDefaults: UserDefaults
 
-    /// Unique wrong PINs of the current process lifetime — re-entering the
-    /// same wrong PIN never double-increments the fail counter (pod parity;
-    /// in-memory there too, so losing it on relaunch matches).
-    private var failedPins = Set<String>()
+    private var sessionAuthenticated = false
 
-    @objc private(set) var didAuthenticate = false
+    /// Copy for the lock screen: how many attempts remain before the
+    /// permanent lock.
+    var remainingAttempts: UInt64 {
+        failCount >= LockoutPolicy.maxFailCount ? 0 : LockoutPolicy.maxFailCount - failCount
+    }
+
+    /// TODO(C7-final): during the C7.3→C7.7 window the still-DashSync lock
+    /// screen sets the pod's session flag on unlock; OR it in so
+    /// `sessionAuthSufficient` gates and `didAuthenticate` readers stay
+    /// coherent regardless of which stack authenticated. The C7.7 cutover
+    /// drops the pod term and this getter becomes the plain stored value.
+    @objc var didAuthenticate: Bool {
+        get { sessionAuthenticated || DSAuthenticationManager.sharedInstance().didAuthenticate }
+        set { sessionAuthenticated = newValue }
+    }
 
     init(secureTime: SecureTimeService = .shared, userDefaults: UserDefaults = .standard) {
         self.secureTimeService = secureTime
@@ -132,19 +143,20 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         case storeError
     }
 
-    /// Ported from `performPinVerificationAgainstCurrentPin:` (:896-940):
-    /// unique attempts pre-increment the fail counter, success resets
-    /// everything, unique failures stamp `failHeight` with secure time.
+    /// Success resets counters + biometric allowance; a wrong PIN increments
+    /// the fail counter and re-stamps `failHeight` to the current secure time
+    /// so the backoff window restarts from the latest attempt.
+    ///
+    /// Deliberate divergence from `performPinVerificationAgainstCurrentPin:`
+    /// (:896-940): DashSync deduplicated identical wrong PINs via an
+    /// in-memory `failedPins` set, so re-entering the same wrong code never
+    /// advanced the counter. Owner decision 2026-07-08: count every attempt —
+    /// the dedup only shielded a fumbling legit user (an attacker types
+    /// distinct guesses regardless) and made the lock untestable/ineffective.
     @objc func verifyPin(_ inputPin: String) -> PinVerification {
         guard let storedPin = PinStore.string(for: .pin) else { return .storeError }
-        let previousFailCount = failCount
-
-        if !failedPins.contains(inputPin) {
-            PinStore.set(int64: Int64(bitPattern: previousFailCount &+ 1), for: .pinFailCount)
-        }
 
         if inputPin == storedPin {
-            failedPins.removeAll()
             didAuthenticate = true
             PinStore.set(int64: 0, for: .pinFailCount)
             PinStore.set(int64: 0, for: .pinFailHeight)
@@ -153,21 +165,11 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
             return .authenticated
         }
 
-        if !failedPins.contains(inputPin) {
-            failedPins.insert(inputPin)
+        let newFailCount = failCount &+ 1
+        PinStore.set(int64: Int64(bitPattern: newFailCount), for: .pinFailCount)
+        PinStore.set(int64: Int64(secureTime), for: .pinFailHeight)
 
-            let secureTime = self.secureTime
-            let storedHeight = TimeInterval(PinStore.int64(for: .pinFailHeight) ?? 0)
-            if secureTime > storedHeight {
-                PinStore.set(int64: Int64(secureTime), for: .pinFailHeight)
-            }
-
-            if previousFailCount >= LockoutPolicy.allowedFailCount {
-                return .wrongPinLockout
-            }
-        }
-
-        return .wrongPinTryAgain
+        return newFailCount >= LockoutPolicy.allowedFailCount ? .wrongPinLockout : .wrongPinTryAgain
     }
 
     struct Precheck {
@@ -177,18 +179,24 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         let attemptsMessage: String?
     }
 
-    /// Ported from `performAuthenticationPrecheck:` (:826-878).
+    /// Ported from `performAuthenticationPrecheck:` (:826-878), with the
+    /// attempts-remaining message surfaced from the first failure on (not
+    /// only past the free attempts) so the modal always shows live feedback.
     func authenticationPrecheck() -> Precheck {
         let count = failCount
         if count >= LockoutPolicy.maxFailCount {
             return Precheck(shouldContinueAuthentication: false, shouldLockout: true, attemptsMessage: nil)
         }
-        if count >= LockoutPolicy.allowedFailCount {
-            if lockoutWaitTime > 0 {
-                return Precheck(shouldContinueAuthentication: false, shouldLockout: true, attemptsMessage: nil)
-            }
-            let remaining = LockoutPolicy.maxFailCount - count
-            let message = String(format: NSLocalizedString("%ld attempt(s) remaining", comment: ""), Int(remaining))
+        if count >= LockoutPolicy.allowedFailCount, lockoutWaitTime > 0 {
+            return Precheck(shouldContinueAuthentication: false, shouldLockout: true, attemptsMessage: nil)
+        }
+        // Surface a counter only as a warning close to the PERMANENT
+        // (wipe-only) lock — below that a wrong PIN just shakes, so the
+        // count-toward-8 number doesn't get confused with the temporary
+        // cooldown at 3.
+        let remaining = LockoutPolicy.maxFailCount - count
+        if count > 0, remaining <= LockoutPolicy.permanentLockWarningThreshold {
+            let message = String(format: NSLocalizedString("%ld attempt(s) left before your wallet is disabled", comment: ""), Int(remaining))
             return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: message)
         }
         return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: nil)
@@ -275,6 +283,73 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
             PinStore.set(int64: Int64(bitPattern: limit), for: .biometricAmountLeft)
         }
         return true
+    }
+
+    // MARK: Interactive authentication
+
+    enum AuthOutcome {
+        case authenticated(usedBiometrics: Bool)
+        case cancelled
+        case failed
+    }
+
+    /// The presenting entry point behind `AuthenticationGate`. Biometrics are
+    /// attempted only when allowed AND (for a spend) within the remaining
+    /// allowance; a biometric failure zeroes the allowance and falls through
+    /// to the PIN modal, matching the pod. `spendAmount` threads Bug #3's
+    /// limit enforcement (wired at the call sites in C7.4); nil for
+    /// non-monetary gates.
+    @MainActor
+    func authenticate(usingBiometrics: Bool, spendAmount: UInt64?) async -> AuthOutcome {
+        guard usesAuthentication else { return .authenticated(usedBiometrics: false) }
+
+        let biometricsPermitted: Bool = {
+            guard usingBiometrics, isBiometricAuthenticationAllowed else { return false }
+            if let amount = spendAmount { return canUseBiometricAuthentication(forAmount: amount) }
+            return true
+        }()
+
+        if biometricsPermitted {
+            switch await evaluateBiometrics() {
+            case .success:
+                didAuthenticate = true
+                if let amount = spendAmount { updateBiometricsAmountLeft(afterSpending: amount) }
+                return .authenticated(usedBiometrics: true)
+            case .cancelled:
+                return .cancelled
+            case .failed:
+                zeroBiometricsAmountLeft() // next spend requires PIN (pod parity)
+                // fall through to PIN
+            }
+        }
+
+        switch await PinPromptPresenter.present(service: self) {
+        case .authenticated:
+            return .authenticated(usedBiometrics: false)
+        case .cancelled:
+            return .cancelled
+        case .failed:
+            return .failed
+        }
+    }
+
+    private enum BiometricResult { case success, cancelled, failed }
+
+    @MainActor
+    private func evaluateBiometrics() async -> BiometricResult {
+        let context = LAContext()
+        let reason = NSLocalizedString("Authenticate to access your wallet", comment: "Biometric prompt")
+        return await withCheckedContinuation { continuation in
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
+                if success {
+                    continuation.resume(returning: .success)
+                } else if let laError = error as? LAError, laError.code == .userCancel || laError.code == .appCancel || laError.code == .systemCancel {
+                    continuation.resume(returning: .cancelled)
+                } else {
+                    continuation.resume(returning: .failed)
+                }
+            }
+        }
     }
 
     // MARK: Secure time

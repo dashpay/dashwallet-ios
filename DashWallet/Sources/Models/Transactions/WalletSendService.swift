@@ -334,8 +334,11 @@ enum AuthenticationGate {
     /// protocol sends: an already-authenticated session (`didAuthenticate`,
     /// set by the lock-screen PIN/biometric unlock) passes without presenting
     /// any UI. Interactive gates keep the default `false` and prompt per send.
-    static func authenticate(biometric: Bool, sessionAuthSufficient: Bool = false, timeout: TimeInterval = 120) async -> Outcome {
-        if sessionAuthSufficient, DSAuthenticationManager.sharedInstance().didAuthenticate {
+    static func authenticate(biometric: Bool,
+                             sessionAuthSufficient: Bool = false,
+                             spendAmount: UInt64? = nil,
+                             timeout: TimeInterval = 120) async -> Outcome {
+        if sessionAuthSufficient, AuthenticationService.shared.didAuthenticate {
             WalletSendService.logger.info("💸 TXSEND :: session-authenticated — skipping auth prompt")
             return .ok
         }
@@ -347,19 +350,25 @@ enum AuthenticationGate {
                 continuation.resume(returning: outcome)
             }
 
-            // Watchdog: resume after the timeout if the callback never arrives (silent
-            // non-presentation). It harmlessly no-ops once auth has resumed (safeResume is
-            // idempotent). The watchdog and the auth callback both run on the main queue, so
-            // `didResume` is accessed serially — no lock needed.
+            // Watchdog: resume after the timeout if the modal never resolves
+            // (no presentation anchor is handled inside the presenter, but a
+            // wedged UI still can't be ruled out). Idempotent; serial on main.
             DispatchQueue.main.asyncAfter(deadline: .now() + timeout) { safeResume(.timedOut) }
 
-            DispatchQueue.main.async {
-                DSAuthenticationManager.sharedInstance().authenticate(
-                    withPrompt: nil,
-                    usingBiometricAuthentication: biometric,
-                    alertIfLockout: true
-                ) { authenticatedOrSuccess, _, cancelled in
-                    safeResume(cancelled ? .cancelled : (authenticatedOrSuccess ? .ok : .failed))
+            Task { @MainActor in
+                let outcome = await AuthenticationService.shared.authenticate(
+                    usingBiometrics: biometric, spendAmount: spendAmount)
+                switch outcome {
+                case .authenticated:
+                    // TODO(C7-final): mirror into the pod's session flag so the
+                    // still-DashSync lock screen and the `didAuthenticate`
+                    // readers stay coherent until C7.7 deletes the bridge.
+                    DSAuthenticationManager.sharedInstance().didAuthenticate = true
+                    safeResume(.ok)
+                case .cancelled:
+                    safeResume(.cancelled)
+                case .failed:
+                    safeResume(.failed)
                 }
             }
         }
