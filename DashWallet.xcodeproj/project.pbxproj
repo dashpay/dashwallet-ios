@@ -54,6 +54,7 @@
 		114D16B829828BCC009A124C /* OnlineAccountConfirmationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */; };
 		11517C852949E6F0004FC7BF /* CrowdNodeEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */; };
 		11517C87294B0FED004FC7BF /* CrowdNodeWebService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */; };
+		DA12C0DE2026070800000002 /* DarkCoinMessageFraming.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA12C0DE2026070800000001 /* DarkCoinMessageFraming.swift */; };
 		11517C8A294B11DD004FC7BF /* CrowdNodeBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C89294B11DD004FC7BF /* CrowdNodeBalance.swift */; };
 		117728A3297A7D24006F1553 /* CrowdNodePortalItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117728A2297A7D24006F1553 /* CrowdNodePortalItem.swift */; };
 		117ECC7E29742A42003D798E /* CrowdNodeWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117ECC7D29742A42003D798E /* CrowdNodeWebViewController.swift */; };
@@ -1179,6 +1180,7 @@
 		C9D2C6962A320AA000D15901 /* DWBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */; };
 		C9D2C6972A320AA000D15901 /* DWBiometricAuthViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314622CF82D9009BAF7F /* DWBiometricAuthViewController.m */; };
 		C9D2C6982A320AA000D15901 /* CrowdNodeWebService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */; };
+		DA12C0DE2026070800000003 /* DarkCoinMessageFraming.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA12C0DE2026070800000001 /* DarkCoinMessageFraming.swift */; };
 		C9D2C6992A320AA000D15901 /* DWStartViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D12196E25D00A6E7E6 /* DWStartViewController.m */; };
 		C9D2C69B2A320AA000D15901 /* DWStartModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB231D62196E5CF00A6E7E6 /* DWStartModel.m */; };
 		C9D2C69C2A320AA000D15901 /* DWAdvancedSecurityModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417923A929B6004E37A7 /* DWAdvancedSecurityModelStub.m */; };
@@ -1880,6 +1882,7 @@
 		114D16B729828BCC009A124C /* OnlineAccountConfirmationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineAccountConfirmationController.swift; sourceTree = "<group>"; };
 		11517C842949E6F0004FC7BF /* CrowdNodeEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeEndpoint.swift; sourceTree = "<group>"; };
 		11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWebService.swift; sourceTree = "<group>"; };
+		DA12C0DE2026070800000001 /* DarkCoinMessageFraming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DarkCoinMessageFraming.swift; sourceTree = "<group>"; };
 		11517C89294B11DD004FC7BF /* CrowdNodeBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalance.swift; sourceTree = "<group>"; };
 		117728A2297A7D24006F1553 /* CrowdNodePortalItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodePortalItem.swift; sourceTree = "<group>"; };
 		117ECC7D29742A42003D798E /* CrowdNodeWebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWebViewController.swift; sourceTree = "<group>"; };
@@ -3764,6 +3767,7 @@
 			children = (
 				117ED4A028EC86E0006E3EE4 /* TransactionObserver.swift */,
 				11517C86294B0FED004FC7BF /* CrowdNodeWebService.swift */,
+				DA12C0DE2026070800000001 /* DarkCoinMessageFraming.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -8877,6 +8881,7 @@
 				2A44314722CF82D9009BAF7F /* DWBiometricAuthViewController.m in Sources */,
 				75FFD6BE2BF491FC0032879E /* HomeViewController+BackupReminder.swift in Sources */,
 				11517C87294B0FED004FC7BF /* CrowdNodeWebService.swift in Sources */,
+				DA12C0DE2026070800000002 /* DarkCoinMessageFraming.swift in Sources */,
 				75EBAA1D2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift in Sources */,
 				2A4E531422E9F0A200E5168A /* DWStartViewController.m in Sources */,
 				7569D6832DE6DA6800768BFF /* ExploreViewController.swift in Sources */,
@@ -9600,6 +9605,7 @@
 				755A22BD2B1385FD001F170D /* IconAttributedText.swift in Sources */,
 				C9D2C6972A320AA000D15901 /* DWBiometricAuthViewController.m in Sources */,
 				C9D2C6982A320AA000D15901 /* CrowdNodeWebService.swift in Sources */,
+				DA12C0DE2026070800000003 /* DarkCoinMessageFraming.swift in Sources */,
 				C943B4EE2A40A54600AF23C5 /* DWStretchyHeaderListCollectionLayout.m in Sources */,
 				75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */,
 				C9D2C6992A320AA000D15901 /* DWStartViewController.m in Sources */,

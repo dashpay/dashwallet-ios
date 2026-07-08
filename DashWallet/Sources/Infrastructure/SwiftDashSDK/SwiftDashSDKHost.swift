@@ -106,6 +106,31 @@ final class SwiftDashSDKHost {
         }
     }
 
+    /// Throwaway key-wallet stack (manager + wallet) for path-based key
+    /// derivation, built from the persisted mnemonic of the host's active
+    /// wallet. Separate from the running `PlatformWalletManager` — key
+    /// derivation lives in the `WalletManager`/`Wallet` FFI surface, which
+    /// the runtime handles don't expose. The instances derive keys locally
+    /// (no networking, no persistence); drop them when done.
+    ///
+    /// Consumers: the masternode Owner/Voting key deriver and CrowdNode
+    /// message signing. Returns nil when no wallet is bound/running or the
+    /// mnemonic can't be read (logged).
+    func derivationWallet() -> (manager: WalletManager, wallet: Wallet, walletId: Data)? {
+        guard let hostWalletId = wallet?.walletId, let network = runningNetwork else {
+            Self.logger.warning("🪺 HOST :: derivationWallet — no bound wallet/network")
+            return nil
+        }
+        guard let mnemonic = try? WalletStorage().retrieveMnemonic(for: hostWalletId),
+              let manager = try? WalletManager(network: network),
+              let walletId = try? manager.addWallet(mnemonic: mnemonic),
+              let derivationWallet = (try? manager.getWallet(id: walletId)) ?? nil else {
+            Self.logger.error("🪺 HOST :: derivationWallet — key-wallet bootstrap failed")
+            return nil
+        }
+        return (manager: manager, wallet: derivationWallet, walletId: walletId)
+    }
+
     // MARK: - Lifecycle
 
     enum HostError: LocalizedError {

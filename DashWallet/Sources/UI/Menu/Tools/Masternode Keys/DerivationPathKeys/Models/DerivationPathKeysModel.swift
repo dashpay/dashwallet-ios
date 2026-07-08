@@ -140,8 +140,7 @@ private final class MasternodeProviderKeyDeriver {
     private let walletId: Data
 
     init?(key: MNKey) {
-        guard let hostWalletId = SwiftDashSDKHost.shared.wallet?.walletId,
-              let network = SwiftDashSDKHost.shared.runningNetwork else {
+        guard let network = SwiftDashSDKHost.shared.runningNetwork else {
             return nil
         }
 
@@ -157,10 +156,7 @@ private final class MasternodeProviderKeyDeriver {
             type = .providerOwnerKeys
         }
 
-        guard let mnemonic = try? WalletStorage().retrieveMnemonic(for: hostWalletId),
-              let manager = try? WalletManager(network: network),
-              let walletId = try? manager.addWallet(mnemonic: mnemonic),
-              let wallet = (try? manager.getWallet(id: walletId)) ?? nil else {
+        guard let (manager, wallet, walletId) = SwiftDashSDKHost.shared.derivationWallet() else {
             return nil
         }
 

@@ -16,6 +16,7 @@
 //
 
 import Combine
+import SwiftDashSDK
 import WebKit
 
 // MARK: - CrowdNodeModelObjcWrapper
@@ -284,19 +285,17 @@ extension CrowdNodeModel {
 
     func withdraw(amount: UInt64) async throws -> Bool {
         guard amount > 0 && walletBalance >= CrowdNode.minimumLeftoverBalance else { return false }
-        
-        let wallet = DWEnvironment.sharedInstance().currentWallet
-        let result = await wallet.seed(withPrompt: NSLocalizedString("Sign the message", comment: "CrowdNode"), forAmount: 1)
 
-        if let seed = result.0, !result.1 {
-            if let key = wallet.privateKey(forAddress: crowdNode.accountAddress, fromSeed: seed) {
-                let signature = DSKeyManager.signMesasageDigest(key, digest: amount.value.magicDigest())
-                try await crowdNode.withdraw(amount: amount, signature: signature.base64EncodedString())
-                return true
-            }
-        }
+        guard await AuthenticationGate.authenticate(
+            biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled) == .ok else { return false }
 
-        return false
+        // Signed message == the exact string requestWithdrawal sends as the
+        // `amount` API parameter (its `.value` — `String(describing:)`).
+        guard let signature = CrowdNodeMessageSigner.sign(
+            message: String(amount), forAddress: crowdNode.accountAddress) else { return false }
+
+        try await crowdNode.withdraw(amount: amount, signature: signature.base64EncodedString())
+        return true
     }
 
     /// Fee for an average-size tx at the app's 1 duff/byte rate — the same
@@ -341,21 +340,80 @@ extension CrowdNodeModel {
         guard !crowdNode.accountAddress.isEmpty else { return false }
         emailForAccount = email
 
-        let wallet = DWEnvironment.sharedInstance().currentWallet
-        let result = await wallet.seed(withPrompt: NSLocalizedString("Sign the message", comment: "CrowdNode"), forAmount: 1)
+        guard await AuthenticationGate.authenticate(
+            biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled) == .ok else { return false }
 
-        if !result.1 {
-            if let key = wallet.privateKey(forAddress: crowdNode.accountAddress, fromSeed: result.0!) {
-                let signature = DSKeyManager.signMesasageDigest(key, digest: email.magicDigest())
-                try await crowdNode.registerEmailForAccount(email: email, signature: signature.base64EncodedString())
-                return true
-            }
-        }
+        guard let signature = CrowdNodeMessageSigner.sign(
+            message: email, forAddress: crowdNode.accountAddress) else { return false }
 
-        return false
+        try await crowdNode.registerEmailForAccount(email: email, signature: signature.base64EncodedString())
+        return true
     }
 
     func finishSignUpToOnlineAccount() {
         crowdNode.setOnlineAccountCreated()
+    }
+}
+
+// MARK: - CrowdNodeMessageSigner
+
+/// Dash "signed message" production for the CrowdNode API
+/// (withdrawal / email registration), SwiftDashSDK-native — replaces the
+/// frozen DashSync path (`wallet.privateKey(forAddress:fromSeed:)` +
+/// `DSKeyManager.signMesasageDigest` + `magicDigest`), which reads a
+/// wallet that has no keys for SDK-created wallets.
+///
+/// The CrowdNode account address is a BIP44 receive address of account 0;
+/// the SDK exposes no address→derivation-index lookup, so the signer
+/// re-derives public keys along `m/44'/<coin>'/0'/<chain>/<index>` and
+/// matches the address's hash160. The scan is bounded — an address
+/// outside it (never observed in practice; the address was issued by
+/// this wallet) fails closed with nil, never a wrong-key signature.
+@MainActor
+enum CrowdNodeMessageSigner {
+    private static let scanLimit: UInt32 = 300
+
+    /// 65-byte compact recoverable signature over the DarkCoin-framed
+    /// message (`DarkCoinMessage.framed`; the signer FFI SHA256d-hashes
+    /// internally), or nil when the wallet/keys can't be resolved.
+    static func sign(message: String, forAddress address: String) -> Data? {
+        guard let network = SwiftDashSDKHost.shared.runningNetwork,
+              let targetHash160 = hash160(ofAddress: address, network: network),
+              let (_, wallet, _) = SwiftDashSDKHost.shared.derivationWallet(),
+              let path = derivationPath(ofHash160: targetHash160, wallet: wallet, network: network),
+              let wif = try? wallet.derivePrivateKey(path: path),
+              let privateKey = WIFParser.parseWIF(wif) else {
+            DWLogger.log("CrowdNode: message signing failed — no key resolved for account address")
+            return nil
+        }
+        return try? RawKeySigner.sign(
+            data: DarkCoinMessage.framed(message), privateKey: privateKey, network: network)
+    }
+
+    /// Base58Check-decoded P2PKH hash160 of `address` as lowercase hex
+    /// (the format `computePublicKeyHashHex` emits).
+    private static func hash160(ofAddress address: String, network: Network) -> String? {
+        let paymentNetwork: PaymentNetwork = network == .mainnet ? .mainnet : .testnet
+        guard let script = ScriptAddressCodec.scriptPubKey(forAddress: address, network: paymentNetwork),
+              script.count == 25 else { return nil } // P2PKH only; P2SH can't be message-signed
+        return script.subdata(in: 3 ..< 23).hexEncodedString()
+    }
+
+    /// Scan the BIP44 external chain (then internal, defensively) for the
+    /// key whose hash160 matches. ~50 µs per derive; worst case ≈ 600
+    /// derives once per withdraw/email action.
+    private static func derivationPath(ofHash160 target: String, wallet: Wallet, network: Network) -> String? {
+        let coin = network == .mainnet ? "5'" : "1'"
+        for chain in [0, 1] {
+            for index in 0 ..< scanLimit {
+                let path = "m/44'/\(coin)/0'/\(chain)/\(index)"
+                guard let pubHex = try? wallet.derivePublicKey(path: path),
+                      let pubKey = Data(hex: pubHex) else { continue }
+                if KeychainManager.computePublicKeyHashHex(pubKey) == target {
+                    return path
+                }
+            }
+        }
+        return nil
     }
 }
