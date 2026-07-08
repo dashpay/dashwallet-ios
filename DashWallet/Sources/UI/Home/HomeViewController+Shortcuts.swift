@@ -163,10 +163,10 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
 
     private func showSendToContact() {
         #if DASHPAY
-        // TODO: wire this up via the payments controller. DWContactsViewController
-        // requires initWithPayModel:dataProvider: and a payDelegate that conforms to
-        // DWContactsViewControllerPayDelegate (PayViewController does, HomeViewController
-        // does not). See PayableViewController.performPayToDashPayUser(with:delegate:).
+        // Row #18: open the SwiftUI contacts screen; paying happens
+        // from a contact's profile sheet (WalletSendService.sendToContact).
+        let controller = UIHostingController(rootView: ContactsScreen())
+        present(controller, animated: true)
         #endif
     }
 

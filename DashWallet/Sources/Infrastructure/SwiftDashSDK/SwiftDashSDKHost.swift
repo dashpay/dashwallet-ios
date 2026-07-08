@@ -61,6 +61,18 @@ final class SwiftDashSDKHost {
         sdkInitLock.lock()
         defer { sdkInitLock.unlock() }
         if !sdkInitialized {
+            // Install the SDK's Rust tracing subscriber BEFORE init so
+            // wallet-side diagnostics (DashPay sync passes, payment
+            // reconciles, SPV events) reach the console. Without this
+            // every `tracing::warn!` in rs-platform-wallet is silently
+            // dropped — the payments-attribution debugging session of
+            // 2026-07-08 flew blind because of it. `RUST_LOG` overrides
+            // the level when set (dev runs: SIMCTL_CHILD_RUST_LOG=…).
+            #if DEBUG
+            SDK.enableLogging(level: .info)
+            #else
+            SDK.enableLogging(level: .warn)
+            #endif
             SDK.initialize()
             sdkInitialized = true
         }

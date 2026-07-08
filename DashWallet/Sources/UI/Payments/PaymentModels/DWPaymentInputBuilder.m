@@ -129,41 +129,6 @@ NS_ASSUME_NONNULL_BEGIN
     return paymentInput;
 }
 
-#if DASHPAY
-- (DWPaymentInput *)paymentInputWithUserItem:(id<DWDPBasicUserItem>)userItem {
-    if (MOCK_DASHPAY) {
-        NSString *address = @"yeRZBWYfeNE4yVUHV4ZLs83Ppn9aMRH57A"; // testnet faucet
-        DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-        DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:address onChain:chain];
-
-        DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_BlockchainUser];
-        paymentInput.userItem = userItem;
-        paymentInput.canChangeAmount = YES;
-        paymentInput.request = paymentRequest;
-        paymentInput.request.dashpayUsername = userItem.username;
-
-        return paymentInput;
-    }
-
-    DSFriendRequestEntity *friendRequest = [userItem friendRequestToPay];
-    NSParameterAssert(friendRequest);
-
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-    DSIncomingFundsDerivationPath *derivationPath = [account derivationPathForFriendshipWithIdentifier:friendRequest.friendshipIdentifier];
-    NSAssert(derivationPath.extendedPublicKeyData, @"Extended public key must exist already");
-    NSString *address = derivationPath.receiveAddress;
-
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    DSPaymentRequest *paymentRequest = [DSPaymentRequest requestWithString:address onChain:chain];
-
-    DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_BlockchainUser];
-    paymentInput.userItem = userItem;
-    paymentInput.canChangeAmount = YES;
-    paymentInput.request = paymentRequest;
-
-    return paymentInput;
-}
-#endif
 
 @end
 

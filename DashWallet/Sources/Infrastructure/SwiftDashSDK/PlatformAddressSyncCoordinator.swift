@@ -369,6 +369,27 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             Self.logger.error("🛡️ SHIELD :: bind failed: \(String(describing: error), privacy: .public)")
         }
 
+#if DASHPAY
+        // Start the DashPay background sync (contact requests, own + contact
+        // profiles, contact info, DashPay payment reconciliation — the Rust
+        // coordinator sequences six per-wallet steps each pass, default 15s).
+        // Rows land in SwiftData (PersistentDashpayContactRequest /
+        // PersistentDashpayContactProfile) via the persister callback, which is
+        // what the contacts read model queries (migration row #18). Wallets
+        // with no identity get a harmless empty pass — errors are
+        // log-and-continue per wallet on the Rust side. Best-effort like the
+        // shielded block above: a failure must not abort the BLAST start and
+        // must not touch `lastError`.
+        do {
+            if try !manager.isDashPaySyncRunning() {
+                try manager.startDashPaySync()
+            }
+            Self.logger.info("👥 DASHPAY-SYNC :: started for \(network.rawValue, privacy: .public)")
+        } catch {
+            Self.logger.error("👥 DASHPAY-SYNC :: startDashPaySync failed: \(String(describing: error), privacy: .public)")
+        }
+#endif
+
         self.sdk = SwiftDashSDKHost.shared.sdk
         self.modelContainer = SwiftDashSDKHost.shared.modelContainer
         self.walletManager = manager
@@ -434,6 +455,20 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             } catch {
                 Self.logger.error("🛡️ SHIELD :: stopShieldedSync threw: \(String(describing: error), privacy: .public)")
             }
+#if DASHPAY
+            // Stop the DashPay sync loop alongside BLAST/shielded so it
+            // doesn't outlive the manager (also covers network switch —
+            // performStart calls performStop first). Independent do/catch,
+            // same isolation rationale as the shielded stop above.
+            do {
+                if try manager.isDashPaySyncRunning() {
+                    try manager.stopDashPaySync()
+                }
+                Self.logger.info("👥 DASHPAY-SYNC :: stopped")
+            } catch {
+                Self.logger.error("👥 DASHPAY-SYNC :: stopDashPaySync threw: \(String(describing: error), privacy: .public)")
+            }
+#endif
         }
 
         walletManager = nil

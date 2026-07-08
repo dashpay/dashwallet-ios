@@ -126,7 +126,7 @@ extension PayViewController: UITableViewDataSource, UITableViewDelegate {
             performNFCReadingAction()
     #if DASHPAY
         case .dashPayUser:
-            performPayToDashPayUser(with: dataProvider, delegate: self)
+            performPayToDashPayUser()
     #endif
         @unknown default:
             break
@@ -174,18 +174,3 @@ extension PayViewController: EnterAddressViewControllerDelegate {
     }
 }
 
-#if DASHPAY
-// MARK: DWContactsViewControllerPayDelegate
-extension PayViewController: DWContactsViewControllerPayDelegate {
-    func contactsViewController(_ controller: DWContactsViewController, payTo item: DWDPBasicUserItem) {
-        dismiss(animated: true) { [weak self] in
-            self?.performPayToUser(userItem: item)
-        }
-    }
-    
-    private func performPayToUser(userItem: DWDPBasicUserItem) {
-        let paymentInput = payModel.paymentInput(withUser: userItem)
-        self.paymentController.performPayment(with: paymentInput)
-    }
-}
-#endif

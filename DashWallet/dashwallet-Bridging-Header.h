@@ -98,8 +98,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPBasicUserItem.h"
 #import "DWDPAvatarView.h"
 #import "DWDPRegistrationStatus.h"
-#import "DWDPUserObject.h"
-#import "DWModalUserProfileViewController.h"
 #import "DWInvitationActionsView.h"
 #import "DWInvitationPreviewViewController.h"
 #import "DWInvitationLinkBuilder.h"
@@ -112,11 +110,7 @@ static const bool _SNAPSHOT = 0;
 #if DASHPAY
 #import "DWInvitationSetupState.h"
 #import "DPAlertViewController.h"
-#import "DWNotificationsViewController.h"
 #import "DWDashPayConstants.h"
-#import "DWRootContactsViewController.h"
-#import "DWNotificationsProvider.h"
-#import "DWContactsViewController.h"
 #import "DWCreateUsernameViewController.h"
 #import "DWConfirmUsernameViewController.h"
 #import "DWUsernamePendingViewController.h"
@@ -130,7 +124,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWDPWelcomeCollectionViewController.h"
 #import "DWGetStarted.h"
 #import "DWGetStartedContentViewController.h"
-#import "DWDashPayContactsUpdater.h"
 #import "DWDPUpdateProfileModel.h"
 #import "DWInvitationHistoryViewController.h"
 #endif

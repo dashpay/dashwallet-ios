@@ -18,9 +18,10 @@
 import Foundation
 
 // TODO(dashpay-e2e): these survive solely for the DashPay-frozen ObjC
-// surfaces (DWTransactionListDataProvider(+Stub), DWUserProfileDataSourceObject),
-// which still format DSTransaction couriers directly. They fall with those
-// surfaces when the DashPay tx UI migrates to SDK rows. The app's own
+// surfaces (DWTransactionListDataProvider(+Stub)), which still format
+// DSTransaction couriers directly. They fall with those surfaces when
+// the DashPay tx UI migrates to SDK rows. (DWUserProfileDataSourceObject,
+// previously listed here, was deleted with the Row #18 contacts teardown.) The app's own
 // `Transaction` wrapper no longer touches any of this.
 @objc
 extension DSTransaction {

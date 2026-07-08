@@ -887,15 +887,10 @@ extension HomeViewModel {
             .sink { [weak self] _ in
                 self?.checkJoinDashPay()
                 self?.reloadTxsAndShortcuts()
-                DWDashPayContactsUpdater.sharedInstance().beginUpdating()
+                // Row #18: contact syncing is owned by the SDK DashPay
+                // sync loop (PlatformAddressSyncCoordinator).
             }
             .store(in: &cancellableBag)
-        
-        // TODO: update notifications
-//        NotificationCenter.default.addObserver(self,
-//                                               selector: #selector(updateHeaderView),
-//                                               name:NSNotification.Name.DWNotificationsProviderDidUpdate,
-//                                               object:nil);
     }
 }
 #endif

@@ -42,7 +42,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
 #if DASHPAY
-- (void)performPayToUser:(id<DWDPBasicUserItem>)userItem;
 #endif
 
 /// This method is called after dismissal of payment result controller.

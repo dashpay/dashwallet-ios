@@ -194,14 +194,12 @@ static NSString *sanitizeString(NSString *s) {
 
 #if DASHPAY
 - (BOOL)isAcceptContactRequestCheckboxVisible {
-    if (self.userItem.blockchainIdentity == nil) {
-        return NO;
-    }
-
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    DSBlockchainIdentity *blockchainIdentity = self.userItem.blockchainIdentity;
-    return [myBlockchainIdentity friendshipStatusForRelationshipWithBlockchainIdentity:blockchainIdentity] == DSBlockchainIdentityFriendshipStatus_Incoming;
+    // Row #18: always hidden. The checkbox keyed off the DashSync
+    // contact graph via `userItem`, which no longer has any producer —
+    // the DWDP item implementations were deleted with the contacts
+    // teardown, and accepting requests happens in the SwiftUI
+    // contacts/notifications screens instead of the payment sheet.
+    return NO;
 }
 
 - (BOOL)isAcceptContactRequestCheckboxOn {

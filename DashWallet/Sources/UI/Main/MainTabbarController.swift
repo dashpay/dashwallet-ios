@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import SwiftUI
 import UIKit
 import Combine
 
@@ -82,7 +83,6 @@ class MainTabbarController: UITabBarController {
     weak var menuNavigationController: MainMenuViewController?
     
     #if DASHPAY
-    weak var contactsNavigationController: DWRootContactsViewController?
     weak var exploreNavigationController: ExploreViewController?
     private var pendingDashPayTabReconfiguration = false
     #endif
@@ -102,14 +102,16 @@ class MainTabbarController: UITabBarController {
     var homeModel: DWHomeProtocol!
     
     #if DASHPAY
-    // TODO: MOCK_DASHPAY remove when not mocked
-    private var blockchainIdentity: DSBlockchainIdentity? {
-        if MOCK_DASHPAY.boolValue {
-            if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
-            }
-        }
-        return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
+    /// Gate for the DashPay tabs (Contacts, Explore). Reads the
+    /// SwiftDashSDK identity helper (Row #17) — true when a
+    /// `PersistentIdentity` row exists for the current wallet. The
+    /// previous gate read DashSync's `defaultBlockchainIdentity`,
+    /// which is nil for SDK-registered identities (no Core-chain
+    /// footprint for Platform-Payment-funded registrations), hiding
+    /// the tabs from exactly the users the SDK flows serve.
+    @MainActor
+    private var hasDashPayIdentity: Bool {
+        DWCurrentUserIdentityInfo.shared.hasIdentity
     }
     #endif
 
@@ -164,18 +166,17 @@ extension MainTabbarController {
         viewControllers.append(nvc)
         
         #if DASHPAY
-        let identity = self.blockchainIdentity
-        
-        if identity != nil {
-            // Contacts
+        let identityAvailable = hasDashPayIdentity
+
+        if identityAvailable {
+            // Contacts — SwiftUI screen backed by SwiftDashSDKContactsService
+            // (Row #18); replaces the DashSync-era DWRootContactsViewController.
             item = UITabBarItem(title: nil, image: MainTabbarTabs.contacts.icon, selectedImage: MainTabbarTabs.contacts.selectedIcon)
             item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
-            
-            let contactsVC = DWRootContactsViewController(payModel: homeModel.payModel, dataProvider: homeModel.getDataProvider(), dashPayModel: homeModel.dashPayModel, dashPayReady: homeModel)
-            contactsNavigationController = contactsVC
-            nvc = BaseNavigationController(rootViewController: contactsVC)
-            nvc.tabBarItem = item
-            viewControllers.append(nvc)
+
+            let contactsVC = UIHostingController(rootView: ContactsScreen())
+            contactsVC.tabBarItem = item
+            viewControllers.append(contactsVC)
         }
         #endif
 
@@ -190,7 +191,7 @@ extension MainTabbarController {
         viewControllers.append(paymentVC)
         
         #if DASHPAY
-        if identity != nil {
+        if identityAvailable {
             // Explore
             item = UITabBarItem(title: nil, image: MainTabbarTabs.explore.icon, selectedImage: MainTabbarTabs.explore.selectedIcon)
             item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
@@ -227,7 +228,7 @@ extension MainTabbarController {
 
     #if DASHPAY
     private func reconfigureDashPayTabsIfNeeded() {
-        guard blockchainIdentity != nil else { return }
+        guard hasDashPayIdentity else { return }
 
         if containsCreateUsernameController(in: self) {
             pendingDashPayTabReconfiguration = true
