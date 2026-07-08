@@ -740,6 +740,7 @@ PODS:
 DEPENDENCIES:
   - CloudInAppMessaging (= 0.1.0)
   - CocoaImageHashing (from `https://github.com/ameingast/cocoaimagehashing.git`, commit `ad01eee`)
+  - CocoaLumberjack (= 3.7.2)
   - DashSync (from `../DashSync/`)
   - DSDynamicOptions (= 0.1.2)
   - Firebase/DynamicLinks
@@ -876,6 +877,6 @@ SPEC CHECKSUMS:
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: 179245240291472823f765cfa86722224c899a27
+PODFILE CHECKSUM: d4b1cc8d3ba9bfb6a5ddbb59fc134a8fd2cff1ee
 
 COCOAPODS: 1.16.2

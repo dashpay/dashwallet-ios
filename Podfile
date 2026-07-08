@@ -4,6 +4,10 @@ target 'dashwallet' do
   platform :ios, '18.0'
 
   pod 'DashSync', :path => '../DashSync/'
+  # Declared directly (not just transitively via DashSync) so the app-owned
+  # DWLogger keeps CocoaLumberjack after the DashSync unlink. Pinned to the
+  # version DashSync currently resolves to avoid a bump.
+  pod 'CocoaLumberjack', '3.7.2'
   pod 'SQLite.swift', '~> 0.15.3'
   pod 'SQLiteMigrationManager.swift', '0.8.3'
   pod 'CloudInAppMessaging', '0.1.0'
@@ -29,6 +33,10 @@ target 'dashpay' do
   platform :ios, '18.0'
 
   pod 'DashSync', :path => '../DashSync/'
+  # Declared directly (not just transitively via DashSync) so the app-owned
+  # DWLogger keeps CocoaLumberjack after the DashSync unlink. Pinned to the
+  # version DashSync currently resolves to avoid a bump.
+  pod 'CocoaLumberjack', '3.7.2'
   pod 'SQLite.swift', '~> 0.15.3'
   pod 'SQLiteMigrationManager.swift', '0.8.3'
   pod 'CloudInAppMessaging', '0.1.0'
