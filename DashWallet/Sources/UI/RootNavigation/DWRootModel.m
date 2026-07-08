@@ -23,8 +23,6 @@
 #import "DWHomeModel.h"
 #import "dashwallet-Swift.h"
 
-#import <DashSync/DSBiometricsAuthenticator.h>
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWRootModel ()
@@ -60,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)walletOperationAllowed {
-    return DSBiometricsAuthenticator.passcodeEnabled;
+    return [DWAuthenticationService shared].passcodeEnabled;
 }
 
 - (void)applicationDidEnterBackground {
@@ -81,8 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
         return NO;
     }
 
-    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-    const BOOL didAuthenticate = authManager.didAuthenticate;
+    const BOOL didAuthenticate = [DWAuthenticationService shared].didAuthenticate;
     if (didAuthenticate) {
         return NO;
     }

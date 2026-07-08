@@ -24,6 +24,7 @@
 
 import Foundation
 import LocalAuthentication
+import UIKit
 
 // MARK: - Protocol
 
@@ -80,19 +81,32 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         failCount >= LockoutPolicy.maxFailCount ? 0 : LockoutPolicy.maxFailCount - failCount
     }
 
-    /// TODO(C7-final): during the C7.3→C7.7 window the still-DashSync lock
-    /// screen sets the pod's session flag on unlock; OR it in so
-    /// `sessionAuthSufficient` gates and `didAuthenticate` readers stay
-    /// coherent regardless of which stack authenticated. The C7.7 cutover
-    /// drops the pod term and this getter becomes the plain stored value.
+    /// Set on PIN/biometric success, cleared when the app backgrounds so the
+    /// lock screen re-arms (pod parity — `applicationDidEnterBackground` reset
+    /// `didAuthenticate`).
     @objc var didAuthenticate: Bool {
-        get { sessionAuthenticated || DSAuthenticationManager.sharedInstance().didAuthenticate }
+        get { sessionAuthenticated }
         set { sessionAuthenticated = newValue }
     }
 
-    init(secureTime: SecureTimeService = .shared, userDefaults: UserDefaults = .standard) {
+    override init() {
+        self.secureTimeService = .shared
+        self.userDefaults = .standard
+        super.init()
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(deauthenticateOnBackground),
+            name: UIApplication.didEnterBackgroundNotification, object: nil)
+    }
+
+    /// Test seam.
+    init(secureTime: SecureTimeService, userDefaults: UserDefaults) {
         self.secureTimeService = secureTime
         self.userDefaults = userDefaults
+        super.init()
+    }
+
+    @objc private func deauthenticateOnBackground() {
+        sessionAuthenticated = false
     }
 
     // MARK: Session
@@ -207,6 +221,67 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
             return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: message)
         }
         return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: nil)
+    }
+
+    // MARK: Lock-screen ObjC facades (DWLockScreenModel / DWSetPinModel)
+
+    /// ObjC-visible box for `Precheck` (the struct can't cross into ObjC).
+    @objc(DWAuthPrecheck)
+    final class ObjCPrecheck: NSObject {
+        @objc let shouldContinueAuthentication: Bool
+        @objc let shouldLockout: Bool
+        @objc let attemptsMessage: String?
+        init(_ precheck: Precheck) {
+            shouldContinueAuthentication = precheck.shouldContinueAuthentication
+            shouldLockout = precheck.shouldLockout
+            attemptsMessage = precheck.attemptsMessage
+        }
+    }
+
+    @objc func authenticationPrecheckObjc() -> ObjCPrecheck {
+        ObjCPrecheck(authenticationPrecheck())
+    }
+
+    /// Whether `pin` matches (recording the failure/success as `verifyPin`
+    /// does). The lock screen only needs the boolean.
+    @objc(verifyPinString:)
+    func verifyPinObjc(_ pin: String) -> Bool {
+        verifyPin(pin) == .authenticated
+    }
+
+    /// Biometrics-only unlock (no PIN fallback) — the lock screen's
+    /// Face/Touch ID button.
+    @MainActor
+    @objc func authenticateUsingBiometricsOnly(_ completion: @escaping (Bool) -> Void) {
+        Task { @MainActor in
+            let result = await evaluateBiometrics()
+            if case .success = result { didAuthenticate = true }
+            completion(result == .success)
+        }
+    }
+
+    @objc var maxFailCount: UInt64 { LockoutPolicy.maxFailCount }
+
+    // MARK: - Biometric capability (DSBiometricsAuthenticator replacement)
+
+    /// Biometric hardware present and enrolled.
+    @objc var biometricsAuthenticationEnabled: Bool { biometryType != .none }
+    @objc var touchIDEnabled: Bool { biometryType == .touchID }
+    @objc var faceIDEnabled: Bool { biometryType == .faceID }
+
+    /// A device passcode is set (gates whether wallet operations are allowed).
+    @objc var passcodeEnabled: Bool {
+        LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+    }
+
+    /// One-shot biometric evaluation for the enable-biometrics setup flow
+    /// (pod's `DSBiometricsAuthenticator.performBiometricsAuthentication…`).
+    @MainActor
+    @objc func performBiometricsAuthentication(reason: String, completion: @escaping (Bool) -> Void) {
+        Task { @MainActor in
+            let result = await evaluateBiometrics(reason: reason)
+            completion(result == .success)
+        }
     }
 
     @objc var failCount: UInt64 {
@@ -366,9 +441,10 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
     private enum BiometricResult { case success, cancelled, failed }
 
     @MainActor
-    private func evaluateBiometrics() async -> BiometricResult {
+    private func evaluateBiometrics(
+        reason: String = NSLocalizedString("Authenticate to access your wallet", comment: "Biometric prompt")
+    ) async -> BiometricResult {
         let context = LAContext()
-        let reason = NSLocalizedString("Authenticate to access your wallet", comment: "Biometric prompt")
         return await withCheckedContinuation { continuation in
             context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
                 if success {

@@ -17,11 +17,10 @@
 
 #import "DWLockScreenModel.h"
 
-#import <DashSync/DSAuthenticationManager+Private.h>
-#import <DashSync/DSBiometricsAuthenticator.h>
-#import <DashSync/DashSync.h>
+#import <DashSync/DashSync.h> // NSString+Dash (waitTimeFromNow:), DSLocalizedString
 
 #import "DWGlobalOptions.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,24 +39,23 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 
 - (BOOL)isBiometricAuthenticationAllowed {
     return [DWGlobalOptions sharedInstance].biometricAuthEnabled &&
-           [[DSAuthenticationManager sharedInstance] isBiometricAuthenticationAllowed];
+           [DWAuthenticationService shared].isBiometricAuthenticationAllowed;
 }
 
 - (LABiometryType)biometryType {
 #if (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS)
     return LABiometryTypeTouchID;
 #else
-    return DSBiometricsAuthenticator.biometryType;
+    return [DWAuthenticationService shared].biometryType;
 #endif /* (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS) */
 }
 
 - (void)authenticateUsingBiometricsOnlyCompletion:(void (^)(BOOL authenticated))completion {
-    [[DSAuthenticationManager sharedInstance] authenticateUsingBiometricsOnlyWithPrompt:nil
-                                                                             completion:^(BOOL authenticatedOrSuccess, BOOL usedBiometrics, BOOL cancelled) {
-                                                                                 if (completion) {
-                                                                                     completion(authenticatedOrSuccess);
-                                                                                 }
-                                                                             }];
+    [[DWAuthenticationService shared] authenticateUsingBiometricsOnly:^(BOOL authenticated) {
+        if (completion) {
+            completion(authenticated);
+        }
+    }];
 }
 
 - (void)startCheckingAuthState {
@@ -78,34 +76,21 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 - (BOOL)checkPin:(NSString *)inputPin {
     [self stopCheckingAuthState];
 
-    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-    __block BOOL isPinValid = NO;
-    [authManager performPinVerificationAgainstCurrentPin:inputPin
-                                              completion:^(BOOL allowedNextVerificationRound,
-                                                           BOOL authenticated,
-                                                           BOOL cancelled,
-                                                           BOOL shouldLockout) {
-                                                  isPinValid = authenticated;
-
-                                                  if (!authenticated) {
-                                                      [self startCheckingAuthState];
-                                                  }
-                                              }];
+    BOOL isPinValid = [[DWAuthenticationService shared] verifyPinString:inputPin];
+    if (!isPinValid) {
+        [self startCheckingAuthState];
+    }
 
     return isPinValid;
 }
 
 - (nullable NSString *)lockoutErrorMessage {
-    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    DWAuthenticationService *authManager = [DWAuthenticationService shared];
 
-    NSError *error = nil;
-    uint64_t failCount = [authManager getFailCount:&error];
-    if (error) {
-        return nil;
-    }
+    uint64_t failCount = authManager.failCount;
     NSString *message = nil;
-    if (failCount < MAX_FAIL_COUNT) {
-        NSTimeInterval wait = [authManager lockoutWaitTime];
+    if (failCount < authManager.maxFailCount) {
+        NSTimeInterval wait = authManager.lockoutWaitTime;
         NSString *waitString = [NSString waitTimeFromNow:wait];
         message = [NSString stringWithFormat:DSLocalizedString(@"Try again in %@", nil), waitString];
     }
@@ -117,15 +102,7 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 }
 
 - (BOOL)isAllowedToWipe {
-    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
-
-    NSError *error = nil;
-    uint64_t failCount = [authManager getFailCount:&error];
-    if (error) {
-        return NO;
-    }
-
-    return failCount >= MIN_FAIL_COUNT_TO_WIPE;
+    return [DWAuthenticationService shared].failCount >= MIN_FAIL_COUNT_TO_WIPE;
 }
 
 #pragma mark - Private
@@ -135,27 +112,17 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
         return;
     }
 
-    DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+    DWAuthPrecheck *precheck = [[DWAuthenticationService shared] authenticationPrecheckObjc];
 
-    [authManager
-        performAuthenticationPrecheck:^(BOOL shouldContinueAuthentication,
-                                        BOOL authenticated,
-                                        BOOL shouldLockout,
-                                        NSString *_Nullable attemptsMessage) {
-            if (!self.checkingAuth) {
-                return;
-            }
+    [self.delegate lockScreenModel:self
+        shouldContinueAuthentication:precheck.shouldContinueAuthentication
+                       authenticated:NO
+                       shouldLockout:precheck.shouldLockout
+                     attemptsMessage:precheck.attemptsMessage];
 
-            [self.delegate lockScreenModel:self
-                shouldContinueAuthentication:shouldContinueAuthentication
-                               authenticated:authenticated
-                               shouldLockout:shouldLockout
-                             attemptsMessage:attemptsMessage];
-
-            [self performSelector:@selector(checkAuthState)
-                       withObject:nil
-                       afterDelay:CHECK_INTERVAL];
-        }];
+    [self performSelector:@selector(checkAuthState)
+               withObject:nil
+               afterDelay:CHECK_INTERVAL];
 }
 
 @end

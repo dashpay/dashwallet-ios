@@ -200,12 +200,12 @@ NS_ASSUME_NONNULL_BEGIN
         [CrowdNodeObjcWrapper restoreState];
 
         if ([CrowdNodeObjcWrapper isInterrupted]) {
-            DSAuthenticationManager *authManager = [DSAuthenticationManager sharedInstance];
+            DWAuthenticationService *authManager = [DWAuthenticationService shared];
             // Mirrors the didAuthenticate / lockScreenDisabled reads of
             // -[DWRootModel shouldShowLockScreen]: before the first unlock the
             // lock screen is (or is about to be) up, and the signup resume's
-            // PIN gate must never stack a DashSync alert on top of it. The
-            // deferred resume re-runs via DWAppDidUnlockNotification below.
+            // PIN gate must never stack a prompt on top of it. The deferred
+            // resume re-runs via DWAppDidUnlockNotification below.
             BOOL awaitingFirstUnlock = authManager.usesAuthentication && !authManager.didAuthenticate && ![[DWGlobalOptions sharedInstance] lockScreenDisabled];
             if (awaitingFirstUnlock) {
                 return;

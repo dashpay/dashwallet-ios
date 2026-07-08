@@ -136,13 +136,11 @@ NS_ASSUME_NONNULL_BEGIN
         dateFormatter.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"Mdjma" options:0 locale:[NSLocale currentLocale]];
     }
 
-    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-
     NSString *rateString = [NSString stringWithFormat:NSLocalizedString(@"Rate: %@ = %@", @"ex., Rate 1 US $ = 0.000009 Dash"),
                                                       [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue],
                                                       [CurrencyExchangerObjcWrapper stringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue]];
     NSString *updatedString = [NSString stringWithFormat:NSLocalizedString(@"Updated: %@", @"ex., Updated: 27.12, 8:30"),
-                                                         [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:authenticationManager.secureTime]].lowercaseString];
+                                                         [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:[DWAuthenticationService shared].secureTime]].lowercaseString];
     // Block + connection lines read SwiftDashSDK SPV state (C1 cat 4) — the
     // DashSync chain heights and DSPeerManager are frozen/dead post-M6.
     NSString *blockString = [self blockSyncLine];

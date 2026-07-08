@@ -17,10 +17,10 @@
 
 #import "DWBiometricAuthModel.h"
 
-#import <DashSync/DSBiometricsAuthenticator.h>
-#import <DashSync/DashSync.h>
+#import <DashSync/DashSync.h> // DUFFS
 
 #import "DWGlobalOptions.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,7 +42,7 @@ static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DUFFS / 2; // 0.5 Dash
 #if (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS)
     return YES;
 #else
-    return DSBiometricsAuthenticator.biometricsAuthenticationEnabled;
+    return [DWAuthenticationService shared].biometricsAuthenticationEnabled;
 #endif /* (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS) */
 }
 
@@ -50,7 +50,7 @@ static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DUFFS / 2; // 0.5 Dash
 #if (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS)
     return LABiometryTypeTouchID;
 #else
-    return DSBiometricsAuthenticator.biometryType;
+    return [DWAuthenticationService shared].biometryType;
 #endif /* (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS) */
 }
 
@@ -58,7 +58,7 @@ static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DUFFS / 2; // 0.5 Dash
     NSParameterAssert(completion);
 
     NSString *reason = nil;
-    switch (DSBiometricsAuthenticator.biometryType) {
+    switch ([DWAuthenticationService shared].biometryType) {
         case LABiometryTypeTouchID:
             reason = NSLocalizedString(@"Enable Touch ID", nil);
             break;
@@ -70,16 +70,14 @@ static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DUFFS / 2; // 0.5 Dash
             break;
     }
 
-    [DSBiometricsAuthenticator
+    [[DWAuthenticationService shared]
         performBiometricsAuthenticationWithReason:reason
-                                    fallbackTitle:nil
-                                       completion:^(DSBiometricsAuthenticationResult result) {
-                                           const BOOL success = result == DSBiometricsAuthenticationResultSucceeded;
+                                       completion:^(BOOL success) {
                                            [DWGlobalOptions sharedInstance].biometricAuthConfigured = YES;
                                            [DWGlobalOptions sharedInstance].biometricAuthEnabled = success;
 
                                            const uint64_t spendingLimit = success ? DEFAULT_BIOMETRIC_SPENDING_LIMIT : 0;
-                                           [[DSAuthenticationManager sharedInstance]
+                                           [[DWAuthenticationService shared]
                                                setBiometricSpendingLimitIfAuthenticated:spendingLimit];
 
                                            completion(success);

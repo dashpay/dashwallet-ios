@@ -360,10 +360,6 @@ enum AuthenticationGate {
                     usingBiometrics: biometric, spendAmount: spendAmount)
                 switch outcome {
                 case .authenticated:
-                    // TODO(C7-final): mirror into the pod's session flag so the
-                    // still-DashSync lock screen and the `didAuthenticate`
-                    // readers stay coherent until C7.7 deletes the bridge.
-                    DSAuthenticationManager.sharedInstance().didAuthenticate = true
                     safeResume(.ok)
                 case .cancelled:
                     safeResume(.cancelled)

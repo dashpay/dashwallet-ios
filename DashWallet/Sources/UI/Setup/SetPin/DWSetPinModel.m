@@ -18,7 +18,6 @@
 #import "DWSetPinModel.h"
 
 #import "dashwallet-Swift.h"
-#import <DashSync/DSAuthenticationManager+Private.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,18 +28,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (BOOL)shouldSetPin {
-    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    NSError *error = nil;
-    BOOL hasPin = [authenticationManager hasPin:&error];
-    if (error) {
-        return NO;
-    }
-    return !hasPin;
+    return ![[DWAuthenticationService shared] hasPin];
 }
 
 - (BOOL)setPin:(NSString *)pin {
-    DSAuthenticationManager *authenticationManager = [DSAuthenticationManager sharedInstance];
-    return [authenticationManager setupNewPin:pin];
+    return [[DWAuthenticationService shared] setupNewPin:pin];
 }
 
 @end

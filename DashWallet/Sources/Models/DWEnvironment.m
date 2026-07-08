@@ -17,6 +17,8 @@
 
 #import "DWEnvironment.h"
 
+#import "dashwallet-Swift.h"
+
 #define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
@@ -115,7 +117,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     }
 
     if (shouldRemovePin) {
-        [[DSAuthenticationManager sharedInstance] removePin]; // this can only work if there are no wallets
+        [[DWAuthenticationService shared] removePin]; // this can only work if there are no wallets
     }
 }
 

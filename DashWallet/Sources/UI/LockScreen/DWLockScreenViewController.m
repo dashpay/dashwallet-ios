@@ -169,6 +169,12 @@ static CGFloat ActionButtonsHeight(void) {
     }
 
     __weak typeof(self) weakSelf = self;
+    // TODO(C7-recovery): the forgot-PIN flow still presents DashSync's
+    // DSRecoveryViewController (the recovery-phrase entry + wipe screen) —
+    // the single remaining DSAuthenticationManager reference after C7.7.
+    // Port it to the app-owned DWRecoverViewController (action Wipe) so the
+    // pod's auth screens can leave; the whole-screen UI port is scoped as
+    // its own follow-up.
     [[DSAuthenticationManager sharedInstance]
         resetAllWalletsWithWipeHandler:wipeHandler
                             completion:^(BOOL success) {
