@@ -130,6 +130,12 @@ NS_ASSUME_NONNULL_BEGIN
     [[DWVersionManager sharedInstance] migrateUserDefaults];
     [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:YES];
 
+    // Advance the PIN-lockout clock to the wall clock at every launch, so a
+    // lockout keeps elapsing even fully offline (Bug #2 — DashSync's own
+    // secure-time feed died with the M6 freeze; HTTP responses re-feed it
+    // continuously via HTTPClient).
+    [[DWSecureTimeService shared] ratchetToWallClock];
+
     [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
 
     // Kick off the SwiftDashSDK key migration and app-owned runtime early.

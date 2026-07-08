@@ -168,6 +168,14 @@ extension HTTPClient {
                 print(try? JSONSerialization.jsonObject(with: response.data, options: .allowFragments))
                 #endif
 
+                // Feed the auth stack's monotone clock from the TLS-protected
+                // Date header (any response, incl. non-2xx — the header is
+                // equally trustworthy there). See SecureTimeService (D5).
+                if let dateHeader = response.response?.value(forHTTPHeaderField: "Date"),
+                   let serverDate = SecureTimeService.parseHTTPDate(dateHeader) {
+                    SecureTimeService.shared.observe(serverDate: serverDate)
+                }
+
                 if acceptableCodes.contains(response.statusCode) {
                     if let etag = response.response?.value(forHTTPHeaderField: "Etag"),
                        let key = response.request?.url?.absoluteString {
