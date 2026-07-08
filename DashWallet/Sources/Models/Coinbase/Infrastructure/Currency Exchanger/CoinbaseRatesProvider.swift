@@ -27,7 +27,6 @@ final class CoinbaseRatesProvider: RatesProvider {
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
 
     private var lastPriceSourceInfo: String!
-    private var pricesByCode: [String: DSCurrencyPriceObject]!
     private var plainPricesByCode: [String: Decimal]!
 
     func startExchangeRateFetching() {

@@ -32,6 +32,10 @@ class CurrencyExchangerObjcWrapper: NSObject {
         }
     }
 
+    // TODO(PR2b): the last DSCurrencyPriceObject surface — a facade minted for
+    // the ObjC currency picker (DWLocalCurrencyModel/DWCurrencyObject). Swap to
+    // an app-owned DTO after the SwiftUI local-currency rework on master
+    // integrates (deferred 2026-07-08 to avoid colliding with it).
     @objc
     static var prices: [DSCurrencyPriceObject] {
         wrapped.currencies.compactMap { .init(code: $0.code, name: $0.name, price: $0.price as NSNumber) }

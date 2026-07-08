@@ -18,14 +18,13 @@
 #import "DPAlertViewController+DWInvite.h"
 
 #import "DWDashPayConstants.h"
-#import <DashSync/DashSync.h>
+#import "dashwallet-Swift.h"
 
 @implementation DPAlertViewController (DWInvite)
 
 + (DPAlertViewController *)insufficientFundsForInvitationAlert {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    NSString *amount = [[[priceManager stringForDashAmount:DWDP_MIN_BALANCE_TO_CREATE_INVITE]
-        stringByReplacingOccurrencesOfString:DASH
+    NSString *amount = [[[CurrencyExchangerObjcWrapper stringForDashAmount:DWDP_MIN_BALANCE_TO_CREATE_INVITE]
+        stringByReplacingOccurrencesOfString:@"DASH"
                                   withString:@""]
         stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 
