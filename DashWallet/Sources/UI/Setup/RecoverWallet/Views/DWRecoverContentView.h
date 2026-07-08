@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)recoverContentView:(DWRecoverContentView *)view usedWordsHaveInvalidCount:(NSArray *)words;
 - (void)recoverContentViewBadRecoveryPhrase:(DWRecoverContentView *)view;
 - (void)recoverContentViewDidRecoverWallet:(DWRecoverContentView *)view phrase:(NSString *)phrase;
+- (void)recoverContentViewDidVerifyPhraseForPinReset:(DWRecoverContentView *)view;
 - (void)recoverContentViewPerformWipe:(DWRecoverContentView *)view;
 - (void)recoverContentViewWipeNotAllowed:(DWRecoverContentView *)view;
 - (void)recoverContentViewWipeNotAllowedPhraseMismatch:(DWRecoverContentView *)view;

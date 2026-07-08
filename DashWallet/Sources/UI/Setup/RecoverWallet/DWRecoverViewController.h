@@ -30,6 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
                                recoverCommand:(DWRecoverWalletCommand *)recoverCommand;
 - (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller;
 
+@optional
+/// DWRecoverAction_ResetPin only: the entered phrase matched a stored mnemonic.
+/// The wallet is untouched; the caller now sets a new PIN.
+- (void)recoverViewControllerDidVerifyPhraseForPinReset:(DWRecoverViewController *)controller;
+
 @end
 
 @interface DWRecoverViewController : DWBaseSeedViewController

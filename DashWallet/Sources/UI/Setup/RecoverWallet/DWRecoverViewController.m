@@ -159,6 +159,12 @@ NS_ASSUME_NONNULL_BEGIN
     [self.delegate recoverViewControllerDidRecoverWallet:self recoverCommand:recoverCommand];
 }
 
+- (void)recoverContentViewDidVerifyPhraseForPinReset:(DWRecoverContentView *)view {
+    if ([self.delegate respondsToSelector:@selector(recoverViewControllerDidVerifyPhraseForPinReset:)]) {
+        [self.delegate recoverViewControllerDidVerifyPhraseForPinReset:self];
+    }
+}
+
 - (void)recoverContentViewPerformWipe:(DWRecoverContentView *)view {
     UIAlertControllerStyle style = IS_IPAD ? UIAlertControllerStyleAlert : UIAlertControllerStyleActionSheet;
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
@@ -222,6 +228,9 @@ NS_ASSUME_NONNULL_BEGIN
         case DWRecoverAction_Wipe:
             self.title = NSLocalizedString(@"Wipe Wallet", nil);
             break;
+        case DWRecoverAction_ResetPin:
+            self.title = NSLocalizedString(@"Reset PIN", nil);
+            break;
     }
 
     self.model = [[DWRecoverModel alloc] initWithAction:self.action];
@@ -232,7 +241,9 @@ NS_ASSUME_NONNULL_BEGIN
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     contentView.model = self.model;
     contentView.delegate = self;
-    contentView.title = NSLocalizedString(@"Enter Recovery Phrase", nil);
+    contentView.title = (self.action == DWRecoverAction_ResetPin)
+                            ? NSLocalizedString(@"Enter your recovery phrase to reset your PIN", nil)
+                            : NSLocalizedString(@"Enter Recovery Phrase", nil);
     [self.scrollView addSubview:contentView];
     self.contentView = contentView;
 

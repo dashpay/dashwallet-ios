@@ -21,6 +21,10 @@
 typedef NS_ENUM(NSUInteger, DWRecoverAction) {
     DWRecoverAction_Recover,
     DWRecoverAction_Wipe,
+    // Forgot-PIN: verify ownership by recovery phrase, then set a new PIN and
+    // keep the wallet untouched (no re-import, no re-sync, no data loss). The
+    // caller drives the Set-PIN step; this screen only gates on the phrase.
+    DWRecoverAction_ResetPin,
 };
 
 #endif /* DWRecoverAction_h */

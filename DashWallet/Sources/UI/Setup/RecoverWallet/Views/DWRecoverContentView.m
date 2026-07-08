@@ -235,6 +235,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)wipeWithPhrase:(NSString *)phrase {
     @autoreleasepool {
+        // Forgot-PIN (ResetPin) reuses this screen only to prove ownership: a
+        // phrase that matches a stored mnemonic resets the PIN and keeps the
+        // wallet; anything else (including the wipe magic words) is a mismatch.
+        // Isolated from the wipe machinery so no wallet is ever erased here.
+        if (self.model.action == DWRecoverAction_ResetPin) {
+            if ([self.model canWipeWithPhrase:phrase]) {
+                [self.delegate recoverContentViewDidVerifyPhraseForPinReset:self];
+            }
+            else {
+                [self.delegate recoverContentViewWipeNotAllowedPhraseMismatch:self];
+            }
+            return;
+        }
+
         if ([phrase isEqualToString:DW_WIPE]) {
             if ([self.model isWalletEmpty]) {
                 [self.delegate recoverContentViewPerformWipe:self];
