@@ -142,7 +142,7 @@ final class WalletSendService: NSObject {
 
     func prepareStandardSendForConfirmation(address: String, amount: UInt64, sessionAuthSufficient: Bool = false) async throws -> PreparedStandardSend {
         Self.logger.info("💸 TXSEND :: preparing standard send")
-        try await sendAuthorizer.authorizeSend(sessionAuthSufficient: sessionAuthSufficient)
+        try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
         let prepared = try buildPreparedStandardSend(address: address, amount: amount)
         Self.logger.info("💸 TXSEND :: standard send prepared")
         return prepared
@@ -159,7 +159,7 @@ final class WalletSendService: NSObject {
     ) async throws -> Data {
         if let inputSelector {
             Self.logger.info("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
-            try await sendAuthorizer.authorizeSend(sessionAuthSufficient: sessionAuthSufficient)
+            try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
             do {
                 let (_, fee, txHash) = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
                     fromAddress: inputSelector.address,
@@ -208,7 +208,7 @@ final class WalletSendService: NSObject {
         }
 
         Self.logger.info("💸 TXSEND :: CJTEST preparing CoinJoin sweep — balance \(amount, privacy: .public) duffs (\(Double(amount) / 1e8, privacy: .public) DASH)")
-        try await sendAuthorizer.authorizeSend()
+        try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
         guard let destination = SwiftDashSDKReceiveAddressReader.receiveAddress() else {
             throw Self.makeError(
@@ -376,11 +376,16 @@ enum AuthenticationGate {
 }
 
 private final class SendAuthorizer {
+    /// `spendAmount` enforces the biometric spending limit (Bug #3): a
+    /// send over the remaining allowance skips biometrics and requires the
+    /// PIN; a biometric-authorized send decrements the allowance. Nil for
+    /// non-monetary gates.
     @MainActor
-    func authorizeSend(sessionAuthSufficient: Bool = false) async throws {
+    func authorizeSend(spendAmount: UInt64? = nil, sessionAuthSufficient: Bool = false) async throws {
         let outcome = await AuthenticationGate.authenticate(
             biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-            sessionAuthSufficient: sessionAuthSufficient)
+            sessionAuthSufficient: sessionAuthSufficient,
+            spendAmount: spendAmount)
 
         switch outcome {
         case .ok:
