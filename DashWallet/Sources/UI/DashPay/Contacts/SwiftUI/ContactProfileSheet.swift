@@ -28,6 +28,17 @@ struct ContactProfileSheet: View {
     @State private var noteText = ""
     @State private var isHidden = false
     @State private var payments: [SwiftDashSDKContactsService.ContactPayment] = []
+    /// Payment txid (display hex) → the resolved wallet `Transaction`,
+    /// for the rows whose on-chain tx exists in this wallet's store.
+    /// A payment absent here (H1 loss, or a received tx not yet synced)
+    /// renders as a non-tappable row instead of a broken tx-detail push.
+    @State private var resolvedByTxid: [String: Transaction] = [:]
+    /// Tapped payment's txid (display hex, Hashable) — drives the
+    /// tx-detail push via the NavigationStack-native
+    /// `navigationDestination(item:)`. The resolved `Transaction` is
+    /// looked up from `resolvedByTxid` in the destination builder
+    /// (`Transaction` itself isn't `Hashable`).
+    @State private var selectedPaymentId: String? = nil
     @State private var metaSavedToast = false
     /// Contact settings (alias / note) stay collapsed until the user
     /// taps the contact header; tapping again collapses them.
@@ -56,6 +67,17 @@ struct ContactProfileSheet: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(item: $selectedPaymentId) { paymentId in
+                // Reuse the standard tx-detail screen. The SwiftUI
+                // NavigationStack supplies the back button (nav bar left
+                // visible), so we don't drive TXDetailVCWrapper's own
+                // programmatic pop.
+                if let tx = resolvedByTxid[paymentId] {
+                    TXDetailVCWrapper(tx: tx, navigateBack: .constant(false))
+                        .navigationTitle(NSLocalizedString("Transaction", comment: "DashPay Contacts"))
+                        .navigationBarTitleDisplayMode(.inline)
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(NSLocalizedString("Done", comment: "")) { dismiss() }
@@ -83,14 +105,14 @@ struct ContactProfileSheet: View {
                     // Pull the Rust-side history into SwiftData first —
                     // the projection is app-driven (no persister push).
                     service.refreshPaymentsProjection()
-                    payments = service.payments(with: contact.contactIdentityId)
+                    loadPayments()
                 }
             }
             .onReceive(NotificationCenter.default.publisher(
                 for: SwiftDashSDKContactsService.contactsDidChangeNotification)
             ) { _ in
                 if contact.relationship == .established {
-                    payments = service.payments(with: contact.contactIdentityId)
+                    loadPayments()
                 }
             }
             .overlay(alignment: .bottom) {
@@ -342,33 +364,20 @@ struct ContactProfileSheet: View {
             Text(NSLocalizedString("Payments", comment: "DashPay Contacts"))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.primaryText)
+            // Legacy profile's info tooltip, inlined: only payments
+            // that flowed through the DashPay contact channel appear
+            // here — direct-to-address sends are not retained.
+            Text(NSLocalizedString("Payments made directly to an address aren't retained here.", comment: "DashPay Contacts"))
+                .font(.system(size: 12))
+                .foregroundColor(.tertiaryText)
             if payments.isEmpty {
                 Text(NSLocalizedString("No payments with this contact yet", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
                     .foregroundColor(.secondaryText)
+                    .padding(.top, 2)
             } else {
                 ForEach(payments) { payment in
-                    HStack(spacing: 10) {
-                        Image(systemName: payment.direction == .sent
-                            ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
-                            .foregroundColor(payment.direction == .sent ? .dashBlue : .dashGreen)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("\(payment.direction == .sent ? "-" : "+")\(Self.dashString(duffs: payment.amountDuffs)) DASH")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.primaryText)
-                            if let memo = payment.memo, !memo.isEmpty {
-                                Text(memo)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.secondaryText)
-                                    .lineLimit(1)
-                            }
-                        }
-                        Spacer()
-                        Text(payment.date.formatted(date: .abbreviated, time: .omitted))
-                            .font(.system(size: 12))
-                            .foregroundColor(.tertiaryText)
-                    }
-                    .padding(.vertical, 6)
+                    paymentRow(payment)
                 }
             }
         }
@@ -378,6 +387,64 @@ struct ContactProfileSheet: View {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(Color.secondaryBackground))
         .padding(.horizontal, 15)
+    }
+
+    /// One payment row. Tappable → the standard tx-detail screen when
+    /// the on-chain transaction resolves in this wallet's store; a plain
+    /// row otherwise (H1-lost sends, or a received tx not yet synced).
+    @ViewBuilder
+    private func paymentRow(_ payment: SwiftDashSDKContactsService.ContactPayment) -> some View {
+        let resolvedTx = resolvedByTxid[payment.id]
+        HStack(spacing: 10) {
+            Image(systemName: payment.direction == .sent
+                ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
+                .foregroundColor(payment.direction == .sent ? .dashBlue : .dashGreen)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(payment.direction == .sent ? "-" : "+")\(Self.dashString(duffs: payment.amountDuffs)) DASH")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.primaryText)
+                if let fiat = payment.fiatString {
+                    Text(fiat)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondaryText)
+                }
+                if let memo = payment.memo, !memo.isEmpty {
+                    Text(memo)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondaryText)
+                        .lineLimit(1)
+                }
+            }
+            Spacer()
+            Text(payment.date.formatted(date: .abbreviated, time: .omitted))
+                .font(.system(size: 12))
+                .foregroundColor(.tertiaryText)
+            if resolvedTx != nil {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.tertiaryText)
+            }
+        }
+        .padding(.vertical, 6)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if resolvedTx != nil { selectedPaymentId = payment.id }
+        }
+    }
+
+    /// Fetch the payment history and resolve each row's on-chain tx
+    /// (main-thread SwiftData reads; a handful of rows, <10ms each).
+    private func loadPayments() {
+        let rows = service.payments(with: contact.contactIdentityId)
+        var resolved: [String: Transaction] = [:]
+        for payment in rows {
+            if let wire = payment.txidWire,
+               let tx = SwiftDashSDKWalletSource.fetch(txid: wire) {
+                resolved[payment.id] = tx
+            }
+        }
+        payments = rows
+        resolvedByTxid = resolved
     }
 
     private static func dashString(duffs: UInt64) -> String {

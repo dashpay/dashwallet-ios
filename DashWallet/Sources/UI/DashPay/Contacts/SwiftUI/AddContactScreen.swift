@@ -28,7 +28,12 @@ struct AddContactScreen: View {
     /// (eligibility query unavailable) — row stays actionable and the
     /// send path surfaces the real error.
     @State private var eligibilityById: [Data: Bool] = [:]
-    @State private var confirmTarget: DpnsSearchResult? = nil
+    /// identityIds with an in-flight eligibility query — set while the
+    /// lazy per-row check runs so a row doesn't fire it twice.
+    @State private var eligibilityInFlight: Set<Data> = []
+    /// Tapped result shown in the preview sheet (the single
+    /// send/accept confirmation surface).
+    @State private var previewTarget: DpnsSearchResult? = nil
     @State private var errorMessage: String? = nil
     @State private var sentToast = false
 
@@ -69,16 +74,13 @@ struct AddContactScreen: View {
             } message: {
                 Text(errorMessage ?? "")
             }
-            .alert(item: $confirmTarget) { target in
-                Alert(
-                    title: Text(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts")),
-                    message: Text(String(
-                        format: NSLocalizedString("Send a contact request to %@?", comment: "DashPay Contacts"),
-                        target.fullName.withoutDashSuffix)),
-                    primaryButton: .default(Text(NSLocalizedString("Send", comment: "DashPay Contacts"))) {
-                        send(to: target)
-                    },
-                    secondaryButton: .cancel())
+            .sheet(item: $previewTarget) { target in
+                AddContactPreviewSheet(
+                    result: target,
+                    collision: collision(for: target),
+                    contact: service.contactItem(for: target.identityId),
+                    onSend: { send(to: target) },
+                    onAccept: { accept(target) })
             }
             .overlay(alignment: .bottom) {
                 if sentToast {
@@ -134,6 +136,9 @@ struct AddContactScreen: View {
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
                                 .fill(Color.secondaryBackground))
+                        .contentShape(Rectangle())
+                        .onTapGesture { previewTarget = result }
+                        .onAppear { checkEligibilityIfNeeded(result) }
                 }
             }
             .padding(.horizontal, 15)
@@ -143,7 +148,9 @@ struct AddContactScreen: View {
 
     // MARK: Rows
 
-    private enum Collision {
+    /// Non-private so `AddContactPreviewSheet` can render the
+    /// state-appropriate CTA from the same classification.
+    enum Collision {
         case none
         case established
         case alreadyRequested
@@ -220,7 +227,7 @@ struct AddContactScreen: View {
             switch state {
             case .none:
                 Button {
-                    confirmTarget = result
+                    previewTarget = result
                 } label: {
                     Image(systemName: "person.badge.plus")
                         .foregroundColor(.dashBlue)
@@ -269,24 +276,35 @@ struct AddContactScreen: View {
             isSearching = true
             defer { isSearching = false }
             do {
-                let found = try await service.searchUsernames(prefix: prefix, limit: 10)
+                // limit 0 → the SDK's default cap (100), matching the
+                // legacy global search's page size. Eligibility is
+                // resolved lazily per visible row (below) so a large
+                // result set doesn't fan out a key query for every hit.
+                let found = try await service.searchUsernames(prefix: prefix)
                 guard !Task.isCancelled else { return }
                 results = found
-                // Check who can actually receive a request (DIP-15
-                // needs the recipient's DashPay encryption +
-                // decryption keys) so pre-DashPay identities are
-                // marked instead of failing after the PIN gate.
-                let unknownIds = found.map(\.identityId).filter { eligibilityById[$0] == nil }
-                if !unknownIds.isEmpty {
-                    let checked = await service.contactRequestEligibility(for: unknownIds)
-                    guard !Task.isCancelled else { return }
-                    eligibilityById.merge(checked) { _, new in new }
-                }
             } catch {
                 guard !Task.isCancelled else { return }
                 results = []
                 errorMessage = error.localizedDescription
             }
+        }
+    }
+
+    /// Resolve whether one result can receive a contact request (DIP-15
+    /// needs the recipient's DashPay encryption + decryption keys), the
+    /// first time its row scrolls into view. Marks pre-DashPay
+    /// identities so the user sees "Can't receive contact requests"
+    /// instead of hitting the PIN gate and a network error. One query
+    /// per identity, deduped via `eligibilityInFlight`.
+    private func checkEligibilityIfNeeded(_ result: DpnsSearchResult) {
+        let id = result.identityId
+        guard eligibilityById[id] == nil, !eligibilityInFlight.contains(id) else { return }
+        eligibilityInFlight.insert(id)
+        Task {
+            defer { eligibilityInFlight.remove(id) }
+            let checked = await service.contactRequestEligibility(for: [id])
+            eligibilityById.merge(checked) { _, new in new }
         }
     }
 
@@ -326,5 +344,152 @@ struct AddContactScreen: View {
                 errorMessage = error.localizedDescription
             }
         }
+    }
+}
+
+// MARK: - AddContactPreviewSheet
+
+/// Preview shown when a search result is tapped — the SDK-side stand-in
+/// for the legacy `DWUserProfileViewController` a user reached before
+/// sending a request. It confirms who you're adding (avatar, name,
+/// username, and — when we already hold it — the contact's profile
+/// message) and carries the single send/accept CTA.
+///
+/// Honest limitation: the SDK exposes no on-chain profile fetch for an
+/// arbitrary identity (`getDashPayProfile`/`getContactProfile` read the
+/// local cache only), so for a true stranger this shows the DPNS
+/// username + placeholder avatar, not a fetched bio. Real profile
+/// fields appear once the identity is one of our contacts/requesters
+/// (`contact` non-nil). Nothing is fabricated when the data is absent.
+struct AddContactPreviewSheet: View {
+    let result: DpnsSearchResult
+    let collision: AddContactScreen.Collision
+    /// The already-materialized contact row when this identity is known
+    /// (established / incoming / outgoing); nil for a true stranger.
+    let contact: ContactItem?
+    let onSend: () -> Void
+    let onAccept: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    private var username: String { result.fullName.withoutDashSuffix }
+    private var title: String { contact?.displayTitle ?? username }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.primaryBackground.ignoresSafeArea()
+                VStack(spacing: 12) {
+                    ContactAvatarView(
+                        title: title,
+                        avatarURL: contact?.avatarURL,
+                        identitySeed: result.identityId,
+                        size: 88)
+                        .padding(.top, 28)
+                    Text(title)
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundColor(.primaryText)
+                    if username != title {
+                        Text(username)
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondaryText)
+                    }
+                    if let message = contact?.publicMessage, !message.isEmpty {
+                        Text(message)
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondaryText)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 32)
+                            .padding(.top, 2)
+                    }
+                    Text(rationale)
+                        .font(.system(size: 14))
+                        .foregroundColor(.tertiaryText)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 28)
+                        .padding(.top, 4)
+                    Spacer()
+                    cta
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 24)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(NSLocalizedString("Close", comment: "")) { dismiss() }
+                        .foregroundColor(.dashBlue)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
+    /// State-appropriate framing copy — the persuasive "pay directly by
+    /// username, keep a shared history" line the legacy send-request
+    /// cell showed, adapted per collision state.
+    private var rationale: String {
+        switch collision {
+        case .none, .alreadyRequested:
+            return String(
+                format: NSLocalizedString("Add %@ as a contact to pay them directly by username and keep a shared history of your payments.", comment: "DashPay Contacts"),
+                username)
+        case .theyAskedUs:
+            return String(
+                format: NSLocalizedString("%@ wants to connect. Accept to pay each other directly by username.", comment: "DashPay Contacts"),
+                username)
+        case .established:
+            return NSLocalizedString("You're already connected — you can pay each other directly by username.", comment: "DashPay Contacts")
+        case .isSelf:
+            return NSLocalizedString("This is your own identity.", comment: "DashPay Contacts")
+        case .missingDashPayKeys:
+            return NSLocalizedString("This user hasn't set up the keys needed to receive contact requests yet.", comment: "DashPay Contacts")
+        }
+    }
+
+    @ViewBuilder
+    private var cta: some View {
+        switch collision {
+        case .none:
+            primaryButton(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts"), color: .dashBlue) {
+                onSend()
+                dismiss()
+            }
+        case .theyAskedUs:
+            primaryButton(NSLocalizedString("Accept", comment: "DashPay Contacts"), color: .dashGreen) {
+                onAccept()
+                dismiss()
+            }
+        case .alreadyRequested:
+            statusLabel(NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts"), systemImage: "hourglass", color: .dashGolden)
+        case .established:
+            statusLabel(NSLocalizedString("Already a contact", comment: "DashPay Contacts"), systemImage: "checkmark.circle.fill", color: .dashGreen)
+        case .isSelf:
+            EmptyView()
+        case .missingDashPayKeys:
+            statusLabel(NSLocalizedString("Can't receive contact requests", comment: "DashPay Contacts"), systemImage: "lock.slash", color: .tertiaryText)
+        }
+    }
+
+    private func primaryButton(_ title: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(color))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func statusLabel(_ title: String, systemImage: String, color: Color) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: systemImage)
+            Text(title).font(.system(size: 14, weight: .medium))
+        }
+        .foregroundColor(color)
+        .frame(maxWidth: .infinity)
+        .frame(height: 48)
     }
 }

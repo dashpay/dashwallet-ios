@@ -59,6 +59,8 @@ struct NotificationsScreen: View {
     private enum EventKind {
         /// Pending incoming request — actionable.
         case incomingRequest
+        /// Pending outgoing request we sent — awaiting their acceptance.
+        case sentRequest
         /// Established because they reciprocated our request.
         case theyAccepted
         /// Established because we accepted their request.
@@ -74,13 +76,14 @@ struct NotificationsScreen: View {
 
     private var events: [Event] {
         let requests = viewModel.incomingRequests.map { Event(item: $0, kind: .incomingRequest) }
+        let sent = viewModel.outgoingRequests.map { Event(item: $0, kind: .sentRequest) }
         let established = viewModel.contacts.map { item -> Event in
             // The newer direction row is the reciprocation.
             let incoming = item.incomingCreatedAt ?? .distantPast
             let outgoing = item.outgoingCreatedAt ?? .distantPast
             return Event(item: item, kind: incoming >= outgoing ? .theyAccepted : .weAccepted)
         }
-        return (requests + established).sorted { $0.date > $1.date }
+        return (requests + sent + established).sorted { $0.date > $1.date }
     }
 
     private var newEvents: [Event] { events.filter { $0.date > lastViewedAtEntry } }
@@ -164,6 +167,21 @@ struct NotificationsScreen: View {
                     AcceptPillButton { viewModel.accept(event.item) }
                     IgnoreCircleButton { viewModel.ignore(event.item) }
                 }
+            }
+            .onAppear { viewModel.resolveUsernameIfNeeded(event.item) }
+        case .sentRequest:
+            notificationRow(
+                event,
+                text: String(
+                    format: NSLocalizedString("You sent a contact request to %@", comment: "DashPay Notifications"),
+                    event.item.displayTitle)
+            ) {
+                HStack(spacing: 4) {
+                    Image(systemName: "hourglass").font(.system(size: 12))
+                    Text(NSLocalizedString("Pending", comment: "DashPay Contacts"))
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .foregroundColor(.dashGolden)
             }
             .onAppear { viewModel.resolveUsernameIfNeeded(event.item) }
         case .theyAccepted:

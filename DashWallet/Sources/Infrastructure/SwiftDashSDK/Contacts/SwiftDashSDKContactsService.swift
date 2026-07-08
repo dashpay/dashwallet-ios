@@ -404,7 +404,13 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// DPNS prefix search for the add-contact flow. Thin passthrough;
     /// each result pairs a label with the 32-byte identity ID that
     /// `sendContactRequest(to:)` takes.
-    func searchUsernames(prefix: String, limit: UInt32 = 10) async throws -> [DpnsSearchResult] {
+    ///
+    /// `limit == 0` (the default) defers to the SDK's own cap — 100
+    /// rows, the same page size the legacy `DWUserSearchModel` fetched.
+    /// Eligibility is checked lazily per visible row (see
+    /// `contactRequestEligibility`), so a large result set doesn't fan
+    /// out a key query for every hit up front.
+    func searchUsernames(prefix: String, limit: UInt32 = 0) async throws -> [DpnsSearchResult] {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             throw ServiceError.noWallet
         }
@@ -415,17 +421,42 @@ final class SwiftDashSDKContactsService: ObservableObject {
         }
     }
 
+    /// Look up an already-materialized `ContactItem` for `identityId`
+    /// across the established / incoming / outgoing snapshots. Used by
+    /// the add-contact preview to show a contact's real profile fields
+    /// when we already hold them; returns nil for a true stranger (no
+    /// on-chain profile fetch exists in the SDK — reads are cache-only).
+    func contactItem(for identityId: Data) -> ContactItem? {
+        contacts.first { $0.contactIdentityId == identityId }
+            ?? incomingRequests.first { $0.contactIdentityId == identityId }
+            ?? outgoingRequests.first { $0.contactIdentityId == identityId }
+    }
+
     // MARK: - Contact meta (alias / note / hidden)
 
     /// One row of the payments-between-us history for a contact,
     /// read from the SwiftData rows the DashPay sync reconciles.
     struct ContactPayment: Identifiable {
+        /// Display-order (RPC) txid hex — the Rust `dashpay_payments`
+        /// map key, produced by `dashcore::Txid::to_string()`.
         let txid: String
         let amountDuffs: UInt64
         let direction: DashPayPaymentDirection
         let memo: String?
         let date: Date
+        /// Current-rate fiat equivalent of `amountDuffs`, formatted for
+        /// display (e.g. "$0.35"). Nil only when the amount is zero.
+        let fiatString: String?
         var id: String { txid }
+
+        /// Wire-order txid (the byte reverse of the display-order hex
+        /// key) — the form `SwiftDashSDKWalletSource.fetch(txid:)` and
+        /// `TxDetailModel(txidWire:)` expect, matching
+        /// `PersistentTransaction.txid`. Nil when the hex won't parse.
+        var txidWire: Data? {
+            guard let display = Data(hex: txid) else { return nil }
+            return Data(display.reversed())
+        }
     }
 
     /// DashPay payment history with one contact, newest first.
@@ -440,13 +471,21 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 counterpartyIdentityId: contactId),
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
         let rows = (try? modelContainer.mainContext.fetch(descriptor)) ?? []
-        return rows.map {
-            ContactPayment(
-                txid: $0.txid,
-                amountDuffs: $0.amountDuffs,
-                direction: $0.direction,
-                memo: $0.memo,
-                date: $0.createdAt)
+        return rows.map { row in
+            let dash = Decimal(row.amountDuffs) / Decimal(100_000_000)
+            return ContactPayment(
+                txid: row.txid,
+                amountDuffs: row.amountDuffs,
+                direction: row.direction,
+                memo: row.memo,
+                date: row.createdAt,
+                // Current-rate conversion (parity with the legacy
+                // profile, which showed the live fiat equivalent, not a
+                // historical one). Returns a "Fetching rates…" string
+                // rather than throwing when rates aren't up yet.
+                fiatString: row.amountDuffs > 0
+                    ? CurrencyExchanger.shared.fiatAmountString(for: dash)
+                    : nil)
         }
     }
 
