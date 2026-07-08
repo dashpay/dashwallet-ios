@@ -811,7 +811,11 @@
 		A5D5DD000000000000000201 /* WalletEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000203 /* WalletEnvironment.swift */; };
 		A5D5DD000000000000000313 /* DWLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000304 /* DWLogger.m */; };
 		C7AE5D000000000000000003 /* SecureTimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7AE5D000000000000000002 /* SecureTimeService.swift */; };
+		C7AE5D000000000000000006 /* PinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7AE5D000000000000000005 /* PinStore.swift */; };
+		C7AE5D000000000000000009 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7AE5D000000000000000008 /* AuthenticationService.swift */; };
 		C7AE5D000000000000000004 /* SecureTimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7AE5D000000000000000002 /* SecureTimeService.swift */; };
+		C7AE5D000000000000000007 /* PinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7AE5D000000000000000005 /* PinStore.swift */; };
+		C7AE5D00000000000000000A /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7AE5D000000000000000008 /* AuthenticationService.swift */; };
 		A5D5DD000000000000000314 /* DWLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000304 /* DWLogger.m */; };
 		A5D5DD000000000000000202 /* WalletEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000203 /* WalletEnvironment.swift */; };
 		A5D5DD000000000000000122 /* SwiftDashSDKTransactionSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000124 /* SwiftDashSDKTransactionSender.swift */; };
@@ -2757,6 +2761,8 @@
 		A5D5DD000000000000000203 /* WalletEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletEnvironment.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000303 /* DWLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLogger.h; sourceTree = "<group>"; };
 		C7AE5D000000000000000002 /* SecureTimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureTimeService.swift; sourceTree = "<group>"; };
+		C7AE5D000000000000000005 /* PinStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinStore.swift; sourceTree = "<group>"; };
+		C7AE5D000000000000000008 /* AuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000304 /* DWLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLogger.m; sourceTree = "<group>"; };
 		A5D5DD000000000000000124 /* SwiftDashSDKTransactionSender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKTransactionSender.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
@@ -5740,6 +5746,8 @@
 			isa = PBXGroup;
 			children = (
 				C7AE5D000000000000000002 /* SecureTimeService.swift */,
+				C7AE5D000000000000000005 /* PinStore.swift */,
+				C7AE5D000000000000000008 /* AuthenticationService.swift */,
 			);
 			path = Authentication;
 			sourceTree = "<group>";
@@ -9223,6 +9231,8 @@
 				A5D5DD000000000000000201 /* WalletEnvironment.swift in Sources */,
 				A5D5DD000000000000000313 /* DWLogger.m in Sources */,
 				C7AE5D000000000000000003 /* SecureTimeService.swift in Sources */,
+				C7AE5D000000000000000006 /* PinStore.swift in Sources */,
+				C7AE5D000000000000000009 /* AuthenticationService.swift in Sources */,
 				A5D5DD000000000000000321 /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */,
 				A5D5DD000000000000000132 /* SwiftDashSDKReceiveAddressReader.swift in Sources */,
 				A5D5DD000000000000000122 /* SwiftDashSDKTransactionSender.swift in Sources */,
@@ -10133,6 +10143,8 @@
 				A5D5DD000000000000000202 /* WalletEnvironment.swift in Sources */,
 				A5D5DD000000000000000314 /* DWLogger.m in Sources */,
 				C7AE5D000000000000000004 /* SecureTimeService.swift in Sources */,
+				C7AE5D000000000000000007 /* PinStore.swift in Sources */,
+				C7AE5D00000000000000000A /* AuthenticationService.swift in Sources */,
 				A5D5DD000000000000000322 /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */,
 				A5D5DD000000000000000133 /* SwiftDashSDKReceiveAddressReader.swift in Sources */,
 				A5D5DD000000000000000123 /* SwiftDashSDKTransactionSender.swift in Sources */,

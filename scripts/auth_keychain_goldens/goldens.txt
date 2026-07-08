@@ -1,0 +1,12 @@
+# Raw keychain bytes of DashSync-written auth items, frozen 2026-07-08 from a
+# live testnet sim wallet (PIN "1111") running the pre-C7 dashpay build.
+# Captured in-process via SecItemCopyMatching (kSecReturnData+Attributes).
+# service=org.dashfoundation.dash; pdmn=cku == kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly.
+# These are the PinStore compatibility contract — see PinStoreGoldenTests.
+pin len=4 hex=31313131 pdmn=cku            # UTF-8 "1111", no BOM, no length prefix
+pinfailcount len=8 hex=0000000000000000 pdmn=cku      # int64 little-endian 0
+pinfailheight len=8 hex=0000000000000000 pdmn=cku     # int64 little-endian 0
+USES_AUTHENTICATION len=8 hex=0100000000000000 pdmn=cku   # int64 LE 1 — endianness witness
+SPEND_LIMIT_AMOUNT absent (errSecItemNotFound -25300)      # limit never set on this wallet;
+                                                           # spec accessibility when written: WhenUnlockedThisDeviceOnly (aku)
+BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY len=8 hex=ffffffffffffffff pdmn=cku  # UINT64_MAX = reset-to-NOT_SET sentinel

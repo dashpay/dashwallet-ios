@@ -136,6 +136,13 @@ NS_ASSUME_NONNULL_BEGIN
     // continuously via HTTPClient).
     [[DWSecureTimeService shared] ratchetToWallClock];
 
+#if DEBUG
+    // TODO(C7-final: remove) — byte-compatibility watchdog for the C7 auth
+    // migration window: asserts the app-side PinStore reads the same values
+    // DSAuthenticationManager does.
+    [DWAuthenticationService debugAssertDashSyncParity];
+#endif
+
     [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
 
     // Kick off the SwiftDashSDK key migration and app-owned runtime early.

@@ -296,21 +296,11 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         return nil
     }
 
-    /// Read a UTF-8 string value from a keychain item. Returns nil on any failure.
+    /// Read a UTF-8 string value from a keychain item. Returns nil on any
+    /// failure. Delegates to the shared raw primitive in `PinStore` (C7).
     private static func readKeychainString(service: String, account: String) -> String? {
-        let query: [String: Any] = [
-            kSecClass as String:        kSecClassGenericPassword,
-            kSecAttrService as String:  service,
-            kSecAttrAccount as String:  account,
-            kSecMatchLimit as String:   kSecMatchLimitOne,
-            kSecReturnData as String:   true
-        ]
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess, let data = result as? Data else {
-            return nil
-        }
-        return String(data: data, encoding: .utf8)
+        PinStore.readData(service: service, account: account)
+            .flatMap { String(data: $0, encoding: .utf8) }
     }
 
 }
