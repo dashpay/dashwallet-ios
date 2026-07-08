@@ -50,7 +50,7 @@ static CGFloat const VERTICAL_PADDING = 16.0;
         [self addSubview:titleLabel];
         _titleLabel = titleLabel;
 
-        DWPinField *inputView = [[DWPinField alloc] initWithStyle:DSPinFieldStyle_Default];
+        DWPinField *inputView = [[DWPinField alloc] initWithStyle:DWPinFieldStyle_Default];
         inputView.backgroundColor = self.backgroundColor;
         inputView.translatesAutoresizingMaskIntoConstraints = NO;
         [self addSubview:inputView];

@@ -15,11 +15,42 @@
 //  limitations under the License.
 //
 
-#import <DashSync/DSPinField.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWPinField : DSPinField
+typedef NS_ENUM(NSUInteger, DWPinFieldStyle) {
+    DWPinFieldStyle_Default,      // 50pt field size
+    DWPinFieldStyle_DefaultWhite, // 50pt field size, white bg (lock screen)
+    DWPinFieldStyle_Small,        // 44pt
+};
+
+@class DWPinField;
+
+@protocol DWPinFieldDelegate <NSObject>
+
+- (void)pinFieldDidFinishInput:(DWPinField *)pinField;
+
+@end
+
+/// App-owned PIN entry control (C7 — ported from DashSync's `DSPinField`,
+/// which vanishes with the pod). A `UITextInput` view drawing PIN_LENGTH
+/// rounded boxes that fill dash-blue with a white dot as digits arrive;
+/// used by the lock screen and Set-PIN flows. Rendering matches the pod's
+/// exactly (same field/dot sizes and colors) so the migration is invisible.
+@interface DWPinField : UIView <UITextInput>
+
+@property (nonatomic, assign) BOOL inputEnabled;
+@property (nullable, nonatomic, weak) id<DWPinFieldDelegate> delegate;
+@property (readonly, nonatomic, copy) NSString *text;
+
+- (void)clear;
+
+- (instancetype)initWithStyle:(DWPinFieldStyle)style;
+
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 
 @end
 

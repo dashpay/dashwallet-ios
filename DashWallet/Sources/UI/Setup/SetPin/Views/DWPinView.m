@@ -27,7 +27,7 @@ static CGFloat const ANIMATION_SPRING_DAMPING = 1.0;
 static CGFloat const ANIMATION_INITIAL_VELOCITY = 0.0;
 static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCurveEaseOut;
 
-@interface DWPinView () <DSPinFieldDelegate, NumberKeyboardDelegate>
+@interface DWPinView () <DWPinFieldDelegate, NumberKeyboardDelegate>
 
 @property (nullable, nonatomic, weak) NumberKeyboard *keyboard;
 
@@ -114,9 +114,9 @@ static UIViewAnimationOptions const ANIMATION_OPTIONS = UIViewAnimationOptionCur
     }
 }
 
-#pragma mark - DSPinFieldDelegate
+#pragma mark - DWPinFieldDelegate
 
-- (void)pinFieldDidFinishInput:(DSPinField *)pinField {
+- (void)pinFieldDidFinishInput:(DWPinField *)pinField {
     if (self.setPinView.pinField == pinField) {
         [self confirmPin];
     }

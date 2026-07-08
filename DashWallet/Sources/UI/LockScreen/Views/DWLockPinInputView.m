@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 static CGFloat const VERTICAL_PADDING = 16.0;
 static CGFloat const SPACING = 8.0;
 
-@interface DWLockPinInputView () <DSPinFieldDelegate>
+@interface DWLockPinInputView () <DWPinFieldDelegate>
 
 @property (readonly, nonatomic, strong) UILabel *titleLabel;
 @property (readonly, nonatomic, strong) UILabel *attemptsLabel;
@@ -97,7 +97,7 @@ static CGFloat const SPACING = 8.0;
     errorLabel.hidden = YES;
     _errorLabel = errorLabel;
 
-    DWPinField *pinField = [[DWPinField alloc] initWithStyle:DSPinFieldStyle_DefaultWhite];
+    DWPinField *pinField = [[DWPinField alloc] initWithStyle:DWPinFieldStyle_DefaultWhite];
     pinField.backgroundColor = self.backgroundColor;
     pinField.translatesAutoresizingMaskIntoConstraints = NO;
     pinField.delegate = self;
@@ -161,9 +161,9 @@ static CGFloat const SPACING = 8.0;
     self.errorLabel.hidden = !hasError;
 }
 
-#pragma mark - DSPinFieldDelegate
+#pragma mark - DWPinFieldDelegate
 
-- (void)pinFieldDidFinishInput:(DSPinField *)pinField {
+- (void)pinFieldDidFinishInput:(DWPinField *)pinField {
     [self.delegate lockPinInputView:self didFinishInputWithText:pinField.text];
 }
 
