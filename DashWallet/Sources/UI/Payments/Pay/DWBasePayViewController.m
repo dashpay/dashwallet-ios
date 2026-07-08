@@ -147,16 +147,29 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller txidWire:(NSData *_Nonnull)txidWire {
-    [self dismissViewControllerAnimated:true
-                             completion:^{
-                                 DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTxidWire:txidWire];
-                                 SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
-                                 vc.contactItem = self->_paymentController.contactItem;
-                                 vc.delegate = self;
-                                 [self presentViewController:vc
-                                                    animated:YES
-                                                  completion:nil];
-                             }];
+    void (^presentSuccess)(void) = ^{
+        DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTxidWire:txidWire];
+        SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
+        vc.contactItem = self->_paymentController.contactItem;
+        vc.delegate = self;
+        [self presentViewController:vc
+                           animated:YES
+                         completion:nil];
+    };
+
+    if (self.presentedViewController) {
+        [self dismissViewControllerAnimated:YES completion:presentSuccess];
+    }
+    else {
+        // Nothing is presented from self (PaymentController already dismissed
+        // the confirm sheet). A bare `dismissViewControllerAnimated:` here
+        // forwards to the presenting controller and tears down THIS
+        // controller's own modal stack — on the modally-presented Send screen
+        // that detached `self` and UIKit refused the follow-up present
+        // ("whose view is not in the window hierarchy"), so the success
+        // screen never appeared. Present directly instead.
+        presentSuccess();
+    }
 }
 
 - (UIViewController *_Nonnull)presentationAnchorForPaymentController:(PaymentController *_Nonnull)controller {
