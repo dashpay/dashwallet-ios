@@ -118,6 +118,22 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         return value != 0
     }
 
+    private var didRunEnableAuthenticationCheck = false
+
+    /// Pod's `setOneTimeShouldUseAuthentication:YES`, called once at launch:
+    /// persist the enabled flag on first run, and upgrade a legacy "disabled"
+    /// (0) flag to enabled. Never disables authentication. Idempotent; the
+    /// run-once guard mirrors the pod's `dispatch_once`.
+    @objc func enableAuthenticationIfNeeded() {
+        guard !didRunEnableAuthenticationCheck else { return }
+        didRunEnableAuthenticationCheck = true
+
+        let stored = PinStore.int64(for: .usesAuthentication)
+        if stored == nil || stored == 0 {
+            PinStore.set(int64: 1, for: .usesAuthentication)
+        }
+    }
+
     // MARK: PIN lifecycle
 
     @objc func hasPin() -> Bool {

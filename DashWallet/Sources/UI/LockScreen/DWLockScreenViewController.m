@@ -17,12 +17,12 @@
 
 #import "DWLockScreenViewController.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWLockActionButton.h"
 #import "DWLockPinInputView.h"
 #import "DWLockScreenModel.h"
 #import "DWQuickReceiveViewController.h"
+#import "DWRecoverViewController.h"
+#import "DWSetPinViewController.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
 
@@ -68,7 +68,10 @@ static CGFloat ActionButtonsHeight(void) {
     }
 }
 
-@interface DWLockScreenViewController () <DWLockPinInputViewDelegate, DWLockScreenModelDelegate>
+@interface DWLockScreenViewController () <DWLockPinInputViewDelegate,
+                                          DWLockScreenModelDelegate,
+                                          DWRecoverViewControllerDelegate,
+                                          DWSetPinViewControllerDelegate>
 
 @property (strong, nonatomic) DWLockScreenModel *model;
 @property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
@@ -155,41 +158,138 @@ static CGFloat ActionButtonsHeight(void) {
 - (IBAction)forgotPinButtonAction:(UIButton *)sender {
     [self.model stopCheckingAuthState];
 
-    void (^wipeHandler)(void) = nil;
+    // Everyday forgot-PIN: prove ownership with the recovery phrase, then set a
+    // new PIN and keep the wallet (app-owned DWRecoverViewController in
+    // ResetPin mode). Only past the wipe threshold do we also offer a wipe —
+    // matching DashSync, whose Wipe button appeared only once wiping was
+    // allowed.
     if ([self.model isAllowedToWipe]) {
-        __weak typeof(self) weakSelf = self;
-        wipeHandler = ^{
-            __strong typeof(weakSelf) strongSelf = weakSelf;
-            if (!strongSelf) {
-                return;
-            }
-
-            [strongSelf.delegate lockScreenViewControllerDidWipe:strongSelf];
-        };
+        UIAlertControllerStyle style = IS_IPAD ? UIAlertControllerStyleAlert : UIAlertControllerStyleActionSheet;
+        UIAlertController *sheet = [UIAlertController alertControllerWithTitle:nil
+                                                                       message:nil
+                                                                preferredStyle:style];
+        [sheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Reset PIN", nil)
+                                                  style:UIAlertActionStyleDefault
+                                                handler:^(UIAlertAction *action) {
+                                                    [self presentPinResetRecovery];
+                                                }]];
+        [sheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Wipe wallet", nil)
+                                                  style:UIAlertActionStyleDestructive
+                                                handler:^(UIAlertAction *action) {
+                                                    [self confirmWipeWallet];
+                                                }]];
+        [sheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                                                  style:UIAlertActionStyleCancel
+                                                handler:^(UIAlertAction *action) {
+                                                    [self.model startCheckingAuthState];
+                                                }]];
+        [self presentViewController:sheet animated:YES completion:nil];
     }
+    else {
+        [self presentPinResetRecovery];
+    }
+}
 
-    __weak typeof(self) weakSelf = self;
-    // TODO(C7-recovery): the forgot-PIN flow still presents DashSync's
-    // DSRecoveryViewController (the recovery-phrase entry + wipe screen) —
-    // the single remaining DSAuthenticationManager reference after C7.7.
-    // Port it to the app-owned DWRecoverViewController (action Wipe) so the
-    // pod's auth screens can leave; the whole-screen UI port is scoped as
-    // its own follow-up.
-    [[DSAuthenticationManager sharedInstance]
-        resetAllWalletsWithWipeHandler:wipeHandler
-                            completion:^(BOOL success) {
-                                __strong typeof(weakSelf) strongSelf = weakSelf;
-                                if (!strongSelf) {
-                                    return;
-                                }
+- (void)presentPinResetRecovery {
+    DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
+    controller.action = DWRecoverAction_ResetPin;
+    controller.delegate = self;
+    UIBarButtonItem *cancelButton =
+        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                                                      target:self
+                                                      action:@selector(forgotPinRecoveryCancelAction:)];
+    controller.navigationItem.leftBarButtonItem = cancelButton;
 
-                                if (success) {
-                                    [self.delegate lockScreenViewControllerDidUnlock:self];
-                                }
-                                else {
-                                    [self.model startCheckingAuthState];
-                                }
-                            }];
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:navigationController animated:YES completion:nil];
+}
+
+- (void)forgotPinRecoveryCancelAction:(id)sender {
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+                                 [self.model startCheckingAuthState];
+                             }];
+}
+
+- (void)confirmWipeWallet {
+    UIAlertController *alert = [UIAlertController
+        alertControllerWithTitle:NSLocalizedString(@"Wipe wallet", nil)
+                         message:NSLocalizedString(@"This will erase this wallet from this device. You can only restore it with your recovery phrase.", nil)
+                  preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                                              style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction *action) {
+                                                [self.model startCheckingAuthState];
+                                            }]];
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Wipe wallet", nil)
+                                              style:UIAlertActionStyleDestructive
+                                            handler:^(UIAlertAction *action) {
+                                                [self.delegate lockScreenViewControllerDidWipe:self];
+                                            }]];
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+#pragma mark - DWRecoverViewControllerDelegate
+
+- (void)recoverViewControllerDidVerifyPhraseForPinReset:(DWRecoverViewController *)controller {
+    // Ownership proven, wallet untouched — dismiss the phrase screen and set a
+    // new PIN. Unlock happens once the PIN is set.
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+                                 [self presentSetNewPin];
+                             }];
+}
+
+- (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller {
+    // Unreachable in ResetPin mode (wipe is offered by the lock screen's own
+    // action sheet, not this screen). Implemented for protocol conformance; if
+    // it ever fires, fail loud in debug and recover safely in release.
+    NSAssert(NO, @"ResetPin recovery never wipes; wipe is the lock screen's own path");
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+                                 [self.model startCheckingAuthState];
+                             }];
+}
+
+- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller
+                               recoverCommand:(DWRecoverWalletCommand *)recoverCommand {
+    // Unreachable in ResetPin mode (no wallet is recovered/re-imported here).
+    NSAssert(NO, @"ResetPin recovery never recovers a wallet");
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+                                 [self.model startCheckingAuthState];
+                             }];
+}
+
+#pragma mark - DWSetPinViewControllerDelegate
+
+- (void)presentSetNewPin {
+    DWSetPinViewController *controller =
+        [DWSetPinViewController controllerWithIntent:DWSetPinIntent_ChangePin];
+    controller.delegate = self;
+
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:navigationController animated:YES completion:nil];
+}
+
+- (void)setPinViewControllerDidSetPin:(DWSetPinViewController *)controller {
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+                                 [self.delegate lockScreenViewControllerDidUnlock:self];
+                             }];
+}
+
+- (void)setPinViewControllerDidCancel:(DWSetPinViewController *)controller {
+    // Phrase was proven but the user backed out of setting a new PIN; the old
+    // PIN still works, so return to the lock screen.
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+                                 [self.model startCheckingAuthState];
+                             }];
 }
 
 - (IBAction)receiveButtonAction:(DWLockActionButton *)sender {

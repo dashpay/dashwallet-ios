@@ -128,7 +128,7 @@ NS_ASSUME_NONNULL_BEGIN
     self.window.backgroundColor = [UIColor blackColor];
     
     [[DWVersionManager sharedInstance] migrateUserDefaults];
-    [[DSAuthenticationManager sharedInstance] setOneTimeShouldUseAuthentication:YES];
+    [[DWAuthenticationService shared] enableAuthenticationIfNeeded];
 
     // Advance the PIN-lockout clock to the wall clock at every launch, so a
     // lockout keeps elapsing even fully offline (Bug #2 — DashSync's own
