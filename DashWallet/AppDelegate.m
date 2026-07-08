@@ -25,9 +25,6 @@
 @import Firebase;
 
 #import "DWInitialViewController.h"
-#import "DWDataMigrationManager.h"
-#import "DWStartViewController.h"
-#import "DWStartModel.h"
 #import "DWVersionManager.h"
 #import "DWWindow.h"
 #import "DWURLParser.h"
@@ -60,7 +57,7 @@
 #endif
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AppDelegate () <DWStartViewControllerDelegate, UNUserNotificationCenterDelegate>
+@interface AppDelegate () <UNUserNotificationCenterDelegate>
 
 @property (nonatomic, strong) DWBalanceNotifier *balanceNotifier;
 
@@ -143,13 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
     [DWSwiftDashSDKWalletRuntime startIfReady];
     [DWSwiftDashSDKWalletWiper startObservingWipeNotification];
 
-    DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
-    if (migrationManager.shouldMigrate) {
-        [self performDeferredStartWithLaunchOptions:launchOptions];
-    }
-    else {
-        [self performNormalStartWithLaunchOptions:launchOptions wasDeferred:NO];
-    }
+    [self performNormalStartWithLaunchOptions:launchOptions];
     
     NSParameterAssert(self.window.rootViewController);
     
@@ -239,12 +230,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
-    DWStartViewController *startController = (DWStartViewController *)self.window.rootViewController;
-    if ([startController isKindOfClass:DWStartViewController.class]) {
-        startController.deferredURLToProcess = url;
-        return NO;
-    }
-    
 #if DASHPAY
     FIRDynamicLink *dynamicLink = [[FIRDynamicLinks dynamicLinks] dynamicLinkFromCustomSchemeURL:url];
     if (dynamicLink) {
@@ -300,22 +285,10 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
 #pragma mark - Private
 
-- (void)performDeferredStartWithLaunchOptions:(NSDictionary *)launchOptions {
-    DWStartModel *viewModel = [[DWStartModel alloc] initWithLaunchOptions:launchOptions];
-    DWStartViewController *controller = [DWStartViewController controller];
-    controller.viewModel = viewModel;
-    controller.delegate = self;
-    
-    self.window.rootViewController = controller;
-}
-
-- (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions wasDeferred:(BOOL)wasDeferred {
+- (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions {
     DWInitialViewController *controller = [[DWInitialViewController alloc] init];
-    if (wasDeferred) {
-        [controller setLaunchingAsDeferredController];
-    }
     self.window.rootViewController = controller;
-    
+
     [self setupDashWalletComponentsWithOptions:launchOptions];
 }
 
@@ -381,18 +354,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         }
         completionHandler();
     }
-}
-
-#pragma mark - DWStartViewControllerDelegate
-
-- (void)startViewController:(DWStartViewController *)controller didFinishWithDeferredLaunchOptions:(NSDictionary *)launchOptions shouldRescanBlockchain:(BOOL)shouldRescanBlockchain {
-    [self performNormalStartWithLaunchOptions:launchOptions wasDeferred:YES];
-
-    // TODO(teardown C1): `shouldRescanBlockchain` is ignored — the DashSync
-    // rescan it used to trigger is dead post-M6 (and would start DashSync
-    // networking). The migration-cancel launch proceeds without a rescan;
-    // the delegate parameter travels with the DWStartModel legacy-upgrade
-    // funnel decision.
 }
 
 #pragma mark - Notifications

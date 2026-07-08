@@ -8,21 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
-#define SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE @"SHOWED_WARNING_FOR_INCOMPLETE_PASSPHRASE"
-
 NS_ASSUME_NONNULL_BEGIN
-
-@class DSWallet;
-
-typedef void (^CheckPassphraseCompletionBlock)(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString *_Nullable seedPhrase);
 
 @interface DWVersionManager : NSObject
 
 + (instancetype)sharedInstance;
 
 - (void)migrateUserDefaults;
-
-- (void)checkPassphraseWasShownCorrectlyForWallet:(DSWallet *)wallet withCompletion:(CheckPassphraseCompletionBlock)completion;
 
 @end
 

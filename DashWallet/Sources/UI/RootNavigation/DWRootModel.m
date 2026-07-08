@@ -52,14 +52,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)hasAWallet {
-    // Legacy-breadwallet keys keep their DSVersionManager term (C9/D4 owns
-    // its removal). Post-wipe, the SDK-keychain term of `hasWallet` clears
-    // asynchronously (the wiper runs on a background queue) — a stale-true
-    // read within that window at worst shows one spurious lock screen; the
-    // wipe→setup routing itself doesn't read this property.
-    DSVersionManager *dashSyncVersionManager = [DSVersionManager sharedInstance];
-
-    return (DWWalletEnvironment.hasWallet || ![dashSyncVersionManager noOldWallet]);
+    // Post-wipe, the SDK-keychain term of `hasWallet` clears asynchronously
+    // (the wiper runs on a background queue) — a stale-true read within that
+    // window at worst shows one spurious lock screen; the wipe→setup routing
+    // itself doesn't read this property.
+    return DWWalletEnvironment.hasWallet;
 }
 
 - (BOOL)walletOperationAllowed {

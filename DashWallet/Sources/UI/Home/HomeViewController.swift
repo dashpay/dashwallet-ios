@@ -108,11 +108,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         // resolved vote state (O(1) early-out when nothing is pending).
         DWIdentityRegistrationCoordinator.shared.checkPendingContestResolution()
 
-        let upgrading = model.performOnSetupUpgrades()
-        if !upgrading {
-            // since these both methods might display modals, don't allow running them simultaneously
-            showWalletBackupReminderIfNeeded()
-        }
+        showWalletBackupReminderIfNeeded()
 
         model.registerForPushNotifications()
         model.checkCrowdNodeState()

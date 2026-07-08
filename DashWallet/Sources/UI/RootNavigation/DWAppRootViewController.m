@@ -263,8 +263,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
-    // If launch of DWAppRootViewController was deferred by DWStartViewController perform
-    // missed UIApplicationDidBecomeActiveNotification notification action
+    // If this controller was installed after launch (post-onboarding
+    // setLaunchingAsDeferredController chain), perform the missed
+    // UIApplicationDidBecomeActiveNotification notification action
     if (self.launchingWasDeferred) {
         self.launchingWasDeferred = NO;
 

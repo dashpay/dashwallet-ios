@@ -55,8 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *sentDataSource;
 @property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *rewardsDataSource;
 
-@property (nonatomic, assign) BOOL upgradedExtendedKeys;
-
 @end
 
 @implementation DWHomeModel
@@ -189,34 +187,6 @@ NS_ASSUME_NONNULL_BEGIN
     NSAssert(options.walletBackupReminderWasShown == NO, @"Inconsistent state");
 
     options.walletBackupReminderWasShown = YES;
-}
-
-- (BOOL)performOnSetupUpgrades {
-    if (self.upgradedExtendedKeys) {
-        return NO;
-    }
-
-    self.upgradedExtendedKeys = YES;
-
-    DSVersionManager *dashSyncVersionManager = [DSVersionManager sharedInstance];
-    NSArray *wallets = [DWEnvironment sharedInstance].allWallets;
-
-    [dashSyncVersionManager
-        upgradeExtendedKeysForWallets:wallets
-                          withMessage:NSLocalizedString(@"Please enter PIN to upgrade wallet", nil)
-                       withCompletion:^(BOOL success, BOOL neededUpgrade, BOOL authenticated, BOOL cancelled) {
-                           DWVersionManager *dashwalletVersionManager = [DWVersionManager sharedInstance];
-                           [dashwalletVersionManager
-                               checkPassphraseWasShownCorrectlyForWallet:wallets.firstObject
-                                                          withCompletion:^(BOOL needsCheck, BOOL authenticated, BOOL cancelled, NSString *_Nullable seedPhrase) {
-                                                              if (needsCheck) {
-                                                                  // Show backup reminder shortcut
-                                                                  [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
-                                                              }
-                                                          }];
-                       }];
-
-    return YES;
 }
 
 - (void)walletDidWipe {
