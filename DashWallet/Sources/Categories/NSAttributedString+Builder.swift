@@ -25,10 +25,22 @@ extension NSAttributedString {
     static func dashAttributedString(for amount: UInt64,
                                      tintColor: UIColor,
                                      symbolSize: CGSize) -> NSAttributedString {
-        let dashAmount = amount.formattedDashAmount
-        let result = dashAmount.attributedStringForDashSymbol(withTintColor: tintColor,
-                                                              dashSymbolSize: symbolSize)
-        return result!
+        let dashAmount = amount.formattedDashAmount.trimmingCharacters(in: .whitespacesAndNewlines)
+        let symbol = dashSymbolAttributedString(symbolSize: symbolSize, tintColor: tintColor)
+
+        let attributedString = NSMutableAttributedString(string: dashAmount)
+        let range = (attributedString.string as NSString).range(of: DASH)
+        if range.location == NSNotFound {
+            attributedString.insert(NSAttributedString(string: " "), at: 0)
+            attributedString.insert(symbol, at: 0)
+        } else {
+            attributedString.replaceCharacters(in: range, with: symbol)
+        }
+
+        let fullRange = NSRange(location: 0, length: attributedString.length)
+        attributedString.addAttribute(.foregroundColor, value: tintColor, range: fullRange)
+
+        return attributedString.copy() as! NSAttributedString
     }
 
     @objc(dw_dashAttributedStringForAmount:tintColor:font:)
@@ -114,11 +126,14 @@ extension NSAttributedString {
         dashAddressAttributedString(address, with: font, showingLogo: false)
     }
 
-    // Private function
+    // Private functions
     private static func dashSymbolAttributedString(for font: UIFont, tintColor: UIColor) -> NSAttributedString {
         let scaleFactor: CGFloat = 0.665
         let side = font.pointSize * scaleFactor
-        let symbolSize = CGSize(width: side, height: side)
+        return dashSymbolAttributedString(symbolSize: CGSize(width: side, height: side), tintColor: tintColor)
+    }
+
+    private static func dashSymbolAttributedString(symbolSize: CGSize, tintColor: UIColor) -> NSAttributedString {
         let dashSymbol = NSTextAttachment()
         dashSymbol.bounds = CGRect(x: 0, y: 0, width: symbolSize.width, height: symbolSize.height)
         dashSymbol.image = UIImage(named: "icon_dash_currency")?.sd_tintedImage(with: tintColor)

@@ -44,8 +44,6 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     if (!(self = [super init]))
         return nil;
 
-    [NSString setDashCurrencySymbolAssetName:@"icon_dash_currency"];
-
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
         // Default to testnet during the SwiftDashSDK migration — Platform L2
