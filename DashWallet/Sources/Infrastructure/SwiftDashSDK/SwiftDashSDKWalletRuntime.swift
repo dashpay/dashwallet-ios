@@ -85,6 +85,89 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: true) }
     }
 
+    // MARK: - Runtime wallet switching
+
+    /// Switch the active wallet (same network) to `walletId` at runtime.
+    ///
+    /// Reuses the exact stop → clear → load → start sequence a network switch
+    /// runs (`refresh`), the only difference being that the network is
+    /// unchanged and the active-wallet registry is repointed first: after
+    /// `WalletEnvironment.setActiveWalletId`, the host's Phase-0
+    /// `resolveActiveWallet` binds `walletId` when it rebuilds. On success the
+    /// new wallet is bound and its balance seeded, and
+    /// `activeWalletDidChangeNotification` has been posted.
+    ///
+    /// Validation runs synchronously on the main actor before any teardown:
+    /// the target must be a persisted wallet on the current network (its
+    /// mnemonic present in `WalletStorage`), or the call throws without
+    /// touching the running runtime. Switching to the already-active wallet is
+    /// a success no-op.
+    @MainActor
+    func switchWallet(to walletId: Data) async throws {
+        let network = try validateSwitchTarget(walletId)
+
+        let kind = registryNetworkKind(for: network)
+        if WalletEnvironment.activeWalletId(for: kind) == walletId,
+           SwiftDashSDKHost.shared.wallet?.walletId == walletId {
+            Self.logger.info("🧭 RUNTIME :: switchWallet — target already active; no-op")
+            return
+        }
+
+        WalletEnvironment.setActiveWalletId(walletId, for: kind)
+
+        // Same stop/clear/load/start sequence as a network switch, enqueued on
+        // the serial lifecycle chain so it can't interleave with a concurrent
+        // refresh/wipe. `.walletDidChange` never elides the refresh.
+        await enqueueAwaitable { [weak self] in
+            await self?.refresh(trigger: .walletDidChange)
+        }.value
+
+        guard SwiftDashSDKHost.shared.wallet?.walletId == walletId else {
+            throw SwitchError.bindFailed
+        }
+
+        NotificationCenter.default.post(
+            name: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
+            object: nil)
+        Self.logger.info("🧭 RUNTIME :: switchWallet — bound new active wallet and posted change")
+    }
+
+    /// Validate that `walletId` is a switchable target on the current network:
+    /// the network must be SDK-supported and a mnemonic for `walletId` must be
+    /// persisted in `WalletStorage` — the same keychain surface the host loads
+    /// and recovers wallets from. Returns the resolved `Network` for the
+    /// caller's registry write. Throws (leaving the runtime untouched) on an
+    /// unsupported network or an unknown/missing walletId.
+    @MainActor
+    private func validateSwitchTarget(_ walletId: Data) throws -> Network {
+        let network: Network
+        switch resolveCurrentNetwork() {
+        case .failure:
+            throw SwitchError.unsupportedNetwork
+        case .success(let resolved):
+            network = resolved
+        }
+
+        let persistedIds = SwiftDashSDKHost.persistedMnemonics().map { $0.walletId }
+        guard persistedIds.contains(walletId) else {
+            throw SwitchError.unknownWallet
+        }
+        return network
+    }
+
+    /// `WalletEnvironment.NetworkKind` for the SDK `Network`. Only
+    /// `.mainnet`/`.testnet` reach a persisted wallet (the runtime fails fast
+    /// on every other network before this is called), so the switch path never
+    /// sees a network without a registry key; the `default` maps to `.testnet`
+    /// defensively to keep the return non-optional.
+    private func registryNetworkKind(for network: Network) -> WalletEnvironment.NetworkKind {
+        switch network {
+        case .mainnet: return .mainnet
+        case .testnet: return .testnet
+        default: return .testnet
+        }
+    }
+
     /// Push one ordered step from any thread into the MainActor lifecycle.
     /// `entryQueue` serializes Task creation; the MainActor then processes
     /// the enqueue calls in the order their Tasks were created. The block
@@ -105,11 +188,23 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// succession (e.g. `stop()` then `startIfReady()` from the diagnostic
     /// Restart button) are processed strictly in order.
     private func enqueue(_ op: @escaping @MainActor () async -> Void) {
+        currentLifecycleTask = enqueueAwaitable(op)
+    }
+
+    /// Same serial-chain append as `enqueue`, but returns the appended task so
+    /// an awaiting caller (`switchWallet`) can block until its own op — and
+    /// every op enqueued before it — has completed. Preserves the FIFO
+    /// ordering `enqueue` provides: the returned task awaits the previous
+    /// lifecycle task before running.
+    @discardableResult
+    private func enqueueAwaitable(_ op: @escaping @MainActor () async -> Void) -> Task<Void, Never> {
         let previous = currentLifecycleTask
-        currentLifecycleTask = Task { @MainActor in
+        let task = Task { @MainActor in
             await previous?.value
             await op()
         }
+        currentLifecycleTask = task
+        return task
     }
 
     private func enqueueRefresh(trigger: RefreshTrigger) {
@@ -187,7 +282,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     private func shouldSkipRefresh(for network: Network, trigger: RefreshTrigger) -> Bool {
         switch trigger {
-        case .walletMaterialChanged:
+        case .walletMaterialChanged, .walletDidChange:
+            // A runtime wallet switch always rebuilds — the active-wallet
+            // registry was repointed to a different wallet on the SAME
+            // network, so `currentNetwork == network` would otherwise wrongly
+            // elide the rebind.
             return false
         case .startIfReady, .networkDidChange:
             // External callers (PlatformSyncStatusScreen, StorageExplorerUnavailableView,
@@ -255,6 +354,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         case startIfReady
         case networkDidChange
         case walletMaterialChanged
+        case walletDidChange
     }
 
     enum RuntimeError: LocalizedError {
@@ -264,6 +364,29 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             switch self {
             case .unsupportedCurrentNetwork(let name):
                 return "SwiftDashSDK runtime does not support \(name)"
+            }
+        }
+    }
+
+    /// Failure modes of `switchWallet(to:)`. Surfaced to the caller rather
+    /// than logged-and-swallowed so a UI switch flow can report why it failed.
+    enum SwitchError: LocalizedError {
+        /// The current network isn't SDK-supported (devnet/unsupported).
+        case unsupportedNetwork
+        /// No mnemonic is persisted in `WalletStorage` for the target walletId.
+        case unknownWallet
+        /// The stop/clear/load/start sequence ran but the host did not bind the
+        /// requested wallet (e.g. its rows failed to load).
+        case bindFailed
+
+        var errorDescription: String? {
+            switch self {
+            case .unsupportedNetwork:
+                return "Cannot switch wallet: the current network is not supported."
+            case .unknownWallet:
+                return "Cannot switch wallet: no wallet with that id is stored on this network."
+            case .bindFailed:
+                return "Switching wallet failed: the new wallet could not be loaded."
             }
         }
     }

@@ -106,6 +106,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
     private let authorizer = DWIdentityAuthorizer()
     private var saveObserverCancellable: AnyCancellable?
+    private var activeWalletCancellable: AnyCancellable?
 
     /// Last run of the payments projection (see
     /// `refreshPaymentsProjection`). Throttles the piggyback call in
@@ -122,6 +123,20 @@ final class SwiftDashSDKContactsService: ObservableObject {
             .publisher(for: .NSManagedObjectContextDidSave)
             .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
+                self?.refresh()
+            }
+        // The ownerId (current identity id) changes with the active wallet, so
+        // a runtime wallet switch invalidates every published snapshot. Rebuild
+        // against the new wallet's ownerId. `refresh` reads the ownerId from
+        // `DWCurrentUserIdentityInfo`, whose cache the same notification also
+        // invalidates — but NotificationCenter delivery order between the two
+        // observers isn't guaranteed, so force the identity snapshot fresh here
+        // (idempotent revision bump) before reading it.
+        activeWalletCancellable = NotificationCenter.default
+            .publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                DWCurrentUserIdentityInfo.shared.refreshFromSDK()
                 self?.refresh()
             }
         refresh()

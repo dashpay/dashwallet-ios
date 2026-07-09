@@ -128,6 +128,19 @@ class MainTabbarController: UITabBarController {
                 self?.reconfigureDashPayTabsIfNeeded()
             }
             .store(in: &cancellableBag)
+
+        // A runtime wallet switch may cross the identity boundary in EITHER
+        // direction: the registration-status observer above only ADDS tabs
+        // (`reconfigureDashPayTabsIfNeeded` early-returns when no identity), so
+        // switching to a wallet without an identity needs a rebuild that also
+        // REMOVES them. `reconfigureDashPayTabsForActiveWalletChange` rebuilds
+        // unconditionally.
+        NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.reconfigureDashPayTabsForActiveWalletChange()
+            }
+            .store(in: &cancellableBag)
         #endif
     }
 
@@ -236,6 +249,24 @@ extension MainTabbarController {
         }
 
         reconfigureDashPayTabsPreservingSelection()
+    }
+
+    /// Rebuild the tab set for a runtime active-wallet switch. Unlike
+    /// `reconfigureDashPayTabsIfNeeded` (which only adds tabs when an identity
+    /// exists), this rebuilds unconditionally so the DashPay tabs are removed
+    /// when the newly-active wallet has no identity. Selection resets to Home
+    /// because the previously-selected tab index may not exist under the new
+    /// wallet's tab set (the +2 shift `reconfigureDashPayTabsPreservingSelection`
+    /// applies assumes tabs were added, which doesn't hold on removal).
+    private func reconfigureDashPayTabsForActiveWalletChange() {
+        if containsCreateUsernameController(in: self) {
+            pendingDashPayTabReconfiguration = true
+            return
+        }
+        configureControllers()
+        selectedIndex = 0
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
     }
 
     private func reconfigureDashPayTabsPreservingSelection() {

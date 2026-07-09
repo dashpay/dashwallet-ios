@@ -116,6 +116,57 @@ public final class WalletEnvironment: NSObject {
         SwiftDashSDKHost.hasPersistedSDKWallet()
     }
 
+    // MARK: - Active-wallet registry
+
+    /// UserDefaults key holding the raw walletId `Data` chosen as active on
+    /// `network`. One key per network — the app tracks a distinct active
+    /// wallet on mainnet and testnet (the same posture as the per-network
+    /// SwiftData store `SwiftDashSDKHost.buildModelContainer` builds). A
+    /// missing key means "unset" — no wallet has been resolved on this
+    /// network yet, and `SwiftDashSDKHost` falls back to `firstWallet`.
+    private static func activeWalletIdKey(for network: NetworkKind) -> String {
+        "DW_ACTIVE_WALLET_ID_\(network.rawValue)"
+    }
+
+    /// The walletId last resolved as active for `network`, or `nil` when
+    /// unset. Written by `SwiftDashSDKHost` whenever it binds a wallet
+    /// (including the `firstWallet` fallback and after `createOrImportWallet`),
+    /// so the registry becomes concrete after first launch. The stored value
+    /// is the raw 32-byte walletId `Data`.
+    public static func activeWalletId(for network: NetworkKind) -> Data? {
+        UserDefaults.standard.data(forKey: activeWalletIdKey(for: network))
+    }
+
+    /// Persist (or clear, when `id` is `nil`) the active walletId for
+    /// `network`. Sole writer of the per-network active-wallet key.
+    public static func setActiveWalletId(_ id: Data?, for network: NetworkKind) {
+        let defaults = UserDefaults.standard
+        let key = activeWalletIdKey(for: network)
+        if let id {
+            defaults.set(id, forKey: key)
+        } else {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
+    /// The active walletId for the app's CURRENT network, hex-encoded, or nil
+    /// when no wallet is resolved yet (fresh install, or between wipe and first
+    /// create). ObjC-facing so `DWGlobalOptions` can scope its per-wallet
+    /// UserDefaults keys (backup / has-balance) by the active wallet without
+    /// importing SwiftDashSDK. Resolves through the same per-network registry
+    /// the Swift side reads (`activeWalletId(for:)`) — one place owns the
+    /// registry. `devnet`/unsupported network ⇒ nil.
+    @objc public static var activeWalletIdHex: NSString? {
+        let kind: NetworkKind
+        switch networkKind {
+        case .mainnet: kind = .mainnet
+        case .testnet: kind = .testnet
+        case .devnet: return nil
+        }
+        guard let id = activeWalletId(for: kind) else { return nil }
+        return id.map { String(format: "%02x", $0) }.joined() as NSString
+    }
+
     /// App-level wallet existence. MIGRATION-WINDOW UNION: SDK presence OR
     /// DashSync `chain.hasAWallet` — DashSync-only wallets exist transiently
     /// (the recover flow's async SDK import; migrator-deferred multi-wallet /

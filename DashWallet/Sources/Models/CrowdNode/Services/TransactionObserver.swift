@@ -115,18 +115,34 @@ public final class TransactionObserver {
         fetchLimit: Int?,
         firstSeenAtOrAfter: UInt64?
     ) -> [ObservedTransaction] {
-        guard let container = SwiftDashSDKHost.shared.modelContainer else {
-            logger.info("🅾 OBSERVER :: no model container yet — empty scan")
+        guard let container = SwiftDashSDKHost.shared.modelContainer,
+              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
+            logger.info("🅾 OBSERVER :: no model container / active wallet yet — empty scan")
             return []
         }
         guard case .success(let network) = SwiftDashSDKWalletRuntime.shared.resolveCurrentNetwork() else {
             logger.error("🅾 OBSERVER :: unsupported network — empty scan")
             return []
         }
+        // Scope to the active wallet via the TXO join: gather the wallet's
+        // txids from its walletId-scoped TXO rows (CrowdNode responses land
+        // in the active wallet's own addresses), then match transactions in
+        // that set. `PersistentTransaction` carries no walletId of its own.
+        let txoDescriptor = FetchDescriptor<PersistentTxo>(
+            predicate: #Predicate { $0.walletId == walletId })
+        let txos = (try? container.mainContext.fetch(txoDescriptor)) ?? []
+        var txids = Set<Data>()
+        for txo in txos {
+            if let producing = txo.transaction { txids.insert(producing.txid) }
+            if let spending = txo.spendingTransaction { txids.insert(spending.txid) }
+        }
+        guard !txids.isEmpty else { return [] }
         var descriptor = FetchDescriptor<PersistentTransaction>(
             sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
         if let floor = firstSeenAtOrAfter {
-            descriptor.predicate = #Predicate { $0.firstSeen >= floor }
+            descriptor.predicate = #Predicate { txids.contains($0.txid) && $0.firstSeen >= floor }
+        } else {
+            descriptor.predicate = #Predicate { txids.contains($0.txid) }
         }
         if let fetchLimit {
             descriptor.fetchLimit = fetchLimit

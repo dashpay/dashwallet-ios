@@ -132,6 +132,20 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     @objc public static let balanceDidChangeNotification =
         NSNotification.Name("DWSwiftDashSDKWalletStateBalanceDidChange")
 
+    /// Notification posted on the main queue AFTER the active wallet is
+    /// switched at runtime (`SwiftDashSDKWalletRuntime.switchWallet`) — the
+    /// host has bound the new wallet and its balance state has been seeded.
+    /// Consumers that cache per-wallet state keyed off the host's active
+    /// wallet (identity snapshot, DashPay contacts, tx list, DashPay tab
+    /// gating) observe this to invalidate and reload for the new wallet.
+    ///
+    /// A distinct name (guardrail #5): it is NOT a re-emission of any DashSync
+    /// `DS*` name nor of `balanceDidChangeNotification` — a balance change and
+    /// an active-wallet change are different events, and the switch drives the
+    /// balance notification separately (via `clearAllState` + the SPV re-seed).
+    @objc public static let activeWalletDidChangeNotification =
+        NSNotification.Name("DWSwiftDashSDKWalletStateActiveWalletDidChange")
+
     /// Obj-C-friendly accessor for the current total balance in satoshis.
     /// Returns 0 when no balance is published yet (e.g. before SPV first
     /// emits a balance event for an imported wallet, or after `clearBalance`).

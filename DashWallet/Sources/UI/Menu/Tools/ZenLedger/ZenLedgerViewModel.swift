@@ -41,8 +41,10 @@ class ZenLedgerViewModel: ObservableObject {
     /// ZenLedger only needs each address once.
     @MainActor
     private static func walletOutputAddresses() -> [String] {
-        guard let container = SwiftDashSDKHost.shared.modelContainer else { return [] }
+        guard let container = SwiftDashSDKHost.shared.modelContainer,
+              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return [] }
         let descriptor = FetchDescriptor<PersistentTxo>(
+            predicate: #Predicate { $0.walletId == walletId },
             sortBy: [SortDescriptor(\.createdAt, order: .forward)])
         guard let rows = try? container.mainContext.fetch(descriptor) else { return [] }
 
