@@ -605,15 +605,20 @@ struct PayContactSheet: View {
     }
 
     /// Entered DASH amount in duffs, or nil when unparseable, zero,
-    /// or above the sendable cap.
+    /// or above the sendable cap. The cap check runs in `Decimal`
+    /// space BEFORE the `UInt64` conversion — `NSDecimalNumber`'s
+    /// `uint64Value` wraps modulo 2^64, so an overflowing input
+    /// (e.g. 2^64 + 1 duffs) would otherwise alias to a tiny value
+    /// that passes the range check and sends the wrong amount.
     private var parsedDuffs: UInt64? {
         let normalized = amountText
             .trimmingCharacters(in: .whitespaces)
             .replacingOccurrences(of: ",", with: ".")
         guard let dash = Decimal(string: normalized), dash > 0 else { return nil }
         let duffsDecimal = dash * Decimal(100_000_000)
+        guard duffsDecimal <= Decimal(maxSendable) else { return nil }
         let duffs = NSDecimalNumber(decimal: duffsDecimal).uint64Value
-        guard duffs > 0, duffs <= maxSendable else { return nil }
+        guard duffs > 0 else { return nil }
         return duffs
     }
 

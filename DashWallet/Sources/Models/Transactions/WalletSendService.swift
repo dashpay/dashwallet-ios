@@ -278,7 +278,10 @@ final class WalletSendService: NSObject {
         memo: String? = nil
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
         Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
-        try await sendAuthorizer.authorizeSend()
+        // spendAmount engages the biometric spending limit (C7.4) —
+        // without it the gate is non-monetary and Face ID alone would
+        // authorize a contact payment of any size.
+        try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
         let context: (wallet: ManagedPlatformWallet, ourId: Data)? = await MainActor.run {
             guard let wallet = SwiftDashSDKHost.shared.wallet,
