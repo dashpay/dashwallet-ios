@@ -18,7 +18,6 @@
 #import "DWHomeModelStub.h"
 
 #import "DWDashPayModel.h"
-#import "DWEnvironment.h"
 #import "DWPayModelStub.h"
 #import "DWReceiveModelStub.h"
 #import "dashwallet-Swift.h"

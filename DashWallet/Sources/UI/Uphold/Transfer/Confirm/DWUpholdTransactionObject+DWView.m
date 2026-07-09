@@ -17,7 +17,6 @@
 
 #import "DWUpholdTransactionObject+DWView.h"
 
-#import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
 #import "dashwallet-Swift.h"

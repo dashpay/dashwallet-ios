@@ -17,7 +17,6 @@
 
 #import "DWInvitationLinkBuilder.h"
 
-#import "DWEnvironment.h"
 #import <Firebase/Firebase.h>
 
 #import "DSBlockchainIdentity+DWDisplayName.h"

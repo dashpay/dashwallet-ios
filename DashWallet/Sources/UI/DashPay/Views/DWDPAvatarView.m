@@ -17,7 +17,6 @@
 
 #import "DWDPAvatarView.h"
 
-#import "DWEnvironment.h"
 #import "DWUIKit.h"
 #import "UIColor+DWDashPay.h"
 

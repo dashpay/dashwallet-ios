@@ -25,7 +25,6 @@
 
 #if DASHPAY
 #import "DWDashPayConstants.h"
-#import "DWEnvironment.h"
 #import "dashwallet-Swift.h"
 #endif
 
