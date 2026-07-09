@@ -18,6 +18,8 @@ The teardown is **broader than the ledger's blocker list but more tractable than
 - The research also surfaced **7 live bugs** worth fixing regardless of the teardown (Bug #1 fixed with Wave A; see §2).
 - **Number drift:** it's **~78** `currentChain/currentAccount/currentWallet` reader files (ledger said ~127) — minus the 12 network-identity files A4 repointed. Post-Wave-A the app has **zero** `DSWallet.allTransactions` enumerations and **zero** `DSChainManagerSync*` references (`grep` is a clean audit signal again).
 
+**STATUS 2026-07-09 (post etap-4 + cat-6):** Waves A and B are **done** — C2, C3, C4, C5, C6 A–D, C7 (incl. recovery), C8 (full), C9 (signing/prices/logger), and all of C1 (read-side + the etap-4 duty strip + cat-6 xpub). `DWEnvironment` survives only as a frozen wallet-registry shim; its consumer ledger is final: **C6-E** (dual-write create/recover, wipe, `DSChainWalletsDidChange` filter, `hasWallet` union) + **DashPay/invites (C10)** + **watch (D1)**. No unblocked app-side engineering remains — what's left is: the colleague-owned coverage surfaces (§4: Uphold HTTP **M**, keychain shim **S**, DS-notification renames **S**, About commit-hash plumbing **S**, Podfile direct-declares **S**), two owner decisions (C10 invites: gate/delete now vs wait for an upstream invitations wrapper; D1 watch: drop vs port), then the sequenced endgame: C6-E cut + `DWEnvironment.{h,m}` deletion (~1 session) and the unlink mechanics (~1 session: `DSLocalizedString`→NSLocalizedString, `DSCurrencyPriceObject`→local DTO, `DSUtils`, `dwLogLevel`→`ddLogLevel`, `setupDashSyncOnce`/`DSOptionsManager` removal, `pod 'DashSync'` out).
+
 ---
 
 ## 1. Corrections to the current plan of record
@@ -246,29 +248,34 @@ Of the 85 DashPay `DS*`-referencing files: **47 compile only into the dashpay ta
 
 Verification: clean `dashpay` arm64-sim build; audit greps at zero (`DSChainManagerSync`, `allTransactions` enumerations, `syncPhase == .synced`). Testnet smokes pending (sync-banner cycle, send-enable post-sync, About stats, BIP70 merchant + CTX gift card). Environment note: landing the wave required moving the `../platform` pin to `local/tx-decode-plus-v4.1-dev` (v4.1-dev + tx-decode + the rebased tx-builder commit `9458b7a70d`) and rebuilding `DashSDKFFI.xcframework` — the old pin's Swift surface no longer matched.
 
-### Wave B — mid-game (independent M/L workstreams, no ordering between them)
-~~`WalletEnvironment` build-out (C1 categories 2/5)~~ **done 2026-07-07** · ~~Transaction `.ds` deletion (C2)~~ **done 2026-07-06** · Payments zero-DS\* (C8 steps 2–5) · Auth replacement (C7, fixes Bugs #2/#3) · Utility tail — logger + **price pipeline** (C9) · CrowdNode signing app-side (C9/cov) · Uphold HTTP + keychain shims (cov) · ~~Wallet presence + reinstall recovery (C6 A–D)~~ **done 2026-07-07** (E open, gated) · ~~CrowdNode online-account forward (C3 PR2)~~ done · ~~APY calculator port (C5 PR2)~~ done.
+### Wave B — mid-game (independent M/L workstreams, no ordering between them) — ✅ **DONE 2026-07-09**
+~~`WalletEnvironment` build-out (C1 categories 2/5)~~ **done 2026-07-07** · ~~Transaction `.ds` deletion (C2)~~ **done 2026-07-06** · ~~Payments zero-DS\* (C8 steps 2–5 + C8-fin)~~ **done 2026-07-09** · ~~Auth replacement (C7 incl. recovery tail)~~ **done 2026-07-08** (Bugs #2/#3 fixed) · ~~Utility tail — logger + price pipeline (C9)~~ **done** · ~~CrowdNode signing app-side (C9/cov)~~ **done** · Uphold HTTP + keychain shims (cov) → **assigned to a colleague** (with DS-notification renames, About commit-hash, Podfile direct-declares) · ~~Wallet presence + reinstall recovery (C6 A–D)~~ **done 2026-07-07** (E open, gated) · ~~CrowdNode online-account forward (C3 PR2)~~ done · ~~APY calculator port (C5 PR2)~~ done · ~~C1 read-side + etap 4 (DWEnvironment duty strip) + cat-6 xpub~~ **done 2026-07-09**.
 
-**Recommended entry order (post-Wave-A):** ~~(1) C5 PR2 + C3 PR2~~ (**both done 2026-07-06**); ~~(2) the C2 arc~~ (**done 2026-07-06** — Bug #6 fixed, largest `DSTransaction` mass deleted); (0) testnet smokes — Wave A (BIP70 merchant run, send-gate), the APY figure, the confirmation forward, **and the C2 arc** (send-success screen, demo tour, gift-card icon refresh, explorer links); (3) **C9 price-pipeline port** (the live-service unlink foot-gun) + the mechanical logger swap; (4) **C7 auth** (largest remaining "by-decision" blocker, fixes Bugs #2/#3 — needs D5 first). C8 steps 2–5 and C6 can interleave; C10 stays deferred per the owner.
-
-### Wave C — endgame (sequenced)
-1. **DashPay contacts rebuild** (C10) — testnet probe gates the UI investment.
-2. **Invitations** — after the upstream Swift wrapper.
-3. **Cut `standardWalletWithSeedPhrase`** (C6 E) — only after C1/C10/C11 stop traversing `currentWallet`; + keychain scrubber.
-4. **Unlink mechanics** — direct-declare `DSDynamicOptions`/`DWAlertController` in the Podfile; rename DS-named app notifications; remove `DashSyncCurrentCommit` plumbing; delete `DWEnvironment.{h,m}`; `pod` removal. **dashwallet target can go first** (§6).
+### Wave C — endgame (sequenced; all that remains app-side)
+1. **C10 decision** — invites/`DWDashPayModel` (~20 files on `DSBlockchainIdentity`/`DSBlockchainInvitation`): compile-gate/delete now (**M**, ~1–2 sessions) vs wait for the upstream invitations Swift wrapper (unbounded). This is the critical path to the pod unlink.
+2. **D1 decision** — watch: drop (**S–M**, ~1 session incl. `DWPhoneWCSessionManager`/`DSWatchTransactionDataObject`) vs port (its own project).
+3. **Cut `standardWalletWithSeedPhrase`** (C6-E) — after 1+2; drops the dual-write, the wipe's DashSync arm, the `DSChainWalletsDidChange` filter, the `hasWallet` union, and **deletes `DWEnvironment.{h,m}`** (+ keychain scrubber). **M**, ~1 session.
+4. **Unlink mechanics** (**M**, ~1 session): direct-declare `DSDynamicOptions`/`DWAlertController` in the Podfile; rename DS-named app notifications; remove `DashSyncCurrentCommit` plumbing; `DSLocalizedString`→`NSLocalizedString`; `DSCurrencyPriceObject`→local DTO; `DSUtils`; `dwLogLevel`→`ddLogLevel`; drop `setupDashSyncOnce`/`DSOptionsManager` from AppDelegate; `pod 'DashSync'` removal. **dashwallet target can go first** (§6).
 
 ---
 
 ## 8. Owner decisions needed
 
-Each currently blocks a workstream:
+Still open (each blocks a Wave-C step):
 
 - **D1 — Apple Watch: keep or remove?** It already doesn't ship from this branch; keeping means phone-side porting *plus* modernizing a 2023-era WatchKit-storyboard app (watchOS 4.0 target).
-- **D2 — Paper-wallet sweep: drop or port?** No silent stub either way (guardrail #3). Porting blocks on an upstream UTXO-query FFI.
-- **D3 — BIP70 payment *files* (`handleFile`): drop or port** onto the committed L1 codec?
-- **D4 — Drop breadwallet-era upgrade support** (`DSVersionManager` + `DWDataMigrationManager`)? Deletion is S–M but permanently strands V0/V1-key installs — needs a sign-off like the testnet-default decision.
-- **D5 — Lockout time-source threat model:** local never-decreasing clock (bypassable by clock advance) vs re-feed server time from an app HTTP hook. Today's frozen state (Bug #2) is worse than either.
-- **D6 — CrowdNode APY:** ship at parity-with-today (static estimate) now, or block on the upstream masternode-stats FFI?
+- **D7 — DashPay invites (C10): compile-gate/delete now, or wait for the upstream invitations Swift wrapper?** The FFI gap audit found invitations composable from existing FFI but unwrapped; gating/deleting now unblocks the pod unlink immediately.
+
+Resolved (recorded here so the list stays honest):
+
+- ~~**D2 — Paper-wallet sweep**~~ — **dropped** (C8 step 5, 2026-07-08).
+- ~~**D3 — BIP70 payment files (`handleFile`)**~~ — **dropped** (C8 step 5, 2026-07-08).
+- ~~**D4 — breadwallet-era upgrade support**~~ — **dropped** (C9, 2026-07-08; V0/V1-key installs strand by sign-off).
+- ~~**D5 — Lockout time source**~~ — **hybrid clock** (C7.1 `SecureTimeService`: HTTP Date feed + never-decreasing local floor; Bug #2 fixed).
+- ~~**D6 — CrowdNode APY**~~ — **parity-with-today static estimate** shipped (C5 PR2 `MasternodeAPYCalculator`); upstream masternode-stats FFI stays a cosmetic ask.
+- ~~**Trusted-peer About feature**~~ — **dropped, not ported** (etap 4, 2026-07-09; closed the "fourth hole").
+- ~~**`masterPublicKey` inter-app API**~~ — **dropped** (cat-6, 2026-07-09).
+- ~~**Forgot-PIN semantics**~~ — **faithful port**: phrase → new PIN, wallet kept (C7.9).
 
 ---
 
