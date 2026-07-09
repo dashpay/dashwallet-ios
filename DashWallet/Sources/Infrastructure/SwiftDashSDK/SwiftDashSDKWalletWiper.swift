@@ -90,6 +90,11 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // background queue with no @MainActor hop (unlike deleteWalletsFromSDK).
         CoinJoinRecovery.shared.resetForWipe()
         CoinJoinWithdrawalStore.shared.resetForWipe()
+        // CrowdNode state is per-wallet-keyed; the wipe destroys every wallet, so
+        // clear every wallet's keys (the CrowdNode singleton's own
+        // `DWWillWipeWallet` observer only resets the ACTIVE wallet's keys). Also
+        // UserDefaults-only, safe from this background queue.
+        CrowdNodeDefaults.shared.resetForWipe()
 
         // Enumerate every wallet that still has stored material BEFORE any
         // deletion runs. Both the SDK wipe and the mnemonic safety-net below
@@ -187,5 +192,16 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // Safety net: ensure the seed is gone even if `deleteWallet` threw
         // before reaching its own mnemonic-delete step. Idempotent.
         try? WalletStorage().deleteMnemonic(for: walletId)
+
+        // Clear this wallet's per-wallet app-side state that lives outside the
+        // SDK/SwiftData/Keychain teardown above: CrowdNode account state and the
+        // CoinJoin withdrawal tag set are UserDefaults, keyed by walletId hex.
+        // Done here (not in the UI) so BOTH the per-wallet Remove flow and the
+        // full wipe's per-wallet loop clear them — one shared deletion primitive
+        // (guardrail #1). Hex must match `WalletEnvironment.activeWalletIdHex`
+        // (lowercase, %02x). Idempotent; UserDefaults-only, so thread-agnostic.
+        let walletIdHex = walletId.map { String(format: "%02x", $0) }.joined()
+        CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
+        CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
     }
 }

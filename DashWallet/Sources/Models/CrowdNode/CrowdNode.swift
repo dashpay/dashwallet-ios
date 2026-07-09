@@ -142,6 +142,18 @@ public final class CrowdNode {
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)
 
+        // A runtime wallet switch rebinds every per-wallet fact: CrowdNode state
+        // is scoped by the active walletId (see CrowdNodeDefaults), and this
+        // singleton caches the previous wallet's account/balance/signup state in
+        // memory (plus CrowdNodeDefaults' own `_`-backed value cache). Reload
+        // against the now-active wallet so wallet A's CrowdNode balance/account
+        // never shows under wallet B. Mirrors SwiftDashSDKContactsService's
+        // observer of the same notification.
+        NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.handleActiveWalletChanged() }
+            .store(in: &cancellableBag)
+
         $onlineAccountState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
@@ -296,6 +308,28 @@ extension CrowdNode {
         apiError = nil
         balance = 0
         prefs.resetUserDefaults()
+    }
+
+    /// React to a runtime wallet switch: drop the in-memory state cached for the
+    /// previous wallet and re-restore from the now-active wallet's per-wallet
+    /// defaults. Unlike `reset()`, this does NOT call `prefs.resetUserDefaults()`
+    /// — that would erase the newly-active wallet's persisted CrowdNode state.
+    /// It only invalidates `CrowdNodeDefaults`' in-memory value cache (so the
+    /// next read resolves the new wallet's keys) and re-runs `restoreState()`.
+    private func handleActiveWalletChanged() {
+        DWLogger.log("CrowdNode reloading for active wallet change")
+        prefs.invalidateCache()
+        // Clear the previous wallet's published/in-memory state without touching
+        // persisted defaults, then re-open the restore path (its `signUpState >
+        // .notStarted` guard would otherwise short-circuit the reload).
+        signUpState = .notInitiated
+        onlineAccountState = .none
+        linkingApiAddress = nil
+        primaryAddress = nil
+        apiError = nil
+        balance = 0
+        isOnlineStateRestored = false
+        restoreState()
     }
     
     private func checkAPY() {
