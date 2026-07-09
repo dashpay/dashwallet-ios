@@ -889,6 +889,8 @@
 		A5D5DD000000000000000551 /* InternalTransferConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000552 /* InternalTransferConfirmSheet.swift */; };
 		A5D5DD000000000000000560 /* ShieldedTransferCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000562 /* ShieldedTransferCoordinator.swift */; };
 		A5D5DD000000000000000561 /* ShieldedTransferCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000562 /* ShieldedTransferCoordinator.swift */; };
+		A5D5DD000000000000000570 /* ShieldedWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000572 /* ShieldedWithdrawalStore.swift */; };
+		A5D5DD000000000000000571 /* ShieldedWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000572 /* ShieldedWithdrawalStore.swift */; };
 		A5D5DD000000000000001102 /* DWRegistrationPhaseAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001001 /* DWRegistrationPhaseAdapter.swift */; };
 		A5D5DD000000000000001104 /* DWIdentityRegistrationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001002 /* DWIdentityRegistrationController.swift */; };
 		A5D5DD000000000000001106 /* DWIdentityAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001003 /* DWIdentityAuthorizer.swift */; };
@@ -2702,6 +2704,7 @@
 		A5D5DD000000000000000532 /* InternalTransferHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferHostingController.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000552 /* InternalTransferConfirmSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferConfirmSheet.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000562 /* ShieldedTransferCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedTransferCoordinator.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000000572 /* ShieldedWithdrawalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalStore.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001001 /* DWRegistrationPhaseAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWRegistrationPhaseAdapter.swift; path = Identity/DWRegistrationPhaseAdapter.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001002 /* DWIdentityRegistrationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWIdentityRegistrationController.swift; path = Identity/DWIdentityRegistrationController.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001003 /* DWIdentityAuthorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWIdentityAuthorizer.swift; path = Identity/DWIdentityAuthorizer.swift; sourceTree = "<group>"; };
@@ -6461,6 +6464,7 @@
 				A5D5DD000000000000000532 /* InternalTransferHostingController.swift */,
 				A5D5DD000000000000000552 /* InternalTransferConfirmSheet.swift */,
 				A5D5DD000000000000000562 /* ShieldedTransferCoordinator.swift */,
+				A5D5DD000000000000000572 /* ShieldedWithdrawalStore.swift */,
 			);
 			path = InternalTransfer;
 			sourceTree = "<group>";
@@ -8767,6 +8771,7 @@
 				A5D5DD000000000000000530 /* InternalTransferHostingController.swift in Sources */,
 				A5D5DD000000000000000550 /* InternalTransferConfirmSheet.swift in Sources */,
 				A5D5DD000000000000000560 /* ShieldedTransferCoordinator.swift in Sources */,
+				A5D5DD000000000000000570 /* ShieldedWithdrawalStore.swift in Sources */,
 				A5D5DD000000000000000249 /* PlatformSendExecutor.swift in Sources */,
 				A5D5DD000000000000000252 /* StorageExplorerView.swift in Sources */,
 				A5D5DD000000000000000255 /* StorageModelListViews.swift in Sources */,
@@ -9632,6 +9637,7 @@
 				A5D5DD000000000000000531 /* InternalTransferHostingController.swift in Sources */,
 				A5D5DD000000000000000551 /* InternalTransferConfirmSheet.swift in Sources */,
 				A5D5DD000000000000000561 /* ShieldedTransferCoordinator.swift in Sources */,
+				A5D5DD000000000000000571 /* ShieldedWithdrawalStore.swift in Sources */,
 				A5D5DD000000000000000250 /* PlatformSendExecutor.swift in Sources */,
 				A5D5DD000000000000000253 /* StorageExplorerView.swift in Sources */,
 				A5D5DD000000000000000256 /* StorageModelListViews.swift in Sources */,

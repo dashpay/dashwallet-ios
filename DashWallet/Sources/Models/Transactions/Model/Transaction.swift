@@ -227,6 +227,16 @@ class Transaction: TransactionDataItem, Identifiable {
     /// True when this is the funding tx of a "to Shielded" transfer.
     var isShieldedTransfer: Bool { shieldedLockInfo != nil }
 
+    /// True when this incoming tx is the L1 payout of a Shielded → Core
+    /// withdrawal the app performed — matched by destination address via
+    /// `ShieldedWithdrawalStore` (the SDK's opaque withdraw call returns no
+    /// txid, so the app tags the receive address it handed the withdraw).
+    /// Drives the "Shielded received" home filter category.
+    var isShieldedWithdrawalReceipt: Bool {
+        direction == .received
+            && snapshot.outputAddresses.contains { ShieldedWithdrawalStore.shared.contains($0) }
+    }
+
     /// True when the shielded transfer is still pending / stuck — its asset
     /// lock is broadcast/IS-locked/CL-locked (`statusRaw` 1…3) but the shield
     /// state transition hasn't consumed it yet (4 = consumed = success). Drives
@@ -448,6 +458,18 @@ extension Transaction {
     var txHashHexString: String { Self.displayHex(snapshot.txid) }
 
     var txHashData: Data { snapshot.txid }
+
+    /// True for any masternode special transaction: provider registration
+    /// (proRegTx), update registrar/service, or revocation. Drives the
+    /// "Masternode" home filter category.
+    var isMasternodeTransaction: Bool {
+        switch transactionType {
+        case .masternodeRegistration, .masternodeUpdate, .masternodeRevoke:
+            return true
+        default:
+            return false
+        }
+    }
 
     var isCoinbaseTransaction: Bool {
         TransactionTypeKind(rawValue: snapshot.typeKind) == .coinbase
