@@ -92,7 +92,7 @@ The app is mid-migration off DashSync. **Source of truth: `DASHSYNC_MIGRATION.md
 - **Sync gating**: never gate on SPV `state == .synced` — dash-spv's steady state when fully synced is `waitForEvents` at progress ≈ 1.0 (`.synced` is a transient window). Gate on `SyncingActivityMonitor` (`.syncDone`).
 - **Sends**: every spend goes through `WalletSendService` (standard) or `SwiftDashSDKTransactionSender` (selected-input / sweep). Never call `CoreTransactionBuilder` from UI code. `prepare*` never broadcasts; broadcast happens only on explicit confirm.
 - **Mnemonic ownership**: stored as plain keychain bytes via SwiftDashSDK `WalletStorage` (the iOS keychain is the security boundary — there is no PIN-encryption layer). Writers: `SwiftDashSDKWalletCreator` / `SwiftDashSDKKeyMigrator`; deletion: `SwiftDashSDKWalletWiper`. Don't add ad-hoc `WalletStorage()` readers — resolve through `SwiftDashSDKHost` (wallet presence: `SwiftDashSDKHost.hasPersistedSDKWallet()`, surfaced app-wide as `WalletEnvironment.hasSDKWallet`/`hasWallet`).
-- **TestNet by design (temporary)**: fresh installs deliberately default to testnet in ALL build configurations while mainnet Platform DAPI is unreachable in the current SDK build (`DWEnvironment.m`; owner decision 2026-07-03). Do not "fix" this; revisit before any release branch.
+- **TestNet by design (temporary)**: fresh installs deliberately default to testnet in ALL build configurations while mainnet Platform DAPI is unreachable in the current SDK build (`WalletEnvironment.networkKind`'s missing-key default; owner decision 2026-07-03). Do not "fix" this; revisit before any release branch.
 
 ## UI Development — SwiftUI-First (Mandatory)
 

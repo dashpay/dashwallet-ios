@@ -34,8 +34,8 @@ import SwiftDashSDK
 /// UserDefaults (no instances, no mutable state, nothing to inject).
 @objc(DWWalletEnvironment)
 public final class WalletEnvironment: NSObject {
-    /// Raw values mirror DashSync's `ChainType_Tag` C enum, which is what
-    /// `DWEnvironment` persists under `CURRENT_CHAIN_TYPE_KEY`.
+    /// Raw values mirror DashSync's `ChainType_Tag` C enum — the historical
+    /// (and still persisted) encoding of `CURRENT_CHAIN_TYPE_KEY`.
     public enum NetworkKind: Int {
         case mainnet = 0
         case testnet = 1
