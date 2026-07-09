@@ -20,7 +20,6 @@
 #import <UIKit/UIPasteboard.h>
 
 #import "DWAppGroupOptions.h"
-#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "UIImage+Utils.h"
 #import "dashwallet-Swift.h"
@@ -151,10 +150,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)updateReceivingInfo {
     dispatch_async(self.updateQueue, ^{
-        DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-        if (!account) {
+        if (!DWWalletEnvironment.hasWallet) {
             // wallet has been wiped
-
             return;
         }
         NSString *paymentAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];

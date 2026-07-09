@@ -390,6 +390,23 @@ enum CrowdNodeMessageSigner {
             data: DarkCoinMessage.framed(message), privateKey: privateKey, network: network)
     }
 
+    /// Tri-state wallet-ownership check for a persisted CrowdNode account
+    /// address: `true`/`false` when the SDK wallet is available and the BIP44
+    /// acct-0 scan ran (the CrowdNode address is a BIP44 receive address, so
+    /// the same bounded scan the signer uses answers ownership); `nil` when
+    /// the wallet/network isn't up yet — the caller must NOT treat that as
+    /// "alien address" (a relaunch validates prefs before the SDK starts).
+    static func ownsAddress(_ address: String) -> Bool? {
+        guard let network = SwiftDashSDKHost.shared.runningNetwork,
+              let (_, wallet, _) = SwiftDashSDKHost.shared.derivationWallet() else {
+            return nil
+        }
+        guard let targetHash160 = hash160(ofAddress: address, network: network) else {
+            return false // not a P2PKH address of this network ⇒ not ours
+        }
+        return derivationPath(ofHash160: targetHash160, wallet: wallet, network: network) != nil
+    }
+
     /// Base58Check-decoded P2PKH hash160 of `address` as lowercase hex
     /// (the format `computePublicKeyHashHex` emits).
     private static func hash160(ofAddress address: String, network: Network) -> String? {

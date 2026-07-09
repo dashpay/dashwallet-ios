@@ -277,13 +277,31 @@ extension CrowdNode {
     }
 
     private func validatePrefs() {
-        if let accountAddress = prefs.accountAddress {
-            let wallet = DWEnvironment.sharedInstance().currentWallet
+        guard let accountAddress = prefs.accountAddress else { return }
 
-            if !wallet.containsAddress(accountAddress) {
-                DWLogger.log("Found alien address in CrowdNode prefs")
-                reset()
+        // SDK-native ownership check (BIP44 acct-0 scan — the same one the
+        // CrowdNode signer uses). Tri-state: nil ⇒ the SDK wallet isn't up
+        // yet, so we can't validate — skip rather than reset a live account;
+        // the check reruns on the next restoreState.
+        let owns: Bool?
+        if Thread.isMainThread {
+            owns = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownsAddress(accountAddress) }
+        } else {
+            var captured: Bool?
+            DispatchQueue.main.sync {
+                captured = MainActor.assumeIsolated { CrowdNodeMessageSigner.ownsAddress(accountAddress) }
             }
+            owns = captured
+        }
+
+        switch owns {
+        case false:
+            DWLogger.log("Found alien address in CrowdNode prefs")
+            reset()
+        case nil:
+            DWLogger.log("CrowdNode prefs validation skipped — SDK wallet not available yet")
+        default:
+            break
         }
     }
 
