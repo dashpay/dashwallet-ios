@@ -39,10 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (DWURLRequestActionType)type {
     NSAssert(self.request != nil, @"Type is not available. Action is not configured");
 
-    if ([self.request isEqualToString:@"masterPublicKey"]) {
-        return DWURLRequestActionType_MasterPublicKey;
-    }
-    else if ([self.request isEqualToString:@"address"]) {
+    if ([self.request isEqualToString:@"address"]) {
         return DWURLRequestActionType_Address;
     }
 

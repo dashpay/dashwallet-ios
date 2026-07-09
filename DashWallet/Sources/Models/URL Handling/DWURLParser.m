@@ -120,10 +120,7 @@ NS_ASSUME_NONNULL_BEGIN
     if (params[@"request"] &&
         params[@"sender"] &&
         (!params[@"account"] || [params[@"account"] isEqualToString:@"0"])) {
-        if ([params[@"request"] isEqualToString:@"masterPublicKey"]) {
-            return YES;
-        }
-        else if ([params[@"request"] isEqualToString:@"address"]) {
+        if ([params[@"request"] isEqualToString:@"address"]) {
             return YES;
         }
     }

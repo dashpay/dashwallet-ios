@@ -39,7 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, DWURLRequestActionType) {
     DWURLRequestActionType_Unknown,
-    DWURLRequestActionType_MasterPublicKey,
     DWURLRequestActionType_Address,
 };
 
