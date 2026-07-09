@@ -28,7 +28,6 @@
 #import "dashwallet-Swift.h"
 
 #if DASHPAY
-#import "DWDPUserObject.h"
 // if MOCK_DASHPAY
 #import "DWDashPayConstants.h"
 #endif
@@ -130,37 +129,12 @@ static NSString *sanitizeString(NSString *s) {
     NSParameterAssert(self.delegate);
 
 #if DASHPAY
-    // re-build input if it's DashPay-compatible
-    NSString *requestUsername = paymentInput.request.dashpayUsername;
-    if (requestUsername) {
-        DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-        DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-
-        if (MOCK_DASHPAY && myBlockchainIdentity == NULL) {
-            NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
-
-            if (username != nil) {
-                myBlockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
-            }
-        }
-
-        if (myBlockchainIdentity) {
-            NSManagedObjectContext *context = NSManagedObjectContext.viewContext;
-            DSDashpayUserEntity *dashpayUserEntity = [myBlockchainIdentity matchingDashpayUserInContext:context];
-            DSBlockchainIdentity *requestIdentity = nil;
-            for (DSFriendRequestEntity *friendRequest in dashpayUserEntity.incomingRequests) {
-                if ([[friendRequest.sourceContact.associatedBlockchainIdentity.dashpayUsername stringValue] isEqualToString:requestUsername]) {
-                    requestIdentity = [friendRequest.sourceContact.associatedBlockchainIdentity blockchainIdentity];
-                    break;
-                }
-            }
-
-
-            if (requestIdentity) {
-                paymentInput.userItem = [[DWDPUserObject alloc] initWithBlockchainIdentity:requestIdentity];
-            }
-        }
-    }
+    // Row #18: the DashSync "re-build input for a DashPay username"
+    // path is retired — it resolved the sender through the frozen
+    // Core Data contact graph (matchingDashpayUserInContext +
+    // DSFriendRequestEntity) that no longer syncs. Pay-to-contact
+    // now flows through the SwiftUI contacts screen →
+    // WalletSendService.sendToContact, never through this processor.
 #endif
 
     self.paymentInput = paymentInput;

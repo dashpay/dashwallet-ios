@@ -25,7 +25,6 @@
 #import "AppDelegate.h"
 #if DASHPAY
 #import "DWDashPayConstants.h"
-#import "DWDashPayContactsUpdater.h"
 #import "DWDashPayModel.h"
 #endif
 
@@ -280,7 +279,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)willWipeWalletNotification {
 #if DASHPAY
-    [[DWDashPayContactsUpdater sharedInstance] endUpdating];
+    // Row #18: contact syncing is owned by the SDK DashPay sync loop
+    // (PlatformAddressSyncCoordinator); no app-side updater to stop.
 #endif
 }
 
@@ -298,7 +298,7 @@ NS_ASSUME_NONNULL_BEGIN
         if (self.dashPayModel.username != nil) {
             [self.receiveModel updateReceivingInfo];
 #if DASHPAY
-            [[DWDashPayContactsUpdater sharedInstance] beginUpdating];
+            // Row #18: contact syncing is owned by the SDK DashPay sync loop.
 #endif
         }
 

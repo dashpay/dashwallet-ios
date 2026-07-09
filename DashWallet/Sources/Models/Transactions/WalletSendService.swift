@@ -256,6 +256,57 @@ final class WalletSendService: NSObject {
         return amount
     }
 
+#if DASHPAY
+    /// DashPay pay-to-contact (migration Row #18 phase 6). The caller
+    /// shows its confirmation UI FIRST — the user's explicit "Pay" tap
+    /// is what invokes this — then this method runs the spend-auth
+    /// gate (same `sendAuthorizer` as every other spend) and the
+    /// single-shot SDK payment: `sendDashPayPayment` derives the
+    /// contact's DIP-15 receive address Rust-side from the registered
+    /// external contact account, builds, signs, and broadcasts
+    /// atomically. There is no separate prepare/broadcast split on
+    /// this path, so it must never be called before the user
+    /// confirms. The network fee is computed SDK-side on top of
+    /// `amount`; callers cap input at `WalletBalance.maxSendable`.
+    ///
+    /// - Returns: the 32-byte transaction id plus the exact network
+    ///   fee (duffs) of the broadcast transaction, from the builder.
+    @discardableResult
+    func sendToContact(
+        contactIdentityId: Data,
+        amount: UInt64,
+        memo: String? = nil
+    ) async throws -> (txid: Data, feeDuffs: UInt64) {
+        Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
+        // spendAmount engages the biometric spending limit (C7.4) —
+        // without it the gate is non-monetary and Face ID alone would
+        // authorize a contact payment of any size.
+        try await sendAuthorizer.authorizeSend(spendAmount: amount)
+
+        let context: (wallet: ManagedPlatformWallet, ourId: Data)? = await MainActor.run {
+            guard let wallet = SwiftDashSDKHost.shared.wallet,
+                  let ourId = DWCurrentUserIdentityInfo.shared.identityId else {
+                return nil
+            }
+            return (wallet, ourId)
+        }
+        guard let context else {
+            throw Self.makeError(
+                code: .dashPayPaymentUnavailable,
+                description: "Wallet or DashPay identity is not ready"
+            )
+        }
+
+        let (txid, feeDuffs) = try await context.wallet.sendDashPayPayment(
+            fromIdentityId: context.ourId,
+            toContactIdentityId: contactIdentityId,
+            amountDuffs: amount,
+            memo: memo)
+        Self.logger.info("💸 TXSEND :: pay-to-contact broadcast, txid \(txid.map { String(format: "%02x", $0) }.joined(), privacy: .public), fee \(feeDuffs, privacy: .public) duffs")
+        return (txid: txid, feeDuffs: feeDuffs)
+    }
+#endif
+
     @objc(prepareStandardSendForConfirmationWithAddress:amount:completion:)
     func prepareStandardSendForConfirmation(
         address: String,
@@ -410,6 +461,7 @@ private extension WalletSendService {
         case insufficientSelectedFunds = 3
         case coinJoinSweepUnavailable = 4
         case alreadyBroadcast = 5
+        case dashPayPaymentUnavailable = 6
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"

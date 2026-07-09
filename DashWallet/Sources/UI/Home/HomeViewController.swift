@@ -149,13 +149,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     // MARK: - Private
 
     #if DASHPAY
-    override func payViewControllerDidHidePaymentResult(toContact contact: DWDPBasicUserItem?) {
-        guard let contact = contact else { return }
-
-        let profile = DWModalUserProfileViewController(item: contact, payModel: payModel, dataProvider: dataProvider)
-        present(profile, animated: true, completion: nil)
-    }
-
     /// Row #17 stage A — re-evaluate avatar visibility + notification
     /// bell from the central model state. Called from the legacy
     /// `homeView(_:didUpdateProfile:)` delegate (DashSync-side
@@ -183,7 +176,10 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     }
 
     @objc func notificationAction() {
-        let controller = DWNotificationsViewController(payModel: payModel, dataProvider: dataProvider)
+        // Row #18: SwiftUI notifications backed by the SwiftDashSDK
+        // contacts service (replaces DWNotificationsViewController +
+        // the Core Data provider stack).
+        let controller = UIHostingController(rootView: NotificationsScreen())
         navigationController?.pushViewController(controller, animated: true)
     }
 

@@ -96,13 +96,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self processPaymentInput:paymentInput];
 }
 
-#if DASHPAY
-- (void)performPayToUser:(id<DWDPBasicUserItem>)userItem {
-    DWPaymentInput *paymentInput = [self.payModel paymentInputWithUser:userItem];
-    [self processPaymentInput:paymentInput];
-}
-#endif
-
 - (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact {
     // to be overriden
 }

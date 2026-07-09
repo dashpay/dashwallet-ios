@@ -22,8 +22,6 @@
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWLogger.h"
-#import "DWNotificationsData.h"
-#import "DWNotificationsProvider.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -67,13 +65,12 @@ NS_ASSUME_NONNULL_END
         DWLogPrivate(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].dashpayUsername);
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        // Row #18: the badge count now derives from the SwiftDashSDK
+        // contacts service; its snapshot-change notification replaces
+        // the retired DWNotificationsProvider will/did pair.
         [notificationCenter addObserver:self
-                               selector:@selector(notificationsWillUpdate)
-                                   name:DWNotificationsProviderWillUpdateNotification
-                                 object:nil];
-        [notificationCenter addObserver:self
-                               selector:@selector(notificationsDidUpdate)
-                                   name:DWNotificationsProviderDidUpdateNotification
+                               selector:@selector(contactsSnapshotDidChange)
+                                   name:@"DWSwiftDashSDKContactsDidChangeNotification"
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(bridgeRegistrationStateChanged:)
@@ -138,7 +135,9 @@ NS_ASSUME_NONNULL_END
         return 1;
     }
 
-    return [DWNotificationsProvider sharedInstance].data.unreadItems.count;
+    // Row #18: SwiftDashSDK contacts service (incoming requests +
+    // established-contact events newer than the last-viewed marker).
+    return DWContactsNotificationsBridge.unreadCount;
 }
 
 - (BOOL)shouldPresentRegistrationPaymentConfirmation {
@@ -385,13 +384,11 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Notifications
 
-- (void)notificationsWillUpdate {
+- (void)contactsSnapshotDidChange {
+    // The service posts after its snapshot is already rebuilt, so the
+    // will/did pair brackets a value that has, in fact, changed.
     NSString *key = DW_KEYPATH(self, unreadNotificationsCount);
     [self willChangeValueForKey:key];
-}
-
-- (void)notificationsDidUpdate {
-    NSString *key = DW_KEYPATH(self, unreadNotificationsCount);
     [self didChangeValueForKey:key];
 }
 

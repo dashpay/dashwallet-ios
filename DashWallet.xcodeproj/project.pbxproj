@@ -165,7 +165,6 @@
 		2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E531C22EA49FE00E5168A /* DWProgressView.m */; };
 		2A4E533822F023AB00E5168A /* DWHomeModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E533722F023AB00E5168A /* DWHomeModel.m */; };
 		2A4E534422F02BC300E5168A /* UIView+DWReuseHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534322F02BC300E5168A /* UIView+DWReuseHelper.m */; };
-		2A4E534D22F03AAC00E5168A /* DWFilterHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E534C22F03AAC00E5168A /* DWFilterHeaderView.xib */; };
 		2A4E535C22F335C200E5168A /* DWTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */; };
 		2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A5279BB23D994BC00F856D3 /* CoreNFC.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		2A63003F2327B4BB00827825 /* DWPaymentOutput+DWView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A63003E2327B4BB00827825 /* DWPaymentOutput+DWView.m */; };
@@ -758,7 +757,6 @@
 		75EBAA262BBA9DC2004488E3 /* ZenLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA242BBA9DC2004488E3 /* ZenLedger.swift */; };
 		75EBAA292BBBE385004488E3 /* ZenLedgerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA282BBBE385004488E3 /* ZenLedgerViewModel.swift */; };
 		75EBAA2A2BBBE385004488E3 /* ZenLedgerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA282BBBE385004488E3 /* ZenLedgerViewModel.swift */; };
-		75EE38D82CBFE52E00845FFF /* ContactsPlaceholderViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */; };
 		75EE9F422DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */; };
 		75EE9F432DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */; };
 		75F3F00D2C48F819004470EA /* RootEditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759063EC2C42687F002F2AA9 /* RootEditProfileViewController.swift */; };
@@ -901,6 +899,14 @@
 		A5D5DD00000000000000110A /* DWIdentityRegistrationBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001005 /* DWIdentityRegistrationBridge.swift */; };
 		A5D5DD00000000000000110C /* SDKIdentityProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001006 /* SDKIdentityProfileSheet.swift */; };
 		A5D5DD00000000000000110E /* DWCurrentUserIdentityInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001007 /* DWCurrentUserIdentityInfo.swift */; };
+		A5D5DD000000000000001410 /* ContactItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001400 /* ContactItem.swift */; };
+		A5D5DD000000000000001411 /* SwiftDashSDKContactsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001401 /* SwiftDashSDKContactsService.swift */; };
+		A5D5DD000000000000001412 /* ContactsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001402 /* ContactsScreen.swift */; };
+		A5D5DD000000000000001413 /* AddContactScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001403 /* AddContactScreen.swift */; };
+		A5D5DD000000000000001414 /* ContactProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001404 /* ContactProfileSheet.swift */; };
+		A5D5DD000000000000001415 /* ContactAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001405 /* ContactAvatarView.swift */; };
+		A5D5DD000000000000001416 /* NotificationsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001406 /* NotificationsScreen.swift */; };
+		A5D5DD000000000000001417 /* DWIdentityKeyUpgrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001407 /* DWIdentityKeyUpgrader.swift */; };
 		A5D5DD000000000000001110 /* DWProfileUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001008 /* DWProfileUpdateCoordinator.swift */; };
 		A5D5DD000000000000001112 /* DWProfileUpdateBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001009 /* DWProfileUpdateBridge.swift */; };
 		A5D5DD000000000000001114 /* DWContestedNameStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000100A /* DWContestedNameStatusService.swift */; };
@@ -1008,78 +1014,12 @@
 		C943B3462A409FFA00AF23C5 /* DWDPAvatarView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3442A409FFA00AF23C5 /* DWDPAvatarView.m */; };
 		C943B34D2A40A4C500AF23C5 /* DWInfoPopupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B34A2A40A4C500AF23C5 /* DWInfoPopupViewController.m */; };
 		C943B34E2A40A4C500AF23C5 /* DWInfoPopupContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B34B2A40A4C500AF23C5 /* DWInfoPopupContentView.m */; };
-		C943B4AC2A40A54600AF23C5 /* DWContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3542A40A54500AF23C5 /* DWContactsViewController.m */; };
-		C943B4AD2A40A54600AF23C5 /* DWBaseContactsContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3552A40A54500AF23C5 /* DWBaseContactsContentViewController.m */; };
-		C943B4AE2A40A54600AF23C5 /* DWNoContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3572A40A54500AF23C5 /* DWNoContactsViewController.m */; };
-		C943B4AF2A40A54600AF23C5 /* DWInvitationSuggestionView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3582A40A54500AF23C5 /* DWInvitationSuggestionView.m */; };
-		C943B4B02A40A54600AF23C5 /* DWContactsContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B35B2A40A54500AF23C5 /* DWContactsContentViewController.m */; };
-		C943B4B12A40A54600AF23C5 /* DWBaseContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B35C2A40A54500AF23C5 /* DWBaseContactsViewController.m */; };
-		C943B4B22A40A54600AF23C5 /* DWContactsDataSourceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B35F2A40A54500AF23C5 /* DWContactsDataSourceObject.m */; };
-		C943B4B32A40A54600AF23C5 /* DWContactsSearchDataSourceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3602A40A54500AF23C5 /* DWContactsSearchDataSourceObject.m */; };
-		C943B4B42A40A54600AF23C5 /* DWIncomingFetchedDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3682A40A54500AF23C5 /* DWIncomingFetchedDataSource.m */; };
-		C943B4B52A40A54600AF23C5 /* DWContactsFetchedDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3692A40A54600AF23C5 /* DWContactsFetchedDataSource.m */; };
-		C943B4B62A40A54600AF23C5 /* DWFetchedResultsDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B36A2A40A54600AF23C5 /* DWFetchedResultsDataSource.m */; };
-		C943B4B72A40A54600AF23C5 /* DWBaseContactsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B36F2A40A54600AF23C5 /* DWBaseContactsModel.m */; };
-		C943B4B82A40A54600AF23C5 /* DWContactsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3702A40A54600AF23C5 /* DWContactsModel.m */; };
-		C943B4B92A40A54600AF23C5 /* DWRequestsContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3722A40A54600AF23C5 /* DWRequestsContentViewController.m */; };
-		C943B4BA2A40A54600AF23C5 /* DWRequestsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3742A40A54600AF23C5 /* DWRequestsModel.m */; };
-		C943B4BB2A40A54600AF23C5 /* DWRequestsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3782A40A54600AF23C5 /* DWRequestsViewController.m */; };
-		C943B4BC2A40A54600AF23C5 /* DWRootContactsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3792A40A54600AF23C5 /* DWRootContactsViewController.m */; };
-		C943B4BD2A40A54600AF23C5 /* DWGlobalMatchHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3802A40A54600AF23C5 /* DWGlobalMatchHeaderView.m */; };
-		C943B4BE2A40A54600AF23C5 /* DWGlobalMatchFailedHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3812A40A54600AF23C5 /* DWGlobalMatchFailedHeaderView.m */; };
-		C943B4BF2A40A54600AF23C5 /* DWContactsSearchPlaceholderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3822A40A54600AF23C5 /* DWContactsSearchPlaceholderView.m */; };
-		C943B4C02A40A54600AF23C5 /* DWContactsSearchInfoHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3852A40A54600AF23C5 /* DWContactsSearchInfoHeaderView.m */; };
-		C943B4C12A40A54600AF23C5 /* DWTitleActionHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C943B3872A40A54600AF23C5 /* DWTitleActionHeaderView.xib */; };
-		C943B4C22A40A54600AF23C5 /* BaseCollectionReusableView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3892A40A54600AF23C5 /* BaseCollectionReusableView.m */; };
-		C943B4C32A40A54600AF23C5 /* DWTitleActionHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B38A2A40A54600AF23C5 /* DWTitleActionHeaderView.m */; };
-		C943B4C42A40A54600AF23C5 /* DWSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B38F2A40A54600AF23C5 /* DWSearchViewController.m */; };
-		C943B4C52A40A54600AF23C5 /* DWUserSearchModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3942A40A54600AF23C5 /* DWUserSearchModel.m */; };
-		C943B4C62A40A54600AF23C5 /* DWUserSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3962A40A54600AF23C5 /* DWUserSearchViewController.m */; };
-		C943B4C72A40A54600AF23C5 /* DWUserSearchResultViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B39A2A40A54600AF23C5 /* DWUserSearchResultViewController.m */; };
-		C943B4C82A40A54600AF23C5 /* DWSearchStateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B39B2A40A54600AF23C5 /* DWSearchStateViewController.m */; };
 		C943B4DB2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CA2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m */; };
 		C943B4DE2A40A54600AF23C5 /* DWDPWelcomePageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CD2A40A54600AF23C5 /* DWDPWelcomePageViewController.m */; };
 		C943B4DF2A40A54600AF23C5 /* DWGetStartedContentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3CF2A40A54600AF23C5 /* DWGetStartedContentViewController.m */; };
 		C943B4E12A40A54600AF23C5 /* DWGetStartedItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3D62A40A54600AF23C5 /* DWGetStartedItemView.m */; };
 		C943B4E22A40A54600AF23C5 /* DWPassthroughView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3DD2A40A54600AF23C5 /* DWPassthroughView.m */; };
 		C943B4E32A40A54600AF23C5 /* DWPassthroughStackView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3DE2A40A54600AF23C5 /* DWPassthroughStackView.m */; };
-		C943B4E72A40A54600AF23C5 /* DWUserProfileDataSourceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3EE2A40A54600AF23C5 /* DWUserProfileDataSourceObject.m */; };
-		C943B4E82A40A54600AF23C5 /* DWProfileTxsFetchedDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3EF2A40A54600AF23C5 /* DWProfileTxsFetchedDataSource.m */; };
-		C943B4E92A40A54600AF23C5 /* DWUserProfileModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3F32A40A54600AF23C5 /* DWUserProfileModel.m */; };
-		C943B4EA2A40A54600AF23C5 /* DWUserProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3F42A40A54600AF23C5 /* DWUserProfileViewController.m */; };
-		C943B4EB2A40A54600AF23C5 /* DWModalUserProfileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3F52A40A54600AF23C5 /* DWModalUserProfileViewController.m */; };
-		C943B4EC2A40A54600AF23C5 /* DWUserProfileSendRequestCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3F82A40A54600AF23C5 /* DWUserProfileSendRequestCell.m */; };
-		C943B4ED2A40A54600AF23C5 /* DWPendingContactInfoView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3FA2A40A54600AF23C5 /* DWPendingContactInfoView.m */; };
-		C943B4EE2A40A54600AF23C5 /* DWStretchyHeaderListCollectionLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3FD2A40A54600AF23C5 /* DWStretchyHeaderListCollectionLayout.m */; };
-		C943B4EF2A40A54600AF23C5 /* DWUserProfileHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3FE2A40A54600AF23C5 /* DWUserProfileHeaderView.m */; };
-		C943B4F02A40A54600AF23C5 /* DWUserProfileNavigationTitleView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4012A40A54600AF23C5 /* DWUserProfileNavigationTitleView.m */; };
-		C943B4F12A40A54600AF23C5 /* DWUserProfileContactActionsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4022A40A54600AF23C5 /* DWUserProfileContactActionsCell.m */; };
-		C943B4F22A40A54600AF23C5 /* DWDPNewIncomingRequestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4052A40A54600AF23C5 /* DWDPNewIncomingRequestObject.m */; };
-		C943B4F32A40A54600AF23C5 /* DWDPEstablishedContactObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4072A40A54600AF23C5 /* DWDPEstablishedContactObject.m */; };
-		C943B4F42A40A54600AF23C5 /* DWDPUserObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4092A40A54600AF23C5 /* DWDPUserObject.m */; };
-		C943B4F52A40A54600AF23C5 /* DWDPIncomingRequestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B40C2A40A54600AF23C5 /* DWDPIncomingRequestObject.m */; };
-		C943B4F62A40A54600AF23C5 /* DWDPContactObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B40D2A40A54600AF23C5 /* DWDPContactObject.m */; };
-		C943B4F72A40A54600AF23C5 /* DWDPTxObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4102A40A54600AF23C5 /* DWDPTxObject.m */; };
-		C943B4F82A40A54600AF23C5 /* DWDPPendingRequestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4122A40A54600AF23C5 /* DWDPPendingRequestObject.m */; };
-		C943B4F92A40A54600AF23C5 /* DWDPAcceptedRequestNotificationObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4152A40A54600AF23C5 /* DWDPAcceptedRequestNotificationObject.m */; };
-		C943B4FA2A40A54600AF23C5 /* DWDPOutgoingRequestNotificationObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4162A40A54600AF23C5 /* DWDPOutgoingRequestNotificationObject.m */; };
-		C943B4FB2A40A54600AF23C5 /* DWDPNewIncomingRequestNotificationObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4172A40A54600AF23C5 /* DWDPNewIncomingRequestNotificationObject.m */; };
-		C943B4FC2A40A54600AF23C5 /* DWDPEstablishedContactNotificationObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B41B2A40A54600AF23C5 /* DWDPEstablishedContactNotificationObject.m */; };
-		C943B4FD2A40A54600AF23C5 /* DWDPRespondedIncomingRequestObject.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B41D2A40A54600AF23C5 /* DWDPRespondedIncomingRequestObject.m */; };
-		C943B4FE2A40A54600AF23C5 /* DWDPTextStatusCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B41F2A40A54600AF23C5 /* DWDPTextStatusCell.m */; };
-		C943B4FF2A40A54600AF23C5 /* DWDPGenericContactRequestItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4222A40A54600AF23C5 /* DWDPGenericContactRequestItemView.m */; };
-		C943B5002A40A54600AF23C5 /* DWDPTxItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4232A40A54600AF23C5 /* DWDPTxItemView.m */; };
-		C943B5012A40A54600AF23C5 /* DWDPGenericItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4252A40A54600AF23C5 /* DWDPGenericItemView.m */; };
-		C943B5022A40A54600AF23C5 /* DWDPGenericStatusItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4272A40A54600AF23C5 /* DWDPGenericStatusItemView.m */; };
-		C943B5032A40A54600AF23C5 /* DWDPGenericImageItemView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4282A40A54600AF23C5 /* DWDPGenericImageItemView.m */; };
-		C943B5042A40A54600AF23C5 /* DWDPImageStatusCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B42D2A40A54600AF23C5 /* DWDPImageStatusCell.m */; };
-		C943B5052A40A54600AF23C5 /* DWDPIncomingRequestCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B42E2A40A54600AF23C5 /* DWDPIncomingRequestCell.m */; };
-		C943B5062A40A54600AF23C5 /* UICollectionView+DWDPItemDequeue.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4302A40A54600AF23C5 /* UICollectionView+DWDPItemDequeue.m */; };
-		C943B5072A40A54600AF23C5 /* DWDPBasicCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4312A40A54600AF23C5 /* DWDPBasicCell.m */; };
-		C943B5082A40A54600AF23C5 /* DWDPTxListCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4332A40A54600AF23C5 /* DWDPTxListCell.m */; };
-		C943B5092A40A54600AF23C5 /* UIFont+DWDPItem.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4352A40A54600AF23C5 /* UIFont+DWDPItem.m */; };
-		C943B50A2A40A54600AF23C5 /* DWDPContactsItemsFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4482A40A54600AF23C5 /* DWDPContactsItemsFactory.m */; };
-		C943B50B2A40A54600AF23C5 /* DWDPSearchItemsFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4492A40A54600AF23C5 /* DWDPSearchItemsFactory.m */; };
 		C943B50C2A40A54600AF23C5 /* DPAlertViewController+DWInvite.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B44F2A40A54600AF23C5 /* DPAlertViewController+DWInvite.m */; };
 		C943B50D2A40A54600AF23C5 /* DWConfirmInvitationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4522A40A54600AF23C5 /* DWConfirmInvitationViewController.m */; };
 		C943B50E2A40A54600AF23C5 /* DWConfirmInvitationContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4532A40A54600AF23C5 /* DWConfirmInvitationContentView.m */; };
@@ -1109,17 +1049,7 @@
 		C943B5262A40A54600AF23C5 /* DWDashPayAnimationView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4882A40A54600AF23C5 /* DWDashPayAnimationView.m */; };
 		C943B5292A40A54600AF23C5 /* DWDashPayConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B48D2A40A54600AF23C5 /* DWDashPayConstants.m */; };
 		C943B52A2A40A54600AF23C5 /* UIImageView+DWDPAvatar.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B48F2A40A54600AF23C5 /* UIImageView+DWDPAvatar.m */; };
-		C943B52B2A40A54600AF23C5 /* DWDashPayContactsActions.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4912A40A54600AF23C5 /* DWDashPayContactsActions.m */; };
 		C943B52C2A40A54600AF23C5 /* DSBlockchainIdentity+DWDisplayName.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4932A40A54600AF23C5 /* DSBlockchainIdentity+DWDisplayName.m */; };
-		C943B52D2A40A54600AF23C5 /* DWDashPayContactsUpdater.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4962A40A54600AF23C5 /* DWDashPayContactsUpdater.m */; };
-		C943B52E2A40A54600AF23C5 /* DWNotificationsProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4982A40A54600AF23C5 /* DWNotificationsProvider.m */; };
-		C943B52F2A40A54600AF23C5 /* DWNotificationsData.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4992A40A54600AF23C5 /* DWNotificationsData.m */; };
-		C943B5302A40A54600AF23C5 /* DWNotificationsFetchedDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B49C2A40A54600AF23C5 /* DWNotificationsFetchedDataSource.m */; };
-		C943B5312A40A54600AF23C5 /* DWNoNotificationsCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4A12A40A54600AF23C5 /* DWNoNotificationsCell.m */; };
-		C943B5322A40A54600AF23C5 /* DWNotificationsInvitationCell.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4A22A40A54600AF23C5 /* DWNotificationsInvitationCell.m */; };
-		C943B5332A40A54600AF23C5 /* DWNotificationsModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4A72A40A54600AF23C5 /* DWNotificationsModel.m */; };
-		C943B5342A40A54600AF23C5 /* DWListCollectionLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4A92A40A54600AF23C5 /* DWListCollectionLayout.m */; };
-		C943B5352A40A54600AF23C5 /* DWNotificationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B4AA2A40A54600AF23C5 /* DWNotificationsViewController.m */; };
 		C943B5382A40A65B00AF23C5 /* DWScrollingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5362A40A65B00AF23C5 /* DWScrollingViewController.m */; };
 		C943B53E2A40A6BE00AF23C5 /* DPAlertViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B53B2A40A6BE00AF23C5 /* DPAlertViewController.m */; };
 		C943B53F2A40A6BE00AF23C5 /* DPAlertChildContentsView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B53C2A40A6BE00AF23C5 /* DPAlertChildContentsView.m */; };
@@ -1127,10 +1057,8 @@
 		C943B54A2A40B52F00AF23C5 /* NSLayoutConstraint+DWAutolayout.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5462A40B52F00AF23C5 /* NSLayoutConstraint+DWAutolayout.m */; };
 		C943B54B2A40B52F00AF23C5 /* UIView+DWAutolayout.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5482A40B52F00AF23C5 /* UIView+DWAutolayout.m */; };
 		C943B54E2A40B6B500AF23C5 /* DWColoredButton.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B54C2A40B6B500AF23C5 /* DWColoredButton.m */; };
-		C943B5542A40C23500AF23C5 /* DWFilterHeaderView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C943B5522A40C23500AF23C5 /* DWFilterHeaderView.xib */; };
 		C943B5582A40DA3700AF23C5 /* DWFullScreenModalControllerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5572A40DA3700AF23C5 /* DWFullScreenModalControllerViewController.m */; };
 		C943B55B2A40DD4000AF23C5 /* NSArray+DWFlatten.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B55A2A40DD4000AF23C5 /* NSArray+DWFlatten.m */; };
-		C943B55E2A40E6F200AF23C5 /* DWFilterHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B55C2A40E6F200AF23C5 /* DWFilterHeaderView.m */; };
 		C943B58B2A40ED6F00AF23C5 /* DWInputUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B56F2A40ED4200AF23C5 /* DWInputUsernameViewController.m */; };
 		C943B58C2A40ED6F00AF23C5 /* DWUsernameValidationRule.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5882A40ED4500AF23C5 /* DWUsernameValidationRule.m */; };
 		C943B58D2A40ED6F00AF23C5 /* DWCreateUsernameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B56E2A40ED4200AF23C5 /* DWCreateUsernameViewController.m */; };
@@ -1519,7 +1447,6 @@
 		C9D2C8422A320AA000D15901 /* ErrorPresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EE171629560DC200BA1986 /* ErrorPresentable.swift */; };
 		C9D2C8432A320AA000D15901 /* DWPinInputStepView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8E1231E507900A96B62 /* DWPinInputStepView.m */; };
 		C9D2C8452A320AA000D15901 /* DWRecoverViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFEC2305318000C475EB /* DWRecoverViewController.m */; };
-		C9D2C8462A320AA000D15901 /* DWDPAmountContactView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */; };
 		C9D2C8472A320AA000D15901 /* DWBaseTransactionListDataProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913EAD23A7AC86006A2A59 /* DWBaseTransactionListDataProvider.m */; };
 		C9D2C8482A320AA000D15901 /* CoinbaseTransactionsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFA828C896BC000427E7 /* CoinbaseTransactionsRequest.swift */; };
 		C9D2C8492A320AA000D15901 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
@@ -2053,7 +1980,6 @@
 		2A4E534222F02BC300E5168A /* UIView+DWReuseHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWReuseHelper.h"; sourceTree = "<group>"; };
 		2A4E534322F02BC300E5168A /* UIView+DWReuseHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWReuseHelper.m"; sourceTree = "<group>"; };
 		2A4E534522F02C6000E5168A /* DWUIKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUIKit.h; sourceTree = "<group>"; };
-		2A4E534C22F03AAC00E5168A /* DWFilterHeaderView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DWFilterHeaderView.xib; sourceTree = "<group>"; };
 		2A4E535A22F335C200E5168A /* DWTransactionListDataProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProvider.h; sourceTree = "<group>"; };
 		2A4E535B22F335C200E5168A /* DWTransactionListDataProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTransactionListDataProvider.m; sourceTree = "<group>"; };
 		2A4E535D22F33BD200E5168A /* DWTransactionListDataProviderProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTransactionListDataProviderProtocol.h; sourceTree = "<group>"; };
@@ -2193,8 +2119,6 @@
 		2A9172C325233DC50024B4C5 /* DWPhraseRepairViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPhraseRepairViewController.m; sourceTree = "<group>"; };
 		2A9172D125233F4F0024B4C5 /* DWPhraseRepairChildViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPhraseRepairChildViewController.h; sourceTree = "<group>"; };
 		2A9172D225233F4F0024B4C5 /* DWPhraseRepairChildViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPhraseRepairChildViewController.m; sourceTree = "<group>"; };
-		2A919F9D24A65CE00018C9A3 /* DWDPAmountContactView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDPAmountContactView.h; sourceTree = "<group>"; };
-		2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWDPAmountContactView.m; sourceTree = "<group>"; };
 		2A9CEBA422E1D26500A50237 /* DWSecureWalletDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureWalletDelegate.h; sourceTree = "<group>"; };
 		2A9CEBAB22E1DA4000A50237 /* DWAppRootViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAppRootViewController.h; sourceTree = "<group>"; };
 		2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAppRootViewController.m; sourceTree = "<group>"; };
@@ -2732,7 +2656,6 @@
 		75EBAA212BBA9D3C004488E3 /* ZenLedger-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "ZenLedger-Info.plist"; sourceTree = "<group>"; };
 		75EBAA242BBA9DC2004488E3 /* ZenLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenLedger.swift; sourceTree = "<group>"; };
 		75EBAA282BBBE385004488E3 /* ZenLedgerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZenLedgerViewModel.swift; sourceTree = "<group>"; };
-		75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsPlaceholderViewController.swift; sourceTree = "<group>"; };
 		75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendConfirmationDialog.swift; sourceTree = "<group>"; };
 		75F2E0B61BE2D5F000EAE861 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
@@ -2813,6 +2736,14 @@
 		A5D5DD000000000000001005 /* DWIdentityRegistrationBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWIdentityRegistrationBridge.swift; path = Identity/DWIdentityRegistrationBridge.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001006 /* SDKIdentityProfileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKIdentityProfileSheet.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001007 /* DWCurrentUserIdentityInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWCurrentUserIdentityInfo.swift; path = Identity/DWCurrentUserIdentityInfo.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001400 /* ContactItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContactItem.swift; path = Contacts/ContactItem.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001402 /* ContactsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContactsScreen.swift; path = SwiftUI/ContactsScreen.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001403 /* AddContactScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AddContactScreen.swift; path = SwiftUI/AddContactScreen.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001404 /* ContactProfileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContactProfileSheet.swift; path = SwiftUI/ContactProfileSheet.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001405 /* ContactAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContactAvatarView.swift; path = SwiftUI/ContactAvatarView.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001406 /* NotificationsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NotificationsScreen.swift; path = SwiftUI/NotificationsScreen.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001407 /* DWIdentityKeyUpgrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWIdentityKeyUpgrader.swift; path = Identity/DWIdentityKeyUpgrader.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001401 /* SwiftDashSDKContactsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwiftDashSDKContactsService.swift; path = Contacts/SwiftDashSDKContactsService.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001008 /* DWProfileUpdateCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWProfileUpdateCoordinator.swift; path = Identity/DWProfileUpdateCoordinator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001009 /* DWProfileUpdateBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWProfileUpdateBridge.swift; path = Identity/DWProfileUpdateBridge.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000100A /* DWContestedNameStatusService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWContestedNameStatusService.swift; path = Identity/DWContestedNameStatusService.swift; sourceTree = "<group>"; };
@@ -2953,68 +2884,6 @@
 		C943B34A2A40A4C500AF23C5 /* DWInfoPopupViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInfoPopupViewController.m; sourceTree = "<group>"; };
 		C943B34B2A40A4C500AF23C5 /* DWInfoPopupContentView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInfoPopupContentView.m; sourceTree = "<group>"; };
 		C943B34C2A40A4C500AF23C5 /* DWInfoPopupViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInfoPopupViewController.h; sourceTree = "<group>"; };
-		C943B3512A40A54500AF23C5 /* DWBaseContactsViewController+DWProtected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DWBaseContactsViewController+DWProtected.h"; sourceTree = "<group>"; };
-		C943B3532A40A54500AF23C5 /* DWRootContactsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWRootContactsViewController.h; sourceTree = "<group>"; };
-		C943B3542A40A54500AF23C5 /* DWContactsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsViewController.m; sourceTree = "<group>"; };
-		C943B3552A40A54500AF23C5 /* DWBaseContactsContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWBaseContactsContentViewController.m; sourceTree = "<group>"; };
-		C943B3572A40A54500AF23C5 /* DWNoContactsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWNoContactsViewController.m; sourceTree = "<group>"; };
-		C943B3582A40A54500AF23C5 /* DWInvitationSuggestionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWInvitationSuggestionView.m; sourceTree = "<group>"; };
-		C943B3592A40A54500AF23C5 /* DWNoContactsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWNoContactsViewController.h; sourceTree = "<group>"; };
-		C943B35A2A40A54500AF23C5 /* DWInvitationSuggestionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationSuggestionView.h; sourceTree = "<group>"; };
-		C943B35B2A40A54500AF23C5 /* DWContactsContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsContentViewController.m; sourceTree = "<group>"; };
-		C943B35C2A40A54500AF23C5 /* DWBaseContactsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWBaseContactsViewController.m; sourceTree = "<group>"; };
-		C943B35F2A40A54500AF23C5 /* DWContactsDataSourceObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsDataSourceObject.m; sourceTree = "<group>"; };
-		C943B3602A40A54500AF23C5 /* DWContactsSearchDataSourceObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsSearchDataSourceObject.m; sourceTree = "<group>"; };
-		C943B3612A40A54500AF23C5 /* DWContactsSearchDataSourceObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsSearchDataSourceObject.h; sourceTree = "<group>"; };
-		C943B3622A40A54500AF23C5 /* DWContactsDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsDataSource.h; sourceTree = "<group>"; };
-		C943B3632A40A54500AF23C5 /* DWContactsDataSourceObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsDataSourceObject.h; sourceTree = "<group>"; };
-		C943B3652A40A54500AF23C5 /* DWIncomingFetchedDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWIncomingFetchedDataSource.h; sourceTree = "<group>"; };
-		C943B3662A40A54500AF23C5 /* DWContactsFetchedDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsFetchedDataSource.h; sourceTree = "<group>"; };
-		C943B3672A40A54500AF23C5 /* DWFetchedResultsDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWFetchedResultsDataSource.h; sourceTree = "<group>"; };
-		C943B3682A40A54500AF23C5 /* DWIncomingFetchedDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWIncomingFetchedDataSource.m; sourceTree = "<group>"; };
-		C943B3692A40A54600AF23C5 /* DWContactsFetchedDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsFetchedDataSource.m; sourceTree = "<group>"; };
-		C943B36A2A40A54600AF23C5 /* DWFetchedResultsDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWFetchedResultsDataSource.m; sourceTree = "<group>"; };
-		C943B36B2A40A54600AF23C5 /* DWBaseContactsModel+DWProtected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DWBaseContactsModel+DWProtected.h"; sourceTree = "<group>"; };
-		C943B36C2A40A54600AF23C5 /* DWBaseContactsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWBaseContactsModel.h; sourceTree = "<group>"; };
-		C943B36D2A40A54600AF23C5 /* DWContactsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsModel.h; sourceTree = "<group>"; };
-		C943B36E2A40A54600AF23C5 /* DWContactsSortModeProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsSortModeProtocol.h; sourceTree = "<group>"; };
-		C943B36F2A40A54600AF23C5 /* DWBaseContactsModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWBaseContactsModel.m; sourceTree = "<group>"; };
-		C943B3702A40A54600AF23C5 /* DWContactsModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsModel.m; sourceTree = "<group>"; };
-		C943B3722A40A54600AF23C5 /* DWRequestsContentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWRequestsContentViewController.m; sourceTree = "<group>"; };
-		C943B3742A40A54600AF23C5 /* DWRequestsModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWRequestsModel.m; sourceTree = "<group>"; };
-		C943B3752A40A54600AF23C5 /* DWRequestsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWRequestsModel.h; sourceTree = "<group>"; };
-		C943B3762A40A54600AF23C5 /* DWRequestsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWRequestsViewController.h; sourceTree = "<group>"; };
-		C943B3772A40A54600AF23C5 /* DWRequestsContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWRequestsContentViewController.h; sourceTree = "<group>"; };
-		C943B3782A40A54600AF23C5 /* DWRequestsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWRequestsViewController.m; sourceTree = "<group>"; };
-		C943B3792A40A54600AF23C5 /* DWRootContactsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWRootContactsViewController.m; sourceTree = "<group>"; };
-		C943B37A2A40A54600AF23C5 /* DWBaseContactsContentViewController+DWProtected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DWBaseContactsContentViewController+DWProtected.h"; sourceTree = "<group>"; };
-		C943B37C2A40A54600AF23C5 /* DWContactsContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsContentViewController.h; sourceTree = "<group>"; };
-		C943B37D2A40A54600AF23C5 /* DWBaseContactsContentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWBaseContactsContentViewController.h; sourceTree = "<group>"; };
-		C943B37E2A40A54600AF23C5 /* DWContactsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsViewController.h; sourceTree = "<group>"; };
-		C943B3802A40A54600AF23C5 /* DWGlobalMatchHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWGlobalMatchHeaderView.m; sourceTree = "<group>"; };
-		C943B3812A40A54600AF23C5 /* DWGlobalMatchFailedHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWGlobalMatchFailedHeaderView.m; sourceTree = "<group>"; };
-		C943B3822A40A54600AF23C5 /* DWContactsSearchPlaceholderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsSearchPlaceholderView.m; sourceTree = "<group>"; };
-		C943B3832A40A54600AF23C5 /* DWTitleActionHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTitleActionHeaderView.h; sourceTree = "<group>"; };
-		C943B3842A40A54600AF23C5 /* BaseCollectionReusableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseCollectionReusableView.h; sourceTree = "<group>"; };
-		C943B3852A40A54600AF23C5 /* DWContactsSearchInfoHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWContactsSearchInfoHeaderView.m; sourceTree = "<group>"; };
-		C943B3862A40A54600AF23C5 /* DWGlobalMatchHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWGlobalMatchHeaderView.h; sourceTree = "<group>"; };
-		C943B3872A40A54600AF23C5 /* DWTitleActionHeaderView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DWTitleActionHeaderView.xib; sourceTree = "<group>"; };
-		C943B3882A40A54600AF23C5 /* DWGlobalMatchFailedHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWGlobalMatchFailedHeaderView.h; sourceTree = "<group>"; };
-		C943B3892A40A54600AF23C5 /* BaseCollectionReusableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BaseCollectionReusableView.m; sourceTree = "<group>"; };
-		C943B38A2A40A54600AF23C5 /* DWTitleActionHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTitleActionHeaderView.m; sourceTree = "<group>"; };
-		C943B38B2A40A54600AF23C5 /* DWContactsSearchPlaceholderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsSearchPlaceholderView.h; sourceTree = "<group>"; };
-		C943B38C2A40A54600AF23C5 /* DWContactsSearchInfoHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWContactsSearchInfoHeaderView.h; sourceTree = "<group>"; };
-		C943B38E2A40A54600AF23C5 /* DWSearchViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSearchViewController.h; sourceTree = "<group>"; };
-		C943B38F2A40A54600AF23C5 /* DWSearchViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSearchViewController.m; sourceTree = "<group>"; };
-		C943B3902A40A54600AF23C5 /* DWBaseContactsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWBaseContactsViewController.h; sourceTree = "<group>"; };
-		C943B3922A40A54600AF23C5 /* DWUserSearchViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserSearchViewController.h; sourceTree = "<group>"; };
-		C943B3942A40A54600AF23C5 /* DWUserSearchModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserSearchModel.m; sourceTree = "<group>"; };
-		C943B3952A40A54600AF23C5 /* DWUserSearchModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserSearchModel.h; sourceTree = "<group>"; };
-		C943B3962A40A54600AF23C5 /* DWUserSearchViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserSearchViewController.m; sourceTree = "<group>"; };
-		C943B3982A40A54600AF23C5 /* DWUserSearchResultViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserSearchResultViewController.h; sourceTree = "<group>"; };
-		C943B3992A40A54600AF23C5 /* DWSearchStateViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSearchStateViewController.h; sourceTree = "<group>"; };
-		C943B39A2A40A54600AF23C5 /* DWUserSearchResultViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserSearchResultViewController.m; sourceTree = "<group>"; };
-		C943B39B2A40A54600AF23C5 /* DWSearchStateViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWSearchStateViewController.m; sourceTree = "<group>"; };
 		C943B3C82A40A54600AF23C5 /* DWDashPayConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDashPayConstants.h; sourceTree = "<group>"; };
 		C943B3CA2A40A54600AF23C5 /* DWDPWelcomeCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomeCollectionViewController.m; sourceTree = "<group>"; };
 		C943B3CD2A40A54600AF23C5 /* DWDPWelcomePageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPWelcomePageViewController.m; sourceTree = "<group>"; };
@@ -3029,77 +2898,6 @@
 		C943B3DD2A40A54600AF23C5 /* DWPassthroughView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPassthroughView.m; sourceTree = "<group>"; };
 		C943B3DE2A40A54600AF23C5 /* DWPassthroughStackView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPassthroughStackView.m; sourceTree = "<group>"; };
 		C943B3DF2A40A54600AF23C5 /* DWPassthroughView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPassthroughView.h; sourceTree = "<group>"; };
-		C943B3E92A40A54600AF23C5 /* DWUserProfileViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileViewController.h; sourceTree = "<group>"; };
-		C943B3EA2A40A54600AF23C5 /* DWModalUserProfileViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWModalUserProfileViewController.h; sourceTree = "<group>"; };
-		C943B3ED2A40A54600AF23C5 /* DWUserProfileDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileDataSource.h; sourceTree = "<group>"; };
-		C943B3EE2A40A54600AF23C5 /* DWUserProfileDataSourceObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileDataSourceObject.m; sourceTree = "<group>"; };
-		C943B3EF2A40A54600AF23C5 /* DWProfileTxsFetchedDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWProfileTxsFetchedDataSource.m; sourceTree = "<group>"; };
-		C943B3F02A40A54600AF23C5 /* DWUserProfileDataSourceObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileDataSourceObject.h; sourceTree = "<group>"; };
-		C943B3F12A40A54600AF23C5 /* DWProfileTxsFetchedDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWProfileTxsFetchedDataSource.h; sourceTree = "<group>"; };
-		C943B3F22A40A54600AF23C5 /* DWUserProfileModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileModel.h; sourceTree = "<group>"; };
-		C943B3F32A40A54600AF23C5 /* DWUserProfileModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileModel.m; sourceTree = "<group>"; };
-		C943B3F42A40A54600AF23C5 /* DWUserProfileViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileViewController.m; sourceTree = "<group>"; };
-		C943B3F52A40A54600AF23C5 /* DWModalUserProfileViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWModalUserProfileViewController.m; sourceTree = "<group>"; };
-		C943B3F72A40A54600AF23C5 /* DWStretchyHeaderListCollectionLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWStretchyHeaderListCollectionLayout.h; sourceTree = "<group>"; };
-		C943B3F82A40A54600AF23C5 /* DWUserProfileSendRequestCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileSendRequestCell.m; sourceTree = "<group>"; };
-		C943B3F92A40A54600AF23C5 /* DWUserProfileHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileHeaderView.h; sourceTree = "<group>"; };
-		C943B3FA2A40A54600AF23C5 /* DWPendingContactInfoView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPendingContactInfoView.m; sourceTree = "<group>"; };
-		C943B3FB2A40A54600AF23C5 /* DWUserProfileContactActionsCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileContactActionsCell.h; sourceTree = "<group>"; };
-		C943B3FC2A40A54600AF23C5 /* DWUserProfileNavigationTitleView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileNavigationTitleView.h; sourceTree = "<group>"; };
-		C943B3FD2A40A54600AF23C5 /* DWStretchyHeaderListCollectionLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWStretchyHeaderListCollectionLayout.m; sourceTree = "<group>"; };
-		C943B3FE2A40A54600AF23C5 /* DWUserProfileHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileHeaderView.m; sourceTree = "<group>"; };
-		C943B3FF2A40A54600AF23C5 /* DWUserProfileSendRequestCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUserProfileSendRequestCell.h; sourceTree = "<group>"; };
-		C943B4002A40A54600AF23C5 /* DWPendingContactInfoView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPendingContactInfoView.h; sourceTree = "<group>"; };
-		C943B4012A40A54600AF23C5 /* DWUserProfileNavigationTitleView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileNavigationTitleView.m; sourceTree = "<group>"; };
-		C943B4022A40A54600AF23C5 /* DWUserProfileContactActionsCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUserProfileContactActionsCell.m; sourceTree = "<group>"; };
-		C943B4052A40A54600AF23C5 /* DWDPNewIncomingRequestObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPNewIncomingRequestObject.m; sourceTree = "<group>"; };
-		C943B4062A40A54600AF23C5 /* DWDPContactObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPContactObject.h; sourceTree = "<group>"; };
-		C943B4072A40A54600AF23C5 /* DWDPEstablishedContactObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPEstablishedContactObject.m; sourceTree = "<group>"; };
-		C943B4082A40A54600AF23C5 /* DWDPPendingRequestObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPPendingRequestObject.h; sourceTree = "<group>"; };
-		C943B4092A40A54600AF23C5 /* DWDPUserObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPUserObject.m; sourceTree = "<group>"; };
-		C943B40A2A40A54600AF23C5 /* DWDPTxObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPTxObject.h; sourceTree = "<group>"; };
-		C943B40B2A40A54600AF23C5 /* DWDPRespondedIncomingRequestObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPRespondedIncomingRequestObject.h; sourceTree = "<group>"; };
-		C943B40C2A40A54600AF23C5 /* DWDPIncomingRequestObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPIncomingRequestObject.m; sourceTree = "<group>"; };
-		C943B40D2A40A54600AF23C5 /* DWDPContactObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPContactObject.m; sourceTree = "<group>"; };
-		C943B40E2A40A54600AF23C5 /* DWDPNewIncomingRequestObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPNewIncomingRequestObject.h; sourceTree = "<group>"; };
-		C943B40F2A40A54600AF23C5 /* DWDPEstablishedContactObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPEstablishedContactObject.h; sourceTree = "<group>"; };
-		C943B4102A40A54600AF23C5 /* DWDPTxObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPTxObject.m; sourceTree = "<group>"; };
-		C943B4112A40A54600AF23C5 /* DWDPUserObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPUserObject.h; sourceTree = "<group>"; };
-		C943B4122A40A54600AF23C5 /* DWDPPendingRequestObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPPendingRequestObject.m; sourceTree = "<group>"; };
-		C943B4132A40A54600AF23C5 /* DWDPIncomingRequestObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPIncomingRequestObject.h; sourceTree = "<group>"; };
-		C943B4152A40A54600AF23C5 /* DWDPAcceptedRequestNotificationObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPAcceptedRequestNotificationObject.m; sourceTree = "<group>"; };
-		C943B4162A40A54600AF23C5 /* DWDPOutgoingRequestNotificationObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPOutgoingRequestNotificationObject.m; sourceTree = "<group>"; };
-		C943B4172A40A54600AF23C5 /* DWDPNewIncomingRequestNotificationObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPNewIncomingRequestNotificationObject.m; sourceTree = "<group>"; };
-		C943B4182A40A54600AF23C5 /* DWDPEstablishedContactNotificationObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPEstablishedContactNotificationObject.h; sourceTree = "<group>"; };
-		C943B4192A40A54600AF23C5 /* DWDPAcceptedRequestNotificationObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPAcceptedRequestNotificationObject.h; sourceTree = "<group>"; };
-		C943B41A2A40A54600AF23C5 /* DWDPOutgoingRequestNotificationObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPOutgoingRequestNotificationObject.h; sourceTree = "<group>"; };
-		C943B41B2A40A54600AF23C5 /* DWDPEstablishedContactNotificationObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPEstablishedContactNotificationObject.m; sourceTree = "<group>"; };
-		C943B41C2A40A54600AF23C5 /* DWDPNewIncomingRequestNotificationObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPNewIncomingRequestNotificationObject.h; sourceTree = "<group>"; };
-		C943B41D2A40A54600AF23C5 /* DWDPRespondedIncomingRequestObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPRespondedIncomingRequestObject.m; sourceTree = "<group>"; };
-		C943B41F2A40A54600AF23C5 /* DWDPTextStatusCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPTextStatusCell.m; sourceTree = "<group>"; };
-		C943B4212A40A54600AF23C5 /* DWDPGenericStatusItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPGenericStatusItemView.h; sourceTree = "<group>"; };
-		C943B4222A40A54600AF23C5 /* DWDPGenericContactRequestItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPGenericContactRequestItemView.m; sourceTree = "<group>"; };
-		C943B4232A40A54600AF23C5 /* DWDPTxItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPTxItemView.m; sourceTree = "<group>"; };
-		C943B4242A40A54600AF23C5 /* DWDPGenericImageItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPGenericImageItemView.h; sourceTree = "<group>"; };
-		C943B4252A40A54600AF23C5 /* DWDPGenericItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPGenericItemView.m; sourceTree = "<group>"; };
-		C943B4262A40A54600AF23C5 /* DWDPGenericContactRequestItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPGenericContactRequestItemView.h; sourceTree = "<group>"; };
-		C943B4272A40A54600AF23C5 /* DWDPGenericStatusItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPGenericStatusItemView.m; sourceTree = "<group>"; };
-		C943B4282A40A54600AF23C5 /* DWDPGenericImageItemView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPGenericImageItemView.m; sourceTree = "<group>"; };
-		C943B4292A40A54600AF23C5 /* DWDPTxItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPTxItemView.h; sourceTree = "<group>"; };
-		C943B42A2A40A54600AF23C5 /* DWDPGenericItemView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPGenericItemView.h; sourceTree = "<group>"; };
-		C943B42B2A40A54600AF23C5 /* DWDPBasicCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPBasicCell.h; sourceTree = "<group>"; };
-		C943B42C2A40A54600AF23C5 /* DWDPTxListCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPTxListCell.h; sourceTree = "<group>"; };
-		C943B42D2A40A54600AF23C5 /* DWDPImageStatusCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPImageStatusCell.m; sourceTree = "<group>"; };
-		C943B42E2A40A54600AF23C5 /* DWDPIncomingRequestCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPIncomingRequestCell.m; sourceTree = "<group>"; };
-		C943B42F2A40A54600AF23C5 /* UIFont+DWDPItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIFont+DWDPItem.h"; sourceTree = "<group>"; };
-		C943B4302A40A54600AF23C5 /* UICollectionView+DWDPItemDequeue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UICollectionView+DWDPItemDequeue.m"; sourceTree = "<group>"; };
-		C943B4312A40A54600AF23C5 /* DWDPBasicCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPBasicCell.m; sourceTree = "<group>"; };
-		C943B4322A40A54600AF23C5 /* DWDPTextStatusCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPTextStatusCell.h; sourceTree = "<group>"; };
-		C943B4332A40A54600AF23C5 /* DWDPTxListCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPTxListCell.m; sourceTree = "<group>"; };
-		C943B4342A40A54600AF23C5 /* UICollectionView+DWDPItemDequeue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UICollectionView+DWDPItemDequeue.h"; sourceTree = "<group>"; };
-		C943B4352A40A54600AF23C5 /* UIFont+DWDPItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIFont+DWDPItem.m"; sourceTree = "<group>"; };
-		C943B4362A40A54600AF23C5 /* DWDPIncomingRequestCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPIncomingRequestCell.h; sourceTree = "<group>"; };
-		C943B4372A40A54600AF23C5 /* DWDPImageStatusCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPImageStatusCell.h; sourceTree = "<group>"; };
 		C943B4392A40A54600AF23C5 /* DWDPBasicItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPBasicItem.h; sourceTree = "<group>"; };
 		C943B43A2A40A54600AF23C5 /* DWDPNewIncomingRequestItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPNewIncomingRequestItem.h; sourceTree = "<group>"; };
 		C943B43B2A40A54600AF23C5 /* DWDPPendingRequestItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPPendingRequestItem.h; sourceTree = "<group>"; };
@@ -3112,10 +2910,6 @@
 		C943B4432A40A54600AF23C5 /* DWDPRespondedRequestItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPRespondedRequestItem.h; sourceTree = "<group>"; };
 		C943B4442A40A54600AF23C5 /* DWDPBasicUserItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPBasicUserItem.h; sourceTree = "<group>"; };
 		C943B4452A40A54600AF23C5 /* DWDPIncomingRequestItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPIncomingRequestItem.h; sourceTree = "<group>"; };
-		C943B4472A40A54600AF23C5 /* DWDPSearchItemsFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPSearchItemsFactory.h; sourceTree = "<group>"; };
-		C943B4482A40A54600AF23C5 /* DWDPContactsItemsFactory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPContactsItemsFactory.m; sourceTree = "<group>"; };
-		C943B4492A40A54600AF23C5 /* DWDPSearchItemsFactory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDPSearchItemsFactory.m; sourceTree = "<group>"; };
-		C943B44A2A40A54600AF23C5 /* DWDPContactsItemsFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDPContactsItemsFactory.h; sourceTree = "<group>"; };
 		C943B44C2A40A54600AF23C5 /* DWSendInviteFirstStepViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSendInviteFirstStepViewController.h; sourceTree = "<group>"; };
 		C943B44E2A40A54600AF23C5 /* DPAlertViewController+DWInvite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DPAlertViewController+DWInvite.h"; sourceTree = "<group>"; };
 		C943B44F2A40A54600AF23C5 /* DPAlertViewController+DWInvite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DPAlertViewController+DWInvite.m"; sourceTree = "<group>"; };
@@ -3169,28 +2963,8 @@
 		C943B48D2A40A54600AF23C5 /* DWDashPayConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDashPayConstants.m; sourceTree = "<group>"; };
 		C943B48F2A40A54600AF23C5 /* UIImageView+DWDPAvatar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+DWDPAvatar.m"; sourceTree = "<group>"; };
 		C943B4902A40A54600AF23C5 /* DSBlockchainIdentity+DWDisplayName.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DSBlockchainIdentity+DWDisplayName.h"; sourceTree = "<group>"; };
-		C943B4912A40A54600AF23C5 /* DWDashPayContactsActions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDashPayContactsActions.m; sourceTree = "<group>"; };
-		C943B4922A40A54600AF23C5 /* DWDashPayContactsUpdater.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDashPayContactsUpdater.h; sourceTree = "<group>"; };
 		C943B4932A40A54600AF23C5 /* DSBlockchainIdentity+DWDisplayName.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DSBlockchainIdentity+DWDisplayName.m"; sourceTree = "<group>"; };
 		C943B4942A40A54600AF23C5 /* UIImageView+DWDPAvatar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImageView+DWDPAvatar.h"; sourceTree = "<group>"; };
-		C943B4952A40A54600AF23C5 /* DWDashPayContactsActions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDashPayContactsActions.h; sourceTree = "<group>"; };
-		C943B4962A40A54600AF23C5 /* DWDashPayContactsUpdater.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDashPayContactsUpdater.m; sourceTree = "<group>"; };
-		C943B4982A40A54600AF23C5 /* DWNotificationsProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWNotificationsProvider.m; sourceTree = "<group>"; };
-		C943B4992A40A54600AF23C5 /* DWNotificationsData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWNotificationsData.m; sourceTree = "<group>"; };
-		C943B49A2A40A54600AF23C5 /* DWNotificationsFetchedDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWNotificationsFetchedDataSource.h; sourceTree = "<group>"; };
-		C943B49B2A40A54600AF23C5 /* DWNotificationsProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWNotificationsProvider.h; sourceTree = "<group>"; };
-		C943B49C2A40A54600AF23C5 /* DWNotificationsFetchedDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWNotificationsFetchedDataSource.m; sourceTree = "<group>"; };
-		C943B49D2A40A54600AF23C5 /* DWNotificationsData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWNotificationsData.h; sourceTree = "<group>"; };
-		C943B4A02A40A54600AF23C5 /* DWNotificationsInvitationCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWNotificationsInvitationCell.h; sourceTree = "<group>"; };
-		C943B4A12A40A54600AF23C5 /* DWNoNotificationsCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWNoNotificationsCell.m; sourceTree = "<group>"; };
-		C943B4A22A40A54600AF23C5 /* DWNotificationsInvitationCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWNotificationsInvitationCell.m; sourceTree = "<group>"; };
-		C943B4A32A40A54600AF23C5 /* DWNoNotificationsCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWNoNotificationsCell.h; sourceTree = "<group>"; };
-		C943B4A42A40A54600AF23C5 /* DWListCollectionLayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWListCollectionLayout.h; sourceTree = "<group>"; };
-		C943B4A52A40A54600AF23C5 /* DWNotificationsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWNotificationsViewController.h; sourceTree = "<group>"; };
-		C943B4A72A40A54600AF23C5 /* DWNotificationsModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWNotificationsModel.m; sourceTree = "<group>"; };
-		C943B4A82A40A54600AF23C5 /* DWNotificationsModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWNotificationsModel.h; sourceTree = "<group>"; };
-		C943B4A92A40A54600AF23C5 /* DWListCollectionLayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWListCollectionLayout.m; sourceTree = "<group>"; };
-		C943B4AA2A40A54600AF23C5 /* DWNotificationsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWNotificationsViewController.m; sourceTree = "<group>"; };
 		C943B5362A40A65B00AF23C5 /* DWScrollingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWScrollingViewController.m; sourceTree = "<group>"; };
 		C943B5372A40A65B00AF23C5 /* DWScrollingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWScrollingViewController.h; sourceTree = "<group>"; };
 		C943B53A2A40A6BE00AF23C5 /* DPAlertChildContentsView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPAlertChildContentsView.h; sourceTree = "<group>"; };
@@ -3206,13 +2980,10 @@
 		C943B5492A40B52F00AF23C5 /* UIView+DWAutolayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+DWAutolayout.h"; sourceTree = "<group>"; };
 		C943B54C2A40B6B500AF23C5 /* DWColoredButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWColoredButton.m; sourceTree = "<group>"; };
 		C943B54D2A40B6B500AF23C5 /* DWColoredButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWColoredButton.h; sourceTree = "<group>"; };
-		C943B5522A40C23500AF23C5 /* DWFilterHeaderView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DWFilterHeaderView.xib; sourceTree = "<group>"; };
 		C943B5562A40DA3600AF23C5 /* DWFullScreenModalControllerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWFullScreenModalControllerViewController.h; sourceTree = "<group>"; };
 		C943B5572A40DA3700AF23C5 /* DWFullScreenModalControllerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWFullScreenModalControllerViewController.m; sourceTree = "<group>"; };
 		C943B5592A40DD3F00AF23C5 /* NSArray+DWFlatten.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+DWFlatten.h"; sourceTree = "<group>"; };
 		C943B55A2A40DD4000AF23C5 /* NSArray+DWFlatten.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+DWFlatten.m"; sourceTree = "<group>"; };
-		C943B55C2A40E6F200AF23C5 /* DWFilterHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWFilterHeaderView.m; sourceTree = "<group>"; };
-		C943B55D2A40E6F200AF23C5 /* DWFilterHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWFilterHeaderView.h; sourceTree = "<group>"; };
 		C943B5662A40ED4100AF23C5 /* DWConfirmUsernameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWConfirmUsernameViewController.h; sourceTree = "<group>"; };
 		C943B5672A40ED4100AF23C5 /* DWConfirmUsernameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWConfirmUsernameViewController.m; sourceTree = "<group>"; };
 		C943B5692A40ED4100AF23C5 /* DWRegistrationCompletedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRegistrationCompletedViewController.m; sourceTree = "<group>"; };
@@ -5142,8 +4913,6 @@
 			isa = PBXGroup;
 			children = (
 				2A9FFF3822357F7800956D5F /* AmountInput */,
-				2A919F9D24A65CE00018C9A3 /* DWDPAmountContactView.h */,
-				2A919F9E24A65CE00018C9A3 /* DWDPAmountContactView.m */,
 				47838B7428FFD1D10003E8AB /* AmountView.swift */,
 				47838B7628FFFFAD0003E8AB /* AmountInputTypeSwitcher.swift */,
 			);
@@ -6699,6 +6468,9 @@
 				A5D5DD000000000000001008 /* DWProfileUpdateCoordinator.swift */,
 				A5D5DD000000000000001009 /* DWProfileUpdateBridge.swift */,
 				A5D5DD00000000000000100A /* DWContestedNameStatusService.swift */,
+				A5D5DD000000000000001407 /* DWIdentityKeyUpgrader.swift */,
+				A5D5DD000000000000001400 /* ContactItem.swift */,
+				A5D5DD000000000000001401 /* SwiftDashSDKContactsService.swift */,
 				811A28A8BBF01BD2CFAF2E54 /* SwiftDashSDKCoinJoinBalanceReader.swift */,
 				D459E9A66A00CF069AA64FB8 /* SwiftDashSDKWalletSending.swift */,
 				FFDA6D0DBFB64AFF4C1BE507 /* SwiftDashSDKReceiveAddressProvider.swift */,
@@ -7075,25 +6847,17 @@
 		C943B3502A40A54500AF23C5 /* Contacts */ = {
 			isa = PBXGroup;
 			children = (
-				75EE38D72CBFE52B00845FFF /* ContactsPlaceholderViewController.swift */,
-				C943B3512A40A54500AF23C5 /* DWBaseContactsViewController+DWProtected.h */,
-				C943B3532A40A54500AF23C5 /* DWRootContactsViewController.h */,
-				C943B3542A40A54500AF23C5 /* DWContactsViewController.m */,
-				C943B3552A40A54500AF23C5 /* DWBaseContactsContentViewController.m */,
 				C943B3562A40A54500AF23C5 /* Placeholders */,
-				C943B35B2A40A54500AF23C5 /* DWContactsContentViewController.m */,
-				C943B35C2A40A54500AF23C5 /* DWBaseContactsViewController.m */,
 				C943B35D2A40A54500AF23C5 /* Models */,
 				C943B3712A40A54600AF23C5 /* Requests */,
-				C943B3792A40A54600AF23C5 /* DWRootContactsViewController.m */,
-				C943B37A2A40A54600AF23C5 /* DWBaseContactsContentViewController+DWProtected.h */,
-				C943B37C2A40A54600AF23C5 /* DWContactsContentViewController.h */,
-				C943B37D2A40A54600AF23C5 /* DWBaseContactsContentViewController.h */,
-				C943B37E2A40A54600AF23C5 /* DWContactsViewController.h */,
 				C943B37F2A40A54600AF23C5 /* Views */,
 				C943B38D2A40A54600AF23C5 /* Base */,
-				C943B3902A40A54600AF23C5 /* DWBaseContactsViewController.h */,
 				C943B3912A40A54600AF23C5 /* GlobalSearch */,
+				A5D5DD000000000000001402 /* ContactsScreen.swift */,
+				A5D5DD000000000000001403 /* AddContactScreen.swift */,
+				A5D5DD000000000000001404 /* ContactProfileSheet.swift */,
+				A5D5DD000000000000001405 /* ContactAvatarView.swift */,
+				A5D5DD000000000000001406 /* NotificationsScreen.swift */,
 			);
 			path = Contacts;
 			sourceTree = "<group>";
@@ -7101,10 +6865,6 @@
 		C943B3562A40A54500AF23C5 /* Placeholders */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3572A40A54500AF23C5 /* DWNoContactsViewController.m */,
-				C943B3582A40A54500AF23C5 /* DWInvitationSuggestionView.m */,
-				C943B3592A40A54500AF23C5 /* DWNoContactsViewController.h */,
-				C943B35A2A40A54500AF23C5 /* DWInvitationSuggestionView.h */,
 			);
 			path = Placeholders;
 			sourceTree = "<group>";
@@ -7114,12 +6874,6 @@
 			children = (
 				C943B35E2A40A54500AF23C5 /* DataSource */,
 				C943B3642A40A54500AF23C5 /* Fetched DataSource */,
-				C943B36B2A40A54600AF23C5 /* DWBaseContactsModel+DWProtected.h */,
-				C943B36C2A40A54600AF23C5 /* DWBaseContactsModel.h */,
-				C943B36D2A40A54600AF23C5 /* DWContactsModel.h */,
-				C943B36E2A40A54600AF23C5 /* DWContactsSortModeProtocol.h */,
-				C943B36F2A40A54600AF23C5 /* DWBaseContactsModel.m */,
-				C943B3702A40A54600AF23C5 /* DWContactsModel.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -7127,11 +6881,6 @@
 		C943B35E2A40A54500AF23C5 /* DataSource */ = {
 			isa = PBXGroup;
 			children = (
-				C943B35F2A40A54500AF23C5 /* DWContactsDataSourceObject.m */,
-				C943B3602A40A54500AF23C5 /* DWContactsSearchDataSourceObject.m */,
-				C943B3612A40A54500AF23C5 /* DWContactsSearchDataSourceObject.h */,
-				C943B3622A40A54500AF23C5 /* DWContactsDataSource.h */,
-				C943B3632A40A54500AF23C5 /* DWContactsDataSourceObject.h */,
 			);
 			path = DataSource;
 			sourceTree = "<group>";
@@ -7139,12 +6888,6 @@
 		C943B3642A40A54500AF23C5 /* Fetched DataSource */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3652A40A54500AF23C5 /* DWIncomingFetchedDataSource.h */,
-				C943B3662A40A54500AF23C5 /* DWContactsFetchedDataSource.h */,
-				C943B3672A40A54500AF23C5 /* DWFetchedResultsDataSource.h */,
-				C943B3682A40A54500AF23C5 /* DWIncomingFetchedDataSource.m */,
-				C943B3692A40A54600AF23C5 /* DWContactsFetchedDataSource.m */,
-				C943B36A2A40A54600AF23C5 /* DWFetchedResultsDataSource.m */,
 			);
 			path = "Fetched DataSource";
 			sourceTree = "<group>";
@@ -7152,11 +6895,7 @@
 		C943B3712A40A54600AF23C5 /* Requests */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3722A40A54600AF23C5 /* DWRequestsContentViewController.m */,
 				C943B3732A40A54600AF23C5 /* Models */,
-				C943B3762A40A54600AF23C5 /* DWRequestsViewController.h */,
-				C943B3772A40A54600AF23C5 /* DWRequestsContentViewController.h */,
-				C943B3782A40A54600AF23C5 /* DWRequestsViewController.m */,
 			);
 			path = Requests;
 			sourceTree = "<group>";
@@ -7164,8 +6903,6 @@
 		C943B3732A40A54600AF23C5 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3742A40A54600AF23C5 /* DWRequestsModel.m */,
-				C943B3752A40A54600AF23C5 /* DWRequestsModel.h */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -7173,19 +6910,6 @@
 		C943B37F2A40A54600AF23C5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3802A40A54600AF23C5 /* DWGlobalMatchHeaderView.m */,
-				C943B3812A40A54600AF23C5 /* DWGlobalMatchFailedHeaderView.m */,
-				C943B3822A40A54600AF23C5 /* DWContactsSearchPlaceholderView.m */,
-				C943B3832A40A54600AF23C5 /* DWTitleActionHeaderView.h */,
-				C943B3842A40A54600AF23C5 /* BaseCollectionReusableView.h */,
-				C943B3852A40A54600AF23C5 /* DWContactsSearchInfoHeaderView.m */,
-				C943B3862A40A54600AF23C5 /* DWGlobalMatchHeaderView.h */,
-				C943B3872A40A54600AF23C5 /* DWTitleActionHeaderView.xib */,
-				C943B3882A40A54600AF23C5 /* DWGlobalMatchFailedHeaderView.h */,
-				C943B3892A40A54600AF23C5 /* BaseCollectionReusableView.m */,
-				C943B38A2A40A54600AF23C5 /* DWTitleActionHeaderView.m */,
-				C943B38B2A40A54600AF23C5 /* DWContactsSearchPlaceholderView.h */,
-				C943B38C2A40A54600AF23C5 /* DWContactsSearchInfoHeaderView.h */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -7193,8 +6917,6 @@
 		C943B38D2A40A54600AF23C5 /* Base */ = {
 			isa = PBXGroup;
 			children = (
-				C943B38E2A40A54600AF23C5 /* DWSearchViewController.h */,
-				C943B38F2A40A54600AF23C5 /* DWSearchViewController.m */,
 			);
 			path = Base;
 			sourceTree = "<group>";
@@ -7202,9 +6924,7 @@
 		C943B3912A40A54600AF23C5 /* GlobalSearch */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3922A40A54600AF23C5 /* DWUserSearchViewController.h */,
 				C943B3932A40A54600AF23C5 /* Model */,
-				C943B3962A40A54600AF23C5 /* DWUserSearchViewController.m */,
 				C943B3972A40A54600AF23C5 /* Children */,
 			);
 			path = GlobalSearch;
@@ -7213,8 +6933,6 @@
 		C943B3932A40A54600AF23C5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3942A40A54600AF23C5 /* DWUserSearchModel.m */,
-				C943B3952A40A54600AF23C5 /* DWUserSearchModel.h */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -7222,10 +6940,6 @@
 		C943B3972A40A54600AF23C5 /* Children */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3982A40A54600AF23C5 /* DWUserSearchResultViewController.h */,
-				C943B3992A40A54600AF23C5 /* DWSearchStateViewController.h */,
-				C943B39A2A40A54600AF23C5 /* DWUserSearchResultViewController.m */,
-				C943B39B2A40A54600AF23C5 /* DWSearchStateViewController.m */,
 			);
 			path = Children;
 			sourceTree = "<group>";
@@ -7283,10 +6997,6 @@
 				7596091C2C45516D00F3BF04 /* Edit Profile */,
 				C943B3EB2A40A54600AF23C5 /* Model */,
 				C943B3F62A40A54600AF23C5 /* Views */,
-				C943B3E92A40A54600AF23C5 /* DWUserProfileViewController.h */,
-				C943B3EA2A40A54600AF23C5 /* DWModalUserProfileViewController.h */,
-				C943B3F42A40A54600AF23C5 /* DWUserProfileViewController.m */,
-				C943B3F52A40A54600AF23C5 /* DWModalUserProfileViewController.m */,
 				A5D5DD000000000000001006 /* SDKIdentityProfileSheet.swift */,
 			);
 			path = Profile;
@@ -7296,8 +7006,6 @@
 			isa = PBXGroup;
 			children = (
 				C943B3EC2A40A54600AF23C5 /* DataSource */,
-				C943B3F22A40A54600AF23C5 /* DWUserProfileModel.h */,
-				C943B3F32A40A54600AF23C5 /* DWUserProfileModel.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -7305,11 +7013,6 @@
 		C943B3EC2A40A54600AF23C5 /* DataSource */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3ED2A40A54600AF23C5 /* DWUserProfileDataSource.h */,
-				C943B3EE2A40A54600AF23C5 /* DWUserProfileDataSourceObject.m */,
-				C943B3EF2A40A54600AF23C5 /* DWProfileTxsFetchedDataSource.m */,
-				C943B3F02A40A54600AF23C5 /* DWUserProfileDataSourceObject.h */,
-				C943B3F12A40A54600AF23C5 /* DWProfileTxsFetchedDataSource.h */,
 			);
 			path = DataSource;
 			sourceTree = "<group>";
@@ -7317,18 +7020,6 @@
 		C943B3F62A40A54600AF23C5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				C943B3F72A40A54600AF23C5 /* DWStretchyHeaderListCollectionLayout.h */,
-				C943B3F82A40A54600AF23C5 /* DWUserProfileSendRequestCell.m */,
-				C943B3F92A40A54600AF23C5 /* DWUserProfileHeaderView.h */,
-				C943B3FA2A40A54600AF23C5 /* DWPendingContactInfoView.m */,
-				C943B3FB2A40A54600AF23C5 /* DWUserProfileContactActionsCell.h */,
-				C943B3FC2A40A54600AF23C5 /* DWUserProfileNavigationTitleView.h */,
-				C943B3FD2A40A54600AF23C5 /* DWStretchyHeaderListCollectionLayout.m */,
-				C943B3FE2A40A54600AF23C5 /* DWUserProfileHeaderView.m */,
-				C943B3FF2A40A54600AF23C5 /* DWUserProfileSendRequestCell.h */,
-				C943B4002A40A54600AF23C5 /* DWPendingContactInfoView.h */,
-				C943B4012A40A54600AF23C5 /* DWUserProfileNavigationTitleView.m */,
-				C943B4022A40A54600AF23C5 /* DWUserProfileContactActionsCell.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -7347,23 +7038,7 @@
 		C943B4042A40A54600AF23C5 /* Objects */ = {
 			isa = PBXGroup;
 			children = (
-				C943B4052A40A54600AF23C5 /* DWDPNewIncomingRequestObject.m */,
-				C943B4062A40A54600AF23C5 /* DWDPContactObject.h */,
-				C943B4072A40A54600AF23C5 /* DWDPEstablishedContactObject.m */,
-				C943B4082A40A54600AF23C5 /* DWDPPendingRequestObject.h */,
-				C943B4092A40A54600AF23C5 /* DWDPUserObject.m */,
-				C943B40A2A40A54600AF23C5 /* DWDPTxObject.h */,
-				C943B40B2A40A54600AF23C5 /* DWDPRespondedIncomingRequestObject.h */,
-				C943B40C2A40A54600AF23C5 /* DWDPIncomingRequestObject.m */,
-				C943B40D2A40A54600AF23C5 /* DWDPContactObject.m */,
-				C943B40E2A40A54600AF23C5 /* DWDPNewIncomingRequestObject.h */,
-				C943B40F2A40A54600AF23C5 /* DWDPEstablishedContactObject.h */,
-				C943B4102A40A54600AF23C5 /* DWDPTxObject.m */,
-				C943B4112A40A54600AF23C5 /* DWDPUserObject.h */,
-				C943B4122A40A54600AF23C5 /* DWDPPendingRequestObject.m */,
-				C943B4132A40A54600AF23C5 /* DWDPIncomingRequestObject.h */,
 				C943B4142A40A54600AF23C5 /* Notifications */,
-				C943B41D2A40A54600AF23C5 /* DWDPRespondedIncomingRequestObject.m */,
 			);
 			path = Objects;
 			sourceTree = "<group>";
@@ -7371,14 +7046,6 @@
 		C943B4142A40A54600AF23C5 /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
-				C943B4152A40A54600AF23C5 /* DWDPAcceptedRequestNotificationObject.m */,
-				C943B4162A40A54600AF23C5 /* DWDPOutgoingRequestNotificationObject.m */,
-				C943B4172A40A54600AF23C5 /* DWDPNewIncomingRequestNotificationObject.m */,
-				C943B4182A40A54600AF23C5 /* DWDPEstablishedContactNotificationObject.h */,
-				C943B4192A40A54600AF23C5 /* DWDPAcceptedRequestNotificationObject.h */,
-				C943B41A2A40A54600AF23C5 /* DWDPOutgoingRequestNotificationObject.h */,
-				C943B41B2A40A54600AF23C5 /* DWDPEstablishedContactNotificationObject.m */,
-				C943B41C2A40A54600AF23C5 /* DWDPNewIncomingRequestNotificationObject.h */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -7386,21 +7053,7 @@
 		C943B41E2A40A54600AF23C5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				C943B41F2A40A54600AF23C5 /* DWDPTextStatusCell.m */,
 				C943B4202A40A54600AF23C5 /* ContentViews */,
-				C943B42B2A40A54600AF23C5 /* DWDPBasicCell.h */,
-				C943B42C2A40A54600AF23C5 /* DWDPTxListCell.h */,
-				C943B42D2A40A54600AF23C5 /* DWDPImageStatusCell.m */,
-				C943B42E2A40A54600AF23C5 /* DWDPIncomingRequestCell.m */,
-				C943B42F2A40A54600AF23C5 /* UIFont+DWDPItem.h */,
-				C943B4302A40A54600AF23C5 /* UICollectionView+DWDPItemDequeue.m */,
-				C943B4312A40A54600AF23C5 /* DWDPBasicCell.m */,
-				C943B4322A40A54600AF23C5 /* DWDPTextStatusCell.h */,
-				C943B4332A40A54600AF23C5 /* DWDPTxListCell.m */,
-				C943B4342A40A54600AF23C5 /* UICollectionView+DWDPItemDequeue.h */,
-				C943B4352A40A54600AF23C5 /* UIFont+DWDPItem.m */,
-				C943B4362A40A54600AF23C5 /* DWDPIncomingRequestCell.h */,
-				C943B4372A40A54600AF23C5 /* DWDPImageStatusCell.h */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -7408,16 +7061,6 @@
 		C943B4202A40A54600AF23C5 /* ContentViews */ = {
 			isa = PBXGroup;
 			children = (
-				C943B4212A40A54600AF23C5 /* DWDPGenericStatusItemView.h */,
-				C943B4222A40A54600AF23C5 /* DWDPGenericContactRequestItemView.m */,
-				C943B4232A40A54600AF23C5 /* DWDPTxItemView.m */,
-				C943B4242A40A54600AF23C5 /* DWDPGenericImageItemView.h */,
-				C943B4252A40A54600AF23C5 /* DWDPGenericItemView.m */,
-				C943B4262A40A54600AF23C5 /* DWDPGenericContactRequestItemView.h */,
-				C943B4272A40A54600AF23C5 /* DWDPGenericStatusItemView.m */,
-				C943B4282A40A54600AF23C5 /* DWDPGenericImageItemView.m */,
-				C943B4292A40A54600AF23C5 /* DWDPTxItemView.h */,
-				C943B42A2A40A54600AF23C5 /* DWDPGenericItemView.h */,
 			);
 			path = ContentViews;
 			sourceTree = "<group>";
@@ -7452,10 +7095,6 @@
 		C943B4462A40A54600AF23C5 /* Factory */ = {
 			isa = PBXGroup;
 			children = (
-				C943B4472A40A54600AF23C5 /* DWDPSearchItemsFactory.h */,
-				C943B4482A40A54600AF23C5 /* DWDPContactsItemsFactory.m */,
-				C943B4492A40A54600AF23C5 /* DWDPSearchItemsFactory.m */,
-				C943B44A2A40A54600AF23C5 /* DWDPContactsItemsFactory.h */,
 			);
 			path = Factory;
 			sourceTree = "<group>";
@@ -7601,12 +7240,8 @@
 			children = (
 				C943B48F2A40A54600AF23C5 /* UIImageView+DWDPAvatar.m */,
 				C943B4902A40A54600AF23C5 /* DSBlockchainIdentity+DWDisplayName.h */,
-				C943B4912A40A54600AF23C5 /* DWDashPayContactsActions.m */,
-				C943B4922A40A54600AF23C5 /* DWDashPayContactsUpdater.h */,
 				C943B4932A40A54600AF23C5 /* DSBlockchainIdentity+DWDisplayName.m */,
 				C943B4942A40A54600AF23C5 /* UIImageView+DWDPAvatar.h */,
-				C943B4952A40A54600AF23C5 /* DWDashPayContactsActions.h */,
-				C943B4962A40A54600AF23C5 /* DWDashPayContactsUpdater.m */,
 				C943B4972A40A54600AF23C5 /* Notifications */,
 			);
 			path = Global;
@@ -7615,12 +7250,6 @@
 		C943B4972A40A54600AF23C5 /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
-				C943B4982A40A54600AF23C5 /* DWNotificationsProvider.m */,
-				C943B4992A40A54600AF23C5 /* DWNotificationsData.m */,
-				C943B49A2A40A54600AF23C5 /* DWNotificationsFetchedDataSource.h */,
-				C943B49B2A40A54600AF23C5 /* DWNotificationsProvider.h */,
-				C943B49C2A40A54600AF23C5 /* DWNotificationsFetchedDataSource.m */,
-				C943B49D2A40A54600AF23C5 /* DWNotificationsData.h */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -7629,11 +7258,7 @@
 			isa = PBXGroup;
 			children = (
 				C943B49F2A40A54600AF23C5 /* Cells */,
-				C943B4A42A40A54600AF23C5 /* DWListCollectionLayout.h */,
-				C943B4A52A40A54600AF23C5 /* DWNotificationsViewController.h */,
 				C943B4A62A40A54600AF23C5 /* Models */,
-				C943B4A92A40A54600AF23C5 /* DWListCollectionLayout.m */,
-				C943B4AA2A40A54600AF23C5 /* DWNotificationsViewController.m */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -7641,10 +7266,6 @@
 		C943B49F2A40A54600AF23C5 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
-				C943B4A02A40A54600AF23C5 /* DWNotificationsInvitationCell.h */,
-				C943B4A12A40A54600AF23C5 /* DWNoNotificationsCell.m */,
-				C943B4A22A40A54600AF23C5 /* DWNotificationsInvitationCell.m */,
-				C943B4A32A40A54600AF23C5 /* DWNoNotificationsCell.h */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -7652,8 +7273,6 @@
 		C943B4A62A40A54600AF23C5 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				C943B4A72A40A54600AF23C5 /* DWNotificationsModel.m */,
-				C943B4A82A40A54600AF23C5 /* DWNotificationsModel.h */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -7694,7 +7313,6 @@
 		C943B54F2A40C21A00AF23C5 /* Filter View */ = {
 			isa = PBXGroup;
 			children = (
-				C943B5522A40C23500AF23C5 /* DWFilterHeaderView.xib */,
 			);
 			path = "Filter View";
 			sourceTree = "<group>";
@@ -7711,9 +7329,6 @@
 		C943B55F2A40ECEC00AF23C5 /* Cells */ = {
 			isa = PBXGroup;
 			children = (
-				C943B55D2A40E6F200AF23C5 /* DWFilterHeaderView.h */,
-				C943B55C2A40E6F200AF23C5 /* DWFilterHeaderView.m */,
-				2A4E534C22F03AAC00E5168A /* DWFilterHeaderView.xib */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -8292,7 +7907,6 @@
 				2A4431D622D52F67009BAF7F /* DWInfoTextCell.xib in Resources */,
 				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
 				2A8B9E3D22FD71E100FF8653 /* Payments.storyboard in Resources */,
-				2A4E534D22F03AAC00E5168A /* DWFilterHeaderView.xib in Resources */,
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
 				4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */,
@@ -8393,7 +8007,6 @@
 				C9D2C91A2A320AA000D15901 /* Migrations.bundle in Resources */,
 				C9D2C91B2A320AA000D15901 /* TxDetailTaxCategoryCell.xib in Resources */,
 				C9D2C91C2A320AA000D15901 /* Localizable.stringsdict in Resources */,
-				C943B4C12A40A54600AF23C5 /* DWTitleActionHeaderView.xib in Resources */,
 				C9D2C91D2A320AA000D15901 /* ShortcutsView.xib in Resources */,
 				753FDBEE2AECF52B0005EEC3 /* UsernameVoting.storyboard in Resources */,
 				C9D2C9202A320AA000D15901 /* TxDetailInfoCell.xib in Resources */,
@@ -8420,7 +8033,6 @@
 				C9D2C9342A320AA000D15901 /* Onboarding.storyboard in Resources */,
 				C9D2C9352A320AA000D15901 /* OperationStatus.storyboard in Resources */,
 				C9D2C9362A320AA000D15901 /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
-				C943B5542A40C23500AF23C5 /* DWFilterHeaderView.xib in Resources */,
 				C9D2C93A2A320AA000D15901 /* ResetWalletInfo.storyboard in Resources */,
 				C9D2C93B2A320AA000D15901 /* LaunchScreen.storyboard in Resources */,
 				C9D2C93C2A320AA000D15901 /* Pay.storyboard in Resources */,
@@ -9613,10 +9225,8 @@
 				C9D2C6972A320AA000D15901 /* DWBiometricAuthViewController.m in Sources */,
 				C9D2C6982A320AA000D15901 /* CrowdNodeWebService.swift in Sources */,
 				DA12C0DE2026070800000003 /* DarkCoinMessageFraming.swift in Sources */,
-				C943B4EE2A40A54600AF23C5 /* DWStretchyHeaderListCollectionLayout.m in Sources */,
 				75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */,
 				7549BE5B2DEAF50D004F0BAF /* IconBitmap.swift in Sources */,
-				C943B4C02A40A54600AF23C5 /* DWContactsSearchInfoHeaderView.m in Sources */,
 				754495DD2AE91B6300492817 /* GroupedRequestCell.swift in Sources */,
 				C9D2C69C2A320AA000D15901 /* DWAdvancedSecurityModelStub.m in Sources */,
 				C9D2C69D2A320AA000D15901 /* Foundation+Bitcoin.swift in Sources */,
@@ -9629,7 +9239,6 @@
 				C9D2C6A32A320AA000D15901 /* ApiCode.swift in Sources */,
 				75FEC6AF2CE0C58A00F87B48 /* VerifyIdentityScreen.swift in Sources */,
 				C9D2C6A42A320AA000D15901 /* CoinbaseEntryPointModel.swift in Sources */,
-				C943B4F02A40A54600AF23C5 /* DWUserProfileNavigationTitleView.m in Sources */,
 				C9D2C6A52A320AA000D15901 /* SyncingAlertViewController.swift in Sources */,
 				C9D2C6A72A320AA000D15901 /* CrowdNodeResponse.swift in Sources */,
 				C9D2C6A82A320AA000D15901 /* FileManager+DashWallet.swift in Sources */,
@@ -9637,16 +9246,13 @@
 				753261B22CBC157F003CDE00 /* GetStartedViewController.swift in Sources */,
 				C956AF142A5B5949002FAB75 /* EnterAddressViewController.swift in Sources */,
 				C9D2C6AA2A320AA000D15901 /* DSTransaction+DashWallet.swift in Sources */,
-				C943B4C52A40A54600AF23C5 /* DWUserSearchModel.m in Sources */,
 				C9D2C6AC2A320AA000D15901 /* PayableViewController.swift in Sources */,
 				C9D2C6AD2A320AA000D15901 /* HairlineView.swift in Sources */,
 				C943B51B2A40A54600AF23C5 /* BaseInvitationViewController.swift in Sources */,
 				C9D2C6AE2A320AA000D15901 /* DWInitialViewController.m in Sources */,
-				C943B52D2A40A54600AF23C5 /* DWDashPayContactsUpdater.m in Sources */,
 				C9D2C6AF2A320AA000D15901 /* BuySellPortalViewController.swift in Sources */,
 				C9D2C6B02A320AA000D15901 /* SettingsScreen.swift in Sources */,
 				751B61C52ADFFD0700D1C2EF /* IntegrationViewController+Uphold.swift in Sources */,
-				C943B5022A40A54600AF23C5 /* DWDPGenericStatusItemView.m in Sources */,
 				C9D2C6B22A320AA000D15901 /* UISpringTimingParameters+DWInit.m in Sources */,
 				C9D2C6B62A320AA000D15901 /* NumberKeyboardButton.swift in Sources */,
 				C9D2C6B72A320AA000D15901 /* IsDefaultEmail.swift in Sources */,
@@ -9658,7 +9264,6 @@
 				C943B32A2A408CED00AF23C5 /* DWAvatarExternalSourceView.m in Sources */,
 				C9D2C6BC2A320AA000D15901 /* WalletKeysOverviewModel.swift in Sources */,
 				C9D2C6BD2A320AA000D15901 /* UIAssembly.swift in Sources */,
-				C943B4B32A40A54600AF23C5 /* DWContactsSearchDataSourceObject.m in Sources */,
 				C9D2C6BE2A320AA000D15901 /* DWLocationManager.swift in Sources */,
 				75D2B4A22D9D28AC00228DB0 /* BlockExplorerSelectionView.swift in Sources */,
 				7514E4EC2AF27E5900A0466F /* VotingHeaderView.swift in Sources */,
@@ -9681,12 +9286,10 @@
 				C9D2C6C62A320AA000D15901 /* Coinbase+Error.swift in Sources */,
 				C9D2C6C72A320AA000D15901 /* DWPaymentOutput+DWView.m in Sources */,
 				75B4D7E62EEC100000A1B2C3 /* WalletSendService.swift in Sources */,
-				C943B5092A40A54600AF23C5 /* UIFont+DWDPItem.m in Sources */,
 				C9D2C6C82A320AA000D15901 /* UIView+DWRecursiveSubview.m in Sources */,
 				C9D2C6C92A320AA000D15901 /* AddressStatus.swift in Sources */,
 				C9D2C6CA2A320AA000D15901 /* ExtendedPublicKeysModel.swift in Sources */,
 				C9D2C6CB2A320AA000D15901 /* OrderPreviewViewController.swift in Sources */,
-				C943B5342A40A54600AF23C5 /* DWListCollectionLayout.m in Sources */,
 				C9D2C6CC2A320AA000D15901 /* ActivePaymentMethodView.swift in Sources */,
 				C9D2C6CD2A320AA000D15901 /* BasicInfoController.swift in Sources */,
 				C9D2C6CE2A320AA000D15901 /* DWPreviewSeedPhraseModel.m in Sources */,
@@ -9698,7 +9301,6 @@
 				C9D2C6D22A320AA000D15901 /* TransactionWrapper.swift in Sources */,
 				C9D2C6D32A320AA000D15901 /* Transactions.swift in Sources */,
 				C9D2C6D42A320AA000D15901 /* DWRecoverTextView.m in Sources */,
-				C943B5012A40A54600AF23C5 /* DWDPGenericItemView.m in Sources */,
 				C9D2C6D52A320AA000D15901 /* TransactionMetadata.swift in Sources */,
 				C9D2C6D62A320AA000D15901 /* ExtendedPublicKeysViewController.swift in Sources */,
 				B3A1F2C4D5E6078901234569 /* ExtendedPublicKeySheet.swift in Sources */,
@@ -9725,18 +9327,14 @@
 				C9D2C6E62A320AA000D15901 /* CrowdNodeEndpoint.swift in Sources */,
 				C9D2C6E72A320AA000D15901 /* ServiceEntryPointModel.swift in Sources */,
 				75050CD12DF2FCC200F586D6 /* ServiceName.swift in Sources */,
-				C943B4B72A40A54600AF23C5 /* DWBaseContactsModel.m in Sources */,
 				C9D2C6E82A320AA000D15901 /* ExploreDash.swift in Sources */,
 				C9D2C6EB2A320AA000D15901 /* UpholdAmountModel.swift in Sources */,
 				C943B4DF2A40A54600AF23C5 /* DWGetStartedContentViewController.m in Sources */,
 				759AFDE32CC67E8E007072D2 /* VotingInfoScreen.swift in Sources */,
-				C943B4F42A40A54600AF23C5 /* DWDPUserObject.m in Sources */,
 				C9D2C6EC2A320AA000D15901 /* DWModalInteractiveTransition.m in Sources */,
 				C943B31D2A408CED00AF23C5 /* DWUserProfileContainerView.m in Sources */,
 				C9D2C6F02A320AA000D15901 /* UIImage+Utils.m in Sources */,
-				C943B4BE2A40A54600AF23C5 /* DWGlobalMatchFailedHeaderView.m in Sources */,
 				75A2F3032DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */,
-				C943B4C22A40A54600AF23C5 /* BaseCollectionReusableView.m in Sources */,
 				C9D2C6F22A320AA000D15901 /* DWSetupViewController.m in Sources */,
 				C9D2C6F32A320AA000D15901 /* ExploreDatabaseConnection.swift in Sources */,
 				C9D2C6F42A320AA000D15901 /* WithdrawalLimitsController.swift in Sources */,
@@ -9744,7 +9342,6 @@
 				752D03AC2E2F758B00B88784 /* MainMenuViewController.swift in Sources */,
 				C943B31B2A408CED00AF23C5 /* DWUpdatingUserProfileView.m in Sources */,
 				C9D2C6F52A320AA000D15901 /* CoinbaseTransactionResponse.swift in Sources */,
-				C943B52F2A40A54600AF23C5 /* DWNotificationsData.m in Sources */,
 				C9D2C6F72A320AA000D15901 /* TxDetailModel.swift in Sources */,
 				757514E22B15DB510026AD8E /* ShadowView.swift in Sources */,
 				C9D2C6F82A320AA000D15901 /* NewAccountViewController.swift in Sources */,
@@ -9768,19 +9365,16 @@
 				755049AD2C846576008FA7EB /* MenuItemModel.swift in Sources */,
 				C9D2C7052A320AA000D15901 /* DWRequestAmountContentView.m in Sources */,
 				C943B3312A408CED00AF23C5 /* DWProfileAboutCellModel.m in Sources */,
-				C943B4C42A40A54600AF23C5 /* DWSearchViewController.m in Sources */,
 				75EBAA2A2BBBE385004488E3 /* ZenLedgerViewModel.swift in Sources */,
 				75FFD6C22BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift in Sources */,
 				C9D2C7062A320AA000D15901 /* DWOnboardingModel.m in Sources */,
 				C9D2C7072A320AA000D15901 /* AmountInputTypeSwitcher.swift in Sources */,
-				C943B4FA2A40A54600AF23C5 /* DWDPOutgoingRequestNotificationObject.m in Sources */,
 				75EBAA132BB99B6B004488E3 /* BottomSheet.swift in Sources */,
 				EE5F3D5C458E92B69D14BFD8 /* NavigationBar.swift in Sources */,
 				C9D2C7082A320AA000D15901 /* DWPlaceholderFormCellModel.m in Sources */,
 				C9D2C7092A320AA000D15901 /* DWOverlapControl.m in Sources */,
 				C9D2C70A2A320AA000D15901 /* CoinsToAddressTxFilter.swift in Sources */,
 				C9D2C95E2A386D7E00D15901 /* DWBasePressableControl.m in Sources */,
-				C943B4BF2A40A54600AF23C5 /* DWContactsSearchPlaceholderView.m in Sources */,
 				751C05DD2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */,
 				C9D2C70B2A320AA000D15901 /* DWDemoAppRootViewController.m in Sources */,
 				C9D2C70C2A320AA000D15901 /* DWUpholdLogoutTutorialViewController.m in Sources */,
@@ -9792,11 +9386,9 @@
 				C9D2C7112A320AA000D15901 /* Coinbase.swift in Sources */,
 				C9D2C7122A320AA000D15901 /* SyncModel.swift in Sources */,
 				C9D2C7132A320AA000D15901 /* ReceiveContentView.swift in Sources */,
-				C943B4FB2A40A54600AF23C5 /* DWDPNewIncomingRequestNotificationObject.m in Sources */,
 				C956AF1B2A5C337F002FAB75 /* DWBorderedActionButton.m in Sources */,
 				C9D2C7142A320AA000D15901 /* AmountView.swift in Sources */,
 				C9D2C7152A320AA000D15901 /* DWBasePayViewController.m in Sources */,
-				C943B4AC2A40A54600AF23C5 /* DWContactsViewController.m in Sources */,
 				C9D2C7162A320AA000D15901 /* CrowdNodeTransferModel.swift in Sources */,
 				750CED612C94BFD7000FB837 /* SettingsMenuViewModel.swift in Sources */,
 				C9D2C7172A320AA000D15901 /* DWSetPinViewController.m in Sources */,
@@ -9808,16 +9400,12 @@
 				C9D2C71D2A320AA000D15901 /* DWVerifySeedPhraseContentView.m in Sources */,
 				C9D2C71E2A320AA000D15901 /* Coinbase+Constants.swift in Sources */,
 				C9D2C71F2A320AA000D15901 /* PointOfUseListSearchCell.swift in Sources */,
-				C943B4FD2A40A54600AF23C5 /* DWDPRespondedIncomingRequestObject.m in Sources */,
 				C9D2C7202A320AA000D15901 /* ServiceDataProvider.swift in Sources */,
 				C9D2C7212A320AA000D15901 /* PaymentButton.swift in Sources */,
 				C9D2C7222A320AA000D15901 /* DWPreviewSeedPhraseViewController.m in Sources */,
 				7573C2DF2B00C05900F4C347 /* CastVoteViewController.swift in Sources */,
-				C943B4B42A40A54600AF23C5 /* DWIncomingFetchedDataSource.m in Sources */,
-				C943B4B02A40A54600AF23C5 /* DWContactsContentViewController.m in Sources */,
 				C9D2C7242A320AA000D15901 /* WKWebView+CrowdNode.swift in Sources */,
 				C9D2C7252A320AA000D15901 /* SyncingActivityMonitor.swift in Sources */,
-				75EE38D82CBFE52E00845FFF /* ContactsPlaceholderViewController.swift in Sources */,
 				C9D2C7262A320AA000D15901 /* EmptyUIView.swift in Sources */,
 				C9D2C7272A320AA000D15901 /* BuildFile in Sources */,
 				C9D2C7282A320AA000D15901 /* DWQRScanModel.m in Sources */,
@@ -9835,14 +9423,10 @@
 				C9D2C7342A320AA000D15901 /* DWPinView.m in Sources */,
 				C9D2C7362A320AA000D15901 /* DWBaseReceiveModel.m in Sources */,
 				7545ED582DA91AF10075F45C /* DashSpendUserAuthViewModel.swift in Sources */,
-				C943B52E2A40A54600AF23C5 /* DWNotificationsProvider.m in Sources */,
-				C943B4F12A40A54600AF23C5 /* DWUserProfileContactActionsCell.m in Sources */,
 				C9D2C7372A320AA000D15901 /* DWSegmentSlider.m in Sources */,
-				C943B4AE2A40A54600AF23C5 /* DWNoContactsViewController.m in Sources */,
 				C9D2C7382A320AA000D15901 /* CoinbasePlaceBuyOrderRequest.swift in Sources */,
 				C943B5262A40A54600AF23C5 /* DWDashPayAnimationView.m in Sources */,
 				753F75342DD0D42300D40DFE /* DashSpendPayScreen.swift in Sources */,
-				C943B4EF2A40A54600AF23C5 /* DWUserProfileHeaderView.m in Sources */,
 				C9D2C7392A320AA000D15901 /* CoinbaseAmount.swift in Sources */,
 				C9D2C73B2A320AA000D15901 /* SendAmountModel.swift in Sources */,
 				75EBAA102BB99036004488E3 /* TextIntro.swift in Sources */,
@@ -9853,7 +9437,6 @@
 				C9D2C73E2A320AA000D15901 /* DWTitleDetailCellModel.m in Sources */,
 				7514E4EA2AF2351F00A0466F /* VotingFiltersModel.swift in Sources */,
 				C943B4E22A40A54600AF23C5 /* DWPassthroughView.m in Sources */,
-				C943B5332A40A54600AF23C5 /* DWNotificationsModel.m in Sources */,
 				C9D2C73F2A320AA000D15901 /* BuyDashModel.swift in Sources */,
 				C9D2C7402A320AA000D15901 /* MerchantListViewController.swift in Sources */,
 				C9D2C7412A320AA000D15901 /* DWUpholdCardObject.m in Sources */,
@@ -9866,13 +9449,10 @@
 				C9D2C7472A320AA000D15901 /* FailedOperationStatusViewController.swift in Sources */,
 				C9D2C7482A320AA000D15901 /* UIPanGestureRecognizer+DWProjected.m in Sources */,
 				C956AF182A5C3306002FAB75 /* DWPressableButton.m in Sources */,
-				C943B50A2A40A54600AF23C5 /* DWDPContactsItemsFactory.m in Sources */,
 				C93078492A6AD4FC00906E4B /* UpholdConfirmViewController.swift in Sources */,
 				75CDD7842C0898FA00F433D2 /* Wrapper.swift in Sources */,
 				C9D2C7492A320AA000D15901 /* DWCurrencyObject.m in Sources */,
-				C943B52B2A40A54600AF23C5 /* DWDashPayContactsActions.m in Sources */,
 				C956AF102A5B592E002FAB75 /* UIView+Dash.swift in Sources */,
-				C943B50B2A40A54600AF23C5 /* DWDPSearchItemsFactory.m in Sources */,
 				C9D2C74A2A320AA000D15901 /* ShortcutsView.swift in Sources */,
 				C9D2C74B2A320AA000D15901 /* DWFormSectionModel.m in Sources */,
 				C9D2C74C2A320AA000D15901 /* BuildFile in Sources */,
@@ -9883,8 +9463,6 @@
 				7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */,
 				C9D2C74F2A320AA000D15901 /* DWSeedPhraseRow.m in Sources */,
 				C943B5132A40A54600AF23C5 /* DWHistoryFilterContentView.m in Sources */,
-				C943B4BC2A40A54600AF23C5 /* DWRootContactsViewController.m in Sources */,
-				C943B4C32A40A54600AF23C5 /* DWTitleActionHeaderView.m in Sources */,
 				7531308E2B47EC910069C9B7 /* UpholdClient.swift in Sources */,
 				755049AA2C846299008FA7EB /* DWAboutViewController.m in Sources */,
 				751C05D92D3BB6AA00475E52 /* CurrentUserProfileModel.swift in Sources */,
@@ -9906,18 +9484,15 @@
 				C9D2C75E2A320AA000D15901 /* KeyboardHeader.swift in Sources */,
 				C9D2C75F2A320AA000D15901 /* DWUpholdOTPViewController.m in Sources */,
 				C9D2C7602A320AA000D15901 /* DWAppGroupOptions.m in Sources */,
-				C943B5352A40A54600AF23C5 /* DWNotificationsViewController.m in Sources */,
 				C9D2C7612A320AA000D15901 /* DWTransactionListDataItemObject.m in Sources */,
 				75050CCE2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */,
 				C943B3362A408CED00AF23C5 /* DWEditProfileBaseCell.m in Sources */,
 				C930784A2A6AD52400906E4B /* UpholdConfirmTransferModel.swift in Sources */,
 				C9D2C7622A320AA000D15901 /* DWUpholdAPIProvider.m in Sources */,
 				C943B5102A40A54600AF23C5 /* DWSendInviteFirstStepViewController.m in Sources */,
-				C943B4E72A40A54600AF23C5 /* DWUserProfileDataSourceObject.m in Sources */,
 				C943B50C2A40A54600AF23C5 /* DPAlertViewController+DWInvite.m in Sources */,
 				C943B3352A408CED00AF23C5 /* DWEditProfileTextViewCell.m in Sources */,
 				C9D2C7642A320AA000D15901 /* BasePageSheetViewController.swift in Sources */,
-				C943B4B92A40A54600AF23C5 /* DWRequestsContentViewController.m in Sources */,
 				C943B54E2A40B6B500AF23C5 /* DWColoredButton.m in Sources */,
 				C9D2C7662A320AA000D15901 /* CrowdNodeRequest.swift in Sources */,
 				75EBAA0A2BB9791B004488E3 /* Icon.swift in Sources */,
@@ -9925,14 +9500,12 @@
 				C9D2C7672A320AA000D15901 /* CoinbaseExchangeRateResponse.swift in Sources */,
 				C9D2C7692A320AA000D15901 /* BuildFile in Sources */,
 				C9D2C76A2A320AA000D15901 /* CrowdNodePortalItem.swift in Sources */,
-				C943B4C82A40A54600AF23C5 /* DWSearchStateViewController.m in Sources */,
 				C9D2C76B2A320AA000D15901 /* BaseViewController.swift in Sources */,
 				C9D2C76C2A320AA000D15901 /* AccountListController.swift in Sources */,
 				753261B02CBC11BF003CDE00 /* WelcomeViewController.swift in Sources */,
 				C9D2C76D2A320AA000D15901 /* DWUpholdTransactionObject.m in Sources */,
 				7556EE422DF9876B004E8093 /* ExploreSyncBannerView.swift in Sources */,
 				754C27CD2CC3C15B00BA7B9F /* FeatureSingleItem.swift in Sources */,
-				C943B5052A40A54600AF23C5 /* DWDPIncomingRequestCell.m in Sources */,
 				C9D2C76E2A320AA000D15901 /* DWBaseSeedViewController.m in Sources */,
 				C943B51D2A40A54600AF23C5 /* InvitationBottomView.swift in Sources */,
 				C943B32D2A408CED00AF23C5 /* DWAvatarPublicURLViewController.m in Sources */,
@@ -9947,9 +9520,7 @@
 				C9D2C7722A320AA000D15901 /* DWSeedWordView.m in Sources */,
 				C9D2C7732A320AA000D15901 /* DWSecurityStatusView.m in Sources */,
 				C9D2C7752A320AA000D15901 /* DWAnimatedShapeLayer.m in Sources */,
-				C943B4BD2A40A54600AF23C5 /* DWGlobalMatchHeaderView.m in Sources */,
 				C9D2C7782A320AA000D15901 /* DWScreenshotWarningViewController.m in Sources */,
-				C943B4B82A40A54600AF23C5 /* DWContactsModel.m in Sources */,
 				C9D2C7792A320AA000D15901 /* ConvertCryptoOrderPreviewController.swift in Sources */,
 				C9D2C77A2A320AA000D15901 /* TransactionDataItem.swift in Sources */,
 				C9D2C77B2A320AA000D15901 /* DWSetPinModel.m in Sources */,
@@ -9985,8 +9556,6 @@
 				C93078482A6AD4F500906E4B /* ConfirmPaymentViewController.swift in Sources */,
 				C9D2C7962A320AA000D15901 /* UIViewController+DWShareReceiveInfo.m in Sources */,
 				C9D2C7972A320AA000D15901 /* OnlineAccountConfirmationController.swift in Sources */,
-				C943B4F52A40A54600AF23C5 /* DWDPIncomingRequestObject.m in Sources */,
-				C943B4BA2A40A54600AF23C5 /* DWRequestsModel.m in Sources */,
 				C9D2C7982A320AA000D15901 /* BaseResponse.swift in Sources */,
 				C9D2C7992A320AA000D15901 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				C943B3212A408CED00AF23C5 /* DWImgurItemView.m in Sources */,
@@ -10002,14 +9571,12 @@
 				C9D2C7A22A320AA000D15901 /* DWSelectorFormCellModel.m in Sources */,
 				C943B5142A40A54600AF23C5 /* DWHistoryFilterViewController.m in Sources */,
 				C9D2C7A32A320AA000D15901 /* DWVersionManager.m in Sources */,
-				C943B4AF2A40A54600AF23C5 /* DWInvitationSuggestionView.m in Sources */,
 				C9D2C7A52A320AA000D15901 /* DWModalPresentationController.m in Sources */,
 				75BDE7AD2BF3287400556791 /* Toast.swift in Sources */,
 				C9D2C7A72A320AA000D15901 /* ActionButtonViewController.swift in Sources */,
 				C9D2C7A82A320AA000D15901 /* BuySellServiceItemCell.swift in Sources */,
 				C956AF122A5B5949002FAB75 /* PasteboardContentView.swift in Sources */,
 				C9D2C7AA2A320AA000D15901 /* BuildFile in Sources */,
-				C943B5002A40A54600AF23C5 /* DWDPTxItemView.m in Sources */,
 				C9D2C7AB2A320AA000D15901 /* DWBaseFormTableViewCell.m in Sources */,
 				C9D2C7AC2A320AA000D15901 /* AccountCell.swift in Sources */,
 				C9D2C7AD2A320AA000D15901 /* DWTransactionListDataProviderStub.m in Sources */,
@@ -10020,7 +9587,6 @@
 				C9D2C7B12A320AA000D15901 /* CoinbaseBaseIDForCurrencyResponse.swift in Sources */,
 				C9D2C7B22A320AA000D15901 /* BuildFile in Sources */,
 				C9D2C7B32A320AA000D15901 /* SpecifyAmountViewController.swift in Sources */,
-				C943B4EA2A40A54600AF23C5 /* DWUserProfileViewController.m in Sources */,
 				756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */,
 				C943B5922A40ED7B00AF23C5 /* DWTextField.m in Sources */,
 				75EBAA0D2BB9792F004488E3 /* FeatureTopText.swift in Sources */,
@@ -10031,7 +9597,6 @@
 				C9D2C7B92A320AA000D15901 /* DWIntrinsicTableView.m in Sources */,
 				C9D2C7BA2A320AA000D15901 /* DWURLActions.m in Sources */,
 				C9D2C7BB2A320AA000D15901 /* KeysOverviewViewController.swift in Sources */,
-				C943B4FE2A40A54600AF23C5 /* DWDPTextStatusCell.m in Sources */,
 				C9D2C7BC2A320AA000D15901 /* AccountRepository.swift in Sources */,
 				C9D2C7BD2A320AA000D15901 /* DWSharedUIConstants.m in Sources */,
 				7592AA7D2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */,
@@ -10064,19 +9629,15 @@
 				C9D2C7D62A320AA000D15901 /* CALayer+DWShadow.m in Sources */,
 				C9D2C7D72A320AA000D15901 /* MerchantDAO.swift in Sources */,
 				C9D2C7D82A320AA000D15901 /* ExploreDatabaseSyncManager.swift in Sources */,
-				C943B5312A40A54600AF23C5 /* DWNoNotificationsCell.m in Sources */,
 				751B61C42ADFF9D000D1C2EF /* CoinbaseDepositRequest.swift in Sources */,
 				C9D2C7D92A320AA000D15901 /* DWOnboardingCollectionViewCell.m in Sources */,
-				C943B4B22A40A54600AF23C5 /* DWContactsDataSourceObject.m in Sources */,
 				C9D2C7DA2A320AA000D15901 /* CrowdNodeErrorResponse.swift in Sources */,
-				C943B4F72A40A54600AF23C5 /* DWDPTxObject.m in Sources */,
 				C9D2C7DC2A320AA000D15901 /* DWHomeModelStub.m in Sources */,
 				C9D2C7DD2A320AA000D15901 /* UISearchBar+DWAdditions.m in Sources */,
 				C943B5122A40A54600AF23C5 /* DWInvitationHistoryModel.m in Sources */,
 				C943B31A2A408CED00AF23C5 /* DWCurrentUserProfileView.m in Sources */,
 				751B61C22ADFF99D00D1C2EF /* CoinbaseDepositResponse.swift in Sources */,
 				753E46E92DE1E24300A3FF2A /* CTXSpendModels.swift in Sources */,
-				C943B4F32A40A54600AF23C5 /* DWDPEstablishedContactObject.m in Sources */,
 				C9D2C7E02A320AA000D15901 /* TransactionFilter.swift in Sources */,
 				C9D2C7E22A320AA000D15901 /* CrowdNodeWithdrawalReceivedTx.swift in Sources */,
 				7549BE612DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
@@ -10096,7 +9657,6 @@
 				FF0000022DUMMYID001234567 /* PiggyCardsConstants.swift in Sources */,
 				FF0000072DUMMYID001234567 /* PiggyCardsModels.swift in Sources */,
 				FF0000102DUMMYID001234567 /* BarcodeScanner.swift in Sources */,
-				C943B4B62A40A54600AF23C5 /* DWFetchedResultsDataSource.m in Sources */,
 				C9D2C7E32A320AA000D15901 /* PointOfUseListSegmentedCell.swift in Sources */,
 				7513DA892AB17606005D55F6 /* Topper.swift in Sources */,
 				C943B33C2A408CED00AF23C5 /* DWHourGlassAnimationView.m in Sources */,
@@ -10119,6 +9679,14 @@
 				A5D5DD000000000000001102 /* DWRegistrationPhaseAdapter.swift in Sources */,
 				A5D5DD000000000000001104 /* DWIdentityRegistrationController.swift in Sources */,
 				A5D5DD000000000000001106 /* DWIdentityAuthorizer.swift in Sources */,
+				A5D5DD000000000000001410 /* ContactItem.swift in Sources */,
+				A5D5DD000000000000001411 /* SwiftDashSDKContactsService.swift in Sources */,
+				A5D5DD000000000000001412 /* ContactsScreen.swift in Sources */,
+				A5D5DD000000000000001413 /* AddContactScreen.swift in Sources */,
+				A5D5DD000000000000001414 /* ContactProfileSheet.swift in Sources */,
+				A5D5DD000000000000001415 /* ContactAvatarView.swift in Sources */,
+				A5D5DD000000000000001416 /* NotificationsScreen.swift in Sources */,
+				A5D5DD000000000000001417 /* DWIdentityKeyUpgrader.swift in Sources */,
 				A5D5DD000000000000001108 /* DWIdentityRegistrationCoordinator.swift in Sources */,
 				A5D5DD00000000000000110A /* DWIdentityRegistrationBridge.swift in Sources */,
 				A5D5DD00000000000000110C /* SDKIdentityProfileSheet.swift in Sources */,
@@ -10172,7 +9740,6 @@
 				C9D2C7EB2A320AA000D15901 /* DWPaymentProcessor.m in Sources */,
 				C9D2C7ED2A320AA000D15901 /* SyncingHeaderView.swift in Sources */,
 				C9D2C7EE2A320AA000D15901 /* MinimumDepositBanner.swift in Sources */,
-				C943B4F92A40A54600AF23C5 /* DWDPAcceptedRequestNotificationObject.m in Sources */,
 				C9D2C7EF2A320AA000D15901 /* BalanceView.swift in Sources */,
 				C9D2C7F02A320AA000D15901 /* DWQRScanStatusView.m in Sources */,
 				C9D2C7F12A320AA000D15901 /* DWURLParser.m in Sources */,
@@ -10188,7 +9755,6 @@
 				C956AF0C2A5B591A002FAB75 /* DashInputField.swift in Sources */,
 				C9D2C7FB2A320AA000D15901 /* DWPasteboardAddressExtractor.m in Sources */,
 				7545ED602DA91FC60075F45C /* NumericKeyboardView.swift in Sources */,
-				C943B4F22A40A54600AF23C5 /* DWDPNewIncomingRequestObject.m in Sources */,
 				C9D2C7FC2A320AA000D15901 /* ViewModel+Coinbase.swift in Sources */,
 				75DFAF2E2CF7066600CCA68B /* VoteButton.swift in Sources */,
 				C943B52C2A40A54600AF23C5 /* DSBlockchainIdentity+DWDisplayName.m in Sources */,
@@ -10220,24 +9786,16 @@
 				C9D2C8172A320AA000D15901 /* DWBiometricAuthModel.m in Sources */,
 				C943B52A2A40A54600AF23C5 /* UIImageView+DWDPAvatar.m in Sources */,
 				C9D2C8182A320AA000D15901 /* DWNumberKeyboardInputViewAudioFeedback.m in Sources */,
-				C943B5042A40A54600AF23C5 /* DWDPImageStatusCell.m in Sources */,
-				C943B4AD2A40A54600AF23C5 /* DWBaseContactsContentViewController.m in Sources */,
 				C9D2C8192A320AA000D15901 /* CrowdNode+Constants.swift in Sources */,
 				A5D5DD000000000000000208 /* MasternodeAPYCalculator.swift in Sources */,
 				C9D2C81A2A320AA000D15901 /* CurrencyExchanger.swift in Sources */,
-				C943B55E2A40E6F200AF23C5 /* DWFilterHeaderView.m in Sources */,
-				C943B5072A40A54600AF23C5 /* DWDPBasicCell.m in Sources */,
-				C943B4EC2A40A54600AF23C5 /* DWUserProfileSendRequestCell.m in Sources */,
 				C930784D2A6AD59A00906E4B /* TitleCell.swift in Sources */,
-				C943B4C62A40A54600AF23C5 /* DWUserSearchViewController.m in Sources */,
-				C943B4C72A40A54600AF23C5 /* DWUserSearchResultViewController.m in Sources */,
 				C9D2C81D2A320AA000D15901 /* MessageStatus.swift in Sources */,
 				7514E4E82AF233CF00A0466F /* VotingFiltersViewController.swift in Sources */,
 				C9D2C81E2A320AA000D15901 /* DWGlobalOptions.m in Sources */,
 				C9D2C81F2A320AA000D15901 /* AppDelegate.m in Sources */,
 				C9D2C8202A320AA000D15901 /* SendReceivePageController.swift in Sources */,
 				C943B5242A40A54600AF23C5 /* UIColor+DWDashPay.m in Sources */,
-				C943B4E82A40A54600AF23C5 /* DWProfileTxsFetchedDataSource.m in Sources */,
 				C9D2C8232A320AA000D15901 /* BaseNavigationController.swift in Sources */,
 				C9D2C8242A320AA000D15901 /* UIViewController+Coinbase.swift in Sources */,
 				C9D2C8262A320AA000D15901 /* CSVBuilder.swift in Sources */,
@@ -10254,7 +9812,6 @@
 				C9D2C82F2A320AA000D15901 /* PointOfUseDAO.swift in Sources */,
 				C943B5292A40A54600AF23C5 /* DWDashPayConstants.m in Sources */,
 				C9D2C8302A320AA000D15901 /* ProvideAmountViewController.swift in Sources */,
-				C943B4E92A40A54600AF23C5 /* DWUserProfileModel.m in Sources */,
 				C9D2C8312A320AA000D15901 /* DWCheckbox.m in Sources */,
 				C9D2C8322A320AA000D15901 /* DWRequestAmountViewController.m in Sources */,
 				C9D2C8332A320AA000D15901 /* DerivationPathKeysModel.swift in Sources */,
@@ -10273,13 +9830,11 @@
 				759AFDE02CC63571007072D2 /* JoinDashPayScreen.swift in Sources */,
 				C9D2C83D2A320AA000D15901 /* DWUpholdConstants.m in Sources */,
 				C9D2C83F2A320AA000D15901 /* CoinbaseSwapeTradeResponse.swift in Sources */,
-				C943B4FF2A40A54600AF23C5 /* DWDPGenericContactRequestItemView.m in Sources */,
 				C9D2C8402A320AA000D15901 /* DWQRScanView.m in Sources */,
 				C9D2C8412A320AA000D15901 /* ServiceItem.swift in Sources */,
 				C9D2C8422A320AA000D15901 /* ErrorPresentable.swift in Sources */,
 				C9D2C8432A320AA000D15901 /* DWPinInputStepView.m in Sources */,
 				C9D2C8452A320AA000D15901 /* DWRecoverViewController.m in Sources */,
-				C9D2C8462A320AA000D15901 /* DWDPAmountContactView.m in Sources */,
 				C9D2C8472A320AA000D15901 /* DWBaseTransactionListDataProvider.m in Sources */,
 				75AA33D92BFB4A5A00F12465 /* Extensions.swift in Sources */,
 				75FEC6B32CE0C71700F87B48 /* DWUsernamePendingViewController.m in Sources */,
@@ -10293,14 +9848,12 @@
 				C9D2C84D2A320AA000D15901 /* ShortcutCell.swift in Sources */,
 				75B3C1B32E36100100CAFE06 /* ShortcutCustomizeBannerView.swift in Sources */,
 				75B3C1A32E36100100CAFE03 /* ShortcutSelectionView.swift in Sources */,
-				C943B4BB2A40A54600AF23C5 /* DWRequestsViewController.m in Sources */,
 				C9D2C84F2A320AA000D15901 /* UIColor+DWStyle.m in Sources */,
 				C9D2C8502A320AA000D15901 /* DWEnvironment.m in Sources */,
 				C9D2C8512A320AA000D15901 /* AtmItemCell.swift in Sources */,
 				C9D2C8522A320AA000D15901 /* CoinbaseService.swift in Sources */,
 				C9D2C8532A320AA000D15901 /* DWControllerCollectionView.m in Sources */,
 				C9D2C8542A320AA000D15901 /* SFSafariViewController+DashWallet.m in Sources */,
-				C943B4F82A40A54600AF23C5 /* DWDPPendingRequestObject.m in Sources */,
 				C9D2C8562A320AA000D15901 /* TransactionItemView.swift in Sources */,
 				C9D2C8572A320AA000D15901 /* UIView+Reuse.swift in Sources */,
 				C9D2C8582A320AA000D15901 /* DWUpholdClient.m in Sources */,
@@ -10327,9 +9880,7 @@
 				75CDD7812C0898E400F433D2 /* Shape.swift in Sources */,
 				756FE7082CDCBBC800E6C195 /* UsernameValidationRuleResult.swift in Sources */,
 				75FFD6B92BF47BA20032879E /* HomeViewController.swift in Sources */,
-				C943B5322A40A54600AF23C5 /* DWNotificationsInvitationCell.m in Sources */,
 				C9D2C86C2A320AA000D15901 /* ModalNavigationController.swift in Sources */,
-				C943B5032A40A54600AF23C5 /* DWDPGenericImageItemView.m in Sources */,
 				C943B58F2A40ED6F00AF23C5 /* DWCheckExistenceUsernameValidationRule.m in Sources */,
 				C9D2C86E2A320AA000D15901 /* TransferAmountModel.swift in Sources */,
 				C9D2C86F2A320AA000D15901 /* NavigationBarAppearanceCustomizable.swift in Sources */,
@@ -10369,7 +9920,6 @@
 				C9D2C8902A320AA000D15901 /* MerchantItemCell.swift in Sources */,
 				C9D2C8912A320AA000D15901 /* PaymentMethodCell.swift in Sources */,
 				C9D2C8932A320AA000D15901 /* CBUserManager.swift in Sources */,
-				C943B5082A40A54600AF23C5 /* DWDPTxListCell.m in Sources */,
 				75FFD6BC2BF48DF80032879E /* HomeViewController+JailbreakCheck.swift in Sources */,
 				C9D2C8942A320AA000D15901 /* DerivationPathKeysHeaderView.swift in Sources */,
 				75387B4B2E0400C300BCCC72 /* MerchantDenominations.swift in Sources */,
@@ -10386,7 +9936,6 @@
 				7569D6872DE6DB2200768BFF /* ExploreHeaderView.swift in Sources */,
 				C9D2C89D2A320AA000D15901 /* SyncingAlertContentView.swift in Sources */,
 				C9D2C89E2A320AA000D15901 /* AddressUserInfo.swift in Sources */,
-				C943B5062A40A54600AF23C5 /* UICollectionView+DWDPItemDequeue.m in Sources */,
 				C9D2C8A02A320AA000D15901 /* SendCoinsService.swift in Sources */,
 				C9D2C8A12A320AA000D15901 /* ShortcutAction.swift in Sources */,
 				C956AF112A5B592E002FAB75 /* UIButton+Dash.swift in Sources */,
@@ -10399,8 +9948,6 @@
 				C9D2C8A82A320AA000D15901 /* CrowdNodeError.swift in Sources */,
 				C9D2C8A92A320AA000D15901 /* WithdrawalLimit.swift in Sources */,
 				7569D6842DE6DA6800768BFF /* ExploreViewController.swift in Sources */,
-				C943B4B12A40A54600AF23C5 /* DWBaseContactsViewController.m in Sources */,
-				C943B5302A40A54600AF23C5 /* DWNotificationsFetchedDataSource.m in Sources */,
 				C9D2C8AA2A320AA000D15901 /* DWPayModel.m in Sources */,
 				C943B54B2A40B52F00AF23C5 /* UIView+DWAutolayout.m in Sources */,
 				C943B3332A408CED00AF23C5 /* DWTextFieldFormCellModel.m in Sources */,
@@ -10428,11 +9975,9 @@
 				C9D2C8C12A320AA000D15901 /* DWDashPayModel.m in Sources */,
 				C943B5912A40ED7B00AF23C5 /* DWUsernameValidationView.m in Sources */,
 				C9D2C8C22A320AA000D15901 /* TransactionObserver.swift in Sources */,
-				C943B4EB2A40A54600AF23C5 /* DWModalUserProfileViewController.m in Sources */,
 				C9D2C8C32A320AA000D15901 /* DWInfoTextCell.m in Sources */,
 				7569D68A2DE6DB6700768BFF /* ExploreContentsView.swift in Sources */,
 				C943B50D2A40A54600AF23C5 /* DWConfirmInvitationViewController.m in Sources */,
-				C943B4F62A40A54600AF23C5 /* DWDPContactObject.m in Sources */,
 				C9D2C8C42A320AA000D15901 /* ColorizedText.swift in Sources */,
 				75EAFBB22B04C057005ABC6A /* CustomHUDView.swift in Sources */,
 				C9D2C8C72A320AA000D15901 /* PaymentsViewController.swift in Sources */,
@@ -10447,7 +9992,6 @@
 				C9D2C8D12A320AA000D15901 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				752D03B32E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift in Sources */,
 				C9D2C8D22A320AA000D15901 /* CoinbaseAPIClient.swift in Sources */,
-				C943B4ED2A40A54600AF23C5 /* DWPendingContactInfoView.m in Sources */,
 				C9D2C8D32A320AA000D15901 /* SendAmountViewController.swift in Sources */,
 				757514E02B15D8DE0026AD8E /* VotingConstants.swift in Sources */,
 				C943B51E2A40A54600AF23C5 /* InvitationTopView.swift in Sources */,
@@ -10465,7 +10009,6 @@
 				C9D2C8DF2A320AA000D15901 /* NetworkUnavailableView.swift in Sources */,
 				C9D2C8E02A320AA000D15901 /* BuildFile in Sources */,
 				751B61C32ADFF9AE00D1C2EF /* UpholdPortalModel.swift in Sources */,
-				C943B4FC2A40A54600AF23C5 /* DWDPEstablishedContactNotificationObject.m in Sources */,
 				C9D2C8E12A320AA000D15901 /* DWLockScreenViewController.m in Sources */,
 				C9D2C8E22A320AA000D15901 /* UpholdTransferViewController.swift in Sources */,
 				C943B31E2A408CED00AF23C5 /* DWUserProfileModalQRContentView.m in Sources */,
@@ -10483,7 +10026,6 @@
 				C9D2C8EB2A320AA000D15901 /* DWAboutModel.m in Sources */,
 				A5D5DD000000000000000205 /* DWAboutModel+MasternodeSync.swift in Sources */,
 				753261AE2CBC1040003CDE00 /* InvitationFlowViewController.swift in Sources */,
-				C943B4B52A40A54600AF23C5 /* DWContactsFetchedDataSource.m in Sources */,
 				C9D2C8EE2A320AA000D15901 /* WelcomeToCrowdNodeViewController.swift in Sources */,
 				C943B3282A408CED00AF23C5 /* DWAvatarEditSelectorContentView.m in Sources */,
 				7573C2E52B01120B00F4C347 /* MasternodeKey.swift in Sources */,

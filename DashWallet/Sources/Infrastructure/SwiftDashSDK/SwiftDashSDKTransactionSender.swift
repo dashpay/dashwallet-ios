@@ -91,7 +91,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
                   let network = SwiftDashSDKHost.shared.runningNetwork else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
-            let core = try wallet.coreWallet()
             // Build + sign a standard BIP44 payment via the core
             // TransactionBuilder. `setFunding` auto-selects inputs and routes
             // change to the account's next internal address (single tx — normal
@@ -100,8 +99,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
             for recipient in recipients {
                 try builder.addOutput(address: recipient.address, amountDuffs: recipient.amountDuffs)
             }
-            try builder.setFunding(wallet: core, accountType: .bip44, accountIndex: 0)
-            return try builder.buildSigned(wallet: core, accountType: .bip44, accountIndex: 0)
+            try builder.setFunding(wallet: wallet, accountType: .bip44, accountIndex: 0)
+            return try builder.buildSigned(wallet: wallet, accountType: .bip44, accountIndex: 0)
         }
 
         let tx: CoreTransaction
@@ -179,7 +178,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 do {
                     let builder = try CoreTransactionBuilder(network: network)
                     try builder.addInputs(
-                        wallet: core, accountType: .coinJoin,
+                        wallet: wallet, accountType: .coinJoin,
                         accountIndex: Self.coinJoinAccountIndex, utxos: chunk)
                     try builder.setSelectionStrategy(.all)
                     try builder.setFeeRate(satPerKb: Self.feeRateSatPerKb)
@@ -187,7 +186,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     // wallet's last_processed_height, overriding anything set here.
                     try builder.addOutput(address: address, amountDuffs: 0)
                     let tx = try builder.buildSigned(
-                        wallet: core, accountType: .coinJoin,
+                        wallet: wallet, accountType: .coinJoin,
                         accountIndex: Self.coinJoinAccountIndex)
                     _ = try core.broadcastTransaction(tx)
                     // Wire (internal) byte order to match `Transaction.txHashData` /
@@ -301,7 +300,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             let core = try wallet.coreWallet()
             let builder = try CoreTransactionBuilder(network: network)
             try builder.addInputs(
-                wallet: core, accountType: .bip44,
+                wallet: wallet, accountType: .bip44,
                 accountIndex: Self.bip44AccountIndex, utxos: utxos)
             try builder.addOutput(address: address, amountDuffs: sendAmount)
             // Required with `addInputs` (`setFunding` is what normally routes
@@ -310,7 +309,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             try builder.setChangeAddress(fromAddress)
             try builder.setFeeRate(satPerKb: Self.feeRateSatPerKb)
             let tx = try builder.buildSigned(
-                wallet: core, accountType: .bip44, accountIndex: Self.bip44AccountIndex)
+                wallet: wallet, accountType: .bip44, accountIndex: Self.bip44AccountIndex)
             _ = try core.broadcastTransaction(tx)
             return (tx.data, tx.fee)
         }

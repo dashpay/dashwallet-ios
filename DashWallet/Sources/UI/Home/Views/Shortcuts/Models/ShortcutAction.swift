@@ -42,15 +42,26 @@ enum ShortcutActionType: Int {
     case coinbase
     case uphold
     case topper
+    // Appended last: raw values persist in DWGlobalOptions.shortcuts,
+    // so inserting mid-enum would silently remap saved configurations.
+    case getTestDash
 }
 
 extension ShortcutActionType {
-    /// The 13 features available for shortcut bar customization
-    static let customizableActions: [ShortcutActionType] = [
-        .buySellDash, .explore, .spend, .atm, .receive,
-        .send, .scanToPay, .payToAddress,
-        .crowdNode, .coinbase, .uphold, .topper
-    ]
+    /// The features available for shortcut bar customization. Computed
+    /// (not stored) because the faucet entry follows the runtime
+    /// network — it appears only while the wallet is on testnet.
+    static var customizableActions: [ShortcutActionType] {
+        var actions: [ShortcutActionType] = [
+            .buySellDash, .explore, .spend, .atm, .receive,
+            .send, .scanToPay, .payToAddress,
+            .crowdNode, .coinbase, .uphold, .topper
+        ]
+        if WalletEnvironment.isTestnet {
+            actions.insert(.getTestDash, at: 0)
+        }
+        return actions
+    }
 
     var icon: UIImage {
         switch self {
@@ -151,6 +162,11 @@ extension ShortcutActionType {
                 fatalError("Image not found for shortcut type: \(self)")
             }
             return image
+        case .getTestDash:
+            guard let image = UIImage(named: "shortcut_getTestDash") else {
+                fatalError("Image not found for shortcut type: \(self)")
+            }
+            return image
         default:
             fatalError("Image not found for shortcut type: \(self)")
         }
@@ -210,6 +226,8 @@ extension ShortcutActionType {
             return NSLocalizedString("Uphold", comment: "Translate it as short as possible! (24 symbols max)")
         case .topper:
             return NSLocalizedString("Topper", comment: "Translate it as short as possible! (24 symbols max)")
+        case .getTestDash:
+            return NSLocalizedString("1 tDash", comment: "Translate it as short as possible! (24 symbols max)")
         }
     }
 }

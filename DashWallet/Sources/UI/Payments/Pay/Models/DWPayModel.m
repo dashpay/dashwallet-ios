@@ -139,12 +139,6 @@ NS_ASSUME_NONNULL_BEGIN
     return [self.inputBuilder paymentInputWithURL:url];
 }
 
-#if DASHPAY
-- (DWPaymentInput *)paymentInputWithUser:(id<DWDPBasicUserItem>)userItem {
-    return [self.inputBuilder paymentInputWithUserItem:userItem];
-}
-#endif
-
 #pragma mark - NFCNDEFReaderSessionDelegate
 
 - (void)readerSession:(nonnull NFCNDEFReaderSession *)session didDetectNDEFs:(nonnull NSArray<NFCNDEFMessage *> *)messages {

@@ -684,12 +684,20 @@ extension HomeViewModel {
 
     func reloadShortcuts() {
         let options = DWGlobalOptions.sharedInstance()
+        let isTestnet = WalletEnvironment.isTestnet
 
         // Check for custom configuration first
         if let customShortcuts = options.shortcuts,
            customShortcuts.count == maxShortcutsCount {
             let items = customShortcuts.compactMap { number -> ShortcutAction? in
-                guard let type = ShortcutActionType(rawValue: number.intValue) else { return nil }
+                guard var type = ShortcutActionType(rawValue: number.intValue) else { return nil }
+                // A faucet shortcut saved on testnet degrades to Spend
+                // after a switch to mainnet (no mainnet faucet exists);
+                // the saved config is untouched, so it comes back when
+                // the user returns to testnet.
+                if type == .getTestDash && !isTestnet {
+                    type = .spend
+                }
                 return ShortcutAction(type: type)
             }
             if items.count == maxShortcutsCount {
@@ -703,6 +711,9 @@ extension HomeViewModel {
         // Fall back to default state-based logic
         let walletNeedsBackup = options.walletNeedsBackup
         let userHasBalance = options.userHasBalance
+        // On testnet the last default slot offers the faucet instead of
+        // Spend — test Dash is what a testnet wallet actually needs.
+        let lastSlot: ShortcutActionType = isTestnet ? .getTestDash : .spend
 
         var mutableItems = [ShortcutAction]()
         mutableItems.reserveCapacity(maxShortcutsCount)
@@ -712,28 +723,28 @@ extension HomeViewModel {
             mutableItems.append(ShortcutAction(type: .secureWallet))
             mutableItems.append(ShortcutAction(type: .receive))
             mutableItems.append(ShortcutAction(type: .buySellDash))
-            mutableItems.append(ShortcutAction(type: .spend))
+            mutableItems.append(ShortcutAction(type: lastSlot))
         }
         // State 2: Zero balance and verified passphrase
         else if !userHasBalance && !walletNeedsBackup {
             mutableItems.append(ShortcutAction(type: .receive))
             mutableItems.append(ShortcutAction(type: .send))
             mutableItems.append(ShortcutAction(type: .buySellDash))
-            mutableItems.append(ShortcutAction(type: .spend))
+            mutableItems.append(ShortcutAction(type: lastSlot))
         }
         // State 3: Has balance and verified passphrase
         else if userHasBalance && !walletNeedsBackup {
             mutableItems.append(ShortcutAction(type: .receive))
             mutableItems.append(ShortcutAction(type: .send))
             mutableItems.append(ShortcutAction(type: .scanToPay))
-            mutableItems.append(ShortcutAction(type: .spend))
+            mutableItems.append(ShortcutAction(type: lastSlot))
         }
         // State 4: Has balance and not verified passphrase
         else if userHasBalance && walletNeedsBackup {
             mutableItems.append(ShortcutAction(type: .secureWallet))
             mutableItems.append(ShortcutAction(type: .receive))
             mutableItems.append(ShortcutAction(type: .send))
-            mutableItems.append(ShortcutAction(type: .spend))
+            mutableItems.append(ShortcutAction(type: lastSlot))
         }
 
         DispatchQueue.main.async {
@@ -887,15 +898,10 @@ extension HomeViewModel {
             .sink { [weak self] _ in
                 self?.checkJoinDashPay()
                 self?.reloadTxsAndShortcuts()
-                DWDashPayContactsUpdater.sharedInstance().beginUpdating()
+                // Row #18: contact syncing is owned by the SDK DashPay
+                // sync loop (PlatformAddressSyncCoordinator).
             }
             .store(in: &cancellableBag)
-        
-        // TODO: update notifications
-//        NotificationCenter.default.addObserver(self,
-//                                               selector: #selector(updateHeaderView),
-//                                               name:NSNotification.Name.DWNotificationsProviderDidUpdate,
-//                                               object:nil);
     }
 }
 #endif

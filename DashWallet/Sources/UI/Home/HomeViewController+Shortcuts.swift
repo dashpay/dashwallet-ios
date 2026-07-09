@@ -18,6 +18,7 @@
 import UIKit
 import SafariServices
 import SwiftUI
+import SwiftDashSDK
 
 extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreViewControllerDelegate {
     func performAction(for action: ShortcutAction, sender: UIView?) {
@@ -68,6 +69,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
             showUphold()
         case .topper:
             showTopper()
+        case .getTestDash:
+            showTestnetFaucet()
         }
     }
 
@@ -163,10 +166,10 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
 
     private func showSendToContact() {
         #if DASHPAY
-        // TODO: wire this up via the payments controller. DWContactsViewController
-        // requires initWithPayModel:dataProvider: and a payDelegate that conforms to
-        // DWContactsViewControllerPayDelegate (PayViewController does, HomeViewController
-        // does not). See PayableViewController.performPayToDashPayUser(with:delegate:).
+        // Row #18: open the SwiftUI contacts screen; paying happens
+        // from a contact's profile sheet (WalletSendService.sendToContact).
+        let controller = UIHostingController(rootView: ContactsScreen())
+        present(controller, animated: true)
         #endif
     }
 
@@ -217,6 +220,55 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
         let urlString = TopperViewModel.shared.topperBuyUrl(walletName: bundleName)
         guard let url = URL(string: urlString) else { return }
         let safariViewController = SFSafariViewController.dw_controller(with: url)
+        present(safariViewController, animated: true)
+    }
+
+    /// Testnet faucet, driven fully in-app (same flow as SwiftExampleApp's
+    /// ReceiveAddressView): the SDK's `TestnetFaucet` client solves the
+    /// faucet's soft cap.js proof-of-work on-device and posts the wallet's
+    /// receive address to `/api/core-faucet` — 1 tDash arrives without
+    /// leaving the app. On rate limit or any failure it falls back to the
+    /// legacy behavior: copy the address, open the web faucet, and say why.
+    private func showTestnetFaucet() {
+        guard WalletEnvironment.isTestnet else { return }
+        guard let address = SwiftDashSDKReceiveAddressReader.receiveAddress() else {
+            openWebFaucetFallback(address: nil, reason: nil)
+            return
+        }
+
+        view.dw_showProgressHUD(withMessage: NSLocalizedString("Requesting tDash…", comment: "Testnet faucet"))
+        Task { @MainActor in
+            let outcome = await TestnetFaucet().requestCoreDash(address: address)
+            self.view.dw_hideProgressHUD()
+            switch outcome {
+            case .sent(_, let amount):
+                let dash = amount == amount.rounded()
+                    ? String(format: "%.0f", amount)
+                    : String(format: "%.4f", amount)
+                self.view.dw_showInfoHUD(
+                    withText: String(
+                        format: NSLocalizedString("%@ tDash requested — it will arrive shortly", comment: "Testnet faucet"),
+                        dash),
+                    offsetForNavBar: true)
+            case .rateLimited(let message):
+                self.openWebFaucetFallback(address: address, reason: message)
+            case .failed(let reason):
+                self.openWebFaucetFallback(address: address, reason: reason)
+            }
+        }
+    }
+
+    /// Web fallback for rate-limit/failure: copy the receive address (the
+    /// faucet page doesn't prefill it) and open the faucet in-app. The
+    /// reason is logged, not toasted — the Safari sheet covers the HUD.
+    private func openWebFaucetFallback(address: String?, reason: String?) {
+        if let reason {
+            DWLogger.log("Faucet: falling back to web — \(reason)")
+        }
+        if let address {
+            UIPasteboard.general.string = address
+        }
+        let safariViewController = SFSafariViewController.dw_controller(with: TestnetFaucet.webURL)
         present(safariViewController, animated: true)
     }
 

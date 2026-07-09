@@ -106,13 +106,10 @@ class InvitationSourceItem: NSObject, UIActivityItemSource
     }
     
     @objc func profileAction() {
-        let item = DWDPUserObject(blockchainIdentity: invitation.identity)
-        let payModel = DWPayModel()
-        //TODO: DashPay
-//        let dataProvider = DWTransactionListDataProviderStub()
-//
-//        let profileController = DWUserProfileViewController(item: item, payModel: payModel, dataProvider: dataProvider, shouldSkipUpdating: true, shownAfterPayment: false)
-//        self.navigationController?.pushViewController(profileController, animated: true)
+        // Row #18: the legacy DWUserProfileViewController push was
+        // already dead here (commented out pre-migration) and the
+        // DWDP item hierarchy is retired; invitations stay on
+        // DashSync per Row #16, so this remains a no-op.
     }
     
     //MARK: Hierarchy

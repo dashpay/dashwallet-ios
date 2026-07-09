@@ -171,6 +171,15 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         snapshot.identityIdHex
     }
 
+    /// Raw 32-byte identity ID, or nil when no identity is registered.
+    /// Swift-only (SDK APIs take `Identifier` = `Data`); Obj-C callers
+    /// use `identityIdHex`. Added for the contacts service (Row #18),
+    /// which passes it as `ownerIdentityId` into the SwiftData
+    /// predicates and `ManagedPlatformWallet` contact calls.
+    public var identityId: Data? {
+        snapshot.identityId
+    }
+
     /// Display title preferring `displayName`, falling back to
     /// `username`. Nil only when no identity exists at all.
     @objc public var displayTitle: String? {
