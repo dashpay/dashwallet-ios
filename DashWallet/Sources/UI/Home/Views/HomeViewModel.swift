@@ -133,6 +133,20 @@ class HomeViewModel: ObservableObject {
                 self?.clearCachedData()
             }
             .store(in: &cancellableBag)
+
+        // A runtime wallet switch rebinds the host to a different wallet on the
+        // SAME network. The cached tx items belong to the old wallet, so treat
+        // it exactly like a network switch: drop the caches and reload the new
+        // wallet's tx list (SwiftDashSDKWalletSource reads the host's now-active
+        // wallet). The balance-driven reloads don't cover this — the balance
+        // notifications the switch posts can carry the same total, and their
+        // observers don't clear the stale per-hash cache.
+        NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.clearCachedData()
+            }
+            .store(in: &cancellableBag)
     }
 
     /// Clears all cached transaction data when switching networks

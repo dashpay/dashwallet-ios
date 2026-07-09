@@ -125,6 +125,17 @@ final class SwiftDashSDKWalletWiper: NSObject {
         for walletId in walletIds {
             try? storage.deleteMnemonic(for: walletId)
         }
+        // Clear the per-network active-wallet registry. The wipe removes ALL
+        // wallets (mnemonics are network-agnostic — one keychain entry backs a
+        // wallet on every network), so every network's recorded active id now
+        // points at nothing. Phase 0's `resolveActiveWallet` fallback would
+        // mask a stale id, but clearing it keeps the registry honest — a
+        // wallet created afterwards resolves as `firstWallet` and re-pins
+        // itself rather than briefly matching a dead id. UserDefaults-only, so
+        // safe from this background queue.
+        WalletEnvironment.setActiveWalletId(nil, for: .mainnet)
+        WalletEnvironment.setActiveWalletId(nil, for: .testnet)
+
         logger.info("wiped \(walletIds.count) wallet(s) from SwiftDashSDK")
 
         // Tear down the app-owned runtime now that all wallet material is

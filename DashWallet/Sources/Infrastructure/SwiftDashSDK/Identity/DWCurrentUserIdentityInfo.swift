@@ -118,6 +118,15 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             selector: #selector(handleInvalidationNotification(_:)),
             name: DWIdentityRegistrationBridge.stateChangedNotification,
             object: nil)
+        // A runtime wallet switch rebinds the host to a different wallet whose
+        // identity/username is entirely different (or absent). Invalidate so
+        // the next read rebuilds the snapshot from the new wallet's
+        // `PersistentIdentity` rows instead of serving the old wallet's cache.
+        center.addObserver(
+            self,
+            selector: #selector(handleInvalidationNotification(_:)),
+            name: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
+            object: nil)
     }
 
     // MARK: - Obj-C / Swift read API
