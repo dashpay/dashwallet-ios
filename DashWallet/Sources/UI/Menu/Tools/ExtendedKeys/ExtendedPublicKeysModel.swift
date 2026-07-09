@@ -19,28 +19,18 @@ import Foundation
 
 // MARK: - ExtendedPublicKeysModel
 
+@MainActor
 final class ExtendedPublicKeysModel {
-    let derivationPaths: [DSDerivationPath]
+    /// The SDK wallet's BIP44 account-0 extended public key (xpub/tpub
+    /// base58check, serialized by the SDK), or `nil` when the wallet runtime
+    /// isn't up or the derivation fails — the sheet shows "Not available".
+    let bip44AccountXpub: String?
 
     init() {
-        let currentAccount = DWEnvironment.sharedInstance().currentAccount
-        derivationPaths = currentAccount.fundDerivationPaths ?? []
-    }
-}
-
-extension DSDerivationPath {
-    var item: DerivationPathKeysItem {
-        let title: String
-
-        if let dp = self as? DSIncomingFundsDerivationPath,
-           let username = dp.contactDestinationBlockchainIdentity.currentDashpayUsername {
-            title = username
-        } else {
-            title = referenceName
+        guard let (_, wallet, _) = SwiftDashSDKHost.shared.derivationWallet() else {
+            bip44AccountXpub = nil
+            return
         }
-
-        let value = serializedExtendedPublicKey() ?? NSLocalizedString("Not available", comment: "")
-
-        return DerivationPathKeysItem(title: title, value: value)
+        bip44AccountXpub = try? wallet.getAccountXpub(accountIndex: 0)
     }
 }

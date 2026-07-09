@@ -22,6 +22,7 @@ import UIKit
 
 // MARK: - ExtendedPublicKeySheetViewModel
 
+@MainActor
 class ExtendedPublicKeySheetViewModel: ObservableObject {
     @Published var keyValue: String = ""
     @Published var qrImage: UIImage? = nil
@@ -32,8 +33,8 @@ class ExtendedPublicKeySheetViewModel: ObservableObject {
 
     private func loadKey() {
         let model = ExtendedPublicKeysModel()
-        guard let firstPath = model.derivationPaths.first else { return }
-        keyValue = firstPath.item.value
+        guard let xpub = model.bip44AccountXpub else { return }
+        keyValue = xpub
         qrImage = generateQRCode(from: keyValue)
     }
 
