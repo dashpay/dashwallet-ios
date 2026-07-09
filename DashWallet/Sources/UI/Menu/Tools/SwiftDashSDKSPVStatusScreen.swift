@@ -65,8 +65,9 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 VStack(alignment: .leading, spacing: 16) {
                     stateBadgeCard
                     progressCard
-                    peersCard
+                    heightsCard
                     perPhaseCard
+                    connectedPeersCard
                     if let lastError = coordinator.lastError {
                         errorCard(message: lastError)
                     }
@@ -126,7 +127,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
         .cornerRadius(12)
     }
 
-    private var peersCard: some View {
+    private var heightsCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             row(title: "Tip height", value: "\(coordinator.tipHeight)")
             row(title: "Best peer height", value: "\(coordinator.bestPeerHeight)")
@@ -134,6 +135,71 @@ struct SwiftDashSDKSPVStatusScreen: View {
         .padding(16)
         .background(Color.secondaryBackground)
         .cornerRadius(12)
+    }
+
+    private var connectedPeersCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Connected Peers")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.primaryText)
+                Spacer()
+                Text("\(coordinator.connectedPeers.count)")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.primaryText)
+                    .monospacedDigit()
+            }
+            .padding(.bottom, 4)
+
+            if coordinator.connectedPeers.isEmpty {
+                Text("No peers connected")
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+            } else {
+                ForEach(coordinator.connectedPeers) { peer in
+                    HStack {
+                        Text(peer.address)
+                            .font(.system(size: 13))
+                            .foregroundColor(.primaryText)
+                            .monospacedDigit()
+                            .lineLimit(1)
+                        Spacer()
+                        peerBadge(peer.nodeType)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(Color.secondaryBackground)
+        .cornerRadius(12)
+    }
+
+    private func peerBadge(_ nodeType: PlatformSpvPeerNodeType) -> some View {
+        Text(peerBadgeLabel(nodeType))
+            .font(.system(size: 11, weight: .semibold))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(peerBadgeColor(nodeType).opacity(0.15))
+            .foregroundColor(peerBadgeColor(nodeType))
+            .cornerRadius(6)
+    }
+
+    private func peerBadgeLabel(_ nodeType: PlatformSpvPeerNodeType) -> String {
+        switch nodeType {
+        case .evonode:    return "Evonode"
+        case .masternode: return "Masternode"
+        case .normal:     return "Node"
+        case .unknown:    return "Unclassified"
+        }
+    }
+
+    private func peerBadgeColor(_ nodeType: PlatformSpvPeerNodeType) -> Color {
+        switch nodeType {
+        case .evonode:    return .purple
+        case .masternode: return .blue
+        case .normal:     return .gray
+        case .unknown:    return .orange
+        }
     }
 
     private var perPhaseCard: some View {
