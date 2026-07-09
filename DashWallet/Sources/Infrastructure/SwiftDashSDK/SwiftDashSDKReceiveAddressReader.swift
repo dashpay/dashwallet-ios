@@ -67,9 +67,10 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
     @objc
     static func isAddressUsed(_ address: String) -> Bool {
         onMain {
-            guard let container = SwiftDashSDKHost.shared.modelContainer else { return false }
+            guard let container = SwiftDashSDKHost.shared.modelContainer,
+                  let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return false }
             var descriptor = FetchDescriptor<PersistentTxo>(
-                predicate: #Predicate { $0.address == address })
+                predicate: #Predicate { $0.address == address && $0.walletId == walletId })
             descriptor.fetchLimit = 1
             let rows = (try? container.mainContext.fetch(descriptor)) ?? []
             return !rows.isEmpty
@@ -85,8 +86,23 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
     @objc(receivedTotalExcludingAddress:)
     static func receivedTotal(excludingAddress address: String) -> UInt64 {
         onMain {
-            guard let container = SwiftDashSDKHost.shared.modelContainer else { return 0 }
-            let descriptor = FetchDescriptor<PersistentTransaction>()
+            guard let container = SwiftDashSDKHost.shared.modelContainer,
+                  let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return 0 }
+            // Scope to the active wallet via the TXO join: `PersistentTransaction`
+            // carries no walletId, so gather the wallet's txids from its
+            // walletId-scoped TXO rows (producing + spending sides) and sum
+            // only those transactions' own outputs.
+            let txoDescriptor = FetchDescriptor<PersistentTxo>(
+                predicate: #Predicate { $0.walletId == walletId })
+            guard let txos = try? container.mainContext.fetch(txoDescriptor) else { return 0 }
+            var txids = Set<Data>()
+            for txo in txos {
+                if let producing = txo.transaction { txids.insert(producing.txid) }
+                if let spending = txo.spendingTransaction { txids.insert(spending.txid) }
+            }
+            guard !txids.isEmpty else { return 0 }
+            let descriptor = FetchDescriptor<PersistentTransaction>(
+                predicate: #Predicate { txids.contains($0.txid) })
             guard let rows = try? container.mainContext.fetch(descriptor) else { return 0 }
 
             var total: UInt64 = 0

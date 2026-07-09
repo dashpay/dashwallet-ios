@@ -275,6 +275,9 @@ final class SwiftDashSDKHost {
             throw HostError.mnemonicPersistenceFailed(error)
         }
 
+        if let kind = registryNetworkKind(for: network) {
+            WalletEnvironment.setActiveWalletId(createdWallet.walletId, for: kind)
+        }
         publish(handles: handles, wallet: createdWallet)
 
         let origin = isImported ? "imported" : "created"
@@ -360,12 +363,51 @@ final class SwiftDashSDKHost {
         network: Network
     ) throws -> ManagedPlatformWallet {
         let restored = try manager.loadFromPersistor()
-        if let first = manager.firstWallet {
+        if let resolved = resolveActiveWallet(in: manager, network: network) {
             Self.logger.info("🪺 HOST :: reusing persisted wallet; restored=\(restored.count, privacy: .public)")
-            return first
+            return resolved
         }
 
         throw HostError.walletNotFound(network)
+    }
+
+    /// `WalletEnvironment.NetworkKind` for the SDK `Network` — the app-side
+    /// key the active-wallet registry is scoped by. Only `.mainnet` /
+    /// `.testnet` reach the registry; `.devnet`/`.regtest` don't run a
+    /// persisted wallet (`buildRuntime` rejects `.regtest`), so they map to
+    /// `nil` and the resolver falls back to `firstWallet` without touching
+    /// the registry.
+    private func registryNetworkKind(for network: Network) -> WalletEnvironment.NetworkKind? {
+        switch network {
+        case .mainnet: return .mainnet
+        case .testnet: return .testnet
+        default: return nil
+        }
+    }
+
+    /// Resolve which loaded wallet is active for `network`: the persisted
+    /// `WalletEnvironment.activeWalletId` when it names a wallet the manager
+    /// currently holds, otherwise `firstWallet` (unset registry, or the
+    /// recorded wallet is gone). The resolved walletId is written back to the
+    /// registry so it's concrete after the first launch — including the
+    /// fallback, which pins the arbitrary-but-deterministic `firstWallet` as
+    /// the active choice going forward. Returns `nil` only when the manager
+    /// holds no wallets at all.
+    private func resolveActiveWallet(
+        in manager: PlatformWalletManager,
+        network: Network
+    ) -> ManagedPlatformWallet? {
+        let kind = registryNetworkKind(for: network)
+        if let kind,
+           let activeId = WalletEnvironment.activeWalletId(for: kind),
+           let active = manager.wallets[activeId] {
+            return active
+        }
+        guard let fallback = manager.firstWallet else { return nil }
+        if let kind {
+            WalletEnvironment.setActiveWalletId(fallback.walletId, for: kind)
+        }
+        return fallback
     }
 
     /// `walletNotFound` retry: re-create wallet rows from the keychain
@@ -401,9 +443,9 @@ final class SwiftDashSDKHost {
             }
         }
 
-        guard let first = handles.manager.firstWallet else { return nil }
+        guard let resolved = resolveActiveWallet(in: handles.manager, network: handles.network) else { return nil }
         Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); entries=\(entries.count, privacy: .public)")
-        return first
+        return resolved
     }
 
     private func publish(handles: RuntimeHandles, wallet resolvedWallet: ManagedPlatformWallet) {

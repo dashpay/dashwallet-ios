@@ -813,7 +813,8 @@ class SwiftDashSDKWalletSource: TransactionSource {
 
     @MainActor
     private static func fetchOnMain(txid: Data) -> Transaction? {
-        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+        guard let container = SwiftDashSDKHost.shared.modelContainer,
+              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
             return nil
         }
         var descriptor = FetchDescriptor<PersistentTransaction>(
@@ -822,17 +823,53 @@ class SwiftDashSDKWalletSource: TransactionSource {
         guard let row = (try? container.mainContext.fetch(descriptor))?.first else {
             return nil
         }
+        // Membership check: a tx the active wallet doesn't participate in
+        // (no TXO row denorm'd to its walletId, via either the producing
+        // `transaction` or the spending `spendingTransaction`) is not its
+        // transaction and reads as absent.
+        guard row.outputs.contains(where: { $0.walletId == walletId })
+            || row.inputs.contains(where: { $0.walletId == walletId }) else {
+            return nil
+        }
         let tx = Transaction(persistentTransaction: row)
         tx.sdkCoinJoinMixing = isCoinJoinMixingTx(row)
         return tx
     }
 
+    /// Every txid the active wallet participates in, recovered by the
+    /// TXO join `PersistentTransaction` deliberately can't express itself
+    /// (it has no walletId — one row is shared across wallets; see the
+    /// model doc). A wallet's TXO rows carry its walletId denorm; each row
+    /// names the wallet's transactions on both sides — the producing
+    /// `transaction` (funds in) and the `spendingTransaction` (funds out).
+    /// One walletId-scoped fetch per reload (not per transaction), so the
+    /// timeline stays a single indexed scan on large wallets.
+    @MainActor
+    private static func activeWalletTxids(
+        in container: ModelContainer,
+        walletId: Data
+    ) -> Set<Data> {
+        let descriptor = FetchDescriptor<PersistentTxo>(
+            predicate: #Predicate { $0.walletId == walletId })
+        guard let txos = try? container.mainContext.fetch(descriptor) else { return [] }
+        var txids = Set<Data>()
+        for txo in txos {
+            if let producing = txo.transaction { txids.insert(producing.txid) }
+            if let spending = txo.spendingTransaction { txids.insert(spending.txid) }
+        }
+        return txids
+    }
+
     @MainActor
     private static func fetchAndWrapOnMain() -> [Transaction] {
-        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+        guard let container = SwiftDashSDKHost.shared.modelContainer,
+              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
             return []
         }
+        let txids = activeWalletTxids(in: container, walletId: walletId)
+        guard !txids.isEmpty else { return [] }
         let descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { txids.contains($0.txid) },
             sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
         let rows: [PersistentTransaction]
         do {
