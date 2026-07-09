@@ -28,7 +28,6 @@
 #import "DWVersionManager.h"
 #import "DWWindow.h"
 #import "DWURLParser.h"
-#import "DWEnvironment.h"
 #import "dashwallet-Swift.h"
 #ifndef IGNORE_WATCH_TARGET
 #import "DWPhoneWCSessionManager.h"
@@ -307,13 +306,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
     [[DashSync sharedSyncController] setupDashSyncOnce];
 
-    [DWEnvironment sharedInstance]; //starts up the environment, this is needed here
-    
-#if FRESH_INSTALL
-    // TODO: fix. Disabled due to crashing :(
-//    [[DashSync sharedSyncController] wipeBlockchainDataForChain:[DWEnvironment sharedInstance].currentChain];
-#endif /* FRESH_INSTALL */
-    
     [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_Default];
     
     // TODO_outdated: bitcoin protocol/payment protocol over multipeer connectivity

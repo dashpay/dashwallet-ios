@@ -9,8 +9,8 @@
 //  DWWillWipeWalletNotification. Hooks NotificationCenter once at app
 //  launch — covers all 5 user-facing wipe entry points (Settings →
 //  Reset Wallet, lock screen emergency wipe, legacy PIN reset, etc.)
-//  because they all funnel through `[DWEnvironment clearAllWalletsAndRemovePin:]`
-//  which posts the notification at DWEnvironment.m:104.
+//  because they all funnel through `[DWEnvironment clearAllWalletsAndRemovePin:]`,
+//  which posts the notification before it wipes.
 //
 //  This file is intentionally decoupled from DashSync and from
 //  dashwallet-ios's own DWEnvironment header — it references the
@@ -36,9 +36,9 @@ final class SwiftDashSDKWalletWiper: NSObject {
     // MARK: - Notification name
 
     /// `DWWillWipeWalletNotification` posted by `[DWEnvironment
-    /// clearAllWalletsAndRemovePin:]` at `DWEnvironment.m:104` BEFORE
-    /// the actual wipe runs. Referenced by string literal here so this
-    /// file has zero DashSync (or DWEnvironment) imports.
+    /// clearAllWalletsAndRemovePin:]` BEFORE the actual wipe runs.
+    /// Referenced by string literal here so this file has zero DashSync
+    /// (or DWEnvironment) imports.
     private static let wipeNotificationName = NSNotification.Name("DWWillWipeWalletNotification")
 
     // MARK: - Observer keepalive
