@@ -67,6 +67,11 @@ class HomeViewModel: ObservableObject {
     /// Debounce timer for sync state changes to prevent excessive reloads (Fix #4)
     private var syncStateDebounceWorkItem: DispatchWorkItem?
     private let syncStateDebounceInterval: TimeInterval = 0.5
+
+    /// Funnel for every "wallet content changed, reload the tx list" trigger.
+    /// Throttled in `observeWallet()` so the save/balance notification storm
+    /// during sync coalesces into at most one full reload per interval.
+    private let txReloadRequests = PassthroughSubject<Void, Never>()
     
     @Published private(set) var txItems: [TransactionGroup] = []
     @Published var shortcutItems: [ShortcutAction] = []
@@ -129,6 +134,13 @@ class HomeViewModel: ObservableObject {
         self.setupMetadataProviders()
         self.onSyncStateChanged()
         self.recalculateHeight()
+
+        // First load right away — `onSyncStateChanged()` above only schedules
+        // one behind its 0.5s debounce, which reads as a visibly empty list
+        // at startup before the rows pop in. There's no notification storm to
+        // coalesce yet, and the fetch runs on `queue`, so this is safe to
+        // start immediately.
+        self.reloadTxsAndShortcuts()
 
         self.observeCoinJoinSweep()
         self.observeWallet()
@@ -207,9 +219,31 @@ class HomeViewModel: ObservableObject {
     }
     
     private func observeWallet() {
-        NotificationCenter.default.publisher(for: Notification.Name.fiatCurrencyDidChange)
+        // All reload triggers below funnel into this one throttled pipeline.
+        // During sync the persister saves a SwiftData batch several times per
+        // second (with a balance notification usually alongside), and each
+        // full reload is expensive — unthrottled, the storm kept the reload
+        // queue permanently busy and the list janky. `throttle` (not
+        // `debounce`) so a continuous save storm still repaints once per
+        // interval instead of starving until it ends; `latest: true`
+        // guarantees a trailing reload that picks up the final batch. A lone
+        // event (e.g. a received tx while idle) passes through immediately.
+        txReloadRequests
+            .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .sink { [weak self] _ in
                 self?.reloadTxsAndShortcuts()
+            }
+            .store(in: &cancellableBag)
+
+        // Each trigger hops to the main queue before `send()` — the
+        // notifications post from arbitrary threads (persister save thread,
+        // balance updates) and PassthroughSubject requires serialized sends.
+        // (DispatchQueue.main, not RunLoop.main: the latter is default-mode
+        // only and stalls delivery during scroll tracking.)
+        NotificationCenter.default.publisher(for: Notification.Name.fiatCurrencyDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.txReloadRequests.send()
             }
             .store(in: &cancellableBag)
 
@@ -221,20 +255,19 @@ class HomeViewModel: ObservableObject {
         // directly from SwiftData via SwiftDashSDKWalletSource and use this
         // notification as the reload trigger.
         NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                DWLogger.log("HomeViewModel: SwiftData saved, reloading tx list")
-                self?.reloadTxsAndShortcuts()
+                self?.txReloadRequests.send()
             }
             .store(in: &cancellableBag)
 
-        // Fix #5: Balance changes often indicate new transactions, so reload the full
-        // transaction list, not just shortcuts. This ensures newly received or sent
-        // transactions appear in the UI promptly.
+        // Balance changes often indicate new transactions, so reload the full
+        // transaction list, not just shortcuts. This ensures newly received or
+        // sent transactions appear in the UI promptly.
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                DWLogger.log("HomeViewModel: Wallet balance changed, reloading transactions and shortcuts")
-                self?.reloadTxsAndShortcuts()
+                self?.txReloadRequests.send()
             }
             .store(in: &cancellableBag)
         
@@ -273,10 +306,17 @@ class HomeViewModel: ObservableObject {
             // history so it doesn't flap with the current selection.
             let hasRewards = transactions.contains { $0.isCoinbaseTransaction }
 
+            // Snapshot each provider's metadata once per reload —
+            // `availableMetadata` copies the whole dictionary through the
+            // provider's serial queue, so reading it per-transaction costs
+            // O(n) queue hops + dictionary copies per reload.
+            let metadataSnapshots = self.metadataProviders.map { $0.availableMetadata }
+            let giftCardTxIds = Set(GiftCardMetadataProvider.shared.availableMetadata.keys)
+
             var items: [TransactionListDataItem] = transactions.compactMap { wrappedTx -> TransactionListDataItem? in
                 Tx.shared.updateRateIfNeeded(for: wrappedTx)
 
-                if !self.passesFilter(transaction: wrappedTx, selected: self.selectedFilters, hasRewards: hasRewards) {
+                if !self.passesFilter(transaction: wrappedTx, selected: self.selectedFilters, hasRewards: hasRewards, giftCardTxIds: giftCardTxIds) {
                     return nil
                 }
 
@@ -304,7 +344,7 @@ class HomeViewModel: ObservableObject {
                     }
                 }
 
-                return .tx(wrappedTx, self.resolveMetadata(for: wrappedTx.txHashData))
+                return .tx(wrappedTx, self.resolveMetadata(for: wrappedTx.txHashData, in: metadataSnapshots))
             }
 
             self.txByHash.removeAll()
@@ -652,12 +692,18 @@ extension HomeViewModel {
     }
     
     private func resolveMetadata(for txId: Data) -> TxRowMetadata? {
+        resolveMetadata(for: txId, in: metadataProviders.map { $0.availableMetadata })
+    }
+
+    /// `snapshots` holds one pre-copied `availableMetadata` per provider, in
+    /// provider (priority) order — full-reload loops snapshot once and reuse
+    /// across all transactions instead of re-copying per row.
+    private func resolveMetadata(for txId: Data, in snapshots: [[Data: TxRowMetadata]]) -> TxRowMetadata? {
         var finalMetadata: TxRowMetadata? = nil
 
         // Metadata will not be replaced if already found, so in case
         // of conflicts metadataProviders should be sorted by priority
-        for provider in self.metadataProviders {
-            let providerMetadata = provider.availableMetadata
+        for providerMetadata in snapshots {
             guard let metadata = providerMetadata[txId] else { continue }
             
             if finalMetadata == nil {
@@ -692,7 +738,11 @@ extension HomeViewModel {
     /// A selection covering every OFFERED category (rewards is offered only
     /// when `hasRewards`) is "All" and also admits txs that fit no category
     /// (internal transfers, CoinJoin mixing groups).
-    private func passesFilter(transaction: Transaction, selected: Set<TransactionFilterCategory>, hasRewards: Bool) -> Bool {
+    ///
+    /// `giftCardTxIds` is an optional pre-snapshotted key set for the
+    /// `.giftCard` category — full-reload loops pass it to avoid copying the
+    /// provider's dictionary per transaction; single-tx callers omit it.
+    private func passesFilter(transaction: Transaction, selected: Set<TransactionFilterCategory>, hasRewards: Bool, giftCardTxIds: Set<Data>? = nil) -> Bool {
         var offered = Set(TransactionFilterCategory.allCases)
         if !hasRewards {
             offered.remove(.rewards)
@@ -700,14 +750,14 @@ extension HomeViewModel {
         if selected.isSuperset(of: offered) {
             return true
         }
-        return !selected.isDisjoint(with: categories(of: transaction))
+        return !selected.isDisjoint(with: categories(of: transaction, giftCardTxIds: giftCardTxIds))
     }
 
     /// Categories a transaction belongs to. Overlaps are allowed (a gift-card
     /// purchase is also a sent tx); rewards and shielded receipts are carved
     /// out of received, mirroring how the old single-select filter separated
     /// rewards from receives.
-    private func categories(of transaction: Transaction) -> Set<TransactionFilterCategory> {
+    private func categories(of transaction: Transaction, giftCardTxIds: Set<Data>? = nil) -> Set<TransactionFilterCategory> {
         if transaction.isCoinbaseTransaction {
             return [.rewards]
         }
@@ -719,7 +769,8 @@ extension HomeViewModel {
         if isShieldedReceipt {
             categories.insert(.shieldedReceived)
         }
-        if GiftCardMetadataProvider.shared.availableMetadata[transaction.txHashData] != nil {
+        let ids = giftCardTxIds ?? Set(GiftCardMetadataProvider.shared.availableMetadata.keys)
+        if ids.contains(transaction.txHashData) {
             categories.insert(.giftCard)
         }
         switch transaction.direction {
@@ -848,11 +899,13 @@ protocol TransactionSource {
 /// for the existing UIKit + Combine home view: instead of `@Query`, we do
 /// a synchronous fetch and feed the existing `Transaction` wrapper.
 ///
-/// `SwiftDashSDKHost` is `@MainActor`-isolated; this getter is invoked
-/// from `HomeViewModel.queue` (a background dispatch queue), so the read
-/// trampolines through `DispatchQueue.main.sync`. The fetch itself is
-/// fast (<10ms for a few hundred rows), so blocking the worker queue
-/// briefly is acceptable.
+/// Threading: only the `@MainActor` host's handles (`modelContainer` +
+/// active `walletId`) are read through a brief main-thread hop. The fetch
+/// and the per-tx wrapping run on the CALLER's thread against a private
+/// `ModelContext`, so a full home-list reload never blocks the main
+/// thread mid-scroll. A private context reads the last SAVED state —
+/// which is exactly what the `NSManagedObjectContextDidSave` reload
+/// trigger guarantees is current.
 class SwiftDashSDKWalletSource: TransactionSource {
     var allTransactions: Array<Transaction> {
         Self.fetchAll().sorted { $0.date > $1.date }
@@ -862,20 +915,33 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// Safe from any thread. Shared read for every tx-history consumer that
     /// used to enumerate DashSync's `DSWallet.allTransactions`.
     static func fetchAll() -> [Transaction] {
-        onMain { fetchAndWrapOnMain() }
+        guard let (container, walletId) = hostHandles() else { return [] }
+        return fetchAndWrap(in: ModelContext(container), walletId: walletId)
     }
 
     /// Single transaction by txid (wire order — the same `Data` as
     /// `DSTransaction.txHashData`). Safe from any thread.
     static func fetch(txid: Data) -> Transaction? {
-        onMain { fetchOnMain(txid: txid) }
+        guard let (container, walletId) = hostHandles() else { return nil }
+        return fetchOne(txid: txid, in: ModelContext(container), walletId: walletId)
     }
 
-    /// Main-thread trampoline: `mainContext` and the `Transaction` wrapping
-    /// (the per-tx CoinJoin membership walk over SwiftData relationships —
-    /// outputs → coreAddress → account) are main-bound, while callers run on
-    /// background queues. Fetches are fast (<10ms for a few hundred rows), so
-    /// briefly blocking the worker queue is acceptable.
+    /// The host is `@MainActor`-isolated; grab its container + active-wallet
+    /// id in one brief main hop (two property reads — unlike the fetches,
+    /// cheap enough to block a worker queue on). `ModelContainer` is
+    /// `Sendable`, so the caller then opens its own `ModelContext` on its
+    /// own thread and all SwiftData work stays there.
+    private static func hostHandles() -> (container: ModelContainer, walletId: Data)? {
+        onMain {
+            guard let container = SwiftDashSDKHost.shared.modelContainer,
+                  let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
+                return nil
+            }
+            return (container, walletId)
+        }
+    }
+
+    /// Main-thread trampoline for the `@MainActor`-isolated host reads.
     private static func onMain<T>(_ body: @MainActor () -> T) -> T {
         if Thread.isMainThread {
             return MainActor.assumeIsolated(body)
@@ -885,16 +951,11 @@ class SwiftDashSDKWalletSource: TransactionSource {
         }
     }
 
-    @MainActor
-    private static func fetchOnMain(txid: Data) -> Transaction? {
-        guard let container = SwiftDashSDKHost.shared.modelContainer,
-              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
-            return nil
-        }
+    private static func fetchOne(txid: Data, in context: ModelContext, walletId: Data) -> Transaction? {
         var descriptor = FetchDescriptor<PersistentTransaction>(
             predicate: #Predicate { $0.txid == txid })
         descriptor.fetchLimit = 1
-        guard let row = (try? container.mainContext.fetch(descriptor))?.first else {
+        guard let row = (try? context.fetch(descriptor))?.first else {
             return nil
         }
         // Membership check: a tx the active wallet doesn't participate in
@@ -918,14 +979,13 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// `transaction` (funds in) and the `spendingTransaction` (funds out).
     /// One walletId-scoped fetch per reload (not per transaction), so the
     /// timeline stays a single indexed scan on large wallets.
-    @MainActor
     private static func activeWalletTxids(
-        in container: ModelContainer,
+        in context: ModelContext,
         walletId: Data
     ) -> Set<Data> {
         let descriptor = FetchDescriptor<PersistentTxo>(
             predicate: #Predicate { $0.walletId == walletId })
-        guard let txos = try? container.mainContext.fetch(descriptor) else { return [] }
+        guard let txos = try? context.fetch(descriptor) else { return [] }
         var txids = Set<Data>()
         for txo in txos {
             if let producing = txo.transaction { txids.insert(producing.txid) }
@@ -934,20 +994,15 @@ class SwiftDashSDKWalletSource: TransactionSource {
         return txids
     }
 
-    @MainActor
-    private static func fetchAndWrapOnMain() -> [Transaction] {
-        guard let container = SwiftDashSDKHost.shared.modelContainer,
-              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
-            return []
-        }
-        let txids = activeWalletTxids(in: container, walletId: walletId)
+    private static func fetchAndWrap(in context: ModelContext, walletId: Data) -> [Transaction] {
+        let txids = activeWalletTxids(in: context, walletId: walletId)
         guard !txids.isEmpty else { return [] }
         let descriptor = FetchDescriptor<PersistentTransaction>(
             predicate: #Predicate { txids.contains($0.txid) },
             sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
         let rows: [PersistentTransaction]
         do {
-            rows = try container.mainContext.fetch(descriptor)
+            rows = try context.fetch(descriptor)
         } catch {
             DWLogger.log("HomeViewModel: PersistentTransaction fetch failed: \(error)")
             return []
@@ -965,13 +1020,13 @@ class SwiftDashSDKWalletSource: TransactionSource {
 
     /// Account type owning a TXO — canonical path is `coreAddress?.account`;
     /// `account` is the fallback used before the address row is linked.
-    @MainActor
     private static func ownerAccountType(_ txo: PersistentTxo) -> UInt32? {
         (txo.coreAddress?.account ?? txo.account)?.accountType
     }
 
-    /// CoinJoin mixing-operation detection (main actor — traverses SwiftData
-    /// relationships). DashSync grouped by CoinJoin-account *role*, not tx
+    /// CoinJoin mixing-operation detection. Traverses SwiftData relationships,
+    /// so it must run on the thread that owns the row's `ModelContext` (the
+    /// fetch thread). DashSync grouped by CoinJoin-account *role*, not tx
     /// structure, so the SDK's structural `typedKind` (mixing rounds only) is
     /// too narrow. We classify a tx as a mixing operation when:
     ///   1. it DEPOSITS into the CoinJoin account (≥1 CoinJoin output) — covers
@@ -981,7 +1036,6 @@ class SwiftDashSDKWalletSource: TransactionSource {
     ///      collateral spend (the tiny "Sent 0.0001" txs). A Standard output
     ///      marks the CoinJoin→BIP44 sweep or an internal transfer out, which
     ///      must stay an individual row — matching DashSync's "Send" exclusion.
-    @MainActor
     private static func isCoinJoinMixingTx(_ p: PersistentTransaction) -> Bool {
         if p.typedKind == .coinJoin { return true }
         if p.outputs.contains(where: { ownerAccountType($0) == coinJoinAccountType }) {

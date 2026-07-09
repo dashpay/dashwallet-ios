@@ -26,8 +26,8 @@ import SwiftDashSDK
 /// stop/start (e.g. an SPV restart), which tears down the `ModelContainer` and
 /// resets its context; reading any model property afterwards traps ("instance
 /// was destroyed by calling ModelContext.reset"). Snapshotting every UI-read
-/// field at wrap time — on the main actor, while the model is alive — makes
-/// the wrapper immune to that teardown.
+/// field at wrap time — on the fetch thread, while the model is alive — makes
+/// the wrapper immune to that teardown (and thread-safe to hand around).
 class Transaction: TransactionDataItem, Identifiable {
     enum State {
         case ok
@@ -73,8 +73,9 @@ class Transaction: TransactionDataItem, Identifiable {
         /// the send intent (see the synthetic initializer).
         let externalSentAddresses: [String]
 
-        /// Must be called on the main actor — reads `p`'s relationships
-        /// (`outputs`/`inputs`), which are bound to the model-context actor.
+        /// Must be called on the thread that owns `p`'s `ModelContext` (the
+        /// fetch thread) — reads `p`'s relationships (`outputs`/`inputs`),
+        /// which are bound to that context.
         init(_ p: PersistentTransaction) {
             txid = p.txid
             direction = p.direction
@@ -118,12 +119,12 @@ class Transaction: TransactionDataItem, Identifiable {
     /// CoinJoin "mixing operation" flag — drives grouping into the single
     /// "Mixing Transactions" home-screen row.
     ///
-    /// Computed and cached on the MAIN actor at wrap time
-    /// (`SwiftDashSDKWalletSource.fetchAndWrapOnMain`), because deciding
-    /// membership traverses SwiftData relationships (outputs → coreAddress →
-    /// account) that are bound to the model-context actor and must not be read
-    /// from the background grouping queue. Defaults to false; the home tx source
-    /// is the sole producer of home-list wrappers and always populates it.
+    /// Computed and cached at wrap time on the fetch thread
+    /// (`SwiftDashSDKWalletSource.fetchAndWrap`), because deciding membership
+    /// traverses SwiftData relationships (outputs → coreAddress → account)
+    /// that are bound to the fetching `ModelContext` and must not be read
+    /// after the wrap. Defaults to false; the home tx source is the sole
+    /// producer of home-list wrappers and always populates it.
     var sdkCoinJoinMixing: Bool = false
 
     /// True only for CoinJoin mixing transactions. The flag is computed via
@@ -408,7 +409,7 @@ class Transaction: TransactionDataItem, Identifiable {
     }
 
     init(persistentTransaction p: PersistentTransaction) {
-        // Freeze every UI-read field now, on the main actor where `p`'s model
+        // Freeze every UI-read field now, on the thread where `p`'s model
         // context is alive. After this the wrapper never dereferences `p`
         // again, so it stays valid after a ModelContext reset (see SDKSnapshot).
         self.snapshot = SDKSnapshot(p)
