@@ -123,6 +123,7 @@ struct BuySellPortalView: View {
     private var swapKitCard: some View {
         VStack(spacing: 2) {
             menuItem(for: .swapKit, action: onSwapKit)
+                .accessibilityIdentifier("portal_swapkit")
         }
         .modifier(MenuCardStyle())
     }

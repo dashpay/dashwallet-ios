@@ -97,6 +97,7 @@ struct RefundAddressView: View {
             onScanQR: onScanQR
         )
         .padding(14)
+        .accessibilityIdentifier("buy_refund_field")
     }
 
     private func clipboardContentRow(_ content: String) -> some View {
@@ -135,6 +136,7 @@ struct RefundAddressView: View {
                 onContinue?(address)
             }
         )
+        .accessibilityIdentifier("buy_refund_continue")
     }
 }
 
