@@ -4,10 +4,8 @@
 //
 //  Immutable @objc record of one parsed payment string plus validity verdicts computed against
 //  the app's current network (`WalletEnvironment`). The interactive ObjC payment flow (QR scan,
-//  pasteboard/NFC, deeplink) reads THIS for every routing/validity decision; the `DSPaymentRequest`
-//  it travels with (`DWPaymentInput.request`) is a write-only courier that only feeds DashSync's
-//  protocol-request conversion, the sweep path, and the `userDetails` reconstruction — see
-//  `DWPaymentInput.attachParsedURI:` (C8 step 2; the conversion is step 4).
+//  pasteboard/NFC, deeplink) reads THIS for every routing/validity decision; its send-side
+//  projection is `DWPaymentIntent` — see `DWPaymentInput.attachParsedURI:`.
 //
 //  Parsing/validation live here and in the pure `BIP70URI` value type; this class only bridges to
 //  ObjC and pins the address verdict to the current network so the ObjC sites stop threading a

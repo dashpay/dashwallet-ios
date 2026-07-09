@@ -51,8 +51,7 @@ final class SendViewModel: ObservableObject {
     }
 
     func ingestScannedInput(_ paymentInput: DWPaymentInput) {
-        // Read the parse box, not the DSPaymentRequest courier (C8 step 4); `.address` is the same
-        // string the courier carried, then validated for the current network below.
+        // Read the parse box; `.address` is validated for the current network below.
         if let address = paymentInput.parsedURI?.address,
            !address.isEmpty,
            address.isValidDashAddressForCurrentNetwork {
