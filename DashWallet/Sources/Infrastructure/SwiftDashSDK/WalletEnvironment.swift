@@ -22,23 +22,15 @@ import SwiftDashSDK
 /// (One deliberate DashSync read remains: `hasWallet`'s migration-window
 /// union term — see its doc.)
 ///
-/// Reads the same persisted network selection `DWEnvironment` maintains —
-/// the `CURRENT_CHAIN_TYPE_KEY` UserDefaults integer holding a DashSync
-/// `ChainType_Tag` raw value (`0` mainnet / `1` testnet / `2` devnet;
-/// `dash_shared_core.h`) — so call sites that only need to know *which
-/// network the app is on* can stop touching the `DWEnvironment.currentChain`
-/// DashSync object graph.
+/// Owns the persisted network selection — the `CURRENT_CHAIN_TYPE_KEY`
+/// UserDefaults integer holding a DashSync `ChainType_Tag` raw value
+/// (`0` mainnet / `1` testnet / `2` devnet; `dash_shared_core.h`).
+/// `switchToNetwork(_:)` is the sole writer of the key; everything else here
+/// is a static reader. A stored devnet value is reported as-is (devnet ⇒
+/// `network == nil`, both bools false), matching the runtime's fail-fast
+/// handling of unsupported networks.
 ///
-/// Read-only by design: `DWEnvironment.switchToNetwork` remains the sole
-/// writer of the key (and posts `DWCurrentNetworkDidChangeNotification`).
-/// One deliberate divergence from `DWEnvironment.reset`: when the key holds
-/// devnet but no devnet chain exists, DWEnvironment rewrites the key back to
-/// mainnet during its init — this reader does not replicate that write-back
-/// and reports the stored value as-is (devnet ⇒ `network == nil`, both
-/// bools false), matching the runtime's fail-fast handling of unsupported
-/// networks.
-///
-/// Not a singleton — a stateless namespace of static readers over
+/// Not a singleton — a stateless namespace of static members over
 /// UserDefaults (no instances, no mutable state, nothing to inject).
 @objc(DWWalletEnvironment)
 public final class WalletEnvironment: NSObject {
@@ -85,6 +77,36 @@ public final class WalletEnvironment: NSObject {
         case .testnet: return .testnet
         case .devnet: return nil
         }
+    }
+
+    /// Switches the persisted network selection. Returns `true` when the app
+    /// is on `kind` afterwards (including the already-there no-op), `false`
+    /// for `.devnet` (no SDK network exists for it).
+    ///
+    /// Before writing the key, mirrors the frozen DashSync wallet registry
+    /// onto the destination chain from the SDK-persisted mnemonic — nonnull
+    /// `DWEnvironment.currentWallet` consumers (DashPay, xpub export, watch)
+    /// must keep resolving on the new network until the C6-E dual-write cut.
+    /// The mirror derives BIP39 material synchronously (~100 ms).
+    ///
+    /// Posting `DWCurrentNetworkDidChangeNotification` is what actually moves
+    /// the app: the SDK wallet runtime restarts SPV for the new network and
+    /// DWRootModel rebuilds the home stack.
+    @MainActor
+    @discardableResult
+    public static func switchToNetwork(_ kind: NetworkKind) -> Bool {
+        guard kind != networkKind else { return true }
+        guard kind != .devnet else { return false }
+
+        let mnemonic = SwiftDashSDKHost.persistedMnemonics().first?.mnemonic
+        guard DWEnvironment.sharedInstance().mirrorWalletRegistry(toChainType: kind.rawValue,
+                                                                  seedPhrase: mnemonic) else {
+            return false
+        }
+
+        UserDefaults.standard.set(kind.rawValue, forKey: currentChainTypeKey)
+        NotificationCenter.default.post(name: NSNotification.Name.DWCurrentNetworkDidChange, object: nil)
+        return true
     }
 
     /// SwiftDashSDK wallet presence — a mnemonic persisted in `WalletStorage`'s

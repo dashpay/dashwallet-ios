@@ -190,19 +190,15 @@ class SettingsMenuViewModel: ObservableObject {
     }
 
     // MARK: - Network Switching
-    
+
     func switchToMainnet() async -> Bool {
-        await DWEnvironment.sharedInstance().switchToMainnet()
+        await WalletEnvironment.switchToNetwork(.mainnet)
     }
-    
+
     func switchToTestnet() async -> Bool {
-        return await DWEnvironment.sharedInstance().switchToTestnet()
+        await WalletEnvironment.switchToNetwork(.testnet)
     }
-    
-    func switchToEvonet() async -> Bool {
-        await DWEnvironment.sharedInstance().switchToEvonet()
-    }
-    
+
     // MARK: - CSV Report Generation
     
     func generateCSVReport() async throws -> (fileName: String, file: URL) {

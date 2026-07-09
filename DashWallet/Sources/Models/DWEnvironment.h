@@ -21,6 +21,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// Posted by `WalletEnvironment.switchToNetwork` after the persisted network
+/// selection changes. The SDK wallet runtime restarts SPV on it;
+/// DWRootModel rebuilds the home stack.
 extern NSNotificationName const DWCurrentNetworkDidChangeNotification;
 extern NSNotificationName const DWWillWipeWalletNotification;
 /// Posted by DWAppRootViewController once the lock screen has been dismissed
@@ -28,21 +31,33 @@ extern NSNotificationName const DWWillWipeWalletNotification;
 /// is disabled or was never required this session.
 extern NSNotificationName const DWAppDidUnlockNotification;
 
+/// Frozen DashSync wallet-registry shim (post-M6). DashSync no longer syncs;
+/// its wallet objects survive only as a derivation-path/identity registry for
+/// the not-yet-migrated consumers — DashPay/invites (C10), Apple Watch (D1),
+/// and xpub export. Wallet state (balance, UTXOs, transactions) lives in
+/// `SwiftDashSDKWalletState`; network identity lives in `WalletEnvironment`.
+/// The whole shim goes away with the C6-E dual-write cut.
 @interface DWEnvironment : NSObject
 
-@property (nonatomic, strong, nonnull) DSChain *currentChain;
+/// The DSChain matching the persisted network selection, derived per-read
+/// from `WalletEnvironment` (devnet/unknown map to mainnet — registry-only;
+/// the SDK runtime fails fast on unsupported networks itself).
+@property (nonatomic, readonly) DSChain *currentChain;
 @property (nonatomic, readonly) DSWallet *currentWallet;
-@property (nonatomic, readonly) NSArray *allWallets;
 @property (nonatomic, readonly) DSAccount *currentAccount;
-@property (nonatomic, strong) DSChainManager *currentChainManager;
+@property (nonatomic, readonly) DSChainManager *currentChainManager;
 + (instancetype)sharedInstance;
 
 - (void)clearAllWallets;
 - (void)clearAllWalletsAndRemovePin:(BOOL)shouldRemovePin;
-- (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion;
-- (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion;
-- (void)switchToEvonetWithCompletion:(void (^)(BOOL success))completion;
-- (void)reset;
+
+/// Registers a DSWallet for `seedPhrase` on the chain matching `chainType`
+/// (`ChainType_Tag` raw value) so the registry keeps resolving after a network
+/// switch — nonnull `currentWallet`/`currentAccount` consumers (DashPay, xpub
+/// export, watch) read it on the new chain. Registry-only: no sync, no SPV.
+/// Returns YES when the chain already has a wallet or `seedPhrase` is nil
+/// (nothing to mirror); NO for unsupported chain types.
+- (BOOL)mirrorWalletRegistryToChainType:(NSInteger)chainType seedPhrase:(nullable NSString *)seedPhrase;
 
 @end
 

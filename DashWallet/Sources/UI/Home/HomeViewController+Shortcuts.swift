@@ -39,11 +39,11 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
             break
         case .switchToTestnet:
             Task {
-                await DWEnvironment.sharedInstance().switchToTestnet()
+                await WalletEnvironment.switchToNetwork(.testnet)
             }
         case .switchToMainnet:
             Task {
-                await DWEnvironment.sharedInstance().switchToMainnet()
+                await WalletEnvironment.switchToNetwork(.mainnet)
             }
         case .reportAnIssue:
             break

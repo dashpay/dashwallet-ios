@@ -19,12 +19,9 @@
 
 #import "dashwallet-Swift.h"
 
-#define CURRENT_CHAIN_TYPE_KEY @"CURRENT_CHAIN_TYPE_KEY"
-
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
 NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotification";
 NSNotificationName const DWAppDidUnlockNotification = @"DWAppDidUnlockNotification";
-static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 
 @implementation DWEnvironment
 
@@ -44,48 +41,23 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     if (!(self = [super init]))
         return nil;
 
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    if (![userDefaults objectForKey:CURRENT_CHAIN_TYPE_KEY]) {
-        // Default to testnet during the SwiftDashSDK migration — Platform L2
-        // DAPI defaults only work on testnet in the current SDK build; mainnet
-        // returns "no available addresses to use". Flip back to mainnet once
-        // the Rust SDK ships a reachable mainnet DAPI seed list.
-        [userDefaults setInteger:ChainType_TestNet forKey:CURRENT_CHAIN_TYPE_KEY];
-    }
-    [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]]; // initialization
-    [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]]; // initialization
-    DSChain *evonet = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
-    if (evonet) {
-        [evonet setDevnetNetworkName:@"Evonet"];
-        [[DSChainsManager sharedInstance] chainManagerForChain:evonet];
-    }
-    [self reset];
+    // Registers both chains with DSChainsManager. Load-bearing for the wipe:
+    // clearAllWalletsAndRemovePin iterates DSChainsManager.chains, which is
+    // populated only by these calls, to unregister wallets on BOTH networks.
+    [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain mainnet]];
+    [[DSChainsManager sharedInstance] chainManagerForChain:[DSChain testnet]];
 
     return self;
 }
 
-- (void)reset {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    // DSChainType chainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
-    switch ([userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY]) {
-        case ChainType_MainNet:
-            self.currentChain = [DSChain mainnet];
-            break;
-        case ChainType_TestNet:
-            self.currentChain = [DSChain testnet];
-            break;
-        case ChainType_DevNet: // we will only have evonet
-            self.currentChain = [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier];
-            if (!self.currentChain) {
-                NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                [userDefaults setInteger:ChainType_MainNet forKey:CURRENT_CHAIN_TYPE_KEY];
-                self.currentChain = [DSChain mainnet];
-            }
-            break;
-        default:
-            break;
-    }
-    self.currentChainManager = [[DSChainsManager sharedInstance] chainManagerForChain:self.currentChain];
+- (DSChain *)currentChain {
+    // Derived per-read from the selection WalletEnvironment owns — never
+    // cached, so an external network switch can't leave the shim stale.
+    return DWWalletEnvironment.isTestnet ? [DSChain testnet] : [DSChain mainnet];
+}
+
+- (DSChainManager *)currentChainManager {
+    return [[DSChainsManager sharedInstance] chainManagerForChain:self.currentChain];
 }
 
 - (DSWallet *)currentWallet {
@@ -96,10 +68,6 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     return [[self.currentWallet accounts] firstObject];
 }
 
-- (NSArray *)allWallets {
-    return [[DSChainsManager sharedInstance] allWallets];
-}
-
 - (void)clearAllWallets {
     [self clearAllWalletsAndRemovePin:YES];
 }
@@ -107,7 +75,6 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
 - (void)clearAllWalletsAndRemovePin:(BOOL)shouldRemovePin {
     [[NSNotificationCenter defaultCenter] postNotificationName:DWWillWipeWalletNotification object:self];
 
-    [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
     NSManagedObjectContext *context = [NSManagedObjectContext chainContext];
     for (DSChain *chain in [[DSChainsManager sharedInstance] chains]) {
         [[DashSync sharedSyncController] wipeBlockchainNonTerminalDataForChain:chain inContext:context];
@@ -119,55 +86,7 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
     }
 }
 
-- (void)switchToMainnetWithCompletion:(void (^)(BOOL success))completion {
-    if (self.currentChain != [DSChain mainnet]) {
-        [self switchToNetwork:ChainType_MainNet withIdentifier:nil withCompletion:completion];
-    }
-}
-
-- (void)switchToTestnetWithCompletion:(void (^)(BOOL success))completion {
-    if (self.currentChain != [DSChain testnet]) {
-        [self switchToNetwork:ChainType_TestNet withIdentifier:nil withCompletion:completion];
-    }
-}
-
-- (void)switchToEvonetWithCompletion:(void (^)(BOOL success))completion {
-    if (self.currentChain != [DSChain devnetWithIdentifier:DWDevnetEvonetIdentifier]) {
-        [self switchToNetwork:ChainType_DevNet withIdentifier:DWDevnetEvonetIdentifier withCompletion:completion];
-    }
-}
-
-- (NSOrderedSet *)evonetServiceLocation {
-    NSMutableArray *serviceLocations = [NSMutableArray array];
-    [serviceLocations addObject:@"54.218.48.42"];
-    [serviceLocations addObject:@"34.212.55.24"];
-    [serviceLocations addObject:@"34.217.210.86"];
-    [serviceLocations addObject:@"34.222.214.130"];
-    [serviceLocations addObject:@"35.165.117.23"];
-    [serviceLocations addObject:@"34.217.109.240"];
-    [serviceLocations addObject:@"34.212.175.168"];
-    [serviceLocations addObject:@"34.212.127.218"];
-    [serviceLocations addObject:@"34.217.130.113"];
-    [serviceLocations addObject:@"34.222.113.168"];
-    // shuffle them
-    NSUInteger count = [serviceLocations count];
-    for (NSUInteger i = 0; i < count - 1; ++i) {
-        NSInteger remainingCount = count - i;
-        NSInteger exchangeIndex = i + arc4random_uniform((u_int32_t)remainingCount);
-        [serviceLocations exchangeObjectAtIndex:i withObjectAtIndex:exchangeIndex];
-    }
-    return [NSOrderedSet orderedSetWithArray:serviceLocations];
-}
-
-- (void)switchToNetwork:(ChainType_Tag)chainType withIdentifier:(NSString *)identifier withCompletion:(void (^)(BOOL success))completion {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    ChainType_Tag originalChainType = [userDefaults integerForKey:CURRENT_CHAIN_TYPE_KEY];
-    if (originalChainType == chainType) {
-        // Notification isn't send here as the chain remains the same
-        completion(YES); // didn't really switch but good enough
-        return;
-    }
-    DSWallet *wallet = [self currentWallet];
+- (BOOL)mirrorWalletRegistryToChainType:(NSInteger)chainType seedPhrase:(NSString *)seedPhrase {
     DSChain *destinationChain = nil;
     switch (chainType) {
         case ChainType_MainNet:
@@ -176,47 +95,28 @@ static NSString *const DWDevnetEvonetIdentifier = @"devnet-mobile-2";
         case ChainType_TestNet:
             destinationChain = [DSChain testnet];
             break;
-        case ChainType_DevNet:
-            destinationChain = [DSChain devnetWithIdentifier:identifier];
-            if (!destinationChain && [identifier isEqualToString:DWDevnetEvonetIdentifier]) {
-                // TODO: add devnet eventually
-            }
-            break;
         default:
             break;
     }
-    if (!destinationChain)
-        return;
-    if (![destinationChain hasAWallet]) {
-        [wallet copyForChain:destinationChain
-                  completion:^(DSWallet *_Nullable copiedWallet) {
-                      if (copiedWallet) {
-                          NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-                          [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
-                          [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
-                          [self reset];
-                          [self.currentChainManager.peerManager connect];
-                          [[NSNotificationCenter defaultCenter] postNotificationName:DWCurrentNetworkDidChangeNotification
-                                                                              object:nil];
-                          completion(YES);
-                      }
-                      else {
-                          completion(NO);
-                      }
-                  }];
+    if (!destinationChain) {
+        return NO;
     }
-    else {
-        NSAssert([NSThread isMainThread], @"Main thread is assumed here");
-        if (self.currentChain) {
-            [[DashSync sharedSyncController] stopSyncForChain:self.currentChain];
-        }
-        [userDefaults setInteger:chainType forKey:CURRENT_CHAIN_TYPE_KEY];
-        [self reset];
-        [self.currentChainManager.peerManager connect];
-        [[NSNotificationCenter defaultCenter] postNotificationName:DWCurrentNetworkDidChangeNotification
-                                                            object:nil];
-        completion(YES);
+    if ([destinationChain hasAWallet] || seedPhrase == nil) {
+        return YES;
     }
+
+    // Same registration the create/recover dual-write performs, on the
+    // destination chain. Replaces the legacy copyForChain: (which ran a
+    // DashSync-pod PIN prompt to read the phrase — the phrase now comes from
+    // the SDK's WalletStorage, the keychain being the security boundary).
+    // BIP39 derivation runs on the calling thread (~100 ms), the same cost
+    // copyForChain paid post-auth.
+    DSWallet *wallet = [DSWallet standardWalletWithSeedPhrase:seedPhrase
+                                              setCreationDate:BIP39_WALLET_UNKNOWN_CREATION_TIME
+                                                     forChain:destinationChain
+                                              storeSeedPhrase:YES
+                                                  isTransient:NO];
+    return wallet != nil;
 }
 
 @end
