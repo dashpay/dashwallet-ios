@@ -17,7 +17,7 @@
 //  limitations under the License.
 //
 
-@testable import DashWallet
+@testable import dashwallet
 import XCTest
 
 final class SwapKitQuoteDecodingTests: XCTestCase {
