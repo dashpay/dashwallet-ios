@@ -93,15 +93,11 @@ class BaseAmountModel: ObservableObject {
     }
 
     public var isEnteredAmountLessThenMinimumOutputAmount: Bool {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        let amount = amount.plainAmount
-
-        return amount < chain.minOutputAmount
+        amount.plainAmount < CoreTxConstants.minOutputAmount
     }
 
     public var minimumOutputAmountFormattedString: String {
-        let chain = DWEnvironment.sharedInstance().currentChain
-        return chain.minOutputAmount.formattedDashAmount
+        CoreTxConstants.minOutputAmount.formattedDashAmount
     }
 
     internal var mainAmountValidator: DWAmountInputValidator!

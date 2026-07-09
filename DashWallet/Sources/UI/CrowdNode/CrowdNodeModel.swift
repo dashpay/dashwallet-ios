@@ -108,7 +108,7 @@ final class CrowdNodeModel {
     }
 
     var buyDashButtonText: String {
-        if DWEnvironment.sharedInstance().currentChain.isMainnet() {
+        if WalletEnvironment.isMainnet {
             return NSLocalizedString("Buy Dash", comment: "CrowdNode")
         } else {
             return ""

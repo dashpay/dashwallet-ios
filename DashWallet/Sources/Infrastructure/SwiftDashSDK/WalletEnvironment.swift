@@ -66,6 +66,16 @@ public final class WalletEnvironment: NSObject {
 
     @objc public static var isTestnet: Bool { networkKind == .testnet }
 
+    /// Display name of the current network ("Mainnet"/"Testnet"/"Devnet") —
+    /// same strings DashSync's `DSChain.name` produced for the supported nets.
+    @objc public static var networkDisplayName: String {
+        switch networkKind {
+        case .mainnet: return "Mainnet"
+        case .testnet: return "Testnet"
+        case .devnet: return "Devnet"
+        }
+    }
+
     /// The SwiftDashSDK network for the current selection, or `nil` for
     /// devnet/unsupported — callers fail fast instead of silently mapping
     /// to a supported network (same contract as the wallet runtime).

@@ -57,10 +57,9 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSString *)appVersion {
-    DWEnvironment *environment = [DWEnvironment sharedInstance];
     NSString *networkString = @"";
-    if (![environment.currentChain isMainnet]) {
-        networkString = [NSString stringWithFormat:@" (%@)", environment.currentChain.name];
+    if (!DWWalletEnvironment.isMainnet) {
+        networkString = [NSString stringWithFormat:@" (%@)", DWWalletEnvironment.networkDisplayName];
     }
 
     NSBundle *bundle = [NSBundle mainBundle];

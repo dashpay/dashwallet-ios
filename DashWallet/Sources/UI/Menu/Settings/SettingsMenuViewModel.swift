@@ -58,7 +58,7 @@ class SettingsMenuViewModel: ObservableObject {
     }
     
     var networkName: String {
-        return DWEnvironment.sharedInstance().currentChain.name
+        return WalletEnvironment.networkDisplayName
     }
     
     var localCurrencyCode: String {

@@ -33,7 +33,6 @@ final class CoinJoinMixingTxSet: GroupedTransactions {
             NSLocalizedString("Updating Price", comment: "Updating Price")
     }
     
-    private let chain = DWEnvironment.sharedInstance().currentChain
     private let amountQueue = DispatchQueue(label: "CoinJoinMixingSet.amount", qos: .utility)
     private let amountLock = NSLock()
     private let txMapLock = NSLock()

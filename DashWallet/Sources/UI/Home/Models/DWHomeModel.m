@@ -210,10 +210,9 @@ NS_ASSUME_NONNULL_BEGIN
         return NO;
     }
 
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    if (chain.isEvolutionEnabled == NO && !MOCK_DASHPAY) {
-        return NO;
-    }
+    // The old `chain.isEvolutionEnabled` gate was constant-false at runtime
+    // (the pod hardcodes NO and MOCK_DASHPAY is hardcoded YES) — deleted, not
+    // ported. Revisit real Platform-availability gating with C10.
 
     // username is registered / in progress
     if (self.dashPayModel.registrationStatus != nil) {

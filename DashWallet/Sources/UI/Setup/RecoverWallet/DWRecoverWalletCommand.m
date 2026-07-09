@@ -82,15 +82,14 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     DWSwiftDashSDKNetwork network;
-    switch (chain.chainType.tag) {
-        case ChainType_MainNet:
-            network = DWSwiftDashSDKNetworkMainnet;
-            break;
-        case ChainType_TestNet:
-            network = DWSwiftDashSDKNetworkTestnet;
-            break;
-        default:
-            return; // devnet/regtest unsupported in v1
+    if (DWWalletEnvironment.isMainnet) {
+        network = DWSwiftDashSDKNetworkMainnet;
+    }
+    else if (DWWalletEnvironment.isTestnet) {
+        network = DWSwiftDashSDKNetworkTestnet;
+    }
+    else {
+        return; // devnet/regtest unsupported in v1
     }
 
     [DWSwiftDashSDKWalletCreator importWalletWithMnemonic:phrase pin:pin network:network];
