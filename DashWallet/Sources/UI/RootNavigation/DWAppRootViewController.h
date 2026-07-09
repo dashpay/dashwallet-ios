@@ -22,6 +22,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// Posted by DWAppRootViewController once the lock screen has been dismissed
+/// after a successful PIN / biometric unlock. Not posted when the lock screen
+/// is disabled or was never required this session.
+extern NSNotificationName const DWAppDidUnlockNotification;
+
 @interface DWAppRootViewController : DWContainerViewController
 
 @property (readonly, nonatomic, assign) BOOL demoMode;

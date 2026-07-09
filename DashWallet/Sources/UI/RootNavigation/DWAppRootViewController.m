@@ -20,7 +20,6 @@
 #import <DashSync/DashSync.h>
 #import <DashSync/UIWindow+DSUtils.h>
 
-#import "DWEnvironment.h"
 #import "DWLockScreenViewController.h"
 #import "DWRootModel.h"
 #import "DWSetupViewController.h"
@@ -34,6 +33,8 @@
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
+
+NSNotificationName const DWAppDidUnlockNotification = @"DWAppDidUnlockNotification";
 
 static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 

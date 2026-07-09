@@ -21,7 +21,6 @@
 
 NSNotificationName const DWCurrentNetworkDidChangeNotification = @"DWCurrentNetworkDidChangeNotification";
 NSNotificationName const DWWillWipeWalletNotification = @"DWWillWipeWalletNotification";
-NSNotificationName const DWAppDidUnlockNotification = @"DWAppDidUnlockNotification";
 
 @implementation DWEnvironment
 

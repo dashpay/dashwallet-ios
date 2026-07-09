@@ -28,6 +28,7 @@
 #import "DWDashPayModel.h"
 #endif
 
+#import "DWAppRootViewController.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
