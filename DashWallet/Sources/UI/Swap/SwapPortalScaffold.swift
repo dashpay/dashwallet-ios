@@ -70,6 +70,7 @@ struct SwapPortalScaffold: View {
                     }
                 )
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("swap_portal_buy")
             }
 
             Button(

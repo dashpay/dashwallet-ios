@@ -143,6 +143,7 @@ struct BuyReceiveView: View {
                 .scaledToFit()
                 .frame(minWidth: 200, maxWidth: 200, minHeight: 200, maxHeight: 200, alignment: .center)
                 .padding(10)
+                .accessibilityIdentifier("buy_receive_qr")
         } else if let errorMessage = viewModel.errorMessage {
             VStack(spacing: 16) {
                 Text(errorMessage)
