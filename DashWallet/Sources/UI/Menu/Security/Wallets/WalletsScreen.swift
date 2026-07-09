@@ -56,7 +56,13 @@ struct WalletsScreen: View {
                 ScrollView {
                     VStack(spacing: 0) {
                         ForEach(viewModel.rows) { row in
-                            WalletRowView(row: row)
+                            WalletRowView(
+                                row: row,
+                                onRename: {
+                                    renameText = row.displayName
+                                    renameTarget = row
+                                },
+                                onRemove: { beginRemove(row) })
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     if !row.isActive { pendingSwitch = row }
@@ -238,6 +244,8 @@ struct WalletsScreen: View {
 
 private struct WalletRowView: View {
     let row: WalletRow
+    let onRename: () -> Void
+    let onRemove: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
@@ -264,6 +272,26 @@ private struct WalletRowView: View {
                 Image(systemName: "checkmark")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.dashBlue)
+            }
+            // Visible entry point for rename/remove — the long-press context
+            // menu duplicates these but is undiscoverable on its own.
+            Menu {
+                Button {
+                    onRename()
+                } label: {
+                    Label(NSLocalizedString("Rename", comment: "Wallets"), systemImage: "pencil")
+                }
+                Button(role: .destructive) {
+                    onRemove()
+                } label: {
+                    Label(NSLocalizedString("Remove", comment: "Wallets"), systemImage: "trash")
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.secondaryText)
+                    .frame(width: 32, height: 32)
+                    .contentShape(Rectangle())
             }
         }
         .padding(.horizontal, 16)
