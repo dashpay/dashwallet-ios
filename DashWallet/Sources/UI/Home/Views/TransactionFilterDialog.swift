@@ -4,16 +4,18 @@ import SwiftUI
 /// shortcut per row, applied live through the binding (the sheet stays open
 /// while toggling). The "All" row checks every box; a fully checked selection
 /// means "show everything", including transactions that fit no category
-/// (internal transfers, CoinJoin mixing groups). The Rewards row is offered
-/// only when the wallet has ever earned a masternode/mining reward.
+/// (internal transfers, CoinJoin mixing groups). The Rewards and Masternode
+/// rows are offered only when the wallet has ever had a masternode/mining
+/// reward or a masternode special transaction, respectively.
 struct TransactionFilterDialog: View {
     @Binding var selectedFilters: Set<TransactionFilterCategory>
     let showRewards: Bool
+    let showMasternode: Bool
 
     /// Sheet detent height for the current row count (options + the All row),
     /// matching the BottomSheet's title + row + padding metrics.
-    static func height(showRewards: Bool) -> CGFloat {
-        let rows = showRewards ? 7 : 6
+    static func height(showRewards: Bool, showMasternode: Bool) -> CGFloat {
+        let rows = 6 + (showRewards ? 1 : 0) + (showMasternode ? 1 : 0)
         return CGFloat(134 + rows * 54)
     }
 
@@ -24,6 +26,9 @@ struct TransactionFilterDialog: View {
         ]
         if showRewards {
             options.append(FilterOption(category: .rewards, title: NSLocalizedString("Rewards", comment: "Transaction filter"), icon: .system("trophy")))
+        }
+        if showMasternode {
+            options.append(FilterOption(category: .masternode, title: NSLocalizedString("Masternode", comment: "Transaction filter"), icon: .system("server.rack")))
         }
         options.append(contentsOf: [
             FilterOption(category: .giftCard, title: NSLocalizedString("Gift card", comment: ""), icon: .custom("image.dashspend.giftcard")),

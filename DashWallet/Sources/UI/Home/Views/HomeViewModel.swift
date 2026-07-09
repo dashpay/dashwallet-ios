@@ -33,6 +33,7 @@ enum TransactionFilterCategory: CaseIterable {
     case sent
     case received
     case rewards
+    case masternode
     case giftCard
     case shieldedSent
     case shieldedReceived
@@ -92,6 +93,11 @@ class HomeViewModel: ObservableObject {
     /// (any coinbase tx in history). Gates the "Rewards" filter row; computed
     /// on each full reload.
     @Published private(set) var hasRewardsHistory: Bool = false
+
+    /// True when the wallet has ever had a masternode special transaction
+    /// (proRegTx / update / revocation). Gates the "Masternode" filter row;
+    /// computed on each full reload.
+    @Published private(set) var hasMasternodeHistory: Bool = false
 
     @Published private(set) var headerHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
     @Published private(set) var showReclassifyTransaction: Transaction? = nil
@@ -302,9 +308,10 @@ class HomeViewModel: ObservableObject {
             self.coinJoinTxSets = [:]
             self.coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet()
 
-            // Gates the "Rewards" filter row; computed from the unfiltered
-            // history so it doesn't flap with the current selection.
+            // Gate the "Rewards" / "Masternode" filter rows; computed from the
+            // unfiltered history so they don't flap with the current selection.
             let hasRewards = transactions.contains { $0.isCoinbaseTransaction }
+            let hasMasternodes = transactions.contains { $0.isMasternodeTransaction }
 
             // Snapshot each provider's metadata once per reload —
             // `availableMetadata` copies the whole dictionary through the
@@ -316,7 +323,7 @@ class HomeViewModel: ObservableObject {
             var items: [TransactionListDataItem] = transactions.compactMap { wrappedTx -> TransactionListDataItem? in
                 Tx.shared.updateRateIfNeeded(for: wrappedTx)
 
-                if !self.passesFilter(transaction: wrappedTx, selected: self.selectedFilters, hasRewards: hasRewards, giftCardTxIds: giftCardTxIds) {
+                if !self.passesFilter(transaction: wrappedTx, selected: self.selectedFilters, hasRewards: hasRewards, hasMasternodes: hasMasternodes, giftCardTxIds: giftCardTxIds) {
                     return nil
                 }
 
@@ -392,6 +399,9 @@ class HomeViewModel: ObservableObject {
                 if self.hasRewardsHistory != hasRewards {
                     self.hasRewardsHistory = hasRewards
                 }
+                if self.hasMasternodeHistory != hasMasternodes {
+                    self.hasMasternodeHistory = hasMasternodes
+                }
             }
         }
     }
@@ -417,15 +427,20 @@ class HomeViewModel: ObservableObject {
                 return
             }
 
-            // A coinbase tx arriving incrementally unlocks the Rewards row
-            // without waiting for the next full reload.
+            // A coinbase / masternode tx arriving incrementally unlocks its
+            // filter row without waiting for the next full reload.
             if tx.isCoinbaseTransaction && !self.hasRewardsHistory {
                 DispatchQueue.main.async {
                     self.hasRewardsHistory = true
                 }
             }
+            if tx.isMasternodeTransaction && !self.hasMasternodeHistory {
+                DispatchQueue.main.async {
+                    self.hasMasternodeHistory = true
+                }
+            }
 
-            if !self.passesFilter(transaction: tx, selected: self.selectedFilters, hasRewards: self.hasRewardsHistory) {
+            if !self.passesFilter(transaction: tx, selected: self.selectedFilters, hasRewards: self.hasRewardsHistory, hasMasternodes: self.hasMasternodeHistory) {
                 return
             }
 
@@ -735,17 +750,20 @@ extension HomeViewModel {
     }
     
     /// Union semantics: show the tx when it belongs to any selected category.
-    /// A selection covering every OFFERED category (rewards is offered only
-    /// when `hasRewards`) is "All" and also admits txs that fit no category
-    /// (internal transfers, CoinJoin mixing groups).
+    /// A selection covering every OFFERED category (rewards / masternode are
+    /// offered only when their history flags are set) is "All" and also admits
+    /// txs that fit no category (internal transfers, CoinJoin mixing groups).
     ///
     /// `giftCardTxIds` is an optional pre-snapshotted key set for the
     /// `.giftCard` category — full-reload loops pass it to avoid copying the
     /// provider's dictionary per transaction; single-tx callers omit it.
-    private func passesFilter(transaction: Transaction, selected: Set<TransactionFilterCategory>, hasRewards: Bool, giftCardTxIds: Set<Data>? = nil) -> Bool {
+    private func passesFilter(transaction: Transaction, selected: Set<TransactionFilterCategory>, hasRewards: Bool, hasMasternodes: Bool, giftCardTxIds: Set<Data>? = nil) -> Bool {
         var offered = Set(TransactionFilterCategory.allCases)
         if !hasRewards {
             offered.remove(.rewards)
+        }
+        if !hasMasternodes {
+            offered.remove(.masternode)
         }
         if selected.isSuperset(of: offered) {
             return true
@@ -760,6 +778,9 @@ extension HomeViewModel {
     private func categories(of transaction: Transaction, giftCardTxIds: Set<Data>? = nil) -> Set<TransactionFilterCategory> {
         if transaction.isCoinbaseTransaction {
             return [.rewards]
+        }
+        if transaction.isMasternodeTransaction {
+            return [.masternode]
         }
         var categories: Set<TransactionFilterCategory> = []
         if transaction.isShieldedTransfer {

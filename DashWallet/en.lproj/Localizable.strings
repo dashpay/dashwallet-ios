@@ -1487,6 +1487,9 @@
 /* Map */
 "Map" = "Map";
 
+/* Transaction filter */
+"Masternode" = "Masternode";
+
 /* Voting */
 "Masternode IP address" = "Masternode IP address";
 

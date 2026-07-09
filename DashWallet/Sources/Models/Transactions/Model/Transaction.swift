@@ -459,6 +459,18 @@ extension Transaction {
 
     var txHashData: Data { snapshot.txid }
 
+    /// True for any masternode special transaction: provider registration
+    /// (proRegTx), update registrar/service, or revocation. Drives the
+    /// "Masternode" home filter category.
+    var isMasternodeTransaction: Bool {
+        switch transactionType {
+        case .masternodeRegistration, .masternodeUpdate, .masternodeRevoke:
+            return true
+        default:
+            return false
+        }
+    }
+
     var isCoinbaseTransaction: Bool {
         TransactionTypeKind(rawValue: snapshot.typeKind) == .coinbase
     }

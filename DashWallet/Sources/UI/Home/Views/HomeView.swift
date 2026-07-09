@@ -295,11 +295,12 @@ struct HomeViewContent<Content: View>: View {
         .sheet(isPresented: $showFilterDialog) {
             let dialog = TransactionFilterDialog(
                 selectedFilters: $viewModel.selectedFilters,
-                showRewards: viewModel.hasRewardsHistory
+                showRewards: viewModel.hasRewardsHistory,
+                showMasternode: viewModel.hasMasternodeHistory
             )
 
             if #available(iOS 16.0, *) {
-                dialog.presentationDetents([.height(TransactionFilterDialog.height(showRewards: viewModel.hasRewardsHistory))])
+                dialog.presentationDetents([.height(TransactionFilterDialog.height(showRewards: viewModel.hasRewardsHistory, showMasternode: viewModel.hasMasternodeHistory))])
             } else {
                 dialog
             }
