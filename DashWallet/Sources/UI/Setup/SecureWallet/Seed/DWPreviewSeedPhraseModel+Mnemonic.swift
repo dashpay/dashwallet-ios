@@ -35,15 +35,29 @@ extension DWPreviewSeedPhraseModel {
         }
     }
 
-    /// Read the mnemonic of the first wallet known to SwiftDashSDK's
-    /// `WalletStorage`. Returns nil if no wallet has stored a mnemonic
-    /// yet (e.g. migration deferred, async creation still in flight).
+    /// Read the ACTIVE wallet's mnemonic from SwiftDashSDK's `WalletStorage`,
+    /// resolved via the per-network active-wallet registry
+    /// (`WalletEnvironment.activeWalletId`, seeded on wallet create/start/
+    /// switch). Falls back to the sole stored wallet on pre-registry installs.
+    /// Returns nil if no mnemonic is stored yet (migration deferred, async
+    /// creation in flight) — or if several wallets exist and none matches the
+    /// registry: showing ANOTHER wallet's phrase would have the user back up
+    /// the wrong words, so an empty screen is the safer failure.
     @objc(readStoredMnemonic)
     func readStoredMnemonic() -> String? {
         do {
             let storage = WalletStorage()
             let walletIds = try storage.listWalletIdsWithMnemonic()
-            guard let walletId = walletIds.first else { return nil }
+            let activeId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)
+            let walletId: Data
+            if let activeId, walletIds.contains(activeId) {
+                walletId = activeId
+            } else if walletIds.count == 1, let only = walletIds.first {
+                walletId = only
+            } else {
+                Self.mnemonicLogger.error("readStoredMnemonic: active wallet not resolvable among \(walletIds.count, privacy: .public) stored mnemonic(s)")
+                return nil
+            }
             return try storage.retrieveMnemonic(for: walletId)
         } catch {
             Self.mnemonicLogger.error("readStoredMnemonic failed: \(String(describing: error), privacy: .public)")
