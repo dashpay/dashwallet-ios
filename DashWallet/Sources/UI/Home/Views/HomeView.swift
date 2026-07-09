@@ -448,7 +448,8 @@ struct HomeViewContent<Content: View>: View {
                 icon: icons.primary,
                 secondaryIcon: icons.secondary,
                 dashAmount: txItem.signedDashAmount,
-                overrideFiatAmount: txItem.fiatAmount
+                overrideFiatAmount: txItem.fiatAmount,
+                trailingStatusText: txItem.state == .locked ? NSLocalizedString("Locked", comment: "Transaction state: coinbase reward locked until 100 confirmations") : nil
             ) {
                 // Check if this is a gift card transaction
                 if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
