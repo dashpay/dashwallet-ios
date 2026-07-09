@@ -101,11 +101,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @Published public private(set) var bestPeerHeight: UInt32 = 0
     @Published public private(set) var lastError: String? = nil
     @Published public private(set) var syncProgress: SPVSyncProgress = .default()
+    /// Peers the SPV client is currently connected to, classified against
+    /// the masternode list (Evonode / Masternode / Normal, or Unknown while
+    /// the masternode phase hasn't synced).
+    @Published public private(set) var connectedPeers: [PlatformSpvPeerInfo] = []
 
     // MARK: - Internal state
 
     private var runningNetwork: Network?
     private var progressCancellable: AnyCancellable?
+    private var peersCancellable: AnyCancellable?
 
     /// Network whose CoinJoin gap was widened for a one-time recovery scan
     /// during the current run, so a subsequent full sync can mark recovery
@@ -206,6 +211,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private func performStop(lastError: String?) {
         progressCancellable?.cancel()
         progressCancellable = nil
+        peersCancellable?.cancel()
+        peersCancellable = nil
 
         if let manager = SwiftDashSDKHost.shared.manager {
             do {
@@ -297,6 +304,13 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                     self?.applyProgress(platformProgress)
                 }
             }
+        peersCancellable = manager.$spvPeers
+            .receive(on: RunLoop.main)
+            .sink { [weak self] peers in
+                MainActor.assumeIsolated {
+                    self?.connectedPeers = peers
+                }
+            }
     }
 
     @MainActor
@@ -376,6 +390,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         tipHeight = 0
         bestPeerHeight = 0
         syncProgress = .default()
+        connectedPeers = []
     }
 
     // MARK: - Mapping
