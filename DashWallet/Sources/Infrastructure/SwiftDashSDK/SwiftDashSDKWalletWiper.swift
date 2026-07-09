@@ -90,6 +90,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // background queue with no @MainActor hop (unlike deleteWalletsFromSDK).
         CoinJoinRecovery.shared.resetForWipe()
         CoinJoinWithdrawalStore.shared.resetForWipe()
+        ShieldedWithdrawalStore.shared.resetForWipe()
         // CrowdNode state is per-wallet-keyed; the wipe destroys every wallet, so
         // clear every wallet's keys (the CrowdNode singleton's own
         // `DWWillWipeWallet` observer only resets the ACTIVE wallet's keys). Also
@@ -203,5 +204,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
         let walletIdHex = walletId.map { String(format: "%02x", $0) }.joined()
         CrowdNodeDefaults.shared.clearPerWalletKeys(forWalletIdHex: walletIdHex)
         CoinJoinWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
+        ShieldedWithdrawalStore.shared.clearForWallet(walletIdHex: walletIdHex)
     }
 }

@@ -24,13 +24,18 @@ private let kBaseBalanceHeaderHeight: CGFloat = 100
 private let kTimeskewTolerance: TimeInterval = 3600 // 1 hour
 private let maxShortcutsCount = 4
 
-@objc(DWHomeTxDisplayMode)
-public enum HomeTxDisplayMode: UInt {
-    case all = 0
-    case received
+/// One selectable category in the home screen's transaction filter. The
+/// filter is multi-select (checkboxes): a transaction shows when it belongs
+/// to ANY selected category, and a selection covering every offered category
+/// means "All" — which also shows transactions that fit no category (internal
+/// transfers, CoinJoin mixing groups).
+enum TransactionFilterCategory: CaseIterable {
     case sent
+    case received
     case rewards
     case giftCard
+    case shieldedSent
+    case shieldedReceived
 }
 
 class HomeViewModel: ObservableObject {
@@ -69,11 +74,19 @@ class HomeViewModel: ObservableObject {
     @Published var showCoinJoinSweepDialog: Bool = false
     @Published private(set) var timeSkew: TimeInterval = 0
     @Published private(set) var showJoinDashpay: Bool = true
-    @Published var displayMode: HomeTxDisplayMode = .all {
+    /// Selected filter categories (multi-select checkboxes). Defaults to every
+    /// category — i.e. "All". Never empty: the dialog blocks unchecking the
+    /// last box.
+    @Published var selectedFilters: Set<TransactionFilterCategory> = Set(TransactionFilterCategory.allCases) {
         didSet {
             reloadTxDataSource()
         }
     }
+
+    /// True when the wallet has ever received a masternode/mining reward
+    /// (any coinbase tx in history). Gates the "Rewards" filter row; computed
+    /// on each full reload.
+    @Published private(set) var hasRewardsHistory: Bool = false
 
     @Published private(set) var headerHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
     @Published private(set) var showReclassifyTransaction: Transaction? = nil
@@ -256,10 +269,14 @@ class HomeViewModel: ObservableObject {
             self.coinJoinTxSets = [:]
             self.coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet()
 
+            // Gates the "Rewards" filter row; computed from the unfiltered
+            // history so it doesn't flap with the current selection.
+            let hasRewards = transactions.contains { $0.isCoinbaseTransaction }
+
             var items: [TransactionListDataItem] = transactions.compactMap { wrappedTx -> TransactionListDataItem? in
                 Tx.shared.updateRateIfNeeded(for: wrappedTx)
 
-                if !self.passesFilter(transaction: wrappedTx, displayMode: self.displayMode) {
+                if !self.passesFilter(transaction: wrappedTx, selected: self.selectedFilters, hasRewards: hasRewards) {
                     return nil
                 }
 
@@ -332,6 +349,9 @@ class HomeViewModel: ObservableObject {
 
             DispatchQueue.main.async {
                 self.txItems = array
+                if self.hasRewardsHistory != hasRewards {
+                    self.hasRewardsHistory = hasRewards
+                }
             }
         }
     }
@@ -357,7 +377,15 @@ class HomeViewModel: ObservableObject {
                 return
             }
 
-            if !self.passesFilter(transaction: tx, displayMode: self.displayMode) {
+            // A coinbase tx arriving incrementally unlocks the Rewards row
+            // without waiting for the next full reload.
+            if tx.isCoinbaseTransaction && !self.hasRewardsHistory {
+                DispatchQueue.main.async {
+                    self.hasRewardsHistory = true
+                }
+            }
+
+            if !self.passesFilter(transaction: tx, selected: self.selectedFilters, hasRewards: self.hasRewardsHistory) {
                 return
             }
 
@@ -660,19 +688,51 @@ extension HomeViewModel {
         return finalMetadata
     }
     
-    private func passesFilter(transaction: Transaction, displayMode: HomeTxDisplayMode) -> Bool {
-        switch displayMode {
-        case .all:
-            return true
-        case .sent:
-            return transaction.direction == .sent
-        case .received:
-            return transaction.direction == .received && !transaction.isCoinbaseTransaction
-        case .rewards:
-            return transaction.isCoinbaseTransaction
-        case .giftCard:
-            return GiftCardMetadataProvider.shared.availableMetadata[transaction.txHashData] != nil
+    /// Union semantics: show the tx when it belongs to any selected category.
+    /// A selection covering every OFFERED category (rewards is offered only
+    /// when `hasRewards`) is "All" and also admits txs that fit no category
+    /// (internal transfers, CoinJoin mixing groups).
+    private func passesFilter(transaction: Transaction, selected: Set<TransactionFilterCategory>, hasRewards: Bool) -> Bool {
+        var offered = Set(TransactionFilterCategory.allCases)
+        if !hasRewards {
+            offered.remove(.rewards)
         }
+        if selected.isSuperset(of: offered) {
+            return true
+        }
+        return !selected.isDisjoint(with: categories(of: transaction))
+    }
+
+    /// Categories a transaction belongs to. Overlaps are allowed (a gift-card
+    /// purchase is also a sent tx); rewards and shielded receipts are carved
+    /// out of received, mirroring how the old single-select filter separated
+    /// rewards from receives.
+    private func categories(of transaction: Transaction) -> Set<TransactionFilterCategory> {
+        if transaction.isCoinbaseTransaction {
+            return [.rewards]
+        }
+        var categories: Set<TransactionFilterCategory> = []
+        if transaction.isShieldedTransfer {
+            categories.insert(.shieldedSent)
+        }
+        let isShieldedReceipt = transaction.isShieldedWithdrawalReceipt
+        if isShieldedReceipt {
+            categories.insert(.shieldedReceived)
+        }
+        if GiftCardMetadataProvider.shared.availableMetadata[transaction.txHashData] != nil {
+            categories.insert(.giftCard)
+        }
+        switch transaction.direction {
+        case .sent:
+            categories.insert(.sent)
+        case .received:
+            if !isShieldedReceipt {
+                categories.insert(.received)
+            }
+        default:
+            break
+        }
+        return categories
     }
 }
 

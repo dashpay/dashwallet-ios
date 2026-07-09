@@ -1709,6 +1709,9 @@
 /* Online Merchant */
 "Online Merchant" = "Online Merchant";
 
+/* Transaction filter */
+"Only" = "Only";
+
 /* Voting */
 "Only duplicates" = "Only duplicates";
 
@@ -2099,6 +2102,9 @@
 /* No comment provided by engineer. */
 "Reward" = "Reward";
 
+/* Transaction filter */
+"Rewards" = "Rewards";
+
 /* No comment provided by engineer. */
 "Save" = "Save";
 
@@ -2301,6 +2307,12 @@
 
 /* No comment provided by engineer. */
 "Setup Wallet" = "Setup Wallet";
+
+/* Transaction filter */
+"Shielded received" = "Shielded received";
+
+/* Transaction filter */
+"Shielded sent" = "Shielded sent";
 
 /* CrowdNode */
 "Share" = "Share";

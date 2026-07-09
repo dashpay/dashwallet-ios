@@ -384,9 +384,20 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 toCoreAddress: coreAddress,
                 amount: amountCredits)
         } catch {
+            // shieldedSpendUnconfirmed means the spend may already be on
+            // chain (non-retryable), so its payout can still arrive — tag
+            // the destination so the incoming tx classifies as a shielded
+            // withdrawal either way.
+            if case PlatformWalletError.shieldedSpendUnconfirmed = error {
+                ShieldedWithdrawalStore.shared.record(address: coreAddress)
+            }
             handleSpendError(error, manager: env.manager)
             return
         }
+
+        // Tag the payout destination so the home list can classify the
+        // incoming L1 tx as "Shielded received" (the SDK call returns no txid).
+        ShieldedWithdrawalStore.shared.record(address: coreAddress)
 
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route completed")
         phase = .broadcasting
