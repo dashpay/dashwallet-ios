@@ -45,16 +45,29 @@ enum SwapDepositURIBuilder {
             return evmURI(for: coin, address: trimmedAddress, amount: amount, chainID: chainId)
         }
 
-        // Non-EVM, non-UTXO chains (Cosmos, Solana, NEAR, Sui, …): no scheme most wallets honor,
-        // so encode the bare address — the user picks asset/amount in their wallet.
+        if chain == "SOL" {
+            return solanaPayURI(for: coin, address: trimmedAddress, amount: amount)
+        }
+
+        if chain == "ADA" {
+            return cardanoURI(address: trimmedAddress, amount: amount)
+        }
+
+        if chain == "SUI" {
+            return suiPayURI(for: coin, address: trimmedAddress, amount: amount)
+        }
+
+        // Non-EVM, non-UTXO, non-SOL, non-ADA, non-SUI chains (NEAR, TRON, STRK, …): no scheme most
+        // wallets honor, so encode the bare address — the user picks asset/amount in their wallet.
         return trimmedAddress
     }
 
     /// True when the URI for this coin is a bare deposit address with no amount/memo embedded
-    /// (i.e. non-EVM, non-UTXO chains such as Solana, NEAR, Cosmos, TON, XRP…).
+    /// (i.e. non-EVM, non-UTXO, non-SOL, non-ADA, non-SUI chains such as NEAR, Cosmos, TON, XRP…).
     static func isBareURI(for coin: SwapCryptoCurrency) -> Bool {
         let chain = coin.chain.uppercased()
         return !isUTXOChain(chain) && evmChainIDs[chain] == nil
+            && chain != "SOL" && chain != "ADA" && chain != "SUI"
     }
 
     static func isUTXOChain(_ chain: String) -> Bool {
@@ -111,13 +124,9 @@ enum SwapDepositURIBuilder {
             return "ethereum:\(address)@\(chainID)?value=\(value)"
         }
 
-        // ERC-20 token: only emit EIP-681 /transfer when decimals are known with certainty.
-        // A guessed default (e.g. 18 for a 6-decimal token) would produce a uint256 off by
-        // 10^12 — safer to fall back to the bare deposit address.
-        guard let decimals = tokenDecimals(for: coin) else {
-            return address
-        }
-        guard let value = baseUnits(amount, decimals: decimals) else {
+        // ERC-20 token: EIP-681 /transfer form. Decimals default to 18 (ERC-20 norm) for tokens
+        // outside the special-cased set, so most tokens get a proper URI instead of a bare address.
+        guard let value = baseUnits(amount, decimals: tokenDecimals(for: coin)) else {
             return address
         }
         return "ethereum:\(contract)@\(chainID)/transfer?address=\(address)&uint256=\(value)"
@@ -130,9 +139,12 @@ enum SwapDepositURIBuilder {
         return String(coin.swapAsset[range.upperBound...]).lowercased()
     }
 
-    /// Token base-unit exponent for known ERC-20s. Returns nil when the decimals are not
-    /// known with certainty — callers must treat nil as "unsafe to build URI".
-    private static func tokenDecimals(for coin: SwapCryptoCurrency) -> Int? {
+    /// Token base-unit exponent. Special-cases the common non-18 ERC-20s (stablecoins, wrapped BTC)
+    /// and defaults to **18** for everything else — the ERC-20 norm, and what Android does. Most
+    /// tokens are 18-decimal; defaulting to 18 lets us emit a proper EIP-681 URI for them instead
+    /// of falling back to a bare address. (A rare non-18 token outside the special cases would get
+    /// an off-by-10^n `uint256`; the "Amount to send" row remains the human-readable source of truth.)
+    private static func tokenDecimals(for coin: SwapCryptoCurrency) -> Int {
         switch coin.code.uppercased() {
         case "USDC", "USDT":
             // Binance-Peg USDC/USDT on BSC are 18 decimals; elsewhere these stablecoins are 6.
@@ -142,9 +154,7 @@ enum SwapDepositURIBuilder {
         case "WBTC", "CBBTC":
             return 8
         default:
-            // Returning nil causes evmURI to fall back to a bare address rather than emitting
-            // a uint256 computed from an incorrect assumed-18 exponent.
-            return nil
+            return 18
         }
     }
 
@@ -175,6 +185,94 @@ enum SwapDepositURIBuilder {
         return NSDecimalNumber(decimal: truncated).stringValue
     }
 
+    // MARK: - Solana Pay
+
+    private static func solanaPayURI(for coin: SwapCryptoCurrency, address: String, amount: String) -> String {
+        var components = URLComponents()
+        components.scheme = "solana"
+        components.path = address
+
+        var items = [URLQueryItem]()
+        // Solana Pay amount is in TOKEN (UI) units, not base units — pass the human amount as-is
+        // (only when it's a well-formed decimal; otherwise omit rather than emit a bad amount).
+        let trimmedAmount = amount.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedAmount.isEmpty, Decimal(string: trimmedAmount) != nil {
+            items.append(URLQueryItem(name: "amount", value: trimmedAmount))
+        }
+        let mint = splTokenMint(for: coin)   // original-case, NOT lowercased
+        if !mint.isEmpty {
+            items.append(URLQueryItem(name: "spl-token", value: mint))
+        }
+        components.queryItems = items.isEmpty ? nil : items
+        return components.string ?? address
+    }
+
+    /// SPL mint = the segment after the first "-" in the SwapKit asset id, preserving case.
+    /// Empty for native SOL (`SOL.SOL`). Case-sensitive — never lowercase (base58).
+    private static func splTokenMint(for coin: SwapCryptoCurrency) -> String {
+        guard let range = coin.swapAsset.range(of: "-") else { return "" }
+        return String(coin.swapAsset[range.upperBound...])
+    }
+
+    // MARK: - Cardano (CIP-13)
+
+    // Uses string concatenation rather than URLComponents — `web+cardano` contains `+` which
+    // URLComponents percent-encodes in the scheme position. Address and amount are URL-safe.
+    private static func cardanoURI(address: String, amount: String) -> String {
+        let trimmedAmount = amount.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedAmount.isEmpty, Decimal(string: trimmedAmount) != nil {
+            return "web+cardano:\(address)?amount=\(trimmedAmount)"
+        }
+        return "web+cardano:\(address)"
+    }
+
+    // MARK: - Sui (Payment Kit URI)
+
+    /// Full type identifier for native SUI (Payment Kit `coinType`).
+    private static let suiNativeCoinType =
+        "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"
+
+    /// Builds a Sui Payment Kit transaction URI (`sui:pay?…`), which Sui wallets (e.g. Slush) honor.
+    /// `amount` is base units of the coin type (MIST for native SUI, 9 decimals; SUI-native USDC is
+    /// 6 decimals). `nonce` is required (unique ASCII ≤36 chars). `registry` is omitted → ephemeral
+    /// P2P transfer with no on-chain record, which is exactly what a deposit needs.
+    private static func suiPayURI(for coin: SwapCryptoCurrency, address: String, amount: String) -> String {
+        // Amount must be encodable; otherwise fall back to the bare address (never a bad amount).
+        guard let value = baseUnits(amount, decimals: suiDecimals(for: coin)) else {
+            return address
+        }
+
+        var components = URLComponents()
+        components.scheme = "sui"
+        components.path = "pay"
+        components.queryItems = [
+            URLQueryItem(name: "receiver", value: address),
+            URLQueryItem(name: "amount", value: value),
+            URLQueryItem(name: "coinType", value: suiCoinType(for: coin)),
+            URLQueryItem(name: "nonce", value: suiNonce(for: address)),
+        ]
+        return components.string ?? address
+    }
+
+    /// On-chain decimals for the Sui coin: native SUI is 9 (MIST); Sui-native USDC is 6.
+    private static func suiDecimals(for coin: SwapCryptoCurrency) -> Int {
+        coin.code.uppercased() == "USDC" ? 6 : 9
+    }
+
+    /// Sui `coinType` = the segment after the first "-" in the SwapKit asset id, preserving case
+    /// (e.g. `SUI.USDC-0x…::USDC` → `0x…::USDC`). Native SUI (`SUI.SUI`) has no "-" → the 0x2 type.
+    private static func suiCoinType(for coin: SwapCryptoCurrency) -> String {
+        guard let range = coin.swapAsset.range(of: "-") else { return suiNativeCoinType }
+        return String(coin.swapAsset[range.upperBound...])
+    }
+
+    /// Deterministic per-deposit `nonce`: up to 32 hex chars of the deposit address (ASCII, ≤36).
+    /// Stable across re-renders and unique per deposit; ephemeral payments don't enforce uniqueness.
+    private static func suiNonce(for address: String) -> String {
+        let hex = address.hasPrefix("0x") || address.hasPrefix("0X") ? String(address.dropFirst(2)) : address
+        return String(hex.prefix(32))
+    }
+
     private static func trimTrailingZeros(_ s: String) -> String {
         guard s.contains(".") else { return s }
         var result = s
@@ -187,8 +285,18 @@ enum SwapDepositURIBuilder {
 
     private static func utxoURI(chain: String, address: String, amount: String, memo: String?) -> String {
         var components = URLComponents()
-        components.scheme = utxoScheme(for: chain)
-        components.path = address
+        let scheme = utxoScheme(for: chain)
+        components.scheme = scheme
+
+        // Some backends return the address WITH its scheme prefix (notably BCH CashAddr:
+        // "bitcoincash:qqm88…"). Strip a duplicate leading "<scheme>:" so we don't emit
+        // "bitcoincash:bitcoincash%3Aqqm…" (a malformed URI no wallet can parse).
+        var addr = address
+        let prefix = scheme + ":"
+        if addr.lowercased().hasPrefix(prefix.lowercased()) {
+            addr = String(addr.dropFirst(prefix.count))
+        }
+        components.path = addr
 
         var items = [URLQueryItem]()
         let trimmedAmount = amount.trimmingCharacters(in: .whitespacesAndNewlines)

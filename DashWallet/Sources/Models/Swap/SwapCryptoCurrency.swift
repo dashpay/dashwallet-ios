@@ -29,7 +29,10 @@ struct SwapCryptoCurrency: Identifiable, Hashable {
     /// appends them at runtime for codes shared across chains.
     let name: String
     /// Swap pool asset string used in API calls (e.g. `"BTC.BTC"`, `"ETH.USDC-0XA0B8..."`).
-    let swapAsset: String
+    /// `var` so `knownCoin`/`coin(for:)` can preserve the ORIGINAL-case identifier from SwapKit —
+    /// the curated `supportedCoins` ids are uppercased, but SwapKit is case-sensitive for NEAR
+    /// (and other non-EVM) asset ids, so an uppercased sellAsset returns `noRoutesFound`.
+    var swapAsset: String
     /// Maya chain identifier used for local address validation (e.g. `"BTC"`, `"ARB"`).
     let chain: String
     /// Remote icon URL string sourced from SwapKit `logoURI`. Nil when not yet loaded or unavailable.
@@ -397,7 +400,9 @@ struct SwapCryptoCurrency: Identifiable, Hashable {
 
         guard normalizedAsset != "DASH.DASH" else { return nil }
 
-        if let knownCoin = supportedCoins.first(where: { $0.swapAsset.uppercased() == normalizedAsset }) {
+        if var knownCoin = supportedCoins.first(where: { $0.swapAsset.uppercased() == normalizedAsset }) {
+            // Preserve the original-case identifier for API calls (case-sensitive backends).
+            knownCoin.swapAsset = swapAsset
             return knownCoin
         }
 
@@ -433,8 +438,13 @@ struct SwapCryptoCurrency: Identifiable, Hashable {
         let normalizedAsset = swapAsset.uppercased()
         guard normalizedAsset != "DASH.DASH" else { return nil }
         guard supportedAssets.contains(normalizedAsset) else { return nil }
-        return supportedCoins.first { $0.swapAsset.uppercased() == normalizedAsset }
-            ?? coin(for: swapAsset)
+        if var curated = supportedCoins.first(where: { $0.swapAsset.uppercased() == normalizedAsset }) {
+            // Curated ids are uppercased for display; keep the original-case identifier from
+            // SwapKit for API calls (case-sensitive on NEAR/non-EVM assets).
+            curated.swapAsset = swapAsset
+            return curated
+        }
+        return coin(for: swapAsset)
     }
 
     // MARK: - Chain display helpers
