@@ -21,8 +21,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSPaymentRequest;
-@class DSPaymentProtocolRequest;
 @class DWParsedPaymentURI;
 
 typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
@@ -31,7 +29,6 @@ typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
     DWPaymentInputSource_NFC,
     DWPaymentInputSource_DeepLink,
     DWPaymentInputSource_URL,
-    DWPaymentInputSource_BlockchainUser,
     DWPaymentInputSource_PlainAddress
 };
 
@@ -39,10 +36,8 @@ typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
 
 @property (readonly, nonatomic, assign) DWPaymentInputSource source;
 /// The app-side parse of the payment string (QR / pasteboard / NFC / deeplink). Carries every
-/// routing/validity decision; `request` below is its write-only DashSync courier.
+/// routing/validity decision; its `DWPaymentIntent` projection drives the send.
 @property (nullable, readonly, nonatomic, strong) DWParsedPaymentURI *parsedURI;
-@property (nullable, readonly, nonatomic, strong) DSPaymentRequest *request;
-@property (nullable, readonly, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
 /// Opaque `DWBIP70ConfirmationBox` (Swift) for an app-side BIP70 request fetched + verified at
 /// scan/clipboard time. Present ⇒ route through the BIP70 confirm/send path.
 @property (nullable, readonly, nonatomic, strong) id bip70Confirmation;

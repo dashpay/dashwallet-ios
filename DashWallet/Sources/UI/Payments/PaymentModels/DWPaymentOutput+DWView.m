@@ -17,7 +17,6 @@
 
 #import "DWPaymentOutput+DWView.h"
 
-#import <DashSync/DashSync.h>
 #import <UIKit/UIKit.h>
 
 #import "DWTitleDetailCellModel.h"
@@ -87,8 +86,8 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 - (nullable id<DWTitleDetailItem>)addressWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
-    if (self.isMerchantRequest || self.protocolRequest.commonName) {
-        // don't show "send to" for BIP70 payment requests
+    if (self.isMerchantRequest) {
+        // don't show "send to" for BIP70 merchant requests
         return nil;
     }
     else {

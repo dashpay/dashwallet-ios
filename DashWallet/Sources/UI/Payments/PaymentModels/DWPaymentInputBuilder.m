@@ -17,13 +17,8 @@
 
 #import "DWPaymentInputBuilder.h"
 
-#import "DWEnvironment.h"
 #import "DWPaymentInput+Private.h"
 #import "dashwallet-Swift.h"
-
-#if DASHPAY
-#import "DWDashPayConstants.h"
-#endif
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,15 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable DWPaymentInput *)payToAddress:(NSString *)address
                                    amount:(uint64_t)amount {
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-
     DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:address];
-
-    NSData *data = address.hexToData.reverse;
-
-    if (data.length == sizeof(UInt256) && [account transactionForHash:*(UInt256 *)data.bytes]) {
-        return nil;
-    }
 
     if (parsed.isAddressValidForCurrentNetwork) {
         DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_PlainAddress];
@@ -59,17 +46,13 @@ NS_ASSUME_NONNULL_BEGIN
                    source:(DWPaymentInputSource)source
                completion:(void (^)(DWPaymentInput *paymentInput))completion {
     NSUInteger i = 0;
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
     for (NSString *str in array) {
+        // (The legacy "known txHash ⇒ not a hex private key" pre-filter is gone with the paper-
+        // wallet sweep: a 64-hex txid parses as neither a valid address nor a payable URI, so it
+        // is skipped by the checks below either way.)
         DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:str];
-        NSData *data = str.hexToData.reverse;
 
         i++;
-
-        // if the clipboard contains a known txHash, we know it's not a hex encoded private key
-        if (data.length == sizeof(UInt256) && [account transactionForHash:*(UInt256 *)data.bytes]) {
-            continue;
-        }
 
         if (parsed.isAddressValidForCurrentNetwork) {
             if (completion) {

@@ -351,11 +351,9 @@ static NSString *DWReversedHexString(NSData *data) {
                                                // headline (`amount − fee`) shows what the recipient gets and "Total" shows
                                                // the true debit. `preparedSend.amount` keeps the recipient amount.
                                                DWPaymentOutput *paymentOutput = [[DWPaymentOutput alloc]
-                                                                    initWithTx:nil
-                                                               protocolRequest:nil
+                                                               initWithAddress:address
                                                                         amount:amount + preparedSend.fee
                                                                            fee:preparedSend.fee
-                                                                       address:address
                                                                           name:name
                                                                           memo:memo
                                                                       isSecure:NO

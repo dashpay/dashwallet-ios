@@ -21,49 +21,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWPaymentOutput
 
-- (instancetype)initWithTx:(nullable DSTransaction *)tx
-           protocolRequest:(nullable DSPaymentProtocolRequest *)protocolRequest
-                    amount:(uint64_t)amount
-                       fee:(uint64_t)fee
-                   address:(NSString *)address
-                      name:(NSString *_Nullable)name
-                      memo:(NSString *_Nullable)memo
-                  isSecure:(BOOL)isSecure
-             localCurrency:(NSString *_Nullable)localCurrency
-                  userItem:(id<DWDPBasicUserItem>)userItem {
-    return [self initWithTx:tx
-                    protocolRequest:protocolRequest
-                             amount:amount
-                                fee:fee
-                            address:address
-                               name:name
-                               memo:memo
-                           isSecure:isSecure
-                      localCurrency:localCurrency
-                           userItem:userItem
-               preparedStandardSend:nil
-        broadcastAuthorizationState:DWPaymentOutputBroadcastAuthorizationStateNeedsAuthentication];
-}
-
-- (instancetype)initWithTx:(nullable DSTransaction *)tx
-                protocolRequest:(nullable DSPaymentProtocolRequest *)protocolRequest
+- (instancetype)initWithAddress:(NSString *)address
                          amount:(uint64_t)amount
                             fee:(uint64_t)fee
-                        address:(NSString *)address
                            name:(NSString *_Nullable)name
                            memo:(NSString *_Nullable)memo
                        isSecure:(BOOL)isSecure
                   localCurrency:(NSString *_Nullable)localCurrency
-                       userItem:(id<DWDPBasicUserItem>)userItem
+                       userItem:(nullable id<DWDPBasicUserItem>)userItem
            preparedStandardSend:(DWPreparedStandardSend *_Nullable)preparedStandardSend
     broadcastAuthorizationState:(DWPaymentOutputBroadcastAuthorizationState)broadcastAuthorizationState {
     self = [super init];
     if (self) {
-        _tx = tx;
-        _protocolRequest = protocolRequest;
+        _address = address;
         _amount = amount;
         _fee = fee;
-        _address = address;
         _name = name;
         _memo = memo;
         _isSecure = isSecure;

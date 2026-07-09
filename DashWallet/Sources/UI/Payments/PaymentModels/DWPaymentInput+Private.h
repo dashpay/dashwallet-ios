@@ -24,19 +24,16 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWPaymentInput ()
 
 @property (nullable, nonatomic, strong) DWParsedPaymentURI *parsedURI;
-/// App-side send carrier projected from `parsedURI`. The processor consumes THIS for a plain-`dash:`
-/// send (C8 step 4); it replaces the synthetic `DSPaymentProtocolRequest` the courier used to feed.
+/// App-side send carrier projected from `parsedURI`. The processor consumes THIS for a
+/// plain-`dash:` send (C8 step 4).
 @property (nullable, nonatomic, strong) DWPaymentIntent *paymentIntent;
-@property (nullable, nonatomic, strong) DSPaymentRequest *request;
-@property (nullable, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
 @property (nullable, nonatomic, strong) id bip70Confirmation;
 @property (nullable, nonatomic, strong) id<DWDPBasicUserItem> userItem;
 
 - (instancetype)initWithSource:(DWPaymentInputSource)source;
 
-/// Attach the parsed URI, build its send-side `DWPaymentIntent`, and mint the write-only
-/// `DSPaymentRequest` courier from the parsed fields. The box owns all decisions; the intent drives
-/// the send; the courier now only feeds the sweep path and the C10 DashPay conversion.
+/// Attach the parsed URI and build its send-side `DWPaymentIntent`. The box owns all
+/// routing/validity decisions; the intent drives the send.
 - (void)attachParsedURI:(DWParsedPaymentURI *)parsedURI;
 
 @end

@@ -128,7 +128,10 @@ NS_ASSUME_NONNULL_BEGIN
                                       strongSelf.pasteboardPaymentInput = paymentInput;
 
                                       if (completion) {
-                                          BOOL success = paymentInput.request || paymentInput.protocolRequest;
+                                          // A payable pasteboard input carries either a parsed URI
+                                          // (address/URI path) or a fetched BIP70 confirmation
+                                          // (BIP73 URL path — previously misreported as failure).
+                                          BOOL success = paymentInput.parsedURI != nil || paymentInput.bip70Confirmation != nil;
                                           completion(success);
                                       }
                                   }];

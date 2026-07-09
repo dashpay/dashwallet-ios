@@ -25,10 +25,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 
-#import <DashSync/DashSync.h>
-
 #import "DWCaptureSessionManager.h"
-#import "DWEnvironment.h"
 #import "DWPaymentInput+Private.h"
 #import "DWQRScanModel.h"
 #import "dashwallet-Swift.h"

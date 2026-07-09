@@ -19,8 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSTransaction;
-@class DSPaymentProtocolRequest;
 @protocol DWDPBasicUserItem;
 
 typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
@@ -30,15 +28,6 @@ typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
 
 @interface DWPaymentOutput : NSObject
 
-/// The DashSync-built transaction — set only on the DashSync / C10 DashPay arm
-/// (`txManagerConfirmTx:`), where `confirmPaymentOutput:` hands it back to
-/// `signAndPublishTransaction:`. nil for SwiftDashSDK-prepared outputs (which
-/// carry `preparedStandardSend` instead) and merchant/BIP70 outputs (tx is
-/// built later, inside `confirmAndSend`).
-@property (readonly, nullable, nonatomic, strong) DSTransaction *tx;
-/// nil for app-side sends built from a `DWPaymentIntent` (plain-dash:) or a BIP70 merchant
-/// `Confirmation` — those carry no `DSPaymentProtocolRequest`. Set only on the DashSync / C10 paths.
-@property (readonly, nullable, nonatomic, strong) DSPaymentProtocolRequest *protocolRequest;
 @property (readonly, nonatomic, assign) uint64_t amount;
 @property (readonly, nonatomic, assign) uint64_t fee;
 @property (readonly, nonatomic, copy) NSString *address;
@@ -57,8 +46,8 @@ typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
 /// `confirmAndSend` on the same prepared confirmation. nil for non-BIP70 outputs.
 @property (readonly, nullable, nonatomic, strong) id bip70Confirmation;
 
-/// Builds a merchant (BIP70) payment output from plain fields — no `DSTransaction` /
-/// `DSPaymentProtocolRequest`. The tx is built later, inside `confirmAndSend`.
+/// Builds a merchant (BIP70) payment output from plain fields.
+/// The tx is built later, inside `confirmAndSend`.
 - (instancetype)initWithMerchantName:(nullable NSString *)merchantName
                             isSecure:(BOOL)isSecure
                               amount:(uint64_t)amount
