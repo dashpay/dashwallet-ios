@@ -40,9 +40,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray<NSURL *> *)logFiles;
 
-- (void)setFixedPeer:(NSString *)fixedPeer;
-- (void)clearFixedPeer;
-
 @end
 
 NS_ASSUME_NONNULL_END

@@ -17,11 +17,6 @@
 
 #import "DWAboutModel.h"
 
-#import <arpa/inet.h>
-#import <netdb.h>
-#import <sys/socket.h>
-
-#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "dashwallet-Swift.h"
 
@@ -162,51 +157,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray<NSURL *> *)logFiles {
     return [[DWLogger sharedInstance] logFiles];
-}
-
-- (void)setFixedPeer:(NSString *)fixedPeer {
-    NSArray *pair = [fixedPeer componentsSeparatedByString:@":"];
-    NSString *host = pair.firstObject;
-    NSString *service = (pair.count > 1) ? pair[1] : @([DWEnvironment sharedInstance].currentChain.standardPort).stringValue;
-    struct addrinfo hints = {0, AF_UNSPEC, SOCK_STREAM, 0, 0, 0, NULL, NULL}, *servinfo, *p;
-    UInt128 addr = {.u32 = {0, 0, CFSwapInt32HostToBig(0xffff), 0}};
-
-    NSLog(@"DNS lookup %@", host);
-
-    if (getaddrinfo(host.UTF8String, service.UTF8String, &hints, &servinfo) == 0) {
-        for (p = servinfo; p != NULL; p = p->ai_next) {
-            if (p->ai_family == AF_INET) {
-                addr.u64[0] = 0;
-                addr.u32[2] = CFSwapInt32HostToBig(0xffff);
-                addr.u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
-            }
-            else {
-                continue;
-            }
-
-            uint16_t port = CFSwapInt16BigToHost(((struct sockaddr_in *)p->ai_addr)->sin_port);
-            char s[INET6_ADDRSTRLEN];
-
-            if (addr.u64[0] == 0 && addr.u32[2] == CFSwapInt32HostToBig(0xffff)) {
-                host = @(inet_ntop(AF_INET, &addr.u32[3], s, sizeof(s)));
-            }
-            else {
-                host = @(inet_ntop(AF_INET6, &addr, s, sizeof(s)));
-            }
-            [[DWEnvironment sharedInstance].currentChainManager.peerManager setTrustedPeerHost:[NSString stringWithFormat:@"%@:%d", host, port]];
-            [[DWEnvironment sharedInstance].currentChainManager.peerManager disconnect:DSDisconnectReason_TrustedPeerSet];
-            [[DWEnvironment sharedInstance].currentChainManager.peerManager connect];
-            break;
-        }
-
-        freeaddrinfo(servinfo);
-    }
-}
-
-- (void)clearFixedPeer {
-    DSPeerManager *peerManager = [DWEnvironment sharedInstance].currentChainManager.peerManager;
-    [peerManager removeTrustedPeerHost];
-    [peerManager connect];
 }
 
 - (void)dealloc {

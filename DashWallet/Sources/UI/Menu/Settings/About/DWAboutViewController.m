@@ -21,7 +21,6 @@
 #import <StoreKit/StoreKit.h>
 
 #import "DWAboutModel.h"
-#import "DWEnvironment.h"
 #import "DWUIKit.h"
 #import "DWWindow.h"
 #import "SFSafariViewController+DashWallet.h"
@@ -166,14 +165,6 @@ NS_ASSUME_NONNULL_BEGIN
                 }];
     [alert addAction:copyLogs];
 
-    UIAlertAction *setPeerAction = [UIAlertAction
-        actionWithTitle:NSLocalizedString(@"Manage Trusted Node", nil)
-                  style:UIAlertActionStyleDefault
-                handler:^(UIAlertAction *_Nonnull action) {
-                    [self setFixedPeer];
-                }];
-    [alert addAction:setPeerAction];
-
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
                                                        style:UIAlertActionStyleCancel
                                                      handler:nil];
@@ -200,63 +191,6 @@ NS_ASSUME_NONNULL_BEGIN
     UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:dataToShare
                                                                                          applicationActivities:nil];
     [self presentViewController:activityViewController animated:YES completion:nil];
-}
-
-- (void)setFixedPeer {
-    if (![[DWEnvironment sharedInstance].currentChainManager.peerManager trustedPeerHost]) {
-        UIAlertController *alert = [UIAlertController
-            alertControllerWithTitle:nil
-                             message:NSLocalizedString(@"Set a trusted node", nil)
-                      preferredStyle:UIAlertControllerStyleAlert];
-
-        [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
-            textField.placeholder = NSLocalizedString(@"Node IP", nil);
-            textField.textColor = [UIColor darkTextColor];
-            textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-            textField.borderStyle = UITextBorderStyleRoundedRect;
-        }];
-
-        UIAlertAction *cancelButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                      style:UIAlertActionStyleCancel
-                    handler:nil];
-        [alert addAction:cancelButton];
-
-        UIAlertAction *trustButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"OK", nil)
-                      style:UIAlertActionStyleDefault
-                    handler:^(UIAlertAction *action) {
-                        UITextField *ipField = alert.textFields.firstObject;
-                        NSString *fixedPeer = ipField.text;
-                        [self.model setFixedPeer:fixedPeer];
-                    }];
-        [alert addAction:trustButton];
-        alert.preferredAction = trustButton;
-
-        [self presentViewController:alert animated:YES completion:nil];
-    }
-    else {
-        UIAlertController *alert = [UIAlertController
-            alertControllerWithTitle:nil
-                             message:NSLocalizedString(@"Clear trusted node?", nil)
-                      preferredStyle:UIAlertControllerStyleAlert];
-
-        UIAlertAction *cancelButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                      style:UIAlertActionStyleCancel
-                    handler:nil];
-        [alert addAction:cancelButton];
-
-        UIAlertAction *clearButton = [UIAlertAction
-            actionWithTitle:NSLocalizedString(@"Clear", nil)
-                      style:UIAlertActionStyleDestructive
-                    handler:^(UIAlertAction *action) {
-                        [self.model clearFixedPeer];
-                    }];
-        [alert addAction:clearButton];
-
-        [self presentViewController:alert animated:YES completion:nil];
-    }
 }
 
 - (void)exploreDashDatabaseSyncStateChanged {
