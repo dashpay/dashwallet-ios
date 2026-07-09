@@ -90,8 +90,7 @@ public final class TransactionObserver {
     /// Persisted rows decoded to `ObservedTransaction`, newest-first
     /// (`firstSeen` desc). Empty (logged) when the SDK host has no container
     /// yet or the network is unsupported. Safe from any thread — trampolines
-    /// to main because `mainContext` and the `Transaction` wrapper are
-    /// main-bound (same shape as `SwiftDashSDKWalletSource.allTransactions`).
+    /// to main because this scanner reads through `mainContext`.
     static func fetchObserved(
         fetchLimit: Int? = nil,
         firstSeenAtOrAfter: UInt64? = nil
