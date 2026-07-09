@@ -56,6 +56,9 @@ final class WalletsViewModel: ObservableObject {
     /// Non-nil while a switch (or an auto-switch before removing the active
     /// wallet) is in flight — the screen shows a blocking progress overlay.
     @Published private(set) var switchInProgress = false
+    /// True while an add-wallet (create or import) is in flight — the add sheet
+    /// shows a progress state and disables its controls.
+    @Published private(set) var addInProgress = false
     /// Set to surface an error alert; the screen clears it on dismiss.
     @Published var errorMessage: String? = nil
 
@@ -137,6 +140,94 @@ final class WalletsViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Add Wallet
+
+    /// Outcome of an add-wallet attempt, surfaced to the sheet.
+    enum AddOutcome: Equatable {
+        /// The wallet was added and the app switched to it — dismiss the sheet.
+        case switched
+        /// A wallet with this recovery phrase is already on this device. Carries
+        /// its walletId so the sheet can offer switching to it instead.
+        case alreadyOnDevice(walletId: Data)
+    }
+
+    /// Generate a fresh 12-word BIP39 mnemonic via the SDK for the "Create New
+    /// Wallet" flow. Returns nil (and surfaces an error) on FFI failure. Nothing
+    /// is persisted here — creation happens in `addWallet` after the user
+    /// confirms they wrote the phrase down.
+    func generateMnemonic() -> String? {
+        do {
+            return try Mnemonic.generate(wordCount: 12)
+        } catch {
+            Self.logger.error("mnemonic generation failed: \(String(describing: error), privacy: .public)")
+            errorMessage = NSLocalizedString("Could not generate a recovery phrase.", comment: "Wallets")
+            return nil
+        }
+    }
+
+    /// Whether `phrase` is a valid BIP39 mnemonic — the import field's gate,
+    /// checked before enabling its confirm button.
+    func isValidMnemonic(_ phrase: String) -> Bool {
+        Mnemonic.validate(Self.normalize(phrase))
+    }
+
+    /// Add a wallet from `mnemonic` and switch to it. `isImported` distinguishes
+    /// the two entry paths and sets the new wallet's `walletNeedsBackup` flag:
+    /// a created wallet still needs a backup (its phrase was only shown, not
+    /// verified — matches onboarding); an imported wallet does not (the user
+    /// already holds the phrase — matches the recover flow).
+    ///
+    /// Flow: `SwiftDashSDKHost.addWallet` (additive — no rebind) → on `.added`,
+    /// `switchWallet(to:)` the new wallet (awaited, progress overlay) → set the
+    /// per-wallet backup flag for the now-active new wallet → refresh. On
+    /// `.alreadyExists` nothing is written and `.alreadyOnDevice` is returned so
+    /// the sheet can offer switching instead.
+    ///
+    /// Returns the outcome; returns nil after surfacing an error (the sheet
+    /// stays open on failure — never claims a success that didn't happen).
+    func addWallet(mnemonic: String, isImported: Bool) async -> AddOutcome? {
+        guard !addInProgress, !switchInProgress else { return nil }
+        let normalized = Self.normalize(mnemonic)
+
+        addInProgress = true
+        defer { addInProgress = false }
+
+        let result: SwiftDashSDKHost.AddWalletResult
+        do {
+            result = try SwiftDashSDKHost.shared.addWallet(mnemonic: normalized)
+        } catch {
+            Self.logger.error("addWallet failed: \(String(describing: error), privacy: .public)")
+            errorMessage = error.localizedDescription
+            return nil
+        }
+
+        switch result {
+        case .alreadyExists(let walletId):
+            return .alreadyOnDevice(walletId: walletId)
+        case .added(let walletId):
+            switchInProgress = true
+            do {
+                try await SwiftDashSDKWalletRuntime.shared.switchWallet(to: walletId)
+            } catch {
+                switchInProgress = false
+                Self.logger.error("post-add switch failed: \(String(describing: error), privacy: .public)")
+                // The wallet was added but the switch failed; leave it on device
+                // and surface the error. The list still gains the new wallet.
+                errorMessage = error.localizedDescription
+                reload()
+                return nil
+            }
+            switchInProgress = false
+
+            // The new wallet is now the active wallet, so this per-wallet flag
+            // targets it (DWGlobalOptions scopes by the active walletId).
+            DWGlobalOptions.sharedInstance().walletNeedsBackup = !isImported
+
+            reload()
+            return .switched
+        }
+    }
+
     // MARK: - Rename
 
     /// Write `name` to `PersistentWallet.name` for `walletId` (empty string
@@ -175,10 +266,7 @@ final class WalletsViewModel: ObservableObject {
     /// recovery phrase before deleting this device's copy of it. Returns false
     /// on an invalid mnemonic, an unsupported network, or a mismatch.
     func recoveryPhraseMatches(_ mnemonic: String, walletId expected: Data) -> Bool {
-        let trimmed = mnemonic
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .split(whereSeparator: { $0.isWhitespace })
-            .joined(separator: " ")
+        let trimmed = Self.normalize(mnemonic)
         guard Mnemonic.validate(trimmed) else { return false }
         guard let network = WalletEnvironment.network else { return false }
         do {
@@ -243,6 +331,16 @@ final class WalletsViewModel: ObservableObject {
 
     private func activeWalletId() -> Data? {
         WalletEnvironment.activeWalletId(for: WalletEnvironment.isTestnet ? .testnet : .mainnet)
+    }
+
+    /// Collapse a user-entered recovery phrase to canonical form: trim, then
+    /// join words on single spaces (tolerates newlines / extra spacing from
+    /// paste). Shared by import and the remove-sheet verification.
+    static func normalize(_ phrase: String) -> String {
+        phrase
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .split(whereSeparator: { $0.isWhitespace })
+            .joined(separator: " ")
     }
 
     private static func fetchPersistentWallet(walletId: Data, in context: ModelContext) -> PersistentWallet? {
