@@ -95,7 +95,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWPhoneWCSessionManager.h"
 
 //MARK: DashPay
-#import "DWDPBasicUserItem.h"
 #import "DWDPAvatarView.h"
 #import "DWDPRegistrationStatus.h"
 #import "DWInvitationActionsView.h"
