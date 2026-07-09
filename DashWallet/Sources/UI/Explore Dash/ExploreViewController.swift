@@ -107,7 +107,8 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
             UIPasteboard.general.string = paymentAddress
         }
         
-        if let url = URL(string: "http://faucet.testnet.networks.dash.org/") {
+        // https only — the faucet no longer answers on port 80.
+        if let url = URL(string: "https://faucet.testnet.networks.dash.org/") {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
     }

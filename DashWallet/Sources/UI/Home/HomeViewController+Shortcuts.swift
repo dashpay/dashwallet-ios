@@ -68,6 +68,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
             showUphold()
         case .topper:
             showTopper()
+        case .getTestDash:
+            showTestnetFaucet()
         }
     }
 
@@ -216,6 +218,21 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
         guard let bundleName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String else { return }
         let urlString = TopperViewModel.shared.topperBuyUrl(walletName: bundleName)
         guard let url = URL(string: urlString) else { return }
+        let safariViewController = SFSafariViewController.dw_controller(with: url)
+        present(safariViewController, animated: true)
+    }
+
+    /// Testnet faucet (mirrors the Explore screen's get-test-dash flow):
+    /// copies the wallet's receive address so the user can paste it into
+    /// the faucet form, then opens the faucet in-app. The request itself
+    /// stays in the web page — the faucet's API requires its anti-bot
+    /// challenge token, which only the page can produce.
+    private func showTestnetFaucet() {
+        guard WalletEnvironment.isTestnet else { return }
+        if let paymentAddress = SwiftDashSDKReceiveAddressReader.receiveAddress() {
+            UIPasteboard.general.string = paymentAddress
+        }
+        guard let url = URL(string: "https://faucet.testnet.networks.dash.org/") else { return }
         let safariViewController = SFSafariViewController.dw_controller(with: url)
         present(safariViewController, animated: true)
     }
