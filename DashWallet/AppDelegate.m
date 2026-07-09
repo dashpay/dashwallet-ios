@@ -27,6 +27,7 @@
 #import "DWInitialViewController.h"
 #import "DWVersionManager.h"
 #import "DWWindow.h"
+#import "DWEnvironment.h"
 #import "DWURLParser.h"
 #import "dashwallet-Swift.h"
 #ifndef IGNORE_WATCH_TARGET
@@ -305,6 +306,14 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     [[DSOptionsManager sharedInstance] setRetrievePriceInfo:NO];
 
     [[DashSync sharedSyncController] setupDashSyncOnce];
+
+    // Materializes the DSChain singletons (+ chain managers) on the MAIN
+    // thread before any background consumer reaches the shim — DSChain's
+    // init asserts "Chains should only be created on main thread", and
+    // DWPhoneWCSessionManager's application-context dispatch below is such
+    // a first-toucher. A lazy first touch off-main crashes; a dispatch_sync
+    // trampoline inside the shim's dispatch_once would deadlock instead.
+    [DWEnvironment sharedInstance];
 
     [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_Default];
     
