@@ -21,8 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWPaymentInput;
 @class DWPaymentProcessor;
-@class DSPaymentProtocolRequest;
-@class DSPaymentRequest;
 @class DWPaymentOutput;
 @protocol DWDPBasicUserItem;
 
@@ -36,13 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
     requestAmountWithDestination:(NSString *)sendingDestination
                           amount:(uint64_t)amount
                      contactItem:(nullable id<DWDPBasicUserItem>)contactItem;
-
-- (void)paymentProcessor:(DWPaymentProcessor *)processor
-    requestUserActionTitle:(nullable NSString *)title
-                   message:(nullable NSString *)message
-               actionTitle:(NSString *)actionTitle
-               cancelBlock:(nullable void (^)(void))cancelBlock
-               actionBlock:(nullable void (^)(void))actionBlock;
 
 // Confirmation
 
@@ -60,11 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // `txidWire` is the broadcast transaction's wire-order txid (`Transaction.txHashData`
 // convention) — the only datum consumers ever read off the old DSTransaction courier;
-// the success screen resolves it to the persisted SDK row. `protocolRequest` is nil
-// for app-side sends (plain-dash: intent, BIP70 merchant).
+// the success screen resolves it to the persisted SDK row.
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
-          didSendRequest:(nullable DSPaymentProtocolRequest *)protocolRequest
-                txidWire:(NSData *)txidWire
+     didSendWithTxidWire:(NSData *)txidWire
              contactItem:(nullable id<DWDPBasicUserItem>)contactItem;
 
 // Progress HUD
@@ -88,10 +77,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)confirmPaymentOutput:(DWPaymentOutput *)paymentOutput;
 
 - (void)reset;
-
-- (instancetype)initWithDelegate:(id<DWPaymentProcessorDelegate>)delegate;
-
-- (instancetype)init;
 
 @end
 

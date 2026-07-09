@@ -129,26 +129,6 @@ extension PaymentController: DWPaymentProcessorDelegate {
         provideAmountViewController = vc
     }
 
-    func paymentProcessor(_ processor: DWPaymentProcessor, requestUserActionTitle title: String?, message: String?,
-                          actionTitle: String, cancel cancelBlock: (() -> Void)?, actionBlock: (() -> Void)? = nil) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel) { _ in
-            cancelBlock?()
-        }
-
-        alert.addAction(cancelAction)
-
-        let actionAction = UIAlertAction(title: actionTitle, style: .default) { _ in
-            actionBlock?()
-
-            self.confirmViewController?.isSendingEnabled = true
-        }
-
-        alert.addAction(actionAction)
-        show(modalController: alert)
-    }
-
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
         self.paymentOutput = paymentOutput
 
@@ -172,7 +152,10 @@ extension PaymentController: DWPaymentProcessorDelegate {
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, didFailWithError error: Error?, title: String?, message: String?) {
-        guard let error = error as? NSError else {
+        // Pre-existing behavior kept: nil-error failures (invalid-address rejections)
+        // stay silent here. The DashSync DSErrorDomain special-case is gone — live
+        // errors carry WalletSendService / SDK / BIP70 domains.
+        guard error != nil else {
             return
         }
 
@@ -181,19 +164,10 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
         confirmViewController?.isSendingEnabled = true
 
-        if error.domain == DSErrorDomain,
-           error.code == DSErrorInsufficientFunds
-           || error.code == DSErrorInsufficientFundsForNetworkFee
-           || error.code == DSErrorPaymentAmountLessThenMinOutputAmount
-           || error.code == DSErrorPaymentTransactionOutputTooSmall {
-            provideAmountViewController?.present(error: error)
-        } else {
-            showAlert(with: title, message: message)
-        }
+        showAlert(with: title, message: message)
     }
 
-    func paymentProcessor(_ processor: DWPaymentProcessor, didSend protocolRequest: DSPaymentProtocolRequest?,
-                          txidWire: Data, contactItem: DWDPBasicUserItem?) {
+    func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithTxidWire txidWire: Data, contactItem: DWDPBasicUserItem?) {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
 
         let finishBlock = {
