@@ -27,7 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeModelStub ()
 
-@property (readonly, nonatomic, strong) NSArray<DSTransaction *> *dataSource;
 
 @end
 
@@ -37,7 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize receiveModel = _receiveModel;
 @synthesize dashPayModel = _dashPayModel;
 @synthesize updatesObserver = _updatesObserver;
-@synthesize allDataSource = _allDataSource;
 @synthesize allowedToShowReclassifyYourTransactions = _allowedToShowReclassifyYourTransactions;
 
 - (instancetype)init {
@@ -64,10 +62,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setUpdatesObserver:(nullable id<DWHomeModelUpdatesObserver>)updatesObserver {
     _updatesObserver = updatesObserver;
-}
-
-- (NSArray<DSTransaction *> *)dataSource {
-    return self.allDataSource;
 }
 
 - (BOOL)shouldShowWalletBackupReminder {
@@ -112,9 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reloadTxDataSource {
     // The demo tx list renders via the Swift `StubTransactionSource`
-    // (synthetic SDK-shaped wrappers); `allDataSource` survives only to
-    // satisfy the DWHomeProtocol contract and has no readers.
-    self.allDataSource = @[];
+    // (synthetic SDK-shaped wrappers); nothing to reload here.
 }
 
 @end

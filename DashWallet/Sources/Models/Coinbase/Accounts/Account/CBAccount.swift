@@ -111,7 +111,7 @@ extension CBAccount {
 //            throw Coinbase.Error.transactionFailed(.limitExceded)
 //        }
 
-        guard amount >= DSTransaction.txMinOutputAmount() else {
+        guard amount >= CoreTxConstants.minOutputAmount else {
             throw Coinbase.Error.transactionFailed(.invalidAmount)
         }
 

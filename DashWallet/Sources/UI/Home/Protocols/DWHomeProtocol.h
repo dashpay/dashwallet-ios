@@ -23,7 +23,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWHomeProtocol;
-@class DSTransaction;
 @protocol DWPayModelProtocol;
 @protocol DWReceiveModelProtocol;
 
@@ -39,7 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
 @property (readonly, nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
-@property (nonatomic, strong) NSArray<DSTransaction *> *allDataSource;
 
 @property (readonly, nonatomic, assign) BOOL shouldShowWalletBackupReminder;
 

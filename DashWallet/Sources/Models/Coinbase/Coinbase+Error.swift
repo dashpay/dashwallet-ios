@@ -122,7 +122,7 @@ extension Coinbase {
             var errorDescription: String? {
                 switch self {
                 case .invalidAmount:
-                    let amountString = DSTransaction.txMinOutputAmount().formattedDashAmount
+                    let amountString = CoreTxConstants.minOutputAmount.formattedDashAmount
                     return String(format: NSLocalizedString("Dash payments can't be less than %@", comment: "Coinbase"), amountString)
                 case .failedToObtainNewAddress:
                     return NSLocalizedString("There was an error while obtaining new address", comment: "Coinbase")

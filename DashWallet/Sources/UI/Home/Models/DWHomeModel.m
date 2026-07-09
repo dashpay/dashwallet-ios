@@ -54,7 +54,6 @@ NS_ASSUME_NONNULL_BEGIN
 @synthesize receiveModel = _receiveModel;
 @synthesize dashPayModel = _dashPayModel;
 @synthesize updatesObserver = _updatesObserver;
-@synthesize allDataSource = _allDataSource;
 
 
 - (instancetype)init {
@@ -75,8 +74,6 @@ NS_ASSUME_NONNULL_BEGIN
         _dashPayModel = [[DWDashPayModel alloc] init];
 #endif /* DASHPAY_ENABLED */
 
-        // set empty datasource
-        _allDataSource = @[];
 
         _receiveModel = [[DWReceiveModel alloc] init];
         [_receiveModel updateReceivingInfo];

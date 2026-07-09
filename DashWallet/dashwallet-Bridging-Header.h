@@ -48,7 +48,6 @@ static const bool _SNAPSHOT = 0;
 #import "UIFont+DWFont.h"
 #import "NSData+Dash.h"
 #import "CALayer+DWShadow.h"
-#import "DSTransaction+DashWallet.h"
 #import "DWAlertController.h"
 #import "DWHomeProtocol.h"
 #import "UIDevice+DashWallet.h"

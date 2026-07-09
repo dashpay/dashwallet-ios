@@ -50,20 +50,7 @@ class TxDetailModel: NSObject {
         self.init(transaction: Self.resolve(txidWire: txidWire))
     }
 
-    /// ObjC resolver seam for the surviving `DSTransaction` courier hand-over
-    /// (the DashPay profile popup, C10). Only the courier's txid — and its
-    /// timestamp as a last-resort date — is read; everything else it would
-    /// derive itself comes from the frozen DashSync chain and is wrong post-M6.
-    @objc
-    convenience init(transaction: DSTransaction) {
-        let fallbackDate = transaction.timestamp > 1
-            ? Date(timeIntervalSince1970: transaction.timestamp)
-            : nil
-        self.init(transaction: Self.resolve(txidWire: transaction.txHashData,
-                                            fallbackDate: fallbackDate))
-    }
-
-    private static func resolve(txidWire: Data, fallbackDate: Date? = nil) -> Transaction {
+    private static func resolve(txidWire: Data) -> Transaction {
         if let row = SwiftDashSDKWalletSource.fetch(txid: txidWire) {
             return row
         }
@@ -86,7 +73,7 @@ class TxDetailModel: NSObject {
             netAmount: 0,
             fee: nil,
             contextRaw: 0,
-            date: fallbackDate ?? Date())
+            date: Date())
     }
 
     init(transaction: Transaction) {

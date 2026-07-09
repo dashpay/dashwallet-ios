@@ -9,6 +9,13 @@ import Foundation
 import OSLog
 import SwiftDashSDK
 
+/// Core-chain transaction constants the app needs without DashSync.
+enum CoreTxConstants {
+    /// DashSync's TX_MIN_OUTPUT_AMOUNT: TX_FEE_PER_B(1) × 3 × (TX_OUTPUT_SIZE(34) +
+    /// TX_INPUT_SIZE(148)) = 546 duffs — the standard dust threshold; no txout below this.
+    static let minOutputAmount: UInt64 = 546
+}
+
 @objc(DWPreparedStandardSend)
 final class PreparedStandardSend: NSObject {
     @objc let txData: Data

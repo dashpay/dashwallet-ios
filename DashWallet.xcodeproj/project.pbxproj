@@ -325,12 +325,10 @@
 		470617D6299A671900DCC667 /* CrowdNodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470617D5299A671900DCC667 /* CrowdNodeCell.swift */; };
 		47081197298CF20C003FCA3D /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47081196298CF20B003FCA3D /* Transaction.swift */; };
 		4708119F2990F56F003FCA3D /* TransactionDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4708119E2990F56F003FCA3D /* TransactionDataItem.swift */; };
-		47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */; };
 		4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4709C30E287E787700B4BD48 /* Migrations.bundle */; };
 		4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C311287E78BD00B4BD48 /* SeedDB.swift */; };
 		4709C315287EA11900B4BD48 /* TransactionMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C314287EA11900B4BD48 /* TransactionMetadata.swift */; };
 		4709C318287EA23000B4BD48 /* TransactionMetadataDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C317287EA23000B4BD48 /* TransactionMetadataDAO.swift */; };
-		4709C31E2880247C00B4BD48 /* DSTransaction+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4709C31D2880247C00B4BD48 /* DSTransaction+DashWallet.m */; };
 		4709C31F28818BAE00B4BD48 /* TxDetailModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C31A288020DE00B4BD48 /* TxDetailModel.swift */; };
 		4709C32128818D5400B4BD48 /* Foundation+Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C32028818D5400B4BD48 /* Foundation+Bitcoin.swift */; };
 		470AE1882926600A001A0514 /* PaymentController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A50F372912D9DC00C70123 /* PaymentController.swift */; };
@@ -1047,7 +1045,6 @@
 		C943B5382A40A65B00AF23C5 /* DWScrollingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5362A40A65B00AF23C5 /* DWScrollingViewController.m */; };
 		C943B53E2A40A6BE00AF23C5 /* DPAlertViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B53B2A40A6BE00AF23C5 /* DPAlertViewController.m */; };
 		C943B53F2A40A6BE00AF23C5 /* DPAlertChildContentsView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B53C2A40A6BE00AF23C5 /* DPAlertChildContentsView.m */; };
-		C943B5432A40AFD100AF23C5 /* DWTxDetailPopupViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5422A40AFD100AF23C5 /* DWTxDetailPopupViewController.m */; };
 		C943B54A2A40B52F00AF23C5 /* NSLayoutConstraint+DWAutolayout.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5462A40B52F00AF23C5 /* NSLayoutConstraint+DWAutolayout.m */; };
 		C943B54B2A40B52F00AF23C5 /* UIView+DWAutolayout.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B5482A40B52F00AF23C5 /* UIView+DWAutolayout.m */; };
 		C943B54E2A40B6B500AF23C5 /* DWColoredButton.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B54C2A40B6B500AF23C5 /* DWColoredButton.m */; };
@@ -1119,7 +1116,6 @@
 		C9D2C6A72A320AA000D15901 /* CrowdNodeResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11B8449528F5B9F80082770C /* CrowdNodeResponse.swift */; };
 		C9D2C6A82A320AA000D15901 /* FileManager+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */; };
 		C9D2C6A92A320AA000D15901 /* PointOfUseItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BCB28C1305E00490F5E /* PointOfUseItemCell.swift */; };
-		C9D2C6AA2A320AA000D15901 /* DSTransaction+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */; };
 		C9D2C6AC2A320AA000D15901 /* PayableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */; };
 		C9D2C6AD2A320AA000D15901 /* HairlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1428C6378E00490F5E /* HairlineView.swift */; };
 		C9D2C6AE2A320AA000D15901 /* DWInitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E9423A3F75F006A2A59 /* DWInitialViewController.m */; };
@@ -1468,7 +1464,6 @@
 		C9D2C86F2A320AA000D15901 /* NavigationBarAppearanceCustomizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */; };
 		C9D2C8702A320AA000D15901 /* AmountObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471DD1B5290A901200E030C8 /* AmountObject.swift */; };
 		C9D2C8712A320AA000D15901 /* DerivationPathKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909615029F158D700002D82 /* DerivationPathKeysViewController.swift */; };
-		C9D2C8722A320AA000D15901 /* DSTransaction+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 4709C31D2880247C00B4BD48 /* DSTransaction+DashWallet.m */; };
 		C9D2C8742A320AA000D15901 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		C9D2C8762A320AA000D15901 /* DWUpholdMainnetConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB8ACEB522E0502100EE5035 /* DWUpholdMainnetConstants.m */; };
 		C9D2C8792A320AA000D15901 /* Style.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA829DC09CF001BC549 /* Style.swift */; };
@@ -2273,14 +2268,11 @@
 		470617D5299A671900DCC667 /* CrowdNodeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeCell.swift; sourceTree = "<group>"; };
 		47081196298CF20B003FCA3D /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		4708119E2990F56F003FCA3D /* TransactionDataItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDataItem.swift; sourceTree = "<group>"; };
-		47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DSTransaction+DashWallet.swift"; sourceTree = "<group>"; };
 		4709C30E287E787700B4BD48 /* Migrations.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Migrations.bundle; sourceTree = "<group>"; };
 		4709C311287E78BD00B4BD48 /* SeedDB.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SeedDB.swift; sourceTree = "<group>"; };
 		4709C314287EA11900B4BD48 /* TransactionMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMetadata.swift; sourceTree = "<group>"; };
 		4709C317287EA23000B4BD48 /* TransactionMetadataDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMetadataDAO.swift; sourceTree = "<group>"; };
 		4709C31A288020DE00B4BD48 /* TxDetailModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailModel.swift; sourceTree = "<group>"; };
-		4709C31C2880247C00B4BD48 /* DSTransaction+DashWallet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DSTransaction+DashWallet.h"; sourceTree = "<group>"; };
-		4709C31D2880247C00B4BD48 /* DSTransaction+DashWallet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DSTransaction+DashWallet.m"; sourceTree = "<group>"; };
 		4709C32028818D5400B4BD48 /* Foundation+Bitcoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Foundation+Bitcoin.swift"; sourceTree = "<group>"; };
 		471A2604289ACD5C0056B7B2 /* AddressUserInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressUserInfo.swift; sourceTree = "<group>"; };
 		471A2607289ACDA00056B7B2 /* AddressUserInfoDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressUserInfoDAO.swift; sourceTree = "<group>"; };
@@ -2934,8 +2926,6 @@
 		C943B53B2A40A6BE00AF23C5 /* DPAlertViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DPAlertViewController.m; sourceTree = "<group>"; };
 		C943B53C2A40A6BE00AF23C5 /* DPAlertChildContentsView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DPAlertChildContentsView.m; sourceTree = "<group>"; };
 		C943B53D2A40A6BE00AF23C5 /* DPAlertViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPAlertViewController.h; sourceTree = "<group>"; };
-		C943B5412A40AFD000AF23C5 /* DWTxDetailPopupViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWTxDetailPopupViewController.h; sourceTree = "<group>"; };
-		C943B5422A40AFD100AF23C5 /* DWTxDetailPopupViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTxDetailPopupViewController.m; sourceTree = "<group>"; };
 		C943B5442A40B4AF00AF23C5 /* DWDashPayReadyProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDashPayReadyProtocol.h; sourceTree = "<group>"; };
 		C943B5462A40B52F00AF23C5 /* NSLayoutConstraint+DWAutolayout.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSLayoutConstraint+DWAutolayout.m"; sourceTree = "<group>"; };
 		C943B5472A40B52F00AF23C5 /* NSLayoutConstraint+DWAutolayout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSLayoutConstraint+DWAutolayout.h"; sourceTree = "<group>"; };
@@ -4962,8 +4952,6 @@
 				2A885FD5244DFEF100B9F679 /* UIView+DWFindConstraints.m */,
 				C3DAD2CD247585C10001624F /* NSPredicate+DWFullTextSearch.h */,
 				C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */,
-				4709C31C2880247C00B4BD48 /* DSTransaction+DashWallet.h */,
-				4709C31D2880247C00B4BD48 /* DSTransaction+DashWallet.m */,
 				4709C32028818D5400B4BD48 /* Foundation+Bitcoin.swift */,
 				47AE8BB128BFF61A00490F5E /* FileManager+DashWallet.swift */,
 				471DD1B9290A962B00E030C8 /* String+DashWallet.swift */,
@@ -4978,7 +4966,6 @@
 				4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */,
 				47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */,
 				47F005FE297164600029EB10 /* UITableView+DashWallet.swift */,
-				47083B3129892D770010AF71 /* DSTransaction+DashWallet.swift */,
 				474C7210298A1A9500475CA6 /* UIView+Reuse.swift */,
 				472D13E9299E5396006903F1 /* NSAttributedString+Builder.swift */,
 				C9F451E82A0BDAE700825057 /* UIApplication+DashWallet.swift */,
@@ -7228,8 +7215,6 @@
 		C943B5402A40AFC400AF23C5 /* Tx Details */ = {
 			isa = PBXGroup;
 			children = (
-				C943B5412A40AFD000AF23C5 /* DWTxDetailPopupViewController.h */,
-				C943B5422A40AFD100AF23C5 /* DWTxDetailPopupViewController.m */,
 			);
 			path = "Tx Details";
 			sourceTree = "<group>";
@@ -8451,7 +8436,6 @@
 				47AE8BB228BFF61A00490F5E /* FileManager+DashWallet.swift in Sources */,
 				7545ED532DA91A2F0075F45C /* CTXConstants.swift in Sources */,
 				47AE8BF228C1306000490F5E /* PointOfUseItemCell.swift in Sources */,
-				47083B3229892D770010AF71 /* DSTransaction+DashWallet.swift in Sources */,
 				C9F42F9F29DA82E5001BC549 /* PayableViewController.swift in Sources */,
 				75FFD6C12BF493A60032879E /* HomeViewController+SecureWalletDelegateImpl.swift in Sources */,
 				47AE8C1528C6378E00490F5E /* HairlineView.swift in Sources */,
@@ -8955,7 +8939,6 @@
 				471DD1B6290A901200E030C8 /* AmountObject.swift in Sources */,
 				C909615129F158D700002D82 /* DerivationPathKeysViewController.swift in Sources */,
 				A0795C9369A1402498C00F69 /* DerivationPathKeysView.swift in Sources */,
-				4709C31E2880247C00B4BD48 /* DSTransaction+DashWallet.m in Sources */,
 				75D6D8E42D96A6DB00E40A6D /* StubTransactionSource.swift in Sources */,
 				75CDD7802C0898E400F433D2 /* Shape.swift in Sources */,
 				2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */,
@@ -9176,7 +9159,6 @@
 				C9D2C6A92A320AA000D15901 /* PointOfUseItemCell.swift in Sources */,
 				753261B22CBC157F003CDE00 /* GetStartedViewController.swift in Sources */,
 				C956AF142A5B5949002FAB75 /* EnterAddressViewController.swift in Sources */,
-				C9D2C6AA2A320AA000D15901 /* DSTransaction+DashWallet.swift in Sources */,
 				C9D2C6AC2A320AA000D15901 /* PayableViewController.swift in Sources */,
 				C9D2C6AD2A320AA000D15901 /* HairlineView.swift in Sources */,
 				C943B51B2A40A54600AF23C5 /* BaseInvitationViewController.swift in Sources */,
@@ -9815,7 +9797,6 @@
 				C9D2C8712A320AA000D15901 /* DerivationPathKeysViewController.swift in Sources */,
 				8A7607606A594C6E99A2FAC7 /* DerivationPathKeysView.swift in Sources */,
 				758A8F182C4D35A80012FA41 /* NSLayoutConstraint+DashWallet.swift in Sources */,
-				C9D2C8722A320AA000D15901 /* DSTransaction+DashWallet.m in Sources */,
 				C943B58D2A40ED6F00AF23C5 /* DWCreateUsernameViewController.m in Sources */,
 				C943B58E2A40ED6F00AF23C5 /* DWAllowedCharactersUsernameValidationRule.m in Sources */,
 				C9D2C8742A320AA000D15901 /* DWLocalCurrencyModel.m in Sources */,
@@ -9942,7 +9923,6 @@
 				C9D2C8E42A320AA000D15901 /* DerivationPathKeysCell.swift in Sources */,
 				C9D2C8E62A320AA000D15901 /* DWContainerViewController.m in Sources */,
 				C9D2C8E72A320AA000D15901 /* DashTextAttachment.swift in Sources */,
-				C943B5432A40AFD100AF23C5 /* DWTxDetailPopupViewController.m in Sources */,
 				C9D2C8E82A320AA000D15901 /* HomeBalanceView.swift in Sources */,
 				A5D5DD000000000000000220 /* PlatformBalanceView.swift in Sources */,
 				C9D2C8E92A320AA000D15901 /* PointOfUseListFiltersModel.swift in Sources */,
