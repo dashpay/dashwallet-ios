@@ -13,16 +13,14 @@ import Foundation
 @objc(DWBIP70PaymentOutputFactory)
 final class BIP70PaymentOutputFactory: NSObject {
 
-    @objc(paymentOutputFromBox:userItem:)
-    static func paymentOutput(from box: BIP70ConfirmationBox,
-                              userItem: DWDPBasicUserItem?) -> DWPaymentOutput {
+    @objc(paymentOutputFromBox:)
+    static func paymentOutput(from box: BIP70ConfirmationBox) -> DWPaymentOutput {
         DWPaymentOutput(merchantName: box.merchantName,
                         isSecure: box.isSecure,
                         amount: box.amount,
                         fee: box.estimatedFee,
                         address: box.primaryAddress ?? "",
                         memo: box.memo,
-                        bip70Confirmation: box,
-                        userItem: userItem)
+                        bip70Confirmation: box)
     }
 }

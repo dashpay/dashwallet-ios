@@ -51,7 +51,6 @@ final class PaymentController: NSObject {
     @objc weak var delegate: PaymentControllerDelegate?
     @objc weak var presentationContextProvider: PaymentControllerPresentationContextProviding?
 
-    @objc public var contactItem: DWDPBasicUserItem?
     @objc public var locksBalance = false
 
     private var paymentProcessor: DWPaymentProcessor
@@ -117,9 +116,9 @@ extension PaymentController: ConfirmPaymentViewControllerDelegate {
 // MARK: DWPaymentProcessorDelegate
 
 extension PaymentController: DWPaymentProcessorDelegate {
-    func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, amount: UInt64, contactItem: DWDPBasicUserItem?) {
+    func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, amount: UInt64) {
         provideAmountViewController = nil
-        let vc = ProvideAmountViewController(address: sendingDestination, amount: amount, contact: contactItem)
+        let vc = ProvideAmountViewController(address: sendingDestination, amount: amount)
         vc.locksBalance = locksBalance
         vc.delegate = self
         vc.hidesBottomBarWhenPushed = true
@@ -167,7 +166,7 @@ extension PaymentController: DWPaymentProcessorDelegate {
         showAlert(with: title, message: message)
     }
 
-    func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithTxidWire txidWire: Data, contactItem: DWDPBasicUserItem?) {
+    func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithTxidWire txidWire: Data) {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
 
         let finishBlock = {

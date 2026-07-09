@@ -32,7 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
                            memo:(NSString *_Nullable)memo
                        isSecure:(BOOL)isSecure
                   localCurrency:(NSString *_Nullable)localCurrency
-                       userItem:(nullable id<DWDPBasicUserItem>)userItem
            preparedStandardSend:(DWPreparedStandardSend *_Nullable)preparedStandardSend
     broadcastAuthorizationState:(DWPaymentOutputBroadcastAuthorizationState)broadcastAuthorizationState;
 

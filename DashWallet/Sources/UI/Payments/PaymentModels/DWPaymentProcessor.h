@@ -22,7 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class DWPaymentInput;
 @class DWPaymentProcessor;
 @class DWPaymentOutput;
-@protocol DWDPBasicUserItem;
 
 @protocol DWPaymentProcessorDelegate <NSObject>
 
@@ -32,8 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 // `DSPaymentProtocolDetails` carrier — the only thing the UI read from it was the output-amount sum.
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
     requestAmountWithDestination:(NSString *)sendingDestination
-                          amount:(uint64_t)amount
-                     contactItem:(nullable id<DWDPBasicUserItem>)contactItem;
+                          amount:(uint64_t)amount;
 
 // Confirmation
 
@@ -53,8 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 // convention) — the only datum consumers ever read off the old DSTransaction courier;
 // the success screen resolves it to the persisted SDK row.
 - (void)paymentProcessor:(DWPaymentProcessor *)processor
-     didSendWithTxidWire:(NSData *)txidWire
-             contactItem:(nullable id<DWDPBasicUserItem>)contactItem;
+     didSendWithTxidWire:(NSData *)txidWire;
 
 // Progress HUD
 

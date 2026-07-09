@@ -17,8 +17,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DWDPBasicUserItem.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWParsedPaymentURI;
@@ -41,8 +39,6 @@ typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
 /// Opaque `DWBIP70ConfirmationBox` (Swift) for an app-side BIP70 request fetched + verified at
 /// scan/clipboard time. Present ⇒ route through the BIP70 confirm/send path.
 @property (nullable, readonly, nonatomic, strong) id bip70Confirmation;
-@property (nullable, readonly, nonatomic, strong) id<DWDPBasicUserItem> userItem;
-@property (nonatomic, assign) BOOL canChangeAmount;
 
 @property (nullable, readonly, nonatomic) NSString *userDetails;
 

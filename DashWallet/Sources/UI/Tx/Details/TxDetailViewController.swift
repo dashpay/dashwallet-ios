@@ -348,9 +348,6 @@ protocol SuccessTxDetailViewControllerDelegate: AnyObject {
 class SuccessTxDetailViewController: TXDetailViewController, NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
 
-    // TODO: think how we can avoid storing contactItem here
-    // passthrough context, not used internally
-    @objc var contactItem: DWDPBasicUserItem?
     @objc weak var delegate: SuccessTxDetailViewControllerDelegate?
 
     internal var closeButton: ActionButton!

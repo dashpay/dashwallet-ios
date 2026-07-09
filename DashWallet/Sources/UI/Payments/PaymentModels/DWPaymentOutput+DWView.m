@@ -92,13 +92,7 @@ static NSString *sanitizeString(NSString *s) {
     }
     else {
         NSString *title = NSLocalizedString(@"Send to", nil);
-        if (self.userItem) {
-            DWTitleDetailCellModel *model = [[DWTitleDetailCellModel alloc] initWithTitle:title
-                                                                                 userItem:self.userItem
-                                                                             copyableData:self.address];
-            return model;
-        }
-        else {
+        {
             NSString *address = self.address;
             NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address withFont:font];
             DWTitleDetailCellModel *model =
@@ -191,24 +185,6 @@ static NSString *sanitizeString(NSString *s) {
     return hasInfo ? info : nil;
 }
 
-#if DASHPAY
-- (BOOL)isAcceptContactRequestCheckboxVisible {
-    // Row #18: always hidden. The checkbox keyed off the DashSync
-    // contact graph via `userItem`, which no longer has any producer —
-    // the DWDP item implementations were deleted with the contacts
-    // teardown, and accepting requests happens in the SwiftUI
-    // contacts/notifications screens instead of the payment sheet.
-    return NO;
-}
-
-- (BOOL)isAcceptContactRequestCheckboxOn {
-    return [DWGlobalOptions sharedInstance].confirmationAcceptContactRequestIsOn;
-}
-
-- (void)setIsAcceptContactRequestCheckboxOn:(BOOL)value {
-    [DWGlobalOptions sharedInstance].confirmationAcceptContactRequestIsOn = value;
-}
-#endif
 
 @end
 

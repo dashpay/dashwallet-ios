@@ -33,15 +33,13 @@ final class ProvideAmountViewController: SendAmountViewController {
     public var locksBalance = false
 
     private let address: String
-    private let contact: DWDPBasicUserItem?
     /// Pre-fill amount in duffs (0 ⇒ empty). Replaces the old `DSPaymentProtocolDetails` — the only
     /// thing this screen read from it was the output-amount sum (C8 step 4).
     private let initialAmount: UInt64
     private var isBalanceHidden = true
 
-    init(address: String, amount: UInt64, contact: DWDPBasicUserItem?) {
+    init(address: String, amount: UInt64) {
         self.address = address
-        self.contact = contact
         self.initialAmount = amount
         super.init(model: SendAmountModel())
     }
@@ -75,30 +73,16 @@ final class ProvideAmountViewController: SendAmountViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(stackView)
         
-        var destination = address
         let balanceLabel = NSLocalizedString("Dash balance", comment: "")
-        var avatarView: DWDPAvatarView? = nil
-        
-#if DASHPAY
-        if let contact = contact {
-            avatarView = DWDPAvatarView()
-            destination = contact.username
-            avatarView!.blockchainIdentity = contact.blockchainIdentity
-            avatarView!.translatesAutoresizingMaskIntoConstraints = false
-            avatarView!.backgroundMode = .random
-            avatarView!.isUserInteractionEnabled = false
-            avatarView!.isSmall = true
-        }
-#endif
-        
+
         let intro = ProvideAmountIntro(
-            destination: destination,
+            destination: address,
             balanceLabel: balanceLabel,
             model: self.model as! SendAmountModel,
-            avatarView: { 
-                if let avatarView = avatarView {
-                    UIViewWrapper(uiView: avatarView)
-                }
+            avatarView: {
+                // Pay-to-contact never routes through this screen (it flows through the
+                // SwiftUI contacts screen → WalletSendService.sendToContact), so there is
+                // no avatar to render here.
             }
         )
         let swiftUIController = UIHostingController(rootView: intro)

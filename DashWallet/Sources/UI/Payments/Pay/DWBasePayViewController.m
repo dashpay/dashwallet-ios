@@ -17,8 +17,6 @@
 
 #import "DWBasePayViewController.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWPayModelProtocol.h"
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentProcessor.h"
@@ -51,7 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
     _paymentController.delegate = self;
     _paymentController.locksBalance = self.locksBalance;
     _paymentController.presentationContextProvider = self;
-    _paymentController.contactItem = [self contactItem];
 }
 
 
@@ -96,14 +93,6 @@ NS_ASSUME_NONNULL_BEGIN
     [self processPaymentInput:paymentInput];
 }
 
-- (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact {
-    // to be overriden
-}
-
-- (id<DWDPBasicUserItem>)contactItem {
-    return nil; // to be overriden
-}
-
 - (void)processPaymentInput:(DWPaymentInput *)input {
     [self.paymentController performPaymentWith:input];
 }
@@ -111,8 +100,8 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWTxDetailFullscreenViewControllerDelegate
 
 - (void)txDetailViewControllerDidFinishWithController:(SuccessTxDetailViewController *)controller {
-    id<DWDPBasicUserItem> contact = [self contactItem] == nil ? controller.contactItem : nil;
-    [self payViewControllerDidHidePaymentResultToContact:contact];
+    // Nothing to do — the success screen dismisses itself; the legacy pay-to-contact
+    // follow-up that lived here is gone with the contact plumbing (Row #18).
 }
 
 #pragma mark -  DWQRScanModelDelegate
@@ -143,7 +132,6 @@ NS_ASSUME_NONNULL_BEGIN
     void (^presentSuccess)(void) = ^{
         DWTxDetailModel *model = [[DWTxDetailModel alloc] initWithTxidWire:txidWire];
         SuccessTxDetailViewController *vc = [[SuccessTxDetailViewController alloc] initWithModel:model];
-        vc.contactItem = self->_paymentController.contactItem;
         vc.delegate = self;
         [self presentViewController:vc
                            animated:YES

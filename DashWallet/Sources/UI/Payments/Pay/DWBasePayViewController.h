@@ -17,14 +17,12 @@
 
 #import <UIKit/UIKit.h>
 
-#import "DWDPBasicUserItem.h"
 #import "DWDemoDelegate.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWPayModelProtocol;
 @protocol DWTransactionListDataProviderProtocol;
-@protocol DWDPBasicUserItem;
 
 @interface DWBasePayViewController : UIViewController
 
@@ -41,13 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
-#if DASHPAY
-#endif
-
-/// This method is called after dismissal of payment result controller.
-- (void)payViewControllerDidHidePaymentResultToContact:(nullable id<DWDPBasicUserItem>)contact;
-
-- (id<DWDPBasicUserItem>)contactItem;
 
 @end
 

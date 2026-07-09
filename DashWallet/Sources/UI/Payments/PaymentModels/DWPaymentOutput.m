@@ -28,7 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
                            memo:(NSString *_Nullable)memo
                        isSecure:(BOOL)isSecure
                   localCurrency:(NSString *_Nullable)localCurrency
-                       userItem:(nullable id<DWDPBasicUserItem>)userItem
            preparedStandardSend:(DWPreparedStandardSend *_Nullable)preparedStandardSend
     broadcastAuthorizationState:(DWPaymentOutputBroadcastAuthorizationState)broadcastAuthorizationState {
     self = [super init];
@@ -40,7 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
         _memo = memo;
         _isSecure = isSecure;
         _localCurrency = localCurrency;
-        _userItem = userItem;
         _preparedStandardSend = preparedStandardSend;
         _broadcastAuthorizationState = broadcastAuthorizationState;
     }
@@ -53,8 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
                                  fee:(uint64_t)fee
                              address:(NSString *)address
                                 memo:(nullable NSString *)memo
-                   bip70Confirmation:(id)bip70Confirmation
-                            userItem:(nullable id<DWDPBasicUserItem>)userItem {
+                   bip70Confirmation:(id)bip70Confirmation {
     self = [super init];
     if (self) {
         _amount = amount;
@@ -63,7 +60,6 @@ NS_ASSUME_NONNULL_BEGIN
         _name = merchantName;
         _memo = memo;
         _isSecure = isSecure;
-        _userItem = userItem;
         _isMerchantRequest = YES;
         _bip70Confirmation = bip70Confirmation;
         // The tx is built later (inside confirmAndSend); auth is required at the Send tap.

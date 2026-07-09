@@ -250,7 +250,6 @@ NS_ASSUME_NONNULL_END
 
                 DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_ScanQR];
                 [paymentInput attachParsedURI:parsed];
-                paymentInput.canChangeAmount = parsed.amount > 0;
                 [self.delegate qrScanModel:self didScanPaymentInput:paymentInput];
             });
         }

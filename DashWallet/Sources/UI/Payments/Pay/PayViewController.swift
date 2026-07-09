@@ -21,7 +21,7 @@ import UIKit
 
 protocol PayViewControllerDelegate: AnyObject {
     /// `txidWire` is the broadcast transaction's wire-order txid (`Transaction.txHashData` convention).
-    func payViewControllerDidFinishPayment(_ controller: PayViewController, txidWire: Data, contact: DWDPBasicUserItem?)
+    func payViewControllerDidFinishPayment(_ controller: PayViewController, txidWire: Data)
 }
 
 // MARK: - PayViewController
@@ -158,7 +158,7 @@ extension PayViewController: PaymentControllerDelegate, PaymentControllerPresent
     }
 
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, txidWire: Data) {
-        delegate?.payViewControllerDidFinishPayment(self, txidWire: txidWire, contact: paymentController.contactItem)
+        delegate?.payViewControllerDidFinishPayment(self, txidWire: txidWire)
     }
 
     func paymentControllerDidCancelTransaction(_ controller: PaymentController) { }

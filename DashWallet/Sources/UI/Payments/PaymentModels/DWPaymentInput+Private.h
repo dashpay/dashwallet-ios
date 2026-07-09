@@ -28,7 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// plain-`dash:` send (C8 step 4).
 @property (nullable, nonatomic, strong) DWPaymentIntent *paymentIntent;
 @property (nullable, nonatomic, strong) id bip70Confirmation;
-@property (nullable, nonatomic, strong) id<DWDPBasicUserItem> userItem;
 
 - (instancetype)initWithSource:(DWPaymentInputSource)source;
 

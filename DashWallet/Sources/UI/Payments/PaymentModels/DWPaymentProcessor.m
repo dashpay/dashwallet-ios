@@ -220,8 +220,7 @@ static NSString *DWReversedHexString(NSData *data) {
 
 /// Build the confirm-screen output from a verified BIP70 `Confirmation` box (no build, no spend).
 - (void)confirmBIP70Output:(id)bip70Confirmation {
-    DWPaymentOutput *paymentOutput = [DWBIP70PaymentOutputFactory paymentOutputFromBox:bip70Confirmation
-                                                                              userItem:self.paymentInput.userItem];
+    DWPaymentOutput *paymentOutput = [DWBIP70PaymentOutputFactory paymentOutputFromBox:bip70Confirmation];
     [self.delegate paymentProcessor:self confirmPaymentOutput:paymentOutput];
 }
 
@@ -271,8 +270,7 @@ static NSString *DWReversedHexString(NSData *data) {
                          if (!self.didSendRequestDelegateNotified) {
                              self.didSendRequestDelegateNotified = YES;
                              [self.delegate paymentProcessor:self
-                                         didSendWithTxidWire:result.txidWire
-                                                 contactItem:paymentOutput.userItem];
+                                         didSendWithTxidWire:result.txidWire];
                          }
 
                          if (result.callbackURL) {
@@ -320,8 +318,7 @@ static NSString *DWReversedHexString(NSData *data) {
     self.paymentIntent = intent;
     [self.delegate paymentProcessor:self
         requestAmountWithDestination:intent.address ?: @""
-                              amount:intent.amount
-                         contactItem:self.paymentInput.userItem];
+                              amount:intent.amount];
 }
 
 /// Shared SwiftDashSDK build+sign then show the confirmation UI with the real fee.
@@ -358,7 +355,6 @@ static NSString *DWReversedHexString(NSData *data) {
                                                                           memo:memo
                                                                       isSecure:NO
                                                                  localCurrency:localCurrency
-                                                                      userItem:self.paymentInput.userItem
                                                           preparedStandardSend:preparedSend
                                                    broadcastAuthorizationState:DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized];
 
@@ -371,7 +367,7 @@ static NSString *DWReversedHexString(NSData *data) {
 /// Successful SwiftDashSDK broadcast: notify the delegate and fire the URI's callback scheme.
 - (void)sendCompletedToAddress:(NSString *)address
                       txidWire:(NSData *)txidWire {
-    [self.delegate paymentProcessor:self didSendWithTxidWire:txidWire contactItem:self.paymentInput.userItem];
+    [self.delegate paymentProcessor:self didSendWithTxidWire:txidWire];
 
     self.didSendRequestDelegateNotified = YES;
 

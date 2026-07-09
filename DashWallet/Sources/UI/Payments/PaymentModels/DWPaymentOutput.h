@@ -19,8 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol DWDPBasicUserItem;
-
 typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
     DWPaymentOutputBroadcastAuthorizationStateNeedsAuthentication = 0,
     DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized = 1,
@@ -35,7 +33,6 @@ typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
 @property (readonly, nullable, nonatomic, copy) NSString *memo;
 @property (readonly, nonatomic, assign) BOOL isSecure;
 @property (readonly, nullable, nonatomic, copy) NSString *localCurrency;
-@property (readonly, nullable, nonatomic, strong) id<DWDPBasicUserItem> userItem;
 @property (readonly, nonatomic, assign) DWPaymentOutputBroadcastAuthorizationState broadcastAuthorizationState;
 
 /// YES for an app-side BIP70 merchant request (built from a verified `Confirmation`), so the
@@ -54,8 +51,7 @@ typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
                                  fee:(uint64_t)fee
                              address:(NSString *)address
                                 memo:(nullable NSString *)memo
-                   bip70Confirmation:(id)bip70Confirmation
-                            userItem:(nullable id<DWDPBasicUserItem>)userItem;
+                   bip70Confirmation:(id)bip70Confirmation;
 
 - (instancetype)init NS_UNAVAILABLE;
 

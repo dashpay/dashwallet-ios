@@ -377,19 +377,18 @@ extension MainTabbarController: DWWipeDelegate {
 // MARK: PaymentsViewControllerDelegate
 
 extension MainTabbarController: PaymentsViewControllerDelegate {
-    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, txidWire: Data, contact: DWDPBasicUserItem?) {
+    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, txidWire: Data) {
         closePayments { [weak self] in
-            self?.presentTxDetails(for: txidWire, contact: contact)
+            self?.presentTxDetails(for: txidWire)
         }
     }
 
-    private func presentTxDetails(for txidWire: Data, contact: DWDPBasicUserItem?) {
+    private func presentTxDetails(for txidWire: Data) {
         // Resolves the txid to the SDK-backed row (or the recent-send
         // registry entry) — see TxDetailModel.init(txidWire:).
         let model = TxDetailModel(txidWire: txidWire)
         let vc = SuccessTxDetailViewController(model: model)
         vc.modalPresentationStyle = .fullScreen
-        vc.contactItem = contact
         vc.delegate = self
         selectedViewController?.topController().present(vc, animated: true)
     }

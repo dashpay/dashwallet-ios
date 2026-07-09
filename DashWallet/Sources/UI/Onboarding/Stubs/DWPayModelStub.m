@@ -83,10 +83,6 @@ NS_ASSUME_NONNULL_BEGIN
     return self.pasteboardPaymentInput;
 }
 
-- (DWPaymentInput *)paymentInputWithUser:(id<DWDPBasicUserItem>)userItem {
-    return self.pasteboardPaymentInput;
-}
-
 - (void)performNFCReadingWithCompletion:(nonnull void (^)(DWPaymentInput *_Nonnull))completion {
 }
 

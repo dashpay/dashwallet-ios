@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class DWPayOptionModel;
 @class DWPaymentInput;
-@protocol DWDPBasicUserItem;
 
 @protocol DWPayModelProtocol <NSObject>
 
