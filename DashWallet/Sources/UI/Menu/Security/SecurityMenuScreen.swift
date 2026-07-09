@@ -148,9 +148,9 @@ struct SecurityMenuScreen: View {
                     self.vc.pushViewController(controller, animated: true)
                 }
             }
-        case .resetWallet:
-            let controller = DWResetWalletInfoViewController.make()
-            controller.delegate = delegateInternal
+        case .wallets:
+            let controller = UIHostingController(rootView: WalletsScreen(vc: vc))
+            controller.hidesBottomBarWhenPushed = true
             self.vc.pushViewController(controller, animated: true)
         case .resetWalletDebug:
             showResetWalletDebugAlert = true

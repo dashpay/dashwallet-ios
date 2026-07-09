@@ -115,16 +115,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // example app's `WalletDetailView.deleteWallet()`. Must run BEFORE the
         // teardown: the manager is dropped in `host.stop()`, and the
         // `PersistentWallet` row (needed for the identity/account cascade) is
-        // deleted by `fullReset(forWipe:)`.
+        // deleted by `fullReset(forWipe:)`. Each per-wallet delete also removes
+        // that wallet's Keychain mnemonic (the safety-net step lives inside
+        // `deleteWalletFromSDK`), so no separate mnemonic-delete loop follows.
         deleteWalletsFromSDK(walletIds)
-
-        // Safety net: ensure the seed is gone even if `deleteWallet` threw
-        // before reaching its own mnemonic-delete step (e.g. the wallet was
-        // never registered in the Rust manager). Idempotent — no-op on an
-        // already-deleted mnemonic.
-        for walletId in walletIds {
-            try? storage.deleteMnemonic(for: walletId)
-        }
         // Clear the per-network active-wallet registry. The wipe removes ALL
         // wallets (mnemonics are network-agnostic — one keychain entry backs a
         // wallet on every network), so every network's recorded active id now
@@ -153,16 +147,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
     private static func deleteWalletsFromSDK(_ walletIds: [Data]) {
         let work = {
             MainActor.assumeIsolated {
-                guard let manager = SwiftDashSDKHost.shared.manager else {
-                    logger.info("no live PlatformWalletManager; skipping SDK deleteWallet")
-                    return
-                }
                 for walletId in walletIds {
-                    do {
-                        try manager.deleteWallet(walletId: walletId)
-                    } catch {
-                        logger.error("deleteWallet failed: \(String(describing: error), privacy: .public)")
-                    }
+                    deleteWalletFromSDK(walletId)
                 }
             }
         }
@@ -171,5 +157,35 @@ final class SwiftDashSDKWalletWiper: NSObject {
         } else {
             DispatchQueue.main.sync { work() }
         }
+    }
+
+    /// Full per-wallet SwiftDashSDK deletion of a single wallet: the Rust
+    /// manager state + this wallet's SwiftData rows (via
+    /// `PlatformWalletManager.deleteWallet(walletId:)`) and its Keychain
+    /// mnemonic (via `WalletStorage().deleteMnemonic(for:)`). Both steps are
+    /// idempotent — a no-op on an already-deleted wallet — and their failures
+    /// are logged, not thrown, so a partial failure of one step doesn't block
+    /// the other.
+    ///
+    /// The single per-wallet deletion primitive shared by the full wipe
+    /// (`deleteWalletsFromSDK`) and the Wallets screen's per-wallet Remove
+    /// flow (`WalletsViewModel`) — one body, not a copy on each side
+    /// (guardrail #1). Callers own their own registry/runtime bookkeeping
+    /// (the wipe tears the runtime down; the remove flow rebinds via
+    /// `switchWallet` before deleting the active wallet).
+    @MainActor
+    static func deleteWalletFromSDK(_ walletId: Data) {
+        if let manager = SwiftDashSDKHost.shared.manager {
+            do {
+                try manager.deleteWallet(walletId: walletId)
+            } catch {
+                logger.error("deleteWallet failed: \(String(describing: error), privacy: .public)")
+            }
+        } else {
+            logger.info("no live PlatformWalletManager; skipping SDK deleteWallet")
+        }
+        // Safety net: ensure the seed is gone even if `deleteWallet` threw
+        // before reaching its own mnemonic-delete step. Idempotent.
+        try? WalletStorage().deleteMnemonic(for: walletId)
     }
 }
