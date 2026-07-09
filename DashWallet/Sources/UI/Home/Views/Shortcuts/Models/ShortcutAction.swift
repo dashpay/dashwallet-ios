@@ -227,7 +227,7 @@ extension ShortcutActionType {
         case .topper:
             return NSLocalizedString("Topper", comment: "Translate it as short as possible! (24 symbols max)")
         case .getTestDash:
-            return NSLocalizedString("Request 1 tDash", comment: "Translate it as short as possible! (24 symbols max)")
+            return NSLocalizedString("1 tDash", comment: "Translate it as short as possible! (24 symbols max)")
         }
     }
 }
