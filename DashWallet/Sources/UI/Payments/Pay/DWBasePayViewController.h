@@ -22,12 +22,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol DWPayModelProtocol;
-@protocol DWTransactionListDataProviderProtocol;
 
 @interface DWBasePayViewController : UIViewController
 
 @property (nonatomic, strong) id<DWPayModelProtocol> payModel;
-@property (nonatomic, strong) id<DWTransactionListDataProviderProtocol> dataProvider;
 
 @property (nonatomic, assign) BOOL demoMode;
 @property (nullable, nonatomic, weak) id<DWDemoDelegate> demoDelegate;

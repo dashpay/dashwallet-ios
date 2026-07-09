@@ -26,7 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 @class DSTransaction;
 @protocol DWPayModelProtocol;
 @protocol DWReceiveModelProtocol;
-@protocol DWTransactionListDataProviderProtocol;
 
 @protocol DWHomeModelUpdatesObserver <NSObject>
 - (void)homeModelDidChangeInnerModels:(id<DWHomeProtocol>)model;
@@ -50,8 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)walletBackupReminderWasShown;
 
 - (void)registerForPushNotifications;
-
-- (id<DWTransactionListDataProviderProtocol>)getDataProvider;
 
 - (void)walletDidWipe;
 

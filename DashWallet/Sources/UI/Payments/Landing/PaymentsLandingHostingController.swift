@@ -9,14 +9,6 @@ import UIKit
 @objc(DWPaymentsLandingHostingController)
 final class PaymentsLandingHostingController: DWBasePayViewController {
 
-    @objc var homeModel: DWHomeProtocol? {
-        didSet {
-            if let provider = homeModel?.getDataProvider() {
-                dataProvider = provider
-            }
-        }
-    }
-
     private let viewModel: PaymentsLandingViewModel
     private lazy var hostingController: UIHostingController<PaymentsLandingScreen> = {
         let screen = PaymentsLandingScreen(
@@ -93,7 +85,6 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     private func pushSendScreen() {
         let controller = SendScreenViewController()
-        controller.homeModel = homeModel
         navigationController?.pushViewController(controller, animated: true)
     }
 

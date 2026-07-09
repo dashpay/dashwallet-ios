@@ -33,7 +33,6 @@ class PayViewController: BaseViewController, PayableViewController {
 
     var payModel: DWPayModelProtocol!
     
-    var dataProvider: DWTransactionListDataProviderProtocol!
 
     var maxActionButtonWidth: CGFloat = 0
 
@@ -66,11 +65,10 @@ class PayViewController: BaseViewController, PayableViewController {
         }
     }
 
-    static func controller(with payModel: DWPayModelProtocol, dataProvider: DWTransactionListDataProviderProtocol) -> PayViewController {
+    static func controller(with payModel: DWPayModelProtocol) -> PayViewController {
         let storyboard = UIStoryboard(name: "Pay", bundle: nil)
         let controller = storyboard.instantiateInitialViewController() as! PayViewController
         controller.payModel = payModel
-        controller.dataProvider = dataProvider
 
         return controller
     }

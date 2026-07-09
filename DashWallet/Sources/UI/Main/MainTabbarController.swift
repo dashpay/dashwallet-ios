@@ -418,7 +418,6 @@ extension MainTabbarController: HomeViewControllerDelegate {
 
     private func presentPaymentsLandingScreen(activeTab: PaymentsLandingTab) {
         let controller = PaymentsLandingHostingController(activeTab: activeTab)
-        controller.homeModel = homeModel
         let navigationController = BaseNavigationController(rootViewController: controller)
         navigationController.isNavigationBarHidden = true
         navigationController.isModalInPresentation = false

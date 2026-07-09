@@ -44,11 +44,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         set { }
     }
     
-    override var dataProvider: DWTransactionListDataProviderProtocol {
-        get { return model.getDataProvider() }
-        set { }
-    }
-
     deinit {
         print("☠️ \(String(describing: self))")
     }

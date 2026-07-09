@@ -32,7 +32,6 @@
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
 #import "DWReceiveModel.h"
-#import "DWTransactionListDataProvider.h"
 #import "DWVersionManager.h"
 #import "UIDevice+DashWallet.h"
 #import "dashwallet-Swift.h"
@@ -43,16 +42,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (strong, nonatomic) DWNetworkReachability *reachability;
-@property (readonly, nonatomic, strong) DWTransactionListDataProvider *dataProvider;
-
 @property (nonatomic, strong) id<DWDashPayProtocol> dashPayModel;
 
 @property (nonatomic, strong) SyncingActivityMonitor *syncMonitor;
-
-@property (readonly, nonatomic, strong) NSArray<DSTransaction *> *dataSource;
-@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *receivedDataSource;
-@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *sentDataSource;
-@property (null_resettable, nonatomic, strong) NSArray<DSTransaction *> *rewardsDataSource;
 
 @end
 
@@ -77,9 +69,6 @@ NS_ASSUME_NONNULL_BEGIN
 
         _syncMonitor = SyncingActivityMonitor.shared;
         [_syncMonitor addObserver:self];
-
-
-        _dataProvider = [[DWTransactionListDataProvider alloc] init];
 
 
 #if DASHPAY
@@ -174,10 +163,6 @@ NS_ASSUME_NONNULL_BEGIN
         [self.reachability stopMonitoring];
         [self.reachability startMonitoring];
     }
-}
-
-- (id<DWTransactionListDataProviderProtocol>)getDataProvider {
-    return self.dataProvider;
 }
 
 - (void)walletBackupReminderWasShown {

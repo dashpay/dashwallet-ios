@@ -21,14 +21,12 @@
 #import "DWEnvironment.h"
 #import "DWPayModelStub.h"
 #import "DWReceiveModelStub.h"
-#import "DWTransactionListDataProviderStub.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWHomeModelStub ()
 
-@property (readonly, nonatomic, strong) DWTransactionListDataProviderStub *dataProvider;
 @property (readonly, nonatomic, strong) NSArray<DSTransaction *> *dataSource;
 
 @end
@@ -45,7 +43,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _dataProvider = [[DWTransactionListDataProviderStub alloc] init];
 
         _receiveModel = [[DWReceiveModelStub alloc] init];
 #ifdef DASHPAY
@@ -88,10 +85,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)registerForPushNotifications {
-}
-
-- (id<DWTransactionListDataProviderProtocol>)getDataProvider {
-    return self.dataProvider;
 }
 
 - (void)walletBackupReminderWasShown {

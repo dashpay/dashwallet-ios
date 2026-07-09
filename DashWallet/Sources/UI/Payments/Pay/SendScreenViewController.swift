@@ -10,14 +10,6 @@ import UIKit
 @objc(DWSendScreenViewController)
 final class SendScreenViewController: DWBasePayViewController {
 
-    @objc var homeModel: DWHomeProtocol? {
-        didSet {
-            if let provider = homeModel?.getDataProvider() {
-                dataProvider = provider
-            }
-        }
-    }
-
     private let sendViewModel = SendViewModel()
     private lazy var hostingController: UIHostingController<SendScreen> = {
         let screen = SendScreen(
