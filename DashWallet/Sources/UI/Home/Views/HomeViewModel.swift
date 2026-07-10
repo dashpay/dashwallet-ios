@@ -832,29 +832,46 @@ extension HomeViewModel {
         let options = DWGlobalOptions.sharedInstance()
         let isTestnet = WalletEnvironment.isTestnet
 
-        // Check for custom configuration first
+        // Check for custom configuration first. Mapped on main: the Switch
+        // Wallet availability gate reads main-actor wallet state, and this
+        // reload can run off-main (the published write lands on main anyway).
         if let customShortcuts = options.shortcuts,
            customShortcuts.count == maxShortcutsCount {
-            let items = customShortcuts.compactMap { number -> ShortcutAction? in
-                guard var type = ShortcutActionType(rawValue: number.intValue) else { return nil }
-                // A faucet shortcut saved on testnet degrades to Spend
-                // after a switch to mainnet (no mainnet faucet exists);
-                // the saved config is untouched, so it comes back when
-                // the user returns to testnet.
-                if type == .getTestDash && !isTestnet {
-                    type = .spend
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                let canSwitchWallet = MainActor.assumeIsolated { WalletsViewModel.switchableWalletCount > 1 }
+                let items = customShortcuts.compactMap { number -> ShortcutAction? in
+                    guard var type = ShortcutActionType(rawValue: number.intValue) else { return nil }
+                    // A faucet shortcut saved on testnet degrades to Spend
+                    // after a switch to mainnet (no mainnet faucet exists);
+                    // the saved config is untouched, so it comes back when
+                    // the user returns to testnet.
+                    if type == .getTestDash && !isTestnet {
+                        type = .spend
+                    }
+                    // A Switch Wallet shortcut degrades to Receive while the
+                    // device is back to a single wallet; the saved config is
+                    // untouched, so it returns when another wallet is added.
+                    if type == .switchWallet && !canSwitchWallet {
+                        type = .receive
+                    }
+                    return ShortcutAction(type: type)
                 }
-                return ShortcutAction(type: type)
-            }
-            if items.count == maxShortcutsCount {
-                DispatchQueue.main.async {
+                if items.count == maxShortcutsCount {
                     self.shortcutItems = items
+                } else {
+                    self.applyDefaultShortcuts(options: options, isTestnet: isTestnet)
                 }
-                return
             }
+            return
         }
 
-        // Fall back to default state-based logic
+        applyDefaultShortcuts(options: options, isTestnet: isTestnet)
+    }
+
+    /// The default state-based bar (no custom configuration, or the saved one
+    /// no longer maps to a full set of actions).
+    private func applyDefaultShortcuts(options: DWGlobalOptions, isTestnet: Bool) {
         let walletNeedsBackup = options.walletNeedsBackup
         let userHasBalance = options.userHasBalance
         // On testnet the last default slot offers the faucet instead of

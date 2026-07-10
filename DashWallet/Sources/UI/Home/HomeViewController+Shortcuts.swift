@@ -71,7 +71,60 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
             showTopper()
         case .getTestDash:
             showTestnetFaucet()
+        case .switchWallet:
+            showSwitchWallet()
         }
+    }
+
+    // MARK: - Switch Wallet
+
+    /// Entry point of the Switch Wallet shortcut. Presentation scales with how
+    /// many OTHER wallets exist: one → confirmation alert directly; two to
+    /// five → bottom-sheet picker (then the same confirmation); more → the
+    /// full Wallets screen (which has its own switch confirmation). The
+    /// shortcut is hidden/degraded while only one wallet exists, so an empty
+    /// list here is just a defensive no-op.
+    private func showSwitchWallet() {
+        let walletsViewModel = WalletsViewModel()
+        walletsViewModel.reload()
+        let others = walletsViewModel.rows.filter { !$0.isActive }
+        guard !others.isEmpty else { return }
+
+        if others.count == 1 {
+            confirmWalletSwitch(to: others[0], viewModel: walletsViewModel)
+        } else if others.count <= 5 {
+            let dialog = WalletSwitchDialog(rows: others) { [weak self] row in
+                self?.dismiss(animated: true) {
+                    self?.confirmWalletSwitch(to: row, viewModel: walletsViewModel)
+                }
+            }
+            let hostingController = UIHostingController(rootView: dialog)
+            hostingController.setDetent(WalletSwitchDialog.height(rowCount: others.count))
+            present(hostingController, animated: true)
+        } else {
+            guard let navigationController else { return }
+            let controller = UIHostingController(rootView: WalletsScreen(vc: navigationController))
+            controller.hidesBottomBarWhenPushed = true
+            navigationController.pushViewController(controller, animated: true)
+        }
+    }
+
+    /// The always-shown switch confirmation. The switch itself runs through
+    /// `WalletsViewModel.switchWallet` (shared runtime call + error logging);
+    /// the home screen refreshes via the active-wallet-change notification.
+    /// `viewModel` is captured by the action so it outlives the alert.
+    private func confirmWalletSwitch(to row: WalletRow, viewModel: WalletsViewModel) {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Switch Wallet", comment: "Wallets"),
+            message: String(
+                format: NSLocalizedString("Would you like to switch to \"%@\"? You can always switch back later.", comment: "Wallets"),
+                row.displayName),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Switch", comment: "Wallets"), style: .default) { _ in
+            viewModel.switchWallet(to: row.walletId)
+        })
+        present(alert, animated: true)
     }
 
     // MARK: - Private

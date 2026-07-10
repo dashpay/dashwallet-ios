@@ -2413,6 +2413,12 @@
 /* No comment provided by engineer. */
 "Swept!" = "Swept!";
 
+/* Wallets */
+"Switch" = "Switch";
+
+/* Translate it as short as possible! (24 symbols max) */
+"Switch Wallet" = "Switch Wallet";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Switch to Mainnet" = "Switch to Mainnet";
 
@@ -2952,6 +2958,9 @@
 
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Would you like to accept the invitation?";
+
+/* Wallets */
+"Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
 
 /* Coinbase */
 "Would you like to make a deposit for your purchase using a linked bank account?" = "Would you like to make a deposit for your purchase using a linked bank account?";

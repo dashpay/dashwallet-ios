@@ -693,6 +693,8 @@
 		75AE5A7F2A87C363006CD4BA /* DWConfirmUsernameContentView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C943B5712A40ED4200AF23C5 /* DWConfirmUsernameContentView.xib */; };
 		75B3C1A22E36100100CAFE02 /* ShortcutSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B3C1A12E36100100CAFE01 /* ShortcutSelectionView.swift */; };
 		75B3C1A32E36100100CAFE03 /* ShortcutSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B3C1A12E36100100CAFE01 /* ShortcutSelectionView.swift */; };
+		75B3C1B22E36100100CAFE12 /* WalletSwitchDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B3C1B12E36100100CAFE11 /* WalletSwitchDialog.swift */; };
+		75B3C1B32E36100100CAFE13 /* WalletSwitchDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B3C1B12E36100100CAFE11 /* WalletSwitchDialog.swift */; };
 		75B3C1B22E36100100CAFE05 /* ShortcutCustomizeBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B3C1B12E36100100CAFE04 /* ShortcutCustomizeBannerView.swift */; };
 		75B3C1B32E36100100CAFE06 /* ShortcutCustomizeBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B3C1B12E36100100CAFE04 /* ShortcutCustomizeBannerView.swift */; };
 		75B4D7E52EEC100000A1B2C3 /* WalletSendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B4D7E42EEC100000A1B2C3 /* WalletSendService.swift */; };
@@ -2585,6 +2587,7 @@
 		75AA33D42BF9E1D400F12465 /* Font+DWStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Font+DWStyle.swift"; sourceTree = "<group>"; };
 		75AA33D72BFB4A5A00F12465 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		75B3C1A12E36100100CAFE01 /* ShortcutSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutSelectionView.swift; sourceTree = "<group>"; };
+		75B3C1B12E36100100CAFE11 /* WalletSwitchDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletSwitchDialog.swift; sourceTree = "<group>"; };
 		75B3C1B12E36100100CAFE04 /* ShortcutCustomizeBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutCustomizeBannerView.swift; sourceTree = "<group>"; };
 		75B4D7E42EEC100000A1B2C3 /* WalletSendService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletSendService.swift; sourceTree = "<group>"; };
 		75BDE7AB2BF3287400556791 /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
@@ -3738,6 +3741,7 @@
 				C94F5E8D29D404850034FD57 /* ShortcutCell.swift */,
 				75B3C1B12E36100100CAFE04 /* ShortcutCustomizeBannerView.swift */,
 				75B3C1A12E36100100CAFE01 /* ShortcutSelectionView.swift */,
+				75B3C1B12E36100100CAFE11 /* WalletSwitchDialog.swift */,
 				2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */,
 				2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */,
 				C94F5E8F29D4060A0034FD57 /* ShortcutsView.swift */,
@@ -8915,6 +8919,7 @@
 				C94F5E8E29D404850034FD57 /* ShortcutCell.swift in Sources */,
 				75B3C1B22E36100100CAFE05 /* ShortcutCustomizeBannerView.swift in Sources */,
 				75B3C1A22E36100100CAFE02 /* ShortcutSelectionView.swift in Sources */,
+				75B3C1B22E36100100CAFE12 /* WalletSwitchDialog.swift in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
 				FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */,
 				47AE8BF028C1306000490F5E /* AtmItemCell.swift in Sources */,
@@ -9768,6 +9773,7 @@
 				C9D2C84D2A320AA000D15901 /* ShortcutCell.swift in Sources */,
 				75B3C1B32E36100100CAFE06 /* ShortcutCustomizeBannerView.swift in Sources */,
 				75B3C1A32E36100100CAFE03 /* ShortcutSelectionView.swift in Sources */,
+				75B3C1B32E36100100CAFE13 /* WalletSwitchDialog.swift in Sources */,
 				C9D2C84F2A320AA000D15901 /* UIColor+DWStyle.m in Sources */,
 				C9D2C8502A320AA000D15901 /* DWEnvironment.m in Sources */,
 				C9D2C8512A320AA000D15901 /* AtmItemCell.swift in Sources */,
