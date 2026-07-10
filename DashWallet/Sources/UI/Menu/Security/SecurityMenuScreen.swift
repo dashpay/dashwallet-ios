@@ -26,11 +26,11 @@ struct SecurityMenuScreen: View {
     @State private var showBiometricsAlert = false
     @State private var showResetWalletDebugAlert = false
     
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController, wipeDelegate: DWWipeDelegate? = nil) {
         self.vc = vc
         self.delegateInternal = DelegateInternal(onHide: {
             vc.popViewController(animated: true)
-        })
+        }, wipeDelegate: wipeDelegate)
     }
     
     var body: some View {
@@ -149,7 +149,7 @@ struct SecurityMenuScreen: View {
                 }
             }
         case .wallets:
-            let controller = UIHostingController(rootView: WalletsScreen(vc: vc))
+            let controller = UIHostingController(rootView: WalletsScreen(vc: vc, wipeDelegate: delegateInternal.wipeDelegate))
             controller.hidesBottomBarWhenPushed = true
             self.vc.pushViewController(controller, animated: true)
         case .resetWalletDebug:
@@ -186,16 +186,29 @@ struct SecurityMenuScreen: View {
 extension SecurityMenuScreen {
     class DelegateInternal: NSObject, DWSecureWalletDelegate, DWSetPinViewControllerDelegate, DWWipeDelegate {
         let onHide: () -> ()
-        
-        init(onHide: @escaping () -> ()) {
+        weak var wipeDelegate: DWWipeDelegate?
+
+        init(onHide: @escaping () -> (), wipeDelegate: DWWipeDelegate? = nil) {
             self.onHide = onHide
+            self.wipeDelegate = wipeDelegate
         }
-        
+
         func secureWalletRoutineDidVerify(_ controller: UIViewController) { }
         func secureWalletRoutineDidFinish(_ controller: VerifiedSuccessfullyViewController) { }
         func secureWalletRoutineDidCancel(_ controller: UIViewController) { onHide() }
         func setPinViewControllerDidSetPin(_ controller: DWSetPinViewController) { onHide() }
         func setPinViewControllerDidCancel(_ controller: DWSetPinViewController) { onHide() }
-        func didWipeWallet() { onHide() }
+
+        /// A wipe invalidates the entire main UI, not just this screen: route
+        /// to the app-level DWWipeDelegate chain (MainTabbar → root VC), which
+        /// transitions to onboarding and drops the whole main stack. Popping
+        /// one screen is only the fallback when no chain was provided.
+        func didWipeWallet() {
+            if let wipeDelegate {
+                wipeDelegate.didWipeWallet()
+            } else {
+                onHide()
+            }
+        }
     }
 }

@@ -342,7 +342,7 @@ struct MainMenuScreen: View {
             }
             
             NavigationLink(
-                destination: SecurityMenuScreen(vc: vc),
+                destination: SecurityMenuScreen(vc: vc, wipeDelegate: delegateInternal.wipeDelegate),
                 isActive: $showSecurity
             ) {
                 EmptyView()
@@ -510,7 +510,7 @@ struct MainMenuScreen: View {
 extension MainMenuScreen {
     class DelegateInternal: NSObject, RootEditProfileViewControllerDelegate, ExploreViewControllerDelegate {
         private weak var delegate: MainMenuViewControllerDelegate?
-        private weak var wipeDelegate: DWWipeDelegate?
+        weak var wipeDelegate: DWWipeDelegate?
         private let viewModel: MainMenuViewModel
         private let showCreditsWarning: (String, String) -> Void
         

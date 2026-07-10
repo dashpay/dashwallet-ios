@@ -39,11 +39,11 @@ struct WalletsScreen: View {
     /// True while the "Add Wallet" sheet (create / import) is presented.
     @State private var showAddWallet = false
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController, wipeDelegate: DWWipeDelegate? = nil) {
         self.vc = vc
         self.resetDelegate = ResetDelegate(onFinish: { [weak vc] in
             vc?.popViewController(animated: true)
-        })
+        }, wipeDelegate: wipeDelegate)
     }
 
     var body: some View {
@@ -695,11 +695,26 @@ private struct ImportWalletView: View {
 // MARK: - Reset flow delegate
 
 extension WalletsScreen {
-    /// Bridges the last-wallet full reset flow (`DWResetWalletInfoViewController`)
-    /// back to this screen's navigation, popping on completion or cancel.
+    /// Bridges the last-wallet full reset flow (`DWResetWalletInfoViewController`).
+    /// A completed wipe invalidates the entire main UI: route to the app-level
+    /// DWWipeDelegate chain (MainTabbar → root VC), which transitions to
+    /// onboarding and drops the whole main stack. Popping back to this screen
+    /// is only the fallback when no chain was provided.
     final class ResetDelegate: NSObject, DWWipeDelegate {
         private let onFinish: () -> Void
-        init(onFinish: @escaping () -> Void) { self.onFinish = onFinish }
-        func didWipeWallet() { onFinish() }
+        private weak var wipeDelegate: DWWipeDelegate?
+
+        init(onFinish: @escaping () -> Void, wipeDelegate: DWWipeDelegate? = nil) {
+            self.onFinish = onFinish
+            self.wipeDelegate = wipeDelegate
+        }
+
+        func didWipeWallet() {
+            if let wipeDelegate {
+                wipeDelegate.didWipeWallet()
+            } else {
+                onFinish()
+            }
+        }
     }
 }
