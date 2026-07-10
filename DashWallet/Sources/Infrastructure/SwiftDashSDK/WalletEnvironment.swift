@@ -98,7 +98,17 @@ public final class WalletEnvironment: NSObject {
         guard kind != networkKind else { return true }
         guard kind != .devnet else { return false }
 
-        let mnemonic = SwiftDashSDKHost.persistedMnemonics().first?.mnemonic
+        // Mirror the wallet that will be ACTIVE on the destination network —
+        // not whatever WalletStorage enumerates first (same wrong-wallet class
+        // #794 fixed for the recovery phrase). Destination registry entry
+        // first, then the current network's (the wallet the user is on now),
+        // then the sole stored wallet on pre-registry installs; with several
+        // wallets and no registry match, mirror nothing rather than the wrong
+        // wallet (nil phrase is a no-op for the shim).
+        let mnemonics = SwiftDashSDKHost.persistedMnemonics()
+        let activeId = activeWalletId(for: kind) ?? activeWalletId(for: networkKind)
+        let mnemonic = mnemonics.first(where: { $0.walletId == activeId })?.mnemonic
+            ?? (mnemonics.count == 1 ? mnemonics.first?.mnemonic : nil)
         guard DWEnvironment.sharedInstance().mirrorWalletRegistry(toChainType: kind.rawValue,
                                                                   seedPhrase: mnemonic) else {
             return false
