@@ -36,10 +36,23 @@ final class PinPromptViewModel: ObservableObject {
     @Published private(set) var isLockedOut = false
     @Published var shakeToken = 0
 
+    /// Identity token for the hidden text field. Clearing `enteredPin`
+    /// inside the binding setter does NOT reliably propagate back into the
+    /// UIKit field — the stale text then made every subsequent keypress
+    /// re-deliver the rejected 4 digits, burning one attempt per key.
+    /// Bumping this recreates the field empty; the view re-focuses it.
+    @Published private(set) var fieldGeneration = 0
+
     private let service: AuthenticationServiceProtocol
     private let completion: (PinPromptResult) -> Void
     private var didComplete = false
     private var countdownTimer: Timer?
+    /// The last rejected entry, kept until the next partial input. Defends
+    /// the window before the recreated field takes over: a keystroke landing
+    /// on the old field re-delivers the just-verified digits (a real retype
+    /// passes through 1–3 digit states first) — swallowing keeps one
+    /// physical entry from burning two attempts.
+    private var justRejectedPin: String?
 
     let pinLength = LockoutPolicy.pinLength
 
@@ -57,14 +70,28 @@ final class PinPromptViewModel: ObservableObject {
 
     // MARK: Input
 
-    /// Bound to the (hidden) system-keyboard field: keep only digits, clamp
-    /// to the PIN length, and verify once full.
+    /// Bound to the (hidden) system-keyboard field: keep only digits, drop
+    /// anything longer than the PIN length, and verify once full.
     func inputChanged(_ text: String) {
         guard !isLockedOut else {
             if !enteredPin.isEmpty { enteredPin = "" }
             return
         }
-        let digits = String(text.filter(\.isNumber).prefix(pinLength))
+        let digits = text.filter(\.isNumber)
+        // A fresh field can never exceed the PIN length (entry verifies and
+        // the field is recreated at exactly `pinLength` digits). More means
+        // the old field's stale buffer — drop it; never clamp it back to
+        // full length with a prefix, which is what re-verified the rejected
+        // PIN on every keypress.
+        guard digits.count <= pinLength else { return }
+        if digits.count < pinLength {
+            justRejectedPin = nil
+        } else if enteredPin.isEmpty, digits == justRejectedPin {
+            // Absorb a re-delivery from the outgoing field, but let a
+            // deliberate identical re-entry count as the attempt it is.
+            justRejectedPin = nil
+            return
+        }
         if digits != enteredPin { enteredPin = digits }
         if digits.count == pinLength { verify() }
     }
@@ -89,7 +116,9 @@ final class PinPromptViewModel: ObservableObject {
     }
 
     private func rejectEntry(refreshPrecheck: Bool) {
+        justRejectedPin = enteredPin
         enteredPin = ""
+        fieldGeneration += 1
         shakeToken += 1
         if refreshPrecheck {
             applyPrecheck()
@@ -112,6 +141,7 @@ final class PinPromptViewModel: ObservableObject {
     private func enterLockout() {
         isLockedOut = true
         enteredPin = ""
+        fieldGeneration += 1
         refreshLockoutMessage()
         countdownTimer?.invalidate()
         countdownTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
@@ -169,6 +199,24 @@ struct PinPromptView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear { fieldFocused = true }
+        // On a stable ancestor: the field itself is recreated by the
+        // `.id(fieldGeneration)` swap, so observers on it would miss the
+        // very change that replaced it.
+        .onChange(of: viewModel.fieldGeneration) {
+            if !viewModel.isLockedOut { refocus() }
+        }
+        .onChange(of: viewModel.isLockedOut) {
+            if !viewModel.isLockedOut { refocus() }
+        }
+    }
+
+    /// Focus doesn't survive the field's identity swap (or a disable
+    /// round-trip) — re-assert it a tick later so the recreated field is
+    /// attached before it becomes first responder.
+    private func refocus() {
+        Task { @MainActor in
+            fieldFocused = true
+        }
     }
 
     /// Centered alert-style card (the DWAlertController the pod used for the
@@ -213,7 +261,9 @@ struct PinPromptView: View {
         }
         .background(
             // Hidden field owns the system numeric keyboard, exactly as the
-            // pod's pinField.becomeFirstResponder did.
+            // pod's pinField.becomeFirstResponder did. `.id(fieldGeneration)`
+            // recreates it empty after each rejected entry — see
+            // `fieldGeneration` for why a programmatic clear isn't enough.
             TextField("", text: Binding(
                 get: { viewModel.enteredPin },
                 set: { viewModel.inputChanged($0) }))
@@ -222,6 +272,7 @@ struct PinPromptView: View {
                 .frame(width: 0, height: 0)
                 .opacity(0)
                 .disabled(viewModel.isLockedOut)
+                .id(viewModel.fieldGeneration)
         )
         .background(Color.primaryBackground)
         .cornerRadius(14)

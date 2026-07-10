@@ -24,6 +24,7 @@
 
 import Foundation
 import LocalAuthentication
+import os.log
 import UIKit
 
 // MARK: - Protocol
@@ -69,6 +70,10 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
     /// UserDefaults key DashSync stamps on PIN success; gates the 7-day
     /// biometric re-enable window. Same literal (`PIN_UNLOCK_TIME_KEY`).
     private static let pinUnlockTimeKey = "PIN_UNLOCK_TIME"
+
+    private static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "authentication")
 
     private let secureTimeService: SecureTimeService
     private let userDefaults: UserDefaults
@@ -149,10 +154,22 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
 
     /// Pod's `setupNewPin:` — write the PIN, flip the flags, stamp the
     /// biometric window.
+    ///
+    /// Deliberate divergence from the pod: also zero the fail counters. Every
+    /// call site carries strong auth — new-wallet setup, change-PIN (the
+    /// Security menu PIN-verifies first), and forgot-PIN (seed-phrase proof) —
+    /// so a new PIN must not inherit failures banked against the old one.
+    /// The pod left them, which (a) let a fresh wallet inherit a stale
+    /// keychain counter from a previous install and (b) made forgot-PIN
+    /// recovery from the permanent lockout a dead end (the keypad stayed
+    /// disabled, and only a successful PIN entry — impossible while
+    /// disabled — could clear the counter).
     @objc @discardableResult
     func setupNewPin(_ pin: String) -> Bool {
         guard PinStore.set(string: pin, for: .pin) else { return false }
         PinStore.set(int64: 1, for: .usesAuthentication)
+        PinStore.set(int64: 0, for: .pinFailCount)
+        PinStore.set(int64: 0, for: .pinFailHeight)
         didAuthenticate = true
         userDefaults.set(Date().timeIntervalSince1970, forKey: Self.pinUnlockTimeKey)
         return true
@@ -202,9 +219,15 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
             return .authenticated
         }
 
-        let newFailCount = failCount &+ 1
+        let previousFailCount = failCount
+        let newFailCount = previousFailCount &+ 1
         PinStore.set(int64: Int64(bitPattern: newFailCount), for: .pinFailCount)
         PinStore.set(int64: Int64(secureTime), for: .pinFailHeight)
+
+        // Never log the PIN itself. The transition makes a surprise lockout
+        // diagnosable from the log stream (banked counter vs. double-counted
+        // entry).
+        Self.logger.notice("PIN verify failed: failCount \(previousFailCount) → \(newFailCount)")
 
         return newFailCount >= LockoutPolicy.allowedFailCount ? .wrongPinLockout : .wrongPinTryAgain
     }
@@ -219,6 +242,10 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
     /// Ported from `performAuthenticationPrecheck:` (:826-878), with the
     /// attempts-remaining message surfaced from the first failure on (not
     /// only past the free attempts) so the modal always shows live feedback.
+    /// Two tiers with distinct copy so the temporary cooldown at 3 doesn't
+    /// get confused with the PERMANENT (wipe-only) lock at 8: below the
+    /// cooldown it counts toward the cooldown; near the permanent lock it
+    /// warns about the wallet being disabled.
     func authenticationPrecheck() -> Precheck {
         let count = failCount
         if count >= LockoutPolicy.maxFailCount {
@@ -227,13 +254,14 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         if count >= LockoutPolicy.allowedFailCount, lockoutWaitTime > 0 {
             return Precheck(shouldContinueAuthentication: false, shouldLockout: true, attemptsMessage: nil)
         }
-        // Surface a counter only as a warning close to the PERMANENT
-        // (wipe-only) lock — below that a wrong PIN just shakes, so the
-        // count-toward-8 number doesn't get confused with the temporary
-        // cooldown at 3.
         let remaining = LockoutPolicy.maxFailCount - count
         if count > 0, remaining <= LockoutPolicy.permanentLockWarningThreshold {
             let message = String(format: NSLocalizedString("%ld attempt(s) left before your wallet is disabled", comment: ""), Int(remaining))
+            return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: message)
+        }
+        if count > 0, count < LockoutPolicy.allowedFailCount {
+            let untilCooldown = LockoutPolicy.allowedFailCount - count
+            let message = String(format: NSLocalizedString("%ld attempt(s) remaining", comment: "PIN attempts before temporary lockout"), Int(untilCooldown))
             return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: message)
         }
         return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: nil)
