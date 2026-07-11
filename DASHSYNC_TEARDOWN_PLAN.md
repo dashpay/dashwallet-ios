@@ -31,6 +31,25 @@ The contacts rebuild in PR #787 is complete. Do not describe C10 as “contacts
 pending”; the remaining C10 scope is invitations plus legacy identity/profile
 compatibility types.
 
+CrowdNode is also not a teardown blocker. Its migrated implementation should be
+temporarily suspended/hidden for the migration release, but no CrowdNode path
+may be used as a reason to retain DashSync.
+
+## Non-blocking release actions
+
+These actions must be tracked for the migration release but do not participate
+in the T1-T5 dependency chain:
+
+- temporarily suspend/hide CrowdNode entry points; do not add a DashSync
+  fallback;
+- upstream/reconcile every app-required commit from
+  `local/tx-decode-plus-v4.1-dev-dashwallet` onto platform `v4.1-dev`;
+- switch the sibling `../platform` checkout to `v4.1-dev`, rebuild both device
+  and simulator xcframework slices, and pass both app builds before release.
+
+The temporary platform integration branch is acceptable during development,
+but it is not an acceptable final migration or release pin.
+
 ## Remaining work
 
 ### T1. Decide the DashPay invitation/profile tail
@@ -126,6 +145,9 @@ T4 non-wallet export replacements -------------------------------+
 T4 can run independently before the two product decisions. T3 must wait until
 both remaining consumers of `DWEnvironment` have a final shape.
 
+The non-blocking CrowdNode suspension and platform-upstream work can run in
+parallel with T1-T4. They do not change the order of the DashSync unlink.
+
 ## Audit gates
 
 Run before calling teardown complete:
@@ -171,6 +193,10 @@ xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay \
 - Watch payload compatibility if retained;
 - Uphold/Coinbase sessions survive the keychain-helper replacement;
 - local-currency picker and About diagnostics after unlink.
+
+Before the final release build, also verify that CrowdNode is unavailable as
+intended and that `../platform` is on `v4.1-dev` rather than the temporary local
+integration branch.
 
 ## Maintenance rule
 

@@ -49,6 +49,11 @@ The app currently builds against sibling `../platform` branch
 app-required tx decoding, DashPay fee threading, raw signer, testnet faucet,
 classified SPV peers, and filter-rescan surfaces.
 
+This branch is a temporary integration pin, not a release destination. Every
+app-required platform change must be upstreamed/reconciled onto `v4.1-dev`, and
+the final migration build must use `../platform` on `v4.1-dev`. DashSync removal
+is not complete while dashwallet-ios depends on the private integration branch.
+
 After changing the platform checkout, rebuild both xcframework slices from
 `../platform/packages/swift-sdk`:
 
@@ -94,6 +99,18 @@ Status meanings:
 | 21 | Reachability | Done | Replaced with `NWPathMonitor`; this is app-owned, not a SwiftDashSDK API. |
 | 22 | BIP70 | Done | App-owned protocol stack performs build/sign -> Payment/ACK -> broadcast. Keep `BIP70_TESTING.md` as the focused verification record. |
 
+## Non-blocking product action: CrowdNode
+
+CrowdNode should be temporarily suspended/hidden for the migration release.
+Its wallet balance, transaction, signing, and APY work is already app/SDK-owned,
+so CrowdNode does **not** justify keeping DashSync linked and must not block the
+pod teardown. Suspension is a product/release action, not a dependency of the
+T1-T5 unlink sequence.
+
+When CrowdNode is re-enabled, verify its account state, deposit/withdrawal,
+message signing, and active-wallet scoping against the final `v4.1-dev` SDK
+build. Do not reintroduce a DashSync fallback while it is suspended.
+
 ## Storage migration
 
 No DashSync Core Data -> SwiftData copy is required:
@@ -112,6 +129,8 @@ No DashSync Core Data -> SwiftData copy is required:
   behavior using the available lower-level SDK/FFI primitives.
 - **Apple Watch:** remove the non-embedded legacy targets/phone bridge, or port
   and deliberately restore shipping.
+- **CrowdNode:** temporarily suspend it for the migration release; this decision
+  is recorded but does not block DashSync removal.
 
 Contacts are not part of the invitation decision; they are already migrated.
 

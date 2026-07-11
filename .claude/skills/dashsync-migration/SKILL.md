@@ -53,6 +53,11 @@ direct app/SDK boundary cannot work.
 - New Swift migration code imports `SwiftDashSDK`, never `DashSync`.
 - Do not recreate SDK values as `DS*` objects merely to satisfy an old API;
   replace the boundary and delete the leaking legacy types.
+- CrowdNode is temporarily suspended for the migration release and is not a
+  DashSync teardown blocker. Never keep or reintroduce a DashSync path for it.
+- `local/tx-decode-plus-v4.1-dev-dashwallet` is development-only. Required
+  platform changes must land on `v4.1-dev`, and the final migration/release
+  build must consume `v4.1-dev`.
 
 ## 4. Implementation rules
 
@@ -104,6 +109,10 @@ The SDK xcframework requires the arm64 simulator slice. After a platform branch
 change, rebuild both device and simulator slices from
 `../platform/packages/swift-sdk` with
 `./build_ios.sh --target ios --target sim`.
+
+For final verification, assert that `git -C ../platform branch --show-current`
+returns `v4.1-dev`. A green build against the temporary integration branch is
+development evidence only, not release completion.
 
 Run focused runtime smokes proportional to the change. Upgrade/multi-wallet,
 active-wallet network switch, wipe, auth, and retained invitation/Watch flows
