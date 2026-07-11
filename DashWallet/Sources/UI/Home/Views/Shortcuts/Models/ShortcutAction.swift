@@ -45,12 +45,15 @@ enum ShortcutActionType: Int {
     // Appended last: raw values persist in DWGlobalOptions.shortcuts,
     // so inserting mid-enum would silently remap saved configurations.
     case getTestDash
+    case switchWallet
 }
 
 extension ShortcutActionType {
     /// The features available for shortcut bar customization. Computed
-    /// (not stored) because the faucet entry follows the runtime
-    /// network — it appears only while the wallet is on testnet.
+    /// (not stored) because two entries follow runtime state: the faucet
+    /// appears only while the wallet is on testnet, and Switch Wallet only
+    /// while the current network has more than one wallet to switch among.
+    @MainActor
     static var customizableActions: [ShortcutActionType] {
         var actions: [ShortcutActionType] = [
             .buySellDash, .explore, .spend, .atm, .receive,
@@ -59,6 +62,9 @@ extension ShortcutActionType {
         ]
         if WalletEnvironment.isTestnet {
             actions.insert(.getTestDash, at: 0)
+        }
+        if WalletsViewModel.switchableWalletCount > 1 {
+            actions.append(.switchWallet)
         }
         return actions
     }
@@ -167,6 +173,13 @@ extension ShortcutActionType {
                 fatalError("Image not found for shortcut type: \(self)")
             }
             return image
+        case .switchWallet:
+            // Reuses the network-switch glyph (circular arrows) — same
+            // "switch" metaphor, no dedicated asset yet.
+            guard let image = UIImage(named: "shortcut_switchNetwork") else {
+                fatalError("Image not found for shortcut type: \(self)")
+            }
+            return image
         default:
             fatalError("Image not found for shortcut type: \(self)")
         }
@@ -228,6 +241,8 @@ extension ShortcutActionType {
             return NSLocalizedString("Topper", comment: "Translate it as short as possible! (24 symbols max)")
         case .getTestDash:
             return NSLocalizedString("1 tDash", comment: "Translate it as short as possible! (24 symbols max)")
+        case .switchWallet:
+            return NSLocalizedString("Switch Wallet", comment: "Translate it as short as possible! (24 symbols max)")
         }
     }
 }

@@ -82,17 +82,10 @@ final class WalletsViewModel: ObservableObject {
     /// scoped by walletId; the balance from the managed wallet.
     func reload() {
         let host = SwiftDashSDKHost.shared
-        guard let manager = host.manager else {
-            rows = []
-            return
-        }
-
-        let switchableIds = Set(SwiftDashSDKHost.persistedMnemonics().map { $0.walletId })
         let activeId = activeWalletId()
         let context = host.modelContainer?.mainContext
 
-        let built: [WalletRow] = manager.wallets.values
-            .filter { switchableIds.contains($0.walletId) }
+        let built: [WalletRow] = Self.switchableWallets()
             .map { wallet in
                 let walletId = wallet.walletId
                 let persisted = context.flatMap { Self.fetchPersistentWallet(walletId: walletId, in: $0) }
@@ -114,6 +107,19 @@ final class WalletsViewModel: ObservableObject {
 
         rows = built
     }
+
+    /// The wallets the current network can switch among: the running manager's
+    /// wallets intersected with the walletIds that have a persisted mnemonic
+    /// (a wallet without a mnemonic isn't switchable). Shared by `reload()`
+    /// and the Switch Wallet shortcut's visibility gate.
+    static func switchableWallets() -> [ManagedPlatformWallet] {
+        guard let manager = SwiftDashSDKHost.shared.manager else { return [] }
+        let switchableIds = Set(SwiftDashSDKHost.persistedMnemonics().map { $0.walletId })
+        return manager.wallets.values.filter { switchableIds.contains($0.walletId) }
+    }
+
+    /// Cheap visibility gate for the Switch Wallet shortcut (offered while > 1).
+    static var switchableWalletCount: Int { switchableWallets().count }
 
     var hasSingleWallet: Bool { rows.count <= 1 }
 
