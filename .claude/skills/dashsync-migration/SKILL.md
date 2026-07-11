@@ -1,195 +1,126 @@
 ---
 name: dashsync-migration
-description: Use when migrating any function from DashSync (legacy ObjC) to SwiftDashSDK (Swift package) in dashwallet-ios. Defines the one-stage cutover approach, when to use a direct swap versus a thin SwiftDashSDK-only shim, the verify-before-assume rule, and the alternative shapes for functions that don't fit a simple replacement. Triggers on phrases like "migrate <X> from DashSync", "swap DashSync for SwiftDashSDK", any work touching DashWallet/Sources/Infrastructure/SwiftDashSDK/, or any reference to DASHSYNC_MIGRATION.md.
+description: Use for DashSync removal, SwiftDashSDK migration, DWEnvironment teardown, key migration, or final pod-unlink work in dashwallet-ios. This is an endgame playbook: verify the current working tree, preserve upgrade contracts, remove bounded legacy tails, and keep migration/teardown docs current.
 ---
 
-# DashSync → SwiftDashSDK migration playbook
+# DashSync removal endgame playbook
 
-This skill is the entry point for **all** DashSync removal work in dashwallet-ios, regardless of which function you're migrating. Most sections apply universally; §3 is the default path for functions that fit a straightforward replacement. For everything else, §2 + §3a route you to the right alternative.
+The broad functional migration is complete. Remaining work is teardown, not a
+new staged rollout. Never infer status from old Shadow/Flipped/Solo labels or
+raw `DS*` token counts.
 
-**Division of labor across the three migration docs:** `DASHSYNC_MIGRATION.md` = status (what's migrated, per function). `CLAUDE.md` §"DashSync → SwiftDashSDK Migration" + §"Architecture Guardrails" = invariants that must always hold (frozen DashSync reads, sync gating, send boundary, mnemonic ownership, no copy-then-adapt, comments state behavior not intent). This file = procedure (how to run the next cutover). Don't duplicate content across them — link.
+## 1. Establish current truth
 
-## 0. Deployment model: one-shot, single-release migration
+Read, in order:
 
-**The entire DashSync → SwiftDashSDK migration ships in a single App Store release.** No interim release ever ships with the migration partially done. The cutover work, the key/storage migrators, and DashSync's removal all land on the development branch and ship together.
+1. the call sites and project configuration being changed;
+2. `DASHSYNC_MIGRATION.md` for the current functional ledger;
+3. `DASHSYNC_TEARDOWN_PLAN.md` for remaining unlink work;
+4. `DASHSYNC_KEY_MIGRATION.md` for frozen upgrade contracts;
+5. sibling `../platform/packages/swift-sdk/Sources/SwiftDashSDK/` and underlying
+   FFI/Rust code when SDK behavior is relevant.
 
-This is a load-bearing assumption with hard implications for what code you should and shouldn't write:
+Docs are maintained snapshots, not substitutes for inspecting the working tree.
+If code and docs disagree, verify the code, then update the docs in the same
+change.
 
-- **No dual-stack window exists in production.** Users never see a build where DashSync is authoritative for one operation while SwiftDashSDK is authoritative for another. Do not write code for users running partially migrated behavior.
-- **Do not write cross-library state-drift handlers.** No wipe-detection branches that scrub SwiftDashSDK state when DashSync state disappears. No PIN-rotation branches that re-encrypt SwiftDashSDK seeds when DashSync's PIN changes. No runtime wallet-ID translation tables. That code is dead in this deployment model.
-- **Do not preserve a staged Shadow / Flipped / Solo rollout inside the app just for migration safety.** Verify aggressively in development, then swap. The shadow-then-flip ladder that earlier sessions used is retired — it was ceremony, not insurance, because nothing ever shipped in a shadow state.
-- **Hard invariant for storage migrators:** never delete from a DashSync-owned keychain service (`org.dashfoundation.dash`). The DashSync keychain entries from previous app versions persist on user devices forever as belt-and-suspenders rollback. The migrator only ever reads from them. Reference: `DASHSYNC_KEY_MIGRATION.md` and `DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKKeyMigrator.swift`.
+## 2. Classify the task
 
-If you find yourself writing a branch that "handles the case where DashSync did X to its state after the migrator already ran", **stop**. That case can't happen in our deployment model. Delete the branch.
+Every remaining DashSync dependency should fit one of these buckets:
 
-## 1. First step: read the migration map
+- DashPay invitations or legacy identity/profile compatibility types;
+- Apple Watch phone bridge/targets;
+- C6-E wallet-registry compatibility (`DWEnvironment`, dual-write, wipe,
+  `hasWallet`, chain-wallet notification, network mirror);
+- non-wallet exported helpers (Uphold HTTP, generic keychain helpers,
+  notifications, currency DTO, localization/utilities, startup);
+- Podfile/pbxproj/resource/linker unlink mechanics.
 
-Always read `DASHSYNC_MIGRATION.md` at the repo root **before** starting any migration work. For the function you're about to touch, find:
+Do not add a new adapter or dual-stack path without showing why deletion or a
+direct app/SDK boundary cannot work.
 
-- Its row in the main 22-row table
-- The **SDK** column (🟢 Ready / 🟡 Partial / 🔴 Blocked / ⚪ N/A)
-- The **Status** column
-- The **Storage migration?** column
-- The **"Where we are"** section at the top — quick scan of in-flight work and notes from previous sessions
+## 3. Hard invariants
 
-If the row doesn't exist or is wrong about the current state, **fix the doc first**. The migration map is the source of truth for status; this skill is the source of truth for procedure.
+- The migration ships as one release; no production cross-library drift logic.
+- Never delete old keychain entries in service `org.dashfoundation.dash`.
+- The key migrator supports multiple wallets and resumes partial runs.
+- Resolve wallet-sensitive work through the active wallet ID for the selected
+  network; never choose the first mnemonic/wallet when several exist.
+- Never read balance, UTXOs, transactions, sync state, or keys from frozen
+  DashSync wallet objects.
+- Every spend uses `WalletSendService` or the established SDK transaction
+  sender boundary; UI code never builds/broadcasts directly.
+- New Swift migration code imports `SwiftDashSDK`, never `DashSync`.
+- Do not recreate SDK values as `DS*` objects merely to satisfy an old API;
+  replace the boundary and delete the leaking legacy types.
 
-## 2. First check: does a direct cutover fit?
+## 4. Implementation rules
 
-The one-stage replacement in §3 is the **default**, but it only fits when **all** of these are true:
+- Preserve ObjC selectors only when a thin SDK/app-owned bridge materially
+  reduces churn; the bridge must expose non-DashSync types.
+- Add new Swift files to both app targets when shared.
+- Use top-level Infrastructure PBXGroup `479E7922287C00A000D0F7D7`.
+- Remove obsolete sources, imports, bridging-header entries, pbxproj membership,
+  resources, and Podfile dependencies in the same review-sized change.
+- For invitation/Watch decisions, implement the chosen outcome end to end;
+  do not leave disabled legacy code linked “for safety”.
+- For generic keychain replacement, preserve exact service, account,
+  accessibility, and byte encoding so Coinbase/Uphold/PIN state survives.
 
-- **Pure function**: same input → same output, no held state on either side
-- **Synchronous**: no callbacks, no events, no completion handlers
-- **Directly equivalent APIs**: both libraries expose the same operation with the same shape
-- **Few isolated call sites**: a handful, not hundreds
+## 5. Audit gates
 
-If any are false, **STOP and re-plan**. Go to §3a, find the function's category, use the alternative shape, and ask the user before forging ahead. Do not jam an unfitting function into a direct swap.
-
-**Functions where the direct cutover pattern fits cleanly** (per `DASHSYNC_MIGRATION.md`):
-
-- #2 address validation (✅ done — the standalone `SwiftDashSDKAddressValidator` adapter was retired; the final shape is the NSString category extension at `DashWallet/Sources/UI/Payments/PaymentModels/NSString+SwiftDashSDKAddress.swift`)
-- #3 mnemonic generation
-- #4 mnemonic validation
-- #13 backup seed phrase
-- #15 provider keys derivation
-- #1 receive address (✅ done — no-arg `SwiftDashSDKReceiveAddressReader`, kept as a permanent SDK-only helper)
-
-## 3. One-stage cutover
-
-For functions that fit §2, do the migration in one review-sized change:
-
-1. Replace the DashSync implementation with the SwiftDashSDK implementation.
-2. Remove the DashSync call path in the same change.
-3. Delete any migration adapter that only existed to support staged parity, unless a thin SwiftDashSDK-only shim is still useful for Obj-C interop.
-4. Update `DASHSYNC_MIGRATION.md` to reflect that the function moved straight to done.
-
-The goal is **not** "run both and compare." The goal is **"verify first, then cut over cleanly"** — and verification happens against the sources in §5, not against DashSync at runtime.
-
-### Shim conventions (when a shim is still useful)
-
-- **Prefer direct Swift call-site replacement** where practical.
-- If Obj-C interop or selector stability makes a shim useful, keep it **SwiftDashSDK-only** — never route through DashSync.
-- **Location**: `DashWallet/Sources/Infrastructure/SwiftDashSDK/` (canonical directory for migration shims)
-- **Naming**: `SwiftDashSDK<Concept>.swift` (e.g. `SwiftDashSDKAddressValidator.swift`)
-- **Class**: `final class SwiftDashSDK<Concept>: NSObject` with `@objc(DWSwiftDashSDK<Concept>)` so Obj-C call sites can use it without rewriting
-- **Method**: preserve the original selector only if it materially reduces call-site churn
-- **Do not `import DashSync`** from the shim.
-
-Example shim shape:
-
-```swift
-guard /* validate input */ else { return false }
-return SwiftDashSDKModule.theMethod(...)
-```
-
-Reference implementation: `SwiftDashSDKReceiveAddressReader.swift` (the canonical *kept* shim: main-thread hop + host resolution + nil-on-failure logging that ObjC callers can't inline). If the shim adds no real value after the cutover, delete it and call SwiftDashSDK directly from the final call sites — precedent: `SwiftDashSDKAddressValidator` was retired in favor of an NSString category extension once verification completed.
-
-## 3a. When the direct cutover doesn't fit — alternative shapes
-
-For functions that fail the §2 check, here's the alternative shape per category. Some are sketched; most will be enriched as we actually ship migrations in each category. When you encounter one of these for the first time, **stop and ask the user** before designing the approach.
-
-| Category | DASHSYNC_MIGRATION rows | Why a direct swap fails | Alternative shape |
-|---|---|---|---|
-| **Async / network calls** | #16 identity create, #18 contacts, #19 DPNS lookup | Needs callbacks or `async` behavior; Obj-C call sites need rewiring | Single cutover behind a SwiftDashSDK-backed async boundary, with call-site rewiring as needed. |
-| **Stateful balance / UTXO** | #5 wallet balance, #9 fee estimation | SwiftDashSDK depends on SPV-populated state | Sequence after #11 SPV sync work. Don't attempt these in isolation. |
-| **Persisted data (tx history)** | #6 transaction list, #7 tx detail | Two different storage frameworks (Core Data vs SwiftData); this is a storage migration, not a function wrapper | One-shot data migrator that runs at first launch after upgrade. See the "Storage migration" section in `DASHSYNC_MIGRATION.md`. |
-| **Multi-step async write paths** | #8 send Dash, #16 identity create | Build → sign → broadcast carries state across steps | Replace the whole boundary at once; do not mix implementations inside one flow. If Swift and Obj-C callers coexist, introduce one app-level async service plus a thin Obj-C completion bridge, and keep the low-level SDK executor behind that boundary. |
-| **Long-running event streams** | #11 SPV sync, #20 CoinJoin, parts of #18 | Event-driven, lifetime-coupled to the app; not a single call you can wrap | Event-router pattern. **#18 contacts shipped a working recipe (2026-07-07):** SDK background sync loop started/stopped from the existing coordinator lifecycle (`PlatformAddressSyncCoordinator`, same shape as the shielded block) → Rust persister lands SwiftData rows → an app-side `@MainActor` service materializes value-type snapshots on debounced `NSManagedObjectContextDidSave` (same mechanism as the #6 tx list) and owns the PIN-gated async writes → SwiftUI screens consume the service; the whole DashSync subsystem (FRC + Core Data wrappers + ObjC VCs, 163 files) was deleted in the same arc. When the legacy read model is Core Data FRC and the SDK persists to SwiftData, **rebuild the screens in SwiftUI rather than adapting the ObjC protocol layer** — those protocols leak DashSync entity types from their signatures and adaptation costs more than the rewrite. |
-| **Side-effect-only calls** | #12 network switch, #14 wipe wallet | Both calls just delete or mutate state; nothing meaningful to compare | Direct flip with manual verification. |
-| **Not really a migration** | #21 reachability, #22 BIP70 | Replace with iOS framework (`NWPathMonitor`) or drop entirely | Out of scope for this skill — handle as a regular code change. |
-
-**When in doubt, stop and ask the user.** Picking the wrong shape upfront is the most expensive mistake — once call sites are rewired in the wrong shape, undoing them is painful.
-
-## 4. Project structure rules
-
-These apply universally regardless of which shape you're using.
-
-- **Both targets** (`dashwallet` and `dashpay`) need new Swift source files registered in `project.pbxproj`. The pattern: one `PBXFileReference`, two `PBXBuildFile` entries (one per target), both registered in their respective `PBXSourcesBuildPhase`. **Search the pbxproj for `App.swift in Sources`** to see the canonical pattern.
-- **Infrastructure PBXGroup IDs** in pbxproj — there are THREE groups named `Infrastructure`. Use `479E7922287C00A000D0F7D7` (top-level `DashWallet/Sources/Infrastructure`). **Do NOT** use `47838B83290665EC0003E8AB` (that's `Models/Coinbase/Infrastructure`) or `47AE8B9728BFACED00490F5E` (that's `DashSpend Model/Infrastructure`). This was a footgun caught in commit `19b475684`.
-- **Obj-C call sites** that use a new Swift `@objc` class need `#import "dashwallet-Swift.h"`. Most files in `DashWallet/Sources/UI/Payments/PaymentModels/` already have it; check before adding.
-- **Both targets share `dashwallet-Swift.h`** as the auto-generated bridging header (verified via `SWIFT_OBJC_INTERFACE_HEADER_NAME` in pbxproj).
-- **Swift migration files** should `import SwiftDashSDK`; they should never `import DashSync`.
-- **`String` shadowing via the DashSDKFFI umbrella**: SwiftDashSDK does `@_exported import DashSDKFFI`, which leaks C enum-case constants into expression scope — e.g. `DashSDKResultDataType`'s `String` case. In metatype *expressions* like `withTaskGroup(of: (String, [String: UInt]).self)` the bare `String` resolves to that constant and produces a baffling `(DashSDKResultDataType, …)` type error. Route tuple metatypes through a `typealias` (type-resolution context) or write `Swift.String`. Learned in the phrase-repair port (`SwiftDashSDKPhraseRepairer.swift`).
-- **Obj-C blocks with out-pointer params** (`void (^)(float, BOOL *stop)`): bridge as `UnsafeMutablePointer<ObjCBool>` whose memory the Swift side owns on the **heap**, retained by the final completion closure scheduled on the same serial queue as the ticks — never expose a stack address to a block that may write via deferred `dispatch_async` (DashSync did; latent use-after-return). Pattern: `CancellationBox` in `SwiftDashSDKPhraseRepairer.swift`.
-- **Remove obsolete DashSync-only files, references, and imports** as part of the cutover when they're no longer needed.
-- **UUID family** for migration shim pbxproj entries: extend the existing `A5D5DD0000000000000000…` family. Prefer the `…F1` through `…F4` range used by prior migration files.
-- **SwiftUI symbol shadowing**: the app defines UIKit classes whose names collide with SwiftUI types (`ProgressView: UIView` in `UI/Views/ProgressView.swift`). Inside SwiftUI views, qualify as `SwiftUI.ProgressView()` or the builder errors are baffling (`buildExpression requires ProgressView conform to View`). Learned in the #18 contacts rebuild.
-- **Teardown-scale pbxproj purging**: every pbxproj entry (build file, file ref, group child, resources entry) is one line naming the file, so bulk deletions are safe to purge with a line filter on `/* <basename>` — then `plutil -lint` + build. Scan ALL source roots for dangling references before building: `DashPay/` and `Shared/` exist beside `DashWallet/Sources` and are easy to miss (a dead `DWFilterHeaderView` in `DashPay/Presentation` importing a deleted header broke the first #18 teardown build).
-
-## 5. Verify-before-assume rule
-
-**The devnet-fallback episode is the load-bearing lesson here.** When tempted to add a defensive fallback or special-case branch ("just in case the two libraries differ on edge case X"), spend 5 minutes reading both implementations FIRST.
-
-`dashwallet-ios` depends on the sibling `../platform` repo for SwiftDashSDK. Treat that repo as the source of truth for the Swift SDK surface this app is actually consuming. Do not infer SwiftDashSDK behavior from dashwallet wrappers alone.
-
-Default inspection order:
-
-1. Read the dashwallet call sites you're changing.
-2. Read the SwiftDashSDK wrappers in `../platform/packages/swift-sdk/Sources/SwiftDashSDK/` to confirm the real Swift API shape, naming, lifecycle, and availability.
-3. If wrapper behavior, type mapping, FFI boundaries, or runtime semantics are still unclear, inspect the underlying Rust / core implementation and FFI layer before designing the migration.
-
-Concrete locations:
-
-- **DashSync source**: sibling repo at `../DashSync/`
-- **DashSync address logic**: `../DashSync/shared/Categories/NSString+Dash.{h,m}`
-- **DashSync wallet / derivation**: `../DashSync/shared/Models/Wallet/`
-- **SwiftDashSDK Rust source**: `~/.cargo/git/checkouts/rust-dashcore-*/<rev>/`. Find the rev via `grep "rust-dashcore" /Users/bartoszrozwarski/Documents/Developer/platform/Cargo.toml`. Address logic at `dash/src/address.rs`. FFI wrappers at `key-wallet-ffi/src/`.
-- **SwiftDashSDK revision source of truth**: `/Users/bartoszrozwarski/Documents/Developer/platform/Cargo.toml`
-- **SwiftDashSDK Swift wrappers**: `/Users/bartoszrozwarski/Documents/Developer/platform/packages/swift-sdk/Sources/SwiftDashSDK/`
-
-Most of the time the two libraries already behave the same way and the fallback is dead code. The devnet check (commit `3c87467e5`) is the canonical example: assumed `.devnet` might differ from evonet, added a fallback, then found they use byte-identical logic and the fallback was deletable in the very next PR. The inverse failure also happened: the send path *assumed* the SDK bundles build+sign+broadcast into one FFI call and shipped a no-op `broadcast()` on that basis — `buildSigned` and `broadcastTransaction` were always separate calls, and the wrong assumption shipped a decorative confirm sheet (arch-review T1, fixed `ee9901696`). Do the read first, in both directions: before adding a fallback AND before claiming a constraint exists.
-
-## 6. Verification flow
-
-Run these checks for each cutover. Build verification proves static correctness; a focused runtime smoke test of the migrated flow is the second gate. Since the app no longer preserves staged parity, the runtime gate is the migrated behavior itself — not mismatch logging.
+Prefer ownership-specific greps:
 
 ```bash
-# 0. if the build errors with "sandbox is not in sync with Podfile.lock":
-#    pod install needs a UTF-8 locale in non-interactive shells, or Ruby's
-#    unicode_normalize crashes (Encoding::CompatibilityError)
-LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pod install
+rg -n --glob '*.{h,m,mm,swift}' \
+  '(#import[[:space:]]*[<\"][^\n]*DashSync|@import DashSync|^[[:space:]]*import DashSync)' \
+  DashWallet DashPay TodayExtension WatchApp 'WatchApp Extension'
 
-# 1. pbxproj sanity
-plutil -lint DashWallet.xcodeproj/project.pbxproj
+rg -n --glob '*.{h,m,mm,swift}' \
+  '\b(DSChain|DSWallet|DSAccount|DSTransaction|DSBlockchainIdentity|DSBlockchainInvitation)\b' \
+  DashWallet DashPay TodayExtension WatchApp 'WatchApp Extension'
 
-# 2. the build gate — dashpay is the scheme kept green during the migration
-xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay -sdk iphonesimulator \
-  -destination 'generic/platform=iOS Simulator' ARCHS=arm64 build
+rg -n "pod ['\"]DashSync|DashSync" Podfile Podfile.lock DashWallet.xcodeproj/project.pbxproj
 ```
 
-`ARCHS=arm64` is required because the SwiftDashSDK xcframework only ships `ios-arm64-simulator` (not x86_64). On Apple Silicon this works fine; CI on Intel would need a rebuilt xcframework. The `dashwallet` scheme is **not kept green on this branch** (as of 2026-07) — build it additionally only when your change touches dashwallet-only surfaces, and don't treat its pre-existing breakage as your regression.
+Review remaining matches; a raw `DS[A-Z]` count includes app-owned names and
+comments and is not a completion metric.
 
-**If the verify build fails on a missing SDK member** (e.g. `'ManagedCoreWallet' has no member 'X'`), it's almost never your migration — the `../platform` checkout is on a branch lacking that API, or `DashSDKFFI.xcframework` is stale. The xcframework is a **gitignored build artifact** that a platform branch switch does NOT update. Fix: switch `../platform` to the branch defining the API, then rebuild `build_ios.sh --target sim` **run with cwd inside `../platform/packages/swift-sdk`** (it invokes `cargo` from the cwd; run from dashwallet-ios it errors `could not find Cargo.toml`). Confirm with `nm <slice>/librs_unified_sdk_ffi.a | grep <symbol>` before rebuilding the app. Note: such a failure also masks app-target errors — the app module isn't compiled until the SDK package builds, so a "clean" first build can hide real errors in your changed files until the SDK builds. (Learned closing out #20 CoinJoin: sweep API lives on `feature/coinjoin-sweep-and-recovery`.)
+## 6. Verification
 
-Exercise the migrated flow end-to-end on the simulator (dashpay scheme, testnet) before calling it done — the unit-test target is currently broken, so the runtime smoke IS the second gate.
+```bash
+plutil -lint DashWallet.xcodeproj/project.pbxproj
 
-## 7. Update the migration doc on every cutover
+xcodebuild -workspace DashWallet.xcworkspace -scheme dashwallet \
+  -configuration Debug -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_ALLOWED=NO EXCLUDED_ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES build
 
-Edit `DASHSYNC_MIGRATION.md` as part of the same change:
+xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay \
+  -configuration Debug -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_ALLOWED=NO EXCLUDED_ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES build
+```
 
-- The **"Where we are"** section: update or add the row for this function with the new state and a brief note about what landed (cite the commit SHA once it exists).
-- The main 22-row table: update the **Status** column for this row — usually straight to `✅` for direct cutovers.
-- If the lesson generalizes to future migrations, update this skill too (see §9).
+The SDK xcframework requires the arm64 simulator slice. After a platform branch
+change, rebuild both device and simulator slices from
+`../platform/packages/swift-sdk` with
+`./build_ios.sh --target ios --target sim`.
 
-## 8. Commit policy
+Run focused runtime smokes proportional to the change. Upgrade/multi-wallet,
+active-wallet network switch, wipe, auth, and retained invitation/Watch flows
+cannot be proven by a build alone.
 
-**Per `CLAUDE.md`: never commit or push without explicit user permission.** Make changes, run verification, show the diff, wait for the explicit phrase ("commit", "push", "commit and push"). Plan-mode approval is NOT commit approval. After completing a task like "address review comments" or "fix this", do NOT automatically commit — the user typically wants to test first.
+## 7. Documentation and handoff
 
-## 9. Self-improvement clause
+In the same change:
 
-**At the end of any DashSync migration session, if you learned something during it that would be useful for migrating OTHER functions in the future, update this SKILL.md before ending the session.**
+- update the affected functional row in `DASHSYNC_MIGRATION.md`;
+- remove closed work from `DASHSYNC_TEARDOWN_PLAN.md`;
+- update `DASHSYNC_KEY_MIGRATION.md` when an upgrade/storage contract changes;
+- update both `.codex` and `.claude` copies of this skill when the reusable
+  procedure changes.
 
-Examples of things worth capturing here:
+Keep docs present-state only. Staffing/ownership notes and session diaries do
+not belong in technical status documents.
 
-- A new Swift-from-ObjC bridging gotcha
-- A network / enum mapping pitfall
-- A new pbxproj group that's commonly mis-targeted (like the Infrastructure footgun in §4)
-- An FFI signature mismatch class
-- A verification step that catches a class of bugs
-- A category in §3a that now has a real recipe instead of "stop and ask"
-
-**Do NOT update SKILL.md** for one-off lessons specific to a single function. Those go in the adapter file as a comment, or in `DASHSYNC_MIGRATION.md` as a row note. The bar for editing SKILL.md is "useful for migrating OTHER functions, not just this one".
-
-**Format for additions:** keep them in the relevant section above, one sentence per item, link to the commit SHA where the lesson was learned. If a section grows past ~10 items, propose a refactor in the next session.
-
-**The skill grows over time.** Its long-term value comes from being kept current with what we've learned. A stale skill is worse than no skill — it gives confident wrong advice. If you notice anything in here that contradicts current reality, propose a fix.
+Per `AGENTS.md`, never commit or push without explicit user permission. Show the
+diff or summarize changes and stop for review.

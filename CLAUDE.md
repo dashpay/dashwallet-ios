@@ -84,14 +84,14 @@ Main app, `TodayExtension` (widget), and `WatchApp`, with shared code in `Shared
 - `MainTabbarController.swift` — tab-based navigation
 - `UIHostingController+DashWallet.swift` — UIKit ↔ SwiftUI bridge
 
-## DashSync → SwiftDashSDK Migration (active)
+## DashSync → SwiftDashSDK Migration (endgame)
 
-The app is mid-migration off DashSync. **Source of truth: `DASHSYNC_MIGRATION.md`** (per-function status; staged shadow → flipped → solo → done model). Process playbook: the `dashsync-migration` skill. Invariants that have each already caused a real bug when violated:
+The broad functional migration is complete; the branch is in pod-unlink teardown. `DASHSYNC_MIGRATION.md` is the current functional ledger, `DASHSYNC_TEARDOWN_PLAN.md` is the remaining unlink sequence, and `DASHSYNC_KEY_MIGRATION.md` owns upgrade-time key contracts. The `dashsync-migration` skill is the endgame playbook. Verify every status against the working tree; old Shadow/Flipped/Solo staging labels are retired.
 
 - **DashSync is frozen post-M6** — nothing starts its sync. `DWEnvironment.currentChain` / `currentAccount` still exist, but their balances, UTXOs, and `allTransactions` read stale/zero. Read wallet state from `SwiftDashSDKWalletState.shared`; DashSync reads are valid only for the not-yet-migrated surfaces tracked in DASHSYNC_MIGRATION.md.
 - **Sync gating**: never gate on SPV `state == .synced` — dash-spv's steady state when fully synced is `waitForEvents` at progress ≈ 1.0 (`.synced` is a transient window). Gate on `SyncingActivityMonitor` (`.syncDone`).
 - **Sends**: every spend goes through `WalletSendService` (standard) or `SwiftDashSDKTransactionSender` (selected-input / sweep). Never call `CoreTransactionBuilder` from UI code. `prepare*` never broadcasts; broadcast happens only on explicit confirm.
-- **Mnemonic ownership**: stored as plain keychain bytes via SwiftDashSDK `WalletStorage` (the iOS keychain is the security boundary — there is no PIN-encryption layer). Writers: `SwiftDashSDKWalletCreator` / `SwiftDashSDKKeyMigrator`; deletion: `SwiftDashSDKWalletWiper`. Don't add ad-hoc `WalletStorage()` readers — resolve through `SwiftDashSDKHost` (wallet presence: `SwiftDashSDKHost.hasPersistedSDKWallet()`, surfaced app-wide as `WalletEnvironment.hasSDKWallet`/`hasWallet`).
+- **Mnemonic ownership**: stored as plain keychain bytes via SwiftDashSDK `WalletStorage` (the iOS keychain is the security boundary — there is no PIN-encryption layer). Creation/import/migration route through `SwiftDashSDKHost`; deletion routes through `SwiftDashSDKWalletWiper`. The migrator supports multiple wallets and never deletes DashSync-owned `org.dashfoundation.dash` entries. Don't add ad-hoc `WalletStorage()` readers or choose the first mnemonic — resolve the active wallet through `SwiftDashSDKHost` / `WalletEnvironment.activeWalletId(for:)`.
 - **TestNet by design (temporary)**: fresh installs deliberately default to testnet in ALL build configurations while mainnet Platform DAPI is unreachable in the current SDK build (`WalletEnvironment.networkKind`'s missing-key default; owner decision 2026-07-03). Do not "fix" this; revisit before any release branch.
 
 ## UI Development — SwiftUI-First (Mandatory)
@@ -99,7 +99,7 @@ The app is mid-migration off DashSync. **Source of truth: `DASHSYNC_MIGRATION.md
 All new UI MUST be built in SwiftUI with a ViewModel. Do **not** add new Storyboards, XIBs, or UIViewControllers containing UI logic.
 
 - Keep views lightweight; put business logic in `ObservableObject` ViewModels (`@MainActor`, `@Published` state).
-- Concretely banned inside SwiftUI `View` structs: FFI/SDK calls, fee math, auth (`DSAuthenticationManager`) calls, `DSChain`→network mapping, protocol constants. Those live in the ViewModel or a service.
+- Concretely banned inside SwiftUI `View` structs: FFI/SDK calls, fee math, direct auth calls (use `AuthenticationGate`), `DSChain`→network mapping, protocol constants. Those live in the ViewModel or a service.
 - When integrating with existing UIKit navigation, use a thin `UIHostingController` wrapper only.
 - Maintain existing UIKit code but don't extend it; migrate a screen to SwiftUI when substantially reworking it.
 
@@ -113,7 +113,7 @@ Distilled from the 2026-07 branch review (`ARCH_REVIEW_2026-07-03.md`) — each 
 4. **New singletons need a reason.** Don't add another `static let shared` in `Sources/Infrastructure/` without a protocol seam or a written justification in the type doc; prefer injecting. One file = one responsibility — a "coordinator" that accumulates published UI counters, storage wipes, and money movement gets split.
 5. **Never re-emit another system's notification names.** Re-posting `DS*` notification strings from new state poisons every future grep audit. New state gets a new typed publisher/notification; consumers migrate.
 6. **No debug residue in commits:** no session tags in log lines (à la `CJTEST`), no plan-diary comments ("Row #17 stage A", "M5/M6"), no stale line-number cross-references in doc comments. Use `TODO(label)` and link docs instead.
-7. **Migration seams stay honest.** Dual DashSync/SDK paths are fine (staged migration), but business logic must not be duplicated on both sides of a seam, and a seam method's name must match its behavior (`prepare` must not spend; `broadcast` must broadcast).
+7. **Migration seams stay bounded and honest.** New staged DashSync/SDK paths are not allowed. The only dual-library seams are the explicit teardown tails in `DASHSYNC_TEARDOWN_PLAN.md`; delete them with their final consumer. A seam method's name must match its behavior (`prepare` must not spend; `broadcast` must broadcast).
 
 ## Code Style
 

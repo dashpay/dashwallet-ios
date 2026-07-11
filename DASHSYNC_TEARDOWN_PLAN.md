@@ -1,284 +1,180 @@
-# DashSync Pod Teardown — Research & Sequenced Plan
+# DashSync pod teardown plan
+
+Current unlink plan, audited against the working tree on 2026-07-11. This file
+answers **what still prevents removing `pod 'DashSync'`**. Functional migration
+status lives in [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md).
+
+## Exit criteria
 
-**Scope:** what it takes to eventually **unlink the DashSync CocoaPod** — the "long tail" of migration ledger item #11.
-**Date:** 2026-07-06 · **Branch:** `swift-sdk-integration` · **Updated 2026-07-06 pm:** Wave A landed (7 commits, `dae5239e1` → `2f796e71c`; A7 deferred by owner) — statuses folded into the TL;DR, bug table, cluster entries, and §7 below.
-**Source of truth for per-function migration status remains [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md).** This doc is the teardown-specific companion: it inventories the *remaining* DashSync coupling, corrects the ledger where it had drifted, and lays out a shippable sequence.
+Teardown is complete only when all of the following are true:
 
-**Provenance:** produced by a 23-agent read-only research pass (11 coupling clusters + adversarial API verification against `../platform` and `../rust-dashcore` sources + a coverage-critic sweep for surfaces the clusters missed). Every claimed-present or claimed-missing SDK/FFI symbol was grep-verified. Where a verifier corrected a cluster's claim, the correction is folded in below.
+- neither app target declares or links DashSync;
+- no app source file imports a DashSync header/module;
+- no live app path creates or reads `DSChain`, `DSWallet`, `DSAccount`,
+  `DSTransaction`, `DSBlockchainIdentity`, or `DSBlockchainInvitation`;
+- DashSync bundle, commit-hash resource, build scripts, linker flags, header
+  paths, and generated pod references are gone;
+- upgrade-time mnemonic and PIN/token compatibility remains readable through
+  app-owned code;
+- both `dashwallet` and `dashpay` build and the affected upgrade/wipe/send flows
+  pass runtime smoke tests.
 
----
+## Completed migration clusters
+
+The following are no longer teardown blockers: SDK SPV and wallet state,
+transaction list/detail, receive, standard sends and fees, BIP70, address and
+mnemonic validation, authentication, reachability, the app-owned fiat-rate pipeline, logging, CrowdNode
+signing/APY, network identity/switch ownership, xpub export, DashPay registration
+and contacts, and CoinJoin recovery/sweep.
 
-## TL;DR
+The contacts rebuild in PR #787 is complete. Do not describe C10 as “contacts
+pending”; the remaining C10 scope is invitations plus legacy identity/profile
+compatibility types.
 
-The teardown is **broader than the ledger's blocker list but more tractable than it looks**.
+## Remaining work
 
-- The residual coupling is **11 clusters + 10 previously-unscoped surfaces**. Two of those surfaces are DashSync services still doing **live** work today (exchange-rate fetching, logging) — nothing will flag them as broken until unlink day.
-- Several feared upstream blockers were **refuted**: CrowdNode message signing and even DashPay invitation create/accept are composable from FFI that already exists — only Swift wrappers are missing.
-- There is a clean set of **~8 small PRs shippable immediately** (✅ **landed 2026-07-06** as Wave A, minus the deferred A7), a mid-game of independent M/L workstreams, and an endgame gated on the DashPay contacts rebuild (dashpay target only) plus a short list of owner decisions.
-- The research also surfaced **7 live bugs** worth fixing regardless of the teardown (Bug #1 fixed with Wave A; see §2).
-- **Number drift:** it's **~78** `currentChain/currentAccount/currentWallet` reader files (ledger said ~127) — minus the 12 network-identity files A4 repointed. Post-Wave-A the app has **zero** `DSWallet.allTransactions` enumerations and **zero** `DSChainManagerSync*` references (`grep` is a clean audit signal again).
+### T1. Decide the DashPay invitation/profile tail
 
-**STATUS 2026-07-09 (post etap-4 + cat-6):** Waves A and B are **done** — C2, C3, C4, C5, C6 A–D, C7 (incl. recovery), C8 (full), C9 (signing/prices/logger), and all of C1 (read-side + the etap-4 duty strip + cat-6 xpub). `DWEnvironment` survives only as a frozen wallet-registry shim; its consumer ledger is final: **C6-E** (dual-write create/recover, wipe, `DSChainWalletsDidChange` filter, `hasWallet` union) + **DashPay/invites (C10)** + **watch (D1)**. No unblocked app-side engineering remains — what's left is: the colleague-owned coverage surfaces (§4: Uphold HTTP **M**, keychain shim **S**, DS-notification renames **S**, About commit-hash plumbing **S**, Podfile direct-declares **S**), two owner decisions (C10 invites: gate/delete now vs wait for an upstream invitations wrapper; D1 watch: drop vs port), then the sequenced endgame: C6-E cut + `DWEnvironment.{h,m}` deletion (~1 session) and the unlink mechanics (~1 session: `DSLocalizedString`→NSLocalizedString, `DSCurrencyPriceObject`→local DTO, `DSUtils`, `dwLogLevel`→`ddLogLevel`, `setupDashSyncOnce`/`DSOptionsManager` removal, `pod 'DashSync'` out).
+**Decision:** delete/compile-gate invitations or port them.
 
----
+Current coupling includes:
 
-## 1. Corrections to the current plan of record
+- invitation create, accept, history, preview, and link UI using
+  `DSBlockchainInvitation`;
+- funding and status logic using `DSWallet`, `DSAccount`, `DSTransaction`, and
+  `DSBlockchainIdentity`;
+- old current-user profile/edit views retaining `DSBlockchainIdentity`-typed
+  properties/categories even when their displayed data comes from
+  `DWCurrentUserIdentityInfo`;
+- `JoinDashPayViewModel` compatibility reads.
 
-### 1a. Do **not** build the two-backend `DWEnvironment` facade
-[`DASHSYNC_MIGRATION.md:170`](./DASHSYNC_MIGRATION.md) proposes refactoring `DWEnvironment` into a facade with `DashSyncBackend` / `SwiftDashSDKBackend`. This is **structurally unable to reach unlink**: `DWEnvironment`'s public API surface *is* DashSync types (`DSChain currentChain`, `DSWallet currentWallet`, `DSAccount currentAccount` in `DWEnvironment.h:33-37`), so any SDK-backed implementation still has to mint `DS*` objects — keeping the pod linked forever.
+If invitations are kept, replace the whole async boundary and data model; do
+not adapt SDK values back into `DSBlockchainInvitation`. If they are removed,
+delete the entry points, types, project membership, and mock invitation paths
+in the same change.
 
-The reader census shows most consumers never needed the objects:
-- **12 files / 29 sites** need only mainnet/testnet identity.
-- **8 files / 13 sites** pass `DSChain` solely as a *network token* into codecs (address validation, `DSPaymentRequest` parse, `DSTransaction(message:on:)`).
-- **7 files** need only "does a wallet exist".
+### T2. Decide the Apple Watch tail
 
-**Recommended shape:** a small new **`WalletEnvironment`** (Swift, `@MainActor`, `@objc`-bridged, in `Sources/Infrastructure/SwiftDashSDK/`) exposing `networkKind` (persisted under the existing `CURRENT_CHAIN_TYPE_KEY` UserDefaults key, keeping DashSync `ChainType` raw values `0/1` for upgrade compatibility), `network: SwiftDashSDK.Network?`, `isMainnet/isTestnet`, `hasWallet`, `walletId: Data?`, plus `switchNetwork(to:)` and wipe entry points that keep posting the app-owned `DWCurrentNetworkDidChangeNotification` / `DWWillWipeWalletNotification` (already observed by `SwiftDashSDKWalletRuntime` and `DWSwiftDashSDKWalletWiper` — no re-plumbing). Call sites migrate one category at a time; `DWEnvironment` loses readers until only DashSync-internal duties remain, then it's deleted with the pod. Side benefit: this collapses **5 duplicated `DSChain`→`Network` mappers** (a standing guardrail-#1 violation) into one.
+**Decision:** remove or port.
 
-### 1b. The "DashSync is frozen post-M6" invariant has live holes
-Three code paths still start DashSync networking (`[peerManager connect]` / `DSChainManager` rescans):
-- `SettingsMenuViewModel.swift:216-233` — `rescanTransactions()` / `fullResync()` / `resyncMasternodeList()`.
-- `AppDelegate.m:397-404` — the migration-crash recovery path.
-- `DWEnvironment.switchToNetwork` — `DWEnvironment.m:199,216`.
+The Watch targets still exist, but the phone app does not embed WatchApp on
+this branch. `DWPhoneWCSessionManager` and `DSWatchTransactionDataObject` still
+depend on frozen DashSync account/transaction state.
 
-These aren't only audit noise — the first one is **Bug #1** below.
+- **Remove:** delete Watch targets, `Sources/AppleWatch`, Podfile watch targets,
+  and phone hooks.
+- **Port:** create an SDK snapshot provider, preserve the existing NSCoding
+  wire format for installed watches, replace the transaction/account reads,
+  and deliberately restore the embed phase.
 
-**Fourth hole found 2026-07-07 (C1 cat-4 sweep):** the About screen's trusted-peer debug feature (`DWAboutModel.m` `setTrustedPeerHost:`/`removeTrustedPeerHost` paths, ~:200-217) calls `[peerManager connect]` — another DashSync networking starter, alongside `switchToNetwork`. **CLOSED 2026-07-09 (etap 4, owner decision: drop, not port):** the trusted-node manager is deleted (`c4d4adf0e`), and `switchToNetwork`'s DashSync arm (stopSync + peerManager connect) fell with the switch rewrite (`9b0338e38`) — no app-side DashSync networking starter remains (`peerManager` greps zero in Sources). A fixed-peer diagnostic, if wanted later, goes through `PlatformSpvStartConfig(peers:restrictToConfiguredPeers:)` as a new SDK-side feature.
+### T3. Cut C6-E and delete `DWEnvironment`
 
-### 1c. Two DashSync services are still doing real, live runtime work
-Unlinking without porting these silently breaks working features:
-- **Exchange rates** — `setupDashSyncOnce` (`AppDelegate.m:338`) → `DSPriceManager` HTTP fetch → `PRICESBYCODE_KEY` UserDefaults → `BaseRatesProvider` re-reads. Kills *every fiat price in the app* at unlink (balance header, amount entry, tx rows, Coinbase/Uphold/CrowdNode fiat).
-- **Logging** — `DSLogger`/`DSLog` (162 refs / 47 files), including the CocoaLumberjack file sink behind the user-facing "share logs" support feature (`DWAboutModel.logFiles`).
+Do this after T1/T2 no longer need DashSync wallet objects.
 
----
+Remove together:
 
-## 2. Live bugs found during the research
+- create/recover `standardWalletWithSeedPhrase` dual-writes;
+- DashSync registry mirroring during network switch;
+- DashSync Core Data/registry wipe arm;
+- `DSChainWalletsDidChangeNotification` filtering;
+- the DashSync half of `WalletEnvironment.hasWallet`;
+- eager `DWEnvironment` bootstrap in AppDelegate;
+- `DWEnvironment.{h,m}` and bridging-header exposure.
 
-These are defects in the current build, independent of teardown work. Several get fixed *en route* through the plan; listed here so they aren't lost.
+Multi-wallet warning: every operation must resolve the active wallet for the
+selected network through `WalletEnvironment.activeWalletId`. Never select the
+first mnemonic/wallet when more than one exists.
 
-| # | Bug | Location | Severity | Status (2026-07-06) |
-|---|---|---|---|---|
-| 1 | **Rescan permanently blocks sending.** Settings→Rescan sets `isResyncingWallet=true` + invokes a dead DashSync rescan; sends then gate on `chainManager.syncPhase == .synced`, which never arrives post-M6. | `SettingsMenuViewModel.swift:216-233`, `SendAmountModel.swift:52,88` | High — user-reachable, fails locked | ✅ **Fixed** (`b40466d33`): gates on `.syncDone`, rescan controls removed |
-| 2 | **PIN lockout never expires.** Countdown depends on DashSync `secureTime`, which nothing updates post-M6; after 4+ wrong attempts "Try again in 6 minutes" is frozen forever (recover only via phrase reset/wipe). | `DSAuthenticationManager` lockout path | High — fails closed | ✅ Fixed — C7.1 (`SecureTimeService`, 2026-07-08) |
-| 3 | **Biometric spending limit unenforced on the main send path.** The amount-left decrement lived only in DashSync's retired spend path; `WalletSendService`'s `AuthenticationGate` never calls `canUseBiometricAuthenticationForAmount`. | `WalletSendService.swift` auth gate | High — security regression | ✅ Fixed — C7.4 (2026-07-08) |
-| 4 | **Watch app silently doesn't ship from this branch.** Commit `45da5fd69` (2026-06-01) removed the "Embed Watch Content" phase + target dependency, apparently incidentally. `master` still embeds it. | `project.pbxproj` | Medium — silent product regression | Open — awaiting decision D1 (balance payload already ported, `7fa75d3af`) |
-| 5 | **MOCK_DASHPAY fabricates data for SDK users.** `MOCK_DASHPAY = YES` (since Aug 2023) synthesizes a fake identity, 3 hardcoded notifications, mock search results, and mock-verifies invitation deeplinks. | `DWDashPayConstants.m:28` + 24 files | Medium — ships theater | Accepted for now — owner deferred all DashPay work (A7/C10) until the SDK-side e2e migration |
-| 6 | **Send-success screen computes state/date from frozen chain.** `.ds` shells fall back to stale `lastTerminalBlockHeight`/`timestamp`. | `DSTransaction+DashWallet.swift:22-31` | Medium — wrong data on a screen shown after every send | ✅ **Fixed** (`a284c68ef`): the screen resolves the persisted SDK row (or the recent-sends registry) via `TxDetailModel`'s resolver init |
-| 7 | **Paste/NFC `dash:` URI with embedded amount is dead.** Non-ScanQR sources skip the amount screen; `confirmProtocolRequest`'s SDK gate needs `amount>0` (0 here) → falls into DashSync's zero-UTXO account → guaranteed "insufficient funds". | `DWPaymentProcessor.m:488` | Medium — real balance, false failure | ✅ **CLOSED (C8 steps 4+5).** Step 4 (`c1de1f831`) fixed the mechanism — `confirmPaymentIntent:` takes `self.amount` from `intent.amount` before the SDK gate, so embedded amounts route through SwiftDashSDK, not the DashSync zero-UTXO branch. Step 5 (`dbd06d22a`) removed the residual `change-amount`/`UINT64_MAX` write-only sentinel. Confirm with a funded paste-with-amount smoke on an unlocked wallet. |
+### T4. Replace non-wallet DashSync exports
 
-**Also latent:** CrowdNode `withdraw()` / `signAndSendEmail()` may already be silently broken for SDK-fresh wallets — `wallet.privateKey(forAddress:)` returns nil for addresses outside DashSync's pool, so both return `false` with no error UI. Worth a testnet smoke.
+These are active repo tasks, not externally assigned work:
 
----
+| Surface | Current evidence | Required replacement |
+|---|---|---|
+| Uphold/profile HTTP | `HTTPLoaderManager`, `HTTPLoaderFactory`, `DSNetworkingCoordinator` | App-owned URLSession/Moya boundary preserving bearer and OTP behavior. |
+| Generic keychain helpers | `getKeychainData`, `setKeychainData`, `getKeychainInt` in Coinbase, Uphold, global options | App-owned compatibility shim preserving service/account/accessibility bytes. |
+| App-internal notifications | `DSWillRequestOSPermissionNotification`, `DSApplicationTerminationRequestNotification`, residual transaction notification names | App-owned typed notification names; migrate posters and observers together. |
+| About/build metadata | `DashSyncCurrentCommit`, `scripts/dashsync_version.sh` | Remove resource/script and show app/platform information only. |
+| Local currency DTO | `DSCurrencyPriceObject` | App-owned value/ObjC DTO returned by `CurrencyExchanger`. |
+| Confirm Username fiat amount | Direct `DSPriceManager.localCurrencyStringForDashAmount` call in `DWConfirmUsernameContentView` | Route through `CurrencyExchanger_Objc` / the app-owned exchanger. |
+| Localization/utilities | `DSLocalizedString`, `UIWindow+DSUtils`, umbrella-only constants such as `DUFFS` | Foundation/app helpers and app-owned constants. |
+| Logger compatibility | `dwLogLevel` workaround | Revert to normal CocoaLumberjack `ddLogLevel` after DashSync headers disappear. |
+| App startup | `setupDashSyncOnce`, `DSOptionsManager` | Delete once every required service has an app/SDK owner. |
+| Transitive pods | `DSDynamicOptions`, `DWAlertController`, CocoaLumberjack | Keep required libraries directly declared before removing DashSync. `DSDynamicOptions` is already direct for TodayExtension; verify both app targets. |
 
-## 3. The 11 coupling clusters
+### T5. Unlink mechanics
 
-Effort scale: **S** = a few hours · **M** = 1–2 days · **L** = a week · **XL** = multi-week.
+After T1-T4:
 
-### C1 · DWEnvironment live-object backbone — **XL**
-**Coupling:** 79 reader files / 207 occurrences (excluding `DWEnvironment.m`) of `currentChain`/`currentAccount`/`currentWallet`, in 7 consumption categories:
-1. **Network identity only** — 12 files (DWUpholdConstants ×12, ExploreDatabaseSyncManager ×4, CrowdNode+Constants ×3, TxDetailModel, TopperViewModel, CTXConstants, …).
-2. **Chain-as-codec-parameter** — 8 files (SendViewModel, EnterAddressModel, DWQRScanModel, WalletSendService, SendCoinsService, …).
-3. **DashPay identity** (`currentWallet.defaultBlockchainIdentity`, etc.) — 24 files / ~62 sites, the biggest block (DWDashPayModel ×13, DWNotificationsProvider ×6, DWUserProfileModel ×6, contacts/invites files, …).
-4. **Account/chain data — DEAD post-M6** — ~15 files (DWTransactionListDataProvider confirmations, DWHomeModel.isWalletEmpty→always 0, watch payload, CrowdNode APY, SendAmountModel sync gate, DWAboutModel diagnostics, …).
-5. **Wallet existence** — 7 files (DWURLParser, DWRootModel, DWInitialViewController reinstall detection, …).
-6. **Auth/seed/key-material** (live — DashSync keychain, not sync) — 8 files (CrowdNodeModel seed+sign, DWURLRequestHandler xpub export, ExtendedPublicKeysModel, DWRecoverModel xpub compare, dual-write sites).
-7. **Vestigial** — 4 (comment-only / stored-but-unused).
+1. Remove `pod 'DashSync'` from both app targets.
+2. Run CocoaPods 1.15.2 install.
+3. Remove `libDashSync`, `DashSync.framework`, header paths, linker flags,
+   `DashSync.bundle`, `DashSyncCurrentCommit`, and stale project references.
+4. Remove DashSync-only bridging-header and prefix-header imports.
+5. Run the audit gates and build both schemes.
 
-`DWEnvironment.m` itself needs DashSync for: `DSChainsManager`/`DSChain` bootstrap in init (the load-bearing lazy init per the #11 audit), wallet/account resolution, `allWallets`, wipe (`stopSyncForChain` + `wipeBlockchainNonTerminalDataForChain` CoreData + `unregisterAllWallets` + `DSAuthenticationManager removePin`), network switch (`copyForChain:` + `stopSyncForChain` + `peerManager connect`), and `apy`.
+## Sequence
 
-**Shape:** `WalletEnvironment` + let-DWEnvironment-wither (§1a). **Effort XL** but the first 4 PRs free ~27 files and delete the duplicated mappers. **Depends on / is the seam for:** DashPay (#16/#18), auth (C7), watch (C11), wallet-structure (C6). **Risk to verify early:** `DWEnvironment.m:199,216` `peerManager connect` may be the last live DashSync networking starter.
+```text
+T1 invitation/profile decision + implementation ----+
+                                                    +--> T3 C6-E / DWEnvironment
+T2 Watch decision + implementation -----------------+             |
+                                                                  +--> T5 unlink
+T4 non-wallet export replacements -------------------------------+
+```
 
-**Progress 2026-07-06:** category 1 (network identity) is **done** — `WalletEnvironment` v1 landed (`0085f1bcb`): 12 files repointed, 4 of 5 mappers collapsed (5th kept by design, travels with C8). The rescan trap + dead `syncPhase` gates fixed (`b40466d33`), which also removed the Settings/crash-path DashSync networking starters (the `switchToNetwork` one remains). Next categories: existence (rides C6 PRs 1-2) and codec-parameter (needs C8's BIP21 parser).
+T4 can run independently before the two product decisions. T3 must wait until
+both remaining consumers of `DWEnvironment` have a final shape.
 
-**Progress 2026-07-07:** categories **2 and 5 are done** (5 commits, `7c24fc622`…`b09946166`; migration-doc row #25). Cat 2: `String.isValidDashAddressForCurrentNetwork` replaces DashSync `isValidDashAddress(on:)` at all 7 sites + `DWParsedPaymentURI`; all 4 `DSTransaction(message:on:)` couriers deleted — the send boundary and the whole send-success delegate chain are wire-txid-typed (`TxDetailModel.initWithTxidWire:`; `DWPaymentOutput.tx` nullable, C10-arm-only). Cat 5 (= C6 A+B): `WalletEnvironment.hasSDKWallet`/`hasWallet` over `SwiftDashSDKHost.hasPersistedSDKWallet()`; runtime gate on SDK presence; the 5 app-level existence reads repointed. **Remaining C1 categories:** 3 (DashPay identity ⏸ C10), ~~4 (dead post-M6 reads)~~ **done 2026-07-07** (`d6f8d9316` — DWHomeModel.isWalletEmpty → SDK balance; About block/peer lines → SPV state; CrowdNode `fee(forTxSize:)` → static 1-duff/byte helper; deferred by design: DSTransaction formatting + `timestamp(forBlockHeight:)` → C10, `secureTime` → C7, `minOutputAmount` static-harmless), 6 (auth/seed — C7), 7 (vestigial), plus `DWEnvironment.m`'s own duties (`switchToNetwork` etc.).
+## Audit gates
 
-**Progress 2026-07-09:** the C8-fin payment-chain strip removed **11 more `DWEnvironment` reads** (all 8 in `DWPaymentProcessor`, 2 in `DWPaymentInputBuilder`, the courier's `currentChain` in `DWPaymentInput`) — the largest single non-DashPay consumer block. Post-#787 the remaining consumers are: DashPay invites/`DWDashPayModel` (gated), Watch (D1), tx-display formatting (`DWTransactionListDataProvider`), ~12 small 1–2-read files, and `DWEnvironment.m`'s own duties.
+Run before calling teardown complete:
 
-**Progress 2026-07-09 (C1-s3, read repoints done — the read side of C1 is CLOSED):** the last non-gated `DWEnvironment` reads are repointed or deleted: About version suffix + Settings network row + CrowdNode Buy-Dash gate → `WalletEnvironment` (new shared `networkDisplayName`); the DashSync→SDK network mapping in wallet create/recover → `isMainnet`/`isTestnet`; `BaseAmountModel` dust validation → `CoreTxConstants.minOutputAmount` (546 — the pod's feePerByte-scaled bound is frozen at the default post-M6, so runtime-identical); `DWReceiveModel`'s wiped-wallet guard → `hasWallet`; CrowdNode's relaunch prefs validation → a new tri-state `CrowdNodeMessageSigner.ownsAddress` (BIP44 acct-0 scan; `nil` = SDK not up ⇒ skip, never reset a live account). Deleted as dead: `CoinJoinMixingTxSet`'s unread `chain` and `DWHomeModel`'s constant-false `isEvolutionEnabled` gate (pod hardcodes NO × `MOCK_DASHPAY` hardcodes YES). **Every remaining `DWEnvironment` consumer is now one of:** (a) **duty invocations** — etap 4/C6-E: network switch (`SettingsMenuViewModel:195-204`, `HomeViewController+Shortcuts:40-47`), wipe (`DWRecoverModel`, `DWRootModel`, `DWInitialViewController`, `DWPreviewSeedPhraseModel.clearAllWallets`), dual-write wallet create/recover (`DWPreviewSeedPhraseModel:63`, `DWRecoverWalletCommand:52`), bootstrap (`AppDelegate:310`), trusted-peer debug (`DWAboutModel:171-208`, `DWAboutViewController:206` — owner decision pending), the `DSChainWalletsDidChange` filter (`DWHomeModel:255`); (b) **xpub export** (`ExtendedPublicKeysModel:26`, `DWURLRequestHandler:51` — C1 cat-6, live keychain-backed reads; needs an SDK xpub-serialization surface); (c) **DashPay** (`DWDashPayModel` + invites + JoinDashPay/CurrentUserProfile — C10); (d) **Watch** (D1); (e) the migration-window union inside `WalletEnvironment.hasWallet` itself (falls with etap 4). 2 code commits (`b3348109f`, `f3013a003`), green builds.
+```bash
+rg -n "pod ['\"]DashSync|DashSync" Podfile Podfile.lock DashWallet.xcodeproj/project.pbxproj
 
-**Progress 2026-07-09 (cat-6 CLOSED — xpub export SDK-native; migration-doc row #33):** the last two `currentAccount` reads outside deferred clusters are gone, with zero platform changes. Extended-public-keys screen → `SwiftDashSDKHost.derivationWallet()` + `Wallet.getAccountXpub(0)` (existing FFI; serialization in the C library; same-mnemonic dual-write ⇒ identical displayed string); orphaned ExtendedPublicKeysView/-Controller deleted. The breadwallet-era `dashwallet://request?request=masterPublicKey` inter-app xpub export is **deleted** (owner decision — no known consumers, privacy surface, and its BIP32 `m/0'` half was unreachable without a swift-sdk wrapper); the SDK-native `request=address` flow stays. **The `DWEnvironment` consumer ledger is now exactly: C6-E (dual-write create/recover, wipe, `DSChainWalletsDidChange` filter, `hasWallet` union) + DashPay (C10) + watch (D1).**
+rg -n --glob '*.{h,m,mm,swift}' \
+  '(#import[[:space:]]*[<\"][^\n]*DashSync|@import DashSync|^[[:space:]]*import DashSync)' \
+  DashWallet DashPay TodayExtension WatchApp 'WatchApp Extension'
 
-**Progress 2026-07-09 (etap 4 — `DWEnvironment` hollowed to a frozen wallet-registry shim; migration-doc row #32):** the shim's live duties are gone or moved (6 commits `351a7f7e0`…`a72187404`, green builds each). **Switch** → `WalletEnvironment.switchToNetwork(_:)` (sole `CURRENT_CHAIN_TYPE_KEY` writer + `DWCurrentNetworkDidChangeNotification` poster; runtime refresh path untouched); `switchToEvonet` deleted (no UI caller, SDK has no devnet); the pod-auth `copyForChain:` replaced by `mirrorWalletRegistryToChainType:seedPhrase:` from the SDK-persisted mnemonic (no PIN prompt on switch — keychain is the boundary; wallet-less switch no longer leaks its completion). **Trusted-node manager deleted** (owner decision — see the closed "fourth hole" note in §1b). **Bootstrap**: the shim's init is trimmed to registering both chains with `DSChainsManager` (the wipe loop's iteration source); the eager `AppDelegate` call **stays** — `DSChain` singletons must be first-created on the main thread (pod assert), and the watch manager's background dispatch is a lazy first-toucher (launch crash when the eager call was dropped; `dispatch_sync`-in-`dispatch_once` would deadlock). **Wipe** stays in the shim minus `stopSyncForChain` (it wipes DashSync's own registry; SDK wiper rides the notification unchanged). Riders: dash-symbol attributed string built app-side (the shim's `setDashCurrencySymbolAssetName` was load-bearing for confirm-send/Uphold rendering); `DWAppDidUnlockNotification` moved to its poster (`DWAppRootViewController.h`); 5 dead imports swept. **The deferred ledger shrinks to:** dual-write create/recover + wipe + `DSChainWalletsDidChange` filter (`DWHomeModel`) + `hasWallet` union — all C6-E; xpub export (C1 cat-6); DashPay (C10); Watch (D1). `DWEnvironment.{h,m}` itself falls with C6-E once those close.
+rg -n --glob '*.{h,m,mm,swift}' \
+  '\b(DSChain|DSWallet|DSAccount|DSTransaction|DSBlockchainIdentity|DSBlockchainInvitation)\b' \
+  DashWallet DashPay TodayExtension WatchApp 'WatchApp Extension'
 
-**Progress 2026-07-09 (C1-s2, tx-display strip):** the tx-display formatting layer is gone. The `DWTransactionListDataProvider` chain (provider + base + protocol + item + itemObject + onboarding stub, 10 files) was **dead at runtime** — zero callers of any protocol method; the provider was only threaded through properties — and is deleted along with all its carrier plumbing (`DWHomeProtocol.getDataProvider`, the pay-chain `dataProvider` properties/params, the hosting controllers' `homeModel` relay). The `DSTransaction+DashWallet` category is retired: `txMinOutputAmount` ported as `CoreTxConstants.minOutputAmount` (546 duffs, formula-documented; both Coinbase callers repointed); the date-formatting extension and `txHashData` fell with their last consumers, including `TxDetailModel`'s zero-caller `DSTransaction` resolver seam. Riders: orphaned `DWTxDetailPopupViewController` deleted (the seam's only compile-time caller; flagged dead-but-compiled in the C8-fin audit) and the write-only `DWHomeProtocol.allDataSource` (`NSArray<DSTransaction *>`) removed. 3 commits (`1cc56bc23`…), green `dashpay` arm64-sim builds. **`DSTransaction` now survives in app code only in DashPay invites (3 sites, gated C10) and the Watch payload (D1); comments elsewhere.** Open: owner smokes (home tx list + detail, send success screen, reclassify popup, Coinbase sub-546-duff error).
+plutil -lint DashWallet.xcodeproj/project.pbxproj
+```
 
-### C2 · Transaction sum type — retire `.ds(DSTransaction)` — **L** — tail closed 2026-07-09 (C1-s2: `DSTransaction+DashWallet` category retired; residual `DSTransaction` = invites (C10) + watch (D1) only)
-**Coupling:** `DSTransaction` ~136 refs repo-wide, funneled through `Transaction.swift`'s `.ds`/`.sdk` sum type. **Live/dead:** home list is pure `.sdk`; **send-success detail is LIVE on `.ds`** (Bug #6); reclassify + incremental-update paths are dead; watch/DashPay tx surfaces stale. **`.ds` IS still instantiated at runtime** (send success + demo mode + upgrade-stale), so retirement is not purely mechanical — but every live producer is either dead or salvageable.
+Do not use a raw `DS[A-Z]` count as the completion gate; it includes app-owned
+compatibility names and comments. Review each remaining match by ownership.
 
-**Shape (6 PRs):** (A) delete dead `.ds` producers + re-point the metadata-update path to `SwiftDashSDKWalletSource.fetch(txid:)`; (B) fix tax-category `.tx` readers via the shared `direction.defaultTaxCategory` + metadata DAO; (C) retype the send-success delegate chain from `DSTransaction` to the `Transaction` wrapper (fetch-by-txid + synthetic-snapshot fallback for the async-persister race — also fixes Bug #6); (D) synthetic `.sdk` snapshots for the onboarding demo (delete `DWTransactionStub`); (E) enrich `SDKSnapshot` with `transactionTypeKind`; (F) delete `case ds`, `computeStateFromDSTransaction`, `DSTransaction+DashWallet.swift`, and the DS overloads in `Taxes.swift`/`Transactions.swift`. **Nothing upstream needed** (verified).
+Build both targets with the arm64 simulator slice:
 
-**Progress 2026-07-06 (evening): ✅ CLUSTER CLOSED — all PRs landed** (`70e278efb` B · `f66f95216` A · `34aa6b75d` D · `a284c68ef` C · `270ebdf0a` E · F follows). `case ds`, `Transaction.tx`, `init(transaction:)` and `computeStateFromDSTransaction` are gone; `Transaction` is a single-source `SDKSnapshot` wrapper. **Shape deviations from the plan, by evidence:** (C) the delegate chain was NOT retyped — `PaymentControllerDelegate` is `@objc` with a live ObjC conformer (`DWBasePayViewController.m`), so the `DSTransaction` stays a *courier* and `TxDetailModel.init(transaction:)` is the resolver seam (fetch row → `RecentSendsRegistry` synthetic → minimal); the couriers die with C8/C10. (F) `DSTransaction+DashWallet.swift` was **trimmed, not deleted** — `date` + 3 date formatters survive for the DashPay-frozen ObjC providers (incl. `formattedISO8601TxDate`, which the protocol requires — the "zero callers" audit note was wrong); the live `DSTransactionDirection` UI extension moved to `TransactionDataItem.swift`; the ObjC twin `DSTransaction+DashWallet.m` survives (`txMinOutputAmount` has live Coinbase callers). **Bonus fixes shipped en route:** `.sdk` txid hex was wire-order (copy-txid + explorer links 404'd for every SDK row — fixed with `displayHex`), and `TXDetailViewController.Item`'s degenerate `==`/hash made `.sentFrom([])`/`.sentTo([])` collide (diffable duplicate-identifier crash, which SDK sent rows made the norm). **Still outside this cluster:** DashPay tx surfaces (C10), watch payload (C11), payment-processor internals (C8), and replacing the `DSTransactionDirection` enum (app-owned enum) last.
+```bash
+xcodebuild -workspace DashWallet.xcworkspace -scheme dashwallet \
+  -configuration Debug -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_ALLOWED=NO EXCLUDED_ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES build
 
-### C3 · Satellite `DSWallet.allTransactions` readers — **S–M**
-**Coupling:** after this week's ports, effectively **one dead loop left** — `DWUserProfileDataSourceObject.m:155` (MOCK_DASHPAY scaffolding; the nil-transaction fallback already renders, so deletion is behavior-identical). The CrowdNode ×3 scans (`getWithdrawalsForTheLast`, `hasDepositConfirmations`, `getApiAddressConfirmationTx`) and `DWReceiveModel` "Received X" are already live on `fetchObserved`. The **online-account confirmation forward** is deliberately disabled (`TODO(online-account port)`, `CrowdNode.swift:786`).
+xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay \
+  -configuration Debug -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGNING_ALLOWED=NO EXCLUDED_ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES build
+```
 
-**Shape:** (PR1, S) delete the dead loop → **zero `allTransactions` readers** + de-stale the ledger. (PR2, M) re-enable the online-account forward: add chain-acceptance to `ObservedTransaction(row:network:)` (`context ≥ 1 || blockHeight > 0` — *stronger* than legacy `transactionIsValid`), compose it **into the filter, not post-match** (the observer's txid dedupe at `TransactionObserver.swift:161` would otherwise permanently swallow a mempool-first sighting), then auth + `sendCoinsService.sendCoins(...)` via the existing selected-input path. **Nothing upstream needed.**
+## Required runtime checks
 
-**Progress 2026-07-06:** PR1 **done** (`f2524feb2`) — zero `allTransactions` enumerations remain. PR2 **done** (online-account forward re-enabled on the `isChainAccepted` context gate, in-filter, with a pre-send already-forwarded guard) — **C3 closed**.
+- upgrade from a DashSync-keychain wallet, including multiple wallets;
+- create, import, switch, rename/remove, and network switch with the correct
+  active wallet;
+- wipe from Settings, lock screen, and recovery/backup paths;
+- receive, standard send, BIP70, and pay-to-contact;
+- PIN lockout and biometric spending limit;
+- invitation flow if retained;
+- Watch payload compatibility if retained;
+- Uphold/Coinbase sessions survive the keychain-helper replacement;
+- local-currency picker and About diagnostics after unlink.
 
-### C4 · Legacy sync-notification re-emit — ✅ **DONE 2026-07-06** (`dae5239e1`)
-**Coupling:** `SyncingActivityMonitor.postLegacyNotifications` re-emits `DSChainManagerSync*` names (guardrail-#5 violation; poisons grep audits). Exactly **3 consumers:** `HomeViewModel.swift:225` (WillStart→reload), `DWPhoneWCSessionManager.m:79/87` (Finished/Failed→watch ping), `DWAboutViewController.m:103` (StateDidChange — effectively dead).
+## Maintenance rule
 
-**Shape (single PR):** HomeViewModel → fold reload into the existing `$state` sink on `.syncing`; DWPhoneWCSessionManager → adopt the observer protocol; DWAboutViewController → **NC on the typed name, not protocol adoption** (the monitor's `observers` is a *strong* array — a protocol-adopting VC would leak). Then delete `postLegacyNotifications` + the 3 name constants. **No new files, no pbxproj edits.** Makes `grep DSChainManagerSync` a clean audit signal again and removes 4 app references to pod notification symbols (link-time blockers). ⚠️ Do **not** delete `.syncStateChangedNotification` as "unused" — the About migration makes it load-bearing.
-
-### C5 · Masternode / quorum display — **M** (+ upstream)
-**Coupling:** About "Quorums validated x/y" (`DWAboutModel.m:157`) and CrowdNode APY masternode count (`DSChain+DashWallet.m`). **Both wrong today:** quorum row renders **0/0** on fresh installs; APY is **silently degraded** — with `validMasternodeCount==0` it falls back to a static estimate from a hardcoded **3800** masternodes (a stale mainnet-era figure, applied even on testnet, ignoring HPMN ×4 weighting).
-
-**Shape:** (PR1, S) About row → SDK masternode-sync stats from `SwiftDashSDKSPVCoordinator`; delete the dead `DSQuorumListDidChangeNotification` observer. (PR2, S/M) port the APY block-reward math to a pure-Swift `MasternodeAPYCalculator` (per-network constants keyed off the SDK network, height from the SPV coordinator — never gate on `.synced`), keeping today's estimated-count behavior for exact parity; then delete `DSChain+DashWallet.{h,m}` + `DWEnvironment.apy`. (Upstream + PR3) a `spv_masternode_list_stats` FFI getter replaces the hardcoded count with the live virtual count and can restore true quorum counts. **Product must sign off on shipping parity-with-today** rather than blocking on the FFI (guardrail #3: no stub-and-assert).
-
-**Progress 2026-07-06:** PR1 **done** (`94cc2ea81`); PR2 **done** (`9d11acd80` — `MasternodeAPYCalculator`, `DSChain+DashWallet.{h,m}` + `DWEnvironment.apy` deleted; v20 heights verified against Dash Core chainparams). **The cluster's app-side work is complete** — one of the four named pod-unlink blockers closed. Open: the upstream stats-FFI ask, then PR3 (live virtual count + optional true quorum row).
-
-### C6 · Wallet-structure creation (row #3 tail) — **M**
-**Coupling:** `[DSWallet standardWalletWithSeedPhrase:...]` on create (`DWPreviewSeedPhraseModel.m:58`) and restore (`DWRecoverWalletCommand.m:55`) — the dual-write that keeps DashSync's keychain + `chain.hasAWallet` in step. **Live/dead:** dual-write functions correctly; existence gates are live *only because* of it. ~~`DWRecoverModel.isWalletEmpty` is broken (reads frozen sync heights → always "not empty" → plain-"wipe" phrase always refused)~~ **fixed 2026-07-07 (step D)** — reads SDK balance + `.syncDone`.
-
-**Shape:** do **NOT** flip new installs first — an SDK-only fresh install today crashes nonnull `currentWallet` Swift sites (DashPay identity, HomeViewModel) and ships with the lock screen disabled (`shouldShowLockScreen` returns NO when `hasAWallet` is NO). Instead, phased: (A) `@objc hasSDKWallet` presence bridge + flip the SDK runtime's own gate; (B) point app-level existence checks at SDK presence (union with DashSync during the window); (C) SDK-native reinstall recovery on `walletNotFound` (today reinstall+Keep works only by accident via the KeyMigrator); (D) `canWipeWithPhrase` → `Mnemonic.normalizePhrase` compare, `isWalletEmpty` → WalletState + `.syncDone`; (E) **last, after C1/C10/C11 stop traversing `currentWallet`** — delete both `standardWalletWithSeedPhrase` sites + a one-shot DashSync-keychain seed scrubber gated on SDK keychain parity. `walletId` from mnemonic = `Wallet(mnemonic:network:).id` (no upstream gap).
-
-**Progress 2026-07-07:** **A + B done** (with C1 categories 2/5 — commits `893458077` + `b09946166`, migration-doc row #25): `SwiftDashSDKHost.hasPersistedSDKWallet()` presence primitive, `WalletEnvironment.hasSDKWallet`/`hasWallet` (union), runtime gate flipped to SDK presence, 5 app-level existence reads repointed.
-
-**Progress 2026-07-07 (later):** **C + D done** (commits `b39964921` + `966b804bc`, migration-doc row #26). C: `SwiftDashSDKHost.start` retries `walletNotFound` by rebuilding wallet rows from keychain mnemonics (`persistedMnemonics()`) — reinstall+Keep no longer depends on the KeyMigrator race. D: `isWalletEmpty` = SDK balance + `.syncDone` (the plain-"wipe" refusal bug is fixed); `canWipeWithPhrase` = normalized-phrase compare against persisted SDK mnemonics (no more transient-DashSync-wallet xpub derivation). Open: **E** only (dual-write deletion + scrubber, gated on C1 cat-3/6 + C10/C11).
-
-### C7 · PIN / biometric auth — **L** — **done 2026-07-08** (Bugs #2 & #3 fixed; DSAuthenticationManager fully retired)
-**Progress 2026-07-08:** **done** — 8 commits (`3868a4cc5`…C7.8), migration row #28. App-side `DWAuthenticationService` over a byte-compatible `PinStore` + `LockoutPolicy` + `SecureTimeService` (D5 hybrid clock) replaced the pod auth managers with **zero PIN migration**. `AuthenticationGate` flipped; SwiftUI `PinPromptView` replaced `DSRequestPinViewController`; `DSPinField` ported into `DWPinField`; all 13 direct call sites + lock screen + Set-PIN/biometric/advanced-security/About models cut over; `didAuthenticate` bridge deleted (resets on background). **Bug #2 fixed** (secure-time re-fed from HTTP `Date` headers — shipped standalone in C7.1). **Bug #3 fixed** (biometric spending limit enforced on the send path). **Owner UX deltas:** count every wrong PIN (no identical-PIN dedup); attempts counter shown only as a near-permanent-lock warning. Byte-compat proven by a DEBUG parity assertion (retired in C7.8) + the upgrade-in-place smoke (pre-C7 DashSync-written PIN unlocks under the post-cutover build). **C7.9 (2026-07-08) closed the recovery tail — `DSAuthenticationManager` and `DSBiometricsAuthenticator` are both zero-refs.** Forgot-PIN drops `DSRecoveryViewController`: it reuses the app-owned `DWRecoverViewController` in a new phrase-gated `DWRecoverAction_ResetPin` mode (correct phrase → `DWSetPinViewController(.ChangePin)` → unlock, **wallet kept, no re-import/re-sync**); a Wipe option is offered only past the wipe threshold and rides the lock screen's existing single-wipe chain (no double-wipe). `AppDelegate`'s `setOneTimeShouldUseAuthentication:YES` → `DWAuthenticationService.enableAuthenticationIfNeeded`; the pod auth bridging-header imports + the lock screen's DashSync umbrella import are gone. Open: biometric-limit smoke on real hardware; owner testnet smokes for the new forgot-PIN flow.
-
-**Coupling:** `DSAuthenticationManager` (~54) + `DSBiometricsAuthenticator` (~12) across ~24 files / 13 UI flows. Kept "on DashSync by decision," but pod unlink requires replacing it. Contains **Bug #2** (frozen lockout) and **Bug #3** (unenforced biometric limit).
-
-**Shape:** one app-side `AuthenticationService` (protocol seam, injected — not a bare singleton) = (1) **byte-compatible `PinStore`** — same keychain service `org.dashfoundation.dash`, accounts `pin`/`pinfailcount`/`pinfailheight`/`USES_AUTHENTICATION` (UTF-8 PIN bytes + 8-byte native-endian int64, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) so existing users' PINs carry over with **zero migration** (verified against `NSData+Dash.m`); (2) `LockoutPolicy` with a repaired monotone time source (fixes Bug #2); (3) stateless `BiometricAuthenticator` LAContext wrapper; (4) session `didAuthenticate` + reset-on-background. Plus a SwiftUI PIN modal, flipping `AuthenticationGate` first (atomically covers all sends/identity/shielded), then the 12 direct call sites. Enforce the spending limit in `WalletSendService` (fixes Bug #3). **Nothing upstream needed** — pure Security.framework + LocalAuthentication. **Highest risk:** any keychain encoding/accessibility mismatch bricks existing users' PINs — needs fixture round-trip + device-upgrade tests.
-
-### C8 · Payments / BIP70 tail — **L**
-**Coupling:** `DSPaymentRequest` (~43) / `DSPaymentProtocolRequest` (~30) at the payment call sites (BIP70 L1–L6 are committed app-side, but the sites still run on DashSync types). `DSPaymentRequest` plays **two roles**: BIP70 fetch/POST (replaced by the new module) and plain `dash:` URI parse/build (used across scan/receive/request-amount). Contains **Bug #7**.
-
-**Shape (5 steps, each shippable):** (1) `TODO(P0 flip)` — reorder `BIP70PaymentService.confirmAndSend` to build→POST→ACK→broadcast, hard-throw on POST failure. (2) Parser swap — extend `BIP70URI` to accept **bare addresses** (⚠️ it currently requires a `:` and returns nil for plain addresses — a naive swap breaks the most common input), add a `@objc DWParsedPaymentURI` box, cut `DWQRScanModel`/`DWPaymentInputBuilder`/`DWPaymentProcessor` reads over. (3) Receive-side `BIP21URIBuilder` (shared with watch + CrowdNode QRs; invalidate the app-group QR cache once). (4) Swift `PaymentIntent` carrier replacing `DSPaymentRequest` + synthetic `DSPaymentProtocolRequest`. (5) **Rewrite `DWPaymentProcessor` as a Swift `@MainActor` service** — most of its 18 env reads sit on 4 dead DashSync branches that just get deleted; fixing the amount-0 bounce closes Bug #7. **Decisions ride step 5:** paper-wallet sweep and BIP70-file handling (see §5). **Upstream gap** only if paper-wallet sweep is kept: arbitrary-address UTXO query (external-key P2PKH signing already exists via `transaction_sign_input`; BIP38 exports exist but are stubs over a complete pure-crate impl).
-
-**Progress 2026-07-06:** step 1 **done** (`2f796e71c`; live merchant smoke pending). Open: steps 2–5 + the P7 e2e run.
-
-**Progress 2026-07-07:** step 2 **done** — the three interactive payment entries (QR / pasteboard+NFC / deeplink) parse `dash:` URIs / bare addresses via the app-side `BIP70URI` + a new `@objc DWParsedPaymentURI` box instead of `DSPaymentRequest requestWithString:onChain:`; the box owns all routing/validity, and `DSPaymentRequest` is demoted to a **write-only courier** minted in `-[DWPaymentInput attachParsedURI:]` (feeds only the step-4 `protocolRequestFromPaymentRequest:` conversion, sweep, and `userDetails`). Cutover: `DWQRScanModel.m`, `DWPaymentInputBuilder.m`, `DWPaymentProcessor.m` (+ `DWPaymentInput`). **`NSString+SwiftDashSDKAddress.swift` deleted** — the last "5th `DSChain`→`Network` mapper" went with its 4 callers, **unblocking C1 category 2** (chain-as-codec-parameter). Also fixed an app-owned crash: nil `NSURL`/`scheme` from a non-`dash:` QR trapped in the coordinator's non-optional Swift params (garbage/`bitcoin:`/spaces-in-`r` inputs) — the box's pre-parsed `rURL: URL?` gates every fetch. Two local commits; `dashpay` arm64-sim **BUILD SUCCEEDED**, `scripts/bip70_manual_test` parser checks green. Deliberate parity deltas (all equal-or-safer): garbage/unknown-scheme inputs no longer trigger a doomed fetch; negative amounts → absent; `+` no longer corrupts `r` URLs; sub-duff amounts round up. Open: steps 3–5 (receive-side gen, processor rewrite closing Bug #7, decisions D2/D3) + the P7 e2e run.
-
-**Progress 2026-07-07 (step 3): done** — receive-side `dash:` URI **generation** is off `DSPaymentRequest`, onto a new app-side `@objc(DWPaymentURIBuilder) PaymentURIBuilder` (Foundation-only, `PaymentProtocol/`, the inverse of `BIP70URI`). Byte-for-byte parity with `DSPaymentRequest.m:171-220` (param order/encoding/`NSDecimalNumber.stringValue`), golden-tested in the swiftc harness — so the app-group QR cache (keyed on the bare-address `.data`) keeps hitting with **no invalidation**. Cutover: `DWReceiveModel.m`, `DWReceiveModelStub.m`, `DWPhoneWCSessionManager.m` (watch ×2, display-only so encoding-safe), CrowdNode `OnlineAccountConfirmationController.swift` + `ConfirmationTransactionQRController.swift`; the `isValidAsNonDashpayPaymentRequest` cache guard reuses the step-2 `DWParsedPaymentURI` box. **After steps 2+3, `DSPaymentRequest` neither parses nor builds URIs in the app** — only the write-only courier (steps 4/5), sweep (D2), and DashPay `paymentInputWithUserItem:` (C10) remain. Two local commits; `dashpay` arm64-sim **BUILD SUCCEEDED**, harness goldens green. Open: steps 4–5 (courier→app-side conversion + `DWPaymentProcessor` rewrite closing Bug #7, decisions D2/D3) + the P7 e2e run.
-
-**Progress 2026-07-07 (step 4): done** — the plain-`dash:` **send** path is off the synthetic `DSPaymentProtocolRequest`. `-[DWPaymentInput attachParsedURI:]` now projects an `@objc(DWPaymentIntent)` carrier (Foundation-only, `PaymentProtocol/`, the send-side mirror of `DWParsedPaymentURI`); `DWPaymentProcessor` consumes it — `processPaymentInput:` / `confirmRequest:` route scan/deeplink/pasteboard/plain-address sends through `confirmPaymentIntent:` → a shared `confirmSwiftDashSDKSendToAddress:...` helper (extracted from `confirmProtocolRequestViaSwiftDashSDK:`, no duplicated send logic). This **deletes `protocolRequestFromPaymentRequest:` from the URI send path** — no more `protocolRequestForBlockchainIdentity:onAccount:inContext:` (default blockchain identity + current account + CoreData `viewContext`) on the money path; only the C10 DashPay `BlockchainUser` input (parsed==nil) still mints a synthetic request. Audit-backed fallout, all safe: the `didSend` delegate arg is ignored by its sole implementer (`PaymentController`, pass nil); the amount screen only read `details.outputAmounts` for its pre-fill, so the delegate now carries a `uint64` prefill and `ProvideAmountViewController` drops `DSPaymentProtocolDetails`; `callbackScheme` rides the intent; `DWPaymentOutput.protocolRequest` is now honestly nullable. **Plain-address sends (e.g. Coinbase's fixed-amount `payToAddress:amount:`) now go through SwiftDashSDK** (`self.amount` taken from `intent.amount`) instead of the frozen DashSync branch — which is also **Bug #7's failure mode** (embedded-amount non-ScanQR → amount 0 → DashSync zero-UTXO → false "insufficient funds"): now the intent carries the amount past the SDK gate. The `DSPaymentRequest` courier is **still minted** in `attachParsedURI:` but its only readers are now the D2 sweep path (`request.paymentAddress`) and the DashPay `?user=` rebuild (`request.dashpayUsername`); `userDetails` + `SendViewModel.ingestScannedInput` were re-pointed to the parse box, so the URI path reads zero `DSPaymentRequest` **for the send**. Removing the mint itself waits on D2 (sweep) — flagged `TODO(D2/C10)`. Three local commits; `dashpay` arm64-sim **BUILD SUCCEEDED**, harness unchanged (85 pass, 2 pre-existing A8). Verified on the testnet sim: `dash:<addr>?amount=0.001` surfaces Send with the address + 0.001 prefilled; no-amount `dash:<addr>` shows it empty (Send disabled); garbage `dash:` rejected. Open: step 5 (`DWPaymentProcessor` Swift rewrite, the change-amount/`UINT64_MAX` cleanup) + a funded paste-with-amount / Coinbase send smoke + decisions D2/D3 + the P7 e2e run.
-
-**Progress 2026-07-07 (step 5): done** — the DashSync tx-manager subsystem in `DWPaymentProcessor` is now reachable **only** through the C10 DashPay contact-send seam. Owner decisions: **drop D2 (sweep)**, **drop D3 (BIP70-file)**, **defer the Swift `@MainActor` port** (cleanup in ObjC). Four local commits: (1) **BIP70-file import dropped** — deleted the whole `handleFile` chain (AppDelegate launchOptions block → `DWInitialViewController`/`DWAppRootViewController`/`MainTabbarController`/`DWBasePayViewController` → `PaymentController.performPaymentWithFile` → `processFile:`/`handleFile:`) + the three `application/dash-payment*` `CFBundleDocumentTypes` + `UTImportedTypeDeclarations`; the `dash:` deep-link path (`handleURL:`) is untouched. (2) **Paper-wallet sweep dropped** — deleted `confirmSweep:`/`handleSweepResultTx:`/`didSweepRequest:` + the WIF/BIP38 detection (`DWQRScanModel`, `DWPaymentInputBuilder`, `PasteboardContentView`) + the whole "Import Private Key" UI (Tools/Receive/Payments-landing/Home entries, `DWImportWalletInfoViewController` + storyboard, `ImportPrivateKeySheet`, the MainMenu import-key delegate chain, pbxproj + bridging header). Kept the `@objc ShortcutActionType.importPrivateKey` enum case (its `Int` raw values are persisted to users' saved shortcut bars) — only its handler is a no-op. **Sweep can only return with an arbitrary-address UTXO query FFI in SwiftDashSDK** (the known upstream gap; BIP38 exports are pure-crate stubs). (3) **Dead code** — the `else if (paymentInput.protocolRequest)` branch (never set) + the write-only `UINT64_MAX` sentinel; **Bug #7 closed** (its failure mode was already fixed in step 4; the `UINT64_MAX`/change-amount residue is gone). (4) docs. `dashpay` arm64-sim **BUILD SUCCEEDED** ×4; harness unchanged (85/2). **The only DashSync left in `DWPaymentProcessor` is the C10 DashPay send seam** (`protocolRequestFromPaymentRequest:` + the `confirmProtocolRequest:`/`confirmPaymentOutput:` DashSync arms + `txManager*`), `#if DASHPAY`-scoped by reachability and deferred with C10; making the **dashwallet** target fully payments-DashSync-free is a C10 deliverable (gate/remove that seam). Runtime deeplink smoke not re-run (the reinstalled sim is PIN-locked); `handleURL:` and the `DWPaymentIntent` send path are git-diff-unchanged from step 4, where the send was verified. **C8 payments/BIP70 tail is now functionally complete** except the deferred C10 seam. Open: a funded send smoke on an unlocked wallet + the Swift `@MainActor` port (optional modernization) + P7 e2e.
-
-**Progress 2026-07-09 (C8-fin): the payment chain is zero-DashSync — the C10 seam is deleted, not deferred.** The #787 contacts merge removed the seam's last producer (`performPayToUser` excised; `DWPaymentInputSource_BlockchainUser` producer-less; the courier only minted alongside `paymentIntent`), making the whole DashSync arm provably unreachable — so it went: both txManager orchestrations + all callbacks + the challenge/signed/error blocks + `protocolRequestFromPaymentRequest:` + `confirmProtocolRequest:`(+Via) + `reqeustAmountForProtocolRequest` + `cancelOrChangeAmount` (~380 lines), the `DSPaymentRequest` courier mint (its readers — D2 sweep, DashPay `?user=` — were already dropped), `DWPaymentOutput.tx/.protocolRequest` (always nil in live outputs), and the delegate went fully txid-typed (`didSendWithTxidWire:`; `requestUserActionTitle` retired with its dead producers). The always-nil `id<DWDPBasicUserItem>` plumbing was removed end-to-end (input/output/processor/PaymentController/ProvideAmount/BasePay/tabbar/SuccessTxDetail) and the orphaned DWDP protocol headers + `DWTitleDetailCellView`/`DWDPSmallContactView` deleted (pbxproj scrubbed). Two rider fixes: the pasteboard success gate now reads `parsedURI`/`bip70Confirmation` (a BIP73 pasteboard URL previously fetched fine but reported failure), and the callback-scheme txid hex comes from a local helper instead of the pod's `NSString+Dash`/`NSData+Dash`. 5 commits (`135fe220e`…), each a green `dashpay` arm64-sim build; grep gates: zero `DSPayment*`/`DSTransaction`/`DWEnvironment`/`DWDPBasicUserItem` in the chain (comments only). **The `UI/Payments` + `Payment Controller` trees no longer import DashSync anywhere.** Open: owner testnet smokes (scan-QR send, pasteboard address, deeplink, BIP70 merchant, Coinbase transfer-out entry, `callbackScheme=` send).
-
-### C9 · Utility long tail — **L** (mechanical but wide)
-**Coupling & live/dead:** `DSLogger`/`DSLog`/`DSLogPrivate` (162 refs — **LIVE**, feeds share-logs); `DSPriceManager`+`DSCurrencyPriceObject` (~17 — **LIVE**, the exchange-rate service); `DSVersionManager` (~8 — live at launch, no-op except breadwallet-era installs); `DSEventManager` (app-side dead); jailbreak (already app-side, DashSync's is dead weight); `DSDynamicOptions` (its own pod, see C-cov); `DSKeyManager` (CrowdNode signing + recover).
-
-**Shape (4 independent mechanical PRs):** (1) `DWLogger` shim over a **direct** CocoaLumberjack dependency + mechanical 47-file rename (land fast, keep purely mechanical). (2) **Port the price pipeline** into `BaseRatesProvider` (same UserDefaults keys, app-side `isVolatile`, a **new typed publisher** — never re-post `DSExchangeRatesReported`). (3) `DSVersionManager` deletion (owner decision D4). (4) small category swaps. **CrowdNode signing is refuted as an upstream blocker:** `dash_sdk_signer_sign` already produces the exact 65-byte compact sig over SHA256d — the app needs only ~10 lines of `"\x19DarkCoin Signed Message:\n"` + varint framing.
-
-**Progress 2026-07-07:** PR1 (logger) **done** — app-owned `DWLogger.{h,m}` (ObjC over CocoaLumberjack) replaces `DSLogger`; all 162 call sites renamed (`DWLogger.log` / `DWLog` / `DWLogPrivate`), the pch + bridging header dropped `<DashSync/DSLogger.h>`, and the file logger (share-logs) is now app-owned. Two conscious deltas, both documented in-code: (a) rolled logs use CocoaLumberjack's default manager (no gzip; same 5 MB/24 h/10-file rolling — DashSync's 582-line `CompressingLogFileManager` not ported; share UI handles both `.log`/`.gz`); (b) an app-owned `dwLogLevel` + `LOG_LEVEL_DEF` redirect avoids the `static const ddLogLevel` collision with DashSync's still-transitively-imported `DSLogger.h`. **Two follow-ups before the final pod unlink:** (i) `CocoaLumberjack` is currently only a *transitive* dep via DashSync — add `pod 'CocoaLumberjack'` to the app targets before DashSync leaves, else the logger loses its backend; (ii) revert `dwLogLevel` → plain `ddLogLevel` once `DSLogger.h` is gone. Open: PR2 (price pipeline — the live-service foot-gun), PR3 (D4), PR4.
-
-**Progress 2026-07-07 (PR2a — the fetch): done.** `BaseRatesProvider` now polls `rates.ctx.com/rates?source=ctx` itself (Moya `CTXRatesEndpoint`, 60 s), decodes the bare `[{symbol,price:String}]` array, filters DASH-prefixed **fiat-only** against DashSync's 156-code `CurrenciesByCode` set (embedded — `Locale.commonISOCurrencyCodes` is unsafe), writes the same `PRICESBYCODE_KEY`/`LAST_RATES_RETRIEVAL_TIME` (app-owned constants, cache carries over), computes `isVolatile` app-side (ported 7 d + 50 % guard), and drops the `DSExchangeRatesReported` observation + `DSPriceManager.isVolatile` + `DSOperationQueue`. `AppDelegate` sets `retrievePriceInfo = NO` before `setupDashSyncOnce` so DashSync's own poll stops (no double-fetch). **Testnet smoke passed** (runnable — no PIN needed): one `rates.ctx.com` request, cache written fresh (age 30 s, 156 fiat entries, BTC/BCH correctly filtered out), no crash. Correction to the earlier note: the pipeline was **not** frozen — DashSync's `DSPriceManager` was still polling live inside the pod (`setupDashSyncOnce` runs; `retrievePriceInfo` defaulted YES); this PR removes that live dependency. **PR2b (DSCurrencyPriceObject removal in the Settings picker) deferred** — it lands in Roman's active SwiftUI local-currency rework on master (`LocalCurrencyViewModel` reads `CurrencyExchangerObjcWrapper.prices`); do it after that rework integrates. Open: PR2b (post-integration), PR3 (D4), PR4.
-
-**Progress 2026-07-08 (CrowdNode signing + PR2 read-side + PR3/D4 + PR4): C9 done except PR2b.** Three commits:
-- **CrowdNode message signing SDK-native** — `withdraw()`/`signAndSendEmail()` no longer read the frozen DashSync wallet (they were silently broken for SDK-created wallets). New pieces: `DarkCoinMessage.framed` (pure-Foundation `Models/CrowdNode/Services/DarkCoinMessageFraming.swift`; Bitcoin **CompactSize** framing — NOT `ProtoWriter`'s LEB128 varint — golden-tested byte-exact against an independent Python port incl. the ≥253-byte 0xFD arm); `CrowdNodeMessageSigner` (CrowdNodeModel.swift) resolving the account address's key by scanning `m/44'/coin'/0'/{0,1}/{0..299}` pubkey hash160s (the SDK exposes **no address→index lookup**; fails closed on no match), deriving WIF via `Wallet.derivePrivateKey(path:)` (the account-level `derivePrivateKeyWIF` refuses dual-chain BIP44 accounts — full-path only), and signing via the new **public swift-sdk `RawKeySigner`** (platform `47a83cf6d0`; extracted from `KeychainSigner.ffiSign` — SHA256d inside the FFI, 65-byte compact recoverable sig, Dash Core `signmessage` format). Auth rides the shared `AuthenticationGate` instead of `wallet.seed(withPrompt:)`. `SwiftDashSDKHost.derivationWallet()` is the shared throwaway key-wallet bootstrap (promoted out of the masternode deriver).
-- **Prices read-side** — the last 2 live `DSPriceManager` call sites (DashPay invite views) → `CurrencyExchangerObjcWrapper`; dead `DSCurrencyPriceObject` field deleted in `CoinbaseRatesProvider`; dead `DSEventManager` import deleted (its last app-side ref). `DSPriceManager` now has **zero** app call sites; `DSCurrencyPriceObject` survives only as the picker facade (`TODO(PR2b)`).
-- **PR3 = D4 executed (owner decision 2026-07-08: drop)** — the breadwallet-era upgrade funnel is deleted: `DWStartViewController`/`DWStartModel`/`DWBaseLegacyViewController`/`StartStoryboard`/`DWDataMigrationManager` (+pbxproj), AppDelegate always normal-starts, `DWRootModel.hasAWallet` = `DWWalletEnvironment.hasWallet` alone, `DWHomeModel.performOnSetupUpgrades` (extended-keys v1→v2 upgrade) deleted through the protocol/stub/caller chain, `DWVersionManager` slimmed to `migrateUserDefaults` (orphaned `checkPassphraseWasShownCorrectlyForWallet` + its `DSChainWalletsDidChangeNotification` observer gone). **`DSVersionManager` has zero app references.** Consequence, accepted: a user upgrading from a pre-2019 breadwallet-era install gets no key migration — recovery is re-entering the seed phrase.
-Remaining C9: **PR2b only** (picker facade, post-rework) + the two logger pod-unlink follow-ups (CocoaLumberjack direct pod; `dwLogLevel`→`ddLogLevel`).
-
-### C10 · DashPay-target tail — **XL** (dashpay target only) — ⏸ **deferred by owner 2026-07-06** ("we don't care about contacts and dashpay at this stage; we will migrate the feature e2e when swift sdk is ready"; includes the A7 honesty pass — Bug #5 accepted until then)
-**Coupling:** `DSBlockchainIdentity` (~149), `DSFriendRequestEntity` (~58), `DSDashpayUserEntity` (~21), `DSBlockchainInvitation` (~20). **Live/dead: mostly MOCK-THEATER** (Bug #5) over a doubly-dead real path (`DWDashPayContactsUpdater` bails at `defaultBlockchainIdentity == nil` for SDK identities).
-
-**Shape: rebuild, don't port** (the 26-file `Items/` pyramid exists only to adapt Core Data objects into UIKit cells — under the SwiftUI-first mandate most of it deletes): (1) honesty pass (turn off MOCK_DASHPAY branches, gate Contacts tab/bell/search on a real capability check, fail invitation deeplinks explicitly); (2) `ContactsSyncCoordinator` — **thin testnet probe first** (verify `syncContactRequests` produces SwiftData rows between two SDK identities — the go/no-go gate); (3) SwiftUI contacts read; (4) actions; (5) search on `searchDpnsNames`; (6) other-user profile; (7) notifications; then delete the pyramid + retire MOCK_DASHPAY. **Invitations refuted as an upstream FFI gap:** `dash_sdk_identity_put_to_platform_with_instant_lock` (accept) + asset-lock `funding_type=3 IdentityInvitation` (create) already exist — only a Swift wrapper/link-compose layer is missing. **Two-target leverage is real** (see §6).
-
-### C11 · Apple Watch — **M** (gated on a decision)
-**Coupling:** `DWPhoneWCSessionManager.m` (6 env reads, balance payload, DS sync observers) + `DSWatchTransactionDataObject`. **Headline:** the watch app **doesn't ship from this branch** (Bug #4). Balance payload + tx list read frozen DashSync (broken); receive QR is live (row #1).
-
-**Shape — two tracks on an owner decision (D1):** **Track A (remove):** delete WatchApp targets + `Sources/AppleWatch/` (10 files) + Podfile watch targets + the AppDelegate/BalanceNotifier hooks (already `IGNORE_WATCH_TARGET`-gated) — one PR, cluster done. **Track B (keep):** swap balance payload to `currentTotalBalance` (2 lines); a Swift snapshot provider over `SwiftDashSDKWalletSource.fetchAll()` mapping to the 4 `BRAppleWatchTransactionData` fields (⚠️ keep the NSCoding wire format byte-identical — watches in the field decode it); swap the DS observers for the monitor protocol; app-side `dash:` serializer; restore the embed phase. **Regardless of the decision, PR1 = swap the balance payload** (closes row #5's last tail).
-
-**Progress 2026-07-06:** PR1 (balance payload) **done** (`7fa75d3af`); the DS sync observers also left with C4's commit. Everything else waits on **D1**.
-
----
-
-## 4. Coverage-critic surfaces (no cluster owned these)
-
-Found by a full `DS[A-Z]` symbol census + non-DS-prefixed export sweep + Podfile/pbxproj inspection. These break the build or a feature at unlink and none of the 11 clusters covers them.
-
-| Surface | Files | Why it matters | Effort |
-|---|---|---|---|
-| **Fiat exchange-rate pipeline** (last live DashSync network service) | `AppDelegate.m:338`, `RatesProvider.swift:75`, `CurrencyExchanger.swift:36`, `DWLocalCurrencyModel.m`, `CoinbaseRatesProvider.swift` | Unlink silently kills **every fiat price**. Works today → nothing flags it. Port HTTP fetch into `BaseRatesProvider`. | M |
-| **CrowdNode API message signing** | `CrowdNodeModel.swift:287-296, 339-347` | Live money path. Refuted as needing new FFI — `dash_sdk_signer_sign` + ~10 lines of magic framing. May already be broken for SDK wallets. | S (app-side) |
-| **Uphold REST client on DashSync HTTP** (`HTTPLoaderManager`/`HTTPLoaderFactory` via `DSNetworkingCoordinator`) | `DWUpholdAPIProvider.m` (whole file, ~30 sites) | Non-DS-prefixed → invisible to the symbol census. Entire Uphold integration stops compiling at unlink. Port to URLSession/Moya, preserve OTP + bearer. | M |
-| **DashSync keychain C helpers** (`getKeychainData`/`setKeychainData`/`getKeychainInt`/…) | `DWUpholdClient.m`, `UpholdClient.swift`, `CBUserManager.swift`, `DWGlobalOptions.m`, `DWVersionManager.m` (17 sites) | Careless replacement **logs everyone out of Uphold/Coinbase** — item service/account strings live inside DashSync. Needs an app-owned shim with exact attributes. | S |
-| **PIN-entry UI control** — `DWPinField` subclasses the pod's `DSPinField` | `DWPinField.h`, `DWPinView.m`, `DWPinInputStepView.m`, `DWLockPinInputView.m` (8 refs) | Auth cluster (C7) is scoped to the managers; this UI widget breaks Set-PIN + lock screen even after. Fold into C7 or port the control. | S |
-| **Legacy upgrade / data-migration funnel** — `DWDataMigrationManager` → `DSCoreDataMigrator`; `DSVersionManager` old-keychain detection | `DWDataMigrationManager.m`, `DWStartModel.m`, `DWStartViewController.m`, `DWBaseLegacyViewController.m`, `DWRootModel.m`, `DWHomeModel.m:193`, `DWVersionManager.m` | Breadwallet-era upgrade path lives only in DashSync. Owner decision D4 (drop vs port). | S–M |
-| **About / diagnostics + build-version plumbing** — `DashSyncCurrentCommit` bundle resource (generated by `scripts/dashsync_version.sh` in Podfile `post_install`), peer/sync status lines, trusted-node control | `DWAboutModel.m:77-219`, `DWAboutViewController.m:99-115`, `scripts/dashsync_version.sh`, `project.pbxproj:222,1699` | C5 owns only the quorum line; the rest is build- + UI-level breakage. Mostly deletions/re-pointing. | S |
-| **Transitive pods** — `DSDynamicOptions` (**superclass of `DWGlobalOptions`** + `DWAppGroupOptions`, also used by TodayExtension) and `DWAlertController` reach the app only as DashSync deps | `Podfile`, `Podfile.lock:595`, `DWGlobalOptions.h`, `DWAppGroupOptions.h`, `DWPhraseRepairViewController.h`, Uphold VCs | Even after every `DS*` symbol is gone, `pod DashSync` removal breaks the build because these vanish with it. **Two-line Podfile fix — must be on the checklist.** | S |
-| **App-internal DS-named notifications** — `DSWillRequestOSPermissionNotification` (camera→auto-lock suppress), `DSApplicationTerminationRequestNotification` | `DWQRScanViewController.m:64`, `DWWindow.m:49`, `HomeViewController+JailbreakCheck.swift`, `DWAppRootViewController.m:426`, `AppDelegate.m:123` | Live app-internal signals whose constants disappear at unlink (7-file compile break). Rename to app-owned names (guardrail #5). Plus one dead `DWReceiveModel.m:53` observer → re-point to TransactionObserver. | S |
-
-**Census confidence:** `Shared/`, `WatchApp`, and `WatchApp Extension` targets have **zero** `DS*` refs; TodayExtension's only tie is `DWAppGroupOptions → DSDynamicOptions` (separate pod, already declared directly there).
-
----
-
-## 5. Upstream asks (verified genuine)
-
-In priority order. FFI crate note: `key-wallet-ffi` source lives in the **rust-dashcore** repo (pinned via `platform/Cargo.toml`), *not* under `platform/packages`.
-
-1. **Masternode-list stats FFI** — `{list height, valid regular count, valid evo count, per-LLMQ quorum totals+verified}` over dash-spv's `masternode_list_engine()` (returns `Result<Arc<RwLock<…>>>` — the getter must model "not ready" as unknown, not zeros). Unblocks live APY (C5) + real About quorum counts.
-2. **Invitation Swift wrapper** in swift-sdk composing the existing FFI primitives (create via asset-lock `funding_type=3`; accept via `put_to_platform_with_instant_lock`; link verify). Dashpay target only (C10).
-3. **Only if paper-wallet sweep is kept (D2):** arbitrary-address UTXO query. Signing half already exists; BIP38 exports exist but are stubs over a complete pure-crate impl (wiring, not greenfield).
-4. **Nice-to-have:** a digest-input signer / exported `signed_msg_hash` (narrows the CrowdNode framing further); a `restoreFromKeychain()` manager convenience for C6.
-
-**Refuted (not gaps):** CrowdNode magic-message signing (solvable app-side today); DashPay invitation create/accept primitives (exist); `walletId`-from-mnemonic (`Wallet(mnemonic:network:).id`).
-
----
-
-## 6. Two-target leverage
-
-Of the 85 DashPay `DS*`-referencing files: **47 compile only into the dashpay target, 0 are dashwallet-only, 7 are shared** (all `#if DASHPAY`-gated except one ungated identity read at `DWPaymentProcessor.m:398`, owned by C8). `DWDashPayConstants.m` (the MOCK_DASHPAY symbol) is dashpay-only.
-
-**Consequence:** the **dashwallet target can unlink the DashSync pod before the C10 contacts rebuild finishes.** The dashpay target's unlink is gated on the shared clusters (C1 backbone, C8 payments, C7 auth) + C10. Worth wiring into sequencing even though the dashwallet scheme isn't currently kept green on this branch.
-
----
-
-## 7. Sequenced plan
-
-### Wave A — shippable now (each S, independent, no upstream)
-**Status 2026-07-06: landed** (7 commits, `dae5239e1` → `2f796e71c`); A7 deferred by owner decision.
-
-| PR | Cluster | What | Status |
-|---|---|---|---|
-| A1 | C4 | Kill `postLegacyNotifications` + migrate its 3 consumers | ✅ `dae5239e1` |
-| A2 | C1 | Fix the rescan trap (Bug #1): send gates → `.syncDone`; rescan controls removed (no SDK rescan API; restart path has the known deadlock); crash-path rescan neutralized | ✅ `b40466d33` |
-| A3 | C3 | Delete the last dead `allTransactions` loop → **zero readers**; de-stale the ledger | ✅ `f2524feb2` |
-| A4 | C1 | `WalletEnvironment` v1 (network identity) + repoint 12 files + collapse 4 of 5 duplicated mappers (5th kept by design — maps a passed parameter; travels with C8) | ✅ `0085f1bcb` |
-| A5 | C11 | Watch balance payload → `currentTotalBalance`; keep/remove decision (D1) still open | ✅ `7fa75d3af` |
-| A6 | C5 | About "Quorums validated" → SDK masternode-sync stats; delete dead quorum observer | ✅ `94cc2ea81` |
-| A7 | C10 | ~~DashPay honesty pass~~ **Deferred by owner (2026-07-06):** "we don't care about contacts and dashpay at this stage; we will migrate the feature e2e when swift sdk is ready" | ⏸ deferred |
-| A8 | C8 | BIP70 `TODO(P0 flip)`: build→POST→ACK→broadcast | ✅ `2f796e71c` |
-
-Verification: clean `dashpay` arm64-sim build; audit greps at zero (`DSChainManagerSync`, `allTransactions` enumerations, `syncPhase == .synced`). Testnet smokes pending (sync-banner cycle, send-enable post-sync, About stats, BIP70 merchant + CTX gift card). Environment note: landing the wave required moving the `../platform` pin to `local/tx-decode-plus-v4.1-dev` (v4.1-dev + tx-decode + the rebased tx-builder commit `9458b7a70d`) and rebuilding `DashSDKFFI.xcframework` — the old pin's Swift surface no longer matched.
-
-### Wave B — mid-game (independent M/L workstreams, no ordering between them) — ✅ **DONE 2026-07-09**
-~~`WalletEnvironment` build-out (C1 categories 2/5)~~ **done 2026-07-07** · ~~Transaction `.ds` deletion (C2)~~ **done 2026-07-06** · ~~Payments zero-DS\* (C8 steps 2–5 + C8-fin)~~ **done 2026-07-09** · ~~Auth replacement (C7 incl. recovery tail)~~ **done 2026-07-08** (Bugs #2/#3 fixed) · ~~Utility tail — logger + price pipeline (C9)~~ **done** · ~~CrowdNode signing app-side (C9/cov)~~ **done** · Uphold HTTP + keychain shims (cov) → **assigned to a colleague** (with DS-notification renames, About commit-hash, Podfile direct-declares) · ~~Wallet presence + reinstall recovery (C6 A–D)~~ **done 2026-07-07** (E open, gated) · ~~CrowdNode online-account forward (C3 PR2)~~ done · ~~APY calculator port (C5 PR2)~~ done · ~~C1 read-side + etap 4 (DWEnvironment duty strip) + cat-6 xpub~~ **done 2026-07-09**.
-
-### Wave C — endgame (sequenced; all that remains app-side)
-1. **C10 decision** — invites/`DWDashPayModel` (~20 files on `DSBlockchainIdentity`/`DSBlockchainInvitation`): compile-gate/delete now (**M**, ~1–2 sessions) vs wait for the upstream invitations Swift wrapper (unbounded). This is the critical path to the pod unlink.
-2. **D1 decision** — watch: drop (**S–M**, ~1 session incl. `DWPhoneWCSessionManager`/`DSWatchTransactionDataObject`) vs port (its own project).
-3. **Cut `standardWalletWithSeedPhrase`** (C6-E) — after 1+2; drops the dual-write, the wipe's DashSync arm, the `DSChainWalletsDidChange` filter, the `hasWallet` union, and **deletes `DWEnvironment.{h,m}`** (+ keychain scrubber). **M**, ~1 session.
-4. **Unlink mechanics** (**M**, ~1 session): direct-declare `DSDynamicOptions`/`DWAlertController` in the Podfile; rename DS-named app notifications; remove `DashSyncCurrentCommit` plumbing; `DSLocalizedString`→`NSLocalizedString`; `DSCurrencyPriceObject`→local DTO; `DSUtils`; `dwLogLevel`→`ddLogLevel`; drop `setupDashSyncOnce`/`DSOptionsManager` from AppDelegate; `pod 'DashSync'` removal. **dashwallet target can go first** (§6).
-
----
-
-## 8. Owner decisions needed
-
-Still open (each blocks a Wave-C step):
-
-- **D1 — Apple Watch: keep or remove?** It already doesn't ship from this branch; keeping means phone-side porting *plus* modernizing a 2023-era WatchKit-storyboard app (watchOS 4.0 target).
-- **D7 — DashPay invites (C10): compile-gate/delete now, or wait for the upstream invitations Swift wrapper?** The FFI gap audit found invitations composable from existing FFI but unwrapped; gating/deleting now unblocks the pod unlink immediately.
-
-Resolved (recorded here so the list stays honest):
-
-- ~~**D2 — Paper-wallet sweep**~~ — **dropped** (C8 step 5, 2026-07-08).
-- ~~**D3 — BIP70 payment files (`handleFile`)**~~ — **dropped** (C8 step 5, 2026-07-08).
-- ~~**D4 — breadwallet-era upgrade support**~~ — **dropped** (C9, 2026-07-08; V0/V1-key installs strand by sign-off).
-- ~~**D5 — Lockout time source**~~ — **hybrid clock** (C7.1 `SecureTimeService`: HTTP Date feed + never-decreasing local floor; Bug #2 fixed).
-- ~~**D6 — CrowdNode APY**~~ — **parity-with-today static estimate** shipped (C5 PR2 `MasternodeAPYCalculator`); upstream masternode-stats FFI stays a cosmetic ask.
-- ~~**Trusted-peer About feature**~~ — **dropped, not ported** (etap 4, 2026-07-09; closed the "fourth hole").
-- ~~**`masterPublicKey` inter-app API**~~ — **dropped** (cat-6, 2026-07-09).
-- ~~**Forgot-PIN semantics**~~ — **faithful port**: phrase → new PIN, wallet kept (C7.9).
-
----
-
-## Appendix · Methodology
-
-23 read-only agents: 11 cluster analysts (each grepping the app + verifying every claimed SDK/FFI symbol against `../platform` and `../rust-dashcore`), an adversarial verifier per load-bearing cluster (actively trying to refute claimed-present APIs and claimed-missing gaps), and a coverage critic running a full `DS[A-Z]` census (109 distinct symbols, every family mapped to a cluster or reported in §4) + `<DashSync/…>` import census + non-DS-prefixed export sweep + Podfile/pbxproj/build-script inspection. Verifier corrections are folded into the cluster entries above. Raw per-cluster reports (full file:line evidence, per-PR breakdowns): workflow run `wf_f18eae82-1ae`.
+Keep only present-state inventory and sequencing in this file. When a tail is
+closed, remove it from the remaining-work section and update the matching row in
+`DASHSYNC_MIGRATION.md` in the same change. Ownership or staffing notes do not
+belong in the technical plan.

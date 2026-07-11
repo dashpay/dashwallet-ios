@@ -1,62 +1,128 @@
 # DashSync -> SwiftDashSDK key migration
 
-Status ledger for moving wallet key material from DashSync's keychain layout into SwiftDashSDK's host-owned wallet runtime. Sibling to [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md).
+Current contract for importing wallet mnemonics from DashSync-owned keychain
+entries into the host-owned SwiftDashSDK runtime. Updated 2026-07-11 to include
+multi-wallet and active-wallet behavior.
 
-**Deployment model.** This migration lands on the development branch and ships in the same App Store release as DashSync removal. There is no production window where a partially migrated dual-stack wallet must be supported.
+## Deployment model and invariant
 
-## Hard Invariant
+The migrator ships in the same release as the final DashSync removal. It may
+read old DashSync state, but it must never mutate or delete the DashSync-owned
+keychain service `org.dashfoundation.dash`.
 
-Keys written by DashSync into the iOS Keychain (`org.dashfoundation.dash` service) are never deleted by this codebase. The migrator only reads those entries. All SwiftDashSDK writes target SDK-owned storage: SwiftData wallet rows through `SwiftDashSDKHost` and per-wallet mnemonics through `WalletStorage`.
+All new writes go to SDK-owned persistence:
 
-## Current Shape
+- `PlatformWalletManager` / SwiftData for managed-wallet rows;
+- SwiftDashSDK `WalletStorage` for mnemonic bytes keyed by SDK wallet ID;
+- `WalletEnvironment` UserDefaults entries for the active wallet per network.
 
-| Area | Status | Notes |
-|---|---|---|
-| Key migrator | Landed | Reads one DashSync mnemonic, detects mainnet/testnet, and asks `SwiftDashSDKHost` to create/import the managed wallet. |
-| Runtime ownership | Landed | `SwiftDashSDKHost` owns `SDK`, `ModelContainer`, `PlatformWalletManager`, and the active `ManagedPlatformWallet`. |
-| Key storage | Landed | `WalletStorage.storeMnemonic(_:for:)` stores the mnemonic under the `ManagedPlatformWallet.walletId` returned by the SDK. |
-| DashSync removal | Pending | DashSync keychain entries stay on device as read-only rollback source. |
+DashSync mnemonic entries remain a read-only recovery/rollback source.
 
-## Frozen DashSync Keychain Contract
+## Frozen DashSync keychain contract
 
-`SwiftDashSDKKeyMigrator.swift` is the only file that knows DashSync's keychain layout. These entries describe data written by older app versions and must remain readable after the DashSync library is removed.
+Only compatibility code may know these old layouts:
 
-| What | Service | Account | Format | Source |
-|---|---|---|---|---|
-| Mnemonic | `org.dashfoundation.dash` | `WALLET_MNEMONIC_KEY_<walletID>` | UTF-8 BIP39 phrase | `DSWallet.m` |
-| Wallet list per chain | `org.dashfoundation.dash` | `CHAIN_WALLETS_KEY_<chainGenesisShortHex>` | NSKeyedArchiver `NSArray<NSString *>` of wallet IDs | `DSChain.m` |
-| Extended public key cache | `org.dashfoundation.dash` | `<pathReference>_<walletID>` | raw NSData | `DSDerivationPath.m` |
+| Data | Service | Account | Format |
+|---|---|---|---|
+| Mnemonic | `org.dashfoundation.dash` | `WALLET_MNEMONIC_KEY_<dashSyncWalletID>` | UTF-8 BIP39 phrase |
+| Wallet list per chain | `org.dashfoundation.dash` | `CHAIN_WALLETS_KEY_<genesisShortHex>` | NSKeyedArchiver array of DashSync wallet ID strings |
+| Extended-public-key cache | `org.dashfoundation.dash` | `<pathReference>_<dashSyncWalletID>` | Raw `NSData`; not imported |
 
-Wallet ID format is DashSync-specific (`%0llx` 64-bit hash). SwiftDashSDK wallet IDs are 32-byte SDK identifiers and are not expected to match.
+DashSync wallet IDs are short hash strings. SDK wallet IDs are 32-byte SDK
+identifiers and are not expected to match.
 
-Precomputed chain suffixes:
+Known chain suffixes:
 
-| Network | Displayed genesis hex | shortHex |
-|---|---|---|
-| Mainnet | `00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6` | `b67a40f` |
-| Testnet | `00000bafbc94add76cb75e2ec92894837288a481e5c005f6563d91623bf8bc2c` | `2cbcf83` |
-
-## Migrator Design
-
-`migrateIfNeeded()` dispatches to a background queue, checks the one-shot `swiftSDKKeyMigration.v1.done` sentinel, reads the single DashSync mnemonic, detects the wallet network, validates the mnemonic, and then synchronously hops to `SwiftDashSDKHost` on the main actor.
-
-The host creates/imports the wallet with `PlatformWalletManager.createWallet(mnemonic:network:name:createDefaultAccounts:)`, persists the SDK wallet row through SwiftData, stores the mnemonic in `WalletStorage` under the returned wallet id, and publishes that `ManagedPlatformWallet` as the active host wallet.
-
-The migrator then sets the done sentinel and calls `SwiftDashSDKWalletRuntime.handleWalletMaterialChanged()` so runtime startup reloads from the host-owned managed wallet.
-
-## Skip Cases
-
-| Condition | Flag |
+| Network | Genesis short hex |
 |---|---|
-| More than one DashSync wallet found | `swiftSDKKeyMigration.v1.deferredMultiWallet` |
-| Wallet on unsupported devnet/regtest/evonet chain | `swiftSDKKeyMigration.v1.deferredUnknownChain` |
+| Mainnet | `b67a40f` |
+| Testnet | `2cbcf83` |
 
-No-PIN is no longer a skip case because SwiftDashSDK key material is mnemonic-only.
+## Current migrator algorithm
 
-## Acceptance Criteria
+`SwiftDashSDKKeyMigrator.migrateIfNeeded()` returns immediately and performs the
+work on a background queue:
 
-- Obsolete app-owned descriptor/provider files are absent from app sources and project membership.
-- `SwiftDashSDKWalletRuntime` starts SPV by network and resolves wallet state through `SwiftDashSDKHost`.
-- Create, recover, and migration paths all use the same host create/import entry point.
-- Wipe deletes per-wallet mnemonics and then tears down the host/runtime.
-- `dashwallet` and `dashpay` simulator builds pass.
+1. If `swiftSDKKeyMigration.v1.done` exists, return.
+2. Clear stale legacy defer flags and enumerate every
+   `WALLET_MNEMONIC_KEY_*` account.
+3. If none exist, mark migration done (fresh install or already wiped device).
+4. For each DashSync wallet ID not already present in the success ledger:
+   - resolve mainnet/testnet membership from the frozen chain-wallet lists;
+   - read and validate the mnemonic;
+   - sanity-check deterministic seed derivation;
+   - call `SwiftDashSDKHost.createOrImportWallet` on the main actor;
+   - persist the DashSync wallet ID in
+     `swiftSDKKeyMigration.v1.migratedDashSyncWalletIds`.
+5. Set the done sentinel only when every discovered wallet either migrated or
+   was already in the ledger and no wallet has an unknown chain/failure.
+6. Notify `SwiftDashSDKWalletRuntime` after the done sentinel is written.
+
+Partial runs are resumable: successfully migrated wallet IDs are not imported
+again, while failures are retried on a later launch.
+
+## Multi-wallet behavior
+
+Multiple DashSync wallets are supported. The old
+`swiftSDKKeyMigration.v1.deferredMultiWallet` flag is legacy compatibility
+state: the current migrator clears it and does not use it as a skip condition.
+
+After wallets load, `SwiftDashSDKHost` resolves the active wallet using
+`WalletEnvironment.activeWalletId(for:)`, scoped independently to mainnet and
+testnet. If the recorded ID is absent, the manager selects its deterministic
+`firstWallet` fallback and persists that choice.
+
+Create/import/switch/remove and network-mirror code must always resolve by the
+active wallet ID. Selecting `persistedMnemonics().first` is forbidden when more
+than one wallet exists; that previously mirrored or displayed the wrong wallet.
+
+## Incomplete cases
+
+| Condition | Behavior |
+|---|---|
+| Unknown/unsupported DashSync chain | Set `swiftSDKKeyMigration.v1.deferredUnknownChain`; leave done unset; retry later. |
+| Mnemonic missing/invalid or host creation fails | Leave done unset; retain successes in the per-wallet ledger; retry later. |
+| No old mnemonics | Mark done so SDK runtime startup does not wait indefinitely. |
+
+The runtime treats legacy defer flags as permission to stop waiting, but the
+migrator remains responsible for clearing stale values and retrying incomplete
+work.
+
+## Host recovery behavior
+
+If SwiftData wallet rows are missing but SDK-owned mnemonic entries remain,
+`SwiftDashSDKHost.recoverPersistedWallet` recreates managed wallets from every
+valid stored mnemonic. Wallet creation is idempotent by SDK wallet ID. Because
+mnemonics are network-agnostic while wallet IDs can be network-specific, the
+host re-stores the mnemonic under the created ID when needed.
+
+## Wipe contract
+
+The app-level wipe posts `DWWillWipeWalletNotification`. The SDK wiper deletes
+SDK-owned mnemonics and managed-wallet state, clears active-wallet registry
+entries, and tears down runtime state. During the migration window,
+`DWEnvironment` also unregisters DashSync wallets and clears DashSync Core Data,
+but it still must not delete the frozen DashSync mnemonic keychain entries.
+
+The DashSync wipe arm is removed with C6-E after invitations/profile and Watch
+no longer require DashSync wallet objects.
+
+## Acceptance criteria
+
+- one and multiple DashSync wallets import without selecting the wrong active
+  wallet;
+- a partial failure resumes without duplicating successful wallets;
+- mainnet and testnet retain separate active-wallet choices;
+- create/import/recovery use the same host boundary;
+- network switch mirrors only the active wallet while the legacy shim exists;
+- wipe deletes all SDK-owned mnemonic/managed-wallet/active-wallet state;
+- no migration code deletes `org.dashfoundation.dash` entries;
+- both app schemes build and upgrade/multi-wallet/wipe runtime smokes pass.
+
+## Source files
+
+- `DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKKeyMigrator.swift`
+- `DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKHost.swift`
+- `DashWallet/Sources/Infrastructure/SwiftDashSDK/WalletEnvironment.swift`
+- `DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKWalletRuntime.swift`
+- `DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKWalletWiper.swift`

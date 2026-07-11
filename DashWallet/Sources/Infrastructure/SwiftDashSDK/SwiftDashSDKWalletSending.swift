@@ -7,9 +7,8 @@
 //
 //  `buildSignedTransaction` builds + signs only; the built `CoreTransaction` rides inside
 //  `PreparedSend.sdkTransaction` (opaque `AnyObject` — the protocol core stays Foundation-only)
-//  until `broadcast(_:)` submits it. Ordering inside `BIP70PaymentService.confirmAndSend` is
-//  still build → broadcast → POST; the BIP70-correct POST-before-broadcast reorder is the
-//  separately-tracked P0 flip (see `// TODO(P0 flip)` there and DASHSYNC_MIGRATION.md row #22).
+//  until `broadcast(_:)` submits it. `BIP70PaymentService.confirmAndSend` uses the final
+//  BIP70-correct ordering: build/sign → Payment/ACK → broadcast.
 //
 
 import Foundation
