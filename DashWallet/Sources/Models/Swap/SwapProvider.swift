@@ -48,9 +48,25 @@ struct SwapStatusResult {
     let error: String?
     /// Whether the provider has observed the swap (Maya: observedTx != nil; SwapKit: status != not_started).
     let isObserved: Bool
-    /// Normalised status string: "done" / "refunded" / "aborted" / "pending" or nil.
+    /// Normalised status string: "done" / "refunded" / "aborted" / "pending" / "swapping" or nil.
     let observedStatus: String?
     let outHashes: [String]?
+    /// Actual amount received at the destination (from /track `toAmount`), if available.
+    let actualToAmount: String?
+
+    init(
+        error: String?,
+        isObserved: Bool,
+        observedStatus: String?,
+        outHashes: [String]?,
+        actualToAmount: String? = nil
+    ) {
+        self.error = error
+        self.isObserved = isObserved
+        self.observedStatus = observedStatus
+        self.outHashes = outHashes
+        self.actualToAmount = actualToAmount
+    }
 }
 
 enum SwapProviderError: LocalizedError {

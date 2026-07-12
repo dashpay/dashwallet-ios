@@ -17,12 +17,14 @@
 
 import DashUIKit
 import SwiftUI
+import UIKit
 
 struct SwapPortalScaffold: View {
     let logoIcon: DashIconSource
     let title: String
     let description: String
     var showBuy: Bool = false
+    var isOnline: Bool = true
     var onBack: () -> Void
     var onBuyDash: (() -> Void)?
     var onSellDash: (() -> Void)?
@@ -45,6 +47,7 @@ struct SwapPortalScaffold: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(Color.dash.primaryBackground.ignoresSafeArea())
+        .dexOfflineToast(isOnline: isOnline)
     }
 
     private var introSection: some View {
@@ -59,32 +62,46 @@ struct SwapPortalScaffold: View {
         VStack(spacing: 0) {
             if showBuy {
                 Button(
-                    action: { onBuyDash?() },
+                    action: { guard isOnline else { return }; onBuyDash?() },
                     label: {
                         DashUIKit.MenuItem(
                             leadingIcon: .custom("menu-receive", bundle: .dashUIKit),
+                            isEnabled: isOnline,
+                            disabledLeadingIcon: disabledMenuIcon(
+                                assetName: "menu-receive.disabled",
+                                fallbackName: "menu-receive"
+                            ),
                             title: NSLocalizedString("Buy Dash", comment: "Dash DEX Portal"),
                             helpText: NSLocalizedString("From any crypto to your Dash Wallet", comment: "Dash DEX Portal"),
                             accessory: .none
                         )
+                        .contentShape(.rect)
                     }
                 )
                 .buttonStyle(.plain)
+                .disabled(!isOnline)
                 .accessibilityIdentifier("swap_portal_buy")
             }
 
             Button(
-                action: { onSellDash?() },
+                action: { guard isOnline else { return }; onSellDash?() },
                 label: {
                     DashUIKit.MenuItem(
                         leadingIcon: .custom("menu-send", bundle: .dashUIKit),
+                        isEnabled: isOnline,
+                        disabledLeadingIcon: disabledMenuIcon(
+                            assetName: "menu-send.disabled",
+                            fallbackName: "menu-send"
+                        ),
                         title: NSLocalizedString("Sell Dash", comment: "Dash DEX Portal"),
                         helpText: NSLocalizedString("From Dash Wallet to any crypto", comment: "Dash DEX Portal"),
                         accessory: .none
                     )
+                    .contentShape(.rect)
                 }
             )
             .buttonStyle(.plain)
+            .disabled(!isOnline)
         }
         .modifier(MenuViewModifier())
     }
@@ -109,5 +126,13 @@ struct SwapPortalScaffold: View {
                 .lineSpacing(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func disabledMenuIcon(assetName: String, fallbackName: String) -> DashIconSource {
+        if let image = UIImage(named: assetName, in: .dashUIKit, compatibleWith: nil) {
+            return .uiImage(image)
+        }
+
+        return .custom(fallbackName, bundle: .dashUIKit)
     }
 }

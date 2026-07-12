@@ -40,7 +40,6 @@ struct SelectCoinView: View {
     }
 
     @StateObject private var viewModel: SelectCoinViewModel
-    @StateObject private var reachability = NetworkReachabilityMonitor()
     var onBack: (() -> Void)?
     var onCoinSelected: ((SwapCryptoCurrency) -> Void)?
 
@@ -61,7 +60,7 @@ struct SelectCoinView: View {
             VStack(spacing: 0) {
                 DashUIKit.NavigationBar(
                     leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } },
-                    central: { Text(NSLocalizedString("Select coin", comment: "Maya")).font(Font.dash.subheadMedium) }
+                    central: { Text(NSLocalizedString("Select coin", comment: "Dash DEX")).font(Font.dash.subheadMedium) }
                 )
                 mainContent
             }
@@ -70,7 +69,7 @@ struct SelectCoinView: View {
             if viewModel.showHaltedToast {
                 Toast(
                     style: .warning,
-                    message: NSLocalizedString("Some coins are not available because of the halted chain", comment: "Maya"),
+                    message: NSLocalizedString("Some coins are not available because of the halted chain", comment: "Dash DEX"),
                     onDismiss: { viewModel.showHaltedToast = false }
                 )
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -79,28 +78,15 @@ struct SelectCoinView: View {
             }
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.showHaltedToast)
-        .task {
-            if reachability.isOnline {
-                await viewModel.loadCoins()
-            }
-        }
-        .onChange(of: reachability.isOnline) { isOnline in
-            // Restore the coin list when connectivity returns. loadCoins() is a no-op
-            // unless coins are missing or a prior fetch errored, so this never resets
-            // an already-loaded list or its scroll position.
-            guard isOnline else { return }
-            Task { await viewModel.loadCoins() }
-        }
+        .dexOfflineToast(isOnline: viewModel.isOnline)
+        .task { await viewModel.loadCoins() }
     }
 
     // MARK: - Main Content
 
     @ViewBuilder
     private var mainContent: some View {
-        if !reachability.isOnline {
-            NetworkUnavailableStateView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else if viewModel.isLoading {
+        if viewModel.isLoading {
             SwiftUI.ProgressView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if let error = viewModel.errorMessage {
@@ -148,6 +134,8 @@ struct SelectCoinView: View {
                         // Halted coins are shown (dimmed) but not selectable — the chain can't
                         // route a swap while halted, so block the tap here.
                         .disabled(item.isHalted)
+                        // Block taps while offline without applying SwiftUI's disabled visual effect.
+                        .allowsHitTesting(viewModel.isOnline)
                         .accessibilityIdentifier("swap_coin_\(item.id)")
                         .id(item.id)
                     }
@@ -170,7 +158,7 @@ struct SelectCoinView: View {
     private var emptyStateView: some View {
         VStack {
             VStack(spacing: Layout.emptyStateSpacing) {
-                Text(NSLocalizedString("No coins found", comment: "Maya"))
+                Text(NSLocalizedString("No coins found", comment: "Dash DEX"))
                     .font(Font.dash.footnote)
                     .foregroundColor(Color.dash.gray500)
             }

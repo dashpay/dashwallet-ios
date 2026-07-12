@@ -542,6 +542,12 @@
 		B1300000B1300000B1300031 /* BuyReceiveHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300003 /* BuyReceiveHostingController.swift */; };
 		B1300000B1300000B1300032 /* BuyReceiveHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300003 /* BuyReceiveHostingController.swift */; };
 		B1300000B1300000B1300033 /* BuyReceiveHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1300000B1300000B1300003 /* BuyReceiveHostingController.swift */; };
+		B1600000B1600000B1600010 /* SwapKitErrorCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1600000B1600000B1600001 /* SwapKitErrorCopy.swift */; };
+		B1600000B1600000B1600011 /* SwapKitErrorCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1600000B1600000B1600001 /* SwapKitErrorCopy.swift */; };
+		B1700000B1700000B1700010 /* NetworkStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1700000B1700000B1700001 /* NetworkStatusService.swift */; };
+		B1700000B1700000B1700011 /* NetworkStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1700000B1700000B1700001 /* NetworkStatusService.swift */; };
+		B1700000B1700000B1700020 /* DEXOfflineToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1700000B1700000B1700002 /* DEXOfflineToastModifier.swift */; };
+		B1700000B1700000B1700021 /* DEXOfflineToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1700000B1700000B1700002 /* DEXOfflineToastModifier.swift */; };
 		B1500000B1500000B1500010 /* BuyOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1500000B1500000B1500001 /* BuyOrder.swift */; };
 		B1500000B1500000B1500011 /* BuyOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1500000B1500000B1500001 /* BuyOrder.swift */; };
 		B1500000B1500000B1500012 /* BuyOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1500000B1500000B1500001 /* BuyOrder.swift */; };
@@ -852,6 +858,8 @@
 		75EAFBB22B04C057005ABC6A /* CustomHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EAFBB02B04C057005ABC6A /* CustomHUDView.swift */; };
 		75EBAA092BB9791B004488E3 /* Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA082BB9791B004488E3 /* Icon.swift */; };
 		75EBAA0A2BB9791B004488E3 /* Icon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA082BB9791B004488E3 /* Icon.swift */; };
+		AA0031022FD0000000000012 /* IconName+DashIconSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0031012FD0000000000011 /* IconName+DashIconSource.swift */; };
+		AA0031032FD0000000000013 /* IconName+DashIconSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0031012FD0000000000011 /* IconName+DashIconSource.swift */; };
 		75EBAA0C2BB9792F004488E3 /* FeatureTopText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA0B2BB9792F004488E3 /* FeatureTopText.swift */; };
 		75EBAA0D2BB9792F004488E3 /* FeatureTopText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA0B2BB9792F004488E3 /* FeatureTopText.swift */; };
 		75EBAA0F2BB99036004488E3 /* TextIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA0E2BB99036004488E3 /* TextIntro.swift */; };
@@ -904,6 +912,16 @@
 		AA00000228D9A3DB00223B77 /* BuySellPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */; };
 		AA0000022DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */; };
 		AA0000042DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */; };
+		AA0030022FD0000000000002 /* SwapOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030012FD0000000000001 /* SwapOrder.swift */; };
+		AA0030032FD0000000000003 /* SwapOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030012FD0000000000001 /* SwapOrder.swift */; };
+		AA0030052FD0000000000005 /* SwapTrackingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030042FD0000000000004 /* SwapTrackingService.swift */; };
+		AA0030062FD0000000000006 /* SwapTrackingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030042FD0000000000004 /* SwapTrackingService.swift */; };
+		AA0030092FD0000000000009 /* SwapOrdersDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030082FD0000000000008 /* SwapOrdersDAO.swift */; };
+		AA00300A2FD000000000000A /* SwapOrdersDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030082FD0000000000008 /* SwapOrdersDAO.swift */; };
+		AA00300C2FD000000000000C /* AddSwapOrdersTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00300B2FD000000000000B /* AddSwapOrdersTable.swift */; };
+		AA00300D2FD000000000000D /* AddSwapOrdersTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00300B2FD000000000000B /* AddSwapOrdersTable.swift */; };
+		AA00300F2FD000000000000F /* SwapOrderMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00300E2FD000000000000E /* SwapOrderMetadataProvider.swift */; };
+		AA0030102FD0000000000010 /* SwapOrderMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00300E2FD000000000000E /* SwapOrderMetadataProvider.swift */; };
 		AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */; };
 		AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */; };
 		AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */; };
@@ -2892,6 +2910,7 @@
 		75E83CF51B5F997A0038FB70 /* coinflip.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = coinflip.aiff; sourceTree = "<group>"; };
 		75EAFBB02B04C057005ABC6A /* CustomHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomHUDView.swift; sourceTree = "<group>"; };
 		75EBAA082BB9791B004488E3 /* Icon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Icon.swift; sourceTree = "<group>"; };
+		AA0031012FD0000000000011 /* IconName+DashIconSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IconName+DashIconSource.swift"; sourceTree = "<group>"; };
 		75EBAA0B2BB9792F004488E3 /* FeatureTopText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureTopText.swift; sourceTree = "<group>"; };
 		75EBAA0E2BB99036004488E3 /* TextIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextIntro.swift; sourceTree = "<group>"; };
 		75EBAA112BB99B6B004488E3 /* BottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheet.swift; sourceTree = "<group>"; };
@@ -2928,6 +2947,11 @@
 		AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalView.swift; sourceTree = "<group>"; };
 		AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProviderToGiftCardsTable.swift; sourceTree = "<group>"; };
 		AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardProvider.swift; sourceTree = "<group>"; };
+		AA0030012FD0000000000001 /* SwapOrder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapOrder.swift; sourceTree = "<group>"; };
+		AA0030042FD0000000000004 /* SwapTrackingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapTrackingService.swift; sourceTree = "<group>"; };
+		AA0030082FD0000000000008 /* SwapOrdersDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapOrdersDAO.swift; sourceTree = "<group>"; };
+		AA00300B2FD000000000000B /* AddSwapOrdersTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSwapOrdersTable.swift; sourceTree = "<group>"; };
+		AA00300E2FD000000000000E /* SwapOrderMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapOrderMetadataProvider.swift; sourceTree = "<group>"; };
 		AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalView.swift; sourceTree = "<group>"; };
 		AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaPortalViewController.swift; sourceTree = "<group>"; };
 		AA0002012BA0F58E00A1B301 /* SwapCryptoCurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoCurrency.swift; sourceTree = "<group>"; };
@@ -2959,6 +2983,9 @@
 		AA0020052FA0000000000005 /* SwapBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapBackend.swift; sourceTree = "<group>"; };
 		AA0020082FA0000000000008 /* MayaSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaSwapProvider.swift; sourceTree = "<group>"; };
 		AA00200D2FA000000000000D /* SwapFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFlowCoordinator.swift; sourceTree = "<group>"; };
+		B1600000B1600000B1600001 /* SwapKitErrorCopy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitErrorCopy.swift; sourceTree = "<group>"; };
+		B1700000B1700000B1700001 /* NetworkStatusService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkStatusService.swift; sourceTree = "<group>"; };
+		B1700000B1700000B1700002 /* DEXOfflineToastModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DEXOfflineToastModifier.swift; sourceTree = "<group>"; };
 		B1500000B1500000B1500001 /* BuyOrder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyOrder.swift; sourceTree = "<group>"; };
 		B1500000B1500000B1500002 /* SwapDepositURIBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapDepositURIBuilder.swift; sourceTree = "<group>"; };
 		AA0020102FA0000000000010 /* SwapPortalScaffold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPortalScaffold.swift; sourceTree = "<group>"; };
@@ -5551,6 +5578,7 @@
 				7549BE5F2DEAF628004F0BAF /* AddIconBitmapsTable.swift */,
 				75D9EBB72DE5CC3A009416A2 /* AddGiftCardsTable.swift */,
 				AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */,
+				AA00300B2FD000000000000B /* AddSwapOrdersTable.swift */,
 				4709C311287E78BD00B4BD48 /* SeedDB.swift */,
 			);
 			path = Migrations;
@@ -5923,6 +5951,7 @@
 				47F006002971B1CE0029EB10 /* Currency Exchanger */,
 				47FA3B0029364743008D58DC /* Networking */,
 				4741255F287E77B4004E6BF3 /* Database */,
+				B1700000B1700000B1700001 /* NetworkStatusService.swift */,
 			);
 			path = Infrastructure;
 			sourceTree = "<group>";
@@ -6603,6 +6632,7 @@
 			children = (
 				75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */,
 				7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */,
+				AA00300E2FD000000000000E /* SwapOrderMetadataProvider.swift */,
 			);
 			path = "Tx Metadata";
 			sourceTree = "<group>";
@@ -6628,6 +6658,7 @@
 				75CDD7852C08D61300F433D2 /* DashAmount.swift */,
 				750CEFA02CCA6EA100E87A32 /* TextInput.swift */,
 				75EBAA082BB9791B004488E3 /* Icon.swift */,
+				AA0031012FD0000000000011 /* IconName+DashIconSource.swift */,
 				7566F4892BB6CAF2005238D2 /* MenuItem.swift */,
 				75EBAA0B2BB9792F004488E3 /* FeatureTopText.swift */,
 				754C27CB2CC3C14F00BA7B9F /* FeatureSingleItem.swift */,
@@ -6947,6 +6978,7 @@
 				AA00200D2FA000000000000D /* SwapFlowCoordinator.swift */,
 				AA0020102FA0000000000010 /* SwapPortalScaffold.swift */,
 				0286D4D1CADBBD51F09BE8E8 /* SwapMenuStyles.swift */,
+				B1700000B1700000B1700002 /* DEXOfflineToastModifier.swift */,
 				514AEA112FB324DA00F9B54C /* Convert */,
 				B1100000B1100000B1100000 /* Buy */,
 				AA0005032EA0F58E00D1D603 /* EnterAddress */,
@@ -7025,7 +7057,11 @@
 		AA0020012FA0000000000001 /* Swap */ = {
 			isa = PBXGroup;
 			children = (
+				AA0030012FD0000000000001 /* SwapOrder.swift */,
+				AA0030042FD0000000000004 /* SwapTrackingService.swift */,
+				AA0030072FD0000000000007 /* DAO */,
 				AA0020012FA0000000000013 /* SwapExecutionData.swift */,
+				B1600000B1600000B1600001 /* SwapKitErrorCopy.swift */,
 				B1500000B1500000B1500001 /* BuyOrder.swift */,
 				B1500000B1500000B1500002 /* SwapDepositURIBuilder.swift */,
 				AA0020022FA0000000000002 /* SwapProvider.swift */,
@@ -7040,6 +7076,14 @@
 				51BA2E9F2F0B2E0100A1B201 /* SwapPendingGate.swift */,
 			);
 			path = Swap;
+			sourceTree = "<group>";
+		};
+		AA0030072FD0000000000007 /* DAO */ = {
+			isa = PBXGroup;
+			children = (
+				AA0030082FD0000000000008 /* SwapOrdersDAO.swift */,
+			);
+			path = DAO;
 			sourceTree = "<group>";
 		};
 		AA0020202FA0000000000020 /* SwapKit */ = {
@@ -9394,6 +9438,9 @@
 				B1300000B1300000B1300010 /* BuyReceiveView.swift in Sources */,
 				B1300000B1300000B1300020 /* BuyReceiveViewModel.swift in Sources */,
 				B1300000B1300000B1300030 /* BuyReceiveHostingController.swift in Sources */,
+				B1600000B1600000B1600010 /* SwapKitErrorCopy.swift in Sources */,
+				B1700000B1700000B1700010 /* NetworkStatusService.swift in Sources */,
+				B1700000B1700000B1700020 /* DEXOfflineToastModifier.swift in Sources */,
 				B1500000B1500000B1500010 /* BuyOrder.swift in Sources */,
 				B1500000B1500000B1500020 /* SwapDepositURIBuilder.swift in Sources */,
 				51A57C042FBB5A0000FB4097 /* SwapTransactionSuccessView.swift in Sources */,
@@ -9594,6 +9641,11 @@
 				7549BE582DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */,
 				7549BE602DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				AA0000012DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */,
+				AA00300C2FD000000000000C /* AddSwapOrdersTable.swift in Sources */,
+				AA0030022FD0000000000002 /* SwapOrder.swift in Sources */,
+				AA0030052FD0000000000005 /* SwapTrackingService.swift in Sources */,
+				AA0030092FD0000000000009 /* SwapOrdersDAO.swift in Sources */,
+				AA00300F2FD000000000000F /* SwapOrderMetadataProvider.swift in Sources */,
 				AA0000042DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
 				BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
@@ -9824,6 +9876,7 @@
 				0F6EDFCF28C896BD000427E7 /* CoinbaseAccountAddress.swift in Sources */,
 				7531308D2B47EC910069C9B7 /* UpholdClient.swift in Sources */,
 				75EBAA092BB9791B004488E3 /* Icon.swift in Sources */,
+				AA0031022FD0000000000012 /* IconName+DashIconSource.swift in Sources */,
 				1141E4C2291BB12200ACDA9E /* CrowdNodeTransferViewController.swift in Sources */,
 				478483E829629C0700E05A5A /* CBAuthInterop.swift in Sources */,
 				4789D27029825F5400BAFEFA /* CoinbaseAmountViewController.swift in Sources */,
@@ -10133,6 +10186,9 @@
 				B1300000B1300000B1300011 /* BuyReceiveView.swift in Sources */,
 				B1300000B1300000B1300021 /* BuyReceiveViewModel.swift in Sources */,
 				B1300000B1300000B1300031 /* BuyReceiveHostingController.swift in Sources */,
+				B1600000B1600000B1600011 /* SwapKitErrorCopy.swift in Sources */,
+				B1700000B1700000B1700011 /* NetworkStatusService.swift in Sources */,
+				B1700000B1700000B1700021 /* DEXOfflineToastModifier.swift in Sources */,
 				B1500000B1500000B1500011 /* BuyOrder.swift in Sources */,
 				B1500000B1500000B1500021 /* SwapDepositURIBuilder.swift in Sources */,
 				B1200000B1200000B1200020 /* RefundAddressView.swift in Sources */,
@@ -10345,6 +10401,7 @@
 				C943B54E2A40B6B500AF23C5 /* DWColoredButton.m in Sources */,
 				C9D2C7662A320AA000D15901 /* CrowdNodeRequest.swift in Sources */,
 				75EBAA0A2BB9791B004488E3 /* Icon.swift in Sources */,
+				AA0031032FD0000000000013 /* IconName+DashIconSource.swift in Sources */,
 				754C27C72CC3C0B900BA7B9F /* UsernamePrefs.swift in Sources */,
 				C9D2C7672A320AA000D15901 /* CoinbaseExchangeRateResponse.swift in Sources */,
 				C9D2C7692A320AA000D15901 /* (null) in Sources */,
@@ -10511,6 +10568,11 @@
 				C9D2C7E22A320AA000D15901 /* CrowdNodeWithdrawalReceivedTx.swift in Sources */,
 				7549BE612DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
 				AA0000022DUMMYID001234567 /* AddProviderToGiftCardsTable.swift in Sources */,
+				AA00300D2FD000000000000D /* AddSwapOrdersTable.swift in Sources */,
+				AA0030032FD0000000000003 /* SwapOrder.swift in Sources */,
+				AA0030062FD0000000000006 /* SwapTrackingService.swift in Sources */,
+				AA00300A2FD000000000000A /* SwapOrdersDAO.swift in Sources */,
+				AA0030102FD0000000000010 /* SwapOrderMetadataProvider.swift in Sources */,
 				AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
 				BB0000042DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,

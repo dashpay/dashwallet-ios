@@ -23,7 +23,7 @@ import UIKit
 final class RefundAddressHostingController: UIViewController, NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
 
-    var onRefundAddressConfirmed: ((SwapCryptoCurrency, String) -> Void)?
+    var onOrderCreated: ((SwapCryptoCurrency, BuyOrder) -> Void)?
 
     private let coin: SwapCryptoCurrency
     private let viewModel: RefundAddressViewModel
@@ -33,9 +33,9 @@ final class RefundAddressHostingController: UIViewController, NavigationBarDispl
         return recognizer
     }()
 
-    init(coin: SwapCryptoCurrency) {
+    init(coin: SwapCryptoCurrency, sellAmount: String, swapProvider: SwapProvider) {
         self.coin = coin
-        self.viewModel = RefundAddressViewModel(coin: coin)
+        self.viewModel = RefundAddressViewModel(coin: coin, sellAmount: sellAmount, swapProvider: swapProvider)
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -55,9 +55,9 @@ final class RefundAddressHostingController: UIViewController, NavigationBarDispl
             onScanQR: { [weak self] in
                 self?.presentQRScanner()
             },
-            onContinue: { [weak self] refundAddress in
+            onOrderCreated: { [weak self] order in
                 guard let self else { return }
-                self.onRefundAddressConfirmed?(self.coin, refundAddress)
+                self.onOrderCreated?(self.coin, order)
             }
         )
 

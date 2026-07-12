@@ -141,6 +141,7 @@ NS_ASSUME_NONNULL_BEGIN
     [[DashSync sharedSyncController] registerBackgroundFetchOnce];
     
     [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
+    [SwapTrackingServiceObjcWrapper start];
     
     DWDataMigrationManager *migrationManager = [DWDataMigrationManager sharedInstance];
     if (migrationManager.shouldMigrate) {

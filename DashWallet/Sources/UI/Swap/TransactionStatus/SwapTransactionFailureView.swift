@@ -42,12 +42,12 @@ struct SwapTransactionFailureView: View {
                 .padding(.bottom, 30)
 
             VStack(spacing: 6) {
-                Text(NSLocalizedString("Conversion failed", comment: "Maya"))
+                Text(NSLocalizedString("Conversion failed", comment: "Dash DEX"))
                     .font(Font.dash.title1)
                     .foregroundColor(Color.dash.primaryText)
                     .multilineTextAlignment(.center)
 
-                Text(reason ?? NSLocalizedString("Your DASH was not converted and no funds were deducted. Try again, or come back later.", comment: "Maya"))
+                Text(reason ?? NSLocalizedString("Your DASH was not converted and no funds were deducted. Try again, or come back later.", comment: "Dash DEX"))
                     .font(Font.dash.subhead)
                     .foregroundColor(Color.dash.secondaryText)
                     .multilineTextAlignment(.center)
@@ -62,7 +62,7 @@ struct SwapTransactionFailureView: View {
 
             VStack(spacing: 16) {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Retry", comment: "Maya"),
+                    text: NSLocalizedString("Retry", comment: "Dash DEX"),
                     isEnabled: !isRetrying,
                     isLoading: isRetrying,
                     fillsWidth: true,
@@ -73,7 +73,7 @@ struct SwapTransactionFailureView: View {
                 }
 
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Close", comment: "Maya"),
+                    text: NSLocalizedString("Close", comment: "Dash DEX"),
                     fillsWidth: true,
                     size: .large,
                     style: .tintedGray
@@ -93,12 +93,12 @@ struct SwapTransactionFailureView: View {
             if let transactionHash, !transactionHash.isEmpty {
                 return (
                     MayaConstants.mayaScanTransactionURL(txHash: transactionHash),
-                    NSLocalizedString("View transaction on MayaScan", comment: "Maya")
+                    NSLocalizedString("View transaction on MayaScan", comment: "Dash DEX")
                 )
             }
             return (
                 MayaConstants.supportURL,
-                NSLocalizedString("Contact Maya Support", comment: "Maya")
+                NSLocalizedString("Contact Maya Support", comment: "Dash DEX")
             )
         }()
 

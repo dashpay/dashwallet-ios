@@ -25,13 +25,8 @@ final class BuyReceiveHostingController: UIViewController, NavigationBarDisplaya
 
     private let viewModel: BuyReceiveViewModel
 
-    init(coin: SwapCryptoCurrency, refundAddress: String, sellAmount: String, swapProvider: SwapProvider) {
-        self.viewModel = BuyReceiveViewModel(
-            coin: coin,
-            refundAddress: refundAddress,
-            sellAmount: sellAmount,
-            swapProvider: swapProvider
-        )
+    init(coin: SwapCryptoCurrency, order: BuyOrder) {
+        self.viewModel = BuyReceiveViewModel(coin: coin, order: order)
         super.init(nibName: nil, bundle: nil)
     }
 

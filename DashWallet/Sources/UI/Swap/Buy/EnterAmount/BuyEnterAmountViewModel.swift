@@ -35,6 +35,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
     @Published var statusMessage: String?
 
     private let swapProvider: SwapProvider
+    private let networkStatus: NetworkStatusProviding
     private var amount = SwapConvertAmount()
     private var cancellables = Set<AnyCancellable>()
     private var rateRequestID = 0
@@ -42,9 +43,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
     private var validationRequestID = 0
     private var isSwitchingCurrency = false
 
-    var title: String {
-        NSLocalizedString("Enter amount", comment: "Dash DEX")
-    }
+    @Published private(set) var isOnline: Bool
 
     var subtitle: String? { nil }
 
@@ -57,22 +56,25 @@ final class BuyEnterAmountViewModel: ObservableObject {
     }
 
     var isActionEnabled: Bool {
-        amount.crypto > 0 && !isValidating
+        amount.crypto > 0 && !isValidating && isOnline
     }
 
     var inlineMessage: String? {
         validationErrorMessage ?? rateErrorMessage
     }
 
-    init(coin: SwapCryptoCurrency, swapProvider: SwapProvider) {
+    init(coin: SwapCryptoCurrency, swapProvider: SwapProvider, networkStatus: NetworkStatusProviding = NetworkStatusService.shared) {
         self.coin = coin
         self.swapProvider = swapProvider
+        self.networkStatus = networkStatus
+        self.isOnline = networkStatus.isOnline
         let initialFiat = App.fiatCurrency
         self.currentFiatCurrency = initialFiat
         self.selectedCurrency = .fiat(initialFiat)
         initializeRates()
         observeInput()
         observeCurrencySwitch()
+        subscribeToNetworkStatus()
         Task { await fetchCryptoRate() }
     }
 
@@ -101,7 +103,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
     }
 
     func attemptContinue(onSuccess: @escaping (SwapCryptoCurrency, String) -> Void) async {
-        guard !isValidating else { return }
+        guard isOnline, !isValidating else { return }
 
         let sellAmount = Self.formattedCryptoAmount(amount.crypto)
         guard !sellAmount.isEmpty else { return }
@@ -141,6 +143,16 @@ final class BuyEnterAmountViewModel: ObservableObject {
             isValidating = false
             validationErrorMessage = Self.validationMessage(from: error)
         }
+    }
+
+    // MARK: - Private: Network Status
+
+    private func subscribeToNetworkStatus() {
+        networkStatus.statusPublisher
+            .sink { [weak self] status in
+                self?.isOnline = status == .online
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Private: Rate setup
@@ -332,11 +344,10 @@ final class BuyEnterAmountViewModel: ObservableObject {
     }
 
     private static func validationMessage(from error: Error) -> String {
-        let raw = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-        if raw.localizedCaseInsensitiveContains("noRoutesFound") {
-            return NSLocalizedString("Entered amount is lower than the allowed minimum", comment: "Dash DEX")
-        }
-        return NSLocalizedString("This amount can't be swapped right now", comment: "Dash DEX")
+        NSLocalizedString(
+            "This amount can't be swapped right now. Try a different amount, or try again shortly.",
+            comment: "Dash DEX / dex_enter_amount_invalid"
+        )
     }
 
     private enum RateError: Error {
