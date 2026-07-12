@@ -44,15 +44,20 @@ included.
 
 ## Platform pin
 
-The app currently builds against sibling `../platform` branch
-`local/tx-decode-plus-v4.1-dev-dashwallet`, commit `3a51cbd198`. It contains the
-app-required tx decoding, DashPay fee threading, raw signer, testnet faucet,
-classified SPV peers, and filter-rescan surfaces.
+The app builds against sibling `../platform` on **`v4.1-dev`** (verified
+2026-07-12: dashpay arm64-sim build green at app tip `62a7eb40c` against
+`origin/v4.1-dev` tip `0bfdc5745c`). Every app-required surface is upstream:
+tx decoding (`TransactionDecoder`, key-wallet-ffi route), DashPay fee threading,
+`RawKeySigner` (#4097), the testnet faucet client (#4098), classified SPV peers,
+and the filter-rescan FFI (#4099). The `local/tx-decode-plus-v4.1-dev-dashwallet`
+integration branch is retired.
 
-This branch is a temporary integration pin, not a release destination. Every
-app-required platform change must be upstreamed/reconciled onto `v4.1-dev`, and
-the final migration build must use `../platform` on `v4.1-dev`. DashSync removal
-is not complete while dashwallet-ios depends on the private integration branch.
+No open nuances: the verified tip `0bfdc5745c` IS the merge of
+[platform #4049](https://github.com/dashpay/platform/pull/4049), so
+`send_payment` returns the exact fee (Σinputs − Σoutputs via
+dashpay/rust-dashcore#872) and the faucet captcha's aggregate
+proof-of-work cap ([#4100](https://github.com/dashpay/platform/pull/4100))
+is included as well.
 
 After changing the platform checkout, rebuild both xcframework slices from
 `../platform/packages/swift-sdk`:
