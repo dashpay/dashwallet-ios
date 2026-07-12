@@ -116,9 +116,9 @@ struct AddressSourceView: View {
         case .available(let address):
             address
         case .notAvailable:
-            NSLocalizedString("Not available", comment: "Maya")
+            NSLocalizedString("Not available", comment: "Dash DEX")
         case .loading:
-            NSLocalizedString("Loading...", comment: "Maya")
+            NSLocalizedString("Loading...", comment: "Dash DEX")
         case .loggedOut:
             nil
         }
@@ -128,7 +128,7 @@ struct AddressSourceView: View {
         switch state {
         case .loggedOut:
             AnyView(
-                Text(NSLocalizedString("Log In", comment: "Maya"))
+                Text(NSLocalizedString("Log In", comment: "Dash DEX"))
                     .font(.subheadMedium)
                     .foregroundColor(.dashBlue)
             )

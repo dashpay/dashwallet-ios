@@ -82,28 +82,17 @@ final class SwapFlowCoordinator {
 
     private func navigateToRefundAddress(coin: SwapCryptoCurrency, sellAmount: String) {
         guard !(navigationController?.topViewController is RefundAddressHostingController) else { return }
-        let refundVC = RefundAddressHostingController(coin: coin)
-        refundVC.onRefundAddressConfirmed = { [weak self] coin, refundAddress in
-            self?.navigateToReceive(coin: coin, sellAmount: sellAmount, refundAddress: refundAddress)
+        let refundVC = RefundAddressHostingController(coin: coin, sellAmount: sellAmount, swapProvider: swapProvider)
+        refundVC.onOrderCreated = { [weak self] coin, order in
+            self?.navigateToReceive(coin: coin, order: order)
         }
         navigationController?.pushViewController(refundVC, animated: true)
     }
 
-    private func navigateToReceive(coin: SwapCryptoCurrency, sellAmount: String, refundAddress: String) {
+    private func navigateToReceive(coin: SwapCryptoCurrency, order: BuyOrder) {
         guard !(navigationController?.topViewController is BuyReceiveHostingController) else { return }
-        DSLogger.log("Swap: Buy receive \(coin.code) amount=\(sellAmount) refund=\(refundAddress)")
-        guard let swapKitProvider = swapProvider as? SwapKitSwapProvider else {
-            DSLogger.log("Swap flow: Buy receive requires SwapKit backend")
-            assertionFailure("Buy flow requires SwapKit backend")
-            return
-        }
-
-        let receiveVC = BuyReceiveHostingController(
-            coin: coin,
-            refundAddress: refundAddress,
-            sellAmount: sellAmount,
-            swapProvider: swapKitProvider
-        )
+        DSLogger.log("Swap: Buy receive \(coin.code) amount=\(order.sellAmount) deposit=\(order.depositAddress)")
+        let receiveVC = BuyReceiveHostingController(coin: coin, order: order)
         navigationController?.pushViewController(receiveVC, animated: true)
     }
 }

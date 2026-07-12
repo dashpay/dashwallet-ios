@@ -74,7 +74,7 @@ struct GenericQRScannerView: View {
                     .frame(width: 250, height: 250)
 
                 // Instruction label
-                Text(NSLocalizedString("Scan QR Code", comment: "Maya"))
+                Text(NSLocalizedString("Scan QR Code", comment: "Dash DEX"))
                     .font(.system(size: 15, weight: .medium))
                     .foregroundColor(.white)
                     .padding(.top, 24)

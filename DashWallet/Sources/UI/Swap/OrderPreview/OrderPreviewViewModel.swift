@@ -122,11 +122,51 @@ final class OrderPreviewViewModel: ObservableObject {
     /// Updated by background polling after early success is shown.
     /// Never causes the success screen to be removed — only recorded for tx history.
     @Published var backendOutcome: SwapBackendOutcome = .pending
+    @Published private(set) var isOnline: Bool
 
     /// Deep-link to the provider's hosted transaction tracker (nil for Maya).
     var trackerURL: URL? {
         guard let txid = submittedTxId, !txid.isEmpty else { return nil }
         return swapProvider.trackerURL(for: txid, depositAddress: lastDepositAddress)
+    }
+
+    /// Deep-link to the block explorer for the currently selected execution network.
+    /// Mirrors Android's network-aware explorer resolution and stays independent of hosted trackers.
+    var explorerLink: (url: URL, text: String)? {
+        let network = resolvedExecutionNetwork.trimmingCharacters(in: .whitespacesAndNewlines)
+        let lowercasedNetwork = network.lowercased()
+
+        if network.isEmpty || lowercasedNetwork.contains("maya") {
+            let url: URL
+            if let txid = submittedTxId?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !txid.isEmpty {
+                url = MayaConstants.mayaScanTransactionURL(txHash: txid.uppercased())
+            } else {
+                url = URL(string: "https://www.mayascan.org/")!
+            }
+
+            return (
+                url: url,
+                text: NSLocalizedString("View MayaChain explorer", comment: "Dash DEX")
+            )
+        }
+
+        if lowercasedNetwork.contains("near") {
+            let url: URL
+            if let depositAddress = lastDepositAddress?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !depositAddress.isEmpty {
+                url = NearConstants.explorerTransactionURL(depositAddress: depositAddress)
+            } else {
+                url = NearConstants.explorerHomeURL
+            }
+
+            return (
+                url: url,
+                text: NSLocalizedString("View NEAR Intents explorer", comment: "Dash DEX")
+            )
+        }
+
+        return nil
     }
 
     /// NEAR Intents routes can remain genuinely in-flight for much longer than Maya routes.
@@ -147,8 +187,8 @@ final class OrderPreviewViewModel: ObservableObject {
             ? NSLocalizedString("Fee", comment: "Swap order preview")
             : (
                 executionNetwork == "—"
-                    ? NSLocalizedString("Swap fee", comment: "Maya/SwapKit order preview")
-                    : String(format: NSLocalizedString("%@ fee", comment: "Maya/SwapKit order preview"), executionNetwork)
+                    ? NSLocalizedString("Swap fee", comment: "Dash DEX")
+                    : String(format: NSLocalizedString("%@ fee", comment: "Dash DEX"), executionNetwork)
             )
     }
 
@@ -156,14 +196,21 @@ final class OrderPreviewViewModel: ObservableObject {
         swapProvider.usesGenericFeeLabel
     }
 
+    var timerText: String {
+        String(
+            format: NSLocalizedString("%ld sec", comment: "Dash DEX"),
+            CLong(remainingSubmitSeconds)
+        )
+    }
+
     var confirmButtonText: String {
         if remainingSubmitSeconds > 0 {
             return String(
-                format: NSLocalizedString("Confirm (%lds)", comment: "Maya"),
+                format: NSLocalizedString("Confirm (%lds)", comment: "Dash DEX"),
                 CLong(remainingSubmitSeconds)
             )
         } else {
-            return NSLocalizedString("Refresh quote", comment: "Maya")
+            return NSLocalizedString("Refresh quote", comment: "Dash DEX")
         }
     }
 
@@ -177,7 +224,7 @@ final class OrderPreviewViewModel: ObservableObject {
     private var countdownCancellable: AnyCancellable?
     private let sendCoinsService = SendCoinsService()
     private let swapProvider: SwapProvider
-    private var pollingTask: Task<Void, Never>?
+    private var daoCancellable: AnyCancellable?
     private var isLockCancellable: AnyCancellable?
     // Strong reference to the broadcast Dash tx. DashSync mutates its `blockHeight` in place
     // when the tx is included in a block, which the confirmation observer re-reads on each
@@ -186,6 +233,8 @@ final class OrderPreviewViewModel: ObservableObject {
     private var confirmationCancellable: AnyCancellable?
     private var didInitialLoad = false
     private var lastDepositAddress: String?
+    private let networkStatus: NetworkStatusProviding
+    private var networkCancellable: AnyCancellable?
 
     init(
         coin: SwapCryptoCurrency,
@@ -197,7 +246,8 @@ final class OrderPreviewViewModel: ObservableObject {
         fiatCurrencyCode: String,
         targetReceiveAmount: Decimal? = nil,
         initialQuote: SwapQuoteResult,
-        swapProvider: SwapProvider = MayaSwapProvider()
+        swapProvider: SwapProvider = MayaSwapProvider(),
+        networkStatus: NetworkStatusProviding = NetworkStatusService.shared
     ) {
         self.coin = coin
         self.address = address
@@ -208,18 +258,23 @@ final class OrderPreviewViewModel: ObservableObject {
         self.fiatCurrencyCode = fiatCurrencyCode
         self.targetReceiveAmount = targetReceiveAmount
         self.swapProvider = swapProvider
+        self.networkStatus = networkStatus
+        self.isOnline = networkStatus.isOnline
         self.quote = initialQuote
         applyQuote(initialQuote)
+        subscribeToNetworkStatus()
     }
 
     deinit {
         countdownCancellable?.cancel()
-        pollingTask?.cancel()
+        daoCancellable?.cancel()
         isLockCancellable?.cancel()
         confirmationCancellable?.cancel()
+        networkCancellable?.cancel()
     }
 
     func handlePrimaryAction() async {
+        guard isOnline else { return }
         if remainingSubmitSeconds > 0 {
             await submitSwap()
         } else {
@@ -234,8 +289,8 @@ final class OrderPreviewViewModel: ObservableObject {
     }
 
     func resetToIdle() {
-        pollingTask?.cancel()
-        pollingTask = nil
+        daoCancellable?.cancel()
+        daoCancellable = nil
         isLockCancellable?.cancel()
         isLockCancellable = nil
         confirmationCancellable?.cancel()
@@ -254,7 +309,7 @@ final class OrderPreviewViewModel: ObservableObject {
     ///   refresh succeeds; `nil` when it fails (in which case `swapStatus` is updated with the
     ///   new failure reason so the caller can stay on the failed screen).
     func retryQuote() async -> OrderPreviewViewModel? {
-        guard !isRetrying else { return nil }
+        guard isOnline, !isRetrying else { return nil }
         isRetrying = true
         defer { isRetrying = false }
 
@@ -280,6 +335,15 @@ final class OrderPreviewViewModel: ObservableObject {
             setFailure(error.localizedDescription)
             return nil
         }
+    }
+
+    // MARK: - Private: Network Status
+
+    private func subscribeToNetworkStatus() {
+        networkCancellable = networkStatus.statusPublisher
+            .sink { [weak self] status in
+                self?.isOnline = status == .online
+            }
     }
 
     // MARK: - Private: Countdown
@@ -394,7 +458,7 @@ final class OrderPreviewViewModel: ObservableObject {
 
     private func resolveExecutionData(from quote: SwapQuoteResult) throws -> SwapExecutionData {
         guard let vaultAddress = quote.inboundAddress, !vaultAddress.isEmpty else {
-            throw mayaFieldError(NSLocalizedString("Vault address is missing. Please refresh and try again.", comment: "Maya"))
+            throw mayaFieldError(NSLocalizedString("Vault address is missing. Please refresh and try again.", comment: "Dash DEX"))
         }
 
         let memo: String?
@@ -405,7 +469,7 @@ final class OrderPreviewViewModel: ObservableObject {
                 ?? coin.swapAsset.uppercased()
             memo = "=:\(shortAsset):\(address)"
         } else {
-            throw mayaFieldError(NSLocalizedString("Swap memo is missing. Please refresh and try again.", comment: "Maya"))
+            throw mayaFieldError(NSLocalizedString("Swap memo is missing. Please refresh and try again.", comment: "Dash DEX"))
         }
 
         let resolvedExecutionNetwork = quote.executionNetwork?
@@ -431,7 +495,7 @@ final class OrderPreviewViewModel: ObservableObject {
             )
         } else {
             guard let memo = execution.memo, !memo.isEmpty else {
-                throw mayaFieldError(NSLocalizedString("Swap memo is missing. Please refresh and try again.", comment: "Maya"))
+                throw mayaFieldError(NSLocalizedString("Swap memo is missing. Please refresh and try again.", comment: "Dash DEX"))
             }
             return try await sendCoinsService.sendMayaSwap(
                 vaultAddress: execution.vaultAddress,
@@ -450,20 +514,7 @@ final class OrderPreviewViewModel: ObservableObject {
     }
 
     private func userFacingErrorMessage(for message: String) -> String {
-        if message.localizedCaseInsensitiveContains("invalidDestinationAddress") {
-            let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
-            return String(
-                format: NSLocalizedString(
-                    "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address.",
-                    comment: "Swap"
-                ),
-                coin.name,
-                chainLabel,
-                chainLabel
-            )
-        }
-
-        return message
+        SwapKitErrorCopy.message(for: message, coin: coin)
     }
 
     private func setSubmittedTransaction(_ tx: DSTransaction, depositAddress: String) {
@@ -471,11 +522,33 @@ final class OrderPreviewViewModel: ObservableObject {
         submittedTxId = tx.txHashHexString
         lastDepositAddress = depositAddress
         swapStatus = .pendingConfirmation
+        saveSwapOrder(tx: tx, depositAddress: depositAddress)
         startObservingISLock(txid: tx.txHashHexString)
         if Self.successTrigger == .onDashConfirmation {
             startObservingDashConfirmation(tx: tx)
         }
-        startPolling(txid: tx.txHashHexString)
+        startObservingDAO(orderId: tx.txHashHexString)
+    }
+
+    // MARK: - Private: Swap order persistence
+
+    private func saveSwapOrder(tx: DSTransaction, depositAddress: String) {
+        let service = swapProvider is MayaSwapProvider ? "maya" : "swapkit"
+        let order = SwapOrder(
+            id: tx.txHashHexString,
+            direction: "sell",
+            service: service,
+            provider: resolvedExecutionNetwork,
+            fromAsset: "DASH",
+            toAsset: coin.swapAsset,
+            toAddress: address,
+            depositAddress: depositAddress,
+            expectedToAmount: toAmount,
+            status: .notStarted
+        )
+        Task {
+            await SwapOrdersDAOImpl.shared.create(dto: order)
+        }
     }
 
     // MARK: - Private: IS-Lock Observation
@@ -500,13 +573,18 @@ final class OrderPreviewViewModel: ObservableObject {
 
                 DSLogger.log("sendMayaSwap IS-lock received for \(txid)")
 
-                if case .pendingConfirmation = self.swapStatus {
-                    switch Self.successTrigger {
-                    case .onISLock:
-                        // Show success immediately. Polling keeps running in the background
-                        // to track the real backend outcome (backendOutcome).
+                switch Self.successTrigger {
+                case .onISLock:
+                    switch self.swapStatus {
+                    case .pendingConfirmation, .processingSwap:
+                        // IS-lock is the user-facing success point for this trigger.
+                        // DAO/tracking stays background-only and must not block Done.
                         self.swapStatus = .completed(outHashes: [])
-                    case .onObserved, .onDone, .onDashConfirmation:
+                    default:
+                        break
+                    }
+                case .onObserved, .onDone, .onDashConfirmation:
+                    if case .pendingConfirmation = self.swapStatus {
                         // IS-lock alone is NOT success here — it only advances the UI to
                         // "processing". Success requires a block confirmation (or, for the
                         // other triggers, their own backend condition).
@@ -572,106 +650,59 @@ final class OrderPreviewViewModel: ObservableObject {
         return Int(lastHeight - txHeight) + 1
     }
 
-    // MARK: - Private: Polling
+    // MARK: - Private: DAO observation (replaces the in-memory 30-min polling loop)
 
-    private func startPolling(txid: String) {
-        pollingTask?.cancel()
-        // [weak self] prevents a retain cycle: the Task would otherwise keep self alive
-        // indefinitely even after popToRootViewController releases all external references.
-        // The @MainActor context is inherited, so all property accesses remain on main.
-        pollingTask = Task { [weak self] in
-            guard let self else { return }
-            let maxIterations = 360 // 5 s × 360 = 30 min
-
-            for iteration in 0..<maxIterations {
-                guard !Task.isCancelled else { return }
-
-                if iteration > 0 {
-                    try? await Task.sleep(nanoseconds: 5_000_000_000)
-                    guard !Task.isCancelled else { return }
-                }
-
-                do {
-                    let info = try await swapProvider.fetchSwapStatus(
-                        txid: txid,
-                        depositAddress: self.lastDepositAddress
-                    )
-
-                    // Provider hasn't seen the Dash tx yet (block not confirmed) — keep waiting.
-                    guard info.error == nil, info.isObserved else { continue }
-
-                    let outcome = Self.classifyStatus(info)
-                    if self.handlePollingOutcome(outcome, txid: txid) { return }
-                } catch {
-                    // Transient network error — keep current status and retry next tick.
-                }
+    private func startObservingDAO(orderId: String) {
+        daoCancellable?.cancel()
+        daoCancellable = SwapOrdersDAOImpl.shared.observeAll()
+            .compactMap { orders in orders.first { $0.id == orderId } }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] order in
+                self?.applyDAOUpdate(order)
             }
+    }
 
-            // 30-minute timeout.
-            // If success was already shown, silently stop. backendOutcome stays .pending
-            // which signals that the terminal state was never confirmed within 30 min.
-            if !self.isSuccessAlreadyShown {
-                self.swapStatus = .failed(reason: NSLocalizedString(
-                    "Swap timed out after 30 minutes. Contact Maya support if funds were sent.",
-                    comment: "Maya"
+    /// Reacts to a DAO status write from `SwapTrackingService`.
+    /// Never regresses a terminal user-facing state; only records `backendOutcome` silently
+    /// when success is already on screen.
+    private func applyDAOUpdate(_ order: SwapOrder) {
+        if isSuccessAlreadyShown {
+            switch order.status {
+            case .completed:
+                backendOutcome = .done(outHashes: [order.outboundTxHash].compactMap { $0 })
+            case .refunded, .failed:
+                backendOutcome = .refunded
+                DSLogger.log("DEX: post-success \(order.status.rawValue) for \(order.id)")
+            default: break
+            }
+            return
+        }
+
+        switch order.status {
+        case .completed:
+            swapStatus = .completed(outHashes: [order.outboundTxHash].compactMap { $0 })
+            backendOutcome = .done(outHashes: [order.outboundTxHash].compactMap { $0 })
+            daoCancellable?.cancel()
+        case .refunded:
+            swapStatus = .failed(reason: String(format: NSLocalizedString(
+                "Your DASH was refunded by %@.",
+                comment: "Swap refund message — %@ is the provider name e.g. Maya"
+            ), swapProvider.displayName))
+            backendOutcome = .refunded
+            daoCancellable?.cancel()
+        case .failed:
+            if !isSuccessAlreadyShown {
+                swapStatus = .failed(reason: NSLocalizedString(
+                    "Swap timed out. Contact support if funds were sent.",
+                    comment: "Dash DEX"
                 ))
             }
-        }
-    }
-
-    /// Applies a single polled Maya outcome to the view-model state.
-    /// - Returns: `true` when a terminal state was reached and polling should stop.
-    private func handlePollingOutcome(_ outcome: SwapBackendOutcome, txid: String) -> Bool {
-        // Success already on screen — NEVER regress swapStatus; only record backendOutcome.
-        if isSuccessAlreadyShown {
-            switch outcome {
-            case .pending:
-                return false  // still running, continue polling
-            case .done, .refunded:
-                backendOutcome = outcome
-                if case .refunded = outcome {
-                    // Post-success refund detected. Record it; do not yank the success
-                    // screen. Future: surface in tx history / a badge.
-                    DSLogger.log("Maya: post-success refund detected for \(txid)")
-                }
-                return true  // terminal state reached, stop polling
-            }
-        }
-
-        // Success not yet shown — drive swapStatus.
-        switch outcome {
-        case .done(let hashes):
-            swapStatus = .completed(outHashes: hashes)
-            backendOutcome = outcome
-            return true
-        case .refunded:
-            swapStatus = .failed(reason: String(
-                format: NSLocalizedString(
-                    "Your DASH was refunded by %@.",
-                    comment: "Swap refund message — %@ is the provider name e.g. Maya"
-                ),
-                swapProvider.displayName
-            ))
-            backendOutcome = outcome
-            return true
-        case .pending:
-            advanceUIForPendingObservation()
-            return false
-        }
-    }
-
-    /// Advances the UI on a non-terminal Maya observation, per the active success trigger.
-    private func advanceUIForPendingObservation() {
-        switch Self.successTrigger {
-        case .onObserved:
-            // observedTx is present and not terminal-bad → show success.
-            // Keep polling so backendOutcome is eventually resolved.
-            swapStatus = .completed(outHashes: [])
-        case .onISLock, .onDone, .onDashConfirmation:
-            // For these triggers success is driven elsewhere (IS-lock, Maya done, or the
-            // local block-confirmation observer). While still waiting, only advance
-            // pending → processing; never overwrite a success that was already shown.
-            if case .pendingConfirmation = swapStatus {
+            backendOutcome = .refunded
+            daoCancellable?.cancel()
+        case .pending, .swapping, .notStarted, .unknown, .expired:
+            // `.expired` is a neutral age-out (funds may have arrived) — never flip the live screen
+            // to a failure on it. It only occurs 24 h out, long after this screen is gone.
+            if Self.successTrigger != .onISLock, case .pendingConfirmation = swapStatus {
                 swapStatus = .processingSwap
             }
         }
@@ -680,23 +711,6 @@ final class OrderPreviewViewModel: ObservableObject {
     private var isSuccessAlreadyShown: Bool {
         if case .completed = swapStatus { return true }
         return false
-    }
-
-    /// Maps a `SwapStatusResult` to a `SwapBackendOutcome`.
-    ///
-    /// Normalised status strings:
-    /// - `"done"`               — funds arrived at destination chain (terminal success)
-    /// - `"refunded"/"aborted"` — sent DASH was returned (terminal, treated as failure for UX)
-    /// - anything else          → `.pending`
-    private static func classifyStatus(_ result: SwapStatusResult) -> SwapBackendOutcome {
-        switch result.observedStatus {
-        case "done":
-            return .done(outHashes: result.outHashes ?? [])
-        case "refunded", "aborted":
-            return .refunded
-        default:
-            return .pending
-        }
     }
 
     private func applyQuote(_ quote: SwapQuoteResult) {

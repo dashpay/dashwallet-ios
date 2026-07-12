@@ -28,7 +28,6 @@ struct BuyEnterAmountView: View {
     }
 
     @StateObject private var viewModel: BuyEnterAmountViewModel
-    @StateObject private var reachability = NetworkReachabilityMonitor()
     @State private var showLocalCurrency = false
     private let onBack: (() -> Void)?
     private let onContinue: (SwapCryptoCurrency, String) -> Void
@@ -46,18 +45,16 @@ struct BuyEnterAmountView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } })
-            TopIntro(title: viewModel.title, subtitle: viewModel.subtitle)
-                .padding(.horizontal, Layout.hPadding)
-                .padding(.bottom, 6)
+            TopIntro(
+                title: NSLocalizedString("Enter Amount", comment: "Dash DEX")
+            )
+            .padding(.horizontal, Layout.hPadding)
+            .padding(.bottom, 6)
+
             amountSection
-            if reachability.isOnline {
-                keyboard
-            } else {
-                NetworkUnavailableStateView()
-                    .frame(maxWidth: .infinity, maxHeight: 320)
-                    .padding(.horizontal, Layout.hPadding)
-            }
+            keyboard
         }
+        .dexOfflineToast(isOnline: viewModel.isOnline)
         .sheet(isPresented: $showLocalCurrency) {
             let dialog = BottomSheet(
                 showBackButton: Binding<Bool>.constant(false)
@@ -84,9 +81,8 @@ struct BuyEnterAmountView: View {
                 value: $viewModel.inputValue,
                 selectedCurrency: $viewModel.selectedCurrency,
                 options: viewModel.currencyOptions,
-                // EnterAmountView's single layout always renders Max; keep it inert for Buy.
-                onMax: { },
-                onCurrencyTap: { showLocalCurrency = true }
+                onCurrencyTap: { showLocalCurrency = true },
+                hidesSelectedOption: true
             )
             .frame(height: 70)
 

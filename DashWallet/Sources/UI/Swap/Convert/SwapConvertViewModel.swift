@@ -51,6 +51,8 @@ final class SwapConvertViewModel: ObservableObject {
     // MARK: - Private State
 
     private let swapProvider: SwapProvider
+    private let networkStatus: NetworkStatusProviding
+    @Published private(set) var isOnline: Bool
     private var amount = SwapConvertAmount()
     private var latestQuote: SwapQuoteResult?
     private var effectiveSellSatoshis: Int64?
@@ -117,22 +119,25 @@ final class SwapConvertViewModel: ObservableObject {
     }
 
     var canOpenOrderPreview: Bool {
-        guard isActionEnabled && !isLoading else { return false }
+        guard isActionEnabled && !isLoading && isOnline else { return false }
         return latestQuote != nil
     }
 
     // MARK: - Init
 
-    init(coin: SwapCryptoCurrency, address: String, swapProvider: SwapProvider = MayaSwapProvider()) {
+    init(coin: SwapCryptoCurrency, address: String, swapProvider: SwapProvider = MayaSwapProvider(), networkStatus: NetworkStatusProviding = NetworkStatusService.shared) {
         self.coin = coin
         self.address = address
         self.swapProvider = swapProvider
+        self.networkStatus = networkStatus
+        self.isOnline = networkStatus.isOnline
         let initialFiat = App.fiatCurrency
         self.currentFiatCurrency = initialFiat
         self.selectedCurrency = .fiat(initialFiat)
         initializeRates()
         observeInput()
         observeCurrencySwitch()
+        subscribeToNetworkStatus()
         Task { await fetchCryptoRate() }
     }
 
@@ -193,6 +198,16 @@ final class SwapConvertViewModel: ObservableObject {
         )
     }
 
+    // MARK: - Private: Network Status
+
+    private func subscribeToNetworkStatus() {
+        networkStatus.statusPublisher
+            .sink { [weak self] status in
+                self?.isOnline = status == .online
+            }
+            .store(in: &cancellables)
+    }
+
     // MARK: - Private: Rate Initialisation
 
     private func initializeRates() {
@@ -247,7 +262,7 @@ final class SwapConvertViewModel: ObservableObject {
         let satoshis = activeSellSatoshis
         let accountBalance = Int64(DWEnvironment.sharedInstance().currentAccount.balance)
         errorMessage = satoshis > accountBalance
-            ? NSLocalizedString("Insufficient balance", comment: "Maya")
+            ? NSLocalizedString("Insufficient balance", comment: "Dash DEX")
             : nil
     }
 
@@ -280,7 +295,7 @@ final class SwapConvertViewModel: ObservableObject {
         latestQuote = nil
         receiveAmount = nil
         if apiError.contains("not enough asset to pay for fees") {
-            errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Maya")
+            errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Dash DEX")
         } else if apiError.localizedCaseInsensitiveContains("noRoutesFound") {
             errorMessage = NSLocalizedString("No routes available for this coin right now", comment: "Swap")
         } else if apiError.localizedCaseInsensitiveContains("invalidDestinationAddress") {
@@ -295,7 +310,7 @@ final class SwapConvertViewModel: ObservableObject {
                 chainLabel
             )
         } else {
-            errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Maya")
+            errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Dash DEX")
         }
     }
 
@@ -355,11 +370,11 @@ final class SwapConvertViewModel: ObservableObject {
         case .exchangeRateUnavailable:
             isLoading = false
             clearQuoteState()
-            errorMessage = NSLocalizedString("Exchange rate not available", comment: "Maya")
+            errorMessage = NSLocalizedString("Exchange rate not available", comment: "Dash DEX")
         case .insufficientBalance:
             isLoading = false
             clearQuoteState(keepingEffectiveSell: effectiveSellSatoshis != nil)
-            errorMessage = NSLocalizedString("Insufficient balance", comment: "Maya")
+            errorMessage = NSLocalizedString("Insufficient balance", comment: "Dash DEX")
         case .valid(let satoshis):
             errorMessage = nil
             isLoading = true
