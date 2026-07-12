@@ -52,11 +52,12 @@ tx decoding (`TransactionDecoder`, key-wallet-ffi route), DashPay fee threading,
 and the filter-rescan FFI (#4099). The `local/tx-decode-plus-v4.1-dev-dashwallet`
 integration branch is retired.
 
-One open nuance: the fee VALUE `send_payment` returns on plain `v4.1-dev` is
-still the builder's size-based estimate until
-[platform #4049](https://github.com/dashpay/platform/pull/4049) (rust-dashcore
-pin bump picking up dashpay/rust-dashcore#872) merges — a ≤546-duff display
-nuance on the pay-to-contact success screen, not a compile/behavior blocker.
+No open nuances: the verified tip `0bfdc5745c` IS the merge of
+[platform #4049](https://github.com/dashpay/platform/pull/4049), so
+`send_payment` returns the exact fee (Σinputs − Σoutputs via
+dashpay/rust-dashcore#872) and the faucet captcha's aggregate
+proof-of-work cap ([#4100](https://github.com/dashpay/platform/pull/4100))
+is included as well.
 
 After changing the platform checkout, rebuild both xcframework slices from
 `../platform/packages/swift-sdk`:
