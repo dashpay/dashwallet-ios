@@ -38,15 +38,20 @@ class SelectCoinViewModel: ObservableObject {
     private var swapProvider: SwapProvider
     private let direction: SwapDirection
     private var lastLoadedCoinSignature: [String] = []
+    private let networkStatus: NetworkStatusProviding
+    private var networkCancellable: AnyCancellable?
 
-    init(swapProvider: SwapProvider = MayaSwapProvider(), direction: SwapDirection = .sell) {
+    init(swapProvider: SwapProvider = MayaSwapProvider(), direction: SwapDirection = .sell, networkStatus: NetworkStatusProviding = NetworkStatusService.shared) {
         self.swapProvider = swapProvider
         self.direction = direction
+        self.networkStatus = networkStatus
+        self.isOnline = networkStatus.isOnline
         if direction == .buy {
             self.swapProvider.onBuyRoutabilityChanged = { [weak self] in
                 Task { await self?.loadCoins(force: true) }
             }
         }
+        subscribeToNetworkStatus()
     }
 
     deinit {
@@ -60,6 +65,7 @@ class SelectCoinViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var hasHaltedCoins: Bool = false
     @Published var showHaltedToast: Bool = false
+    @Published private(set) var isOnline: Bool
 
     /// ID of the last coin the user tapped; used to restore scroll position on back-navigation.
     private(set) var scrollAnchorID: String?
@@ -83,12 +89,26 @@ class SelectCoinViewModel: ObservableObject {
         scrollAnchorID = item.id
     }
 
+    // MARK: - Network Status
+
+    private func subscribeToNetworkStatus() {
+        networkCancellable = networkStatus.statusPublisher
+            .sink { [weak self] status in
+                guard let self else { return }
+                self.isOnline = status == .online
+                if status == .online {
+                    Task { await self.loadCoins() }
+                }
+            }
+    }
+
     // MARK: - Loading
 
     /// Loads coins from the network.
     /// Skips the network call if coins are already loaded and there is no pending error,
     /// which prevents the `.task` re-fire on back-navigation from resetting the scroll position.
     func loadCoins(force: Bool = false) async {
+        guard isOnline else { return }
         guard force || coins.isEmpty || errorMessage != nil else { return }
         let shouldShowLoading = coins.isEmpty || errorMessage != nil
         if shouldShowLoading {

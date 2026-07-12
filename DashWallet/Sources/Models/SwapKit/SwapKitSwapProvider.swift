@@ -865,8 +865,8 @@ final class SwapKitSwapProvider: SwapProvider {
             return SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil)
 
         case "swapping":
-            // SwapKit is actively routing the swap (intermediate state between pending and completed).
-            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "pending", outHashes: nil)
+            // SwapKit is actively routing the swap; surface as "swapping" for per-order status tracking.
+            return SwapStatusResult(error: nil, isObserved: true, observedStatus: "swapping", outHashes: nil)
 
         case "completed":
             let outHashes = extractOutHashes(from: response)

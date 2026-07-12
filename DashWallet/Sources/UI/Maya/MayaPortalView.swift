@@ -24,17 +24,23 @@ struct MayaPortalView: View {
     var onBack: () -> Void
     var onConvertDash: (() -> Void)?
 
+    @State private var isOnline: Bool = NetworkStatusService.shared.isOnline
+
     var body: some View {
         SwapPortalScaffold(
             logoIcon: .custom("maya-illustration"),
-            title: NSLocalizedString("Maya", comment: "Maya Portal"),
+            title: NSLocalizedString("Maya", comment: "Dash DEX"),
             description: NSLocalizedString(
                 "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet",
-                comment: "Maya Portal"
+                comment: "Dash DEX"
             ),
+            isOnline: isOnline,
             onBack: onBack,
             onSellDash: onConvertDash
         )
+        .onReceive(NetworkStatusService.shared.statusPublisher) { status in
+            isOnline = status == .online
+        }
     }
 }
 

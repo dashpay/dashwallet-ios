@@ -25,7 +25,6 @@ import UIKit
 
 struct EnterAddressView: View {
     @ObservedObject var viewModel: EnterAddressViewModel
-    @StateObject private var reachability = NetworkReachabilityMonitor()
     var onBack: (() -> Void)?
     var onScanQR: (() -> Void)?
     var onContinue: ((String) -> Void)?
@@ -41,31 +40,20 @@ struct EnterAddressView: View {
                 DashUIKit.NavigationBar(
                     leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } },
                     central: {
-                        Text(NSLocalizedString("Enter address", comment: "Maya"))
+                        Text(NSLocalizedString("Enter address", comment: "Dash DEX"))
                             .dashFont(.subheadMedium)
                             .foregroundColor(Color.dash.primaryText)
                     }
                 )
 
-                // Offline: hide the whole address-entry content (address sources and the
-                // server-side address validation both need network) and show the offline state,
-                // matching Convert / Order Preview. Continue stays disabled below.
-                if reachability.isOnline {
-                    addressContent
-                } else {
-                    NetworkUnavailableStateView()
-                        .frame(maxWidth: .infinity)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 40)
-
-                    Spacer(minLength: 0)
-                }
+                addressContent
 
                 continueButton
                     .padding(.horizontal, 60)
                     .padding(.bottom, 16)
             }
         }
+        .dexOfflineToast(isOnline: viewModel.isOnline)
         .onChange(of: viewModel.addressText) { _ in
             viewModel.onAddressChanged()
         }
@@ -90,10 +78,12 @@ struct EnterAddressView: View {
                 addressField
                 addressSourcesMenu
 
-                if let clipboardContent = viewModel.clipboardContent {
-                    clipboardContentRow(clipboardContent)
-                } else if viewModel.hasClipboardCandidate {
-                    clipboardPermissionRow
+                if viewModel.addressText.isEmpty {
+                    if let clipboardContent = viewModel.clipboardContent {
+                        clipboardContentRow(clipboardContent)
+                    } else if viewModel.hasClipboardCandidate {
+                        clipboardPermissionRow
+                    }
                 }
             }
             .modifier(MenuViewModifier())
@@ -111,7 +101,8 @@ struct EnterAddressView: View {
             placeholder: viewModel.placeholderText,
             hasError: viewModel.showAddressError,
             errorText: viewModel.addressValidationErrorMessage ?? viewModel.errorMessage,
-            onScanQR: onScanQR
+            onScanQR: onScanQR,
+            onPaste: { viewModel.pasteFromClipboard() }
         )
         .padding(14)
     }
@@ -120,7 +111,7 @@ struct EnterAddressView: View {
 
     private var addressSourcesMenu: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(NSLocalizedString("Paste address from", comment: "Maya"))
+            Text(NSLocalizedString("Paste address from", comment: "Dash DEX"))
                 .dashFont(.footnote)
                 .foregroundColor(Color.dash.tertiaryText)
                 .padding(.vertical, 10)
@@ -144,8 +135,8 @@ struct EnterAddressView: View {
         Button(action: { viewModel.pasteFromClipboard() }) {
             DashUIKit.MenuItem(
                 leadingIcon: .custom("masternode-keys"),
-                title: NSLocalizedString("Clipboard", comment: "Maya"),
-                helpText: NSLocalizedString("Show content in the clipboard", comment: "Maya"),
+                title: NSLocalizedString("Clipboard", comment: "Dash DEX"),
+                helpText: NSLocalizedString("Show content in the clipboard", comment: "Dash DEX"),
                 accessory: .none
             )
         }
@@ -192,10 +183,12 @@ struct EnterAddressView: View {
 
     private func helpText(for state: AddressSourceState) -> String? {
         switch state {
-        case .available(let address): return address
-        case .notAvailable:           return NSLocalizedString("Not available", comment: "Maya")
-        case .loading:                return NSLocalizedString("Loading...", comment: "Maya")
-        case .loggedOut:              return nil
+        case .available(let address):
+            guard address.count > 20 else { return address }
+            return "\(address.prefix(10))…\(address.suffix(8))"
+        case .notAvailable: return NSLocalizedString("Not available", comment: "Dash DEX")
+        case .loading:      return NSLocalizedString("Loading...", comment: "Dash DEX")
+        case .loggedOut:    return nil
         }
     }
 
@@ -206,7 +199,7 @@ struct EnterAddressView: View {
         switch state {
         case .loggedOut:
             return .button(DashUIKit.DashButton(
-                text: NSLocalizedString("Log In", comment: "Maya"),
+                text: NSLocalizedString("Log In", comment: "Dash DEX"),
                 size: .small,
                 style: .plainBlue,
                 action: onTap
@@ -221,7 +214,7 @@ struct EnterAddressView: View {
     private var continueButton: some View {
         DashUIKit.DashButton(
             text: NSLocalizedString("Continue", comment: ""),
-            isEnabled: viewModel.isContinueEnabled && reachability.isOnline,
+            isEnabled: viewModel.isContinueEnabled && viewModel.isOnline,
             fillsWidth: true,
             size: .large,
             style: .filledBlue,

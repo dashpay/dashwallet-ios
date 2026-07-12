@@ -33,3 +33,11 @@ enum MayaConstants {
         URL(string: "https://www.mayascan.org/tx/\(txHash)")!
     }
 }
+
+enum NearConstants {
+    static let explorerHomeURL = URL(string: "https://explorer.near-intents.org/")!
+
+    static func explorerTransactionURL(depositAddress: String) -> URL {
+        URL(string: "https://explorer.near-intents.org/transactions/\(depositAddress)")!
+    }
+}

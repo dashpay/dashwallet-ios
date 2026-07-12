@@ -33,16 +33,29 @@ final class BuyReceiveViewModel: ObservableObject {
     @Published var qrImage: UIImage?
     @Published private var confirmedSellAmount: String = ""
 
-    private let refundAddress: String
-    private let sellAmount: String
-    private let swapProvider: SwapProvider
-
-    init(coin: SwapCryptoCurrency, refundAddress: String, sellAmount: String, swapProvider: SwapProvider) {
+    init(coin: SwapCryptoCurrency, order: BuyOrder) {
         self.coin = coin
         self.coinCode = coin.code
-        self.refundAddress = refundAddress.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.sellAmount = sellAmount.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.swapProvider = swapProvider
+
+        let addr = order.depositAddress
+        let amount = order.sellAmount
+
+        self.depositAddress = addr
+        self.confirmedSellAmount = amount
+
+        let uriString = SwapDepositURIBuilder.uri(
+            for: coin,
+            address: addr,
+            amount: amount,
+            memo: order.memo
+        )
+        self.uri = uriString
+
+        let trimmedMemo = order.memo?.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.memoText = trimmedMemo?.isEmpty == true ? nil : trimmedMemo
+
+        let qrStr = uriString.isEmpty ? addr : uriString
+        self.qrImage = Self.generateQRCode(from: qrStr)
     }
 
     var title: String {
@@ -54,7 +67,7 @@ final class BuyReceiveViewModel: ObservableObject {
     }
 
     var subtitle: String {
-        NSLocalizedString("Once the network confirms your transfer, we'll convert it to Dash and deposit it in your Dash Wallet.", comment: "Dash DEX")
+        NSLocalizedString("Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet", comment: "Dash DEX / dex_receive_description")
     }
 
     var copyText: String {
@@ -64,19 +77,14 @@ final class BuyReceiveViewModel: ObservableObject {
     }
 
     /// True when the deposit URI is a bare address with no amount or memo embedded.
-    /// This covers both non-EVM/non-UTXO chains (Solana, NEAR, XRP…) and EVM tokens
-    /// whose decimals are unknown (URI falls back to bare address per SwapDepositURIBuilder).
     var isBareURI: Bool {
-        // After loading: a bare URI equals the deposit address exactly.
         if !isLoading, !depositAddress.isEmpty {
             return uri == depositAddress
         }
-        // Before loading: use chain-level heuristic (non-EVM, non-UTXO).
         return SwapDepositURIBuilder.isBareURI(for: coin)
     }
 
     /// Amount string to display when the URI cannot carry it (bare-address chains only).
-    /// Driven by order.sellAmount (set after createBuyOrder), not the raw pre-order input.
     var displaySendAmount: String? {
         guard isBareURI else { return nil }
         let trimmed = confirmedSellAmount.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -86,63 +94,19 @@ final class BuyReceiveViewModel: ObservableObject {
     }
 
     var qrContent: String {
-        // Encode the full payment URI (BIP21 for UTXO, EIP-681 for EVM, bare address elsewhere),
-        // matching Android so a scanning wallet auto-fills token + network + recipient + amount.
         copyText
     }
 
     func load() async {
-        isLoading = true
-        errorMessage = nil
-        depositAddress = ""
-        uri = ""
-        memoText = nil
-        qrImage = nil
-        defer { isLoading = false }
-
-        guard !coin.swapAsset.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-              !refundAddress.isEmpty,
-              !sellAmount.isEmpty else {
-            errorMessage = NSLocalizedString("Missing swap details", comment: "Dash DEX")
-            return
-        }
-
-        guard let destinationAddress = DWEnvironment.sharedInstance().currentAccount.receiveAddress, !destinationAddress.isEmpty else {
-            errorMessage = NSLocalizedString("Missing swap details", comment: "Dash DEX")
-            return
-        }
-
-        do {
-            let order = try await swapProvider.createBuyOrder(
-                sellAsset: coin.swapAsset,
-                sellAmount: sellAmount,
-                destination: destinationAddress,
-                refundAddress: refundAddress
-            )
-
-            depositAddress = order.depositAddress
-            confirmedSellAmount = order.sellAmount
-            uri = SwapDepositURIBuilder.uri(
-                for: coin,
-                address: order.depositAddress,
-                amount: order.sellAmount,
-                memo: order.memo
-            )
-            let trimmedMemo = order.memo?.trimmingCharacters(in: .whitespacesAndNewlines)
-            memoText = trimmedMemo?.isEmpty == true ? nil : trimmedMemo
-            qrImage = generateQRCode(from: qrContent)
-        } catch {
-            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-        }
+        // Order was created on the Refund Address screen; everything is resolved in init.
     }
 
-    private func generateQRCode(from string: String) -> UIImage? {
+    private static func generateQRCode(from string: String) -> UIImage? {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty,
               let data = trimmed.data(using: .utf8) else {
             return nil
         }
-
         return UIImage.dw_image(withQRCodeData: data, color: CIColor(color: UIColor.label))
     }
 }
