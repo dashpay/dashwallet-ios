@@ -204,14 +204,11 @@ final class OrderPreviewViewModel: ObservableObject {
     }
 
     var confirmButtonText: String {
-        if remainingSubmitSeconds > 0 {
-            return String(
-                format: NSLocalizedString("Confirm (%lds)", comment: "Dash DEX"),
-                CLong(remainingSubmitSeconds)
-            )
-        } else {
-            return NSLocalizedString("Refresh quote", comment: "Dash DEX")
-        }
+        // The countdown is shown separately as `timerText`, so the button is just "Confirm"
+        // while the quote is live, and switches to "Refresh quote" once it expires.
+        remainingSubmitSeconds > 0
+            ? NSLocalizedString("Confirm", comment: "Dash DEX")
+            : NSLocalizedString("Refresh quote", comment: "Dash DEX")
     }
 
     private var dashSatoshis: Int64

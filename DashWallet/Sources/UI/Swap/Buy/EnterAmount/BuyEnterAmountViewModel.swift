@@ -272,7 +272,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
                 return
             }
             let d = (amount.crypto as NSDecimalNumber).doubleValue
-            inputValue = SwapInputFormatter.trimTrailingZeros(String(format: "%.8f", d))
+            inputValue = SwapInputFormatter.trimTrailingZeros(String(format: "%.5f", d))
         }
     }
 
@@ -307,7 +307,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
         switch currency {
         case .fiat: maxDecimals = 2
         case .dash: maxDecimals = 5
-        case .coin: maxDecimals = 8
+        case .coin: maxDecimals = 5
         }
 
         if let dotRange = s.range(of: ".") {
@@ -330,7 +330,7 @@ final class BuyEnterAmountViewModel: ObservableObject {
 
         var rounded = Decimal()
         var input = value
-        NSDecimalRound(&rounded, &input, 8, .plain)
+        NSDecimalRound(&rounded, &input, 5, .plain)
 
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -338,13 +338,21 @@ final class BuyEnterAmountViewModel: ObservableObject {
         formatter.decimalSeparator = "."
         formatter.usesGroupingSeparator = false
         formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 8
+        formatter.maximumFractionDigits = 5
 
         return formatter.string(from: rounded as NSDecimalNumber) ?? rounded.string
     }
 
     private static func validationMessage(from error: Error) -> String {
-        NSLocalizedString(
+        let raw = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+        if raw.localizedCaseInsensitiveContains("noRoutesFound") {
+            return NSLocalizedString(
+                "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
+                comment: "Dash DEX / dex_error_no_route"
+            )
+        }
+
+        return NSLocalizedString(
             "This amount can't be swapped right now. Try a different amount, or try again shortly.",
             comment: "Dash DEX / dex_enter_amount_invalid"
         )

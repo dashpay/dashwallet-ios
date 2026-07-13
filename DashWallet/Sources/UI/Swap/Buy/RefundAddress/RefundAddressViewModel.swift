@@ -26,6 +26,7 @@ final class RefundAddressViewModel: ObservableObject {
     let coin: SwapCryptoCurrency
     let sellAmount: String
     let swapProvider: SwapProvider
+    private let swapOrdersDAO: SwapOrdersDAO
     private let networkStatus: NetworkStatusProviding
     private var cancellables = Set<AnyCancellable>()
 
@@ -75,10 +76,17 @@ final class RefundAddressViewModel: ObservableObject {
         )
     }
 
-    init(coin: SwapCryptoCurrency, sellAmount: String, swapProvider: SwapProvider, networkStatus: NetworkStatusProviding = NetworkStatusService.shared) {
+    init(
+        coin: SwapCryptoCurrency,
+        sellAmount: String,
+        swapProvider: SwapProvider,
+        swapOrdersDAO: SwapOrdersDAO = SwapOrdersDAOImpl.shared,
+        networkStatus: NetworkStatusProviding = NetworkStatusService.shared
+    ) {
         self.coin = coin
         self.sellAmount = sellAmount
         self.swapProvider = swapProvider
+        self.swapOrdersDAO = swapOrdersDAO
         self.networkStatus = networkStatus
         self.isOnline = networkStatus.isOnline
         subscribeToNetworkStatus()
@@ -162,20 +170,20 @@ final class RefundAddressViewModel: ObservableObject {
                 destination: destination,
                 refundAddress: candidate
             )
-            persistBuyOrder(order, dashDestination: destination)
+            try await persistBuyOrder(order, dashDestination: destination)
             return order
         } catch {
-            orderError = SwapKitErrorCopy.message(
-                for: (error as? LocalizedError)?.errorDescription ?? error.localizedDescription,
-                coin: coin
-            )
+            let raw = (error as NSError).localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+            orderError = raw.isEmpty
+                ? NSLocalizedString("We couldn't save this swap order. Please try again.", comment: "Dash DEX")
+                : raw
             return nil
         }
     }
 
     // MARK: - Private: Order persistence
 
-    private func persistBuyOrder(_ order: BuyOrder, dashDestination: String) {
+    private func persistBuyOrder(_ order: BuyOrder, dashDestination: String) async throws {
         // Buy orders always use SwapKit (Maya doesn't support Buy).
         let swapOrder = SwapOrder(
             id: order.depositAddress,
@@ -188,9 +196,7 @@ final class RefundAddressViewModel: ObservableObject {
             expectedToAmount: "\(order.expectedDashAmount)",
             status: .notStarted
         )
-        Task {
-            await SwapOrdersDAOImpl.shared.create(dto: swapOrder)
-        }
+        try await swapOrdersDAO.save(dto: swapOrder)
     }
 
     private var isAddressValid: Bool {
