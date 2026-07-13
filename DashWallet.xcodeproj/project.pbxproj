@@ -610,6 +610,8 @@
 		7503643F2C89D49A0029EC0D /* CoinJoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7503643D2C89D49A0029EC0D /* CoinJoinService.swift */; };
 		75050CCE2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */; };
 		75050CCF2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */; };
+		AA0030212FD0000000000021 /* CoinbaseMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030202FD0000000000020 /* CoinbaseMetadataProvider.swift */; };
+		AA0030222FD0000000000022 /* CoinbaseMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030202FD0000000000020 /* CoinbaseMetadataProvider.swift */; };
 		75050CD12DF2FCC200F586D6 /* ServiceName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CD02DF2FCBF00F586D6 /* ServiceName.swift */; };
 		75050CD22DF2FCC200F586D6 /* ServiceName.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75050CD02DF2FCBF00F586D6 /* ServiceName.swift */; };
 		750CED602C94BFD7000FB837 /* SettingsMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */; };
@@ -915,7 +917,9 @@
 		AA0030022FD0000000000002 /* SwapOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030012FD0000000000001 /* SwapOrder.swift */; };
 		AA0030032FD0000000000003 /* SwapOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030012FD0000000000001 /* SwapOrder.swift */; };
 		AA0030052FD0000000000005 /* SwapTrackingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030042FD0000000000004 /* SwapTrackingService.swift */; };
+		AA00301B2FD000000000001B /* SwapBuyTransactionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00301A2FD000000000001A /* SwapBuyTransactionMatcher.swift */; };
 		AA0030062FD0000000000006 /* SwapTrackingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030042FD0000000000004 /* SwapTrackingService.swift */; };
+		AA00301C2FD000000000001C /* SwapBuyTransactionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00301A2FD000000000001A /* SwapBuyTransactionMatcher.swift */; };
 		AA0030092FD0000000000009 /* SwapOrdersDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030082FD0000000000008 /* SwapOrdersDAO.swift */; };
 		AA00300A2FD000000000000A /* SwapOrdersDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030082FD0000000000008 /* SwapOrdersDAO.swift */; };
 		AA00300C2FD000000000000C /* AddSwapOrdersTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00300B2FD000000000000B /* AddSwapOrdersTable.swift */; };
@@ -2741,6 +2745,7 @@
 		750364392C89CFB70029EC0D /* CoinJoinProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinProgressView.swift; sourceTree = "<group>"; };
 		7503643D2C89D49A0029EC0D /* CoinJoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinService.swift; sourceTree = "<group>"; };
 		75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardMetadataProvider.swift; sourceTree = "<group>"; };
+		AA0030202FD0000000000020 /* CoinbaseMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseMetadataProvider.swift; sourceTree = "<group>"; };
 		75050CD02DF2FCBF00F586D6 /* ServiceName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceName.swift; sourceTree = "<group>"; };
 		7509C10E1AF3076100D03FD5 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		7509C1121AF3720100D03FD5 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -2949,6 +2954,7 @@
 		AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardProvider.swift; sourceTree = "<group>"; };
 		AA0030012FD0000000000001 /* SwapOrder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapOrder.swift; sourceTree = "<group>"; };
 		AA0030042FD0000000000004 /* SwapTrackingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapTrackingService.swift; sourceTree = "<group>"; };
+		AA00301A2FD000000000001A /* SwapBuyTransactionMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapBuyTransactionMatcher.swift; sourceTree = "<group>"; };
 		AA0030082FD0000000000008 /* SwapOrdersDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapOrdersDAO.swift; sourceTree = "<group>"; };
 		AA00300B2FD000000000000B /* AddSwapOrdersTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSwapOrdersTable.swift; sourceTree = "<group>"; };
 		AA00300E2FD000000000000E /* SwapOrderMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapOrderMetadataProvider.swift; sourceTree = "<group>"; };
@@ -6631,6 +6637,7 @@
 			isa = PBXGroup;
 			children = (
 				75050CCD2DF2CB0E00F586D6 /* GiftCardMetadataProvider.swift */,
+				AA0030202FD0000000000020 /* CoinbaseMetadataProvider.swift */,
 				7549BE562DEAECB0004F0BAF /* CustomIconMetadataProvider.swift */,
 				AA00300E2FD000000000000E /* SwapOrderMetadataProvider.swift */,
 			);
@@ -7059,6 +7066,7 @@
 			children = (
 				AA0030012FD0000000000001 /* SwapOrder.swift */,
 				AA0030042FD0000000000004 /* SwapTrackingService.swift */,
+				AA00301A2FD000000000001A /* SwapBuyTransactionMatcher.swift */,
 				AA0030072FD0000000000007 /* DAO */,
 				AA0020012FA0000000000013 /* SwapExecutionData.swift */,
 				B1600000B1600000B1600001 /* SwapKitErrorCopy.swift */,
@@ -9551,6 +9559,7 @@
 				C956AF2D2A5CEA1F002FAB75 /* SheetViewController.swift in Sources */,
 				C9C1335A2A561FFA00B66651 /* PasteboardContentView.swift in Sources */,
 				75050CCF2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */,
+				AA0030212FD0000000000021 /* CoinbaseMetadataProvider.swift in Sources */,
 				C909615929F29C9200002D82 /* KeysOverviewCell.swift in Sources */,
 				2ACCD86E2319609400A96B62 /* UIViewController+DWShareReceiveInfo.m in Sources */,
 				114D16B829828BCC009A124C /* OnlineAccountConfirmationController.swift in Sources */,
@@ -9644,6 +9653,7 @@
 				AA00300C2FD000000000000C /* AddSwapOrdersTable.swift in Sources */,
 				AA0030022FD0000000000002 /* SwapOrder.swift in Sources */,
 				AA0030052FD0000000000005 /* SwapTrackingService.swift in Sources */,
+				AA00301B2FD000000000001B /* SwapBuyTransactionMatcher.swift in Sources */,
 				AA0030092FD0000000000009 /* SwapOrdersDAO.swift in Sources */,
 				AA00300F2FD000000000000F /* SwapOrderMetadataProvider.swift in Sources */,
 				AA0000042DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
@@ -10388,6 +10398,7 @@
 				C943B5352A40A54600AF23C5 /* DWNotificationsViewController.m in Sources */,
 				C9D2C7612A320AA000D15901 /* DWTransactionListDataItemObject.m in Sources */,
 				75050CCE2DF2CB0F00F586D6 /* GiftCardMetadataProvider.swift in Sources */,
+				AA0030222FD0000000000022 /* CoinbaseMetadataProvider.swift in Sources */,
 				C943B3362A408CED00AF23C5 /* DWEditProfileBaseCell.m in Sources */,
 				C930784A2A6AD52400906E4B /* UpholdConfirmTransferModel.swift in Sources */,
 				C9D2C7622A320AA000D15901 /* DWUpholdAPIProvider.m in Sources */,
@@ -10571,6 +10582,7 @@
 				AA00300D2FD000000000000D /* AddSwapOrdersTable.swift in Sources */,
 				AA0030032FD0000000000003 /* SwapOrder.swift in Sources */,
 				AA0030062FD0000000000006 /* SwapTrackingService.swift in Sources */,
+				AA00301C2FD000000000001C /* SwapBuyTransactionMatcher.swift in Sources */,
 				AA00300A2FD000000000000A /* SwapOrdersDAO.swift in Sources */,
 				AA0030102FD0000000000010 /* SwapOrderMetadataProvider.swift in Sources */,
 				AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
@@ -11110,7 +11122,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -11147,7 +11159,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -11183,7 +11195,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -11219,7 +11231,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -11380,7 +11392,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -11511,7 +11523,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11648,7 +11660,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11683,7 +11695,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -11718,7 +11730,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -11740,7 +11752,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -11760,7 +11772,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3BA20785E162F1AF2F455D9C /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -11787,7 +11799,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4457C976B1DB0CF402FF3C5F /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -11815,7 +11827,7 @@
 			baseConfigurationReference = 3B0E86557754B86DD3A389CC /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11844,7 +11856,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11878,7 +11890,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -12014,7 +12026,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -12148,7 +12160,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -12292,7 +12304,7 @@
 				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
 				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -12496,7 +12508,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -12633,7 +12645,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12663,7 +12675,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -12698,7 +12710,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -12718,7 +12730,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EE15E7C0EEFF1E6930A90DA6 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -12817,7 +12829,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -12943,7 +12955,7 @@
 			baseConfigurationReference = AA29A8515217AC4232F794C2 /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12972,7 +12984,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -13007,7 +13019,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
 				IBSC_MODULE = WatchApp_Extension;
@@ -13027,7 +13039,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E2A832899A499C24C7A43E47 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 14;
+				CURRENT_PROJECT_VERSION = 20;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";

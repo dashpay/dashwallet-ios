@@ -120,7 +120,7 @@ struct OrderPreviewView: View {
                 .padding(.horizontal, 20)
 
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Confirm", comment: "Dash DEX"),
+                    text: viewModel.confirmButtonText,
                     isEnabled: !(viewModel.isSubmitting || viewModel.isRefreshing || !viewModel.isOnline),
                     fillsWidth: true,
                     size: .large,

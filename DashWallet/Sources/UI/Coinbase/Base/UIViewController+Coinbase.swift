@@ -22,12 +22,26 @@ extension BaseViewController {
         let vc = SuccessfulOperationStatusViewController.initiate(from: sb("OperationStatus"))
         vc.closeHandler = { [weak self] in
             guard let wSelf = self else { return }
-            guard let rootController = wSelf.navigationController?.controller(by: IntegrationViewController.self) else {
-                wSelf.navigationController?.popToRootViewController(animated: true)
+            let nav = wSelf.navigationController
+
+            // Dismiss any lingering overlay before we change the navigation stack.
+            if let presented = nav?.presentedViewController ?? wSelf.presentedViewController {
+                presented.dismiss(animated: false)
+            }
+
+            if let coinbaseRoot = nav?.controller(by: IntegrationViewController.self) {
+                nav?.popToViewController(coinbaseRoot, animated: true)
                 return
             }
 
-            wSelf.navigationController?.popToViewController(rootController, animated: true)
+            if let nav, nav.viewControllers.count > 1 {
+                nav.popToRootViewController(animated: true)
+                if nav.presentingViewController != nil {
+                    nav.dismiss(animated: true)
+                }
+            } else {
+                nav?.dismiss(animated: true) ?? wSelf.dismiss(animated: true)
+            }
         }
         vc.headerText = NSLocalizedString("Transfer successful", comment: "Coinbase")
         vc.descriptionText = text
@@ -120,7 +134,21 @@ extension CoinbaseTransactionHandling where Self: BaseViewController {
     }
 
     func transferFromCoinbaseToWalletDidSucceed() {
+        let successText = NSLocalizedString(
+            "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
+            comment: "Coinbase"
+        )
+
+        if let confirmationController = codeConfirmationController,
+           confirmationController.presentingViewController != nil {
+            codeConfirmationController = nil
+            confirmationController.dismiss(animated: false) { [weak self] in
+                self?.showSuccessTransactionStatus(text: successText)
+            }
+            return
+        }
+
         codeConfirmationController = nil
-        showSuccessTransactionStatus(text: NSLocalizedString("It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device", comment: "Coinbase"))
+        showSuccessTransactionStatus(text: successText)
     }
 }

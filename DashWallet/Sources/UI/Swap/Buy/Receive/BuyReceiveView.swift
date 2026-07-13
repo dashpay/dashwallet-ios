@@ -77,6 +77,7 @@ struct BuyReceiveView: View {
                             style: .tintedGray,
                             action: onBackHome
                         )
+                        .padding(.horizontal, 40)
                     }
                     .padding(.horizontal, Layout.hPadding)
                     .padding(.top, Layout.topPadding)

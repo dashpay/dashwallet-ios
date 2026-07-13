@@ -25,10 +25,10 @@ import DashUIKit
 /// - **Sell**: `order.id` is `tx.txHashHexString` (reversed-byte Bitcoin display form).
 ///   `tx.txHashData` (the metadata dict key) equals the byte-reversed form of that hex.
 ///   Convert: `Data(hex: order.id).map { Data($0.reversed()) }`.
-/// - **Buy**: walk `DWEnvironment.sharedInstance().currentWallet.allTransactions` and find
-///   the tx whose output pays `order.toAddress` (the unique Dash receive address the DEX
-///   sends DASH into). Return that tx's `txHashData`. This is immediate and requires no
-///   `/track` response — it decorates the row as soon as the funds arrive in the wallet.
+/// - **Buy**: prefer `order.outboundTxHash` once tracking has resolved it, but re-validate
+///   that hash against the precise buy matcher before trusting it. Otherwise walk
+///   `DWEnvironment.sharedInstance().currentWallet.allTransactions` and match the incoming
+///   Dash tx by address + time + approximate amount. Return that tx's `txHashData`.
 ///   Re-resolves on `NSNotification.Name.DSWalletBalanceDidChange` so a buy that lands
 ///   after the order is stored still gets labelled.
 class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
@@ -54,22 +54,28 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
 
         NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in self?.refreshBuyMetadata() }
+            .sink { [weak self] _ in self?.refreshMetadata() }
             .store(in: &cancellables)
     }
 
     // MARK: - Private
 
     private func updateMetadata(from orders: [SwapOrder]) {
+        var current: [Data: TxRowMetadata] = [:]
         for order in orders {
-            guard let txKey = metadataKey(for: order) else { continue }
-            let metadata = makeMetadata(for: order)
+            if let key = metadataKey(for: order) {
+                current[key] = makeMetadata(for: order)
+            }
+        }
 
-            metadataQueue.async { [weak self] in
-                guard let self else { return }
-                self._availableMetadata[txKey] = metadata
-                DispatchQueue.main.async {
-                    self.metadataUpdated.send(txKey)
+        metadataQueue.async { [weak self] in
+            guard let self else { return }
+            let staleKeys = Set(self._availableMetadata.keys).subtracting(current.keys)
+            let changedKeys = Set(current.keys).union(staleKeys)
+            self._availableMetadata = current
+            DispatchQueue.main.async {
+                for key in changedKeys {
+                    self.metadataUpdated.send(key)
                 }
             }
         }
@@ -79,21 +85,29 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         if order.direction == "sell" {
             return Data(hex: order.id).map { Data($0.reversed()) }
         } else {
-            guard !order.toAddress.isEmpty else { return nil }
-            return walletTxHashData(forAddress: order.toAddress)
+            if let outboundTxHash = order.outboundTxHash?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !outboundTxHash.isEmpty,
+               let txHashData = Data(hex: outboundTxHash),
+               let matchingTx = DWEnvironment.sharedInstance().currentWallet.allTransactions.first(
+                    where: { $0.txHashHexString.caseInsensitiveCompare(outboundTxHash) == .orderedSame }
+               ),
+               SwapBuyTransactionMatcher.matchedTransaction(for: order, in: [matchingTx]) != nil {
+                return Data(txHashData.reversed())
+            }
+
+            return walletTxHashData(for: order)
         }
     }
 
-    private func walletTxHashData(forAddress address: String) -> Data? {
-        DWEnvironment.sharedInstance().currentWallet.allTransactions.first { tx in
-            tx.outputAddresses.contains { ($0 as? String) == address }
-        }?.txHashData
+    private func walletTxHashData(for order: SwapOrder) -> Data? {
+        let transactions = DWEnvironment.sharedInstance().currentWallet.allTransactions
+        return SwapBuyTransactionMatcher.walletTxHashData(for: order, in: transactions)
     }
 
-    private func refreshBuyMetadata() {
+    private func refreshMetadata() {
         Task {
-            let buyOrders = await dao.all().filter { $0.direction == "buy" }
-            updateMetadata(from: buyOrders)
+            let orders = await dao.all()
+            updateMetadata(from: orders)
         }
     }
 

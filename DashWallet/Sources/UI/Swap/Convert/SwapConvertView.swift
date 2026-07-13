@@ -198,6 +198,7 @@ struct SwapConvertView: View {
                     Text(error)
                         .font(Font.dash.caption1)
                         .foregroundColor(Color.dash.red)
+                        .multilineTextAlignment(.center)
                 } else if let amount = viewModel.receiveAmount {
                     Text(NSLocalizedString("Receive amount", comment: "Dash DEX"))
                         .font(Font.dash.caption1)
