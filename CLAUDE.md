@@ -941,6 +941,22 @@ if condition1 || additionalCondition || condition3 {
 - Private key protection
 - Secure enclave integration
 
+### 🔒 Secrets Management (MANDATORY — how we avoid leaking credentials)
+**Secrets (API keys, OAuth `client_secret`/`client_id`, tokens, private keys) live ONLY in gitignored files.**
+- ✅ Allowed locations (all gitignored): `*-Info.plist` (`Coinbase-Info.plist`, `ZenLedger-Info.plist`,
+  `Topper-Info.plist`, `GoogleService-Info.plist`), `DWUpholdMainnetConstants__Release.m`, and any
+  `*.xcconfig`. Real values are injected at Release build time; the tracked source holds only `@""`/`$(VAR)`.
+- ❌ NEVER put a real secret in `project.pbxproj` build settings, a tracked `Info.plist`, or a `.swift`/`.m`
+  source file. (This is exactly how the Uphold `client_secret` and the redundant Coinbase `CLIENT_*` leaked.)
+- **A git revert does NOT undo a leak** — the value stays in history and must be treated as compromised.
+  Response = **rotate the credential**, then squash-merge / delete the branch that carried it.
+- **Enforcement (two layers):**
+  1. CI secret scan — `.github/workflows/gitleaks.yml` runs gitleaks on every PR/push; a detected secret
+     fails the check (cannot be bypassed).
+  2. Local pre-commit hook — enable once with `git config core.hooksPath .githooks` (`brew install gitleaks`).
+  Config lives in `.gitleaks.toml`; reviewed false positives go in `.gitleaksignore` (by fingerprint),
+  never by allowlisting the secret string.
+
 ### Multi-target Builds
 - Main app, Today extension, and Watch app share core components
 - Different deployment targets and capabilities per target
