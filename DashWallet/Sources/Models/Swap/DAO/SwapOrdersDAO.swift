@@ -59,7 +59,8 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     func save(dto: SwapOrder) async throws {
         await hydration.value
 
-        let insert = SwapOrder.table.insert(or: .replace,
+        let insert = SwapOrder.table.insert(
+            or: .replace,
             SwapOrder.colId <- dto.id,
             SwapOrder.colDirection <- dto.direction,
             SwapOrder.colService <- dto.service,
@@ -135,10 +136,12 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
     }
 
     nonisolated func observeAll() -> AnyPublisher<[SwapOrder], Never> {
+        Task { await hydration.value }
         allOrdersSubject.eraseToAnyPublisher()
     }
 
     nonisolated func observeActive() -> AnyPublisher<[SwapOrder], Never> {
+        Task { await hydration.value }
         allOrdersSubject
             .map { $0.filter { $0.status.isActive } }
             .eraseToAnyPublisher()

@@ -310,6 +310,9 @@ final class CoinbaseTransactionMetadataTagger {
 
     private let metadataDao = TransactionMetadataDAOImpl.shared
     private let queue = DispatchQueue(label: "CoinbaseTransactionMetadataTagger.queue", qos: .utility)
+    // A wallet receive can land before Coinbase's response completes; if createdAt is missing,
+    // look back a bounded window so we do not permanently miss the matching transaction.
+    private static let receiveLookbackWindow: TimeInterval = 15 * 60
     private var pendingReceiveTransfers: [PendingReceiveTransfer] = []
     private var cancellables = Set<AnyCancellable>()
 
@@ -342,7 +345,8 @@ final class CoinbaseTransactionMetadataTagger {
             return
         }
 
-        let minimumTimestamp = coinbaseTimestamp(from: transaction.createdAt) ?? Date().timeIntervalSince1970
+        let minimumTimestamp = coinbaseTimestamp(from: transaction.createdAt)
+            ?? (Date().timeIntervalSince1970 - Self.receiveLookbackWindow)
 
         queue.async { [weak self] in
             self?.pendingReceiveTransfers.append(
