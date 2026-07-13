@@ -97,7 +97,7 @@ final class SwapTrackingService {
 
         do {
             if order.direction == "buy" {
-                if let walletTxHash = await completedWalletTxHash(for: order.toAddress) {
+                if let walletTxHash = await completedWalletTxHash(for: order) {
                     apiStatus = .completed
                     firstOutHash = walletTxHash
                 } else {
@@ -210,10 +210,8 @@ final class SwapTrackingService {
     }
 
     @MainActor
-    private func completedWalletTxHash(for address: String) -> String? {
-        guard !address.isEmpty else { return nil }
-        return DWEnvironment.sharedInstance().currentWallet.allTransactions.first { tx in
-            tx.outputAddresses.contains { ($0 as? String) == address }
-        }?.txHashHexString
+    private func completedWalletTxHash(for order: SwapOrder) -> String? {
+        let transactions = DWEnvironment.sharedInstance().currentWallet.allTransactions
+        return SwapBuyTransactionMatcher.walletTxHashHexString(for: order, in: transactions)
     }
 }

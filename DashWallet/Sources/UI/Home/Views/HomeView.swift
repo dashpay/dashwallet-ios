@@ -379,6 +379,16 @@ struct HomeViewContent<Content: View>: View {
         .padding(.horizontal, 15)
     }
     
+    /// Base leading icon for a plain tx row (when no metadata icon applies). Reward
+    /// (masternode/mining) rewards use the mining icon instead of the generic received icon,
+    /// since a reward's direction is `.received` and would otherwise show the receive arrow.
+    private func baseRowIcon(for tx: Transaction) -> IconName {
+        if tx.transactionType == .reward {
+            return .custom("transaction-mining", bundle: .dashUIKit)
+        }
+        return .custom(tx.iconName)
+    }
+
     @ViewBuilder
     private func TransactionPreviewFrom(
         txItem txDataItem: TransactionListDataItem
@@ -413,7 +423,7 @@ struct HomeViewContent<Content: View>: View {
         case .tx(let txItem, let metadata):
             DashUIKit.TransactionView(
                 icon: metadata?.icon == nil
-                    ? (metadata?.iconName ?? .custom(txItem.iconName)).dashIconSource
+                    ? (metadata?.iconName ?? baseRowIcon(for: txItem)).dashIconSource
                     : nil,
                 iconView: metadata?.icon.map {
                     AnyView(Image(uiImage: $0).resizable().scaledToFit().clipShape(Circle()))
