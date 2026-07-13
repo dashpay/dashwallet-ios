@@ -137,12 +137,12 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
 
     nonisolated func observeAll() -> AnyPublisher<[SwapOrder], Never> {
         Task { await hydration.value }
-        allOrdersSubject.eraseToAnyPublisher()
+        return allOrdersSubject.eraseToAnyPublisher()
     }
 
     nonisolated func observeActive() -> AnyPublisher<[SwapOrder], Never> {
         Task { await hydration.value }
-        allOrdersSubject
+        return allOrdersSubject
             .map { $0.filter { $0.status.isActive } }
             .eraseToAnyPublisher()
     }
