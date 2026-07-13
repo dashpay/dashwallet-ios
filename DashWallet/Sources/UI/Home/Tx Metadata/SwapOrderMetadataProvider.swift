@@ -125,16 +125,15 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         )
     }
 
-    /// Small status badge shown on the icon's corner. Only a few states carry one for now.
+    /// Three visual states drive the row:
+    /// - **Processing** (not started / pending / swapping / unknown): text label, no corner badge.
+    /// - **Success** (completed): nothing extra — the convert icon alone reads as done.
+    /// - **Failed** (refunded / failed / expired): error corner badge, no text label.
     private func secondaryIcon(for status: SwapOrderStatus) -> IconName? {
         switch status {
         case .refunded, .failed, .expired:
             return .custom("additional-info-error", bundle: .dashUIKit)
-        case .notStarted, .pending, .swapping, .unknown:
-            // No dedicated pending badge yet — use the native ellipsis ("…") as a placeholder.
-            return .system("ellipsis")
-        case .completed:
-            // Completed needs no badge; the convert icon alone reads as done.
+        case .notStarted, .pending, .swapping, .unknown, .completed:
             return nil
         }
     }
@@ -147,23 +146,18 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         return afterDot.split(separator: "-").first.map(String.init) ?? afterDot
     }
 
-    private func statusLabel(for status: SwapOrderStatus) -> String {
+    /// Text badge — shown only for the **Processing** states. Success and Failed carry no label
+    /// (Success shows nothing; Failed is conveyed by the error corner badge).
+    private func statusLabel(for status: SwapOrderStatus) -> String? {
         switch status {
         case .notStarted, .pending:
             return NSLocalizedString("Pending", comment: "Dash DEX")
         case .swapping:
             return NSLocalizedString("Swapping", comment: "Dash DEX")
-        case .completed:
-            return NSLocalizedString("Completed", comment: "Dash DEX")
-        case .refunded:
-            return NSLocalizedString("Refunded", comment: "Dash DEX")
-        case .failed:
-            return NSLocalizedString("Failed", comment: "Dash DEX")
         case .unknown:
             return NSLocalizedString("In progress", comment: "Dash DEX")
-        case .expired:
-            // Neutral: tracking stopped after 24 h without a terminal status; funds may have arrived.
-            return NSLocalizedString("Status unavailable", comment: "Dash DEX")
+        case .completed, .refunded, .failed, .expired:
+            return nil
         }
     }
 }
