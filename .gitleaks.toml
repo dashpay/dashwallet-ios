@@ -1,0 +1,44 @@
+# gitleaks config — extends the built-in ruleset with project-specific rules and
+# an allowlist for values that are intentionally NOT secret.
+#
+# Secrets in this project belong in gitignored files only:
+#   *-Info.plist (Coinbase / ZenLedger / Topper / GoogleService), and
+#   DWUpholdMainnetConstants__Release.m
+# Never in project.pbxproj, tracked Info.plist, or source .swift/.m files.
+
+[extend]
+useDefault = true
+
+# --- Project-specific rules (catch the exact shapes that leaked before) ---
+
+[[rules]]
+id = "oauth-clientsecret-assignment"
+description = "OAuth client_id / client_secret assigned inline (e.g. pbxproj: CLIENT_SECRET = <hex>)"
+# Coinbase-style: keyword and 32–64-hex value on the SAME line.
+regex = '''(?i)(client[_-]?secret|client[_-]?id)\s*[=:]\s*@?["']?[0-9a-f]{32,64}["']?'''
+keywords = ["client_secret", "clientSecret", "CLIENT_SECRET", "CLIENT_ID"]
+
+[[rules]]
+id = "hardcoded-hex-secret-literal"
+description = "Long hex string returned/assigned as a literal (Uphold-style ObjC/Swift return @\"<hex>\")"
+# Uphold-style: `return @"da72feee…";` — value on its OWN line, no keyword adjacent.
+# 40 hex (SHA1-like) or 64 hex (SHA256-like) literal; 24-char uppercase pbxproj UUIDs won't match ([0-9a-f]).
+regex = '''=\s*@?"[0-9a-f]{40}"|return\s+@?"[0-9a-f]{40,64}"'''
+
+[allowlist]
+description = "Values that are identifiers, not secrets, or live only in gitignored files."
+# Do not flag findings inside the gitignored secret files themselves.
+paths = [
+  '''.*-Info\.plist$''',
+  '''DWUpholdMainnetConstants__Release\.m$''',
+  '''.*\.xcconfig$''',
+]
+# Public, non-secret identifiers used in headers/OAuth redirects.
+regexes = [
+  '''X-Client-Id"?\s*[=:]\s*"?dcg_ios''',
+  '''dashwallet://brokers/coinbase/connect''',
+]
+# NOTE: the historical Uphold leak (commits 7381075f1 / f30f03e1e) is being
+# remediated by ROTATION + branch cleanup, not by allowlisting. If CI re-flags
+# that specific historical commit, add its printed fingerprint to `.gitleaksignore`
+# — never allowlist the secret string itself.

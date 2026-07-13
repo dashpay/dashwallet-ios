@@ -1,0 +1,24 @@
+#!/bin/sh
+# Local secret-scan gate — fast feedback before a secret ever enters a commit.
+# Enable once per clone:  git config core.hooksPath .githooks
+#
+# Requires gitleaks:  brew install gitleaks
+# If gitleaks isn't installed, the hook warns and lets the commit through — CI
+# (.github/workflows/gitleaks.yml) is the non-bypassable backstop.
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+    echo "⚠️  gitleaks not installed — skipping local secret scan (CI will still check)."
+    echo "    Install with: brew install gitleaks"
+    exit 0
+fi
+
+echo "🔎 gitleaks: scanning staged changes for secrets…"
+if ! gitleaks protect --staged --redact --config .gitleaks.toml; then
+    echo ""
+    echo "🛑 Potential secret detected in staged changes — commit blocked."
+    echo "   Secrets belong in gitignored *-Info.plist / __Release.m / *.xcconfig only."
+    echo "   If this is a false positive, add the printed fingerprint to .gitleaksignore."
+    exit 1
+fi
+
+exit 0
