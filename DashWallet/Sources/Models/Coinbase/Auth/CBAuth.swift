@@ -63,23 +63,31 @@ class CBAuth {
         let callbackURLScheme = Coinbase.callbackURLScheme
 
         let code = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Swift.Error>) in
+            var didResume = false
+
+            func resumeOnce(_ result: Result<String, Swift.Error>) {
+                guard !didResume else { return }
+                didResume = true
+                continuation.resume(with: result)
+            }
+
             let authenticationSession = ASWebAuthenticationSession(url: signInURL,
                                                                    callbackURLScheme: callbackURLScheme) { callbackURL, error in
                 guard error == nil,
                       let callbackURL,
                       let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems,
                       let code = queryItems.first(where: { $0.name == "code" })?.value else {
-                    continuation.resume(throwing: Coinbase.Error.authFailed(.failedToRetrieveCode))
+                    resumeOnce(.failure(Coinbase.Error.authFailed(.failedToRetrieveCode)))
                     return
                 }
-                continuation.resume(returning: code)
+                resumeOnce(.success(code))
             }
 
             authenticationSession.presentationContextProvider = presentationContext
             authenticationSession.prefersEphemeralWebBrowserSession = true
 
             if !authenticationSession.start() {
-                continuation.resume(throwing: Coinbase.Error.authFailed(.failedToStartAuthSession))
+                resumeOnce(.failure(Coinbase.Error.authFailed(.failedToStartAuthSession)))
             }
         }
 
