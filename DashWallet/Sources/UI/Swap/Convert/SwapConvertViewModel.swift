@@ -262,13 +262,7 @@ final class SwapConvertViewModel: ObservableObject {
         let satoshis = activeSellSatoshis
         let accountBalance = Int64(DWEnvironment.sharedInstance().currentAccount.balance)
         errorMessage = satoshis > accountBalance
-            ? String(
-                format: NSLocalizedString(
-                    "The maximum transaction amount is %@",
-                    comment: "Dash DEX"
-                ),
-                maximumTransactionAmountText()
-            )
+            ? maximumTransactionAmountMessage()
             : nil
     }
 
@@ -389,13 +383,7 @@ final class SwapConvertViewModel: ObservableObject {
         case .insufficientBalance:
             isLoading = false
             clearQuoteState(keepingEffectiveSell: effectiveSellSatoshis != nil)
-            errorMessage = String(
-                format: NSLocalizedString(
-                    "The maximum transaction amount is %@",
-                    comment: "Dash DEX"
-                ),
-                maximumTransactionAmountText()
-            )
+            errorMessage = maximumTransactionAmountMessage()
         case .valid(let satoshis):
             errorMessage = nil
             isLoading = true
@@ -702,21 +690,30 @@ private extension CurrencyOption {
 }
 
 private extension SwapConvertViewModel {
-    func maximumTransactionAmountText() -> String {
+    func maximumTransactionAmountMessage() -> String? {
+        let amountText: String
         switch selectedCurrency {
         case .fiat:
-            return dashBalanceFiat
+            amountText = dashBalanceFiat
         case .dash:
-            return "\(dashBalanceFormatted) DASH"
+            amountText = "\(dashBalanceFormatted) DASH"
         case .coin:
             guard amount.cryptoDashRate > 0 else {
-                return "\(dashBalanceFormatted) DASH"
+                return nil
             }
 
             let dashBalanceDecimal = Decimal(dashBalance) / Decimal(100_000_000)
             let maxCoinAmount = dashBalanceDecimal * amount.cryptoDashRate
             let formatted = SwapInputFormatter.receiveAmount((maxCoinAmount as NSDecimalNumber).doubleValue)
-            return "\(formatted) \(coin.code)"
+            amountText = "\(formatted) \(coin.code)"
         }
+
+        return String(
+            format: NSLocalizedString(
+                "The maximum transaction amount is %@",
+                comment: "Dash DEX"
+            ),
+            amountText
+        )
     }
 }

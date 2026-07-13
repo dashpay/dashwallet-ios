@@ -51,18 +51,19 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
                     }
 
                 case .deleted(let metadata):
-                    metadataQueue.async { [weak self] in
-                        self?._availableMetadata.removeValue(forKey: metadata.txHash)
+                    metadataQueue.sync {
+                        _availableMetadata.removeValue(forKey: metadata.txHash)
                     }
                     metadataUpdated.send(metadata.txHash)
 
                 case .deletedAll:
-                    let keys = metadataQueue.sync { self._availableMetadata.keys }
+                    let keys = metadataQueue.sync { () -> [Data] in
+                        let existing = Array(_availableMetadata.keys)
+                        _availableMetadata = [:]
+                        return existing
+                    }
                     for key in keys {
                         metadataUpdated.send(key)
-                    }
-                    metadataQueue.async { [weak self] in
-                        self?._availableMetadata = [:]
                     }
                 }
             }
