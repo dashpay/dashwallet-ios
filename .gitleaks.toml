@@ -22,8 +22,9 @@ keywords = ["client_secret", "clientSecret", "CLIENT_SECRET", "CLIENT_ID"]
 id = "hardcoded-hex-secret-literal"
 description = "Long hex string returned/assigned as a literal (Uphold-style ObjC/Swift return @\"<hex>\")"
 # Uphold-style: `return @"da72feee…";` — value on its OWN line, no keyword adjacent.
-# 40 hex (SHA1-like) or 64 hex (SHA256-like) literal; 24-char uppercase pbxproj UUIDs won't match ([0-9a-f]).
-regex = '''=\s*@?"[0-9a-f]{40}"|return\s+@?"[0-9a-f]{40,64}"'''
+# 40 hex (SHA1-like) or 64 hex (SHA256-like) literal, any case ((?i) catches uppercase like @"DA72…").
+# 24-char pbxproj UUIDs won't match — excluded by the length bounds {40} / {40,64}, not the char class.
+regex = '''(?i)=\s*@?"[0-9a-f]{40}"|return\s+@?"[0-9a-f]{40,64}"'''
 
 [allowlist]
 description = "Values that are identifiers, not secrets, or live only in gitignored files."
