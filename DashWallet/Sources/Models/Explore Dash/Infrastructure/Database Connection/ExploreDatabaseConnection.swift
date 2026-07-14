@@ -43,6 +43,13 @@ class ExploreDatabaseConnection {
     #endif
 
     init() {
+        // Release the file before the sync manager overwrites it — SQLite corrupts a database that
+        // is replaced on disk underneath a live connection. Queries return [] while db is nil.
+        NotificationCenter.default.addObserver(forName: ExploreDatabaseSyncManager.databaseWillBeUpdatedNotification,
+                                               object: nil, queue: .main) { [weak self] _ in
+            self?.db = nil
+        }
+
         NotificationCenter.default.addObserver(forName: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification,
                                                object: nil, queue: .main) { [weak self] _ in
             try? self?.connect()

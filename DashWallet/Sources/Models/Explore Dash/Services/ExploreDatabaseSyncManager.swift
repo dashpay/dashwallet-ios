@@ -40,6 +40,9 @@ public class ExploreDatabaseSyncManager {
     }
 
     static let databaseHasBeenUpdatedNotification = NSNotification.Name(rawValue: "databaseHasBeenUpdatedNotification")
+    /// Posted right before `explore.db` is replaced on disk, so open connections can let go of the
+    /// file first. Overwriting it underneath a live SQLite connection corrupts the database.
+    static let databaseWillBeUpdatedNotification = NSNotification.Name(rawValue: "databaseWillBeUpdatedNotification")
 
     private let storage = Storage.storage()
     private let storageRef: StorageReference
@@ -172,6 +175,15 @@ extension ExploreDatabaseSyncManager {
                 
                 Task {
                     do {
+                        // The archive unzips straight over the live `explore.db`. Let the open
+                        // connection go first, and drop the -wal/-shm sidecars: they describe the
+                        // *old* file, and SQLite replaying that WAL against the new one is what
+                        // produces "database disk image is malformed".
+                        await MainActor.run {
+                            NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseWillBeUpdatedNotification, object: nil)
+                        }
+                        self?.removeDatabaseSidecars()
+
                         try await self?.unzipFile(at: urlToSave.path, password: checksum)
                         self?.exploreDatabaseLastSyncTimestamp = now
                         self?.exploreDatabaseLastVersion = timeIntervalMillesecond / 1000
@@ -214,6 +226,16 @@ extension ExploreDatabaseSyncManager {
     private func hasLocalExploreDatabase() -> Bool {
         let localDbPath = getDocumentsDirectory().appendingPathComponent(kExploreDashDatabaseName).path
         return FileManager.default.fileExists(atPath: localDbPath)
+    }
+
+    /// Deletes the write-ahead log and shared-memory files left behind by the database we are about
+    /// to replace. They are only valid for the file they were written against.
+    private func removeDatabaseSidecars() {
+        let dbPath = getDocumentsDirectory().appendingPathComponent(kExploreDashDatabaseName).path
+
+        for suffix in ["-wal", "-shm"] {
+            try? FileManager.default.removeItem(atPath: dbPath + suffix)
+        }
     }
 }
 
