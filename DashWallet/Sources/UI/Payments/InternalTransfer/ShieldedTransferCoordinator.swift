@@ -380,6 +380,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         do {
             try await env.manager.shieldedWithdraw(
                 walletId: env.walletId,
+                // Per-operation Orchard spend authority (seedless shielded
+                // bind, platform #4125/#4126); the SDK holds the resolver
+                // alive across the FFI call via withExtendedLifetime.
+                resolver: MnemonicResolver(),
                 account: 0,
                 toCoreAddress: coreAddress,
                 amount: amountCredits)
@@ -444,6 +448,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         do {
             try await env.manager.shieldedUnshield(
                 walletId: env.walletId,
+                // Per-operation Orchard spend authority — see above.
+                resolver: MnemonicResolver(),
                 account: 0,
                 toPlatformAddress: platformAddress,
                 amount: amountCredits)

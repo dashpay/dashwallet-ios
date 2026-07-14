@@ -45,8 +45,10 @@ included.
 ## Platform pin
 
 The app builds against sibling `../platform` on **`v4.1-dev`** (verified
-2026-07-12: dashpay arm64-sim build green at app tip `62a7eb40c` against
-`origin/v4.1-dev` tip `0bfdc5745c`). Every app-required surface is upstream:
+2026-07-15: dashpay arm64-sim build green at app tip `62a7eb40c` against
+`origin/v4.1-dev` tip `88949b7144`; the seedless-shielded-bind API drift —
+`shieldedWithdraw`/`shieldedUnshield` gaining a per-operation
+`resolver:` — is adapted in `ShieldedTransferCoordinator`). Every app-required surface is upstream:
 tx decoding (`TransactionDecoder`, key-wallet-ffi route), DashPay fee threading,
 `RawKeySigner` (#4097), the testnet faucet client (#4098), classified SPV peers,
 and the filter-rescan FFI (#4099). The `local/tx-decode-plus-v4.1-dev-dashwallet`
