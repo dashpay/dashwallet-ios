@@ -26,6 +26,15 @@ enum SwapBuyTransactionMatcher {
     private static let baseUnits = Decimal(100_000_000)
     private static let maximumRelativeAmountDifference = Decimal(string: "0.05", locale: Locale(identifier: "en_US_POSIX"))!
 
+    /// How far a transaction may predate its order and still match.
+    ///
+    /// An unconfirmed tx reports the time the wallet first saw it, but once mined it reports the
+    /// *block's* timestamp — which only has to beat the median of the last 11 blocks and so can sit
+    /// minutes behind the wallet's clock. Comparing against the order time exactly meant a swap row
+    /// lost its match the moment it confirmed and fell back to a plain "Received". The window is
+    /// still far tighter than the address + amount checks, which do the real disambiguation.
+    private static let timestampSlack: TimeInterval = 2 * 60 * 60
+
     static func matchedTransaction(
         for order: SwapOrder,
         in transactions: [DSTransaction]
@@ -94,7 +103,7 @@ enum SwapBuyTransactionMatcher {
         expectedDashAmount: Decimal
     ) -> Bool {
         guard tx.direction == .received else { return false }
-        guard tx.timestamp >= minimumTimestamp else { return false }
+        guard tx.timestamp >= minimumTimestamp - timestampSlack else { return false }
         guard tx.outputReceiveAddresses.contains(receiveAddress) else { return false }
 
         guard let receivedDashAmount = receivedDashAmount(for: tx) else { return false }
