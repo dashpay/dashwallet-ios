@@ -52,10 +52,22 @@ public class ExploreDatabaseSyncManager {
     var syncState: State
     var lastServerUpdateDate: Date { Date(timeIntervalSince1970: exploreDatabaseLastVersion) }
 
-    // Network-specific filename to prevent mainnet/testnet database conflicts
+    // Network-specific name for the downloaded archive only — the database itself always unzips to
+    // the single `explore.db`, so see `installedDatabaseNetwork` for the mainnet/testnet conflict.
     private var networkSpecificFileName: String {
-        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
-        return isMainnet ? "explore-mainnet" : "explore-testnet"
+        return currentNetworkName == "mainnet" ? "explore-mainnet" : "explore-testnet"
+    }
+
+    private var currentNetworkName: String {
+        return DWEnvironment.sharedInstance().currentChain.isMainnet() ? "mainnet" : "testnet"
+    }
+
+    /// The network whose data currently sits in `explore.db`. Both networks share that one file
+    /// while the sync bookkeeping (`versionKey`) is per-network, so after a chain switch the saved
+    /// version reads as up to date while the file on disk still holds the other network's merchants.
+    private var installedDatabaseNetwork: String? {
+        get { UserDefaults.standard.string(forKey: kExploreDatabaseInstalledNetworkKey) }
+        set { UserDefaults.standard.setValue(newValue, forKey: kExploreDatabaseInstalledNetworkKey) }
     }
 
     init() {
@@ -111,6 +123,15 @@ public class ExploreDatabaseSyncManager {
                 return
             }
 
+            // The file on disk may belong to the other network (the chain was switched since it was
+            // downloaded). Its version is tracked under that network's key, so the check below would
+            // read as up to date and leave us serving the wrong network's merchants.
+            if wSelf.installedDatabaseNetwork != wSelf.currentNetworkName {
+                DSLogger.log("ExploreDash: explore.db belongs to \(wSelf.installedDatabaseNetwork ?? "an unknown network"), current network is \(wSelf.currentNetworkName) — forcing download")
+                wSelf.downloadDatabase(metadata: metadata)
+                return
+            }
+
             guard timeInterval > installedVersion else {
                 wSelf.syncState = .synced(Date())
                 return
@@ -154,6 +175,7 @@ extension ExploreDatabaseSyncManager {
                         try await self?.unzipFile(at: urlToSave.path, password: checksum)
                         self?.exploreDatabaseLastSyncTimestamp = now
                         self?.exploreDatabaseLastVersion = timeIntervalMillesecond / 1000
+                        self?.installedDatabaseNetwork = self?.currentNetworkName
                         self?.syncState = .synced(date)
 
                         NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
@@ -197,6 +219,7 @@ extension ExploreDatabaseSyncManager {
 
 private let kExploreDatabaseLastSyncTimestampKey = "kExploreDatabaseLastSyncTimestampKey"
 private let kExploreDatabaseLastVersion = "kExploreDatabaseLastVersion"
+private let kExploreDatabaseInstalledNetworkKey = "kExploreDatabaseInstalledNetwork"
 
 extension ExploreDatabaseSyncManager {
     // Network-specific UserDefaults keys
