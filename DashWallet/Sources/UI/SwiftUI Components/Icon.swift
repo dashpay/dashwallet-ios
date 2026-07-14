@@ -19,15 +19,17 @@ import SwiftUI
 
 enum IconName: Equatable {
     case system(_ name: String)
-    case custom(_ name: String, maxHeight: CGFloat? = nil)
+    case custom(_ name: String, bundle: Bundle? = nil, maxHeight: CGFloat? = nil)
     case image(_ uiImage: UIImage, effect: ImageEffect = .none)
-    
+
     static func == (lhs: IconName, rhs: IconName) -> Bool {
         switch (lhs, rhs) {
         case (.system(let lhsName), .system(let rhsName)):
             return lhsName == rhsName
-        case (.custom(let lhsName, let lhsHeight), .custom(let rhsName, let rhsHeight)):
-            return lhsName == rhsName && lhsHeight == rhsHeight
+        case (.custom(let lhsName, let lhsBundle, let lhsHeight), .custom(let rhsName, let rhsBundle, let rhsHeight)):
+            return lhsName == rhsName
+                && lhsBundle?.bundleIdentifier == rhsBundle?.bundleIdentifier
+                && lhsHeight == rhsHeight
         case (.image(_, let lhsEffect), .image(_, let rhsEffect)):
             return lhsEffect == rhsEffect
         default:
@@ -55,8 +57,8 @@ struct Icon: View {
                 Image(systemName: name)
                     .imageScale(.medium)
             }
-        case .custom(let name, let height):
-            Image(name)
+        case .custom(let name, let bundle, let height):
+            Image(name, bundle: bundle)
                 .resizable()
                 .scaledToFit()
                 .frame(maxHeight: height)

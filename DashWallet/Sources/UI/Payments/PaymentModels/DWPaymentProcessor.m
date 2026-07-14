@@ -26,6 +26,7 @@
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentOutput+Private.h"
 #import "dashwallet-Swift.h"
+#import <DashSync/DSTransactionInput.h>
 
 #if DASHPAY
 #import "DWDPUserObject.h"
@@ -200,10 +201,21 @@ static NSString *sanitizeString(NSString *s) {
     DSPaymentProtocolRequest *protocolRequest = paymentOutput.protocolRequest;
 
     // NOTE: previously a blanket lock here blocked ANY spend while a Maya swap was still confirming
-    // (~2–5 min), as a guard against coin selection re-using the swap's not-yet-reconciled UTXO.
-    // That is no longer needed: DashSync now reconciles spentOutputs on IS-lock, so coin selection
-    // skips spent outputs, and the swap send path keeps its own per-UTXO `isInputSpent` guard.
-    // Regular sends are therefore no longer blocked by a pending swap.
+    // (~2–5 min). That blanket lock is gone — DashSync reconciles spentOutputs on IS-lock and coin
+    // selection skips spent outputs. We keep only a NARROW per-input guard: reject the exact pending
+    // inputs already consumed by another in-flight transaction; unrelated outgoing transactions
+    // remain allowed.
+    for (DSTransactionInput *input in paymentOutput.tx.inputs) {
+        if ([account isInputSpent:input.inputHash atIndex:input.index]) {
+            NSString *title = NSLocalizedString(@"Couldn't make payment", @"Shown when the selected inputs were already consumed by a pending transaction.");
+            NSString *message = NSLocalizedString(@"Some selected funds are still pending from a previous transaction. Please wait a moment and try again.", @"Shown when a payment tries to reuse inputs already spent by a pending transaction.");
+            NSError *spentInputError = [NSError errorWithDomain:@"DashWallet.PendingSpendGuard"
+                                                           code:1
+                                                       userInfo:@{NSLocalizedDescriptionKey : message}];
+            [self failedWithError:spentInputError title:title message:message];
+            return;
+        }
+    }
 
     self.request = protocolRequest;
     self.didSendRequestDelegateNotified = NO;

@@ -137,6 +137,7 @@ extension TransferAmountViewController {
 
 extension TransferAmountViewController: PaymentControllerDelegate {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, transaction: DSTransaction) {
+        CoinbaseTransactionMetadataTagger.shared.track(sentTransaction: transaction)
         hideActivityIndicator()
         showSuccessTransactionStatus()
     }

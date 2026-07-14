@@ -21,6 +21,6 @@ import Foundation
 
 struct SwapExecutionData {
     let vaultAddress: String
-    let memo: String
+    let memo: String?
     let executionNetwork: String
 }
