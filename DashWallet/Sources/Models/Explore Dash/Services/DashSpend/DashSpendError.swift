@@ -34,6 +34,7 @@ enum DashSpendError: Error, LocalizedError {
     case paymentProcessingError(String)
     case previousSwapPending
     case swapAwaitingInstantLock
+    case authenticationCancelled
 
     var errorDescription: String? {
         switch self {
@@ -79,6 +80,8 @@ enum DashSpendError: Error, LocalizedError {
                 "Your previous swap is still locking in. Please wait a few seconds before starting another one.",
                 comment: "Maya/SwapKit"
             )
+        case .authenticationCancelled:
+            return NSLocalizedString("Authentication cancelled", comment: "DashSpend/Maya")
         }
     }
 }

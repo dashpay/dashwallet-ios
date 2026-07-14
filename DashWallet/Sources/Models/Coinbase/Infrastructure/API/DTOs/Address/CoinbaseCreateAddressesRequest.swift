@@ -9,4 +9,5 @@ import Foundation
 
 struct CoinbaseCreateAddressesRequest: Codable {
     let name: String?
+    let network: String?
 }

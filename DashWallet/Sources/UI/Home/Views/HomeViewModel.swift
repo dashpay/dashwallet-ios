@@ -633,7 +633,9 @@ extension HomeViewModel {
     private func setupMetadataProviders() {
         let giftCardMetadata = GiftCardMetadataProvider.shared
         let customIconMetadata = CustomIconMetadataProvider.shared
-        self.metadataProviders = [giftCardMetadata, customIconMetadata]
+        let coinbaseMetadata = CoinbaseMetadataProvider.shared
+        let swapOrderMetadata = SwapOrderMetadataProvider.shared
+        self.metadataProviders = [giftCardMetadata, coinbaseMetadata, customIconMetadata, swapOrderMetadata]
         
         for provider in self.metadataProviders {
             provider.metadataUpdated

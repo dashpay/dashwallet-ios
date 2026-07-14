@@ -29,6 +29,7 @@ protocol ServiceDataProvider {
 class ServiceDataProviderImpl: ServiceDataProvider {
     private var handler: (([ServiceItem]) -> Void)?
     private var items: [ServiceItem]
+    private var networkDidChangeObserver: NSObjectProtocol?
 
     init() {
         items = [
@@ -40,36 +41,68 @@ class ServiceDataProviderImpl: ServiceDataProvider {
             items.insert(.init(service: .coinbase, dataProvider: CoinbaseDataSource()), at: 0)
         }
 
-        // Maya always at the end of the list
         items.append(.init(service: .maya, dataProvider: nil))
-        
+        if SwapKitConstants.isConfigured {
+            items.append(.init(service: .swapKit, dataProvider: nil))
+        }
+
         for item in items {
             item.didUpdate = { [weak self] in
                 self?.updateServices()
             }
         }
+
+        networkDidChangeObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.DWCurrentNetworkDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateServices()
+        }
     }
 
     func listenForData(handler: @escaping (([ServiceItem]) -> Void)) {
         self.handler = handler
+        updateServices()
     }
 
     func refresh() {
         for item in items {
             item.refresh()
         }
+        updateServices()
     }
 
     private func updateServices() {
-        // Separate Maya from sorting so it stays at the end
-        let nonMayaItems = items.filter { $0.service != .maya }
-        let mayaItems = items.filter { $0.service == .maya }
+        let visibleItems = items.filter { shouldShow(service: $0.service) }
 
-        let sortedItems = nonMayaItems
+        // Keep Maya and SwapKit pinned at the end; sort the rest by usage/activity.
+        let pinned: [Service] = [.maya, .swapKit]
+        let nonPinnedItems = visibleItems.filter { !pinned.contains($0.service) }
+        let pinnedItems = visibleItems.filter { pinned.contains($0.service) }
+
+        let sortedItems = nonPinnedItems
             .sorted(by: { $0.usageCount > $1.usageCount })
             .sorted(by: { $0.isInUse && !$1.isInUse })
-            + mayaItems
 
-        handler?(sortedItems)
+        handler?(sortedItems + pinnedItems)
+    }
+
+    private func shouldShow(service: Service) -> Bool {
+        switch service {
+        case .swapKit:
+            return DWEnvironment.sharedInstance().currentChain.isMainnet() && SwapKitConstants.isConfigured
+        case .maya:
+            // Hidden from Buy & Sell — Dash DEX (SwapKit) replaces the standalone Maya entry.
+            return false
+        default:
+            return true
+        }
+    }
+
+    deinit {
+        if let networkDidChangeObserver {
+            NotificationCenter.default.removeObserver(networkDidChangeObserver)
+        }
     }
 }

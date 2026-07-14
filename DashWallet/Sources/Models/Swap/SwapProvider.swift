@@ -1,0 +1,208 @@
+//
+//  SwapProvider.swift
+//  DashWallet
+//
+//  Copyright © 2024 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import Foundation
+
+// MARK: - Result types
+
+/// Neutral fee summary from a swap quote — only the fields the UI renders.
+struct SwapFeeResult {
+    let total: String?
+    let outbound: String?
+}
+
+/// Neutral quote result carrying only the fields the UI reads.
+/// `MayaSwapProvider` maps `MayaSwapQuote` into this. Future providers map their own types.
+struct SwapQuoteResult {
+    let error: String?
+    /// Expected output in 1e8 base units (same normalisation the Maya flow uses throughout).
+    let expectedAmountOut: String?
+    let fees: SwapFeeResult?
+    /// Vault / deposit address to send DASH to.
+    let inboundAddress: String?
+    /// OP_RETURN memo for the Dash tx.
+    let memo: String?
+    /// Human-readable label surfaced in the order-preview as the execution network (AC#5).
+    let executionNetwork: String?
+}
+
+/// Neutral status result for swap tracking.
+/// `isObserved` is true once the provider has seen the inbound DASH tx.
+struct SwapStatusResult {
+    let error: String?
+    /// Whether the provider has observed the swap (Maya: observedTx != nil; SwapKit: status != not_started).
+    let isObserved: Bool
+    /// Normalised status string: "done" / "refunded" / "aborted" / "pending" / "swapping" or nil.
+    let observedStatus: String?
+    let outHashes: [String]?
+    /// Actual amount received at the destination (from /track `toAmount`), if available.
+    let actualToAmount: String?
+
+    init(
+        error: String?,
+        isObserved: Bool,
+        observedStatus: String?,
+        outHashes: [String]?,
+        actualToAmount: String? = nil
+    ) {
+        self.error = error
+        self.isObserved = isObserved
+        self.observedStatus = observedStatus
+        self.outHashes = outHashes
+        self.actualToAmount = actualToAmount
+    }
+}
+
+enum SwapProviderError: LocalizedError {
+    case unsupportedBuyOrder
+
+    var errorDescription: String? {
+        switch self {
+        case .unsupportedBuyOrder:
+            return NSLocalizedString("Buy flow is not supported by this swap backend", comment: "Swap")
+        }
+    }
+}
+
+// MARK: - Protocol
+
+// MARK: - Protocol extension helpers
+
+extension SwapProvider {
+    /// Optional deep-link to a hosted transaction tracker for this provider.
+    /// Returns `nil` for providers without a public tracker (Maya uses its own explorer).
+    func trackerURL(for txid: String, depositAddress: String?) -> URL? { nil }
+
+    /// Controls whether the order-preview fee row uses a backend-specific label
+    /// (`"Maya fee"`) or a generic one (`"Fee"`).
+    var usesGenericFeeLabel: Bool { false }
+
+    /// True when the provider expects the client to build and submit the DASH deposit
+    /// transaction locally for SwapKit-style routes.
+    var buildsSwapKitDeposit: Bool { false }
+
+    /// Indicative quote used by the amount screen. Providers that do not have a cheaper
+    /// quote-only path can fall back to the full quote implementation.
+    func fetchIndicativeQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
+        try await fetchQuote(dashSatoshis: dashSatoshis, toAsset: toAsset, destination: destination)
+    }
+
+    /// Direction-aware pool fetch. Defaults to `.sell` (all pools) for providers that
+    /// don't distinguish directions (Maya).
+    func fetchPools(direction: SwapDirection) async throws -> [SwapPool] {
+        try await fetchPools()
+    }
+
+    /// Returns a map of asset identifier (uppercased) → routing network label
+    /// for display in the coin picker ("Maya", "NEAR", "Multiple networks").
+    /// Default: empty — non-SwapKit providers don't have multi-provider routing.
+    func networkLabels(for pools: [SwapPool]) async -> [String: String] { [:] }
+
+    /// Returns the set of asset identifiers (uppercased) that are halted due to
+    /// provider-specific halt logic (e.g. Maya chain halt for mayaOnly assets).
+    /// Default: empty set (use chain-based halt from inbound addresses).
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String> { [] }
+}
+
+// MARK: - Protocol
+
+/// Backend-agnostic surface for cross-chain DASH swaps.
+///
+/// The Maya integration and the SwapKit aggregator both conform to this protocol so that
+/// view models (SelectCoinViewModel, MayaConvertViewModel, OrderPreviewViewModel) can be
+/// wired to either backend without modification.
+protocol SwapProvider {
+    /// Human-readable label shown as the execution network (e.g. "Maya", "MAYACHAIN").
+    var displayName: String { get }
+    var usesGenericFeeLabel: Bool { get }
+    var buildsSwapKitDeposit: Bool { get }
+    var onBuyRoutabilityChanged: (() -> Void)? { get set }
+
+    func fetchPools() async throws -> [SwapPool]
+    func fetchInboundAddresses() async throws -> [SwapInboundAddress]
+
+    /// Direction-aware pool fetch. MUST be a protocol requirement (not extension-only) so
+    /// that a `SwapProvider`-typed call dynamically dispatches to the concrete override
+    /// (e.g. SwapKit's Buy filtering) instead of statically using the extension default.
+    func fetchPools(direction: SwapDirection) async throws -> [SwapPool]
+
+    /// Routing network labels per asset. MUST be a protocol requirement for dynamic dispatch.
+    func networkLabels(for pools: [SwapPool]) async -> [String: String]
+
+    /// Provider-specific halted assets. MUST be a protocol requirement for dynamic dispatch.
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String>
+
+    /// Returns `nil` if the destination address is valid, otherwise an error string.
+    func validateAddress(destination: String, toAsset: String) async -> String?
+
+    /// Quote for a DASH→toAsset swap. `dashSatoshis` is in 1e8 base units.
+    func fetchQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult
+
+    /// Indicative quote for the amount screen: expected output + execution network only.
+    /// Must not perform heavy swap-build work because it runs on every keystroke.
+    func fetchIndicativeQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult
+
+    /// Status lookup for a submitted swap.
+    /// Maya: queries by Dash txid via `/tx/{txid}`.
+    /// SwapKit: queries via `/track`.
+    func fetchSwapStatus(txid: String, depositAddress: String?) async throws -> SwapStatusResult
+
+    func createBuyOrder(
+        sellAsset: String,
+        sellAmount: String,
+        destination: String,
+        refundAddress: String
+    ) async throws -> BuyOrder
+
+    func validateBuyOrder(
+        sellAsset: String,
+        sellAmount: String,
+        refundAddress: String
+    ) async throws
+
+    /// Optional hosted-tracker deep link. MUST be a protocol requirement for dynamic dispatch
+    /// (SwapKit overrides it; otherwise the extension default `nil` would always win).
+    func trackerURL(for txid: String, depositAddress: String?) -> URL?
+
+    /// Returns the icon URL for a Maya asset identifier sourced from SwapKit `logoURI`.
+    /// Returns `nil` for providers that do not carry icon metadata or when the asset is unknown.
+    /// MUST be a protocol requirement for dynamic dispatch.
+    func logoURL(for mayaAsset: String) -> URL?
+}
+
+extension SwapProvider {
+    func logoURL(for mayaAsset: String) -> URL? { nil }
+
+    func createBuyOrder(
+        sellAsset: String,
+        sellAmount: String,
+        destination: String,
+        refundAddress: String
+    ) async throws -> BuyOrder {
+        throw SwapProviderError.unsupportedBuyOrder
+    }
+
+    func validateBuyOrder(
+        sellAsset: String,
+        sellAmount: String,
+        refundAddress: String
+    ) async throws {
+        throw SwapProviderError.unsupportedBuyOrder
+    }
+}

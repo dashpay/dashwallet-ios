@@ -52,6 +52,15 @@ struct BuySellPortalView: View {
     var onCoinbase: () -> Void
     var onTopper: () -> Void
     var onMaya: () -> Void
+    var onSwapKit: () -> Void
+
+    private var showsMaya: Bool {
+        model.items.contains { $0.service == .maya }
+    }
+
+    private var showsSwapKit: Bool {
+        model.items.contains { $0.service == .swapKit }
+    }
 
     var body: some View {
         ScrollView {
@@ -66,7 +75,12 @@ struct BuySellPortalView: View {
                     if showCoinbase {
                         coinbaseCard
                     }
-                    mayaCard
+                    if showsMaya {
+                        mayaCard
+                    }
+                    if showsSwapKit {
+                        swapKitCard
+                    }
                 }
                 .padding(.top, 10)
                 .padding(.horizontal, 20)
@@ -102,6 +116,14 @@ struct BuySellPortalView: View {
     private var mayaCard: some View {
         VStack(spacing: 2) {
             menuItem(for: .maya, action: onMaya)
+        }
+        .modifier(MenuCardStyle())
+    }
+
+    private var swapKitCard: some View {
+        VStack(spacing: 2) {
+            menuItem(for: .swapKit, action: onSwapKit)
+                .accessibilityIdentifier("portal_swapkit")
         }
         .modifier(MenuCardStyle())
     }
@@ -179,7 +201,8 @@ private extension BuySellPortalModel {
         onUphold: {},
         onCoinbase: {},
         onTopper: {},
-        onMaya: {}
+        onMaya: {},
+        onSwapKit: {}
     )
 }
 
@@ -191,7 +214,8 @@ private extension BuySellPortalModel {
         onUphold: {},
         onCoinbase: {},
         onTopper: {},
-        onMaya: {}
+        onMaya: {},
+        onSwapKit: {}
     )
 }
 #endif
