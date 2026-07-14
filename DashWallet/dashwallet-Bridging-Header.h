@@ -27,6 +27,8 @@ static const bool _SNAPSHOT = 0;
 #import "DSChain.h"
 
 //MARK: DashWallet
+#import "DSAccount+SpentInputCheck.h"
+#import "DSTransaction+DashWallet.h"
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"

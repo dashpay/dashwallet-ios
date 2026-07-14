@@ -82,7 +82,7 @@ class MainMenuViewModel: ObservableObject {
         // Buy & Sell Dash
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Buy & Sell Dash", comment: ""),
-            icon: .custom("image.buy.and.sell", maxHeight: 22),
+            icon: .custom("image.buy.and.sell", maxHeight: 30),
             action: { [weak self] in
                 self?.handleBuySellDash()
             }
@@ -91,7 +91,7 @@ class MainMenuViewModel: ObservableObject {
         // Explore
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Explore", comment: ""),
-            icon: .custom("image.explore", maxHeight: 22),
+            icon: .custom("image.explore", maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .explore
             }
@@ -100,7 +100,7 @@ class MainMenuViewModel: ObservableObject {
         // Security
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Security", comment: ""),
-            icon: .custom("image.security", maxHeight: 22),
+            icon: .custom("image.security", maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .security
             }
@@ -109,7 +109,7 @@ class MainMenuViewModel: ObservableObject {
         // Settings
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Settings", comment: ""),
-            icon: .custom("image.settings", maxHeight: 22),
+            icon: .custom("image.settings", maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .settings
             }
@@ -118,7 +118,7 @@ class MainMenuViewModel: ObservableObject {
         // Tools
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Tools", comment: ""),
-            icon: .custom("image.tools", maxHeight: 22),
+            icon: .custom("image.tools", maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .tools
             }
@@ -127,7 +127,7 @@ class MainMenuViewModel: ObservableObject {
         // Support
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Support", comment: ""),
-            icon: .custom("image.support", maxHeight: 22),
+            icon: .custom("image.support", maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .support
             }
@@ -138,7 +138,7 @@ class MainMenuViewModel: ObservableObject {
         if VotingPrefs.shared.votingEnabled {
             allItems.append(MenuItemModel(
                 title: NSLocalizedString("Voting", comment: ""),
-                icon: .custom("menu_voting", maxHeight: 22),
+                icon: .custom("menu_voting", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .voting
                 }

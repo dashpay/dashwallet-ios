@@ -180,6 +180,7 @@ struct HomeViewContent<Content: View>: View {
     @State private var giftCardTxId: Data? = nil
     @State private var pendingShieldedRecovery: Transaction? = nil
 
+
     @ObservedObject var viewModel: HomeViewModel
     @ObservedObject private var balanceModel = BalanceModel()
     #if DASHPAY
@@ -363,6 +364,20 @@ struct HomeViewContent<Content: View>: View {
         .padding(.horizontal, 15)
     }
     
+    /// Chooses the transaction row icons. Gift cards without a loaded merchant logo fall back to the
+    /// gift card icon instead of the generic send arrow.
+    private func transactionRowIcons(txItem: Transaction, metadata: TxRowMetadata?) -> (primary: IconName, secondary: IconName?) {
+        if let merchantIcon = metadata?.icon {
+            return (.image(merchantIcon, effect: .rounded), metadata?.secondaryIcon ?? .custom(txItem.iconName))
+        }
+
+        if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
+            return (.custom("image.explore.dash.wts.payment.gift-card"), nil)
+        }
+
+        return (.custom(txItem.iconName), nil)
+    }
+
     @ViewBuilder
     private func TransactionPreviewFrom(
         txItem txDataItem: TransactionListDataItem
@@ -408,16 +423,19 @@ struct HomeViewContent<Content: View>: View {
             .frame(height: 80)
             
         case .tx(let txItem, let metadata):
+            let icons = transactionRowIcons(txItem: txItem, metadata: metadata)
+
             TransactionPreview(
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
                     : (metadata?.details?.isEmpty == false ? metadata?.details : nil),
-                icon: metadata?.icon == nil ? .custom(txItem.iconName) : .image(metadata!.icon!, effect: .rounded),
-                secondaryIcon: metadata?.icon == nil ? nil : metadata?.secondaryIcon == nil ? .custom(txItem.iconName) : metadata?.secondaryIcon,
+                icon: icons.primary,
+                secondaryIcon: icons.secondary,
                 dashAmount: txItem.signedDashAmount,
-                overrideFiatAmount: txItem.fiatAmount
+                overrideFiatAmount: txItem.fiatAmount,
+                trailingStatusText: txItem.state == .locked ? NSLocalizedString("Locked", comment: "Transaction state: coinbase reward locked until 100 confirmations") : nil
             ) {
                 // A stuck "to Shielded" transfer opens the recovery sheet
                 // instead of the read-only detail/gift-card sheets.
@@ -436,24 +454,167 @@ struct HomeViewContent<Content: View>: View {
 }
 
 struct GiftCardDetailsSheet: View {
-    var txId: Data
+    @Environment(\.dismiss) private var dismiss
+
+    let txId: Data
     @State private var showBackButton: Bool = false
     @State private var backNavigationRequested: Bool = false
+    @State private var selectedCardIndex: Int? = nil
+    @State private var txDetailRoute: TxDetailRoute? = nil
+    @StateObject private var viewModel: GiftCardDetailsViewModel
+
+    init(txId: Data) {
+        self.txId = txId
+        _viewModel = StateObject(wrappedValue: GiftCardDetailsViewModel(txId: txId))
+    }
     
     var body: some View {
-        BottomSheet(showBackButton: $showBackButton, onBackButtonPressed: {
-            backNavigationRequested = true
-        }) {
-            GiftCardDetailsView(
-                txId: txId,
-                backNavigationRequested: $backNavigationRequested,
-                onShowBackButton: { show in
-                    showBackButton = show
+        let showsTxDetailRoute = txDetailRoute != nil
+        let dialog = BottomSheet(
+            showBackButton: $showBackButton,
+            onBackButtonPressed: {
+                handleBackNavigation()
+            },
+            fillsHeight: showsTxDetailRoute
+        ) {
+            if let txDetailRoute {
+                TXDetailVCWrapper(
+                    tx: txDetailRoute.tx,
+                    navigateBack: $backNavigationRequested,
+                    onDismissed: {
+                        showBackButton = shouldShowBackButton
+                    }
+                )
+            } else if let selectedCardIndex {
+                GiftCardDetailsView(
+                    viewModel: viewModel,
+                    selectedCardIndex: selectedCardIndex,
+                    backNavigationRequested: $backNavigationRequested,
+                    onShowBackButton: { show in
+                        showBackButton = show
+                    },
+                    onOpenTransaction: { transaction in
+                        txDetailRoute = TxDetailRoute(
+                            tx: transaction,
+                            selectedCardIndex: selectedCardIndex
+                        )
+                        showBackButton = true
+                    }
+                )
+            } else {
+                GiftCardPurchaseSelectionSheet(
+                    merchantIcon: viewModel.uiState.merchantIcon,
+                    merchantName: viewModel.uiState.merchantName,
+                    provider: viewModel.uiState.provider,
+                    cards: viewModel.uiState.cards,
+                    isLoadingCardDetails: viewModel.uiState.isLoadingCardDetails,
+                    hasBeenPollingForLongTime: viewModel.uiState.hasBeenPollingForLongTime,
+                    onSelectCard: { index in
+                        selectedCardIndex = index
+                        showBackButton = true
+                    }
+                )
+            }
+        }
+
+        Group {
+            if #available(iOS 16.4, *) {
+                if showsTxDetailRoute {
+                    dialog
+                        .presentationBackground(Color.primaryBackground)
+                        .presentationDetents([.large])
+                        .presentationCornerRadius(32)
+                        .presentationDragIndicator(.hidden)
+                } else {
+                    dialog
+                        .presentationBackground(Color.primaryBackground)
+                        .selfSizingSheet(fallback: calculatedSelectionSheetHeight)
+                        .presentationCornerRadius(32)
+                        .presentationDragIndicator(.hidden)
                 }
-            )
+            } else if #available(iOS 16.0, *) {
+                if showsTxDetailRoute {
+                    dialog
+                        .presentationDetents([.large])
+                } else {
+                    dialog
+                        .selfSizingSheet(fallback: calculatedSelectionSheetHeight)
+                }
+            } else {
+                dialog
+            }
         }
         .background(Color.primaryBackground)
+        .onAppear {
+            viewModel.startObserving()
+            showBackButton = shouldShowBackButton
+        }
+        .onDisappear {
+            viewModel.stopObserving()
+        }
+        .onChange(of: selectedCardIndex) { _ in
+            showBackButton = shouldShowBackButton
+        }
+        .onChange(of: txDetailRoute?.id) { _ in
+            showBackButton = shouldShowBackButton
+        }
+        .onChange(of: viewModel.uiState.cards.count) { cardsCount in
+            if selectedCardIndex == nil, txDetailRoute == nil, cardsCount == 1 {
+                selectedCardIndex = 0
+            }
+            showBackButton = shouldShowBackButton
+        }
+        .onChange(of: backNavigationRequested) { requested in
+            guard requested else { return }
+            backNavigationRequested = false
+            handleBackNavigation()
+        }
     }
+
+    private var calculatedSelectionSheetHeight: CGFloat {
+        // Merchant header + cards/loading + provider + paddings + bottom safe area.
+        let baseHeight: CGFloat = 250
+        if viewModel.uiState.cards.isEmpty {
+            return baseHeight + 120
+        }
+
+        let rowHeight: CGFloat = 64
+        let dividerHeight: CGFloat = 1
+        let cardsCount = CGFloat(viewModel.uiState.cards.count)
+        let listHeight = cardsCount * rowHeight + max(0, cardsCount - 1) * dividerHeight
+        let cappedListHeight = min(listHeight, 5 * rowHeight + 4 * dividerHeight)
+
+        return baseHeight + cappedListHeight
+    }
+
+    private var shouldShowBackButton: Bool {
+        txDetailRoute != nil
+    }
+
+    private func handleBackNavigation() {
+        if let txDetailRoute {
+            selectedCardIndex = txDetailRoute.selectedCardIndex
+            self.txDetailRoute = nil
+            return
+        }
+
+        if selectedCardIndex != nil {
+            if viewModel.uiState.cards.count > 1 {
+                selectedCardIndex = nil
+            } else {
+                dismiss()
+            }
+            return
+        }
+
+        dismiss()
+    }
+}
+
+private struct TxDetailRoute: Identifiable {
+    let id = UUID()
+    let tx: Transaction
+    let selectedCardIndex: Int?
 }
 
 struct TransactionDetailsSheet: View {

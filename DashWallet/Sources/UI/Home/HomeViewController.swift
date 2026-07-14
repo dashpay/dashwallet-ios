@@ -16,8 +16,8 @@
 //
 
 import UIKit
-import SwiftUI
 import Combine
+import SwiftUI
 
 @objc(DWHomeViewControllerDelegate)
 protocol HomeViewControllerDelegate: AnyObject {
@@ -287,11 +287,17 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     }
     
     func showGiftCardDetails(txId: Data) {
-        let hostingController = UIHostingController(rootView: 
-            GiftCardDetailsSheet(txId: txId).background(Color.primaryBackground)
-        )
-        
-        present(hostingController, animated: true, completion: nil)
+        let presentGiftCardSheet: () -> Void = { [weak self] in
+            self?.viewModel.giftCardTxId = txId
+        }
+
+        if let presentedViewController {
+            presentedViewController.dismiss(animated: true) {
+                DispatchQueue.main.async(execute: presentGiftCardSheet)
+            }
+        } else {
+            DispatchQueue.main.async(execute: presentGiftCardSheet)
+        }
     }
     
     private func configureObservers() {

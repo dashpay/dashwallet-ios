@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "zen_ledger.png",
+      "filename" : "zenledger.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "zen_ledger@2x.png",
+      "filename" : "zenledger@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "zen_ledger@3x.png",
+      "filename" : "zenledger@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

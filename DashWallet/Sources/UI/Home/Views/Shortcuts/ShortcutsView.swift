@@ -19,7 +19,7 @@ import UIKit
 import Combine
 
 func cellSize(for contentSizeCategory: UIContentSizeCategory, viewWidth: CGFloat) -> CGSize {
-    let margin: CGFloat = 10.0       // Figma: container px padding
+    let margin: CGFloat = 20.0       // Outer spacing to the screen edges
     let spacing: CGFloat = 4.0       // Figma: shortcut-bar/gap
     let visibleCells: CGFloat = 4.0
     let cellWidth = floor((viewWidth - margin * 2.0 - spacing * (visibleCells - 1)) / visibleCells)
@@ -49,6 +49,8 @@ protocol ShortcutsViewDelegate: AnyObject {
 // MARK: - ShortcutsView
 
 class ShortcutsView: UIView {
+    private static let verticalPadding: CGFloat = 4.0
+
     private var cancellableBag = Set<AnyCancellable>()
     private let viewModel: HomeViewModel
     private var lastLayoutWidth: CGFloat = 0
@@ -100,11 +102,11 @@ class ShortcutsView: UIView {
             contentView.widthAnchor.constraint(equalTo: widthAnchor),
         ])
 
-        collectionView.layer.cornerRadius = 16
+        collectionView.layer.cornerRadius = 20
         collectionView.layer.masksToBounds = true
 
         if UIDevice.current.userInterfaceIdiom == .pad {
-            collectionView.contentInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
+            collectionView.contentInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 0)
         }
 
         collectionView.register(UINib(nibName: "DWShortcutCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: ShortcutCell.reuseIdentifier)
@@ -140,7 +142,7 @@ class ShortcutsView: UIView {
         var cellSize = cellSize(for: contentSizeCategory, viewWidth: width)
         cellSize.height = ceil(cellSize.height) // This fixes the autolayout issue when the size of the cell is higher than the collection view itself
 
-        collectionViewHeightConstraint.constant = cellSize.height
+        collectionViewHeightConstraint.constant = cellSize.height + ShortcutsView.verticalPadding * 2
         setNeedsUpdateConstraints()
 
         if let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
@@ -212,7 +214,7 @@ extension ShortcutsView: UICollectionViewDataSource, UICollectionViewDelegate, U
         let cellCount = CGFloat(collectionView.numberOfItems(inSection: section))
         var inset = (collectionView.bounds.size.width - (cellCount * cellWidth) - ((cellCount - 1) * cellSpacing)) * 0.5
         inset = max(inset, 0.0)
-        return UIEdgeInsets(top: 0.0, left: inset, bottom: 0.0, right: inset)
+        return UIEdgeInsets(top: ShortcutsView.verticalPadding, left: inset, bottom: ShortcutsView.verticalPadding, right: inset)
     }
 }
 
@@ -224,3 +226,64 @@ extension ShortcutsView {
         false
     }
 }
+
+// MARK: - Xcode Canvas Previews
+
+#if DEBUG
+import SwiftUI
+
+// Thin UIViewRepresentable that hosts the UIKit ShortcutsView in SwiftUI Canvas.
+private struct ShortcutsViewRepresentable: UIViewRepresentable {
+    let items: [ShortcutAction]
+
+    func makeUIView(context: Context) -> ShortcutsView {
+        ShortcutsView(frame: .zero, viewModel: .makeForPreview(shortcuts: items))
+    }
+
+    func updateUIView(_ uiView: ShortcutsView, context: Context) {}
+}
+
+// Helper to keep #Preview bodies one-liners.
+private func shortcutsPreview(_ items: [ShortcutAction]) -> some View {
+    ShortcutsViewRepresentable(items: items)
+        .frame(width: 375, height: 92) // 68 cell + 8×2 vertical padding
+}
+
+private let previewState1: [ShortcutAction] = [ // zero balance + backup needed
+    .init(type: .secureWallet),
+    .init(type: .receive),
+    .init(type: .buySellDash),
+    .init(type: .spend)
+]
+private let previewState2: [ShortcutAction] = [ // zero balance + verified
+    .init(type: .receive),
+    .init(type: .send),
+    .init(type: .buySellDash),
+    .init(type: .spend)
+]
+private let previewState3: [ShortcutAction] = [ // has balance + verified
+    .init(type: .receive),
+    .init(type: .send),
+    .init(type: .sendToContact),
+    .init(type: .payToAddress)
+]
+private let previewState4: [ShortcutAction] = [ // has balance + backup needed
+    .init(type: .secureWallet),
+    .init(type: .receive),
+    .init(type: .send),
+    .init(type: .spend)
+]
+
+#Preview("Zero bal · backup needed") {
+    shortcutsPreview(previewState1)
+}
+#Preview("Zero bal · verified") {
+    shortcutsPreview(previewState2)
+}
+#Preview("Has balance · verified") {
+    shortcutsPreview(previewState3)
+}
+#Preview("Has balance · backup needed") {
+    shortcutsPreview(previewState4)
+}
+#endif

@@ -26,4 +26,5 @@ class PiggyCardsConstants {
     static let tokenExpirationSeconds = 3600
     static let serviceFeePercent = 1.5 // 1.5% service fee deducted from discount
     static let orderPollingDelayMs = 250 // Delay before first status check
+    static let maxOrderAmount: Decimal = 2500
 }
