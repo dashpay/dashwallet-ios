@@ -436,16 +436,23 @@ struct HomeViewContent<Content: View>: View {
         case .tx(let txItem, let metadata):
             let icons = transactionRowIcons(txItem: txItem, metadata: metadata)
 
-            TransactionPreview(
+            DashUIKit.TransactionView(
+                // A merchant logo is a bitmap and goes through `iconView` so it can be clipped to a
+                // circle; every other row resolves to a named icon.
+                icon: metadata?.icon == nil ? icons.primary.dashIconSource : nil,
+                iconView: metadata?.icon.map {
+                    AnyView(Image(uiImage: $0).resizable().scaledToFit().clipShape(Circle()))
+                },
+                secondaryIcon: icons.secondary?.dashIconSource,
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: metadata?.details?.isEmpty == false ? metadata?.details : nil,
-                icon: icons.primary,
-                secondaryIcon: icons.secondary,
                 dashAmount: txItem.signedDashAmount,
-                overrideFiatAmount: txItem.fiatAmount,
+                amountSign: .always,
+                fiat: txItem.fiatAmount,
                 trailingStatusText: txItem.state == .locked ? NSLocalizedString("Locked", comment: "Transaction state: coinbase reward locked until 100 confirmations") : nil
-            ) {
+            )
+            .onTapGesture {
                 if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
                     viewModel.giftCardTxId = txItem.txHashData
                 } else {

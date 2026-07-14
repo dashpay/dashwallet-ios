@@ -1,0 +1,15 @@
+{
+  "originHash" : "c249ed8d75daf51cf5f1467a120fdeaf4cb1d396e8e7721de5bd30aa8b713ba4",
+  "pins" : [
+    {
+      "identity" : "dashuikit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/dashpay/DashUIKit",
+      "state" : {
+        "branch" : "import/final",
+        "revision" : "72f56c235a0f745275c3c790c19c82dbf71d4fcb"
+      }
+    }
+  ],
+  "version" : 3
+}
