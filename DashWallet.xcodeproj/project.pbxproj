@@ -512,6 +512,7 @@
 		510336DC2FEBB0C9002E0899 /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10175DFA10175DFA101 /* DashStepper.swift */; };
 		510336DD2FEBB0C9002E0899 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10275DFA10275DFA102 /* SegmentedControl.swift */; };
 		510336ED2FEBB1B4002E0899 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 510336EC2FEBB1B4002E0899 /* DashUIKit */; };
+		510336EF2FEBB1B4002E0899 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 510336EE2FEBB1B4002E0899 /* DashUIKit */; };
 		514AEA132FB324FA00F9B54C /* SwapConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* SwapConvertView.swift */; };
 		514AEA142FB324FA00F9B54C /* SwapConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* SwapConvertView.swift */; };
 		514AEA492FB33B4300F9B54C /* SwapConvertHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */; };
@@ -3694,6 +3695,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				510336EF2FEBB1B4002E0899 /* DashUIKit in Frameworks */,
 				C9D2C8F62A320AA000D15901 /* libDashSync.a in Frameworks */,
 				C9D2C8F72A320AA000D15901 /* CoreNFC.framework in Frameworks */,
 				C9D2C8F82A320AA000D15901 /* BackgroundTasks.framework in Frameworks */,
@@ -8529,6 +8531,9 @@
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
 			);
 			name = dashwallet;
+			packageProductDependencies = (
+				510336EC2FEBB1B4002E0899 /* DashUIKit */,
+			);
 			productName = DashWallet;
 			productReference = 75D5F3BE191EC270004AB296 /* dashwallet.app */;
 			productType = "com.apple.product-type.application";
@@ -8629,6 +8634,9 @@
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
 			);
 			name = dashpay;
+			packageProductDependencies = (
+				510336EE2FEBB1B4002E0899 /* DashUIKit */,
+			);
 			productName = DashWallet;
 			productReference = C9D2C9532A320AA000D15901 /* dashpay.app */;
 			productType = "com.apple.product-type.application";
@@ -13201,6 +13209,11 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		510336EC2FEBB1B4002E0899 /* DashUIKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 510336EB2FEBB1B4002E0899 /* XCRemoteSwiftPackageReference "DashUIKit" */;
+			productName = DashUIKit;
+		};
+		510336EE2FEBB1B4002E0899 /* DashUIKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 510336EB2FEBB1B4002E0899 /* XCRemoteSwiftPackageReference "DashUIKit" */;
 			productName = DashUIKit;
