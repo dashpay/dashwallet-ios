@@ -18,6 +18,10 @@
 import MapKit
 import UIKit
 
+#if DEBUG
+import SwiftUI
+#endif
+
 // MARK: - CLLocationCoordinate2D + Equatable
 
 extension CLLocationCoordinate2D: Equatable {
@@ -25,6 +29,62 @@ extension CLLocationCoordinate2D: Equatable {
         lhs.longitude == rhs.longitude && lhs.latitude == rhs.latitude
     }
 }
+
+#if DEBUG
+private func makePreviewMapView() -> ExploreMapView {
+    let view = ExploreMapView(frame: .zero)
+    view.initialCenterLocation = CLLocation(latitude: 37.7749, longitude: -122.4194)
+    return view
+}
+
+private func previewMockMerchant(name: String, latitude: Double, longitude: Double) -> ExplorePointOfUse {
+    ExplorePointOfUse(
+        id: Int64(abs(name.hashValue)),
+        name: name,
+        category: .merchant(
+            .init(
+                merchantId: name.lowercased().replacingOccurrences(of: " ", with: "-"),
+                paymentMethod: .dash,
+                type: .physical,
+                deeplink: nil,
+                savingsBasisPoints: 0,
+                denominationsType: nil,
+                redeemType: nil
+            )
+        ),
+        active: true,
+        city: "San Francisco",
+        territory: "CA",
+        address1: "Market Street",
+        address2: nil,
+        address3: nil,
+        address4: nil,
+        latitude: latitude,
+        longitude: longitude,
+        website: nil,
+        phone: nil,
+        logoLocation: nil,
+        coverImage: nil,
+        source: "preview"
+    )
+}
+
+#Preview("Empty map") {
+    UIViewWrapper(uiView: makePreviewMapView())
+        .frame(height: 400)
+}
+
+#Preview("With merchants") {
+    let view = makePreviewMapView()
+    view.show(merchants: [
+        previewMockMerchant(name: "Blue Bottle Coffee", latitude: 37.7764, longitude: -122.4231),
+        previewMockMerchant(name: "Ferry Building Market", latitude: 37.7956, longitude: -122.3937),
+        previewMockMerchant(name: "Mission Dash Shop", latitude: 37.7597, longitude: -122.4148),
+    ])
+    return UIViewWrapper(uiView: view)
+        .frame(height: 400)
+}
+#endif
 
 // MARK: - ExploreMapBounds + Equatable
 
@@ -446,6 +506,5 @@ extension ExploreMapView: MKMapViewDelegate {
         }
     }
 }
-
 
 

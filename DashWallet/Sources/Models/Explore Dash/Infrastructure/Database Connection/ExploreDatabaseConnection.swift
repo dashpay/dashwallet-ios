@@ -33,6 +33,15 @@ let kExploreDashDatabaseName = "explore.db"
 class ExploreDatabaseConnection {
     var db: Connection!
 
+    #if DEBUG || Testflight
+    /// Guards the test-merchant seeding so it runs at most once per session.
+    /// Seeding drops and recreates the FTS sync triggers; doing that repeatedly
+    /// (on every connect + every sync notification) transiently invalidates the
+    /// schema, making merchant SELECTs fail with
+    /// "malformed database schema ... trigger ... already exists" → "No Results Found".
+    private var didInsertTestMerchants = false
+    #endif
+
     init() {
         NotificationCenter.default.addObserver(forName: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification,
                                                object: nil, queue: .main) { [weak self] _ in
@@ -232,8 +241,20 @@ class ExploreDatabaseConnection {
     ]
 
     private func addPiggyCardsTestMerchants(db: Connection) {
+        // Run at most once per session: avoid repeatedly dropping/recreating the FTS
+        // triggers, which transiently invalidates the schema and breaks merchant queries.
+        guard !didInsertTestMerchants else { return }
+
         do {
             let allIds = piggyCardsTestMerchants.map { "'\($0.merchantId)'" }.joined(separator: ", ")
+
+            // Already seeded (e.g. from a previous launch)? Skip the trigger churn entirely.
+            if let count = try? db.scalar(
+                "SELECT COUNT(*) FROM merchant WHERE source = 'PiggyCards' AND merchantId IN (\(allIds))"
+            ) as? Int64, count >= Int64(piggyCardsTestMerchants.count) {
+                didInsertTestMerchants = true
+                return
+            }
 
             try db.transaction {
                 // Drop FTS triggers to allow merchant table modifications
@@ -296,31 +317,32 @@ class ExploreDatabaseConnection {
 
                 // Recreate FTS triggers
                 try db.run("""
-                    CREATE TRIGGER room_fts_content_sync_merchant_fts_BEFORE_UPDATE
+                    CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchant_fts_BEFORE_UPDATE
                     BEFORE UPDATE ON merchant BEGIN
                         DELETE FROM merchant_fts WHERE docid=OLD.rowid;
                     END
                 """)
                 try db.run("""
-                    CREATE TRIGGER room_fts_content_sync_merchant_fts_BEFORE_DELETE
+                    CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchant_fts_BEFORE_DELETE
                     BEFORE DELETE ON merchant BEGIN
                         DELETE FROM merchant_fts WHERE docid=OLD.rowid;
                     END
                 """)
                 try db.run("""
-                    CREATE TRIGGER room_fts_content_sync_merchant_fts_AFTER_UPDATE
+                    CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchant_fts_AFTER_UPDATE
                     AFTER UPDATE ON merchant BEGIN
                         INSERT INTO merchant_fts(docid, name) VALUES (NEW.rowid, NEW.name);
                     END
                 """)
                 try db.run("""
-                    CREATE TRIGGER room_fts_content_sync_merchant_fts_AFTER_INSERT
+                    CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_merchant_fts_AFTER_INSERT
                     AFTER INSERT ON merchant BEGIN
                         INSERT INTO merchant_fts(docid, name) VALUES (NEW.rowid, NEW.name);
                     END
                 """)
             }
 
+            didInsertTestMerchants = true
             print("✅ PiggyCards test merchants added successfully (\(piggyCardsTestMerchants.count) merchants)")
         } catch {
             print("🎯 Error adding PiggyCards test merchants: \(error)")
