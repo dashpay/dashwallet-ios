@@ -46,6 +46,15 @@ private struct MenuCardStyle: ViewModifier {
 
 struct BuySellPortalView: View {
     let showCoinbase: Bool
+
+    /// Maya is suspended for the SwiftDashSDK migration release. Its swap path
+    /// hand-builds a `DSTransaction` (OP_RETURN memo + fixed output order) and
+    /// broadcasts it through DashSync, whose SPV is frozen post-M6 — balances and
+    /// UTXOs read stale/zero, so a swap would be built against dead state and fail.
+    /// The screens stay compiled; only the entry point is withheld.
+    /// TODO(maya-sdk-port): restore once `SwiftDashSDKTransactionSender` can emit an
+    /// OP_RETURN output with a preserved output order.
+    private let showMaya = false
     @ObservedObject var model: BuySellPortalModel
     var onBack: () -> Void
     var onUphold: () -> Void
@@ -66,7 +75,9 @@ struct BuySellPortalView: View {
                     if showCoinbase {
                         coinbaseCard
                     }
-                    mayaCard
+                    if showMaya {
+                        mayaCard
+                    }
                 }
                 .padding(.top, 10)
                 .padding(.horizontal, 20)
