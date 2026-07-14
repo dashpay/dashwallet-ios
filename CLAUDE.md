@@ -950,12 +950,12 @@ if condition1 || additionalCondition || condition3 {
   source file. (This is exactly how the Uphold `client_secret` and the redundant Coinbase `CLIENT_*` leaked.)
 - **A git revert does NOT undo a leak** — the value stays in history and must be treated as compromised.
   Response = **rotate the credential**, then squash-merge / delete the branch that carried it.
-- **Enforcement (two layers):**
-  1. CI secret scan — `.github/workflows/gitleaks.yml` runs gitleaks on every PR/push; a detected secret
-     fails the check (cannot be bypassed).
-  2. Local pre-commit hook — enable once with `git config core.hooksPath .githooks` (`brew install gitleaks`).
-  Config lives in `.gitleaks.toml`; reviewed false positives go in `.gitleaksignore` (by fingerprint),
-  never by allowlisting the secret string.
+- **Enforcement (local pre-commit hook):** enable once with `git config core.hooksPath .githooks`
+  (`brew install gitleaks`). The hook (`.githooks/pre-commit`) runs gitleaks on staged changes and blocks
+  the commit on a detected secret. Config lives in `.gitleaks.toml`; reviewed false positives go in
+  `.gitleaksignore` (by fingerprint), never by allowlisting the secret string.
+  (There is intentionally no CI secret-scan workflow — the org-licensed `gitleaks-action` was dropped in
+  favor of local-only scanning.)
 
 ### Multi-target Builds
 - Main app, Today extension, and Watch app share core components
