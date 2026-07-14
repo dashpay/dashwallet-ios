@@ -8638,7 +8638,7 @@
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			packageReferences = (
-				510336EB2FEBB1B4002E0899 /* XCLocalSwiftPackageReference "../Packages/DashUIKit" */,
+				510336EB2FEBB1B4002E0899 /* XCRemoteSwiftPackageReference "DashUIKit" */,
 			);
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
 			projectDirPath = "";
@@ -13163,16 +13163,21 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		510336EB2FEBB1B4002E0899 /* XCLocalSwiftPackageReference "../Packages/DashUIKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/DashUIKit;
+/* Begin XCRemoteSwiftPackageReference section */
+		510336EB2FEBB1B4002E0899 /* XCRemoteSwiftPackageReference "DashUIKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dashpay/DashUIKit";
+			requirement = {
+				branch = "import/final";
+				kind = branch;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		510336EC2FEBB1B4002E0899 /* DashUIKit */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 510336EB2FEBB1B4002E0899 /* XCRemoteSwiftPackageReference "DashUIKit" */;
 			productName = DashUIKit;
 		};
 /* End XCSwiftPackageProductDependency section */
