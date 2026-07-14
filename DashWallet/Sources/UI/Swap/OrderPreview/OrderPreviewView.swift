@@ -107,7 +107,7 @@ struct OrderPreviewView: View {
 
                         Text(NSLocalizedString("Quote expires", comment: "Dash DEX"))
                             .dashFont(.subheadMedium)
-                            .foregroundColor(Color.dash.black)
+                            .foregroundColor(Color.dash.primaryText)
                     }
 
                     Spacer(minLength: 0)
@@ -115,7 +115,7 @@ struct OrderPreviewView: View {
                     //Timer ~ 10 sec
                     Text(viewModel.timerText)
                         .dashFont(.subheadMedium)
-                        .foregroundColor(Color.dash.black)
+                        .foregroundColor(Color.dash.primaryText)
                 }
                 .padding(.horizontal, 20)
 
