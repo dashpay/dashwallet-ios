@@ -3725,7 +3725,6 @@
 				C9D2C9072A320AA000D15901 /* WebKit.framework in Frameworks */,
 				C9D2C9082A320AA000D15901 /* libbz2.tbd in Frameworks */,
 				B3D26F853F876FE4F2081CFF /* libPods-dashpay.a in Frameworks */,
-				51760D812FF7C2CF00E70F0B /* DashUIKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
