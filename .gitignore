@@ -41,13 +41,13 @@ fastlane/test_output
 Pods/
 
 # Production Constants
-DWUpholdMainnetConstants__Release.m
 TODO.md
 */GoogleService-Info.plist
 */Topper-Info.plist
 */Coinbase-Info.plist
 */ZenLedger-Info.plist
 */SwapKit-Info.plist
+**/Uphold-Info.plist
 
 # SQLite temporary files
 *.db-shm
