@@ -101,7 +101,7 @@ final class SwapConvertViewModel: ObservableObject {
 
     /// Fiat value of the entered amount, in the active fiat currency.
     var enteredFiatFormatted: String {
-        SwapInputFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency)
+        MayaAmountFormatter.fiat(displayFiatAmount, currencyCode: currentFiatCurrency)
     }
 
     /// True when nothing meaningful has been entered yet (used to hide the fiat sub-line).
@@ -189,7 +189,7 @@ final class SwapConvertViewModel: ObservableObject {
             dashSatoshis: activeSellSatoshis,
             // Order Preview reflects the real (grossed-up) spend — that's where the fee is shown.
             fromDashAmount: dashAmount(from: activeSellSatoshis).formattedDashAmountWithoutCurrencySymbol,
-            fromFiatAmount: SwapInputFormatter.fiat(dashAmount(from: activeSellSatoshis) * amount.dashFiatRate, currencyCode: currentFiatCurrency),
+            fromFiatAmount: MayaAmountFormatter.fiat(dashAmount(from: activeSellSatoshis) * amount.dashFiatRate, currencyCode: currentFiatCurrency),
             cryptoFiatRate: amount.cryptoFiatRate,
             fiatCurrencyCode: currentFiatCurrency,
             targetReceiveAmount: selectedCurrency.isReceiveTargetMode && !isMaxFromBalance ? amount.crypto : nil,
@@ -277,7 +277,7 @@ final class SwapConvertViewModel: ObservableObject {
     }
 
     private func applySuccessfulQuote(_ quote: SwapQuoteResult) {
-        guard let raw = quote.expectedAmountOut, let rawValue = Double(raw) else {
+        guard let raw = quote.expectedAmountOut, let expectedOut = decimalFromBaseUnits(raw) else {
             latestQuote = nil
             errorMessage = nil
             receiveAmount = selectedCurrency.isReceiveTargetMode && !isMaxFromBalance ? fixedTargetReceiveAmount : nil
@@ -286,7 +286,7 @@ final class SwapConvertViewModel: ObservableObject {
         latestQuote = quote
         receiveAmount = selectedCurrency.isReceiveTargetMode && !isMaxFromBalance
             ? fixedTargetReceiveAmount
-            : "\(SwapInputFormatter.receiveAmount(rawValue / 1e8)) \(coin.code)"
+            : "\(MayaAmountFormatter.coinDisplayString(expectedOut)) \(coin.code)"
         checkBalance()
         syncCoinInputToQuotedReceiveIfNeeded(quote)
     }
@@ -530,8 +530,7 @@ final class SwapConvertViewModel: ObservableObject {
                 return
             }
             guard !amount.crypto.isZero, amount.cryptoFiatRate > 0 else { inputValue = ""; return }
-            let d = (amount.crypto as NSDecimalNumber).doubleValue
-            inputValue = SwapInputFormatter.trimTrailingZeros(String(format: "%.5f", d))
+            inputValue = MayaAmountFormatter.coinDisplayString(amount.crypto)
         }
     }
 
@@ -561,8 +560,7 @@ final class SwapConvertViewModel: ObservableObject {
 
     private var fixedTargetReceiveAmount: String? {
         guard selectedCurrency.isReceiveTargetMode, amount.crypto > 0 else { return nil }
-        let value = (amount.crypto as NSDecimalNumber).doubleValue
-        return "\(SwapInputFormatter.receiveAmount(value)) \(coin.code)"
+        return "\(MayaAmountFormatter.coinDisplayString(amount.crypto)) \(coin.code)"
     }
 
     private var quotedReceiveInputValue: String? {
@@ -573,8 +571,7 @@ final class SwapConvertViewModel: ObservableObject {
               expectedOut > 0 else {
             return nil
         }
-        let value = (expectedOut as NSDecimalNumber).doubleValue
-        return SwapInputFormatter.receiveAmount(value)
+        return MayaAmountFormatter.coinDisplayString(expectedOut)
     }
 
     private func dashAmount(from satoshis: Int64) -> Decimal {
@@ -612,7 +609,7 @@ final class SwapConvertViewModel: ObservableObject {
             return
         }
 
-        let displayValue = SwapInputFormatter.receiveAmount((expectedOut as NSDecimalNumber).doubleValue)
+        let displayValue = MayaAmountFormatter.coinDisplayString(expectedOut)
         guard inputValue != displayValue else { return }
 
         isSyncingQuotedInput = true
@@ -664,25 +661,6 @@ final class SwapConvertViewModel: ObservableObject {
     }
 }
 
-private struct SwapInputFormatter {
-    static func trimTrailingZeros(_ s: String) -> String {
-        var result = s
-        while result.hasSuffix("0") { result.removeLast() }
-        if result.hasSuffix(".") { result.removeLast() }
-        return result
-    }
-
-    static func receiveAmount(_ humanValue: Double) -> String {
-        let s = String(format: "%.5f", humanValue)
-        return trimTrailingZeros(s)
-    }
-
-    static func fiat(_ value: Decimal, currencyCode: String) -> String {
-        NumberFormatter.fiatDisplayFormatter(currencyCode: currencyCode)
-            .string(from: value as NSDecimalNumber) ?? "\(value)"
-    }
-}
-
 private extension CurrencyOption {
     var isReceiveTargetMode: Bool {
         isCoinInput || isFiat
@@ -704,7 +682,7 @@ private extension SwapConvertViewModel {
 
             let dashBalanceDecimal = Decimal(dashBalance) / Decimal(100_000_000)
             let maxCoinAmount = dashBalanceDecimal * amount.cryptoDashRate
-            let formatted = SwapInputFormatter.receiveAmount((maxCoinAmount as NSDecimalNumber).doubleValue)
+            let formatted = MayaAmountFormatter.coinDisplayString(maxCoinAmount)
             amountText = "\(formatted) \(coin.code)"
         }
 

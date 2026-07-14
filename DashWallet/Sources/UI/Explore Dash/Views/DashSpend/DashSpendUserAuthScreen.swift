@@ -146,9 +146,10 @@ struct DashSpendUserAuthScreen: View {
             
             // Bottom section with button or keyboard
             if authType == .otp {
-                NumericKeyboardView(
+                DashUIKit.NumericKeyboardView(
                     value: $viewModel.input,
                     showDecimalSeparator: false,
+                    locale: .autoupdatingCurrent,
                     actionButtonText: NSLocalizedString("Continue", comment: ""),
                     actionEnabled: true,
                     inProgress: viewModel.isLoading,
