@@ -205,9 +205,14 @@ extension ExploreDash {
         merchantDAO.allMerchants(by: query, in: bounds, userPoint: userPoint, paymentMethods: paymentMethods, sortBy: sortBy, territory: territory, denominationType: denominationType, offset: offset, completion: completion)
     }
 
-    func allLocations(for merchantId: String, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+    func allLocations(for merchantId: String, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, offset: Int = 0,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
-        merchantDAO.allLocations(for: merchantId, in: bounds, userPoint: userPoint, completion: completion)
+        merchantDAO.allLocations(for: merchantId, in: bounds, userPoint: userPoint, offset: offset, completion: completion)
+    }
+
+    func allLocationsCount(for merchantId: String, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+                           completion: @escaping (Swift.Result<Int, Error>) -> Void) {
+        merchantDAO.allLocationsCount(for: merchantId, in: bounds, userPoint: userPoint, completion: completion)
     }
 
     func fetchTerritoriesForMerchants(completion: @escaping (Swift.Result<[Territory], Error>) -> Void) {
@@ -277,4 +282,3 @@ extension FloatingPoint {
     var degreesToRadians: Self { self * .pi / 180 }
     var radiansToDegrees: Self { self * 180 / .pi }
 }
-

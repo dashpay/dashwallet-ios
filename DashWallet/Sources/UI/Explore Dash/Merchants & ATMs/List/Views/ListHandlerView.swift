@@ -17,6 +17,10 @@
 
 import UIKit
 
+#if DEBUG
+import SwiftUI
+#endif
+
 final class ListHandlerView: UIView {
     private var handler: UIView!
 
@@ -49,3 +53,11 @@ final class ListHandlerView: UIView {
     }
 }
 
+#if DEBUG
+#Preview("Default") {
+    UIViewWrapper(uiView: ListHandlerView(frame: .zero))
+        .frame(width: 375, height: 30)
+        .padding()
+        .background(Color(.systemGray4))
+}
+#endif

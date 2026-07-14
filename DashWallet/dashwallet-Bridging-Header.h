@@ -28,7 +28,10 @@ static const bool _SNAPSHOT = 0;
 #import "DSChain.h"
 
 //MARK: DashWallet
-#import "DSAccount+SpentInputCheck.h"
+// Imported via $(SRCROOT)-relative path: this header is missing from the generated
+// project header map, so a bare "DSAccount+SpentInputCheck.h" quote-import is not
+// found by the bridging-header dependency scanner. $(SRCROOT) is on HEADER_SEARCH_PATHS.
+#import "DashWallet/Sources/Models/Transactions/DSAccount+SpentInputCheck.h"
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
