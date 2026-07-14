@@ -465,7 +465,7 @@
 		47C661AB28F9707A00028A8D /* NumberKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AA28F9707A00028A8D /* NumberKeyboard.swift */; };
 		47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */; };
 		47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */; };
-		47C661B228FDC72700028A8D /* TransferAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B128FDC72700028A8D /* TransferAmountViewController.swift */; };
+
 		47C661B428FDCF7800028A8D /* ActionButtonViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B328FDCF7800028A8D /* ActionButtonViewController.swift */; };
 		47C661B628FE75A700028A8D /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B528FE75A700028A8D /* BaseViewController.swift */; };
 		47C661B828FE907300028A8D /* AmountInputControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B728FE907300028A8D /* AmountInputControl.swift */; };
@@ -561,6 +561,12 @@
 		514AF1C12FB5F02D00F9B54C /* SwapConvertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AF1BF2FB5F02D00F9B54C /* SwapConvertViewModel.swift */; };
 		514BEA012FB5F02D00F9B54C /* SwapConvertAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514BEA002FB5F02D00F9B54C /* SwapConvertAmount.swift */; };
 		514BEA022FB5F02D00F9B54C /* SwapConvertAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514BEA002FB5F02D00F9B54C /* SwapConvertAmount.swift */; };
+		2E08EC52344E430F9BC8DEAA /* TransferAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */; };
+		10853C84CC9043928BA2205A /* TransferAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */; };
+		D5E6F7A8B9C0D1E2F3A4B5C6 /* TransferAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */; };
+		E9F0A1B2C3D4E5F6A7B8C9D0 /* TransferAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */; };
+		F2A3B4C5D6E7F8091A2B3C4D /* TransferAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */; };
+		1C2D3E4F5A6B7C8D9E0F1A2B /* TransferAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */; };
 		5151C8C62F913BF100F0A604 /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */; };
 		5151C8C72F913BF100F0A604 /* ZenLedger-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C52F913BF100F0A604 /* ZenLedger-Info.plist */; };
 		5151C8C82F913BF100F0A604 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C32F913BF100F0A604 /* GoogleService-Info.plist */; };
@@ -1638,7 +1644,7 @@
 		C9D2C8492A320AA000D15901 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
 		C9D2C84A2A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C84B2A320AA000D15901 /* UITableView+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F005FE297164600029EB10 /* UITableView+DashWallet.swift */; };
-		C9D2C84C2A320AA000D15901 /* TransferAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B128FDC72700028A8D /* TransferAmountViewController.swift */; };
+
 		C9D2C84D2A320AA000D15901 /* ShortcutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8D29D404850034FD57 /* ShortcutCell.swift */; };
 		C9D2C84F2A320AA000D15901 /* UIColor+DWStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */; };
 		C9D2C8502A320AA000D15901 /* DWEnvironment.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEF3AF021823CD800917AB6 /* DWEnvironment.m */; };
@@ -2705,7 +2711,7 @@
 		47C661AA28F9707A00028A8D /* NumberKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberKeyboard.swift; sourceTree = "<group>"; };
 		47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberKeyboardButton.swift; sourceTree = "<group>"; };
 		47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseAmountViewController.swift; sourceTree = "<group>"; };
-		47C661B128FDC72700028A8D /* TransferAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountViewController.swift; sourceTree = "<group>"; };
+
 		47C661B328FDCF7800028A8D /* ActionButtonViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButtonViewController.swift; sourceTree = "<group>"; };
 		47C661B528FE75A700028A8D /* BaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
 		47C661B728FE907300028A8D /* AmountInputControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountInputControl.swift; sourceTree = "<group>"; };
@@ -2753,6 +2759,9 @@
 		B1300000B1300000B1300001 /* BuyReceiveViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveViewModel.swift; sourceTree = "<group>"; };
 		B1300000B1300000B1300002 /* BuyReceiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveView.swift; sourceTree = "<group>"; };
 		B1300000B1300000B1300003 /* BuyReceiveHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveHostingController.swift; sourceTree = "<group>"; };
+		31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountViewModel.swift; sourceTree = "<group>"; };
+		C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountView.swift; sourceTree = "<group>"; };
+		B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountHostingController.swift; sourceTree = "<group>"; };
 		5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
 		5151C8C32F913BF100F0A604 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		5151C8C42F913BF100F0A604 /* Topper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Topper-Info.plist"; sourceTree = "<group>"; };
@@ -3716,6 +3725,7 @@
 				C9D2C9072A320AA000D15901 /* WebKit.framework in Frameworks */,
 				C9D2C9082A320AA000D15901 /* libbz2.tbd in Frameworks */,
 				B3D26F853F876FE4F2081CFF /* libPods-dashpay.a in Frameworks */,
+				51760D812FF7C2CF00E70F0B /* DashUIKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6332,7 +6342,10 @@
 			children = (
 				47A50F392913B96F00C70123 /* Model */,
 				47838B78290019310003E8AB /* Views */,
-				47C661B128FDC72700028A8D /* TransferAmountViewController.swift */,
+
+				31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */,
+				C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */,
+				B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */,
 			);
 			path = "Transfer Amount";
 			sourceTree = "<group>";
@@ -9815,7 +9828,10 @@
 				75DFA00175DFA00175DFA001 /* DashStepper.swift in Sources */,
 				75DFA00275DFA00275DFA002 /* SegmentedControl.swift in Sources */,
 				47F005FF297164600029EB10 /* UITableView+DashWallet.swift in Sources */,
-				47C661B228FDC72700028A8D /* TransferAmountViewController.swift in Sources */,
+
+				2E08EC52344E430F9BC8DEAA /* TransferAmountViewModel.swift in Sources */,
+				D5E6F7A8B9C0D1E2F3A4B5C6 /* TransferAmountView.swift in Sources */,
+				F2A3B4C5D6E7F8091A2B3C4D /* TransferAmountHostingController.swift in Sources */,
 				C94F5E8E29D404850034FD57 /* ShortcutCell.swift in Sources */,
 				75B3C1B22E36100100CAFE05 /* ShortcutCustomizeBannerView.swift in Sources */,
 				C1A0B2C3D4E5F60718293A02 /* ShortcutsBarView.swift in Sources */,
@@ -10779,7 +10795,10 @@
 				C9D2C84A2A320AA000D15901 /* (null) in Sources */,
 				7513DA882AB175E0005D55F6 /* TopperViewModel.swift in Sources */,
 				C9D2C84B2A320AA000D15901 /* UITableView+DashWallet.swift in Sources */,
-				C9D2C84C2A320AA000D15901 /* TransferAmountViewController.swift in Sources */,
+
+				10853C84CC9043928BA2205A /* TransferAmountViewModel.swift in Sources */,
+				E9F0A1B2C3D4E5F6A7B8C9D0 /* TransferAmountView.swift in Sources */,
+				1C2D3E4F5A6B7C8D9E0F1A2B /* TransferAmountHostingController.swift in Sources */,
 				C9D2C84D2A320AA000D15901 /* ShortcutCell.swift in Sources */,
 				75B3C1B32E36100100CAFE06 /* ShortcutCustomizeBannerView.swift in Sources */,
 				C1A0B2C3D4E5F60718293A03 /* ShortcutsBarView.swift in Sources */,
