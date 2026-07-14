@@ -193,7 +193,7 @@ public final class CurrencyExchanger {
         if amount.isZero { return 0 }
 
         if amountCurrency == kDashCurrency {
-            return try convertToDash(amount: amount, currency: currency)
+            return try convertDash(amount: amount, to: currency)
         }
 
         let dashAmount = try convertToDash(amount: amount, currency: amountCurrency)
