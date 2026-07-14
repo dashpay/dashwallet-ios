@@ -623,6 +623,7 @@
 		51A577482FBB3A6000FB4097 /* OrderPreviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A577472FBB3A6000FB4097 /* OrderPreviewViewModel.swift */; };
 		51A577492FBB3A6000FB4097 /* OrderPreviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A577472FBB3A6000FB4097 /* OrderPreviewViewModel.swift */; };
 		5EAD111230A0000000A1B201 /* MayaAmountFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAD111130A0000000A1B201 /* MayaAmountFormatter.swift */; };
+		5EAD111330A0000000A1B201 /* MayaAmountFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAD111130A0000000A1B201 /* MayaAmountFormatter.swift */; };
 		51A5774B2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A5774A2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift */; };
 		51A5774C2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A5774A2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift */; };
 		51A57B022FBB41DE00FB4097 /* OrderPreviewTableRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57B012FBB41DE00FB4097 /* OrderPreviewTableRow.swift */; };
@@ -10107,6 +10108,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5EAD111330A0000000A1B201 /* MayaAmountFormatter.swift in Sources */,
 				C9D2C6942A320AA000D15901 /* DWReceiveModelStub.m in Sources */,
 				C9D2C6952A320AA000D15901 /* DWBaseAdvancedSecurityModel.m in Sources */,
 				75EBAA262BBA9DC2004488E3 /* ZenLedger.swift in Sources */,
