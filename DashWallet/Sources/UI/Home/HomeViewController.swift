@@ -300,9 +300,15 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         }
         // Present on whatever view is currently active (any tab / pushed screen), not just Home.
         // The sync observer fires even when Home isn't the visible tab, so `self` may be off-screen.
+        //
+        // The top controller may itself be a dialog — the PIN prompt (DSRequestPinViewController)
+        // is a DWAlertController and reports no presentedViewController of its own, so presenting
+        // over it would pass the check. Stacking on top of the PIN breaks its dismissal and lets
+        // its completion fire twice, which trips NSParameterAssert(completion) in DashSync.
         guard let presenter = activeTopViewController(),
               presenter.presentedViewController == nil,
-              !(presenter is UIAlertController) else {
+              !(presenter is UIAlertController),
+              !(presenter is DWAlertController) else {
             pendingCrowdNodeReminder = true
             scheduleCrowdNodeReminderRetryIfNeeded()
             return
