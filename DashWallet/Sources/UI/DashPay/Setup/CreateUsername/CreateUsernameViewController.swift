@@ -76,12 +76,18 @@ struct CreateUsernameView: View {
     @FocusState private var isTextInputFocused: Bool
     @State private var inProgress: Bool = false
     @State private var screenLockedAfterAuth: Bool = false
-    /// Funding source for the SwiftDashSDK identity registration. Defaults
-    /// to Core; auto-pinned to Platform when only PP credits are available;
-    /// user-selectable via the segmented picker when both sources have enough.
-    /// Written into `DWIdentityRegistrationBridge.shared.preferredFundingSource`
+    /// Funding source for the SwiftDashSDK identity registration.
+    /// Auto-pinned by `syncFundingSourceToViableSource()` to the first
+    /// viable source in privacy-descending order (Shielded → Platform →
+    /// Core) until the user explicitly picks one; user-selectable via
+    /// the segmented picker when two or more sources qualify. Written
+    /// into `DWIdentityRegistrationBridge.shared.preferredFundingSource`
     /// in the Continue handler right before the submit call.
     @State private var fundingSource: DWIdentityFundingSource = .core
+    /// True once the user has manually changed the picker; auto-pinning
+    /// then only corrects a selection that became non-viable, instead
+    /// of overriding the user's explicit choice.
+    @State private var didUserPickFundingSource: Bool = false
     /// Tracks the contested-name confirmation alert. Continue routes
     /// through this alert (instead of submitting directly) when the
     /// typed name is contested-eligible — `viewModel.isContestedCandidate`.
@@ -149,23 +155,31 @@ struct CreateUsernameView: View {
                     .padding(.top, 20)
             }
 
-            // Funding source picker. Visible only when both Core and
-            // Platform Payment have enough balance to cover the
-            // identity-registration cost. When only one source is
-            // viable, the picker stays hidden and `fundingSource` is
-            // auto-pinned by `.onChange` so the Continue handler
-            // routes correctly without UI clutter.
-            if viewModel.hasMinimumRequiredCoreBalance && viewModel.hasMinimumRequiredPlatformBalance {
+            // Shielded readiness hint. Shown while the privacy-preserving
+            // funding path is NOT yet available (needs funds / maturing /
+            // pool below the consensus minimum) so the user learns what
+            // the wait is for without being blocked — the transparent
+            // sources below remain an explicit choice.
+            shieldedReadinessHint
+
+            // Funding source picker. Visible when two or more sources
+            // can cover the identity-registration cost. When only one
+            // is viable, the picker stays hidden and `fundingSource` is
+            // auto-pinned by `syncFundingSourceToViableSource()` so the
+            // Continue handler routes correctly without UI clutter.
+            if viableFundingSources.count >= 2 {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("Pay with", comment: "Usernames"))
                         .foregroundColor(.secondaryText)
                         .font(.caption)
-                    Picker("", selection: $fundingSource) {
-                        Text("Core (\(viewModel.balance) Dash)").tag(DWIdentityFundingSource.core)
-                        Text("Platform (\(viewModel.platformPaymentBalance) Dash)").tag(DWIdentityFundingSource.platformPayment)
+                    Picker("", selection: userFundingSourceBinding) {
+                        ForEach(viableFundingSources, id: \.rawValue) { source in
+                            Text(fundingSourceLabel(source)).tag(source)
+                        }
                     }
                     .pickerStyle(.segmented)
                     .disabled(screenLockedAfterAuth)
+                    fundingPrivacyFootnote
                 }
                 .padding(.top, 20)
             }
@@ -209,6 +223,9 @@ struct CreateUsernameView: View {
         .onChange(of: viewModel.hasMinimumRequiredPlatformBalance) { _ in
             syncFundingSourceToViableSource()
         }
+        .onChange(of: viewModel.shieldedReadiness) { _ in
+            syncFundingSourceToViableSource()
+        }
         .alert(
             NSLocalizedString("Contested name", comment: "Usernames"),
             isPresented: $showContestedConfirmation
@@ -250,6 +267,57 @@ struct CreateUsernameView: View {
             }
         } message: {
             Text(registrationErrorMessage ?? "")
+        }
+    }
+
+    /// Blue informational callout shown while the shielded funding
+    /// path is not yet available, explaining which gate is unmet and
+    /// what will unlock it. Purely informative — the transparent
+    /// sources stay selectable.
+    @ViewBuilder
+    private var shieldedReadinessHint: some View {
+        if let snapshot = viewModel.shieldedReadiness, snapshot.state != .ready {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "shield.lefthalf.filled")
+                    .foregroundColor(.blue)
+                    .font(.system(size: 20))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(NSLocalizedString("Private registration", comment: "Usernames"))
+                        .font(.subheadline.bold())
+                        .foregroundColor(.blue)
+                    Text(shieldedHintText(for: snapshot))
+                        .font(.caption)
+                        .foregroundColor(.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.blue.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.top, 20)
+        }
+    }
+
+    private func shieldedHintText(for snapshot: ShieldedIdentityFundingReadiness.Snapshot) -> String {
+        switch snapshot.state {
+        case .needsFunding(let shortfallCredits):
+            // Credits → duffs (÷1000) for display.
+            let shortfallDash = (shortfallCredits / 1_000).dashAmount.formattedDashAmountWithoutCurrencySymbol
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Add %@ Dash to your Shielded balance and let it rest a few hours to register without linking your username to your other funds.", comment: "Usernames"),
+                shortfallDash)
+        case .maturing(let readyAt):
+            let time = DateFormatter.localizedString(from: readyAt, dateStyle: .none, timeStyle: .short)
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Your Shielded balance is almost ready — you can register privately around %@.", comment: "Usernames"),
+                time)
+        case .poolTooSmall(let current):
+            return String.localizedStringWithFormat(
+                NSLocalizedString("The shared privacy pool is still growing (%ld of %ld deposits). Private registration unlocks once it reaches the minimum.", comment: "Usernames"),
+                Int(current), Int(ShieldedIdentityFundingReadiness.minimumPoolNotes))
+        case .ready:
+            return ""
         }
     }
 
@@ -311,21 +379,72 @@ struct CreateUsernameView: View {
         }
     }
 
-    /// Keep `fundingSource` pointing at a viable source when only one
-    /// of {Core, Platform} qualifies. When both qualify we leave the
-    /// selection alone so the picker preserves the user's pick.
-    private func syncFundingSourceToViableSource() {
-        let coreOk = viewModel.hasMinimumRequiredCoreBalance
-        let platformOk = viewModel.hasMinimumRequiredPlatformBalance
-        if coreOk && !platformOk {
-            fundingSource = .core
-        } else if platformOk && !coreOk {
-            fundingSource = .platformPayment
+    /// Viable funding sources in privacy-descending priority order.
+    /// Shielded leads: it is the default whenever its readiness gates
+    /// (funding, maturity, pool minimum) all pass.
+    private var viableFundingSources: [DWIdentityFundingSource] {
+        var sources: [DWIdentityFundingSource] = []
+        if viewModel.hasReadyShieldedFunding {
+            sources.append(.shielded)
         }
-        // Otherwise (both viable, or neither): leave `fundingSource`
-        // alone. With neither viable, the Continue button is disabled
-        // anyway; with both viable, the picker is shown and the user
-        // makes the call.
+        if viewModel.hasMinimumRequiredPlatformBalance {
+            sources.append(.platformPayment)
+        }
+        if viewModel.hasMinimumRequiredCoreBalance {
+            sources.append(.core)
+        }
+        return sources
+    }
+
+    /// Picker binding that records an explicit user pick, so the
+    /// auto-pinning in `syncFundingSourceToViableSource()` stops
+    /// overriding the selection. Programmatic assignments write
+    /// `fundingSource` directly and deliberately bypass this.
+    private var userFundingSourceBinding: Binding<DWIdentityFundingSource> {
+        Binding(
+            get: { fundingSource },
+            set: { newValue in
+                didUserPickFundingSource = true
+                fundingSource = newValue
+            })
+    }
+
+    private func fundingSourceLabel(_ source: DWIdentityFundingSource) -> String {
+        switch source {
+        case .shielded:
+            return "Shielded (\(viewModel.shieldedBalance) Dash)"
+        case .platformPayment:
+            return "Platform (\(viewModel.platformPaymentBalance) Dash)"
+        case .core:
+            return "Core (\(viewModel.balance) Dash)"
+        }
+    }
+
+    /// One-line privacy consequence of the current pick, shown under
+    /// the picker whenever it is visible.
+    private var fundingPrivacyFootnote: some View {
+        Text(fundingSource == .shielded
+            ? NSLocalizedString("Funded from your Shielded balance — your username can't be linked to your other Dash.", comment: "Usernames")
+            : NSLocalizedString("Transparent funding publicly links your username to these funds.", comment: "Usernames"))
+            .font(.caption2)
+            .foregroundColor(.secondaryText)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// Keep `fundingSource` pointing at a viable source. Until the
+    /// user explicitly picks one, pin to the highest-priority viable
+    /// source (Shielded → Platform → Core); after an explicit pick,
+    /// only correct a selection that is no longer viable.
+    private func syncFundingSourceToViableSource() {
+        let viable = viableFundingSources
+        guard let preferred = viable.first else {
+            // Nothing viable — leave the selection alone; the Continue
+            // button is disabled by the cost rule anyway.
+            return
+        }
+        if !viable.contains(fundingSource) || !didUserPickFundingSource {
+            fundingSource = preferred
+        }
     }
 
     private func getMessageForBlockedRule() -> String {

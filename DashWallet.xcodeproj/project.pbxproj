@@ -894,6 +894,8 @@
 		A5D5DD000000000000000570 /* ShieldedWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000572 /* ShieldedWithdrawalStore.swift */; };
 		A5D5DD000000000000000571 /* ShieldedWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000572 /* ShieldedWithdrawalStore.swift */; };
 		A5D5DD000000000000001102 /* DWRegistrationPhaseAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001001 /* DWRegistrationPhaseAdapter.swift */; };
+		A5D5DD000000000000001419 /* ShieldedIdentityFundingReadiness.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001418 /* ShieldedIdentityFundingReadiness.swift */; };
+		A5D5DD00000000000000141B /* JoinDashPayReadinessScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000141A /* JoinDashPayReadinessScreen.swift */; };
 		A5D5DD000000000000001104 /* DWIdentityRegistrationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001002 /* DWIdentityRegistrationController.swift */; };
 		A5D5DD000000000000001106 /* DWIdentityAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001003 /* DWIdentityAuthorizer.swift */; };
 		A5D5DD000000000000001108 /* DWIdentityRegistrationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000001004 /* DWIdentityRegistrationCoordinator.swift */; };
@@ -2726,6 +2728,8 @@
 		A5D5DD000000000000001008 /* DWProfileUpdateCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWProfileUpdateCoordinator.swift; path = Identity/DWProfileUpdateCoordinator.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001009 /* DWProfileUpdateBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWProfileUpdateBridge.swift; path = Identity/DWProfileUpdateBridge.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000100A /* DWContestedNameStatusService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DWContestedNameStatusService.swift; path = Identity/DWContestedNameStatusService.swift; sourceTree = "<group>"; };
+		A5D5DD000000000000001418 /* ShieldedIdentityFundingReadiness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ShieldedIdentityFundingReadiness.swift; path = Identity/ShieldedIdentityFundingReadiness.swift; sourceTree = "<group>"; };
+		A5D5DD00000000000000141A /* JoinDashPayReadinessScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayReadinessScreen.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001200 /* DWRegistrationPhaseAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapterTests.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001300 /* SwiftDashSDKPhraseRepairer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKPhraseRepairer.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000001301 /* SwiftDashSDKInsightClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKInsightClient.swift; sourceTree = "<group>"; };
@@ -6172,6 +6176,7 @@
 				759AFDDF2CC6356D007072D2 /* JoinDashPayScreen.swift */,
 				754C27D02CC3C82300BA7B9F /* JoinDashPayInfoDialog.swift */,
 				757514E42B1735370026AD8E /* JoinDashPayView.swift */,
+				A5D5DD00000000000000141A /* JoinDashPayReadinessScreen.swift */,
 			);
 			path = CreateUsername;
 			sourceTree = "<group>";
@@ -6417,6 +6422,7 @@
 				A5D5DD000000000000001008 /* DWProfileUpdateCoordinator.swift */,
 				A5D5DD000000000000001009 /* DWProfileUpdateBridge.swift */,
 				A5D5DD00000000000000100A /* DWContestedNameStatusService.swift */,
+				A5D5DD000000000000001418 /* ShieldedIdentityFundingReadiness.swift */,
 				A5D5DD000000000000001407 /* DWIdentityKeyUpgrader.swift */,
 				A5D5DD000000000000001400 /* ContactItem.swift */,
 				A5D5DD000000000000001401 /* SwiftDashSDKContactsService.swift */,
@@ -9185,6 +9191,7 @@
 				C9D2C6B62A320AA000D15901 /* NumberKeyboardButton.swift in Sources */,
 				C9D2C6B72A320AA000D15901 /* IsDefaultEmail.swift in Sources */,
 				750CEFA42CCA713300E87A32 /* CreateUsernameViewController.swift in Sources */,
+				A5D5DD00000000000000141B /* JoinDashPayReadinessScreen.swift in Sources */,
 				C9D2C6BA2A320AA000D15901 /* DWUpholdAccountObject.m in Sources */,
 				C9D2C6BB2A320AA000D15901 /* DWFormTableViewController.m in Sources */,
 				C943B34D2A40A4C500AF23C5 /* DWInfoPopupViewController.m in Sources */,
@@ -9602,6 +9609,7 @@
 				A5D5DD000000000000000130 /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				A5D5DD000000000000000272 /* SwiftDashSDKHost.swift in Sources */,
 				A5D5DD000000000000001102 /* DWRegistrationPhaseAdapter.swift in Sources */,
+				A5D5DD000000000000001419 /* ShieldedIdentityFundingReadiness.swift in Sources */,
 				A5D5DD000000000000001104 /* DWIdentityRegistrationController.swift in Sources */,
 				A5D5DD000000000000001106 /* DWIdentityAuthorizer.swift in Sources */,
 				A5D5DD000000000000001410 /* ContactItem.swift in Sources */,

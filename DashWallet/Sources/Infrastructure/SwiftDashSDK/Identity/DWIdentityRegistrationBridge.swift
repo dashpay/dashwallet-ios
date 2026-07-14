@@ -40,9 +40,26 @@ import SwiftDashSDK
 ///   Payment addresses via `registerIdentityFromAddresses`. Skips
 ///   the asset-lock IS/CL wait — there is no Core-chain asset-lock
 ///   in this path.
+/// - `shielded`: spend a fixed exit denomination from the wallet's
+///   shielded (Orchard) balance via `shieldedIdentityCreateFromPool`
+///   (Type 20). The privacy-preserving default when the shielded
+///   balance is funded, matured, and the pool clears the consensus
+///   minimum — see `ShieldedIdentityFundingReadiness`. No asset-lock.
 @objc public enum DWIdentityFundingSource: Int {
     case core = 0
     case platformPayment = 1
+    case shielded = 2
+}
+
+extension DWIdentityFundingSource {
+    /// Short tag for log lines.
+    var logLabel: String {
+        switch self {
+        case .core: return "core"
+        case .platformPayment: return "pp"
+        case .shielded: return "shielded"
+        }
+    }
 }
 
 @objc(DWIdentityRegistrationBridge)
@@ -122,7 +139,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         completion: @escaping (String?, NSError?) -> Void
     ) {
         let source = preferredFundingSource
-        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source == .core ? "core" : "pp", privacy: .public)")
+        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public)")
         Task { @MainActor in
             do {
                 let identityId = try await DWIdentityRegistrationCoordinator.shared.startCreateUsername(
@@ -143,7 +160,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         completion: @escaping (String?, NSError?) -> Void
     ) {
         let source = preferredFundingSource
-        Self.logger.info("🪪 IDENT-BRIDGE :: retry username=\(username, privacy: .public) funding=\(source == .core ? "core" : "pp", privacy: .public)")
+        Self.logger.info("🪪 IDENT-BRIDGE :: retry username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public)")
         Task { @MainActor in
             do {
                 let identityId = try await DWIdentityRegistrationCoordinator.shared.retry(

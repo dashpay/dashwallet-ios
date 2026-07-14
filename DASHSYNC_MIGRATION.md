@@ -98,7 +98,7 @@ Status meanings:
 | 13 | Backup seed phrase | Done | Reads the active SDK wallet mnemonic from host-owned storage. |
 | 14 | Wipe wallet | Done; teardown tail | Remove the DashSync registry/Core Data wipe arm after all consumers are gone. |
 | 15 | Provider-key derivation | Done for retained scope | Owner/Voting are SDK-native; Operator/HPMN and legacy “used at” UI were intentionally dropped because the required public-key/list lookup surfaces are unavailable. |
-| 16 | DashPay identity creation | Done; invitation tail | Standard SDK-funded identity/name registration is migrated. Invitation-funded create/accept remains part of the invitation decision. |
+| 16 | DashPay identity creation | Done; invitation tail | Standard SDK-funded identity/name registration is migrated, with three funding paths (Core asset-lock, Platform Payment, shielded Type-20 — the privacy-preserving default, gated by `ShieldedIdentityFundingReadiness`). Invitation-funded create/accept remains part of the invitation decision. |
 | 17 | DashPay identity/profile read-write | Done; compatibility tail | Retire remaining `DSBlockchainIdentity`-typed profile properties/categories and route every old view directly through `DWCurrentUserIdentityInfo` / `DWProfileUpdateBridge`. |
 | 18 | DashPay contacts and pay-to-contact | Done | PR #787 rebuilt contacts on SwiftDashSDK/SwiftData/SwiftUI and removed the old contacts subsystem. Invitations were explicitly out of scope. |
 | 18a | Contested DPNS-name detection | Done for retained scope | Warning/bookmark behavior is SDK-native; richer resolution/status UX remains optional product work, not a DashSync blocker. |
