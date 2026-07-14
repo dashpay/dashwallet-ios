@@ -17,6 +17,7 @@
 
 import UIKit
 import Combine
+import SwiftUI
 import DashUIKit
 
 @objc(DWHomeViewControllerDelegate)
