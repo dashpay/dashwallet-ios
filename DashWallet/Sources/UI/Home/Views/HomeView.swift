@@ -386,6 +386,11 @@ struct HomeViewContent<Content: View>: View {
             return (.image(merchantIcon, effect: .rounded), metadata?.secondaryIcon ?? .custom(txItem.iconName))
         }
 
+        // Swap and Coinbase rows carry their icon as a name (convert / coinbase), not a bitmap.
+        if let iconName = metadata?.iconName {
+            return (iconName, metadata?.secondaryIcon)
+        }
+
         if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
             return (.custom("image.explore.dash.wts.payment.gift-card"), nil)
         }
