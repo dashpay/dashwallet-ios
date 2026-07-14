@@ -79,9 +79,13 @@ enum SwapDepositURIBuilder {
         }
     }
 
-    /// The amount to display in the "Amount to send" row, truncated to the asset's real on-chain
+    /// The amount to display in the "Amount to send" row, rounded to the asset's real on-chain
     /// decimals so a token like USDC (6 decimals) never shows an un-sendable 8-decimal value.
-    /// Matches the truncation used for the URI's base-unit amount. Non-EVM chains are shown as-is.
+    /// Matches the rounding used for the URI's base-unit amount. Non-EVM chains are shown as-is.
+    ///
+    /// Rounds UP: the swap provider refunds a deposit that falls even one base unit short of the
+    /// quoted amount, while an overpayment of one base unit is accepted. Rounding down here is what
+    /// caused a quoted 5.701673 USDC to be deposited as 5.701672 and refunded.
     static func displaySendAmount(for coin: SwapCryptoCurrency, amount: String) -> String {
         let trimmed = amount.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let places = displayDecimals(for: coin),
@@ -90,7 +94,7 @@ enum SwapDepositURIBuilder {
         }
         var input = value
         var rounded = Decimal()
-        NSDecimalRound(&rounded, &input, places, .down)
+        NSDecimalRound(&rounded, &input, places, .up)
         return trimTrailingZeros(NSDecimalNumber(decimal: rounded).stringValue)
     }
 
@@ -165,7 +169,10 @@ enum SwapDepositURIBuilder {
         return tokenDecimals(for: coin)
     }
 
-    /// `amount × 10^decimals`, truncated toward zero, as a plain integer string (no exponent).
+    /// `amount × 10^decimals`, rounded up to a whole base unit, as a plain integer string
+    /// (no exponent). Rounds up for the same reason as `displaySendAmount` — a deposit one base
+    /// unit short of the quote gets refunded, one unit over does not — and so the `uint256` the
+    /// external wallet sends always matches the amount we display.
     /// Returns nil when the amount is unparseable or ≤ 0 — callers must omit the amount
     /// parameter from the URI rather than encoding a zero-value payment request.
     private static func baseUnits(_ amount: String, decimals: Int) -> String? {
@@ -180,9 +187,9 @@ enum SwapDepositURIBuilder {
         for _ in 0..<decimals { multiplier *= 10 }
 
         var scaled = value * multiplier
-        var truncated = Decimal()
-        NSDecimalRound(&truncated, &scaled, 0, .down)
-        return NSDecimalNumber(decimal: truncated).stringValue
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &scaled, 0, .up)
+        return NSDecimalNumber(decimal: rounded).stringValue
     }
 
     // MARK: - Solana Pay
