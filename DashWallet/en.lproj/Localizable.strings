@@ -185,7 +185,7 @@
 "The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum." = "The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum.";
 
 /* SPV diagnostics */
-"The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set 0 for an imported wallet whose history may predate this device." = "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set 0 for an imported wallet whose history may predate this device.";
+"The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet." = "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet.";
 
 /* Usernames */
 "Transparent funding publicly links your username to these funds." = "Transparent funding publicly links your username to these funds.";

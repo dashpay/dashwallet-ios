@@ -171,7 +171,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
         } message: {
             Text(NSLocalizedString(
-                "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set 0 for an imported wallet whose history may predate this device.",
+                "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet.",
                 comment: "SPV diagnostics"))
         }
         .alert(

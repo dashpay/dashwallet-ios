@@ -86,6 +86,18 @@ final class SwiftDashSDKHost {
 
     private init() {}
 
+    // MARK: - Import scan floor
+
+    /// Birth height for imported / unknown-provenance mnemonics, per
+    /// network. Mainnet imports scan from block 200,000 rather than
+    /// genesis (owner decision 2026-07-15): early-2015 and older
+    /// blocks predate any wallet this app could import, so starting
+    /// there skips a year of filter work without risking missed
+    /// funds. Testnet (and anything else) scans from 0.
+    static func importedWalletBirthHeight(for network: Network) -> UInt32 {
+        network == .mainnet ? 200_000 : 0
+    }
+
     // MARK: - Wallet presence
 
     /// True when at least one SDK wallet mnemonic is persisted in
@@ -265,11 +277,14 @@ final class SwiftDashSDKHost {
                 network: handles.network,
                 modelContainer: handles.modelContainer,
                 // Imported mnemonics may hold history from long before
-                // this device: birth height 0 makes SPV scan from
-                // genesis (the SDK's documented import semantics).
-                // Freshly generated mnemonics keep nil — nothing can
-                // predate them, so the scan anchors at the tip.
-                birthHeight: isImported ? 0 : nil)
+                // this device: scan from the network's import floor
+                // (genesis on testnet, block 200,000 on mainnet — see
+                // `importedWalletBirthHeight`). Freshly generated
+                // mnemonics keep nil — nothing can predate them, so
+                // the scan anchors at the tip.
+                birthHeight: isImported
+                    ? Self.importedWalletBirthHeight(for: handles.network)
+                    : nil)
         } catch {
             // `createOrImportWallet` owns a freshly-built (not yet published)
             // runtime, so tear it down on failure. `createAndPersist` has
@@ -340,8 +355,11 @@ final class SwiftDashSDKHost {
             network: network,
             modelContainer: modelContainer,
             // Same semantics as `createOrImportWallet`: imports scan
-            // from genesis, freshly generated wallets from the tip.
-            birthHeight: isImported ? 0 : nil)
+            // from the network's import floor, freshly generated
+            // wallets from the tip.
+            birthHeight: isImported
+                ? Self.importedWalletBirthHeight(for: network)
+                : nil)
 
         Self.logger.info("🪺 HOST :: added managed wallet for \(network.rawValue, privacy: .public) (additive)")
         return .added(walletId: createdWallet.walletId)
@@ -556,10 +574,11 @@ final class SwiftDashSDKHost {
                     // existed on this network (first switch). Its true
                     // creation height is unknown and the wallet may
                     // hold history from long before this registration,
-                    // so scan from genesis — the conservative-correct
-                    // choice; a needless full scan is recoverable, a
-                    // tip-anchored miss of old funds is not.
-                    birthHeight: 0)
+                    // so scan from the network's import floor — the
+                    // conservative-correct choice; a needless full
+                    // scan is recoverable, a tip-anchored miss of old
+                    // funds is not.
+                    birthHeight: Self.importedWalletBirthHeight(for: handles.network))
                 if created.walletId != entry.walletId {
                     try? storage.storeMnemonic(entry.mnemonic, for: created.walletId)
                 }
