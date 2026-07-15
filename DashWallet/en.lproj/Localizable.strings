@@ -25,6 +25,9 @@
 /* Maya/SwapKit order preview - %@ is the executing provider, e.g. "Maya fee" or "NEAR fee" */
 "%@ fee" = "%@ fee";
 
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "%@ has accepted your contact request";
+
 /* Dash DEX */
 "%@ has received your transaction and is processing the swap." = "%@ has received your transaction and is processing the swap.";
 
@@ -185,10 +188,16 @@
 "Account Recovery" = "Account Recovery";
 
 /* No comment provided by engineer. */
+"Activity" = "Activity";
+
+/* No comment provided by engineer. */
 "Add" = "Add";
 
 /* DashPay Contacts */
 "Add %@ as a contact to pay them directly by username and keep a shared history of your payments." = "Add %@ as a contact to pay them directly by username and keep a shared history of your payments.";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History";
 
 /* Usernames */
 "Add %@ Dash to your Shielded balance and let it rest a few hours to register without linking your username to your other funds." = "Add %@ Dash to your Shielded balance and let it rest a few hours to register without linking your username to your other funds.";
@@ -643,6 +652,9 @@
 /* DashPay Contacts */
 "Contact request sent" = "Contact request sent";
 
+/* No comment provided by engineer. */
+"Contact Requests" = "Contact Requests";
+
 /* DashPay Contacts */
 "Contact Requests (%d)" = "Contact Requests (%d)";
 
@@ -769,6 +781,9 @@
 
 /* Usernames */
 "Create your username" = "Create your username";
+
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
 
 /* Coinbase/Payment Methods */
 "Credit Card" = "Credit Card";
@@ -1164,6 +1179,9 @@
 /* DashPay Contacts */
 "Find a user and add them to your contacts." = "Find a user and add them to your contacts.";
 
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Find a user on the Dash Network";
+
 /* Explore Dash */
 "Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
 
@@ -1343,6 +1361,9 @@
 
 /* Voting */
 "Has blocked votes" = "Has blocked votes";
+
+/* Username has requested to be your friend */
+"has requested to be your friend" = "has requested to be your friend";
 
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Have complete control and customize your wallet based on your needs";
@@ -1594,6 +1615,9 @@
 "Invite" = "Invite";
 
 /* No comment provided by engineer. */
+"Invite Someone to join the Dash Network" = "Invite Someone to join the Dash Network";
+
+/* No comment provided by engineer. */
 "Invite your family, find your friends by searching their usernames" = "Invite your family, find your friends by searching their usernames";
 
 /* Usernames */
@@ -1604,6 +1628,9 @@
 
 /* No comment provided by engineer. */
 "Invite your friends and family to join the Dash Network." = "Invite your friends and family to join the Dash Network.";
+
+/* No comment provided by engineer. */
+"Invite your friends and family to the Dash Network" = "Invite your friends and family to the Dash Network";
 
 /* No comment provided by engineer. */
 "iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Reported issue";
@@ -1905,6 +1932,9 @@
 "More Control" = "More Control";
 
 /* No comment provided by engineer. */
+"More Suggestions" = "More Suggestions";
+
+/* No comment provided by engineer. */
 "Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
 
 /* CoinJoin */
@@ -2098,6 +2128,9 @@
 /* Voting */
 "Old to new" = "Old to new";
 
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
+
 /* Dash DEX / dex_receive_description */
 "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet" = "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet";
 
@@ -2127,6 +2160,9 @@
 
 /* Voting */
 "Only with links" = "Only with links";
+
+/* No comment provided by engineer. */
+"or" = "or";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Order Preview";
@@ -2167,6 +2203,9 @@
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Pay and get paid instantly with easy to use payment flows";
 
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "Pay Directly to Username";
+
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "Pay to usernames. No more alphanumeric addresses";
 
@@ -2205,6 +2244,9 @@
 
 /* DashPay Contacts */
 "Payments" = "Payments";
+
+/* No comment provided by engineer. */
+"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
 
 /* DashPay Contacts */
 "Payments made directly to an address aren't retained here." = "Payments made directly to an address aren't retained here.";
@@ -2566,6 +2608,9 @@
 /* Usernames */
 "Results" = "Results";
 
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "Retain Mutual Transaction History";
+
 /* No comment provided by engineer. */
 "Retry" = "Retry";
 
@@ -2623,11 +2668,29 @@
 /* DashPay Contacts */
 "Search Contacts" = "Search Contacts";
 
+/* No comment provided by engineer. */
+"Search for a contact" = "Search for a contact";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "Search for a contact request";
+
 /* DashPay Contacts */
 "Search for a User" = "Search for a User";
 
 /* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "Search for a User on the Dash Network";
+
+/* No comment provided by engineer. */
+"Search for a username" = "Search for a username";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "Search results for \"";
+
+/* No comment provided by engineer. */
 "Search territories" = "Search territories";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
 
 /* No comment provided by engineer. */
 "Secure Your Wallet" = "Secure Your Wallet";
@@ -2721,6 +2784,9 @@
 /* No comment provided by engineer. */
 "Send to" = "Send to";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "Send to a Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Send to Address";
 
@@ -2747,6 +2813,12 @@
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
+
+/* No comment provided by engineer. */
+"Sending Contact Request" = "Sending Contact Request";
+
+/* No comment provided by engineer. */
+"Sending to" = "Sending to";
 
 /* CrowdNode */
 "Sending to CrowdNode account" = "Sending to CrowdNode account";
@@ -2876,6 +2948,9 @@
 
 /* No comment provided by engineer. */
 "Sort by" = "Sort by";
+
+/* No comment provided by engineer. */
+"Sort Contacts" = "Sort Contacts";
 
 /* Explore Dash/Filters */
 "Sorted by discount" = "Sorted by discount";
@@ -3133,7 +3208,19 @@
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
 
 /* No comment provided by engineer. */
+"them (Fetching Info)" = "them (Fetching Info)";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "There are no new notifications";
+
+/* No comment provided by engineer. */
 "There are no transactions to display" = "There are no transactions to display";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@" = "There are no users that match with the name %@";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@ in your contacts" = "There are no users that match with the name %@ in your contacts";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
@@ -3356,6 +3443,9 @@
 /* Dash DEX */
 "Unable to load rate data" = "Unable to load rate data";
 
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "Unable to provide suggestions";
+
 /* Swap */
 "Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
 
@@ -3411,6 +3501,9 @@
 "Upgrade to DashPay" = "Upgrade to DashPay";
 
 /* No comment provided by engineer. */
+"Upgrade to Evolution" = "Upgrade to Evolution";
+
+/* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* Uphold */
@@ -3433,6 +3526,9 @@
 
 /* Usernames */
 "Use transparent balance instead" = "Use transparent balance instead";
+
+/* No comment provided by engineer. */
+"User (Fetching Info)" = "User (Fetching Info)";
 
 /* Voting */
 "Username" = "Username";
@@ -3463,6 +3559,9 @@
 
 /* Usernames */
 "Username was successfully requested" = "Username was successfully requested";
+
+/* No comment provided by engineer. */
+"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
 
 /* CrowdNode Portal */
 "Validating address…" = "Validating address…";
@@ -3499,6 +3598,9 @@
 
 /* CrowdNode */
 "Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address.";
+
+/* No comment provided by engineer. */
+"View All" = "View All";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "View in Explorer";
@@ -3705,6 +3807,9 @@
 /* No comment provided by engineer. */
 "Yesterday" = "Yesterday";
 
+/* No comment provided by engineer. */
+"You accepted the contact request from %@" = "You accepted the contact request from %@";
+
 /* DashPay Notifications */
 "You added %@ as a contact" = "You added %@ as a contact";
 
@@ -3752,6 +3857,9 @@
 
 /* Usernames */
 "You chose “%@” as your username." = "You chose “%@” as your username.";
+
+/* No comment provided by engineer. */
+"You do not have any contacts at the moment" = "You do not have any contacts at the moment";
 
 /* DashSpend */
 "You do not have sufficient funds to complete this transaction" = "You do not have sufficient funds to complete this transaction";
@@ -3833,6 +3941,9 @@
 
 /* DashPay Notifications */
 "You sent a contact request to %@" = "You sent a contact request to %@";
+
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "You sent the contact request to %@";
 
 /* CrowdNode */
 "You should have a positive balance on Dash Wallet" = "You should have a positive balance on Dash Wallet";
