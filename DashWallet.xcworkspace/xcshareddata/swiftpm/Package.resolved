@@ -1,13 +1,13 @@
 {
-  "originHash" : "00a0bb943d09a60406bc7f00f82835ad5e5ba0d29f820b11071cd8c42c6de08a",
+  "originHash" : "c249ed8d75daf51cf5f1467a120fdeaf4cb1d396e8e7721de5bd30aa8b713ba4",
   "pins" : [
     {
       "identity" : "dashuikit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/romchornyi/DashUIKit",
+      "location" : "https://github.com/dashpay/DashUIKit",
       "state" : {
-        "branch" : "main",
-        "revision" : "9b1b23740802f59222b953edccff66cb3f3486c9"
+        "revision" : "046f087514e12f01087ba20efd5e73c682172ebf",
+        "version" : "1.0.0"
       }
     }
   ],
