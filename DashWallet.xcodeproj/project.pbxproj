@@ -12980,10 +12980,10 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		5149DA092FF3DE7F00207AE5 /* XCRemoteSwiftPackageReference "DashUIKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/romchornyi/DashUIKit";
+			repositoryURL = "https://github.com/dashpay/DashUIKit";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
