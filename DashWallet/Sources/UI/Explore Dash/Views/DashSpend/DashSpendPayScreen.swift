@@ -251,7 +251,6 @@ private struct DashSpendPayConfirmationSheet: View {
     let quantities: [Decimal: Int]?
     let onConfirm: () -> Void
     let onCancel: () -> Void
-    @State private var contentHeight: CGFloat = 0
     
     @ViewBuilder
     var body: some View {
@@ -262,15 +261,18 @@ private struct DashSpendPayConfirmationSheet: View {
             discount: discount,
             quantities: quantities,
             onConfirm: onConfirm,
-            onCancel: onCancel,
-            contentHeight: $contentHeight
+            onCancel: onCancel
         )
 
         if #available(iOS 16.4, *) {
             dialog
                 .presentationBackground(Color.primaryBackground)
-                .presentationDetents([.height(550)])
+                .selfSizingSheet(fallback: 500)
                 .presentationCornerRadius(32)
+                .presentationDragIndicator(.hidden)
+        } else if #available(iOS 16.0, *) {
+            dialog
+                .selfSizingSheet(fallback: 500)
                 .presentationDragIndicator(.hidden)
         } else {
             dialog
