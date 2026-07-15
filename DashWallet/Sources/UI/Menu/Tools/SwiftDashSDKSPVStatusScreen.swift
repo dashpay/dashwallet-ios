@@ -56,10 +56,14 @@ struct SwiftDashSDKSPVStatusScreen: View {
     /// Bound to the birth-height text field; validated to a `UInt32`
     /// before use, never defaulted.
     @State private var birthHeightEntryText = ""
-    /// Non-nil presents the post-save "restart required" notice carrying
-    /// the height that was just written (only for lowered heights, which
-    /// arm a next-launch chain resync).
-    @State private var savedBirthHeightPendingResync: UInt32?
+    /// Non-nil presents the clear-and-resync confirmation carrying the
+    /// entered height. Nothing is written until the user confirms; on
+    /// confirm the row is updated and the next-launch chain resync armed.
+    /// Entered heights at or below the current one land here — "equal"
+    /// included, because a store anchored above the (already-correct)
+    /// birth height can only be repaired by the resync, and re-saving
+    /// the current height is the only way to express that in this UI.
+    @State private var pendingResyncConfirmHeight: UInt32?
 
     init(vc: UINavigationController) {
         self.vc = vc
@@ -172,24 +176,31 @@ struct SwiftDashSDKSPVStatusScreen: View {
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
         } message: {
             Text(NSLocalizedString(
-                "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Lowering it clears this network's chain data at the next launch and rescans from the new height.",
+                "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Saving a height at or below the current one clears this network's chain data at the next launch and rescans from it.",
                 comment: "SPV diagnostics"))
         }
         .alert(
-            NSLocalizedString("Restart required", comment: "SPV diagnostics"),
+            NSLocalizedString("Clear chain data and resync?", comment: "SPV diagnostics"),
             isPresented: Binding(
-                get: { savedBirthHeightPendingResync != nil },
-                set: { if !$0 { savedBirthHeightPendingResync = nil } }
+                get: { pendingResyncConfirmHeight != nil },
+                set: { if !$0 { pendingResyncConfirmHeight = nil } }
             ),
-            presenting: savedBirthHeightPendingResync
-        ) { _ in
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {
-                savedBirthHeightPendingResync = nil
+            presenting: pendingResyncConfirmHeight
+        ) { height in
+            Button(
+                NSLocalizedString("Clear & resync", comment: "SPV diagnostics"),
+                role: .destructive
+            ) {
+                pendingResyncConfirmHeight = nil
+                armBirthHeightResync(height: height)
+            }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                pendingResyncConfirmHeight = nil
             }
         } message: { height in
             Text(String(
                 format: NSLocalizedString(
-                    "Birth height saved. Quit and reopen the app to apply it: the next launch clears this network's chain data and rescans filters from height %u. The running session keeps its old scan floor until then.",
+                    "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start.",
                     comment: "SPV diagnostics"),
                 height))
         }
@@ -664,19 +675,22 @@ extension SwiftDashSDKSPVStatusScreen {
         }
     }
 
-    /// Validate the birth-height text field and write it onto the bound
-    /// wallet's `PersistentWallet` row — the durable source the SDK's
-    /// `loadWallets` restore feeds back to Rust at every launch. The LIVE
-    /// session can never honor the edit: the Rust wallet's birth height has
-    /// no update FFI, and dash-spv never re-anchors an existing header
-    /// store, so heights below the store's first stored block stay
-    /// unreachable until the store is rebuilt. Lowering the height
-    /// therefore also rewinds the row's `syncedHeight` (so the next restore
-    /// starts the filter scan at the new height) and arms
-    /// `SPVChainResyncMarker`, which the SPV coordinator applies on the
-    /// next launch by deleting the chain store before `startSpv`. Raising
-    /// the height just persists — and disarms any pending marker it
-    /// supersedes.
+    /// Validate the birth-height text field and route it. The row is the
+    /// durable source the SDK's `loadWallets` restore feeds back to Rust at
+    /// every launch; the LIVE session can never honor an edit (the Rust
+    /// wallet's birth height has no update FFI, and dash-spv never
+    /// re-anchors an existing header store, so heights below the store's
+    /// first stored block stay unreachable until the store is rebuilt).
+    ///
+    /// - Raising the height persists immediately — it needs no chain
+    ///   rebuild — and disarms any pending resync marker it supersedes.
+    /// - A height at or below the current one means "make this floor
+    ///   real", which requires the next-launch chain resync; nothing is
+    ///   written until the user confirms via `armBirthHeightResync`.
+    ///   Equal heights are included: a store anchored above an
+    ///   already-correct birth height (e.g. created before the birth
+    ///   height was fixed) is repaired the same way, and re-saving the
+    ///   current height is how this UI expresses that.
     func saveEnteredBirthHeight() {
         let trimmed = birthHeightEntryText.trimmingCharacters(in: .whitespaces)
         guard let height = UInt32(trimmed) else {
@@ -685,13 +699,26 @@ extension SwiftDashSDKSPVStatusScreen {
                 "Enter a valid block height.", comment: "SPV diagnostics")
             return
         }
+        guard let (row, walletId, network) = boundWalletRow() else { return }
+        if height <= row.birthHeight {
+            pendingResyncConfirmHeight = height
+            return
+        }
+        saveRaisedBirthHeight(height, row: row, walletId: walletId, network: network)
+    }
+
+    /// Fetch the bound wallet's `PersistentWallet` row plus the identifiers
+    /// the birth-height flows need. Emits the error banner and returns nil
+    /// when no wallet is bound, the row is missing, or it carries no
+    /// network.
+    private func boundWalletRow() -> (PersistentWallet, walletId: Data, network: Network)? {
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let container = SwiftDashSDKHost.shared.modelContainer else {
             rescanResultIsError = true
             rescanResultMessage = NSLocalizedString(
                 "Available only while SPV is running with a wallet bound.",
                 comment: "SPV diagnostics")
-            return
+            return nil
         }
         let walletId = wallet.walletId
         var descriptor = FetchDescriptor<PersistentWallet>(
@@ -702,43 +729,73 @@ extension SwiftDashSDKSPVStatusScreen {
             rescanResultMessage = NSLocalizedString(
                 "No persisted wallet row found for the bound wallet.",
                 comment: "SPV diagnostics")
-            return
+            return nil
         }
         guard let network = row.network else {
             rescanResultIsError = true
             rescanResultMessage = NSLocalizedString(
                 "The persisted wallet row has no network — cannot arm a resync.",
                 comment: "SPV diagnostics")
-            return
+            return nil
         }
+        return (row, walletId, network)
+    }
+
+    /// Persist a raised birth height (no chain rebuild needed) and disarm
+    /// any pending resync marker the raise supersedes.
+    private func saveRaisedBirthHeight(
+        _ height: UInt32, row: PersistentWallet, walletId: Data, network: Network
+    ) {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else { return }
         let previous = row.birthHeight
-        guard height != previous else { return }
-        let previousSynced = row.syncedHeight
         row.birthHeight = height
-        let lowering = height < previous
-        if lowering, row.syncedHeight > height {
-            row.syncedHeight = height
-        }
         do {
             try container.mainContext.save()
         } catch {
             row.birthHeight = previous
-            row.syncedHeight = previousSynced
             rescanResultIsError = true
             rescanResultMessage = error.localizedDescription
             Self.logger.error("🛰️ SPV-STATUS :: birth-height save failed: \(String(describing: error), privacy: .public)")
             return
         }
         Self.logger.info("🛰️ SPV-STATUS :: birth height \(previous, privacy: .public) → \(height, privacy: .public)")
-        if lowering {
-            SPVChainResyncMarker.arm(walletId: walletId, fromHeight: height, network: network)
-            savedBirthHeightPendingResync = height
-        } else {
-            SPVChainResyncMarker.disarm(walletId: walletId, network: network)
-            rescanResultIsError = false
-            rescanResultMessage = NSLocalizedString(
-                "Birth height saved — the raised scan floor applies from the next launch.",
-                comment: "SPV diagnostics")
+        SPVChainResyncMarker.disarm(walletId: walletId, network: network)
+        rescanResultIsError = false
+        rescanResultMessage = NSLocalizedString(
+            "Birth height saved — the raised scan floor applies from the next launch.",
+            comment: "SPV diagnostics")
+    }
+
+    /// Confirmed clear-and-resync: write the birth height, rewind the row's
+    /// `syncedHeight` so the restored wallet's filter scan starts at the new
+    /// floor, and arm `SPVChainResyncMarker` — the SPV coordinator applies
+    /// it on the next launch by deleting the chain store before `startSpv`.
+    func armBirthHeightResync(height: UInt32) {
+        guard let (row, walletId, network) = boundWalletRow(),
+              let container = SwiftDashSDKHost.shared.modelContainer else { return }
+        let previousBirth = row.birthHeight
+        let previousSynced = row.syncedHeight
+        row.birthHeight = height
+        if row.syncedHeight > height {
+            row.syncedHeight = height
         }
+        do {
+            try container.mainContext.save()
+        } catch {
+            row.birthHeight = previousBirth
+            row.syncedHeight = previousSynced
+            rescanResultIsError = true
+            rescanResultMessage = error.localizedDescription
+            Self.logger.error("🛰️ SPV-STATUS :: birth-height resync save failed: \(String(describing: error), privacy: .public)")
+            return
+        }
+        SPVChainResyncMarker.arm(walletId: walletId, fromHeight: height, network: network)
+        Self.logger.info("🛰️ SPV-STATUS :: birth height \(previousBirth, privacy: .public) → \(height, privacy: .public), chain resync armed")
+        rescanResultIsError = false
+        rescanResultMessage = String(
+            format: NSLocalizedString(
+                "Resync armed from height %u — quit and reopen the app to start.",
+                comment: "SPV diagnostics"),
+            height)
     }
 }
