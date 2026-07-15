@@ -45,6 +45,8 @@ struct DashButton: View {
     
     @Environment(\.overrideForegroundColor) var overridenForegroundColor
     @Environment(\.overrideBackgroundColor) var overridenBackgroundColor
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     var body: some View {
         Button(action: {
@@ -92,20 +94,30 @@ struct DashButton: View {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(borderColor, lineWidth: 2)
             )
-            .opacity(isEnabled ? 1.0 : 0.5)
+            .opacity(disabledOpacity)
         }
         .buttonStyle(DashButtonStyle(cornerRadius: cornerRadius))
         .disabled(!isEnabled || isLoading)
         .background(Color.clear)
     }
 
+    private var disabledOpacity: Double {
+        guard !isEnabled else { return 1.0 }
+        switch style {
+        case .filledBlue:
+            return 1.0
+        default:
+            return 0.5
+        }
+    }
+
     private var backgroundColor: Color {
         if !isEnabled {
             switch style {
-            case .filledBlue:
-                return Color.blackAlpha5
+            case .filled, .filledBlue:
+                return Color.black1000Alpha5
             default:
-                return Color.black.opacity(0.2)
+                return Color.black1000Alpha5
             }
         }
 
@@ -127,7 +139,7 @@ struct DashButton: View {
             case .filledBlue:
                 return Color.blackAlpha40
             default:
-                return Color.black.opacity(0.6)
+                return colorScheme == .light ? Color.black1000Alpha40 : Color.whiteAlpha20
             }
         }
 
@@ -287,5 +299,46 @@ struct DashButtonStyle: ButtonStyle {
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .fill(Color.black.opacity(configuration.isPressed ? 0.2 : 0))
             )
+    }
+}
+
+#Preview {
+    DashButtonPreview()
+}
+
+private struct DashButtonPreview: View {
+    var body: some View {
+        VStack(spacing: 16) {
+            DashButton(
+                text: "Continue",
+                style: .filled,
+                isEnabled: true,
+                action: {}
+            )
+
+            DashButton(
+                text: "Disabled",
+                style: .filled,
+                isEnabled: false,
+                action: {}
+            )
+
+            DashButton(
+                text: "Loading",
+                style: .filled,
+                isEnabled: true,
+                isLoading: true,
+                action: {}
+            )
+
+            DashButton(
+                text: "Outlined",
+                style: .outlined,
+                stretch: false,
+                action: {}
+            )
+        }
+        .padding(20)
+        .background(Color.primaryBackground)
     }
 }

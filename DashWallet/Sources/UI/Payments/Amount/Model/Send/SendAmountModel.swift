@@ -60,7 +60,7 @@ class SendAmountModel: BaseAmountModel {
 
     private var syncingActivityMonitor: SyncingActivityMonitor { SyncingActivityMonitor.shared }
 
-    override init() {
+    init() {
         super.init()
 
         initializeSyncingActivityMonitor()

@@ -40,6 +40,9 @@ public class ExploreDatabaseSyncManager {
     }
 
     static let databaseHasBeenUpdatedNotification = NSNotification.Name(rawValue: "databaseHasBeenUpdatedNotification")
+    /// Posted right before `explore.db` is replaced on disk, so open connections can let go of the
+    /// file first. Overwriting it underneath a live SQLite connection corrupts the database.
+    static let databaseWillBeUpdatedNotification = NSNotification.Name(rawValue: "databaseWillBeUpdatedNotification")
 
     private let storage = Storage.storage()
     private let storageRef: StorageReference
@@ -52,10 +55,23 @@ public class ExploreDatabaseSyncManager {
     var syncState: State
     var lastServerUpdateDate: Date { Date(timeIntervalSince1970: exploreDatabaseLastVersion) }
 
-    // Network-specific filename to prevent mainnet/testnet database conflicts
+    // Network-specific name for the downloaded archive only — the database itself always unzips to
+    // the single `explore.db`, so see `installedDatabaseNetwork` for the mainnet/testnet conflict.
     private var networkSpecificFileName: String {
         let isMainnet = WalletEnvironment.isMainnet
         return isMainnet ? "explore-mainnet" : "explore-testnet"
+    }
+
+    // Network the sync bookkeeping expects, from the SDK (DWEnvironment is frozen post-M6).
+    private var currentNetworkName: String {
+        WalletEnvironment.isMainnet ? "mainnet" : "testnet"
+    }
+
+    // Network whose data currently sits in the shared explore.db (see comment on
+    // networkSpecificFileName); lets a chain switch force a re-download.
+    private var installedDatabaseNetwork: String? {
+        get { UserDefaults.standard.string(forKey: kExploreDatabaseInstalledNetworkKey) }
+        set { UserDefaults.standard.setValue(newValue, forKey: kExploreDatabaseInstalledNetworkKey) }
     }
 
     init() {
@@ -101,6 +117,24 @@ public class ExploreDatabaseSyncManager {
 
             let timeInterval = timeIntervalMillesecond/1000
             let installedVersion = wSelf.exploreDatabaseLastVersion
+            let localDatabaseExists = wSelf.hasLocalExploreDatabase()
+
+            // If local DB is missing (e.g. removed due to schema mismatch), force download
+            // regardless of saved version timestamp to avoid falling back to in-memory DB.
+            if !localDatabaseExists {
+                DSLogger.log("ExploreDash: local explore.db missing, forcing cloud database download")
+                wSelf.downloadDatabase(metadata: metadata)
+                return
+            }
+
+            // The file on disk may belong to the other network (the chain was switched since it was
+            // downloaded). Its version is tracked under that network's key, so the check below would
+            // read as up to date and leave us serving the wrong network's merchants.
+            if wSelf.installedDatabaseNetwork != wSelf.currentNetworkName {
+                DSLogger.log("ExploreDash: explore.db belongs to \(wSelf.installedDatabaseNetwork ?? "an unknown network"), current network is \(wSelf.currentNetworkName) — forcing download")
+                wSelf.downloadDatabase(metadata: metadata)
+                return
+            }
 
             guard timeInterval > installedVersion else {
                 wSelf.syncState = .synced(Date())
@@ -142,9 +176,19 @@ extension ExploreDatabaseSyncManager {
                 
                 Task {
                     do {
+                        // The archive unzips straight over the live `explore.db`. Let the open
+                        // connection go first, and drop the -wal/-shm sidecars: they describe the
+                        // *old* file, and SQLite replaying that WAL against the new one is what
+                        // produces "database disk image is malformed".
+                        await MainActor.run {
+                            NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseWillBeUpdatedNotification, object: nil)
+                        }
+                        self?.removeDatabaseSidecars()
+
                         try await self?.unzipFile(at: urlToSave.path, password: checksum)
                         self?.exploreDatabaseLastSyncTimestamp = now
                         self?.exploreDatabaseLastVersion = timeIntervalMillesecond / 1000
+                        self?.installedDatabaseNetwork = self?.currentNetworkName
                         self?.syncState = .synced(date)
 
                         NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
@@ -179,10 +223,26 @@ extension ExploreDatabaseSyncManager {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0]
     }
+
+    private func hasLocalExploreDatabase() -> Bool {
+        let localDbPath = getDocumentsDirectory().appendingPathComponent(kExploreDashDatabaseName).path
+        return FileManager.default.fileExists(atPath: localDbPath)
+    }
+
+    /// Deletes the write-ahead log and shared-memory files left behind by the database we are about
+    /// to replace. They are only valid for the file they were written against.
+    private func removeDatabaseSidecars() {
+        let dbPath = getDocumentsDirectory().appendingPathComponent(kExploreDashDatabaseName).path
+
+        for suffix in ["-wal", "-shm"] {
+            try? FileManager.default.removeItem(atPath: dbPath + suffix)
+        }
+    }
 }
 
 private let kExploreDatabaseLastSyncTimestampKey = "kExploreDatabaseLastSyncTimestampKey"
 private let kExploreDatabaseLastVersion = "kExploreDatabaseLastVersion"
+private let kExploreDatabaseInstalledNetworkKey = "kExploreDatabaseInstalledNetwork"
 
 extension ExploreDatabaseSyncManager {
     // Network-specific UserDefaults keys

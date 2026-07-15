@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct InternalTransferScreen: View {
     @ObservedObject var viewModel: InternalTransferViewModel

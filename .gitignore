@@ -11,6 +11,7 @@ xcuserdata/
 ## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
 build/
 DerivedData/
+.codex-derived-data/
 *.moved-aside
 *.pbxuser
 !default.pbxuser
@@ -40,12 +41,13 @@ fastlane/test_output
 Pods/
 
 # Production Constants
-DWUpholdMainnetConstants__Release.m
 TODO.md
 */GoogleService-Info.plist
 */Topper-Info.plist
 */Coinbase-Info.plist
 */ZenLedger-Info.plist
+*/SwapKit-Info.plist
+**/Uphold-Info.plist
 
 # SQLite temporary files
 *.db-shm
@@ -53,6 +55,17 @@ TODO.md
 
 # Transifex CLI binary
 tx
+DashWalletScreenshotsUITests/refund-addresses.csv
+
+
+
+
+
+
+DWUpholdMainnetConstants__Release.m
+
+
 
 # Claude Code local settings
 .claude/settings.local.json
+DashWallet/Uphold-Info.plist

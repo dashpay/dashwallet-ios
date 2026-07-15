@@ -23,12 +23,14 @@ struct TxRowMetadata: Equatable {
     var details: String?
     var iconId: Data?
     var icon: UIImage?
+    var iconName: IconName?
     var secondaryIcon: IconName?
-    
+
     static func == (lhs: TxRowMetadata, rhs: TxRowMetadata) -> Bool {
         return lhs.title == rhs.title &&
                lhs.details == rhs.details &&
                lhs.iconId == rhs.iconId &&
+               lhs.iconName == rhs.iconName &&
                lhs.secondaryIcon == rhs.secondaryIcon
     }
 }

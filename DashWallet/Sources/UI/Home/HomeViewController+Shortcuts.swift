@@ -20,7 +20,7 @@ import SafariServices
 import SwiftUI
 import SwiftDashSDK
 
-extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreViewControllerDelegate {
+extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     func performAction(for action: ShortcutAction, sender: UIView?) {
         switch action.type {
         case .secureWallet:
@@ -73,6 +73,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
             showTestnetFaucet()
         case .switchWallet:
             showSwitchWallet()
+        case .dashDEX:
+            dashDEXAction()
         }
     }
 
@@ -156,6 +158,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
         controller.showCloseButton = true
 
         let navigationController = BaseNavigationController(rootViewController: controller)
+        navigationController.modalPresentationStyle = .fullScreen
         present(navigationController, animated: true, completion: nil)
     }
 
@@ -214,25 +217,42 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
     #endif
 
     private func showExploreDash() {
-        let controller = ExploreViewController()
-        controller.delegate = self
-        let navigationController = BaseNavigationController(rootViewController: controller)
-        present(navigationController, animated: true, completion: nil)
+        guard let navController = navigationController else { return }
+        let screen = ExploreMenuScreen(
+            vc: navController,
+            onShowSendPayment: { [weak self] in
+                self?.delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
+            },
+            onShowReceivePayment: { [weak self] in
+                self?.delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
+            },
+            onShowGiftCard: { [weak self] txId in
+                self?.showGiftCardDetails(txId: txId)
+            }
+        )
+        let hostingController = UIHostingController(rootView: screen)
+        hostingController.hidesBottomBarWhenPushed = true
+        navController.pushViewController(hostingController, animated: true)
     }
 
     private func showWhereToSpend() {
         let controller = MerchantListViewController()
         controller.initialSegment = .all
+        controller.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
+            title: NSLocalizedString("Where to Spend", comment: ""),
+            onBack: { [weak controller] in controller?.dismiss(animated: true) },
+            onInfo: nil
+        )
         controller.payWithDashHandler = { [weak self] in
             guard let self = self else { return }
             self.delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
         }
         controller.onGiftCardPurchased = { [weak self] txId in
             guard let self = self else { return }
-            self.dismiss(animated: true)
             self.showGiftCardDetails(txId: txId)
         }
         let navigationController = BaseNavigationController(rootViewController: controller)
+        navigationController.modalPresentationStyle = .fullScreen
         present(navigationController, animated: true, completion: nil)
     }
 
@@ -357,6 +377,24 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
         let safariViewController = SFSafariViewController.dw_controller(with: TestnetFaucet.webURL)
         present(safariViewController, animated: true)
     }
+    private func dashDEXAction() {
+        DSAuthenticationManager.sharedInstance().authenticate(
+            withPrompt: nil,
+            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+            alertIfLockout: true
+        ) { [weak self] authenticated, _, _ in
+            guard authenticated else { return }
+            self?.dashDEXActionAuthenticated()
+        }
+    }
+
+    private func dashDEXActionAuthenticated() {
+        let controller = SwapKitPortalViewController()
+        controller.hidesBottomBarWhenPushed = true
+        let navigationController = BaseNavigationController(rootViewController: controller)
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true)
+    }
 
     private func presentControllerModallyInNavigationController(_ controller: UIViewController) {
         if #available(iOS 13.0, *) {
@@ -382,15 +420,32 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
     // MARK: - Shortcut Customization
 
     func presentShortcutSelection(for position: Int) {
-        let selectionView = ShortcutSelectionView { [weak self] selectedType in
-            self?.applyShortcutCustomization(type: selectedType, at: position)
-        }
-        let hostingController = UIHostingController(rootView: selectionView)
-        if let sheet = hostingController.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.prefersGrabberVisible = true
-        }
+        let hostingController = UIHostingController(rootView: shortcutSelectionSheetView(for: position))
         present(hostingController, animated: true)
+    }
+
+    private func shortcutSelectionSheetView(for position: Int) -> AnyView {
+        let usedTypes = Set(HomeViewModel.shared.shortcutItems.map { $0.type })
+        let sheet = BottomSheet(title: NSLocalizedString("Select option", comment: ""),
+                                showBackButton: .constant(false)) {
+            ShortcutSelectionView(usedTypes: usedTypes) { [weak self] selectedType in
+                self?.applyShortcutCustomization(type: selectedType, at: position)
+            }
+        }
+
+        if #available(iOS 16.4, *) {
+            return AnyView(
+                sheet
+                    .presentationDetents([.large])
+                    .presentationBackground(Color.primaryBackground)
+                    .presentationCornerRadius(32)
+                    .presentationDragIndicator(.hidden)
+            )
+        } else if #available(iOS 16.0, *) {
+            return AnyView(sheet.presentationDetents([.large]))
+        } else {
+            return AnyView(sheet)
+        }
     }
 
     private func applyShortcutCustomization(type: ShortcutActionType, at position: Int) {
@@ -429,17 +484,4 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
         controller.navigationController?.dismiss(animated: true, completion: nil)
     }
 
-    // MARK: - DWExploreTestnetViewControllerDelegate
-
-    func exploreViewControllerShowSendPayment(_ controller: ExploreViewController) {
-        delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
-    }
-
-    func exploreViewControllerShowReceivePayment(_ controller: ExploreViewController) {
-        delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive.rawValue)
-    }
-    
-    func exploreViewControllerShowGiftCard(_ controller: ExploreViewController, txId: Data) {
-        showGiftCardDetails(txId: txId)
-    }
 }

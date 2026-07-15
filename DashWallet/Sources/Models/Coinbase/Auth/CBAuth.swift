@@ -63,23 +63,31 @@ class CBAuth {
         let callbackURLScheme = Coinbase.callbackURLScheme
 
         let code = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Swift.Error>) in
+            var didResume = false
+
+            func resumeOnce(_ result: Result<String, Swift.Error>) {
+                guard !didResume else { return }
+                didResume = true
+                continuation.resume(with: result)
+            }
+
             let authenticationSession = ASWebAuthenticationSession(url: signInURL,
                                                                    callbackURLScheme: callbackURLScheme) { callbackURL, error in
                 guard error == nil,
                       let callbackURL,
                       let queryItems = URLComponents(string: callbackURL.absoluteString)?.queryItems,
                       let code = queryItems.first(where: { $0.name == "code" })?.value else {
-                    continuation.resume(throwing: Coinbase.Error.authFailed(.failedToRetrieveCode))
+                    resumeOnce(.failure(Coinbase.Error.authFailed(.failedToRetrieveCode)))
                     return
                 }
-                continuation.resume(returning: code)
+                resumeOnce(.success(code))
             }
 
             authenticationSession.presentationContextProvider = presentationContext
             authenticationSession.prefersEphemeralWebBrowserSession = true
 
             if !authenticationSession.start() {
-                continuation.resume(throwing: Coinbase.Error.authFailed(.failedToStartAuthSession))
+                resumeOnce(.failure(Coinbase.Error.authFailed(.failedToStartAuthSession)))
             }
         }
 
@@ -138,24 +146,17 @@ extension CBAuth {
 extension CBAuth {
     nonisolated
     private var oAuth2URL: URL {
-        let path = CoinbaseEndpoint.signIn.path
-
         var queryItems = [
-            URLQueryItem(name: "redirect_uri", value: Coinbase.redirectUri),
             URLQueryItem(name: "response_type", value: Coinbase.responseType),
+            URLQueryItem(name: "client_id", value: Coinbase.clientID),
+            URLQueryItem(name: "redirect_uri", value: Coinbase.redirectUri),
             URLQueryItem(name: "scope", value: Coinbase.scope),
-            URLQueryItem(name: "meta[send_limit_amount]", value: "\((Coinbase.sendLimitAmount as NSDecimalNumber).intValue)"),
-            URLQueryItem(name: "meta[send_limit_currency]", value: Coinbase.sendLimitCurrency),
-            URLQueryItem(name: "meta[send_limit_period]", value: Coinbase.sendLimitPeriod),
-            URLQueryItem(name: "account", value: Coinbase.account),
         ]
-
-        queryItems.append(URLQueryItem(name: "client_id", value: Coinbase.clientID))
 
         var urlComponents = URLComponents()
         urlComponents.scheme = "https"
-        urlComponents.host = "coinbase.com"
-        urlComponents.path = path
+        urlComponents.host = "login.coinbase.com"
+        urlComponents.path = "/oauth2/auth"
         urlComponents.queryItems = queryItems
 
         guard let url = urlComponents.url else {

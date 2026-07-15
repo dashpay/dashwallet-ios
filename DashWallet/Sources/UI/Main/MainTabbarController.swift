@@ -18,6 +18,7 @@
 import SwiftUI
 import UIKit
 import Combine
+import SwiftUI
 
 // MARK: - MainTabbarTabs
 
@@ -48,7 +49,7 @@ extension MainTabbarTabs {
 
         return UIImage(named: name)!.withRenderingMode(.alwaysOriginal)
     }
-    
+
     var selectedIcon: UIImage {
         let name: String
 
@@ -78,10 +79,11 @@ class MainTabbarController: UITabBarController {
     private var cancellableBag = Set<AnyCancellable>()
     private var ratesFetchErrorShown = false
     private var ratesVolatileWarningShown = false
+    private var paymentIsOpened = false
 
     weak var homeController: HomeViewController?
     weak var menuNavigationController: MainMenuViewController?
-    
+
     #if DASHPAY
     weak var exploreNavigationController: ExploreViewController?
     private var pendingDashPayTabReconfiguration = false
@@ -100,7 +102,7 @@ class MainTabbarController: UITabBarController {
     // TODO: Move it out from here and initialize the model inside home view controller
     @objc
     var homeModel: DWHomeProtocol!
-    
+
     #if DASHPAY
     /// Gate for the DashPay tabs (Contacts, Explore). Reads the
     /// SwiftDashSDK identity helper (Row #17) — true when a
@@ -209,10 +211,18 @@ extension MainTabbarController {
             item = UITabBarItem(title: nil, image: MainTabbarTabs.explore.icon, selectedImage: MainTabbarTabs.explore.selectedIcon)
             item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
             
-            let exploreVC = ExploreViewController()
-            exploreVC.delegate = self
-            exploreNavigationController = exploreVC
-            nvc = BaseNavigationController(rootViewController: exploreVC)
+            nvc = BaseNavigationController(rootViewController: EmptyController())
+            let exploreScreen = ExploreMenuScreen(
+                vc: nvc,
+                showBackButton: false,
+                onShowSendPayment: { [weak self] in self?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay) },
+                onShowReceivePayment: { [weak self] in self?.showPaymentsController(withActivePage: PaymentsViewControllerState.receive) },
+                onShowGiftCard: { [weak self] txId in
+                    self?.selectedIndex = MainTabbarTabs.home.rawValue
+                    self?.homeController?.showGiftCardDetails(txId: txId)
+                }
+            )
+            nvc.viewControllers = [UIHostingController(rootView: exploreScreen)]
             nvc.tabBarItem = item
             viewControllers.append(nvc)
         }
@@ -478,21 +488,6 @@ extension MainTabbarController: UITabBarControllerDelegate {
     }
 }
 
-// MARK: DWExploreTestnetViewControllerDelegate
-
-extension MainTabbarController: ExploreViewControllerDelegate {
-    func exploreViewControllerShowGiftCard(_ controller: ExploreViewController, txId: Data) {
-        homeController?.showGiftCardDetails(txId: txId)
-    }
-    
-    func exploreViewControllerShowSendPayment(_ controller: ExploreViewController) {
-        showPaymentsController(withActivePage: PaymentsViewControllerState.pay)
-    }
-    
-    func exploreViewControllerShowReceivePayment(_ controller: ExploreViewController) {
-        showPaymentsController(withActivePage: PaymentsViewControllerState.receive)
-    }
-}
 
 // MARK: - EmptyController
 

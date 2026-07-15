@@ -46,20 +46,26 @@ enum ShortcutActionType: Int {
     // so inserting mid-enum would silently remap saved configurations.
     case getTestDash
     case switchWallet
+    case dashDEX
 }
 
 extension ShortcutActionType {
     /// The features available for shortcut bar customization. Computed
-    /// (not stored) because two entries follow runtime state: the faucet
-    /// appears only while the wallet is on testnet, and Switch Wallet only
-    /// while the current network has more than one wallet to switch among.
+    /// (not stored) because three entries follow runtime state: CrowdNode
+    /// appears only once the user is signed up, the faucet only while the
+    /// wallet is on testnet, and Switch Wallet only while the current
+    /// network has more than one wallet to switch among.
     @MainActor
     static var customizableActions: [ShortcutActionType] {
         var actions: [ShortcutActionType] = [
             .buySellDash, .explore, .spend, .atm, .receive,
             .send, .scanToPay, .payToAddress,
-            .crowdNode, .coinbase, .uphold, .topper
+            .coinbase, .uphold, .topper, .dashDEX
         ]
+        let state = CrowdNode.shared.signUpState
+        if state == .finished || state == .linkedOnline {
+            actions.append(.crowdNode)
+        }
         if WalletEnvironment.isTestnet {
             actions.insert(.getTestDash, at: 0)
         }
@@ -69,119 +75,57 @@ extension ShortcutActionType {
         return actions
     }
 
-    var icon: UIImage {
+    var iconName: String {
         switch self {
+
         case .secureWallet:
-            guard let image = UIImage(named: "shortcut_secureWalletNow") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-backup"
         case .scanToPay:
-            guard let image = UIImage(named: "shortcut_scanToPay") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-scan-qr"
         case .payToAddress:
-            guard let image = UIImage(named: "shortcut_payToAddress") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-send-address"
         case .buySellDash:
-            guard let image = UIImage(named: "shortcut_buySellDash") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-buy-sell"
         case .payWithNFC:
-            guard let image = UIImage(named: "shortcut_payWithNFC") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut_payWithNFC"
         case .localCurrency:
-            guard let image = UIImage(named: "shortcut_localCurrency") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut_localCurrency"
         case .importPrivateKey:
-            guard let image = UIImage(named: "shortcut_importPrivateKey") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut_importPrivateKey"
         case .switchToTestnet, .switchToMainnet:
-            guard let image = UIImage(named: "shortcut_switchNetwork") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut_switchNetwork"
         case .reportAnIssue:
-            guard let image = UIImage(named: "shortcut_reportAnIssue") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut_reportAnIssue"
         case .createUsername:
             fatalError("Image not found for shortcut type: \(self)")
         case .receive:
-            guard let image = UIImage(named: "shortcut_receive") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-receive"
         case .explore:
-            guard let image = UIImage(named: "shortcut_explore") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-explore"
         case .spend:
-            guard let image = UIImage(named: "shortcut_spend") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-spend"
         case .send:
-            guard let image = UIImage(named: "shortcut_send") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-send"
         case .atm:
-            guard let image = UIImage(named: "shortcut_atm") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-atm"
         case .sendToContact:
-            guard let image = UIImage(named: "shortcut_sendToContact") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-send-contact"
         case .crowdNode:
-            guard let image = UIImage(named: "shortcut_crowdNode") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-crowdnode"
         case .coinbase:
-            guard let image = UIImage(named: "shortcut_coinbase") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-coinbase"
         case .uphold:
-            guard let image = UIImage(named: "shortcut_uphold") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-uphold"
         case .topper:
-            guard let image = UIImage(named: "shortcut_topper") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut-bar-topper"
         case .getTestDash:
-            guard let image = UIImage(named: "shortcut_getTestDash") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
+            return "shortcut_getTestDash"
         case .switchWallet:
             // Reuses the network-switch glyph (circular arrows) — same
             // "switch" metaphor, no dedicated asset yet.
-            guard let image = UIImage(named: "shortcut_switchNetwork") else {
-                fatalError("Image not found for shortcut type: \(self)")
-            }
-            return image
-        default:
-            fatalError("Image not found for shortcut type: \(self)")
+            return "shortcut_switchNetwork"
+        case .dashDEX:
+            return "shortcut-dash-dex"
         }
     }
 
@@ -243,6 +187,8 @@ extension ShortcutActionType {
             return NSLocalizedString("1 tDash", comment: "Translate it as short as possible! (24 symbols max)")
         case .switchWallet:
             return NSLocalizedString("Switch Wallet", comment: "Translate it as short as possible! (24 symbols max)")
+        case .dashDEX:
+            return NSLocalizedString("Dash DEX", comment: "Translate it as short as possible! (24 symbols max)")
         }
     }
 }
@@ -279,7 +225,10 @@ extension ShortcutAction {
     }
 
     var icon: UIImage {
-        type.icon
+        guard let image = UIImage(named: type.iconName) else {
+            fatalError("Image not found for shortcut type: \(self)")
+        }
+        return image
     }
 
     var alpha: CGFloat {

@@ -36,6 +36,8 @@ typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
 
 - (void)setAsDashPlaceholder;
 - (void)configureWithUsername:(NSString *)username;
+/// Current-user render path backed by `DWCurrentUserIdentityInfo.shared`.
+- (void)configureAsCurrentUser;
 
 @end
 
