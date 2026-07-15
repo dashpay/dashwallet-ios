@@ -106,6 +106,9 @@
 /* Usernames */
 "Add to your Shielded balance now and register your username privately a few hours later" = "Add to your Shielded balance now and register your username privately a few hours later";
 
+/* SPV diagnostics */
+"Birth height updated" = "Birth height updated";
+
 /* Log export */
 "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files" = "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files";
 
@@ -114,6 +117,9 @@
 
 /* Usernames */
 "Done — your balance has rested long enough" = "Done — your balance has rested long enough";
+
+/* SPV diagnostics */
+"Edit birth height" = "Edit birth height";
 
 /* Log export */
 "Export Logs" = "Export Logs";
@@ -127,6 +133,9 @@
 /* Usernames */
 "Get ready to join DashPay" = "Get ready to join DashPay";
 
+/* No comment provided by engineer. */
+"Later" = "Later";
+
 /* Usernames */
 "Minimum met" = "Minimum met";
 
@@ -135,6 +144,9 @@
 
 /* Log export */
 "No diagnostic logs were found on this device. Logs are written from the next launch onward." = "No diagnostic logs were found on this device. Logs are written from the next launch onward.";
+
+/* SPV diagnostics */
+"No persisted wallet row found for the bound wallet." = "No persisted wallet row found for the bound wallet.";
 
 /* DashPay */
 "Not enough shielded balance to register an identity" = "Not enough shielded balance to register an identity";
@@ -151,6 +163,9 @@
 /* Usernames */
 "Registering privately takes at least %@ Dash in your Shielded balance plus a few hours of rest time — the next screens walk you through it." = "Registering privately takes at least %@ Dash in your Shielded balance plus a few hours of rest time — the next screens walk you through it.";
 
+/* SPV diagnostics */
+"Rescan now" = "Rescan now";
+
 /* Usernames */
 "Shared privacy pool at minimum size" = "Shared privacy pool at minimum size";
 
@@ -160,11 +175,17 @@
 /* DashPay */
 "The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately." = "The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately.";
 
+/* SPV diagnostics */
+"The saved height becomes the scan floor from the next launch. Rescan filters from it now to pick up any missed history immediately." = "The saved height becomes the scan floor from the next launch. Rescan filters from it now to pick up any missed history immediately.";
+
 /* Usernames */
 "The shared privacy pool is still growing (%ld of %ld deposits). Private registration unlocks once it reaches the minimum." = "The shared privacy pool is still growing (%ld of %ld deposits). Private registration unlocks once it reaches the minimum.";
 
 /* DashPay */
 "The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum." = "The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum.";
+
+/* SPV diagnostics */
+"The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set 0 for an imported wallet whose history may predate this device." = "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set 0 for an imported wallet whose history may predate this device.";
 
 /* Usernames */
 "Transparent funding publicly links your username to these funds." = "Transparent funding publicly links your username to these funds.";
@@ -174,6 +195,9 @@
 
 /* Usernames */
 "Verified during registration" = "Verified during registration";
+
+/* SPV diagnostics */
+"Wallet birth height" = "Wallet birth height";
 
 /* Usernames */
 "You have %@ Dash so far" = "You have %@ Dash so far";

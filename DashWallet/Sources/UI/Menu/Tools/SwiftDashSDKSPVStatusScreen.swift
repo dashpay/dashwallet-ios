@@ -50,6 +50,16 @@ struct SwiftDashSDKSPVStatusScreen: View {
     @State private var rescanResultMessage: String?
     @State private var rescanResultIsError = false
 
+    /// Presents the birth-height edit alert (numeric entry, mirrors the
+    /// "From height…" rescan alert).
+    @State private var showBirthHeightEntry = false
+    /// Bound to the birth-height text field; validated to a `UInt32`
+    /// before use, never defaulted.
+    @State private var birthHeightEntryText = ""
+    /// Non-nil presents the post-save "rescan now?" prompt carrying the
+    /// height that was just written.
+    @State private var savedBirthHeightPendingRescan: UInt32?
+
     init(vc: UINavigationController) {
         self.vc = vc
     }
@@ -147,6 +157,43 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 "Enter the core block height to re-check filters from.",
                 comment: "SPV diagnostics"))
         }
+        .alert(
+            NSLocalizedString("Edit birth height", comment: "SPV diagnostics"),
+            isPresented: $showBirthHeightEntry
+        ) {
+            TextField(
+                NSLocalizedString("Block height", comment: "SPV diagnostics"),
+                text: $birthHeightEntryText)
+                .keyboardType(.numberPad)
+            Button(NSLocalizedString("Save", comment: "")) {
+                saveEnteredBirthHeight()
+            }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+        } message: {
+            Text(NSLocalizedString(
+                "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set 0 for an imported wallet whose history may predate this device.",
+                comment: "SPV diagnostics"))
+        }
+        .alert(
+            NSLocalizedString("Birth height updated", comment: "SPV diagnostics"),
+            isPresented: Binding(
+                get: { savedBirthHeightPendingRescan != nil },
+                set: { if !$0 { savedBirthHeightPendingRescan = nil } }
+            ),
+            presenting: savedBirthHeightPendingRescan
+        ) { height in
+            Button(NSLocalizedString("Rescan now", comment: "SPV diagnostics")) {
+                savedBirthHeightPendingRescan = nil
+                performRescan(fromHeight: height)
+            }
+            Button(NSLocalizedString("Later", comment: ""), role: .cancel) {
+                savedBirthHeightPendingRescan = nil
+            }
+        } message: { _ in
+            Text(NSLocalizedString(
+                "The saved height becomes the scan floor from the next launch. Rescan filters from it now to pick up any missed history immediately.",
+                comment: "SPV diagnostics"))
+        }
     }
 
     // MARK: - Cards
@@ -199,6 +246,30 @@ struct SwiftDashSDKSPVStatusScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             row(title: "Tip height", value: "\(coordinator.tipHeight)")
             row(title: "Best peer height", value: "\(coordinator.bestPeerHeight)")
+            // Birth height (the wallet's filter-scan floor) with an
+            // edit affordance — the escape hatch for wallets stamped
+            // with a wrong creation height (e.g. imports made before
+            // the import-birth-height fix): set 0 and rescan to
+            // recover pre-import history.
+            HStack {
+                Text(NSLocalizedString("Wallet birth height", comment: "SPV diagnostics"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.primaryText)
+                Spacer()
+                Text(walletBirthHeight.map { "\($0)" } ?? "—")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.primaryText)
+                    .monospacedDigit()
+                Button(action: {
+                    birthHeightEntryText = walletBirthHeight.map { "\($0)" } ?? ""
+                    showBirthHeightEntry = true
+                }) {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.dashBlue)
+                }
+                .disabled(walletBirthHeight == nil)
+            }
         }
         .padding(16)
         .background(Color.secondaryBackground)
@@ -592,5 +663,56 @@ extension SwiftDashSDKSPVStatusScreen {
             rescanResultMessage = error.localizedDescription
             Self.logger.error("🛰️ SPV-STATUS :: rescan filters failed: \(String(describing: error), privacy: .public)")
         }
+    }
+
+    /// Validate the birth-height text field and write it onto the
+    /// bound wallet's `PersistentWallet` row. The row is the durable
+    /// source: the SDK's `loadWallets` restore sends `birthHeight`
+    /// back to Rust at every launch, so the edit becomes the wallet's
+    /// scan floor from the next start. The LIVE session's floor is
+    /// unchanged (Rust read it at configure) — the post-save prompt
+    /// offers an immediate filter rescan from the new height, which
+    /// reads the row and therefore honors the edit right away.
+    func saveEnteredBirthHeight() {
+        let trimmed = birthHeightEntryText.trimmingCharacters(in: .whitespaces)
+        guard let height = UInt32(trimmed) else {
+            rescanResultIsError = true
+            rescanResultMessage = NSLocalizedString(
+                "Enter a valid block height.", comment: "SPV diagnostics")
+            return
+        }
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let container = SwiftDashSDKHost.shared.modelContainer else {
+            rescanResultIsError = true
+            rescanResultMessage = NSLocalizedString(
+                "Available only while SPV is running with a wallet bound.",
+                comment: "SPV diagnostics")
+            return
+        }
+        let walletId = wallet.walletId
+        var descriptor = FetchDescriptor<PersistentWallet>(
+            predicate: #Predicate { $0.walletId == walletId })
+        descriptor.fetchLimit = 1
+        guard let row = (try? container.mainContext.fetch(descriptor))?.first else {
+            rescanResultIsError = true
+            rescanResultMessage = NSLocalizedString(
+                "No persisted wallet row found for the bound wallet.",
+                comment: "SPV diagnostics")
+            return
+        }
+        let previous = row.birthHeight
+        guard height != previous else { return }
+        row.birthHeight = height
+        do {
+            try container.mainContext.save()
+        } catch {
+            row.birthHeight = previous
+            rescanResultIsError = true
+            rescanResultMessage = error.localizedDescription
+            Self.logger.error("🛰️ SPV-STATUS :: birth-height save failed: \(String(describing: error), privacy: .public)")
+            return
+        }
+        Self.logger.info("🛰️ SPV-STATUS :: birth height \(previous, privacy: .public) → \(height, privacy: .public)")
+        savedBirthHeightPendingRescan = height
     }
 }
