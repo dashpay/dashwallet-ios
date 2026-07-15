@@ -46,6 +46,7 @@ enum ShortcutActionType: Int {
     // so inserting mid-enum would silently remap saved configurations.
     case getTestDash
     case switchWallet
+    case dashDEX
 }
 
 extension ShortcutActionType {
@@ -59,7 +60,7 @@ extension ShortcutActionType {
         var actions: [ShortcutActionType] = [
             .buySellDash, .explore, .spend, .atm, .receive,
             .send, .scanToPay, .payToAddress,
-            .coinbase, .uphold, .topper
+            .coinbase, .uphold, .topper, .dashDEX
         ]
         let state = CrowdNode.shared.signUpState
         if state == .finished || state == .linkedOnline {
@@ -123,6 +124,8 @@ extension ShortcutActionType {
             // Reuses the network-switch glyph (circular arrows) — same
             // "switch" metaphor, no dedicated asset yet.
             return "shortcut_switchNetwork"
+        case .dashDEX:
+            return "shortcut-dash-dex"
         }
     }
 
@@ -184,6 +187,8 @@ extension ShortcutActionType {
             return NSLocalizedString("1 tDash", comment: "Translate it as short as possible! (24 symbols max)")
         case .switchWallet:
             return NSLocalizedString("Switch Wallet", comment: "Translate it as short as possible! (24 symbols max)")
+        case .dashDEX:
+            return NSLocalizedString("Dash DEX", comment: "Translate it as short as possible! (24 symbols max)")
         }
     }
 }

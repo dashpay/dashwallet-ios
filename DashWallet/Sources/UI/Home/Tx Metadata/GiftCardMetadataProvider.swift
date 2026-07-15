@@ -19,6 +19,7 @@ import Foundation
 import Combine
 import UIKit
 import CryptoKit
+import DashUIKit
 
 class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
     static let shared = GiftCardMetadataProvider()
@@ -98,11 +99,11 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
 
                 if txRowMetadata != nil {
                     txRowMetadata!.title = title
-                    txRowMetadata!.secondaryIcon = .custom("image.explore.dash.wts.payment.gift-card")
+                    txRowMetadata!.secondaryIcon = .custom("transaction-gift-card", bundle: .dashUIKit)
                 } else {
                     txRowMetadata = TxRowMetadata(
                         title: title,
-                        secondaryIcon: .custom("image.explore.dash.wts.payment.gift-card")
+                        secondaryIcon: .custom("transaction-gift-card", bundle: .dashUIKit)
                     )
                 }
 
@@ -127,11 +128,11 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
             
             if txRowMetadata != nil {
                 txRowMetadata!.title = title
-                txRowMetadata!.secondaryIcon = .custom("image.explore.dash.wts.payment.gift-card")
+                txRowMetadata!.secondaryIcon = .custom("transaction-gift-card", bundle: .dashUIKit)
             } else {
                 txRowMetadata = TxRowMetadata(
                     title: title,
-                    secondaryIcon: .custom("image.explore.dash.wts.payment.gift-card")
+                    secondaryIcon: .custom("transaction-gift-card", bundle: .dashUIKit)
                 )
             }
             

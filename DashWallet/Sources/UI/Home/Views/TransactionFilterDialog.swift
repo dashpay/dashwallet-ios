@@ -1,3 +1,4 @@
+import DashUIKit
 import SwiftUI
 
 /// Multi-select transaction filter: one checkbox per category plus an "Only"

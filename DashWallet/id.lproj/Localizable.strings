@@ -11,13 +11,19 @@
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
 /* Maya */
-"%@ address" = "%@ alamat";
+"%@ address" = "%@ address";
 
-/* Maya */
-"%@ address is not valid" = "%@ alamat tidak valid";
+/* Dash DEX / dex_error_blacklisted */
+"%@ can't be swapped at the moment." = "%@ can't be swapped at the moment.";
 
 /* DashPay Contacts */
 "%@ DASH sent to %@" = "%1$@ DASH sent to %2$@";
+
+/* Maya/SwapKit order preview */
+"%@ fee" = "%@ fee";
+
+/* Dash DEX */
+"%@ has received your transaction and is processing the swap." = "%@ has received your transaction and is processing the swap.";
 
 /* DashPay Contacts */
 "%@ has requested to be your contact" = "%@ has requested to be your contact";
@@ -57,6 +63,9 @@
 
 /* Voting */
 "%ld requests" = "%ld permintaan";
+
+/* Dash DEX */
+"%ld sec" = "%ld sec";
 
 /* 10/20 Characters */
 "%ld/%ld Characters" = "%1$ld/%2$ld karakter";
@@ -137,7 +146,7 @@
 "A network fee will be added on top of the amount." = "A network fee will be added on top of the amount.";
 
 /* DashSpend/Maya */
-"A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "Konversi Dash sebelumnya masih dalam proses konfirmasi. Mohon tunggu hingga konfirmasi selesai (sekitar 2-5 menit) sebelum memulai konversi baru.";
+"A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
@@ -193,8 +202,9 @@
 /* No comment provided by engineer. */
 "Address" = "Alamat";
 
-/* Maya */
-"Address validation unavailable — please check your connection" = "Validasi alamat tidak tersedia — silakan periksa koneksi anda";
+/* Maya
+   SwapKit */
+"Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
 
 /* No comment provided by engineer. */
 "Advanced Security" = "Keamanan Tingkat Lanjut";
@@ -218,10 +228,10 @@
 "All" = "Semua";
 
 /* CSV Export */
-"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "Semua pembayaran akan dianggap sebagai pengeluaran dan semua transaksi masuk akan dianggap sebagai pendapatan.\nPemilik dompet ini bertanggung jawab untuk melakukan penyesuaian biaya dasar dalam sistem pelaporan pajak yang mereka pilih.";
+"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
 
 /* Shortcut selection empty state */
-"All shortcuts are already in use" = "Semua pintasan sudah digunakan";
+"All shortcuts are already in use" = "All shortcuts are already in use";
 
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Semua transfer ke dan dari CrowdNode dari perangkat ini akan dilakukan dengan alamat Dash di bawah dari perangkat ini.";
@@ -250,8 +260,11 @@
 /* No comment provided by engineer. */
 "Amount Sent" = "Jumlah Dikirim";
 
+/* No comment provided by engineer. */
+"Amount too low" = "Amount too low";
+
 /* Maya */
-"Amount too small to cover fees" = "Jumlah terlalu kecil untuk menutupi biaya.";
+"Amount too small to cover fees" = "Amount too small to cover fees";
 
 /* No comment provided by engineer. */
 "An error occurred" = "Terjadi kesalahan";
@@ -267,6 +280,9 @@
 
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Nama pengguna apa pun yang memiliki angka 2-9, lebih dari 20 karakter atau yang memiliki tanda hubung akan disetujui secara otomatis";
+
+/* AboutDash */
+"App version" = "App version";
 
 /* Coinbase/Payment Methods */
 "Apple Pay" = "Apple Pay";
@@ -293,7 +309,7 @@
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Karena kebanyakan orang tidak memiliki 1000 Dash, Crowdnode telah membuat layanan di mana, dengan mengumpulkan simpanan dari anggota, mereka dapat memperoleh keuntungan dari memiliki Masternode.";
 
 /* DashSpend */
-"As soon as your code is generated, it will be displayed here" = "Segera setelah kode Anda dibuat, kode tersebut akan ditampilkan di sini.";
+"As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
 
 /* DashSpend */
 "at" = "pada";
@@ -310,9 +326,7 @@
 /* Biometric prompt */
 "Authenticate to access your wallet" = "Authenticate to access your wallet";
 
-/* DashPay
-   DashPay identity registration
-   InternalTransfer */
+/* DashSpend/Maya */
 "Authentication cancelled" = "Authentication cancelled";
 
 /* DashPay
@@ -341,11 +355,14 @@
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
 
-/* Backup */
-"Back Up Now" = "Cadangkan Sekarang";
+/* Dash DEX */
+"Back home" = "Back home";
 
 /* Backup */
-"Back Up Your Wallet" = "Cadangkan Dompet Anda";
+"Back Up Now" = "Back Up Now";
+
+/* Backup */
+"Back Up Your Wallet" = "Back Up Your Wallet";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "Cadangan";
@@ -450,6 +467,9 @@
 /* Dash Portal */
 "Buy Dash · No account needed" = "Beli Dash · Tidak memerlukan akun";
 
+/* Swap */
+"Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
+
 /* DashSpend */
 "Buy gift card" = "Beli kartu hadiah";
 
@@ -466,10 +486,10 @@
 "By tapping the \"Vote for All\" button, you will automatically vote for all of the filtered usernames (%ld) that were submitted first" = "Dengan mengetuk tombol \"Pilih Semua\", Anda akan secara otomatis memilih semua nama pengguna yang difilter (%ld) yang dikirimkan terlebih dahulu";
 
 /* No comment provided by engineer. */
-"Camera is required to scan QR codes." = "Kamera dibutuhkan untuk memindai kode QR.";
+"Camera is required to scan QR codes." = "Camera is required to scan QR codes.";
 
 /* No comment provided by engineer. */
-"Camera Unavailable" = "Kamera tak tersedia";
+"Camera Unavailable" = "Camera Unavailable";
 
 /* DashPay Contacts */
 "Can't receive contact requests" = "Can't receive contact requests";
@@ -496,7 +516,7 @@
 "Card PIN" = "PIN kartu";
 
 /* DashSpend */
-"Cashier instructions" = "Instruksi kasir";
+"Cashier instructions" = "Cashier instructions";
 
 /* DashSpend */
 "Challenge" = "Challenge";
@@ -513,6 +533,9 @@
 /* DashSpend */
 "Check your email and enter the verification code." = "Periksa email anda dan masukkan kode verifikasi.";
 
+/* Dash DEX */
+"Checking amount…" = "Checking amount…";
+
 /* Choose your Dash username */
 "Choose your" = "Pilih Anda";
 
@@ -523,10 +546,13 @@
 "Claimed" = "Diklaim";
 
 /* Maya */
-"Clear address" = "Bersihkan alamat";
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "Tutup";
+
+/* Dash DEX */
+"Close and notify me" = "Close and notify me";
 
 /* CrowdNode */
 "Close and notify when it’s done" = "Tutup dan beri tahu jika sudah selesai";
@@ -555,9 +581,6 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Confirm (%d%@)" = "konfirmasi (%1$d%2$@)";
 
-/* Maya */
-"Confirm (%lds)" = "Konfirmasi (%lds)";
-
 /* No comment provided by engineer. */
 "Confirm PIN" = "Pastikan PIN";
 
@@ -581,17 +604,17 @@
 "Connecting to payment server" = "Mengghubungkan ke server pembayaran";
 
 /* DashSpend */
-"Connection Error" = "Kesalahan koneksi";
+"Connection Error" = "Connection Error";
 
 /* DashSpend */
-"Contact %@ Support" = "Hubungi %@ Dukungan";
+"Contact %@ Support" = "Contact %@ Support";
 
 /* Coinbase
    Coinbase Two Factor Auth */
 "Contact Coinbase Support" = "Hubungi Dukungan Coinbase";
 
 /* Maya */
-"Contact Maya Support" = "Hubungi Dukungan Maya";
+"Contact Maya Support" = "Contact Maya Support";
 
 /* DashPay */
 "Contact request not found" = "Contact request not found";
@@ -608,8 +631,8 @@
 /* DashPay Contacts */
 "Contact settings" = "Contact settings";
 
-/* No comment provided by engineer. */
-"Contact Support" = "Hubungi Dukungan";
+/* AboutDash */
+"Contact support" = "Contact support";
 
 /* No comment provided by engineer. */
 "Contacts" = "Kontak";
@@ -621,19 +644,22 @@
 "Continue" = "Teruskan";
 
 /* Maya */
-"Conversion failed" = "Konversi gagal";
+"Conversion failed" = "Conversion failed";
 
 /* Maya */
-"Conversion in progress" = "Konversi sedang berlangsung";
+"Conversion in progress" = "Conversion in progress";
+
+/* Dash Dex */
+"Convert" = "Convert";
 
 /* Coinbase Entry Point */
 "Convert Crypto" = "Konversi Kripto";
 
 /* Maya Portal */
-"Convert Dash" = "Konversi Dash";
+"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
 
-/* Maya Portal */
-"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Konversikan Dash dari Dash Wallet ke mata uang kripto apa pun yang didukung di Maya dan kirimkan ke dompet mana pun.";
+/* Dash DEX / tx history row title */
+"Converted · %@" = "Converted · %@";
 
 /* No comment provided by engineer. */
 "Copied" = "Disalin";
@@ -645,13 +671,10 @@
 "Copy Invitation Link" = "Salin Tautan Undangan";
 
 /* No comment provided by engineer. */
-"Copy Logs" = "Salin Log";
-
-/* No comment provided by engineer. */
 "Copy text" = "Salin teks";
 
-/* No comment provided by engineer. */
-"Copyright © 2023 Dash Core" = "Hak Cipta © 2023 Dash Core";
+/* AboutDash */
+"Copyright © 2026 Dash Core Group" = "Copyright © 2026 Dash Core Group";
 
 /* Dash Core chain */
 "Core" = "Core";
@@ -664,6 +687,9 @@
 
 /* Wallets */
 "Could not generate a recovery phrase." = "Could not generate a recovery phrase.";
+
+/* SwapKit */
+"Could not load Buy Dash options — please check your connection and try again" = "Could not load Buy Dash options — please check your connection and try again";
 
 /* Wallets */
 "Could not rename this wallet." = "Could not rename this wallet.";
@@ -733,7 +759,7 @@
 "CrowdNode benefits" = "Manfaat CrowdNode";
 
 /* CrowdNode */
-"CrowdNode sign-up and deposits are temporarily unavailable." = "Pendaftaran dan deposit di CrowdNode untuk sementara tidak tersedia.";
+"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
 
 /* CrowdNode Portal */
 "CrowdNode Support" = "Dukungan CrowdNode";
@@ -795,6 +821,10 @@
 /* Uphold Entry Point */
 "Dash balance on Uphold" = "Saldo Dash di Uphold";
 
+/* Dash DEX Portal
+   Translate it as short as possible! (24 symbols max) */
+"Dash DEX" = "Dash DEX";
+
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "pembayaran dash tidak boleh kurang dari %@";
 
@@ -804,6 +834,9 @@
 /* DashSpend confirmation */
 "Dash Wallet" = "Dompet Dash";
 
+/* AboutDash */
+"Dash Wallet is an open sourced app forked from Bitcoin Wallet" = "Dash Wallet is an open sourced app forked from Bitcoin Wallet";
+
 /* Buy Dash */
 "Dash Wallet on this device" = "Dompet Dash di perangkat ini";
 
@@ -812,6 +845,9 @@
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "Biaya Peningkatan DashPay";
+
+/* AboutDash */
+"DashSync" = "DashSync";
 
 /* CrowdNode Portal */
 "DashWallet ➝ CrowdNode" = "DashWallet ➝ CrowdNode";
@@ -826,13 +862,13 @@
 "Date: Old to new" = "Tanggal: Lama ke baru";
 
 /* DashSpend */
-"Decrease quantity" = "Kurangi jumlah";
+"Decrease quantity" = "Decrease quantity";
 
 /* Voting */
 "Default filter setting" = "Pengaturan filter default";
 
 /* Explore Dash */
-"Default filters applied" = "Filter default diterapkan";
+"Default filters applied" = "Default filters applied";
 
 /* No comment provided by engineer. */
 "Delete" = "Delete";
@@ -903,10 +939,10 @@
 "Done" = "Selesai";
 
 /* DashSpend */
-"Double tap to change quantity" = "Ketuk dua kali untuk mengubah jumlah";
+"Double tap to change quantity" = "Double tap to change quantity";
 
 /* SegmentedControl */
-"Double tap to select" = "Ketuk dua kali untuk memilih";
+"Double tap to select" = "Double tap to select";
 
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
@@ -934,7 +970,7 @@
 "Earlier" = "Sebelumnya";
 
 /* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Lakukan staking Dash dengan mudah dan dapatkan penghasilan pasif hanya dengan beberapa klik sederhana.";
+"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "Stake Dash dengan mudah dan dapatkan penghasilan pasif dengan beberapa klik yang mudah.";
@@ -960,11 +996,20 @@
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Aktifkan Pengenal sentuh";
 
+/* Swap */
+"Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work." = "Enter a valid %1$@ address. %2$@ here is on %3$@, so an Ethereum (0x…) address won’t work.";
+
 /* SPV diagnostics */
 "Enter a valid block height." = "Enter a valid block height.";
 
 /* Maya */
-"Enter address" = "Masukkan alamat";
+"Enter address" = "Enter address";
+
+/* Dash DEX */
+"Enter Amount" = "Enter Amount";
+
+/* Dash DEX */
+"Enter amount" = "Enter amount";
 
 /* Coinbase Two Factor Auth */
 "Enter Coinbase 2FA code" = "Masukkan kode Coinbase 2FA";
@@ -974,6 +1019,9 @@
 
 /* No comment provided by engineer. */
 "Enter Recovery Phrase" = "Masukkan Frasa pemulihan";
+
+/* Dash DEX */
+"Enter refund address" = "Enter refund address";
 
 /* SPV diagnostics */
 "Enter the core block height to re-check filters from." = "Enter the core block height to re-check filters from.";
@@ -1009,7 +1057,7 @@
 "Error updating your profile" = "Terjadi kesalahan saat memperbarui profil Anda";
 
 /* Maya */
-"Exchange rate not available" = "Data nilai tukar tak tersedia";
+"Exchange rate not available" = "Exchange rate not available";
 
 /* No comment provided by engineer. */
 "Expense" = "pengeluaran";
@@ -1090,19 +1138,22 @@
 "Find a user and add them to your contacts." = "Find a user and add them to your contacts.";
 
 /* Explore Dash */
-"Find ATMs where you can buy or sell Dash" = "Temukan ATM tempat Anda dapat membeli atau menjual Dash.";
+"Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Temukan ATM dimana anda dapat membeli atau menjual Dash.";
 
 /* Explore Dash */
-"Find merchants that accept Dash payments" = "Temukan pedagang yang menerima pembayaran Dash.";
+"Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Temukan pedagang yang menerima pembayaran Dash.";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash, where to buy it and how to earn income with it." = "Temukan pedagang yang menerima Dash, tempat membelinya, dan cara memperoleh penghasilan dengannya.";
+
+/* No comment provided by engineer. */
+"Find merchants who accept Dash and where to buy it." = "Find merchants who accept Dash and where to buy it.";
 
 /* InternalTransfer recovery */
 "Finish now" = "Finish now";
@@ -1152,14 +1203,17 @@
 /* DashSpend confirmation */
 "From" = "Dari";
 
+/* Dash DEX Portal */
+"From any crypto to your Dash Wallet" = "From any crypto to your Dash Wallet";
+
 /* from CrowdNode */
 "from CrowdNode" = "dari CrowdNode";
 
 /* from Dash Wallet */
 "from Dash Wallet" = "dari Wallet Dash";
 
-/* Maya Portal */
-"From Dash Wallet to any crypto" = "Dari Dompet Dash ke kripto apapun";
+/* Swap portal */
+"From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
 
 /* No comment provided by engineer. */
 "From Dash Wallet to Shielded balance" = "From Dash Wallet to Shielded balance";
@@ -1221,11 +1275,11 @@
 /* No comment provided by engineer. */
 "Gift card" = "Kartu Hadiah";
 
-/* DashSpend */
-"Gift card details are unavailable. Please contact support." = "Detail kartu hadiah tidak tersedia. Silakan hubungi dukungan.";
+/* No comment provided by engineer. */
+"Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
 
 /* DashSpend */
-"Gift card is being prepared" = "Kartu hadiah sedang disiapkan";
+"Gift card is being prepared" = "Gift card is being prepared";
 
 /* DashSpend */
 "Gift card purchase successful" = "Pembelian kartu hadiah berhasil";
@@ -1242,9 +1296,6 @@
 /* No comment provided by engineer. */
 "Go to CrowdNode website" = "Buka situs web CrowdNode";
 
-/* Maya */
-"Go to Home" = "Pergi ke Rumah";
-
 /* No comment provided by engineer. */
 "Go to Website" = "Pergi ke Situs Web";
 
@@ -1254,9 +1305,6 @@
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "Berikan izin GPS sehingga kami dapat menunjukkan lokasi di dekat Anda.";
 
-/* Maya */
-"halted" = "Dihentikan";
-
 /* Voting */
 "Has blocked votes" = "Telah memblokir suara";
 
@@ -1265,9 +1313,6 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "header #%1$d dari %2$d";
-
-/* No comment provided by engineer. */
-"Help us improve your experience" = "Bantu kami meningkatkan pengalaman Anda";
 
 /* CrowdNode */
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Berikut adalah alamat Dash yang ditujukan untuk akun CrowdNode Anda di Dash Wallet pada perangkat ini";
@@ -1350,6 +1395,9 @@
 /* Usernames */
 "If enough of the network feels that a username is inappropriate, they can block it" = "Jika cukup banyak jaringan yang merasa bahwa nama pengguna tidak pantas, mereka dapat memblokirnya";
 
+/* Dash DEX / dex_refund_address_description */
+"If the swap fails, your %@ will be returned to this address. Make sure it's a %@ address from a wallet you control.\n\nYour swap cannot be processed without a refund address." = "If the swap fails, your %1$@ will be returned to this address. Make sure it's a %2$@ address from a wallet you control.\n\nYour swap cannot be processed without a refund address.";
+
 /* Geoblock */
 "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "Jika Anda memilih untuk memberikan izin di lain waktu dan Anda tidak berada di Inggris, Anda dapat menggunakan Coinbase";
 
@@ -1393,7 +1441,7 @@
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Selain biaya Coinbase yang ditampilkan, kami menyertakan Spread harga. Saat menggunakan Advanced Trade, tidak ada spread yang disertakan karena Anda berinteraksi langsung dengan buku pesanan.\n\nPasar Cryptocurrency tidak stabil, dan ini memungkinkan kami mengunci sementara harga untuk eksekusi perdagangan.";
 
 /* Maya */
-"In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution." = "Selain biaya Maya yang ditampilkan, kami juga menyertakan spread dalam harga.\nPasar mata uang kripto sangat fluktuatif, dan ini memungkinkan kami untuk sementara mengunci harga untuk eksekusi perdagangan.";
+"In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution." = "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.";
 
 /* CrowdNode */
 "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "Jika terjadi penarikan lebih besar, CrowdNode akan membayar penarikan dalam waktu dua minggu. Hal ini disebabkan oleh protokol keamanan mereka dan seringkali akan ditangani lebih cepat.";
@@ -1403,6 +1451,9 @@
 
 /* CrowdNode Portal */
 "In process…" = "Dalam proses…";
+
+/* Dash DEX */
+"In progress" = "In progress";
 
 /* No comment provided by engineer. */
 "In store" = "Di toko";
@@ -1414,16 +1465,13 @@
 "Income" = "Pemasukan";
 
 /* DashSpend */
-"Increase quantity" = "Naikkan jumlah";
+"Increase quantity" = "Increase quantity";
 
 /* CrowdNode */
 "Information about your online account" = "Informasi tentang akun online Anda";
 
 /* Buy Sell Portal */
 "Initializing" = "Menginisialisasi";
-
-/* Maya */
-"Insufficient balance" = "Saldo tidak mencukupi";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Dana tidak mencukupi";
@@ -1530,8 +1578,8 @@
 /* CrowdNode */
 "It can take a minute for your funds to arrive." = "Mungkin butuh satu menit agar dana Anda tiba.";
 
-/* Maya */
-"It can take up to a few minutes for your \(coinName) to arrive at the destination address" = "Diperlukan waktu hingga beberapa menit agar \(coinName) Anda sampai ke alamat tujuan.";
+/* Dash DEX */
+"It can take up to a few minutes for your %@ to arrive at the destination address using %@" = "It can take up to a few minutes for your %1$@ to arrive at the destination address using %2$@";
 
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "Bisa jadi kode dari SMS di ponsel Anda. Jika tidak, masukkan kode dari aplikasi otentikasi.";
@@ -1540,7 +1588,7 @@
 "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device" = "Diperlukan waktu hingga 10 menit untuk mentransfer Dash dari Coinbase ke Dash Wallet di perangkat ini";
 
 /* DashSpend */
-"It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "Sepertinya Anda sudah lama tidak menggunakan DashSpend. Demi alasan keamanan, Anda telah keluar dari akun.\n\nHarap masuk lagi untuk terus mencari tempat untuk membelanjakan Dash Anda.";
+"It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.";
 
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Sepertinya Anda mencoba mengembalikan dompet Anda menggunakan frasa pemulihan 12 kata, namun Anda hanya memasukkan 10 kata, apakah Anda ingin memulihkan kata yang hilang secara otomatis? Ini mungkin membutuhkan waktu sekitar satu jam. Kami merekomendasikan untuk mencolokkan perangkat Anda.";
@@ -1572,6 +1620,9 @@
 /* Explore Dash */
 "Last device sync" = "Sinkronisasi perangkat terakhir";
 
+/* AboutDash */
+"Last device update" = "Last device update";
+
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Last known balance" = "Saldo terakhir yang diketahui";
@@ -1583,7 +1634,7 @@
 "Later" = "Later";
 
 /* Maya */
-"Learn more" = "Pelajari lebih lanjut";
+"Learn more" = "Learn more";
 
 /* Info Screen */
 "Learn More..." = "Pelajari lebih lanjut...";
@@ -1637,10 +1688,13 @@
 "Link your Uphold account" = "Tautkan akun Uphold anda";
 
 /* DashSpend */
-"Loading gift card options..." = "Memuat pilihan kartu hadiah";
+"Loading gift card options..." = "Loading gift card options...";
+
+/* Dash DEX */
+"Loading rates…" = "Loading rates…";
 
 /* Maya */
-"Loading..." = "Memuat...";
+"Loading..." = "Loading...";
 
 /* No comment provided by engineer. */
 "Loading…" = "Loading…";
@@ -1664,7 +1718,7 @@
 "Log in" = "Masuk";
 
 /* Maya */
-"Log In" = "masuk";
+"Log In" = "Log In";
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Masuk ke CrowdNode";
@@ -1700,7 +1754,7 @@
 "Logout after" = "Keluar setelah";
 
 /* Maya */
-"Long press to paste" = "Tekan lama untuk tempel";
+"Long press to paste" = "Long press to paste";
 
 /* Leftover balance warning */
 "Looks like you are emptying your Dash Wallet" = "Sepertinya Anda sedang mengosongkan Dompet Dash Anda";
@@ -1772,12 +1826,6 @@
    Maya Portal */
 "Maya" = "Maya";
 
-/* Maya */
-"Maya fee" = "Biaya Maya";
-
-/* Maya */
-"Maya Protocol has received your transaction and is processing the swap." = "Maya Protocol telah menerima transaksi Anda dan sedang memproses pertukaran tersebut.";
-
 /* No comment provided by engineer. */
 "Maybe later" = "Mungkin nanti";
 
@@ -1787,8 +1835,11 @@
 /* CrowdNode */
 "Members are free to leave the pool and can most often leave immediately." = "Anggota bebas untuk meninggalkan pool dan paling sering dapat segera pergi.";
 
+/* Dash DEX */
+"Memo / Tag" = "Memo / Tag";
+
 /* DashSpend */
-"Merchant has only %d cards available" = "Pedagang hanya mempunyai %dkartu tersedia";
+"Merchant has only %d cards available" = "Merchant has only %d cards available";
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "Pencarian pedagang bekerja lebih baik dengan Layanan Lokasi diaktifkan.";
@@ -1836,7 +1887,10 @@
 "Moved to Address" = "Terpindah ke Alamat";
 
 /* DashSpend */
-"Multiple" = "Beberapa";
+"Multiple" = "Multiple";
+
+/* Swap route provider */
+"Multiple networks" = "Multiple networks";
 
 /* Validation rule */
 "Must start and end with a letter or number" = "Harus dimulai dan diakhiri dengan huruf atau angka";
@@ -1849,6 +1903,10 @@
 
 /* No comment provided by engineer. */
 "Name" = "Nama";
+
+/* Swap route provider
+   Swap route provider short */
+"NEAR" = "NEAR";
 
 /* Nearby */
 "Nearby" = "Terdekat";
@@ -1906,16 +1964,25 @@
 "No cash account found" = "Tidak ada akun Cash ditemukan";
 
 /* Maya */
-"No coins found" = "Tidak ada koin ditemukan";
+"No coins found" = "No coins found";
 
 /* DashPay */
 "No DashPay identity is registered" = "No DashPay identity is registered";
 
+/* SwapKit */
+"No deposit address returned by SwapKit" = "No deposit address returned by SwapKit";
+
 /* No comment provided by engineer. */
 "No funded Platform address has enough balance to cover this amount plus fees." = "No funded Platform address has enough balance to cover this amount plus fees.";
 
+/* No connection */
+"No internet connection" = "No internet connection";
+
+/* Explore Dash */
+"No locations found." = "No locations found.";
+
 /* local currency empty state */
-"No matches for \"%@\"" = "Tidak ada kecocokan untuk \"%@\"";
+"No matches for \"%@\"" = "No matches for \"%@\"";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Tidak ada metode pembayaran";
@@ -1929,8 +1996,14 @@
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "Tidak ada hasil yang ditemukan";
 
+/* SwapKit */
+"No route available" = "No route available";
+
 /* DashPay Contacts */
 "No usernames found" = "No usernames found";
+
+/* SwapKit */
+"No vault address returned by SwapKit" = "No vault address returned by SwapKit";
 
 /* Voting */
 "No votes left" = "Tidak ada suara tersisa";
@@ -1977,6 +2050,9 @@
 /* Voting */
 "Old to new" = "Lama ke Baru";
 
+/* Dash DEX / dex_receive_description */
+"Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet" = "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet";
+
 /* Voting */
 "One vote left" = "Satu suara tersisa";
 
@@ -2007,8 +2083,11 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Pratinjau Pesanan";
 
+/* Maya */
+"Order preview" = "Order preview";
+
 /* DashSpend */
-"Original Price" = "Harga asli";
+"Original Price" = "Original Price";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Alamat pemilik";
@@ -2023,7 +2102,7 @@
 "Password" = "Kata sandi";
 
 /* Maya */
-"Paste address from" = "Tempel alamat dari";
+"Paste address from" = "Paste address from";
 
 /* Usernames */
 "Paste link here" = "Tempel tautan disini";
@@ -2175,6 +2254,9 @@
 /* Leftover balance warning */
 "Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "Harap diperhatikan, Anda tidak akan dapat menarik dana Anda dari CowdNode ke dompet ini sampai Anda menambah saldo ke %@ Dash.";
 
+/* Leftover balance warning */
+"Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash." = "Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash.";
+
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "Silakan letakkan ponsel Anda di dekat perangkat NFC.";
 
@@ -2257,13 +2339,16 @@
 "Purchase Failed" = "Pembelian gagal";
 
 /* DashSpend */
-"Quantity" = "Kuantitas";
+"Quantity" = "Quantity";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Terima Cepat";
 
 /* Voting */
 "Quick Voting" = "Voting Cepat";
+
+/* Dash DEX */
+"Quote expires" = "Quote expires";
 
 /* Explore Dash/Merchants/Filters */
 "Radius" = "Radius";
@@ -2281,7 +2366,7 @@
 "Receive" = "Terima";
 
 /* Maya */
-"Receive amount" = "Jumlah diterima";
+"Receive amount" = "Receive amount";
 
 /* Coinbase Entry Point */
 "Receive directly into Coinbase" = "Terima langsung ke Coinbase";
@@ -2326,7 +2411,10 @@
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Frasa pemulihan harus memiliki 12, 15, 18, 21, atau 24 kata";
 
 /* Maya */
-"Refresh quote" = "Perbarui kutipan harga";
+"Refresh quote" = "Refresh quote";
+
+/* Dash DEX / dex_refund_address_field_label */
+"Refund address" = "Refund address";
 
 /* Button title, Register (username) */
 "Register" = "Daftar";
@@ -2421,8 +2509,8 @@
 /* No comment provided by engineer. */
 "Retry" = "Coba lagi";
 
-/* No comment provided by engineer. */
-"Review & Rate the app" = "Ulas & beri nilai aplikasi";
+/* AboutDash */
+"Review app" = "Review app";
 
 /* Voting */
 "Review the posting below to verify the ownership of this username" = "Tinjau postingan di bawah untuk memverifikasi kepemilikan nama pengguna ini";
@@ -2491,7 +2579,7 @@
 "Security Level" = "Tingkat keamanan";
 
 /* DashSpend */
-"See card details" = "Lihat detail kartu";
+"See card details" = "See card details";
 
 /* No comment provided by engineer. */
 "See how to use this gift card" = "Lihat cara menggunakan kartu hadiah ini";
@@ -2516,13 +2604,16 @@
 "Select block explorer" = "Pilih penjelajah blok";
 
 /* Maya */
-"Select coin" = "Pilih koin";
+"Select coin" = "Select coin";
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Pilih dari galeri";
 
 /* No comment provided by engineer. */
 "Select gift card provider" = "Pilih penyedia Kartu hadiah";
+
+/* Explore Dash */
+"Select location" = "Select location";
 
 /* No comment provided by engineer. */
 "Select option" = "Pilih opsi";
@@ -2539,11 +2630,20 @@
 /* Buy Dash */
 "Sell Dash" = "Jual Dash";
 
+/* Dash Portal */
+"Sell Dash · Best price across networks" = "Sell Dash · Best price across networks";
+
 /* No comment provided by engineer. */
 "Send" = "Kirim";
 
+/* Dash DEX */
+"Send %@ (%@) to this address" = "Send %1$@ (%2$@) to this address";
+
 /* CrowdNode Confirm */
 "Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "Kirim %@ dari alamat Dash utama yang saat ini Anda gunakan untuk akun CrowdNode Anda";
+
+/* Dash DEX */
+"Send %@ to this address" = "Send %@ to this address";
 
 /* No comment provided by engineer. */
 "Send again" = "Kirim lagi";
@@ -2581,6 +2681,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send with NFC" = "Kirim dengan NFC";
+
+/* Dash DEX */
+"Send your %@ before the timer runs out. If you send after the address expires, your funds will be refunded — not converted." = "Send your %@ before the timer runs out. If you send after the address expires, your funds will be refunded — not converted.";
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Mengirim";
@@ -2691,19 +2794,22 @@
 "Simplify your crypto taxes" = "Sederhanakan pajak kripto Anda";
 
 /* DashSpend */
-"Single" = "Tunggal";
+"Single" = "Single";
 
 /* No comment provided by engineer. */
 "Skip" = "Lewati";
 
 /* Maya */
-"Some coins are not available because of the halted chain" = "Beberapa koin tidak tersedia karena rantai yang terhenti";
+"Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
 /* Usernames */
 "Some usernames can be blocked" = "Beberapa nama pengguna dapat diblokir";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Ada yang salah";
+
+/* Dash DEX / dex_error_generic */
+"Something went wrong setting up your swap. Please try again." = "Something went wrong setting up your swap. Please try again.";
 
 /* No comment provided by engineer. */
 "Sort by" = "Urutkan dengan";
@@ -2760,18 +2866,34 @@
 /* No comment provided by engineer. */
 "Support" = "Dukungan";
 
+/* Dash DEX Portal */
+"Swap crypto into Dash, or convert Dash to any crypto supported across SwapKit networks" = "Swap crypto into Dash, or convert Dash to any crypto supported across SwapKit networks";
+
 /* Dash Portal */
-"Swap Dash · No account needed" = "Tukar Dash · Tidak perlu akun";
+"Swap Dash · No account needed" = "Swap Dash · No account needed";
+
+/* Maya/SwapKit order preview */
+"Swap fee" = "Swap fee";
 
 /* Maya
    Shown when a previous Dash conversion is still confirming and blocks a new general send. */
-"Swap in progress" = "Pertukaran sedang berlangsung.";
+"Swap in progress" = "Swap in progress";
 
 /* Maya */
-"Swap memo is missing. Please refresh and try again." = "Memo pertukaran hilang. Silakan segarkan halaman dan coba lagi.";
+"Swap memo is missing. Please refresh and try again." = "Swap memo is missing. Please refresh and try again.";
 
-/* Maya */
-"Swap timed out after 30 minutes. Contact Maya support if funds were sent." = "Transaksi gagal setelah 30 menit. Hubungi dukungan Maya jika dana telah dikirim.";
+/* Dash DEX */
+"Swap timed out. Contact support if funds were sent." = "Swap timed out. Contact support if funds were sent.";
+
+/* Dash Portal
+   SwapKit Portal */
+"SwapKit" = "SwapKit";
+
+/* Dash DEX */
+"Swapping" = "Swapping";
+
+/* Dash DEX / dex_error_unavailable */
+"Swaps are temporarily unavailable. Please try again later." = "Swaps are temporarily unavailable. Please try again later.";
 
 /* Wallets */
 "Switch" = "Switch";
@@ -2799,10 +2921,16 @@
 "Sync Failed" = "Sinkronisasi Gagal";
 
 /* Explore Dash */
+"Sync failed" = "Sync failed";
+
+/* Explore Dash */
 "Sync in progress… Results may not be complete." = "Sinkronisasi sedang berlangsung... Hasil mungkin tidak lengkap.";
 
 /* About screen tech info: SPV state */
 "synced" = "synced";
+
+/* Explore Dash */
+"Synced" = "Synced";
 
 /* CrowdNode Portal */
 "Synced with current Dash Wallet" = "Disinkronkan dengan Dompet Dash saat ini";
@@ -2861,6 +2989,12 @@
 /* Wallets */
 "That is not this wallet's recovery phrase." = "That is not this wallet's recovery phrase.";
 
+/* Dash DEX / dex_error_invalid_refund_address */
+"That refund address isn't a valid %@ address." = "That refund address isn't a valid %@ address.";
+
+/* Dash DEX / dex_error_insufficient_balance */
+"The amount is more than what you're sending." = "The amount is more than what you're sending.";
+
 /* No comment provided by engineer. */
 "The chain is syncing…" = "Rantai sedang menyinkronkan…";
 
@@ -2879,11 +3013,20 @@
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "Filter default hanya menampilkan nama pengguna duplikat yang BELUM Anda pilih, tetapi Anda dapat melihat dan memilih nama pengguna yang diperebutkan dengan mengubah filter.";
 
+/* Swap */
+"The destination address isn’t valid for %@ (%@). Go back and enter a %@ address." = "The destination address isn’t valid for %1$@ (%2$@). Go back and enter a %3$@ address.";
+
+/* SwapKit */
+"The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it." = "The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it.";
+
+/* Dash DEX */
+"The final amount you receive may differ from this estimate by up to %d%% due to price slippage." = "The final amount you receive may differ from this estimate by up to %d%% due to price slippage.";
+
 /* Explore */
 "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "Yang pertama menerima Dash secara langsung. Yang lainnya menerima kartu hadiah yang dapat Anda beli dengan Dash dengan jumlah yang sama dengan jumlah pembelian Anda dalam dua ketukan.";
 
 /* CSV Export */
-"The full transaction history will be exported as a CSV file" = "Riwayat transaksi lengkap akan diekspor sebagai file CSV.";
+"The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Gambar yang Anda pilih akan diunggah ke Imgur secara anonim.";
@@ -2891,11 +3034,20 @@
 /* Usernames */
 "The link you send will be visible only to the network owners" = "Tautan yang Anda kirimkan hanya akan terlihat oleh pemilik jaringan";
 
+/* Dash DEX */
+"The maximum transaction amount is %@" = "The maximum transaction amount is %@";
+
 /* Coinbase */
 "The minimum amount you can send is %@" = "Jumlah minimum yang dapat Anda kirim adalah %@";
 
+/* Dash DEX / dex_error_price_moved */
+"The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
+
 /* DashSpend */
 "The purchase limits for this merchant have changed. Please contact CTX Support for more information." = "Batasan pembelian untuk pedagang ini telah berubah. Silakan hubungi Dukungan CTX untuk informasi lebih lanjut.";
+
+/* Dash DEX */
+"The refund address is required" = "The refund address is required";
 
 /* No comment provided by engineer. */
 "The transfer could take up to 10 minutes" = "The transfer could take up to 10 minutes";
@@ -2921,11 +3073,23 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 
-/* No comment provided by engineer. */
-"This app is open source:" = "Aplikasi ini adalah open source:";
+/* CrowdNode */
+"These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device." = "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.";
+
+/* Dash DEX / dex_error_sanctioned */
+"This address can't be used for swaps." = "This address can't be used for swaps.";
+
+/* Dash DEX */
+"This address expires in 10 minutes" = "This address expires in 10 minutes";
+
+/* Dash DEX / dex_error_no_route */
+"This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
+
+/* Dash DEX / dex_enter_amount_invalid */
+"This amount can't be swapped right now. Try a different amount, or try again shortly." = "This amount can't be swapped right now. Try a different amount, or try again shortly.";
 
 /* DashSpend */
-"This card works only in the United States." = "Kartu ini hanya berfungsi di Amerika Serikat.";
+"This card works only in the United States." = "This card works only in the United States.";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "Langkah ekstra ini menunjukkan bahwa Anda benar-benar mencoba melakukan transaksi.";
@@ -2960,11 +3124,17 @@
 /* CrowdNode Confirm */
 "This QR already contains the payment request for %@" = "QR ini sudah berisi permintaan pembayaran untuk %@";
 
+/* Dash DEX / dex_error_quote_expired */
+"This quote expired. Please go back and try again." = "This quote expired. Please go back and try again.";
+
 /* Wallets */
 "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds." = "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.";
 
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "Ini mewakili Persentase Hasil Tahunan saat ini dari Masternode penuh dikurangi biaya CrowdNode 15%. Ini bukan tingkat pengembalian yang dijamin dan dapat naik atau turun berdasarkan ukuran  CrowdNode pool dan harga Dash.";
+
+/* Dash DEX / dex_error_allowance */
+"This token needs approval before it can be swapped." = "This token needs approval before it can be swapped.";
 
 /* InternalTransfer recovery */
 "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it." = "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.";
@@ -3034,6 +3204,9 @@
    Dash Service Overview */
 "Transfer Dash" = "Transfer Dash";
 
+/* Coinbase */
+"Transfer DASH" = "Transfer DASH";
+
 /* CrowdNode */
 "Transfer Error" = "Kesalahan Transfer";
 
@@ -3085,6 +3258,9 @@
 /* No comment provided by engineer. */
 "Unable to connect" = "Tidak dapat terhubung";
 
+/* Dash DEX */
+"Unable to determine your Dash receive address." = "Unable to determine your Dash receive address.";
+
 /* No comment provided by engineer. */
 "Unable to fetch contact details" = "Tidak dapat mengambil detail kontak";
 
@@ -3098,7 +3274,13 @@
 "Unable to get new QR code" = "Tidak dapat mendapat kode QR baru";
 
 /* DashSpend */
-"Unable to load merchant details. Please try again." = "Detail pedagang tidak dapat dimuat. Silakan coba lagi.";
+"Unable to load merchant details. Please try again." = "Unable to load merchant details. Please try again.";
+
+/* Dash DEX */
+"Unable to load rate data" = "Unable to load rate data";
+
+/* Swap */
+"Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
 
 /* No comment provided by engineer. */
 "Unable to send contact request" = "Tidak dapat mengirim permintaan kontak";
@@ -3107,10 +3289,10 @@
 "Unable to upload your picture. Please try again." = "Tidak dapat mengunggah gambar Anda. Silakan coba lagi.";
 
 /* DashSpend */
-"Unable to verify your session. Please check your internet connection and try again." = "Tidak dapat memverifikasi sesi Anda. Harap periksa koneksi internet Anda dan coba lagi.";
+"Unable to verify your session. Please check your internet connection and try again." = "Unable to verify your session. Please check your internet connection and try again.";
 
 /* DashSpend */
-"Unavailable at this limit" = "Tidak tersedia pada batas ini";
+"Unavailable at this limit" = "Unavailable at this limit";
 
 /* Voting */
 "Unblock" = "buka blokir";
@@ -3169,6 +3351,9 @@
 /* No comment provided by engineer. */
 "Uploading your picture to the network" = "Mengunggah gambar Anda ke jaringan";
 
+/* Dash DEX */
+"URI" = "URI";
+
 /* Voting */
 "Username" = "Nama pengguna";
 
@@ -3209,7 +3394,7 @@
 "Validating username…" = "Memvalidasi nama pengguna…";
 
 /* Maya */
-"Vault address is missing. Please refresh and try again." = "Alamat brankas tidak ditemukan. Silakan segarkan halaman dan coba lagi.";
+"Vault address is missing. Please refresh and try again." = "Vault address is missing. Please refresh and try again.";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verifikasi Diperlukan";
@@ -3235,6 +3420,12 @@
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Lihat di Explorer";
 
+/* Dash DEX */
+"View MayaChain explorer" = "View MayaChain explorer";
+
+/* Dash DEX */
+"View NEAR Intents explorer" = "View NEAR Intents explorer";
+
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "Lihat frasa pemulihan";
 
@@ -3242,7 +3433,7 @@
 "View transaction details" = "Lihat Detail Transaksi";
 
 /* Maya */
-"View transaction on MayaScan" = "Lihat transaksi di MayaScan";
+"View transaction on MayaScan" = "View transaction on MayaScan";
 
 /* Voting */
 "Vote for All" = "Pilih untuk semua";
@@ -3272,7 +3463,7 @@
 "Voting keys" = "Kunci pemungutan suara";
 
 /* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Tunggu hingga rantai sepenuhnya tersinkronisasi sebelum menggunakan CrowdNode.";
+"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "Tunggu hingga rantai disinkronkan sepenuhnya, sehingga kami bisa mengulas riwayat transaksi anda.";
@@ -3282,9 +3473,6 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Tunggu hingga dompet disinkronkan untuk menyelesaikan transaksi";
-
-/* Maya */
-"Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins." = "Menunggu konfirmasi blok. Pertukaran Maya memerlukan satu blok Dash (~2–5 menit) sebelum pertukaran dimulai.";
 
 /* Wallets — placeholder name with short id */
 "Wallet %@…" = "Wallet %@…";
@@ -3324,6 +3512,18 @@
 
 /* No comment provided by engineer. */
 "WARNING" = "PERINGATAN";
+
+/* Dash DEX / dex_error_build_failed */
+"We couldn't prepare this swap. Please try again." = "We couldn't prepare this swap. Please try again.";
+
+/* Dash DEX */
+"We couldn't save this swap order. Please try again." = "We couldn't save this swap order. Please try again.";
+
+/* Dash DEX / dex_error_invalid_destination */
+"We couldn't set up your deposit. Please try again." = "We couldn't set up your deposit. Please try again.";
+
+/* Dash DEX / dex_error_validation */
+"We couldn't set up your swap. Please check the amount and address, then try again." = "We couldn't set up your swap. Please check the amount and address, then try again.";
 
 /* CrowdNode */
 "We couldn’t create your CrowdNode account." = "Kami tidak dapat membuat akun CrowdNode Anda.";
@@ -3390,6 +3590,9 @@
 "Withdraw" = "Tarik";
 
 /* CrowdNode */
+"Withdraw funds" = "Withdraw funds";
+
+/* CrowdNode */
 "Withdraw without limits with an online account on CrowdNode website." = "Penarikan tanpa batas dengan akun online di situs web CrowdNode.";
 
 /* CrowdNode */
@@ -3426,13 +3629,13 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Anda akan menghapus dompet ini dari perangkat ini. Dana yang terkait dengan dompet ini hanya dapat diambil jika Anda memiliki frasa pemulihan.";
 
 /* DashSpend */
-"You are buying a %@ gift card for %@ (%@%% discount)" = "Anda membeli %1$@ kartu hadiah untuk %2$@(%3$@%% diskon)";
+"You are buying a %@ gift card for %@ (%@%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$@%% discount)";
 
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "Anda selalu dapat menghapus gambar yang diunggah, selama Anda memiliki akses ke dompet ini.";
 
 /* No comment provided by engineer. */
-"You can authenticate with biometrics for payments below" = "Anda dapat mengautentikasi dengan Touch ID untuk pembayaran di bawah ini";
+"You can authenticate with biometrics for payments below" = "You can authenticate with biometrics for payments below";
 
 /* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Anda dapat mengautentikasi dengan ID Wajah untuk pembayaran di bawah";
@@ -3441,7 +3644,7 @@
 "You can authenticate with Touch ID for payments below" = "Anda dapat mengautentikasi dengan Touch ID untuk pembayaran di bawah ini";
 
 /* DashSpend */
-"You can buy up to %@ in gift cards per order" = "Anda dapat membeli sampai %@ kartu hadiah per pesanan";
+"You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
 
 /* CrowdNode */
 "You can change how / when your reward earnings are paid to you." = "Anda dapat mengubah bagaimana / kapan penghasilan hadiah Anda dibayarkan kepada Anda.";
@@ -3482,6 +3685,9 @@
 /* CoinJoin */
 "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance." = "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.";
 
+/* CrowdNode */
+"You have a balance on CrowdNode" = "You have a balance on CrowdNode";
+
 /* Voting */
 "You have already voted for this username %ld times. You can only cast one more vote for this username." = "Anda sudah memberikan suara untuk nama pengguna ini %ld kali. Anda hanya dapat memberikan suara satu kali lagi untuk nama pengguna ini.";
 
@@ -3507,7 +3713,7 @@
 "You have to backup your passphrase in Dash Wallet" = "Anda harus mencadangkan frasa sandi Anda di Dash Wallet";
 
 /* Backup */
-"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "Anda belum mencadangkan frasa pemulihan Anda. Apakah Anda ingin mencadangkannya sekarang sebelum menghapus pintasan ini?";
+"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
 
 /* No comment provided by engineer. */
 "You need at least %@ Dash to create an invitation" = "Anda memerlukan setidaknya %@ Dash untuk membuat undangan";
@@ -3548,14 +3754,17 @@
 /* No comment provided by engineer. */
 "You should have at least %@ to proceed with the CrowdNode verification." = "Anda setidaknya harus %@ untuk melanjutkan verifikasi CrowdNode.";
 
-/* Maya */
-"You successfully converted DASH to \(coinCode)" = "Anda berhasil mengkonversi DASH ke \(coinCode)";
+/* Dash DEX */
+"You successfully converted DASH to %@" = "You successfully converted DASH to %@";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Anda juga harus keluar dari situs web Uphold menggunakan browser Anda";
 
 /* Back up wallet */
 "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device." = "Anda memerlukan frasa pemulihan ini untuk mengakses dana Anda jika perangkat ini hilang, rusak, atau jika Dash Wallet dihapus dari perangkat ini.";
+
+/* Coinbase */
+"You will receive" = "You will receive";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "Anda akan menerima %@ Dash di  Wallet Anda di perangkat ini. Perlu diketahui bahwa butuh waktu hingga 2-3 menit untuk menyelesaikan transfer.";
@@ -3596,17 +3805,17 @@
 /* InternalTransfer recovery */
 "Your Dash is safe" = "Your Dash is safe";
 
-/* Maya */
-"Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Transaksi Dash Anda telah terkirim. Menunggu konfirmasi blok — ini membutuhkan waktu 2–5 menit karena pertukaran Maya tidak menggunakan InstantSend.";
+/* Maya/SwapKit */
+"Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
 /* CoinJoin */
 "Your Dash was mixed using these transactions." = "Dash Anda di Mix menggunakan transaksi ini.";
 
 /* Maya */
-"Your DASH was not converted and no funds were deducted. Try again, or come back later." = "DASH Anda tidak berhasil dikonversi dan tidak ada dana yang dipotong. Coba lagi, atau kembali lagi nanti.";
+"Your DASH was not converted and no funds were deducted. Try again, or come back later." = "Your DASH was not converted and no funds were deducted. Try again, or come back later.";
 
-/* Maya */
-"Your DASH was refunded by Maya Protocol." = "Pembayaran DASH Anda telah dikembalikan oleh Maya Protocol.";
+/* Swap refund message — %@ is the provider name e.g. Maya */
+"Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Nama Pengguna DashPay Anda siap digunakan";
@@ -3653,11 +3862,17 @@
 /* DashSpend */
 "Your session expired" = "Sesi anda telah kedaluwarsa";
 
+/* Dash DEX */
+"Your swap can NOT be processed without a refund address" = "Your swap can NOT be processed without a refund address";
+
 /* DashSpend */
 "Your transaction was rejected. Please try again or contact support if the problem persists." = "Transaksi Anda ditolak. Silakan coba lagi atau hubungi dukungan jika masalah masih berlanjut.";
 
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "Transaksi Anda telah dikirim dan jumlahnya akan muncul di dompet Anda dalam beberapa menit.";
+
+/* Dash DEX / dex_receive_memo_warning */
+"Your transfer must include this memo. Funds sent without it cannot be matched to your swap and will be lost." = "Your transfer must include this memo. Funds sent without it cannot be matched to your swap and will be lost.";
 
 /* InternalTransfer */
 "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it." = "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.";

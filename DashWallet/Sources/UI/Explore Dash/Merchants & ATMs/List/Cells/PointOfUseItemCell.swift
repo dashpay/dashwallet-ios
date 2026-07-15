@@ -108,10 +108,14 @@ extension PointOfUseItemCell {
 
 #if DEBUG
 
-private extension ExplorePointOfUse {
+extension ExplorePointOfUse {
     static func previewMock(
         name: String = "Merchant",
-        logoLocation: String? = nil
+        logoLocation: String? = nil,
+        paymentMethod: Merchant.PaymentMethod = .dash,
+        type: Merchant.`Type` = .onlineAndPhysical,
+        savingsBasisPoints: Int = 0,
+        giftCardProviders: [Merchant.GiftCardProviderInfo] = []
     ) -> ExplorePointOfUse {
         ExplorePointOfUse(
             id: 1,
@@ -119,14 +123,14 @@ private extension ExplorePointOfUse {
             category: .merchant(
                 Merchant(
                     merchantId: "preview-id",
-                    paymentMethod: .dash,
-                    type: .onlineAndPhysical,
+                    paymentMethod: paymentMethod,
+                    type: type,
                     deeplink: nil,
-                    savingsBasisPoints: 0,
+                    savingsBasisPoints: savingsBasisPoints,
                     denominationsType: nil,
                     denominations: [],
                     redeemType: nil,
-                    giftCardProviders: []
+                    giftCardProviders: giftCardProviders
                 )
             ),
             active: true,

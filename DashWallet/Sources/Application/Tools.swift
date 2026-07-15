@@ -165,5 +165,31 @@ extension NumberFormatter {
 
         return formatter.copy() as! NumberFormatter
     }
-}
 
+    static func displayCurrencySymbol(for currencyCode: String) -> String {
+        let locale = Locale.current as NSLocale
+        if let symbol = locale.displayName(forKey: .currencySymbol, value: currencyCode), !symbol.isEmpty {
+            return symbol
+        }
+
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = currencyCode
+        return formatter.currencySymbol
+    }
+
+    static func fiatDisplayFormatter(currencyCode: String) -> NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.isLenient = true
+        formatter.numberStyle = .currency
+        formatter.generatesDecimalNumbers = true
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.currencyCode = currencyCode
+        formatter.currencySymbol = displayCurrencySymbol(for: currencyCode)
+        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 2
+        formatter.positiveFormat = "¤#,##0.00"
+        formatter.negativeFormat = "-¤#,##0.00"
+        return formatter
+    }
+}

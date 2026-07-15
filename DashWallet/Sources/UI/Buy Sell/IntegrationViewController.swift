@@ -275,8 +275,17 @@ extension IntegrationViewController: UITableViewDelegate, UITableViewDataSource 
 
 extension IntegrationViewController: ASWebAuthenticationPresentationContextProviding {
     internal func initAuthentication(url: URL?) {
-        guard let url = url else { return }
-        
+        // ASWebAuthenticationSession throws NSInvalidArgumentException ("unsupported scheme")
+        // if the URL is not http/https. On mainnet the Uphold OAuth config (authorizeURLFormat /
+        // clientID) can be empty in dev builds → an empty, scheme-less URL → crash. Guard the
+        // scheme and fail gracefully instead of crashing.
+        guard let url = url,
+              let scheme = url.scheme?.lowercased(),
+              scheme == "https" || scheme == "http" else {
+            DSLogger.log("IntegrationViewController: auth URL missing or has unsupported scheme — integration not configured")
+            return
+        }
+
         signInOutButton.isUserInteractionEnabled = false
 
         // Starting iOS 14.5 `callbackURLScheme` is required to have the following format:

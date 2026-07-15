@@ -1,0 +1,123 @@
+//
+//  Created by Roman Chornyi
+//  Copyright © 2026 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import DashUIKit
+import SwiftUI
+
+struct SwapFeeInfoSheet: View {
+    let usesGenericFeeInfo: Bool
+    let onDismiss: () -> Void
+
+    @Environment(\.openURL) private var openURL
+
+    var body: some View {
+        VStack(spacing: 0) {
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(NSLocalizedString("Fees in crypto purchases", comment: "Dash DEX"))
+                    .font(Font.dash.title1)
+                    .foregroundColor(Color.dash.primaryText)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+
+                Text(infoDescription)
+                .font(Font.dash.body)
+                .foregroundStyle(Color.dash.gray500)
+                .multilineTextAlignment(.leading)
+            }
+            .padding(.top, 20)
+            .padding(.bottom, 32)
+            .padding(.horizontal, 60)
+
+            VStack(alignment: .leading, spacing: 16) {
+                // Opens the Maya fee docs in the system browser via @Environment(\.openURL).
+                // Using openURL (system Safari) rather than SFSafariViewController because the
+                // sheet has no UIViewController context for modal presentation.
+                if !usesGenericFeeInfo {
+                    DashUIKit.DashButton(
+                        text: NSLocalizedString("Learn more", comment: "Dash DEX"),
+                        fillsWidth: true,
+                        size: .large,
+                        style: .filledBlue
+                    ) {
+                        openURL(MayaConstants.feesDocsURL)
+                    }
+                }
+
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Close", comment: "Dash DEX"),
+                    fillsWidth: true,
+                    size: .large,
+                    style: .tintedGray
+                ) {
+                    onDismiss()
+                }
+            }
+            .padding(.horizontal, 60)
+            .padding(.vertical, 20)
+        }
+    }
+
+    private var infoDescription: String {
+        if usesGenericFeeInfo {
+            return NSLocalizedString(
+                "The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it.",
+                comment: "SwapKit"
+            )
+        }
+
+        return NSLocalizedString(
+            "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.",
+            comment: "Dash DEX"
+        )
+    }
+}
+
+#if DEBUG
+#Preview("Standalone") {
+    SwapFeeInfoSheet(usesGenericFeeInfo: false, onDismiss: {})
+        .background(Color.dash.secondaryBackground)
+}
+
+private struct SwapFeeInfoSheetPreviewHost: View {
+    @State private var isPresented = true
+
+    var body: some View {
+        Color.dash.primaryBackground
+            .ignoresSafeArea()
+            .sheet(isPresented: $isPresented) {
+//                let sheet = BottomSheet(showBackButton: .constant(false)) {
+//                        SwapFeeInfoSheet(onDismiss: {})
+//                    }
+//
+//                if #available(iOS 16.0, *) {
+//                    sheet.presentationDetents([.height(450)])
+//                } else {
+//                    sheet
+//                }
+
+                BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
+                    SwapFeeInfoSheet(usesGenericFeeInfo: false, onDismiss: {})
+                }
+                .selfSizingSheet()
+            }
+    }
+}
+
+#Preview("Bottom sheet") {
+    SwapFeeInfoSheetPreviewHost()
+}
+#endif

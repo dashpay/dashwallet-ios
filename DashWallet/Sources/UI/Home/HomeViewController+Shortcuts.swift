@@ -73,6 +73,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             showTestnetFaucet()
         case .switchWallet:
             showSwitchWallet()
+        case .dashDEX:
+            dashDEXAction()
         }
     }
 
@@ -203,6 +205,11 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     private func showWhereToSpend() {
         let controller = MerchantListViewController()
         controller.initialSegment = .all
+        controller.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
+            title: NSLocalizedString("Where to Spend", comment: ""),
+            onBack: { [weak controller] in controller?.dismiss(animated: true) },
+            onInfo: nil
+        )
         controller.payWithDashHandler = { [weak self] in
             guard let self = self else { return }
             self.delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
@@ -212,6 +219,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             self.showGiftCardDetails(txId: txId)
         }
         let navigationController = BaseNavigationController(rootViewController: controller)
+        navigationController.modalPresentationStyle = .fullScreen
         present(navigationController, animated: true, completion: nil)
     }
 
@@ -335,6 +343,24 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         }
         let safariViewController = SFSafariViewController.dw_controller(with: TestnetFaucet.webURL)
         present(safariViewController, animated: true)
+    }
+    private func dashDEXAction() {
+        DSAuthenticationManager.sharedInstance().authenticate(
+            withPrompt: nil,
+            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+            alertIfLockout: true
+        ) { [weak self] authenticated, _, _ in
+            guard authenticated else { return }
+            self?.dashDEXActionAuthenticated()
+        }
+    }
+
+    private func dashDEXActionAuthenticated() {
+        let controller = SwapKitPortalViewController()
+        controller.hidesBottomBarWhenPushed = true
+        let navigationController = BaseNavigationController(rootViewController: controller)
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true)
     }
 
     private func presentControllerModallyInNavigationController(_ controller: UIViewController) {

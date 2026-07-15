@@ -27,19 +27,4 @@
     return [self isSpent:dsutxo_obj(utxo)];
 }
 
-- (BOOL)hasUnconfirmedSwapTransaction {
-    for (DSTransaction *tx in self.allTransactions) {
-        if (tx.confirmed) {
-            continue;
-        }
-        for (DSTransactionOutput *output in tx.outputs) {
-            NSData *script = output.outScript;
-            if (script.length > 0 && ((const uint8_t *)script.bytes)[0] == 0x6a) {
-                return YES;
-            }
-        }
-    }
-    return NO;
-}
-
 @end

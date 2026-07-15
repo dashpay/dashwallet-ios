@@ -18,6 +18,7 @@
 import UIKit
 import SwiftUI
 import Combine
+import DashUIKit
 
 // MARK: - HomeViewDelegate
 
@@ -153,22 +154,6 @@ extension HomeView: HomeHeaderViewDelegate {
 
     func homeHeaderViewDidUpdateContents(_ view: HomeHeaderView) {
         setNeedsLayout()
-    }
-}
-
-struct TxPreviewModel: Identifiable, Equatable {
-    var id: String
-    var title: String
-    var timeFormatted: String
-    var dateFormatted: String
-    var details: String?
-    var icon: IconName
-    var dashAmount: String
-    var fiatAmount: String
-    var date: Date
-    
-    static func == (lhs: TxPreviewModel, rhs: TxPreviewModel) -> Bool {
-        return lhs.id == rhs.id
     }
 }
 
@@ -365,14 +350,24 @@ struct HomeViewContent<Content: View>: View {
     }
     
     /// Chooses the transaction row icons. Gift cards without a loaded merchant logo fall back to the
-    /// gift card icon instead of the generic send arrow.
+    /// gift card icon instead of the generic send arrow. Reward (masternode/mining) rewards use the
+    /// mining icon, since a reward's direction is `.received` and would otherwise show the receive arrow.
     private func transactionRowIcons(txItem: Transaction, metadata: TxRowMetadata?) -> (primary: IconName, secondary: IconName?) {
         if let merchantIcon = metadata?.icon {
             return (.image(merchantIcon, effect: .rounded), metadata?.secondaryIcon ?? .custom(txItem.iconName))
         }
 
+        // Swap and Coinbase rows carry their icon as a name (convert / coinbase), not a bitmap.
+        if let iconName = metadata?.iconName {
+            return (iconName, metadata?.secondaryIcon)
+        }
+
         if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
             return (.custom("image.explore.dash.wts.payment.gift-card"), nil)
+        }
+
+        if txItem.transactionType == .reward {
+            return (.custom("transaction-mining", bundle: .dashUIKit), nil)
         }
 
         return (.custom(txItem.iconName), nil)
@@ -385,28 +380,28 @@ struct HomeViewContent<Content: View>: View {
         switch txDataItem {
         case .crowdnode(let set):
             let firstTx = set.transactionMap.values.first
-            TransactionPreview(
+            DashUIKit.TransactionView(
+                icon: IconName.custom("tx.item.cn.icon").dashIconSource,
+                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
                 title: NSLocalizedString("CrowdNode · Account", comment: "Crowdnode"),
                 subtitle: firstTx?.shortTimeString ?? "",
-                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
-                icon: .custom("tx.item.cn.icon"),
-                dashAmount: set.amount
-            ) {
-                self.selectedTxDataItem = txDataItem
-            }
+                dashAmount: set.amount,
+                amountSign: .none
+            )
+            .onTapGesture { self.selectedTxDataItem = txDataItem }
             .frame(height: 80)
-    
+
         case .coinjoin(let set):
             let firstTx = set.transactionMap.values.first
-            TransactionPreview(
+            DashUIKit.TransactionView(
+                icon: IconName.custom("tx.item.coinjoin.icon").dashIconSource,
+                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
                 title: NSLocalizedString("Mixing Transactions", comment: "CoinJoin"),
                 subtitle: firstTx?.shortTimeString ?? "",
-                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
-                icon: .custom("tx.item.coinjoin.icon"),
-                dashAmount: set.amount
-            ) {
-                self.selectedTxDataItem = txDataItem
-            }
+                dashAmount: set.amount,
+                amountSign: .none
+            )
+            .onTapGesture { self.selectedTxDataItem = txDataItem }
             .frame(height: 80)
 
         case .coinjoinWithdrawal(let set):
@@ -425,16 +420,22 @@ struct HomeViewContent<Content: View>: View {
         case .tx(let txItem, let metadata):
             let icons = transactionRowIcons(txItem: txItem, metadata: metadata)
 
-            TransactionPreview(
+            DashUIKit.TransactionView(
+                // A merchant logo is a bitmap and goes through `iconView` so it can be clipped to a
+                // circle; every other row resolves to a named icon.
+                icon: metadata?.icon == nil ? icons.primary.dashIconSource : nil,
+                iconView: metadata?.icon.map {
+                    AnyView(Image(uiImage: $0).resizable().scaledToFit().clipShape(Circle()))
+                },
+                secondaryIcon: icons.secondary?.dashIconSource,
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
                     : (metadata?.details?.isEmpty == false ? metadata?.details : nil),
-                icon: icons.primary,
-                secondaryIcon: icons.secondary,
                 dashAmount: txItem.signedDashAmount,
-                overrideFiatAmount: txItem.fiatAmount,
+                amountSign: .always,
+                fiat: txItem.fiatAmount,
                 trailingStatusText: txItem.state == .locked ? NSLocalizedString("Locked", comment: "Transaction state: coinbase reward locked until 100 confirmations") : nil
             ) {
                 // A stuck "to Shielded" transfer opens the recovery sheet

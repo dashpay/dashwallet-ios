@@ -47,20 +47,23 @@ private struct MenuCardStyle: ViewModifier {
 struct BuySellPortalView: View {
     let showCoinbase: Bool
 
-    /// Maya is suspended for the SwiftDashSDK migration release. Its swap path
-    /// hand-builds a `DSTransaction` (OP_RETURN memo + fixed output order) and
-    /// broadcasts it through DashSync, whose SPV is frozen post-M6 — balances and
-    /// UTXOs read stale/zero, so a swap would be built against dead state and fail.
-    /// The screens stay compiled; only the entry point is withheld.
-    /// TODO(maya-sdk-port): restore once `SwiftDashSDKTransactionSender` can emit an
-    /// OP_RETURN output with a preserved output order.
-    private let showMaya = false
     @ObservedObject var model: BuySellPortalModel
     var onBack: () -> Void
     var onUphold: () -> Void
     var onCoinbase: () -> Void
     var onTopper: () -> Void
     var onMaya: () -> Void
+    var onSwapKit: () -> Void
+
+    // Maya and SwapKit (Dash DEX) are both withheld for the SwiftDashSDK migration
+    // release: their swap paths build a DSTransaction and broadcast through DashSync,
+    // whose SPV is frozen post-M6 (balances/UTXOs read stale/zero), so a swap would be
+    // built against dead state and fail. The screens stay compiled; only the entry
+    // points are withheld.
+    // TODO(swap-sdk-port): restore once the SwiftDashSDK sender can build these swaps
+    // (Maya needs an OP_RETURN output with preserved output order).
+    private var showsMaya: Bool { false }
+    private var showsSwapKit: Bool { false }
 
     var body: some View {
         ScrollView {
@@ -75,8 +78,11 @@ struct BuySellPortalView: View {
                     if showCoinbase {
                         coinbaseCard
                     }
-                    if showMaya {
+                    if showsMaya {
                         mayaCard
+                    }
+                    if showsSwapKit {
+                        swapKitCard
                     }
                 }
                 .padding(.top, 10)
@@ -113,6 +119,14 @@ struct BuySellPortalView: View {
     private var mayaCard: some View {
         VStack(spacing: 2) {
             menuItem(for: .maya, action: onMaya)
+        }
+        .modifier(MenuCardStyle())
+    }
+
+    private var swapKitCard: some View {
+        VStack(spacing: 2) {
+            menuItem(for: .swapKit, action: onSwapKit)
+                .accessibilityIdentifier("portal_swapkit")
         }
         .modifier(MenuCardStyle())
     }
@@ -190,7 +204,8 @@ private extension BuySellPortalModel {
         onUphold: {},
         onCoinbase: {},
         onTopper: {},
-        onMaya: {}
+        onMaya: {},
+        onSwapKit: {}
     )
 }
 
@@ -202,7 +217,8 @@ private extension BuySellPortalModel {
         onUphold: {},
         onCoinbase: {},
         onTopper: {},
-        onMaya: {}
+        onMaya: {},
+        onSwapKit: {}
     )
 }
 #endif
