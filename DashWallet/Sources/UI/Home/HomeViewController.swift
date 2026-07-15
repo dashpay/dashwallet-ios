@@ -154,8 +154,20 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     func refreshIdentityAvatar() {
         let hasIdentity = model.dashPayModel.hasIdentity
         let hasNotifications = model.dashPayModel.unreadNotificationsCount > 0
+#if DEBUG
+        DWLogger.log("Home avatar state: dashSyncIdentity=\(model.dashPayModel.blockchainIdentity != nil), registrationCompleted=\(model.dashPayModel.registrationCompleted), sdkUsername=\(DWCurrentUserIdentityInfo.shared.username ?? "nil"), sdkAvatarURL=\(DWCurrentUserIdentityInfo.shared.avatarURL ?? "nil")")
+#endif
+        updateAvatarContent(identity: model.dashPayModel.blockchainIdentity)
         avatarView?.isHidden = !hasIdentity
         refreshNotificationBell(hasIdentity: hasIdentity, hasNotifications: hasNotifications)
+    }
+
+    private func updateAvatarContent(identity: DSBlockchainIdentity?) {
+        if let identity {
+            avatarView.blockchainIdentity = identity
+        } else {
+            avatarView.configureAsCurrentUser()
+        }
     }
 
     func refreshNotificationBell(hasIdentity: Bool, hasNotifications: Bool) {
@@ -482,7 +494,7 @@ extension HomeViewController: HomeViewDelegate {
     
     #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt) {
-        avatarView.blockchainIdentity = identity
+        updateAvatarContent(identity: identity)
         // Row #17 stage A — visibility gate uses
         // `model.dashPayModel.hasIdentity` (OR of DashSync's
         // `defaultBlockchainIdentity != nil` and SwiftDashSDK's
@@ -492,8 +504,8 @@ extension HomeViewController: HomeViewDelegate {
         // The `DSBlockchainIdentity` passed in is still assigned to
         // `avatarView.blockchainIdentity` so DashSync-side avatar
         // rendering (letter, branded color, profile image) keeps
-        // working; SDK-only identities get the avatar view's
-        // default placeholder.
+        // working; SDK-only identities use the current-user avatar
+        // data from `DWCurrentUserIdentityInfo`.
         let hasIdentity = model.dashPayModel.hasIdentity
         let hasNotifications = unreadNotifications > 0
         avatarView.isHidden = !hasIdentity

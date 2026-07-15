@@ -21,6 +21,7 @@
 #import "UIColor+DWDashPay.h"
 
 #import "UIImageView+DWDPAvatar.h"
+#import "dashwallet-Swift.h"
 #import <DashSync/DashSync.h>
 #import <SDWebImage/SDWebImage.h>
 
@@ -103,6 +104,34 @@ NS_ASSUME_NONNULL_END
 
 - (void)configureWithUsername:(NSString *)username {
     [self setUsername:username];
+}
+
+- (void)configureAsCurrentUser {
+    [self.imageView sd_cancelCurrentImageLoad];
+
+    NSString *username = DWCurrentUserIdentityInfo.shared.username;
+    NSString *avatarRaw = DWCurrentUserIdentityInfo.shared.avatarURL;
+    NSString *avatarUrlString = [avatarRaw stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+
+    [self setUsername:username];
+
+    __block typeof(self) weakSelf = self;
+    [self.imageView dw_setAvatarWithURLString:avatarUrlString
+                                   completion:^(UIImage *_Nullable image) {
+                                       __strong typeof(weakSelf) strongSelf = weakSelf;
+                                       if (!strongSelf) {
+                                           return;
+                                       }
+
+                                       if (image) {
+                                           strongSelf.imageView.hidden = NO;
+                                           strongSelf.letterLabel.hidden = YES;
+                                           strongSelf.imageView.image = image;
+                                       }
+                                       else {
+                                           [strongSelf setUsername:username];
+                                       }
+                                   }];
 }
 
 - (void)setUsername:(NSString *)username {
