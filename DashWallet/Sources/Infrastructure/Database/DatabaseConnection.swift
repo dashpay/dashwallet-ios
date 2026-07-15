@@ -74,7 +74,8 @@ extension DatabaseConnection {
             SeedDB(),
             AddGiftCardsTable(),
             AddIconBitmapsTable(),
-            AddProviderToGiftCardsTable()
+            AddProviderToGiftCardsTable(),
+            AddRedeemUrlChallengeToGiftCardsTable()
         ]
     }
 

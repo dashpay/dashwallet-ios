@@ -67,7 +67,9 @@ struct GiftCardResponse: Codable {
     let paymentCryptoNetwork: String?
     let percentDiscount: String?
     let rate: String?
+    let redeemType: String?
     let redeemUrl: String?
+    let redeemUrlChallenge: String?
     let fiatAmount: String?
     let fiatCurrency: String?
     let paymentUrls: [String: String]?
@@ -92,7 +94,9 @@ struct GiftCardResponse: Codable {
         case paymentId
         case percentDiscount
         case rate
+        case redeemType
         case redeemUrl
+        case redeemUrlChallenge
         case fiatAmount = "paymentFiatAmount"
         case fiatCurrency = "paymentFiatCurrency"
         case paymentUrls
@@ -155,9 +159,11 @@ struct MerchantResponse: Decodable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         id = try container.decode(String.self, forKey: .id)
-        name = try container.decode(String.self, forKey: .name)
-        logoUrl = try container.decode(String.self, forKey: .logoUrl)
-        enabled = try container.decode(Bool.self, forKey: .enabled)
+        // Match Android leniency: only id/denominations/denominationsType are required.
+        // Staging omits logoUrl/mapPinUrl/cardImageUrl, so decode all display fields optionally.
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
+        logoUrl = try container.decodeIfPresent(String.self, forKey: .logoUrl) ?? ""
+        enabled = try container.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
 
         savingsPercentage = try container.decodeIfPresent(Int.self, forKey: .savingsPercentage)
         userDiscount = try container.decodeIfPresent(Int.self, forKey: .userDiscount)
@@ -171,12 +177,12 @@ struct MerchantResponse: Decodable {
         cachedLocationCount = try container.decodeIfPresent(Int.self, forKey: .cachedLocationCount)
         locationCount = try container.decodeIfPresent(Int.self, forKey: .locationCount)
 
-        mapPinUrl = try container.decode(String.self, forKey: .mapPinUrl)
-        type = try container.decode(String.self, forKey: .type)
-        redeemType = try container.decode(String.self, forKey: .redeemType)
+        mapPinUrl = try container.decodeIfPresent(String.self, forKey: .mapPinUrl) ?? ""
+        type = try container.decodeIfPresent(String.self, forKey: .type) ?? ""
+        redeemType = try container.decodeIfPresent(String.self, forKey: .redeemType) ?? ""
         info = try container.decodeIfPresent(MerchantInfo.self, forKey: .info)
-        cardImageUrl = try container.decode(String.self, forKey: .cardImageUrl)
-        currency = try container.decode(String.self, forKey: .currency)
+        cardImageUrl = try container.decodeIfPresent(String.self, forKey: .cardImageUrl) ?? ""
+        currency = try container.decodeIfPresent(String.self, forKey: .currency) ?? ""
     }
 
     private static func decodeDenominations(from container: KeyedDecodingContainer<CodingKeys>) -> [String] {
