@@ -60,8 +60,11 @@ extension ShortcutActionType {
         var actions: [ShortcutActionType] = [
             .buySellDash, .explore, .spend, .atm, .receive,
             .send, .scanToPay, .payToAddress,
-            .coinbase, .uphold, .topper, .dashDEX
+            .coinbase, .uphold, .topper
         ]
+        // Dash DEX is withheld for the SwiftDashSDK migration release (its swap
+        // path builds through frozen DashSync), so it is not offered as a
+        // customizable shortcut. Mirrors the gated Buy & Sell portal card.
         let state = CrowdNode.shared.signUpState
         if state == .finished || state == .linkedOnline {
             actions.append(.crowdNode)
