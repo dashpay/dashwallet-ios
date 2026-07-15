@@ -418,6 +418,9 @@
 /* No comment provided by engineer. */
 "Biometrics Access Required" = "Biometrics Access Required";
 
+/* SPV diagnostics */
+"Birth height saved — the raised scan floor applies from the next launch." = "Birth height saved — the raised scan floor applies from the next launch.";
+
 /* Voting */
 "Block" = "Block";
 
@@ -545,6 +548,12 @@
 /* No comment provided by engineer. */
 "Claimed" = "Claimed";
 
+/* SPV diagnostics */
+"Clear & resync" = "Clear & resync";
+
+/* SPV diagnostics */
+"Clear chain data and resync?" = "Clear chain data and resync?";
+
 /* Maya */
 "Clipboard" = "Clipboard";
 
@@ -586,6 +595,9 @@
 
 /* No comment provided by engineer. */
 "Confirm Platform Send" = "Confirm Platform Send";
+
+/* SPV diagnostics */
+"Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start.";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.";
@@ -974,6 +986,9 @@
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "Easily stake Dash and earn passive income with a few simple clicks.";
+
+/* SPV diagnostics */
+"Edit birth height" = "Edit birth height";
 
 /* No comment provided by engineer. */
 "Edit Profile" = "Edit Profile";
@@ -1993,6 +2008,9 @@
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
 
+/* SPV diagnostics */
+"No persisted wallet row found for the bound wallet." = "No persisted wallet row found for the bound wallet.";
+
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "No Results Found";
 
@@ -2357,6 +2375,9 @@
 "Rate: %@ = %@" = "Rate: %1$@ = %2$@";
 
 /* SPV diagnostics */
+"Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead.";
+
+/* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet.";
 
 /* CrowdNode */
@@ -2505,6 +2526,9 @@
 
 /* Usernames */
 "Results" = "Results";
+
+/* SPV diagnostics */
+"Resync armed from height %u — quit and reopen the app to start." = "Resync armed from height %u — quit and reopen the app to start.";
 
 /* No comment provided by engineer. */
 "Retry" = "Retry";
@@ -3039,6 +3063,9 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "The minimum amount you can send is %@";
 
+/* SPV diagnostics */
+"The persisted wallet row has no network — cannot arm a resync." = "The persisted wallet row has no network — cannot arm a resync.";
+
 /* Dash DEX / dex_error_price_moved */
 "The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
 
@@ -3056,6 +3083,9 @@
 
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+
+/* SPV diagnostics */
+"The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Saving a height at or below the current one clears this network's chain data at the next launch and rescans from it." = "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Saving a height at or below the current one clears this network's chain data at the next launch and rescans from it.";
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "There are no transactions to display";
@@ -3478,6 +3508,9 @@
 
 /* Enter Address Screen */
 "Wallet Address" = "Wallet Address";
+
+/* SPV diagnostics */
+"Wallet birth height" = "Wallet birth height";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Wallet disabled";
