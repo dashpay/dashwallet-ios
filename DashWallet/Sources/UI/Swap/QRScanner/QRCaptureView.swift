@@ -180,13 +180,18 @@ struct QRCaptureView: UIViewRepresentable {
                 output.metadataObjectTypes = [.qr]
 
                 self.metadataOutput = output
+                self.captureSession = session
 
+                // Attach the preview layer on the main thread, then start the session only once that
+                // has finished. Assigning `previewLayer.session` mutates the capture graph
+                // (-[AVCaptureSession _addVideoPreviewLayer:]); letting it run concurrently with
+                // `startRunning()` on this queue makes AVFoundation throw and abort the app.
                 DispatchQueue.main.async {
                     previewLayer.session = session
+                    self.sessionQueue.async {
+                        session.startRunning()
+                    }
                 }
-
-                self.captureSession = session
-                session.startRunning()
             }
         }
     }
