@@ -867,6 +867,9 @@
 		A5D5DD000000000000000267 /* KeychainWalletRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000268 /* KeychainWalletRecoveryCoordinator.swift */; };
 		A5D5DD000000000000000271 /* SwiftDashSDKHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */; };
 		A5D5DD000000000000000272 /* SwiftDashSDKHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000270 /* SwiftDashSDKHost.swift */; };
+		A5D5DD00000000000000141D /* DiagnosticLogExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000141C /* DiagnosticLogExporter.swift */; };
+		A5D5DD00000000000000141E /* DiagnosticLogExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000141C /* DiagnosticLogExporter.swift */; };
+		A5D5DD000000000000001420 /* DiagnosticLogExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD00000000000000141F /* DiagnosticLogExporterTests.swift */; };
 		A5D5DD000000000000000301 /* DWRecoverModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000300 /* DWRecoverModel+Mnemonic.swift */; };
 		A5D5DD000000000000000302 /* DWRecoverModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000300 /* DWRecoverModel+Mnemonic.swift */; };
 		A5D5DD000000000000000315 /* DWParsedPaymentURI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D5DD000000000000000317 /* DWParsedPaymentURI.swift */; };
@@ -2673,6 +2676,8 @@
 		C7AE5D000000000000000005 /* PinStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinStore.swift; sourceTree = "<group>"; };
 		C7AE5D000000000000000008 /* AuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000304 /* DWLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLogger.m; sourceTree = "<group>"; };
+		A5D5DD00000000000000141C /* DiagnosticLogExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporter.swift; sourceTree = "<group>"; };
+		A5D5DD00000000000000141F /* DiagnosticLogExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporterTests.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000124 /* SwiftDashSDKTransactionSender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKTransactionSender.swift; sourceTree = "<group>"; };
 		A5D5DD00000000000000012E /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
 		A5D5DD000000000000000131 /* SwiftDashSDKReceiveAddressReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKReceiveAddressReader.swift; sourceTree = "<group>"; };
@@ -5496,6 +5501,7 @@
 				47F006002971B1CE0029EB10 /* Currency Exchanger */,
 				A5D5DD000000000000000303 /* DWLogger.h */,
 				A5D5DD000000000000000304 /* DWLogger.m */,
+				A5D5DD00000000000000141C /* DiagnosticLogExporter.swift */,
 				47FA3B0029364743008D58DC /* Networking */,
 				C7AE5D000000000000000001 /* Authentication */,
 				4741255F287E77B4004E6BF3 /* Database */,
@@ -6325,6 +6331,7 @@
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
 				A5D5DD000000000000001200 /* DWRegistrationPhaseAdapterTests.swift */,
+				A5D5DD00000000000000141F /* DiagnosticLogExporterTests.swift */,
 				A5D5DD000000000000001310 /* PhraseRepairEngineTests.swift */,
 				328D8D5EF7D75440B3D9B83B /* PaymentProtocolTests.swift */,
 			);
@@ -8758,6 +8765,7 @@
 				A5D5DD000000000000001307 /* DamerauLevenshtein.swift in Sources */,
 				A5D5DD00000000000000012F /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				A5D5DD000000000000000271 /* SwiftDashSDKHost.swift in Sources */,
+				A5D5DD00000000000000141D /* DiagnosticLogExporter.swift in Sources */,
 				A5D5DD0000000000000000FB /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 				A5D5DD0000000000000000FE /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 				A5D5DD000000000000000210 /* PlatformAddressSyncCoordinator.swift in Sources */,
@@ -9107,6 +9115,7 @@
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
 				A5D5DD000000000000001201 /* DWRegistrationPhaseAdapterTests.swift in Sources */,
+				A5D5DD000000000000001420 /* DiagnosticLogExporterTests.swift in Sources */,
 				A5D5DD000000000000001311 /* PhraseRepairEngineTests.swift in Sources */,
 				3BCC8D1E7E9C2356A1B2E622 /* PaymentProtocolTests.swift in Sources */,
 			);
@@ -9608,6 +9617,7 @@
 				A5D5DD000000000000001308 /* DamerauLevenshtein.swift in Sources */,
 				A5D5DD000000000000000130 /* SwiftDashSDKWalletRuntime.swift in Sources */,
 				A5D5DD000000000000000272 /* SwiftDashSDKHost.swift in Sources */,
+				A5D5DD00000000000000141E /* DiagnosticLogExporter.swift in Sources */,
 				A5D5DD000000000000001102 /* DWRegistrationPhaseAdapter.swift in Sources */,
 				A5D5DD000000000000001419 /* ShieldedIdentityFundingReadiness.swift in Sources */,
 				A5D5DD000000000000001104 /* DWIdentityRegistrationController.swift in Sources */,

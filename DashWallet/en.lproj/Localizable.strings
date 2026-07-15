@@ -106,8 +106,17 @@
 /* Usernames */
 "Add to your Shielded balance now and register your username privately a few hours later" = "Add to your Shielded balance now and register your username privately a few hours later";
 
+/* Log export */
+"Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files" = "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files";
+
+/* Log export */
+"Could not create the log archive: %@" = "Could not create the log archive: %@";
+
 /* Usernames */
 "Done — your balance has rested long enough" = "Done — your balance has rested long enough";
+
+/* Log export */
+"Export Logs" = "Export Logs";
 
 /* Usernames */
 "Fund your username from your Shielded balance. Add funds a few hours ahead — the short rest keeps your username unlinkable to your other Dash." = "Fund your username from your Shielded balance. Add funds a few hours ahead — the short rest keeps your username unlinkable to your other Dash.";
@@ -123,6 +132,9 @@
 
 /* DashPay */
 "No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing." = "No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing.";
+
+/* Log export */
+"No diagnostic logs were found on this device. Logs are written from the next launch onward." = "No diagnostic logs were found on this device. Logs are written from the next launch onward.";
 
 /* DashPay */
 "Not enough shielded balance to register an identity" = "Not enough shielded balance to register an identity";

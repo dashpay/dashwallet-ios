@@ -17,6 +17,7 @@
 
 import Foundation
 import Combine
+import SwiftDashSDK
 
 enum ToolsMenuNavigationDestination {
     case extendedPublicKeys
@@ -37,6 +38,13 @@ class ToolsMenuViewModel: ObservableObject {
     @Published var safariLink: String?
     @Published var showCoinJoinSweepConfirmation = false
     @Published var coinJoinSweepErrorMessage: String?
+    /// True while the diagnostic-log archive is being staged + zipped
+    /// (file I/O off the main actor). Guards re-entry from row taps.
+    @Published var isExportingLogs = false
+    /// Non-nil presents the share sheet with the finished zip.
+    @Published var exportedLogsURL: URL?
+    /// Non-nil presents the log-export failure alert.
+    @Published var logExportErrorMessage: String?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -116,6 +124,14 @@ class ToolsMenuViewModel: ObservableObject {
                 }
             ),
             MenuItemModel(
+                title: NSLocalizedString("Export Logs", comment: "Log export"),
+                subtitle: NSLocalizedString("Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files", comment: "Log export"),
+                icon: .system("square.and.arrow.up"),
+                action: { [weak self] in
+                    self?.exportDiagnosticLogs()
+                }
+            ),
+            MenuItemModel(
                 title: "Storage Explorer",
                 icon: .system("cylinder.split.1x2"),
                 action: { [weak self] in
@@ -169,6 +185,51 @@ class ToolsMenuViewModel: ObservableObject {
         }
     }
     
+    /// Zip the recent diagnostic logs (SwiftDashSDK sessions + app
+    /// CocoaLumberjack files) and hand the archive to the share sheet.
+    /// The staging + compression is file I/O, so it runs detached;
+    /// only the resulting URL (or error) comes back to the main actor.
+    /// Mirrors the export flow the SwiftDashSDK example app shipped in
+    /// platform #4131.
+    func exportDiagnosticLogs() {
+        guard !isExportingLogs else { return }
+        isExportingLogs = true
+
+        // Context captured on the main actor; the detached task only
+        // does file work.
+        let network = SwiftDashSDKHost.shared.runningNetwork.map { String(describing: $0) } ?? "unknown"
+        let bundle = Bundle.main
+        let short = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+        let appVersion = "\(short) (\(build))"
+        // Authoritative record of which directory this run is writing
+        // to — timestamp sorting alone can be fooled by a clock
+        // rollback or a stale future-dated directory.
+        let currentSession = LoggingPreferences.currentSessionDirectory
+        let appLogFiles = DWLogger.sharedInstance().logFiles()
+
+        Task.detached(priority: .userInitiated) {
+            let result: Result<URL, Error> = Result {
+                try DiagnosticLogExporter.export(
+                    network: network,
+                    appVersion: appVersion,
+                    currentSession: currentSession,
+                    appLogFiles: appLogFiles
+                )
+            }
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                self.isExportingLogs = false
+                switch result {
+                case .success(let url):
+                    self.exportedLogsURL = url
+                case .failure(let error):
+                    self.logExportErrorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
     func resetNavigation() {
         navigationDestination = nil
         showCSVExportActivity = false
