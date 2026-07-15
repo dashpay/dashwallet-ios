@@ -63,16 +63,22 @@ final class SwiftDashSDKHost {
         if !sdkInitialized {
             // Install the SDK's Rust tracing subscriber BEFORE init so
             // wallet-side diagnostics (DashPay sync passes, payment
-            // reconciles, SPV events) reach the console. Without this
+            // reconciles, SPV events) are captured. Without this
             // every `tracing::warn!` in rs-platform-wallet is silently
             // dropped — the payments-attribution debugging session of
             // 2026-07-08 flew blind because of it. `RUST_LOG` overrides
             // the level when set (dev runs: SIMCTL_CHILD_RUST_LOG=…).
-            #if DEBUG
-            SDK.enableLogging(level: .info)
-            #else
-            SDK.enableLogging(level: .warn)
-            #endif
+            //
+            // `LoggingPreferences.configure()` installs FILE logging at
+            // .info (simulator and device): one timestamped session
+            // directory of per-crate `run.log` files per launch under
+            // `Library/Logs/SwiftDashSDK/`, pruned by the SDK to 20
+            // sessions / 100 MB. Nothing leaves the device — the
+            // sessions exist so `DiagnosticLogExporter` (Tools → Export
+            // Logs, support email) can bundle them when the user asks.
+            // Falls back to console logging when the log root isn't
+            // writable.
+            LoggingPreferences.configure()
             SDK.initialize()
             sdkInitialized = true
         }
