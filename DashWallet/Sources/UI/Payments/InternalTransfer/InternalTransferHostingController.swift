@@ -11,6 +11,17 @@ final class InternalTransferHostingController: UIViewController {
 
     private let viewModel = InternalTransferViewModel()
 
+    /// Open the screen pre-filled for the "fund your Shielded balance"
+    /// flow (Join DashPay readiness): direction is already the default
+    /// `.toShielded`; this just seeds the amount so the user can
+    /// confirm instead of retyping the suggested deposit.
+    convenience init(prefillDashAmount: Decimal) {
+        self.init(nibName: nil, bundle: nil)
+        // `Decimal`'s description always uses a dot, which the view
+        // model's parser normalises for — locale-safe as a seed value.
+        viewModel.amountText = "\(prefillDashAmount)"
+    }
+
     private lazy var hostingController: UIHostingController<InternalTransferScreen> = {
         let screen = InternalTransferScreen(viewModel: viewModel) { [weak self] in
             // After a successful transfer the user taps "Done" inside the

@@ -137,6 +137,28 @@ struct ToolsMenuScreen: View {
                 ActivityView(activityItems: [csvData.file])
             }
         }
+        .sheet(
+            isPresented: Binding(
+                get: { viewModel.exportedLogsURL != nil },
+                set: { if !$0 { viewModel.exportedLogsURL = nil } }
+            )
+        ) {
+            if let url = viewModel.exportedLogsURL {
+                ActivityView(activityItems: [url])
+            }
+        }
+        .alert(
+            NSLocalizedString("Export Logs", comment: "Log export"),
+            isPresented: Binding(
+                get: { viewModel.logExportErrorMessage != nil },
+                set: { if !$0 { viewModel.logExportErrorMessage = nil } }
+            ),
+            presenting: viewModel.logExportErrorMessage
+        ) { _ in
+            Button(NSLocalizedString("OK", comment: "")) { viewModel.logExportErrorMessage = nil }
+        } message: { message in
+            Text(message)
+        }
         .sheet(isPresented: $showZenLedgerSheet, onDismiss: {
             if let link = viewModel.safariLink {
                 openSafariLink(link)

@@ -217,4 +217,43 @@ final class DWRegistrationPhaseAdapterTests: XCTestCase {
                 failedAtPhase: .creatingID),
             .creatingID)
     }
+
+    // MARK: - Shielded (Type-20) funding path
+
+    // Like Platform Payment, the shielded path has no Core-chain
+    // asset-lock — the whole spend (Halo 2 proof + submit) is one
+    // opaque FFI call, so `.inFlight` must map straight to
+    // `.creatingID` regardless of any stale `assetLockStatus`.
+
+    func test_shielded_inFlight_anyAssetLockStatus_isCreatingID() {
+        for status in 0...4 {
+            XCTAssertEqual(
+                DWRegistrationPhaseAdapter.map(
+                    phase: .inFlight,
+                    assetLockStatus: status,
+                    fundingSource: .shielded),
+                .creatingID,
+                "Shielded .inFlight with assetLockStatus=\(status) should map to creatingID")
+        }
+    }
+
+    func test_shielded_completed_isDone() {
+        let dummyId = Data(count: 32)
+        XCTAssertEqual(
+            DWRegistrationPhaseAdapter.map(
+                phase: .completed(identityId: dummyId),
+                assetLockStatus: 0,
+                fundingSource: .shielded),
+            .done)
+    }
+
+    func test_shielded_failed_usesFailedAtPhase() {
+        XCTAssertEqual(
+            DWRegistrationPhaseAdapter.map(
+                phase: .failed("shieldedIdentityCreateFromPool failed"),
+                assetLockStatus: 0,
+                fundingSource: .shielded,
+                failedAtPhase: .creatingID),
+            .creatingID)
+    }
 }

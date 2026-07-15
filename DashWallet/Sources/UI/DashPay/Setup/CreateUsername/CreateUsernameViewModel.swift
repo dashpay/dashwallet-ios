@@ -57,6 +57,12 @@ class CreateUsernameViewModel: ObservableObject {
     /// In-flight DPNS availability check. Cancelled and replaced on
     /// every revalidation so only the newest input hits the network.
     private var availabilityCheckTask: Task<Void, Never>?
+    /// One-shot revalidation alarm for a `.maturing` shielded snapshot.
+    /// The shared readiness service arms its own flip timer only for
+    /// the STANDARD denomination; a contested name's (0.3 DASH) ready
+    /// moment can be later, so the form re-validates itself at the
+    /// snapshot's own `readyAt`. Re-armed on every validation.
+    private var shieldedMaturityRevalidationTask: Task<Void, Never>?
     /// Mirrors the legacy `VALIDATION_DEBOUNCE_DELAY`
     /// (DWCheckExistenceUsernameValidationRule.m).
     private static let availabilityDebounceNanos: UInt64 = 400_000_000
@@ -92,6 +98,21 @@ class CreateUsernameViewModel: ObservableObject {
     /// Formatted Platform Payment balance (in DASH, derived from the
     /// duff-equivalent of `SwiftDashSDKWalletState.platformPaymentCredits`).
     @Published private(set) var platformPaymentBalance: String = ""
+
+    /// Shielded-funding readiness for the CURRENT typed name (contested
+    /// names need the 0.3 DASH exit denomination instead of 0.1).
+    /// Recomputed by `validateUsername` and on every readiness publish.
+    /// nil while the SDK host has no hydrated wallet.
+    @Published private(set) var shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot? = nil
+    /// Formatted unspent shielded balance in DASH, for the picker label.
+    @Published private(set) var shieldedBalance: String = ""
+
+    /// Shielded funding is offerable right now: funded + matured + pool
+    /// minimum cleared (or pool count unknown — Drive enforces the real
+    /// rule at submit).
+    var hasReadyShieldedFunding: Bool {
+        shieldedReadiness?.state == .ready
+    }
     
     var minimumRequiredBalance: String {
         return DWDP_MIN_BALANCE_TO_CREATE_USERNAME.dashAmount.formattedDashAmountWithoutCurrencySymbol
@@ -232,6 +253,11 @@ class CreateUsernameViewModel: ObservableObject {
         guard !username.isEmpty else {
             uiState = CreateUsernameUIState()
             isContestedCandidate = false
+            // Keep the shielded picker option + balance label live
+            // before the user types — evaluated against the standard
+            // (uncontested) denomination.
+            shieldedReadiness = ShieldedIdentityFundingReadiness.shared
+                .evaluate(requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits)
             return
         }
 
@@ -248,17 +274,23 @@ class CreateUsernameViewModel: ObservableObject {
         let contestedCandidate = isContested && lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen
         isContestedCandidate = contestedCandidate
         let requiredCost = isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        // Either funding source can satisfy the cost rule. Core
-        // spends BIP44 UTXOs via `registerIdentityWithFunding`;
-        // Platform Payment spends DIP-17 credits via
-        // `registerIdentityFromAddresses`. The picker in
-        // `CreateUsernameView` lets the user choose when both are
-        // viable; the form is unblocked as soon as either is.
+        // Any funding source can satisfy the cost rule. Core spends
+        // BIP44 UTXOs via `registerIdentityWithFunding`; Platform
+        // Payment spends DIP-17 credits via
+        // `registerIdentityFromAddresses`; Shielded spends a fixed
+        // exit denomination via `shieldedIdentityCreateFromPool` and
+        // is viable only when its readiness gates (funding, maturity,
+        // pool) all pass. The picker in `CreateUsernameView` lets the
+        // user choose among the viable sources; the form is unblocked
+        // as soon as any one is.
         let coreBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         let platformBalance = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
         let hasEnoughCore = coreBalance >= requiredCost
         let hasEnoughPlatform = platformBalance >= requiredCost
-        let hasEnoughBalance = hasEnoughCore || hasEnoughPlatform
+        let shieldedRequired = ShieldedIdentityFundingReadiness.requiredCredits(forContestedName: isContested)
+        shieldedReadiness = ShieldedIdentityFundingReadiness.shared.evaluate(requiredCredits: shieldedRequired)
+        armShieldedMaturityRevalidation()
+        let hasEnoughBalance = hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
 
         uiState = CreateUsernameUIState(
@@ -350,6 +382,35 @@ class CreateUsernameViewModel: ObservableObject {
                 self.checkBalance()
             }
             .store(in: &cancellableBag)
+        // Shielded readiness changes (a note maturing, a shielded sync
+        // pass landing new notes, the pool count arriving) re-run the
+        // same validation so the picker's shielded option and the
+        // inline readiness hint stay live.
+        ShieldedIdentityFundingReadiness.shared.$standardSnapshot
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                self.validateUsername(username: self.username)
+                self.checkBalance()
+            }
+            .store(in: &cancellableBag)
+    }
+
+    /// Schedule a one-shot revalidation at the current snapshot's
+    /// `readyAt` (+1 s of slack) so the `.maturing` hint flips to a
+    /// selectable Shielded option without further user input.
+    private func armShieldedMaturityRevalidation() {
+        shieldedMaturityRevalidationTask?.cancel()
+        shieldedMaturityRevalidationTask = nil
+        guard case .maturing(let readyAt) = shieldedReadiness?.state else { return }
+        let delay = readyAt.timeIntervalSinceNow
+        guard delay > 0 else { return }
+        shieldedMaturityRevalidationTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64((delay + 1) * 1_000_000_000))
+            guard !Task.isCancelled, let self else { return }
+            self.validateUsername(username: self.username)
+            self.checkBalance()
+        }
     }
 
     private func checkBalance() {
@@ -357,6 +418,10 @@ class CreateUsernameViewModel: ObservableObject {
         let platformDuffs = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
         self.balance = balance.dashAmount.formattedDashAmountWithoutCurrencySymbol
         self.platformPaymentBalance = platformDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
+        // Credits → duffs (÷1000) for display; the readiness snapshot
+        // keeps the canonical credit-denominated values.
+        let shieldedDuffs = (shieldedReadiness?.unspentCredits ?? 0) / 1_000
+        self.shieldedBalance = shieldedDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
         hasMinimumRequiredCoreBalance = balance >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
         hasMinimumRequiredPlatformBalance = platformDuffs >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
         // `hasMinimumRequiredBalance` stays as the legacy OR view —
