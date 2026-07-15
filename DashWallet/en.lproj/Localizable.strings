@@ -418,6 +418,12 @@
 /* No comment provided by engineer. */
 "Biometrics Access Required" = "Biometrics Access Required";
 
+/* SPV diagnostics */
+"Birth height saved — the raised scan floor applies from the next launch." = "Birth height saved — the raised scan floor applies from the next launch.";
+
+/* SPV diagnostics */
+"Birth height saved. Quit and reopen the app to apply it: the next launch clears this network's chain data and rescans filters from height %u. The running session keeps its old scan floor until then." = "Birth height saved. Quit and reopen the app to apply it: the next launch clears this network's chain data and rescans filters from height %u. The running session keeps its old scan floor until then.";
+
 /* Voting */
 "Block" = "Block";
 
@@ -974,6 +980,9 @@
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "Easily stake Dash and earn passive income with a few simple clicks.";
+
+/* SPV diagnostics */
+"Edit birth height" = "Edit birth height";
 
 /* No comment provided by engineer. */
 "Edit Profile" = "Edit Profile";
@@ -1993,6 +2002,9 @@
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
 
+/* SPV diagnostics */
+"No persisted wallet row found for the bound wallet." = "No persisted wallet row found for the bound wallet.";
+
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "No Results Found";
 
@@ -2357,6 +2369,9 @@
 "Rate: %@ = %@" = "Rate: %1$@ = %2$@";
 
 /* SPV diagnostics */
+"Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead.";
+
+/* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet.";
 
 /* CrowdNode */
@@ -2496,6 +2511,9 @@
 
 /* No comment provided by engineer. */
 "Reset to Default" = "Reset to Default";
+
+/* SPV diagnostics */
+"Restart required" = "Restart required";
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
@@ -3039,6 +3057,9 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "The minimum amount you can send is %@";
 
+/* SPV diagnostics */
+"The persisted wallet row has no network — cannot arm a resync." = "The persisted wallet row has no network — cannot arm a resync.";
+
 /* Dash DEX / dex_error_price_moved */
 "The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
 
@@ -3056,6 +3077,9 @@
 
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
+
+/* SPV diagnostics */
+"The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Lowering it clears this network's chain data at the next launch and rescans from the new height." = "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Lowering it clears this network's chain data at the next launch and rescans from the new height.";
 
 /* No comment provided by engineer. */
 "There are no transactions to display" = "There are no transactions to display";
@@ -3478,6 +3502,9 @@
 
 /* Enter Address Screen */
 "Wallet Address" = "Wallet Address";
+
+/* SPV diagnostics */
+"Wallet birth height" = "Wallet birth height";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "Wallet disabled";

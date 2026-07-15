@@ -91,6 +91,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinRecovery.shared.resetForWipe()
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
+        // Pending birth-height chain resyncs reference wallet rows and chain
+        // data this wipe destroys; a stale marker would only wipe the next
+        // wallet's fresh sync. UserDefaults-only, safe from this queue.
+        SPVChainResyncMarker.resetForWipe()
         // CrowdNode state is per-wallet-keyed; the wipe destroys every wallet, so
         // clear every wallet's keys (the CrowdNode singleton's own
         // `DWWillWipeWallet` observer only resets the ACTIVE wallet's keys). Also
