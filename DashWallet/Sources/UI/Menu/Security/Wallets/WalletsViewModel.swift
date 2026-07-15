@@ -200,7 +200,7 @@ final class WalletsViewModel: ObservableObject {
 
         let result: SwiftDashSDKHost.AddWalletResult
         do {
-            result = try SwiftDashSDKHost.shared.addWallet(mnemonic: normalized)
+            result = try SwiftDashSDKHost.shared.addWallet(mnemonic: normalized, isImported: isImported)
         } catch {
             Self.logger.error("addWallet failed: \(String(describing: error), privacy: .public)")
             errorMessage = error.localizedDescription
