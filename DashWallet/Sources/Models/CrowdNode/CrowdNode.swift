@@ -554,6 +554,7 @@ extension CrowdNode {
             }
             isBalanceLoading = true
 
+            var fetchSucceeded = false
             do {
                 for i in 0...retries {
                     if i != 0 {
@@ -567,6 +568,7 @@ extension CrowdNode {
                     let plainAmount = dashNumber * duffsNumber
                     currentBalance = NSDecimalNumber(decimal: plainAmount).uint64Value
                     prefs.lastKnownBalance = currentBalance
+                    fetchSucceeded = true
                     // Publish the fresh value as soon as it arrives. The loop keeps polling (with
                     // escalating backoff) until the balance *changes* vs. the cached baseline, which
                     // can take minutes; without this, a non-seeded refresh (e.g. restore) wouldn't
@@ -584,9 +586,19 @@ extension CrowdNode {
                         break
                     }
                 }
+            } catch {
+                // Network failure — swallow so we can reset the loading state below. Crucially, we
+                // must NOT fall through to publishing the stale cached `currentBalance` for a
+                // non-seeded refresh (e.g. restore), which would otherwise drive balance-derived UI
+                // such as `CrowdNodeBalanceReminder` off stale data.
             }
 
-            balance = currentBalance
+            // Only publish `currentBalance` when we actually fetched a fresh value, or when we
+            // already seeded from cache (in which case the cached value is expected on screen).
+            // A failed silent refresh must not surface the stale cache.
+            if fetchSucceeded || seedFromCache {
+                balance = currentBalance
+            }
             isBalanceLoading = false
         }
     }
