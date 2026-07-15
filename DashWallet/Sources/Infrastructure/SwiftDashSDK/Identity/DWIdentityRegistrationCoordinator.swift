@@ -29,11 +29,15 @@
 //
 //  v1 scope:
 //    - Single identity per wallet (`identityIndex` pinned at 0).
-//    - Two funding paths (PR 5):
-//      * Core-funded via `registerIdentityWithFunding` (default).
+//    - Three funding paths:
+//      * Core-funded via `registerIdentityWithFunding` (legacy default).
 //      * Platform Payment via `registerIdentityFromAddresses` —
 //        spends credits already on DIP-17 platform addresses.
 //        Skips the Core-chain asset-lock IS/CL wait.
+//      * Shielded via `shieldedIdentityCreateFromPool` (Type 20) —
+//        spends a fixed exit denomination from the wallet's Orchard
+//        pool. Pre-flighted against `ShieldedIdentityFundingReadiness`
+//        (funding / maturity / pool-size gates); no asset-lock.
 //    - No crash-resume (`resumeIdentityWithAssetLock` deferred to v2).
 //
 
@@ -136,6 +140,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case dpnsRegistration(Error)
         case availabilityCheck(Error)
         case insufficientPlatformCredits(required: UInt64, available: UInt64)
+        case insufficientShieldedBalance(requiredCredits: UInt64, availableCredits: UInt64)
+        case shieldedBalanceImmature(readyAt: Date)
+        case shieldedPoolTooSmall(currentNotes: UInt64)
+        case noShieldedFallbackAddress
+        case shieldedCreateUnconfirmed
         case alreadyInFlight
 
         var errorDescription: String? {
@@ -162,6 +171,21 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 return underlying.localizedDescription
             case .insufficientPlatformCredits:
                 return NSLocalizedString("Not enough Platform credits to register an identity", comment: "DashPay")
+            case .insufficientShieldedBalance:
+                return NSLocalizedString("Not enough shielded balance to register an identity", comment: "DashPay")
+            case .shieldedBalanceImmature(let readyAt):
+                let time = DateFormatter.localizedString(from: readyAt, dateStyle: .none, timeStyle: .short)
+                return String.localizedStringWithFormat(
+                    NSLocalizedString("Your shielded balance is still maturing. It will be ready around %@.", comment: "DashPay"),
+                    time)
+            case .shieldedPoolTooSmall(let currentNotes):
+                return String.localizedStringWithFormat(
+                    NSLocalizedString("The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum.", comment: "DashPay"),
+                    Int(currentNotes), Int(ShieldedIdentityFundingReadiness.minimumPoolNotes))
+            case .noShieldedFallbackAddress:
+                return NSLocalizedString("No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing.", comment: "DashPay")
+            case .shieldedCreateUnconfirmed:
+                return NSLocalizedString("The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately.", comment: "DashPay")
             case .alreadyInFlight:
                 return NSLocalizedString("Identity registration already in progress", comment: "DashPay")
             }
@@ -187,7 +211,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         _ username: String,
         fundingSource: DWIdentityFundingSource = .core
     ) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username, privacy: .public) funding=\(fundingSource == .core ? "core" : "pp", privacy: .public)")
+        Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username, privacy: .public) funding=\(fundingSource.logLabel, privacy: .public)")
 
         // Preconditions — resolved once up-front so failures are
         // surfaced before the PIN prompt.
@@ -331,15 +355,30 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     identitySigner: signer,
                     addressSigner: signer)
                 identityId = created.identityId
+
+            case .shielded:
+                identityId = try await createIdentityFromShieldedPool(
+                    username: username,
+                    walletId: wallet.walletId,
+                    modelContainer: modelContainer,
+                    pubkeys: pubkeys,
+                    signer: signer)
             }
             Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8), privacy: .public)…")
         } catch let coordError as CoordinatorError {
-            // `buildPlatformPaymentInputs` throws our own typed error
-            // before any FFI call — surface as a registration failure
-            // anchored at `.processingPayment` since nothing has hit
-            // the network yet.
+            // Typed errors are almost all pre-flight
+            // (`buildPlatformPaymentInputs`, the shielded readiness
+            // gates) thrown before any FFI call — anchored at
+            // `.processingPayment` since nothing has hit the network
+            // yet. The one exception is the shielded unconfirmed
+            // outcome, which arrives AFTER the Type-20 submit and so
+            // anchors at `.creatingID`.
             Self.logger.error("🪪 IDENT-COORD :: identity creation precondition failed: \(String(describing: coordError), privacy: .public)")
-            failedAtPhase = .processingPayment
+            if case .shieldedCreateUnconfirmed = coordError {
+                failedAtPhase = .creatingID
+            } else {
+                failedAtPhase = .processingPayment
+            }
             lastErrorMessage = coordError.localizedDescription
             newController.enterFailed(coordError.localizedDescription)
             throw coordError
@@ -355,7 +394,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             switch fundingSource {
             case .core:
                 failedAtPhase = assetLockStatus < 2 ? .processingPayment : .creatingID
-            case .platformPayment:
+            case .platformPayment, .shielded:
+                // Neither path has a Core-chain asset-lock; the FFI
+                // submit is the only on-chain step.
                 failedAtPhase = .creatingID
             }
             lastErrorMessage = error.localizedDescription
@@ -428,7 +469,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         _ username: String,
         fundingSource: DWIdentityFundingSource = .core
     ) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: retry username=\(username, privacy: .public) funding=\(fundingSource == .core ? "core" : "pp", privacy: .public)")
+        Self.logger.info("🪪 IDENT-COORD :: retry username=\(username, privacy: .public) funding=\(fundingSource.logLabel, privacy: .public)")
         return try await startCreateUsername(username, fundingSource: fundingSource)
     }
 
@@ -761,5 +802,115 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             remaining -= spend
         }
         return inputs
+    }
+
+    /// Shielded (Type-20) funding path: spend a fixed exit denomination
+    /// from the wallet's Orchard pool into a brand-new identity via
+    /// `shieldedIdentityCreateFromPool`.
+    ///
+    /// Pre-flighted against `ShieldedIdentityFundingReadiness` so the
+    /// three gates (funding, maturity, pool size) fail with typed,
+    /// user-explainable errors BEFORE the ~30 s Halo 2 proof starts.
+    /// Drive re-enforces the pool minimum server-side, so an unknown
+    /// pool count doesn't block here — the FFI error is the backstop.
+    ///
+    /// The denomination is the smallest consensus exit covering the
+    /// name's cost: 0.1 DASH standard, 0.3 DASH for contested names
+    /// (≥ the 0.25 DASH contested requirement). The metered fee is
+    /// taken FROM the denomination, so the new identity starts at
+    /// denomination − fee and no extra headroom is required.
+    ///
+    /// `ShieldedIdentityCreateUnconfirmedError` (broadcast accepted but
+    /// result unconfirmed) maps to `.shieldedCreateUnconfirmed` — NOT
+    /// retryable immediately; if the create actually landed, the SDK's
+    /// pending-spend redrive persists the identity row on a later sync
+    /// and the next attempt resumes past IdentityCreate via
+    /// `lookupExistingIdentityId`.
+    private func createIdentityFromShieldedPool(
+        username: String,
+        walletId: Data,
+        modelContainer: ModelContainer,
+        pubkeys: [ManagedPlatformWallet.IdentityPubkey],
+        signer: KeychainSigner
+    ) async throws -> Identifier {
+        guard let manager = SwiftDashSDKHost.shared.manager else {
+            throw CoordinatorError.noSDK
+        }
+
+        let contested = DWContestedNameStatusService.isContestedLabel(username)
+        let denomination = ShieldedIdentityFundingReadiness.requiredCredits(forContestedName: contested)
+
+        guard let readiness = ShieldedIdentityFundingReadiness.shared
+            .evaluate(requiredCredits: denomination) else {
+            throw CoordinatorError.noWallet
+        }
+        switch readiness.state {
+        case .needsFunding:
+            throw CoordinatorError.insufficientShieldedBalance(
+                requiredCredits: denomination,
+                availableCredits: readiness.unspentCredits)
+        case .maturing(let readyAt):
+            throw CoordinatorError.shieldedBalanceImmature(readyAt: readyAt)
+        case .poolTooSmall(let current):
+            throw CoordinatorError.shieldedPoolTooSmall(currentNotes: current)
+        case .ready:
+            break
+        }
+
+        // REQUIRED Type-20 fallback: if identity creation fails a
+        // stateful check, the spend still finalizes and the value lands
+        // at this address (bound into the transition sighash). Same
+        // encoding the address-funded inputs use: 1-byte variant tag +
+        // 20-byte hash.
+        guard let fallbackAddressBytes = shieldedFallbackAddressBytes(
+            walletId: walletId,
+            modelContainer: modelContainer) else {
+            throw CoordinatorError.noShieldedFallbackAddress
+        }
+
+        Self.logger.info("🪪 IDENT-COORD :: shielded create denomination=\(denomination, privacy: .public) contested=\(contested, privacy: .public)")
+        do {
+            return try await manager.shieldedIdentityCreateFromPool(
+                walletId: walletId,
+                // Per-operation Orchard spend authority (seedless
+                // shielded bind) — same pattern as the app's other
+                // shielded spends in `ShieldedTransferCoordinator`.
+                resolver: MnemonicResolver(),
+                account: 0,
+                identityIndex: Self.pinnedIdentityIndex,
+                identityPubkeys: pubkeys,
+                denomination: denomination,
+                sendToAddressOnCreationFailure: fallbackAddressBytes,
+                identitySigner: signer)
+        } catch let unconfirmed as ShieldedIdentityCreateUnconfirmedError {
+            Self.logger.warning("🪪 IDENT-COORD :: shielded create unconfirmed id=\(unconfirmed.identityId.map { String(format: "%02x", $0) }.joined().prefix(8), privacy: .public)…")
+            throw CoordinatorError.shieldedCreateUnconfirmed
+        }
+    }
+
+    /// Lowest-indexed Platform Payment address as raw 21-byte
+    /// `PlatformAddress` storage bytes (`[addressType] + addressHash`)
+    /// for the Type-20 creation-failure fallback. Deterministic — the
+    /// same wallet always produces the same fallback. nil when no
+    /// Platform address row exists yet (pre-first-platform-sync).
+    private func shieldedFallbackAddressBytes(
+        walletId: Data,
+        modelContainer: ModelContainer
+    ) -> Data? {
+        let accountDescriptor = FetchDescriptor<PersistentAccount>(
+            predicate: #Predicate { account in
+                account.accountType == 14
+                    && account.wallet.walletId == walletId
+            }
+        )
+        guard let accounts = try? modelContainer.mainContext.fetch(accountDescriptor) else {
+            return nil
+        }
+        guard let row = accounts
+            .flatMap({ $0.platformAddresses })
+            .min(by: { $0.addressIndex < $1.addressIndex }) else {
+            return nil
+        }
+        return Data([row.addressType]) + row.addressHash
     }
 }

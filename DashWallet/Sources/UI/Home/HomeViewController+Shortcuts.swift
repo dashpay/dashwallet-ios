@@ -167,6 +167,39 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
 
     func showCreateUsername(withInvitation invitationURL: URL?, definedUsername: String?) {
         #if DASHPAY
+        // Route through the shielded get-ready interstitial whenever
+        // the privacy-preserving funding path isn't ready (needs funds
+        // / maturing / pool below minimum) so the privacy clock starts
+        // at first intent. `nil` (host not hydrated yet) falls through
+        // to the form — its own cost rules gate submission.
+        let readiness = ShieldedIdentityFundingReadiness.shared.evaluate(
+            requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits)
+        if let readiness, readiness.state != .ready {
+            showJoinDashPayReadiness()
+        } else {
+            pushCreateUsernameForm()
+        }
+        #endif
+    }
+
+    #if DASHPAY
+    private func showJoinDashPayReadiness() {
+        let screen = JoinDashPayReadinessScreen(
+            onAddFunds: { [weak self] suggestedDash in
+                let controller = InternalTransferHostingController(prefillDashAmount: suggestedDash)
+                controller.hidesBottomBarWhenPushed = true
+                self?.navigationController?.pushViewController(controller, animated: true)
+            },
+            onProceed: { [weak self] in
+                self?.pushCreateUsernameForm()
+            })
+        let hosting = UIHostingController(rootView: screen)
+        hosting.view.backgroundColor = UIColor.dw_background()
+        hosting.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(hosting, animated: true)
+    }
+
+    private func pushCreateUsernameForm() {
         let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, invitationURL: nil, definedUsername: nil)
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { result in
@@ -177,8 +210,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate, ExploreView
             }
         }
         self.navigationController?.pushViewController(controller, animated: true)
-        #endif
     }
+    #endif
 
     private func showExploreDash() {
         let controller = ExploreViewController()

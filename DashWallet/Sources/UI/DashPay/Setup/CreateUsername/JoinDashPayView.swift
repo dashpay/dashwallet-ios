@@ -36,6 +36,11 @@ extension JoinDashPayState {
 
 struct JoinDashPayView: View {
     @StateObject var viewModel: JoinDashPayViewModel
+    /// Drives the `.callToAction` subtitle nudge: the banner is the
+    /// earliest surface where "fund your Shielded balance now, register
+    /// in a few hours" can reach the user, so the copy tracks the
+    /// shielded readiness state (add funds → maturing countdown → ready).
+    @ObservedObject private var shieldedReadiness = ShieldedIdentityFundingReadiness.shared
     var onTap: (JoinDashPayState) -> Void
     var onActionButton: ((JoinDashPayState) -> Void)? = nil
     var onDismissButton: ((JoinDashPayState) -> Void)? = nil
@@ -140,7 +145,17 @@ struct JoinDashPayView: View {
         case .none:
             return NSLocalizedString("Request your username", comment: "")
         case .callToAction:
-            return NSLocalizedString("Request a username and say goodbye to numerical addresses", comment: "")
+            switch shieldedReadiness.standardSnapshot?.state {
+            case .maturing(let readyAt):
+                let time = DateFormatter.localizedString(from: readyAt, dateStyle: .none, timeStyle: .short)
+                return String.localizedStringWithFormat(
+                    NSLocalizedString("Your Shielded balance is resting — you can register privately around %@", comment: "Usernames"),
+                    time)
+            case .ready:
+                return NSLocalizedString("Your Shielded balance is ready — register your username privately now", comment: "Usernames")
+            case .needsFunding, .poolTooSmall, nil:
+                return NSLocalizedString("Add to your Shielded balance now and register your username privately a few hours later", comment: "Usernames")
+            }
         case .voting:
             let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime)
             let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)

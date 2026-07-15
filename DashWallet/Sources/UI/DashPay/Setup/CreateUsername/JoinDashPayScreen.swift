@@ -27,7 +27,11 @@ public struct JoinDashPayScreen: View {
             TextIntro(
                 buttonLabel: NSLocalizedString("Continue", comment: ""),
                 action: { navigateToVotingInfo = true },
-                isActionEnabled: viewModel.hasMinimumRequiredBalance,
+                // A transparent balance is no longer a hard precondition:
+                // the shielded route starts with ADDING funds (via the
+                // get-ready checklist after Continue), so the button only
+                // stays disabled while the wallet hasn't hydrated yet.
+                isActionEnabled: viewModel.hasMinimumRequiredBalance || viewModel.shieldedReadiness != nil,
                 inProgress: .constant(false),
                 topText: {
                     FeatureTopText(
@@ -38,7 +42,8 @@ public struct JoinDashPayScreen: View {
                 features: {[
                     FeatureSingleItem(iconName: .custom("username.letter"), title: NSLocalizedString("Create a username", comment: ""), description: NSLocalizedString("Pay to usernames. No more alphanumeric addresses.", comment: "")),
                     FeatureSingleItem(iconName: .custom("friends.add"), title: NSLocalizedString("Add your friends & family", comment: ""), description: NSLocalizedString("Invite your family, find your friends by searching their usernames.", comment: "")),
-                    FeatureSingleItem(iconName: .custom("profile.personalized"), title: NSLocalizedString("Personalise profile", comment: ""), description: NSLocalizedString("Upload your picture, personalize your identity.", comment: ""))
+                    FeatureSingleItem(iconName: .custom("profile.personalized"), title: NSLocalizedString("Personalise profile", comment: ""), description: NSLocalizedString("Upload your picture, personalize your identity.", comment: "")),
+                    FeatureSingleItem(iconName: .system("shield.lefthalf.filled"), title: NSLocalizedString("Private by design", comment: "Usernames"), description: NSLocalizedString("Fund your username from your Shielded balance. Add funds a few hours ahead — the short rest keeps your username unlinkable to your other Dash.", comment: "Usernames"))
                 ]},
                 info: getInfo()
             )
@@ -56,11 +61,21 @@ public struct JoinDashPayScreen: View {
         if viewModel.hasRecommendedBalance {
             return nil
         }
-        
+
         if viewModel.hasMinimumRequiredBalance {
             return String.localizedStringWithFormat(NSLocalizedString("You have %@ Dash.\nSome usernames cost up to %@ Dash.", comment: "Usernames"), viewModel.balance, viewModel.recommendedBalance)
         }
-        
-        return String.localizedStringWithFormat(NSLocalizedString("You need to have more than %@ Dash to create a username", comment: "Usernames"), viewModel.minimumRequiredBalance)
+
+        if viewModel.hasReadyShieldedFunding {
+            // No transparent balance, but the shielded route is fully
+            // ready — nothing to warn about.
+            return nil
+        }
+
+        let shieldedMinimum = (ShieldedIdentityFundingReadiness.standardDenominationCredits / 1_000)
+            .dashAmount.formattedDashAmountWithoutCurrencySymbol
+        return String.localizedStringWithFormat(
+            NSLocalizedString("Registering privately takes at least %@ Dash in your Shielded balance plus a few hours of rest time — the next screens walk you through it.", comment: "Usernames"),
+            shieldedMinimum)
     }
 }
