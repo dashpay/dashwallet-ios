@@ -113,6 +113,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case info
         case taxCategory
         case explorer
+        case swapExplorer
     }
 
     enum Item: Hashable {
@@ -130,6 +131,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case date(DWTitleDetailItem)
         case taxCategory(DWTitleDetailItem)
         case explorer
+        case swapExplorer
 
         func hash(into hasher: inout Hasher) {
             switch self {
@@ -150,6 +152,8 @@ class TXDetailViewController: BaseTxDetailsViewController {
 
             case .explorer:
                 hasher.combine("Explorer")
+            case .swapExplorer:
+                hasher.combine("SwapExplorer")
             }
         }
     }
@@ -249,6 +253,13 @@ extension TXDetailViewController {
                                                              for: indexPath) as! TxDetailActionCell
                     cell.titleLabel.text = NSLocalizedString("View in Block Explorer", comment: "")
                     return cell
+
+                case .swapExplorer:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.reuseIdentifier,
+                                                             for: indexPath) as! TxDetailActionCell
+                    cell.titleLabel.text = wSelf.model.swapProviderExplorer?.title
+                        ?? NSLocalizedString("View in Explorer", comment: "")
+                    return cell
                 }
         }
     }
@@ -260,6 +271,10 @@ extension TXDetailViewController {
 
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         currentSnapshot.appendSections([.header, .info, .taxCategory, .explorer])
+        // Swaps get a second, identical explorer card (Maya / NEAR) below the Dash one.
+        if model.swapProviderExplorer != nil {
+            currentSnapshot.appendSections([.swapExplorer])
+        }
         currentSnapshot.appendItems([.header], toSection: .header)
 
         switch model.direction {
@@ -288,6 +303,9 @@ extension TXDetailViewController {
         currentSnapshot.appendItems([.date(date)], toSection: .info)
         currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
+        if model.swapProviderExplorer != nil {
+            currentSnapshot.appendItems([.swapExplorer], toSection: .swapExplorer)
+        }
         dataSource.apply(currentSnapshot, animatingDifferences: false)
         dataSource.defaultRowAnimation = .none
     }
@@ -308,11 +326,20 @@ extension TXDetailViewController {
             break
         case .explorer:
             viewInBlockExplorer()
+        case .swapExplorer:
+            openSwapProviderExplorer()
         default:
             break
         }
     }
 
+    private func openSwapProviderExplorer() {
+        guard let url = model.swapProviderExplorer?.url else { return }
+        let vc = SFSafariViewController.dw_controller(with: url)
+        vc.modalPresentationStyle = .overFullScreen
+        vc.modalPresentationCapturesStatusBarAppearance = true
+        present(vc, animated: true)
+    }
 }
 
 // MARK: - SuccessTxDetailViewControllerDelegate

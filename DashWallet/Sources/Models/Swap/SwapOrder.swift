@@ -157,3 +157,34 @@ struct SwapOrder: RowDecodable {
         self.lastChecked = lastChecked
     }
 }
+
+// MARK: - Provider block explorer
+
+extension SwapOrder {
+    /// A provider-specific block-explorer deep link for this swap, or `nil` when the routing
+    /// provider is unknown or the identifier its explorer needs isn't available yet.
+    ///
+    /// Provider classification mirrors `SwapTrackingService.trackingRoute(for:)` so the link
+    /// always points at the same explorer the app uses to track the order:
+    /// - **Maya** (MayaScan) keys on the DASH deposit tx — the wallet's own tx for a sell, or the
+    ///   tracked incoming-Dash hash for a buy.
+    /// - **NEAR** (near-intents explorer) keys on the deposit address, never a tx hash.
+    var providerExplorer: (providerName: String, url: URL)? {
+        let normalized = provider?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
+
+        if normalized.contains("maya") || (normalized.isEmpty && service == "maya") {
+            let hash = (direction == "sell" ? id : outboundTxHash)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let hash, !hash.isEmpty else { return nil }
+            return ("Maya", MayaConstants.mayaScanTransactionURL(txHash: hash))
+        }
+
+        if normalized.contains("near") {
+            let deposit = (depositAddress ?? id).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !deposit.isEmpty else { return nil }
+            return ("NEAR", NearConstants.explorerTransactionURL(depositAddress: deposit))
+        }
+
+        return nil
+    }
+}
