@@ -85,6 +85,17 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: true) }
     }
 
+    /// Restart the sync stack to dial a fresh peer set ("sync too slow?
+    /// change peers"). A full stop → start through the serial lifecycle
+    /// pipeline: dash-spv re-discovers peers from the DNS seeds on start,
+    /// and chain data persists on disk so sync resumes where it left off.
+    /// Peer selection is seed-random — a redial of a previous peer is
+    /// possible (no exclude-list in the SDK yet).
+    @objc(rotatePeers)
+    nonisolated static func rotatePeers() {
+        dispatchOnPipeline { shared.enqueueRefresh(trigger: .peerRotation) }
+    }
+
     // MARK: - Runtime wallet switching
 
     /// Switch the active wallet (same network) to `walletId` at runtime.
@@ -282,11 +293,12 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     private func shouldSkipRefresh(for network: Network, trigger: RefreshTrigger) -> Bool {
         switch trigger {
-        case .walletMaterialChanged, .walletDidChange:
+        case .walletMaterialChanged, .walletDidChange, .peerRotation:
             // A runtime wallet switch always rebuilds — the active-wallet
             // registry was repointed to a different wallet on the SAME
             // network, so `currentNetwork == network` would otherwise wrongly
-            // elide the rebind.
+            // elide the rebind. Peer rotation exists precisely to force the
+            // stop → start (fresh peer dial), so it never skips either.
             return false
         case .startIfReady, .networkDidChange:
             // External callers (PlatformSyncStatusScreen, StorageExplorerUnavailableView,
@@ -355,6 +367,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         case networkDidChange
         case walletMaterialChanged
         case walletDidChange
+        case peerRotation
     }
 
     enum RuntimeError: LocalizedError {

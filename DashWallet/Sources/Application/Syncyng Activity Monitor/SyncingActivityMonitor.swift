@@ -48,25 +48,50 @@ public class SyncStateSnapshot: NSObject {
         case finished
     }
 
+    /// One row of per-phase sync detail for UI that shows the WHOLE sync
+    /// pipeline (headers → filter headers → filters → masternode lists)
+    /// instead of only the currently-active phase. Swift-only — the Obj-C
+    /// consumers of the snapshot never needed per-phase rows.
+    public struct Phase {
+        public enum Kind {
+            case headers
+            case filterHeaders
+            case filters
+            case masternodes
+        }
+
+        public let kind: Kind
+        public let current: UInt32
+        public let target: UInt32
+        /// True when dash-spv reports the phase caught up (headers/filter
+        /// phases: percentage ≥ 1; masternodes: target height reached).
+        public let isComplete: Bool
+    }
+
     @objc public let kind: Kind
     @objc public let lastSyncBlockHeight: UInt32
     @objc public let lastTerminalBlockHeight: UInt32
     @objc public let estimatedBlockHeight: UInt32
     @objc public let masternodeListsReceived: UInt32
     @objc public let masternodeListsTotal: UInt32
+    /// All phases dash-spv has reported so far, in pipeline order. Empty
+    /// until the first SDK progress event lands.
+    public let phases: [Phase]
 
     init(kind: Kind,
          lastSyncBlockHeight: UInt32,
          lastTerminalBlockHeight: UInt32,
          estimatedBlockHeight: UInt32,
          masternodeListsReceived: UInt32,
-         masternodeListsTotal: UInt32) {
+         masternodeListsTotal: UInt32,
+         phases: [Phase] = []) {
         self.kind = kind
         self.lastSyncBlockHeight = lastSyncBlockHeight
         self.lastTerminalBlockHeight = lastTerminalBlockHeight
         self.estimatedBlockHeight = estimatedBlockHeight
         self.masternodeListsReceived = masternodeListsReceived
         self.masternodeListsTotal = masternodeListsTotal
+        self.phases = phases
         super.init()
     }
 
@@ -302,13 +327,44 @@ extension SyncingActivityMonitor {
             return m.targetHeight > m.currentHeight ? (m.targetHeight - m.currentHeight) : 0
         }()
 
+        // Per-phase rows in pipeline order, one per phase dash-spv has
+        // reported. The syncing detail alert shows all of them so a user
+        // isn't left staring at "header #x of x" while the filter phases
+        // are what the overall percentage is actually grinding through.
+        var phases: [SyncStateSnapshot.Phase] = []
+        if let h = progress.headers {
+            phases.append(.init(kind: .headers,
+                                current: h.currentHeight,
+                                target: h.targetHeight,
+                                isComplete: h.percentage >= 1.0))
+        }
+        if let fh = progress.filterHeaders {
+            phases.append(.init(kind: .filterHeaders,
+                                current: fh.currentHeight,
+                                target: fh.targetHeight,
+                                isComplete: fh.percentage >= 1.0))
+        }
+        if let f = progress.filters {
+            phases.append(.init(kind: .filters,
+                                current: f.currentHeight,
+                                target: f.targetHeight,
+                                isComplete: f.percentage >= 1.0))
+        }
+        if let m = progress.masternodes {
+            phases.append(.init(kind: .masternodes,
+                                current: m.currentHeight,
+                                target: m.targetHeight,
+                                isComplete: m.targetHeight <= m.currentHeight))
+        }
+
         return SyncStateSnapshot(
             kind: kind,
             lastSyncBlockHeight: blockHeight,
             lastTerminalBlockHeight: headerHeight,
             estimatedBlockHeight: peersBestHeight,
             masternodeListsReceived: mnReceived,
-            masternodeListsTotal: mnTotal)
+            masternodeListsTotal: mnTotal,
+            phases: phases)
     }
 
     /// Smooth out large progress jumps for visual continuity. Mirrors the

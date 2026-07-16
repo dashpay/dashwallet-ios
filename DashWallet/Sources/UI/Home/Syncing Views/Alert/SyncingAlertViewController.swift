@@ -15,23 +15,19 @@
 //  limitations under the License.
 //
 
+import SwiftUI
 import UIKit
 
 // MARK: - SyncingAlertViewController
 
-final class SyncingAlertViewController: BaseViewController, SyncingAlertContentViewDelegate {
+/// Thin modal-popup shell around the SwiftUI `SyncingAlertView`, which
+/// renders the overall percentage plus one progress row per SPV sync
+/// phase (headers / filter headers / filters / masternode list).
+final class SyncingAlertViewController: BaseViewController {
 
     var modalTransition = DWModalPopupTransition()
-    private lazy var childView: SyncingAlertContentView = {
-        let childView = SyncingAlertContentView()
-        childView.translatesAutoresizingMaskIntoConstraints = false
-        childView.delegate = self
-        childView.update(with: SyncingActivityMonitor.shared.progress)
-        childView.update(with: SyncingActivityMonitor.shared.state)
-        return childView
-    }()
 
-    internal lazy var model: SyncModel = SyncModelImpl()
+    private let viewModel = SyncingAlertViewModel()
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -46,20 +42,6 @@ final class SyncingAlertViewController: BaseViewController, SyncingAlertContentV
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        model.networkStatusDidChange = { [weak self] _ in
-            // TODO: update view based on network connection instead of passing sync state
-        }
-
-        model.progressDidChange = { [weak self] progress in
-            guard let self else { return }
-            self.childView.update(with: progress)
-            self.childView.update(with: self.model.state)
-        }
-
-        model.stateDidChage = { [weak self] state in
-            self?.childView.update(with: state)
-        }
-
         view.backgroundColor = .clear
 
         let contentView = UIView()
@@ -69,22 +51,23 @@ final class SyncingAlertViewController: BaseViewController, SyncingAlertContentV
         contentView.layer.masksToBounds = true
         view.addSubview(contentView)
 
-        contentView.addSubview(childView)
+        let hosting = UIHostingController(rootView: SyncingAlertView(viewModel: viewModel) { [weak self] in
+            self?.dismiss(animated: true, completion: nil)
+        })
+        hosting.view.backgroundColor = .clear
+        hosting.view.translatesAutoresizingMaskIntoConstraints = false
+        addChild(hosting)
+        contentView.addSubview(hosting.view)
+        hosting.didMove(toParent: self)
 
         NSLayoutConstraint.activate([
             contentView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            childView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 32.0),
-            childView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            childView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: childView.bottomAnchor, constant: 32.0),
+            hosting.view.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 32.0),
+            hosting.view.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            hosting.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: hosting.view.bottomAnchor, constant: 32.0),
         ])
-    }
-
-    // MARK: - DWSyncingAlertContentViewDelegate
-
-    func syncingAlertContentView(_ view: SyncingAlertContentView, okButtonAction sender: UIButton) {
-        dismiss(animated: true, completion: nil)
     }
 }

@@ -557,6 +557,9 @@
 /* DashSpend */
 "Challenge" = "Challenge";
 
+/* SPV sync */
+"Change peers" = "Change peers";
+
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
 
@@ -644,6 +647,9 @@
 
 /* CrowdNode */
 "Connected Dash address" = "Connected Dash address";
+
+/* SPV sync */
+"Connected peers" = "Connected peers";
 
 /* About screen tech info: SPV state */
 "connecting" = "connecting";
@@ -1125,6 +1131,9 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "Error updating your profile";
 
+/* SPV sync peer type */
+"Evonode" = "Evonode";
+
 /* Maya */
 "Exchange rate not available" = "Exchange rate not available";
 
@@ -1190,6 +1199,9 @@
 
 /* No comment provided by engineer. */
 "Filter" = "Filter";
+
+/* SPV sync phase */
+"Filter headers" = "Filter headers";
 
 /* No comment provided by engineer. */
 "Filter transactions" = "Filter transactions";
@@ -1403,6 +1415,9 @@
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "header #%1$d of %2$d";
+
+/* SPV sync phase */
+"Headers" = "Headers";
 
 /* CrowdNode */
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device";
@@ -1885,6 +1900,9 @@
 /* Masternode keys */
 "Masternode keys" = "Masternode keys";
 
+/* SPV sync phase */
+"Masternode list" = "Masternode list";
+
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "masternode list #%1$d of %2$d";
 
@@ -2121,6 +2139,9 @@
 
 /* Voting */
 "No votes left" = "No votes left";
+
+/* SPV sync peer type */
+"Node" = "Node";
 
 /* adjective, security level */
 "None" = "None";
@@ -3116,6 +3137,9 @@
 
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "Sync in progress… Results may not be complete.";
+
+/* SPV sync */
+"Sync too slow?" = "Sync too slow?";
 
 /* About screen tech info: SPV state */
 "synced" = "synced";
