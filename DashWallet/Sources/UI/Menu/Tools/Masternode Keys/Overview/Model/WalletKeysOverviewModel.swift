@@ -16,16 +16,18 @@
 //
 
 import Foundation
+import SwiftDashSDK
 
 // MARK: - MNKey
 
-// Only Owner and Voting keys are supported. Operator (BLS) and HPMN/Platform
-// (EdDSA) keys were removed: SwiftDashSDK can derive their private keys but the
-// FFI does not export per-index BLS/EdDSA *public* keys, which the masternode
-// setup requires, so those families can't be shown DashSync-free.
+/// The four masternode key families a ProRegTx references: Owner and Voting
+/// (ECDSA, on-chain P2PKH addresses), Operator (BLS), and Evonode Operator
+/// (Ed25519 platform-node key, formerly "HPMN Operator").
 enum MNKey: CaseIterable {
     case owner
     case voting
+    case `operator`
+    case evonodeOperator
 }
 
 extension MNKey {
@@ -35,6 +37,115 @@ extension MNKey {
             return NSLocalizedString("Owner keys", comment: "")
         case .voting:
             return NSLocalizedString("Voting keys", comment: "")
+        case .operator:
+            return NSLocalizedString("Operator keys", comment: "")
+        case .evonodeOperator:
+            return NSLocalizedString("Evonode Operator keys", comment: "")
         }
+    }
+}
+
+// MARK: - MasternodeKeyUsage
+
+/// Which key indexes of each masternode key family this wallet's masternodes
+/// use, resolved from the Rust masternode aggregation
+/// (`PlatformWalletManager.masternodes(for:)`).
+///
+/// Operator (BLS) and Evonode Operator (Ed25519) ownership is resolved by
+/// Rust itself (derive-and-compare; `operatorInWallet`/`operatorKeyIndex`,
+/// `platformInWallet`/`platformKeyIndex`). Owner and Voting keys have
+/// on-chain P2PKH addresses, so they're joined in Swift by matching the
+/// aggregation's Rust-encoded base58 addresses against the wallet's derived
+/// address at each index.
+@MainActor
+struct MasternodeKeyUsage {
+    struct KeyUse {
+        /// The masternode's `ip:port`, when known.
+        let serviceAddress: String?
+        /// True when that registration was since revoked.
+        let revoked: Bool
+    }
+
+    /// Owner/Voting address-join scan window. Matches the SDK's
+    /// pre-derivation count (`PLATFORM_NODE_KEY_PREDERIVE_COUNT`).
+    private static let scanWindow: UInt32 = 20
+
+    private let used: [MNKey: [UInt32: KeyUse]]
+
+    private init(used: [MNKey: [UInt32: KeyUse]]) {
+        self.used = used
+    }
+
+    func use(for key: MNKey, at index: Int) -> KeyUse? {
+        guard index >= 0 else { return nil }
+        return used[key]?[UInt32(index)]
+    }
+
+    func usedCount(for key: MNKey) -> Int {
+        used[key]?.count ?? 0
+    }
+
+    /// The index after the highest used one (0 when the family is unused) —
+    /// DashSync's `firstUnusedIndex` semantics, which the key screens use as
+    /// the initially visible keypair.
+    func firstUnusedIndex(for key: MNKey) -> Int {
+        guard let maxUsed = used[key]?.keys.max() else { return 0 }
+        return Int(maxUsed) + 1
+    }
+
+    static func resolve() -> MasternodeKeyUsage {
+        guard let manager = SwiftDashSDKHost.shared.manager,
+              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
+            return MasternodeKeyUsage(used: [:])
+        }
+        let masternodes = manager.masternodes(for: walletId)
+        guard !masternodes.isEmpty else {
+            return MasternodeKeyUsage(used: [:])
+        }
+
+        var used: [MNKey: [UInt32: KeyUse]] = [:]
+        // A revoked registration never overrides a live one at the same index.
+        func record(_ key: MNKey, _ index: UInt32, _ use: KeyUse) {
+            if let current = used[key]?[index], !current.revoked, use.revoked {
+                return
+            }
+            used[key, default: [:]][index] = use
+        }
+
+        // Operator / Evonode Operator: Rust already resolved the in-wallet
+        // key index for these no-address key types.
+        for mn in masternodes {
+            let use = KeyUse(serviceAddress: mn.serviceAddress, revoked: mn.revoked)
+            if mn.operatorInWallet {
+                record(.operator, mn.operatorKeyIndex, use)
+            }
+            if mn.platformOwnershipChecked, mn.platformInWallet {
+                record(.evonodeOperator, mn.platformKeyIndex, use)
+            }
+        }
+
+        // Owner / Voting: join the aggregation's base58 addresses against
+        // the wallet's derived address at each index in the scan window.
+        for key in [MNKey.owner, .voting] {
+            var useByAddress: [String: KeyUse] = [:]
+            for mn in masternodes {
+                let address = (key == .owner) ? mn.ownerAddress : mn.votingAddress
+                guard let address, !address.isEmpty else { continue }
+                let use = KeyUse(serviceAddress: mn.serviceAddress, revoked: mn.revoked)
+                if let current = useByAddress[address], !current.revoked, use.revoked {
+                    continue
+                }
+                useByAddress[address] = use
+            }
+            guard !useByAddress.isEmpty,
+                  let deriver = MasternodeProviderKeyDeriver(key: key) else { continue }
+            for index in 0..<scanWindow {
+                guard let address = deriver.address(at: index),
+                      let use = useByAddress[address] else { continue }
+                record(key, index, use)
+            }
+        }
+
+        return MasternodeKeyUsage(used: used)
     }
 }

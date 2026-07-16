@@ -58,6 +58,9 @@
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
 
+/* Masternode keys overview */
+"%d key(s)" = "%d key(s)";
+
 /* Voting - multiple keys warning */
 "%d votes will be cast as you have multiple voting keys stored in the wallet" = "%d votes will be cast as you have multiple voting keys stored in the wallet";
 
@@ -78,6 +81,9 @@
 
 /* Dash DEX */
 "%ld sec" = "%ld sec";
+
+/* Masternode keys overview */
+"%ld used" = "%ld used";
 
 /* 10/20 Characters */
 "%ld/%ld Characters" = "%1$ld/%2$ld Characters";
@@ -1134,6 +1140,9 @@
 /* SPV sync peer type */
 "Evonode" = "Evonode";
 
+/* Masternode keys */
+"Evonode Operator keys" = "Evonode Operator keys";
+
 /* Maya */
 "Exchange rate not available" = "Exchange rate not available";
 
@@ -2164,6 +2173,9 @@
 /* Location Service Status */
 "Not Determined" = "Not Determined";
 
+/* Masternode keys */
+"Not yet used" = "Not yet used";
+
 /* DashPay */
 "Not enough Platform credits to register an identity" = "Not enough Platform credits to register an identity";
 
@@ -2236,6 +2248,9 @@
 /* DashSpend */
 "Original Price" = "Original Price";
 
+/* Masternode keys */
+"Operator keys" = "Operator keys";
+
 /* No comment provided by engineer. */
 "Owner Address" = "Owner Address";
 
@@ -2244,6 +2259,9 @@
 
 /* No comment provided by engineer. */
 "P2SH platform addresses aren't supported yet. Use a P2PKH recipient." = "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.";
+
+/* Masternode keys */
+"Platform Node ID" = "Platform Node ID";
 
 /* DashSpend */
 "Password" = "Password";
@@ -2470,6 +2488,9 @@
 /* No comment provided by engineer. */
 "Privacy tip" = "Privacy tip";
 
+/* Masternode keys */
+"Previously used at: " = "Previously used at: ";
+
 /* Usernames */
 "Private by design" = "Private by design";
 
@@ -2490,6 +2511,12 @@
 
 /* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
+
+/* Masternode keys */
+"Public key" = "Public key";
+
+/* Masternode keys */
+"Public key (legacy)" = "Public key (legacy)";
 
 /* No comment provided by engineer. */
 "Public URL" = "Public URL";
@@ -3189,6 +3216,9 @@
 /* No comment provided by engineer. */
 "Tell the cashier that you'd like to pay with a gift card and share the card number and pin." = "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.";
 
+/* Masternode keys - dashmate Ed25519 node key format */
+"Tenderdash node key (base64)" = "Tenderdash node key (base64)";
+
 /* DashSpend */
 "Temporarily unavailable" = "Temporarily unavailable";
 
@@ -3625,6 +3655,12 @@
 
 /* Usernames */
 "Use transparent balance instead" = "Use transparent balance instead";
+
+/* Masternode keys */
+"Used" = "Used";
+
+/* Masternode keys */
+"Used at: " = "Used at: ";
 
 /* No comment provided by engineer. */
 "User (Fetching Info)" = "User (Fetching Info)";
