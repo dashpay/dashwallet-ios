@@ -14,7 +14,6 @@ struct PaymentsLandingScreen: View {
     var onShareAddress: () -> Void
     var onSpecifyAmount: () -> Void
     var onScanQR: () -> Void
-    var onSendToAddress: () -> Void
     var onShieldedBalance: () -> Void
     /// When set, the Internal tab embeds the transfer form directly (the
     /// same screen the balance-row arrows used to present standalone)
@@ -25,10 +24,10 @@ struct PaymentsLandingScreen: View {
     /// this balance as its From card (destination picked on the To rows),
     /// instead of the receive sheet's pinned-destination layout.
     var transferSendFrom: ChainNetwork? = nil
-    /// When set, the Send tab embeds the external-send form (pinned to the
-    /// tapped balance as source) instead of the action-row list. Set by
-    /// the balance-row send sheet.
-    var embeddedSendViewModel: SendViewModel? = nil
+    /// The Send tab IS the external-send form — pinned to the tapped
+    /// balance as source on the balance-row send sheet, un-pinned (full
+    /// From picker) on the full landing.
+    var embeddedSendViewModel: SendViewModel
     var onContinueCore: (String, UInt64) -> Void = { _, _ in }
     var onSendCompleted: () -> Void = {}
     /// False for the balance-row receive/send sheets: their grabber + hero
@@ -39,7 +38,7 @@ struct PaymentsLandingScreen: View {
         // Tighter chrome when a tab embeds a full form (transfer or send) —
         // its amount + cards + keypad need most of the sheet.
         let isEmbeddedForm = (viewModel.activeTab == .internalTransfer && embeddedTransferViewModel != nil)
-            || (viewModel.activeTab == .send && embeddedSendViewModel != nil)
+            || viewModel.activeTab == .send
         VStack(alignment: .center, spacing: isEmbeddedForm ? 12 : 20) {
             if showsHeader {
                 header
@@ -82,18 +81,13 @@ struct PaymentsLandingScreen: View {
                     Spacer()
                 }
             case .send:
-                if let sendViewModel = embeddedSendViewModel {
-                    SendScreen(
-                        viewModel: sendViewModel,
-                        onClose: onClose,
-                        onScanQR: onScanQR,
-                        onContinueCore: onContinueCore,
-                        onSendCompleted: onSendCompleted,
-                        showsHeader: false)
-                } else {
-                    sendContent
-                    Spacer()
-                }
+                SendScreen(
+                    viewModel: embeddedSendViewModel,
+                    onClose: onClose,
+                    onScanQR: onScanQR,
+                    onContinueCore: onContinueCore,
+                    onSendCompleted: onSendCompleted,
+                    showsHeader: false)
             }
         }
         .background(Color.primaryBackground)
@@ -253,24 +247,6 @@ struct PaymentsLandingScreen: View {
                 iconSystemName: "shield.fill",
                 title: NSLocalizedString("Shielded balance", comment: ""),
                 action: onShieldedBalance)
-                .padding(.horizontal, 20)
-        }
-    }
-
-    // MARK: - Send
-
-    private var sendContent: some View {
-        VStack(alignment: .center, spacing: 12) {
-            actionRow(
-                iconSystemName: "qrcode.viewfinder",
-                title: NSLocalizedString("Scan QR", comment: ""),
-                action: onScanQR)
-                .padding(.horizontal, 20)
-
-            actionRow(
-                iconSystemName: "paperplane.fill",
-                title: NSLocalizedString("Send to address", comment: ""),
-                action: onSendToAddress)
                 .padding(.horizontal, 20)
         }
     }
