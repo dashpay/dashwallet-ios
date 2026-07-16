@@ -2369,7 +2369,7 @@
 "Platform Payment" = "Platform Payment";
 
 /* No comment provided by engineer. */
-"Platform sync is not running. Open Tools → Platform Sync Status to start it." = "Platform sync is not running. Open Tools → Platform Sync Status to start it.";
+"Platform sync is not running. Open Sync Info → Platform Sync Status to start it." = "Platform sync is not running. Open Sync Info → Platform Sync Status to start it.";
 
 /* No comment provided by engineer. */
 "Platform sync starting…" = "Platform sync starting…";
@@ -3131,6 +3131,9 @@
 
 /* No comment provided by engineer. */
 "Sync Failed" = "Sync Failed";
+
+/* No comment provided by engineer. */
+"Sync Info" = "Sync Info";
 
 /* Explore Dash */
 "Sync failed" = "Sync failed";

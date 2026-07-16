@@ -24,8 +24,6 @@ enum ToolsMenuNavigationDestination {
     case masternodeKeys
     case csvExport
     case zenLedger
-    case swiftDashSDKSPVStatus
-    case platformSyncStatus
     case storageExplorer
 }
 
@@ -107,20 +105,6 @@ class ToolsMenuViewModel: ObservableObject {
                 icon: .custom("image.csv.export", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .csvExport
-                }
-            ),
-            MenuItemModel(
-                title: "SwiftDashSDK SPV Status",
-                icon: .system("arrow.triangle.2.circlepath"),
-                action: { [weak self] in
-                    self?.navigationDestination = .swiftDashSDKSPVStatus
-                }
-            ),
-            MenuItemModel(
-                title: "Platform Sync Status",
-                icon: .system("globe"),
-                action: { [weak self] in
-                    self?.navigationDestination = .platformSyncStatus
                 }
             ),
             MenuItemModel(

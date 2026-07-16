@@ -21,6 +21,7 @@ import Combine
 enum MainMenuNavigationDestination {
     case buySellPortal
     case explore
+    case syncInfo
     case security
     case settings
     case tools
@@ -97,6 +98,15 @@ class MainMenuViewModel: ObservableObject {
             }
         ))
         
+        // Sync Info
+        allItems.append(MenuItemModel(
+            title: NSLocalizedString("Sync Info", comment: ""),
+            icon: .system("arrow.triangle.2.circlepath"),
+            action: { [weak self] in
+                self?.navigationDestination = .syncInfo
+            }
+        ))
+
         // Security
         allItems.append(MenuItemModel(
             title: NSLocalizedString("Security", comment: ""),
