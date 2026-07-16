@@ -337,13 +337,19 @@ struct ContactProfileSheet: View {
     private func saveMeta() {
         Task { @MainActor in
             do {
-                try await service.setAlias(aliasText.trimmingCharacters(in: .whitespaces), for: contact.contactIdentityId)
-                try await service.setNote(noteText.trimmingCharacters(in: .whitespaces), for: contact.contactIdentityId)
+                // Combined write — the contactInfo document carries
+                // alias + note + hidden together, so every save sends the
+                // sheet's full current state.
+                try await service.setContactMeta(
+                    alias: aliasText.trimmingCharacters(in: .whitespaces),
+                    note: noteText.trimmingCharacters(in: .whitespaces),
+                    hidden: isHidden,
+                    for: contact.contactIdentityId)
                 withAnimation { metaSavedToast = true }
                 try? await Task.sleep(nanoseconds: 1_200_000_000)
                 withAnimation { metaSavedToast = false }
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = errorMessageIfNotCancelled(error)
             }
         }
     }
@@ -351,12 +357,25 @@ struct ContactProfileSheet: View {
     private func toggleHidden() {
         Task { @MainActor in
             do {
-                try await service.setHidden(!isHidden, for: contact.contactIdentityId)
+                try await service.setContactMeta(
+                    alias: aliasText.trimmingCharacters(in: .whitespaces),
+                    note: noteText.trimmingCharacters(in: .whitespaces),
+                    hidden: !isHidden,
+                    for: contact.contactIdentityId)
                 isHidden.toggle()
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = errorMessageIfNotCancelled(error)
             }
         }
+    }
+
+    /// A cancelled PIN/biometric prompt is a user action, not an error —
+    /// stay silent instead of popping the error alert.
+    private func errorMessageIfNotCancelled(_ error: Error) -> String? {
+        if case SwiftDashSDKContactsService.ServiceError.authCancelled = error {
+            return nil
+        }
+        return error.localizedDescription
     }
 
     // MARK: Payments between us — history card
