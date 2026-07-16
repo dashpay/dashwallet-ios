@@ -198,6 +198,8 @@ struct HomeViewContent<Content: View>: View {
     @State private var navigateToClaimInvitation: Bool = false
     @State private var giftCardTxId: Data? = nil
     @State private var pendingShieldedRecovery: Transaction? = nil
+    /// Balance whose explainer sheet is up (tap on a breakdown row's body).
+    @State private var balanceInfoNetwork: ChainNetwork? = nil
 
 
     @ObservedObject var viewModel: HomeViewModel
@@ -235,11 +237,21 @@ struct HomeViewContent<Content: View>: View {
                         },
                         onSend: { network in
                             delegate?.homeViewShowSend(network: network)
+                        },
+                        onInfo: { network in
+                            balanceInfoNetwork = network
                         })
                     .frame(maxWidth: .infinity)
                     .background(Color.navigationBarColor)
                     .padding(.top, 5)
                     .padding(.bottom, -12)
+                    .sheet(item: $balanceInfoNetwork) { network in
+                        BalanceInfoSheet(network: network) {
+                            balanceInfoNetwork = nil
+                        }
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
+                    }
 
                     VStack(spacing: 0) {
                         Color.navigationBarColor

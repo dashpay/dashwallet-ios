@@ -39,6 +39,9 @@ struct HomeBalanceView: View {
     var onLongPress: () -> Void
     var onReceive: (ChainNetwork) -> Void = { _ in }
     var onSend: (ChainNetwork) -> Void = { _ in }
+    /// Tap on a row's body (icon/title/amount — not the arrows): opens the
+    /// what-is-this-balance info sheet for that balance.
+    var onInfo: (ChainNetwork) -> Void = { _ in }
 
     private var platformDuffs: UInt64 { platformSync.platformBalance / 1_000 }
     private var shieldedDuffs: UInt64 { platformSync.shieldedBalance / 1_000 }
@@ -124,6 +127,7 @@ struct HomeBalanceView: View {
                 icon: "wallet.pass",
                 title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
                 duffs: viewModel.value,
+                infoAction: { onInfo(.core) },
                 inAction: { onReceive(.core) },
                 outAction: { onSend(.core) })
             rowDivider
@@ -131,6 +135,7 @@ struct HomeBalanceView: View {
                 icon: "cloud",
                 title: NSLocalizedString("Platform", comment: ""),
                 duffs: platformDuffs,
+                infoAction: { onInfo(.platform) },
                 inAction: { onReceive(.platform) },
                 outAction: { onSend(.platform) })
             rowDivider
@@ -138,6 +143,7 @@ struct HomeBalanceView: View {
                 icon: "shield",
                 title: NSLocalizedString("Shielded", comment: ""),
                 duffs: shieldedDuffs,
+                infoAction: { onInfo(.shielded) },
                 inAction: { onReceive(.shielded) },
                 outAction: { onSend(.shielded) })
         }
@@ -156,26 +162,34 @@ struct HomeBalanceView: View {
         icon: String,
         title: String,
         duffs: UInt64,
+        infoAction: @escaping () -> Void,
         inAction: @escaping () -> Void,
         outAction: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 15))
-                .foregroundColor(.white)
-                .frame(width: 20)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(.footnote)
-                    .fontWeight(.medium)
+            // The row body is its own tap target (info sheet); keeping it a
+            // sibling of the arrow buttons means it can't swallow their taps.
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 15))
                     .foregroundColor(.white)
-                Text(viewModel.fiatString(forDuffs: duffs))
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.7))
+                    .frame(width: 20)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title)
+                        .font(.footnote)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                    Text(viewModel.fiatString(forDuffs: duffs))
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.7))
+                }
+                Spacer(minLength: 8)
+                DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
+                    .foregroundColor(.white)
             }
-            Spacer(minLength: 8)
-            DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
-                .foregroundColor(.white)
+            .contentShape(Rectangle())
+            .onTapGesture { infoAction() }
+
             transferButton(systemName: "arrow.down",
                            label: NSLocalizedString("Transfer in", comment: "Balance breakdown"),
                            action: inAction)
