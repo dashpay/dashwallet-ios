@@ -112,9 +112,6 @@
 /* CrowdNode */
 "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year.";
 
-/* Shown when a pending Dash conversion blocks a regular send. */
-"A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before sending." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before sending.";
-
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
@@ -597,9 +594,6 @@
 
 /* Maya Portal */
 "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
-
-/* Maya */
-"Convert Dash to %@" = "Convert Dash to %@";
 
 /* No comment provided by engineer. */
 "Copied" = "Copied";
@@ -2881,9 +2875,6 @@
 /* No comment provided by engineer. */
 "Unable to fetch your Gravatar. Please enter a valid gravatar email ID." = "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.";
 
-/* Maya */
-"Unable to get a quote" = "Unable to get a quote";
-
 /* No comment provided by engineer. */
 "Unable to get new QR code" = "Unable to get new QR code";
 
@@ -3415,6 +3406,9 @@
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
+
+/* Maya/SwapKit */
+"Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "Your primary Dash address that you currently use for your CrowdNode account";
