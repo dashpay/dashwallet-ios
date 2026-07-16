@@ -111,6 +111,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private var runningNetwork: Network?
     private var progressCancellable: AnyCancellable?
     private var peersCancellable: AnyCancellable?
+    private var balanceRefreshCancellable: AnyCancellable?
 
     /// Network whose CoinJoin gap was widened for a one-time recovery scan
     /// during the current run, so a subsequent full sync can mark recovery
@@ -230,6 +231,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         progressCancellable = nil
         peersCancellable?.cancel()
         peersCancellable = nil
+        balanceRefreshCancellable?.cancel()
+        balanceRefreshCancellable = nil
 
         if let manager = SwiftDashSDKHost.shared.manager {
             do {
@@ -376,6 +379,22 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             .sink { [weak self] peers in
                 MainActor.assumeIsolated {
                     self?.connectedPeers = peers
+                }
+            }
+
+        // Refresh the published balance whenever Rust's persister commits a
+        // SwiftData batch (a detected/instant-locked tx writes PersistentTransaction
+        // rows → NSManagedObjectContextDidSave). The progress-tick refresh above
+        // stops firing once the chain is fully synced (steady state has no ticks),
+        // so an incoming payment while synced would otherwise not update the balance
+        // until the next foreground/restart. This is the same trigger the home tx
+        // list already uses; throttled to coalesce the save storm during sync.
+        balanceRefreshCancellable = NotificationCenter.default
+            .publisher(for: .NSManagedObjectContextDidSave)
+            .throttle(for: .seconds(1), scheduler: RunLoop.main, latest: true)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.refreshBalanceBridge()
                 }
             }
     }
