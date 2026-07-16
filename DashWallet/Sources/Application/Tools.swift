@@ -23,7 +23,7 @@ private var _cachedFormatters: [String: NumberFormatter] = [:]
 private var _decimalFormatter: NumberFormatter!
 private var _fiatFormatter: NumberFormatter!
 private var _dashFormatter: NumberFormatter = {
-    let maximumFractionDigits = 5
+    let maximumFractionDigits = 8
 
     var dashFormat = NumberFormatter.cryptoFormatter(currencyCode: DASH, exponent: maximumFractionDigits)
     dashFormat.locale = Locale.current
@@ -166,4 +166,3 @@ extension NumberFormatter {
         return formatter.copy() as! NumberFormatter
     }
 }
-

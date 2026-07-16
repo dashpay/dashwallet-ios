@@ -1,6 +1,6 @@
 //
-//  Created by Andrew Podkovyrin
-//  Copyright © 2019 Dash Core Group. All rights reserved.
+//  Created by Andrei Ashikhmin
+//  Copyright © 2025 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
 //  limitations under the License.
 //
 
-#import <UIKit/UIKit.h>
+import Foundation
+import SQLite
+import SQLiteMigrationManager
 
-NS_ASSUME_NONNULL_BEGIN
+struct AddRedeemUrlChallengeToGiftCardsTable: Migration {
+    var version: Int64 = 20260609090000
 
-@interface DWAboutViewController : UIViewController
-
-+ (instancetype)createController;
-
-@end
-
-NS_ASSUME_NONNULL_END
+    func migrateDatabase(_ db: Connection) throws {
+        try db.run(GiftCard.table.addColumn(GiftCard.redeemUrlChallenge, defaultValue: nil))
+    }
+}

@@ -15,7 +15,9 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
+import DashUIKit
 
 // MARK: - LocalCurrencyView
 
