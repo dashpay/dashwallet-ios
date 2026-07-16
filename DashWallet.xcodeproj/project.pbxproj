@@ -932,7 +932,6 @@
 		75FFD6C72BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		76766A50AFDB7BC138F569DC /* NetworkUnavailableStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */; };
-		769C3030C439328E758ABDD4 /* PlatformSendConfirmScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48B3384646CED915CB258A01 /* PlatformSendConfirmScreen.swift */; };
 		7B18F4580CB3D24E417435DE /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		7B4F28EE00BA451DA8675B06 /* SwapCoinIconLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F0351CAD174EEB8E64012A /* SwapCoinIconLoader.swift */; };
 		7B9BBDE902964C57C44F68BD /* PinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132FE91D9C90E736DB1634A5 /* PinStore.swift */; };
@@ -941,7 +940,6 @@
 		7C93319817E9E574070A504D /* InternalTransferHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F57DA9DBE5AAF88B3727E148 /* InternalTransferHostingController.swift */; };
 		81BDC70FA6BC4154DE5FAE0F /* PaymentProtocolTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B307E94B354351D4E3D3B /* PaymentProtocolTransport.swift */; };
 		85448D7537BBD0AE40682EC8 /* SwiftDashSDKSPVStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90D495F8DF1E8EE8A84C8E8 /* SwiftDashSDKSPVStatusScreen.swift */; };
-		875E98289B88CC70589CE744 /* PlatformSendConfirmScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48B3384646CED915CB258A01 /* PlatformSendConfirmScreen.swift */; };
 		87AC92AAD9DF8CBF271609AC /* SwiftDashSDKSPVStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90D495F8DF1E8EE8A84C8E8 /* SwiftDashSDKSPVStatusScreen.swift */; };
 		88436E7D9764791AC81AFFB0 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE3302C1C5DF898D1A0F915 /* AuthenticationService.swift */; };
 		89ED38B6205FE4EEEE8013B9 /* ShieldedWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */; };
@@ -2796,7 +2794,6 @@
 		47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncingActivityMonitor.swift; sourceTree = "<group>"; };
 		47FA3B0129364991008D58DC /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkUnavailableStateView.swift; sourceTree = "<group>"; };
-		48B3384646CED915CB258A01 /* PlatformSendConfirmScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlatformSendConfirmScreen.swift; sourceTree = "<group>"; };
 		48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DWPreviewSeedPhraseModel+Mnemonic.swift"; sourceTree = "<group>"; };
 		4C4833BE986D59F69A555C5F /* PaymentProtocolMessages.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentProtocolMessages.swift; sourceTree = "<group>"; };
 		4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
@@ -5000,7 +4997,6 @@
 				C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */,
 				D788CCB6B35B655BD713129E /* ChainNetworkToggle.swift */,
 				9A52F6A39C711B1E955B7E3A /* QRCodeGenerator.swift */,
-				48B3384646CED915CB258A01 /* PlatformSendConfirmScreen.swift */,
 				5D1F21A7592E99814A800518 /* SendScreen.swift */,
 				F454341FADB260861FE05EB4 /* SendScreenViewController.swift */,
 				8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */,
@@ -10371,7 +10367,6 @@
 				E16E2BA180551E3B6661B9F4 /* PlatformCreditsFormatter.swift in Sources */,
 				F1F870569B75C5B1452C5D65 /* ChainNetworkToggle.swift in Sources */,
 				A72BF1D1A1F3F067215CE04C /* QRCodeGenerator.swift in Sources */,
-				875E98289B88CC70589CE744 /* PlatformSendConfirmScreen.swift in Sources */,
 				25C88271468A4CD23F34A6E9 /* SendScreen.swift in Sources */,
 				C8D0B892715B6C46126FBE3A /* SendScreenViewController.swift in Sources */,
 				15F9C3B621487500E2919619 /* SendViewModel.swift in Sources */,
@@ -11399,7 +11394,6 @@
 				3705C73F15BCD91AF70940B9 /* PlatformCreditsFormatter.swift in Sources */,
 				56F5C9FD51AE5508BB5E579B /* ChainNetworkToggle.swift in Sources */,
 				9B54AF317E7728C18646F702 /* QRCodeGenerator.swift in Sources */,
-				769C3030C439328E758ABDD4 /* PlatformSendConfirmScreen.swift in Sources */,
 				C5906424C3D379AF0CB83370 /* SendScreen.swift in Sources */,
 				7C8C17249DC2DD0ECB3F2720 /* SendScreenViewController.swift in Sources */,
 				A5C8B5B00075FB8E84009327 /* SendViewModel.swift in Sources */,

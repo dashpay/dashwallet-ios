@@ -40,7 +40,7 @@ class ShortcutCell: UICollectionViewCell {
                 }
                 .margins(.all, 0)
             } else {
-                titleLabel.text = model.title
+                titleLabel.text = model.type.shortTitle
                 titleLabel.textColor = model.textColor
                 iconImageView.image = model.icon
                 gradientLayer?.isHidden = model.showsGradientLayer

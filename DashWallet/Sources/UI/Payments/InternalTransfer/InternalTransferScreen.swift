@@ -100,74 +100,13 @@ struct InternalTransferScreen: View {
     // MARK: - Amount row
 
     private var amountRow: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Button(action: { viewModel.fillMaxFromWallet() }) {
-                Text(NSLocalizedString("Max", comment: ""))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.secondaryBackground)
-                    .clipShape(Capsule())
-            }
-
-            VStack(spacing: 4) {
-                primaryAmountDisplay
-
-                Text(viewModel.secondaryDisplayString)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.secondary)
-            }
-            .frame(maxWidth: .infinity)
-
-            VStack(spacing: 4) {
-                unitPill(label: "DASH", selected: viewModel.unit == .dash) {
-                    viewModel.unit = .dash
-                }
-                unitPill(label: viewModel.fiatCurrencyCode, selected: viewModel.unit == .fiat) {
-                    viewModel.unit = .fiat
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var primaryAmountDisplay: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 4) {
-            switch viewModel.unit {
-            case .dash:
-                Text(viewModel.amountText)
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundColor(.primaryText)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                Image("icon_dash_currency")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 22, height: 22)
-            case .fiat:
-                Text(viewModel.primaryCurrencySymbol)
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.primaryText)
-                Text(viewModel.amountText)
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundColor(.primaryText)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-            }
-        }
-    }
-
-    private func unitPill(label: String, selected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(label)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(selected ? .primaryText : .secondary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(selected ? Color.secondaryBackground : Color.clear)
-                .clipShape(Capsule())
-        }
+        TransferAmountRow(
+            unit: $viewModel.unit,
+            amountText: viewModel.amountText,
+            secondaryText: viewModel.secondaryDisplayString,
+            currencySymbol: viewModel.primaryCurrencySymbol,
+            fiatCurrencyCode: viewModel.fiatCurrencyCode,
+            onMax: { viewModel.fillMaxFromWallet() })
     }
 
     // MARK: - From / To cards
@@ -278,16 +217,7 @@ struct InternalTransferScreen: View {
 
     /// Trailing balance amount + Dash currency glyph, shared by every card.
     private func dashBalanceTrailing(_ formatted: String) -> AnyView {
-        AnyView(
-            HStack(spacing: 2) {
-                Text(formatted)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
-                Image("icon_dash_currency")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 14, height: 14)
-            })
+        TransferSourceRow.dashBalanceTrailing(formatted)
     }
 
     private var coreSourceCard: some View {
@@ -347,9 +277,8 @@ struct InternalTransferScreen: View {
             : NSLocalizedString("To", comment: "")
     }
 
-    /// Tappable source row with a trailing radio indicator. Reuses the
-    /// `directionCard` layout for the icon / caption / title / trailing
-    /// balance, then appends a radio circle.
+    /// Tappable source row with a trailing radio indicator — rendered by the
+    /// shared `TransferSourceRow` (also used by the Send screen's From picker).
     private func sourceRow(
         iconSystemName: String,
         caption: String,
@@ -358,52 +287,13 @@ struct InternalTransferScreen: View {
         selected: Bool,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
-            HStack(spacing: 14) {
-                Image(systemName: iconSystemName)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.blue)
-                    .frame(width: 36, height: 36)
-                    .background(Color.blue.opacity(0.08))
-                    .clipShape(Circle())
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(caption)
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-                    Text(title)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.primaryText)
-                }
-
-                Spacer()
-
-                balanceTrailing
-
-                radioIndicator(selected: selected)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(Color.secondaryBackground)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(selected ? Color.dashBlue : Color.clear, lineWidth: selected ? 1.5 : 0))
-            .cornerRadius(12)
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func radioIndicator(selected: Bool) -> some View {
-        ZStack {
-            Circle()
-                .stroke(selected ? Color.dashBlue : Color.gray300.opacity(0.6), lineWidth: 1.5)
-                .frame(width: 18, height: 18)
-            if selected {
-                Circle()
-                    .fill(Color.dashBlue)
-                    .frame(width: 10, height: 10)
-            }
-        }
+        TransferSourceRow(
+            iconSystemName: iconSystemName,
+            caption: caption,
+            title: title,
+            balanceTrailing: balanceTrailing,
+            selected: selected,
+            action: action)
     }
 
     private func directionCard(
@@ -489,5 +379,171 @@ struct InternalTransferScreen: View {
                     viewModel.amountText = newValue
                 }
             })
+    }
+}
+
+// MARK: - TransferSourceRow
+
+/// Tappable balance row with icon, caption ("From"/"To"), title, trailing
+/// balance, and a radio indicator — shared by the internal transfer screen's
+/// source picker and the Send screen's From picker.
+struct TransferSourceRow: View {
+    let iconSystemName: String
+    let caption: String
+    let title: String
+    let balanceTrailing: AnyView
+    let selected: Bool
+    var action: () -> Void
+
+    /// Trailing balance amount + Dash currency glyph, the standard trailing
+    /// content for these rows.
+    static func dashBalanceTrailing(_ formatted: String) -> AnyView {
+        AnyView(
+            HStack(spacing: 2) {
+                Text(formatted)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.primaryText)
+                Image("icon_dash_currency")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 14, height: 14)
+            })
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: iconSystemName)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.blue)
+                    .frame(width: 36, height: 36)
+                    .background(Color.blue.opacity(0.08))
+                    .clipShape(Circle())
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(caption)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                    Text(title)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.primaryText)
+                }
+
+                Spacer()
+
+                balanceTrailing
+
+                radioIndicator
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .background(Color.secondaryBackground)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(selected ? Color.dashBlue : Color.clear, lineWidth: selected ? 1.5 : 0))
+            .cornerRadius(12)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var radioIndicator: some View {
+        ZStack {
+            Circle()
+                .stroke(selected ? Color.dashBlue : Color.gray300.opacity(0.6), lineWidth: 1.5)
+                .frame(width: 18, height: 18)
+            if selected {
+                Circle()
+                    .fill(Color.dashBlue)
+                    .frame(width: 10, height: 10)
+            }
+        }
+    }
+}
+
+// MARK: - TransferAmountRow
+
+/// The Max-pill / big-number / DASH-fiat unit-pill amount entry row, shared
+/// by the internal transfer screen and the Send screen so the two amount
+/// entries can't drift apart visually.
+struct TransferAmountRow: View {
+    @Binding var unit: InternalTransferUnit
+    let amountText: String
+    /// The small grey line under the big number (the non-input unit).
+    let secondaryText: String
+    /// Fiat currency symbol prefixed to the big number in `.fiat` mode.
+    let currencySymbol: String
+    /// Active fiat code (e.g. "THB") — the second unit pill's label.
+    let fiatCurrencyCode: String
+    var onMax: () -> Void
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Button(action: onMax) {
+                Text(NSLocalizedString("Max", comment: ""))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.secondaryBackground)
+                    .clipShape(Capsule())
+            }
+
+            VStack(spacing: 4) {
+                primaryAmountDisplay
+
+                Text(secondaryText)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+
+            VStack(spacing: 4) {
+                unitPill(label: "DASH", selected: unit == .dash) {
+                    unit = .dash
+                }
+                unitPill(label: fiatCurrencyCode, selected: unit == .fiat) {
+                    unit = .fiat
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var primaryAmountDisplay: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 4) {
+            switch unit {
+            case .dash:
+                Text(amountText)
+                    .font(.system(size: 36, weight: .bold))
+                    .foregroundColor(.primaryText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+                Image("icon_dash_currency")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 22, height: 22)
+            case .fiat:
+                Text(currencySymbol)
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.primaryText)
+                Text(amountText)
+                    .font(.system(size: 36, weight: .bold))
+                    .foregroundColor(.primaryText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+            }
+        }
+    }
+
+    private func unitPill(label: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(label)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(selected ? .primaryText : .secondary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(selected ? Color.secondaryBackground : Color.clear)
+                .clipShape(Capsule())
+        }
     }
 }
