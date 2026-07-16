@@ -17,6 +17,7 @@
 
 import DashUIKit
 import SwiftUI
+import DashUIKit
 
 // MARK: - MayaAmountView
 
