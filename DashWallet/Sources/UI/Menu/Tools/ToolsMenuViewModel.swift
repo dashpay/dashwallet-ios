@@ -22,6 +22,7 @@ import SwiftDashSDK
 enum ToolsMenuNavigationDestination {
     case extendedPublicKeys
     case masternodeKeys
+    case masternodes
     case csvExport
     case zenLedger
     case storageExplorer
@@ -94,10 +95,18 @@ class ToolsMenuViewModel: ObservableObject {
                 }
             ),
             MenuItemModel(
-                title: NSLocalizedString("Show Masternode Keys", comment: ""),
+                title: NSLocalizedString("Masternode Keychain", comment: ""),
                 icon: .custom("image.masternode.keys", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .masternodeKeys
+                }
+            ),
+            MenuItemModel(
+                title: NSLocalizedString("Masternodes", comment: ""),
+                subtitle: NSLocalizedString("Masternodes and evonodes using this wallet's keys", comment: "Masternodes"),
+                icon: .system("server.rack"),
+                action: { [weak self] in
+                    self?.navigationDestination = .masternodes
                 }
             ),
             MenuItemModel(

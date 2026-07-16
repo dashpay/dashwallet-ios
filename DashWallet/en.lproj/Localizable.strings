@@ -199,6 +199,9 @@
 /* No comment provided by engineer. */
 "Activity" = "Activity";
 
+/* Masternode status */
+"Active" = "Active";
+
 /* No comment provided by engineer. */
 "Add" = "Add";
 
@@ -591,6 +594,14 @@
 "Claim your invitation" = "Claim your invitation";
 
 /* No comment provided by engineer. */
+"Claimable balance" = "Claimable balance";
+
+/* Masternodes */
+"Collateral" = "Collateral";
+
+/* Masternodes */
+"Couldn't fetch the balance (network error). Try Refresh." = "Couldn't fetch the balance (network error). Try Refresh.";
+
 "Claimed" = "Claimed";
 
 /* SPV diagnostics */
@@ -807,6 +818,9 @@
 
 /* Create new account */
 "Create new account" = "Create new account";
+
+/* Masternodes */
+"Credits" = "Credits";
 
 /* Wallets */
 "Create New Wallet" = "Create New Wallet";
@@ -1203,6 +1217,9 @@
 /* Balance */
 "Fetching rates…" = "Fetching rates…";
 
+/* Masternodes */
+"Fetching…" = "Fetching…";
+
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Fiat Account";
 
@@ -1432,6 +1449,9 @@
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device";
 
 /* DashPay Contacts */
+/* Masternodes */
+"Height %u" = "Height %u";
+
 "Hidden" = "Hidden";
 
 /* No comment provided by engineer. */
@@ -1576,6 +1596,9 @@
 "In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.";
 
 /* No comment provided by engineer. */
+/* Masternode status */
+"Inactive" = "Inactive";
+
 "Income" = "Income";
 
 /* DashSpend */
@@ -1738,7 +1761,13 @@
 "Keep your passphrase safe" = "Keep your passphrase safe";
 
 /* No comment provided by engineer. */
+/* Masternodes */
+"Key ownership" = "Key ownership";
+
 "Keypair" = "Keypair";
+
+/* Masternodes */
+"Keys" = "Keys";
 
 /* Explore Dash */
 "Last device sync" = "Last device sync";
@@ -1907,6 +1936,9 @@
 "Masternode IP address" = "Masternode IP address";
 
 /* Masternode keys */
+/* Tools menu */
+"Masternode Keychain" = "Masternode Keychain";
+
 "Masternode keys" = "Masternode keys";
 
 /* SPV sync phase */
@@ -1935,6 +1967,15 @@
 
 /* Voting */
 "Masternode Voting Key" = "Masternode Voting Key";
+
+/* Tools menu */
+"Masternodes" = "Masternodes";
+
+/* Masternodes */
+"Masternodes and evonodes registered with this wallet's keys will appear here after the wallet syncs." = "Masternodes and evonodes registered with this wallet's keys will appear here after the wallet syncs.";
+
+/* Masternodes */
+"Masternodes and evonodes using this wallet's keys" = "Masternodes and evonodes using this wallet's keys";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "Max";
@@ -2117,6 +2158,9 @@
 "No locations found." = "No locations found.";
 
 /* local currency empty state */
+/* Masternodes */
+"No masternodes yet" = "No masternodes yet";
+
 "No matches for \"%@\"" = "No matches for \"%@\"";
 
 /* Coinbase/Buy Dash */
@@ -2170,6 +2214,9 @@
 /* Fiat amount */
 "Not available" = "Not available";
 
+/* Masternodes */
+"Not checked yet" = "Not checked yet";
+
 /* Location Service Status */
 "Not Determined" = "Not Determined";
 
@@ -2183,6 +2230,9 @@
 "Not enough shielded balance to register an identity" = "Not enough shielded balance to register an identity";
 
 /* No comment provided by engineer. */
+/* Masternodes */
+"Not in wallet history" = "Not in wallet history";
+
 "Not now" = "Not now";
 
 /* DashPay Contacts */
@@ -2248,8 +2298,26 @@
 /* DashSpend */
 "Original Price" = "Original Price";
 
+/* Masternodes */
+"Operator" = "Operator";
+
 /* Masternode keys */
 "Operator keys" = "Operator keys";
+
+/* Masternodes */
+"Operator public key (BLS)" = "Operator public key (BLS)";
+
+/* Masternodes */
+"Outpoint" = "Outpoint";
+
+/* Masternodes */
+"Owner" = "Owner";
+
+/* Masternodes */
+"Owner address" = "Owner address";
+
+/* Masternodes */
+"Owner key hash" = "Owner key hash";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Owner Address";
@@ -2259,6 +2327,9 @@
 
 /* No comment provided by engineer. */
 "P2SH platform addresses aren't supported yet. Use a P2PKH recipient." = "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.";
+
+/* Masternodes */
+"Platform node" = "Platform node";
 
 /* Masternode keys */
 "Platform Node ID" = "Platform Node ID";
@@ -2336,6 +2407,9 @@
 "Payments made directly to an address aren't retained here." = "Payments made directly to an address aren't retained here.";
 
 /* CrowdNode */
+/* Masternodes */
+"Payout address" = "Payout address";
+
 "Payout Options" = "Payout Options";
 
 /* Coinbase/Payment Methods */
@@ -2385,6 +2459,9 @@
 
 /* No comment provided by engineer. */
 "Platform Payment" = "Platform Payment";
+
+/* Masternodes */
+"Platform SDK not ready" = "Platform SDK not ready";
 
 /* No comment provided by engineer. */
 "Platform sync is not running. Open Sync Info → Platform Sync Status to start it." = "Platform sync is not running. Open Sync Info → Platform Sync Status to start it.";
@@ -2512,6 +2589,9 @@
 /* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
 
+/* Masternodes */
+"Provider transactions" = "Provider transactions";
+
 /* Masternode keys */
 "Public key" = "Public key";
 
@@ -2558,6 +2638,9 @@
 "Ready around %@" = "Ready around %@";
 
 /* No comment provided by engineer. */
+/* Masternodes */
+"Reason" = "Reason";
+
 "Receive" = "Receive";
 
 /* Maya */
@@ -2606,6 +2689,9 @@
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
 
 /* Maya */
+/* Masternodes */
+"Refresh" = "Refresh";
+
 "Refresh quote" = "Refresh quote";
 
 /* Dash DEX / dex_refund_address_field_label */
@@ -2618,6 +2704,9 @@
 "Register?" = "Register?";
 
 /* No comment provided by engineer. */
+/* Masternodes */
+"Registered at" = "Registered at";
+
 "Registered from" = "Registered from";
 
 /* No comment provided by engineer. */
@@ -2627,6 +2716,9 @@
 "Registering privately takes at least %@ Dash in your Shielded balance plus a few hours of rest time — the next screens walk you through it." = "Registering privately takes at least %@ Dash in your Shielded balance plus a few hours of rest time — the next screens walk you through it.";
 
 /* Usernames */
+/* Masternodes */
+"Registration" = "Registration";
+
 "Registration failed" = "Registration failed";
 
 /* Wallets */
@@ -2711,7 +2803,13 @@
 "Retain Mutual Transaction History" = "Retain Mutual Transaction History";
 
 /* No comment provided by engineer. */
+/* Masternode status */
+"Retired" = "Retired";
+
 "Retry" = "Retry";
+
+/* Masternodes */
+"Revocation" = "Revocation";
 
 /* AboutDash */
 "Review app" = "Review app";
@@ -2951,6 +3049,9 @@
 
 /* DashSpend */
 "Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
+
+/* Masternodes */
+"Service" = "Service";
 
 /* No comment provided by engineer. */
 "Set PIN" = "Set PIN";
@@ -3356,6 +3457,9 @@
 
 /* Dash DEX */
 "This address expires in 10 minutes" = "This address expires in 10 minutes";
+
+/* Masternodes */
+"This masternode has no Platform identity yet." = "This masternode has no Platform identity yet.";
 
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
@@ -3783,6 +3887,12 @@
 "Voting is only required in some cases" = "Voting is only required in some cases";
 
 /* Voting keys */
+/* Masternodes */
+"Voting address" = "Voting address";
+
+/* Masternodes */
+"Voting key hash" = "Voting key hash";
+
 "Voting keys" = "Voting keys";
 
 /* CrowdNode */
