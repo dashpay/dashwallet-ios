@@ -46,14 +46,36 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
     override init() {
         updateModel = DWDPUpdateProfileModel()
         super.init()
-        
+
         model.$state
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] state in
-                self?.showJoinDashpay = self?.model.state == .syncDone
+            .sink { [weak self] _ in
+                self?.updateShowJoinDashpay()
             }
             .store(in: &cancellableBag)
+
+        // Registration (or the Identities screen adopting a discovered
+        // identity) retires the banner live — both paths post the
+        // registration-status update after writing the username mirror.
+        NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateShowJoinDashpay()
+            }
+            .store(in: &cancellableBag)
+
+        updateShowJoinDashpay()
+    }
+
+    /// The menu's Join DashPay banner: only while synced AND not already
+    /// registered. A wallet whose identity owns a username (fresh
+    /// registration or an adopted discovered identity — both write the
+    /// `DWGlobalOptions.dashpayUsername` mirror) has nothing to join;
+    /// checking sync state alone kept the banner up forever.
+    private func updateShowJoinDashpay() {
+        let hasUsername = DWGlobalOptions.sharedInstance().dashpayUsername?.isEmpty == false
+        showJoinDashpay = model.state == .syncDone && !hasUsername
     }
     
     @objc func update() {
