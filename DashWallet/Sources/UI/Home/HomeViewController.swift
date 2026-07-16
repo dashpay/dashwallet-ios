@@ -648,6 +648,18 @@ extension HomeViewController: HomeViewDelegate {
         let controller = SyncingAlertViewController()
         present(controller, animated: true, completion: nil)
     }
+
+    func homeViewShowInternalTransfer(direction: InternalTransferDirection, source: InternalTransferSource) {
+        // Sheet, not push: a push drags the blue navigation header along;
+        // the sheet keeps the transfer form on its own background with
+        // swipe-to-dismiss (Done inside the flow also dismisses).
+        let controller = InternalTransferHostingController(direction: direction, source: source)
+        if let sheet = controller.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(controller, animated: true)
+    }
     
     #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt) {

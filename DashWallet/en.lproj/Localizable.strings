@@ -3467,8 +3467,14 @@
 /* No comment provided by engineer. */
 "Transfer from Uphold" = "Transfer from Uphold";
 
+/* Balance breakdown */
+"Transfer in" = "Transfer in";
+
 /* No comment provided by engineer. */
 "Transfer In" = "Transfer In";
+
+/* Balance breakdown */
+"Transfer out" = "Transfer out";
 
 /* No comment provided by engineer. */
 "Transfer Out" = "Transfer Out";
@@ -3481,6 +3487,9 @@
 
 /* No comment provided by engineer. */
 "Transfers take different times" = "Transfers take different times";
+
+/* Balance breakdown */
+"Transparent" = "Transparent";
 
 /* Usernames */
 "Transparent funding publicly links your username to these funds." = "Transparent funding publicly links your username to these funds.";

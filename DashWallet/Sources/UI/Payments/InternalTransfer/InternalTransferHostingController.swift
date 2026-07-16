@@ -22,12 +22,27 @@ final class InternalTransferHostingController: UIViewController {
         viewModel.amountText = "\(prefillDashAmount)"
     }
 
+    /// Open the screen pre-filled for a specific route — used by the home
+    /// balance breakdown's in/out buttons. The user can still flip the
+    /// direction or source on-screen.
+    convenience init(direction: InternalTransferDirection, source: InternalTransferSource) {
+        self.init(nibName: nil, bundle: nil)
+        viewModel.direction = direction
+        viewModel.source = source
+    }
+
     private lazy var hostingController: UIHostingController<InternalTransferScreen> = {
         let screen = InternalTransferScreen(viewModel: viewModel) { [weak self] in
             // After a successful transfer the user taps "Done" inside the
-            // confirm sheet; the screen forwards that to us so we can pop
-            // the Internal Transfer view back to the landing.
-            self?.navigationController?.popViewController(animated: true)
+            // confirm sheet; the screen forwards that to us so we can
+            // leave — pop when pushed (landing / readiness flows), dismiss
+            // when presented as a sheet (home balance breakdown).
+            guard let self else { return }
+            if let navigationController = self.navigationController {
+                navigationController.popViewController(animated: true)
+            } else {
+                self.dismiss(animated: true)
+            }
         }
         return UIHostingController(rootView: screen)
     }()
@@ -42,8 +57,13 @@ final class InternalTransferHostingController: UIViewController {
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         hostingController.view.backgroundColor = .clear
         view.addSubview(hostingController.view)
+        // Pushed: the navigation bar provides the top spacing. Presented
+        // as a sheet: there is no bar, so inset the content below the
+        // grabber instead of letting the title crowd the sheet's edge.
+        let isSheet = navigationController == nil
+        let topInset: CGFloat = isSheet ? 28.0 : 0.0
         NSLayoutConstraint.activate([
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor, constant: topInset),
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),

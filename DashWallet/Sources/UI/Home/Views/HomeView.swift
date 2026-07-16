@@ -24,6 +24,7 @@ import DashUIKit
 
 protocol HomeViewDelegate: AnyObject {
     func homeViewShowSyncingStatus()
+    func homeViewShowInternalTransfer(direction: InternalTransferDirection, source: InternalTransferSource)
 
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
@@ -188,20 +189,31 @@ struct HomeViewContent<Content: View>: View {
                     .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
                 
                 LazyVStack(pinnedViews: [.sectionHeaders]) {
-                    HomeBalanceView(viewModel: balanceModel) {
-                        let action = ShortcutAction(type: .localCurrency)
-                        shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
-                    }
-                    .frame(height: 110)
+                    HomeBalanceView(
+                        viewModel: balanceModel,
+                        onLongPress: {
+                            let action = ShortcutAction(type: .localCurrency)
+                            shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
+                        },
+                        onReceive: {
+                            let action = ShortcutAction(type: .receive)
+                            shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
+                        },
+                        onSend: {
+                            let action = ShortcutAction(type: .send)
+                            shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
+                        },
+                        onTransfer: { direction, source in
+                            delegate?.homeViewShowInternalTransfer(direction: direction, source: source)
+                        })
                     .frame(maxWidth: .infinity)
                     .background(Color.navigationBarColor)
                     .padding(.top, 5)
                     .padding(.bottom, -12)
 
                     VStack(spacing: 0) {
-                        PlatformBalanceView()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.navigationBarColor)
+                        Color.navigationBarColor
+                            .frame(height: 16)
 
                         headerView()
                             .frame(height: viewModel.headerHeight)

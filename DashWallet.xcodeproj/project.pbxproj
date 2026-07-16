@@ -354,7 +354,6 @@
 		39DC037E9CF04CCFA3EFBB53 /* SelfSizingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96CB7E093E994D2391D36DEC /* SelfSizingSheet.swift */; };
 		3A377045AA5C10F3FD63A7C2 /* DWContestedNameStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E950113F9E258B2F1CC0D50C /* DWContestedNameStatusService.swift */; };
 		3A958F915CDACC6FE30923BA /* DarkCoinMessageFraming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C25F44380CDB841AF55D3FF /* DarkCoinMessageFraming.swift */; };
-		3ABC7253C995C16E654DF76D /* PlatformBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CCA0579F761A8ABFF951AC4 /* PlatformBalanceView.swift */; };
 		3B1ECCE5521BAB084D74B5ED /* StorageModelListViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A762BDA473947F1A7EF199 /* StorageModelListViews.swift */; };
 		3B9C0EAAC6DE69DBF8271920 /* BIP70PaymentOutputFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5822AAB9B5EA605FF82B009A /* BIP70PaymentOutputFactory.swift */; };
 		3E715F8F82AA68ED8270F7CE /* ContactAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BF8C5EF6DE6FBECB82DA704 /* ContactAvatarView.swift */; };
@@ -1155,7 +1154,6 @@
 		C5906424C3D379AF0CB83370 /* SendScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1F21A7592E99814A800518 /* SendScreen.swift */; };
 		C6138156317BAF449AA76861 /* PaymentsLandingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64C10DA9C338D408982EBE /* PaymentsLandingViewModel.swift */; };
 		C6344885F1E0A6C04D3D8437 /* InternalTransferConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */; };
-		C8B1DB706D68E65C2FCD0E83 /* PlatformBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CCA0579F761A8ABFF951AC4 /* PlatformBalanceView.swift */; };
 		C8D0B892715B6C46126FBE3A /* SendScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F454341FADB260861FE05EB4 /* SendScreenViewController.swift */; };
 		C909614D29EFF7D600002D82 /* WalletKeysOverviewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909614C29EFF7D600002D82 /* WalletKeysOverviewModel.swift */; };
 		C909615129F158D700002D82 /* DerivationPathKeysViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909615029F158D700002D82 /* DerivationPathKeysViewController.swift */; };
@@ -2112,7 +2110,6 @@
 		1940CA64E8FD6DDD0CFC14A2 /* libPods-DashWalletTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A7BE8E4519203200CDFB460 /* SwiftDashSDKInsightClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKInsightClient.swift; sourceTree = "<group>"; };
 		1AF20341A5E313C9D309BF39 /* Pods-DashWalletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.release.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.release.xcconfig"; sourceTree = "<group>"; };
-		1CCA0579F761A8ABFF951AC4 /* PlatformBalanceView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlatformBalanceView.swift; sourceTree = "<group>"; };
 		1D57AD13519CA41EBE3B8D53 /* CoinJoinWithdrawalTxSet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoinJoinWithdrawalTxSet.swift; sourceTree = "<group>"; };
 		1E0B188220763649450C9423 /* WalletEnvironment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletEnvironment.swift; sourceTree = "<group>"; };
 		1E7370138411E3E74B42F4CC /* Pods-dashwallet.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testflight.xcconfig"; path = "Target Support Files/Pods-dashwallet/Pods-dashwallet.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -8689,7 +8686,6 @@
 			children = (
 				472D13E7299E4EE7006903F1 /* BalanceModel.swift */,
 				C9F067F129E4576D0022D958 /* HomeBalanceView.swift */,
-				1CCA0579F761A8ABFF951AC4 /* PlatformBalanceView.swift */,
 			);
 			path = "Home Balance View";
 			sourceTree = "<group>";
@@ -10396,7 +10392,6 @@
 				4DB882B7974693571FD16952 /* WalletsScreen.swift in Sources */,
 				E5B549CD6364E8982A7262C0 /* WalletsViewModel.swift in Sources */,
 				938DE0B52BD0B57A76CDEE90 /* WalletSwitchDialog.swift in Sources */,
-				3ABC7253C995C16E654DF76D /* PlatformBalanceView.swift in Sources */,
 				5D8D3B4397A957BA6DD6FC0C /* DWAboutModel+MasternodeSync.swift in Sources */,
 				0A7C300A1E685D356BEE3F54 /* SwiftDashSDKCoinJoinBalanceReader.swift in Sources */,
 				C05FA6CE3DDE2D0327D334E5 /* CoinJoinRecovery.swift in Sources */,
@@ -11413,7 +11408,6 @@
 				43001E4B0F1FD846676FCE1F /* NetworkReachability.swift in Sources */,
 				E623DF8B207A512573314A83 /* MasternodeAPYCalculator.swift in Sources */,
 				44A49D70CBFD36A9A68B56B0 /* WalletSwitchDialog.swift in Sources */,
-				C8B1DB706D68E65C2FCD0E83 /* PlatformBalanceView.swift in Sources */,
 				1BA3482EEBB453D45365772F /* DWAboutModel+MasternodeSync.swift in Sources */,
 				7408C11E2FBCCD879AE9CFFC /* SwiftDashSDKCoinJoinBalanceReader.swift in Sources */,
 				B66294BFAF57B052A74EE77D /* CoinJoinRecovery.swift in Sources */,
