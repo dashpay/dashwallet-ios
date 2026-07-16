@@ -180,6 +180,20 @@ Replaces `DWConfirmInvitationViewController.m`'s
 Localization: the 37 restored contacts/invitations keys (commit `bc5383381`)
 cover the legacy copy; new screens may add keys — keep `en` UTF-8, alphabetical.
 
+**Translation reuse (audited 2026-07-16 across all 42 lproj files):** the
+legacy claim-flow strings are translated in every language and MUST be
+reused rather than re-minted:
+- claim-time error mapping (typed SDK errors → localized copy; today the
+  Rust error text surfaces verbatim in English): "Invitation already
+  claimed", "Your invitation from %@ has been already claimed",
+  "Your invitation from %@ is not valid";
+- the create-side share message: "You have been invited by %@. Start using
+  Dash cryptocurrency.".
+The 37 restored contacts/invitations keys carry NO translations in the
+repo (dropped from source before the last Transifex pull) — they are
+English source only; server-side Transifex translation memory may
+re-match them after `tx push -s`.
+
 ### A7. Deletion list (same change as the port — T1 rule, no disabled legacy)
 
 - `DashWallet/Sources/UI/DashPay/Invites/**` (flow controller, first-step,
