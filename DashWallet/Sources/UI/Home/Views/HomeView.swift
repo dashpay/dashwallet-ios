@@ -616,7 +616,7 @@ struct HomeViewContent<Content: View>: View {
                 subtitle: item.shortTimeString,
                 details: item.detailsText,
                 dashAmount: item.signedDashAmount,
-                amountSign: item.direction == .selfTransfer ? .none : .always,
+                amountSign: item.showsDirectionSign ? .always : .none,
                 fiat: item.fiatAmount,
                 trailingStatusText: item.trailingStatusText
             ) {

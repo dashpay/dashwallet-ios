@@ -150,12 +150,30 @@ struct ShieldedActivityItem: Identifiable {
         }
     }
 
-    /// Signed duffs for the row amount label. Self-transfers stay
-    /// positive and render with no sign (own funds moved, not gained
-    /// or lost).
+    /// Internal moves between the user's own balances (Platform ↔
+    /// Shielded). The recorded direction reflects the shielded pool's
+    /// perspective (a shield is "incoming"), but no funds were gained
+    /// or lost — these render signless, like self-transfers.
+    var isInternalMove: Bool {
+        switch kind {
+        case .shield, .shieldFromAssetLock, .unshield, .withdrawal:
+            return true
+        case .received, .sent, .identityCreate, .shieldedSpend:
+            return false
+        }
+    }
+
+    /// Whether the amount renders with a +/− direction sign.
+    var showsDirectionSign: Bool {
+        !isInternalMove && direction != .selfTransfer
+    }
+
+    /// Signed duffs for the row amount label. Internal moves and
+    /// self-transfers stay positive (and render signless via
+    /// `showsDirectionSign`) — own funds moved, not gained or lost.
     var signedDashAmount: Int64 {
         let magnitude = amountDuffs > UInt64(Int64.max) ? Int64.max : Int64(amountDuffs)
-        return direction == .outgoing ? -magnitude : magnitude
+        return direction == .outgoing && showsDirectionSign ? -magnitude : magnitude
     }
 
     var fiatAmount: String {
@@ -222,7 +240,7 @@ struct ShieldedActivityDetailsView: View {
                 .foregroundColor(.primaryText)
                 .padding(.top, 12)
 
-            DashAmount(amount: item.signedDashAmount, font: .title2, showDirection: item.direction != .selfTransfer)
+            DashAmount(amount: item.signedDashAmount, font: .title2, showDirection: item.showsDirectionSign)
                 .padding(.top, 4)
             Text(item.fiatAmount)
                 .font(.footnote)
