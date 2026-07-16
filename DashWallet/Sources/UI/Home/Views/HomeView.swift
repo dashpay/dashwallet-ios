@@ -477,6 +477,22 @@ struct HomeViewContent<Content: View>: View {
         }
     }
 
+    /// Route pill text for an internal transfer row ("Transparent →
+    /// Platform"), shown in the small badge next to the time. Nil for plain
+    /// self-sends and non-transfers.
+    private func transferRouteDetails(txItem: Transaction) -> String? {
+        switch txItem.internalTransferRoute {
+        case .coreToShielded:
+            return NSLocalizedString("Transparent → Shielded", comment: "Transfer of own funds into the private shielded balance")
+        case .shieldedToCore:
+            return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+        case .coreToPlatform:
+            return NSLocalizedString("Transparent → Platform", comment: "Transfer of own funds into the Platform balance")
+        case .coreToCore, nil:
+            return nil
+        }
+    }
+
     /// Blue glyph in a tinted circle — the InternalTransferScreen card icon
     /// treatment, scaled to the 30 pt tx-row icon slot.
     private func transferRouteIcon(_ systemName: String) -> AnyView {
@@ -552,7 +568,11 @@ struct HomeViewContent<Content: View>: View {
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
-                    : (metadata?.details?.isEmpty == false ? metadata?.details : nil),
+                    : txItem.isPendingPlatformFunding
+                        ? NSLocalizedString("Pending", comment: "")
+                        : (metadata?.details?.isEmpty == false
+                            ? metadata?.details
+                            : transferRouteDetails(txItem: txItem)),
                 dashAmount: txItem.signedDashAmount,
                 amountSign: .always,
                 fiat: txItem.fiatAmount,

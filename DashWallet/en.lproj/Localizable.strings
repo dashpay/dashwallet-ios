@@ -3810,14 +3810,8 @@
 /* Transfer of own funds into the Platform balance */
 "Transparent → Platform" = "Transparent → Platform";
 
-/* A to-Platform transfer whose asset lock is committed but the funding hasn't completed yet */
-"Transparent → Platform (pending)" = "Transparent → Platform (pending)";
-
 /* Transfer of own funds into the private shielded balance */
 "Transparent → Shielded" = "Transparent → Shielded";
-
-/* A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet */
-"Transparent → Shielded (pending)" = "Transparent → Shielded (pending)";
 
 /* Raw transaction inspector */
 "Unknown special type %d" = "Unknown special type %d";

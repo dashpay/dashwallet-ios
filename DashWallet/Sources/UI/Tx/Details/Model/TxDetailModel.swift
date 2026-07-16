@@ -31,23 +31,12 @@ class TxDetailModel: NSObject {
     fileprivate var rawFeeCache: UInt64?
 
     var title: String {
-        // Shielded transfers carry their own identity — the generic
-        // direction titles ("Moved to Address" / "Amount received") hide
-        // what actually happened.
-        if transaction.isShieldedTransfer {
-            return transaction.isPendingShieldedTransfer
-                ? NSLocalizedString("Transparent → Shielded (pending)",
-                                    comment: "A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet")
-                : NSLocalizedString("Transparent → Shielded",
-                                    comment: "Transfer of own funds into the private shielded balance")
-        }
-        if transaction.isShieldedWithdrawalReceipt {
-            return NSLocalizedString("Shielded → Transparent",
-                                     comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
-        }
-        if transaction.isPlatformFundingTransfer {
-            return NSLocalizedString("Transparent → Platform",
-                                     comment: "Transfer of own funds into the Platform balance")
+        // Balance-to-balance transfers all read "Internal Transfer" — the
+        // From/To/Status rows below name the route. The generic direction
+        // titles ("Moved to Address" / "Amount received") hide what
+        // actually happened.
+        if let route = transaction.internalTransferRoute, route != .coreToCore {
+            return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
         return direction.title
     }

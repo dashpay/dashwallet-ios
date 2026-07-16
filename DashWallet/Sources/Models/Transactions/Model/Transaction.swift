@@ -284,6 +284,15 @@ class Transaction: TransactionDataItem, Identifiable {
         return (1...3).contains(status)
     }
 
+    /// Platform-funding sibling of `isPendingShieldedTransfer`: the type-4
+    /// lock is committed but the address-funding transition hasn't consumed
+    /// it. Drives the home row's "Pending" pill (no tap-to-recover surface
+    /// yet — retry lives in the transfer confirm sheet).
+    var isPendingPlatformFunding: Bool {
+        guard let status = platformFundingLockInfo?.statusRaw else { return false }
+        return (1...3).contains(status)
+    }
+
     /// Outpoint (wire-order txid + vout) of this transfer's shielded asset
     /// lock, for a recovery resume. `txHashData` is already wire order, so it
     /// is returned verbatim (the display↔wire reversal only happens when
@@ -405,33 +414,14 @@ class Transaction: TransactionDataItem, Identifiable {
     }
 
     var stateTitle: String {
-        // A "to Shielded" transfer surfaces as a Type-18 asset lock that the
-        // generic logic would label "Internal Transfer"; relabel it from the
-        // SDK-sourced shielded lookup (see `shieldedTransferAmountDuffs`).
-        if isShieldedTransfer {
-            if isPendingShieldedTransfer {
-                return NSLocalizedString("Transparent → Shielded (pending)",
-                                         comment: "A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet")
-            }
-            return NSLocalizedString("Transparent → Shielded",
-                                     comment: "Transfer of own funds into the private shielded balance")
-        }
-        // A Core → Platform funding is likewise an asset lock the generic
-        // logic would label "Internal Transfer"; name the route.
-        if isPlatformFundingTransfer {
-            if let statusRaw = platformFundingLockInfo?.statusRaw, (1...3).contains(statusRaw) {
-                return NSLocalizedString("Transparent → Platform (pending)",
-                                         comment: "A to-Platform transfer whose asset lock is committed but the funding hasn't completed yet")
-            }
-            return NSLocalizedString("Transparent → Platform",
-                                     comment: "Transfer of own funds into the Platform balance")
-        }
-        // The L1 payout of a Shielded → Core withdrawal is a transfer of own
-        // funds, not an external receive — label it as such (the row's route
-        // icons show the direction).
-        if isShieldedWithdrawalReceipt {
-            return NSLocalizedString("Shielded → Transparent",
-                                     comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+        // Every balance-to-balance transfer reads "Internal Transfer"; the
+        // route is carried visually (source icon → destination badge), by
+        // the home row's route pill, and by the detail sheet's From/To rows.
+        // Covers the asset-lock fundings (which the generic .moved logic
+        // would also label "Internal Transfer", but with a 0 amount) and the
+        // Shielded → Transparent payout (which would read "Received").
+        if let route = internalTransferRoute, route != .coreToCore {
+            return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
         switch transactionType {
         case .classic:
