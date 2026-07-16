@@ -25,6 +25,11 @@ class TxDetailModel: NSObject {
     var transactionId: String
     var txTaxCategory: TxMetadataTaxCategory
 
+    /// Memoization for `computedRawFee` (extensions can't store properties).
+    /// Two flags so a nil result isn't recomputed on every table reload.
+    private var didComputeRawFee = false
+    fileprivate var rawFeeCache: UInt64?
+
     var title: String {
         // Shielded transfers carry their own identity — the generic
         // direction titles ("Moved to Address" / "Amount received") hide
@@ -376,18 +381,59 @@ extension TxDetailModel {
         }
     }
 
+    /// Below this (0.0001 DASH) a fee renders as plain duffs — the
+    /// DASH-formatted form reads as zero at a glance.
+    private static let duffsDisplayThreshold: UInt64 = 10_000
+
     func fee(with font: UIFont, tintColor: UIColor) -> DWTitleDetailItem {
         let title = NSLocalizedString("Network fee", comment: "")
         var feeValue: UInt64 = 0
-        
+
         if hasFee {
             feeValue = transaction.feeUsed
             feeValue = feeValue == UInt64.max ? 0 : feeValue
         }
-        
+        if feeValue == 0, direction != .received, let computed = computedRawFee {
+            // Rows without a persisted fee (asset-lock fundings) still have a
+            // real one — recover it from the raw transaction.
+            feeValue = computed
+        }
+
+        if feeValue > 0, feeValue < Self.duffsDisplayThreshold {
+            let detail = String(format: NSLocalizedString("%d duffs", comment: "Network fee in duffs (1 DASH = 100,000,000 duffs)"), feeValue)
+            return DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
+        }
+
         let detail = NSAttributedString.dashAttributedString(for: feeValue, tintColor: tintColor, font: font)
 
         return DWTitleDetailCellModel(style: .default, title: title, attributedDetail: detail)
+    }
+
+    /// Fee derived from the stored raw transaction as Σ(input values) −
+    /// Σ(output values) — the consensus definition, computable exactly when
+    /// every input value is known (all inputs are the wallet's own TXOs,
+    /// which holds for any tx we authored). Nil when any input value is
+    /// unknown, the bytes are unavailable, or the difference is negative
+    /// (mis-matched data — never guessed). Memoized: the detail sheet
+    /// reloads on tax-category toggles and the parse isn't free.
+    private var computedRawFee: UInt64? {
+        if !didComputeRawFee {
+            didComputeRawFee = true
+            rawFeeCache = Self.computeRawFee(txidWire: transaction.txHashData)
+        }
+        return rawFeeCache
+    }
+
+    private static func computeRawFee(txidWire: Data) -> UInt64? {
+        let details = MainActor.assumeIsolated {
+            RawTransactionInspector.load(txidWire: txidWire)
+        }
+        guard let details, !details.inputs.isEmpty else { return nil }
+        let inputAmounts = details.inputs.compactMap(\.amountDuffs)
+        guard inputAmounts.count == details.inputs.count else { return nil }
+        let inSum = inputAmounts.reduce(0, +)
+        let outSum = details.outputs.reduce(UInt64(0)) { $0 + $1.valueDuffs }
+        return inSum >= outSum ? inSum - outSum : nil
     }
 
     var date: DWTitleDetailCellModel {

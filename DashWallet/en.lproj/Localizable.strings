@@ -61,6 +61,9 @@
 /* Raw transaction inspector */
 "%d bytes" = "%d bytes";
 
+/* Network fee in duffs (1 DASH = 100,000,000 duffs) */
+"%d duffs" = "%d duffs";
+
 /* Masternode keys overview */
 "%d key(s)" = "%d key(s)";
 
