@@ -200,10 +200,6 @@ struct ToolsMenuScreen: View {
             showCSVExportSheet = true
         case .zenLedger:
             showZenLedgerSheet = true
-        case .swiftDashSDKSPVStatus:
-            showSwiftDashSDKSPVStatus()
-        case .platformSyncStatus:
-            showPlatformSyncStatus()
         case .storageExplorer:
             showStorageExplorer()
         case .none:
@@ -214,22 +210,6 @@ struct ToolsMenuScreen: View {
         if destination != nil {
             viewModel.resetNavigation()
         }
-    }
-
-    private func showSwiftDashSDKSPVStatus() {
-        let hosting = UIHostingController(
-            rootView: SwiftDashSDKSPVStatusScreen(vc: vc)
-        )
-        hosting.hidesBottomBarWhenPushed = true
-        vc.pushViewController(hosting, animated: true)
-    }
-
-    private func showPlatformSyncStatus() {
-        let hosting = UIHostingController(
-            rootView: PlatformSyncStatusScreen(vc: vc)
-        )
-        hosting.hidesBottomBarWhenPushed = true
-        vc.pushViewController(hosting, animated: true)
     }
 
     private func showStorageExplorer() {

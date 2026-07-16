@@ -12,6 +12,16 @@
 		02EDCC7635BCD84768554D9C /* StorageModelListViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A762BDA473947F1A7EF199 /* StorageModelListViews.swift */; };
 		02EED2FC7EAC55B96ECEAAD6 /* DWLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 59C18FCF827D815007BAEF29 /* DWLogger.m */; };
 		0308E777B29CC6DE1DB30FDD /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */; };
+		51AA00022F970002005A0002 /* SyncInfoMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00012F970001005A0001 /* SyncInfoMenuScreen.swift */; };
+		51AA00032F970003005A0003 /* SyncInfoMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00012F970001005A0001 /* SyncInfoMenuScreen.swift */; };
+		51AA00052F970005005A0005 /* SyncInfoMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00042F970004005A0004 /* SyncInfoMenuViewModel.swift */; };
+		51AA00062F970006005A0006 /* SyncInfoMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00042F970004005A0004 /* SyncInfoMenuViewModel.swift */; };
+		51AA00082F970008005A0008 /* DashPaySyncInfoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00072F970007005A0007 /* DashPaySyncInfoScreen.swift */; };
+		51AA00092F970009005A0009 /* DashPaySyncInfoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00072F970007005A0007 /* DashPaySyncInfoScreen.swift */; };
+		51AA000B2F97000B005A000B /* ShieldedSyncInfoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA000A2F97000A005A000A /* ShieldedSyncInfoScreen.swift */; };
+		51AA000C2F97000C005A000C /* ShieldedSyncInfoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA000A2F97000A005A000A /* ShieldedSyncInfoScreen.swift */; };
+		51AA000E2F97000E005A000E /* ShieldedSyncMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA000D2F97000D005A000D /* ShieldedSyncMonitor.swift */; };
+		51AA000F2F97000F005A000F /* ShieldedSyncMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA000D2F97000D005A000D /* ShieldedSyncMonitor.swift */; };
 		06132521E7B4D21B4A1597E7 /* PlatformSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DCDC3A2B92601BB1E61FD9 /* PlatformSendExecutor.swift */; };
 		06E16A070A3C48883BBDA137 /* BIP70InteractiveCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36BCF99A4D30077C9C9B0EB /* BIP70InteractiveCoordinator.swift */; };
 		07B6BD15F525AAF000B53162 /* AddContactScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3498B2E247B2CADBF02DC0B1 /* AddContactScreen.swift */; };
@@ -2818,6 +2828,11 @@
 		59C18FCF827D815007BAEF29 /* DWLogger.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = DWLogger.m; sourceTree = "<group>"; };
 		59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalStore.swift; sourceTree = "<group>"; };
 		5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlatformSyncStatusScreen.swift; sourceTree = "<group>"; };
+		51AA00012F970001005A0001 /* SyncInfoMenuScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncInfoMenuScreen.swift; sourceTree = "<group>"; };
+		51AA00042F970004005A0004 /* SyncInfoMenuViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncInfoMenuViewModel.swift; sourceTree = "<group>"; };
+		51AA00072F970007005A0007 /* DashPaySyncInfoScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DashPaySyncInfoScreen.swift; sourceTree = "<group>"; };
+		51AA000A2F97000A005A000A /* ShieldedSyncInfoScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedSyncInfoScreen.swift; sourceTree = "<group>"; };
+		51AA000D2F97000D005A000D /* ShieldedSyncMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedSyncMonitor.swift; sourceTree = "<group>"; };
 		5B30DA60B985C3CC3ED05B64 /* DWCurrentUserIdentityInfo.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWCurrentUserIdentityInfo.swift; sourceTree = "<group>"; };
 		5C3839568283FDC3A6933824 /* DWRegistrationPhaseAdapter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapter.swift; sourceTree = "<group>"; };
 		5CBC0F417B9E8DE631F9DE2A /* Pods-DashWalletTests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.testnet.xcconfig"; sourceTree = "<group>"; };
@@ -4775,6 +4790,7 @@
 				2A7A7BC52347DF7100451078 /* Main */,
 				2A7A7BCA2347EF7A00451078 /* Security */,
 				2A7A7BD32348CB4F00451078 /* Settings */,
+				51AA00102F970010005A0010 /* SyncInfo */,
 				2A7A7BDA2348DBE700451078 /* Tools */,
 				755049AB2C846576008FA7EB /* MenuItemModel.swift */,
 			);
@@ -4814,6 +4830,19 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+		51AA00102F970010005A0010 /* SyncInfo */ = {
+			isa = PBXGroup;
+			children = (
+				51AA00012F970001005A0001 /* SyncInfoMenuScreen.swift */,
+				51AA00042F970004005A0004 /* SyncInfoMenuViewModel.swift */,
+				51AA00072F970007005A0007 /* DashPaySyncInfoScreen.swift */,
+				51AA000A2F97000A005A000A /* ShieldedSyncInfoScreen.swift */,
+				E90D495F8DF1E8EE8A84C8E8 /* SwiftDashSDKSPVStatusScreen.swift */,
+				5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */,
+			);
+			path = SyncInfo;
+			sourceTree = "<group>";
+		};
 		2A7A7BDA2348DBE700451078 /* Tools */ = {
 			isa = PBXGroup;
 			children = (
@@ -4824,8 +4853,6 @@
 				7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */,
 				RC00C0032FA0000000000001 /* CSVExportSheet.swift */,
 				752F81A82E323FD000ADA76D /* ToolsMenuViewModel.swift */,
-				E90D495F8DF1E8EE8A84C8E8 /* SwiftDashSDKSPVStatusScreen.swift */,
-				5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */,
 				90EDF757D399BA7D1C1AC7AE /* StorageExplorer */,
 			);
 			path = Tools;
@@ -7190,6 +7217,7 @@
 				E181EB71C8803101EA789AA4 /* SwiftDashSDKHost.swift */,
 				35F37C177039C76661FA2DB2 /* SwiftDashSDKSPVCoordinator.swift */,
 				E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */,
+				51AA000D2F97000D005A000D /* ShieldedSyncMonitor.swift */,
 				43C830DD6D63115525925F75 /* PlatformCreditsFormatter.swift */,
 				44DCDC3A2B92601BB1E61FD9 /* PlatformSendExecutor.swift */,
 				B697D56A525CBF142F4401FE /* SwiftDashSDKWalletCreator.swift */,
@@ -10318,6 +10346,11 @@
 				85448D7537BBD0AE40682EC8 /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 				8EAA05FA797008525050A2A7 /* PlatformAddressSyncCoordinator.swift in Sources */,
 				2D354A4D6053027CA27F02CB /* PlatformSyncStatusScreen.swift in Sources */,
+				51AA00022F970002005A0002 /* SyncInfoMenuScreen.swift in Sources */,
+				51AA00052F970005005A0005 /* SyncInfoMenuViewModel.swift in Sources */,
+				51AA00082F970008005A0008 /* DashPaySyncInfoScreen.swift in Sources */,
+				51AA000B2F97000B005A000B /* ShieldedSyncInfoScreen.swift in Sources */,
+				51AA000E2F97000E005A000E /* ShieldedSyncMonitor.swift in Sources */,
 				E16E2BA180551E3B6661B9F4 /* PlatformCreditsFormatter.swift in Sources */,
 				F1F870569B75C5B1452C5D65 /* ChainNetworkToggle.swift in Sources */,
 				A72BF1D1A1F3F067215CE04C /* QRCodeGenerator.swift in Sources */,
@@ -11333,6 +11366,11 @@
 				87AC92AAD9DF8CBF271609AC /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 				30C7DE2E26E849E0D76319FA /* PlatformAddressSyncCoordinator.swift in Sources */,
 				0308E777B29CC6DE1DB30FDD /* PlatformSyncStatusScreen.swift in Sources */,
+				51AA00032F970003005A0003 /* SyncInfoMenuScreen.swift in Sources */,
+				51AA00062F970006005A0006 /* SyncInfoMenuViewModel.swift in Sources */,
+				51AA00092F970009005A0009 /* DashPaySyncInfoScreen.swift in Sources */,
+				51AA000C2F97000C005A000C /* ShieldedSyncInfoScreen.swift in Sources */,
+				51AA000F2F97000F005A000F /* ShieldedSyncMonitor.swift in Sources */,
 				3705C73F15BCD91AF70940B9 /* PlatformCreditsFormatter.swift in Sources */,
 				56F5C9FD51AE5508BB5E579B /* ChainNetworkToggle.swift in Sources */,
 				9B54AF317E7728C18646F702 /* QRCodeGenerator.swift in Sources */,
