@@ -530,84 +530,52 @@ final class SwiftDashSDKContactsService: ObservableObject {
         }
     }
 
-    /// Set / clear the owner-private alias on an established contact.
-    /// Local-only state (no on-chain artifact, no auth gate); durably
-    /// persisted via `flushPersist`.
-    func setAlias(_ alias: String?, for contactId: Data) async throws {
-        try await mutateEstablishedContact(contactId) { contact in
-            if let alias, !alias.isEmpty {
-                try contact.setAlias(alias)
-            } else {
-                try contact.clearAlias()
-            }
-        }
-    }
+    /// Write the owner-private contact metadata (alias / note / hidden)
+    /// for an established contact. One combined write: the SDK's
+    /// `setDashPayContactInfo` updates the wallet manager's REAL contact
+    /// state, persists it (feeds the SwiftData mirror the contacts list
+    /// and payment rows read), and publishes the self-encrypted DIP-15
+    /// `contactInfo` document to Platform — the "remote wins" convergence
+    /// that makes the alias roam across devices.
+    ///
+    /// The publish signs a Platform document with the identity key, so
+    /// this is PIN/biometric-gated like every other document write.
+    /// Empty strings clear their field. Returns the publish outcome —
+    /// local state is saved even when the document publish was deferred
+    /// (DIP-15 defers until ≥ 2 established contacts) or skipped
+    /// (watch-only identity).
+    ///
+    /// Replaces the deprecated `EstablishedContact.setAlias/setNote/hide`
+    /// path, which mutated a detached FFI handle clone — nothing it wrote
+    /// ever reached wallet state, disk, or Platform (platform PR #4140).
+    @discardableResult
+    func setContactMeta(
+        alias: String?,
+        note: String?,
+        hidden: Bool,
+        for contactId: Data
+    ) async throws -> ManagedPlatformWallet.ContactInfoPublishOutcome {
+        let (wallet, modelContainer, ownerId) = try requireContext()
 
-    /// Set / clear the owner-private note on an established contact.
-    func setNote(_ note: String?, for contactId: Data) async throws {
-        try await mutateEstablishedContact(contactId) { contact in
-            if let note, !note.isEmpty {
-                try contact.setNote(note)
-            } else {
-                try contact.clearNote()
-            }
-        }
-    }
+        try await authorize()
 
-    /// Hide / unhide an established contact (moves it to the Hidden
-    /// section of the contacts list).
-    func setHidden(_ hidden: Bool, for contactId: Data) async throws {
-        try await mutateEstablishedContact(contactId) { contact in
-            hidden ? try contact.hide() : try contact.unhide()
-        }
-    }
-
-    /// One in-memory lookup of an established contact — split out so the
-    /// mutation path can retry it after a resync.
-    private func establishedContactHandle(
-        wallet: ManagedPlatformWallet,
-        ownerId: Data,
-        contactId: Data
-    ) throws -> EstablishedContact? {
-        let identity = try wallet.managedIdentity(identityId: ownerId)
-        return try identity.getEstablishedContact(contactId: contactId)
-    }
-
-    private func mutateEstablishedContact(
-        _ contactId: Data,
-        _ mutate: (EstablishedContact) throws -> Void
-    ) async throws {
-        let (wallet, _, ownerId) = try requireContext()
+        let signer = KeychainSigner(modelContainer: modelContainer)
+        let outcome: ManagedPlatformWallet.ContactInfoPublishOutcome
         do {
-            // The SDK's in-memory contact state is PER-SESSION while the
-            // rows the UI acted on persist across sessions — same trap as
-            // `acceptContactRequest`. A miss doesn't mean the contact is
-            // gone: resync and look again before failing (setting an alias
-            // right after launch used to die here with the bogus
-            // "Contact request not found").
-            let contact: EstablishedContact
-            if let live = try establishedContactHandle(wallet: wallet, ownerId: ownerId, contactId: contactId) {
-                contact = live
-            } else {
-                Self.logger.info("👥 CONTACTS :: established contact not in memory — resyncing before mutation")
-                await syncNow()
-                guard let retried = try establishedContactHandle(wallet: wallet, ownerId: ownerId, contactId: contactId) else {
-                    throw ServiceError.requestNotFound
-                }
-                contact = retried
-            }
-            try mutate(contact)
-            // Durability: the setters mutate in-memory Rust state; the
-            // flush lands the change in SwiftData via the persister,
-            // which also triggers the debounced snapshot refresh.
-            try wallet.flushPersist()
-        } catch let error as ServiceError {
-            throw error
+            outcome = try await wallet.setDashPayContactInfo(
+                identityId: ownerId,
+                contactId: contactId,
+                alias: alias?.isEmpty == false ? alias : nil,
+                note: note?.isEmpty == false ? note : nil,
+                hidden: hidden,
+                signer: signer)
         } catch {
-            Self.logger.error("👥 CONTACTS :: contact-meta mutation failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("👥 CONTACTS :: contact-meta write failed: \(String(describing: error), privacy: .public)")
             throw ServiceError.sdk(error)
         }
+        Self.logger.info("👥 CONTACTS :: contact meta saved — outcome \(String(describing: outcome), privacy: .public)")
         refresh()
+        return outcome
     }
 
     // MARK: - Contact-request eligibility
