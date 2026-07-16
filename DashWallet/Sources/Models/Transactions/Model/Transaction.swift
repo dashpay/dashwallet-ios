@@ -165,6 +165,18 @@ class Transaction: TransactionDataItem, Identifiable {
     /// True when this tx is a recorded DashPay contact payment.
     var isDashPayPayment: Bool { dashPayPayment != nil }
 
+    /// The counterparty's profile name for the row's gray details line —
+    /// only when the title used the owner-set alias, so both render
+    /// (alias on top, their actual name underneath). `nil` when the title
+    /// already shows the profile name (or nothing is cached).
+    var dashPayPaymentDetailsName: String? {
+        guard let payment = dashPayPayment,
+              payment.counterpartyAlias?.isEmpty == false,
+              let name = payment.counterpartyName,
+              name != payment.counterpartyAlias else { return nil }
+        return name
+    }
+
     var direction: DSTransactionDirection {
         if let payment = dashPayPayment {
             return payment.isOutgoing ? .sent : .received
@@ -477,11 +489,12 @@ class Transaction: TransactionDataItem, Identifiable {
                 return NSLocalizedString("Identity top-up", comment: "Asset lock topping up a DashPay identity's credits")
             }
         }
-        // A DashPay contact payment names the counterparty when their
-        // profile is cached; otherwise it falls through to the generic
-        // Sent/Received (the overlaid `direction` already points the
-        // right way).
-        if let payment = dashPayPayment, let name = payment.counterpartyName {
+        // A DashPay contact payment names the counterparty — the owner-set
+        // alias when one exists, else their profile display name (their
+        // name then moves to the gray details line). No cached
+        // name at all falls through to the generic Sent/Received (the
+        // overlaid `direction` already points the right way).
+        if let payment = dashPayPayment, let name = payment.titleName {
             return payment.isOutgoing
                 ? String(format: NSLocalizedString("Sent to %@", comment: "DashPay payment row — recipient's display name"), name)
                 : String(format: NSLocalizedString("Received from %@", comment: "DashPay payment row — sender's display name"), name)

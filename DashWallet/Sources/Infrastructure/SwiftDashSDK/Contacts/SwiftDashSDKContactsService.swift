@@ -533,8 +533,8 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// Set / clear the owner-private alias on an established contact.
     /// Local-only state (no on-chain artifact, no auth gate); durably
     /// persisted via `flushPersist`.
-    func setAlias(_ alias: String?, for contactId: Data) throws {
-        try mutateEstablishedContact(contactId) { contact in
+    func setAlias(_ alias: String?, for contactId: Data) async throws {
+        try await mutateEstablishedContact(contactId) { contact in
             if let alias, !alias.isEmpty {
                 try contact.setAlias(alias)
             } else {
@@ -544,8 +544,8 @@ final class SwiftDashSDKContactsService: ObservableObject {
     }
 
     /// Set / clear the owner-private note on an established contact.
-    func setNote(_ note: String?, for contactId: Data) throws {
-        try mutateEstablishedContact(contactId) { contact in
+    func setNote(_ note: String?, for contactId: Data) async throws {
+        try await mutateEstablishedContact(contactId) { contact in
             if let note, !note.isEmpty {
                 try contact.setNote(note)
             } else {
@@ -556,21 +556,45 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
     /// Hide / unhide an established contact (moves it to the Hidden
     /// section of the contacts list).
-    func setHidden(_ hidden: Bool, for contactId: Data) throws {
-        try mutateEstablishedContact(contactId) { contact in
+    func setHidden(_ hidden: Bool, for contactId: Data) async throws {
+        try await mutateEstablishedContact(contactId) { contact in
             hidden ? try contact.hide() : try contact.unhide()
         }
+    }
+
+    /// One in-memory lookup of an established contact — split out so the
+    /// mutation path can retry it after a resync.
+    private func establishedContactHandle(
+        wallet: ManagedPlatformWallet,
+        ownerId: Data,
+        contactId: Data
+    ) throws -> EstablishedContact? {
+        let identity = try wallet.managedIdentity(identityId: ownerId)
+        return try identity.getEstablishedContact(contactId: contactId)
     }
 
     private func mutateEstablishedContact(
         _ contactId: Data,
         _ mutate: (EstablishedContact) throws -> Void
-    ) throws {
+    ) async throws {
         let (wallet, _, ownerId) = try requireContext()
         do {
-            let identity = try wallet.managedIdentity(identityId: ownerId)
-            guard let contact = try identity.getEstablishedContact(contactId: contactId) else {
-                throw ServiceError.requestNotFound
+            // The SDK's in-memory contact state is PER-SESSION while the
+            // rows the UI acted on persist across sessions — same trap as
+            // `acceptContactRequest`. A miss doesn't mean the contact is
+            // gone: resync and look again before failing (setting an alias
+            // right after launch used to die here with the bogus
+            // "Contact request not found").
+            let contact: EstablishedContact
+            if let live = try establishedContactHandle(wallet: wallet, ownerId: ownerId, contactId: contactId) {
+                contact = live
+            } else {
+                Self.logger.info("👥 CONTACTS :: established contact not in memory — resyncing before mutation")
+                await syncNow()
+                guard let retried = try establishedContactHandle(wallet: wallet, ownerId: ownerId, contactId: contactId) else {
+                    throw ServiceError.requestNotFound
+                }
+                contact = retried
             }
             try mutate(contact)
             // Durability: the setters mutate in-memory Rust state; the
@@ -791,8 +815,16 @@ final class DashPayPaymentTxLookup {
         /// Counterparty's DashPay profile display name, when the profile
         /// cache has one — drives the "Sent to <name>" row title.
         let counterpartyName: String?
+        /// Owner-set alias for the counterparty, when one exists — wins
+        /// over `counterpartyName` in the row title (the profile name then
+        /// moves to the gray details line).
+        let counterpartyAlias: String?
         /// Counterparty's avatar URL, when their profile carries one.
         let counterpartyAvatarURL: String?
+
+        /// Row-title name: alias first (owner's own label for the contact),
+        /// then the profile display name. Matches `ContactItem.displayTitle`.
+        var titleName: String? { counterpartyAlias ?? counterpartyName }
     }
 
     private let lock = NSLock()
@@ -827,6 +859,16 @@ final class DashPayPaymentTxLookup {
             for profile in profiles {
                 profileByContactId[profile.contactIdentityId] = (profile.displayName, profile.avatarUrl)
             }
+            // Owner-set aliases ride on the contact-request rows (either
+            // direction of the pair may carry it — same read the contacts
+            // snapshot uses).
+            let requests = try container.mainContext.fetch(FetchDescriptor<PersistentDashpayContactRequest>())
+            var aliasByContactId: [Data: String] = [:]
+            for request in requests {
+                if let alias = request.contactAlias, !alias.isEmpty {
+                    aliasByContactId[request.contactIdentityId] = alias
+                }
+            }
             var map: [String: PaymentInfo] = [:]
             for row in rows where row.amountDuffs > 0 {
                 let profile = profileByContactId[row.counterpartyIdentityId]
@@ -835,6 +877,7 @@ final class DashPayPaymentTxLookup {
                     isOutgoing: row.direction == .sent,
                     counterpartyIdentityId: row.counterpartyIdentityId,
                     counterpartyName: profile?.name?.isEmpty == false ? profile?.name : nil,
+                    counterpartyAlias: aliasByContactId[row.counterpartyIdentityId],
                     counterpartyAvatarURL: profile?.avatarURL?.isEmpty == false ? profile?.avatarURL : nil)
             }
             store(map)

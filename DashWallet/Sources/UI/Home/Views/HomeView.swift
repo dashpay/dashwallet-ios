@@ -563,7 +563,7 @@ struct HomeViewContent<Content: View>: View {
             let contactAvatar: AnyView? = metadata == nil
                 ? txItem.dashPayPayment.map { payment in
                     AnyView(ContactAvatarView(
-                        title: payment.counterpartyName ?? "?",
+                        title: payment.titleName ?? "?",
                         avatarURL: payment.counterpartyAvatarURL,
                         identitySeed: payment.counterpartyIdentityId,
                         size: 30))
@@ -587,7 +587,9 @@ struct HomeViewContent<Content: View>: View {
                         ? NSLocalizedString("Pending", comment: "")
                         : (metadata?.details?.isEmpty == false
                             ? metadata?.details
-                            : transferRouteDetails(txItem: txItem)),
+                            // Alias-titled contact payments show the
+                            // counterparty's actual name underneath.
+                            : transferRouteDetails(txItem: txItem) ?? txItem.dashPayPaymentDetailsName),
                 dashAmount: txItem.signedDashAmount,
                 amountSign: .always,
                 fiat: txItem.fiatAmount,
