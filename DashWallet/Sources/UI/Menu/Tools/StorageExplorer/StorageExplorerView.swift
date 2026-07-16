@@ -91,6 +91,30 @@ struct StorageExplorerView: View {
             modelRow("UTXOs", icon: "bitcoinsign.circle", type: PersistentTxo.self) {
                 UtxoStorageListView()
             }
+            modelRow("Pending Inputs", icon: "hourglass", type: PersistentPendingInput.self) {
+                PendingInputStorageListView()
+            }
+            modelRow("Asset Locks", icon: "lock.shield", type: PersistentAssetLock.self) {
+                AssetLockStorageListView()
+            }
+            modelRow("Masternodes", icon: "server.rack", type: PersistentMasternode.self) {
+                MasternodeStorageListView()
+            }
+            modelRow("Shielded Notes", icon: "lock.shield.fill", type: PersistentShieldedNote.self) {
+                ShieldedNoteStorageListView()
+            }
+            modelRow("Shielded Sent Notes", icon: "paperplane", type: PersistentShieldedOutgoingNote.self) {
+                ShieldedOutgoingNoteStorageListView()
+            }
+            modelRow("Shielded Activity", icon: "clock.arrow.circlepath", type: PersistentShieldedActivity.self) {
+                ShieldedActivityStorageListView()
+            }
+            modelRow("Shielded Sync State", icon: "arrow.triangle.2.circlepath", type: PersistentShieldedSyncState.self) {
+                ShieldedSyncStateStorageListView()
+            }
+            modelRow("Shielded Viewing Keys", icon: "eye", type: PersistentShieldedViewingKey.self) {
+                ShieldedViewingKeyStorageListView()
+            }
             modelRow("Manager Metadata", icon: "gearshape.2", type: PersistentWalletManagerMetadata.self) {
                 WalletManagerMetadataStorageListView()
             }

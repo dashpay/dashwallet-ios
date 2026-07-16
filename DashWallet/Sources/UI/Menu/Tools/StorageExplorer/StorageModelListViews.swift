@@ -899,3 +899,342 @@ struct DashpayIgnoredSenderStorageListView: View {
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.crop.circle.badge.xmark") } }
     }
 }
+
+// MARK: - Asset locks / pending inputs / masternodes / shielded family
+// (ported from SwiftExampleApp's storage explorer; network scoping
+// dropped — dashwallet's ModelContainer is per-network)
+
+/// 36-byte outpoint as `<txid hex (display order)>:<vout>`. Mirrors
+/// `PersistentTxo.outpointHex` so the same row is identifiable across
+/// surfaces.
+private func outpoint36Hex(_ outpoint: Data) -> String {
+    guard outpoint.count == 36 else {
+        return outpoint.map { String(format: "%02x", $0) }.joined()
+    }
+    let txid = outpoint.prefix(32)
+    let voutBytes = outpoint.suffix(4)
+    let vout = voutBytes.withUnsafeBytes { raw in
+        raw.load(as: UInt32.self).littleEndian
+    }
+    let txidHex = txid.reversed().map { String(format: "%02x", $0) }.joined()
+    return "\(txidHex):\(vout)"
+}
+
+// MARK: - PersistentPendingInput
+
+struct PendingInputStorageListView: View {
+    @Query(sort: [SortDescriptor(\PersistentPendingInput.createdAt, order: .reverse)])
+    private var records: [PersistentPendingInput]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: PendingInputStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(outpoint36Hex(record.outpoint))
+                        .font(.system(.caption, design: .monospaced))
+                        .lineLimit(1).truncationMode(.middle)
+                    HStack(spacing: 8) {
+                        Text("input \(record.inputIndex)")
+                            .font(.caption2).foregroundColor(.secondary)
+                        Spacer()
+                        Text(record.createdAt, style: .relative)
+                            .font(.caption2).foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .navigationTitle("Pending Inputs (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Pending Inputs", systemImage: "hourglass") } }
+    }
+}
+
+// MARK: - PersistentAssetLock
+
+/// Every row is upserted by the Rust-side `on_persist_asset_locks_fn`
+/// callback as the lock advances through Built / Broadcast /
+/// InstantSendLocked / ChainLocked, and consumed on success.
+struct AssetLockStorageListView: View {
+    @Query(sort: [SortDescriptor(\PersistentAssetLock.updatedAt, order: .reverse)])
+    private var records: [PersistentAssetLock]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: AssetLockStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(record.outPointHex)
+                        .font(.system(.caption, design: .monospaced))
+                        .lineLimit(1).truncationMode(.middle)
+                    HStack(spacing: 8) {
+                        Text(record.statusLabel)
+                            .font(.caption2).foregroundColor(.secondary)
+                        Spacer()
+                        Text("identity #\(record.identityIndexRaw)")
+                            .font(.caption2).foregroundColor(.secondary)
+                        Text(record.updatedAt, style: .relative)
+                            .font(.caption2).foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .navigationTitle("Asset Locks (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Asset Locks", systemImage: "lock.shield") } }
+    }
+}
+
+// MARK: - PersistentMasternode
+
+/// Masternode entities aggregated by Rust from a wallet's provider
+/// special transactions, in the stable cross-type registration order.
+struct MasternodeStorageListView: View {
+    @Query(sort: [SortDescriptor(\PersistentMasternode.orderIndex)])
+    private var records: [PersistentMasternode]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: MasternodeStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(record.displayTitle)
+                            .font(.body)
+                        Spacer()
+                        Text(record.statusName)
+                            .font(.caption2).foregroundColor(.secondary)
+                    }
+                    Text(record.serviceAddress ?? "—")
+                        .font(.caption2).foregroundColor(.secondary)
+                    Text(record.proTxHashShort)
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1).truncationMode(.middle)
+                }
+            }
+        }
+        .navigationTitle("Masternodes (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Masternodes", systemImage: "server.rack") } }
+    }
+}
+
+// MARK: - PersistentShieldedNote
+
+/// All / Unspent / Spent segmented filter for the shielded notes list.
+private enum ShieldedSpentFilter: CaseIterable, Hashable {
+    case all, unspent, spent
+
+    var title: String {
+        switch self {
+        case .all: return "All"
+        case .unspent: return "Unspent"
+        case .spent: return "Spent"
+        }
+    }
+}
+
+/// Read-only browser for the per-(wallet, account) decrypted shielded
+/// notes the persister mirrors out of `ShieldedChangeSet`.
+struct ShieldedNoteStorageListView: View {
+    /// Newest block first, then position so rows from the same block
+    /// stay deterministic.
+    @Query(
+        sort: [
+            SortDescriptor(\PersistentShieldedNote.blockHeight, order: .reverse),
+            SortDescriptor(\PersistentShieldedNote.position),
+        ]
+    )
+    private var records: [PersistentShieldedNote]
+
+    @State private var filter: ShieldedSpentFilter = .all
+
+    private var filteredRecords: [PersistentShieldedNote] {
+        switch filter {
+        case .all: return records
+        case .unspent: return records.filter { !$0.isSpent }
+        case .spent: return records.filter { $0.isSpent }
+        }
+    }
+
+    var body: some View {
+        let visible = filteredRecords
+        List {
+            Section {
+                Picker("Filter", selection: $filter) {
+                    ForEach(ShieldedSpentFilter.allCases, id: \.self) { f in
+                        Text(f.title).tag(f)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+            if !records.isEmpty && visible.isEmpty {
+                Section {
+                    ContentUnavailableView("No \(filter.title) Notes", systemImage: "lock.shield")
+                }
+            }
+            ForEach(visible) { record in
+                NavigationLink(destination: ShieldedNoteStorageDetailView(record: record)) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 8) {
+                            Text("acct \(record.accountIndex)")
+                                .font(.caption2).foregroundColor(.secondary)
+                            Text("pos \(record.position)")
+                                .font(.caption2).foregroundColor(.secondary)
+                            if record.blockHeight > 0 {
+                                Text("h \(record.blockHeight)")
+                                    .font(.caption2).foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            if record.isSpent {
+                                Text("spent")
+                                    .font(.caption2).foregroundColor(.red)
+                            }
+                        }
+                        Text("\(record.value) credits")
+                            .font(.caption)
+                        Text(record.nullifier.prefix(8).map { String(format: "%02x", $0) }.joined())
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .navigationTitle("Shielded Notes (\(visible.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Notes", systemImage: "lock.shield") } }
+    }
+}
+
+// MARK: - PersistentShieldedOutgoingNote
+
+/// OVK-recovered outgoing (sent) shielded notes the persister mirrors
+/// out of `ShieldedChangeSet::outgoing_notes`.
+struct ShieldedOutgoingNoteStorageListView: View {
+    /// `cmx` is `Data` (not Comparable), so it can't be a sort key.
+    @Query(
+        sort: [
+            SortDescriptor(\PersistentShieldedOutgoingNote.blockHeight, order: .reverse),
+            SortDescriptor(\PersistentShieldedOutgoingNote.accountIndex),
+        ]
+    )
+    private var records: [PersistentShieldedOutgoingNote]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: ShieldedOutgoingNoteStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text("acct \(record.accountIndex)")
+                            .font(.caption2).foregroundColor(.secondary)
+                        if record.blockHeight > 0 {
+                            Text("h \(record.blockHeight)")
+                                .font(.caption2).foregroundColor(.secondary)
+                        }
+                        Spacer()
+                    }
+                    Text("\(record.value) credits")
+                        .font(.caption)
+                    Text(record.cmx.prefix(8).map { String(format: "%02x", $0) }.joined())
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .navigationTitle("Shielded Sent Notes (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Sent Notes", systemImage: "paperplane") } }
+    }
+}
+
+// MARK: - PersistentShieldedActivity
+
+/// Derived shielded activity log the persister mirrors out of
+/// `ShieldedChangeSet::activity_entries`.
+struct ShieldedActivityStorageListView: View {
+    /// `entryId` is `Data` (not Comparable), so it can't be a sort key.
+    @Query(
+        sort: [
+            SortDescriptor(\PersistentShieldedActivity.blockHeight, order: .reverse),
+            SortDescriptor(\PersistentShieldedActivity.accountIndex),
+        ]
+    )
+    private var records: [PersistentShieldedActivity]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: ShieldedActivityStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text("kind \(record.kindTag)")
+                            .font(.caption2).foregroundColor(.secondary)
+                        Text("status \(record.status)")
+                            .font(.caption2).foregroundColor(.secondary)
+                        if record.hasBlockHeight {
+                            Text("h \(record.blockHeight)")
+                                .font(.caption2).foregroundColor(.secondary)
+                        }
+                        Spacer()
+                    }
+                    Text("\(record.amount) credits")
+                        .font(.caption)
+                    Text(record.entryId.prefix(8).map { String(format: "%02x", $0) }.joined())
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .navigationTitle("Shielded Activity (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Activity", systemImage: "clock.arrow.circlepath") } }
+    }
+}
+
+// MARK: - PersistentShieldedSyncState
+
+struct ShieldedSyncStateStorageListView: View {
+    // `Data` isn't Comparable — sort by accountIndex only; wallet
+    // grouping falls out of insertion order (a handful of rows at most).
+    @Query(sort: [SortDescriptor(\PersistentShieldedSyncState.accountIndex)])
+    private var records: [PersistentShieldedSyncState]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: ShieldedSyncStateStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(record.walletId.prefix(4).map { String(format: "%02x", $0) }.joined())
+                            .font(.system(.caption2, design: .monospaced))
+                        Text("acct \(record.accountIndex)")
+                            .font(.caption2).foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    Text("synced index: \(record.lastSyncedIndex)")
+                        .font(.caption)
+                }
+            }
+        }
+        .navigationTitle("Shielded Sync State (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Sync States", systemImage: "arrow.triangle.2.circlepath") } }
+    }
+}
+
+// MARK: - PersistentShieldedViewingKey
+
+struct ShieldedViewingKeyStorageListView: View {
+    // Same Data-isn't-Comparable constraint as the sync-state list.
+    @Query(sort: [SortDescriptor(\PersistentShieldedViewingKey.accountIndex)])
+    private var records: [PersistentShieldedViewingKey]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: ShieldedViewingKeyStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(record.walletId.prefix(4).map { String(format: "%02x", $0) }.joined())
+                            .font(.system(.caption2, design: .monospaced))
+                        Text("acct \(record.accountIndex)")
+                            .font(.caption2).foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    Text("FVK: \(record.fvkBytes.count) bytes")
+                        .font(.caption)
+                }
+            }
+        }
+        .navigationTitle("Shielded Viewing Keys (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Viewing Keys", systemImage: "eye") } }
+    }
+}

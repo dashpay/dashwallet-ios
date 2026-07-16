@@ -1059,3 +1059,509 @@ struct DashpayIgnoredSenderStorageDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
+
+// MARK: - Asset locks / pending inputs / masternodes / shielded family
+// (ported from SwiftExampleApp's storage explorer)
+
+// MARK: - PersistentPendingInput
+
+struct PendingInputStorageDetailView: View {
+    let record: PersistentPendingInput
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Outpoint", value: outpointHex(record.outpoint))
+                FieldRow(label: "Input Index", value: "\(record.inputIndex)")
+                // Display order matches the canonical block-explorer form
+                // (byte-reversed from on-disk wire order).
+                FieldRow(
+                    label: "Spending TXID",
+                    value: record.spendingTxid.reversed().map { String(format: "%02x", $0) }.joined())
+                FieldRow(label: "Wallet ID", value: record.walletId.isEmpty ? "—" : hexString(record.walletId))
+            }
+            Section("Relationships") {
+                if let spending = record.spendingTransaction {
+                    NavigationLink(destination: TransactionStorageDetailView(record: spending)) {
+                        FieldRow(label: "Spending Transaction", value: spending.txidHex)
+                    }
+                } else {
+                    // The parent transaction may not have faulted in (the
+                    // cascade-delete relationship keeps them in lockstep,
+                    // but the field is optional for SwiftData's
+                    // brief-window tolerance) — surface the orphan.
+                    FieldRow(label: "Spending Transaction", value: "— (unlinked)")
+                }
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+            }
+            Section {
+                Text(
+                    "A pending input lives here until its previous-output "
+                    + "PersistentTxo arrives. On `upsertUtxo`, the matching "
+                    + "row is consumed: the new TXO is marked spent, linked "
+                    + "to this row's spendingTransaction, and the pending "
+                    + "entry is deleted in one pass.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .navigationTitle("Pending Input")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    /// 36-byte outpoint as `<txid hex (display order)>:<vout>`.
+    private func outpointHex(_ outpoint: Data) -> String {
+        guard outpoint.count == 36 else {
+            return outpoint.map { String(format: "%02x", $0) }.joined()
+        }
+        let txid = outpoint.prefix(32)
+        let voutBytes = outpoint.suffix(4)
+        let vout = voutBytes.withUnsafeBytes { raw in
+            raw.load(as: UInt32.self).littleEndian
+        }
+        let txidHex = txid.reversed().map { String(format: "%02x", $0) }.joined()
+        return "\(txidHex):\(vout)"
+    }
+}
+
+// MARK: - PersistentMasternode
+
+struct MasternodeStorageDetailView: View {
+    let record: PersistentMasternode
+
+    var body: some View {
+        Form {
+            Section("Identity") {
+                FieldRow(label: "Wallet ID", value: hexString(record.walletId))
+                FieldRow(label: "proTxHash", value: record.proTxHashHex)
+                FieldRow(label: "Registration Txid", value: hexString(record.registrationTxid))
+                FieldRow(label: "Type", value: record.typeName)
+                FieldRow(label: "Status", value: record.statusName)
+            }
+            Section("Service") {
+                FieldRow(label: "Service Address", value: record.serviceAddress ?? "—")
+            }
+            Section("Keys") {
+                FieldRow(label: "Owner Key Hash", value: record.ownerKeyHash.map(hexString) ?? "—")
+                FieldRow(label: "Voting Key Hash", value: record.votingKeyHash.map(hexString) ?? "—")
+                FieldRow(label: "Owner Address", value: record.ownerAddress ?? "—")
+                FieldRow(label: "Voting Address", value: record.votingAddress ?? "—")
+            }
+            Section("Collateral") {
+                FieldRow(label: "Collateral Txid", value: record.collateralTxid.map(hexString) ?? "—")
+                FieldRow(label: "Collateral Vout", value: "\(record.collateralVout)")
+            }
+            Section("Aggregation") {
+                FieldRow(label: "Has Registration", value: record.hasRegistration ? "Yes" : "No")
+                FieldRow(label: "Registration Height", value: "\(record.registrationHeight)")
+                FieldRow(label: "Tx Count", value: "\(record.txCount)")
+                FieldRow(label: "Order Index", value: "\(record.orderIndex)")
+                FieldRow(label: "Type Index", value: "\(record.typeIndex)")
+            }
+            Section("Revocation") {
+                FieldRow(label: "Revoked", value: record.revoked ? "Yes" : "No")
+                FieldRow(label: "Revocation Reason", value: "\(record.revocationReason)")
+                FieldRow(label: "Status Raw", value: "\(record.statusRaw)")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle(record.displayTitle)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentAssetLock
+
+/// Human-readable label for `PersistentAssetLock.statusRaw` — one home
+/// for the 0…4 mapping (mirrors the Rust-side `AssetLockStatus` enum and
+/// the example app's `PersistentAssetLockDisplay`).
+extension PersistentAssetLock {
+    var statusLabel: String {
+        switch statusRaw {
+        case 0: return "Built"
+        case 1: return "Broadcast"
+        case 2: return "InstantSendLocked"
+        case 3: return "ChainLocked"
+        case 4: return "Consumed"
+        default: return "Unknown(\(statusRaw))"
+        }
+    }
+}
+
+struct AssetLockStorageDetailView: View {
+    let record: PersistentAssetLock
+
+    /// Candidate identity rows at this asset lock's `identityIndex`.
+    /// Filtered down to the strict `(walletId, identityIndex)` match in
+    /// `linkedIdentity` — the predicate alone would miss legacy rows
+    /// whose `wallet` relationship isn't populated.
+    @Query private var candidateIdentities: [PersistentIdentity]
+
+    init(record: PersistentAssetLock) {
+        self.record = record
+        // `identityIndexRaw` is `Int32` (changeset FFI) but
+        // `PersistentIdentity.identityIndex` is `UInt32` (DIP-9 slot).
+        // Bridge outside the closure — `#Predicate` disallows inline
+        // conversions.
+        let identityIndex = UInt32(bitPattern: record.identityIndexRaw)
+        _candidateIdentities = Query(
+            filter: #Predicate<PersistentIdentity> { identity in
+                identity.identityIndex == identityIndex
+            })
+    }
+
+    /// The identity row this asset lock points at: strict
+    /// `(walletId, identityIndex)` match preferred; a SINGLE orphaned
+    /// candidate (no wallet relationship) is accepted, multiple are
+    /// ambiguous and we don't guess.
+    private var linkedIdentity: PersistentIdentity? {
+        if let strict = candidateIdentities.first(where: { $0.wallet?.walletId == record.walletId }) {
+            return strict
+        }
+        let orphaned = candidateIdentities.filter { $0.wallet == nil }
+        return orphaned.count == 1 ? orphaned.first : nil
+    }
+
+    var body: some View {
+        Form {
+            Section("Asset Lock") {
+                FieldRow(label: "Outpoint", value: record.outPointHex)
+                FieldRow(label: "Status", value: record.statusLabel)
+                FieldRow(label: "Funding Type", value: fundingTypeLabel(record.fundingTypeRaw))
+                FieldRow(label: "Identity Index", value: "\(record.identityIndexRaw)")
+                FieldRow(label: "Amount (duffs)", value: "\(record.amountDuffs)")
+                FieldRow(label: "Wallet ID", value: hexString(record.walletId))
+            }
+            if isAddressFunding {
+                // Recipient platform address, stamped by Swift after a
+                // successful `fundFromAssetLock`. `nil` on rows predating
+                // the column or whose funding hasn't completed.
+                Section("Recipient Platform Address") {
+                    if let hash = record.recipientPlatformAddressHash {
+                        FieldRow(label: "Hash", value: hexString(hash))
+                        FieldRow(label: "Address Type", value: addressTypeLabel(record.recipientPlatformAddressType))
+                        if let encoded = bech32mPlatformAddress(
+                            hash: hash,
+                            addressType: record.recipientPlatformAddressType) {
+                            FieldRow(label: "Bech32m", value: encoded)
+                        }
+                    } else if record.statusRaw == 4 {
+                        FieldRow(label: "Recipient", value: "— (pre-this-commit row)")
+                    } else {
+                        FieldRow(label: "Recipient", value: "— (funding not yet completed)")
+                    }
+                }
+            }
+            if isIdentityFunding {
+                Section("Identity") {
+                    if let identity = linkedIdentity {
+                        // Static row, deliberately no navigation — pushing
+                        // the identity detail from this nested path hung
+                        // the main thread on iOS 26 in the example app.
+                        Text(identity.identityIdBase58)
+                            .font(.system(.caption, design: .monospaced))
+                            .foregroundColor(.primary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .textSelection(.enabled)
+                    } else {
+                        // No identity row yet: pre-finality, or IS/CL-locked
+                        // with the IdentityCreate never completed.
+                        FieldRow(label: pendingLabel(record.statusRaw), value: record.statusLabel)
+                    }
+                }
+            }
+            Section("Bytes") {
+                FieldRow(label: "Transaction Bytes", value: "\(record.transactionBytes.count) bytes")
+                FieldRow(label: "Proof Bytes", value: record.proofBytes.map { "\($0.count) bytes" } ?? "—")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.updatedAt))
+            }
+        }
+        .navigationTitle("Asset Lock")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func fundingTypeLabel(_ raw: Int) -> String {
+        switch raw {
+        case 0: return "IdentityRegistration"
+        case 1: return "IdentityTopUp"
+        case 2: return "IdentityTopUpNotBound"
+        case 3: return "IdentityInvitation"
+        case 4: return "AssetLockAddressTopUp"
+        case 5: return "AssetLockShieldedAddressTopUp"
+        default: return "Unknown(\(raw))"
+        }
+    }
+
+    /// Registration / top-up — the funding types that resolve to a
+    /// single identity slot on this wallet.
+    private var isIdentityFunding: Bool {
+        record.fundingTypeRaw == 0 || record.fundingTypeRaw == 1
+    }
+
+    /// `AddressFundingFromAssetLockTransition` (type 4).
+    private var isAddressFunding: Bool {
+        record.fundingTypeRaw == 4
+    }
+
+    private func addressTypeLabel(_ raw: UInt8?) -> String {
+        switch raw {
+        case 0: return "P2PKH"
+        case 1: return "P2SH"
+        case .some(let v): return "Unknown(\(v))"
+        case .none: return "—"
+        }
+    }
+
+    /// DIP-0018 bech32m encoding of the recipient hash, via the app's
+    /// shared `Bech32m` (the example app carries its own encoder; we
+    /// don't need to). Wire type byte: 0xb0 P2PKH / 0x80 P2SH — distinct
+    /// from the storage discriminant (0 / 1).
+    private func bech32mPlatformAddress(hash: Data, addressType: UInt8?) -> String? {
+        guard hash.count == 20 else { return nil }
+        let typeByte: UInt8
+        switch addressType {
+        case 0: typeByte = 0xb0
+        case 1: typeByte = 0x80
+        default: return nil
+        }
+        let hrp = Bech32m.platformHrp(mainnet: !WalletEnvironment.isTestnet)
+        return Bech32m.encode(hrp: hrp, data: Data([typeByte]) + hash)
+    }
+
+    /// Label when no identity row exists for this slot yet: mid-flight
+    /// vs locked-but-unconsumed.
+    private func pendingLabel(_ raw: Int) -> String {
+        switch raw {
+        case 0, 1: return "In progress"
+        case 2, 3: return "Pending (unused)"
+        default: return "Pending"
+        }
+    }
+}
+
+// MARK: - PersistentShieldedNote
+
+struct ShieldedNoteStorageDetailView: View {
+    let record: PersistentShieldedNote
+
+    var body: some View {
+        Form {
+            Section("Identity") {
+                FieldRow(label: "Wallet ID", value: hexString(record.walletId))
+                FieldRow(label: "Account Index", value: "\(record.accountIndex)")
+                FieldRow(label: "Position", value: "\(record.position)")
+            }
+            Section("Commitment") {
+                FieldRow(label: "cmx", value: hexString(record.cmx))
+                FieldRow(label: "Nullifier", value: hexString(record.nullifier))
+            }
+            Section("State") {
+                FieldRow(label: "Block Height", value: "\(record.blockHeight)")
+                FieldRow(label: "Spent", value: record.isSpent ? "Yes" : "No")
+                FieldRow(label: "Value", value: "\(record.value) credits")
+            }
+            Section("Note Bytes") {
+                Text(hexString(record.noteData))
+                    .font(.system(.caption2, design: .monospaced))
+                    .textSelection(.enabled)
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Shielded Note")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentShieldedOutgoingNote
+
+struct ShieldedOutgoingNoteStorageDetailView: View {
+    let record: PersistentShieldedOutgoingNote
+
+    var body: some View {
+        Form {
+            Section("Identity") {
+                FieldRow(label: "Wallet ID", value: hexString(record.walletId))
+                FieldRow(label: "Account Index", value: "\(record.accountIndex)")
+            }
+            Section("Commitment") {
+                FieldRow(label: "cmx", value: hexString(record.cmx))
+            }
+            Section("Send") {
+                FieldRow(label: "Recipient", value: hexString(record.recipient))
+                FieldRow(label: "Value", value: "\(record.value) credits")
+                FieldRow(label: "Block Height", value: "\(record.blockHeight)")
+            }
+            Section("Memo") {
+                if record.memo.isEmpty {
+                    Text("(empty)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text(hexString(record.memo))
+                        .font(.system(.caption2, design: .monospaced))
+                        .textSelection(.enabled)
+                }
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Shielded Sent Note")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentShieldedActivity
+
+struct ShieldedActivityStorageDetailView: View {
+    let record: PersistentShieldedActivity
+
+    var body: some View {
+        Form {
+            Section("Identity") {
+                FieldRow(label: "Wallet ID", value: hexString(record.walletId))
+                FieldRow(label: "Account Index", value: "\(record.accountIndex)")
+                FieldRow(label: "Entry ID", value: hexString(record.entryId))
+            }
+            Section("Classification") {
+                FieldRow(label: "Kind Tag", value: kindDisplay(record.kindTag))
+                FieldRow(label: "Direction", value: directionDisplay(record.direction))
+                FieldRow(label: "Status", value: statusDisplay(record.status))
+            }
+            Section("Amounts") {
+                FieldRow(label: "Amount", value: "\(record.amount) credits")
+                FieldRow(label: "Fee", value: record.hasFee ? "\(record.fee) credits" : "(unknown)")
+                FieldRow(label: "Block Height", value: record.hasBlockHeight ? "\(record.blockHeight)" : "(pending)")
+            }
+            Section("Linkage") {
+                if !record.identityId.isEmpty {
+                    FieldRow(label: "Identity ID", value: hexString(record.identityId))
+                }
+                if !record.counterparty.isEmpty {
+                    FieldRow(label: "Counterparty", value: hexString(record.counterparty))
+                }
+                FieldRow(label: "Note cmxs", value: "\(record.noteCmxs.count / 32)")
+                FieldRow(label: "Spent Nullifiers", value: "\(record.spentNullifiers.count / 32)")
+            }
+            Section("Memo") {
+                if record.memo.isEmpty {
+                    Text("(empty)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text(hexString(record.memo))
+                        .font(.system(.caption2, design: .monospaced))
+                        .textSelection(.enabled)
+                }
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created (ms)", value: "\(record.createdAtMs)")
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Shielded Activity")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func kindDisplay(_ tag: Int) -> String {
+        let name: String
+        switch tag {
+        case 0: name = "Shield"
+        case 1: name = "ShieldFromAssetLock"
+        case 2: name = "Received"
+        case 3: name = "Sent"
+        case 4: name = "Unshield"
+        case 5: name = "Withdrawal"
+        case 6: name = "IdentityCreate"
+        case 7: name = "ShieldedSpend"
+        default: return "Unknown(\(tag))"
+        }
+        return "\(name) (\(tag))"
+    }
+
+    private func directionDisplay(_ raw: Int) -> String {
+        let name: String
+        switch raw {
+        case 0: name = "In"
+        case 1: name = "Out"
+        case 2: name = "Self"
+        default: return "Unknown(\(raw))"
+        }
+        return "\(name) (\(raw))"
+    }
+
+    private func statusDisplay(_ raw: Int) -> String {
+        let name: String
+        switch raw {
+        case 0: name = "Pending"
+        case 1: name = "Confirmed"
+        case 2: name = "Failed"
+        default: return "Unknown(\(raw))"
+        }
+        return "\(name) (\(raw))"
+    }
+}
+
+// MARK: - PersistentShieldedSyncState
+
+struct ShieldedSyncStateStorageDetailView: View {
+    let record: PersistentShieldedSyncState
+
+    var body: some View {
+        Form {
+            Section("Identity") {
+                FieldRow(label: "Wallet ID", value: hexString(record.walletId))
+                FieldRow(label: "Account Index", value: "\(record.accountIndex)")
+            }
+            Section("Sync") {
+                FieldRow(label: "Last Synced Index", value: "\(record.lastSyncedIndex)")
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Shielded Sync State")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentShieldedViewingKey
+
+struct ShieldedViewingKeyStorageDetailView: View {
+    let record: PersistentShieldedViewingKey
+
+    var body: some View {
+        Form {
+            Section("Identity") {
+                FieldRow(label: "Wallet ID", value: hexString(record.walletId))
+                FieldRow(label: "Account Index", value: "\(record.accountIndex)")
+            }
+            Section("Viewing Key") {
+                // Viewing-grade only (cannot spend), but still key material —
+                // the full FVK is intentionally rendered for QA inspection,
+                // matching how the explorer shows other derived key batches.
+                FieldRow(label: "FVK Length", value: "\(record.fvkBytes.count) bytes")
+                FieldRow(label: "FVK (hex)", value: hexString(record.fvkBytes))
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Shielded Viewing Key")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
