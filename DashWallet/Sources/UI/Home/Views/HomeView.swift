@@ -208,16 +208,6 @@ struct HomeViewContent<Content: View>: View {
                     .frame(height: topOverscrollSize)
                     .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
 
-                // Zero-height scroll sentinel: its minY in the scroll
-                // view's space is 0 at rest and goes negative as the
-                // user scrolls down. Drives the collapsing top bar.
-                GeometryReader { proxy in
-                    Color.clear.preference(
-                        key: HomeScrollOffsetKey.self,
-                        value: proxy.frame(in: .named("homeScroll")).minY)
-                }
-                .frame(height: 0)
-
                 LazyVStack(pinnedViews: [.sectionHeaders]) {
                     HomeBalanceView(
                         viewModel: balanceModel,
@@ -309,6 +299,18 @@ struct HomeViewContent<Content: View>: View {
                     }
                 }
                 .padding(EdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0))
+                // Scroll sentinel as a background so it adds no layout
+                // (a zero-height sibling would still get the scroll
+                // content's implicit spacing and open a light gap in the
+                // blue header). minY is ~0 at rest and goes negative as
+                // the user scrolls down; drives the collapsing top bar.
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear.preference(
+                            key: HomeScrollOffsetKey.self,
+                            value: proxy.frame(in: .named("homeScroll")).minY)
+                    }
+                )
             }
             .coordinateSpace(name: "homeScroll")
             .onPreferenceChange(HomeScrollOffsetKey.self) { minY in
