@@ -626,6 +626,9 @@
 /* Masternodes */
 "Collateral" = "Collateral";
 
+/* Shielded transfer status */
+"Completed" = "Completed";
+
 /* Balance info sheet section */
 "Cons" = "Cons";
 
@@ -1396,6 +1399,9 @@
 
 /* Usernames */
 "Funded from your Shielded balance — your username can't be linked to your other Dash." = "Funded from your Shielded balance — your username can't be linked to your other Dash.";
+
+/* Shielded transfer status */
+"Funds locked — finishing transfer" = "Funds locked — finishing transfer";
 
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash.";
@@ -3309,6 +3315,9 @@
 
 /* Usernames */
 "Starts after you add funds" = "Starts after you add funds";
+
+/* Transaction details */
+"Status" = "Status";
 
 /* Step 1 */
 "Step %ld" = "Step %ld";

@@ -26,7 +26,21 @@ class TxDetailModel: NSObject {
     var txTaxCategory: TxMetadataTaxCategory
 
     var title: String {
-        direction.title
+        // Shielded transfers carry their own identity — the generic
+        // direction titles ("Moved to Address" / "Amount received") hide
+        // what actually happened.
+        if transaction.isShieldedTransfer {
+            return transaction.isPendingShieldedTransfer
+                ? NSLocalizedString("Shielded transfer (pending)",
+                                    comment: "A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet")
+                : NSLocalizedString("Shielded transfer",
+                                    comment: "Transfer of own funds into the private shielded balance")
+        }
+        if transaction.isShieldedWithdrawalReceipt {
+            return NSLocalizedString("Shielded withdrawal",
+                                     comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+        }
+        return direction.title
     }
 
     var direction: DSTransactionDirection {
@@ -305,6 +319,54 @@ extension TxDetailModel {
         }
 
         return models
+    }
+
+    /// Extra rows for shielded transfers: the balance-to-balance route and,
+    /// for a Core → Shielded funding, the live on-chain asset-lock status.
+    /// Empty for every other transaction.
+    func shieldedInfo() -> [DWTitleDetailItem] {
+        let transparent = NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
+        let shielded = NSLocalizedString("Shielded balance", comment: "")
+        if transaction.isShieldedTransfer {
+            var rows: [DWTitleDetailItem] = [
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: transparent),
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: shielded),
+            ]
+            if let status = shieldedStatusText {
+                rows.append(DWTitleDetailCellModel(
+                    style: .default,
+                    title: NSLocalizedString("Status", comment: "Transaction details"),
+                    plainDetail: status))
+            }
+            return rows
+        }
+        if transaction.isShieldedWithdrawalReceipt {
+            return [
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: shielded),
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: transparent),
+            ]
+        }
+        return []
+    }
+
+    /// User-facing name of the funding asset lock's live status
+    /// (`PersistentAssetLock.statusRaw` via `ShieldedTxLookup`): 0/1 =
+    /// built/broadcast, 2/3 = IS/CL-locked awaiting the shield transition,
+    /// 4 = consumed (transfer complete). Nil when the lookup has no entry.
+    private var shieldedStatusText: String? {
+        guard let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: transactionId)?.statusRaw else {
+            return nil
+        }
+        switch statusRaw {
+        case 0, 1:
+            return NSLocalizedString("Broadcasting", comment: "")
+        case 2, 3:
+            return NSLocalizedString("Funds locked — finishing transfer", comment: "Shielded transfer status")
+        case 4:
+            return NSLocalizedString("Completed", comment: "Shielded transfer status")
+        default:
+            return nil
+        }
     }
 
     func fee(with font: UIFont, tintColor: UIColor) -> DWTitleDetailItem {
