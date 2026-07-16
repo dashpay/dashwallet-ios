@@ -22,6 +22,7 @@ enum MainMenuNavigationDestination {
     case buySellPortal
     case explore
     case syncInfo
+    case wallets
     case security
     case settings
     case tools
@@ -104,6 +105,15 @@ class MainMenuViewModel: ObservableObject {
             icon: .system("arrow.triangle.2.circlepath"),
             action: { [weak self] in
                 self?.navigationDestination = .syncInfo
+            }
+        ))
+
+        // Wallets
+        allItems.append(MenuItemModel(
+            title: NSLocalizedString("Wallets", comment: ""),
+            icon: .custom("image.wallets", maxHeight: 30),
+            action: { [weak self] in
+                self?.navigationDestination = .wallets
             }
         ))
 

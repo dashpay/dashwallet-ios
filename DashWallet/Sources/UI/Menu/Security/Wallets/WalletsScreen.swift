@@ -16,10 +16,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  "Wallets" screen (Security menu). Lists the on-device SwiftDashSDK wallets
-//  for the current network, one marked active, and offers switch-on-tap,
-//  rename, and per-wallet remove. Add Wallet is Phase 3 and is intentionally
-//  absent. All logic lives in `WalletsViewModel`; this view only renders.
+//  "Wallets" screen (main menu). Lists the on-device SwiftDashSDK wallets
+//  for the current network, one marked active. Tapping a wallet opens its
+//  per-account breakdown (`WalletAccountsScreen`); switch, rename, and
+//  per-wallet remove live in the row's menu. All logic lives in
+//  `WalletsViewModel`; this view only renders.
 //
 
 import SwiftUI
@@ -58,16 +59,22 @@ struct WalletsScreen: View {
                         ForEach(viewModel.rows) { row in
                             WalletRowView(
                                 row: row,
+                                onSwitch: { pendingSwitch = row },
                                 onRename: {
                                     renameText = row.displayName
                                     renameTarget = row
                                 },
                                 onRemove: { beginRemove(row) })
                                 .contentShape(Rectangle())
-                                .onTapGesture {
-                                    if !row.isActive { pendingSwitch = row }
-                                }
+                                .onTapGesture { showAccounts(row) }
                                 .contextMenu {
+                                    if !row.isActive {
+                                        Button {
+                                            pendingSwitch = row
+                                        } label: {
+                                            Label(NSLocalizedString("Switch to this wallet", comment: "Wallets"), systemImage: "arrow.left.arrow.right")
+                                        }
+                                    }
                                     Button {
                                         renameText = row.displayName
                                         renameTarget = row
@@ -224,6 +231,16 @@ struct WalletsScreen: View {
         }
     }
 
+    // MARK: - Accounts
+
+    /// Push the tapped wallet's per-account breakdown.
+    private func showAccounts(_ row: WalletRow) {
+        let controller = UIHostingController(
+            rootView: WalletAccountsScreen(vc: vc, walletId: row.walletId, walletName: row.displayName))
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
+    }
+
     // MARK: - Remove routing
 
     /// The last remaining wallet routes to the existing full reset flow
@@ -244,6 +261,7 @@ struct WalletsScreen: View {
 
 private struct WalletRowView: View {
     let row: WalletRow
+    let onSwitch: () -> Void
     let onRename: () -> Void
     let onRemove: () -> Void
 
@@ -273,9 +291,16 @@ private struct WalletRowView: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.dashBlue)
             }
-            // Visible entry point for rename/remove — the long-press context
-            // menu duplicates these but is undiscoverable on its own.
+            // Visible entry point for switch/rename/remove — the long-press
+            // context menu duplicates these but is undiscoverable on its own.
             Menu {
+                if !row.isActive {
+                    Button {
+                        onSwitch()
+                    } label: {
+                        Label(NSLocalizedString("Switch to this wallet", comment: "Wallets"), systemImage: "arrow.left.arrow.right")
+                    }
+                }
                 Button {
                     onRename()
                 } label: {
@@ -293,6 +318,9 @@ private struct WalletRowView: View {
                     .frame(width: 32, height: 32)
                     .contentShape(Rectangle())
             }
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.secondaryText)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
