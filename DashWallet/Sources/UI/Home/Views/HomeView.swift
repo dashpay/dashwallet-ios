@@ -472,7 +472,27 @@ struct HomeViewContent<Content: View>: View {
         switch txItem.internalTransferRoute {
         case .coreToShielded: return ("d.circle.fill", "shield.fill")
         case .shieldedToCore: return ("shield.fill", "d.circle.fill")
+        case .coreToPlatform: return ("d.circle.fill", "creditcard.fill")
+        case .coreToIdentity: return ("d.circle.fill", "person.crop.circle.fill")
         case .coreToCore, nil: return nil
+        }
+    }
+
+    /// Route pill text for an internal transfer row ("Transparent →
+    /// Platform"), shown in the small badge next to the time. Nil for plain
+    /// self-sends and non-transfers.
+    private func transferRouteDetails(txItem: Transaction) -> String? {
+        switch txItem.internalTransferRoute {
+        case .coreToShielded:
+            return NSLocalizedString("Transparent → Shielded", comment: "Transfer of own funds into the private shielded balance")
+        case .shieldedToCore:
+            return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+        case .coreToPlatform:
+            return NSLocalizedString("Transparent → Platform", comment: "Transfer of own funds into the Platform balance")
+        case .coreToIdentity, .coreToCore, nil:
+            // Identity fundings carry their purpose in the title
+            // ("Identity registration"), so no route pill.
+            return nil
         }
     }
 
@@ -551,7 +571,11 @@ struct HomeViewContent<Content: View>: View {
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
-                    : (metadata?.details?.isEmpty == false ? metadata?.details : nil),
+                    : txItem.isPendingPlatformFunding || txItem.isPendingIdentityFunding
+                        ? NSLocalizedString("Pending", comment: "")
+                        : (metadata?.details?.isEmpty == false
+                            ? metadata?.details
+                            : transferRouteDetails(txItem: txItem)),
                 dashAmount: txItem.signedDashAmount,
                 amountSign: .always,
                 fiat: txItem.fiatAmount,

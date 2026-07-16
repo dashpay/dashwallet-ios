@@ -31,19 +31,16 @@ class TxDetailModel: NSObject {
     fileprivate var rawFeeCache: UInt64?
 
     var title: String {
-        // Shielded transfers carry their own identity — the generic
-        // direction titles ("Moved to Address" / "Amount received") hide
-        // what actually happened.
-        if transaction.isShieldedTransfer {
-            return transaction.isPendingShieldedTransfer
-                ? NSLocalizedString("Shielded transfer (pending)",
-                                    comment: "A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet")
-                : NSLocalizedString("Shielded transfer",
-                                    comment: "Transfer of own funds into the private shielded balance")
+        // Identity fundings and balance transfers carry their own identity —
+        // the generic direction titles ("Moved to Address") hide what
+        // actually happened. Identity fundings name their purpose (matching
+        // the home row); other transfer routes read "Internal Transfer" with
+        // the From/To/Status rows naming the route.
+        if transaction.isIdentityFundingTransfer {
+            return transaction.stateTitle
         }
-        if transaction.isShieldedWithdrawalReceipt {
-            return NSLocalizedString("Shielded withdrawal",
-                                     comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+        if let route = transaction.internalTransferRoute, route != .coreToCore {
+            return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
         return direction.title
     }
@@ -195,7 +192,8 @@ extension TxDetailModel {
         // labeling them "Internally moved to" reads like the transfer's
         // destination. The From/To route rows carry that instead, and the
         // raw transaction inspector shows every output for the curious.
-        if transaction.isShieldedTransfer {
+        if transaction.isShieldedTransfer || transaction.isPlatformFundingTransfer
+            || transaction.isIdentityFundingTransfer {
             return false
         }
         if direction == .received && hasDestinationUser {
@@ -358,6 +356,40 @@ extension TxDetailModel {
                 DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: transparent),
             ]
         }
+        if transaction.isPlatformFundingTransfer {
+            var rows: [DWTitleDetailItem] = [
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: transparent),
+                DWTitleDetailCellModel(
+                    style: .default,
+                    title: NSLocalizedString("To", comment: ""),
+                    plainDetail: NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")),
+            ]
+            if let statusRaw = transaction.platformFundingLockInfo?.statusRaw,
+               let status = Self.lockStatusText(statusRaw) {
+                rows.append(DWTitleDetailCellModel(
+                    style: .default,
+                    title: NSLocalizedString("Status", comment: "Transaction details"),
+                    plainDetail: status))
+            }
+            return rows
+        }
+        if transaction.isIdentityFundingTransfer {
+            var rows: [DWTitleDetailItem] = [
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: transparent),
+                DWTitleDetailCellModel(
+                    style: .default,
+                    title: NSLocalizedString("To", comment: ""),
+                    plainDetail: NSLocalizedString("Identity credits", comment: "Destination of an identity funding asset lock")),
+            ]
+            if let statusRaw = transaction.identityFundingLockInfo?.statusRaw,
+               let status = Self.lockStatusText(statusRaw) {
+                rows.append(DWTitleDetailCellModel(
+                    style: .default,
+                    title: NSLocalizedString("Status", comment: "Transaction details"),
+                    plainDetail: status))
+            }
+            return rows
+        }
         return []
     }
 
@@ -369,6 +401,12 @@ extension TxDetailModel {
         guard let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: transactionId)?.statusRaw else {
             return nil
         }
+        return Self.lockStatusText(statusRaw)
+    }
+
+    /// User-facing name of an asset-lock status (shared by the shielded and
+    /// platform funding routes).
+    private static func lockStatusText(_ statusRaw: Int) -> String? {
         switch statusRaw {
         case 0, 1:
             return NSLocalizedString("Broadcasting", comment: "")

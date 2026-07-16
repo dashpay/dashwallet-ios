@@ -415,6 +415,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             signer: signer)
 
         applyUpdatedBalances(updated, context: container.mainContext)
+        ShieldedTxLookup.shared.refresh()
         Task { await self.syncNow() }
     }
 
@@ -438,6 +439,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             signer: signer)
 
         applyUpdatedBalances(updated, context: container.mainContext)
+        ShieldedTxLookup.shared.refresh()
         Task { await self.syncNow() }
     }
 
@@ -1003,6 +1005,13 @@ final class ShieldedTxLookup {
     /// (`ManagedAssetLockManager.FundingType.assetLockShieldedAddressTopUp`).
     private static let shieldedFundingType = 5
 
+    /// `AssetLockAddressTopUp` — the Core → Platform address funding lock.
+    private static let platformFundingType = 4
+
+    /// Identity funding locks: 0 = IdentityRegistration, 1 = IdentityTopUp,
+    /// 2 = IdentityTopUpNotBound, 3 = IdentityInvitation.
+    private static let identityFundingTypes = 0...3
+
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.shielded-tx-lookup")
@@ -1016,6 +1025,8 @@ final class ShieldedTxLookup {
         let amountDuffs: UInt64
         let statusRaw: Int
         let vout: UInt32
+        /// 5 = shielded funding, 4 = platform address funding.
+        let fundingTypeRaw: Int
     }
 
     private let lock = NSLock()
@@ -1038,10 +1049,34 @@ final class ShieldedTxLookup {
     /// matching the txid component of `PersistentAssetLock.outPointHex`.
     /// Thread-safe; touches no SwiftData.
     func info(forTxidHex txidHex: String) -> ShieldedLockInfo? {
+        entry(forTxidHex: txidHex, fundingType: Self.shieldedFundingType)
+    }
+
+    /// Same snapshot entry for a Core → Platform (type 4) address-funding
+    /// lock — powers the "Platform transfer" rows the way `info` powers the
+    /// shielded ones. Thread-safe; touches no SwiftData.
+    func platformFundingInfo(forTxidHex txidHex: String) -> ShieldedLockInfo? {
+        entry(forTxidHex: txidHex, fundingType: Self.platformFundingType)
+    }
+
+    /// Snapshot entry for an identity funding lock (types 0…3 — registration,
+    /// top-up, invitation). `fundingTypeRaw` distinguishes the variants.
+    /// Thread-safe; touches no SwiftData.
+    func identityFundingInfo(forTxidHex txidHex: String) -> ShieldedLockInfo? {
         let key = txidHex.lowercased()
         lock.lock()
         defer { lock.unlock() }
-        return infoByTxid[key]
+        guard let entry = infoByTxid[key],
+              Self.identityFundingTypes.contains(entry.fundingTypeRaw) else { return nil }
+        return entry
+    }
+
+    private func entry(forTxidHex txidHex: String, fundingType: Int) -> ShieldedLockInfo? {
+        let key = txidHex.lowercased()
+        lock.lock()
+        defer { lock.unlock() }
+        guard let entry = infoByTxid[key], entry.fundingTypeRaw == fundingType else { return nil }
+        return entry
     }
 
     /// Rebuild the snapshot from the active container's shielded asset-lock
@@ -1059,7 +1094,8 @@ final class ShieldedTxLookup {
             // rather than fighting `#Predicate` local-capture rules.
             let rows = try container.mainContext.fetch(FetchDescriptor<PersistentAssetLock>())
             var map: [String: ShieldedLockInfo] = [:]
-            for row in rows where row.fundingTypeRaw == Self.shieldedFundingType && row.amountDuffs > 0 {
+            let trackedTypes = Array(Self.identityFundingTypes) + [Self.platformFundingType, Self.shieldedFundingType]
+            for row in rows where trackedTypes.contains(row.fundingTypeRaw) && row.amountDuffs > 0 {
                 // outPointHex == "<txid display hex>:<vout>"; key on the txid,
                 // parse the vout after the colon. One shielded asset-lock row
                 // per funding txid in practice; if one ever recurs, prefer the
@@ -1073,12 +1109,13 @@ final class ShieldedTxLookup {
                 let info = ShieldedLockInfo(
                     amountDuffs: UInt64(row.amountDuffs),
                     statusRaw: row.statusRaw,
-                    vout: vout)
+                    vout: vout,
+                    fundingTypeRaw: row.fundingTypeRaw)
                 if let existing = map[txid], existing.statusRaw >= info.statusRaw { continue }
                 map[txid] = info
             }
             store(map)
-            Self.logger.info("🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) shielded funding tx(s)")
+            Self.logger.info("🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) funding tx(s) (shielded + platform)")
             // Diagnostic: if asset locks exist but none matched the shielded
             // funding type, surface the types actually present so a single
             // test run reveals whether the discriminant assumption is wrong.
