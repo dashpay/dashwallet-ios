@@ -200,7 +200,9 @@ struct InternalTransferConfirmSheet: View {
     /// the Rust `shield_from_asset_lock_pool_fee`:
     /// `required_asset_lock_duff_balance_for_processing_start_for_address_funding`
     /// (50_000 duffs) × 1000 credits/duff. Versioned constant; estimate-only.
-    private static let assetLockBaseCostCredits: UInt64 = 50_000_000
+    /// Internal — the Send confirm sheet estimates its Core → Shielded
+    /// route with the same number.
+    static let assetLockBaseCostCredits: UInt64 = 50_000_000
 
     /// Platform credits per DASH (1e11).
     private static let creditsPerDash: Decimal = 100_000_000_000

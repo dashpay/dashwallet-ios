@@ -193,6 +193,17 @@ struct SendScreen: View {
                             isEditingAddress = false
                         }
                     }
+                    .onChange(of: viewModel.destination) { _, destination in
+                        // The address just became valid (a paste, or the
+                        // final typed character) → lock in right away.
+                        // Software-keyboard-less setups (simulator with a
+                        // hardware keyboard) never drop focus on their own,
+                        // so don't wait for that.
+                        if destination != nil {
+                            addressFieldFocused = false
+                            isEditingAddress = false
+                        }
+                    }
             }
 
             if viewModel.showsInvalidAddress {
@@ -595,7 +606,7 @@ struct SendConfirmSheet: View {
             return NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             return NSLocalizedString("Shielded balance", comment: "")
-        case .coreToCore:
+        case .coreToCore, .coreToShielded:
             return NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
         }
     }
@@ -630,6 +641,12 @@ struct SendConfirmSheet: View {
     /// the internal transfer's confirm sheet. `nil` → the row shows "—".
     private var networkFeeCredits: UInt64? {
         switch route {
+        case .coreToShielded:
+            // ShieldFromAssetLock: base shielded fee + asset-lock base cost
+            // (same estimate as the internal Core → Shielded transfer).
+            guard let base = try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+            else { return nil }
+            return base + InternalTransferConfirmSheet.assetLockBaseCostCredits
         case .platformToPlatform:
             // Credit transfer: the metered transition fee. The executor
             // states ~0.001 DASH as the conservative max.
@@ -727,9 +744,13 @@ struct SendConfirmSheet: View {
         var steps: [ShieldedTransferStepList.Step] = [
             .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing)
         ]
+        // Only the asset-lock route has the on-chain locking stage.
+        if route == .coreToShielded {
+            steps.append(.init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking))
+        }
         // Only shielded legs build an Orchard proof.
         switch route {
-        case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
+        case .coreToShielded, .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             steps.append(.init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving))
         case .platformToPlatform, .platformToCore, .coreToCore:
             break
@@ -743,6 +764,14 @@ struct SendConfirmSheet: View {
     private func confirm() {
         Task {
             switch route {
+            case .coreToShielded:
+                guard let destinationRaw43 else {
+                    coordinator.reset()
+                    return
+                }
+                await coordinator.performAssetLock(
+                    amountDuffs: UInt64(dashDuffs),
+                    recipientRaw43: destinationRaw43)
             case .platformToPlatform:
                 await coordinator.performPlatformSend(
                     destination: destinationAddress,
@@ -778,6 +807,22 @@ struct SendConfirmSheet: View {
     }
 
     private func tryAgain() {
+        // If the just-failed Core → Shielded attempt already committed its
+        // asset lock, RESUME that exact outpoint with the same recipient
+        // instead of building a second lock (which strands the first) —
+        // mirrors the internal transfer's retry.
+        if route == .coreToShielded,
+           let op = coordinator.lastAssetLockOutPoint,
+           let destinationRaw43 {
+            coordinator.reset()
+            Task {
+                await coordinator.resumeAssetLock(
+                    outPointTxidWire: op.txidWire,
+                    outPointVout: op.vout,
+                    recipientRaw43: destinationRaw43)
+            }
+            return
+        }
         coordinator.reset()
         confirm()
     }

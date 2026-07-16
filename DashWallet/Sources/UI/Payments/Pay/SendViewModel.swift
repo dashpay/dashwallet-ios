@@ -33,6 +33,10 @@ final class SendViewModel: ObservableObject {
     /// rest run through `ShieldedTransferCoordinator` / the Platform seam.
     enum Route: Equatable {
         case coreToCore
+        /// BIP44 UTXOs → asset lock → Type 18 shield note for the
+        /// recipient's Orchard address (remainder semantics: they receive
+        /// `lock_value − pool_fee`).
+        case coreToShielded
         case platformToPlatform
         case platformToCore
         case shieldedToCore
@@ -226,12 +230,15 @@ final class SendViewModel: ObservableObject {
     /// Which balances can fund a send to the entered destination.
     /// Core addresses can be paid from any bucket; Platform addresses from
     /// Platform credits or the shielded pool (there is no external
-    /// core → platform funding); shielded addresses only from the pool.
+    /// core → platform funding); shielded addresses from the pool or the
+    /// Core balance (asset-lock shield — `shieldedShield` has no recipient
+    /// parameter, so Platform credits can't pay an external shielded
+    /// address).
     var validSources: [ChainNetwork] {
         switch destination {
         case .core: return [.core, .platform, .shielded]
         case .platform: return [.platform, .shielded]
-        case .shielded: return [.shielded]
+        case .shielded: return [.shielded, .core]
         case nil: return []
         }
     }
@@ -240,6 +247,7 @@ final class SendViewModel: ObservableObject {
         guard let destination else { return nil }
         switch (source, destination) {
         case (.core, .core): return .coreToCore
+        case (.core, .shielded): return .coreToShielded
         case (.platform, .platform): return .platformToPlatform
         case (.platform, .core): return .platformToCore
         case (.shielded, .core): return .shieldedToCore
@@ -411,10 +419,12 @@ final class SendViewModel: ObservableObject {
     /// amount. `nil` = requirement unavailable → callers fail closed.
     private var feeReserveCredits: UInt64? {
         switch route {
-        case .coreToCore, .platformToCore, nil:
+        case .coreToCore, .coreToShielded, .platformToCore, nil:
             // L1 send fees are handled by the payment processor; the
-            // full-balance platform withdrawal nets its fee out of the
-            // preflighted payout.
+            // asset-lock shield carves its pool fee from the locked value
+            // (nothing reserved from the Core balance, mirroring the
+            // internal transfer); the full-balance platform withdrawal
+            // nets its fee out of the preflighted payout.
             return 0
         case .platformToPlatform:
             return Self.platformTransferFeeReserveCredits
@@ -465,6 +475,11 @@ final class SendViewModel: ObservableObject {
             // The L1 fee rides on top; the payment processor rejects an
             // unfundable send with its own error, so gate on the balance only.
             return dashDuffsUnsigned <= coreBalanceDuffs
+        case .coreToShielded:
+            // Asset-lock route: the pool fee is carved from the locked value
+            // and the Rust side rejects an undersized lock — same envelope
+            // as the internal Core → Shielded transfer.
+            return dashDuffsUnsigned <= coreBalanceDuffs
         case .platformToPlatform:
             guard let reserve = feeReserveCredits else { return false }
             return platformCredits >= reserve
@@ -486,7 +501,7 @@ final class SendViewModel: ObservableObject {
     func fillMaxFromWallet() {
         let sourceDuffs: UInt64
         switch route {
-        case .coreToCore, nil:
+        case .coreToCore, .coreToShielded, nil:
             sourceDuffs = coreBalanceDuffs
         case .platformToPlatform:
             sourceDuffs = creditsMinusFeeReserve(platformCredits) / 1000

@@ -141,10 +141,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Stages: `.signing → .locking → .proving → .broadcasting → .success`.
     /// The intermediate stages are polled from `PersistentAssetLock.statusRaw`;
     /// the SDK returns `Void` only on `Consumed`/success.
-    func performAssetLock(amountDuffs: UInt64) async {
+    ///
+    /// `recipientRaw43` nil = the wallet's own default Orchard address (the
+    /// internal transfer); an external Send passes the recipient's raw
+    /// 43-byte payload. Type 18's remainder semantics apply either way: the
+    /// recipient receives `lock_value − pool_fee`.
+    func performAssetLock(amountDuffs: UInt64, recipientRaw43 recipientOverride: Data? = nil) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
-        Self.logger.info("🛡️ SHIELD-TX :: asset-lock route amount=\(amountDuffs)")
+        Self.logger.info("🛡️ SHIELD-TX :: asset-lock route amount=\(amountDuffs) external=\(recipientOverride != nil)")
 
         let env: Environment
         do {
@@ -167,7 +172,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         do {
             let recipient = ShieldedFundFromAssetLockRecipient(
-                recipientRaw43: env.shieldedRecipient,
+                recipientRaw43: recipientOverride ?? env.shieldedRecipient,
                 credits: nil)
             try await env.manager.shieldedFundFromAssetLock(
                 walletId: env.walletId,
@@ -198,17 +203,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// landed. Picks up the existing outpoint and drives the remaining stages
     /// via `shieldedResumeFundFromAssetLock` — instead of building a SECOND
     /// asset lock (which is what a fresh `performAssetLock` would do, stranding
-    /// the first). The recipient is re-derived (the wallet's own default
-    /// shielded address), identical to the original attempt; the SDK re-derives
-    /// an identical `shield_amount` from the on-chain lock value, so a resume
-    /// cannot desync funds and is safe to retry. Re-authorizes — this moves
-    /// real funds.
+    /// the first). The recipient must match the original attempt —
+    /// re-derived (the wallet's own default shielded address) for the
+    /// internal transfer, or the same external `recipientRaw43` for a
+    /// Send-screen retry; the SDK re-derives an identical `shield_amount`
+    /// from the on-chain lock value, so a resume cannot desync funds and is
+    /// safe to retry. Re-authorizes — this moves real funds.
     ///
-    /// Used by both the confirm sheet's "Try again" (in-session) and the
+    /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
-    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32) async {
+    func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout)")
+        Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
         let env: Environment
         do {
@@ -232,7 +238,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         do {
             let recipient = ShieldedFundFromAssetLockRecipient(
-                recipientRaw43: env.shieldedRecipient,
+                recipientRaw43: recipientOverride ?? env.shieldedRecipient,
                 credits: nil)
             try await env.manager.shieldedResumeFundFromAssetLock(
                 walletId: env.walletId,
