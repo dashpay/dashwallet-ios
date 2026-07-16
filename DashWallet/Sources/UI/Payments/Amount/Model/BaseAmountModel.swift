@@ -48,35 +48,35 @@ struct AmountInputItem: Equatable {
 class BaseAmountModel: ObservableObject {
     var cancellableBag = Set<AnyCancellable>()
     var activeAmountType: AmountType { currentInputItem.isMain ? .main : .supplementary }
+    internal let inputLocale: Locale
+    var keyboardLocale: Locale { inputLocale }
 
     var mainAmount: AmountObject!
     var supplementaryAmount: AmountObject!
     @Published var amount: AmountObject!
     @Published var walletBalance: UInt64 = 0
-    
-    var localCurrency: String {
-        let locale = Locale.current as NSLocale
-        return locale.displayName(forKey: .currencySymbol, value: localCurrencyCode)!
-    }
-
-    var error: Error? {
+    @Published var error: Error? {
         didSet {
             if let error {
                 errorHandler?(error)
             }
         }
     }
-
-    var currentInputItem: AmountInputItem {
+    @Published var currentInputItem: AmountInputItem {
         didSet {
             inputsSwappedHandler?(activeAmountType)
         }
     }
-
-    var inputItems: [AmountInputItem] = [] {
+    @Published var inputItems: [AmountInputItem] = [] {
         didSet {
             amountInputItemsChangeHandler?()
         }
+    }
+    @Published private(set) var currentKeyboardInputString: String
+
+    var localCurrency: String {
+        let locale = Locale.current as NSLocale
+        return locale.displayName(forKey: .currencySymbol, value: localCurrencyCode) ?? localCurrencyCode
     }
 
     public var errorHandler: ((Error) -> Void)?
@@ -122,18 +122,21 @@ class BaseAmountModel: ObservableObject {
         CurrencyExchanger.shared
     }
 
-    init() {
+    init(inputLocale: Locale = .current) {
+        self.inputLocale = inputLocale
         localCurrencyCode = App.fiatCurrency
         localFormatter = NumberFormatter.fiatFormatter(currencyCode: localCurrencyCode)
+        localFormatter.locale = inputLocale
 
         currentInputItem = .dash
+        currentKeyboardInputString = "0"
         inputItems = [
             .custom(currencyName: localCurrencyCode, currencyCode: localCurrencyCode),
             .dash,
         ]
 
-        mainAmountValidator = DWAmountInputValidator(type: .dash)
-        supplementaryAmountValidator = DWAmountInputValidator(type: .localCurrency)
+        mainAmountValidator = DWAmountInputValidator(type: .dash, locale: inputLocale)
+        supplementaryAmountValidator = DWAmountInputValidator(type: .localCurrency, locale: inputLocale)
 
         updateAmountObjects(with: "0")
         
@@ -156,7 +159,8 @@ class BaseAmountModel: ObservableObject {
                 let mainAmount = AmountObject(plainAmount: currentAmount.plainAmount,
                                               fiatCurrencyCode: supplementaryCurrencyCode,
                                               localFormatter: supplementaryNumberFormatter,
-                                              currencyExchanger: currencyExchanger)
+                                              currencyExchanger: currencyExchanger,
+                                              inputLocale: inputLocale)
                 supplementaryAmount = mainAmount.localAmount
             }
         } else {
@@ -176,6 +180,7 @@ class BaseAmountModel: ObservableObject {
         guard let price = try? CurrencyExchanger.shared.rate(for: code) else { return }
 
         localFormatter = NumberFormatter.fiatFormatter(currencyCode: code)
+        localFormatter.locale = inputLocale
         localCurrencyCode = code
 
         let newInputItem = AmountInputItem.custom(currencyName: localCurrencyCode, currencyCode: localCurrencyCode)
@@ -191,29 +196,32 @@ class BaseAmountModel: ObservableObject {
         rebuildAmounts()
     }
 
-    func updateAmountObjects(with inputString: String) {
+    func updateAmountObjects(with inputString: String, preserveKeyboardInput: Bool = false) {
         if activeAmountType == .main {
             mainAmount = AmountObject(dashAmountString: inputString,
                                       fiatCurrencyCode: supplementaryCurrencyCode,
                                       localFormatter: supplementaryNumberFormatter,
-                                      currencyExchanger: currencyExchanger)
+                                      currencyExchanger: currencyExchanger,
+                                      inputLocale: inputLocale)
             supplementaryAmount = nil
         } else if let amount = AmountObject(localAmountString: inputString,
                                             fiatCurrencyCode: supplementaryCurrencyCode,
                                             localFormatter: supplementaryNumberFormatter,
-                                            currencyExchanger: currencyExchanger) {
+                                            currencyExchanger: currencyExchanger,
+                                            inputLocale: inputLocale) {
             supplementaryAmount = amount
             mainAmount = nil
         }
 
-        amountDidChange()
+        amountDidChange(preserveKeyboardInput: preserveKeyboardInput)
     }
 
     internal func updateCurrentAmountObject(with amount: UInt64) {
         let amountObject = AmountObject(plainAmount: amount,
                                         fiatCurrencyCode: supplementaryCurrencyCode,
                                         localFormatter: supplementaryNumberFormatter,
-                                        currencyExchanger: currencyExchanger)
+                                        currencyExchanger: currencyExchanger,
+                                        inputLocale: inputLocale)
         updateCurrentAmountObject(with: amountObject)
     }
 
@@ -234,8 +242,11 @@ class BaseAmountModel: ObservableObject {
         updateAmountObjects(with: amount)
     }
 
-    internal final func amountDidChange() {
+    internal final func amountDidChange(preserveKeyboardInput: Bool = false) {
         amount = activeAmountType == .main ? mainAmount : supplementaryAmount
+        if !preserveKeyboardInput {
+            currentKeyboardInputString = amount.amountInternalRepresentation
+        }
         error = nil
         checkAmountForErrors()
     }
@@ -263,7 +274,7 @@ extension BaseAmountModel {
         }
 
         let nf = supplementaryNumberFormatter
-        return nf.string(from: fiatAmount as NSNumber)!
+        return nf.string(from: fiatAmount as NSNumber) ?? fiatAmount.string
     }
 
     var walletBalanceFormatted: String {
@@ -275,7 +286,7 @@ extension BaseAmountModel {
 
 extension BaseAmountModel: AmountInputControlDataSource {
     var currentInputString: String {
-        amount.amountInternalRepresentation
+        currentKeyboardInputString
     }
 
     var mainAmountString: String {
@@ -292,29 +303,49 @@ extension BaseAmountModel {
         false
     }
 
-    func updateInputField(with replacementText: String, in range: NSRange) {
-        let lastInputString = amount.amountInternalRepresentation
+    func updateKeyboardInputString(_ value: String) {
+        // SwiftUI keyboards send the full intended string, so validate it as a fresh value.
+        guard let validatedString = validatedInputString(from: "",
+                                                         range: NSRange(location: 0, length: 0),
+                                                         replacementText: value) else {
+            return
+        }
 
+        applyValidatedInputString(validatedString)
+    }
+
+    func updateInputField(with replacementText: String, in range: NSRange) {
+        guard let validatedString = validatedInputString(from: currentKeyboardInputString,
+                                                         range: range,
+                                                         replacementText: replacementText) else {
+            return
+        }
+
+        applyValidatedInputString(validatedString)
+    }
+
+    private func validatedInputString(from lastInputString: String, range: NSRange, replacementText: String) -> String? {
         let validator: DWInputValidator
         let numberFormatter: NumberFormatter
 
         if activeAmountType == .main {
             validator = mainAmountValidator
-            numberFormatter = NumberFormatter.dashFormatter
+            numberFormatter = (NumberFormatter.dashFormatter.copy() as? NumberFormatter) ?? NumberFormatter.dashFormatter
+            numberFormatter.locale = inputLocale
         } else {
             validator = supplementaryAmountValidator
             numberFormatter = supplementaryNumberFormatter
         }
 
-        let validatedString = validator.validatedString(fromLastInputString: lastInputString,
-                                                        range: range,
-                                                        replacementString: replacementText,
-                                                        numberFormatter: numberFormatter)
-        guard let validatedString else {
-            return
-        }
+        return validator.validatedString(fromLastInputString: lastInputString,
+                                         range: range,
+                                         replacementString: replacementText,
+                                         numberFormatter: numberFormatter)
+    }
 
-        updateAmountObjects(with: validatedString)
+    private func applyValidatedInputString(_ validatedString: String) {
+        currentKeyboardInputString = validatedString
+        updateAmountObjects(with: validatedString, preserveKeyboardInput: true)
     }
 
     func amountInputControlDidSwapInputs() {
@@ -325,24 +356,26 @@ extension BaseAmountModel {
     }
 
     func pasteFromClipboard() {
-        guard let string = UIPasteboard.general.string else { return }
+        guard let rawString = UIPasteboard.general.string else { return }
+        guard let parsedAmount = PastedAmountParser.parse(rawString, locale: inputLocale) else { return }
 
-        let originalFormatter = currentInputItem.isMain
-            ? NumberFormatter.dashFormatter
-            : localFormatter
-        let formatter = originalFormatter.copy() as! NumberFormatter
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = originalFormatter.maximumFractionDigits
+        // Clamp the pasted value's fraction digits to what the active input type accepts
+        // (Dash = 8, local currency per its formatter — usually 2), rounding down. Otherwise a
+        // value with too many decimals (e.g. pasting "0.1234" into a 2-dp fiat field) is
+        // rejected by the validator and the paste silently does nothing.
+        let maxFractionDigits = activeAmountType == .main ? 8 : supplementaryNumberFormatter.maximumFractionDigits
+        var value = parsedAmount.decimalValue
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &value, maxFractionDigits, .down)
 
-        guard let number = formatter.number(from: string) else { return }
+        guard let editableValue = PastedAmountParser.editableString(from: rounded, locale: inputLocale) else { return }
 
-        formatter.numberStyle = .none
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = originalFormatter.maximumFractionDigits
+        updateKeyboardInputString(editableValue)
+    }
 
-        guard let string = formatter.string(from: number) else { return }
-
-        updateAmountObjects(with: string)
+    /// Backward-compatible helper used by existing tests. The new paste flow uses
+    /// `PastedAmountParser` directly.
+    static func normalizedPastedNumberString(from string: String) -> String? {
+        PastedAmountParser.parse(string, locale: Locale(identifier: "en_US"))?.normalizedString
     }
 }
