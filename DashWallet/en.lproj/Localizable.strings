@@ -154,6 +154,9 @@
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
 
+/* Balance info sheet */
+"A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames." = "A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames.";
+
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
 
@@ -201,6 +204,9 @@
 
 /* Masternode status */
 "Active" = "Active";
+
+/* Balance info sheet */
+"Activity is public but not easy to trace" = "Activity is public but not easy to trace";
 
 /* No comment provided by engineer. */
 "Add" = "Add";
@@ -284,6 +290,9 @@
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
 
+/* Balance info sheet */
+"Almost instantaneous to sync balances" = "Almost instantaneous to sync balances";
+
 /* DashPay Contacts */
 "Already a contact" = "Already a contact";
 
@@ -305,6 +314,9 @@
 /* Maya */
 "Amount too small to cover fees" = "Amount too small to cover fees";
 
+/* Balance info sheet */
+"Amounts and addresses are public on the blockchain" = "Amounts and addresses are public on the blockchain";
+
 /* No comment provided by engineer. */
 "An error occurred" = "An error occurred";
 
@@ -319,6 +331,9 @@
 
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
+
+/* Balance info sheet */
+"Anyone who knows an address can view its history" = "Anyone who knows an address can view its history";
 
 /* AboutDash */
 "App version" = "App version";
@@ -429,6 +444,9 @@
 
 /* CrowdNode */
 "Balance: " = "Balance: ";
+
+/* Balance info sheet */
+"Balances and transfers are not publicly visible" = "Balances and transfers are not publicly visible";
 
 /* Coinbase/Payment Methods */
 "Bank Account" = "Bank Account";
@@ -598,6 +616,9 @@
 
 /* Masternodes */
 "Collateral" = "Collateral";
+
+/* Balance info sheet section */
+"Cons" = "Cons";
 
 /* Masternodes */
 "Couldn't fetch the balance (network error). Try Refresh." = "Couldn't fetch the balance (network error). Try Refresh.";
@@ -1431,6 +1452,9 @@
 "Google Pay" = "Google Pay";
 
 /* No comment provided by engineer. */
+"Got it" = "Got it";
+
+/* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
 
 /* Voting */
@@ -1471,6 +1495,9 @@
 
 /* Voting */
 "High to low" = "High to low";
+
+/* Balance info sheet */
+"Higher fees around 7 cents (still lower than other blockchains offering similar privacy)" = "Higher fees around 7 cents (still lower than other blockchains offering similar privacy)";
 
 /* No comment provided by engineer. */
 "History" = "History";
@@ -1920,6 +1947,9 @@
 /* adjective, security level */
 "Low" = "Low";
 
+/* Balance info sheet */
+"Low fees for everyday spending" = "Low fees for everyday spending";
+
 /* Voting */
 "Low to high" = "Low to high";
 
@@ -2226,6 +2256,12 @@
 /* Location Service Status */
 "Not Determined" = "Not Determined";
 
+/* Balance info sheet */
+"Not widely accepted by merchants" = "Not widely accepted by merchants";
+
+/* Balance info sheet */
+"Not widely accepted by merchants yet" = "Not widely accepted by merchants yet";
+
 /* Masternode keys */
 "Not yet used" = "Not yet used";
 
@@ -2333,6 +2369,9 @@
 
 /* No comment provided by engineer. */
 "P2SH platform addresses aren't supported yet. Use a P2PKH recipient." = "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.";
+
+/* Balance info sheet */
+"Payments confirm in seconds with InstantSend" = "Payments confirm in seconds with InstantSend";
 
 /* Send screen destination type */
 "Platform address" = "Platform address";
@@ -2594,6 +2633,9 @@
 
 /* Usernames */
 "Private registration" = "Private registration";
+
+/* Balance info sheet section */
+"Pros" = "Pros";
 
 /* CrowdNode Portal */
 "Protect your savings" = "Protect your savings";
@@ -3418,6 +3460,9 @@
 /* Coinbase */
 "The minimum amount you can send is %@" = "The minimum amount you can send is %@";
 
+/* Balance info sheet */
+"The most private place to hold your Dash" = "The most private place to hold your Dash";
+
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "The persisted wallet row has no network — cannot arm a resync.";
 
@@ -3610,6 +3655,9 @@
 /* CrowdNode */
 "Transaction History" = "Transaction History";
 
+/* Balance info sheet */
+"Transaction history isn't available" = "Transaction history isn't available";
+
 /* No comment provided by engineer. */
 "Transaction id" = "Transaction id";
 
@@ -3657,6 +3705,12 @@
 /* No comment provided by engineer. */
 "Transfers take different times" = "Transfers take different times";
 
+/* Balance info sheet */
+"Transfers take longer — privacy proofs take time to build" = "Transfers take longer — privacy proofs take time to build";
+
+/* Balance info sheet */
+"Transfers to other platform addresses and shielded addresses are instant and final" = "Transfers to other platform addresses and shielded addresses are instant and final";
+
 /* Balance breakdown */
 "Transparent" = "Transparent";
 
@@ -3674,6 +3728,12 @@
 
 /* No comment provided by engineer. */
 "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal." = "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal.";
+
+/* Balance info sheet */
+"Uses one of the most audited and tested zero-knowledge libraries (Orchard)" = "Uses one of the most audited and tested zero-knowledge libraries (Orchard)";
+
+/* Balance info sheet */
+"Very efficient with low fees" = "Very efficient with low fees";
 
 /* Full-balance Platform → Transparent withdrawal */
 "Withdraws the entire balance" = "Withdraws the entire balance";
@@ -4087,6 +4147,9 @@
 /* CrowdNode */
 "Withdrawal requested" = "Withdrawal requested";
 
+/* Balance info sheet */
+"Works with every Dash wallet, exchange, and merchant" = "Works with every Dash wallet, exchange, and merchant";
+
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Would you like to accept the invitation?";
 
@@ -4351,6 +4414,9 @@
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
+/* Balance info sheet */
+"Your main Dash balance on the Core blockchain — what you send and receive with other wallets, exchanges, and merchants." = "Your main Dash balance on the Core blockchain — what you send and receive with other wallets, exchanges, and merchants.";
+
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
 
@@ -4359,6 +4425,9 @@
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "Your primary Dash address that you currently use for your CrowdNode account";
+
+/* Balance info sheet */
+"Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";
