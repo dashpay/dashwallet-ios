@@ -227,6 +227,38 @@ class Transaction: TransactionDataItem, Identifiable {
     /// True when this is the funding tx of a "to Shielded" transfer.
     var isShieldedTransfer: Bool { shieldedLockInfo != nil }
 
+    /// Live info for this tx as a Core → Platform address funding (a Type-8
+    /// asset lock with funding type 4). Same live-read rationale as
+    /// `shieldedLockInfo`.
+    var platformFundingLockInfo: ShieldedTxLookup.ShieldedLockInfo? {
+        ShieldedTxLookup.shared.platformFundingInfo(forTxidHex: shieldedDisplayTxid)
+    }
+
+    private var platformFundingAmountDuffs: UInt64? { platformFundingLockInfo?.amountDuffs }
+
+    /// True when this is the funding tx of a Core → Platform transfer.
+    var isPlatformFundingTransfer: Bool { platformFundingLockInfo != nil }
+
+    /// Live info for this tx as an identity funding asset lock (types 0…3 —
+    /// registration / top-up / invitation). Same live-read rationale as
+    /// `shieldedLockInfo`.
+    var identityFundingLockInfo: ShieldedTxLookup.ShieldedLockInfo? {
+        ShieldedTxLookup.shared.identityFundingInfo(forTxidHex: shieldedDisplayTxid)
+    }
+
+    private var identityFundingAmountDuffs: UInt64? { identityFundingLockInfo?.amountDuffs }
+
+    /// True when this is the funding tx of an identity registration/top-up/
+    /// invitation.
+    var isIdentityFundingTransfer: Bool { identityFundingLockInfo != nil }
+
+    /// Identity sibling of `isPendingShieldedTransfer` — drives the home
+    /// row's "Pending" pill.
+    var isPendingIdentityFunding: Bool {
+        guard let status = identityFundingLockInfo?.statusRaw else { return false }
+        return (1...3).contains(status)
+    }
+
     /// True when this incoming tx is the L1 payout of a Shielded → Core
     /// withdrawal the app performed — matched by destination address via
     /// `ShieldedWithdrawalStore` (the SDK's opaque withdraw call returns no
@@ -249,6 +281,10 @@ class Transaction: TransactionDataItem, Identifiable {
         case coreToShielded
         /// L1 payout of a shielded withdrawal (Shielded → Core).
         case shieldedToCore
+        /// "To Platform" address-funding asset lock (Core → Platform).
+        case coreToPlatform
+        /// Identity registration / top-up / invitation asset lock.
+        case coreToIdentity
         /// Self-send within the transparent wallet.
         case coreToCore
     }
@@ -256,6 +292,8 @@ class Transaction: TransactionDataItem, Identifiable {
     var internalTransferRoute: InternalTransferRoute? {
         if isShieldedTransfer { return .coreToShielded }
         if isShieldedWithdrawalReceipt { return .shieldedToCore }
+        if isPlatformFundingTransfer { return .coreToPlatform }
+        if isIdentityFundingTransfer { return .coreToIdentity }
         if direction == .moved { return .coreToCore }
         return nil
     }
@@ -269,6 +307,15 @@ class Transaction: TransactionDataItem, Identifiable {
         return (1...3).contains(status)
     }
 
+    /// Platform-funding sibling of `isPendingShieldedTransfer`: the type-4
+    /// lock is committed but the address-funding transition hasn't consumed
+    /// it. Drives the home row's "Pending" pill (no tap-to-recover surface
+    /// yet — retry lives in the transfer confirm sheet).
+    var isPendingPlatformFunding: Bool {
+        guard let status = platformFundingLockInfo?.statusRaw else { return false }
+        return (1...3).contains(status)
+    }
+
     /// Outpoint (wire-order txid + vout) of this transfer's shielded asset
     /// lock, for a recovery resume. `txHashData` is already wire order, so it
     /// is returned verbatim (the display↔wire reversal only happens when
@@ -279,10 +326,11 @@ class Transaction: TransactionDataItem, Identifiable {
     }
 
     private lazy var _dashAmount: UInt64 = {
-        // A "to Shielded" transfer's L1 funding tx is a Type-18 asset lock;
-        // surface the real locked amount the SDK recorded instead of the 0
-        // the generic logic below derives for a self-directed move.
-        if let shielded = shieldedTransferAmountDuffs { return shielded }
+        // A "to Shielded" / "to Platform" transfer's L1 funding tx is an
+        // asset lock; surface the real locked amount the SDK recorded
+        // instead of the 0 the generic logic below derives for a
+        // self-directed move.
+        if let locked = shieldedTransferAmountDuffs ?? platformFundingAmountDuffs ?? identityFundingAmountDuffs { return locked }
         let fee = Int64(snapshot.fee ?? 0)
         switch direction {
         case .received:
@@ -307,7 +355,9 @@ class Transaction: TransactionDataItem, Identifiable {
     /// the lazily-cached generic `_dashAmount`, so a row that became a shielded
     /// transfer after its first render still shows the locked amount — matching
     /// the now-live `stateTitle` / `isPendingShieldedTransfer`.
-    var dashAmount: UInt64 { shieldedTransferAmountDuffs ?? _dashAmount }
+    var dashAmount: UInt64 {
+        shieldedTransferAmountDuffs ?? platformFundingAmountDuffs ?? identityFundingAmountDuffs ?? _dashAmount
+    }
     var signedDashAmount: Int64 {
         if dashAmount == UInt64.max {
             return Int64.max
@@ -319,7 +369,7 @@ class Transaction: TransactionDataItem, Identifiable {
     var fiatAmount: String {
         // The shielded amount is read live (see `dashAmount`), so compute its
         // fiat live too; non-shielded rows keep the lazily-cached value.
-        if shieldedTransferAmountDuffs != nil {
+        if shieldedTransferAmountDuffs != nil || platformFundingAmountDuffs != nil || identityFundingAmountDuffs != nil {
             return userInfo?.fiatAmountString(from: dashAmount) ?? NSLocalizedString("Not available", comment: "")
         }
         return storedFiatAmount
@@ -389,23 +439,26 @@ class Transaction: TransactionDataItem, Identifiable {
     }
 
     var stateTitle: String {
-        // A "to Shielded" transfer surfaces as a Type-18 asset lock that the
-        // generic logic would label "Internal Transfer"; relabel it from the
-        // SDK-sourced shielded lookup (see `shieldedTransferAmountDuffs`).
-        if isShieldedTransfer {
-            if isPendingShieldedTransfer {
-                return NSLocalizedString("Shielded transfer (pending)",
-                                         comment: "A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet")
+        // Identity funding locks name their purpose — they buy identity
+        // credits rather than moving between the wallet's balances.
+        if let identityType = identityFundingLockInfo?.fundingTypeRaw {
+            switch identityType {
+            case 0:
+                return NSLocalizedString("Identity registration", comment: "Asset lock funding a DashPay identity registration")
+            case 3:
+                return NSLocalizedString("Invitation", comment: "")
+            default:
+                return NSLocalizedString("Identity top-up", comment: "Asset lock topping up a DashPay identity's credits")
             }
-            return NSLocalizedString("Shielded transfer",
-                                     comment: "Transfer of own funds into the private shielded balance")
         }
-        // The L1 payout of a Shielded → Core withdrawal is a transfer of own
-        // funds, not an external receive — label it as such (the row's route
-        // icons show the direction).
-        if isShieldedWithdrawalReceipt {
-            return NSLocalizedString("Shielded withdrawal",
-                                     comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+        // Every balance-to-balance transfer reads "Internal Transfer"; the
+        // route is carried visually (source icon → destination badge), by
+        // the home row's route pill, and by the detail sheet's From/To rows.
+        // Covers the asset-lock fundings (which the generic .moved logic
+        // would also label "Internal Transfer", but with a 0 amount) and the
+        // Shielded → Transparent payout (which would read "Received").
+        if let route = internalTransferRoute, route != .coreToCore {
+            return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
         switch transactionType {
         case .classic:

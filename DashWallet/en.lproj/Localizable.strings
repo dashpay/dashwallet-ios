@@ -1577,14 +1577,23 @@
 /* Voting */
 "Identity" = "Identity";
 
+/* Destination of an identity funding asset lock */
+"Identity credits" = "Identity credits";
+
 /* SDK identity profile sheet */
 "Identity ID" = "Identity ID";
 
 /* Identities */
 "Identity index" = "Identity index";
 
+/* Asset lock funding a DashPay identity registration */
+"Identity registration" = "Identity registration";
+
 /* DashPay */
 "Identity registration already in progress" = "Identity registration already in progress";
+
+/* Asset lock topping up a DashPay identity's credits */
+"Identity top-up" = "Identity top-up";
 
 /* About screen tech info: SPV state */
 "idle" = "idle";
@@ -3236,16 +3245,10 @@
 /* Transaction filter */
 "Shielded sent" = "Shielded sent";
 
-/* Transfer of own funds into the private shielded balance */
-"Shielded transfer" = "Shielded transfer";
-
 "Shielded wallet starting…" = "Shielded wallet starting…";
 
-/* A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet */
-"Shielded transfer (pending)" = "Shielded transfer (pending)";
-
 /* Transfer of own funds from the private shielded balance back to the transparent wallet */
-"Shielded withdrawal" = "Shielded withdrawal";
+"Shielded → Transparent" = "Shielded → Transparent";
 
 /* Explore Dash */
 "Show all locations" = "Show all locations";
@@ -3833,6 +3836,12 @@
 
 /* No comment provided by engineer. */
 "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal." = "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal.";
+
+/* Transfer of own funds into the Platform balance */
+"Transparent → Platform" = "Transparent → Platform";
+
+/* Transfer of own funds into the private shielded balance */
+"Transparent → Shielded" = "Transparent → Shielded";
 
 /* Raw transaction inspector */
 "Unknown special type %d" = "Unknown special type %d";
