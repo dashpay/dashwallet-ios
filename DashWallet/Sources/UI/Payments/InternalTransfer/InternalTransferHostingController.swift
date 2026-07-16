@@ -34,9 +34,15 @@ final class InternalTransferHostingController: UIViewController {
     private lazy var hostingController: UIHostingController<InternalTransferScreen> = {
         let screen = InternalTransferScreen(viewModel: viewModel) { [weak self] in
             // After a successful transfer the user taps "Done" inside the
-            // confirm sheet; the screen forwards that to us so we can pop
-            // the Internal Transfer view back to the landing.
-            self?.navigationController?.popViewController(animated: true)
+            // confirm sheet; the screen forwards that to us so we can
+            // leave — pop when pushed (landing / readiness flows), dismiss
+            // when presented as a sheet (home balance breakdown).
+            guard let self else { return }
+            if let navigationController = self.navigationController {
+                navigationController.popViewController(animated: true)
+            } else {
+                self.dismiss(animated: true)
+            }
         }
         return UIHostingController(rootView: screen)
     }()

@@ -650,9 +650,15 @@ extension HomeViewController: HomeViewDelegate {
     }
 
     func homeViewShowInternalTransfer(direction: InternalTransferDirection, source: InternalTransferSource) {
+        // Sheet, not push: a push drags the blue navigation header along;
+        // the sheet keeps the transfer form on its own background with
+        // swipe-to-dismiss (Done inside the flow also dismisses).
         let controller = InternalTransferHostingController(direction: direction, source: source)
-        controller.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(controller, animated: true)
+        if let sheet = controller.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(controller, animated: true)
     }
     
     #if DASHPAY
