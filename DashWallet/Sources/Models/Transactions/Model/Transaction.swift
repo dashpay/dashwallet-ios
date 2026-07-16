@@ -186,7 +186,7 @@ class Transaction: TransactionDataItem, Identifiable {
                 fatalError()
             }
         case .reward:
-            return NSLocalizedString("Reward", comment: "")
+            return NSLocalizedString("Mining Reward", comment: "Transaction type: coinbase/masternode mining reward")
         case .masternodeRegistration:
             return NSLocalizedString("Masternode Registration", comment: "")
         case .masternodeUpdate:
