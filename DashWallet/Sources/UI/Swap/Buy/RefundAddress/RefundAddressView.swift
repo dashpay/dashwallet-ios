@@ -23,6 +23,7 @@ import UIKit
 
 struct RefundAddressView: View {
     @ObservedObject var viewModel: RefundAddressViewModel
+    @Environment(\.colorScheme) private var colorScheme
 
     var onBack: (() -> Void)?
     var onScanQR: (() -> Void)?
@@ -49,7 +50,7 @@ struct RefundAddressView: View {
                         title: NSLocalizedString("The refund address is required", comment: "Dash DEX"),
                         subtitle: NSLocalizedString("Your swap can NOT be processed without a refund address", comment: "Dash DEX"),
                         icon: .custom("info-rect", bundle: .dashUIKit),
-                        backgroundColor: Color.dash.blueAlpha5,
+                        backgroundColor: colorScheme == .dark ? Color.dash.blueAlpha10 : Color.dash.blueAlpha5,
                         onClose: {}
                     )
 
