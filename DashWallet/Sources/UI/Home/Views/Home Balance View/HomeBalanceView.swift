@@ -28,19 +28,24 @@ enum HomeBalanceViewState: Int {
 
 /// Home header: the combined total (transparent + platform + shielded)
 /// as the hero amount, then one row per balance with its fiat value and
-/// circular in/out transfer buttons. Rows map onto the routes the app
-/// actually supports:
-///   - Transparent: in = Receive, out = Send (external money);
-///   - Platform:    in = Shielded → Platform, out = Platform → Shielded;
-///   - Shielded:    in = Transparent → Shielded, out = Shielded → Transparent.
+/// circular in/out transfer buttons. Every row's in-arrow opens the
+/// payments landing on the Receive tab with that balance's network
+/// preselected (its hero tabs keep Internal transfer one tap away);
+/// the out-arrows keep their direct routes:
+///   - Transparent: out = Send (external money);
+///   - Platform:    out = Platform → Shielded;
+///   - Shielded:    out = Shielded → Transparent.
 struct HomeBalanceView: View {
     @ObservedObject var viewModel: BalanceModel
     @ObservedObject private var platformSync = PlatformAddressSyncCoordinator.shared
     @State private var opacity: Double = 0.3
     var onLongPress: () -> Void
-    var onReceive: () -> Void = {}
+    var onReceive: (ChainNetwork) -> Void = { _ in }
     var onSend: () -> Void = {}
     var onTransfer: (InternalTransferDirection, InternalTransferSource) -> Void = { _, _ in }
+    /// Tap on a row's body (icon/title/amount — not the arrows): opens the
+    /// what-is-this-balance info sheet for that balance.
+    var onInfo: (ChainNetwork) -> Void = { _ in }
 
     private var platformDuffs: UInt64 { platformSync.platformBalance / 1_000 }
     private var shieldedDuffs: UInt64 { platformSync.shieldedBalance / 1_000 }
@@ -126,21 +131,24 @@ struct HomeBalanceView: View {
                 icon: "wallet.pass",
                 title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
                 duffs: viewModel.value,
-                inAction: onReceive,
+                infoAction: { onInfo(.core) },
+                inAction: { onReceive(.core) },
                 outAction: onSend)
             rowDivider
             balanceRow(
                 icon: "cloud",
                 title: NSLocalizedString("Platform", comment: ""),
                 duffs: platformDuffs,
-                inAction: { onTransfer(.fromShielded, .platform) },
+                infoAction: { onInfo(.platform) },
+                inAction: { onReceive(.platform) },
                 outAction: { onTransfer(.toShielded, .platform) })
             rowDivider
             balanceRow(
                 icon: "shield",
                 title: NSLocalizedString("Shielded", comment: ""),
                 duffs: shieldedDuffs,
-                inAction: { onTransfer(.toShielded, .core) },
+                infoAction: { onInfo(.shielded) },
+                inAction: { onReceive(.shielded) },
                 outAction: { onTransfer(.fromShielded, .core) })
         }
         .padding(.horizontal, 12)
@@ -158,26 +166,34 @@ struct HomeBalanceView: View {
         icon: String,
         title: String,
         duffs: UInt64,
+        infoAction: @escaping () -> Void,
         inAction: @escaping () -> Void,
         outAction: @escaping () -> Void
     ) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 15))
-                .foregroundColor(.white)
-                .frame(width: 20)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(.footnote)
-                    .fontWeight(.medium)
+            // The row body is its own tap target (info sheet); keeping it a
+            // sibling of the arrow buttons means it can't swallow their taps.
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 15))
                     .foregroundColor(.white)
-                Text(viewModel.fiatString(forDuffs: duffs))
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.7))
+                    .frame(width: 20)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title)
+                        .font(.footnote)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                    Text(viewModel.fiatString(forDuffs: duffs))
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.7))
+                }
+                Spacer(minLength: 8)
+                DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
+                    .foregroundColor(.white)
             }
-            Spacer(minLength: 8)
-            DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
-                .foregroundColor(.white)
+            .contentShape(Rectangle())
+            .onTapGesture { infoAction() }
+
             transferButton(systemName: "arrow.down",
                            label: NSLocalizedString("Transfer in", comment: "Balance breakdown"),
                            action: inAction)

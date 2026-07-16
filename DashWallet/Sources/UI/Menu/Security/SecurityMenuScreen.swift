@@ -130,10 +130,6 @@ struct SecurityMenuScreen: View {
                     self.vc.pushViewController(controller, animated: true)
                 }
             }
-        case .wallets:
-            let controller = UIHostingController(rootView: WalletsScreen(vc: vc, wipeDelegate: delegateInternal.wipeDelegate))
-            controller.hidesBottomBarWhenPushed = true
-            self.vc.pushViewController(controller, animated: true)
         case .resetWalletDebug:
             showResetWalletDebugAlert = true
         case .none:

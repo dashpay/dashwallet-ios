@@ -58,6 +58,9 @@
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
 
+/* Raw transaction inspector */
+"%d bytes" = "%d bytes";
+
 /* Masternode keys overview */
 "%d key(s)" = "%d key(s)";
 
@@ -154,6 +157,9 @@
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
 
+/* Balance info sheet */
+"A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames." = "A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames.";
+
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
 
@@ -201,6 +207,9 @@
 
 /* Masternode status */
 "Active" = "Active";
+
+/* Balance info sheet */
+"Activity is public but not easy to trace" = "Activity is public but not easy to trace";
 
 /* No comment provided by engineer. */
 "Add" = "Add";
@@ -284,6 +293,9 @@
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
 
+/* Balance info sheet */
+"Almost instantaneous to sync balances" = "Almost instantaneous to sync balances";
+
 /* DashPay Contacts */
 "Already a contact" = "Already a contact";
 
@@ -305,6 +317,9 @@
 /* Maya */
 "Amount too small to cover fees" = "Amount too small to cover fees";
 
+/* Balance info sheet */
+"Amounts and addresses are public on the blockchain" = "Amounts and addresses are public on the blockchain";
+
 /* No comment provided by engineer. */
 "An error occurred" = "An error occurred";
 
@@ -319,6 +334,9 @@
 
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
+
+/* Balance info sheet */
+"Anyone who knows an address can view its history" = "Anyone who knows an address can view its history";
 
 /* AboutDash */
 "App version" = "App version";
@@ -349,6 +367,9 @@
 
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
+
+/* Raw transaction inspector */
+"As text" = "As text";
 
 /* DashSpend */
 "at" = "at";
@@ -429,6 +450,9 @@
 
 /* CrowdNode */
 "Balance: " = "Balance: ";
+
+/* Balance info sheet */
+"Balances and transfers are not publicly visible" = "Balances and transfers are not publicly visible";
 
 /* Coinbase/Payment Methods */
 "Bank Account" = "Bank Account";
@@ -596,8 +620,17 @@
 /* No comment provided by engineer. */
 "Claimable balance" = "Claimable balance";
 
+/* Raw transaction inspector */
+"Coinbase (new coins)" = "Coinbase (new coins)";
+
 /* Masternodes */
 "Collateral" = "Collateral";
+
+/* Balance info sheet section */
+"Cons" = "Cons";
+
+/* Raw transaction inspector */
+"Copy Raw Transaction" = "Copy Raw Transaction";
 
 /* Masternodes */
 "Couldn't fetch the balance (network error). Try Refresh." = "Couldn't fetch the balance (network error). Try Refresh.";
@@ -917,6 +950,9 @@
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
+/* Send confirm sheet */
+"Dash sent to a wrong address can't be recovered. Make sure the address is exactly the one you intend to pay." = "Dash sent to a wrong address can't be recovered. Make sure the address is exactly the one you intend to pay.";
+
 /* No comment provided by engineer. */
 "Dash username" = "Dash username";
 
@@ -1035,6 +1071,9 @@
 
 /* SegmentedControl */
 "Double tap to select" = "Double tap to select";
+
+/* Send confirm sheet */
+"Double-check the address" = "Double-check the address";
 
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
@@ -1425,6 +1464,9 @@
 "Google Pay" = "Google Pay";
 
 /* No comment provided by engineer. */
+"Got it" = "Got it";
+
+/* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "Grant GPS permissions so we can show you locations near you.";
 
 /* Voting */
@@ -1465,6 +1507,9 @@
 
 /* Voting */
 "High to low" = "High to low";
+
+/* Balance info sheet */
+"Higher fees around 7 cents (still lower than other blockchains offering similar privacy)" = "Higher fees around 7 cents (still lower than other blockchains offering similar privacy)";
 
 /* No comment provided by engineer. */
 "History" = "History";
@@ -1609,6 +1654,15 @@
 
 /* Buy Sell Portal */
 "Initializing" = "Initializing";
+
+/* Raw transaction inspector */
+"Input %d" = "Input %d";
+
+/* Raw transaction inspector */
+"Input %d — outpoint" = "Input %d — outpoint";
+
+/* Raw transaction inspector */
+"Inputs (%d)" = "Inputs (%d)";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Insufficient funds";
@@ -1866,6 +1920,9 @@
 /* No comment provided by engineer. */
 "Locking funds" = "Locking funds";
 
+/* Raw transaction inspector */
+"Locktime" = "Locktime";
+
 /* Log in */
 "Log in" = "Log in";
 
@@ -1913,6 +1970,9 @@
 
 /* adjective, security level */
 "Low" = "Low";
+
+/* Balance info sheet */
+"Low fees for everyday spending" = "Low fees for everyday spending";
 
 /* Voting */
 "Low to high" = "Low to high";
@@ -2196,6 +2256,9 @@
 /* SPV sync peer type */
 "Node" = "Node";
 
+/* Raw transaction inspector */
+"Non-standard" = "Non-standard";
+
 /* adjective, security level */
 "None" = "None";
 
@@ -2219,6 +2282,12 @@
 
 /* Location Service Status */
 "Not Determined" = "Not Determined";
+
+/* Balance info sheet */
+"Not widely accepted by merchants" = "Not widely accepted by merchants";
+
+/* Balance info sheet */
+"Not widely accepted by merchants yet" = "Not widely accepted by merchants yet";
 
 /* Masternode keys */
 "Not yet used" = "Not yet used";
@@ -2310,6 +2379,12 @@
 /* Masternodes */
 "Outpoint" = "Outpoint";
 
+/* Raw transaction inspector */
+"Output %d" = "Output %d";
+
+/* Raw transaction inspector */
+"Outputs (%d)" = "Outputs (%d)";
+
 /* Masternodes */
 "Owner" = "Owner";
 
@@ -2327,6 +2402,15 @@
 
 /* No comment provided by engineer. */
 "P2SH platform addresses aren't supported yet. Use a P2PKH recipient." = "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.";
+
+/* Raw transaction inspector */
+"Payload hex" = "Payload hex";
+
+/* Balance info sheet */
+"Payments confirm in seconds with InstantSend" = "Payments confirm in seconds with InstantSend";
+
+/* Send screen destination type */
+"Platform address" = "Platform address";
 
 /* Masternodes */
 "Platform node" = "Platform node";
@@ -2454,6 +2538,12 @@
 /* Dash Platform chain */
 "Platform" = "Platform";
 
+/* The Dash Platform credits balance */
+"Platform balance" = "Platform balance";
+
+/* Platform → Transparent withdrawal */
+"Processing time" = "Processing time";
+
 /* SDK identity profile sheet */
 "Platform Credits" = "Platform Credits";
 
@@ -2580,6 +2670,9 @@
 /* Usernames */
 "Private registration" = "Private registration";
 
+/* Balance info sheet section */
+"Pros" = "Pros";
+
 /* CrowdNode Portal */
 "Protect your savings" = "Protect your savings";
 
@@ -2624,6 +2717,12 @@
 
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Rate: %1$@ = %2$@";
+
+/* Raw transaction inspector */
+"Raw transaction" = "Raw transaction";
+
+/* Raw transaction inspector */
+"Raw transaction unavailable" = "Raw transaction unavailable";
 
 /* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead.";
@@ -2853,6 +2952,15 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret.";
 
+/* Raw transaction inspector */
+"Script" = "Script";
+
+/* Raw transaction inspector */
+"Script signature" = "Script signature";
+
+/* Raw transaction inspector */
+"Script type" = "Script type";
+
 /* DashPay */
 "SDK is not initialized" = "SDK is not initialized";
 
@@ -3047,6 +3155,9 @@
 /* DashPay Contacts */
 "Sent you a request" = "Sent you a request";
 
+/* Raw transaction inspector */
+"Sequence" = "Sequence";
+
 /* DashSpend */
 "Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
 
@@ -3080,6 +3191,9 @@
 /* No comment provided by engineer. */
 "Shielded" = "Shielded";
 
+/* Send screen destination type */
+"Shielded address" = "Shielded address";
+
 /* InternalTransfer */
 "Shielded address is not bound for this wallet" = "Shielded address is not bound for this wallet";
 
@@ -3095,8 +3209,13 @@
 /* Transfer of own funds into the private shielded balance */
 "Shielded transfer" = "Shielded transfer";
 
+"Shielded wallet starting…" = "Shielded wallet starting…";
+
 /* A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet */
 "Shielded transfer (pending)" = "Shielded transfer (pending)";
+
+/* Transfer of own funds from the private shielded balance back to the transparent wallet */
+"Shielded withdrawal" = "Shielded withdrawal";
 
 /* Explore Dash */
 "Show all locations" = "Show all locations";
@@ -3131,6 +3250,9 @@
 /* DashSpend */
 "Single" = "Single";
 
+/* Raw transaction inspector */
+"Size" = "Size";
+
 /* No comment provided by engineer. */
 "Skip" = "Skip";
 
@@ -3160,6 +3282,9 @@
 
 /* Explore Dash/Filters */
 "Sorted by name" = "Sorted by name";
+
+/* Raw transaction inspector */
+"Special payload" = "Special payload";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Specify Amount";
@@ -3305,6 +3430,9 @@
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
 
+/* Raw transaction inspector */
+"Tap to copy" = "Tap to copy";
+
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tap to hide balance";
 
@@ -3350,6 +3478,12 @@
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "The code is incorrect. Please check and try again!";
 
+/* Send confirm sheet */
+"The Dash arrives at the recipient's address after the network processes the withdrawal — this can take up to 10 minutes." = "The Dash arrives at the recipient's address after the network processes the withdrawal — this can take up to 10 minutes.";
+
+/* Send confirm sheet */
+"The Dash arrives at the recipient's address once the network processes the withdrawal." = "The Dash arrives at the recipient's address once the network processes the withdrawal.";
+
 /* Usernames */
 "The Dash network has to vote to approve some usernames before they are created" = "The Dash network has to vote to approve some usernames before they are created";
 
@@ -3388,6 +3522,9 @@
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "The minimum amount you can send is %@";
+
+/* Balance info sheet */
+"The most private place to hold your Dash" = "The most private place to hold your Dash";
 
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "The persisted wallet row has no network — cannot arm a resync.";
@@ -3458,6 +3595,9 @@
 /* Dash DEX */
 "This address expires in 10 minutes" = "This address expires in 10 minutes";
 
+/* Send screen */
+"This is not a valid Dash address for this network" = "This is not a valid Dash address for this network";
+
 /* Masternodes */
 "This masternode has no Platform identity yet." = "This masternode has no Platform identity yet.";
 
@@ -3521,6 +3661,9 @@
 /* Dash DEX / dex_error_allowance */
 "This token needs approval before it can be swapped." = "This token needs approval before it can be swapped.";
 
+/* Raw transaction inspector */
+"This transaction's raw bytes are not stored on this device." = "This transaction's raw bytes are not stored on this device.";
+
 /* InternalTransfer recovery */
 "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it." = "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.";
 
@@ -3535,6 +3678,9 @@
 
 /* No comment provided by engineer. */
 "This will erase this wallet from this device. You can only restore it with your recovery phrase." = "This will erase this wallet from this device. You can only restore it with your recovery phrase.";
+
+/* Send confirm sheet */
+"This withdraws your entire Platform balance in one transfer. The Dash arrives at the recipient's address once the network processes the withdrawal." = "This withdraws your entire Platform balance in one transfer. The Dash arrives at the recipient's address once the network processes the withdrawal.";
 
 /* Send Screen: to address */
 "to" = "to";
@@ -3575,8 +3721,14 @@
 /* CrowdNode */
 "Transaction History" = "Transaction History";
 
+/* Balance info sheet */
+"Transaction history isn't available" = "Transaction history isn't available";
+
 /* No comment provided by engineer. */
 "Transaction id" = "Transaction id";
+
+/* Raw transaction inspector */
+"Transaction ID" = "Transaction ID";
 
 /* A verb, button title. */
 "Transfer" = "Transfer";
@@ -3622,8 +3774,47 @@
 /* No comment provided by engineer. */
 "Transfers take different times" = "Transfers take different times";
 
+/* Balance info sheet */
+"Transfers take longer — privacy proofs take time to build" = "Transfers take longer — privacy proofs take time to build";
+
+/* Balance info sheet */
+"Transfers to other platform addresses and shielded addresses are instant and final" = "Transfers to other platform addresses and shielded addresses are instant and final";
+
 /* Balance breakdown */
 "Transparent" = "Transparent";
+
+/* Send screen destination type */
+"Transparent address" = "Transparent address";
+
+/* The transparent (Core) balance of the Dash Wallet */
+"Transparent balance" = "Transparent balance";
+
+/* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "These funds move to your Platform balance and are ready to spend as soon as the transfer completes.";
+
+/* No comment provided by engineer. */
+"The Dash arrives in your Transparent balance once the network processes the withdrawal." = "The Dash arrives in your Transparent balance once the network processes the withdrawal.";
+
+/* No comment provided by engineer. */
+"This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal." = "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal.";
+
+/* Raw transaction inspector */
+"Unknown special type %d" = "Unknown special type %d";
+
+/* Balance info sheet */
+"Uses one of the most audited and tested zero-knowledge libraries (Orchard)" = "Uses one of the most audited and tested zero-knowledge libraries (Orchard)";
+
+/* Raw transaction inspector */
+"Version" = "Version";
+
+/* Balance info sheet */
+"Very efficient with low fees" = "Very efficient with low fees";
+
+/* Raw transaction inspector */
+"View Transaction" = "View Transaction";
+
+/* Full-balance Platform → Transparent withdrawal */
+"Withdraws the entire balance" = "Withdraws the entire balance";
 
 /* Usernames */
 "Transparent funding publicly links your username to these funds." = "Transparent funding publicly links your username to these funds.";
@@ -4034,6 +4225,9 @@
 /* CrowdNode */
 "Withdrawal requested" = "Withdrawal requested";
 
+/* Balance info sheet */
+"Works with every Dash wallet, exchange, and merchant" = "Works with every Dash wallet, exchange, and merchant";
+
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Would you like to accept the invitation?";
 
@@ -4298,6 +4492,9 @@
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
+/* Balance info sheet */
+"Your main Dash balance on the Core blockchain — what you send and receive with other wallets, exchanges, and merchants." = "Your main Dash balance on the Core blockchain — what you send and receive with other wallets, exchanges, and merchants.";
+
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
 
@@ -4306,6 +4503,9 @@
 
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "Your primary Dash address that you currently use for your CrowdNode account";
+
+/* Balance info sheet */
+"Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";

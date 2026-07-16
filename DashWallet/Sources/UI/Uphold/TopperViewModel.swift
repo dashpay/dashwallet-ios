@@ -27,12 +27,17 @@ class TopperViewModel {
         var widgetId = ""
         var privateKey = ""
         
+        // Missing keys degrade to empty credentials — the same posture as a
+        // missing plist (the widget just won't authenticate). Force-casting
+        // here crashed the app on Buy & Sell open for any build whose
+        // gitignored Topper-Info.plist lacks the SANDBOX_* keys, which is
+        // every placeholder plist while fresh installs default to testnet.
         if let path = Bundle.main.path(forResource: "Topper-Info", ofType: "plist"),
            let dict = NSDictionary(contentsOfFile: path) as? [String: AnyObject] {
             let prefix = isSandbox ? "SANDBOX_" : ""
-            keyId = dict["\(prefix)KEY_ID"] as! String
-            widgetId = dict["\(prefix)WIDGET_ID"] as! String
-            privateKey = dict["\(prefix)PRIVATE_KEY"] as! String
+            keyId = dict["\(prefix)KEY_ID"] as? String ?? ""
+            widgetId = dict["\(prefix)WIDGET_ID"] as? String ?? ""
+            privateKey = dict["\(prefix)PRIVATE_KEY"] as? String ?? ""
         }
         
         topper = Topper(keyId: keyId, widgetId: widgetId, privateKey: privateKey, isSandbox: isSandbox)

@@ -53,8 +53,9 @@ TODO.md
 *.db-shm
 *.db-wal
 
-# Transifex CLI binary
-tx
+# Transifex CLI binary (repo root only; a bare `tx` also matched
+# DashWallet/Sources/UI/Tx/ on case-insensitive filesystems)
+/tx
 DashWalletScreenshotsUITests/refund-addresses.csv
 
 

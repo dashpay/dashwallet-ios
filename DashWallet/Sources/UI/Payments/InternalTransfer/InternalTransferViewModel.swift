@@ -30,6 +30,27 @@ enum InternalTransferDirection {
     case fromShielded
 }
 
+/// Every balance-to-balance route the transfer engine can execute. The
+/// canonical read for validation, fees, and execution — derived from the
+/// receive sheet's (source, target) pair when pinned, otherwise from the
+/// standalone screen's legacy (direction, source) pair (which can only
+/// express the four shielded-centric routes).
+enum InternalTransferRoute: Equatable {
+    /// BIP44 UTXOs → asset lock → Type 18 shield.
+    case coreToShielded
+    /// DIP-17 credits → Type 15 shield.
+    case platformToShielded
+    /// Orchard notes → L1 transparent payout.
+    case shieldedToCore
+    /// Orchard notes → DIP-17 credits (unshield).
+    case shieldedToPlatform
+    /// BIP44 UTXOs → asset lock → Platform address credits (funding type 4).
+    case coreToPlatform
+    /// FULL-BALANCE address-credit withdrawal → L1 payout. The SDK has no
+    /// partial-amount form for this route.
+    case platformToCore
+}
+
 @MainActor
 final class InternalTransferViewModel: ObservableObject {
 
@@ -50,6 +71,114 @@ final class InternalTransferViewModel: ObservableObject {
     /// toggled by the swap badge. Reverse has a single fixed destination
     /// (Dash Wallet), so `source` is ignored while `.fromShielded`.
     @Published var direction: InternalTransferDirection = .toShielded
+
+    /// Fixed destination when this VM drives the receive sheet's embedded
+    /// form: the balance being received into. `nil` = the standalone
+    /// swappable screen (legacy direction/source model).
+    @Published private(set) var receiveTarget: ChainNetwork? = nil
+
+    /// The source balance picked on the receive sheet's From rows. Only
+    /// meaningful for `receiveTarget` .core / .platform (the .shielded
+    /// target reuses the legacy `source` picker). Changing it re-derives
+    /// `route`, and kicks the withdrawal preflight when the full-balance
+    /// Platform → Core route becomes active.
+    @Published var receiveSource: ChainNetwork = .shielded {
+        didSet { routeDidChange() }
+    }
+
+    /// Live result of `preflightWithdrawal()` for the Platform → Core route:
+    /// whether a full-balance withdrawal can fund, its net payout, and the
+    /// reserved fee. `nil` while unknown (loading/failed) — affordability
+    /// fails closed.
+    @Published private(set) var withdrawalPreflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
+    private var preflightTask: Task<Void, Never>?
+
+    /// Pins the route for the receive sheet: a transfer INTO `target`.
+    /// The From rows pick the source among the other two balances —
+    /// `source` for the .shielded target (legacy-expressible routes),
+    /// `receiveSource` for .core/.platform targets.
+    func applyReceiveRoute(into target: ChainNetwork) {
+        receiveTarget = target
+        switch target {
+        case .shielded:
+            direction = .toShielded
+            // `source` keeps the user's pick (.core default).
+        case .core:
+            // Valid sources: shielded (withdraw) or platform (full-balance
+            // address withdrawal). Reset an out-of-range carryover.
+            if receiveSource != .platform { receiveSource = .shielded }
+        case .platform:
+            // Valid sources: shielded (unshield) or core (asset-lock fund).
+            if receiveSource != .core { receiveSource = .shielded }
+        }
+        routeDidChange()
+    }
+
+    /// The canonical route for validation/fees/execution.
+    var route: InternalTransferRoute {
+        if let target = receiveTarget {
+            switch target {
+            case .shielded:
+                return source == .core ? .coreToShielded : .platformToShielded
+            case .core:
+                return receiveSource == .platform ? .platformToCore : .shieldedToCore
+            case .platform:
+                return receiveSource == .core ? .coreToPlatform : .shieldedToPlatform
+            }
+        }
+        switch (direction, source) {
+        case (.toShielded, .core): return .coreToShielded
+        case (.toShielded, .platform): return .platformToShielded
+        case (.fromShielded, .core): return .shieldedToCore
+        case (.fromShielded, .platform): return .shieldedToPlatform
+        }
+    }
+
+    /// Refreshes route-dependent async state. The Platform → Core route
+    /// needs the withdrawal preflight — for the fee headroom that bounds a
+    /// partial withdrawal, and for the net payout a Max (full-balance,
+    /// AUTO-path) withdrawal pays out.
+    private func routeDidChange() {
+        guard route == .platformToCore else {
+            preflightTask?.cancel()
+            preflightTask = nil
+            return
+        }
+        guard preflightTask == nil else { return }
+        preflightTask = Task { [weak self] in
+            let result = try? await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
+            guard let self, !Task.isCancelled else { return }
+            self.withdrawalPreflight = result
+            self.preflightTask = nil
+        }
+    }
+
+    /// Net payout of the full-balance (Max) Platform → Core withdrawal, in
+    /// duffs (credits / 1000). `nil` until the preflight resolves positively.
+    var platformWithdrawableDuffs: UInt64? {
+        guard let preflight = withdrawalPreflight, preflight.canWithdraw else { return nil }
+        return preflight.netWithdrawable / 1000
+    }
+
+    /// Upper bound (credits) for a PARTIAL Platform → Core withdrawal: the
+    /// largest single address balance minus the preflighted fee headroom
+    /// (the fee is deducted from that address's remaining balance). 0 until
+    /// the preflight resolves — affordability fails closed.
+    var partialWithdrawCapCredits: UInt64 {
+        guard let preflight = withdrawalPreflight, preflight.canWithdraw else { return 0 }
+        let largest = PlatformAddressSyncCoordinator.shared
+            .derivedAddresses.map(\.balance).max() ?? 0
+        return largest > preflight.estimatedFee ? largest - preflight.estimatedFee : 0
+    }
+
+    /// True when the typed amount is exactly the full-balance net payout —
+    /// the confirm flow then executes the AUTO (all-addresses) withdrawal
+    /// instead of the single-input partial form.
+    var isFullPlatformWithdrawal: Bool {
+        route == .platformToCore
+            && platformWithdrawableDuffs != nil
+            && dashDuffsUnsigned == platformWithdrawableDuffs
+    }
 
     /// BIP44-only Core balance in duffs — the same number as
     /// `SwiftDashSDKWalletState.balance.total`. Used to validate
@@ -141,30 +270,35 @@ final class InternalTransferViewModel: ObservableObject {
         // otherwise the credit routes would submit a nonzero amount while the
         // UI shows 0.
         guard dashDuffsUnsigned > 0 else { return false }
-        switch direction {
-        case .toShielded:
-            switch source {
-            case .core:
-                // Asset-lock route: the Platform pool fee is carved from the
-                // locked value (not charged on top of the Core balance) and the
-                // Rust side rejects an undersized lock, so no source-balance fee
-                // headroom is reserved here.
-                return dashDuffsUnsigned <= coreBalanceDuffs
-            case .platform:
-                // Shield (Type 15): the SDK's input selection requires
-                // balance ≥ amount + reserve. Fail closed if the reserve is
-                // unavailable. Subtraction keeps the UInt64 add overflow-safe.
-                guard let reserve = feeReserveCredits else { return false }
-                return platformCredits >= reserve
-                    && creditsPreview <= platformCredits - reserve
-            }
-        case .fromShielded:
+        switch route {
+        case .coreToShielded, .coreToPlatform:
+            // Asset-lock routes: the pool/processing fee is carved from the
+            // locked value (not charged on top of the Core balance) and the
+            // Rust side rejects an undersized lock, so no source-balance fee
+            // headroom is reserved here.
+            return dashDuffsUnsigned <= coreBalanceDuffs
+        case .platformToShielded:
+            // Shield (Type 15): the SDK's input selection requires
+            // balance ≥ amount + reserve. Fail closed if the reserve is
+            // unavailable. Subtraction keeps the UInt64 add overflow-safe.
+            guard let reserve = feeReserveCredits else { return false }
+            return platformCredits >= reserve
+                && creditsPreview <= platformCredits - reserve
+        case .shieldedToCore, .shieldedToPlatform:
             // Unshield/withdraw: the SDK debits amount + fee from the shielded
             // pool (recipient receives the full amount), so the balance must
             // cover amount + fee. Fail closed if the reserve is unavailable.
             guard let reserve = feeReserveCredits else { return false }
             return shieldedBalance >= reserve
                 && creditsPreview <= shieldedBalance - reserve
+        case .platformToCore:
+            // Either the exact full-balance net payout (Max → AUTO path over
+            // every address), or a partial amount within the single-input
+            // cap (largest address balance − fee headroom). Fails closed
+            // while the preflight is unknown.
+            guard withdrawalPreflight?.canWithdraw == true else { return false }
+            if isFullPlatformWithdrawal { return true }
+            return creditsPreview <= partialWithdrawCapCredits
         }
     }
 
@@ -182,21 +316,26 @@ final class InternalTransferViewModel: ObservableObject {
     /// fail closed (block). A literal `0` (the asset-lock route) is NOT `nil` —
     /// that route reserves nothing from the source balance.
     private var feeReserveCredits: UInt64? {
-        switch (direction, source) {
-        case (.toShielded, .core):
+        switch route {
+        case .coreToShielded, .coreToPlatform:
+            // Asset-lock routes reserve nothing from the source balance.
             return 0
-        case (.toShielded, .platform):
+        case .platformToShielded:
             // Shield: fixed 1e9-credit selection reserve, not the (smaller) fee.
             return Self.shieldSelectionReserveCredits
-        case (.fromShielded, .core):
+        case .shieldedToCore:
             // The withdraw/unshield fee scales with the number of spent notes;
             // the SDK recomputes it from real note selection (up to the
             // 16-action `max_shielded_transition_actions` cap) at send time.
             // Reserve that worst case so a fragmented wallet can't pass the
             // affordability check and then fail SDK note selection.
             return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 16)
-        case (.fromShielded, .platform):
+        case .shieldedToPlatform:
             return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 16)
+        case .platformToCore:
+            // Full-balance withdrawal: the fee is already netted out of the
+            // preflight's `netWithdrawable`; no reserve on top.
+            return 0
         }
     }
 
@@ -260,43 +399,64 @@ final class InternalTransferViewModel: ObservableObject {
         parsedDashAmount.formattedDashAmountWithoutCurrencySymbol
     }
 
-    /// Formatted BIP44 balance as DASH (no currency symbol). Used by the
-    /// Dash Wallet source row.
+    /// Formatted BIP44 balance as DASH for the balance cards — display
+    /// precision only (max 5 fraction digits); full precision stays
+    /// everywhere amounts are typed or submitted.
     var coreBalanceFormatted: String {
-        coreBalanceDuffs.formattedDashAmountWithoutCurrencySymbol
+        Self.cardBalanceString(duffs: coreBalanceDuffs)
     }
 
-    /// Formatted Platform Payment balance as DASH (no currency symbol). The
-    /// credits-to-duffs conversion is `/ 1000` (1e8 duffs per DASH vs 1e11
-    /// credits per DASH).
+    /// Formatted Platform Payment balance as DASH for the balance cards
+    /// (max 5 fraction digits). The credits-to-duffs conversion is `/ 1000`
+    /// (1e8 duffs per DASH vs 1e11 credits per DASH).
     var platformCreditsFormatted: String {
-        (platformCredits / 1000).formattedDashAmountWithoutCurrencySymbol
+        Self.cardBalanceString(duffs: platformCredits / 1000)
     }
 
-    /// Formatted live shielded balance as DASH (no currency symbol).
-    /// Credits → duffs is `/ 1000` (1e8 duffs per DASH vs 1e11 credits).
+    /// Formatted live shielded balance as DASH for the balance cards
+    /// (max 5 fraction digits). Credits → duffs is `/ 1000`.
     var shieldedBalanceFormatted: String {
-        (shieldedBalance / 1000).formattedDashAmountWithoutCurrencySymbol
+        Self.cardBalanceString(duffs: shieldedBalance / 1000)
+    }
+
+    /// Active fiat currency code (e.g. "THB") — the amount row's second
+    /// unit pill label.
+    var fiatCurrencyCode: String {
+        App.fiatCurrency
+    }
+
+    /// Card-row balance display: plain decimal, no grouping, at most 5
+    /// fraction digits (rounded) so long balances don't wrap the card.
+    /// Internal — the Send screen's source cards use the same format.
+    static func cardBalanceString(duffs: UInt64) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 5
+        return formatter.string(from: NSDecimalNumber(decimal: duffs.dashAmount))
+            ?? duffs.formattedDashAmountWithoutCurrencySymbol
     }
 
     /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
     /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
         let sourceDuffs: UInt64
-        switch direction {
-        case .toShielded:
-            switch source {
-            case .core:
-                sourceDuffs = coreBalanceDuffs
-            case .platform:
-                // Reserve the fee the SDK charges on top of the amount so Max
-                // stays sendable (credits → duffs: integer divide by 1000).
-                sourceDuffs = creditsMinusFeeReserve(platformCredits) / 1000
-            }
-        case .fromShielded:
+        switch route {
+        case .coreToShielded, .coreToPlatform:
+            sourceDuffs = coreBalanceDuffs
+        case .platformToShielded:
+            // Reserve the fee the SDK charges on top of the amount so Max
+            // stays sendable (credits → duffs: integer divide by 1000).
+            sourceDuffs = creditsMinusFeeReserve(platformCredits) / 1000
+        case .shieldedToCore, .shieldedToPlatform:
             // Reverse: upper bound is the shielded balance minus the fee reserve
             // (debited on top of the amount), so Max stays sendable.
             sourceDuffs = creditsMinusFeeReserve(shieldedBalance) / 1000
+        case .platformToCore:
+            // Max = the full-balance net payout (executed via the AUTO,
+            // all-addresses path); 0 until the preflight resolves.
+            sourceDuffs = platformWithdrawableDuffs ?? 0
         }
 
         switch unit {
@@ -340,8 +500,9 @@ final class InternalTransferViewModel: ObservableObject {
 
     /// Formats a Decimal as a user-typed-style string: no grouping separator,
     /// dot as the decimal mark, trailing zeros trimmed. Capped at
-    /// `fractionDigits` decimals.
-    private static func formatTyped(_ value: Decimal, fractionDigits: Int) -> String {
+    /// `fractionDigits` decimals. Internal — reused by the Send screen's
+    /// amount handling.
+    static func formatTyped(_ value: Decimal, fractionDigits: Int) -> String {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.numberStyle = .decimal

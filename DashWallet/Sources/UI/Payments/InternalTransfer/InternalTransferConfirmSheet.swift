@@ -15,20 +15,27 @@ import SwiftDashSDK
 ///   - `.success`        → green check + amount + Done.
 ///   - `.failed(msg)`    → summary card with red error + Try again / Close.
 ///
-/// Confirm routes to one of four SDK paths via the coordinator, keyed by
-/// `direction` then `source`:
-///   - `.toShielded` + `.core`       → `performAssetLock(amountDuffs:)`
-///   - `.toShielded` + `.platform`   → `performShield(amountCredits:)`
-///   - `.fromShielded` + `.core`     → `performWithdraw(amountCredits:)`
-///   - `.fromShielded` + `.platform` → `performUnshield(amountCredits:)`
+/// Confirm executes `route` via the coordinator:
+///   - `.coreToShielded`     → `performAssetLock(amountDuffs:)`
+///   - `.platformToShielded` → `performShield(amountCredits:)`
+///   - `.shieldedToCore`     → `performWithdraw(amountCredits:)`
+///   - `.shieldedToPlatform` → `performUnshield(amountCredits:)`
+///   - `.coreToPlatform`     → `performFundPlatform(amountDuffs:)`
+///   - `.platformToCore`     → `performPlatformWithdrawAll()` (full balance)
 struct InternalTransferConfirmSheet: View {
 
-    let source: InternalTransferSource
-    let direction: InternalTransferDirection
+    let route: InternalTransferRoute
     let dashDuffs: Int64
     let amountDuffsUnsigned: UInt64
     let creditsAmount: UInt64
     let fiatText: String
+    /// Preflighted `AddressCreditWithdrawalTransition` fee — only meaningful
+    /// for `.platformToCore` (the fee headroom / netting basis).
+    var withdrawalFeeCredits: UInt64? = nil
+    /// `.platformToCore` only: the amount equals the full-balance net payout,
+    /// so Confirm runs the AUTO (all-addresses) withdrawal instead of the
+    /// single-input partial form.
+    var isFullPlatformWithdrawal: Bool = false
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
@@ -198,24 +205,34 @@ struct InternalTransferConfirmSheet: View {
     /// Platform credits per DASH (1e11).
     private static let creditsPerDash: Decimal = 100_000_000_000
 
-    /// Flat shielded fee (credits) for the active route, computed offline by
+    /// Flat fee estimate (credits) for the active route, computed offline by
     /// the SDK against the latest protocol version (so it matches the carved
-    /// fee). `nil` if the SDK estimate is unavailable.
+    /// fee). `nil` if the estimate is unavailable → the row shows "—".
     private var networkFeeCredits: UInt64? {
-        switch (direction, source) {
-        case (.toShielded, .core):
+        switch route {
+        case .coreToShielded:
             // ShieldFromAssetLock: base shielded fee + asset-lock base cost.
             guard let base = try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
             else { return nil }
             return base + Self.assetLockBaseCostCredits
-        case (.toShielded, .platform):
+        case .platformToShielded:
             // Shield (Type 15): base shielded fee. Real metered storage is
             // extra and only knowable on-chain, so this is a lower bound.
             return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
-        case (.fromShielded, .core):
+        case .shieldedToCore:
             return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)
-        case (.fromShielded, .platform):
+        case .shieldedToPlatform:
             return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
+        case .coreToPlatform:
+            // Address-funding asset lock: the required processing balance
+            // (the same 50k-duff base the Rust side reserves for address
+            // funding). The funding ST's metered fee is extra and only
+            // knowable on-chain, so this is a lower bound.
+            return Self.assetLockBaseCostCredits
+        case .platformToCore:
+            // The exact transition fee the preflight already netted out of
+            // the payout amount.
+            return withdrawalFeeCredits
         }
     }
 
@@ -251,35 +268,29 @@ struct InternalTransferConfirmSheet: View {
         .cornerRadius(12)
     }
 
-    /// "From" side of the summary. Forward = the picked source; reverse =
-    /// the shielded balance.
-    private var fromLabel: String {
-        switch direction {
-        case .toShielded:
-            return sourceLabel
-        case .fromShielded:
-            return NSLocalizedString("Shielded balance", comment: "")
+    /// From/To endpoint names for the summary card, straight off the route.
+    private var fromLabel: String { Self.balanceName(routeEndpoints.from) }
+    private var toLabel: String { Self.balanceName(routeEndpoints.to) }
+
+    private var routeEndpoints: (from: ChainNetwork, to: ChainNetwork) {
+        switch route {
+        case .coreToShielded: return (.core, .shielded)
+        case .platformToShielded: return (.platform, .shielded)
+        case .shieldedToCore: return (.shielded, .core)
+        case .shieldedToPlatform: return (.shielded, .platform)
+        case .coreToPlatform: return (.core, .platform)
+        case .platformToCore: return (.platform, .core)
         }
     }
 
-    /// "To" side of the summary. Forward = the shielded balance; reverse =
-    /// the transparent Dash Wallet.
-    private var toLabel: String {
-        switch direction {
-        case .toShielded:
-            return NSLocalizedString("Shielded balance", comment: "")
-        case .fromShielded:
-            // Reverse destination is the picked transparent endpoint.
-            return sourceLabel
-        }
-    }
-
-    private var sourceLabel: String {
-        switch source {
+    private static func balanceName(_ network: ChainNetwork) -> String {
+        switch network {
         case .core:
-            return NSLocalizedString("Dash Wallet", comment: "")
+            return NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
         case .platform:
-            return NSLocalizedString("Platform Payment", comment: "")
+            return NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")
+        case .shielded:
+            return NSLocalizedString("Shielded balance", comment: "")
         }
     }
 
@@ -342,39 +353,57 @@ struct InternalTransferConfirmSheet: View {
     }
 
     /// The tip card is route-aware:
-    /// - forward (any source): privacy nudge.
-    /// - reverse → Dash Wallet (L1 withdraw): up-to-10-minute spend delay.
-    /// - reverse → Platform Payment (unshield): settles fast, so a privacy nudge.
-    private var showsWithdrawDelayTip: Bool {
-        direction == .fromShielded && source == .core
-    }
-
+    /// - to Shielded (either source): privacy nudge.
+    /// - Shielded → Core (L1 withdraw): up-to-10-minute spend delay.
+    /// - Shielded → Platform (unshield) / Core → Platform: settles fast.
+    /// - Platform → Core: full-balance withdrawal + network processing delay.
     private var privacyTipIcon: String {
-        showsWithdrawDelayTip ? "clock.fill" : "shield.fill"
+        switch route {
+        case .shieldedToCore, .platformToCore: return "clock.fill"
+        default: return "shield.fill"
+        }
     }
 
     private var privacyTipTitle: String {
-        showsWithdrawDelayTip
-            ? NSLocalizedString("Up to 10 minutes to spend", comment: "")
-            : NSLocalizedString("Privacy tip", comment: "")
+        switch route {
+        case .shieldedToCore:
+            return NSLocalizedString("Up to 10 minutes to spend", comment: "")
+        case .platformToCore:
+            return isFullPlatformWithdrawal
+                ? NSLocalizedString("Withdraws the entire balance", comment: "Full-balance Platform → Transparent withdrawal")
+                : NSLocalizedString("Processing time", comment: "Platform → Transparent withdrawal")
+        default:
+            return NSLocalizedString("Privacy tip", comment: "")
+        }
     }
 
     private var privacyTipBody: String {
-        if showsWithdrawDelayTip {
-            return NSLocalizedString(
-                "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected.",
-                comment: "")
-        }
-        switch direction {
-        case .toShielded:
+        switch route {
+        case .coreToShielded, .platformToShielded:
             return NSLocalizedString(
                 "For best privacy, wait at least 2 hours before using these funds.",
                 comment: "")
-        case .fromShielded:
+        case .shieldedToCore:
+            return NSLocalizedString(
+                "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected.",
+                comment: "")
+        case .shieldedToPlatform:
             // Unshield to Platform Payment settles quickly.
             return NSLocalizedString(
                 "These funds move to your Platform Payment balance and are ready to spend right away.",
                 comment: "")
+        case .coreToPlatform:
+            return NSLocalizedString(
+                "These funds move to your Platform balance and are ready to spend as soon as the transfer completes.",
+                comment: "")
+        case .platformToCore:
+            return isFullPlatformWithdrawal
+                ? NSLocalizedString(
+                    "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal.",
+                    comment: "")
+                : NSLocalizedString(
+                    "The Dash arrives in your Transparent balance once the network processes the withdrawal.",
+                    comment: "")
         }
     }
 
@@ -393,10 +422,17 @@ struct InternalTransferConfirmSheet: View {
         var steps: [ShieldedTransferStepList.Step] = [
             .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing)
         ]
-        if direction == .toShielded && source == .core {
+        // Asset-lock routes have the on-chain locking stage.
+        if route == .coreToShielded || route == .coreToPlatform {
             steps.append(.init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking))
         }
-        steps.append(.init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving))
+        // Only shielded legs build an Orchard proof.
+        switch route {
+        case .coreToShielded, .platformToShielded, .shieldedToCore, .shieldedToPlatform:
+            steps.append(.init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving))
+        case .coreToPlatform, .platformToCore:
+            break
+        }
         steps.append(.init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting))
         return steps
     }
@@ -405,39 +441,49 @@ struct InternalTransferConfirmSheet: View {
 
     private func confirm() {
         Task {
-            switch direction {
-            case .toShielded:
-                switch source {
-                case .core:
-                    await coordinator.performAssetLock(amountDuffs: amountDuffsUnsigned)
-                case .platform:
-                    await coordinator.performShield(amountCredits: creditsAmount)
-                }
-            case .fromShielded:
-                switch source {
-                case .core:
-                    await coordinator.performWithdraw(amountCredits: creditsAmount)
-                case .platform:
-                    await coordinator.performUnshield(amountCredits: creditsAmount)
-                }
+            switch route {
+            case .coreToShielded:
+                await coordinator.performAssetLock(amountDuffs: amountDuffsUnsigned)
+            case .platformToShielded:
+                await coordinator.performShield(amountCredits: creditsAmount)
+            case .shieldedToCore:
+                await coordinator.performWithdraw(amountCredits: creditsAmount)
+            case .shieldedToPlatform:
+                await coordinator.performUnshield(amountCredits: creditsAmount)
+            case .coreToPlatform:
+                await coordinator.performFundPlatform(amountDuffs: amountDuffsUnsigned)
+            case .platformToCore:
+                await coordinator.performPlatformWithdraw(
+                    amountCredits: creditsAmount,
+                    fullBalance: isFullPlatformWithdrawal,
+                    feeHeadroomCredits: withdrawalFeeCredits)
             }
         }
     }
 
     private func tryAgain() {
-        // If the just-failed Core→Shielded attempt already committed an asset
-        // lock, RESUME that exact outpoint instead of building a second lock
-        // (which strands the first). Capture before reset() clears it. Every
-        // other case (no committed lock — auth-cancel / preflight failure — or
-        // a non-asset-lock route) falls through to a fresh retry.
-        if direction == .toShielded, source == .core,
-           let op = coordinator.lastAssetLockOutPoint {
-            coordinator.reset()
-            Task { await coordinator.resumeAssetLock(outPointTxidWire: op.txidWire, outPointVout: op.vout) }
-        } else {
-            coordinator.reset()
-            confirm()
+        // If the just-failed asset-lock attempt (Core→Shielded or
+        // Core→Platform) already committed a lock, RESUME that exact outpoint
+        // instead of building a second lock (which strands the first).
+        // Capture before reset() clears it. Every other case (no committed
+        // lock — auth-cancel / preflight failure — or a non-asset-lock route)
+        // falls through to a fresh retry.
+        if let op = coordinator.lastAssetLockOutPoint {
+            switch route {
+            case .coreToShielded:
+                coordinator.reset()
+                Task { await coordinator.resumeAssetLock(outPointTxidWire: op.txidWire, outPointVout: op.vout) }
+                return
+            case .coreToPlatform:
+                coordinator.reset()
+                Task { await coordinator.resumeFundPlatform(outPointTxidWire: op.txidWire, outPointVout: op.vout) }
+                return
+            default:
+                break
+            }
         }
+        coordinator.reset()
+        confirm()
     }
 }
 
