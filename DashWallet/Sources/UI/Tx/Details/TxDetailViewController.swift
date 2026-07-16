@@ -112,6 +112,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case header
         case info
         case taxCategory
+        case rawTransaction
         case explorer
     }
 
@@ -125,6 +126,8 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case networkFee(DWTitleDetailItem)
         case date(DWTitleDetailItem)
         case taxCategory(DWTitleDetailItem)
+        case viewTransaction
+        case copyRawTransaction
         case explorer
 
         /// Per-case identity strings — the diffable-identifier content. The
@@ -143,6 +146,8 @@ class TXDetailViewController: BaseTxDetailsViewController {
             case .networkFee(let item): return ["NetworkFee"] + Self.identity(of: [item])
             case .date(let item): return ["Date"] + Self.identity(of: [item])
             case .taxCategory(let item): return ["TaxCategory"] + Self.identity(of: [item])
+            case .viewTransaction: return ["ViewTransaction"]
+            case .copyRawTransaction: return ["CopyRawTransaction"]
             case .explorer: return ["Explorer"]
             }
         }
@@ -214,6 +219,29 @@ extension TXDetailViewController {
         hostingController.setDetent(240)
         present(hostingController, animated: true, completion: nil)
     }
+
+    /// Full consensus-field inspector for this transaction's stored raw bytes.
+    private func viewRawTransaction() {
+        let sheet = BottomSheet(
+            title: NSLocalizedString("Transaction", comment: "Raw transaction inspector"),
+            showBackButton: Binding<Bool>.constant(false)
+        ) {
+            RawTransactionView(txidWire: self.model.transaction.txHashData)
+        }
+        let hostingController = UIHostingController(rootView: sheet)
+        present(hostingController, animated: true)
+    }
+
+    /// Copies the serialized transaction hex. A missing row (bytes not
+    /// stored on this device) reports itself rather than copying nothing.
+    private func copyRawTransaction() {
+        if let hex = RawTransactionInspector.rawHex(txidWire: model.transaction.txHashData) {
+            UIPasteboard.general.string = hex
+            view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
+        } else {
+            view.dw_showInfoHUD(withText: NSLocalizedString("Raw transaction unavailable", comment: "Raw transaction inspector"))
+        }
+    }
 }
 
 extension TXDetailViewController {
@@ -250,6 +278,14 @@ extension TXDetailViewController {
                     cell.update(with: item)
                     return cell
 
+                case .rawTransaction:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.reuseIdentifier,
+                                                             for: indexPath) as! TxDetailActionCell
+                    cell.titleLabel.text = item == .copyRawTransaction
+                        ? NSLocalizedString("Copy Raw Transaction", comment: "Raw transaction inspector")
+                        : NSLocalizedString("View Transaction", comment: "Raw transaction inspector")
+                    return cell
+
                 case .explorer:
                     let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailActionCell
@@ -265,7 +301,7 @@ extension TXDetailViewController {
         let taxCategory = model.taxCategory
 
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-        currentSnapshot.appendSections([.header, .info, .taxCategory, .explorer])
+        currentSnapshot.appendSections([.header, .info, .taxCategory, .rawTransaction, .explorer])
         currentSnapshot.appendItems([.header], toSection: .header)
 
         // Empty address groups are skipped: SDK rows often carry no linked
@@ -307,6 +343,7 @@ extension TXDetailViewController {
 
         currentSnapshot.appendItems([.date(date)], toSection: .info)
         currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
+        currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
         dataSource.apply(currentSnapshot, animatingDifferences: false)
         dataSource.defaultRowAnimation = .none
@@ -326,6 +363,14 @@ extension TXDetailViewController {
             model.toggleTaxCategoryOnCurrentTransaction()
             reloadDataSource()
             break
+        case .rawTransaction:
+            if let item = dataSource.itemIdentifier(for: indexPath) {
+                switch item {
+                case .viewTransaction: viewRawTransaction()
+                case .copyRawTransaction: copyRawTransaction()
+                default: break
+                }
+            }
         case .explorer:
             viewInBlockExplorer()
         default:
