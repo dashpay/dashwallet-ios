@@ -57,8 +57,13 @@ final class InternalTransferHostingController: UIViewController {
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         hostingController.view.backgroundColor = .clear
         view.addSubview(hostingController.view)
+        // Pushed: the navigation bar provides the top spacing. Presented
+        // as a sheet: there is no bar, so inset the content below the
+        // grabber instead of letting the title crowd the sheet's edge.
+        let isSheet = navigationController == nil
+        let topInset: CGFloat = isSheet ? 28.0 : 0.0
         NSLayoutConstraint.activate([
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor, constant: topInset),
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
