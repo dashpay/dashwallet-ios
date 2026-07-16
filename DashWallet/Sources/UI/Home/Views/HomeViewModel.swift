@@ -1056,11 +1056,16 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// The active wallet's shielded operations as history items, for
     /// interleaving with the Core rows. Safe from any thread.
     ///
-    /// Two reductions happen here rather than in the view model:
-    /// - Kinds whose Core leg already renders as a history row are
-    ///   dropped — ShieldFromAssetLock (`Transaction.isShieldedTransfer`)
-    ///   and Withdrawal (`Transaction.isShieldedWithdrawalReceipt`) —
-    ///   so one user action never shows as two rows.
+    /// Three reductions happen here rather than in the view model:
+    /// - ShieldFromAssetLock entries are dropped: their Core asset-lock
+    ///   spend always renders as a history row already
+    ///   (`Transaction.isShieldedTransfer`).
+    /// - Withdrawal entries are dropped ONLY when the destination script
+    ///   is one of the active wallet's own Core addresses — that's the
+    ///   internal Shielded→Transparent transfer, whose Core receipt
+    ///   renders via `Transaction.isShieldedWithdrawalReceipt`. A
+    ///   withdrawal to an EXTERNAL Core address produces no wallet-side
+    ///   Core transaction at all, so it stays and renders as a Sent row.
     /// - Rows are deduped by `entryId`: an intra-wallet transfer writes
     ///   a Sent row on the sending account and a Received row on the
     ///   receiving account for the same operation; the outgoing
@@ -1072,12 +1077,8 @@ class SwiftDashSDKWalletSource: TransactionSource {
             predicate: #Predicate { $0.walletId == walletId })
         guard let rows = try? context.fetch(descriptor) else { return [] }
 
-        let coreLegKinds = [
-            ShieldedActivityItem.Kind.shieldFromAssetLock.rawValue,
-            ShieldedActivityItem.Kind.withdrawal.rawValue,
-        ]
         var byEntry: [Data: PersistentShieldedActivity] = [:]
-        for row in rows where !coreLegKinds.contains(row.kindTag) {
+        for row in rows where row.kindTag != ShieldedActivityItem.Kind.shieldFromAssetLock.rawValue {
             if let existing = byEntry[row.entryId] {
                 let existingOutgoing = existing.direction == ShieldedActivityItem.Direction.outgoing.rawValue
                 let rowOutgoing = row.direction == ShieldedActivityItem.Direction.outgoing.rawValue
@@ -1088,7 +1089,49 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 byEntry[row.entryId] = row
             }
         }
-        return byEntry.values.map { ShieldedActivityItem(row: $0) }
+
+        var items: [ShieldedActivityItem] = []
+        for row in byEntry.values {
+            if row.kindTag == ShieldedActivityItem.Kind.withdrawal.rawValue {
+                let address = withdrawalDestinationAddress(counterparty: row.counterparty)
+                if let address, isActiveWalletCoreAddress(address, walletId: walletId, in: context) {
+                    // Internal Shielded→Transparent transfer — the Core
+                    // receipt row represents it.
+                    continue
+                }
+                // External (or undecodable-script) withdrawal: nothing
+                // else in the history covers it — hiding it would make
+                // funds silently vanish from the timeline.
+                items.append(ShieldedActivityItem(row: row, externalWithdrawalAddress: address))
+            } else {
+                items.append(ShieldedActivityItem(row: row))
+            }
+        }
+        return items
+    }
+
+    /// Decode a withdrawal entry's counterparty (a Core scriptPubKey)
+    /// to a Base58Check address. Nil for empty / non-P2PKH/P2SH scripts.
+    private static func withdrawalDestinationAddress(counterparty: Data) -> String? {
+        guard !counterparty.isEmpty else { return nil }
+        let network: PaymentNetwork = WalletEnvironment.isTestnet ? .testnet : .mainnet
+        return ScriptAddressCodec.address(forScript: counterparty, network: network)
+    }
+
+    /// True when `address` belongs to the ACTIVE wallet's Core address
+    /// pools. Scoped to the active wallet on purpose: a withdrawal to
+    /// another on-device wallet's address is still external from this
+    /// wallet's perspective (this wallet gets no Core receipt row).
+    private static func isActiveWalletCoreAddress(
+        _ address: String,
+        walletId: Data,
+        in context: ModelContext
+    ) -> Bool {
+        var descriptor = FetchDescriptor<PersistentCoreAddress>(
+            predicate: #Predicate { $0.address == address })
+        descriptor.fetchLimit = 1
+        guard let row = (try? context.fetch(descriptor))?.first else { return false }
+        return row.account?.wallet.walletId == walletId
     }
 
     /// The host is `@MainActor`-isolated; grab its container + active-wallet
