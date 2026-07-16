@@ -168,6 +168,21 @@ struct ShieldedActivityItem: Identifiable {
         !isInternalMove && direction != .selfTransfer
     }
 
+    /// From/To wording for an internal move's detail sheet; nil for
+    /// non-internal kinds.
+    var internalMoveRoute: (source: String, destination: String)? {
+        let platform = NSLocalizedString("Your Platform balance", comment: "Shielded activity: source/destination of an internal move")
+        let shielded = NSLocalizedString("Your Shielded balance", comment: "Shielded activity: source/destination of an internal move")
+        let transparent = NSLocalizedString("Your Transparent balance", comment: "Shielded activity: source/destination of an internal move")
+        switch kind {
+        case .shield: return (platform, shielded)
+        case .shieldFromAssetLock: return (transparent, shielded)
+        case .unshield: return (shielded, platform)
+        case .withdrawal: return (shielded, transparent)
+        case .received, .sent, .identityCreate, .shieldedSpend: return nil
+        }
+    }
+
     /// Signed duffs for the row amount label. Internal moves and
     /// self-transfers stay positive (and render signless via
     /// `showsDirectionSign`) — own funds moved, not gained or lost.
@@ -250,6 +265,16 @@ struct ShieldedActivityDetailsView: View {
             VStack(spacing: 0) {
                 if let details = item.detailsText {
                     infoRow(NSLocalizedString("Type", comment: ""), details)
+                }
+                // Internal moves are self-originated BY CONSTRUCTION: the
+                // shield/unshield kinds are only ever live-recorded for
+                // this wallet's own operation (the restore-path scan can't
+                // prove origin, so it never labels anything a shield —
+                // an old own-shield resurfaces as plain "Received").
+                // Saying From/To here is therefore a guarantee, not a guess.
+                if let route = item.internalMoveRoute {
+                    infoRow(NSLocalizedString("From", comment: ""), route.source)
+                    infoRow(NSLocalizedString("To", comment: ""), route.destination)
                 }
                 infoRow(
                     NSLocalizedString("Status", comment: ""),

@@ -4597,6 +4597,8 @@
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
 
 /* Maya/SwapKit */
+
+"Your Platform balance" = "Your Platform balance";
 "Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
 
 /* CrowdNode */
@@ -4612,6 +4614,8 @@
 "Your session expired" = "Your session expired";
 
 /* Usernames */
+
+"Your Shielded balance" = "Your Shielded balance";
 "Your Shielded balance is almost ready — you can register privately around %@." = "Your Shielded balance is almost ready — you can register privately around %@.";
 
 /* Usernames */
@@ -4639,6 +4643,8 @@
 "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it." = "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.";
 
 /* No comment provided by engineer. */
+
+"Your Transparent balance" = "Your Transparent balance";
 "Your username %@ has been successfully created on the Dash Network" = "Your username %@ has been successfully created on the Dash Network";
 
 /* No comment provided by engineer. */
