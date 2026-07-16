@@ -364,16 +364,24 @@ final class SwiftDashSDKContactsService: ObservableObject {
         let (wallet, modelContainer, ownerId) = try requireContext()
 
         // Resolve the live ContactRequest handle from the SDK's
-        // in-memory state (populated by the sync that produced the
-        // SwiftData row the UI acted on).
-        let identity: ManagedIdentity
+        // in-memory state. That state is PER-SESSION — the SwiftData row
+        // the UI acted on may have been persisted by an earlier session's
+        // sync, so a miss here doesn't mean the request is gone: run a
+        // DashPay sync pass to repopulate the in-memory list and look
+        // again. Only a miss after a fresh pass is a genuinely
+        // revoked/consumed request.
         let request: ContactRequest
         do {
-            identity = try wallet.managedIdentity(identityId: ownerId)
-            guard let incoming = try identity.getIncomingContactRequest(senderId: senderId) else {
-                throw ServiceError.requestNotFound
+            if let incoming = try incomingRequestHandle(wallet: wallet, ownerId: ownerId, senderId: senderId) {
+                request = incoming
+            } else {
+                Self.logger.info("👥 CONTACTS :: incoming request not in memory — resyncing before accept")
+                await syncNow()
+                guard let retried = try incomingRequestHandle(wallet: wallet, ownerId: ownerId, senderId: senderId) else {
+                    throw ServiceError.requestNotFound
+                }
+                request = retried
             }
-            request = incoming
         } catch let error as ServiceError {
             throw error
         } catch {
@@ -394,6 +402,17 @@ final class SwiftDashSDKContactsService: ObservableObject {
         Self.logger.info("👥 CONTACTS :: accepted request from \(senderId.prefix(4).map { String(format: "%02x", $0) }.joined(), privacy: .public)…")
 
         Task { await self.syncNow() }
+    }
+
+    /// One in-memory lookup of a pending incoming request — split out so
+    /// the accept path can retry it after a resync.
+    private func incomingRequestHandle(
+        wallet: ManagedPlatformWallet,
+        ownerId: Data,
+        senderId: Data
+    ) throws -> ContactRequest? {
+        let identity = try wallet.managedIdentity(identityId: ownerId)
+        return try identity.getIncomingContactRequest(senderId: senderId)
     }
 
     /// Local-only mute: drops the sender's pending request and
