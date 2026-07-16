@@ -158,5 +158,12 @@ extension BalanceModel {
     func fiatAmountString() -> String {
         CurrencyExchanger.shared.fiatAmountString(for: value.dashAmount)
     }
+
+    /// Fiat string for an arbitrary duff amount — used by the balance
+    /// breakdown rows (transparent / platform / shielded) and the
+    /// combined-total hero, which aggregate more than `value`.
+    func fiatString(forDuffs duffs: UInt64) -> String {
+        CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount)
+    }
 }
 

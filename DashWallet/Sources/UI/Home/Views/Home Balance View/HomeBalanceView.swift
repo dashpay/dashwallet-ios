@@ -26,11 +26,26 @@ enum HomeBalanceViewState: Int {
 
 // MARK: - HomeBalanceView
 
+/// Home header: the combined total (transparent + platform + shielded)
+/// as the hero amount, then one row per balance with its fiat value and
+/// circular in/out transfer buttons. Rows map onto the routes the app
+/// actually supports:
+///   - Transparent: in = Receive, out = Send (external money);
+///   - Platform:    in = Shielded → Platform, out = Platform → Shielded;
+///   - Shielded:    in = Transparent → Shielded, out = Shielded → Transparent.
 struct HomeBalanceView: View {
     @ObservedObject var viewModel: BalanceModel
+    @ObservedObject private var platformSync = PlatformAddressSyncCoordinator.shared
     @State private var opacity: Double = 0.3
     var onLongPress: () -> Void
-    
+    var onReceive: () -> Void = {}
+    var onSend: () -> Void = {}
+    var onTransfer: (InternalTransferDirection, InternalTransferSource) -> Void = { _, _ in }
+
+    private var platformDuffs: UInt64 { platformSync.platformBalance / 1_000 }
+    private var shieldedDuffs: UInt64 { platformSync.shieldedBalance / 1_000 }
+    private var totalDuffs: UInt64 { viewModel.value + platformDuffs + shieldedDuffs }
+
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
@@ -50,7 +65,7 @@ struct HomeBalanceView: View {
                 }
             }
             .frame(height: 15)
-            
+
             ZStack {
                 if viewModel.isBalanceHidden {
                     Image(systemName: "eye.slash.fill")
@@ -63,12 +78,12 @@ struct HomeBalanceView: View {
                         .frame(width: 58, height: 58)
                 } else {
                     VStack(spacing: 0) {
-                        DashAmount(amount: Int64(viewModel.value), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
+                        DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
                             .foregroundColor(.white)
-                        Text(viewModel.fiatAmountString())
+                        Text(viewModel.fiatString(forDuffs: totalDuffs))
                             .font(.subhead)
                             .foregroundColor(.white)
-                        
+
                         ZStack {
                             if viewModel.shouldShowTapToHideBalance {
                                 Text(NSLocalizedString("Tap to hide balance", comment: ""))
@@ -90,6 +105,12 @@ struct HomeBalanceView: View {
             .onLongPressGesture {
                 onLongPress()
             }
+
+            if !viewModel.isBalanceHidden && platformSync.isRunning {
+                breakdownCard
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+            }
         }
         .onAppear {
             viewModel.reloadBalance()
@@ -97,5 +118,91 @@ struct HomeBalanceView: View {
         .onDisappear {
             viewModel.hideBalanceIfNeeded()
         }
+    }
+
+    private var breakdownCard: some View {
+        VStack(spacing: 0) {
+            balanceRow(
+                icon: "wallet.pass",
+                title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
+                duffs: viewModel.value,
+                inAction: onReceive,
+                outAction: onSend)
+            rowDivider
+            balanceRow(
+                icon: "cloud",
+                title: NSLocalizedString("Platform", comment: ""),
+                duffs: platformDuffs,
+                inAction: { onTransfer(.fromShielded, .platform) },
+                outAction: { onTransfer(.toShielded, .platform) })
+            rowDivider
+            balanceRow(
+                icon: "shield",
+                title: NSLocalizedString("Shielded", comment: ""),
+                duffs: shieldedDuffs,
+                inAction: { onTransfer(.toShielded, .core) },
+                outAction: { onTransfer(.fromShielded, .core) })
+        }
+        .padding(.horizontal, 12)
+        .background(Color.white.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var rowDivider: some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.18))
+            .frame(height: 0.5)
+    }
+
+    private func balanceRow(
+        icon: String,
+        title: String,
+        duffs: UInt64,
+        inAction: @escaping () -> Void,
+        outAction: @escaping () -> Void
+    ) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 15))
+                .foregroundColor(.white)
+                .frame(width: 20)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.footnote)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                Text(viewModel.fiatString(forDuffs: duffs))
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            Spacer(minLength: 8)
+            DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
+                .foregroundColor(.white)
+            transferButton(systemName: "arrow.down",
+                           label: NSLocalizedString("Transfer in", comment: "Balance breakdown"),
+                           action: inAction)
+            transferButton(systemName: "arrow.up",
+                           label: NSLocalizedString("Transfer out", comment: "Balance breakdown"),
+                           action: outAction)
+        }
+        .padding(.vertical, 9)
+    }
+
+    private func transferButton(
+        systemName: String,
+        label: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 28, height: 28)
+                .background(Circle().fill(Color.white.opacity(0.18)))
+                // Keep the visual small but the tap target comfortable.
+                .contentShape(Rectangle().inset(by: -8))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 }

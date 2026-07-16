@@ -648,6 +648,12 @@ extension HomeViewController: HomeViewDelegate {
         let controller = SyncingAlertViewController()
         present(controller, animated: true, completion: nil)
     }
+
+    func homeViewShowInternalTransfer(direction: InternalTransferDirection, source: InternalTransferSource) {
+        let controller = InternalTransferHostingController(direction: direction, source: source)
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
+    }
     
     #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt) {

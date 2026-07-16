@@ -22,6 +22,15 @@ final class InternalTransferHostingController: UIViewController {
         viewModel.amountText = "\(prefillDashAmount)"
     }
 
+    /// Open the screen pre-filled for a specific route — used by the home
+    /// balance breakdown's in/out buttons. The user can still flip the
+    /// direction or source on-screen.
+    convenience init(direction: InternalTransferDirection, source: InternalTransferSource) {
+        self.init(nibName: nil, bundle: nil)
+        viewModel.direction = direction
+        viewModel.source = source
+    }
+
     private lazy var hostingController: UIHostingController<InternalTransferScreen> = {
         let screen = InternalTransferScreen(viewModel: viewModel) { [weak self] in
             // After a successful transfer the user taps "Done" inside the
