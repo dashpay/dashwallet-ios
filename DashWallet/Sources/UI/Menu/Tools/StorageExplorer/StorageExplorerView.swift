@@ -169,6 +169,24 @@ struct StorageExplorerView: View {
         count(PersistentTransaction.self)
         count(PersistentTxo.self)
         count(PersistentWalletManagerMetadata.self)
+        // DashPay family + asset locks / masternodes / shielded (the
+        // ported list views) — a row whose model isn't counted here
+        // shows a misleading 0 next to a non-empty list.
+        count(PersistentDPNSName.self)
+        count(PersistentDashpayProfile.self)
+        count(PersistentDashpayContactProfile.self)
+        count(PersistentDashpayContactRequest.self)
+        count(PersistentDashpayPayment.self)
+        count(PersistentInvitation.self)
+        count(PersistentDashpayIgnoredSender.self)
+        count(PersistentPendingInput.self)
+        count(PersistentAssetLock.self)
+        count(PersistentMasternode.self)
+        count(PersistentShieldedNote.self)
+        count(PersistentShieldedOutgoingNote.self)
+        count(PersistentShieldedActivity.self)
+        count(PersistentShieldedSyncState.self)
+        count(PersistentShieldedViewingKey.self)
         // Core and Platform address rows live in separate models now
         // (PersistentCoreAddress vs PersistentPlatformAddress), so
         // counting them is a plain `fetchCount` per model.
