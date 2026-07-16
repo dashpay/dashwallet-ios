@@ -163,13 +163,53 @@ final class IdentitiesViewModel: ObservableObject {
                     : String(
                         format: NSLocalizedString("Found %d new identities", comment: "Identities"),
                         found.count)
-                // Backfill balances / usernames for the fresh rows.
+                // Backfill balances / usernames for the fresh rows, THEN
+                // adopt — the discovered row usually arrives nameless and
+                // the DPNS backfill supplies the username adoption needs.
                 reload()
                 await refreshFromNetwork()
+                adoptActiveWalletIdentityIfNeeded()
             }
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// A discovery that surfaced the ACTIVE wallet's pinned identity
+    /// (index 0) flips the app into DashPay mode — the same
+    /// `DWGlobalOptions` mirror + notification chain a fresh registration
+    /// performs on `.completed` — provided the identity already owns a
+    /// DPNS username. A nameless identity stays list-only: Join DashPay
+    /// later completes the name (the coordinator skips IdentityCreate for
+    /// an existing identity at the pinned slot). No-op when the mirror is
+    /// already set, so re-running Find can't clobber live state.
+    private func adoptActiveWalletIdentityIfNeeded() {
+        let options = DWGlobalOptions.sharedInstance()
+        guard options.dashpayUsername?.isEmpty != false else { return }
+        guard let container = SwiftDashSDKHost.shared.modelContainer,
+              let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId else { return }
+
+        var descriptor = FetchDescriptor<PersistentIdentity>(
+            predicate: #Predicate { identity in
+                identity.wallet?.walletId == activeWalletId && identity.identityIndex == 0
+            })
+        descriptor.fetchLimit = 1
+        guard let identity = try? container.mainContext.fetch(descriptor).first else { return }
+        let username = [identity.mainDpnsName, identity.dpnsName]
+            .compactMap { $0?.nonEmptyString }
+            .first
+        guard let username else { return }
+
+        options.dashpayUsername = username
+        options.dashpayRegistrationCompleted = true
+        DWCurrentUserIdentityInfo.shared.refreshFromSDK()
+        // Internal bridge notification: DWDashPayModel observes it, rebuilds
+        // its state, and posts the canonical
+        // DWDashPayRegistrationStatusUpdatedNotification for the wider UI —
+        // same ordering as a registration completion.
+        NotificationCenter.default.post(
+            name: DWIdentityRegistrationBridge.stateChangedNotification,
+            object: nil)
     }
 
     // MARK: - Mapping
