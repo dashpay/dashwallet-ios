@@ -126,6 +126,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case networkFee(DWTitleDetailItem)
         case date(DWTitleDetailItem)
         case taxCategory(DWTitleDetailItem)
+        case shieldedInfo(DWTitleDetailItem)
         case viewTransaction
         case copyRawTransaction
         case explorer
@@ -146,6 +147,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
             case .networkFee(let item): return ["NetworkFee"] + Self.identity(of: [item])
             case .date(let item): return ["Date"] + Self.identity(of: [item])
             case .taxCategory(let item): return ["TaxCategory"] + Self.identity(of: [item])
+            case .shieldedInfo(let item): return ["ShieldedInfo"] + Self.identity(of: [item])
             case .viewTransaction: return ["ViewTransaction"]
             case .copyRawTransaction: return ["CopyRawTransaction"]
             case .explorer: return ["Explorer"]
@@ -303,6 +305,11 @@ extension TXDetailViewController {
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         currentSnapshot.appendSections([.header, .info, .taxCategory, .rawTransaction, .explorer])
         currentSnapshot.appendItems([.header], toSection: .header)
+
+        // Shielded transfers lead with their balance route + lock status.
+        for item in model.shieldedInfo() {
+            currentSnapshot.appendItems([.shieldedInfo(item)], toSection: .info)
+        }
 
         // Empty address groups are skipped: SDK rows often carry no linked
         // input addresses and a sent row's external outputs may be unknown —

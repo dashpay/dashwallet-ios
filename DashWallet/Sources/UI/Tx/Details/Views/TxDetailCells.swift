@@ -103,7 +103,7 @@ class TxDetailInfoCell: TxDetailTitleDetailsCell {
                 valueLabelsStack.addArrangedSubview(view)
             }
             break
-        case .date(let item), .networkFee(let item):
+        case .date(let item), .networkFee(let item), .shieldedInfo(let item):
             title = item.title
             let view = valueLabel(item)
             valueLabelsStack.addArrangedSubview(view)

@@ -25,8 +25,27 @@ class TxDetailModel: NSObject {
     var transactionId: String
     var txTaxCategory: TxMetadataTaxCategory
 
+    /// Memoization for `computedRawFee` (extensions can't store properties).
+    /// Two flags so a nil result isn't recomputed on every table reload.
+    private var didComputeRawFee = false
+    fileprivate var rawFeeCache: UInt64?
+
     var title: String {
-        direction.title
+        // Shielded transfers carry their own identity — the generic
+        // direction titles ("Moved to Address" / "Amount received") hide
+        // what actually happened.
+        if transaction.isShieldedTransfer {
+            return transaction.isPendingShieldedTransfer
+                ? NSLocalizedString("Shielded transfer (pending)",
+                                    comment: "A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet")
+                : NSLocalizedString("Shielded transfer",
+                                    comment: "Transfer of own funds into the private shielded balance")
+        }
+        if transaction.isShieldedWithdrawalReceipt {
+            return NSLocalizedString("Shielded withdrawal",
+                                     comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+        }
+        return direction.title
     }
 
     var direction: DSTransactionDirection {
@@ -172,6 +191,13 @@ extension TxDetailModel {
     }
 
     var shouldDisplayOutputAddresses: Bool {
+        // An asset-lock funding's owned outputs are only its change —
+        // labeling them "Internally moved to" reads like the transfer's
+        // destination. The From/To route rows carry that instead, and the
+        // raw transaction inspector shows every output for the curious.
+        if transaction.isShieldedTransfer {
+            return false
+        }
         if direction == .received && hasDestinationUser {
             return false
         }
@@ -307,18 +333,107 @@ extension TxDetailModel {
         return models
     }
 
+    /// Extra rows for shielded transfers: the balance-to-balance route and,
+    /// for a Core → Shielded funding, the live on-chain asset-lock status.
+    /// Empty for every other transaction.
+    func shieldedInfo() -> [DWTitleDetailItem] {
+        let transparent = NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
+        let shielded = NSLocalizedString("Shielded balance", comment: "")
+        if transaction.isShieldedTransfer {
+            var rows: [DWTitleDetailItem] = [
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: transparent),
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: shielded),
+            ]
+            if let status = shieldedStatusText {
+                rows.append(DWTitleDetailCellModel(
+                    style: .default,
+                    title: NSLocalizedString("Status", comment: "Transaction details"),
+                    plainDetail: status))
+            }
+            return rows
+        }
+        if transaction.isShieldedWithdrawalReceipt {
+            return [
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: shielded),
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: transparent),
+            ]
+        }
+        return []
+    }
+
+    /// User-facing name of the funding asset lock's live status
+    /// (`PersistentAssetLock.statusRaw` via `ShieldedTxLookup`): 0/1 =
+    /// built/broadcast, 2/3 = IS/CL-locked awaiting the shield transition,
+    /// 4 = consumed (transfer complete). Nil when the lookup has no entry.
+    private var shieldedStatusText: String? {
+        guard let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: transactionId)?.statusRaw else {
+            return nil
+        }
+        switch statusRaw {
+        case 0, 1:
+            return NSLocalizedString("Broadcasting", comment: "")
+        case 2, 3:
+            return NSLocalizedString("Funds locked — finishing transfer", comment: "Shielded transfer status")
+        case 4:
+            return NSLocalizedString("Completed", comment: "Shielded transfer status")
+        default:
+            return nil
+        }
+    }
+
+    /// Below this (0.0001 DASH) a fee renders as plain duffs — the
+    /// DASH-formatted form reads as zero at a glance.
+    private static let duffsDisplayThreshold: UInt64 = 10_000
+
     func fee(with font: UIFont, tintColor: UIColor) -> DWTitleDetailItem {
         let title = NSLocalizedString("Network fee", comment: "")
         var feeValue: UInt64 = 0
-        
+
         if hasFee {
             feeValue = transaction.feeUsed
             feeValue = feeValue == UInt64.max ? 0 : feeValue
         }
-        
+        if feeValue == 0, direction != .received, let computed = computedRawFee {
+            // Rows without a persisted fee (asset-lock fundings) still have a
+            // real one — recover it from the raw transaction.
+            feeValue = computed
+        }
+
+        if feeValue > 0, feeValue < Self.duffsDisplayThreshold {
+            let detail = String(format: NSLocalizedString("%d duffs", comment: "Network fee in duffs (1 DASH = 100,000,000 duffs)"), feeValue)
+            return DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
+        }
+
         let detail = NSAttributedString.dashAttributedString(for: feeValue, tintColor: tintColor, font: font)
 
         return DWTitleDetailCellModel(style: .default, title: title, attributedDetail: detail)
+    }
+
+    /// Fee derived from the stored raw transaction as Σ(input values) −
+    /// Σ(output values) — the consensus definition, computable exactly when
+    /// every input value is known (all inputs are the wallet's own TXOs,
+    /// which holds for any tx we authored). Nil when any input value is
+    /// unknown, the bytes are unavailable, or the difference is negative
+    /// (mis-matched data — never guessed). Memoized: the detail sheet
+    /// reloads on tax-category toggles and the parse isn't free.
+    private var computedRawFee: UInt64? {
+        if !didComputeRawFee {
+            didComputeRawFee = true
+            rawFeeCache = Self.computeRawFee(txidWire: transaction.txHashData)
+        }
+        return rawFeeCache
+    }
+
+    private static func computeRawFee(txidWire: Data) -> UInt64? {
+        let details = MainActor.assumeIsolated {
+            RawTransactionInspector.load(txidWire: txidWire)
+        }
+        guard let details, !details.inputs.isEmpty else { return nil }
+        let inputAmounts = details.inputs.compactMap(\.amountDuffs)
+        guard inputAmounts.count == details.inputs.count else { return nil }
+        let inSum = inputAmounts.reduce(0, +)
+        let outSum = details.outputs.reduce(UInt64(0)) { $0 + $1.valueDuffs }
+        return inSum >= outSum ? inSum - outSum : nil
     }
 
     var date: DWTitleDetailCellModel {
