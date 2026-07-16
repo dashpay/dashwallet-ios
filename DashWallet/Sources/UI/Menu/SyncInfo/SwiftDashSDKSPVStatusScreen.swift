@@ -91,7 +91,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
             // Header
             HStack {
-                Text("SwiftDashSDK SPV Status")
+                Text("Core Sync Status")
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.primaryText)

@@ -40,7 +40,7 @@ class SyncInfoMenuViewModel: ObservableObject {
     private func setupMenuItems() {
         items = [
             MenuItemModel(
-                title: "SwiftDashSDK SPV Status",
+                title: "Core Sync Status",
                 icon: .system("arrow.triangle.2.circlepath"),
                 action: { [weak self] in
                     self?.navigationDestination = .swiftDashSDKSPVStatus
