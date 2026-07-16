@@ -335,25 +335,27 @@ struct ContactProfileSheet: View {
     }
 
     private func saveMeta() {
-        do {
-            try service.setAlias(aliasText.trimmingCharacters(in: .whitespaces), for: contact.contactIdentityId)
-            try service.setNote(noteText.trimmingCharacters(in: .whitespaces), for: contact.contactIdentityId)
-            withAnimation { metaSavedToast = true }
-            Task {
+        Task { @MainActor in
+            do {
+                try await service.setAlias(aliasText.trimmingCharacters(in: .whitespaces), for: contact.contactIdentityId)
+                try await service.setNote(noteText.trimmingCharacters(in: .whitespaces), for: contact.contactIdentityId)
+                withAnimation { metaSavedToast = true }
                 try? await Task.sleep(nanoseconds: 1_200_000_000)
                 withAnimation { metaSavedToast = false }
+            } catch {
+                errorMessage = error.localizedDescription
             }
-        } catch {
-            errorMessage = error.localizedDescription
         }
     }
 
     private func toggleHidden() {
-        do {
-            try service.setHidden(!isHidden, for: contact.contactIdentityId)
-            isHidden.toggle()
-        } catch {
-            errorMessage = error.localizedDescription
+        Task { @MainActor in
+            do {
+                try await service.setHidden(!isHidden, for: contact.contactIdentityId)
+                isHidden.toggle()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 

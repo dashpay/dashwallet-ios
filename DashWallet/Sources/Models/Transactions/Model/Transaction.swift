@@ -151,7 +151,38 @@ class Transaction: TransactionDataItem, Identifiable {
 
     var id: String { Self.displayHex(snapshot.txid) }
 
-    var direction: DSTransactionDirection { _direction }
+    /// Live DashPay payment record for this tx (`PersistentDashpayPayment`
+    /// via `DashPayPaymentTxLookup`) — the authoritative direction/amount
+    /// for a DIP-15 contact payment. dash-spv's net-change view misreads an
+    /// outgoing contact payment as an incoming +amount (the jointly-derived
+    /// payment address is watched by our wallet while the spent inputs
+    /// aren't attributed), so the Rust payment history — which records the
+    /// true direction at send/sync time — wins.
+    var dashPayPayment: DashPayPaymentTxLookup.PaymentInfo? {
+        DashPayPaymentTxLookup.shared.info(forTxidHex: shieldedDisplayTxid)
+    }
+
+    /// True when this tx is a recorded DashPay contact payment.
+    var isDashPayPayment: Bool { dashPayPayment != nil }
+
+    /// The counterparty's profile name for the row's gray details line —
+    /// only when the title used the owner-set alias, so both render
+    /// (alias on top, their actual name underneath). `nil` when the title
+    /// already shows the profile name (or nothing is cached).
+    var dashPayPaymentDetailsName: String? {
+        guard let payment = dashPayPayment,
+              payment.counterpartyAlias?.isEmpty == false,
+              let name = payment.counterpartyName,
+              name != payment.counterpartyAlias else { return nil }
+        return name
+    }
+
+    var direction: DSTransactionDirection {
+        if let payment = dashPayPayment {
+            return payment.isOutgoing ? .sent : .received
+        }
+        return _direction
+    }
     private lazy var _direction: DSTransactionDirection = {
         // FFI direction encoding: 0=incoming, 1=outgoing, 2=internal,
         // 3=coinjoin. Promote outgoing→moved when the wallet's net
@@ -354,9 +385,15 @@ class Transaction: TransactionDataItem, Identifiable {
     /// Prefer the live shielded amount (computed from `ShieldedTxLookup`) over
     /// the lazily-cached generic `_dashAmount`, so a row that became a shielded
     /// transfer after its first render still shows the locked amount — matching
-    /// the now-live `stateTitle` / `isPendingShieldedTransfer`.
+    /// the now-live `stateTitle` / `isPendingShieldedTransfer`. A DashPay
+    /// contact payment likewise shows the recorded payment amount (the
+    /// net-change view reads the wrong number for those — see `dashPayPayment`).
     var dashAmount: UInt64 {
-        shieldedTransferAmountDuffs ?? platformFundingAmountDuffs ?? identityFundingAmountDuffs ?? _dashAmount
+        dashPayPayment?.amountDuffs
+            ?? shieldedTransferAmountDuffs
+            ?? platformFundingAmountDuffs
+            ?? identityFundingAmountDuffs
+            ?? _dashAmount
     }
     var signedDashAmount: Int64 {
         if dashAmount == UInt64.max {
@@ -367,9 +404,10 @@ class Transaction: TransactionDataItem, Identifiable {
     }
 
     var fiatAmount: String {
-        // The shielded amount is read live (see `dashAmount`), so compute its
-        // fiat live too; non-shielded rows keep the lazily-cached value.
-        if shieldedTransferAmountDuffs != nil || platformFundingAmountDuffs != nil || identityFundingAmountDuffs != nil {
+        // The shielded / DashPay-payment amount is read live (see
+        // `dashAmount`), so compute its fiat live too; other rows keep the
+        // lazily-cached value.
+        if dashPayPayment != nil || shieldedTransferAmountDuffs != nil || platformFundingAmountDuffs != nil || identityFundingAmountDuffs != nil {
             return userInfo?.fiatAmountString(from: dashAmount) ?? NSLocalizedString("Not available", comment: "")
         }
         return storedFiatAmount
@@ -450,6 +488,16 @@ class Transaction: TransactionDataItem, Identifiable {
             default:
                 return NSLocalizedString("Identity top-up", comment: "Asset lock topping up a DashPay identity's credits")
             }
+        }
+        // A DashPay contact payment names the counterparty — the owner-set
+        // alias when one exists, else their profile display name (their
+        // name then moves to the gray details line). No cached
+        // name at all falls through to the generic Sent/Received (the
+        // overlaid `direction` already points the right way).
+        if let payment = dashPayPayment, let name = payment.titleName {
+            return payment.isOutgoing
+                ? String(format: NSLocalizedString("Sent to %@", comment: "DashPay payment row — recipient's display name"), name)
+                : String(format: NSLocalizedString("Received from %@", comment: "DashPay payment row — sender's display name"), name)
         }
         // Every balance-to-balance transfer reads "Internal Transfer"; the
         // route is carried visually (source icon → destination badge), by

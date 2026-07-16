@@ -2817,6 +2817,9 @@
 /* No comment provided by engineer. */
 "Received from" = "Received from";
 
+/* DashPay payment row — sender's display name */
+"Received from %@" = "Received from %@";
+
 /* CrowdNode */
 "Receiving rewards" = "Receiving rewards";
 
@@ -3202,6 +3205,9 @@
 
 /* No comment provided by engineer. */
 "Sent to" = "Sent to";
+
+/* DashPay payment row — recipient's display name */
+"Sent to %@" = "Sent to %@";
 
 /* DashPay Contacts */
 "Sent you a request" = "Sent you a request";

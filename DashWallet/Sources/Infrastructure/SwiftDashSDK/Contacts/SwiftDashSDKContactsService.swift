@@ -148,6 +148,10 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// call eagerly; also runs automatically on every (debounced)
     /// SwiftData save.
     func refresh() {
+        // Seed / update the txid → DashPay-payment overlay alongside every
+        // snapshot rebuild (service init covers the launch case, where the
+        // home tx list renders before the first contacts sync pass).
+        DashPayPaymentTxLookup.shared.refresh()
         guard let ownerId = DWCurrentUserIdentityInfo.shared.identityId,
               let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
             // No identity (or storage not up yet) — an empty contact
@@ -273,6 +277,9 @@ final class SwiftDashSDKContactsService: ObservableObject {
         } catch {
             Self.logger.error("👥 CONTACTS :: payments projection failed: \(String(describing: error), privacy: .public)")
         }
+        // The projection may have upserted payment rows; keep the tx-list
+        // classification overlay in step.
+        DashPayPaymentTxLookup.shared.refresh()
     }
 
     // MARK: - Notifications read-state (bell badge)
@@ -526,8 +533,8 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// Set / clear the owner-private alias on an established contact.
     /// Local-only state (no on-chain artifact, no auth gate); durably
     /// persisted via `flushPersist`.
-    func setAlias(_ alias: String?, for contactId: Data) throws {
-        try mutateEstablishedContact(contactId) { contact in
+    func setAlias(_ alias: String?, for contactId: Data) async throws {
+        try await mutateEstablishedContact(contactId) { contact in
             if let alias, !alias.isEmpty {
                 try contact.setAlias(alias)
             } else {
@@ -537,8 +544,8 @@ final class SwiftDashSDKContactsService: ObservableObject {
     }
 
     /// Set / clear the owner-private note on an established contact.
-    func setNote(_ note: String?, for contactId: Data) throws {
-        try mutateEstablishedContact(contactId) { contact in
+    func setNote(_ note: String?, for contactId: Data) async throws {
+        try await mutateEstablishedContact(contactId) { contact in
             if let note, !note.isEmpty {
                 try contact.setNote(note)
             } else {
@@ -549,21 +556,45 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
     /// Hide / unhide an established contact (moves it to the Hidden
     /// section of the contacts list).
-    func setHidden(_ hidden: Bool, for contactId: Data) throws {
-        try mutateEstablishedContact(contactId) { contact in
+    func setHidden(_ hidden: Bool, for contactId: Data) async throws {
+        try await mutateEstablishedContact(contactId) { contact in
             hidden ? try contact.hide() : try contact.unhide()
         }
+    }
+
+    /// One in-memory lookup of an established contact — split out so the
+    /// mutation path can retry it after a resync.
+    private func establishedContactHandle(
+        wallet: ManagedPlatformWallet,
+        ownerId: Data,
+        contactId: Data
+    ) throws -> EstablishedContact? {
+        let identity = try wallet.managedIdentity(identityId: ownerId)
+        return try identity.getEstablishedContact(contactId: contactId)
     }
 
     private func mutateEstablishedContact(
         _ contactId: Data,
         _ mutate: (EstablishedContact) throws -> Void
-    ) throws {
+    ) async throws {
         let (wallet, _, ownerId) = try requireContext()
         do {
-            let identity = try wallet.managedIdentity(identityId: ownerId)
-            guard let contact = try identity.getEstablishedContact(contactId: contactId) else {
-                throw ServiceError.requestNotFound
+            // The SDK's in-memory contact state is PER-SESSION while the
+            // rows the UI acted on persist across sessions — same trap as
+            // `acceptContactRequest`. A miss doesn't mean the contact is
+            // gone: resync and look again before failing (setting an alias
+            // right after launch used to die here with the bogus
+            // "Contact request not found").
+            let contact: EstablishedContact
+            if let live = try establishedContactHandle(wallet: wallet, ownerId: ownerId, contactId: contactId) {
+                contact = live
+            } else {
+                Self.logger.info("👥 CONTACTS :: established contact not in memory — resyncing before mutation")
+                await syncNow()
+                guard let retried = try establishedContactHandle(wallet: wallet, ownerId: ownerId, contactId: contactId) else {
+                    throw ServiceError.requestNotFound
+                }
+                contact = retried
             }
             try mutate(contact)
             // Durability: the setters mutate in-memory Rust state; the
@@ -756,5 +787,108 @@ final class SwiftDashSDKContactsService: ObservableObject {
 final class ContactsNotificationsBridge: NSObject {
     @objc static var unreadCount: UInt {
         UInt(SwiftDashSDKContactsService.shared.unreadNotificationCount)
+    }
+}
+
+// MARK: - DashPay payment tx lookup
+
+/// Thread-safe txid → DashPay-payment snapshot, mirrored from
+/// `PersistentDashpayPayment` — the same overlay shape as
+/// `ShieldedTxLookup`. The home transaction list uses it to classify
+/// DIP-15 contact payments: dash-spv's net-change view misreads an
+/// outgoing contact payment as an incoming +amount (the jointly-derived
+/// payment address is watched by our wallet, while the spent inputs
+/// aren't attributed), so the payment record written by the Rust
+/// payment history — which knows the true direction and amount — wins.
+///
+/// Keys are display-order txid hex, lowercased (the `PersistentDashpayPayment.txid`
+/// convention, which matches explorer txids and `Transaction`'s
+/// reversed `txHashData`).
+final class DashPayPaymentTxLookup {
+    static let shared = DashPayPaymentTxLookup()
+
+    struct PaymentInfo: Sendable {
+        let amountDuffs: UInt64
+        /// True when the wallet's identity SENT this payment.
+        let isOutgoing: Bool
+        let counterpartyIdentityId: Data
+        /// Counterparty's DashPay profile display name, when the profile
+        /// cache has one — drives the "Sent to <name>" row title.
+        let counterpartyName: String?
+        /// Owner-set alias for the counterparty, when one exists — wins
+        /// over `counterpartyName` in the row title (the profile name then
+        /// moves to the gray details line).
+        let counterpartyAlias: String?
+        /// Counterparty's avatar URL, when their profile carries one.
+        let counterpartyAvatarURL: String?
+
+        /// Row-title name: alias first (owner's own label for the contact),
+        /// then the profile display name. Matches `ContactItem.displayTitle`.
+        var titleName: String? { counterpartyAlias ?? counterpartyName }
+    }
+
+    private let lock = NSLock()
+    private var infoByTxid: [String: PaymentInfo] = [:]
+
+    private init() {}
+
+    /// Snapshot entry for a txid (display-order hex), or nil when the tx
+    /// is not a recorded DashPay payment. Thread-safe; touches no SwiftData.
+    func info(forTxidHex txidHex: String) -> PaymentInfo? {
+        let key = txidHex.lowercased()
+        lock.lock()
+        defer { lock.unlock() }
+        return infoByTxid[key]
+    }
+
+    /// Rebuild the snapshot from the active container's payment rows.
+    /// Main actor: reads the SwiftData `mainContext`. A nil container
+    /// clears the snapshot; a transient fetch error keeps the previous one.
+    @MainActor
+    func refresh() {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            store([:])
+            return
+        }
+        do {
+            let rows = try container.mainContext.fetch(FetchDescriptor<PersistentDashpayPayment>())
+            // Join the counterparty's cached DashPay profile for the row
+            // title/avatar. Tiny tables; fetch-all and index in Swift.
+            let profiles = try container.mainContext.fetch(FetchDescriptor<PersistentDashpayContactProfile>())
+            var profileByContactId: [Data: (name: String?, avatarURL: String?)] = [:]
+            for profile in profiles {
+                profileByContactId[profile.contactIdentityId] = (profile.displayName, profile.avatarUrl)
+            }
+            // Owner-set aliases ride on the contact-request rows (either
+            // direction of the pair may carry it — same read the contacts
+            // snapshot uses).
+            let requests = try container.mainContext.fetch(FetchDescriptor<PersistentDashpayContactRequest>())
+            var aliasByContactId: [Data: String] = [:]
+            for request in requests {
+                if let alias = request.contactAlias, !alias.isEmpty {
+                    aliasByContactId[request.contactIdentityId] = alias
+                }
+            }
+            var map: [String: PaymentInfo] = [:]
+            for row in rows where row.amountDuffs > 0 {
+                let profile = profileByContactId[row.counterpartyIdentityId]
+                map[row.txid.lowercased()] = PaymentInfo(
+                    amountDuffs: row.amountDuffs,
+                    isOutgoing: row.direction == .sent,
+                    counterpartyIdentityId: row.counterpartyIdentityId,
+                    counterpartyName: profile?.name?.isEmpty == false ? profile?.name : nil,
+                    counterpartyAlias: aliasByContactId[row.counterpartyIdentityId],
+                    counterpartyAvatarURL: profile?.avatarURL?.isEmpty == false ? profile?.avatarURL : nil)
+            }
+            store(map)
+        } catch {
+            // Keep the previous snapshot on a transient fetch failure.
+        }
+    }
+
+    private func store(_ map: [String: PaymentInfo]) {
+        lock.lock()
+        infoByTxid = map
+        lock.unlock()
     }
 }
