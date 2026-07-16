@@ -12,6 +12,7 @@
 		02EDCC7635BCD84768554D9C /* StorageModelListViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A762BDA473947F1A7EF199 /* StorageModelListViews.swift */; };
 		02EED2FC7EAC55B96ECEAAD6 /* DWLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 59C18FCF827D815007BAEF29 /* DWLogger.m */; };
 		0308E777B29CC6DE1DB30FDD /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */; };
+		51AA00212F970021005A0021 /* MasternodesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00202F970020005A0020 /* MasternodesScreen.swift */; };
 		51AA00022F970002005A0002 /* SyncInfoMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00012F970001005A0001 /* SyncInfoMenuScreen.swift */; };
 		51AA00032F970003005A0003 /* SyncInfoMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00012F970001005A0001 /* SyncInfoMenuScreen.swift */; };
 		51AA00052F970005005A0005 /* SyncInfoMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00042F970004005A0004 /* SyncInfoMenuViewModel.swift */; };
@@ -343,6 +344,7 @@
 		2C669744EE2749C5953E2EE7 /* SwiftDashSDKWalletSending.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BAA92B00D4109567DF870F /* SwiftDashSDKWalletSending.swift */; };
 		2D086D12D2112C53A36D4B06 /* ScriptAddressCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080B9ECCDC82A7B7FF4039C6 /* ScriptAddressCodec.swift */; };
 		2D354A4D6053027CA27F02CB /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */; };
+		51AA00222F970022005A0022 /* MasternodesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA00202F970020005A0020 /* MasternodesScreen.swift */; };
 		2E08EC52344E430F9BC8DEAA /* TransferAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */; };
 		2EFDEC7DCA624B16DBBB482D /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B697D56A525CBF142F4401FE /* SwiftDashSDKWalletCreator.swift */; };
 		30C7DE2E26E849E0D76319FA /* PlatformAddressSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */; };
@@ -2825,6 +2827,7 @@
 		59C18FCF827D815007BAEF29 /* DWLogger.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = DWLogger.m; sourceTree = "<group>"; };
 		59C9D64AB542D03FE3704D02 /* ShieldedWithdrawalStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalStore.swift; sourceTree = "<group>"; };
 		5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlatformSyncStatusScreen.swift; sourceTree = "<group>"; };
+		51AA00202F970020005A0020 /* MasternodesScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodesScreen.swift; sourceTree = "<group>"; };
 		51AA00012F970001005A0001 /* SyncInfoMenuScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncInfoMenuScreen.swift; sourceTree = "<group>"; };
 		51AA00042F970004005A0004 /* SyncInfoMenuViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncInfoMenuViewModel.swift; sourceTree = "<group>"; };
 		51AA00072F970007005A0007 /* DashPaySyncInfoScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DashPaySyncInfoScreen.swift; sourceTree = "<group>"; };
@@ -4847,6 +4850,7 @@
 				2A8DBA772630A6BE009094BD /* ExtendedKeys */,
 				2A10EB322358994400C38B61 /* ImportWallet */,
 				FB3FF0B0222641210059A9A5 /* Masternode Keys */,
+				51AA00202F970020005A0020 /* MasternodesScreen.swift */,
 				7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */,
 				RC00C0032FA0000000000001 /* CSVExportSheet.swift */,
 				752F81A82E323FD000ADA76D /* ToolsMenuViewModel.swift */,
@@ -10342,6 +10346,7 @@
 				85448D7537BBD0AE40682EC8 /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 				8EAA05FA797008525050A2A7 /* PlatformAddressSyncCoordinator.swift in Sources */,
 				2D354A4D6053027CA27F02CB /* PlatformSyncStatusScreen.swift in Sources */,
+				51AA00222F970022005A0022 /* MasternodesScreen.swift in Sources */,
 				51AA00022F970002005A0002 /* SyncInfoMenuScreen.swift in Sources */,
 				51AA00052F970005005A0005 /* SyncInfoMenuViewModel.swift in Sources */,
 				51AA00082F970008005A0008 /* DashPaySyncInfoScreen.swift in Sources */,
@@ -11361,6 +11366,7 @@
 				87AC92AAD9DF8CBF271609AC /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 				30C7DE2E26E849E0D76319FA /* PlatformAddressSyncCoordinator.swift in Sources */,
 				0308E777B29CC6DE1DB30FDD /* PlatformSyncStatusScreen.swift in Sources */,
+				51AA00212F970021005A0021 /* MasternodesScreen.swift in Sources */,
 				51AA00032F970003005A0003 /* SyncInfoMenuScreen.swift in Sources */,
 				51AA00062F970006005A0006 /* SyncInfoMenuViewModel.swift in Sources */,
 				51AA00092F970009005A0009 /* DashPaySyncInfoScreen.swift in Sources */,
