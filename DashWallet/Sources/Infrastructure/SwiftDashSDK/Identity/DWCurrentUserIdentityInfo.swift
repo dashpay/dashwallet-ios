@@ -66,6 +66,47 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     /// `DWIdentityRegistrationCoordinator.pinnedIdentityIndex`.
     private static let pinnedIdentityIndex: UInt32 = 0
 
+    // MARK: - Main identity (per-wallet pick)
+
+    /// The SDK deliberately leaves primary-identity selection to the app
+    /// layer (`InMemoryWalletSummary.primaryIdentityId` is always nil
+    /// Rust-side), so the pick lives here: one UserDefaults slot per
+    /// wallet, holding the chosen identity's 32-byte id as hex. `nil` =
+    /// no explicit pick; the snapshot then falls back to identity index
+    /// 0, then the lowest registered index.
+    private static func mainIdentityDefaultsKey(walletId: Data) -> String {
+        "DWMainIdentityId." + walletId.map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// The stored main-identity pick for `walletId`, or nil.
+    static func mainIdentityId(walletId: Data) -> Data? {
+        guard let hex = UserDefaults.standard.string(forKey: mainIdentityDefaultsKey(walletId: walletId)),
+              hex.count == 64 else { return nil }
+        var bytes = Data(capacity: 32)
+        var index = hex.startIndex
+        while index < hex.endIndex {
+            let next = hex.index(index, offsetBy: 2)
+            guard let byte = UInt8(hex[index..<next], radix: 16) else { return nil }
+            bytes.append(byte)
+            index = next
+        }
+        return bytes
+    }
+
+    /// Store (or clear, with nil) the main-identity pick for `walletId`.
+    /// Storage only — callers drive the refresh/notification cascade so
+    /// DashPay surfaces re-key (see `IdentitiesViewModel.setMainIdentity`).
+    static func setMainIdentityId(_ identityId: Data?, walletId: Data) {
+        let key = mainIdentityDefaultsKey(walletId: walletId)
+        if let identityId {
+            UserDefaults.standard.set(
+                identityId.map { String(format: "%02x", $0) }.joined(),
+                forKey: key)
+        } else {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+    }
+
     // MARK: - Snapshot
 
     /// Cached read of the SDK's current identity info. Rebuilt lazily
@@ -290,8 +331,19 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             predicate: #Predicate { $0.walletId == walletId }
         )
         walletDescriptor.fetchLimit = 1
-        guard let persistedWallet = try? context.fetch(walletDescriptor).first,
-              let persisted = persistedWallet.identities.first(where: { $0.identityIndex == pinnedIndex })
+        guard let persistedWallet = try? context.fetch(walletDescriptor).first else {
+            return .empty
+        }
+        // Resolution order: the user's stored main-identity pick (when it
+        // still names one of this wallet's identities), then the pinned
+        // registration slot (index 0), then the lowest registered index —
+        // so a wallet whose only identity was discovered at a higher slot
+        // still resolves instead of reading as unregistered.
+        let identities = persistedWallet.identities
+        let mainPick = Self.mainIdentityId(walletId: walletId)
+        guard let persisted = identities.first(where: { mainPick != nil && $0.identityId == mainPick })
+            ?? identities.first(where: { $0.identityIndex == pinnedIndex })
+            ?? identities.min(by: { $0.identityIndex < $1.identityIndex })
         else {
             return .empty
         }

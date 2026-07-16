@@ -33,7 +33,6 @@ struct IdentitiesScreen: View {
     private let vc: UINavigationController
 
     @StateObject private var viewModel = IdentitiesViewModel()
-    @State private var detailRow: IdentityRowModel? = nil
 
     init(vc: UINavigationController) {
         self.vc = vc
@@ -54,7 +53,7 @@ struct IdentitiesScreen: View {
                             ForEach(viewModel.rows) { row in
                                 IdentityRowView(row: row)
                                     .contentShape(Rectangle())
-                                    .onTapGesture { detailRow = row }
+                                    .onTapGesture { showDetail(row) }
                                 if row.id != viewModel.rows.last?.id {
                                     Divider().padding(.leading, 16)
                                 }
@@ -76,9 +75,6 @@ struct IdentitiesScreen: View {
         }
         .navigationBarHidden(true)
         .onAppear { viewModel.reload() }
-        .sheet(item: $detailRow) { row in
-            IdentityDetailSheet(row: row)
-        }
         .alert(
             NSLocalizedString("Error", comment: ""),
             isPresented: Binding(
@@ -100,6 +96,18 @@ struct IdentitiesScreen: View {
         } message: {
             Text(viewModel.infoMessage ?? "")
         }
+    }
+
+    // MARK: - Navigation
+
+    /// Push the identity's full detail page (WalletsScreen → accounts
+    /// pattern). A page, not a sheet: the detail carries actions
+    /// (set-main) and grows with future identity features.
+    private func showDetail(_ row: IdentityRowModel) {
+        let controller = UIHostingController(
+            rootView: IdentityDetailScreen(row: row, vc: vc, viewModel: viewModel))
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
     }
 
     // MARK: - Subviews
@@ -227,6 +235,12 @@ private struct IdentityRowView: View {
                             .font(.caption)
                             .foregroundColor(.yellow)
                     }
+                    if row.isMainIdentity {
+                        IdentityBadge(
+                            text: NSLocalizedString("Main", comment: "Identities — the wallet's main identity"),
+                            icon: "checkmark.seal.fill",
+                            color: .dashBlue)
+                    }
                 }
                 if let subtitle = row.subtitle {
                     Text(subtitle)
@@ -298,19 +312,44 @@ private struct IdentityBadge: View {
     }
 }
 
-// MARK: - Detail sheet
+// MARK: - Detail page
 
-/// Compact identity detail: full copyable id, balance, type, network
-/// status, owning wallet, key count, and every owned DPNS name.
-private struct IdentityDetailSheet: View {
+/// Full identity detail page (pushed, not a sheet): copyable id,
+/// balance, type, network status, owning wallet, key count, every owned
+/// DPNS name — and the main-identity control. The main identity is the
+/// one every DashPay surface keys on (username, avatar, contacts).
+struct IdentityDetailScreen: View {
     let row: IdentityRowModel
+    private let vc: UINavigationController
+    @ObservedObject private var viewModel: IdentitiesViewModel
 
     @State private var copied = false
+    /// Local main-state so the page reflects the change immediately;
+    /// seeded from the row, flipped on a successful set-main.
+    @State private var isMain: Bool
+    @State private var confirmSetMain = false
+
+    init(row: IdentityRowModel, vc: UINavigationController, viewModel: IdentitiesViewModel) {
+        self.row = row
+        self.vc = vc
+        self.viewModel = viewModel
+        _isMain = State(initialValue: row.isMainIdentity)
+    }
+
+    /// Only identities of the active wallet can become main — the pick
+    /// re-keys the live DashPay surfaces, which follow the active wallet.
+    private var canBecomeMain: Bool {
+        !isMain && row.walletId != nil
+            && row.walletId == SwiftDashSDKHost.shared.wallet?.walletId
+    }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.primaryBackground.ignoresSafeArea()
+        ZStack {
+            Color.primaryBackground.ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 0) {
+                pageHeader
+
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
                         idCard
@@ -318,15 +357,118 @@ private struct IdentityDetailSheet: View {
                         if !row.dpnsNames.isEmpty {
                             namesCard
                         }
+                        mainIdentityCard
                     }
                     .padding(20)
                 }
             }
-            .navigationTitle(row.title)
-            .navigationBarTitleDisplayMode(.inline)
         }
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
+        .navigationBarHidden(true)
+        .alert(
+            NSLocalizedString("Set as Main Identity", comment: "Identities"),
+            isPresented: $confirmSetMain
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+            Button(NSLocalizedString("Set as Main", comment: "Identities")) {
+                viewModel.setMainIdentity(row)
+                if viewModel.errorMessage == nil {
+                    isMain = true
+                }
+            }
+        } message: {
+            Text(NSLocalizedString(
+                "Your username, profile, and contacts will follow this identity.",
+                comment: "Identities"))
+        }
+        .alert(
+            NSLocalizedString("Error", comment: ""),
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { if !$0 { viewModel.errorMessage = nil } })
+        ) {
+            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
+    }
+
+    private var pageHeader: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Button(action: { vc.popViewController(animated: true) }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.primary)
+                        .frame(width: 36, height: 36)
+                        .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 5)
+            .padding(.top, 10)
+
+            HStack(spacing: 6) {
+                Text(row.title)
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primaryText)
+                    .lineLimit(1)
+                if isMain {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.dashBlue)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 6)
+        }
+    }
+
+    /// Main-identity control: a checked state when this IS the main,
+    /// a Set button when it can become it, and an explanatory line when
+    /// it can't (other wallet's identity).
+    private var mainIdentityCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if isMain {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundColor(.dashBlue)
+                    Text(NSLocalizedString("This is your main identity", comment: "Identities"))
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(.primaryText)
+                }
+                Text(NSLocalizedString(
+                    "Your username, profile, and contacts follow this identity.",
+                    comment: "Identities"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondaryText)
+            } else if canBecomeMain {
+                Button(action: { confirmSetMain = true }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.seal")
+                        Text(NSLocalizedString("Set as Main Identity", comment: "Identities"))
+                    }
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.dashBlue)
+                    .cornerRadius(12)
+                }
+            } else {
+                Text(NSLocalizedString(
+                    "The main identity can only be chosen from the active wallet",
+                    comment: "Identities"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondaryText)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color.secondaryBackground)
+        .cornerRadius(12)
     }
 
     private var idCard: some View {

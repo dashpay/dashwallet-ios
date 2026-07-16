@@ -2016,6 +2016,9 @@
 /* Voting */
 "Low to high" = "Low to high";
 
+/* Identities — the wallet's main identity */
+"Main" = "Main";
+
 /* No comment provided by engineer. */
 "Mainnet" = "Mainnet";
 
@@ -3221,6 +3224,12 @@
 /* Masternodes */
 "Service" = "Service";
 
+/* Identities */
+"Set as Main" = "Set as Main";
+
+/* Identities */
+"Set as Main Identity" = "Set as Main Identity";
+
 /* No comment provided by engineer. */
 "Set PIN" = "Set PIN";
 
@@ -3571,6 +3580,9 @@
 /* Usernames */
 "The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
+/* Identities */
+"The main identity can only be chosen from the active wallet" = "The main identity can only be chosen from the active wallet";
+
 /* Dash DEX */
 "The maximum transaction amount is %@" = "The maximum transaction amount is %@";
 
@@ -3654,6 +3666,9 @@
 
 /* Send screen */
 "This is not a valid Dash address for this network" = "This is not a valid Dash address for this network";
+
+/* Identities */
+"This is your main identity" = "This is your main identity";
 
 /* Masternodes */
 "This masternode has no Platform identity yet." = "This masternode has no Platform identity yet.";
@@ -4620,6 +4635,12 @@
 
 /* Usernames */
 "Your username is visible to everyone. Funding it from your Shielded balance — after letting the funds rest for a few hours — means no one can link your username to your other Dash." = "Your username is visible to everyone. Funding it from your Shielded balance — after letting the funds rest for a few hours — means no one can link your username to your other Dash.";
+
+/* Identities */
+"Your username, profile, and contacts follow this identity." = "Your username, profile, and contacts follow this identity.";
+
+/* Identities */
+"Your username, profile, and contacts will follow this identity." = "Your username, profile, and contacts will follow this identity.";
 
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "Your vote was cancelled";
