@@ -164,6 +164,8 @@ extension Coinbase {
         do {
             let tx = try await accountService.send(from: kDashAccount, amount: amount, verificationCode: verificationCode, idem: idem)
 
+            CoinbaseTransactionMetadataTagger.shared.track(receivedTransfer: tx)
+
             if let address = tx.to?.address {
                 Taxes.shared.mark(address: address, with: .transferIn)
             }
@@ -293,6 +295,170 @@ extension Coinbase {
     public func removeUserDidChangeListener(handle: UserDidChangeListenerHandle) {
         auth.removeUserDidChangeListener(handle: handle)
     }
+}
+
+// MARK: - CoinbaseTransactionMetadataTagger
+
+final class CoinbaseTransactionMetadataTagger {
+    static let shared = CoinbaseTransactionMetadataTagger()
+
+    private struct PendingReceiveTransfer: Equatable {
+        let address: String
+        let amount: UInt64
+        let minimumTimestamp: TimeInterval
+    }
+
+    private let metadataDao = TransactionMetadataDAOImpl.shared
+    private let queue = DispatchQueue(label: "CoinbaseTransactionMetadataTagger.queue", qos: .utility)
+    // A wallet receive can land before Coinbase's response completes; if createdAt is missing,
+    // look back a bounded window so we do not permanently miss the matching transaction.
+    private static let receiveLookbackWindow: TimeInterval = 15 * 60
+    private var pendingReceiveTransfers: [PendingReceiveTransfer] = []
+    private var cancellables = Set<AnyCancellable>()
+
+    private init() {
+        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.resolvePendingReceiveTransfers()
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .DSTransactionManagerTransactionStatusDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.resolvePendingReceiveTransfers()
+            }
+            .store(in: &cancellables)
+    }
+
+    func track(receivedTransfer transaction: CoinbaseTransaction) {
+        if let walletTxHash = walletTxHashData(from: transaction.network?.hash) {
+            markCoinbaseTransaction(txHash: walletTxHash)
+            return
+        }
+
+        guard let address = transaction.to?.address?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !address.isEmpty,
+              let amount = coinbaseDashAmount(from: transaction.amount),
+              amount > 0 else {
+            return
+        }
+
+        let minimumTimestamp = coinbaseTimestamp(from: transaction.createdAt)
+            ?? (Date().timeIntervalSince1970 - Self.receiveLookbackWindow)
+
+        queue.async { [weak self] in
+            self?.pendingReceiveTransfers.append(
+                PendingReceiveTransfer(address: address, amount: amount, minimumTimestamp: minimumTimestamp)
+            )
+            self?.resolvePendingReceiveTransfers()
+        }
+    }
+
+    func track(sentTransaction transaction: DSTransaction) {
+        markCoinbaseTransaction(txHash: transaction.txHashData)
+    }
+
+    private func resolvePendingReceiveTransfers() {
+        queue.async { [weak self] in
+            guard let self else { return }
+
+            var availableTransactions = DWEnvironment.sharedInstance().currentWallet.allTransactions
+            guard !availableTransactions.isEmpty, !self.pendingReceiveTransfers.isEmpty else {
+                return
+            }
+
+            var unresolved: [PendingReceiveTransfer] = []
+
+            for pending in self.pendingReceiveTransfers {
+                guard let match = self.matchingTransaction(
+                    for: pending,
+                    in: availableTransactions
+                ) else {
+                    unresolved.append(pending)
+                    continue
+                }
+
+                self.markCoinbaseTransaction(txHash: match.txHashData)
+                if let index = availableTransactions.firstIndex(where: { $0.txHashData == match.txHashData }) {
+                    availableTransactions.remove(at: index)
+                }
+            }
+
+            self.pendingReceiveTransfers = unresolved
+        }
+    }
+
+    private func matchingTransaction(
+        for pending: PendingReceiveTransfer,
+        in transactions: [DSTransaction]
+    ) -> DSTransaction? {
+        let matches = transactions.filter { tx in
+            tx.direction == .received
+                && tx.timestamp >= pending.minimumTimestamp
+                && tx.outputReceiveAddresses.contains(pending.address)
+                && tx.dashAmount == pending.amount
+        }
+
+        return matches.min(by: { lhs, rhs in
+            if lhs.timestamp != rhs.timestamp {
+                return lhs.timestamp < rhs.timestamp
+            }
+
+            return lhs.txHashHexString < rhs.txHashHexString
+        })
+    }
+
+    private func markCoinbaseTransaction(txHash: Data) {
+        var metadata = metadataDao.get(by: txHash) ?? TransactionMetadata(txHash: txHash)
+        metadata.service = ServiceName.coinbase.rawValue
+        metadataDao.update(dto: metadata)
+    }
+
+    private func walletTxHashData(from hash: String?) -> Data? {
+        guard let hash = hash?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !hash.isEmpty,
+              let data = Data(hex: hash) else {
+            return nil
+        }
+
+        return Data(data.reversed())
+    }
+
+    private func coinbaseDashAmount(from amount: Amount?) -> UInt64? {
+        guard let amountString = amount?.amount,
+              let decimal = Decimal(string: amountString, locale: Locale(identifier: "en_US_POSIX")) else {
+            return nil
+        }
+
+        return decimal.plainDashAmount
+    }
+
+    private func coinbaseTimestamp(from createdAt: String?) -> TimeInterval? {
+        guard let createdAt = createdAt?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !createdAt.isEmpty else {
+            return nil
+        }
+
+        if let date = Self.iso8601Formatter.date(from: createdAt) {
+            return date.timeIntervalSince1970
+        }
+
+        return Self.iso8601FractionalFormatter.date(from: createdAt)?.timeIntervalSince1970
+    }
+
+    private static let iso8601Formatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate, .withColonSeparatorInTime]
+        return formatter
+    }()
+
+    private static let iso8601FractionalFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
 }
 
 extension String {

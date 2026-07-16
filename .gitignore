@@ -47,6 +47,7 @@ TODO.md
 */Coinbase-Info.plist
 */ZenLedger-Info.plist
 */SwapKit-Info.plist
+*/Uphold-Info.plist
 
 # SQLite temporary files
 *.db-shm
@@ -54,3 +55,4 @@ TODO.md
 
 # Transifex CLI binary
 tx
+DashWalletScreenshotsUITests/refund-addresses.csv

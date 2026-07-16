@@ -117,21 +117,32 @@ private struct ShortcutCellButton: View {
 
 // MARK: - Snapshot hook
 
-/// Mirrors the `#if SNAPSHOT` accessibility identifier the old `ShortcutsView` set on the
-/// "secure wallet" cell, so UI snapshot tests keep working.
+/// Applies accessibility identifiers to shortcut buttons used in UI tests and snapshot tests.
+/// `.combine` merges the icon+label into one accessible element so the id is queryable.
 private struct ShortcutSnapshotIdentifier: ViewModifier {
     let action: ShortcutAction
 
     func body(content: Content) -> some View {
-        #if SNAPSHOT
-        if action.type == .secureWallet {
-            content.accessibilityIdentifier("shortcut_secure_wallet")
-        } else {
+        switch action.type {
+        case .dashDEX:
+            content
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("shortcut_dash_dex")
+        case .buySellDash:
+            content
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("shortcut_buy_sell_dash")
+        case .secureWallet:
+            #if SNAPSHOT
+            content
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("shortcut_secure_wallet")
+            #else
+            content
+            #endif
+        default:
             content
         }
-        #else
-        content
-        #endif
     }
 }
 

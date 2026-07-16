@@ -68,13 +68,16 @@ struct BuyReceiveView: View {
                             subtitle: String(format: NSLocalizedString("Send your %@ before the timer runs out. If you send after the address expires, your funds will be refunded — not converted.", comment: "Dash DEX"), viewModel.coinCode)
                         )
 
+                        Spacer(minLength: 0)
+
                         DashUIKit.DashButton(
                             text: NSLocalizedString("Back home", comment: "Dash DEX"),
                             fillsWidth: true,
                             size: .large,
-                            style: .filledBlue,
+                            style: .tintedGray,
                             action: onBackHome
                         )
+                        .padding(.horizontal, 40)
                     }
                     .padding(.horizontal, Layout.hPadding)
                     .padding(.top, Layout.topPadding)
@@ -101,22 +104,13 @@ struct BuyReceiveView: View {
                 copyValue: viewModel.copyText
             )
 
-            if let amount = viewModel.displaySendAmount {
-                Divider()
-                copyableDetailRow(
-                    title: NSLocalizedString("Amount to send", comment: "Dash DEX"),
-                    displayValue: amount,
-                    copyValue: amount
-                )
-            }
-
             if let memo = viewModel.memoText {
                 Divider()
                 copyableDetailRow(
                     title: NSLocalizedString("Memo / Tag", comment: "Dash DEX"),
                     displayValue: memo,
                     copyValue: memo,
-                    helper: NSLocalizedString("Required — include this memo or your funds may be lost", comment: "Dash DEX"),
+                    helper: NSLocalizedString("Your transfer must include this memo. Funds sent without it cannot be matched to your swap and will be lost.", comment: "Dash DEX / dex_receive_memo_warning"),
                     helperColor: Color.dash.orange
                 )
             }
@@ -128,54 +122,22 @@ struct BuyReceiveView: View {
 
     @ViewBuilder
     private var qrSection: some View {
-        if viewModel.isLoading, viewModel.qrImage == nil {
-            VStack(spacing: 16) {
-                SwiftUI.ProgressView()
-                Text(NSLocalizedString("Resolving deposit address…", comment: "Dash DEX"))
-                    .font(.footnote)
-                    .foregroundColor(Color.dash.tertiaryText)
-            }
-            .frame(minWidth: 200, maxWidth: 200, minHeight: 200, maxHeight: 200)
-        } else if let qrImage = viewModel.qrImage {
+        if let qrImage = viewModel.qrImage {
             Image(uiImage: qrImage)
                 .interpolation(.none)
                 .resizable()
                 .scaledToFit()
                 .frame(minWidth: 200, maxWidth: 200, minHeight: 200, maxHeight: 200, alignment: .center)
                 .padding(10)
-        } else if let errorMessage = viewModel.errorMessage {
-            VStack(spacing: 16) {
-                Text(errorMessage)
-                    .font(.footnote)
-                    .foregroundColor(Color.dash.red)
-                    .multilineTextAlignment(.center)
-                Button {
-                    Task { await viewModel.load() }
-                } label: {
-                    Text(NSLocalizedString("Retry", comment: "Dash DEX"))
-                }
-            }
-            .frame(minWidth: 200, maxWidth: 200, minHeight: 200, maxHeight: 200)
+                .accessibilityIdentifier("buy_receive_qr")
         } else {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.dash.primaryBackground.opacity(0.8))
-                .frame(minWidth: 200, maxWidth: 200, minHeight: 200, maxHeight: 200, alignment: .center)
-                .overlay(
-                    SwiftUI.ProgressView()
-                )
+            SwiftUI.ProgressView()
+                .frame(minWidth: 200, maxWidth: 200, minHeight: 200, maxHeight: 200)
         }
     }
 
     private var addressDisplayValue: String {
-        if !viewModel.copyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return viewModel.copyText
-        }
-
-        if viewModel.isLoading {
-            return NSLocalizedString("Resolving deposit address…", comment: "Dash DEX")
-        }
-
-        return NSLocalizedString("Not available", comment: "Dash DEX")
+        viewModel.copyText
     }
 
     private func copyableDetailRow(
@@ -224,19 +186,16 @@ private struct BuyReceivePreviewHost: View {
     @StateObject private var viewModel: BuyReceiveViewModel
 
     init(coin: SwapCryptoCurrency = SwapCryptoCurrency.supportedCoins.first { $0.code == "BTC" } ?? SwapCryptoCurrency.supportedCoins[0]) {
-        let viewModel = BuyReceiveViewModel(
-            coin: coin,
-            refundAddress: "bc1qxhgnnp745zryn2ud8hm6k3mygkkpkm35020js0",
-            sellAmount: "0.25",
-            swapProvider: BuyReceivePreviewSwapProvider()
+        let order = BuyOrder(
+            depositAddress: coin.code == "BTC"
+                ? "bc1qpreviewaddress0000000000000000000000000"
+                : "0xpreviewaddress0000000000000000000000000000",
+            memo: coin.code == "BTC" ? "preview-memo" : nil,
+            expectedDashAmount: Decimal(string: "0.25") ?? 0,
+            sellAsset: coin.swapAsset,
+            sellAmount: "0.25"
         )
-        viewModel.depositAddress = coin.code == "BTC" ? "bc1qpreviewaddress0000000000000000000000000" : "0xpreviewaddress0000000000000000000000000000"
-        viewModel.uri = coin.code == "BTC"
-            ? "bitcoin:bc1qpreviewaddress0000000000000000000000000?amount=0.25&message=preview-memo"
-            : "0xpreviewaddress0000000000000000000000000000"
-        viewModel.memoText = coin.code == "BTC" ? "preview-memo" : nil
-        viewModel.qrImage = UIImage(systemName: "qrcode")
-        _viewModel = StateObject(wrappedValue: viewModel)
+        _viewModel = StateObject(wrappedValue: BuyReceiveViewModel(coin: coin, order: order))
     }
 
     var body: some View {
@@ -262,47 +221,4 @@ private struct BuyReceivePreviewHost: View {
     )
 }
 
-private final class BuyReceivePreviewSwapProvider: SwapProvider {
-    var displayName: String { "SwapKit" }
-    var usesGenericFeeLabel: Bool { true }
-    var buildsSwapKitDeposit: Bool { true }
-    var onBuyRoutabilityChanged: (() -> Void)?
-
-    func fetchPools() async throws -> [SwapPool] { [] }
-    func fetchInboundAddresses() async throws -> [SwapInboundAddress] { [] }
-    func fetchPools(direction: SwapDirection) async throws -> [SwapPool] { [] }
-    func networkLabels(for pools: [SwapPool]) async -> [String: String] { [:] }
-    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String> { [] }
-    func validateAddress(destination: String, toAsset: String) async -> String? { nil }
-    func fetchQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
-        SwapQuoteResult(error: nil, expectedAmountOut: "1000000", fees: nil, inboundAddress: nil, memo: nil, executionNetwork: "NEAR")
-    }
-    func fetchIndicativeQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
-        try await fetchQuote(dashSatoshis: dashSatoshis, toAsset: toAsset, destination: destination)
-    }
-    func fetchSwapStatus(txid: String, depositAddress: String?) async throws -> SwapStatusResult {
-        SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
-    }
-    func createBuyOrder(
-        sellAsset: String,
-        sellAmount: String,
-        destination: String,
-        refundAddress: String
-    ) async throws -> BuyOrder {
-        BuyOrder(
-            depositAddress: "XyZPreviewDepositAddress123",
-            memo: "preview-memo",
-            expectedDashAmount: Decimal(string: "0.25") ?? 0,
-            sellAsset: sellAsset,
-            sellAmount: sellAmount
-        )
-    }
-    func validateBuyOrder(
-        sellAsset: String,
-        sellAmount: String,
-        refundAddress: String
-    ) async throws {}
-    func trackerURL(for txid: String, depositAddress: String?) -> URL? { nil }
-    func logoURL(for mayaAsset: String) -> URL? { nil }
-}
 #endif

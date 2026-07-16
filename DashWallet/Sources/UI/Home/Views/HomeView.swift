@@ -18,6 +18,7 @@
 import UIKit
 import SwiftUI
 import Combine
+import DashUIKit
 
 // MARK: - HomeViewDelegate
 
@@ -154,22 +155,6 @@ extension HomeView: HomeHeaderViewDelegate {
 
     func homeHeaderViewDidUpdateContents(_ view: HomeHeaderView) {
         setNeedsLayout()
-    }
-}
-
-struct TxPreviewModel: Identifiable, Equatable {
-    var id: String
-    var title: String
-    var timeFormatted: String
-    var dateFormatted: String
-    var details: String?
-    var icon: IconName
-    var dashAmount: String
-    var fiatAmount: String
-    var date: Date
-    
-    static func == (lhs: TxPreviewModel, rhs: TxPreviewModel) -> Bool {
-        return lhs.id == rhs.id
     }
 }
 
@@ -394,6 +379,16 @@ struct HomeViewContent<Content: View>: View {
         .padding(.horizontal, 15)
     }
     
+    /// Base leading icon for a plain tx row (when no metadata icon applies). Reward
+    /// (masternode/mining) rewards use the mining icon instead of the generic received icon,
+    /// since a reward's direction is `.received` and would otherwise show the receive arrow.
+    private func baseRowIcon(for tx: Transaction) -> IconName {
+        if tx.transactionType == .reward {
+            return .custom("transaction-mining", bundle: .dashUIKit)
+        }
+        return .custom(tx.iconName)
+    }
+
     @ViewBuilder
     private func TransactionPreviewFrom(
         txItem txDataItem: TransactionListDataItem
@@ -401,41 +396,49 @@ struct HomeViewContent<Content: View>: View {
         switch txDataItem {
         case .crowdnode(let set):
             let firstTx = set.transactionMap.values.first
-            TransactionPreview(
+            DashUIKit.TransactionView(
+                icon: IconName.custom("tx.item.cn.icon").dashIconSource,
+                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
                 title: NSLocalizedString("CrowdNode · Account", comment: "Crowdnode"),
                 subtitle: firstTx?.shortTimeString ?? "",
-                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
-                icon: .custom("tx.item.cn.icon"),
-                dashAmount: set.amount
-            ) {
-                self.selectedTxDataItem = txDataItem
-            }
+                dashAmount: set.amount,
+                amountSign: .none
+            )
+            .onTapGesture { self.selectedTxDataItem = txDataItem }
             .frame(height: 80)
-    
+
         case .coinjoin(let set):
             let firstTx = set.transactionMap.values.first
-            TransactionPreview(
+            DashUIKit.TransactionView(
+                icon: IconName.custom("tx.item.coinjoin.icon").dashIconSource,
+                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
                 title: NSLocalizedString("Mixing Transactions", comment: "CoinJoin"),
                 subtitle: firstTx?.shortTimeString ?? "",
-                topText: String.localizedStringWithFormat(NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), set.transactionMap.count),
-                icon: .custom("tx.item.coinjoin.icon"),
-                dashAmount: set.amount
-            ) {
-                self.selectedTxDataItem = txDataItem
-            }
+                dashAmount: set.amount,
+                amountSign: .none
+            )
+            .onTapGesture { self.selectedTxDataItem = txDataItem }
             .frame(height: 80)
-            
+
         case .tx(let txItem, let metadata):
-            TransactionPreview(
+            DashUIKit.TransactionView(
+                icon: metadata?.icon == nil
+                    ? (metadata?.iconName ?? baseRowIcon(for: txItem)).dashIconSource
+                    : nil,
+                iconView: metadata?.icon.map {
+                    AnyView(Image(uiImage: $0).resizable().scaledToFit().clipShape(Circle()))
+                },
+                secondaryIcon: (metadata?.icon != nil
+                    ? (metadata?.secondaryIcon ?? .custom(txItem.iconName))
+                    : metadata?.secondaryIcon)?.dashIconSource,
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: metadata?.details?.isEmpty == false ? metadata?.details : nil,
-                icon: metadata?.icon == nil ? .custom(txItem.iconName) : .image(metadata!.icon!, effect: .rounded),
-                secondaryIcon: metadata?.icon == nil ? nil : metadata?.secondaryIcon == nil ? .custom(txItem.iconName) : metadata?.secondaryIcon,
                 dashAmount: txItem.signedDashAmount,
-                overrideFiatAmount: txItem.fiatAmount
-            ) {
-                // Check if this is a gift card transaction
+                amountSign: .always,
+                fiat: txItem.fiatAmount
+            )
+            .onTapGesture {
                 if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
                     self.giftCardTxId = txItem.txHashData
                 } else {

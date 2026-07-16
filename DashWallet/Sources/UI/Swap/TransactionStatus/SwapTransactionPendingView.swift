@@ -21,11 +21,7 @@ import SwiftUI
 struct SwapTransactionPendingView: View {
     let message: String
     let executionNetwork: String
-    let detailMessage: String?
-    let trackerURL: URL?
     var onGoHome: () -> Void = {}
-
-    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(spacing: 0) {
@@ -37,8 +33,8 @@ struct SwapTransactionPendingView: View {
 
 
             VStack(spacing: 6) {
-                Text(NSLocalizedString("Conversion in progress", comment: "Maya"))
-                    .font(Font.dash.title1)
+                Text(NSLocalizedString("Conversion in progress", comment: "Dash DEX"))
+                    .dashFont(.title1)
                     .foregroundColor(Color.dash.primaryText)
                     .multilineTextAlignment(.center)
 
@@ -47,40 +43,21 @@ struct SwapTransactionPendingView: View {
                     .foregroundColor(Color.dash.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
-
-                if let detailMessage, !detailMessage.isEmpty {
-                    Text(detailMessage)
-                        .font(Font.dash.subhead)
-                        .foregroundColor(Color.dash.secondaryText)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(3)
-                        .padding(.top, 8)
-                }
             }
             .padding(.horizontal, 60)
             .padding(.bottom, 16)
 
-            if let trackerURL {
-                Button {
-                    openURL(trackerURL)
-                } label: {
-                    Text(NSLocalizedString("View details", comment: "Maya/SwapKit"))
-                        .font(Font.dash.subheadMedium)
-                        .foregroundColor(Color.dash.blue)
-                }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 60)
-            }
-
             Spacer()
 
-            DashUIKit.DashButton(
-                text: NSLocalizedString("Go to Home", comment: "Maya"),
-                fillsWidth: true,
-                size: .large,
-                style: .filledBlue
-            ) {
-                onGoHome()
+            VStack(spacing: 16) {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Close and notify me", comment: "Dash DEX"),
+                    fillsWidth: true,
+                    size: .large,
+                    style: .filledBlue
+                ) {
+                    onGoHome()
+                }
             }
             .padding(.vertical, 20)
             .padding(.horizontal, 60)
@@ -93,14 +70,9 @@ struct SwapTransactionPendingView: View {
     SwapTransactionPendingView(
         message: NSLocalizedString(
             "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.",
-            comment: "Maya/SwapKit"
+            comment: "Dash DEX"
         ),
         executionNetwork: "NEAR",
-        detailMessage: NSLocalizedString(
-            "Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later.",
-            comment: "Maya/SwapKit"
-        ),
-        trackerURL: URL(string: "https://example.com"),
         onGoHome: {}
     )
     .frame(maxWidth: .infinity, maxHeight: .infinity)

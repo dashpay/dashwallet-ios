@@ -51,6 +51,8 @@ final class SwapConvertViewModel: ObservableObject {
     // MARK: - Private State
 
     private let swapProvider: SwapProvider
+    private let networkStatus: NetworkStatusProviding
+    @Published private(set) var isOnline: Bool
     private var amount = SwapConvertAmount()
     private var latestQuote: SwapQuoteResult?
     private var effectiveSellSatoshis: Int64?
@@ -117,22 +119,25 @@ final class SwapConvertViewModel: ObservableObject {
     }
 
     var canOpenOrderPreview: Bool {
-        guard isActionEnabled && !isLoading else { return false }
+        guard isActionEnabled && !isLoading && isOnline else { return false }
         return latestQuote != nil
     }
 
     // MARK: - Init
 
-    init(coin: SwapCryptoCurrency, address: String, swapProvider: SwapProvider = MayaSwapProvider()) {
+    init(coin: SwapCryptoCurrency, address: String, swapProvider: SwapProvider = MayaSwapProvider(), networkStatus: NetworkStatusProviding = NetworkStatusService.shared) {
         self.coin = coin
         self.address = address
         self.swapProvider = swapProvider
+        self.networkStatus = networkStatus
+        self.isOnline = networkStatus.isOnline
         let initialFiat = App.fiatCurrency
         self.currentFiatCurrency = initialFiat
         self.selectedCurrency = .fiat(initialFiat)
         initializeRates()
         observeInput()
         observeCurrencySwitch()
+        subscribeToNetworkStatus()
         Task { await fetchCryptoRate() }
     }
 
@@ -193,6 +198,16 @@ final class SwapConvertViewModel: ObservableObject {
         )
     }
 
+    // MARK: - Private: Network Status
+
+    private func subscribeToNetworkStatus() {
+        networkStatus.statusPublisher
+            .sink { [weak self] status in
+                self?.isOnline = status == .online
+            }
+            .store(in: &cancellables)
+    }
+
     // MARK: - Private: Rate Initialisation
 
     private func initializeRates() {
@@ -247,7 +262,7 @@ final class SwapConvertViewModel: ObservableObject {
         let satoshis = activeSellSatoshis
         let accountBalance = Int64(DWEnvironment.sharedInstance().currentAccount.balance)
         errorMessage = satoshis > accountBalance
-            ? NSLocalizedString("Insufficient balance", comment: "Maya")
+            ? maximumTransactionAmountMessage()
             : nil
     }
 
@@ -280,9 +295,15 @@ final class SwapConvertViewModel: ObservableObject {
         latestQuote = nil
         receiveAmount = nil
         if apiError.contains("not enough asset to pay for fees") {
-            errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Maya")
+            errorMessage = NSLocalizedString(
+                "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
+                comment: "Dash DEX / dex_error_no_route"
+            )
         } else if apiError.localizedCaseInsensitiveContains("noRoutesFound") {
-            errorMessage = NSLocalizedString("No routes available for this coin right now", comment: "Swap")
+            errorMessage = NSLocalizedString(
+                "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
+                comment: "Dash DEX / dex_error_no_route"
+            )
         } else if apiError.localizedCaseInsensitiveContains("invalidDestinationAddress") {
             let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
             errorMessage = String(
@@ -295,7 +316,10 @@ final class SwapConvertViewModel: ObservableObject {
                 chainLabel
             )
         } else {
-            errorMessage = NSLocalizedString("Amount too small to cover fees", comment: "Maya")
+            errorMessage = NSLocalizedString(
+                "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
+                comment: "Dash DEX / dex_error_no_route"
+            )
         }
     }
 
@@ -355,11 +379,11 @@ final class SwapConvertViewModel: ObservableObject {
         case .exchangeRateUnavailable:
             isLoading = false
             clearQuoteState()
-            errorMessage = NSLocalizedString("Exchange rate not available", comment: "Maya")
+            errorMessage = NSLocalizedString("Exchange rate not available", comment: "Dash DEX")
         case .insufficientBalance:
             isLoading = false
             clearQuoteState(keepingEffectiveSell: effectiveSellSatoshis != nil)
-            errorMessage = NSLocalizedString("Insufficient balance", comment: "Maya")
+            errorMessage = maximumTransactionAmountMessage()
         case .valid(let satoshis):
             errorMessage = nil
             isLoading = true
@@ -507,7 +531,7 @@ final class SwapConvertViewModel: ObservableObject {
             }
             guard !amount.crypto.isZero, amount.cryptoFiatRate > 0 else { inputValue = ""; return }
             let d = (amount.crypto as NSDecimalNumber).doubleValue
-            inputValue = SwapInputFormatter.trimTrailingZeros(String(format: "%.8f", d))
+            inputValue = SwapInputFormatter.trimTrailingZeros(String(format: "%.5f", d))
         }
     }
 
@@ -602,7 +626,7 @@ final class SwapConvertViewModel: ObservableObject {
     /// Normalizes a raw keyboard string before it reaches the amount model.
     /// Rules:
     ///   - Leading zeros stripped from the integer part: "01" → "1", but "0." and "0.12" stay.
-    ///   - Decimal precision capped: fiat → 2 places, dash/crypto → 8 places.
+    ///   - Decimal precision capped: fiat → 2 places, dash/crypto → 5 places.
     ///   - Empty string and in-progress decimals (e.g. "0.") pass through unchanged.
     /// Dash on the convert screen is shown to at most 5 decimals. Rounds DOWN so a displayed or
     /// Max value never exceeds the real wallet amount.
@@ -621,7 +645,7 @@ final class SwapConvertViewModel: ObservableObject {
         switch currency {
         case .fiat: maxDecimals = 2
         case .dash: maxDecimals = 5
-        case .coin: maxDecimals = 8
+        case .coin: maxDecimals = 5
         }
 
         if let dotRange = s.range(of: ".") {
@@ -649,7 +673,7 @@ private struct SwapInputFormatter {
     }
 
     static func receiveAmount(_ humanValue: Double) -> String {
-        let s = String(format: humanValue < 0.001 ? "%.8f" : "%.4f", humanValue)
+        let s = String(format: "%.5f", humanValue)
         return trimTrailingZeros(s)
     }
 
@@ -662,5 +686,34 @@ private struct SwapInputFormatter {
 private extension CurrencyOption {
     var isReceiveTargetMode: Bool {
         isCoinInput || isFiat
+    }
+}
+
+private extension SwapConvertViewModel {
+    func maximumTransactionAmountMessage() -> String? {
+        let amountText: String
+        switch selectedCurrency {
+        case .fiat:
+            amountText = dashBalanceFiat
+        case .dash:
+            amountText = "\(dashBalanceFormatted) DASH"
+        case .coin:
+            guard amount.cryptoDashRate > 0 else {
+                return nil
+            }
+
+            let dashBalanceDecimal = Decimal(dashBalance) / Decimal(100_000_000)
+            let maxCoinAmount = dashBalanceDecimal * amount.cryptoDashRate
+            let formatted = SwapInputFormatter.receiveAmount((maxCoinAmount as NSDecimalNumber).doubleValue)
+            amountText = "\(formatted) \(coin.code)"
+        }
+
+        return String(
+            format: NSLocalizedString(
+                "The maximum transaction amount is %@",
+                comment: "Dash DEX"
+            ),
+            amountText
+        )
     }
 }

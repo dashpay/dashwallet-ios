@@ -49,7 +49,7 @@ struct SwapAddressValidator {
 
         switch chain {
         case "BTC", "BCH", "LTC", "DOGE":
-            return isValidBitcoinAddress(trimmed)
+            return isValidBitcoinFamilyAddress(trimmed, chain: chain)
         case "NEAR":
             return isValidNEARAddress(trimmed)
         case "KUJI":
@@ -65,7 +65,25 @@ struct SwapAddressValidator {
         }
     }
 
-    // MARK: - Bitcoin
+    // MARK: - Bitcoin family (BTC, BCH, LTC, DOGE)
+
+    /// Dispatches to the per-chain validator. Each Bitcoin-derived chain uses its own Base58Check
+    /// version prefixes (and, where applicable, a native Bech32/CashAddr format), so a single
+    /// BTC-only check wrongly rejected valid LTC/DOGE/BCH addresses (e.g. a DOGE `D...` address).
+    private static func isValidBitcoinFamilyAddress(_ address: String, chain: String) -> Bool {
+        switch chain {
+        case "BTC":
+            return isValidBitcoinAddress(address)
+        case "LTC":
+            return isValidLitecoinAddress(address)
+        case "DOGE":
+            return isValidDogecoinAddress(address)
+        case "BCH":
+            return isValidBitcoinCashAddress(address)
+        default:
+            return false
+        }
+    }
 
     /// Validates Bitcoin addresses: legacy P2PKH (1...), P2SH (3...), and Bech32 SegWit/Taproot (bc1...).
     private static func isValidBitcoinAddress(_ address: String) -> Bool {
@@ -88,6 +106,46 @@ struct SwapAddressValidator {
         }
 
         return false
+    }
+
+    /// Litecoin: legacy P2PKH (L...), P2SH (M... or legacy 3...), and native SegWit (ltc1...).
+    private static func isValidLitecoinAddress(_ address: String) -> Bool {
+        if matchesPattern("^[LM3][1-9A-HJ-NP-Za-km-z]{24,33}$", address) {
+            return true
+        }
+
+        // Native SegWit/Taproot: `ltc1q` (v0, P2WPKH/P2WSH) or `ltc1p` (v1, Taproot).
+        let lower = address.lowercased()
+        if lower.hasPrefix("ltc1q") {
+            return matchesPattern("^ltc1q[a-z0-9]{38}$", lower) ||
+                   matchesPattern("^ltc1q[a-z0-9]{58}$", lower)
+        }
+        if lower.hasPrefix("ltc1p") {
+            return matchesPattern("^ltc1p[a-z0-9]{58}$", lower)
+        }
+
+        return false
+    }
+
+    /// Dogecoin: legacy P2PKH (D...) and P2SH (9.../A...). Base58Check, no native SegWit.
+    private static func isValidDogecoinAddress(_ address: String) -> Bool {
+        matchesPattern("^[9AD][1-9A-HJ-NP-Za-km-z]{24,33}$", address)
+    }
+
+    /// Bitcoin Cash: legacy Base58 (1.../3...) and CashAddr (optional `bitcoincash:` prefix, then q/p...).
+    private static func isValidBitcoinCashAddress(_ address: String) -> Bool {
+        // Legacy Base58Check, shared version bytes with Bitcoin.
+        if matchesPattern("^[13][1-9A-HJ-NP-Za-km-z]{24,33}$", address) {
+            return true
+        }
+
+        // CashAddr: a 42-char bech32-style body (q = P2PKH, p = P2SH), with an optional prefix.
+        var lower = address.lowercased()
+        let prefix = "bitcoincash:"
+        if lower.hasPrefix(prefix) {
+            lower = String(lower.dropFirst(prefix.count))
+        }
+        return matchesPattern("^[qp][a-z0-9]{41}$", lower)
     }
 
     // MARK: - EVM (Ethereum, Arbitrum)

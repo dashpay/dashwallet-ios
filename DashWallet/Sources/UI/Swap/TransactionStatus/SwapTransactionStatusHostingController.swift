@@ -167,18 +167,22 @@ private struct SwapTransactionStatusView: View {
         case .idle, .pendingConfirmation:
             pending(message: NSLocalizedString(
                 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.",
-                comment: "Maya/SwapKit"
+                comment: "Dash DEX"
             ))
         case .processingSwap:
-            pending(message: NSLocalizedString(
-                "Maya Protocol has received your transaction and is processing the swap.",
-                comment: "Maya"
+            pending(message: String(
+                format: NSLocalizedString(
+                    "%@ has received your transaction and is processing the swap.",
+                    comment: "Dash DEX"
+                ),
+                viewModel.resolvedExecutionNetwork
             ))
         case .completed:
             SwapTransactionSuccessView(
                 coinCode: viewModel.coin.code,
                 coinName: viewModel.coin.name,
                 executionNetwork: viewModel.resolvedExecutionNetwork,
+                explorerLink: viewModel.explorerLink,
                 onDone: onDone
             )
         case .failed(let reason):
@@ -196,13 +200,6 @@ private struct SwapTransactionStatusView: View {
         SwapTransactionPendingView(
             message: message,
             executionNetwork: viewModel.resolvedExecutionNetwork,
-            detailMessage: viewModel.isSlowRoute
-                ? NSLocalizedString(
-                    "Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later.",
-                    comment: "Maya/SwapKit"
-                )
-                : nil,
-            trackerURL: viewModel.trackerURL,
             onGoHome: onDone
         )
             .padding(.horizontal, 40)

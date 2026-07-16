@@ -24,26 +24,32 @@ import UIKit
 @MainActor
 final class RefundAddressViewModel: ObservableObject {
     let coin: SwapCryptoCurrency
+    let sellAmount: String
+    let swapProvider: SwapProvider
+    private let swapOrdersDAO: SwapOrdersDAO
+    private let networkStatus: NetworkStatusProviding
+    private var cancellables = Set<AnyCancellable>()
 
     @Published var addressText: String = ""
     @Published var hasClipboardCandidate: Bool = false
     @Published var clipboardContent: String?
     @Published private(set) var shouldShowAddressValidationError: Bool = false
+    @Published private(set) var isSubmitting: Bool = false
+    @Published private(set) var orderError: String?
+    @Published private(set) var isOnline: Bool
 
     var addressLabel: String {
-        String(format: NSLocalizedString("%@ refund address", comment: "Dash DEX"), coin.code)
+        NSLocalizedString("Refund address", comment: "Dash DEX / dex_refund_address_field_label")
     }
 
     var subtitle: String {
-        let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
         return String(
             format: NSLocalizedString(
-                "If the swap fails, your %@ will be returned to this address. Make sure it's a %@ address on the %@ network, from a wallet you control. Your swap can't be processed without a refund address.",
-                comment: "Dash DEX"
+                "If the swap fails, your %@ will be returned to this address. Make sure it's a %@ address from a wallet you control.\n\nYour swap cannot be processed without a refund address.",
+                comment: "Dash DEX / dex_refund_address_description"
             ),
             coin.code,
-            coin.code,
-            chainLabel
+            coin.code
         )
     }
 
@@ -63,16 +69,35 @@ final class RefundAddressViewModel: ObservableObject {
         guard showAddressError else { return nil }
         return String(
             format: NSLocalizedString(
-                "Enter a valid %@ address for the %@ network.",
-                comment: "Dash DEX"
+                "That refund address isn't a valid %@ address.",
+                comment: "Dash DEX / dex_error_invalid_refund_address"
             ),
-            coin.code,
-            SwapCryptoCurrency.chainDisplayName(coin.chain)
+            coin.code
         )
     }
 
-    init(coin: SwapCryptoCurrency) {
+    init(
+        coin: SwapCryptoCurrency,
+        sellAmount: String,
+        swapProvider: SwapProvider,
+        swapOrdersDAO: SwapOrdersDAO = SwapOrdersDAOImpl.shared,
+        networkStatus: NetworkStatusProviding = NetworkStatusService.shared
+    ) {
         self.coin = coin
+        self.sellAmount = sellAmount
+        self.swapProvider = swapProvider
+        self.swapOrdersDAO = swapOrdersDAO
+        self.networkStatus = networkStatus
+        self.isOnline = networkStatus.isOnline
+        subscribeToNetworkStatus()
+    }
+
+    private func subscribeToNetworkStatus() {
+        networkStatus.statusPublisher
+            .sink { [weak self] status in
+                self?.isOnline = status == .online
+            }
+            .store(in: &cancellables)
     }
 
     func refreshClipboardAddress() {
@@ -109,11 +134,17 @@ final class RefundAddressViewModel: ObservableObject {
 
     func onAddressChanged() {
         clearValidationError()
+        orderError = nil
     }
 
-    func attemptContinue() -> String? {
+    /// Validates address locally, then calls `createBuyOrder`. Returns the created order on
+    /// success; sets `orderError` and returns nil on failure so the view stays put.
+    func submitOrder() async -> BuyOrder? {
+        guard isOnline, !isSubmitting else { return nil }
+
         let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         let candidate = Self.extractAddressFromURI(trimmed)
+
         guard !candidate.isEmpty else {
             shouldShowAddressValidationError = true
             return nil
@@ -121,7 +152,51 @@ final class RefundAddressViewModel: ObservableObject {
 
         shouldShowAddressValidationError = true
         guard SwapAddressValidator.isValid(address: candidate, for: coin) else { return nil }
-        return candidate
+
+        guard let destination = DWEnvironment.sharedInstance().currentAccount.receiveAddress,
+              !destination.isEmpty else {
+            orderError = NSLocalizedString("Unable to determine your Dash receive address.", comment: "Dash DEX")
+            return nil
+        }
+
+        isSubmitting = true
+        orderError = nil
+        defer { isSubmitting = false }
+
+        do {
+            let order = try await swapProvider.createBuyOrder(
+                sellAsset: coin.swapAsset,
+                sellAmount: sellAmount,
+                destination: destination,
+                refundAddress: candidate
+            )
+            try await persistBuyOrder(order, dashDestination: destination)
+            return order
+        } catch {
+            let raw = (error as NSError).localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+            orderError = raw.isEmpty
+                ? NSLocalizedString("We couldn't save this swap order. Please try again.", comment: "Dash DEX")
+                : raw
+            return nil
+        }
+    }
+
+    // MARK: - Private: Order persistence
+
+    private func persistBuyOrder(_ order: BuyOrder, dashDestination: String) async throws {
+        // Buy orders always use SwapKit (Maya doesn't support Buy).
+        let swapOrder = SwapOrder(
+            id: order.depositAddress,
+            direction: "buy",
+            service: "swapkit",
+            fromAsset: coin.swapAsset,
+            toAsset: "DASH",
+            toAddress: dashDestination,
+            depositAddress: order.depositAddress,
+            expectedToAmount: "\(order.expectedDashAmount)",
+            status: .notStarted
+        )
+        try await swapOrdersDAO.save(dto: swapOrder)
     }
 
     private var isAddressValid: Bool {
@@ -164,9 +239,6 @@ final class RefundAddressViewModel: ObservableObject {
             return trimmed
         }
 
-        // Accept any RFC 3986 URI scheme: starts with a letter, then letters/digits/+/-/.
-        // This handles bitcoin:, litecoin:, dogecoin:, solana:, near:, ripple:, etc. without
-        // a fixed allowlist that must be updated whenever a new chain is supported.
         let scheme = String(trimmed[..<colonIndex])
         guard let firstChar = scheme.first, firstChar.isLetter,
               scheme.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "+" || $0 == "-" || $0 == "." }),
