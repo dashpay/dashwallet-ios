@@ -45,6 +45,10 @@ class TxDetailModel: NSObject {
             return NSLocalizedString("Shielded withdrawal",
                                      comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
         }
+        if transaction.isPlatformFundingTransfer {
+            return NSLocalizedString("Platform transfer",
+                                     comment: "Transfer of own funds into the Platform balance")
+        }
         return direction.title
     }
 
@@ -195,7 +199,7 @@ extension TxDetailModel {
         // labeling them "Internally moved to" reads like the transfer's
         // destination. The From/To route rows carry that instead, and the
         // raw transaction inspector shows every output for the curious.
-        if transaction.isShieldedTransfer {
+        if transaction.isShieldedTransfer || transaction.isPlatformFundingTransfer {
             return false
         }
         if direction == .received && hasDestinationUser {
@@ -358,6 +362,23 @@ extension TxDetailModel {
                 DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: transparent),
             ]
         }
+        if transaction.isPlatformFundingTransfer {
+            var rows: [DWTitleDetailItem] = [
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: transparent),
+                DWTitleDetailCellModel(
+                    style: .default,
+                    title: NSLocalizedString("To", comment: ""),
+                    plainDetail: NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")),
+            ]
+            if let statusRaw = transaction.platformFundingLockInfo?.statusRaw,
+               let status = Self.lockStatusText(statusRaw) {
+                rows.append(DWTitleDetailCellModel(
+                    style: .default,
+                    title: NSLocalizedString("Status", comment: "Transaction details"),
+                    plainDetail: status))
+            }
+            return rows
+        }
         return []
     }
 
@@ -369,6 +390,12 @@ extension TxDetailModel {
         guard let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: transactionId)?.statusRaw else {
             return nil
         }
+        return Self.lockStatusText(statusRaw)
+    }
+
+    /// User-facing name of an asset-lock status (shared by the shielded and
+    /// platform funding routes).
+    private static func lockStatusText(_ statusRaw: Int) -> String? {
         switch statusRaw {
         case 0, 1:
             return NSLocalizedString("Broadcasting", comment: "")

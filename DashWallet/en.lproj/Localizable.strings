@@ -2550,6 +2550,12 @@
 /* The Dash Platform credits balance */
 "Platform balance" = "Platform balance";
 
+/* Transfer of own funds into the Platform balance */
+"Platform transfer" = "Platform transfer";
+
+/* A to-Platform transfer whose asset lock is committed but the funding hasn't completed yet */
+"Platform transfer (pending)" = "Platform transfer (pending)";
+
 /* Platform → Transparent withdrawal */
 "Processing time" = "Processing time";
 

@@ -472,6 +472,7 @@ struct HomeViewContent<Content: View>: View {
         switch txItem.internalTransferRoute {
         case .coreToShielded: return ("d.circle.fill", "shield.fill")
         case .shieldedToCore: return ("shield.fill", "d.circle.fill")
+        case .coreToPlatform: return ("d.circle.fill", "creditcard.fill")
         case .coreToCore, nil: return nil
         }
     }
