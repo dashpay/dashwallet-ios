@@ -638,6 +638,9 @@
 /* Raw transaction inspector */
 "Copy Raw Transaction" = "Copy Raw Transaction";
 
+/* Identities */
+"Could not refresh %d identities" = "Could not refresh %d identities";
+
 /* Masternodes */
 "Couldn't fetch the balance (network error). Try Refresh." = "Couldn't fetch the balance (network error). Try Refresh.";
 
@@ -1301,6 +1304,9 @@
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
 
+/* Identities */
+"Find identities" = "Find identities";
+
 /* Explore Dash */
 "Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
 
@@ -1348,6 +1354,12 @@
 
 /* No comment provided by engineer. */
 "Forgot PIN?" = "Forgot PIN?";
+
+/* Identities */
+"Found %d new identities" = "Found %d new identities";
+
+/* Identities */
+"Found 1 new identity" = "Found 1 new identity";
 
 /* No comment provided by engineer. */
 "Found missing word:\n%@" = "Found missing word:\n%@";
@@ -1568,6 +1580,9 @@
 /* No comment provided by engineer. */
 "I wrote it down" = "I wrote it down";
 
+/* Identities */
+"Identities" = "Identities";
+
 /* Voting */
 "Identity" = "Identity";
 
@@ -1576,6 +1591,9 @@
 
 /* SDK identity profile sheet */
 "Identity ID" = "Identity ID";
+
+/* Identities */
+"Identity index" = "Identity index";
 
 /* Asset lock funding a DashPay identity registration */
 "Identity registration" = "Identity registration";
@@ -1926,6 +1944,9 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Local Currency";
 
+/* Identities */
+"Local Only" = "Local Only";
+
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
 
@@ -2229,6 +2250,9 @@
 /* No comment provided by engineer. */
 "No funded Platform address has enough balance to cover this amount plus fees." = "No funded Platform address has enough balance to cover this amount plus fees.";
 
+/* Identities */
+"No Identities" = "No Identities";
+
 /* No connection */
 "No internet connection" = "No internet connection";
 
@@ -2240,6 +2264,9 @@
 "No masternodes yet" = "No masternodes yet";
 
 "No matches for \"%@\"" = "No matches for \"%@\"";
+
+/* Identities */
+"No new identities were found for this wallet" = "No new identities were found for this wallet";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "No payment methods";
@@ -2339,6 +2366,9 @@
 
 /* Voting */
 "Old to new" = "Old to new";
+
+/* Identities */
+"On Network" = "On Network";
 
 /* Once <username> accepts your request... */
 "Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
@@ -2708,6 +2738,9 @@
 
 /* Masternode keys */
 "Public key (legacy)" = "Public key (legacy)";
+
+/* Identities */
+"Public keys" = "Public keys";
 
 /* No comment provided by engineer. */
 "Public URL" = "Public URL";
@@ -3825,6 +3858,9 @@
 /* Raw transaction inspector */
 "Unknown special type %d" = "Unknown special type %d";
 
+/* Identities */
+"Usernames" = "Usernames";
+
 /* Balance info sheet */
 "Uses one of the most audited and tested zero-knowledge libraries (Orchard)" = "Uses one of the most audited and tested zero-knowledge libraries (Orchard)";
 
@@ -4470,6 +4506,9 @@
 
 /* InternalTransfer recovery */
 "Your Dash is safe" = "Your Dash is safe";
+
+/* Identities */
+"Your Dash Platform identity appears here once you register a username." = "Your Dash Platform identity appears here once you register a username.";
 
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
