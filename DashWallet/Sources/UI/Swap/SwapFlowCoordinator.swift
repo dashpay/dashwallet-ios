@@ -30,6 +30,12 @@ final class SwapFlowCoordinator {
         self.navigationController = navigationController
         self.direction = direction
 
+        if direction == .buy, !(swapProvider is SwapKitSwapProvider) {
+            DSLogger.log("Swap flow: Buy requires SwapKit backend; got \(swapProvider.displayName)")
+            assertionFailure("Buy flow requires SwapKit backend")
+            return
+        }
+
         let selectCoinVC = SelectCoinHostingController(swapProvider: swapProvider, direction: direction)
         selectCoinVC.onCoinSelected = { [weak self] coin in
             guard let self else { return }
@@ -38,13 +44,14 @@ final class SwapFlowCoordinator {
             case .sell:
                 self.navigateToEnterAddress(for: coin)
             case .buy:
-                self.presentBuyComingSoon()
+                self.navigateToBuyEnterAmount(for: coin)
             }
         }
         navigationController?.pushViewController(selectCoinVC, animated: true)
     }
 
-    private func navigateToEnterAddress(for coin: MayaCryptoCurrency) {
+    private func navigateToEnterAddress(for coin: SwapCryptoCurrency) {
+        guard !(navigationController?.topViewController is EnterAddressHostingController) else { return }
         let enterAddressVC = EnterAddressHostingController(coin: coin, swapProvider: swapProvider)
         enterAddressVC.onAddressConfirmed = { [weak self] coin, address in
             self?.navigateToConvert(coin: coin, address: address)
@@ -52,25 +59,40 @@ final class SwapFlowCoordinator {
         navigationController?.pushViewController(enterAddressVC, animated: true)
     }
 
-    private func navigateToConvert(coin: MayaCryptoCurrency, address: String) {
+    private func navigateToConvert(coin: SwapCryptoCurrency, address: String) {
         guard !(navigationController?.topViewController is SwapConvertHostingController) else { return }
         let convertVC = SwapConvertHostingController(coin: coin, address: address, swapProvider: swapProvider)
         navigationController?.pushViewController(convertVC, animated: true)
     }
 
-    private func presentBuyComingSoon() {
-        let alert = UIAlertController(
-            title: NSLocalizedString("Coming soon", comment: "Dash DEX"),
-            message: NSLocalizedString(
-                "Buying Dash from other crypto isn't available yet. It's coming in a future update.",
-                comment: "Dash DEX"
-            ),
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(
-            title: NSLocalizedString("OK", comment: ""),
-            style: .default
-        ))
-        navigationController?.topViewController?.present(alert, animated: true)
+    private func navigateToBuyEnterAmount(for coin: SwapCryptoCurrency) {
+        guard !(navigationController?.topViewController is BuyEnterAmountHostingController) else { return }
+        guard swapProvider is SwapKitSwapProvider else {
+            DSLogger.log("Swap flow: Buy requires SwapKit backend; got \(swapProvider.displayName)")
+            assertionFailure("Buy flow requires SwapKit backend")
+            return
+        }
+
+        let buyEnterAmountVC = BuyEnterAmountHostingController(coin: coin, swapProvider: swapProvider)
+        buyEnterAmountVC.onContinue = { [weak self] coin, sellAmount in
+            self?.navigateToRefundAddress(coin: coin, sellAmount: sellAmount)
+        }
+        navigationController?.pushViewController(buyEnterAmountVC, animated: true)
+    }
+
+    private func navigateToRefundAddress(coin: SwapCryptoCurrency, sellAmount: String) {
+        guard !(navigationController?.topViewController is RefundAddressHostingController) else { return }
+        let refundVC = RefundAddressHostingController(coin: coin, sellAmount: sellAmount, swapProvider: swapProvider)
+        refundVC.onOrderCreated = { [weak self] coin, order in
+            self?.navigateToReceive(coin: coin, order: order)
+        }
+        navigationController?.pushViewController(refundVC, animated: true)
+    }
+
+    private func navigateToReceive(coin: SwapCryptoCurrency, order: BuyOrder) {
+        guard !(navigationController?.topViewController is BuyReceiveHostingController) else { return }
+        DSLogger.log("Swap: Buy receive \(coin.code) amount=\(order.sellAmount) deposit=\(order.depositAddress)")
+        let receiveVC = BuyReceiveHostingController(coin: coin, order: order)
+        navigationController?.pushViewController(receiveVC, animated: true)
     }
 }

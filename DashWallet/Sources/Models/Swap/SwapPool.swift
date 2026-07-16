@@ -1,5 +1,5 @@
 //
-//  MayaPool.swift
+//  SwapPool.swift
 //  DashWallet
 //
 //  Copyright © 2024 Dash Core Group. All rights reserved.
@@ -19,7 +19,7 @@
 
 import Foundation
 
-struct MayaPool: Decodable {
+struct SwapPool: Decodable {
     let asset: String
     let status: String
     let assetPriceUSD: String

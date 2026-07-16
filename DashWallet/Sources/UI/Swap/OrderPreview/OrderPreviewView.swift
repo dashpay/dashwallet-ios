@@ -32,7 +32,6 @@ struct OrderPreviewView: View {
     }
 
     @ObservedObject var viewModel: OrderPreviewViewModel
-    @StateObject private var reachability = NetworkReachabilityMonitor()
     let onCancel: () -> Void
 
     var body: some View {
@@ -40,12 +39,13 @@ struct OrderPreviewView: View {
         // full-screen transaction status flow (pending → success / failure) is pushed by
         // OrderPreviewHostingController, which observes `viewModel.swapStatus`.
         orderPreviewContent
+            .dexOfflineToast(isOnline: viewModel.isOnline)
             .task { await viewModel.onAppearLoad() }
             .alert(
-                NSLocalizedString("Swap in progress", comment: "Maya"),
+                NSLocalizedString("Swap in progress", comment: "Dash DEX"),
                 isPresented: pendingSwapAlertIsPresented
             ) {
-                Button(NSLocalizedString("OK", comment: "Maya")) {
+                Button(NSLocalizedString("OK", comment: "Dash DEX")) {
                     viewModel.pendingSwapAlertMessage = nil
                 }
             } message: {
@@ -70,52 +70,63 @@ struct OrderPreviewView: View {
                 DashUIKit.NavigationBarElement.back.button { onCancel() }
             })
 
-            TopIntro(title: String(format: NSLocalizedString("Order preview", comment: "Maya")))
+            TopIntro(title: String(format: NSLocalizedString("Order preview", comment: "Dash DEX")))
                 .padding(.top, 10)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
 
-            if reachability.isOnline {
-                VStack(spacing: Layout.cardSpacing) {
-                    fromRow
-                    toRow
-                    addressRow
-                    purchaseRow
-                    feeRow
-                    networkRow
-                    totalRow
-                }
-                .modifier(MenuViewModifier(shadowRadius: 20))
-                .padding(.horizontal, 20)
-            } else {
-                // Confirm and refresh-quote both need network — show the offline state
-                // in the content area. Cancel stays available below.
-                NetworkUnavailableStateView()
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 40)
+            VStack(spacing: Layout.cardSpacing) {
+                fromRow
+                toRow
+                addressRow
+                purchaseRow
+                feeRow
+                networkRow
+                totalRow
             }
+            .modifier(MenuViewModifier(shadowRadius: 20))
+            .padding(.horizontal, 20)
+
+            Text(String(format: NSLocalizedString(
+                "The final amount you receive may differ from this estimate by up to %d%% due to price slippage.",
+                comment: "Dash DEX"
+            ), SwapKitConstants.defaultSlippagePercent))
+                .font(Font.dash.caption1)
+                .foregroundColor(Color.dash.tertiaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
 
             Spacer(minLength: 0)
 
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
+                HStack(spacing: 0) {
+
+                    HStack(spacing: 8) {
+                        Image(dash: .custom("stopwatch", bundle: .dashUIKit))
+
+                        Text(NSLocalizedString("Quote expires", comment: "Dash DEX"))
+                            .dashFont(.subheadMedium)
+                            .foregroundColor(Color.dash.primaryText)
+                    }
+
+                    Spacer(minLength: 0)
+
+                    //Timer ~ 10 sec
+                    Text(viewModel.timerText)
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(Color.dash.primaryText)
+                }
+                .padding(.horizontal, 20)
+
                 DashUIKit.DashButton(
                     text: viewModel.confirmButtonText,
-                    isEnabled: !(viewModel.isSubmitting || viewModel.isRefreshing || !reachability.isOnline),
+                    isEnabled: !(viewModel.isSubmitting || viewModel.isRefreshing || !viewModel.isOnline),
                     fillsWidth: true,
                     size: .large,
                     style: .filledBlue
                 ) {
                     Task { await viewModel.handlePrimaryAction() }
-                }
-
-                DashUIKit.DashButton(
-                    text: NSLocalizedString("Cancel", comment: ""),
-                    fillsWidth: true,
-                    size: .large,
-                    style: .tintedGray
-                ) {
-                    onCancel()
                 }
             }
             .padding(.horizontal, 60)
@@ -127,7 +138,7 @@ struct OrderPreviewView: View {
 
     private var fromRow: some View {
         HStack(spacing: Layout.labelSpacing) {
-            Text(NSLocalizedString("From", comment: "Maya"))
+            Text(NSLocalizedString("From", comment: "Dash DEX"))
                 .font(Font.dash.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
                 .fixedSize()
@@ -137,7 +148,7 @@ struct OrderPreviewView: View {
                     .frame(width: Layout.coinLogoSize, height: Layout.coinLogoSize)
                     .clipShape(.rect(cornerRadius: Layout.coinLogoCornerRadius))
 
-                Text(NSLocalizedString("Dash Wallet", comment: "Maya"))
+                Text(NSLocalizedString("Dash Wallet", comment: "Dash DEX"))
                     .font(Font.dash.subhead)
                     .foregroundColor(Color.dash.primaryText)
             }
@@ -150,7 +161,7 @@ struct OrderPreviewView: View {
 
     private var toRow: some View {
         HStack(spacing: Layout.labelSpacing) {
-            Text(NSLocalizedString("To", comment: "Maya"))
+            Text(NSLocalizedString("To", comment: "Dash DEX"))
                 .font(Font.dash.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
                 .fixedSize()
@@ -175,7 +186,7 @@ struct OrderPreviewView: View {
 
     private var addressRow: some View {
         OrderPreviewTableRow(
-            leading: String(format: NSLocalizedString("%@ address", comment: "Maya"), viewModel.coin.name),
+            leading: String(format: NSLocalizedString("%@ address", comment: "Dash DEX"), viewModel.coin.name),
             trailing: viewModel.address,
             rowHPadding: Layout.rowHPadding,
             rowVPadding: Layout.rowVPadding,
@@ -186,7 +197,7 @@ struct OrderPreviewView: View {
 
     private var purchaseRow: some View {
         OrderPreviewTableRow(
-            leading: NSLocalizedString("Purchase", comment: "Maya"),
+            leading: NSLocalizedString("Purchase", comment: "Dash DEX"),
             trailing: viewModel.purchaseAmount,
             trailingSecondary: viewModel.purchaseFiatAmount,
             rowHPadding: Layout.rowHPadding,
@@ -212,7 +223,7 @@ struct OrderPreviewView: View {
 
     private var totalRow: some View {
         HStack(alignment: .lastTextBaseline, spacing: Layout.labelSpacing) {
-            Text(NSLocalizedString("Total", comment: "Maya"))
+            Text(NSLocalizedString("Total", comment: "Dash DEX"))
                 .font(Font.dash.subheadMedium)
                 .foregroundColor(Color.dash.tertiaryText)
 
@@ -228,7 +239,7 @@ struct OrderPreviewView: View {
     /// Execution network row — AC#5: shows which provider (Maya, NEAR, …) runs this swap.
     private var networkRow: some View {
         OrderPreviewTableRow(
-            leading: NSLocalizedString("Network", comment: "Maya/SwapKit order preview"),
+            leading: NSLocalizedString("Network", comment: "Dash DEX"),
             trailing: viewModel.resolvedExecutionNetwork,
             rowHPadding: Layout.rowHPadding,
             rowVPadding: Layout.rowVPadding,
@@ -250,7 +261,7 @@ struct OrderPreviewView: View {
     )
 
     let viewModel = OrderPreviewViewModel(
-        coin: MayaCryptoCurrency.supportedCoins[0],
+        coin: SwapCryptoCurrency.supportedCoins[0],
         address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
         dashSatoshis: 10_000_000,
         fromDashAmount: "0.1",

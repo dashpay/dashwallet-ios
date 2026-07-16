@@ -22,7 +22,10 @@ struct SwapTransactionSuccessView: View {
     let coinCode: String
     let coinName: String
     let executionNetwork: String
+    let explorerLink: (url: URL, text: String)?
     var onDone: () -> Void = {}
+
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,13 +36,13 @@ struct SwapTransactionSuccessView: View {
                 .padding(.bottom, 30)
 
             VStack(spacing: 6) {
-                Text(NSLocalizedString("You successfully converted DASH to \(coinCode)", comment: "Maya"))
-                    .font(Font.dash.title1)
+                Text(String(format: NSLocalizedString("You successfully converted DASH to %@", comment: "Dash DEX"), coinCode))
+                    .dashFont(.title1)
                     .foregroundColor(Color.dash.primaryText)
                     .multilineTextAlignment(.center)
 
-                Text(NSLocalizedString("It can take up to a few minutes for your \(coinName) to arrive at the destination address", comment: "Maya"))
-                    .font(Font.dash.subhead)
+                Text(String(format: NSLocalizedString("It can take up to a few minutes for your %@ to arrive at the destination address using %@", comment: "Dash DEX"), coinName, executionNetwork))
+                    .dashFont(.subhead)
                     .foregroundColor(Color.dash.secondaryText)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
@@ -48,13 +51,26 @@ struct SwapTransactionSuccessView: View {
 
             Spacer()
 
-            DashUIKit.DashButton(
-                text: NSLocalizedString("Done", comment: ""),
-                fillsWidth: true,
-                size: .large,
-                style: .filledBlue
-            ) {
-                onDone()
+            VStack(spacing: 20) {
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Done", comment: ""),
+                    fillsWidth: true,
+                    size: .large,
+                    style: .filledBlue
+                ) {
+                    onDone()
+                }
+
+                if let explorerLink {
+                    DashUIKit.DashButton(
+                        text: explorerLink.text,
+                        fillsWidth: true,
+                        size: .large,
+                        style: .tintedBlue
+                    ) {
+                        openURL(explorerLink.url)
+                    }
+                }
             }
             .padding(.vertical, 20)
             .padding(.horizontal, 60)
@@ -67,7 +83,8 @@ struct SwapTransactionSuccessView: View {
     SwapTransactionSuccessView(
         coinCode: "BTC",
         coinName: "Bitcoin",
-        executionNetwork: "Maya"
+        executionNetwork: "NEAR",
+        explorerLink: (url: URL(string: "https://example.com")!, text: "View NEAR Intents explorer")
     )
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.dash.primaryBackground)

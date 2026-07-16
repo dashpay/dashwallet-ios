@@ -1,5 +1,5 @@
 //
-//  MayaSwapPendingGate.swift
+//  SwapPendingGate.swift
 //  DashWallet
 //
 //  Copyright © 2026 Dash Core Group. All rights reserved.
@@ -25,8 +25,8 @@ import Foundation
 /// Rationale: submitting the next swap before the previous one has settled on the Dash side can
 /// chain unsettled outputs into a fresh vault deposit. Waiting for the IS-lock (≈5–10 s) gives the
 /// previous deposit a clean, instantly-final state before the next one is built.
-final class MayaSwapPendingGate {
-    static let shared = MayaSwapPendingGate()
+final class SwapPendingGate {
+    static let shared = SwapPendingGate()
 
     /// Safety cap: never block a new swap longer than this even if no IS-lock notification arrives
     /// (e.g. a non-IS-eligible tx). Keeps the gate from wedging the UI permanently.
@@ -84,7 +84,7 @@ final class MayaSwapPendingGate {
               changes[DSTransactionManagerNotificationInstantSendTransactionLockKey] != nil
         else { return }
 
-        DSLogger.log("MayaSwapPendingGate: IS-lock received for \(expected) — gate released")
+        DSLogger.log("SwapPendingGate: IS-lock received for \(expected) — gate released")
         lock.lock()
         clearLocked()
         lock.unlock()

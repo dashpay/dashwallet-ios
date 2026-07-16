@@ -22,6 +22,8 @@ struct SwapKitPortalView: View {
     var onBuyDash: (() -> Void)?
     var onSellDash: (() -> Void)?
 
+    @State private var isOnline: Bool = NetworkStatusService.shared.isOnline
+
     var body: some View {
         SwapPortalScaffold(
             logoIcon: .custom("illustration-dash-dex", bundle: .dashUIKit),
@@ -31,10 +33,14 @@ struct SwapKitPortalView: View {
                 comment: "Dash DEX Portal"
             ),
             showBuy: true,
+            isOnline: isOnline,
             onBack: onBack,
             onBuyDash: onBuyDash,
             onSellDash: onSellDash
         )
+        .onReceive(NetworkStatusService.shared.statusPublisher) { status in
+            isOnline = status == .online
+        }
     }
 }
 

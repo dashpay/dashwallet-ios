@@ -1,5 +1,5 @@
 //
-//  MayaExchangeAddressProvider.swift
+//  ExchangeAddressProvider.swift
 //  DashWallet
 //
 //  Copyright © 2024 Dash Core Group. All rights reserved.
@@ -19,15 +19,15 @@
 
 import Foundation
 
-struct MayaExchangeAddressLookupContext: Hashable {
+struct ExchangeAddressLookupContext: Hashable {
     let currencyCode: String
     let chain: String
-    let mayaAsset: String
+    let swapAsset: String
 
-    init(coin: MayaCryptoCurrency) {
+    init(coin: SwapCryptoCurrency) {
         self.currencyCode = coin.code.uppercased()
         self.chain = coin.chain.uppercased()
-        self.mayaAsset = coin.mayaAsset.uppercased()
+        self.swapAsset = coin.swapAsset.uppercased()
     }
 
     var cacheKey: String {
@@ -114,14 +114,14 @@ struct MayaExchangeAddressLookupContext: Hashable {
     }
 
     var usesAmbiguousCurrencyCode: Bool {
-        MayaCryptoCurrency.supportedCoins.contains {
+        SwapCryptoCurrency.supportedCoins.contains {
             $0.code.caseInsensitiveCompare(currencyCode) == .orderedSame &&
                 $0.chain.caseInsensitiveCompare(chain) != .orderedSame
         }
     }
 
     var tokenIdentifier: String? {
-        let parts = mayaAsset.split(separator: ".", maxSplits: 1).map(String.init)
+        let parts = swapAsset.split(separator: ".", maxSplits: 1).map(String.init)
         guard parts.count == 2 else { return nil }
         return parts[1]
     }
@@ -134,7 +134,7 @@ struct MayaExchangeAddressLookupContext: Hashable {
                 hints.append(String(symbolOnly))
             }
         }
-        let chainLabel = MayaCryptoCurrency.chainDisplayName(chain).uppercased()
+        let chainLabel = SwapCryptoCurrency.chainDisplayName(chain).uppercased()
         if !chainLabel.isEmpty {
             hints.append(chainLabel)
         }
@@ -167,7 +167,7 @@ struct MayaExchangeAddressLookupContext: Hashable {
 /// Provides deposit addresses from Uphold and Coinbase for a given cryptocurrency.
 /// Used by the Maya swap flow to let users select a destination address from their exchange accounts.
 @MainActor
-class MayaExchangeAddressProvider {
+class ExchangeAddressProvider {
 
     // MARK: - Uphold
 
@@ -189,8 +189,8 @@ class MayaExchangeAddressProvider {
     ///
     /// - Parameter coin: The selected Maya destination coin.
     /// - Returns: The deposit address string, or `nil` if the currency is not available.
-    func fetchUpholdAddress(for coin: MayaCryptoCurrency) async -> String? {
-        let context = MayaExchangeAddressLookupContext(coin: coin)
+    func fetchUpholdAddress(for coin: SwapCryptoCurrency) async -> String? {
+        let context = ExchangeAddressLookupContext(coin: coin)
         DSLogger.log("Maya Uphold: fetchUpholdAddress for \(context.currencyCode) on \(context.normalizedNetworkKey), authorized=\(isUpholdAuthorized)")
         guard isUpholdAuthorized else { return nil }
 
@@ -211,10 +211,10 @@ class MayaExchangeAddressProvider {
     ///
     /// - Parameter coin: The selected Maya destination coin.
     /// - Returns: The deposit address string, or `nil` if the currency is not available.
-    func fetchAndCacheUpholdAddress(for coin: MayaCryptoCurrency) async -> String? {
+    func fetchAndCacheUpholdAddress(for coin: SwapCryptoCurrency) async -> String? {
         guard isUpholdAuthorized else { return nil }
 
-        let context = MayaExchangeAddressLookupContext(coin: coin)
+        let context = ExchangeAddressLookupContext(coin: coin)
         let network = upholdNetwork(for: context)
 
         // Step 1: Try to find an existing card
@@ -254,7 +254,7 @@ class MayaExchangeAddressProvider {
     }
 
     /// Maps the selected Maya chain to the Uphold network name used during address creation.
-    private func upholdNetwork(for context: MayaExchangeAddressLookupContext) -> String {
+    private func upholdNetwork(for context: ExchangeAddressLookupContext) -> String {
         switch context.chain {
         case "BTC": return "bitcoin"
         case "ETH": return "ethereum"
@@ -458,8 +458,8 @@ class MayaExchangeAddressProvider {
     ///
     /// - Parameter coin: The selected Maya destination coin.
     /// - Returns: The deposit address string, or `nil` if the currency is not available.
-    func fetchCoinbaseAddress(for coin: MayaCryptoCurrency) async -> String? {
-        let context = MayaExchangeAddressLookupContext(coin: coin)
+    func fetchCoinbaseAddress(for coin: SwapCryptoCurrency) async -> String? {
+        let context = ExchangeAddressLookupContext(coin: coin)
         DSLogger.log("Maya Coinbase: fetchCoinbaseAddress for \(context.currencyCode) on \(context.normalizedNetworkKey), authorized=\(isCoinbaseAuthorized)")
         guard isCoinbaseAuthorized else { return nil }
 
@@ -488,10 +488,10 @@ class MayaExchangeAddressProvider {
     ///
     /// - Parameter coin: The selected Maya destination coin.
     /// - Returns: The newly created deposit address string, or `nil` if the currency is not available.
-    func createAndCacheCoinbaseAddress(for coin: MayaCryptoCurrency) async -> String? {
+    func createAndCacheCoinbaseAddress(for coin: SwapCryptoCurrency) async -> String? {
         guard isCoinbaseAuthorized else { return nil }
 
-        let context = MayaExchangeAddressLookupContext(coin: coin)
+        let context = ExchangeAddressLookupContext(coin: coin)
 
         // Prefer the account list for multi-network symbols so ETH.USDC and ARB.USDC
         // do not silently collapse onto the same default Coinbase account.
@@ -513,7 +513,7 @@ class MayaExchangeAddressProvider {
     }
 
     /// Fetches the account directly via `GET /v2/accounts/{currencyCode}` and creates an address.
-    private func fetchCoinbaseAddressViaDirectLookup(context: MayaExchangeAddressLookupContext) async -> String? {
+    private func fetchCoinbaseAddressViaDirectLookup(context: ExchangeAddressLookupContext) async -> String? {
         do {
             DSLogger.log("Maya Coinbase: Trying direct account lookup for \(context.currencyCode)")
             let account = try await Coinbase.shared.account(byCurrencyCode: context.currencyCode)
@@ -531,7 +531,7 @@ class MayaExchangeAddressProvider {
     }
 
     /// Lists all accounts and searches for the currency, then creates an address.
-    private func fetchCoinbaseAddressViaAccountList(context: MayaExchangeAddressLookupContext) async -> String? {
+    private func fetchCoinbaseAddressViaAccountList(context: ExchangeAddressLookupContext) async -> String? {
         do {
             DSLogger.log("Maya Coinbase: Falling back to account list for \(context.currencyCode) on \(context.normalizedNetworkKey)")
             let accounts = try await Coinbase.shared.accountsIncludingEmpty()
@@ -559,7 +559,7 @@ class MayaExchangeAddressProvider {
         }
     }
 
-    private func preferredCoinbaseAccount(from accounts: [CBAccount], context: MayaExchangeAddressLookupContext) -> CBAccount? {
+    private func preferredCoinbaseAccount(from accounts: [CBAccount], context: ExchangeAddressLookupContext) -> CBAccount? {
         accounts.max { lhs, rhs in
             let leftScore = scoreCoinbaseAccount(lhs, context: context)
             let rightScore = scoreCoinbaseAccount(rhs, context: context)
@@ -570,7 +570,7 @@ class MayaExchangeAddressProvider {
         }
     }
 
-    private func scoreCoinbaseAccount(_ account: CBAccount, context: MayaExchangeAddressLookupContext) -> Int {
+    private func scoreCoinbaseAccount(_ account: CBAccount, context: ExchangeAddressLookupContext) -> Int {
         var score = account.info.primary ? 5 : 0
         let haystack = [
             account.info.name,
@@ -591,7 +591,7 @@ class MayaExchangeAddressProvider {
 
     private func validatedCoinbaseAddress(
         addressInfo: CoinbaseAccountAddress,
-        context: MayaExchangeAddressLookupContext,
+        context: ExchangeAddressLookupContext,
         source: String
     ) -> String? {
         guard let reportedNetwork = addressInfo.network?.trimmingCharacters(in: .whitespacesAndNewlines),

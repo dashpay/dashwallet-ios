@@ -22,7 +22,7 @@ import UIKit
 
 class SelectCoinHostingController: UIViewController, NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
-    var onCoinSelected: ((MayaCryptoCurrency) -> Void)?
+    var onCoinSelected: ((SwapCryptoCurrency) -> Void)?
 
     private let swapProvider: SwapProvider
     private let direction: SwapDirection

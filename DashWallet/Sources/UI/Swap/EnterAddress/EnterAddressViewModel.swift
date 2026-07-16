@@ -17,13 +17,14 @@
 //  limitations under the License.
 //
 
+import Combine
 import Foundation
 import SwiftUI
 import UIKit
 
 @MainActor
 class EnterAddressViewModel: ObservableObject {
-    let coin: MayaCryptoCurrency
+    let coin: SwapCryptoCurrency
 
     // MARK: - Published State
 
@@ -37,15 +38,16 @@ class EnterAddressViewModel: ObservableObject {
     @Published var hasClipboardCandidate: Bool = false
     @Published var clipboardContent: String?
     @Published var isConfirming: Bool = false
+    @Published private(set) var isOnline: Bool
 
     // MARK: - Computed Properties
 
     var addressLabel: String {
-        String(format: NSLocalizedString("%@ address", comment: "Maya"), coin.code)
+        String(format: NSLocalizedString("%@ address", comment: "Dash DEX"), coin.code)
     }
 
     var placeholderText: String {
-        String(format: NSLocalizedString("Long press to paste", comment: "Maya"))
+        String(format: NSLocalizedString("Long press to paste", comment: "Dash DEX"))
     }
 
     var isContinueEnabled: Bool {
@@ -59,7 +61,7 @@ class EnterAddressViewModel: ObservableObject {
 
     var addressValidationErrorMessage: String? {
         guard showAddressError else { return nil }
-        let chainLabel = MayaCryptoCurrency.chainDisplayName(coin.chain)
+        let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
         return String(
             format: NSLocalizedString(
                 "Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work.",
@@ -73,7 +75,9 @@ class EnterAddressViewModel: ObservableObject {
 
     // MARK: - Private
 
-    private let addressProvider = MayaExchangeAddressProvider()
+    private let addressProvider = ExchangeAddressProvider()
+    private let networkStatus: NetworkStatusProviding
+    private var cancellables = Set<AnyCancellable>()
     private var upholdAddress: String?
     private var coinbaseAddress: String?
     /// True once the user has opted in to reading the clipboard (tapped the clipboard row).
@@ -83,8 +87,19 @@ class EnterAddressViewModel: ObservableObject {
 
     // MARK: - Init
 
-    init(coin: MayaCryptoCurrency) {
+    init(coin: SwapCryptoCurrency, networkStatus: NetworkStatusProviding = NetworkStatusService.shared) {
         self.coin = coin
+        self.networkStatus = networkStatus
+        self.isOnline = networkStatus.isOnline
+        subscribeToNetworkStatus()
+    }
+
+    private func subscribeToNetworkStatus() {
+        networkStatus.statusPublisher
+            .sink { [weak self] status in
+                self?.isOnline = status == .online
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Source Loading
@@ -144,6 +159,12 @@ class EnterAddressViewModel: ObservableObject {
     }
 
     func onAddressChanged() {
+        // iOS native paste can append a trailing newline — strip it so the field doesn't show an extra empty line.
+        let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed != addressText {
+            addressText = trimmed
+            return
+        }
         clearValidationError()
     }
 
@@ -173,7 +194,7 @@ class EnterAddressViewModel: ObservableObject {
     private var isAddressValid: Bool {
         let trimmed = addressText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
-        return MayaAddressValidator.isValid(address: trimmed, for: coin)
+        return SwapAddressValidator.isValid(address: trimmed, for: coin)
     }
 
     @discardableResult

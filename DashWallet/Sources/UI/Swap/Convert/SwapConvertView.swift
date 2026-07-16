@@ -37,7 +37,6 @@ struct SwapConvertView: View {
     }
 
     @StateObject private var viewModel: SwapConvertViewModel
-    @StateObject private var reachability = NetworkReachabilityMonitor()
     @State private var showLocalCurrency = false
     @State private var topMenuItemHeight: CGFloat = Layout.topMenuItemHeightFallback
     @State private var bottomMenuItemHeight: CGFloat = Layout.topMenuItemHeightFallback
@@ -53,20 +52,13 @@ struct SwapConvertView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } })
-            TopIntro(title: NSLocalizedString("Convert Dash", comment: "Maya"))
+            TopIntro(title: NSLocalizedString("Enter amount", comment: "Dash DEX"))
                 .padding(.horizontal, Layout.hPadding)
                 .padding(.bottom, 6)
             amountSection
-            if reachability.isOnline {
-                keyboard
-            } else {
-                // Quote/amount entry needs network — replace the keyboard area with
-                // the offline state, mirroring Coinbase's amount screen.
-                NetworkUnavailableStateView()
-                    .frame(maxWidth: .infinity, maxHeight: 320)
-                    .padding(.horizontal, Layout.hPadding)
-            }
+            keyboard
         }
+        .dexOfflineToast(isOnline: viewModel.isOnline)
         .sheet(isPresented: $showLocalCurrency) {
             let dialog = BottomSheet(
                 showBackButton: Binding<Bool>.constant(false)
@@ -94,7 +86,8 @@ struct SwapConvertView: View {
                 selectedCurrency: $viewModel.selectedCurrency,
                 options: viewModel.currencyOptions,
                 onMax: { viewModel.setMax() },
-                onCurrencyTap: { showLocalCurrency = true }
+                onCurrencyTap: { showLocalCurrency = true },
+                hidesSelectedOption: true
             )
             .frame(height: 70)
             conversionCard
@@ -127,9 +120,9 @@ struct SwapConvertView: View {
     /// (`action: nil`); the card chrome / non-interactivity live in `SwapConvertCardRow`.
     private var dashSourceRow: some View {
         MenuItem(
-            title: NSLocalizedString("Dash", comment: "Maya"),
+            title: NSLocalizedString("Dash", comment: "Dash DEX"),
             subtitleView: AnyView(
-                Text(NSLocalizedString("Dash Wallet", comment: "Maya"))
+                Text(NSLocalizedString("Dash Wallet", comment: "Dash DEX"))
                     .font(Font.dash.footnote)
                     .lineSpacing(4)
                     .foregroundColor(Color.dash.primaryText)
@@ -205,8 +198,9 @@ struct SwapConvertView: View {
                     Text(error)
                         .font(Font.dash.caption1)
                         .foregroundColor(Color.dash.red)
+                        .multilineTextAlignment(.center)
                 } else if let amount = viewModel.receiveAmount {
-                    Text(NSLocalizedString("Receive amount", comment: "Maya"))
+                    Text(NSLocalizedString("Receive amount", comment: "Dash DEX"))
                         .font(Font.dash.caption1)
                         .foregroundStyle(Color.dash.tertiaryText)
 
@@ -229,7 +223,7 @@ struct SwapConvertView: View {
                 set: { viewModel.setInput($0) }
             ),
             showDecimalSeparator: true,
-            actionButtonText: NSLocalizedString("Continue", comment: ""),
+            actionButtonText: NSLocalizedString("Convert", comment: "Dash Dex"),
             actionEnabled: viewModel.canOpenOrderPreview,
             inProgress: viewModel.isLoading,
             actionHandler: onContinue
@@ -246,7 +240,7 @@ struct SwapConvertView: View {
 #Preview {
     SwapConvertView(
         viewModel: SwapConvertViewModel(
-            coin: MayaCryptoCurrency.supportedCoins[0],
+            coin: SwapCryptoCurrency.supportedCoins[0],
             address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
         ),
         onBack: {}

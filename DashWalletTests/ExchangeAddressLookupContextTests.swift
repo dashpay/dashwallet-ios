@@ -1,5 +1,5 @@
 //
-//  MayaExchangeAddressLookupContextTests.swift
+//  ExchangeAddressLookupContextTests.swift
 //  DashWalletTests
 //
 //  Copyright © 2024 Dash Core Group. All rights reserved.
@@ -20,28 +20,26 @@
 import XCTest
 @testable import dashwallet
 
-final class MayaExchangeAddressLookupContextTests: XCTestCase {
+final class ExchangeAddressLookupContextTests: XCTestCase {
 
     func testCacheKeySeparatesETHAndArbitrumVariantsOfSameTicker() {
-        let ethUSDC = MayaCryptoCurrency(
+        let ethUSDC = SwapCryptoCurrency(
             id: "usdc",
             code: "USDC",
             name: "USD Coin",
-            mayaAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
-            chain: "ETH",
-            iconAssetName: "maya.coin.usdc"
+            swapAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+            chain: "ETH"
         )
-        let arbUSDC = MayaCryptoCurrency(
+        let arbUSDC = SwapCryptoCurrency(
             id: "usdc_arb",
             code: "USDC",
             name: "USD Coin (Arbitrum)",
-            mayaAsset: "ARB.USDC-0XAF88D065E77C8CC2239327C5EDB3A432268E5831",
-            chain: "ARB",
-            iconAssetName: "maya.coin.usdc"
+            swapAsset: "ARB.USDC-0XAF88D065E77C8CC2239327C5EDB3A432268E5831",
+            chain: "ARB"
         )
 
-        let ethContext = MayaExchangeAddressLookupContext(coin: ethUSDC)
-        let arbContext = MayaExchangeAddressLookupContext(coin: arbUSDC)
+        let ethContext = ExchangeAddressLookupContext(coin: ethUSDC)
+        let arbContext = ExchangeAddressLookupContext(coin: arbUSDC)
 
         XCTAssertNotEqual(ethContext.cacheKey, arbContext.cacheKey)
         XCTAssertEqual(ethContext.normalizedNetworkKey, "ethereum")
@@ -49,38 +47,35 @@ final class MayaExchangeAddressLookupContextTests: XCTestCase {
     }
 
     func testAmbiguousTickerDetectionFlagsMultiChainAssets() {
-        let ethUSDT = MayaCryptoCurrency(
+        let ethUSDT = SwapCryptoCurrency(
             id: "usdt",
             code: "USDT",
             name: "Tether",
-            mayaAsset: "ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7",
-            chain: "ETH",
-            iconAssetName: "maya.coin.usdt"
+            swapAsset: "ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7",
+            chain: "ETH"
         )
-        let btc = MayaCryptoCurrency(
+        let btc = SwapCryptoCurrency(
             id: "btc",
             code: "BTC",
             name: "Bitcoin",
-            mayaAsset: "BTC.BTC",
-            chain: "BTC",
-            iconAssetName: "maya.coin.btc"
+            swapAsset: "BTC.BTC",
+            chain: "BTC"
         )
 
-        XCTAssertTrue(MayaExchangeAddressLookupContext(coin: ethUSDT).usesAmbiguousCurrencyCode)
-        XCTAssertFalse(MayaExchangeAddressLookupContext(coin: btc).usesAmbiguousCurrencyCode)
+        XCTAssertTrue(ExchangeAddressLookupContext(coin: ethUSDT).usesAmbiguousCurrencyCode)
+        XCTAssertFalse(ExchangeAddressLookupContext(coin: btc).usesAmbiguousCurrencyCode)
     }
 
     func testCoinbaseHintsIncludeTokenIdentifierAndChain() {
-        let coin = MayaCryptoCurrency(
+        let coin = SwapCryptoCurrency(
             id: "usdc_base",
             code: "USDC",
             name: "USD Coin (Base)",
-            mayaAsset: "BASE.USDC-0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
-            chain: "BASE",
-            iconAssetName: "maya.coin.usdc"
+            swapAsset: "BASE.USDC-0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+            chain: "BASE"
         )
 
-        let hints = MayaExchangeAddressLookupContext(coin: coin).coinbaseMatchHints
+        let hints = ExchangeAddressLookupContext(coin: coin).coinbaseMatchHints
 
         XCTAssertTrue(hints.contains("USDC"))
         XCTAssertTrue(hints.contains("BASE"))
@@ -88,25 +83,23 @@ final class MayaExchangeAddressLookupContextTests: XCTestCase {
     }
 
     func testCoinbaseNetworkMatchingAcceptsKnownAliases() {
-        let ethereumUSDC = MayaCryptoCurrency(
+        let ethereumUSDC = SwapCryptoCurrency(
             id: "usdc_eth",
             code: "USDC",
             name: "USD Coin (Ethereum)",
-            mayaAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
-            chain: "ETH",
-            iconAssetName: "maya.coin.usdc"
+            swapAsset: "ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48",
+            chain: "ETH"
         )
-        let polygonUSDC = MayaCryptoCurrency(
+        let polygonUSDC = SwapCryptoCurrency(
             id: "usdc_pol",
             code: "USDC",
             name: "USD Coin (Polygon)",
-            mayaAsset: "POL.USDC-0X3C499C542CEF5E3811E1192CE70D8CC03D5C3359",
-            chain: "POL",
-            iconAssetName: "maya.coin.usdc"
+            swapAsset: "POL.USDC-0X3C499C542CEF5E3811E1192CE70D8CC03D5C3359",
+            chain: "POL"
         )
 
-        let ethereumContext = MayaExchangeAddressLookupContext(coin: ethereumUSDC)
-        let polygonContext = MayaExchangeAddressLookupContext(coin: polygonUSDC)
+        let ethereumContext = ExchangeAddressLookupContext(coin: ethereumUSDC)
+        let polygonContext = ExchangeAddressLookupContext(coin: polygonUSDC)
 
         XCTAssertTrue(ethereumContext.matchesCoinbaseReportedNetwork("Ethereum"))
         XCTAssertTrue(ethereumContext.matchesCoinbaseReportedNetwork("ERC20"))
@@ -115,63 +108,58 @@ final class MayaExchangeAddressLookupContextTests: XCTestCase {
     }
 
     func testCoinbaseNetworkMatchingRejectsDifferentChains() {
-        let arbitrumUSDC = MayaCryptoCurrency(
+        let arbitrumUSDC = SwapCryptoCurrency(
             id: "usdc_arb",
             code: "USDC",
             name: "USD Coin (Arbitrum)",
-            mayaAsset: "ARB.USDC-0XAF88D065E77C8CC2239327C5EDB3A432268E5831",
-            chain: "ARB",
-            iconAssetName: "maya.coin.usdc"
+            swapAsset: "ARB.USDC-0XAF88D065E77C8CC2239327C5EDB3A432268E5831",
+            chain: "ARB"
         )
 
-        let context = MayaExchangeAddressLookupContext(coin: arbitrumUSDC)
+        let context = ExchangeAddressLookupContext(coin: arbitrumUSDC)
 
         XCTAssertFalse(context.matchesCoinbaseReportedNetwork("Ethereum"))
         XCTAssertFalse(context.matchesCoinbaseReportedNetwork("Base"))
     }
 
     func testCoinbaseCreateNetworkUsesSpecificEvmSlugs() {
-        let arbitrumUSDC = MayaCryptoCurrency(
+        let arbitrumUSDC = SwapCryptoCurrency(
             id: "usdc_arb",
             code: "USDC",
             name: "USD Coin (Arbitrum)",
-            mayaAsset: "ARB.USDC-0XAF88D065E77C8CC2239327C5EDB3A432268E5831",
-            chain: "ARB",
-            iconAssetName: "maya.coin.usdc"
+            swapAsset: "ARB.USDC-0XAF88D065E77C8CC2239327C5EDB3A432268E5831",
+            chain: "ARB"
         )
-        let avalancheUSDC = MayaCryptoCurrency(
+        let avalancheUSDC = SwapCryptoCurrency(
             id: "usdc_avax",
             code: "USDC",
             name: "USD Coin (Avalanche)",
-            mayaAsset: "AVAX.USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E",
-            chain: "AVAX",
-            iconAssetName: "maya.coin.usdc"
+            swapAsset: "AVAX.USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E",
+            chain: "AVAX"
         )
-        let polygonUSDC = MayaCryptoCurrency(
+        let polygonUSDC = SwapCryptoCurrency(
             id: "usdc_pol",
             code: "USDC",
             name: "USD Coin (Polygon)",
-            mayaAsset: "POL.USDC-0X3C499C542CEF5E3811E1192CE70D8CC03D5C3359",
-            chain: "POL",
-            iconAssetName: "maya.coin.usdc"
+            swapAsset: "POL.USDC-0X3C499C542CEF5E3811E1192CE70D8CC03D5C3359",
+            chain: "POL"
         )
 
-        XCTAssertEqual(MayaExchangeAddressLookupContext(coin: arbitrumUSDC).coinbaseCreateNetwork, "arbitrum")
-        XCTAssertEqual(MayaExchangeAddressLookupContext(coin: avalancheUSDC).coinbaseCreateNetwork, "avacchain")
-        XCTAssertEqual(MayaExchangeAddressLookupContext(coin: polygonUSDC).coinbaseCreateNetwork, "polygon")
+        XCTAssertEqual(ExchangeAddressLookupContext(coin: arbitrumUSDC).coinbaseCreateNetwork, "arbitrum")
+        XCTAssertEqual(ExchangeAddressLookupContext(coin: avalancheUSDC).coinbaseCreateNetwork, "avacchain")
+        XCTAssertEqual(ExchangeAddressLookupContext(coin: polygonUSDC).coinbaseCreateNetwork, "polygon")
     }
 
     func testCoinbaseCreateNetworkReturnsNilForNativeSingleNetworkAssets() {
-        let bitcoin = MayaCryptoCurrency(
+        let bitcoin = SwapCryptoCurrency(
             id: "btc",
             code: "BTC",
             name: "Bitcoin",
-            mayaAsset: "BTC.BTC",
-            chain: "BTC",
-            iconAssetName: "maya.coin.btc"
+            swapAsset: "BTC.BTC",
+            chain: "BTC"
         )
 
-        XCTAssertNil(MayaExchangeAddressLookupContext(coin: bitcoin).coinbaseCreateNetwork)
+        XCTAssertNil(ExchangeAddressLookupContext(coin: bitcoin).coinbaseCreateNetwork)
     }
 
     func testClearCoinbaseCacheRemovesPersistedCoinbaseAddresses() async {
@@ -179,7 +167,7 @@ final class MayaExchangeAddressLookupContextTests: XCTestCase {
         UserDefaults.standard.set("0x1234567890", forKey: persistedKey)
 
         await MainActor.run {
-            MayaExchangeAddressProvider.clearCoinbaseCache()
+            ExchangeAddressProvider.clearCoinbaseCache()
         }
 
         XCTAssertNil(UserDefaults.standard.string(forKey: persistedKey))

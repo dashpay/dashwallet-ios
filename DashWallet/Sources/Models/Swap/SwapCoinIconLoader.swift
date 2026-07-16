@@ -1,5 +1,5 @@
 //
-//  MayaCoinIconLoader.swift
+//  SwapCoinIconLoader.swift
 //  DashWallet
 //
 //  Copyright © 2026 Dash Core Group. All rights reserved.
@@ -27,8 +27,8 @@ import UIKit
 ///
 /// This actor is responsible only for remote loading and caching.
 /// The `convert.crypto` placeholder is shown by `SwapCoinIconView` while loading or on failure.
-actor MayaCoinIconLoader {
-    static let shared = MayaCoinIconLoader()
+actor SwapCoinIconLoader {
+    static let shared = SwapCoinIconLoader()
 
     private let memoryCache = NSCache<NSString, UIImage>()
     private let session: URLSession
@@ -37,7 +37,7 @@ actor MayaCoinIconLoader {
         let diskCache = URLCache(
             memoryCapacity: 0,
             diskCapacity: 100 * 1024 * 1024,
-            diskPath: "maya_coin_icons"
+            diskPath: "swap_coin_icons"
         )
         let config = URLSessionConfiguration.default
         config.urlCache = diskCache
