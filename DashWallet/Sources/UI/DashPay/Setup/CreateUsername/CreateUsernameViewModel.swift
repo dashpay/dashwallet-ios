@@ -113,6 +113,27 @@ class CreateUsernameViewModel: ObservableObject {
     var hasReadyShieldedFunding: Bool {
         shieldedReadiness?.state == .ready
     }
+
+    /// Non-nil puts the form in invitation-claim mode (DIP-13): the
+    /// registration is funded by the voucher in this normalized link,
+    /// so the balance-based cost rule and the funding-source picker do
+    /// not apply, and submit routes through
+    /// `DWIdentityRegistrationCoordinator.startClaimInvitation`.
+    @Published private(set) var invitationURI: String? = nil
+    /// The inviter's DPNS username (`du`) when the invitation carries
+    /// one — drives the post-claim "send a contact request?" offer.
+    @Published private(set) var invitationInviterUsername: String? = nil
+
+    var isInvitationMode: Bool { invitationURI != nil }
+
+    /// Enter invitation-claim mode with a normalized invitation URI
+    /// (see `DWInvitationLinkNormalizer`). Re-runs validation so the
+    /// cost rule reflects the voucher funding.
+    func configureInvitationMode(uri: String) {
+        invitationURI = uri
+        invitationInviterUsername = DWInvitationService.shared.preview(for: uri)?.inviterUsername
+        validateUsername(username: username)
+    }
     
     var minimumRequiredBalance: String {
         return DWDP_MIN_BALANCE_TO_CREATE_USERNAME.dashAmount.formattedDashAmountWithoutCurrencySymbol
@@ -166,7 +187,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// Kick off SwiftDashSDK identity + DPNS registration and suspend
     /// until the terminal phase. Routes straight to
     /// `DWIdentityRegistrationBridge` (instead of
-    /// `DWDashPayModel.createUsername:invitation:`) so the awaiting
+    /// `DWDashPayModel.createUsername:`) so the awaiting
     /// caller gets a one-shot success / cancel / failure signal to drive
     /// the on-screen popup. The model's `bridgeRegistrationStateChanged:`
     /// observer still mirrors progress to the home banner + writes the
@@ -181,6 +202,30 @@ class CreateUsernameViewModel: ObservableObject {
         submittedRegistrationUsername = submittedUsername
         didNotifyRegistrationStarted = false
         self.onRegistrationStarted = onRegistrationStarted
+
+        // Invitation-claim mode: same coordinator, but the voucher in
+        // the link funds the IdentityCreate, so the call carries the
+        // URI and is awaited directly (no Obj-C bridge completion to
+        // adapt). Phase-driven `onRegistrationStarted` still fires via
+        // `handleRegistrationPhase` — the coordinator publishes the
+        // same phases for every funding source.
+        if let invitationURI {
+            defer {
+                submittedRegistrationUsername = nil
+                didNotifyRegistrationStarted = false
+                self.onRegistrationStarted = nil
+            }
+            do {
+                _ = try await DWIdentityRegistrationCoordinator.shared.startClaimInvitation(
+                    username: submittedUsername,
+                    invitationURI: invitationURI)
+                return .success
+            } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
+                return .cancelled
+            } catch {
+                return .failure(error.localizedDescription)
+            }
+        }
 
         return await withCheckedContinuation { (continuation: CheckedContinuation<UsernameRegistrationOutcome, Never>) in
             DWIdentityRegistrationBridge.shared.startCreateUsername(submittedUsername) { [weak self] _, error in
@@ -290,13 +335,20 @@ class CreateUsernameViewModel: ObservableObject {
         let shieldedRequired = ShieldedIdentityFundingReadiness.requiredCredits(forContestedName: isContested)
         shieldedReadiness = ShieldedIdentityFundingReadiness.shared.evaluate(requiredCredits: shieldedRequired)
         armShieldedMaturityRevalidation()
-        let hasEnoughBalance = hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
+        // Invitation-claim mode: the voucher pays the registration, so
+        // no local balance is required and the cost rule stays hidden.
+        // Whether the voucher actually covers the cost is only known at
+        // claim time (the amount is not in the link) — the coordinator
+        // surfaces an insufficient-voucher failure through the normal
+        // error alert.
+        let voucherFunded = isInvitationMode
+        let hasEnoughBalance = voucherFunded || hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
 
         uiState = CreateUsernameUIState(
             lengthRule: lengthValid ? .valid : .invalid,
             allowedCharactersRule: hasIllegalCharacters || startsOrEndsWithHyphen ? .invalid : .valid,
-            costRule: hasEnoughBalance ? .valid : .invalid,
+            costRule: voucherFunded ? .hidden : (hasEnoughBalance ? .valid : .invalid),
             usernameBlockedRule: canContinue ? .loading : .hidden,
             requiredDash: requiredCost,
             canContinue: false

@@ -41,7 +41,7 @@
     // nop
 }
 
-- (void)createUsername:(nonnull NSString *)username invitation:(nullable NSURL *)invitation {
+- (void)createUsername:(nonnull NSString *)username {
     NSAssert(NO, @"Should not be called");
     // nop
 }
@@ -60,11 +60,6 @@
 }
 
 - (void)updateUsernameStatus {
-    // nop
-}
-
-- (void)verifyDeeplink:(nonnull NSURL *)url completion:(nonnull void (^)(BOOL, NSString *_Nullable, NSString *_Nullable))completion {
-    NSAssert(NO, @"Should not be called");
     // nop
 }
 

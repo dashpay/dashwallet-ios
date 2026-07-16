@@ -20,7 +20,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
-extern NSNotificationName const DWDashPaySentContactRequestToInviter;
 
 @class DWDPRegistrationStatus;
 @class DSBlockchainIdentity;
@@ -50,17 +49,12 @@ extern NSNotificationName const DWDashPaySentContactRequestToInviter;
 @property (readonly, nonatomic, assign) BOOL hasIdentity;
 
 - (BOOL)shouldPresentRegistrationPaymentConfirmation;
-- (void)createUsername:(NSString *)username invitation:(nullable NSURL *)invitation;
+- (void)createUsername:(NSString *)username;
 - (BOOL)canRetry;
 - (void)retry;
 - (void)completeRegistration;
 - (void)updateUsernameStatus;
 - (void)setHasEnoughBalanceForInvitationNotification:(BOOL)value;
-
-- (void)verifyDeeplink:(NSURL *)url
-            completion:(void (^)(BOOL success,
-                                 NSString *_Nullable errorTitle,
-                                 NSString *_Nullable errorMessage))completion;
 
 @end
 

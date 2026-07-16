@@ -170,6 +170,13 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
 
     func showCreateUsername(withInvitation invitationURL: URL?, definedUsername: String?) {
         #if DASHPAY
+        // Invitation claim: the voucher funds the registration, so the
+        // shielded get-ready interstitial doesn't apply — straight to
+        // the form in invitation mode.
+        if invitationURL != nil {
+            pushCreateUsernameForm(invitationURL: invitationURL, definedUsername: definedUsername)
+            return
+        }
         // Route through the shielded get-ready interstitial whenever
         // the privacy-preserving funding path isn't ready (needs funds
         // / maturing / pool below minimum) so the privacy clock starts
@@ -184,6 +191,16 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         }
         #endif
     }
+
+    #if DASHPAY
+    /// Manual redeem entry (Join DashPay dialog → "Have an invitation?"):
+    /// paste/scan screen, then the username form in invitation mode.
+    func showClaimInvitation() {
+        ClaimInvitationFlow.pushRedeemScreen(
+            on: navigationController,
+            dashPayModel: model.dashPayModel)
+    }
+    #endif
 
     #if DASHPAY
     private func showJoinDashPayReadiness() {
@@ -202,8 +219,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         navigationController?.pushViewController(hosting, animated: true)
     }
 
-    private func pushCreateUsernameForm() {
-        let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, invitationURL: nil, definedUsername: nil)
+    private func pushCreateUsernameForm(invitationURL: URL? = nil, definedUsername: String? = nil) {
+        let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, invitationURL: invitationURL, definedUsername: definedUsername)
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { result in
             if (result) {

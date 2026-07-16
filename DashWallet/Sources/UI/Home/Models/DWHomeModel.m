@@ -232,12 +232,6 @@ NS_ASSUME_NONNULL_BEGIN
     return canRegisterUsername && isSynced && isEnoughBalance;
 }
 
-- (void)handleDeeplink:(NSURL *)url
-            completion:(void (^)(BOOL success,
-                                 NSString *_Nullable errorTitle,
-                                 NSString *_Nullable errorMessage))completion {
-    [self.dashPayModel verifyDeeplink:url completion:completion];
-}
 #endif
 
 #pragma mark - Notifications

@@ -28,6 +28,7 @@ protocol HomeViewDelegate: AnyObject {
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
     func homeViewRequestUsername()
+    func homeViewClaimInvitation()
     func homeViewEditProfile()
 #endif
 }
@@ -162,6 +163,7 @@ struct HomeViewContent<Content: View>: View {
     @State private var showFilterDialog: Bool = false
     @State private var shouldShowJoinDashPayInfo: Bool = false
     @State private var navigateToDashPayFlow: Bool = false
+    @State private var navigateToClaimInvitation: Bool = false
     @State private var giftCardTxId: Data? = nil
     @State private var pendingShieldedRecovery: Transaction? = nil
 
@@ -297,10 +299,18 @@ struct HomeViewContent<Content: View>: View {
                 navigateToDashPayFlow = false
                 delegate?.homeViewRequestUsername()
             }
-        }) {
-            let joinDashPayDialog = JoinDashPayInfoDialog {
-                navigateToDashPayFlow = true
+            if navigateToClaimInvitation {
+                navigateToClaimInvitation = false
+                delegate?.homeViewClaimInvitation()
             }
+        }) {
+            let joinDashPayDialog = JoinDashPayInfoDialog(
+                action: {
+                    navigateToDashPayFlow = true
+                },
+                onClaimInvitation: {
+                    navigateToClaimInvitation = true
+                })
             
             if #available(iOS 16.0, *) {
                 joinDashPayDialog.presentationDetents([.height(600)])

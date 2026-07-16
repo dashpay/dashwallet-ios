@@ -353,9 +353,13 @@ struct MainMenuScreen: View {
         }
         #if DASHPAY
         .sheet(isPresented: $showDashPayInfo) {
-            let dialog = JoinDashPayInfoDialog {
-                self.joinDashPay()
-            }
+            let dialog = JoinDashPayInfoDialog(
+                action: {
+                    self.joinDashPay()
+                },
+                onClaimInvitation: {
+                    self.claimInvitation()
+                })
             
             if #available(iOS 16.0, *) {
                 dialog.presentationDetents([.height(600)])
@@ -486,6 +490,14 @@ struct MainMenuScreen: View {
         vc.pushViewController(controller, animated: true)
     }
     
+    #if DASHPAY
+    /// Manual redeem entry (Join DashPay dialog → "Have an invitation?").
+    private func claimInvitation() {
+        guard let dashPayModel = viewModel.dashPayModel else { return }
+        ClaimInvitationFlow.pushRedeemScreen(on: vc, dashPayModel: dashPayModel)
+    }
+    #endif
+
     private func joinDashPay() {
         guard let dashPayModel = viewModel.dashPayModel else { return }
         

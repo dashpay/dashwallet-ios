@@ -20,13 +20,24 @@ import SwiftUI
 public struct JoinDashPayInfoDialog: View {
     @Environment(\.presentationMode) private var presentationMode
     var action: () -> Void
-    
+    /// Non-nil surfaces the "Have an invitation?" redeem entry on the
+    /// embedded join screen; the dialog dismisses before forwarding.
+    var onClaimInvitation: (() -> Void)? = nil
+
     public var body: some View {
         BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
-            JoinDashPayScreen {
-                presentationMode.wrappedValue.dismiss()
-                action()
-            }
+            JoinDashPayScreen(
+                action: {
+                    presentationMode.wrappedValue.dismiss()
+                    action()
+                },
+                onClaimInvitation: onClaimInvitation.map { claim in
+                    {
+                        presentationMode.wrappedValue.dismiss()
+                        claim()
+                    }
+                }
+            )
         }
     }
 }

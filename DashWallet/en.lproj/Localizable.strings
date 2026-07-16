@@ -16,11 +16,20 @@
 /* Dash DEX / dex_error_blacklisted */
 "%@ can't be swapped at the moment." = "%@ can't be swapped at the moment.";
 
+/* DashPay Invitations */
+"%@ couldn't be found on the Dash network to send them a contact request." = "%@ couldn't be found on the Dash network to send them a contact request.";
+
+/* Usernames */
+"%@ Dash available" = "%@ Dash available";
+
 /* DashPay Contacts */
 "%@ DASH sent to %@" = "%1$@ DASH sent to %2$@";
 
 /* Maya/SwapKit order preview - %@ is the executing provider, e.g. "Maya fee" or "NEAR fee" */
 "%@ fee" = "%@ fee";
+
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "%@ has accepted your contact request";
 
 /* Dash DEX */
 "%@ has received your transaction and is processing the swap." = "%@ has received your transaction and is processing the swap.";
@@ -60,6 +69,9 @@
 
 /* Voting */
 "%ld duplicates" = "%ld duplicates";
+
+/* Usernames */
+"%ld of %ld deposits" = "%ld of %ld deposits";
 
 /* Voting */
 "%ld requests" = "%ld requests";
@@ -179,16 +191,34 @@
 "Account Recovery" = "Account Recovery";
 
 /* No comment provided by engineer. */
+"Activity" = "Activity";
+
+/* No comment provided by engineer. */
 "Add" = "Add";
+
+/* DashPay Invitations */
+"Add %@ as a contact" = "Add %@ as a contact";
 
 /* DashPay Contacts */
 "Add %@ as a contact to pay them directly by username and keep a shared history of your payments." = "Add %@ as a contact to pay them directly by username and keep a shared history of your payments.";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History";
+
+/* Usernames */
+"Add %@ Dash to your Shielded balance and let it rest a few hours to register without linking your username to your other funds." = "Add %@ Dash to your Shielded balance and let it rest a few hours to register without linking your username to your other funds.";
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
 
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
+
+/* Usernames */
+"Add at least %@ Dash to your Shielded balance" = "Add at least %@ Dash to your Shielded balance";
+
+/* Usernames */
+"Add to your Shielded balance now and register your username privately a few hours later" = "Add to your Shielded balance now and register your username privately a few hours later";
 
 /* Wallets */
 "Add Wallet" = "Add Wallet";
@@ -442,6 +472,9 @@
 /* InternalTransfer recovery */
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
 
+/* Log export */
+"Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files" = "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files";
+
 /* Buy
    buy */
 "Buy" = "Buy";
@@ -545,6 +578,9 @@
 /* No comment provided by engineer. */
 "Choose Your Username" = "Choose Your Username";
 
+/* DashPay Invitations */
+"Claim your invitation" = "Claim your invitation";
+
 /* No comment provided by engineer. */
 "Claimed" = "Claimed";
 
@@ -628,6 +664,9 @@
 /* Maya */
 "Contact Maya Support" = "Contact Maya Support";
 
+/* DashPay Invitations */
+"Contact request failed" = "Contact request failed";
+
 /* DashPay */
 "Contact request not found" = "Contact request not found";
 
@@ -636,6 +675,9 @@
 
 /* DashPay Contacts */
 "Contact request sent" = "Contact request sent";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "Contact Requests";
 
 /* DashPay Contacts */
 "Contact Requests (%d)" = "Contact Requests (%d)";
@@ -654,6 +696,9 @@
 
 /* No comment provided by engineer. */
 "Continue" = "Continue";
+
+/* DashPay Invitations */
+"Continue to pick your username. The invitation pays the registration fee." = "Continue to pick your username. The invitation pays the registration fee.";
 
 /* Maya */
 "Conversion failed" = "Conversion failed";
@@ -693,6 +738,9 @@
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
+
+/* Log export */
+"Could not create the log archive: %@" = "Could not create the log archive: %@";
 
 /* No comment provided by engineer. */
 "Could not find exchange rate." = "Could not find exchange rate.";
@@ -760,6 +808,9 @@
 
 /* Usernames */
 "Create your username" = "Create your username";
+
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "Create your Username, find friends & family with their usernames and add them to your contacts";
 
 /* Coinbase/Payment Methods */
 "Credit Card" = "Credit Card";
@@ -950,6 +1001,9 @@
 /* No comment provided by engineer. */
 "Done" = "Done";
 
+/* Usernames */
+"Done — your balance has rested long enough" = "Done — your balance has rested long enough";
+
 /* DashSpend */
 "Double tap to change quantity" = "Double tap to change quantity";
 
@@ -1089,6 +1143,9 @@
 /* No comment provided by engineer. */
 "Export CSV" = "Export CSV";
 
+/* Log export */
+"Export Logs" = "Export Logs";
+
 /* Extended public key (BIP44) */
 "Extended public key (BIP44)" = "Extended public key (BIP44)";
 
@@ -1151,6 +1208,9 @@
 
 /* DashPay Contacts */
 "Find a user and add them to your contacts." = "Find a user and add them to your contacts.";
+
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "Find a user on the Dash Network";
 
 /* Explore Dash */
 "Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
@@ -1254,6 +1314,12 @@
 /* SPV diagnostics */
 "Full rescan (from 0) — slow" = "Full rescan (from 0) — slow";
 
+/* Usernames */
+"Fund your username from your Shielded balance. Add funds a few hours ahead — the short rest keeps your username unlinkable to your other Dash." = "Fund your username from your Shielded balance. Add funds a few hours ahead — the short rest keeps your username unlinkable to your other Dash.";
+
+/* Usernames */
+"Funded from your Shielded balance — your username can't be linked to your other Dash." = "Funded from your Shielded balance — your username can't be linked to your other Dash.";
+
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash.";
 
@@ -1268,6 +1334,9 @@
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Get Quote";
+
+/* Usernames */
+"Get ready to join DashPay" = "Get ready to join DashPay";
 
 /* CrowdNode */
 "Get Rewards Instantly" = "Get Rewards Instantly";
@@ -1322,6 +1391,12 @@
 
 /* Voting */
 "Has blocked votes" = "Has blocked votes";
+
+/* Username has requested to be your friend */
+"has requested to be your friend" = "has requested to be your friend";
+
+/* DashPay Invitations */
+"Have an invitation?" = "Have an invitation?";
 
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Have complete control and customize your wallet based on your needs";
@@ -1563,6 +1638,9 @@
 /* No comment provided by engineer. */
 "Invitation Fee" = "Invitation Fee";
 
+/* DashPay Invitations */
+"Invitation from %@" = "Invitation from %@";
+
 /* No comment provided by engineer. */
 "Invitation used by" = "Invitation used by";
 
@@ -1571,6 +1649,9 @@
 
 /* No comment provided by engineer. */
 "Invite" = "Invite";
+
+/* No comment provided by engineer. */
+"Invite Someone to join the Dash Network" = "Invite Someone to join the Dash Network";
 
 /* No comment provided by engineer. */
 "Invite your family, find your friends by searching their usernames" = "Invite your family, find your friends by searching their usernames";
@@ -1583,6 +1664,9 @@
 
 /* No comment provided by engineer. */
 "Invite your friends and family to join the Dash Network." = "Invite your friends and family to join the Dash Network.";
+
+/* No comment provided by engineer. */
+"Invite your friends and family to the Dash Network" = "Invite your friends and family to the Dash Network";
 
 /* No comment provided by engineer. */
 "iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Reported issue";
@@ -1862,6 +1946,9 @@
 /* DashSpend */
 "Min: %@" = "Min: %@";
 
+/* Usernames */
+"Minimum met" = "Minimum met";
+
 /* Transaction type: coinbase/masternode mining reward */
 "Mining Reward" = "Mining Reward";
 
@@ -1879,6 +1966,9 @@
 
 /* No comment provided by engineer. */
 "More Control" = "More Control";
+
+/* No comment provided by engineer. */
+"More Suggestions" = "More Suggestions";
 
 /* No comment provided by engineer. */
 "Move and Zoom your photo to find the perfect fit" = "Move and Zoom your photo to find the perfect fit";
@@ -1987,6 +2077,9 @@
 /* SwapKit */
 "No deposit address returned by SwapKit" = "No deposit address returned by SwapKit";
 
+/* Log export */
+"No diagnostic logs were found on this device. Logs are written from the next launch onward." = "No diagnostic logs were found on this device. Logs are written from the next launch onward.";
+
 /* No comment provided by engineer. */
 "No funded Platform address has enough balance to cover this amount plus fees." = "No funded Platform address has enough balance to cover this amount plus fees.";
 
@@ -2010,6 +2103,9 @@
 
 /* SPV diagnostics */
 "No persisted wallet row found for the bound wallet." = "No persisted wallet row found for the bound wallet.";
+
+/* DashPay */
+"No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing." = "No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing.";
 
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "No Results Found";
@@ -2050,6 +2146,12 @@
 /* DashPay */
 "Not enough Platform credits to register an identity" = "Not enough Platform credits to register an identity";
 
+/* DashPay */
+"Not enough shielded balance to register an identity" = "Not enough shielded balance to register an identity";
+
+/* No comment provided by engineer. */
+"Not now" = "Not now";
+
 /* DashPay Contacts */
 "Note" = "Note";
 
@@ -2067,6 +2169,9 @@
 
 /* Voting */
 "Old to new" = "Old to new";
+
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "Once %@ accepts your request you can Pay Directly to Username";
 
 /* Dash DEX / dex_receive_description */
 "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet" = "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet";
@@ -2098,6 +2203,9 @@
 /* Voting */
 "Only with links" = "Only with links";
 
+/* No comment provided by engineer. */
+"or" = "or";
+
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Order Preview";
 
@@ -2125,6 +2233,9 @@
 /* Usernames */
 "Paste link here" = "Paste link here";
 
+/* DashPay Invitations */
+"Paste the invitation link you received, or scan its QR code. It funds your username registration." = "Paste the invitation link you received, or scan its QR code. It funds your username registration.";
+
 /* No comment provided by engineer. */
 "Paste your image URL" = "Paste your image URL";
 
@@ -2136,6 +2247,9 @@
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Pay and get paid instantly with easy to use payment flows";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "Pay Directly to Username";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "Pay to usernames. No more alphanumeric addresses";
@@ -2175,6 +2289,9 @@
 
 /* DashPay Contacts */
 "Payments" = "Payments";
+
+/* No comment provided by engineer. */
+"Payments made directly to addresses won’t be retained in activity." = "Payments made directly to addresses won’t be retained in activity.";
 
 /* DashPay Contacts */
 "Payments made directly to an address aren't retained here." = "Payments made directly to an address aren't retained here.";
@@ -2332,11 +2449,17 @@
 /* No comment provided by engineer. */
 "Privacy tip" = "Privacy tip";
 
+/* Usernames */
+"Private by design" = "Private by design";
+
 /* No comment provided by engineer. */
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
 "Private key could not be decoded: %@" = "Private key could not be decoded: %@";
+
+/* Usernames */
+"Private registration" = "Private registration";
 
 /* CrowdNode Portal */
 "Protect your savings" = "Protect your savings";
@@ -2382,6 +2505,9 @@
 
 /* CrowdNode */
 "Read Withdrawal Policy" = "Read Withdrawal Policy";
+
+/* Usernames */
+"Ready around %@" = "Ready around %@";
 
 /* No comment provided by engineer. */
 "Receive" = "Receive";
@@ -2448,6 +2574,9 @@
 
 /* No comment provided by engineer. */
 "Registered Masternode" = "Registered Masternode";
+
+/* Usernames */
+"Registering privately takes at least %@ Dash in your Shielded balance plus a few hours of rest time — the next screens walk you through it." = "Registering privately takes at least %@ Dash in your Shielded balance plus a few hours of rest time — the next screens walk you through it.";
 
 /* Usernames */
 "Registration failed" = "Registration failed";
@@ -2530,6 +2659,9 @@
 /* SPV diagnostics */
 "Resync armed from height %u — quit and reopen the app to start." = "Resync armed from height %u — quit and reopen the app to start.";
 
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "Retain Mutual Transaction History";
+
 /* No comment provided by engineer. */
 "Retry" = "Retry";
 
@@ -2587,11 +2719,29 @@
 /* DashPay Contacts */
 "Search Contacts" = "Search Contacts";
 
+/* No comment provided by engineer. */
+"Search for a contact" = "Search for a contact";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "Search for a contact request";
+
 /* DashPay Contacts */
 "Search for a User" = "Search for a User";
 
 /* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "Search for a User on the Dash Network";
+
+/* No comment provided by engineer. */
+"Search for a username" = "Search for a username";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "Search results for \"";
+
+/* No comment provided by engineer. */
 "Search territories" = "Search territories";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "Searching for username %@ on the Dash Network";
 
 /* No comment provided by engineer. */
 "Secure Your Wallet" = "Secure Your Wallet";
@@ -2685,6 +2835,9 @@
 /* No comment provided by engineer. */
 "Send to" = "Send to";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "Send to a Contact";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Send to Address";
 
@@ -2711,6 +2864,12 @@
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Sending";
+
+/* No comment provided by engineer. */
+"Sending Contact Request" = "Sending Contact Request";
+
+/* No comment provided by engineer. */
+"Sending to" = "Sending to";
 
 /* CrowdNode */
 "Sending to CrowdNode account" = "Sending to CrowdNode account";
@@ -2765,6 +2924,9 @@
 
 /* Share key */
 "Share key" = "Share key";
+
+/* Usernames */
+"Shared privacy pool at minimum size" = "Shared privacy pool at minimum size";
 
 /* No comment provided by engineer. */
 "Shielded" = "Shielded";
@@ -2838,6 +3000,9 @@
 /* No comment provided by engineer. */
 "Sort by" = "Sort by";
 
+/* No comment provided by engineer. */
+"Sort Contacts" = "Sort Contacts";
+
 /* Explore Dash/Filters */
 "Sorted by discount" = "Sorted by discount";
 
@@ -2867,6 +3032,9 @@
 
 /* No comment provided by engineer. */
 "Staking" = "Staking";
+
+/* Usernames */
+"Starts after you add funds" = "Starts after you add funds";
 
 /* Step 1 */
 "Step %ld" = "Step %ld";
@@ -3075,6 +3243,15 @@
 /* Dash DEX */
 "The refund address is required" = "The refund address is required";
 
+/* DashPay */
+"The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately." = "The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately.";
+
+/* Usernames */
+"The shared privacy pool is still growing (%ld of %ld deposits). Private registration unlocks once it reaches the minimum." = "The shared privacy pool is still growing (%ld of %ld deposits). Private registration unlocks once it reaches the minimum.";
+
+/* DashPay */
+"The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum." = "The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum.";
+
 /* No comment provided by engineer. */
 "The transfer could take up to 10 minutes" = "The transfer could take up to 10 minutes";
 
@@ -3088,7 +3265,19 @@
 "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Saving a height at or below the current one clears this network's chain data at the next launch and rescans from it." = "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Saving a height at or below the current one clears this network's chain data at the next launch and rescans from it.";
 
 /* No comment provided by engineer. */
+"them (Fetching Info)" = "them (Fetching Info)";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "There are no new notifications";
+
+/* No comment provided by engineer. */
 "There are no transactions to display" = "There are no transactions to display";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@" = "There are no users that match with the name %@";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@ in your contacts" = "There are no users that match with the name %@ in your contacts";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
@@ -3122,6 +3311,12 @@
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
+
+/* DashPay Invitations */
+"This invitation link is not valid." = "This invitation link is not valid.";
+
+/* DashPay Invitations */
+"This is not a valid invitation link" = "This is not a valid invitation link";
 
 /* DashPay Contacts */
 "This is you" = "This is you";
@@ -3260,6 +3455,9 @@
 /* No comment provided by engineer. */
 "Transfers take different times" = "Transfers take different times";
 
+/* Usernames */
+"Transparent funding publicly links your username to these funds." = "Transparent funding publicly links your username to these funds.";
+
 /* An action */
 "Try again" = "Try again";
 
@@ -3307,6 +3505,9 @@
 
 /* Dash DEX */
 "Unable to load rate data" = "Unable to load rate data";
+
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "Unable to provide suggestions";
 
 /* Swap */
 "Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
@@ -3363,6 +3564,9 @@
 "Upgrade to DashPay" = "Upgrade to DashPay";
 
 /* No comment provided by engineer. */
+"Upgrade to Evolution" = "Upgrade to Evolution";
+
+/* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* Uphold */
@@ -3382,6 +3586,12 @@
 
 /* Dash DEX */
 "URI" = "URI";
+
+/* Usernames */
+"Use transparent balance instead" = "Use transparent balance instead";
+
+/* No comment provided by engineer. */
+"User (Fetching Info)" = "User (Fetching Info)";
 
 /* Voting */
 "Username" = "Username";
@@ -3413,6 +3623,12 @@
 /* Usernames */
 "Username was successfully requested" = "Username was successfully requested";
 
+/* No comment provided by engineer. */
+"Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
+
+/* DashPay Invitations */
+"Valid invitation" = "Valid invitation";
+
 /* CrowdNode Portal */
 "Validating address…" = "Validating address…";
 
@@ -3427,6 +3643,9 @@
 
 /* CrowdNode Portal */
 "Verification Required" = "Verification Required";
+
+/* Usernames */
+"Verified during registration" = "Verified during registration";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
@@ -3445,6 +3664,9 @@
 
 /* CrowdNode */
 "Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address.";
+
+/* No comment provided by engineer. */
+"View All" = "View All";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "View in Explorer";
@@ -3654,6 +3876,9 @@
 /* No comment provided by engineer. */
 "Yesterday" = "Yesterday";
 
+/* No comment provided by engineer. */
+"You accepted the contact request from %@" = "You accepted the contact request from %@";
+
 /* DashPay Notifications */
 "You added %@ as a contact" = "You added %@ as a contact";
 
@@ -3702,6 +3927,9 @@
 /* Usernames */
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
+/* No comment provided by engineer. */
+"You do not have any contacts at the moment" = "You do not have any contacts at the moment";
+
 /* DashSpend */
 "You do not have sufficient funds to complete this transaction" = "You do not have sufficient funds to complete this transaction";
 
@@ -3710,6 +3938,9 @@
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "You exceeded the authorization limit on Coinbase.";
+
+/* Usernames */
+"You have %@ Dash so far" = "You have %@ Dash so far";
 
 /* Usernames */
 "You have %@ Dash.\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash.\nSome usernames cost up to %2$@ Dash.";
@@ -3779,6 +4010,9 @@
 
 /* DashPay Notifications */
 "You sent a contact request to %@" = "You sent a contact request to %@";
+
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "You sent the contact request to %@";
 
 /* CrowdNode */
 "You should have a positive balance on Dash Wallet" = "You should have a positive balance on Dash Wallet";
@@ -3873,6 +4107,9 @@
 /* No comment provided by engineer. */
 "Your invitation from %@ is not valid" = "Your invitation from %@ is not valid";
 
+/* DashPay Invitations */
+"Your invitation pays the registration fee for this username." = "Your invitation pays the registration fee for this username.";
+
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
 
@@ -3893,6 +4130,18 @@
 
 /* DashSpend */
 "Your session expired" = "Your session expired";
+
+/* Usernames */
+"Your Shielded balance is almost ready — you can register privately around %@." = "Your Shielded balance is almost ready — you can register privately around %@.";
+
+/* Usernames */
+"Your Shielded balance is ready — register your username privately now" = "Your Shielded balance is ready — register your username privately now";
+
+/* Usernames */
+"Your Shielded balance is resting — you can register privately around %@" = "Your Shielded balance is resting — you can register privately around %@";
+
+/* DashPay */
+"Your shielded balance is still maturing. It will be ready around %@." = "Your shielded balance is still maturing. It will be ready around %@.";
 
 /* Dash DEX */
 "Your swap can NOT be processed without a refund address" = "Your swap can NOT be processed without a refund address";
@@ -3918,6 +4167,9 @@
 /* Usernames */
 "Your username has been successfully created" = "Your username has been successfully created";
 
+/* Usernames */
+"Your username is visible to everyone. Funding it from your Shielded balance — after letting the funds rest for a few hours — means no one can link your username to your other Dash." = "Your username is visible to everyone. Funding it from your Shielded balance — after letting the funds rest for a few hours — means no one can link your username to your other Dash.";
+
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "Your vote was cancelled";
 
@@ -3935,3 +4187,6 @@
 
 /* Usernames */
 "“%@” has been registered." = "“%@” has been registered.";
+
+/* DashPay Invitations */
+"“%@” has been registered. Send a contact request to the person who invited you?" = "“%@” has been registered. Send a contact request to the person who invited you?";
