@@ -151,6 +151,7 @@ struct MainMenuScreen: View {
     @ObservedObject private var viewModel: MainMenuViewModel
     @State private var openSettings: Bool = false
     @State private var showTools: Bool = false
+    @State private var showSyncInfo: Bool = false
     @State private var showSecurity: Bool = false
     @State private var showDashPayInfo: Bool = false
     @State private var showCreditsPurchasedToast: Bool = false
@@ -338,6 +339,13 @@ struct MainMenuScreen: View {
             }
             
             NavigationLink(
+                destination: SyncInfoMenuScreen(vc: vc),
+                isActive: $showSyncInfo
+            ) {
+                EmptyView()
+            }
+
+            NavigationLink(
                 destination: SecurityMenuScreen(vc: vc, wipeDelegate: delegateInternal.wipeDelegate),
                 isActive: $showSecurity
             ) {
@@ -411,6 +419,8 @@ struct MainMenuScreen: View {
             showBuySellPortal()
         case .explore:
             showExplore()
+        case .syncInfo:
+            showSyncInfo = true
         case .security:
             showSecurity = true
         case .settings:

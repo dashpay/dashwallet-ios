@@ -84,6 +84,13 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     public var swiftDataContainer: ModelContainer? { modelContainer }
 
+    /// Read-only handle to the live SDK wallet manager plus the wallet it was
+    /// started for (nil until BLAST starts). The Sync Info diagnostic screens
+    /// observe the manager's published sync mirrors (`dashPaySyncIsSyncing`,
+    /// `shieldedSyncIsSyncing`, …) through this; lifecycle stays owned here.
+    public var platformWalletManager: PlatformWalletManager? { walletManager }
+    public var activeWalletId: Data? { wallet?.walletId }
+
     private var syncEventCancellable: AnyCancellable?
     private var syncStateCancellable: AnyCancellable?
     private var shieldedEventCancellable: AnyCancellable?
@@ -402,10 +409,22 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         subscribeToManager(manager: manager, walletId: resolvedWallet.walletId)
         refreshDerivedAddresses()
 
+        // Hand the shielded diagnostics monitor the new manager generation.
+        // Attach AFTER the state above is committed so the monitor's initial
+        // bound-state / notes-synced reads see the running coordinator.
+        ShieldedSyncMonitor.shared.attach(
+            manager: manager,
+            walletId: resolvedWallet.walletId,
+            modelContainer: SwiftDashSDKHost.shared.modelContainer)
+
         Self.logger.info("🛰️ PLATFORM-ADDR :: started for \(network.rawValue, privacy: .public)")
     }
 
     private func performStop(deletingPersistedWallet: Bool) async {
+        // Detach the shielded diagnostics monitor before the manager handles
+        // drop, so it never observes a manager whose loops are being torn down.
+        ShieldedSyncMonitor.shared.detach()
+
         // Mirror SwiftExampleApp's delete-wallet sequence
         // (`WalletDetailView.deleteWallet()` + `rebindWalletScopedServices()`):
         //
@@ -737,7 +756,7 @@ extension PlatformAddressSyncCoordinator {
             switch self {
             case .coordinatorNotReady:
                 return NSLocalizedString(
-                    "Platform sync is not running. Open Tools → Platform Sync Status to start it.",
+                    "Platform sync is not running. Open Sync Info → Platform Sync Status to start it.",
                     comment: "")
             case .noFundedAddress:
                 return NSLocalizedString(
