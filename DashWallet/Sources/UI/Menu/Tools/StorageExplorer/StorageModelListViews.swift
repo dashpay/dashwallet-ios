@@ -669,3 +669,233 @@ struct WalletManagerMetadataStorageListView: View {
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "gearshape.2") } }
     }
 }
+
+// MARK: - DashPay family (ported from SwiftExampleApp's storage explorer;
+// network filtering dropped — dashwallet's ModelContainer is per-network)
+
+/// "<first 4 hex>…<last 4 hex>" of a 32-byte id, keeping rows concise —
+/// the same truncation the example app's list views use.
+private func shortIdHex(_ data: Data) -> String {
+    guard data.count >= 8 else {
+        return data.map { String(format: "%02x", $0) }.joined()
+    }
+    let head = data.prefix(4).map { String(format: "%02x", $0) }.joined()
+    let tail = data.suffix(4).map { String(format: "%02x", $0) }.joined()
+    return "\(head)…\(tail)"
+}
+
+// MARK: - PersistentDPNSName
+
+struct DPNSNameStorageListView: View {
+    @Query(sort: \PersistentDPNSName.acquiredAt, order: .reverse)
+    private var records: [PersistentDPNSName]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: DPNSNameStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(record.label).\(record.parentDomainName)")
+                        .font(.body).lineLimit(1)
+                    Text(record.identity.identityIdBase58)
+                        .font(.caption).foregroundColor(.secondary)
+                        .lineLimit(1).truncationMode(.middle)
+                }
+            }
+        }
+        .navigationTitle("DPNS Names (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "at") } }
+    }
+}
+
+// MARK: - PersistentDashpayProfile
+
+/// One row per (network, identity) — the wallet's own cached DashPay
+/// profiles. Newest profile update first.
+struct DashpayProfileStorageListView: View {
+    @Query(sort: \PersistentDashpayProfile.lastUpdated, order: .reverse)
+    private var records: [PersistentDashpayProfile]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: DashpayProfileStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(record.displayName ?? "(no display name)")
+                        .font(.body).lineLimit(1)
+                    Text(record.identity.identityIdBase58)
+                        .font(.caption).foregroundColor(.secondary)
+                        .lineLimit(1).truncationMode(.middle)
+                }
+            }
+        }
+        .navigationTitle("DashPay Profiles (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.text.rectangle") } }
+    }
+}
+
+// MARK: - PersistentDashpayContactProfile
+
+/// Cached counterparty profiles, one row per (owner, contact).
+struct DashpayContactProfileStorageListView: View {
+    @Query(sort: \PersistentDashpayContactProfile.lastUpdated, order: .reverse)
+    private var records: [PersistentDashpayContactProfile]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: DashpayContactProfileStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(record.displayName ?? "(no display name)")
+                        .font(.body).lineLimit(1)
+                    Text(shortIdHex(record.contactIdentityId))
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .navigationTitle("Contact Profiles (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.crop.circle") } }
+    }
+}
+
+// MARK: - PersistentDashpayContactRequest
+
+/// Grouped by direction (Outgoing / Incoming) — the encrypted payload
+/// differs per direction, so the two directions are inherently distinct
+/// rows even for the same (owner, contact) pair. Newest first per section.
+struct DashpayContactRequestStorageListView: View {
+    @Query private var records: [PersistentDashpayContactRequest]
+
+    private var outgoing: [PersistentDashpayContactRequest] {
+        records.filter { $0.isOutgoing }
+            .sorted { $0.createdAtMillis > $1.createdAtMillis }
+    }
+
+    private var incoming: [PersistentDashpayContactRequest] {
+        records.filter { !$0.isOutgoing }
+            .sorted { $0.createdAtMillis > $1.createdAtMillis }
+    }
+
+    var body: some View {
+        List {
+            if !outgoing.isEmpty {
+                Section("Outgoing (\(outgoing.count))") {
+                    ForEach(outgoing) { record in
+                        contactRequestLink(record)
+                    }
+                }
+            }
+            if !incoming.isEmpty {
+                Section("Incoming (\(incoming.count))") {
+                    ForEach(incoming) { record in
+                        contactRequestLink(record)
+                    }
+                }
+            }
+        }
+        .navigationTitle("Contact Requests (\(records.count))")
+        .overlay {
+            if records.isEmpty {
+                ContentUnavailableView("No Records", systemImage: "person.crop.circle.badge.plus")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func contactRequestLink(_ record: PersistentDashpayContactRequest) -> some View {
+        NavigationLink(destination: DashpayContactRequestStorageDetailView(record: record)) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(shortIdHex(record.contactIdentityId))
+                    .font(.system(.body, design: .monospaced))
+                    .lineLimit(1).truncationMode(.middle)
+                Text("from \(shortIdHex(record.ownerIdentityId))")
+                    .font(.caption).foregroundColor(.secondary)
+                    .lineLimit(1).truncationMode(.middle)
+            }
+        }
+    }
+}
+
+// MARK: - PersistentDashpayPayment
+
+struct DashpayPaymentStorageListView: View {
+    @Query(sort: \PersistentDashpayPayment.createdAt, order: .reverse)
+    private var records: [PersistentDashpayPayment]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: DashpayPaymentStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(record.direction == .sent ? "Sent" : "Received")
+                            .font(.body)
+                        Spacer()
+                        Text(String(format: "%.8f DASH", Double(record.amountDuffs) / 100_000_000))
+                            .font(.system(.caption, design: .monospaced))
+                    }
+                    Text(record.txid)
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1).truncationMode(.middle)
+                }
+            }
+        }
+        .navigationTitle("DashPay Payments (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "arrow.left.arrow.right.circle") } }
+    }
+}
+
+// MARK: - PersistentInvitation
+
+struct InvitationStorageListView: View {
+    @Query(sort: [SortDescriptor(\PersistentInvitation.createdAtSecs, order: .reverse)])
+    private var records: [PersistentInvitation]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: InvitationStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(record.outPointHex)
+                        .font(.system(.caption, design: .monospaced))
+                        .lineLimit(1).truncationMode(.middle)
+                    HStack(spacing: 8) {
+                        Text(invitationStatusLabel(record.statusRaw))
+                            .font(.caption2).foregroundColor(.secondary)
+                        Spacer()
+                        Text(String(format: "%.8f DASH", Double(record.amountDuffs) / 100_000_000))
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+        .navigationTitle("Sent Invitations (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Invitations", systemImage: "paperplane") } }
+    }
+}
+
+// MARK: - PersistentDashpayIgnoredSender
+
+struct DashpayIgnoredSenderStorageListView: View {
+    @Query(sort: \PersistentDashpayIgnoredSender.ignoredAt, order: .reverse)
+    private var records: [PersistentDashpayIgnoredSender]
+
+    var body: some View {
+        List(records) { record in
+            NavigationLink(destination: DashpayIgnoredSenderStorageDetailView(record: record)) {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("ignored sender")
+                            .font(.body)
+                        Spacer()
+                        Text(record.ignoredAt, style: .date)
+                            .font(.caption).foregroundColor(.secondary)
+                    }
+                    Text(shortIdHex(record.ignoredSenderId))
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+        .navigationTitle("Ignored Senders (\(records.count))")
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.crop.circle.badge.xmark") } }
+    }
+}
