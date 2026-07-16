@@ -29,6 +29,11 @@ struct SendScreen: View {
     var showsHeader: Bool = true
 
     @State private var showConfirm = false
+    /// True while the user is deliberately editing an already-valid address
+    /// (they tapped the locked card). A valid address otherwise renders
+    /// locked-in — compact, single line — while the amount is entered.
+    @State private var isEditingAddress = false
+    @FocusState private var addressFieldFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -139,6 +144,14 @@ struct SendScreen: View {
 
     // MARK: - Address
 
+    /// A valid address locks in as a compact single-line card while the
+    /// amount is entered; tapping it reopens the editable field. The lock
+    /// waits for focus to leave the field (first keypad tap, scroll, or
+    /// keyboard dismissal) so the field never vanishes mid-typing.
+    private var isAddressLocked: Bool {
+        viewModel.destination != nil && !isEditingAddress && !addressFieldFocused
+    }
+
     private var addressField: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
@@ -150,19 +163,37 @@ struct SendScreen: View {
                     destinationBadge(destination)
                 }
             }
-            TextField(
-                NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
-                text: $viewModel.addressText,
-                axis: .vertical)
-                .font(.system(.footnote, design: .monospaced))
-                .foregroundColor(.primaryText)
-                .padding(12)
-                .background(Color.secondaryBackground)
-                .cornerRadius(10)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .keyboardType(.asciiCapable)
-                .lineLimit(2...4)
+            if isAddressLocked {
+                lockedAddressCard
+            } else {
+                TextField(
+                    NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
+                    text: $viewModel.addressText,
+                    axis: .vertical)
+                    .font(.system(.footnote, design: .monospaced))
+                    .foregroundColor(.primaryText)
+                    .padding(12)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(10)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.asciiCapable)
+                    .lineLimit(2...4)
+                    .focused($addressFieldFocused)
+                    .onAppear {
+                        // Rendered after tapping the locked card → put the
+                        // cursor straight back into the field.
+                        if isEditingAddress {
+                            addressFieldFocused = true
+                        }
+                    }
+                    .onChange(of: addressFieldFocused) { _, focused in
+                        // Focus left the field → re-lock (when valid).
+                        if !focused {
+                            isEditingAddress = false
+                        }
+                    }
+            }
 
             if viewModel.showsInvalidAddress {
                 Text(NSLocalizedString("This is not a valid Dash address for this network", comment: "Send screen"))
@@ -177,6 +208,28 @@ struct SendScreen: View {
             }
         }
         .padding(.horizontal, 20)
+    }
+
+    /// The locked-in address: middle-truncated single line + pencil.
+    /// Tapping reopens the editable field with the cursor in place.
+    private var lockedAddressCard: some View {
+        Button(action: { isEditingAddress = true }) {
+            HStack(spacing: 8) {
+                Text(truncateMiddle(viewModel.trimmedAddress, visible: 10))
+                    .font(.system(.footnote, design: .monospaced))
+                    .foregroundColor(.primaryText)
+                    .lineLimit(1)
+                Spacer()
+                Image(systemName: "pencil")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity)
+            .background(Color.secondaryBackground)
+            .cornerRadius(10)
+        }
+        .buttonStyle(.plain)
     }
 
     private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {
@@ -309,6 +362,10 @@ struct SendScreen: View {
         Binding(
             get: { viewModel.amountText == "0" ? "" : viewModel.amountText },
             set: { newValue in
+                // First keypad tap moves the user from address entry to
+                // amount entry: drop the field's focus so a valid address
+                // locks in (and the system keyboard leaves).
+                addressFieldFocused = false
                 if newValue.isEmpty {
                     viewModel.amountText = "0"
                 } else {
