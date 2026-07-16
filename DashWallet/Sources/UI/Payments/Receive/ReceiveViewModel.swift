@@ -39,6 +39,9 @@ final class ReceiveViewModel: ObservableObject {
         switch network {
         case .core: return coreAddress
         case .platform: return platformAddress
+        // Not offered by this screen's toggle (shielded receive lives on
+        // the payments landing).
+        case .shielded: return nil
         }
     }
 

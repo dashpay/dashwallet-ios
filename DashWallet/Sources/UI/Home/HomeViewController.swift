@@ -20,9 +20,13 @@ import Combine
 import SwiftUI
 import DashUIKit
 
-@objc(DWHomeViewControllerDelegate)
+// Swift-only (no ObjC references remain): lets requirements use Swift-only
+// types like `ChainNetwork`.
 protocol HomeViewControllerDelegate: AnyObject {
     func showPaymentsController(withActivePage pageIndex: Int)
+    /// Opens the payments landing on the Receive tab with `network`
+    /// preselected in its Core/Platform/Shielded toggle.
+    func showReceiveLanding(network: ChainNetwork)
 }
 
 class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
@@ -678,6 +682,10 @@ extension HomeViewController: HomeViewDelegate {
         if navigationController?.topViewController === self {
             navigationController?.setNavigationBarHidden(shouldHide, animated: true)
         }
+    }
+
+    func homeViewShowReceive(network: ChainNetwork) {
+        delegate?.showReceiveLanding(network: network)
     }
 
     func homeViewShowInternalTransfer(direction: InternalTransferDirection, source: InternalTransferSource) {

@@ -88,6 +88,8 @@ struct SendScreen: View {
         switch viewModel.network {
         case .core: return NSLocalizedString("XpEBa5... or BIP21 URI", comment: "")
         case .platform: return NSLocalizedString("tdashevo1... / dashevo1...", comment: "")
+        // Not offered by this screen's toggle.
+        case .shielded: return ""
         }
     }
 
@@ -146,6 +148,9 @@ struct SendScreen: View {
             switch viewModel.network {
             case .core: onContinueCore(trimmed)
             case .platform: onContinuePlatform(trimmed)
+            // Not offered by this screen's toggle; `canContinue` is false
+            // for it, so Continue is disabled before this can fire.
+            case .shielded: break
             }
         }) {
             Text(NSLocalizedString("Continue", comment: ""))

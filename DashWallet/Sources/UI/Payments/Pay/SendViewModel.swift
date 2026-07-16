@@ -90,6 +90,10 @@ final class SendViewModel: ObservableObject {
             return trimmed.isValidDashAddressForCurrentNetwork
         case .platform:
             return Self.looksLikePlatformAddress(trimmed)
+        case .shielded:
+            // Not offered by the Send toggle — sending to a shielded
+            // address isn't supported from this screen.
+            return false
         }
     }
 

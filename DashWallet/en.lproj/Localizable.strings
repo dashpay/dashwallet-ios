@@ -2454,6 +2454,12 @@
 /* Dash Platform chain */
 "Platform" = "Platform";
 
+/* The Dash Platform credits balance */
+"Platform balance" = "Platform balance";
+
+/* Platform → Transparent withdrawal */
+"Processing time" = "Processing time";
+
 /* SDK identity profile sheet */
 "Platform Credits" = "Platform Credits";
 
@@ -3095,8 +3101,13 @@
 /* Transfer of own funds into the private shielded balance */
 "Shielded transfer" = "Shielded transfer";
 
+"Shielded wallet starting…" = "Shielded wallet starting…";
+
 /* A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet */
 "Shielded transfer (pending)" = "Shielded transfer (pending)";
+
+/* Transfer of own funds from the private shielded balance back to the transparent wallet */
+"Shielded withdrawal" = "Shielded withdrawal";
 
 /* Explore Dash */
 "Show all locations" = "Show all locations";
@@ -3624,6 +3635,21 @@
 
 /* Balance breakdown */
 "Transparent" = "Transparent";
+
+/* The transparent (Core) balance of the Dash Wallet */
+"Transparent balance" = "Transparent balance";
+
+/* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "These funds move to your Platform balance and are ready to spend as soon as the transfer completes.";
+
+/* No comment provided by engineer. */
+"The Dash arrives in your Transparent balance once the network processes the withdrawal." = "The Dash arrives in your Transparent balance once the network processes the withdrawal.";
+
+/* No comment provided by engineer. */
+"This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal." = "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal.";
+
+/* Full-balance Platform → Transparent withdrawal */
+"Withdraws the entire balance" = "Withdraws the entire balance";
 
 /* Usernames */
 "Transparent funding publicly links your username to these funds." = "Transparent funding publicly links your username to these funds.";

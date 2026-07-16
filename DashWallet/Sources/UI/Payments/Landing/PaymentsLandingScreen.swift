@@ -16,26 +16,55 @@ struct PaymentsLandingScreen: View {
     var onScanQR: () -> Void
     var onSendToAddress: () -> Void
     var onShieldedBalance: () -> Void
+    /// When set, the Internal tab embeds the transfer form directly (the
+    /// same screen the balance-row arrows used to present standalone)
+    /// instead of the action-row list. Set by the receive sheet.
+    var embeddedTransferViewModel: InternalTransferViewModel? = nil
+    var onTransferCompleted: () -> Void = {}
+    /// False for the balance-row receive sheet: its grabber + hero selector
+    /// are the top chrome — no X close button or title row.
+    var showsHeader: Bool = true
 
     var body: some View {
-        VStack(alignment: .center, spacing: 20) {
-            header
+        // Tighter chrome when the Internal tab embeds the full transfer
+        // form — its amount + cards + keypad need most of the sheet.
+        let isEmbeddedTransfer = viewModel.activeTab == .internalTransfer
+            && embeddedTransferViewModel != nil
+        VStack(alignment: .center, spacing: isEmbeddedTransfer ? 12 : 20) {
+            if showsHeader {
+                header
+            }
 
             tabSelector
                 .padding(.horizontal, 20)
+                .padding(.top, showsHeader ? 0 : 12)
 
-            Group {
-                switch viewModel.activeTab {
-                case .receive:
-                    receiveContent
-                case .internalTransfer:
+            switch viewModel.activeTab {
+            case .receive:
+                receiveContent
+                Spacer()
+            case .internalTransfer:
+                if let transferViewModel = embeddedTransferViewModel {
+                    InternalTransferScreen(
+                        viewModel: transferViewModel,
+                        onCompleted: onTransferCompleted,
+                        showsHeader: false,
+                        receiveInto: viewModel.network)
+                        // Keep the pinned route in lockstep with the receive
+                        // toggle, so the fixed To card and the executed
+                        // transfer can never disagree.
+                        .onAppear { transferViewModel.applyReceiveRoute(into: viewModel.network) }
+                        .onChange(of: viewModel.network) { network in
+                            transferViewModel.applyReceiveRoute(into: network)
+                        }
+                } else {
                     internalContent
-                case .send:
-                    sendContent
+                    Spacer()
                 }
+            case .send:
+                sendContent
+                Spacer()
             }
-
-            Spacer()
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
@@ -75,7 +104,7 @@ struct PaymentsLandingScreen: View {
 
     private var tabSelector: some View {
         HStack(spacing: 4) {
-            ForEach(PaymentsLandingTab.allCases) { tab in
+            ForEach(viewModel.visibleTabs) { tab in
                 Button(action: { viewModel.activeTab = tab }) {
                     VStack(spacing: 4) {
                         Image(systemName: tab.iconSystemName)
@@ -105,7 +134,7 @@ struct PaymentsLandingScreen: View {
 
     private var receiveContent: some View {
         VStack(alignment: .center, spacing: 20) {
-            ChainNetworkToggle(selection: $viewModel.network)
+            ChainNetworkToggle(selection: $viewModel.network, options: ChainNetwork.allCases)
                 .padding(.horizontal, 20)
 
             qrCard
@@ -150,6 +179,10 @@ struct PaymentsLandingScreen: View {
                 .onTapGesture { onCopyAddress() }
             } else if viewModel.network == .platform && !viewModel.platformIsReady {
                 placeholder(NSLocalizedString("Platform sync starting…", comment: ""))
+            } else if viewModel.network == .shielded {
+                // Nil only until the shielded sub-wallet binds at startup
+                // (the view model retries as the platform stack comes up).
+                placeholder(NSLocalizedString("Shielded wallet starting…", comment: ""))
             } else {
                 placeholder(NSLocalizedString("No address available", comment: ""))
             }

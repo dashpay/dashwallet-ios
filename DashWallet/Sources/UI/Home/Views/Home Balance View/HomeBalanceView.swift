@@ -28,17 +28,19 @@ enum HomeBalanceViewState: Int {
 
 /// Home header: the combined total (transparent + platform + shielded)
 /// as the hero amount, then one row per balance with its fiat value and
-/// circular in/out transfer buttons. Rows map onto the routes the app
-/// actually supports:
-///   - Transparent: in = Receive, out = Send (external money);
-///   - Platform:    in = Shielded → Platform, out = Platform → Shielded;
-///   - Shielded:    in = Transparent → Shielded, out = Shielded → Transparent.
+/// circular in/out transfer buttons. Every row's in-arrow opens the
+/// payments landing on the Receive tab with that balance's network
+/// preselected (its hero tabs keep Internal transfer one tap away);
+/// the out-arrows keep their direct routes:
+///   - Transparent: out = Send (external money);
+///   - Platform:    out = Platform → Shielded;
+///   - Shielded:    out = Shielded → Transparent.
 struct HomeBalanceView: View {
     @ObservedObject var viewModel: BalanceModel
     @ObservedObject private var platformSync = PlatformAddressSyncCoordinator.shared
     @State private var opacity: Double = 0.3
     var onLongPress: () -> Void
-    var onReceive: () -> Void = {}
+    var onReceive: (ChainNetwork) -> Void = { _ in }
     var onSend: () -> Void = {}
     var onTransfer: (InternalTransferDirection, InternalTransferSource) -> Void = { _, _ in }
 
@@ -126,21 +128,21 @@ struct HomeBalanceView: View {
                 icon: "wallet.pass",
                 title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
                 duffs: viewModel.value,
-                inAction: onReceive,
+                inAction: { onReceive(.core) },
                 outAction: onSend)
             rowDivider
             balanceRow(
                 icon: "cloud",
                 title: NSLocalizedString("Platform", comment: ""),
                 duffs: platformDuffs,
-                inAction: { onTransfer(.fromShielded, .platform) },
+                inAction: { onReceive(.platform) },
                 outAction: { onTransfer(.toShielded, .platform) })
             rowDivider
             balanceRow(
                 icon: "shield",
                 title: NSLocalizedString("Shielded", comment: ""),
                 duffs: shieldedDuffs,
-                inAction: { onTransfer(.toShielded, .core) },
+                inAction: { onReceive(.shielded) },
                 outAction: { onTransfer(.fromShielded, .core) })
         }
         .padding(.horizontal, 12)

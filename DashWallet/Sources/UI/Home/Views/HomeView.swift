@@ -25,6 +25,10 @@ import DashUIKit
 protocol HomeViewDelegate: AnyObject {
     func homeViewShowSyncingStatus()
     func homeViewShowInternalTransfer(direction: InternalTransferDirection, source: InternalTransferSource)
+    /// Opens the payments landing on the Receive tab with `network`
+    /// preselected — the balance rows' receive arrows land on the QR for
+    /// the balance the user tapped, with the Internal tab one tap away.
+    func homeViewShowReceive(network: ChainNetwork)
     /// Scroll-derived chrome: false at the top of the feed (bar hidden,
     /// balance header owns the space), true once the user scrolls down.
     func homeViewDidChangeTopBarVisibility(shouldShow: Bool)
@@ -73,19 +77,25 @@ final class HomeView: UIView {
         headerView = HomeHeaderView(frame: CGRect.zero, viewModel: viewModel)
         headerView.delegate = self
         
+        // Resolve the shortcuts delegate lazily (through the computed property)
+        // rather than passing its current value: it is still nil here —
+        // HomeViewController assigns it right after this init returns.
+        let performShortcut: (ShortcutAction) -> Void = { [weak self] action in
+            self?.shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
+        }
         #if DASHPAY
         let content = HomeViewContent(
             viewModel: self.viewModel,
             joinDPViewModel: self.joinDPViewModel,
             delegate: self.delegate,
-            shortcutsDelegate: self.shortcutsDelegate,
+            performShortcut: performShortcut,
             headerView: { UIViewWrapper(uiView: self.headerView) }
         )
         #else
         let content = HomeViewContent(
             viewModel: self.viewModel,
             delegate: self.delegate,
-            shortcutsDelegate: self.shortcutsDelegate,
+            performShortcut: performShortcut,
             headerView: { UIViewWrapper(uiView: self.headerView) }
         )
         #endif
@@ -194,7 +204,11 @@ struct HomeViewContent<Content: View>: View {
     @ObservedObject var joinDPViewModel: JoinDashPayViewModel
     #endif
     weak var delegate: HomeViewDelegate?
-    weak var shortcutsDelegate: ShortcutsActionDelegate?
+    /// Resolves the shortcuts delegate at tap time. A stored weak delegate
+    /// captured here would be permanently nil: this struct is built inside
+    /// `HomeView.init`, before `HomeViewController.loadView` assigns
+    /// `homeView.shortcutsDelegate` (which forwards into the header view).
+    var performShortcut: (ShortcutAction) -> Void = { _ in }
     @ViewBuilder var headerView: () -> Content
     
     private let topOverscrollSize: CGFloat = 1000 // Fixed value for top overscroll area
@@ -212,16 +226,13 @@ struct HomeViewContent<Content: View>: View {
                     HomeBalanceView(
                         viewModel: balanceModel,
                         onLongPress: {
-                            let action = ShortcutAction(type: .localCurrency)
-                            shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
+                            performShortcut(ShortcutAction(type: .localCurrency))
                         },
-                        onReceive: {
-                            let action = ShortcutAction(type: .receive)
-                            shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
+                        onReceive: { network in
+                            delegate?.homeViewShowReceive(network: network)
                         },
                         onSend: {
-                            let action = ShortcutAction(type: .send)
-                            shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
+                            performShortcut(ShortcutAction(type: .send))
                         },
                         onTransfer: { direction, source in
                             delegate?.homeViewShowInternalTransfer(direction: direction, source: source)
@@ -442,6 +453,30 @@ struct HomeViewContent<Content: View>: View {
         return (.custom(txItem.iconName), nil)
     }
 
+    /// SF-symbol pair for an internal transfer's route: the source balance as
+    /// the main icon, the destination as the corner badge. Symbols match the
+    /// InternalTransferScreen cards (Core = d.circle, Shielded = shield).
+    /// Core → Core self-sends return nil and keep the generic internal icon.
+    private func transferRouteSymbols(txItem: Transaction) -> (source: String, destination: String)? {
+        switch txItem.internalTransferRoute {
+        case .coreToShielded: return ("d.circle.fill", "shield.fill")
+        case .shieldedToCore: return ("shield.fill", "d.circle.fill")
+        case .coreToCore, nil: return nil
+        }
+    }
+
+    /// Blue glyph in a tinted circle — the InternalTransferScreen card icon
+    /// treatment, scaled to the 30 pt tx-row icon slot.
+    private func transferRouteIcon(_ systemName: String) -> AnyView {
+        AnyView(
+            Image(systemName: systemName)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(.dashBlue)
+                .frame(width: 30, height: 30)
+                .background(Circle().fill(Color.dashBlue.opacity(0.08)))
+        )
+    }
+
     @ViewBuilder
     private func TransactionPreviewFrom(
         txItem txDataItem: TransactionListDataItem
@@ -488,15 +523,19 @@ struct HomeViewContent<Content: View>: View {
             
         case .tx(let txItem, let metadata):
             let icons = transactionRowIcons(txItem: txItem, metadata: metadata)
+            // Service/merchant metadata wins over the route pair — such rows
+            // are external payments, not transfers of own funds.
+            let routeSymbols = metadata == nil ? transferRouteSymbols(txItem: txItem) : nil
 
             DashUIKit.TransactionView(
                 // A merchant logo is a bitmap and goes through `iconView` so it can be clipped to a
                 // circle; every other row resolves to a named icon.
-                icon: metadata?.icon == nil ? icons.primary.dashIconSource : nil,
+                icon: metadata?.icon == nil && routeSymbols == nil ? icons.primary.dashIconSource : nil,
                 iconView: metadata?.icon.map {
                     AnyView(Image(uiImage: $0).resizable().scaledToFit().clipShape(Circle()))
-                },
-                secondaryIcon: icons.secondary?.dashIconSource,
+                } ?? routeSymbols.map { transferRouteIcon($0.source) },
+                secondaryIcon: routeSymbols.map { DashIconSource.system($0.destination) }
+                    ?? icons.secondary?.dashIconSource,
                 title: metadata?.title ?? txItem.stateTitle,
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer

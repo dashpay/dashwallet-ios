@@ -36,7 +36,12 @@ extension UIViewController {
 
             return vc
         } else if let vc = presentedViewController {
-            return vc
+            // Recurse like the container branches above: stopping one level
+            // into the presentation stack made every "present from the top"
+            // caller present from a controller that was itself already
+            // presenting (e.g. PIN prompt over the receive sheet's confirm
+            // sheet), which UIKit silently drops.
+            return vc.topController()
         }
 
         return self

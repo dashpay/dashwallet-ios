@@ -233,15 +233,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         else { throw SendError.p2shNotSupported }
 
         let context = container.mainContext
-
-        let allDescriptor = FetchDescriptor<PersistentPlatformAddress>(
-            predicate: #Predicate<PersistentPlatformAddress> { $0.walletId == walletId })
-        let allRows = try context.fetch(allDescriptor)
-        guard let senderRow = allRows
-            .filter({ $0.balance > 0 })
-            .max(by: { $0.balance < $1.balance })
-        else { throw SendError.noFundedAddress }
-        let senderAccountIndex = senderRow.accountIndex
+        let senderAccountIndex = try highestBalanceAccountIndex(context: context, walletId: walletId)
 
         let output = ManagedPlatformAddressWallet.TransferOutput(
             addressType: recipient.ffiAddressType,
@@ -263,8 +255,36 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             outputs: [output],
             signer: signer)
 
-        // Idempotent with the Rust persister callback; keeps @Query-bound
-        // rows fresh even if the callback ordering ever changes.
+        applyUpdatedBalances(updated, context: context)
+
+        Task { await self.syncNow() }
+    }
+
+    /// Account index holding the highest-balance Platform address — the
+    /// account `transfer`/`withdrawAllToCore` spend from.
+    private func highestBalanceAccountIndex(context: ModelContext, walletId: Data) throws -> UInt32 {
+        try highestBalanceRow(context: context, walletId: walletId).accountIndex
+    }
+
+    /// The highest-balance funded Platform address row.
+    private func highestBalanceRow(context: ModelContext, walletId: Data) throws -> PersistentPlatformAddress {
+        let allDescriptor = FetchDescriptor<PersistentPlatformAddress>(
+            predicate: #Predicate<PersistentPlatformAddress> { $0.walletId == walletId })
+        let allRows = try context.fetch(allDescriptor)
+        guard let senderRow = allRows
+            .filter({ $0.balance > 0 })
+            .max(by: { $0.balance < $1.balance })
+        else { throw SendError.noFundedAddress }
+        return senderRow
+    }
+
+    /// Apply the FFI-reported per-address balances to SwiftData — idempotent
+    /// with the Rust persister callback; keeps @Query-bound rows fresh even
+    /// if the callback ordering ever changes.
+    private func applyUpdatedBalances(
+        _ updated: [ManagedPlatformAddressWallet.UpdatedBalance],
+        context: ModelContext
+    ) {
         for entry in updated {
             let entryHash = entry.hash
             let descriptor = FetchDescriptor<PersistentPlatformAddress>(
@@ -276,8 +296,173 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             row.lastUpdated = Date()
         }
         try? context.save()
+    }
 
+    // MARK: - Core ↔ Platform balance movement
+
+    /// Preflight of the full-balance Platform → Core withdrawal for the
+    /// account holding the highest Platform address balance (the same
+    /// account `transfer` spends from). See `withdrawAllToCore` for why
+    /// there is no partial-amount form.
+    public func preflightWithdrawal() async throws -> ManagedPlatformAddressWallet.WithdrawalPreflight {
+        guard isRunning,
+              let addressWallet = platformAddressWallet,
+              let container = modelContainer,
+              let walletId = wallet?.walletId
+        else { throw SendError.coordinatorNotReady }
+        let accountIndex = try highestBalanceAccountIndex(
+            context: container.mainContext, walletId: walletId)
+        return try await addressWallet.preflightWithdrawal(accountIndex: accountIndex)
+    }
+
+    /// Withdraw the selected account's ENTIRE withdrawable Platform credit
+    /// balance to `coreAddress`. The SDK's address-credit withdrawal has no
+    /// partial-amount form — AUTO input selection withdraws every non-dust
+    /// input, less the transition fee — so callers must present this as a
+    /// full-balance operation. The L1 payout arrives asynchronously once the
+    /// chain processes the withdrawal.
+    public func withdrawAllToCore(address coreAddress: String) async throws {
+        guard isRunning,
+              let addressWallet = platformAddressWallet,
+              let container = modelContainer,
+              let walletId = wallet?.walletId,
+              let network = runningNetwork
+        else { throw SendError.coordinatorNotReady }
+        let context = container.mainContext
+        let accountIndex = try highestBalanceAccountIndex(context: context, walletId: walletId)
+        let signer = KeychainSigner(modelContainer: container, network: network)
+
+        Self.logger.info("🛰️ PLATFORM-WITHDRAW :: full balance → core account=\(accountIndex)")
+
+        let updated = try await addressWallet.withdraw(
+            accountIndex: accountIndex,
+            coreAddress: coreAddress,
+            signer: signer)
+
+        applyUpdatedBalances(updated, context: context)
         Task { await self.syncNow() }
+    }
+
+    /// Partial Platform → Core withdrawal: pays out exactly `amountCredits`
+    /// to `coreAddress`, drawn from the single largest-balance Platform
+    /// address (explicit input selection). The transition fee is deducted
+    /// from that address's REMAINING balance, so it must retain at least
+    /// `feeHeadroomCredits` after the withdrawal — pass the preflight's
+    /// `estimatedFee` (a conservative bound for a single input), or nil to
+    /// preflight here. Amounts above the single-address cap should go
+    /// through `withdrawAllToCore` (AUTO, all addresses) instead.
+    public func withdrawToCore(
+        amountCredits: UInt64,
+        address coreAddress: String,
+        feeHeadroomCredits: UInt64? = nil
+    ) async throws {
+        guard isRunning,
+              let addressWallet = platformAddressWallet,
+              let container = modelContainer,
+              let walletId = wallet?.walletId,
+              let network = runningNetwork
+        else { throw SendError.coordinatorNotReady }
+        let context = container.mainContext
+        let senderRow = try highestBalanceRow(context: context, walletId: walletId)
+
+        let headroom: UInt64
+        if let feeHeadroomCredits {
+            headroom = feeHeadroomCredits
+        } else {
+            headroom = try await addressWallet
+                .preflightWithdrawal(accountIndex: senderRow.accountIndex)
+                .estimatedFee
+        }
+        guard senderRow.balance >= headroom,
+              amountCredits <= senderRow.balance - headroom
+        else { throw SendError.noFundedAddress }
+
+        let signer = KeychainSigner(modelContainer: container, network: network)
+        let input = ManagedPlatformAddressWallet.WithdrawalInput(
+            addressType: 0,
+            hash: senderRow.addressHash,
+            credits: amountCredits)
+
+        Self.logger.info(
+            "🛰️ PLATFORM-WITHDRAW :: partial amount=\(amountCredits) account=\(senderRow.accountIndex)")
+
+        let updated = try await addressWallet.withdraw(
+            accountIndex: senderRow.accountIndex,
+            coreAddress: coreAddress,
+            inputs: [input],
+            signer: signer)
+
+        applyUpdatedBalances(updated, context: context)
+        Task { await self.syncNow() }
+    }
+
+    /// Fund the wallet's own Platform balance from the Core L1 balance via
+    /// an asset lock (funding type 4, `AssetLockAddressTopUp`). `amountDuffs`
+    /// is locked on L1; the credited amount is that value minus the fees the
+    /// Rust side carves from the single remainder recipient (the wallet's
+    /// own next unused Platform address).
+    public func fundFromCore(amountDuffs: UInt64) async throws {
+        let (addressWallet, container, recipient, accountIndex) = try resolveFundEnvironment()
+        let signer = KeychainSigner(modelContainer: container, network: runningNetwork!)
+
+        Self.logger.info("🛰️ PLATFORM-FUND :: core → platform amount=\(amountDuffs) account=\(accountIndex)")
+
+        let updated = try await addressWallet.fundFromAssetLock(
+            amountDuffs: amountDuffs,
+            fundingAccountIndex: 0,
+            platformAccountIndex: accountIndex,
+            recipients: [recipient],
+            signer: signer)
+
+        applyUpdatedBalances(updated, context: container.mainContext)
+        Task { await self.syncNow() }
+    }
+
+    /// Resume a stuck Core → Platform funding whose asset lock is committed
+    /// on-chain (Broadcast/IS-locked/CL-locked) but whose address-funding
+    /// state transition never landed. Sibling of `fundFromCore` — picks up
+    /// the existing outpoint instead of building (and stranding) a second
+    /// lock. See `ShieldedTransferCoordinator.resumeAssetLock` for the same
+    /// pattern on the shielded route.
+    public func resumeFundFromCore(outPointTxid: Data, outPointVout: UInt32) async throws {
+        let (addressWallet, container, recipient, accountIndex) = try resolveFundEnvironment()
+        let signer = KeychainSigner(modelContainer: container, network: runningNetwork!)
+
+        Self.logger.info("🛰️ PLATFORM-FUND :: resume core → platform vout=\(outPointVout)")
+
+        let updated = try await addressWallet.resumeFundFromAssetLock(
+            outPointTxid: outPointTxid,
+            outPointVout: outPointVout,
+            platformAccountIndex: accountIndex,
+            recipients: [recipient],
+            signer: signer)
+
+        applyUpdatedBalances(updated, context: container.mainContext)
+        Task { await self.syncNow() }
+    }
+
+    /// Shared readiness + recipient resolution for `fundFromCore` /
+    /// `resumeFundFromCore`: the single credits-nil recipient is the
+    /// remainder output (absorbs the locked value less fees), pointed at the
+    /// wallet's own next receive address.
+    private func resolveFundEnvironment() throws -> (
+        wallet: ManagedPlatformAddressWallet,
+        container: ModelContainer,
+        recipient: ManagedPlatformAddressWallet.FundFromAssetLockRecipient,
+        accountIndex: UInt32
+    ) {
+        guard isRunning,
+              let addressWallet = platformAddressWallet,
+              let container = modelContainer,
+              runningNetwork != nil
+        else { throw SendError.coordinatorNotReady }
+        guard let target = derivedAddresses.nextReceiveAddress,
+              let parsed = Self.parsePlatformRecipient(bech32m: target.address),
+              parsed.ffiAddressType == 0
+        else { throw SendError.noPlatformReceiveAddress }
+        let recipient = ManagedPlatformAddressWallet.FundFromAssetLockRecipient(
+            addressType: 0, hash: parsed.hash, credits: nil)
+        return (addressWallet, container, recipient, target.accountIndex)
     }
 
     /// Clear the UI counters/display without tearing down the sync loop.
@@ -749,6 +934,7 @@ extension PlatformAddressSyncCoordinator {
         case noFundedAddress
         case invalidDestination
         case p2shNotSupported
+        case noPlatformReceiveAddress
         case mnemonicUnavailable
         case keyDecodeFailed(String)
 
@@ -770,6 +956,10 @@ extension PlatformAddressSyncCoordinator {
                 return NSLocalizedString(
                     "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.",
                     comment: "")
+            case .noPlatformReceiveAddress:
+                return NSLocalizedString(
+                    "Could not resolve a destination Platform Payment address",
+                    comment: "InternalTransfer")
             case .mnemonicUnavailable:
                 return NSLocalizedString(
                     "Wallet mnemonic is unavailable. Unlock the wallet and try again.",
@@ -905,5 +1095,21 @@ final class ShieldedTxLookup {
         lock.lock()
         infoByTxid = map
         lock.unlock()
+    }
+}
+
+// MARK: - DerivedPlatformAddress selection
+
+extension Array where Element == DerivedPlatformAddress {
+    /// The wallet's own next receive address: lowest-indexed unused address,
+    /// falling back to the lowest-indexed overall. Single shared
+    /// implementation for the Receive screen, the unshield destination, and
+    /// Core → Platform funding.
+    var nextReceiveAddress: DerivedPlatformAddress? {
+        if let unused = filter({ !$0.isUsed })
+            .min(by: { ($0.accountIndex, $0.addressIndex) < ($1.accountIndex, $1.addressIndex) }) {
+            return unused
+        }
+        return self.min(by: { ($0.accountIndex, $0.addressIndex) < ($1.accountIndex, $1.addressIndex) })
     }
 }
