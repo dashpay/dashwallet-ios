@@ -790,3 +790,272 @@ struct WalletManagerMetadataStorageDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
+
+// MARK: - DashPay family (ported from SwiftExampleApp's storage explorer)
+
+// MARK: - PersistentDPNSName
+
+struct DPNSNameStorageDetailView: View {
+    let record: PersistentDPNSName
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Label", value: record.label)
+                FieldRow(label: "Normalized Label", value: record.normalizedLabel)
+                FieldRow(label: "Parent Domain", value: record.parentDomainName)
+                FieldRow(label: "Normalized Parent Domain", value: record.normalizedParentDomainName)
+            }
+            Section("Status") {
+                // `acquiredAt` is Unix-millis from `DpnsNameInfo.acquired_at`;
+                // zero when the FFI changeset didn't carry a timestamp.
+                FieldRow(label: "Acquired At (ms)", value: record.acquiredAt == 0 ? "—" : "\(record.acquiredAt)")
+                if record.acquiredAt > 0 {
+                    let date = Date(timeIntervalSince1970: TimeInterval(record.acquiredAt) / 1000.0)
+                    FieldRow(label: "Acquired", value: dateString(date))
+                }
+            }
+            Section("Relationships") {
+                NavigationLink(destination: IdentityStorageDetailView(record: record.identity)) {
+                    FieldRow(label: "Owner Identity", value: record.identity.identityIdBase58)
+                }
+                FieldRow(label: "Owner ID (Hex)", value: record.identity.identityIdString)
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("DPNS Name")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDashpayProfile
+
+/// Every stored own-profile field; optional ones render as "—" so partial
+/// profiles are obvious rather than fields silently disappearing.
+struct DashpayProfileStorageDetailView: View {
+    let record: PersistentDashpayProfile
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Display Name", value: record.displayName ?? "—")
+                FieldRow(label: "Public Message", value: record.publicMessage ?? "—")
+                // Reserved for future DashPay contract revisions; v3 doesn't
+                // populate it — surfaced so it isn't invisible if lit up later.
+                FieldRow(label: "Bio", value: record.bio ?? "—")
+            }
+            Section("Avatar") {
+                FieldRow(label: "URL", value: record.avatarUrl ?? "—")
+                FieldRow(label: "Hash (32 B)", value: record.avatarHash.map { hexString($0) } ?? "—")
+                FieldRow(label: "Fingerprint (8 B)", value: record.avatarFingerprint.map { hexString($0) } ?? "—")
+            }
+            Section("Relationships") {
+                NavigationLink(destination: IdentityStorageDetailView(record: record.identity)) {
+                    FieldRow(label: "Owner Identity", value: record.identity.identityIdBase58)
+                }
+                FieldRow(label: "Owner ID (Hex)", value: record.identity.identityIdString)
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("DashPay Profile")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDashpayContactProfile
+
+/// A counterparty's DashPay profile as seen by an owner identity — one
+/// row per (owner, contact).
+struct DashpayContactProfileStorageDetailView: View {
+    let record: PersistentDashpayContactProfile
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Display Name", value: record.displayName ?? "—")
+                FieldRow(label: "Public Message", value: record.publicMessage ?? "—")
+                FieldRow(label: "Bio", value: record.bio ?? "—")
+            }
+            Section("Avatar") {
+                FieldRow(label: "URL", value: record.avatarUrl ?? "—")
+                FieldRow(label: "Hash (32 B)", value: record.avatarHash.map { hexString($0) } ?? "—")
+                FieldRow(label: "Fingerprint (8 B)", value: record.avatarFingerprint.map { hexString($0) } ?? "—")
+            }
+            Section("Relationships") {
+                NavigationLink(destination: IdentityStorageDetailView(record: record.owner)) {
+                    FieldRow(label: "Owner Identity", value: record.owner.identityIdBase58)
+                }
+                FieldRow(label: "Owner ID (Hex)", value: hexString(record.ownerIdentityId))
+                FieldRow(label: "Contact ID (Hex)", value: hexString(record.contactIdentityId))
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Checked At (ms)", value: String(record.checkedAtMs))
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Contact Profile")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDashpayContactRequest
+
+/// Every payload field plus the relationship pair. The `ownerIdentityId`
+/// denorm shadow is redundant with `owner.identityId` but query-friendly.
+/// The owner-private alias/note (decrypted contact meta) are included —
+/// they back the contacts list titles and the payment-row aliases.
+struct DashpayContactRequestStorageDetailView: View {
+    let record: PersistentDashpayContactRequest
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Direction", value: record.isOutgoing ? "Outgoing" : "Incoming")
+                FieldRow(label: "Sender Key Index", value: "\(record.senderKeyIndex)")
+                FieldRow(label: "Recipient Key Index", value: "\(record.recipientKeyIndex)")
+                FieldRow(label: "Account Reference", value: "\(record.accountReference)")
+                FieldRow(label: "Core Height Created At", value: "\(record.coreHeightCreatedAt)")
+                FieldRow(label: "Created At (ms)", value: record.createdAtMillis == 0 ? "—" : "\(record.createdAtMillis)")
+            }
+            Section("Payload") {
+                FieldRow(label: "Encrypted Public Key", value: "\(record.encryptedPublicKey.count) bytes")
+                FieldRow(label: "Encrypted Account Label", value: record.encryptedAccountLabel.map { "\($0.count) bytes" } ?? "—")
+                FieldRow(label: "Account Label (decrypted)", value: record.contactAccountLabel ?? "—")
+                FieldRow(label: "Auto-Accept Proof", value: record.autoAcceptProof.map { "\($0.count) bytes" } ?? "—")
+                FieldRow(label: "Alias (owner-private)", value: record.contactAlias ?? "—")
+                FieldRow(label: "Note (owner-private)", value: record.contactNote ?? "—")
+            }
+            Section("Relationships") {
+                NavigationLink(destination: IdentityStorageDetailView(record: record.owner)) {
+                    FieldRow(label: "Owner Identity", value: record.owner.identityIdBase58)
+                }
+                FieldRow(label: "Owner ID (Hex, denorm)", value: hexString(record.ownerIdentityId))
+                FieldRow(label: "Contact ID (Hex)", value: hexString(record.contactIdentityId))
+            }
+            Section("Timestamps") {
+                if record.createdAtMillis > 0 {
+                    let date = Date(timeIntervalSince1970: TimeInterval(record.createdAtMillis) / 1000.0)
+                    FieldRow(label: "Document Created", value: dateString(date))
+                }
+                FieldRow(label: "Row Created", value: dateString(record.createdAt))
+                FieldRow(label: "Row Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("Contact Request")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDashpayPayment
+
+struct DashpayPaymentStorageDetailView: View {
+    let record: PersistentDashpayPayment
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Direction", value: record.direction == .sent ? "Sent" : "Received")
+                FieldRow(label: "Status", value: statusText)
+                FieldRow(label: "Amount", value: String(format: "%.8f DASH", Double(record.amountDuffs) / 100_000_000))
+                FieldRow(label: "Amount (duffs)", value: "\(record.amountDuffs)")
+                FieldRow(label: "Memo", value: record.memo ?? "—")
+            }
+            Section("Transaction") {
+                FieldRow(label: "Txid", value: record.txid)
+            }
+            Section("Identities") {
+                FieldRow(label: "Owner", value: hexString(record.ownerIdentityId))
+                FieldRow(label: "Counterparty", value: hexString(record.counterpartyIdentityId))
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.lastUpdated))
+            }
+        }
+        .navigationTitle("DashPay Payment")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var statusText: String {
+        switch record.status {
+        case .pending: return "Pending"
+        case .confirmed: return "Confirmed"
+        case .failed: return "Failed"
+        }
+    }
+}
+
+// MARK: - PersistentInvitation
+
+/// Human label for a `PersistentInvitation.statusRaw` discriminant
+/// (0 = Created, 1 = Claimed, 2 = Reclaimed). Shared with the list view;
+/// an unmapped value renders as "Unknown (n)" rather than being hidden.
+func invitationStatusLabel(_ raw: Int) -> String {
+    switch raw {
+    case 0: return "Created"
+    case 1: return "Claimed"
+    case 2: return "Reclaimed"
+    default: return "Unknown (\(raw))"
+    }
+}
+
+/// One created DashPay invitation (DIP-13). No secret column — the
+/// one-time voucher key is never stored.
+struct InvitationStorageDetailView: View {
+    let record: PersistentInvitation
+
+    var body: some View {
+        Form {
+            Section("Core") {
+                FieldRow(label: "Status", value: invitationStatusLabel(record.statusRaw))
+                FieldRow(label: "Amount", value: String(format: "%.8f DASH", Double(record.amountDuffs) / 100_000_000))
+                FieldRow(label: "Amount (duffs)", value: "\(record.amountDuffs)")
+                FieldRow(label: "Funding index", value: "\(record.fundingIndexRaw)")
+                FieldRow(label: "Has inviter", value: record.hasInviter ? "Yes" : "No")
+            }
+            Section("Outpoint") {
+                FieldRow(label: "Outpoint", value: record.outPointHex)
+                FieldRow(label: "Raw outpoint", value: hexString(record.rawOutPoint))
+            }
+            Section("Wallet") {
+                FieldRow(label: "Wallet id", value: hexString(record.walletId))
+            }
+            Section("Timestamps") {
+                FieldRow(label: "Expiry (unix)", value: "\(record.expiryUnix)")
+                FieldRow(label: "Created (unix)", value: "\(record.createdAtSecs)")
+                FieldRow(label: "Created", value: dateString(record.createdAt))
+                FieldRow(label: "Updated", value: dateString(record.updatedAt))
+            }
+        }
+        .navigationTitle("Invitation")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - PersistentDashpayIgnoredSender
+
+/// One DashPay ignored sender (per-sender mute, local-only).
+struct DashpayIgnoredSenderStorageDetailView: View {
+    let record: PersistentDashpayIgnoredSender
+
+    var body: some View {
+        Form {
+            Section("Suppression key") {
+                FieldRow(label: "Owner", value: hexString(record.ownerIdentityId))
+                FieldRow(label: "Ignored sender", value: hexString(record.ignoredSenderId))
+            }
+            Section("Audit") {
+                FieldRow(label: "Ignored", value: dateString(record.ignoredAt))
+            }
+        }
+        .navigationTitle("Ignored Sender")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}

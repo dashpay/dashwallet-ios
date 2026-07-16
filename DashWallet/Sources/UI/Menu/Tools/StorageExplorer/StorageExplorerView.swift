@@ -41,6 +41,27 @@ struct StorageExplorerView: View {
             modelRow("Keywords", icon: "tag", type: PersistentKeyword.self) {
                 KeywordStorageListView()
             }
+            modelRow("DPNS Names", icon: "at", type: PersistentDPNSName.self) {
+                DPNSNameStorageListView()
+            }
+            modelRow("DashPay Profiles", icon: "person.text.rectangle", type: PersistentDashpayProfile.self) {
+                DashpayProfileStorageListView()
+            }
+            modelRow("Contact Profiles", icon: "person.crop.circle", type: PersistentDashpayContactProfile.self) {
+                DashpayContactProfileStorageListView()
+            }
+            modelRow("Contact Requests", icon: "person.crop.circle.badge.plus", type: PersistentDashpayContactRequest.self) {
+                DashpayContactRequestStorageListView()
+            }
+            modelRow("DashPay Payments", icon: "arrow.left.arrow.right.circle", type: PersistentDashpayPayment.self) {
+                DashpayPaymentStorageListView()
+            }
+            modelRow("Sent Invitations", icon: "paperplane", type: PersistentInvitation.self) {
+                InvitationStorageListView()
+            }
+            modelRow("Ignored Senders", icon: "person.crop.circle.badge.xmark", type: PersistentDashpayIgnoredSender.self) {
+                DashpayIgnoredSenderStorageListView()
+            }
             modelCountRow(
                 "Platform Addresses",
                 icon: "creditcard",
