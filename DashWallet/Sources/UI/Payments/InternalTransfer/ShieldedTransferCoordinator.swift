@@ -2,8 +2,11 @@
 //  ShieldedTransferCoordinator.swift
 //  DashWallet
 //
-//  Drives a single user-initiated internal transfer between the wallet's
-//  balances (all six InternalTransferRoute legs):
+//  Drives a single user-initiated transfer: the six internal
+//  InternalTransferRoute legs between the wallet's own balances, plus the
+//  external Send routes (the withdraw/unshield/platform-withdraw legs with a
+//  recipient destination override, shielded → shielded `shieldedTransfer`,
+//  and platform → platform `PlatformSendExecutor.transfer`):
 //   - PIN/biometric gate via `DWIdentityAuthorizer`.
 //   - Shielded-centric legs call `PlatformWalletManager` directly:
 //       * Core → Shielded   `shieldedFundFromAssetLock` (Type 18 lock,
@@ -25,9 +28,10 @@
 //   - `fundingAccountIndex`, `shieldedAccount`, `paymentAccount` all pinned
 //     to 0 (single-account wallet). Mirrors `DWIdentityRegistrationCoordinator
 //     .defaultAccountIndex`.
-//   - The shielded recipient is the wallet's own default Orchard address —
-//     resolved once via `PlatformWalletManager.shieldedDefaultAddress(...)`.
-//     A future "send to another shielded address" surface would override this.
+//   - The internal legs' shielded recipient is the wallet's own default
+//     Orchard address — resolved once via
+//     `PlatformWalletManager.shieldedDefaultAddress(...)`. The Send screen's
+//     external legs pass the recipient's address/raw bytes instead.
 //   - No mid-call cancellation. The FFI doesn't expose it; the sheet
 //     disables drag-dismiss + Cancel while a transfer is in flight.
 //
@@ -350,14 +354,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     /// Route 3 (reverse): shielded Orchard notes → Core L1 transparent
-    /// address (Dash Wallet). Stages: `.signing → .proving → .broadcasting →
+    /// address. Stages: `.signing → .proving → .broadcasting →
     /// .success`. Like `shieldedShield`, `shieldedWithdraw` is a single opaque
     /// async call with no intermediate signals — `.proving` covers it until it
     /// returns. `amount` is in credits (1e11 / DASH), same scale as
     /// `shieldedShield`. No signer required.
-    func performWithdraw(amountCredits: UInt64) async {
+    ///
+    /// `toCoreAddress` nil = the wallet's own receive address (the internal
+    /// transfer); an external Send passes the recipient's address. The
+    /// withdrawal-store tag (which classifies the incoming L1 tx as
+    /// "Shielded received") only applies to the own-wallet payout.
+    func performWithdraw(amountCredits: UInt64, toCoreAddress destinationOverride: String? = nil) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits")
+        Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
 
         let env: Environment
         do {
@@ -367,14 +376,24 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        // Destination Core (BIP44, Base58Check) receive address. Resolve before
-        // advancing the phase — same ordering as `resolveEnvironment()`. The
-        // reader is main-actor-safe and we're already on @MainActor, so call it
+        // Destination Core (BIP44, Base58Check) address. For the internal
+        // transfer, resolve the wallet's own receive address before advancing
+        // the phase — same ordering as `resolveEnvironment()`. The reader is
+        // main-actor-safe and we're already on @MainActor, so call it
         // directly (no GCD hop).
-        guard let coreAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(),
-              !coreAddress.isEmpty else {
-            handleFailure(CoordinatorError.noReceiveAddress)
-            return
+        let coreAddress: String
+        let paysOwnWallet: Bool
+        if let destinationOverride, !destinationOverride.isEmpty {
+            coreAddress = destinationOverride
+            paysOwnWallet = false
+        } else {
+            guard let ownAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(),
+                  !ownAddress.isEmpty else {
+                handleFailure(CoordinatorError.noReceiveAddress)
+                return
+            }
+            coreAddress = ownAddress
+            paysOwnWallet = true
         }
 
         do {
@@ -400,8 +419,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
             // shieldedSpendUnconfirmed means the spend may already be on
             // chain (non-retryable), so its payout can still arrive — tag
             // the destination so the incoming tx classifies as a shielded
-            // withdrawal either way.
-            if case PlatformWalletError.shieldedSpendUnconfirmed = error {
+            // withdrawal either way. External payouts never land in this
+            // wallet, so there is nothing to tag.
+            if paysOwnWallet, case PlatformWalletError.shieldedSpendUnconfirmed = error {
                 ShieldedWithdrawalStore.shared.record(address: coreAddress)
             }
             handleSpendError(error, manager: env.manager)
@@ -410,7 +430,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         // Tag the payout destination so the home list can classify the
         // incoming L1 tx as "Shielded received" (the SDK call returns no txid).
-        ShieldedWithdrawalStore.shared.record(address: coreAddress)
+        if paysOwnWallet {
+            ShieldedWithdrawalStore.shared.record(address: coreAddress)
+        }
 
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route completed")
         phase = .broadcasting
@@ -418,14 +440,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
         scheduleShieldedResync(manager: env.manager)
     }
 
-    /// Route 4 (reverse): shielded Orchard notes → the wallet's own transparent
-    /// Platform Payment balance (DIP-17 credits). Stages: `.signing → .proving →
+    /// Route 4 (reverse): shielded Orchard notes → a transparent Platform
+    /// Payment balance (DIP-17 credits). Stages: `.signing → .proving →
     /// .broadcasting → .success`. Like `shieldedShield` / `shieldedWithdraw`,
     /// `shieldedUnshield` is a single opaque async call with no intermediate
     /// signals. `amount` is in credits; no signer required.
-    func performUnshield(amountCredits: UInt64) async {
+    ///
+    /// `toPlatformAddress` nil = the wallet's own next receive address (the
+    /// internal transfer); an external Send passes the recipient's bech32m
+    /// Platform address.
+    func performUnshield(amountCredits: UInt64, toPlatformAddress destinationOverride: String? = nil) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: unshield route amount=\(amountCredits) credits")
+        Self.logger.info("🛡️ SHIELD-TX :: unshield route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
 
         let env: Environment
         do {
@@ -435,13 +461,20 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        // Destination Platform Payment (bech32m) address — the wallet's own
-        // next receive address. Resolve before advancing the phase.
-        guard let platformAddress = PlatformAddressSyncCoordinator.shared
-                .derivedAddresses.nextReceiveAddress?.address,
-              !platformAddress.isEmpty else {
-            handleFailure(CoordinatorError.noPlatformAddress)
-            return
+        // Destination Platform Payment (bech32m) address — for the internal
+        // transfer, the wallet's own next receive address. Resolve before
+        // advancing the phase.
+        let platformAddress: String
+        if let destinationOverride, !destinationOverride.isEmpty {
+            platformAddress = destinationOverride
+        } else {
+            guard let ownAddress = PlatformAddressSyncCoordinator.shared
+                    .derivedAddresses.nextReceiveAddress?.address,
+                  !ownAddress.isEmpty else {
+                handleFailure(CoordinatorError.noPlatformAddress)
+                return
+            }
+            platformAddress = ownAddress
         }
 
         do {
@@ -578,20 +611,31 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// exactly `amountCredits` from the largest funded address. The L1
     /// payout arrives asynchronously once the chain processes the
     /// withdrawal; it shows as a regular incoming transaction.
+    ///
+    /// `toCoreAddress` nil = the wallet's own receive address (the internal
+    /// transfer); an external Send passes the recipient's L1 address.
     func performPlatformWithdraw(
         amountCredits: UInt64,
         fullBalance: Bool,
-        feeHeadroomCredits: UInt64?
+        feeHeadroomCredits: UInt64?,
+        toCoreAddress destinationOverride: String? = nil
     ) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw route full=\(fullBalance) amount=\(amountCredits)")
+        Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw route full=\(fullBalance) amount=\(amountCredits) external=\(destinationOverride != nil)")
 
-        // Destination Core (BIP44, Base58Check) receive address — same
-        // resolution as the shielded withdraw route.
-        guard let coreAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(),
-              !coreAddress.isEmpty else {
-            handleFailure(CoordinatorError.noReceiveAddress)
-            return
+        // Destination Core (BIP44, Base58Check) address — for the internal
+        // transfer, the wallet's own receive address (same resolution as the
+        // shielded withdraw route).
+        let coreAddress: String
+        if let destinationOverride, !destinationOverride.isEmpty {
+            coreAddress = destinationOverride
+        } else {
+            guard let ownAddress = SwiftDashSDKReceiveAddressReader.receiveAddress(),
+                  !ownAddress.isEmpty else {
+                handleFailure(CoordinatorError.noReceiveAddress)
+                return
+            }
+            coreAddress = ownAddress
         }
 
         do {
@@ -618,6 +662,82 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw completed")
+        phase = .success
+        schedulePlatformResync()
+    }
+
+    /// External send: shielded Orchard notes → a third-party shielded
+    /// payment address (`recipientRaw43` = the recipient's raw 43-byte
+    /// Orchard address, decoded from their bech32m display form). Stages:
+    /// `.signing → .proving → .broadcasting → .success` — same opaque-call
+    /// shape as `performWithdraw`/`performUnshield`.
+    func performShieldedTransfer(amountCredits: UInt64, recipientRaw43: Data) async {
+        guard beginTransfer() else { return }
+        Self.logger.info("🛡️ SHIELD-TX :: shielded→shielded send amount=\(amountCredits) credits")
+
+        let env: BasicEnvironment
+        do {
+            env = try resolveBasicEnvironment()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        do {
+            try await authorize()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        phase = .proving
+
+        do {
+            try await env.manager.shieldedTransfer(
+                walletId: env.walletId,
+                // Per-operation Orchard spend authority — see `performWithdraw`.
+                resolver: MnemonicResolver(),
+                account: 0,
+                recipientRaw43: recipientRaw43,
+                amount: amountCredits)
+        } catch {
+            handleSpendError(error, manager: env.manager)
+            return
+        }
+
+        Self.logger.info("🛡️ SHIELD-TX :: shielded→shielded send completed")
+        phase = .broadcasting
+        phase = .success
+        scheduleShieldedResync(manager: env.manager)
+    }
+
+    /// External send: DIP-17 Platform credits → a third-party Platform
+    /// bech32m address, via `PlatformSendExecutor` (credit transfer, inputs
+    /// auto-selected largest-first). Stages: `.signing → .broadcasting →
+    /// .success` — a single opaque transition, no proof and no asset lock.
+    func performPlatformSend(destination: String, amountCredits: UInt64) async {
+        guard beginTransfer() else { return }
+        Self.logger.info("🛡️ SHIELD-TX :: platform→platform send amount=\(amountCredits) credits")
+
+        do {
+            try await authorize()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        phase = .broadcasting
+
+        do {
+            try await PlatformSendExecutor.shared.transfer(
+                destination: destination,
+                amount: amountCredits)
+        } catch {
+            handleFailure(CoordinatorError.transferFailed(error))
+            return
+        }
+
+        Self.logger.info("🛡️ SHIELD-TX :: platform→platform send completed")
         phase = .success
         schedulePlatformResync()
     }
@@ -764,7 +884,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// periodic BLAST pass. A few spaced kicks cover the brief indexing lag
     /// before the credit is visible past the BLAST watermark (`syncNow()` no-ops
     /// while a pass is already running, so a single immediate call can miss it).
-    /// Mirrors the kick `PlatformSendConfirmScreen` does after a Platform send.
+    /// `performPlatformSend` relies on the same kick after a Platform send.
     private func schedulePlatformResync() {
         Task {
             for delayNanos in [UInt64(0), 4_000_000_000, 12_000_000_000] {

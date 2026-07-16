@@ -302,7 +302,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             return false
         case .startIfReady, .networkDidChange:
             // External callers (PlatformSyncStatusScreen, StorageExplorerUnavailableView,
-            // PlatformSendConfirmScreen) can mutate BLAST without touching
+            // the Platform send path) can mutate BLAST without touching
             // `currentNetwork`, so consult the live coordinator state too — otherwise
             // the runtime would skip a refresh after an out-of-band BLAST stop and
             // leave the user without the BLAST sync they triggered.

@@ -194,6 +194,18 @@ extension ShortcutActionType {
             return NSLocalizedString("Dash DEX", comment: "Translate it as short as possible! (24 symbols max)")
         }
     }
+
+    /// Compact label for the home-screen shortcut bar, where four items share
+    /// a row and long titles truncate. The full `title` is still used where
+    /// there is room, e.g. the shortcut customization sheet.
+    var shortTitle: String {
+        switch self {
+        case .payToAddress:
+            return NSLocalizedString("Address", comment: "Translate it as short as possible! (24 symbols max)")
+        default:
+            return title
+        }
+    }
 }
 
 // MARK: - ShortcutAction

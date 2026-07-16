@@ -427,7 +427,8 @@ final class InternalTransferViewModel: ObservableObject {
 
     /// Card-row balance display: plain decimal, no grouping, at most 5
     /// fraction digits (rounded) so long balances don't wrap the card.
-    private static func cardBalanceString(duffs: UInt64) -> String {
+    /// Internal — the Send screen's source cards use the same format.
+    static func cardBalanceString(duffs: UInt64) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.usesGroupingSeparator = false
@@ -499,8 +500,9 @@ final class InternalTransferViewModel: ObservableObject {
 
     /// Formats a Decimal as a user-typed-style string: no grouping separator,
     /// dot as the decimal mark, trailing zeros trimmed. Capped at
-    /// `fractionDigits` decimals.
-    private static func formatTyped(_ value: Decimal, fractionDigits: Int) -> String {
+    /// `fractionDigits` decimals. Internal — reused by the Send screen's
+    /// amount handling.
+    static func formatTyped(_ value: Decimal, fractionDigits: Int) -> String {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.numberStyle = .decimal

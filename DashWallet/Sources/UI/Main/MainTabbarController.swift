@@ -447,14 +447,26 @@ extension MainTabbarController: HomeViewControllerDelegate {
     }
 
     func showPaymentsController(withActivePage pageIndex: PaymentsViewControllerState) {
-        let tab: PaymentsLandingTab
         switch pageIndex {
         case .receive:
-            tab = .receive
-        case .pay, .enterAddress, .none:
-            tab = .send
+            presentPaymentsLandingScreen(activeTab: .receive)
+        case .enterAddress:
+            presentSendToAddressScreen()
+        case .pay, .none:
+            presentPaymentsLandingScreen(activeTab: .send)
         }
-        presentPaymentsLandingScreen(activeTab: tab)
+    }
+
+    /// The "Send to Address" shortcut skips the payments landing: straight
+    /// to the send screen, with the address field prefilled when the
+    /// clipboard holds a valid Core/Platform address.
+    private func presentSendToAddressScreen() {
+        let controller = SendScreenViewController()
+        controller.prefillsFromClipboard = true
+        let navigationController = BaseNavigationController(rootViewController: controller)
+        navigationController.isNavigationBarHidden = true
+        navigationController.modalPresentationStyle = .fullScreen
+        presentModal(navigationController)
     }
 
     /// The balance-row receive arrows open a focused two-tab sheet

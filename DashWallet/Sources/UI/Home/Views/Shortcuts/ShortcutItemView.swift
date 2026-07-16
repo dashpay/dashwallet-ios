@@ -29,7 +29,7 @@ struct ShortcutItemView: View {
     }
 
     init(model: ShortcutAction) {
-        self.title = model.title
+        self.title = model.type.shortTitle
         self.iconName = model.type.iconName
     }
 
