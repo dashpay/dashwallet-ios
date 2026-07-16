@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/dashpay/DashUIKit",
       "state" : {
-        "branch" : "import/final",
-        "revision" : "8ba562961c784587ece1a95e38345b4a708ae528"
+        "branch" : "master",
+        "revision" : "046f087514e12f01087ba20efd5e73c682172ebf"
       }
     }
   ],

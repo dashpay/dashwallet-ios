@@ -121,7 +121,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     #if DASHPAY
     func handleDeeplink(_ url: URL, definedUsername: String?) {
-        if model.dashPayModel.blockchainIdentity != nil {
+        if DWInvitationService.shared.hasLocalIdentity {
             let title = NSLocalizedString("Username already found", comment: "")
             let message = NSLocalizedString("You cannot claim this invite since you already have a Dash username", comment: "")
             let alert = DPAlertViewController(icon: UIImage(named: "icon_invitation_error")!, title: title, description: message)
@@ -137,16 +137,18 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             return
         }
 
-        model.handleDeeplink(url) { [weak self] success, errorTitle, errorMessage in
-            guard let self = self else { return }
-
-            if success {
-                self.showCreateUsername(withInvitation: url, definedUsername: definedUsername)
-            } else {
-                let alert = DPAlertViewController(icon: UIImage(named: "icon_invitation_error")!, title: errorTitle ?? "", description: errorMessage ?? "")
-                self.present(alert, animated: true, completion: nil)
-            }
-        }
+        // The redeem screen owns validation: an unrecognized or
+        // structurally invalid link renders its inline error state
+        // (and the field stays editable), so no pre-flight alert is
+        // needed. Claim-time failures (already claimed, wrong network,
+        // insufficient voucher) surface in the username form's error
+        // alert from the coordinator.
+        let prefill = DWInvitationLinkNormalizer.normalize(url) ?? url.absoluteString
+        ClaimInvitationFlow.pushRedeemScreen(
+            on: navigationController,
+            dashPayModel: model.dashPayModel,
+            initialLink: prefill,
+            definedUsername: definedUsername)
     }
     #endif
 
@@ -635,6 +637,12 @@ extension HomeViewController: HomeViewDelegate {
         let action = ShortcutAction(type: .createUsername)
         performAction(for: action, sender: nil)
     }
+
+    #if DASHPAY
+    func homeViewClaimInvitation() {
+        showClaimInvitation()
+    }
+    #endif
 
     func homeViewShowSyncingStatus() {
         let controller = SyncingAlertViewController()

@@ -70,15 +70,17 @@ enum DWRegistrationPhaseAdapter {
                 }
                 return .registrationUsername
 
-            case .platformPayment, .shielded:
-                // Neither path has a Core-chain asset-lock —
+            case .platformPayment, .shielded, .invitation:
+                // None of these paths has a LOCAL Core-chain asset-lock —
                 // `registerIdentityFromAddresses` consumes credits
-                // already on Platform addresses, and the Type-20
-                // shielded create spends Orchard notes in one opaque
-                // FFI call (proof + submit). There is no IS/CL wait,
-                // so the UI jumps straight to "Creating ID" as soon
-                // as the FFI submit goes in flight. `assetLockStatus`
-                // is intentionally ignored here.
+                // already on Platform addresses, the Type-20 shielded
+                // create spends Orchard notes in one opaque FFI call
+                // (proof + submit), and an invitation claim consumes an
+                // asset-lock the INVITER built (no `PersistentAssetLock`
+                // row on this device). There is no IS/CL wait, so the
+                // UI jumps straight to "Creating ID" as soon as the FFI
+                // submit goes in flight. `assetLockStatus` is
+                // intentionally ignored here.
                 return .creatingID
             }
 

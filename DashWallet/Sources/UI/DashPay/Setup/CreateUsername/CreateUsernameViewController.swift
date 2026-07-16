@@ -21,12 +21,20 @@ import SwiftUI
 class CreateUsernameViewController: UIViewController {
     @objc var completionHandler: ((Bool) -> ())?
 
+    /// Normalized invitation URI (see `DWInvitationLinkNormalizer`)
+    /// when this form is claiming a DIP-13 invitation; nil for the
+    /// regular self-funded registration.
+    private let invitationURI: String?
+    private let definedUsername: String?
+
     @objc
     init(dashPayModel: DWDashPayProtocol, invitationURL: URL?, definedUsername: String?) {
-        // TODO: invites. `dashPayModel` / `invitationURL` / `definedUsername`
-        // are part of the Obj-C navigation contract (3 call sites) but the
-        // new-user SwiftUI flow drives registration straight through
-        // `DWIdentityRegistrationBridge`, so none are stored here.
+        // `dashPayModel` is part of the Obj-C navigation contract but
+        // the SwiftUI flow drives registration straight through
+        // `DWIdentityRegistrationBridge` / the coordinator, so it is
+        // not stored here.
+        self.invitationURI = invitationURL?.absoluteString
+        self.definedUsername = definedUsername
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -39,7 +47,10 @@ class CreateUsernameViewController: UIViewController {
 
         self.view.backgroundColor = UIColor.dw_secondaryBackground()
 
-        let content = CreateUsernameView {
+        let content = CreateUsernameView(
+            invitationURI: invitationURI,
+            definedUsername: definedUsername
+        ) {
             let navigationController = self.navigationController
             #if DASHPAY
             let mainTabController = self.tabBarController as? MainTabbarController
@@ -99,6 +110,15 @@ struct CreateUsernameView: View {
     /// human-readable failure message. OK clears it and keeps the
     /// screen up so the user can edit or retry.
     @State private var registrationErrorMessage: String? = nil
+    /// Post-claim contact-request failure. The username IS registered
+    /// at this point — the alert reports the failed request and its OK
+    /// finishes the flow (the request is re-sendable from Contacts).
+    @State private var inviterContactErrorMessage: String? = nil
+    /// Normalized invitation URI when claiming (invitation mode); nil
+    /// for the regular self-funded registration.
+    var invitationURI: String? = nil
+    /// Username prefill carried by the deep link (`definedUsername`).
+    var definedUsername: String? = nil
     var finish: () -> Void
 
     var body: some View {
@@ -155,19 +175,30 @@ struct CreateUsernameView: View {
                     .padding(.top, 20)
             }
 
+            // Invitation-claim mode: the voucher funds the registration,
+            // so the shielded readiness hint and the funding-source
+            // picker below don't apply and stay hidden. A short banner
+            // states the funding instead.
+            if viewModel.isInvitationMode {
+                invitationFundingBanner
+                    .padding(.top, 20)
+            }
+
             // Shielded readiness hint. Shown while the privacy-preserving
             // funding path is NOT yet available (needs funds / maturing /
             // pool below the consensus minimum) so the user learns what
             // the wait is for without being blocked — the transparent
             // sources below remain an explicit choice.
-            shieldedReadinessHint
+            if !viewModel.isInvitationMode {
+                shieldedReadinessHint
+            }
 
             // Funding source picker. Visible when two or more sources
             // can cover the identity-registration cost. When only one
             // is viable, the picker stays hidden and `fundingSource` is
             // auto-pinned by `syncFundingSourceToViableSource()` so the
             // Continue handler routes correctly without UI clutter.
-            if viableFundingSources.count >= 2 {
+            if !viewModel.isInvitationMode, viableFundingSources.count >= 2 {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("Pay with", comment: "Usernames"))
                         .foregroundColor(.secondaryText)
@@ -212,6 +243,12 @@ struct CreateUsernameView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             isTextInputFocused = true
+            if let invitationURI {
+                viewModel.configureInvitationMode(uri: invitationURI)
+            }
+            if let definedUsername, !definedUsername.isEmpty, viewModel.username.isEmpty {
+                viewModel.username = definedUsername
+            }
             // Seed the picker selection so a wallet with only one
             // viable source (typical case) doesn't default to a
             // non-viable Core path.
@@ -243,11 +280,43 @@ struct CreateUsernameView: View {
             NSLocalizedString("Username registered", comment: "Usernames"),
             isPresented: $showSuccess
         ) {
-            Button(NSLocalizedString("OK", comment: "")) { finish() }
+            if let inviter = viewModel.invitationInviterUsername {
+                // Invitation claim with a known inviter: offer the
+                // contact-bootstrap (mirrors Android, where the request
+                // is sent after registration; here the user opts in).
+                Button(String.localizedStringWithFormat(
+                    NSLocalizedString("Add %@ as a contact", comment: "DashPay Invitations"),
+                    inviter)) {
+                    sendInviterContactRequest(inviter)
+                }
+                Button(NSLocalizedString("Not now", comment: ""), role: .cancel) { finish() }
+            } else {
+                Button(NSLocalizedString("OK", comment: "")) { finish() }
+            }
         } message: {
-            Text(String.localizedStringWithFormat(
-                NSLocalizedString("“%@” has been registered.", comment: "Usernames"),
-                viewModel.username))
+            if viewModel.invitationInviterUsername != nil {
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString("“%@” has been registered. Send a contact request to the person who invited you?", comment: "DashPay Invitations"),
+                    viewModel.username))
+            } else {
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString("“%@” has been registered.", comment: "Usernames"),
+                    viewModel.username))
+            }
+        }
+        .alert(
+            NSLocalizedString("Contact request failed", comment: "DashPay Invitations"),
+            isPresented: Binding(
+                get: { inviterContactErrorMessage != nil },
+                set: { if !$0 { inviterContactErrorMessage = nil; finish() } }
+            )
+        ) {
+            Button(NSLocalizedString("OK", comment: "")) {
+                inviterContactErrorMessage = nil
+                finish()
+            }
+        } message: {
+            Text(inviterContactErrorMessage ?? "")
         }
         .alert(
             NSLocalizedString("Registration failed", comment: "Usernames"),
@@ -353,8 +422,44 @@ struct CreateUsernameView: View {
     /// `.core` on every terminal phase, so a stale picker value
     /// can't leak into a future attempt; this single write is the
     /// only synchronization needed.
+    /// Invitation-claim funding banner (invitation mode only).
+    private var invitationFundingBanner: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "envelope.open")
+                .foregroundColor(.dashBlue)
+                .font(.system(size: 20))
+            Text(NSLocalizedString("Your invitation pays the registration fee for this username.", comment: "DashPay Invitations"))
+                .font(.caption)
+                .foregroundColor(.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.dashBlue.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
+    /// Post-claim contact-bootstrap: resolve the `du` inviter and send
+    /// them a request. The username is already registered — a failure
+    /// here is reported (and re-sendable from Contacts) but never
+    /// unwinds the claim.
+    private func sendInviterContactRequest(_ inviter: String) {
+        Task {
+            inProgress = true
+            defer { inProgress = false }
+            do {
+                try await DWInvitationService.shared.sendContactRequestToInviter(username: inviter)
+                finish()
+            } catch {
+                inviterContactErrorMessage = error.localizedDescription
+            }
+        }
+    }
+
     private func performSubmit() {
-        DWIdentityRegistrationBridge.shared.preferredFundingSource = fundingSource
+        if !viewModel.isInvitationMode {
+            DWIdentityRegistrationBridge.shared.preferredFundingSource = fundingSource
+        }
         Task {
             // `inProgress` keeps the Continue spinner up — and the screen
             // alive — across the PIN gate and the whole registration. The
@@ -417,6 +522,10 @@ struct CreateUsernameView: View {
             return "Platform (\(viewModel.platformPaymentBalance) Dash)"
         case .core:
             return "Core (\(viewModel.balance) Dash)"
+        case .invitation:
+            // Never user-pickable — `viableFundingSources` never
+            // contains it and the picker is hidden in invitation mode.
+            return ""
         }
     }
 

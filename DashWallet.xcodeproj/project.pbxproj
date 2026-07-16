@@ -112,6 +112,9 @@
 		1CDA90D00719D6249F2761AC /* ContactItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CE7E8766B8C1601A85AAB4F /* ContactItem.swift */; };
 		1F3FF21B0295D5A326F08B74 /* OrderPreviewFeeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */; };
 		1FAFEA3F516E6CBDD2B49010 /* SwiftDashSDKContactsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02357928871603392E797C9A /* SwiftDashSDKContactsService.swift */; };
+		A11E57A70006C0DE0006B006 /* DWInvitationLinkNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E57A70001C0DE0001B001 /* DWInvitationLinkNormalizer.swift */; };
+		A11E57A70007C0DE0007B007 /* DWInvitationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E57A70002C0DE0002B002 /* DWInvitationService.swift */; };
+		A11E57A70008C0DE0008B008 /* ClaimInvitationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E57A70003C0DE0003B003 /* ClaimInvitationScreen.swift */; };
 		20C8591E86D33DE8DCD6ADC2 /* ReceiveScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08CA1CAD519B199EE20CFB7E /* ReceiveScreen.swift */; };
 		2284B63F1C7BD28F0012ECDF /* BRAWKeypad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */; };
 		22E89B6C00B546D294D7F331 /* SelfSizingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96CB7E093E994D2391D36DEC /* SelfSizingSheet.swift */; };
@@ -2000,6 +2003,9 @@
 /* Begin PBXFileReference section */
 		01D55D0FA9AE953CD23DE6B6 /* DWIdentityRegistrationController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWIdentityRegistrationController.swift; sourceTree = "<group>"; };
 		02357928871603392E797C9A /* SwiftDashSDKContactsService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKContactsService.swift; sourceTree = "<group>"; };
+		A11E57A70001C0DE0001B001 /* DWInvitationLinkNormalizer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWInvitationLinkNormalizer.swift; sourceTree = "<group>"; };
+		A11E57A70002C0DE0002B002 /* DWInvitationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWInvitationService.swift; sourceTree = "<group>"; };
+		A11E57A70003C0DE0003B003 /* ClaimInvitationScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClaimInvitationScreen.swift; sourceTree = "<group>"; };
 		0286D4D1CADBBD51F09BE8E8 /* SwapMenuStyles.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwapMenuStyles.swift; sourceTree = "<group>"; };
 		0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporter.swift; sourceTree = "<group>"; };
 		05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferConfirmSheet.swift; sourceTree = "<group>"; };
@@ -7155,9 +7161,27 @@
 			path = UsernamePending;
 			sourceTree = "<group>";
 		};
+		A11E57A70004C0DE0004B004 /* Invitations */ = {
+			isa = PBXGroup;
+			children = (
+				A11E57A70001C0DE0001B001 /* DWInvitationLinkNormalizer.swift */,
+				A11E57A70002C0DE0002B002 /* DWInvitationService.swift */,
+			);
+			path = Invitations;
+			sourceTree = "<group>";
+		};
+		A11E57A70005C0DE0005B005 /* Invitations */ = {
+			isa = PBXGroup;
+			children = (
+				A11E57A70003C0DE0003B003 /* ClaimInvitationScreen.swift */,
+			);
+			path = Invitations;
+			sourceTree = "<group>";
+		};
 		7E31813A79237F4E037063AA /* SwiftDashSDK */ = {
 			isa = PBXGroup;
 			children = (
+				A11E57A70004C0DE0004B004 /* Invitations */,
 				33FB75FCD21FC8C62840E6FD /* SwiftDashSDKKeyMigrator.swift */,
 				E3CA14DC8416012B813B5E2C /* SwiftDashSDKPhraseRepairer.swift */,
 				1A7BE8E4519203200CDFB460 /* SwiftDashSDKInsightClient.swift */,
@@ -7739,6 +7763,7 @@
 				C943B3E82A40A54600AF23C5 /* Profile */,
 				C943B4032A40A54600AF23C5 /* Items */,
 				C943B44B2A40A54600AF23C5 /* Invites */,
+				A11E57A70005C0DE0005B005 /* Invitations */,
 				7502A4852AE401DA00ACDDD3 /* Voting */,
 				75D656182B0792AB00D1A902 /* Usernames */,
 				75889B742AD296D500C17F5D /* CoinJoin */,
@@ -11295,6 +11320,9 @@
 				9A1606353B5B4E5481AC5C6A /* NotificationsScreen.swift in Sources */,
 				51629A945A8CEF6EF50F9A4A /* DWIdentityKeyUpgrader.swift in Sources */,
 				F4202BDB27E7066201C23A58 /* DWIdentityRegistrationCoordinator.swift in Sources */,
+				A11E57A70006C0DE0006B006 /* DWInvitationLinkNormalizer.swift in Sources */,
+				A11E57A70007C0DE0007B007 /* DWInvitationService.swift in Sources */,
+				A11E57A70008C0DE0008B008 /* ClaimInvitationScreen.swift in Sources */,
 				D2616FE9FE5ED53F26506A73 /* DWIdentityRegistrationBridge.swift in Sources */,
 				026B0383557D0181E034B64E /* SDKIdentityProfileSheet.swift in Sources */,
 				431DC6C9218C3DFAF6DE23C0 /* DWCurrentUserIdentityInfo.swift in Sources */,
@@ -13563,7 +13591,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/dashpay/DashUIKit";
 			requirement = {
-				branch = import/final;
+				branch = master;
 				kind = branch;
 			};
 		};

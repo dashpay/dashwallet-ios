@@ -16,6 +16,9 @@
 /* Dash DEX / dex_error_blacklisted */
 "%@ can't be swapped at the moment." = "%@ can't be swapped at the moment.";
 
+/* DashPay Invitations */
+"%@ couldn't be found on the Dash network to send them a contact request." = "%@ couldn't be found on the Dash network to send them a contact request.";
+
 /* Usernames */
 "%@ Dash available" = "%@ Dash available";
 
@@ -192,6 +195,9 @@
 
 /* No comment provided by engineer. */
 "Add" = "Add";
+
+/* DashPay Invitations */
+"Add %@ as a contact" = "Add %@ as a contact";
 
 /* DashPay Contacts */
 "Add %@ as a contact to pay them directly by username and keep a shared history of your payments." = "Add %@ as a contact to pay them directly by username and keep a shared history of your payments.";
@@ -569,6 +575,9 @@
 /* No comment provided by engineer. */
 "Choose Your Username" = "Choose Your Username";
 
+/* DashPay Invitations */
+"Claim your invitation" = "Claim your invitation";
+
 /* No comment provided by engineer. */
 "Claimed" = "Claimed";
 
@@ -643,6 +652,9 @@
 /* Maya */
 "Contact Maya Support" = "Contact Maya Support";
 
+/* DashPay Invitations */
+"Contact request failed" = "Contact request failed";
+
 /* DashPay */
 "Contact request not found" = "Contact request not found";
 
@@ -672,6 +684,9 @@
 
 /* No comment provided by engineer. */
 "Continue" = "Continue";
+
+/* DashPay Invitations */
+"Continue to pick your username. The invitation pays the registration fee." = "Continue to pick your username. The invitation pays the registration fee.";
 
 /* Maya */
 "Conversion failed" = "Conversion failed";
@@ -1365,6 +1380,9 @@
 /* Username has requested to be your friend */
 "has requested to be your friend" = "has requested to be your friend";
 
+/* DashPay Invitations */
+"Have an invitation?" = "Have an invitation?";
+
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Have complete control and customize your wallet based on your needs";
 
@@ -1604,6 +1622,9 @@
 
 /* No comment provided by engineer. */
 "Invitation Fee" = "Invitation Fee";
+
+/* DashPay Invitations */
+"Invitation from %@" = "Invitation from %@";
 
 /* No comment provided by engineer. */
 "Invitation used by" = "Invitation used by";
@@ -2110,6 +2131,9 @@
 /* DashPay */
 "Not enough shielded balance to register an identity" = "Not enough shielded balance to register an identity";
 
+/* No comment provided by engineer. */
+"Not now" = "Not now";
+
 /* DashPay Contacts */
 "Note" = "Note";
 
@@ -2190,6 +2214,9 @@
 
 /* Usernames */
 "Paste link here" = "Paste link here";
+
+/* DashPay Invitations */
+"Paste the invitation link you received, or scan its QR code. It funds your username registration." = "Paste the invitation link you received, or scan its QR code. It funds your username registration.";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "Paste your image URL";
@@ -3255,6 +3282,12 @@
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
 
+/* DashPay Invitations */
+"This invitation link is not valid." = "This invitation link is not valid.";
+
+/* DashPay Invitations */
+"This is not a valid invitation link" = "This is not a valid invitation link";
+
 /* DashPay Contacts */
 "This is you" = "This is you";
 
@@ -3562,6 +3595,9 @@
 
 /* No comment provided by engineer. */
 "Users that matches %@ who are currently not in your contacts" = "Users that matches %@ who are currently not in your contacts";
+
+/* DashPay Invitations */
+"Valid invitation" = "Valid invitation";
 
 /* CrowdNode Portal */
 "Validating address…" = "Validating address…";
@@ -4038,6 +4074,9 @@
 /* No comment provided by engineer. */
 "Your invitation from %@ is not valid" = "Your invitation from %@ is not valid";
 
+/* DashPay Invitations */
+"Your invitation pays the registration fee for this username." = "Your invitation pays the registration fee for this username.";
+
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
 
@@ -4115,3 +4154,6 @@
 
 /* Usernames */
 "“%@” has been registered." = "“%@” has been registered.";
+
+/* DashPay Invitations */
+"“%@” has been registered. Send a contact request to the person who invited you?" = "“%@” has been registered. Send a contact request to the person who invited you?";

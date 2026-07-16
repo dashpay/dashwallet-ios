@@ -27,14 +27,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification = @"DWDashPayRegistrationStatusUpdatedNotification";
-NSNotificationName const DWDashPaySentContactRequestToInviter = @"kDWDashPaySentContactRequestToInviter";
 
 @interface DWDashPayModel ()
 
 @property (nullable, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (nullable, nonatomic, strong) NSError *lastRegistrationError;
 @property (nonatomic, assign) BOOL isInvitationNotificationAllowed;
-@property (nullable, nonatomic, strong) NSURL *invitation;
 @end
 
 NS_ASSUME_NONNULL_END
@@ -146,48 +144,15 @@ NS_ASSUME_NONNULL_END
     return blockchainIdentity == nil;
 }
 
-- (void)createUsername:(NSString *)username invitation:(nullable NSURL *)invitationURL {
-    self.invitation = invitationURL;
+- (void)createUsername:(NSString *)username {
+    // Invitation-funded registration no longer goes through this
+    // model — the SwiftUI form drives
+    // `DWIdentityRegistrationCoordinator.startClaimInvitation` directly
+    // (see CreateUsernameViewModel).
     self.lastRegistrationError = nil;
     [DWGlobalOptions sharedInstance].dashpayUsername = username;
 
     DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-
-    if (invitationURL != nil) {
-        DSBlockchainInvitation *invitation = [[DSBlockchainInvitation alloc] initWithInvitationLink:invitationURL.absoluteString inWallet:wallet];
-
-        __weak typeof(self) weakSelf = self;
-        [invitation
-            acceptInvitationUsingWalletIndex:0
-            setDashpayUsername:username
-            authenticationPrompt:NSLocalizedString(@"Would you like to accept the invitation?", nil)
-            identityRegistrationSteps:[self invitationSteps]
-            stepCompletion:^(DSBlockchainIdentityRegistrationStep stepCompleted) {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
-
-                [strongSelf handleSteps:stepCompleted error:nil];
-            }
-            completion:^(DSBlockchainIdentityRegistrationStep stepsCompleted, NSError *_Nonnull error) {
-                __strong typeof(weakSelf) strongSelf = weakSelf;
-                if (!strongSelf) {
-                    return;
-                }
-
-                NSLog(@">>> completed invitation %@ - %@", @(stepsCompleted), error);
-
-                [strongSelf handleSteps:stepsCompleted error:error];
-
-                if (!error) {
-                    [strongSelf sendContactRequestToInviterUsingInvitationURL:invitationURL];
-                }
-            }
-            completionQueue:dispatch_get_main_queue()];
-
-        return;
-    }
 
     DSBlockchainIdentity *blockchainIdentity = wallet.defaultBlockchainIdentity;
 
@@ -254,54 +219,12 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (void)sendContactRequestToInviterUsingInvitationURL:(NSURL *)invitationURL {
-    NSURLComponents *components = [NSURLComponents componentsWithURL:invitationURL resolvingAgainstBaseURL:NO];
-    NSString *username;
-
-    for (NSURLQueryItem *item in components.queryItems) {
-        if ([item.name isEqualToString:@"du"]) {
-            username = item.value;
-            break;
-        }
-    }
-
-    if (!username) {
-        return;
-    }
-
-    DSIdentitiesManager *manager = [DWEnvironment sharedInstance].currentChainManager.identitiesManager;
-    __weak typeof(self) weakSelf = self;
-    [manager searchIdentityByDashpayUsername:username
-                              withCompletion:^(BOOL success, DSBlockchainIdentity *_Nullable blockchainIdentity, NSError *_Nullable error) {
-                                  if (success) {
-
-                                      DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-                                      DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-
-                                      [myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:blockchainIdentity
-                                                                                          completion:^(BOOL success, NSArray<NSError *> *_Nullable errors) {
-                                                                                              DWLog(@"Friend request sent %i", success);
-                                                                                          }];
-                                  }
-                              }];
-}
-
-- (void)sendContactRequestToBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
-
-    DSWallet *wallet = [DWEnvironment sharedInstance].currentWallet;
-    DSBlockchainIdentity *myBlockchainIdentity = wallet.defaultBlockchainIdentity;
-    [myBlockchainIdentity sendNewFriendRequestToBlockchainIdentity:blockchainIdentity
-                                                        completion:^(BOOL success, NSArray<NSError *> *_Nullable errors){
-
-                                                        }];
-}
-
 - (BOOL)canRetry {
     return self.username != nil;
 }
 
 - (void)retry {
-    [self createUsername:self.username invitation:self.invitation];
+    [self createUsername:self.username];
 }
 
 - (void)completeRegistration {
@@ -337,49 +260,6 @@ NS_ASSUME_NONNULL_END
 
 - (void)setHasEnoughBalanceForInvitationNotification:(BOOL)value {
     self.isInvitationNotificationAllowed = ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && value);
-}
-
-- (void)verifyDeeplink:(NSURL *)url
-            completion:(void (^)(BOOL success,
-                                 NSString *_Nullable errorTitle,
-                                 NSString *_Nullable errorMessage))completion {
-    if (MOCK_DASHPAY) {
-        completion(YES, nil, nil);
-        return;
-    }
-
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    [DSBlockchainInvitation
-        verifyInvitationLink:url.absoluteString
-                     onChain:chain
-                  completion:^(DSTransaction *_Nonnull transaction, bool spent, NSError *_Nonnull error) {
-                      NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
-                      NSString *username = @"<unknown user>";
-                      for (NSURLQueryItem *item in components.queryItems) {
-                          if ([item.name isEqualToString:@"du"]) {
-                              username = item.value;
-                              break;
-                          }
-                      }
-                      if (transaction != nil) {
-                          completion(YES, nil, nil);
-                      }
-                      else {
-                          if (spent) {
-                              completion(
-                                  NO,
-                                  NSLocalizedString(@"Invitation already claimed", nil),
-                                  [NSString stringWithFormat:NSLocalizedString(@"Your invitation from %@ has been already claimed", nil), username]);
-                          }
-                          else {
-                              completion(
-                                  NO,
-                                  NSLocalizedString(@"Invalid Inviation", nil),
-                                  [NSString stringWithFormat:NSLocalizedString(@"Your invitation from %@ is not valid", nil), username]);
-                          }
-                      }
-                  }
-             completionQueue:dispatch_get_main_queue()];
 }
 
 #pragma mark - Notifications
@@ -513,12 +393,6 @@ NS_ASSUME_NONNULL_END
 
 - (DSBlockchainIdentityRegistrationStep)steps {
     return DSBlockchainIdentityRegistrationStep_RegistrationStepsWithUsername;
-}
-
-- (DSBlockchainIdentityRegistrationStep)invitationSteps {
-    return (DSBlockchainIdentityRegistrationStep_LocalInWalletPersistence |
-            DSBlockchainIdentityRegistrationStep_Identity |
-            DSBlockchainIdentityRegistrationStep_Username);
 }
 
 - (void)handleSteps:(DSBlockchainIdentityRegistrationStep)stepsCompleted error:(nullable NSError *)error {

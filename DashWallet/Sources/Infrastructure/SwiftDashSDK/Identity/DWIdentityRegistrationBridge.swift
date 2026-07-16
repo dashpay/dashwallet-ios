@@ -32,7 +32,7 @@ import SwiftDashSDK
 /// Funding source for new-identity registration. Surfaced to Obj-C
 /// as an NSInteger-backed enum so the SwiftUI form can route the
 /// user's picker selection through the bridge without changing
-/// `DWDashPayProtocol.createUsername:invitation:`.
+/// `DWDashPayProtocol.createUsername:`.
 ///
 /// - `core`: spend Core BIP44 UTXOs via `registerIdentityWithFunding`.
 ///   Default and only path before PR 5.
@@ -45,10 +45,16 @@ import SwiftDashSDK
 ///   (Type 20). The privacy-preserving default when the shielded
 ///   balance is funded, matured, and the pool clears the consensus
 ///   minimum — see `ShieldedIdentityFundingReadiness`. No asset-lock.
+/// - `invitation`: fund the new identity from a DashPay invitation
+///   voucher (DIP-13) via `claimInvitation`. The asset-lock was built
+///   and broadcast by the INVITER, so there is no local asset-lock
+///   row to track. Never user-pickable — entered only through
+///   `DWIdentityRegistrationCoordinator.startClaimInvitation`.
 @objc public enum DWIdentityFundingSource: Int {
     case core = 0
     case platformPayment = 1
     case shielded = 2
+    case invitation = 3
 }
 
 extension DWIdentityFundingSource {
@@ -58,6 +64,7 @@ extension DWIdentityFundingSource {
         case .core: return "core"
         case .platformPayment: return "pp"
         case .shielded: return "shielded"
+        case .invitation: return "invite"
         }
     }
 }
@@ -111,7 +118,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// attempt.
     ///
     /// Written by `CreateUsernameView`'s Continue handler immediately
-    /// before `DWDashPayModel.createUsername:invitation:` so the
+    /// before `DWDashPayModel.createUsername:` so the
     /// model→bridge call picks it up. Kept as a property (not a
     /// method parameter) to avoid widening `DWDashPayProtocol`'s
     /// surface for what is effectively SwiftDashSDK-path-only state.
@@ -260,7 +267,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         // Reset preferredFundingSource to the safe default on
         // `.completed` only. On `.failed`, preserve the source so a
         // retry (which goes through `DWDashPayModel.retry` →
-        // `createUsername:invitation:` → bridge without re-running the
+        // `createUsername:` → bridge without re-running the
         // SwiftUI picker) uses the same funding the user originally
         // picked — flipping a PP-funded failure back to `.core` would
         // strand a PP-only wallet on a path that has no Core balance.

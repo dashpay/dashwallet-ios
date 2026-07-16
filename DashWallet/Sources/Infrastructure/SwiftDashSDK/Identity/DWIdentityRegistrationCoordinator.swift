@@ -29,7 +29,7 @@
 //
 //  v1 scope:
 //    - Single identity per wallet (`identityIndex` pinned at 0).
-//    - Three funding paths:
+//    - Four funding paths:
 //      * Core-funded via `registerIdentityWithFunding` (legacy default).
 //      * Platform Payment via `registerIdentityFromAddresses` —
 //        spends credits already on DIP-17 platform addresses.
@@ -38,6 +38,9 @@
 //        spends a fixed exit denomination from the wallet's Orchard
 //        pool. Pre-flighted against `ShieldedIdentityFundingReadiness`
 //        (funding / maturity / pool-size gates); no asset-lock.
+//      * Invitation via `claimInvitation` (DIP-13) — consumes the
+//        voucher asset-lock the INVITER built; entered through
+//        `startClaimInvitation(username:invitationURI:)` only.
 //    - No crash-resume (`resumeIdentityWithAssetLock` deferred to v2).
 //
 
@@ -145,6 +148,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case shieldedPoolTooSmall(currentNotes: UInt64)
         case noShieldedFallbackAddress
         case shieldedCreateUnconfirmed
+        case missingInvitation
         case alreadyInFlight
 
         var errorDescription: String? {
@@ -186,6 +190,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 return NSLocalizedString("No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing.", comment: "DashPay")
             case .shieldedCreateUnconfirmed:
                 return NSLocalizedString("The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately.", comment: "DashPay")
+            case .missingInvitation:
+                return NSLocalizedString("This invitation link is not valid.", comment: "DashPay Invitations")
             case .alreadyInFlight:
                 return NSLocalizedString("Identity registration already in progress", comment: "DashPay")
             }
@@ -206,10 +212,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// (`registerIdentityFromAddresses` → direct address-funded ST).
     /// Defaults to `.core` for callers that don't care (legacy
     /// Obj-C entry points, retries after a terminal phase).
+    ///
+    /// `.invitation` is entered through
+    /// `startClaimInvitation(username:invitationURI:)`, which supplies
+    /// the voucher link; calling this method with `.invitation` and no
+    /// `invitationURI` fails with `.missingInvitation`.
     @discardableResult
     func startCreateUsername(
         _ username: String,
-        fundingSource: DWIdentityFundingSource = .core
+        fundingSource: DWIdentityFundingSource = .core,
+        invitationURI: String? = nil
     ) async throws -> Identifier {
         Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username, privacy: .public) funding=\(fundingSource.logLabel, privacy: .public)")
 
@@ -363,6 +375,22 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     modelContainer: modelContainer,
                     pubkeys: pubkeys,
                     signer: signer)
+
+            case .invitation:
+                // DIP-13 claim: register the invitee's identity funded
+                // by the voucher embedded in the link. The SDK refetches
+                // the funding tx and rebuilds the IS/CL proof itself;
+                // key prep above is identical to every other source.
+                guard let invitationURI else {
+                    throw CoordinatorError.missingInvitation
+                }
+                let managed = try await wallet.claimInvitation(
+                    uri: invitationURI,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    signer: signer,
+                    nowUnix: UInt32(Date().timeIntervalSince1970))
+                identityId = try managed.getId()
             }
             Self.logger.info("🪪 IDENT-COORD :: identity created, id=\(identityId.map { String(format: "%02x", $0) }.joined().prefix(8), privacy: .public)…")
         } catch let coordError as CoordinatorError {
@@ -394,9 +422,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             switch fundingSource {
             case .core:
                 failedAtPhase = assetLockStatus < 2 ? .processingPayment : .creatingID
-            case .platformPayment, .shielded:
-                // Neither path has a Core-chain asset-lock; the FFI
-                // submit is the only on-chain step.
+            case .platformPayment, .shielded, .invitation:
+                // None of these paths has a LOCAL Core-chain asset-lock
+                // (the invitation voucher's was built by the inviter);
+                // the FFI submit is the only on-chain step here.
                 failedAtPhase = .creatingID
             }
             lastErrorMessage = error.localizedDescription
@@ -459,11 +488,35 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         return identityId
     }
 
+    /// DIP-13 invitation claim: register this wallet's identity funded
+    /// by the invitation voucher, then register `username` via DPNS.
+    /// Same PIN gate / key prep / phase reporting / resume semantics as
+    /// `startCreateUsername` — a claim that lands IdentityCreate but
+    /// fails DPNS retries past the (already consumed) voucher via the
+    /// persisted-identity resume path.
+    ///
+    /// `invitationURI` must be the normalized `dashpay://invite` /
+    /// applink URI (see `DWInvitationLinkNormalizer`); structural
+    /// validation should have happened in the redeem UI, but claim-time
+    /// SDK errors (malformed link, already-claimed voucher, wrong
+    /// network) surface here as `.identityRegistration`.
+    @discardableResult
+    func startClaimInvitation(
+        username: String,
+        invitationURI: String
+    ) async throws -> Identifier {
+        try await startCreateUsername(
+            username,
+            fundingSource: .invitation,
+            invitationURI: invitationURI)
+    }
+
     /// Restart the flow after a `.failed` terminal phase. Identical
     /// to `startCreateUsername(_:fundingSource:)` — the prior
     /// controller is discarded and a fresh attempt runs end-to-end.
     /// The Keychain-persisted identity keys from the prior attempt
-    /// are overwritten during pre-derive.
+    /// are overwritten during pre-derive. Invitation attempts retry
+    /// through `startClaimInvitation` (the URI is required), not here.
     @discardableResult
     func retry(
         _ username: String,
