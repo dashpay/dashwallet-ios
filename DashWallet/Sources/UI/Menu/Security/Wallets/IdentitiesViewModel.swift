@@ -50,10 +50,18 @@ struct IdentityRowModel: Identifiable {
     let type: IdentityType
     let isLocal: Bool
     let walletName: String?
+    /// Owning wallet id — main-identity selection is scoped to the
+    /// active wallet, so the detail page needs this to offer it.
+    let walletId: Data?
     let identityIndex: UInt32
     let publicKeyCount: Int
     /// Every DPNS label owned by this identity (detail sheet list).
     let dpnsNames: [String]
+    /// True when this identity is the wallet's resolved MAIN identity —
+    /// the one `DWCurrentUserIdentityInfo` reads, i.e. the owner of
+    /// DashPay mode (username, avatar, contacts). Resolution = stored
+    /// pick → index 0 → lowest index.
+    let isMainIdentity: Bool
 
     var id: Data { identityId }
 }
@@ -81,7 +89,46 @@ final class IdentitiesViewModel: ObservableObject {
             predicate: PersistentIdentity.predicate(network: network),
             sortBy: [SortDescriptor(\.identityIndex, order: .forward)])
         let identities = (try? container.mainContext.fetch(descriptor)) ?? []
-        rows = identities.map(Self.rowModel(for:))
+        // The RESOLVED main identity (stored pick → index 0 → lowest) —
+        // read from the same source every DashPay surface reads, so the
+        // star can't disagree with actual behavior.
+        let mainIdentityId = DWCurrentUserIdentityInfo.shared.identityId
+        rows = identities.map { Self.rowModel(for: $0, mainIdentityId: mainIdentityId) }
+    }
+
+    /// Make `row` the wallet's main identity: the one every DashPay
+    /// surface keys on (username, avatar, contacts owner). Stores the
+    /// per-wallet pick, then drives the same refresh cascade a
+    /// registration completion does so the app re-keys live: identity
+    /// snapshot, DWGlobalOptions username mirror (the new main's name,
+    /// or cleared when it has none — the Join banner then honestly
+    /// returns), the registration-status notification chain, and the
+    /// contacts snapshots.
+    func setMainIdentity(_ row: IdentityRowModel) {
+        guard let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId else {
+            errorMessage = NSLocalizedString("Wallet is not ready", comment: "Identities")
+            return
+        }
+        guard row.walletId == activeWalletId else {
+            errorMessage = NSLocalizedString(
+                "The main identity can only be chosen from the active wallet",
+                comment: "Identities")
+            return
+        }
+
+        DWCurrentUserIdentityInfo.setMainIdentityId(row.identityId, walletId: activeWalletId)
+        DWCurrentUserIdentityInfo.shared.refreshFromSDK()
+
+        let options = DWGlobalOptions.sharedInstance()
+        let username = DWCurrentUserIdentityInfo.shared.username
+        options.dashpayUsername = username
+        options.dashpayRegistrationCompleted = username?.isEmpty == false
+
+        NotificationCenter.default.post(
+            name: DWIdentityRegistrationBridge.stateChangedNotification,
+            object: nil)
+        SwiftDashSDKContactsService.shared.refresh()
+        reload()
     }
 
     /// One-shot Platform refresh, pull-to-refresh style: re-fetch each
@@ -214,7 +261,7 @@ final class IdentitiesViewModel: ObservableObject {
 
     // MARK: - Mapping
 
-    private static func rowModel(for identity: PersistentIdentity) -> IdentityRowModel {
+    private static func rowModel(for identity: PersistentIdentity, mainIdentityId: Data?) -> IdentityRowModel {
         let hasName = (identity.alias?.isEmpty == false)
             || (identity.mainDpnsName?.isEmpty == false)
             || (identity.dpnsName?.isEmpty == false)
@@ -232,9 +279,11 @@ final class IdentitiesViewModel: ObservableObject {
             type: identity.identityTypeEnum,
             isLocal: identity.isLocal,
             walletName: identity.wallet?.label.nonEmptyString,
+            walletId: identity.wallet?.walletId,
             identityIndex: identity.identityIndex,
             publicKeyCount: identity.publicKeys.count,
-            dpnsNames: identity.dpnsNames.map(\.label))
+            dpnsNames: identity.dpnsNames.map(\.label),
+            isMainIdentity: mainIdentityId != nil && identity.identityId == mainIdentityId)
     }
 
     private static func uint64(from value: Any?) -> UInt64? {
