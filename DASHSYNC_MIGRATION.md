@@ -45,17 +45,19 @@ included.
 ## Platform pin
 
 The app builds against sibling `../platform` on **`v4.1-dev`** (verified
-2026-07-15: dashpay arm64-sim build green at app tip `5d90bac08` against
-`origin/v4.1-dev` tip `dc1d645df4` with a freshly rebuilt sim-slice
-xcframework; the seedless-shielded-bind API drift —
-`shieldedWithdraw`/`shieldedUnshield` gaining a per-operation
-`resolver:` — is adapted in `ShieldedTransferCoordinator`, and the tip's
-breaking managed-identity-top-up change (#4093) removed only legacy
-`SDK.identityTopUp`/`topUpIdentity` surfaces the app never called). Every app-required surface is upstream:
-tx decoding (`TransactionDecoder`, key-wallet-ffi route), DashPay fee threading,
-`RawKeySigner` (#4097), the testnet faucet client (#4098), classified SPV peers,
-and the filter-rescan FFI (#4099). The `local/tx-decode-plus-v4.1-dev-dashwallet`
-integration branch is retired.
+2026-07-17: dashpay arm64-sim build green at app tip `1f195c6fb` against
+`origin/v4.1-dev` tip `b889e05a1e`; the tip's breaking change — platform
+#4140 removing `EstablishedContact`'s clone-mutating setters, which never
+wrote real state — requires app tip ≥ #834, where contact alias/note/hidden
+write through `setDashPayContactInfo` instead. Earlier drift notes (the
+seedless-shielded-bind `resolver:` parameter, the #4093 managed-identity-
+top-up removal) remain adapted as before). Every app-required surface is
+upstream: tx decoding (`TransactionDecoder`, key-wallet-ffi route), DashPay
+fee threading, `RawKeySigner` (#4097), the testnet faucet client (#4098),
+classified SPV peers, the filter-rescan FFI (#4099), and the
+partial-amount platform address withdrawal wrapper (#4139). The
+`local/tx-decode-plus-v4.1-dev-dashwallet` integration branch and the
+`v4.1-dev-local` sidecar are retired.
 
 No open nuances: the verified tip includes
 [platform #4049](https://github.com/dashpay/platform/pull/4049) (merged as
