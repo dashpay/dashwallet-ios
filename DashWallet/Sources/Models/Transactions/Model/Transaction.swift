@@ -410,27 +410,27 @@ class Transaction: TransactionDataItem, Identifiable {
         // SDK-sourced shielded lookup (see `shieldedTransferAmountDuffs`).
         if isShieldedTransfer {
             if isPendingShieldedTransfer {
-                return NSLocalizedString("Shielded transfer (pending)",
+                return NSLocalizedString("Transparent → Shielded (pending)",
                                          comment: "A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet")
             }
-            return NSLocalizedString("Shielded transfer",
+            return NSLocalizedString("Transparent → Shielded",
                                      comment: "Transfer of own funds into the private shielded balance")
         }
         // A Core → Platform funding is likewise an asset lock the generic
         // logic would label "Internal Transfer"; name the route.
         if isPlatformFundingTransfer {
             if let statusRaw = platformFundingLockInfo?.statusRaw, (1...3).contains(statusRaw) {
-                return NSLocalizedString("Platform transfer (pending)",
+                return NSLocalizedString("Transparent → Platform (pending)",
                                          comment: "A to-Platform transfer whose asset lock is committed but the funding hasn't completed yet")
             }
-            return NSLocalizedString("Platform transfer",
+            return NSLocalizedString("Transparent → Platform",
                                      comment: "Transfer of own funds into the Platform balance")
         }
         // The L1 payout of a Shielded → Core withdrawal is a transfer of own
         // funds, not an external receive — label it as such (the row's route
         // icons show the direction).
         if isShieldedWithdrawalReceipt {
-            return NSLocalizedString("Shielded withdrawal",
+            return NSLocalizedString("Shielded → Transparent",
                                      comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
         }
         switch transactionType {

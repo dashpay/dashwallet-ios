@@ -2550,12 +2550,6 @@
 /* The Dash Platform credits balance */
 "Platform balance" = "Platform balance";
 
-/* Transfer of own funds into the Platform balance */
-"Platform transfer" = "Platform transfer";
-
-/* A to-Platform transfer whose asset lock is committed but the funding hasn't completed yet */
-"Platform transfer (pending)" = "Platform transfer (pending)";
-
 /* Platform → Transparent withdrawal */
 "Processing time" = "Processing time";
 
@@ -3221,16 +3215,10 @@
 /* Transaction filter */
 "Shielded sent" = "Shielded sent";
 
-/* Transfer of own funds into the private shielded balance */
-"Shielded transfer" = "Shielded transfer";
-
 "Shielded wallet starting…" = "Shielded wallet starting…";
 
-/* A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet */
-"Shielded transfer (pending)" = "Shielded transfer (pending)";
-
 /* Transfer of own funds from the private shielded balance back to the transparent wallet */
-"Shielded withdrawal" = "Shielded withdrawal";
+"Shielded → Transparent" = "Shielded → Transparent";
 
 /* Explore Dash */
 "Show all locations" = "Show all locations";
@@ -3818,6 +3806,18 @@
 
 /* No comment provided by engineer. */
 "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal." = "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal.";
+
+/* Transfer of own funds into the Platform balance */
+"Transparent → Platform" = "Transparent → Platform";
+
+/* A to-Platform transfer whose asset lock is committed but the funding hasn't completed yet */
+"Transparent → Platform (pending)" = "Transparent → Platform (pending)";
+
+/* Transfer of own funds into the private shielded balance */
+"Transparent → Shielded" = "Transparent → Shielded";
+
+/* A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet */
+"Transparent → Shielded (pending)" = "Transparent → Shielded (pending)";
 
 /* Raw transaction inspector */
 "Unknown special type %d" = "Unknown special type %d";

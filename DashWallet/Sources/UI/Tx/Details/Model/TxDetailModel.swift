@@ -36,17 +36,17 @@ class TxDetailModel: NSObject {
         // what actually happened.
         if transaction.isShieldedTransfer {
             return transaction.isPendingShieldedTransfer
-                ? NSLocalizedString("Shielded transfer (pending)",
+                ? NSLocalizedString("Transparent → Shielded (pending)",
                                     comment: "A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet")
-                : NSLocalizedString("Shielded transfer",
+                : NSLocalizedString("Transparent → Shielded",
                                     comment: "Transfer of own funds into the private shielded balance")
         }
         if transaction.isShieldedWithdrawalReceipt {
-            return NSLocalizedString("Shielded withdrawal",
+            return NSLocalizedString("Shielded → Transparent",
                                      comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
         }
         if transaction.isPlatformFundingTransfer {
-            return NSLocalizedString("Platform transfer",
+            return NSLocalizedString("Transparent → Platform",
                                      comment: "Transfer of own funds into the Platform balance")
         }
         return direction.title
