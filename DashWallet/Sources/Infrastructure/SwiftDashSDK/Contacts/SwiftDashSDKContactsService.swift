@@ -148,6 +148,10 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// call eagerly; also runs automatically on every (debounced)
     /// SwiftData save.
     func refresh() {
+        // Seed / update the txid → DashPay-payment overlay alongside every
+        // snapshot rebuild (service init covers the launch case, where the
+        // home tx list renders before the first contacts sync pass).
+        DashPayPaymentTxLookup.shared.refresh()
         guard let ownerId = DWCurrentUserIdentityInfo.shared.identityId,
               let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
             // No identity (or storage not up yet) — an empty contact
@@ -273,6 +277,9 @@ final class SwiftDashSDKContactsService: ObservableObject {
         } catch {
             Self.logger.error("👥 CONTACTS :: payments projection failed: \(String(describing: error), privacy: .public)")
         }
+        // The projection may have upserted payment rows; keep the tx-list
+        // classification overlay in step.
+        DashPayPaymentTxLookup.shared.refresh()
     }
 
     // MARK: - Notifications read-state (bell badge)
@@ -756,5 +763,74 @@ final class SwiftDashSDKContactsService: ObservableObject {
 final class ContactsNotificationsBridge: NSObject {
     @objc static var unreadCount: UInt {
         UInt(SwiftDashSDKContactsService.shared.unreadNotificationCount)
+    }
+}
+
+// MARK: - DashPay payment tx lookup
+
+/// Thread-safe txid → DashPay-payment snapshot, mirrored from
+/// `PersistentDashpayPayment` — the same overlay shape as
+/// `ShieldedTxLookup`. The home transaction list uses it to classify
+/// DIP-15 contact payments: dash-spv's net-change view misreads an
+/// outgoing contact payment as an incoming +amount (the jointly-derived
+/// payment address is watched by our wallet, while the spent inputs
+/// aren't attributed), so the payment record written by the Rust
+/// payment history — which knows the true direction and amount — wins.
+///
+/// Keys are display-order txid hex, lowercased (the `PersistentDashpayPayment.txid`
+/// convention, which matches explorer txids and `Transaction`'s
+/// reversed `txHashData`).
+final class DashPayPaymentTxLookup {
+    static let shared = DashPayPaymentTxLookup()
+
+    struct PaymentInfo: Sendable {
+        let amountDuffs: UInt64
+        /// True when the wallet's identity SENT this payment.
+        let isOutgoing: Bool
+        let counterpartyIdentityId: Data
+    }
+
+    private let lock = NSLock()
+    private var infoByTxid: [String: PaymentInfo] = [:]
+
+    private init() {}
+
+    /// Snapshot entry for a txid (display-order hex), or nil when the tx
+    /// is not a recorded DashPay payment. Thread-safe; touches no SwiftData.
+    func info(forTxidHex txidHex: String) -> PaymentInfo? {
+        let key = txidHex.lowercased()
+        lock.lock()
+        defer { lock.unlock() }
+        return infoByTxid[key]
+    }
+
+    /// Rebuild the snapshot from the active container's payment rows.
+    /// Main actor: reads the SwiftData `mainContext`. A nil container
+    /// clears the snapshot; a transient fetch error keeps the previous one.
+    @MainActor
+    func refresh() {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            store([:])
+            return
+        }
+        do {
+            let rows = try container.mainContext.fetch(FetchDescriptor<PersistentDashpayPayment>())
+            var map: [String: PaymentInfo] = [:]
+            for row in rows where row.amountDuffs > 0 {
+                map[row.txid.lowercased()] = PaymentInfo(
+                    amountDuffs: row.amountDuffs,
+                    isOutgoing: row.direction == .sent,
+                    counterpartyIdentityId: row.counterpartyIdentityId)
+            }
+            store(map)
+        } catch {
+            // Keep the previous snapshot on a transient fetch failure.
+        }
+    }
+
+    private func store(_ map: [String: PaymentInfo]) {
+        lock.lock()
+        infoByTxid = map
+        lock.unlock()
     }
 }
