@@ -36,6 +36,14 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     private var homeView: HomeView!
     weak var delegate: (HomeViewControllerDelegate & DWWipeDelegate)?
 
+    /// True while the home feed is scrolled to the top — the navigation
+    /// bar stays hidden there so the balance header owns the space; it
+    /// slides in once the balances scroll away. Read by
+    /// `BaseNavigationController` through `isNavigationBarHidden` on
+    /// every navigation transition, so pushed screens keep their bar and
+    /// popping back restores the current scroll-derived state.
+    private var hidesNavigationBarAtTop = true
+
     #if DASHPAY
     var isBackButtonHidden: Bool = false
     private var invitationSetup: DWInvitationSetupState?
@@ -43,7 +51,9 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     #else
     var isBackButtonHidden: Bool = true
     #endif
-    
+
+    var isNavigationBarHidden: Bool { hidesNavigationBarAtTop }
+
     override var payModel: any DWPayModelProtocol {
         get { return model.payModel }
         set { }
@@ -93,6 +103,12 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         super.viewWillAppear(animated)
 
         navigationController?.navigationBar.applyOpaqueAppearance(with: UIColor.dw_dashNavigationBlue(), shadowColor: .clear)
+        // Apply the scroll-derived bar state directly too —
+        // `BaseNavigationController.willShow` reads `isNavigationBarHidden`
+        // on transitions, but the home tab must also start hidden on
+        // first display and stay correct if hosted outside that
+        // navigation controller subclass.
+        navigationController?.setNavigationBarHidden(hidesNavigationBarAtTop, animated: animated)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -647,6 +663,21 @@ extension HomeViewController: HomeViewDelegate {
     func homeViewShowSyncingStatus() {
         let controller = SyncingAlertViewController()
         present(controller, animated: true, completion: nil)
+    }
+
+    func homeViewDidChangeTopBarVisibility(shouldShow: Bool) {
+        // At the top of the feed the navigation bar stays hidden so the
+        // balance header gets the full height; once the user scrolls the
+        // balances away, the bar (Dash logo + avatar) slides in.
+        // `isNavigationBarHidden` keeps `BaseNavigationController`'s
+        // willShow pass consistent with the live state, so pushes show
+        // the bar for their own screens and pops restore ours.
+        let shouldHide = !shouldShow
+        guard hidesNavigationBarAtTop != shouldHide else { return }
+        hidesNavigationBarAtTop = shouldHide
+        if navigationController?.topViewController === self {
+            navigationController?.setNavigationBarHidden(shouldHide, animated: true)
+        }
     }
 
     func homeViewShowInternalTransfer(direction: InternalTransferDirection, source: InternalTransferSource) {

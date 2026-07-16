@@ -25,6 +25,9 @@ import DashUIKit
 protocol HomeViewDelegate: AnyObject {
     func homeViewShowSyncingStatus()
     func homeViewShowInternalTransfer(direction: InternalTransferDirection, source: InternalTransferSource)
+    /// Scroll-derived chrome: false at the top of the feed (bar hidden,
+    /// balance header owns the space), true once the user scrolls down.
+    func homeViewDidChangeTopBarVisibility(shouldShow: Bool)
 
 #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
@@ -159,6 +162,22 @@ extension HomeView: HomeHeaderViewDelegate {
     }
 }
 
+/// Scroll thresholds (pt scrolled down) for showing/hiding the
+/// navigation bar. Two values (hysteresis) so the bar doesn't flicker
+/// when the user rests exactly on the boundary. File-scoped because
+/// `HomeViewContent` is generic (no static stored properties).
+private let kTopBarShowThreshold: CGFloat = 100
+private let kTopBarHideThreshold: CGFloat = 60
+
+/// Scroll offset of the home feed's top sentinel in the scroll view's
+/// coordinate space — feeds the collapsing top bar.
+private struct HomeScrollOffsetKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 struct HomeViewContent<Content: View>: View {
     @State private var selectedTxDataItem: TransactionListDataItem? = nil
     @State private var showFilterDialog: Bool = false
@@ -179,7 +198,8 @@ struct HomeViewContent<Content: View>: View {
     @ViewBuilder var headerView: () -> Content
     
     private let topOverscrollSize: CGFloat = 1000 // Fixed value for top overscroll area
-    
+
+    @State private var isTopBarShown = false
 
     var body: some View {
         ZStack {
@@ -187,7 +207,17 @@ struct HomeViewContent<Content: View>: View {
                 ZStack { Color.navigationBarColor } // Top overscroll area
                     .frame(height: topOverscrollSize)
                     .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
-                
+
+                // Zero-height scroll sentinel: its minY in the scroll
+                // view's space is 0 at rest and goes negative as the
+                // user scrolls down. Drives the collapsing top bar.
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: HomeScrollOffsetKey.self,
+                        value: proxy.frame(in: .named("homeScroll")).minY)
+                }
+                .frame(height: 0)
+
                 LazyVStack(pinnedViews: [.sectionHeaders]) {
                     HomeBalanceView(
                         viewModel: balanceModel,
@@ -279,6 +309,21 @@ struct HomeViewContent<Content: View>: View {
                     }
                 }
                 .padding(EdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0))
+            }
+            .coordinateSpace(name: "homeScroll")
+            .onPreferenceChange(HomeScrollOffsetKey.self) { minY in
+                // minY == 0 at rest; more negative the further down the
+                // user has scrolled.
+                let scrolled = -minY
+                if isTopBarShown {
+                    if scrolled < kTopBarHideThreshold {
+                        isTopBarShown = false
+                        delegate?.homeViewDidChangeTopBarVisibility(shouldShow: false)
+                    }
+                } else if scrolled > kTopBarShowThreshold {
+                    isTopBarShown = true
+                    delegate?.homeViewDidChangeTopBarVisibility(shouldShow: true)
+                }
             }
         }
         .sheet(item: $selectedTxDataItem) { item in
