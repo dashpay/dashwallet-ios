@@ -58,6 +58,9 @@
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
 
+/* Raw transaction inspector */
+"%d bytes" = "%d bytes";
+
 /* Masternode keys overview */
 "%d key(s)" = "%d key(s)";
 
@@ -365,6 +368,9 @@
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
 
+/* Raw transaction inspector */
+"As text" = "As text";
+
 /* DashSpend */
 "at" = "at";
 
@@ -614,11 +620,17 @@
 /* No comment provided by engineer. */
 "Claimable balance" = "Claimable balance";
 
+/* Raw transaction inspector */
+"Coinbase (new coins)" = "Coinbase (new coins)";
+
 /* Masternodes */
 "Collateral" = "Collateral";
 
 /* Balance info sheet section */
 "Cons" = "Cons";
+
+/* Raw transaction inspector */
+"Copy Raw Transaction" = "Copy Raw Transaction";
 
 /* Masternodes */
 "Couldn't fetch the balance (network error). Try Refresh." = "Couldn't fetch the balance (network error). Try Refresh.";
@@ -1643,6 +1655,15 @@
 /* Buy Sell Portal */
 "Initializing" = "Initializing";
 
+/* Raw transaction inspector */
+"Input %d" = "Input %d";
+
+/* Raw transaction inspector */
+"Input %d — outpoint" = "Input %d — outpoint";
+
+/* Raw transaction inspector */
+"Inputs (%d)" = "Inputs (%d)";
+
 /* No comment provided by engineer. */
 "Insufficient funds" = "Insufficient funds";
 
@@ -1898,6 +1919,9 @@
 
 /* No comment provided by engineer. */
 "Locking funds" = "Locking funds";
+
+/* Raw transaction inspector */
+"Locktime" = "Locktime";
 
 /* Log in */
 "Log in" = "Log in";
@@ -2232,6 +2256,9 @@
 /* SPV sync peer type */
 "Node" = "Node";
 
+/* Raw transaction inspector */
+"Non-standard" = "Non-standard";
+
 /* adjective, security level */
 "None" = "None";
 
@@ -2352,6 +2379,12 @@
 /* Masternodes */
 "Outpoint" = "Outpoint";
 
+/* Raw transaction inspector */
+"Output %d" = "Output %d";
+
+/* Raw transaction inspector */
+"Outputs (%d)" = "Outputs (%d)";
+
 /* Masternodes */
 "Owner" = "Owner";
 
@@ -2369,6 +2402,9 @@
 
 /* No comment provided by engineer. */
 "P2SH platform addresses aren't supported yet. Use a P2PKH recipient." = "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.";
+
+/* Raw transaction inspector */
+"Payload hex" = "Payload hex";
 
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Payments confirm in seconds with InstantSend";
@@ -2682,6 +2718,12 @@
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Rate: %1$@ = %2$@";
 
+/* Raw transaction inspector */
+"Raw transaction" = "Raw transaction";
+
+/* Raw transaction inspector */
+"Raw transaction unavailable" = "Raw transaction unavailable";
+
 /* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead.";
 
@@ -2910,6 +2952,15 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret.";
 
+/* Raw transaction inspector */
+"Script" = "Script";
+
+/* Raw transaction inspector */
+"Script signature" = "Script signature";
+
+/* Raw transaction inspector */
+"Script type" = "Script type";
+
 /* DashPay */
 "SDK is not initialized" = "SDK is not initialized";
 
@@ -3104,6 +3155,9 @@
 /* DashPay Contacts */
 "Sent you a request" = "Sent you a request";
 
+/* Raw transaction inspector */
+"Sequence" = "Sequence";
+
 /* DashSpend */
 "Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
 
@@ -3196,6 +3250,9 @@
 /* DashSpend */
 "Single" = "Single";
 
+/* Raw transaction inspector */
+"Size" = "Size";
+
 /* No comment provided by engineer. */
 "Skip" = "Skip";
 
@@ -3225,6 +3282,9 @@
 
 /* Explore Dash/Filters */
 "Sorted by name" = "Sorted by name";
+
+/* Raw transaction inspector */
+"Special payload" = "Special payload";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "Specify Amount";
@@ -3369,6 +3429,9 @@
 
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "Tap the address from the clipboard to paste it";
+
+/* Raw transaction inspector */
+"Tap to copy" = "Tap to copy";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "Tap to hide balance";
@@ -3598,6 +3661,9 @@
 /* Dash DEX / dex_error_allowance */
 "This token needs approval before it can be swapped." = "This token needs approval before it can be swapped.";
 
+/* Raw transaction inspector */
+"This transaction's raw bytes are not stored on this device." = "This transaction's raw bytes are not stored on this device.";
+
 /* InternalTransfer recovery */
 "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it." = "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.";
 
@@ -3660,6 +3726,9 @@
 
 /* No comment provided by engineer. */
 "Transaction id" = "Transaction id";
+
+/* Raw transaction inspector */
+"Transaction ID" = "Transaction ID";
 
 /* A verb, button title. */
 "Transfer" = "Transfer";
@@ -3729,11 +3798,20 @@
 /* No comment provided by engineer. */
 "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal." = "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal.";
 
+/* Raw transaction inspector */
+"Unknown special type %d" = "Unknown special type %d";
+
 /* Balance info sheet */
 "Uses one of the most audited and tested zero-knowledge libraries (Orchard)" = "Uses one of the most audited and tested zero-knowledge libraries (Orchard)";
 
+/* Raw transaction inspector */
+"Version" = "Version";
+
 /* Balance info sheet */
 "Very efficient with low fees" = "Very efficient with low fees";
+
+/* Raw transaction inspector */
+"View Transaction" = "View Transaction";
 
 /* Full-balance Platform → Transparent withdrawal */
 "Withdraws the entire balance" = "Withdraws the entire balance";
