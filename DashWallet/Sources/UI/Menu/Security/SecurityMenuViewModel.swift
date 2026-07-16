@@ -23,7 +23,6 @@ enum SecurityMenuNavigationDestination {
     case viewRecoveryPhrase
     case changePin
     case advancedSecurity
-    case wallets
     case resetWalletDebug
 }
 
@@ -120,16 +119,8 @@ class SecurityMenuViewModel: ObservableObject {
         ))
         
         menuItems.append(MenuItemModel(
-            title: NSLocalizedString("Wallets", comment: ""),
-            icon: .custom("image.reset.wallet", maxHeight: 22),
-            action: { [weak self] in
-                self?.navigationDestination = .wallets
-            }
-        ))
-
-        menuItems.append(MenuItemModel(
             title: "Reset Wallet (Debug)",
-            icon: .custom("image.reset.wallet", maxHeight: 22),
+            icon: .custom("image-menu-reset_wallet", maxHeight: 22),
             action: { [weak self] in
                 self?.navigationDestination = .resetWalletDebug
             }
