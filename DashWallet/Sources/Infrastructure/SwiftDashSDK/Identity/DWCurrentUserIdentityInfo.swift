@@ -395,6 +395,34 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             username = Self.nilIfEmpty(DWGlobalOptions.sharedInstance().dashpayUsername)
         }
 
+        // Self-heal the DWGlobalOptions mirror. Registration completion
+        // and Find-identities adoption are the only writers, so an
+        // identity that arrived any other way (synced in after a
+        // reinstall, registered under an older build) leaves the mirror
+        // empty forever — and every mirror reader (the menu's Join
+        // DashPay banner, DWDashPayModel's registration status) then
+        // disagrees with the SDK truth rendered everywhere else. Only an
+        // SDK-sourced name qualifies (`usernames` — the fallback above
+        // IS the mirror), and the pending-contested filter has already
+        // run, so a deferred contested registration can't sneak in. The
+        // bridge notification is posted async: this runs lazily inside a
+        // property read, and DWDashPayModel re-posting the canonical
+        // status update reentrantly mid-read is the kind of surprise we
+        // don't need.
+        if let sdkUsername = usernames.first,
+           DWGlobalOptions.sharedInstance().dashpayUsername?.isEmpty != false {
+            let options = DWGlobalOptions.sharedInstance()
+            options.dashpayUsername = sdkUsername
+            options.dashpayRegistrationCompleted = true
+            Self.logger.info(
+                "🪪 IDENT-INFO :: backfilled username mirror from SDK: \(sdkUsername, privacy: .public)")
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(
+                    name: DWIdentityRegistrationBridge.stateChangedNotification,
+                    object: nil)
+            }
+        }
+
         Self.logger.debug(
             "🪪 IDENT-INFO :: snapshot username=\(username ?? "nil", privacy: .public) hasProfile=\(displayName != nil || avatarURL != nil, privacy: .public) id=\(hex.prefix(8), privacy: .public)…")
 

@@ -69,12 +69,20 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
     }
 
     /// The menu's Join DashPay banner: only while synced AND not already
-    /// registered. A wallet whose identity owns a username (fresh
-    /// registration or an adopted discovered identity — both write the
-    /// `DWGlobalOptions.dashpayUsername` mirror) has nothing to join;
-    /// checking sync state alone kept the banner up forever.
+    /// registered. "Registered" is the SDK truth
+    /// (`DWCurrentUserIdentityInfo`, which also backfills the
+    /// `DWGlobalOptions.dashpayUsername` mirror when it finds a name the
+    /// mirror missed) OR the mirror itself — the mirror alone misses
+    /// identities that synced in without completing registration on this
+    /// install, which kept the banner up on a wallet that already has a
+    /// username.
     private func updateShowJoinDashpay() {
-        let hasUsername = DWGlobalOptions.sharedInstance().dashpayUsername?.isEmpty == false
+        var hasUsername = DWGlobalOptions.sharedInstance().dashpayUsername?.isEmpty == false
+        if !hasUsername {
+            hasUsername = MainActor.assumeIsolated {
+                DWCurrentUserIdentityInfo.shared.username?.isEmpty == false
+            }
+        }
         showJoinDashpay = model.state == .syncDone && !hasUsername
     }
     
