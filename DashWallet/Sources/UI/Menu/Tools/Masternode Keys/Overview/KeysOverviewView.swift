@@ -43,9 +43,9 @@ struct KeysOverviewContentView: View {
 
                 // Keys list container
                 VStack(spacing: kMenuVGap) {
-                    ForEach(viewModel.items, id: \.self) { item in
+                    ForEach(viewModel.items) { item in
                         KeyItemButton(item: item) {
-                            handleItemTap(item)
+                            handleItemTap(item.key)
                         }
                     }
                 }
@@ -79,17 +79,28 @@ struct KeysOverviewContentView: View {
 // MARK: - KeyItemButton
 
 struct KeyItemButton: View {
-    let item: MNKey
+    let item: KeysOverviewViewModel.Item
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 0) {
-                Text(item.title)
-                    .font(.subheadline)
-                    .foregroundColor(Color(uiColor: .dw_label()))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.key.title)
+                        .font(.subheadline)
+                        .foregroundColor(Color(uiColor: .dw_label()))
+
+                    Text(String.localizedStringWithFormat(NSLocalizedString("%d key(s)", comment: "#bc-ignore!"), item.keyCount))
+                        .font(.caption)
+                        .foregroundColor(Color(uiColor: .dw_secondaryText()))
+                }
 
                 Spacer()
+
+                Text(String.localizedStringWithFormat(NSLocalizedString("%ld used", comment: "#bc-ignore!"), item.usedCount))
+                    .font(.footnote)
+                    .foregroundColor(Color(uiColor: .dw_secondaryText()))
+                    .padding(.trailing, 8)
 
                 Image("list-chevron-right")
                     .resizable()
@@ -109,14 +120,28 @@ struct KeyItemButton: View {
 
 // MARK: - KeysOverviewViewModel
 
+@MainActor
 class KeysOverviewViewModel: ObservableObject {
-    @Published var items: [MNKey] = MNKey.allCases
-}
+    struct Item: Identifiable {
+        let key: MNKey
+        /// Keys to show: everything up to the first unused index, minimum 1
+        /// (DashSync's `max(firstUnusedIndex, 1)` semantics).
+        let keyCount: Int
+        let usedCount: Int
 
-// MARK: - MNKey Identifiable
+        var id: MNKey { key }
+    }
 
-extension MNKey: Identifiable {
-    var id: Self { self }
+    @Published var items: [Item] = []
+
+    init() {
+        let usage = MasternodeKeyUsage.resolve()
+        items = MNKey.allCases.map { key in
+            Item(key: key,
+                 keyCount: max(usage.firstUnusedIndex(for: key), 1),
+                 usedCount: usage.usedCount(for: key))
+        }
+    }
 }
 
 // MARK: - Preview

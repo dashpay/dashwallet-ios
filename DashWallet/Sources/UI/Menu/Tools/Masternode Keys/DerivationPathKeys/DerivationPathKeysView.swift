@@ -45,6 +45,10 @@ class DerivationPathKeysViewModel: ObservableObject {
     func item(for info: DerivationPathInfo, at index: Int) -> DerivationPathKeysItem {
         model.itemForInfo(info, atIndex: index)
     }
+
+    func usageInfo(at index: Int) -> String {
+        model.usageInfoForKey(at: index)
+    }
 }
 
 // MARK: - DerivationPathKeysContentView
@@ -75,12 +79,18 @@ struct DerivationPathKeysContentView: View {
                         // Keypair sections
                         ForEach(0..<viewModel.numberOfSections, id: \.self) { sectionIndex in
                             VStack(alignment: .leading, spacing: 16) {
-                                // Section header: "Keypair N"
-                                Text(NSLocalizedString("Keypair", comment: "") + " \(sectionIndex)")
-                                    .font(.callout.weight(.semibold))
-                                    .foregroundColor(Color(uiColor: .dw_label()))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal, 20)
+                                // Section header: "Keypair N" + usage line
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(NSLocalizedString("Keypair", comment: "") + " \(sectionIndex)")
+                                        .font(.callout.weight(.semibold))
+                                        .foregroundColor(Color(uiColor: .dw_label()))
+
+                                    Text(viewModel.usageInfo(at: sectionIndex))
+                                        .font(.caption)
+                                        .foregroundColor(Color(uiColor: .dw_secondaryText()))
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 20)
 
                                 // Keys card
                                 VStack(spacing: kMenuVGap) {
