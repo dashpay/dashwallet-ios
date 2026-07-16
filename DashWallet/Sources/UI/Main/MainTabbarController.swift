@@ -457,12 +457,40 @@ extension MainTabbarController: HomeViewControllerDelegate {
         presentPaymentsLandingScreen(activeTab: tab)
     }
 
-    private func presentPaymentsLandingScreen(activeTab: PaymentsLandingTab) {
-        let controller = PaymentsLandingHostingController(activeTab: activeTab)
+    /// The balance-row receive arrows open a focused two-tab sheet
+    /// (Receive ↔ Internal transfer, no Send) for the tapped balance,
+    /// rather than the full-screen three-tab landing.
+    func showReceiveLanding(network: ChainNetwork) {
+        presentPaymentsLandingScreen(
+            activeTab: .receive,
+            receiveNetwork: network,
+            visibleTabs: [.receive, .internalTransfer],
+            embedInternalTransfer: true,
+            showsHeader: false,
+            asSheet: true)
+    }
+
+    private func presentPaymentsLandingScreen(activeTab: PaymentsLandingTab,
+                                              receiveNetwork: ChainNetwork = .core,
+                                              visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
+                                              embedInternalTransfer: Bool = false,
+                                              showsHeader: Bool = true,
+                                              asSheet: Bool = false) {
+        let controller = PaymentsLandingHostingController(
+            activeTab: activeTab, receiveNetwork: receiveNetwork,
+            visibleTabs: visibleTabs, embedInternalTransfer: embedInternalTransfer,
+            showsHeader: showsHeader)
         let navigationController = BaseNavigationController(rootViewController: controller)
         navigationController.isNavigationBarHidden = true
         navigationController.isModalInPresentation = false
-        navigationController.modalPresentationStyle = .fullScreen
+        if asSheet {
+            if let sheet = navigationController.sheetPresentationController {
+                sheet.detents = [.large()]
+                sheet.prefersGrabberVisible = true
+            }
+        } else {
+            navigationController.modalPresentationStyle = .fullScreen
+        }
         presentModal(navigationController)
     }
 

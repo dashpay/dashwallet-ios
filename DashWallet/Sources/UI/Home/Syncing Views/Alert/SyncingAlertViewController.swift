@@ -54,6 +54,11 @@ final class SyncingAlertViewController: BaseViewController {
         let hosting = UIHostingController(rootView: SyncingAlertView(viewModel: viewModel) { [weak self] in
             self?.dismiss(animated: true, completion: nil)
         })
+        // The alert's height changes after presentation (the connected-peers
+        // and stall sections appear once their publishers fire); without this
+        // the hosting view keeps its initially measured height and the grown
+        // content clips at the card's bottom edge.
+        hosting.sizingOptions = [.intrinsicContentSize]
         hosting.view.backgroundColor = .clear
         hosting.view.translatesAutoresizingMaskIntoConstraints = false
         addChild(hosting)

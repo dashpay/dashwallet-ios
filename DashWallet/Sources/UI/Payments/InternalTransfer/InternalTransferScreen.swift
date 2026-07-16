@@ -14,30 +14,49 @@ struct InternalTransferScreen: View {
     /// to `navigationController?.popViewController`.
     var onCompleted: () -> Void = {}
 
+    /// False when embedded under a host that renders its own title
+    /// (the balance-row receive sheet) — hides the built-in header.
+    var showsHeader: Bool = true
+
+    /// Receive-sheet variant: fixes the destination card (the balance being
+    /// received into) at the bottom, turns the rows above it into the
+    /// source picker, and hides the swap badge. `nil` = the standard
+    /// swappable transfer screen.
+    var receiveInto: ChainNetwork? = nil
+
     @State private var showConfirm: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
-
-            VStack(spacing: 16) {
-                amountRow
+            if showsHeader {
+                header
                     .padding(.horizontal, 20)
-                    .padding(.top, 12)
-
-                directionCards
-                    .padding(.horizontal, 20)
-
-                if viewModel.canContinue {
-                    transferPreview
-                        .padding(.horizontal, 20)
-                }
+                    .padding(.top, 10)
             }
-            .padding(.bottom, 8)
 
-            Spacer(minLength: 0)
+            // Scrollable so the keypad and action button stay fully on
+            // screen when vertical space is tight — embedded in the
+            // balance-row receive sheet the host's header + hero selector
+            // eat ~110pt the standalone layout has to spare. When the
+            // content fits (standalone), this behaves like the old
+            // fixed layout: top-aligned content, keypad pinned below.
+            ScrollView {
+                VStack(spacing: 16) {
+                    amountRow
+                        .padding(.horizontal, 20)
+                        .padding(.top, showsHeader ? 12 : 0)
+
+                    directionCards
+                        .padding(.horizontal, 20)
+
+                    if viewModel.canContinue {
+                        transferPreview
+                            .padding(.horizontal, 20)
+                    }
+                }
+                .padding(.bottom, 8)
+            }
+            .scrollBounceBehavior(.basedOnSize)
 
             NumericKeyboardView(
                 value: keypadBinding,
@@ -52,12 +71,13 @@ struct InternalTransferScreen: View {
         .background(Color.primaryBackground)
         .sheet(isPresented: $showConfirm) {
             InternalTransferConfirmSheet(
-                source: viewModel.source,
-                direction: viewModel.direction,
+                route: viewModel.route,
                 dashDuffs: viewModel.dashDuffs,
                 amountDuffsUnsigned: viewModel.dashDuffsUnsigned,
                 creditsAmount: viewModel.creditsPreview,
                 fiatText: viewModel.fiatAmountString,
+                withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
+                isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
                 onCancel: { showConfirm = false },
                 onCompleted: {
                     showConfirm = false
@@ -104,7 +124,7 @@ struct InternalTransferScreen: View {
                 unitPill(label: "DASH", selected: viewModel.unit == .dash) {
                     viewModel.unit = .dash
                 }
-                unitPill(label: "FIAT", selected: viewModel.unit == .fiat) {
+                unitPill(label: viewModel.fiatCurrencyCode, selected: viewModel.unit == .fiat) {
                     viewModel.unit = .fiat
                 }
             }
@@ -152,7 +172,16 @@ struct InternalTransferScreen: View {
 
     // MARK: - From / To cards
 
+    @ViewBuilder
     private var directionCards: some View {
+        if let target = receiveInto {
+            receiveCards(target: target)
+        } else {
+            swappableCards
+        }
+    }
+
+    private var swappableCards: some View {
         ZStack {
             VStack(spacing: 8) {
                 switch viewModel.direction {
@@ -176,21 +205,97 @@ struct InternalTransferScreen: View {
         }
     }
 
+    /// Receive-sheet layout: the destination stays pinned as the bottom
+    /// card; the rows above pick the source among the other two balances.
+    /// No swap badge — the destination is fixed by the tapped balance row.
+    @ViewBuilder
+    private func receiveCards(target: ChainNetwork) -> some View {
+        VStack(spacing: 8) {
+            switch target {
+            case .shielded:
+                coreSourceCard
+                platformSourceCard
+                toCard
+            case .core:
+                receiveSourceRow(.shielded)
+                receiveSourceRow(.platform)
+                toTransparentCard
+            case .platform:
+                receiveSourceRow(.shielded)
+                receiveSourceRow(.core)
+                toPlatformCard
+            }
+        }
+    }
+
+    /// Selectable From row of the receive sheet, bound to
+    /// `viewModel.receiveSource` (the .shielded target reuses the legacy
+    /// `source`-bound cards instead).
+    private func receiveSourceRow(_ network: ChainNetwork) -> some View {
+        let icon: String
+        let title: String
+        let trailing: AnyView
+        switch network {
+        case .core:
+            icon = "d.circle.fill"
+            title = NSLocalizedString("Transparent", comment: "Balance breakdown")
+            trailing = dashBalanceTrailing(viewModel.coreBalanceFormatted)
+        case .platform:
+            icon = "creditcard.fill"
+            title = NSLocalizedString("Platform", comment: "Dash Platform chain")
+            trailing = dashBalanceTrailing(viewModel.platformCreditsFormatted)
+        case .shielded:
+            icon = "shield.fill"
+            title = NSLocalizedString("Shielded", comment: "")
+            trailing = dashBalanceTrailing(viewModel.shieldedBalanceFormatted)
+        }
+        return sourceRow(
+            iconSystemName: icon,
+            caption: NSLocalizedString("From", comment: ""),
+            title: title,
+            balanceTrailing: trailing,
+            selected: viewModel.receiveSource == network,
+            action: { viewModel.receiveSource = network })
+    }
+
+    private var toTransparentCard: some View {
+        directionCard(
+            iconSystemName: "d.circle.fill",
+            iconColor: .blue,
+            caption: NSLocalizedString("To", comment: ""),
+            title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
+            balanceTrailing: dashBalanceTrailing(viewModel.coreBalanceFormatted))
+    }
+
+    private var toPlatformCard: some View {
+        directionCard(
+            iconSystemName: "creditcard.fill",
+            iconColor: .blue,
+            caption: NSLocalizedString("To", comment: ""),
+            title: NSLocalizedString("Platform", comment: "Dash Platform chain"),
+            balanceTrailing: dashBalanceTrailing(viewModel.platformCreditsFormatted))
+    }
+
+    /// Trailing balance amount + Dash currency glyph, shared by every card.
+    private func dashBalanceTrailing(_ formatted: String) -> AnyView {
+        AnyView(
+            HStack(spacing: 2) {
+                Text(formatted)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.primaryText)
+                Image("icon_dash_currency")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 14, height: 14)
+            })
+    }
+
     private var coreSourceCard: some View {
         sourceRow(
             iconSystemName: "d.circle.fill",
             caption: sourceCaption,
-            title: NSLocalizedString("Dash Wallet", comment: ""),
-            balanceTrailing: AnyView(
-                HStack(spacing: 2) {
-                    Text(viewModel.coreBalanceFormatted)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.primaryText)
-                    Image("icon_dash_currency")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 14, height: 14)
-                }),
+            title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
+            balanceTrailing: dashBalanceTrailing(viewModel.coreBalanceFormatted),
             selected: viewModel.source == .core,
             action: { viewModel.source = .core })
     }
@@ -199,17 +304,8 @@ struct InternalTransferScreen: View {
         sourceRow(
             iconSystemName: "creditcard.fill",
             caption: sourceCaption,
-            title: NSLocalizedString("Platform Payment", comment: ""),
-            balanceTrailing: AnyView(
-                HStack(spacing: 2) {
-                    Text(viewModel.platformCreditsFormatted)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.primaryText)
-                    Image("icon_dash_currency")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 14, height: 14)
-                }),
+            title: NSLocalizedString("Platform", comment: "Dash Platform chain"),
+            balanceTrailing: dashBalanceTrailing(viewModel.platformCreditsFormatted),
             selected: viewModel.source == .platform,
             action: { viewModel.source = .platform })
     }
@@ -219,7 +315,7 @@ struct InternalTransferScreen: View {
             iconSystemName: "shield.fill",
             iconColor: .blue,
             caption: NSLocalizedString("To", comment: ""),
-            title: NSLocalizedString("Shielded balance", comment: ""),
+            title: NSLocalizedString("Shielded", comment: ""),
             balanceTrailing: AnyView(
                 Text(viewModel.shieldedBalanceFormatted)
                     .font(.system(size: 14, weight: .semibold))
@@ -236,7 +332,7 @@ struct InternalTransferScreen: View {
             iconSystemName: "shield.fill",
             iconColor: .blue,
             caption: NSLocalizedString("From", comment: ""),
-            title: NSLocalizedString("Shielded balance", comment: ""),
+            title: NSLocalizedString("Shielded", comment: ""),
             balanceTrailing: AnyView(
                 Text(viewModel.shieldedBalanceFormatted)
                     .font(.system(size: 14, weight: .semibold))

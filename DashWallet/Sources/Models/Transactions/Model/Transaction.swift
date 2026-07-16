@@ -237,6 +237,29 @@ class Transaction: TransactionDataItem, Identifiable {
             && snapshot.outputAddresses.contains { ShieldedWithdrawalStore.shared.contains($0) }
     }
 
+    /// The balance-to-balance route of an internal transfer, driving the
+    /// route-specific icon pair on the tx row (source icon + destination
+    /// badge). `nil` for anything that isn't a transfer of own funds.
+    ///
+    /// Only Core-side legs exist as L1 transactions, so these are the only
+    /// routes a tx-list row can represent; Platform ↔ Shielded transfers
+    /// happen entirely on Platform and never appear in this list.
+    enum InternalTransferRoute {
+        /// "To Shielded" funding asset lock (Core → Shielded).
+        case coreToShielded
+        /// L1 payout of a shielded withdrawal (Shielded → Core).
+        case shieldedToCore
+        /// Self-send within the transparent wallet.
+        case coreToCore
+    }
+
+    var internalTransferRoute: InternalTransferRoute? {
+        if isShieldedTransfer { return .coreToShielded }
+        if isShieldedWithdrawalReceipt { return .shieldedToCore }
+        if direction == .moved { return .coreToCore }
+        return nil
+    }
+
     /// True when the shielded transfer is still pending / stuck — its asset
     /// lock is broadcast/IS-locked/CL-locked (`statusRaw` 1…3) but the shield
     /// state transition hasn't consumed it yet (4 = consumed = success). Drives
@@ -376,6 +399,13 @@ class Transaction: TransactionDataItem, Identifiable {
             }
             return NSLocalizedString("Shielded transfer",
                                      comment: "Transfer of own funds into the private shielded balance")
+        }
+        // The L1 payout of a Shielded → Core withdrawal is a transfer of own
+        // funds, not an external receive — label it as such (the row's route
+        // icons show the direction).
+        if isShieldedWithdrawalReceipt {
+            return NSLocalizedString("Shielded withdrawal",
+                                     comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
         }
         switch transactionType {
         case .classic:
