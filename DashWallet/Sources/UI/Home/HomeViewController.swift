@@ -27,6 +27,9 @@ protocol HomeViewControllerDelegate: AnyObject {
     /// Opens the payments landing on the Receive tab with `network`
     /// preselected in its Core/Platform/Shielded toggle.
     func showReceiveLanding(network: ChainNetwork)
+    /// Opens the balance-row send sheet (Send ↔ Internal) pinned to
+    /// `network` as the source.
+    func showSendLanding(network: ChainNetwork)
 }
 
 class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
@@ -688,16 +691,8 @@ extension HomeViewController: HomeViewDelegate {
         delegate?.showReceiveLanding(network: network)
     }
 
-    func homeViewShowInternalTransfer(direction: InternalTransferDirection, source: InternalTransferSource) {
-        // Sheet, not push: a push drags the blue navigation header along;
-        // the sheet keeps the transfer form on its own background with
-        // swipe-to-dismiss (Done inside the flow also dismisses).
-        let controller = InternalTransferHostingController(direction: direction, source: source)
-        if let sheet = controller.sheetPresentationController {
-            sheet.detents = [.large()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(controller, animated: true)
+    func homeViewShowSend(network: ChainNetwork) {
+        delegate?.showSendLanding(network: network)
     }
     
     #if DASHPAY

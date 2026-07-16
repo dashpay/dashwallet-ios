@@ -24,14 +24,19 @@ struct SendScreen: View {
     var onContinueCore: (String, UInt64) -> Void
     /// A non-core route finished successfully (confirm sheet's Done).
     var onSendCompleted: () -> Void
+    /// False when embedded under a host that renders its own chrome
+    /// (the balance-row send sheet) — hides the X + title header.
+    var showsHeader: Bool = true
 
     @State private var showConfirm = false
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
+            if showsHeader {
+                header
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+            }
 
             ScrollView {
                 VStack(spacing: 14) {
@@ -163,6 +168,12 @@ struct SendScreen: View {
                 Text(NSLocalizedString("This is not a valid Dash address for this network", comment: "Send screen"))
                     .font(.caption)
                     .foregroundColor(.red)
+            } else if viewModel.pinnedSourceMismatch {
+                Text(String(
+                    format: NSLocalizedString("This address can't be paid from your %@ balance", comment: "Send sheet source/destination mismatch"),
+                    viewModel.pinnedSourceTitle))
+                    .font(.caption)
+                    .foregroundColor(.red)
             }
         }
         .padding(.horizontal, 20)
@@ -247,16 +258,24 @@ struct SendScreen: View {
 
     // MARK: - From picker
 
+    @ViewBuilder
     private var sourceCards: some View {
-        VStack(spacing: 8) {
-            ForEach(viewModel.validSources, id: \.self) { network in
-                sourceRow(network)
+        if let pinned = viewModel.pinnedSource {
+            // Balance-row send sheet: the source is the tapped balance,
+            // rendered as a fixed card (no radio, not tappable).
+            sourceRow(pinned, showsRadio: false)
+                .padding(.horizontal, 20)
+        } else {
+            VStack(spacing: 8) {
+                ForEach(viewModel.validSources, id: \.self) { network in
+                    sourceRow(network)
+                }
             }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
     }
 
-    private func sourceRow(_ network: ChainNetwork) -> some View {
+    private func sourceRow(_ network: ChainNetwork, showsRadio: Bool = true) -> some View {
         let icon: String
         let title: String
         let balance: String
@@ -280,6 +299,7 @@ struct SendScreen: View {
             title: title,
             balanceTrailing: TransferSourceRow.dashBalanceTrailing(balance),
             selected: viewModel.source == network,
+            showsRadio: showsRadio,
             action: { viewModel.source = network })
     }
 

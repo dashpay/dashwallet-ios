@@ -16,6 +16,11 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// from Shielded; Shielded receives from Core). The swap badge on the
     /// form can still reverse it.
     private let embeddedTransferViewModel: InternalTransferViewModel?
+    /// Non-nil only for the balance-row send sheet: the Send tab then embeds
+    /// the external-send form pinned to the tapped balance as source, and
+    /// the Internal tab pins that balance as the transfer's From card.
+    private let embeddedSendViewModel: SendViewModel?
+    private let transferSendFrom: ChainNetwork?
     private lazy var hostingController: UIHostingController<PaymentsLandingScreen> = {
         let screen = PaymentsLandingScreen(
             viewModel: viewModel,
@@ -28,6 +33,12 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             onShieldedBalance: { [weak self] in self?.handleShieldedBalanceTap() },
             embeddedTransferViewModel: embeddedTransferViewModel,
             onTransferCompleted: { [weak self] in self?.dismiss(animated: true) },
+            transferSendFrom: transferSendFrom,
+            embeddedSendViewModel: embeddedSendViewModel,
+            onContinueCore: { [weak self] address, amountDuffs in
+                self?.continueCore(address: address, amountDuffs: amountDuffs)
+            },
+            onSendCompleted: { [weak self] in self?.dismiss(animated: true) },
             showsHeader: showsHeader)
         return UIHostingController(rootView: screen)
     }()
@@ -43,6 +54,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             ?? .send
         self.viewModel = PaymentsLandingViewModel(activeTab: resolved)
         self.embeddedTransferViewModel = nil
+        self.embeddedSendViewModel = nil
+        self.transferSendFrom = nil
         self.showsHeader = true
         super.init(nibName: nil, bundle: nil)
     }
@@ -50,22 +63,38 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// `receiveNetwork` preselects the Receive tab's Core/Platform/Shielded
     /// toggle — the balance-row receive arrows open the landing on the
     /// balance the user tapped. `visibleTabs` narrows the hero selector
-    /// (the receive sheet shows only Receive + Internal), and
-    /// `embedInternalTransfer` makes the Internal tab the transfer form
-    /// itself rather than the action-row list.
+    /// (the receive/send sheets show two tabs), and `embedInternalTransfer`
+    /// makes the Internal tab the transfer form itself rather than the
+    /// action-row list.
+    ///
+    /// `sendNetwork` builds the balance-row SEND sheet instead: the Send tab
+    /// embeds the external-send form pinned to that balance as source, and
+    /// the embedded transfer form pins it as the From card (destination
+    /// picked on the To rows).
     init(activeTab: PaymentsLandingTab,
          receiveNetwork: ChainNetwork = .core,
          visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
          embedInternalTransfer: Bool = false,
+         sendNetwork: ChainNetwork? = nil,
          showsHeader: Bool = true) {
         self.viewModel = PaymentsLandingViewModel(
             activeTab: activeTab, network: receiveNetwork, visibleTabs: visibleTabs)
         self.showsHeader = showsHeader
-        if embedInternalTransfer {
+        if let sendNetwork {
+            self.embeddedSendViewModel = SendViewModel(pinnedSource: sendNetwork)
+            self.transferSendFrom = sendNetwork
+            let transferViewModel = InternalTransferViewModel()
+            transferViewModel.applySendRoute(from: sendNetwork)
+            self.embeddedTransferViewModel = transferViewModel
+        } else if embedInternalTransfer {
+            self.embeddedSendViewModel = nil
+            self.transferSendFrom = nil
             let transferViewModel = InternalTransferViewModel()
             transferViewModel.applyReceiveRoute(into: receiveNetwork)
             self.embeddedTransferViewModel = transferViewModel
         } else {
+            self.embeddedSendViewModel = nil
+            self.transferSendFrom = nil
             self.embeddedTransferViewModel = nil
         }
         super.init(nibName: nil, bundle: nil)
@@ -120,6 +149,24 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private func pushSendScreen() {
         let controller = SendScreenViewController()
         navigationController?.pushViewController(controller, animated: true)
+    }
+
+    /// The base class routes a scanned payment straight into the payment
+    /// processor (its `DWQRScanModelDelegate` conformance is a private
+    /// class extension, so this can't be `override` — the matching selector
+    /// shadows it through ObjC dispatch). When the Send tab embeds the send
+    /// form, a scan fills that form instead; the full landing's Scan QR
+    /// action keeps the standard processing path.
+    @objc(qrScanModel:didScanPaymentInput:)
+    func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
+        dismiss(animated: true) { [weak self] in
+            guard let self else { return }
+            if let sendViewModel = self.embeddedSendViewModel {
+                sendViewModel.ingestScannedInput(paymentInput)
+            } else {
+                self.processPaymentInput(paymentInput)
+            }
+        }
     }
 
     private func handleShieldedBalanceTap() {

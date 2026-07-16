@@ -24,6 +24,12 @@ struct InternalTransferScreen: View {
     /// swappable transfer screen.
     var receiveInto: ChainNetwork? = nil
 
+    /// Send-sheet variant (the balance-row out arrows): fixes the source
+    /// card (the balance being sent from) at the top, turns the rows below
+    /// it into the destination picker, and hides the swap badge. Takes
+    /// precedence over `receiveInto`.
+    var sendFrom: ChainNetwork? = nil
+
     @State private var showConfirm: Bool = false
 
     var body: some View {
@@ -113,10 +119,75 @@ struct InternalTransferScreen: View {
 
     @ViewBuilder
     private var directionCards: some View {
-        if let target = receiveInto {
+        if let source = sendFrom {
+            sendCards(source: source)
+        } else if let target = receiveInto {
             receiveCards(target: target)
         } else {
             swappableCards
+        }
+    }
+
+    /// Send-sheet layout: the source stays pinned as the top card; the rows
+    /// below pick the destination among the other two balances. No swap
+    /// badge — the source is fixed by the tapped balance row.
+    @ViewBuilder
+    private func sendCards(source: ChainNetwork) -> some View {
+        VStack(spacing: 8) {
+            pinnedCard(source, caption: NSLocalizedString("From", comment: ""))
+            switch source {
+            case .core:
+                sendTargetRow(.shielded)
+                sendTargetRow(.platform)
+            case .platform:
+                sendTargetRow(.shielded)
+                sendTargetRow(.core)
+            case .shielded:
+                sendTargetRow(.core)
+                sendTargetRow(.platform)
+            }
+        }
+    }
+
+    /// Selectable To row of the send sheet, bound to `viewModel.sendTarget`.
+    private func sendTargetRow(_ network: ChainNetwork) -> some View {
+        let display = networkDisplay(network)
+        return sourceRow(
+            iconSystemName: display.icon,
+            caption: NSLocalizedString("To", comment: ""),
+            title: display.title,
+            balanceTrailing: dashBalanceTrailing(display.balance),
+            selected: viewModel.sendTarget == network,
+            action: { viewModel.sendTarget = network })
+    }
+
+    /// Non-tappable pinned endpoint card (the fixed From of the send sheet).
+    private func pinnedCard(_ network: ChainNetwork, caption: String) -> some View {
+        let display = networkDisplay(network)
+        return directionCard(
+            iconSystemName: display.icon,
+            iconColor: .blue,
+            caption: caption,
+            title: display.title,
+            balanceTrailing: dashBalanceTrailing(display.balance))
+    }
+
+    /// Icon / title / formatted balance for a balance row, one source of
+    /// truth for the pinned cards and picker rows.
+    private func networkDisplay(_ network: ChainNetwork) -> (icon: String, title: String, balance: String) {
+        switch network {
+        case .core:
+            return ("d.circle.fill",
+                    NSLocalizedString("Transparent", comment: "Balance breakdown"),
+                    viewModel.coreBalanceFormatted)
+        case .platform:
+            return ("creditcard.fill",
+                    NSLocalizedString("Platform", comment: "Dash Platform chain"),
+                    viewModel.platformCreditsFormatted)
+        case .shielded:
+            return ("shield.fill",
+                    NSLocalizedString("Shielded", comment: ""),
+                    viewModel.shieldedBalanceFormatted)
         }
     }
 
@@ -171,28 +242,12 @@ struct InternalTransferScreen: View {
     /// `viewModel.receiveSource` (the .shielded target reuses the legacy
     /// `source`-bound cards instead).
     private func receiveSourceRow(_ network: ChainNetwork) -> some View {
-        let icon: String
-        let title: String
-        let trailing: AnyView
-        switch network {
-        case .core:
-            icon = "d.circle.fill"
-            title = NSLocalizedString("Transparent", comment: "Balance breakdown")
-            trailing = dashBalanceTrailing(viewModel.coreBalanceFormatted)
-        case .platform:
-            icon = "creditcard.fill"
-            title = NSLocalizedString("Platform", comment: "Dash Platform chain")
-            trailing = dashBalanceTrailing(viewModel.platformCreditsFormatted)
-        case .shielded:
-            icon = "shield.fill"
-            title = NSLocalizedString("Shielded", comment: "")
-            trailing = dashBalanceTrailing(viewModel.shieldedBalanceFormatted)
-        }
+        let display = networkDisplay(network)
         return sourceRow(
-            iconSystemName: icon,
+            iconSystemName: display.icon,
             caption: NSLocalizedString("From", comment: ""),
-            title: title,
-            balanceTrailing: trailing,
+            title: display.title,
+            balanceTrailing: dashBalanceTrailing(display.balance),
             selected: viewModel.receiveSource == network,
             action: { viewModel.receiveSource = network })
     }
@@ -393,6 +448,9 @@ struct TransferSourceRow: View {
     let title: String
     let balanceTrailing: AnyView
     let selected: Bool
+    /// False renders a fixed (non-picker) endpoint card: no radio circle
+    /// and no selection border.
+    var showsRadio: Bool = true
     var action: () -> Void
 
     /// Trailing balance amount + Dash currency glyph, the standard trailing
@@ -433,17 +491,21 @@ struct TransferSourceRow: View {
 
                 balanceTrailing
 
-                radioIndicator
+                if showsRadio {
+                    radioIndicator
+                }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .background(Color.secondaryBackground)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(selected ? Color.dashBlue : Color.clear, lineWidth: selected ? 1.5 : 0))
+                    .stroke(showsRadio && selected ? Color.dashBlue : Color.clear,
+                            lineWidth: showsRadio && selected ? 1.5 : 0))
             .cornerRadius(12)
         }
         .buttonStyle(.plain)
+        .disabled(!showsRadio)
     }
 
     private var radioIndicator: some View {

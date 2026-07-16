@@ -482,15 +482,31 @@ extension MainTabbarController: HomeViewControllerDelegate {
             asSheet: true)
     }
 
+    /// The balance-row send (out) arrows: the mirror of the receive sheet.
+    /// A two-tab sheet (Send ↔ Internal transfer) pinned to the tapped
+    /// balance as the SOURCE — the Send tab is the external-send form, the
+    /// Internal tab is the transfer form with the From card fixed and the
+    /// destination picked on the To rows.
+    func showSendLanding(network: ChainNetwork) {
+        presentPaymentsLandingScreen(
+            activeTab: .send,
+            visibleTabs: [.send, .internalTransfer],
+            sendNetwork: network,
+            showsHeader: false,
+            asSheet: true)
+    }
+
     private func presentPaymentsLandingScreen(activeTab: PaymentsLandingTab,
                                               receiveNetwork: ChainNetwork = .core,
                                               visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
                                               embedInternalTransfer: Bool = false,
+                                              sendNetwork: ChainNetwork? = nil,
                                               showsHeader: Bool = true,
                                               asSheet: Bool = false) {
         let controller = PaymentsLandingHostingController(
             activeTab: activeTab, receiveNetwork: receiveNetwork,
             visibleTabs: visibleTabs, embedInternalTransfer: embedInternalTransfer,
+            sendNetwork: sendNetwork,
             showsHeader: showsHeader)
         let navigationController = BaseNavigationController(rootViewController: controller)
         navigationController.isNavigationBarHidden = true

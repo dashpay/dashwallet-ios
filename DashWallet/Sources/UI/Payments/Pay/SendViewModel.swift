@@ -72,7 +72,17 @@ final class SendViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
 
-    init() {
+    /// Set by the balance-row send sheet: the source is fixed to the tapped
+    /// balance instead of being user-pickable, and an address whose type
+    /// that balance can't pay surfaces as a mismatch (`pinnedSourceMismatch`)
+    /// rather than silently re-picking the source.
+    let pinnedSource: ChainNetwork?
+
+    init(pinnedSource: ChainNetwork? = nil) {
+        self.pinnedSource = pinnedSource
+        if let pinnedSource {
+            source = pinnedSource
+        }
         refreshClipboardSuggestion()
 
         NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)
@@ -179,12 +189,32 @@ final class SendViewModel: ObservableObject {
 
         // Keep the source legal for the new destination; prefer keeping the
         // user's pick, else the first valid source that has any balance,
-        // else the first valid source.
+        // else the first valid source. A pinned source never moves — an
+        // incompatible destination reads back as `pinnedSourceMismatch`.
         let valid = validSources
-        if !valid.isEmpty, !valid.contains(source) {
+        if pinnedSource == nil, !valid.isEmpty, !valid.contains(source) {
             source = valid.first { balanceDuffs(of: $0) > 0 } ?? valid[0]
         }
         routeDidChange()
+    }
+
+    /// True when the entered address is valid but its type can't be paid
+    /// from the pinned source (e.g. a Platform address while sending from
+    /// the Transparent balance) — drives the inline mismatch label.
+    var pinnedSourceMismatch: Bool {
+        pinnedSource != nil && destination != nil && route == nil
+    }
+
+    /// Localized name of the pinned source balance, for the mismatch label.
+    var pinnedSourceTitle: String {
+        switch pinnedSource {
+        case .core, nil:
+            return NSLocalizedString("Transparent", comment: "Balance breakdown")
+        case .platform:
+            return NSLocalizedString("Platform", comment: "Dash Platform chain")
+        case .shielded:
+            return NSLocalizedString("Shielded", comment: "")
+        }
     }
 
     private func sourceDidChange() {

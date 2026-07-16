@@ -52,24 +52,6 @@ final class SendScreenViewController: DWBasePayViewController {
         }
     }
 
-    // MARK: - Core → Core routing
-
-    /// Core L1 send with the inline amount: a BIP21 `dash:` URI carries the
-    /// fixed amount into the classic payment processor, which goes straight
-    /// to its confirm (real fee math) — the amount screen is skipped because
-    /// the intent already has an amount.
-    private func continueCore(address: String, amountDuffs: UInt64) {
-        guard address.isValidDashAddressForCurrentNetwork else { return }
-        var uriString = "dash:\(address)"
-        if amountDuffs > 0 {
-            let dashAmount = InternalTransferViewModel.formatTyped(
-                amountDuffs.dashAmount, fractionDigits: 8)
-            uriString += "?amount=\(dashAmount)"
-        }
-        guard let url = URL(string: uriString) else { return }
-        performPay(to: url)
-    }
-
     // MARK: - QR scan
 
     /// The base class routes a scanned payment straight into the payment
@@ -83,6 +65,27 @@ final class SendScreenViewController: DWBasePayViewController {
         dismiss(animated: true) { [weak self] in
             self?.sendViewModel.ingestScannedInput(paymentInput)
         }
+    }
+}
+
+// MARK: - Core → Core routing
+
+extension DWBasePayViewController {
+    /// Core L1 send with a fixed amount: a BIP21 `dash:` URI carries the
+    /// amount into the classic payment processor, which goes straight to
+    /// its confirm (real fee math) — the amount screen is skipped because
+    /// the intent already has an amount. Shared by the Send screen and the
+    /// balance-row send sheet.
+    func continueCore(address: String, amountDuffs: UInt64) {
+        guard address.isValidDashAddressForCurrentNetwork else { return }
+        var uriString = "dash:\(address)"
+        if amountDuffs > 0 {
+            let dashAmount = InternalTransferViewModel.formatTyped(
+                amountDuffs.dashAmount, fractionDigits: 8)
+            uriString += "?amount=\(dashAmount)"
+        }
+        guard let url = URL(string: uriString) else { return }
+        performPay(to: url)
     }
 }
 

@@ -18,19 +18,29 @@ struct PaymentsLandingScreen: View {
     var onShieldedBalance: () -> Void
     /// When set, the Internal tab embeds the transfer form directly (the
     /// same screen the balance-row arrows used to present standalone)
-    /// instead of the action-row list. Set by the receive sheet.
+    /// instead of the action-row list. Set by the receive and send sheets.
     var embeddedTransferViewModel: InternalTransferViewModel? = nil
     var onTransferCompleted: () -> Void = {}
-    /// False for the balance-row receive sheet: its grabber + hero selector
-    /// are the top chrome — no X close button or title row.
+    /// Set by the balance-row send sheet: the embedded transfer form pins
+    /// this balance as its From card (destination picked on the To rows),
+    /// instead of the receive sheet's pinned-destination layout.
+    var transferSendFrom: ChainNetwork? = nil
+    /// When set, the Send tab embeds the external-send form (pinned to the
+    /// tapped balance as source) instead of the action-row list. Set by
+    /// the balance-row send sheet.
+    var embeddedSendViewModel: SendViewModel? = nil
+    var onContinueCore: (String, UInt64) -> Void = { _, _ in }
+    var onSendCompleted: () -> Void = {}
+    /// False for the balance-row receive/send sheets: their grabber + hero
+    /// selector are the top chrome — no X close button or title row.
     var showsHeader: Bool = true
 
     var body: some View {
-        // Tighter chrome when the Internal tab embeds the full transfer
-        // form — its amount + cards + keypad need most of the sheet.
-        let isEmbeddedTransfer = viewModel.activeTab == .internalTransfer
-            && embeddedTransferViewModel != nil
-        VStack(alignment: .center, spacing: isEmbeddedTransfer ? 12 : 20) {
+        // Tighter chrome when a tab embeds a full form (transfer or send) —
+        // its amount + cards + keypad need most of the sheet.
+        let isEmbeddedForm = (viewModel.activeTab == .internalTransfer && embeddedTransferViewModel != nil)
+            || (viewModel.activeTab == .send && embeddedSendViewModel != nil)
+        VStack(alignment: .center, spacing: isEmbeddedForm ? 12 : 20) {
             if showsHeader {
                 header
             }
@@ -45,25 +55,45 @@ struct PaymentsLandingScreen: View {
                 Spacer()
             case .internalTransfer:
                 if let transferViewModel = embeddedTransferViewModel {
-                    InternalTransferScreen(
-                        viewModel: transferViewModel,
-                        onCompleted: onTransferCompleted,
-                        showsHeader: false,
-                        receiveInto: viewModel.network)
-                        // Keep the pinned route in lockstep with the receive
-                        // toggle, so the fixed To card and the executed
-                        // transfer can never disagree.
-                        .onAppear { transferViewModel.applyReceiveRoute(into: viewModel.network) }
-                        .onChange(of: viewModel.network) { network in
-                            transferViewModel.applyReceiveRoute(into: network)
-                        }
+                    if let sendFrom = transferSendFrom {
+                        // Send sheet: the From card is pinned by the tapped
+                        // balance; the To rows pick the destination.
+                        InternalTransferScreen(
+                            viewModel: transferViewModel,
+                            onCompleted: onTransferCompleted,
+                            showsHeader: false,
+                            sendFrom: sendFrom)
+                    } else {
+                        InternalTransferScreen(
+                            viewModel: transferViewModel,
+                            onCompleted: onTransferCompleted,
+                            showsHeader: false,
+                            receiveInto: viewModel.network)
+                            // Keep the pinned route in lockstep with the receive
+                            // toggle, so the fixed To card and the executed
+                            // transfer can never disagree.
+                            .onAppear { transferViewModel.applyReceiveRoute(into: viewModel.network) }
+                            .onChange(of: viewModel.network) { network in
+                                transferViewModel.applyReceiveRoute(into: network)
+                            }
+                    }
                 } else {
                     internalContent
                     Spacer()
                 }
             case .send:
-                sendContent
-                Spacer()
+                if let sendViewModel = embeddedSendViewModel {
+                    SendScreen(
+                        viewModel: sendViewModel,
+                        onClose: onClose,
+                        onScanQR: onScanQR,
+                        onContinueCore: onContinueCore,
+                        onSendCompleted: onSendCompleted,
+                        showsHeader: false)
+                } else {
+                    sendContent
+                    Spacer()
+                }
             }
         }
         .background(Color.primaryBackground)

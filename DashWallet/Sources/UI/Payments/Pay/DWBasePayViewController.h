@@ -21,6 +21,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class DWPaymentInput;
 @protocol DWPayModelProtocol;
 
 @interface DWBasePayViewController : UIViewController
@@ -37,6 +38,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
 - (void)performPayToURL:(NSURL *)url;
+/// Run an already-built payment input through the payment controller.
+/// Public so Swift subclasses that shadow the QR-scan delegate can fall
+/// back to the standard processing path.
+- (void)processPaymentInput:(DWPaymentInput *)input;
 
 @end
 
