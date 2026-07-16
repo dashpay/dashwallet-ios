@@ -29,20 +29,16 @@ enum HomeBalanceViewState: Int {
 /// Home header: the combined total (transparent + platform + shielded)
 /// as the hero amount, then one row per balance with its fiat value and
 /// circular in/out transfer buttons. Every row's in-arrow opens the
-/// payments landing on the Receive tab with that balance's network
-/// preselected (its hero tabs keep Internal transfer one tap away);
-/// the out-arrows keep their direct routes:
-///   - Transparent: out = Send (external money);
-///   - Platform:    out = Platform → Shielded;
-///   - Shielded:    out = Shielded → Transparent.
+/// receive sheet (Receive ↔ Internal) with that balance pinned as the
+/// destination; every out-arrow opens the mirrored send sheet
+/// (Send ↔ Internal) with that balance pinned as the source.
 struct HomeBalanceView: View {
     @ObservedObject var viewModel: BalanceModel
     @ObservedObject private var platformSync = PlatformAddressSyncCoordinator.shared
     @State private var opacity: Double = 0.3
     var onLongPress: () -> Void
     var onReceive: (ChainNetwork) -> Void = { _ in }
-    var onSend: () -> Void = {}
-    var onTransfer: (InternalTransferDirection, InternalTransferSource) -> Void = { _, _ in }
+    var onSend: (ChainNetwork) -> Void = { _ in }
     /// Tap on a row's body (icon/title/amount — not the arrows): opens the
     /// what-is-this-balance info sheet for that balance.
     var onInfo: (ChainNetwork) -> Void = { _ in }
@@ -133,7 +129,7 @@ struct HomeBalanceView: View {
                 duffs: viewModel.value,
                 infoAction: { onInfo(.core) },
                 inAction: { onReceive(.core) },
-                outAction: onSend)
+                outAction: { onSend(.core) })
             rowDivider
             balanceRow(
                 icon: "cloud",
@@ -141,7 +137,7 @@ struct HomeBalanceView: View {
                 duffs: platformDuffs,
                 infoAction: { onInfo(.platform) },
                 inAction: { onReceive(.platform) },
-                outAction: { onTransfer(.toShielded, .platform) })
+                outAction: { onSend(.platform) })
             rowDivider
             balanceRow(
                 icon: "shield",
@@ -149,7 +145,7 @@ struct HomeBalanceView: View {
                 duffs: shieldedDuffs,
                 infoAction: { onInfo(.shielded) },
                 inAction: { onReceive(.shielded) },
-                outAction: { onTransfer(.fromShielded, .core) })
+                outAction: { onSend(.shielded) })
         }
         .padding(.horizontal, 12)
         .background(Color.white.opacity(0.12))

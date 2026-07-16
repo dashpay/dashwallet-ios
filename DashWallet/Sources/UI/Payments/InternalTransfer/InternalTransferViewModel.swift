@@ -77,6 +77,20 @@ final class InternalTransferViewModel: ObservableObject {
     /// swappable screen (legacy direction/source model).
     @Published private(set) var receiveTarget: ChainNetwork? = nil
 
+    /// Fixed source when this VM drives the send sheet's embedded form
+    /// (the balance-row out arrows): the balance being sent FROM. The To
+    /// rows pick `sendTarget` among the other two balances. Mutually
+    /// exclusive with `receiveTarget`; `nil` = not the send sheet.
+    @Published private(set) var sendSource: ChainNetwork? = nil
+
+    /// The destination balance picked on the send sheet's To rows. Only
+    /// meaningful while `sendSource` is set. Changing it re-derives `route`
+    /// and kicks the withdrawal preflight when Platform → Core becomes
+    /// active.
+    @Published var sendTarget: ChainNetwork = .shielded {
+        didSet { routeDidChange() }
+    }
+
     /// The source balance picked on the receive sheet's From rows. Only
     /// meaningful for `receiveTarget` .core / .platform (the .shielded
     /// target reuses the legacy `source` picker). Changing it re-derives
@@ -114,8 +128,34 @@ final class InternalTransferViewModel: ObservableObject {
         routeDidChange()
     }
 
+    /// Pins the route for the send sheet: a transfer OUT OF `from`. The To
+    /// rows pick the destination among the other two balances. Default
+    /// destinations follow the old direct out-arrow routes: Core and
+    /// Platform default to Shielded (privacy-forward); Shielded defaults
+    /// to Core.
+    func applySendRoute(from source: ChainNetwork) {
+        sendSource = source
+        switch source {
+        case .core, .platform:
+            if sendTarget == source { sendTarget = .shielded }
+        case .shielded:
+            if sendTarget == .shielded { sendTarget = .core }
+        }
+        routeDidChange()
+    }
+
     /// The canonical route for validation/fees/execution.
     var route: InternalTransferRoute {
+        if let source = sendSource {
+            switch (source, sendTarget) {
+            case (.core, .platform): return .coreToPlatform
+            case (.platform, .core): return .platformToCore
+            case (.platform, _): return .platformToShielded
+            case (.shielded, .platform): return .shieldedToPlatform
+            case (.shielded, _): return .shieldedToCore
+            case (.core, _): return .coreToShielded
+            }
+        }
         if let target = receiveTarget {
             switch target {
             case .shielded:

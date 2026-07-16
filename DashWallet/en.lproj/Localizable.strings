@@ -3589,6 +3589,9 @@
 /* CrowdNode */
 "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device." = "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.";
 
+/* Send sheet source/destination mismatch */
+"This address can't be paid from your %@ balance" = "This address can't be paid from your %@ balance";
+
 /* Dash DEX / dex_error_sanctioned */
 "This address can't be used for swaps." = "This address can't be used for swaps.";
 

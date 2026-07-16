@@ -24,14 +24,24 @@ struct SendScreen: View {
     var onContinueCore: (String, UInt64) -> Void
     /// A non-core route finished successfully (confirm sheet's Done).
     var onSendCompleted: () -> Void
+    /// False when embedded under a host that renders its own chrome
+    /// (the balance-row send sheet) — hides the X + title header.
+    var showsHeader: Bool = true
 
     @State private var showConfirm = false
+    /// True while the user is deliberately editing an already-valid address
+    /// (they tapped the locked card). A valid address otherwise renders
+    /// locked-in — compact, single line — while the amount is entered.
+    @State private var isEditingAddress = false
+    @FocusState private var addressFieldFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
-            header
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
+            if showsHeader {
+                header
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+            }
 
             ScrollView {
                 VStack(spacing: 14) {
@@ -134,6 +144,14 @@ struct SendScreen: View {
 
     // MARK: - Address
 
+    /// A valid address locks in as a compact single-line card while the
+    /// amount is entered; tapping it reopens the editable field. The lock
+    /// waits for focus to leave the field (first keypad tap, scroll, or
+    /// keyboard dismissal) so the field never vanishes mid-typing.
+    private var isAddressLocked: Bool {
+        viewModel.destination != nil && !isEditingAddress && !addressFieldFocused
+    }
+
     private var addressField: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
@@ -145,27 +163,84 @@ struct SendScreen: View {
                     destinationBadge(destination)
                 }
             }
-            TextField(
-                NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
-                text: $viewModel.addressText,
-                axis: .vertical)
-                .font(.system(.footnote, design: .monospaced))
-                .foregroundColor(.primaryText)
-                .padding(12)
-                .background(Color.secondaryBackground)
-                .cornerRadius(10)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .keyboardType(.asciiCapable)
-                .lineLimit(2...4)
+            if isAddressLocked {
+                lockedAddressCard
+            } else {
+                TextField(
+                    NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
+                    text: $viewModel.addressText,
+                    axis: .vertical)
+                    .font(.system(.footnote, design: .monospaced))
+                    .foregroundColor(.primaryText)
+                    .padding(12)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(10)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.asciiCapable)
+                    .lineLimit(2...4)
+                    .focused($addressFieldFocused)
+                    .onAppear {
+                        // Rendered after tapping the locked card → put the
+                        // cursor straight back into the field.
+                        if isEditingAddress {
+                            addressFieldFocused = true
+                        }
+                    }
+                    .onChange(of: addressFieldFocused) { _, focused in
+                        // Focus left the field → re-lock (when valid).
+                        if !focused {
+                            isEditingAddress = false
+                        }
+                    }
+                    .onChange(of: viewModel.destination) { _, destination in
+                        // The address just became valid (a paste, or the
+                        // final typed character) → lock in right away.
+                        // Software-keyboard-less setups (simulator with a
+                        // hardware keyboard) never drop focus on their own,
+                        // so don't wait for that.
+                        if destination != nil {
+                            addressFieldFocused = false
+                            isEditingAddress = false
+                        }
+                    }
+            }
 
             if viewModel.showsInvalidAddress {
                 Text(NSLocalizedString("This is not a valid Dash address for this network", comment: "Send screen"))
                     .font(.caption)
                     .foregroundColor(.red)
+            } else if viewModel.pinnedSourceMismatch {
+                Text(String(
+                    format: NSLocalizedString("This address can't be paid from your %@ balance", comment: "Send sheet source/destination mismatch"),
+                    viewModel.pinnedSourceTitle))
+                    .font(.caption)
+                    .foregroundColor(.red)
             }
         }
         .padding(.horizontal, 20)
+    }
+
+    /// The locked-in address: middle-truncated single line + pencil.
+    /// Tapping reopens the editable field with the cursor in place.
+    private var lockedAddressCard: some View {
+        Button(action: { isEditingAddress = true }) {
+            HStack(spacing: 8) {
+                Text(truncateMiddle(viewModel.trimmedAddress, visible: 10))
+                    .font(.system(.footnote, design: .monospaced))
+                    .foregroundColor(.primaryText)
+                    .lineLimit(1)
+                Spacer()
+                Image(systemName: "pencil")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity)
+            .background(Color.secondaryBackground)
+            .cornerRadius(10)
+        }
+        .buttonStyle(.plain)
     }
 
     private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {
@@ -247,16 +322,24 @@ struct SendScreen: View {
 
     // MARK: - From picker
 
+    @ViewBuilder
     private var sourceCards: some View {
-        VStack(spacing: 8) {
-            ForEach(viewModel.validSources, id: \.self) { network in
-                sourceRow(network)
+        if let pinned = viewModel.pinnedSource {
+            // Balance-row send sheet: the source is the tapped balance,
+            // rendered as a fixed card (no radio, not tappable).
+            sourceRow(pinned, showsRadio: false)
+                .padding(.horizontal, 20)
+        } else {
+            VStack(spacing: 8) {
+                ForEach(viewModel.validSources, id: \.self) { network in
+                    sourceRow(network)
+                }
             }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
     }
 
-    private func sourceRow(_ network: ChainNetwork) -> some View {
+    private func sourceRow(_ network: ChainNetwork, showsRadio: Bool = true) -> some View {
         let icon: String
         let title: String
         let balance: String
@@ -280,6 +363,7 @@ struct SendScreen: View {
             title: title,
             balanceTrailing: TransferSourceRow.dashBalanceTrailing(balance),
             selected: viewModel.source == network,
+            showsRadio: showsRadio,
             action: { viewModel.source = network })
     }
 
@@ -289,6 +373,10 @@ struct SendScreen: View {
         Binding(
             get: { viewModel.amountText == "0" ? "" : viewModel.amountText },
             set: { newValue in
+                // First keypad tap moves the user from address entry to
+                // amount entry: drop the field's focus so a valid address
+                // locks in (and the system keyboard leaves).
+                addressFieldFocused = false
                 if newValue.isEmpty {
                     viewModel.amountText = "0"
                 } else {
@@ -518,7 +606,7 @@ struct SendConfirmSheet: View {
             return NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             return NSLocalizedString("Shielded balance", comment: "")
-        case .coreToCore:
+        case .coreToCore, .coreToShielded:
             return NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
         }
     }
@@ -553,6 +641,12 @@ struct SendConfirmSheet: View {
     /// the internal transfer's confirm sheet. `nil` → the row shows "—".
     private var networkFeeCredits: UInt64? {
         switch route {
+        case .coreToShielded:
+            // ShieldFromAssetLock: base shielded fee + asset-lock base cost
+            // (same estimate as the internal Core → Shielded transfer).
+            guard let base = try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+            else { return nil }
+            return base + InternalTransferConfirmSheet.assetLockBaseCostCredits
         case .platformToPlatform:
             // Credit transfer: the metered transition fee. The executor
             // states ~0.001 DASH as the conservative max.
@@ -650,9 +744,13 @@ struct SendConfirmSheet: View {
         var steps: [ShieldedTransferStepList.Step] = [
             .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing)
         ]
+        // Only the asset-lock route has the on-chain locking stage.
+        if route == .coreToShielded {
+            steps.append(.init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking))
+        }
         // Only shielded legs build an Orchard proof.
         switch route {
-        case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
+        case .coreToShielded, .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
             steps.append(.init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving))
         case .platformToPlatform, .platformToCore, .coreToCore:
             break
@@ -666,6 +764,14 @@ struct SendConfirmSheet: View {
     private func confirm() {
         Task {
             switch route {
+            case .coreToShielded:
+                guard let destinationRaw43 else {
+                    coordinator.reset()
+                    return
+                }
+                await coordinator.performAssetLock(
+                    amountDuffs: UInt64(dashDuffs),
+                    recipientRaw43: destinationRaw43)
             case .platformToPlatform:
                 await coordinator.performPlatformSend(
                     destination: destinationAddress,
@@ -701,6 +807,22 @@ struct SendConfirmSheet: View {
     }
 
     private func tryAgain() {
+        // If the just-failed Core → Shielded attempt already committed its
+        // asset lock, RESUME that exact outpoint with the same recipient
+        // instead of building a second lock (which strands the first) —
+        // mirrors the internal transfer's retry.
+        if route == .coreToShielded,
+           let op = coordinator.lastAssetLockOutPoint,
+           let destinationRaw43 {
+            coordinator.reset()
+            Task {
+                await coordinator.resumeAssetLock(
+                    outPointTxidWire: op.txidWire,
+                    outPointVout: op.vout,
+                    recipientRaw43: destinationRaw43)
+            }
+            return
+        }
         coordinator.reset()
         confirm()
     }

@@ -33,6 +33,10 @@ final class SendViewModel: ObservableObject {
     /// rest run through `ShieldedTransferCoordinator` / the Platform seam.
     enum Route: Equatable {
         case coreToCore
+        /// BIP44 UTXOs → asset lock → Type 18 shield note for the
+        /// recipient's Orchard address (remainder semantics: they receive
+        /// `lock_value − pool_fee`).
+        case coreToShielded
         case platformToPlatform
         case platformToCore
         case shieldedToCore
@@ -72,7 +76,17 @@ final class SendViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
 
-    init() {
+    /// Set by the balance-row send sheet: the source is fixed to the tapped
+    /// balance instead of being user-pickable, and an address whose type
+    /// that balance can't pay surfaces as a mismatch (`pinnedSourceMismatch`)
+    /// rather than silently re-picking the source.
+    let pinnedSource: ChainNetwork?
+
+    init(pinnedSource: ChainNetwork? = nil) {
+        self.pinnedSource = pinnedSource
+        if let pinnedSource {
+            source = pinnedSource
+        }
         refreshClipboardSuggestion()
 
         NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)
@@ -179,12 +193,32 @@ final class SendViewModel: ObservableObject {
 
         // Keep the source legal for the new destination; prefer keeping the
         // user's pick, else the first valid source that has any balance,
-        // else the first valid source.
+        // else the first valid source. A pinned source never moves — an
+        // incompatible destination reads back as `pinnedSourceMismatch`.
         let valid = validSources
-        if !valid.isEmpty, !valid.contains(source) {
+        if pinnedSource == nil, !valid.isEmpty, !valid.contains(source) {
             source = valid.first { balanceDuffs(of: $0) > 0 } ?? valid[0]
         }
         routeDidChange()
+    }
+
+    /// True when the entered address is valid but its type can't be paid
+    /// from the pinned source (e.g. a Platform address while sending from
+    /// the Transparent balance) — drives the inline mismatch label.
+    var pinnedSourceMismatch: Bool {
+        pinnedSource != nil && destination != nil && route == nil
+    }
+
+    /// Localized name of the pinned source balance, for the mismatch label.
+    var pinnedSourceTitle: String {
+        switch pinnedSource {
+        case .core, nil:
+            return NSLocalizedString("Transparent", comment: "Balance breakdown")
+        case .platform:
+            return NSLocalizedString("Platform", comment: "Dash Platform chain")
+        case .shielded:
+            return NSLocalizedString("Shielded", comment: "")
+        }
     }
 
     private func sourceDidChange() {
@@ -196,12 +230,15 @@ final class SendViewModel: ObservableObject {
     /// Which balances can fund a send to the entered destination.
     /// Core addresses can be paid from any bucket; Platform addresses from
     /// Platform credits or the shielded pool (there is no external
-    /// core → platform funding); shielded addresses only from the pool.
+    /// core → platform funding); shielded addresses from the pool or the
+    /// Core balance (asset-lock shield — `shieldedShield` has no recipient
+    /// parameter, so Platform credits can't pay an external shielded
+    /// address).
     var validSources: [ChainNetwork] {
         switch destination {
         case .core: return [.core, .platform, .shielded]
         case .platform: return [.platform, .shielded]
-        case .shielded: return [.shielded]
+        case .shielded: return [.shielded, .core]
         case nil: return []
         }
     }
@@ -210,6 +247,7 @@ final class SendViewModel: ObservableObject {
         guard let destination else { return nil }
         switch (source, destination) {
         case (.core, .core): return .coreToCore
+        case (.core, .shielded): return .coreToShielded
         case (.platform, .platform): return .platformToPlatform
         case (.platform, .core): return .platformToCore
         case (.shielded, .core): return .shieldedToCore
@@ -381,10 +419,12 @@ final class SendViewModel: ObservableObject {
     /// amount. `nil` = requirement unavailable → callers fail closed.
     private var feeReserveCredits: UInt64? {
         switch route {
-        case .coreToCore, .platformToCore, nil:
+        case .coreToCore, .coreToShielded, .platformToCore, nil:
             // L1 send fees are handled by the payment processor; the
-            // full-balance platform withdrawal nets its fee out of the
-            // preflighted payout.
+            // asset-lock shield carves its pool fee from the locked value
+            // (nothing reserved from the Core balance, mirroring the
+            // internal transfer); the full-balance platform withdrawal
+            // nets its fee out of the preflighted payout.
             return 0
         case .platformToPlatform:
             return Self.platformTransferFeeReserveCredits
@@ -435,6 +475,11 @@ final class SendViewModel: ObservableObject {
             // The L1 fee rides on top; the payment processor rejects an
             // unfundable send with its own error, so gate on the balance only.
             return dashDuffsUnsigned <= coreBalanceDuffs
+        case .coreToShielded:
+            // Asset-lock route: the pool fee is carved from the locked value
+            // and the Rust side rejects an undersized lock — same envelope
+            // as the internal Core → Shielded transfer.
+            return dashDuffsUnsigned <= coreBalanceDuffs
         case .platformToPlatform:
             guard let reserve = feeReserveCredits else { return false }
             return platformCredits >= reserve
@@ -456,7 +501,7 @@ final class SendViewModel: ObservableObject {
     func fillMaxFromWallet() {
         let sourceDuffs: UInt64
         switch route {
-        case .coreToCore, nil:
+        case .coreToCore, .coreToShielded, nil:
             sourceDuffs = coreBalanceDuffs
         case .platformToPlatform:
             sourceDuffs = creditsMinusFeeReserve(platformCredits) / 1000

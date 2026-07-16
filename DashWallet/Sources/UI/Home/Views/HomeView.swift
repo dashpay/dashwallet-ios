@@ -24,11 +24,13 @@ import DashUIKit
 
 protocol HomeViewDelegate: AnyObject {
     func homeViewShowSyncingStatus()
-    func homeViewShowInternalTransfer(direction: InternalTransferDirection, source: InternalTransferSource)
     /// Opens the payments landing on the Receive tab with `network`
     /// preselected — the balance rows' receive arrows land on the QR for
     /// the balance the user tapped, with the Internal tab one tap away.
     func homeViewShowReceive(network: ChainNetwork)
+    /// The mirror for the balance rows' send (out) arrows: the send sheet
+    /// (Send ↔ Internal) pinned to `network` as the source.
+    func homeViewShowSend(network: ChainNetwork)
     /// Scroll-derived chrome: false at the top of the feed (bar hidden,
     /// balance header owns the space), true once the user scrolls down.
     func homeViewDidChangeTopBarVisibility(shouldShow: Bool)
@@ -233,11 +235,8 @@ struct HomeViewContent<Content: View>: View {
                         onReceive: { network in
                             delegate?.homeViewShowReceive(network: network)
                         },
-                        onSend: {
-                            performShortcut(ShortcutAction(type: .send))
-                        },
-                        onTransfer: { direction, source in
-                            delegate?.homeViewShowInternalTransfer(direction: direction, source: source)
+                        onSend: { network in
+                            delegate?.homeViewShowSend(network: network)
                         },
                         onInfo: { network in
                             balanceInfoNetwork = network
