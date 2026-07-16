@@ -607,6 +607,22 @@ struct HomeViewContent<Content: View>: View {
                 }
             }
             .frame(minHeight: 66)
+
+        case .shieldedActivity(let item):
+            DashUIKit.TransactionView(
+                iconView: transferRouteIcon("shield.fill"),
+                secondaryIcon: item.secondarySystemIcon.map { DashIconSource.system($0) },
+                title: item.title,
+                subtitle: item.shortTimeString,
+                details: item.detailsText,
+                dashAmount: item.signedDashAmount,
+                amountSign: item.direction == .selfTransfer ? .none : .always,
+                fiat: item.fiatAmount,
+                trailingStatusText: item.trailingStatusText
+            ) {
+                self.selectedTxDataItem = txDataItem
+            }
+            .frame(minHeight: 66)
         }
     }
 }
@@ -821,6 +837,8 @@ struct TransactionDetailsSheet: View {
             )
         case .tx(let txItem, _):
             TXDetailVCWrapper(tx: txItem, navigateBack: $backNavigationRequested)
+        case .shieldedActivity(let item):
+            ShieldedActivityDetailsView(item: item)
         }
     }
 }

@@ -372,6 +372,21 @@ class HomeViewModel: ObservableObject {
                 return .tx(wrappedTx, self.resolveMetadata(for: wrappedTx.txHashData, in: metadataSnapshots))
             }
 
+            // Interleave the shielded operations (private receives/sends,
+            // Platform↔Shielded moves, shielded identity fundings) — the
+            // Core rows above only cover operations with an L1 leg. The
+            // day-grouping sort below merges the two timelines.
+            let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity()
+            for shielded in shieldedItems {
+                guard self.passesShieldedFilter(
+                    item: shielded,
+                    selected: self.selectedFilters,
+                    hasRewards: hasRewards,
+                    hasMasternodes: hasMasternodes)
+                else { continue }
+                items.append(.shieldedActivity(shielded))
+            }
+
             self.txByHash.removeAll()
             items.forEach { item in
                 self.txByHash[item.id] = item
@@ -794,6 +809,39 @@ extension HomeViewModel {
         return !selected.isDisjoint(with: categories(of: transaction, giftCardTxIds: giftCardTxIds))
     }
 
+    /// Filter check for a pure-shielded history item — the counterpart of
+    /// `passesFilter(transaction:...)` with the same "everything offered
+    /// selected → show all" fast path. Direction maps to the dedicated
+    /// shielded categories only (never plain sent/received: those mean
+    /// on-chain transparent movements).
+    private func passesShieldedFilter(
+        item: ShieldedActivityItem,
+        selected: Set<TransactionFilterCategory>,
+        hasRewards: Bool,
+        hasMasternodes: Bool
+    ) -> Bool {
+        var offered = Set(TransactionFilterCategory.allCases)
+        if !hasRewards {
+            offered.remove(.rewards)
+        }
+        if !hasMasternodes {
+            offered.remove(.masternode)
+        }
+        if selected.isSuperset(of: offered) {
+            return true
+        }
+        var categories: Set<TransactionFilterCategory> = []
+        switch item.direction {
+        case .incoming:
+            categories.insert(.shieldedReceived)
+        case .outgoing:
+            categories.insert(.shieldedSent)
+        case .selfTransfer:
+            categories.formUnion([.shieldedSent, .shieldedReceived])
+        }
+        return !selected.isDisjoint(with: categories)
+    }
+
     /// Categories a transaction belongs to. Overlaps are allowed (a gift-card
     /// purchase is also a sent tx); rewards and shielded receipts are carved
     /// out of received, mirroring how the old single-select filter separated
@@ -1003,6 +1051,44 @@ class SwiftDashSDKWalletSource: TransactionSource {
     static func fetch(txid: Data) -> Transaction? {
         guard let (container, walletId) = hostHandles() else { return nil }
         return fetchOne(txid: txid, in: ModelContext(container), walletId: walletId)
+    }
+
+    /// The active wallet's shielded operations as history items, for
+    /// interleaving with the Core rows. Safe from any thread.
+    ///
+    /// Two reductions happen here rather than in the view model:
+    /// - Kinds whose Core leg already renders as a history row are
+    ///   dropped — ShieldFromAssetLock (`Transaction.isShieldedTransfer`)
+    ///   and Withdrawal (`Transaction.isShieldedWithdrawalReceipt`) —
+    ///   so one user action never shows as two rows.
+    /// - Rows are deduped by `entryId`: an intra-wallet transfer writes
+    ///   a Sent row on the sending account and a Received row on the
+    ///   receiving account for the same operation; the outgoing
+    ///   (initiating) side wins.
+    static func fetchShieldedActivity() -> [ShieldedActivityItem] {
+        guard let (container, walletId) = hostHandles() else { return [] }
+        let context = ModelContext(container)
+        let descriptor = FetchDescriptor<PersistentShieldedActivity>(
+            predicate: #Predicate { $0.walletId == walletId })
+        guard let rows = try? context.fetch(descriptor) else { return [] }
+
+        let coreLegKinds = [
+            ShieldedActivityItem.Kind.shieldFromAssetLock.rawValue,
+            ShieldedActivityItem.Kind.withdrawal.rawValue,
+        ]
+        var byEntry: [Data: PersistentShieldedActivity] = [:]
+        for row in rows where !coreLegKinds.contains(row.kindTag) {
+            if let existing = byEntry[row.entryId] {
+                let existingOutgoing = existing.direction == ShieldedActivityItem.Direction.outgoing.rawValue
+                let rowOutgoing = row.direction == ShieldedActivityItem.Direction.outgoing.rawValue
+                if !existingOutgoing && rowOutgoing {
+                    byEntry[row.entryId] = row
+                }
+            } else {
+                byEntry[row.entryId] = row
+            }
+        }
+        return byEntry.values.map { ShieldedActivityItem(row: $0) }
     }
 
     /// The host is `@MainActor`-isolated; grab its container + active-wallet

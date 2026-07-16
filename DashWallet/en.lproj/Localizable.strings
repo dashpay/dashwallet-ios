@@ -695,6 +695,8 @@
 "Confirm Platform Send" = "Confirm Platform Send";
 
 /* SPV diagnostics */
+
+"Confirmed" = "Confirmed";
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start.";
 
 /* ZenLedger */
@@ -1233,6 +1235,8 @@
 "Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
+
+"Failed" = "Failed";
 "Failed to load barcode" = "Failed to load barcode";
 
 /* Coinbase */
@@ -2614,6 +2618,8 @@
 "Platform wallet manager unavailable" = "Platform wallet manager unavailable";
 
 /* Coinbase/Buy Dash */
+
+"Platform → Shielded" = "Platform → Shielded";
 "Please add a payment method on Coinbase" = "Please add a payment method on Coinbase";
 
 /* Network Unavailable */
@@ -2947,6 +2953,8 @@
 "Restore an existing wallet" = "Restore an existing wallet";
 
 /* Location Service Status */
+
+"Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data.";
 "Restricted" = "Restricted";
 
 /* Usernames */
@@ -3272,9 +3280,13 @@
 /* Transaction filter */
 "Shielded sent" = "Shielded sent";
 
+
+"Shielded Spend" = "Shielded Spend";
 "Shielded wallet starting…" = "Shielded wallet starting…";
 
 /* Transfer of own funds from the private shielded balance back to the transparent wallet */
+
+"Shielded → Platform" = "Shielded → Platform";
 "Shielded → Transparent" = "Shielded → Transparent";
 
 /* Explore Dash */
@@ -3985,6 +3997,8 @@
 "Unknown Balance" = "Unknown Balance";
 
 /* No comment provided by engineer. */
+
+"Unshielded" = "Unshielded";
 "Unsupported URL" = "Unsupported URL";
 
 /* No comment provided by engineer. */

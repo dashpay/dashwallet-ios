@@ -29,6 +29,7 @@ class TransactionGroup: Identifiable {
 
 enum TransactionListDataItem {
     case tx(Transaction, TxRowMetadata?)
+    case shieldedActivity(ShieldedActivityItem)
     case crowdnode(FullCrowdNodeSignUpTxSet)
     case coinjoin(CoinJoinMixingTxSet)
     case coinjoinWithdrawal(CoinJoinWithdrawalTxSet)
@@ -45,9 +46,11 @@ extension TransactionListDataItem: Identifiable {
             return set.id
         case .tx(let tx, _):
             return tx.txHashHexString
+        case .shieldedActivity(let item):
+            return item.id
         }
     }
-    
+
     var date: Date {
         switch self {
         case .crowdnode(let set):
@@ -58,6 +61,8 @@ extension TransactionListDataItem: Identifiable {
             return set.groupDay
         case .tx(let tx, _):
             return tx.date
+        case .shieldedActivity(let item):
+            return item.date
         }
     }
 }
