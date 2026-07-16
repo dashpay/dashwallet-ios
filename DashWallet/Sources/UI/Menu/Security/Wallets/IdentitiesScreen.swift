@@ -89,6 +89,17 @@ struct IdentitiesScreen: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+        // Find-identities outcome ("Found N new identities" / none found).
+        .alert(
+            NSLocalizedString("Find identities", comment: "Identities"),
+            isPresented: Binding(
+                get: { viewModel.infoMessage != nil },
+                set: { if !$0 { viewModel.infoMessage = nil } })
+        ) {
+            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+        } message: {
+            Text(viewModel.infoMessage ?? "")
+        }
     }
 
     // MARK: - Subviews
@@ -104,6 +115,24 @@ struct IdentitiesScreen: View {
                         .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
                 }
                 Spacer()
+                // Explicit Find-identities command: DIP-9 scan of the active
+                // wallet against Platform — discovers identities the store
+                // has never seen (reinstall / imported phrase / other device).
+                Button(action: { Task { await viewModel.discoverIdentities() } }) {
+                    if viewModel.isDiscovering {
+                        SwiftUI.ProgressView()
+                            .frame(width: 36, height: 36)
+                    } else {
+                        Image(systemName: "person.crop.circle.badge.questionmark")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.primary)
+                            .frame(width: 36, height: 36)
+                            .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                    }
+                }
+                .disabled(viewModel.isDiscovering || viewModel.isRefreshing)
+                .accessibilityLabel(NSLocalizedString("Find identities", comment: "Identities"))
+
                 Button(action: { Task { await viewModel.refreshFromNetwork() } }) {
                     if viewModel.isRefreshing {
                         SwiftUI.ProgressView()
@@ -116,7 +145,7 @@ struct IdentitiesScreen: View {
                             .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
                     }
                 }
-                .disabled(viewModel.isRefreshing)
+                .disabled(viewModel.isRefreshing || viewModel.isDiscovering)
                 .accessibilityLabel(NSLocalizedString("Refresh", comment: ""))
             }
             .padding(.horizontal, 5)
@@ -153,6 +182,27 @@ struct IdentitiesScreen: View {
                 .foregroundColor(.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
+
+            // Restored/imported wallet: the identity may already exist on
+            // Platform even though this device has never seen it.
+            Button(action: { Task { await viewModel.discoverIdentities() } }) {
+                HStack(spacing: 6) {
+                    if viewModel.isDiscovering {
+                        SwiftUI.ProgressView()
+                    } else {
+                        Image(systemName: "person.crop.circle.badge.questionmark")
+                    }
+                    Text(NSLocalizedString("Find identities", comment: "Identities"))
+                }
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(.dashBlue)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Color.dashBlue.opacity(0.1))
+                .clipShape(Capsule())
+            }
+            .disabled(viewModel.isDiscovering)
+            .padding(.top, 8)
             Spacer()
         }
         .frame(maxWidth: .infinity)

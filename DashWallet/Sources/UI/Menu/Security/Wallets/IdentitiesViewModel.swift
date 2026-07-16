@@ -63,7 +63,11 @@ final class IdentitiesViewModel: ObservableObject {
 
     @Published private(set) var rows: [IdentityRowModel] = []
     @Published private(set) var isRefreshing = false
+    @Published private(set) var isDiscovering = false
     @Published var errorMessage: String?
+    /// Outcome of the explicit Find-identities scan ("Found 2 new
+    /// identities" / none found) — presented as an informational alert.
+    @Published var infoMessage: String?
 
     /// Reload the row models from SwiftData. Cheap; called on appear and
     /// after every network refresh.
@@ -122,6 +126,49 @@ final class IdentitiesViewModel: ObservableObject {
             errorMessage = String(
                 format: NSLocalizedString("Could not refresh %d identities", comment: "Identities"),
                 failures)
+        }
+    }
+
+    /// Explicit "Find identities" command — the example app's
+    /// "Re-scan for Identities": a DIP-9 gap-limit scan of the ACTIVE
+    /// wallet's identity-authentication derivation tree against Platform
+    /// (`ManagedPlatformWallet.discoverIdentities`). Unlike the refresh,
+    /// this DISCOVERS identities the local store has never seen — after a
+    /// reinstall, an imported recovery phrase, or a registration made on
+    /// another device with the same seed. Discoveries are persisted by
+    /// the SDK's identity persister; `startIndex: 0` forces a full
+    /// re-walk rather than resuming from the cached scan watermark.
+    /// Scans only the loaded (active) wallet — other on-device wallets
+    /// would each need their own loaded handle.
+    func discoverIdentities() async {
+        guard !isDiscovering else { return }
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            errorMessage = NSLocalizedString("Wallet is not ready", comment: "Identities")
+            return
+        }
+        isDiscovering = true
+        defer {
+            isDiscovering = false
+            reload()
+        }
+        do {
+            let found = try await wallet.discoverIdentities(startIndex: 0)
+            if found.isEmpty {
+                infoMessage = NSLocalizedString(
+                    "No new identities were found for this wallet",
+                    comment: "Identities")
+            } else {
+                infoMessage = found.count == 1
+                    ? NSLocalizedString("Found 1 new identity", comment: "Identities")
+                    : String(
+                        format: NSLocalizedString("Found %d new identities", comment: "Identities"),
+                        found.count)
+                // Backfill balances / usernames for the fresh rows.
+                reload()
+                await refreshFromNetwork()
+            }
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 
