@@ -186,6 +186,13 @@ extension TxDetailModel {
     }
 
     var shouldDisplayOutputAddresses: Bool {
+        // An asset-lock funding's owned outputs are only its change —
+        // labeling them "Internally moved to" reads like the transfer's
+        // destination. The From/To route rows carry that instead, and the
+        // raw transaction inspector shows every output for the curious.
+        if transaction.isShieldedTransfer {
+            return false
+        }
         if direction == .received && hasDestinationUser {
             return false
         }
