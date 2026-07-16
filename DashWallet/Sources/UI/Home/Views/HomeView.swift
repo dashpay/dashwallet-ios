@@ -473,6 +473,7 @@ struct HomeViewContent<Content: View>: View {
         case .coreToShielded: return ("d.circle.fill", "shield.fill")
         case .shieldedToCore: return ("shield.fill", "d.circle.fill")
         case .coreToPlatform: return ("d.circle.fill", "creditcard.fill")
+        case .coreToIdentity: return ("d.circle.fill", "person.crop.circle.fill")
         case .coreToCore, nil: return nil
         }
     }
@@ -488,7 +489,9 @@ struct HomeViewContent<Content: View>: View {
             return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
         case .coreToPlatform:
             return NSLocalizedString("Transparent → Platform", comment: "Transfer of own funds into the Platform balance")
-        case .coreToCore, nil:
+        case .coreToIdentity, .coreToCore, nil:
+            // Identity fundings carry their purpose in the title
+            // ("Identity registration"), so no route pill.
             return nil
         }
     }
@@ -568,7 +571,7 @@ struct HomeViewContent<Content: View>: View {
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
-                    : txItem.isPendingPlatformFunding
+                    : txItem.isPendingPlatformFunding || txItem.isPendingIdentityFunding
                         ? NSLocalizedString("Pending", comment: "")
                         : (metadata?.details?.isEmpty == false
                             ? metadata?.details

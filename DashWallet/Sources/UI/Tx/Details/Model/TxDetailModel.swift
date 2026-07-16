@@ -31,10 +31,14 @@ class TxDetailModel: NSObject {
     fileprivate var rawFeeCache: UInt64?
 
     var title: String {
-        // Balance-to-balance transfers all read "Internal Transfer" — the
-        // From/To/Status rows below name the route. The generic direction
-        // titles ("Moved to Address" / "Amount received") hide what
-        // actually happened.
+        // Identity fundings and balance transfers carry their own identity —
+        // the generic direction titles ("Moved to Address") hide what
+        // actually happened. Identity fundings name their purpose (matching
+        // the home row); other transfer routes read "Internal Transfer" with
+        // the From/To/Status rows naming the route.
+        if transaction.isIdentityFundingTransfer {
+            return transaction.stateTitle
+        }
         if let route = transaction.internalTransferRoute, route != .coreToCore {
             return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
@@ -188,7 +192,8 @@ extension TxDetailModel {
         // labeling them "Internally moved to" reads like the transfer's
         // destination. The From/To route rows carry that instead, and the
         // raw transaction inspector shows every output for the curious.
-        if transaction.isShieldedTransfer || transaction.isPlatformFundingTransfer {
+        if transaction.isShieldedTransfer || transaction.isPlatformFundingTransfer
+            || transaction.isIdentityFundingTransfer {
             return false
         }
         if direction == .received && hasDestinationUser {
@@ -360,6 +365,23 @@ extension TxDetailModel {
                     plainDetail: NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")),
             ]
             if let statusRaw = transaction.platformFundingLockInfo?.statusRaw,
+               let status = Self.lockStatusText(statusRaw) {
+                rows.append(DWTitleDetailCellModel(
+                    style: .default,
+                    title: NSLocalizedString("Status", comment: "Transaction details"),
+                    plainDetail: status))
+            }
+            return rows
+        }
+        if transaction.isIdentityFundingTransfer {
+            var rows: [DWTitleDetailItem] = [
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: transparent),
+                DWTitleDetailCellModel(
+                    style: .default,
+                    title: NSLocalizedString("To", comment: ""),
+                    plainDetail: NSLocalizedString("Identity credits", comment: "Destination of an identity funding asset lock")),
+            ]
+            if let statusRaw = transaction.identityFundingLockInfo?.statusRaw,
                let status = Self.lockStatusText(statusRaw) {
                 rows.append(DWTitleDetailCellModel(
                     style: .default,

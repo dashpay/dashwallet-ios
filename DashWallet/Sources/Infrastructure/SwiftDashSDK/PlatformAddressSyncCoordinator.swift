@@ -1008,6 +1008,10 @@ final class ShieldedTxLookup {
     /// `AssetLockAddressTopUp` — the Core → Platform address funding lock.
     private static let platformFundingType = 4
 
+    /// Identity funding locks: 0 = IdentityRegistration, 1 = IdentityTopUp,
+    /// 2 = IdentityTopUpNotBound, 3 = IdentityInvitation.
+    private static let identityFundingTypes = 0...3
+
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.shielded-tx-lookup")
@@ -1055,6 +1059,18 @@ final class ShieldedTxLookup {
         entry(forTxidHex: txidHex, fundingType: Self.platformFundingType)
     }
 
+    /// Snapshot entry for an identity funding lock (types 0…3 — registration,
+    /// top-up, invitation). `fundingTypeRaw` distinguishes the variants.
+    /// Thread-safe; touches no SwiftData.
+    func identityFundingInfo(forTxidHex txidHex: String) -> ShieldedLockInfo? {
+        let key = txidHex.lowercased()
+        lock.lock()
+        defer { lock.unlock() }
+        guard let entry = infoByTxid[key],
+              Self.identityFundingTypes.contains(entry.fundingTypeRaw) else { return nil }
+        return entry
+    }
+
     private func entry(forTxidHex txidHex: String, fundingType: Int) -> ShieldedLockInfo? {
         let key = txidHex.lowercased()
         lock.lock()
@@ -1078,7 +1094,7 @@ final class ShieldedTxLookup {
             // rather than fighting `#Predicate` local-capture rules.
             let rows = try container.mainContext.fetch(FetchDescriptor<PersistentAssetLock>())
             var map: [String: ShieldedLockInfo] = [:]
-            let trackedTypes = [Self.shieldedFundingType, Self.platformFundingType]
+            let trackedTypes = Array(Self.identityFundingTypes) + [Self.platformFundingType, Self.shieldedFundingType]
             for row in rows where trackedTypes.contains(row.fundingTypeRaw) && row.amountDuffs > 0 {
                 // outPointHex == "<txid display hex>:<vout>"; key on the txid,
                 // parse the vout after the colon. One shielded asset-lock row

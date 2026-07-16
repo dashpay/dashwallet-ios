@@ -1571,11 +1571,20 @@
 /* Voting */
 "Identity" = "Identity";
 
+/* Destination of an identity funding asset lock */
+"Identity credits" = "Identity credits";
+
 /* SDK identity profile sheet */
 "Identity ID" = "Identity ID";
 
+/* Asset lock funding a DashPay identity registration */
+"Identity registration" = "Identity registration";
+
 /* DashPay */
 "Identity registration already in progress" = "Identity registration already in progress";
+
+/* Asset lock topping up a DashPay identity's credits */
+"Identity top-up" = "Identity top-up";
 
 /* About screen tech info: SPV state */
 "idle" = "idle";
