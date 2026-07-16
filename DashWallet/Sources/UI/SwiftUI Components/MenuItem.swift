@@ -36,6 +36,8 @@ struct MenuItem: View {
     var dashAmount: Int64?
     var showDashAmountDirection: Bool = true
     var overrideFiatAmount: String?
+    var trailingStatusText: String? = nil
+    var trailingStatusColor: Color = Color(UIColor.dw_orange())
     var trailingView: AnyView?
     var showToggle: Bool = false
     @State private var isToggled: Bool = false
@@ -57,6 +59,8 @@ struct MenuItem: View {
          dashAmount: Int64? = nil,
          showDashAmountDirection: Bool = true,
          overrideFiatAmount: String? = nil,
+         trailingStatusText: String? = nil,
+         trailingStatusColor: Color = Color(UIColor.dw_orange()),
          trailingView: AnyView? = nil,
          showToggle: Bool = false,
          isToggled: Bool = false,
@@ -86,6 +90,8 @@ struct MenuItem: View {
             dashAmount: dashAmount,
             showDashAmountDirection: showDashAmountDirection,
             overrideFiatAmount: overrideFiatAmount,
+            trailingStatusText: trailingStatusText,
+            trailingStatusColor: trailingStatusColor,
             trailingView: trailingView,
             showToggle: showToggle,
             isToggled: isToggled,
@@ -108,6 +114,8 @@ struct MenuItem: View {
          dashAmount: Int64? = nil,
          showDashAmountDirection: Bool = true,
          overrideFiatAmount: String? = nil,
+         trailingStatusText: String? = nil,
+         trailingStatusColor: Color = Color(UIColor.dw_orange()),
          trailingView: AnyView? = nil,
          showToggle: Bool = false,
          isToggled: Bool = false,
@@ -127,6 +135,8 @@ struct MenuItem: View {
         self.showDashAmountDirection = showDashAmountDirection
         self.badgeText = badgeText
         self.overrideFiatAmount = overrideFiatAmount
+        self.trailingStatusText = trailingStatusText
+        self.trailingStatusColor = trailingStatusColor
         self.trailingView = trailingView
         self._isToggled = State(initialValue: isToggled)
         self.showToggle = showToggle
@@ -232,10 +242,18 @@ struct MenuItem: View {
                 } else if let trailingView = trailingView {
                     trailingView
                 } else {
-                    VStack(alignment: .trailing) {
+                    VStack(alignment: .trailing, spacing: 2) {
                         if let dashAmount = dashAmount {
-                            DashAmount(amount: dashAmount, showDirection: showDashAmountDirection)
-                                .foregroundColor(.primaryText)
+                            HStack(spacing: 4) {
+                                if let status = trailingStatusText {
+                                    Text(status)
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(trailingStatusColor)
+                                }
+                                DashAmount(amount: dashAmount, showDirection: showDashAmountDirection)
+                                    .foregroundColor(.primaryText)
+                            }
 
                             if dashAmount != 0 && dashAmount != Int64.max && dashAmount != Int64.min {
                                 if let overriden = overrideFiatAmount {
