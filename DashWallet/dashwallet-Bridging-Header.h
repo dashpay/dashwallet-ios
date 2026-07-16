@@ -162,7 +162,6 @@ static const bool _SNAPSHOT = 0;
 //MARK: Settings menu
 #import "UIViewController+DWDisplayError.h"
 #import "DWFormTableViewController.h"
-#import "DWAboutViewController.h"
 #import "DWCurrentUserProfileView.h"
 #import "DWSharedUIConstants.h"
 #import "DWUserProfileContainerView.h"

@@ -107,7 +107,7 @@ NS_ASSUME_NONNULL_BEGIN
             }
         }
         case DWTransactionType_Reward:
-            return NSLocalizedString(@"Reward", nil);
+            return NSLocalizedString(@"Mining Reward", nil);
         case DWTransactionType_MasternodeRegistration:
             return NSLocalizedString(@"Masternode Registration", nil);
         case DWTransactionType_MasternodeUpdate:
