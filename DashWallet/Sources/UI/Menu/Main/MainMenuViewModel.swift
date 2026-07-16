@@ -23,6 +23,7 @@ enum MainMenuNavigationDestination {
     case explore
     case syncInfo
     case wallets
+    case identities
     case security
     case settings
     case tools
@@ -114,6 +115,15 @@ class MainMenuViewModel: ObservableObject {
             icon: .custom("image.wallets", maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .wallets
+            }
+        ))
+
+        // Identities — the device's Dash Platform identities (under Wallets)
+        allItems.append(MenuItemModel(
+            title: NSLocalizedString("Identities", comment: "Identities"),
+            icon: .system("person.crop.circle"),
+            action: { [weak self] in
+                self?.navigationDestination = .identities
             }
         ))
 

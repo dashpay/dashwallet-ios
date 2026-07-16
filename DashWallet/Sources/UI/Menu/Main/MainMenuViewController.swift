@@ -153,6 +153,7 @@ struct MainMenuScreen: View {
     @State private var showTools: Bool = false
     @State private var showSyncInfo: Bool = false
     @State private var showWallets: Bool = false
+    @State private var showIdentities: Bool = false
     @State private var showSecurity: Bool = false
     @State private var showDashPayInfo: Bool = false
     @State private var showCreditsPurchasedToast: Bool = false
@@ -354,6 +355,13 @@ struct MainMenuScreen: View {
             }
 
             NavigationLink(
+                destination: IdentitiesScreen(vc: vc),
+                isActive: $showIdentities
+            ) {
+                EmptyView()
+            }
+
+            NavigationLink(
                 destination: SecurityMenuScreen(vc: vc, wipeDelegate: delegateInternal.wipeDelegate),
                 isActive: $showSecurity
             ) {
@@ -431,6 +439,8 @@ struct MainMenuScreen: View {
             showSyncInfo = true
         case .wallets:
             showWallets = true
+        case .identities:
+            showIdentities = true
         case .security:
             showSecurity = true
         case .settings:
