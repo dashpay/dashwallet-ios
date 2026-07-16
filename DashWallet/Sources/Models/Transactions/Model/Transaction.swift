@@ -158,7 +158,7 @@ class Transaction: TransactionDataItem, Identifiable {
     /// payment address is watched by our wallet while the spent inputs
     /// aren't attributed), so the Rust payment history — which records the
     /// true direction at send/sync time — wins.
-    private var dashPayPayment: DashPayPaymentTxLookup.PaymentInfo? {
+    var dashPayPayment: DashPayPaymentTxLookup.PaymentInfo? {
         DashPayPaymentTxLookup.shared.info(forTxidHex: shieldedDisplayTxid)
     }
 
@@ -476,6 +476,15 @@ class Transaction: TransactionDataItem, Identifiable {
             default:
                 return NSLocalizedString("Identity top-up", comment: "Asset lock topping up a DashPay identity's credits")
             }
+        }
+        // A DashPay contact payment names the counterparty when their
+        // profile is cached; otherwise it falls through to the generic
+        // Sent/Received (the overlaid `direction` already points the
+        // right way).
+        if let payment = dashPayPayment, let name = payment.counterpartyName {
+            return payment.isOutgoing
+                ? String(format: NSLocalizedString("Sent to %@", comment: "DashPay payment row — recipient's display name"), name)
+                : String(format: NSLocalizedString("Received from %@", comment: "DashPay payment row — sender's display name"), name)
         }
         // Every balance-to-balance transfer reads "Internal Transfer"; the
         // route is carried visually (source icon → destination badge), by

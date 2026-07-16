@@ -557,14 +557,26 @@ struct HomeViewContent<Content: View>: View {
             // Service/merchant metadata wins over the route pair — such rows
             // are external payments, not transfers of own funds.
             let routeSymbols = metadata == nil ? transferRouteSymbols(txItem: txItem) : nil
+            // A DashPay contact payment shows the counterparty's avatar
+            // (profile image, or the deterministic initial placeholder the
+            // contacts screens use).
+            let contactAvatar: AnyView? = metadata == nil
+                ? txItem.dashPayPayment.map { payment in
+                    AnyView(ContactAvatarView(
+                        title: payment.counterpartyName ?? "?",
+                        avatarURL: payment.counterpartyAvatarURL,
+                        identitySeed: payment.counterpartyIdentityId,
+                        size: 30))
+                }
+                : nil
 
             DashUIKit.TransactionView(
                 // A merchant logo is a bitmap and goes through `iconView` so it can be clipped to a
                 // circle; every other row resolves to a named icon.
-                icon: metadata?.icon == nil && routeSymbols == nil ? icons.primary.dashIconSource : nil,
+                icon: metadata?.icon == nil && routeSymbols == nil && contactAvatar == nil ? icons.primary.dashIconSource : nil,
                 iconView: metadata?.icon.map {
                     AnyView(Image(uiImage: $0).resizable().scaledToFit().clipShape(Circle()))
-                } ?? routeSymbols.map { transferRouteIcon($0.source) },
+                } ?? contactAvatar ?? routeSymbols.map { transferRouteIcon($0.source) },
                 secondaryIcon: routeSymbols.map { DashIconSource.system($0.destination) }
                     ?? icons.secondary?.dashIconSource,
                 title: metadata?.title ?? txItem.stateTitle,

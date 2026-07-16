@@ -788,6 +788,11 @@ final class DashPayPaymentTxLookup {
         /// True when the wallet's identity SENT this payment.
         let isOutgoing: Bool
         let counterpartyIdentityId: Data
+        /// Counterparty's DashPay profile display name, when the profile
+        /// cache has one — drives the "Sent to <name>" row title.
+        let counterpartyName: String?
+        /// Counterparty's avatar URL, when their profile carries one.
+        let counterpartyAvatarURL: String?
     }
 
     private let lock = NSLock()
@@ -815,12 +820,22 @@ final class DashPayPaymentTxLookup {
         }
         do {
             let rows = try container.mainContext.fetch(FetchDescriptor<PersistentDashpayPayment>())
+            // Join the counterparty's cached DashPay profile for the row
+            // title/avatar. Tiny tables; fetch-all and index in Swift.
+            let profiles = try container.mainContext.fetch(FetchDescriptor<PersistentDashpayContactProfile>())
+            var profileByContactId: [Data: (name: String?, avatarURL: String?)] = [:]
+            for profile in profiles {
+                profileByContactId[profile.contactIdentityId] = (profile.displayName, profile.avatarUrl)
+            }
             var map: [String: PaymentInfo] = [:]
             for row in rows where row.amountDuffs > 0 {
+                let profile = profileByContactId[row.counterpartyIdentityId]
                 map[row.txid.lowercased()] = PaymentInfo(
                     amountDuffs: row.amountDuffs,
                     isOutgoing: row.direction == .sent,
-                    counterpartyIdentityId: row.counterpartyIdentityId)
+                    counterpartyIdentityId: row.counterpartyIdentityId,
+                    counterpartyName: profile?.name?.isEmpty == false ? profile?.name : nil,
+                    counterpartyAvatarURL: profile?.avatarURL?.isEmpty == false ? profile?.avatarURL : nil)
             }
             store(map)
         } catch {
