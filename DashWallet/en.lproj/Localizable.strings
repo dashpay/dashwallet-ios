@@ -1232,6 +1232,8 @@
 "Extended public key (BIP44)" = "Extended public key (BIP44)";
 
 /* No comment provided by engineer. */
+
+"External address" = "External address";
 "Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
