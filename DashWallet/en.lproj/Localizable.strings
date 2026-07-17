@@ -695,6 +695,8 @@
 "Confirm Platform Send" = "Confirm Platform Send";
 
 /* SPV diagnostics */
+
+"Confirmed" = "Confirmed";
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start.";
 
 /* ZenLedger */
@@ -1233,6 +1235,8 @@
 "Face ID limit" = "Face ID limit";
 
 /* No comment provided by engineer. */
+
+"Failed" = "Failed";
 "Failed to load barcode" = "Failed to load barcode";
 
 /* Coinbase */
@@ -2614,6 +2618,8 @@
 "Platform wallet manager unavailable" = "Platform wallet manager unavailable";
 
 /* Coinbase/Buy Dash */
+
+"Platform → Shielded" = "Platform → Shielded";
 "Please add a payment method on Coinbase" = "Please add a payment method on Coinbase";
 
 /* Network Unavailable */
@@ -2947,6 +2953,8 @@
 "Restore an existing wallet" = "Restore an existing wallet";
 
 /* Location Service Status */
+
+"Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data.";
 "Restricted" = "Restricted";
 
 /* Usernames */
@@ -3272,9 +3280,13 @@
 /* Transaction filter */
 "Shielded sent" = "Shielded sent";
 
+
+"Shielded Spend" = "Shielded Spend";
 "Shielded wallet starting…" = "Shielded wallet starting…";
 
 /* Transfer of own funds from the private shielded balance back to the transparent wallet */
+
+"Shielded → Platform" = "Shielded → Platform";
 "Shielded → Transparent" = "Shielded → Transparent";
 
 /* Explore Dash */
@@ -3985,6 +3997,8 @@
 "Unknown Balance" = "Unknown Balance";
 
 /* No comment provided by engineer. */
+
+"Unshielded" = "Unshielded";
 "Unsupported URL" = "Unsupported URL";
 
 /* No comment provided by engineer. */
@@ -4583,6 +4597,8 @@
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
 
 /* Maya/SwapKit */
+
+"Your Platform balance" = "Your Platform balance";
 "Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
 
 /* CrowdNode */
@@ -4598,6 +4614,8 @@
 "Your session expired" = "Your session expired";
 
 /* Usernames */
+
+"Your Shielded balance" = "Your Shielded balance";
 "Your Shielded balance is almost ready — you can register privately around %@." = "Your Shielded balance is almost ready — you can register privately around %@.";
 
 /* Usernames */
@@ -4625,6 +4643,8 @@
 "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it." = "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.";
 
 /* No comment provided by engineer. */
+
+"Your Transparent balance" = "Your Transparent balance";
 "Your username %@ has been successfully created on the Dash Network" = "Your username %@ has been successfully created on the Dash Network";
 
 /* No comment provided by engineer. */

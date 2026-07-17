@@ -372,6 +372,21 @@ class HomeViewModel: ObservableObject {
                 return .tx(wrappedTx, self.resolveMetadata(for: wrappedTx.txHashData, in: metadataSnapshots))
             }
 
+            // Interleave the shielded operations (private receives/sends,
+            // Platform↔Shielded moves, shielded identity fundings) — the
+            // Core rows above only cover operations with an L1 leg. The
+            // day-grouping sort below merges the two timelines.
+            let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity()
+            for shielded in shieldedItems {
+                guard self.passesShieldedFilter(
+                    item: shielded,
+                    selected: self.selectedFilters,
+                    hasRewards: hasRewards,
+                    hasMasternodes: hasMasternodes)
+                else { continue }
+                items.append(.shieldedActivity(shielded))
+            }
+
             self.txByHash.removeAll()
             items.forEach { item in
                 self.txByHash[item.id] = item
@@ -794,6 +809,39 @@ extension HomeViewModel {
         return !selected.isDisjoint(with: categories(of: transaction, giftCardTxIds: giftCardTxIds))
     }
 
+    /// Filter check for a pure-shielded history item — the counterpart of
+    /// `passesFilter(transaction:...)` with the same "everything offered
+    /// selected → show all" fast path. Direction maps to the dedicated
+    /// shielded categories only (never plain sent/received: those mean
+    /// on-chain transparent movements).
+    private func passesShieldedFilter(
+        item: ShieldedActivityItem,
+        selected: Set<TransactionFilterCategory>,
+        hasRewards: Bool,
+        hasMasternodes: Bool
+    ) -> Bool {
+        var offered = Set(TransactionFilterCategory.allCases)
+        if !hasRewards {
+            offered.remove(.rewards)
+        }
+        if !hasMasternodes {
+            offered.remove(.masternode)
+        }
+        if selected.isSuperset(of: offered) {
+            return true
+        }
+        var categories: Set<TransactionFilterCategory> = []
+        switch item.direction {
+        case .incoming:
+            categories.insert(.shieldedReceived)
+        case .outgoing:
+            categories.insert(.shieldedSent)
+        case .selfTransfer:
+            categories.formUnion([.shieldedSent, .shieldedReceived])
+        }
+        return !selected.isDisjoint(with: categories)
+    }
+
     /// Categories a transaction belongs to. Overlaps are allowed (a gift-card
     /// purchase is also a sent tx); rewards and shielded receipts are carved
     /// out of received, mirroring how the old single-select filter separated
@@ -1003,6 +1051,87 @@ class SwiftDashSDKWalletSource: TransactionSource {
     static func fetch(txid: Data) -> Transaction? {
         guard let (container, walletId) = hostHandles() else { return nil }
         return fetchOne(txid: txid, in: ModelContext(container), walletId: walletId)
+    }
+
+    /// The active wallet's shielded operations as history items, for
+    /// interleaving with the Core rows. Safe from any thread.
+    ///
+    /// Three reductions happen here rather than in the view model:
+    /// - ShieldFromAssetLock entries are dropped: their Core asset-lock
+    ///   spend always renders as a history row already
+    ///   (`Transaction.isShieldedTransfer`).
+    /// - Withdrawal entries are dropped ONLY when the destination script
+    ///   is one of the active wallet's own Core addresses — that's the
+    ///   internal Shielded→Transparent transfer, whose Core receipt
+    ///   renders via `Transaction.isShieldedWithdrawalReceipt`. A
+    ///   withdrawal to an EXTERNAL Core address produces no wallet-side
+    ///   Core transaction at all, so it stays and renders as a Sent row.
+    /// - Rows are deduped by `entryId`: an intra-wallet transfer writes
+    ///   a Sent row on the sending account and a Received row on the
+    ///   receiving account for the same operation; the outgoing
+    ///   (initiating) side wins.
+    static func fetchShieldedActivity() -> [ShieldedActivityItem] {
+        guard let (container, walletId) = hostHandles() else { return [] }
+        let context = ModelContext(container)
+        let descriptor = FetchDescriptor<PersistentShieldedActivity>(
+            predicate: #Predicate { $0.walletId == walletId })
+        guard let rows = try? context.fetch(descriptor) else { return [] }
+
+        var byEntry: [Data: PersistentShieldedActivity] = [:]
+        for row in rows where row.kindTag != ShieldedActivityItem.Kind.shieldFromAssetLock.rawValue {
+            if let existing = byEntry[row.entryId] {
+                let existingOutgoing = existing.direction == ShieldedActivityItem.Direction.outgoing.rawValue
+                let rowOutgoing = row.direction == ShieldedActivityItem.Direction.outgoing.rawValue
+                if !existingOutgoing && rowOutgoing {
+                    byEntry[row.entryId] = row
+                }
+            } else {
+                byEntry[row.entryId] = row
+            }
+        }
+
+        var items: [ShieldedActivityItem] = []
+        for row in byEntry.values {
+            if row.kindTag == ShieldedActivityItem.Kind.withdrawal.rawValue {
+                let address = withdrawalDestinationAddress(counterparty: row.counterparty)
+                if let address, isActiveWalletCoreAddress(address, walletId: walletId, in: context) {
+                    // Internal Shielded→Transparent transfer — the Core
+                    // receipt row represents it.
+                    continue
+                }
+                // External (or undecodable-script) withdrawal: nothing
+                // else in the history covers it — hiding it would make
+                // funds silently vanish from the timeline.
+                items.append(ShieldedActivityItem(row: row, externalWithdrawalAddress: address))
+            } else {
+                items.append(ShieldedActivityItem(row: row))
+            }
+        }
+        return items
+    }
+
+    /// Decode a withdrawal entry's counterparty (a Core scriptPubKey)
+    /// to a Base58Check address. Nil for empty / non-P2PKH/P2SH scripts.
+    private static func withdrawalDestinationAddress(counterparty: Data) -> String? {
+        guard !counterparty.isEmpty else { return nil }
+        let network: PaymentNetwork = WalletEnvironment.isTestnet ? .testnet : .mainnet
+        return ScriptAddressCodec.address(forScript: counterparty, network: network)
+    }
+
+    /// True when `address` belongs to the ACTIVE wallet's Core address
+    /// pools. Scoped to the active wallet on purpose: a withdrawal to
+    /// another on-device wallet's address is still external from this
+    /// wallet's perspective (this wallet gets no Core receipt row).
+    private static func isActiveWalletCoreAddress(
+        _ address: String,
+        walletId: Data,
+        in context: ModelContext
+    ) -> Bool {
+        var descriptor = FetchDescriptor<PersistentCoreAddress>(
+            predicate: #Predicate { $0.address == address })
+        descriptor.fetchLimit = 1
+        guard let row = (try? context.fetch(descriptor))?.first else { return false }
+        return row.account?.wallet.walletId == walletId
     }
 
     /// The host is `@MainActor`-isolated; grab its container + active-wallet
