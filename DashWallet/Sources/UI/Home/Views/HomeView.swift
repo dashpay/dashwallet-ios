@@ -623,6 +623,21 @@ struct HomeViewContent<Content: View>: View {
                 self.selectedTxDataItem = txDataItem
             }
             .frame(minHeight: 66)
+
+        case .platformActivity(let item):
+            DashUIKit.TransactionView(
+                iconView: transferRouteIcon("creditcard.fill"),
+                secondaryIcon: DashIconSource.system("arrow.down"),
+                title: item.title,
+                subtitle: item.shortTimeString,
+                details: item.detailsText,
+                dashAmount: item.signedDashAmount,
+                amountSign: .always,
+                fiat: item.fiatAmount
+            ) {
+                self.selectedTxDataItem = txDataItem
+            }
+            .frame(minHeight: 66)
         }
     }
 }
@@ -839,6 +854,8 @@ struct TransactionDetailsSheet: View {
             TXDetailVCWrapper(tx: txItem, navigateBack: $backNavigationRequested)
         case .shieldedActivity(let item):
             ShieldedActivityDetailsView(item: item)
+        case .platformActivity(let item):
+            PlatformAddressActivityDetailsView(item: item)
         }
     }
 }

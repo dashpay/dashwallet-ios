@@ -30,6 +30,7 @@ class TransactionGroup: Identifiable {
 enum TransactionListDataItem {
     case tx(Transaction, TxRowMetadata?)
     case shieldedActivity(ShieldedActivityItem)
+    case platformActivity(PlatformAddressActivityItem)
     case crowdnode(FullCrowdNodeSignUpTxSet)
     case coinjoin(CoinJoinMixingTxSet)
     case coinjoinWithdrawal(CoinJoinWithdrawalTxSet)
@@ -48,6 +49,8 @@ extension TransactionListDataItem: Identifiable {
             return tx.txHashHexString
         case .shieldedActivity(let item):
             return item.id
+        case .platformActivity(let item):
+            return item.id
         }
     }
 
@@ -62,6 +65,8 @@ extension TransactionListDataItem: Identifiable {
         case .tx(let tx, _):
             return tx.date
         case .shieldedActivity(let item):
+            return item.date
+        case .platformActivity(let item):
             return item.date
         }
     }

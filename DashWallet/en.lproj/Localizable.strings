@@ -449,6 +449,8 @@
 "Balance" = "Balance";
 
 /* CrowdNode */
+
+"Balance after" = "Balance after";
 "Balance On CrowdNode" = "Balance On CrowdNode";
 
 /* CrowdNode */
@@ -2608,6 +2610,8 @@
 "Platform Payment" = "Platform Payment";
 
 /* Masternodes */
+
+"Platform payments don't identify the sender. This payment was recorded when the wallet noticed the balance change — it may have arrived earlier." = "Platform payments don't identify the sender. This payment was recorded when the wallet noticed the balance change — it may have arrived earlier.";
 "Platform SDK not ready" = "Platform SDK not ready";
 
 /* No comment provided by engineer. */

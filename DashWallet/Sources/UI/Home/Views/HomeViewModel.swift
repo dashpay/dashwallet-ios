@@ -285,6 +285,16 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        // The platform-address recorder inserts into the app's SQLite —
+        // invisible to the SwiftData save trigger above — so it posts its
+        // own signal when a received row lands.
+        NotificationCenter.default.publisher(for: .platformAddressActivityRecorded)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.txReloadRequests.send()
+            }
+            .store(in: &cancellableBag)
+
         // Balance changes often indicate new transactions, so reload the full
         // transaction list, not just shortcuts. This ensures newly received or
         // sent transactions appear in the UI promptly.
@@ -385,6 +395,21 @@ class HomeViewModel: ObservableObject {
                     hasMasternodes: hasMasternodes)
                 else { continue }
                 items.append(.shieldedActivity(shielded))
+            }
+
+            // Observed incoming Platform-address payments (app-recorded —
+            // the SDK persists no per-payment platform history; see
+            // PlatformAddressActivityStore.swift). Received-only by
+            // construction, so they ride the .received filter category.
+            let platformItems = SwiftDashSDKWalletSource.fetchPlatformActivity()
+            for platform in platformItems {
+                guard self.passesCategoryFilter(
+                    categories: [.received],
+                    selected: self.selectedFilters,
+                    hasRewards: hasRewards,
+                    hasMasternodes: hasMasternodes)
+                else { continue }
+                items.append(.platformActivity(platform))
             }
 
             self.txByHash.removeAll()
@@ -820,6 +845,31 @@ extension HomeViewModel {
         hasRewards: Bool,
         hasMasternodes: Bool
     ) -> Bool {
+        var categories: Set<TransactionFilterCategory> = []
+        switch item.direction {
+        case .incoming:
+            categories.insert(.shieldedReceived)
+        case .outgoing:
+            categories.insert(.shieldedSent)
+        case .selfTransfer:
+            categories.formUnion([.shieldedSent, .shieldedReceived])
+        }
+        return passesCategoryFilter(
+            categories: categories,
+            selected: selected,
+            hasRewards: hasRewards,
+            hasMasternodes: hasMasternodes)
+    }
+
+    /// Shared filter check for non-Core history items with precomputed
+    /// categories — same "everything offered selected → show all" fast
+    /// path as `passesFilter(transaction:...)`.
+    private func passesCategoryFilter(
+        categories: Set<TransactionFilterCategory>,
+        selected: Set<TransactionFilterCategory>,
+        hasRewards: Bool,
+        hasMasternodes: Bool
+    ) -> Bool {
         var offered = Set(TransactionFilterCategory.allCases)
         if !hasRewards {
             offered.remove(.rewards)
@@ -829,15 +879,6 @@ extension HomeViewModel {
         }
         if selected.isSuperset(of: offered) {
             return true
-        }
-        var categories: Set<TransactionFilterCategory> = []
-        switch item.direction {
-        case .incoming:
-            categories.insert(.shieldedReceived)
-        case .outgoing:
-            categories.insert(.shieldedSent)
-        case .selfTransfer:
-            categories.formUnion([.shieldedSent, .shieldedReceived])
         }
         return !selected.isDisjoint(with: categories)
     }
@@ -1152,6 +1193,23 @@ class SwiftDashSDKWalletSource: TransactionSource {
             predicate: #Predicate { $0.address == address && $0.walletId == walletId })
         descriptor.fetchLimit = 1
         return ((try? context.fetch(descriptor)) ?? []).isEmpty == false
+    }
+
+    /// The active wallet's observed incoming Platform-address payments
+    /// (app-recorded ledger; see PlatformAddressActivityStore.swift).
+    /// Safe from any thread — the DAO's SQLite connection serializes.
+    static func fetchPlatformActivity() -> [PlatformAddressActivityItem] {
+        let handles: (walletId: Data, networkRaw: Int64)? = onMain {
+            guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+                  let network = SwiftDashSDKHost.shared.runningNetwork else {
+                return nil
+            }
+            return (walletId, Int64(network.rawValue))
+        }
+        guard let handles else { return [] }
+        return PlatformAddressActivityDAO.shared
+            .activities(walletId: handles.walletId, networkRaw: handles.networkRaw)
+            .map { PlatformAddressActivityItem(record: $0) }
     }
 
     /// Decode a withdrawal entry's counterparty (a Core scriptPubKey)

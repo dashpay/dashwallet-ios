@@ -687,6 +687,10 @@
 		751C05DE2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */; };
 		5A1EC0FE2E29A10000000002 /* ShieldedActivityHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */; };
 		5A1EC0FE2E29A10000000003 /* ShieldedActivityHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */; };
+		5A1EC0FE2E29A20000000012 /* PlatformAddressActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A20000000011 /* PlatformAddressActivityStore.swift */; };
+		5A1EC0FE2E29A20000000013 /* PlatformAddressActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A20000000011 /* PlatformAddressActivityStore.swift */; };
+		5A1EC0FE2E29A20000000015 /* PlatformAddressHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A20000000014 /* PlatformAddressHistory.swift */; };
+		5A1EC0FE2E29A20000000016 /* PlatformAddressHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A20000000014 /* PlatformAddressHistory.swift */; };
 		7527720D2AA9B2630066557E /* SupportedTopperAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */; };
 		7527720F2AA9F58E0066557E /* TopperViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7527720E2AA9F58E0066557E /* TopperViewModel.swift */; };
 		752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 752772112AAA1CE30066557E /* Coinbase-Info.plist */; };
@@ -2885,6 +2889,8 @@
 		751C05DA2D3D0E7C00475E52 /* JoinDashPayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayViewModel.swift; sourceTree = "<group>"; };
 		751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionListDataItem.swift; sourceTree = "<group>"; };
 		5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedActivityHistory.swift; sourceTree = "<group>"; };
+		5A1EC0FE2E29A20000000011 /* PlatformAddressActivityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAddressActivityStore.swift; sourceTree = "<group>"; };
+		5A1EC0FE2E29A20000000014 /* PlatformAddressHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAddressHistory.swift; sourceTree = "<group>"; };
 		7527720C2AA9B2630066557E /* SupportedTopperAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperAssets.swift; sourceTree = "<group>"; };
 		7527720E2AA9F58E0066557E /* TopperViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopperViewModel.swift; sourceTree = "<group>"; };
 		752772112AAA1CE30066557E /* Coinbase-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
@@ -4417,6 +4423,7 @@
 				754BEA112C0B6BD700E8C93C /* HomeViewModel.swift */,
 				751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */,
 				5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */,
+				5A1EC0FE2E29A20000000014 /* PlatformAddressHistory.swift */,
 				75D657662DF579F300ACE570 /* TransactionFilterDialog.swift */,
 			);
 			path = Views;
@@ -4622,6 +4629,7 @@
 				AA0020012FA0000000000001 /* Swap */,
 				7503643C2C89D4890029EC0D /* CoinJoin */,
 				75A8C1612AE571E30042256E /* Voting */,
+				5A1EC0FE2E29A20000000017 /* PlatformAddress */,
 				47081194298CF1E3003FCA3D /* Transactions */,
 				11BD737F28E7354200A34022 /* CrowdNode */,
 				479DBDDB2995167800F30AF1 /* Tx */,
@@ -6800,6 +6808,14 @@
 				B401E660599FEF6B18087F91 /* PaymentsLandingHostingController.swift */,
 			);
 			path = Landing;
+			sourceTree = "<group>";
+		};
+		5A1EC0FE2E29A20000000017 /* PlatformAddress */ = {
+			isa = PBXGroup;
+			children = (
+				5A1EC0FE2E29A20000000011 /* PlatformAddressActivityStore.swift */,
+			);
+			path = PlatformAddress;
 			sourceTree = "<group>";
 		};
 		7502A4852AE401DA00ACDDD3 /* Voting */ = {
@@ -9861,6 +9877,8 @@
 				470AE1882926600A001A0514 /* PaymentController.swift in Sources */,
 				751C05DE2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */,
 				5A1EC0FE2E29A10000000003 /* ShieldedActivityHistory.swift in Sources */,
+				5A1EC0FE2E29A20000000013 /* PlatformAddressActivityStore.swift in Sources */,
+				5A1EC0FE2E29A20000000016 /* PlatformAddressHistory.swift in Sources */,
 				2ADB396C242615C200A6F898 /* CALayer+MBAnimationPersistence.m in Sources */,
 				2A9FFDF42230FF1A00956D5F /* UIView+DWAnimations.m in Sources */,
 				114573A42949B221009DCF27 /* VerifiedSuccessfullyViewController.swift in Sources */,
@@ -10674,6 +10692,8 @@
 				C9D2C95E2A386D7E00D15901 /* DWBasePressableControl.m in Sources */,
 				751C05DD2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */,
 				5A1EC0FE2E29A10000000002 /* ShieldedActivityHistory.swift in Sources */,
+				5A1EC0FE2E29A20000000012 /* PlatformAddressActivityStore.swift in Sources */,
+				5A1EC0FE2E29A20000000015 /* PlatformAddressHistory.swift in Sources */,
 				C9D2C70B2A320AA000D15901 /* DWDemoAppRootViewController.m in Sources */,
 				C9D2C70C2A320AA000D15901 /* DWUpholdLogoutTutorialViewController.m in Sources */,
 				75A8C1672AE5734A0042256E /* UsernameRequest.swift in Sources */,

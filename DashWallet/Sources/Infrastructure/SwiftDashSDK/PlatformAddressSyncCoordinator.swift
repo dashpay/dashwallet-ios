@@ -928,6 +928,16 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             }
             platformBalance = rows.reduce(0) { $0 + $1.balance }
             activeAddressCount = rows.reduce(0) { $1.balance > 0 ? $0 + 1 : $0 }
+            // Observed-payment ledger: diff this snapshot against the
+            // persisted baseline and record unattributed increases as
+            // received activity for the home history.
+            if let network = runningNetwork {
+                PlatformAddressActivityRecorder.observe(
+                    addresses: derivedAddresses,
+                    walletId: walletId,
+                    network: network,
+                    container: container)
+            }
         } catch {
             Self.logger.warning("🛰️ PLATFORM-ADDR :: derived-address fetch failed: \(String(describing: error), privacy: .public)")
         }
