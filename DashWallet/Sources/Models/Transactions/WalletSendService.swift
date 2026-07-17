@@ -147,8 +147,26 @@ final class WalletSendService: NSObject {
         super.init()
     }
 
+    /// Core sends are blocked until the L1 chain sync completes: before
+    /// `.syncDone` the persisted UTXO set can be stale (already-spent inputs,
+    /// missing recent funds), so a built tx could be rejected — or worse,
+    /// double-spend a UTXO consumed while offline. Gate on
+    /// `SyncingActivityMonitor` per the repo guardrail (never raw SPV state).
+    /// UI entry points disable Continue with the same message; this is the
+    /// boundary backstop for programmatic callers.
+    private static func ensureChainSynced() throws {
+        guard SyncingActivityMonitor.shared.state == .syncDone else {
+            throw Self.makeError(
+                code: .chainNotSynced,
+                description: NSLocalizedString(
+                    "Your wallet is still syncing with the Dash network. Sending will be available once syncing completes.",
+                    comment: "Core send blocked until chain sync completes"))
+        }
+    }
+
     func prepareStandardSendForConfirmation(address: String, amount: UInt64, sessionAuthSufficient: Bool = false) async throws -> PreparedStandardSend {
         Self.logger.info("💸 TXSEND :: preparing standard send")
+        try Self.ensureChainSynced()
         try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
         let prepared = try buildPreparedStandardSend(address: address, amount: amount)
         Self.logger.info("💸 TXSEND :: standard send prepared")
@@ -164,6 +182,7 @@ final class WalletSendService: NSObject {
         adjustAmountDownwards: Bool = false,
         sessionAuthSufficient: Bool = false
     ) async throws -> Data {
+        try Self.ensureChainSynced()
         if let inputSelector {
             Self.logger.info("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
             try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
@@ -285,6 +304,7 @@ final class WalletSendService: NSObject {
         memo: String? = nil
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
         Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
+        try Self.ensureChainSynced()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
         // authorize a contact payment of any size.
@@ -469,6 +489,7 @@ private extension WalletSendService {
         case coinJoinSweepUnavailable = 4
         case alreadyBroadcast = 5
         case dashPayPaymentUnavailable = 6
+        case chainNotSynced = 7
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"

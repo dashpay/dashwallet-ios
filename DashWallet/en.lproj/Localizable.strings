@@ -4677,6 +4677,12 @@
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.";
 
+/* Core send blocked until chain sync completes */
+"Your wallet is still syncing with the Dash network. Sending will be available once syncing completes." = "Your wallet is still syncing with the Dash network. Sending will be available once syncing completes.";
+
+/* Core send blocked until chain sync completes */
+"Your wallet is still syncing. Sending from your Transparent balance will be available once syncing completes." = "Your wallet is still syncing. Sending from your Transparent balance will be available once syncing completes.";
+
 /* No comment provided by engineer. */
 "ZenLedger" = "ZenLedger";
 

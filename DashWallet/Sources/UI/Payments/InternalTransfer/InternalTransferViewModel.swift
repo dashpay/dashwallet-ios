@@ -238,9 +238,22 @@ final class InternalTransferViewModel: ObservableObject {
     /// the manual `syncShieldedNow()` kick after a successful transfer.
     @Published private(set) var shieldedBalance: UInt64 = 0
 
+    /// True once the L1 chain sync completed (`SyncingActivityMonitor`
+    /// `.syncDone`). Core-funded routes (asset locks spend BIP44 UTXOs)
+    /// can't Continue before that — the UTXO set may be stale. Mirrors
+    /// `SendViewModel.isChainSynced`; `WalletSendService` guards the
+    /// classic path at the boundary.
+    @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
+
     private var cancellables = Set<AnyCancellable>()
 
+    deinit {
+        // The monitor holds observers strongly — remove or leak the VM.
+        SyncingActivityMonitor.shared.remove(observer: self)
+    }
+
     init() {
+        SyncingActivityMonitor.shared.add(observer: self)
         coreBalanceDuffs = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         platformCredits = PlatformAddressSyncCoordinator.shared.platformBalance
 
@@ -304,12 +317,24 @@ final class InternalTransferViewModel: ObservableObject {
     /// currently-selected source bucket. Each route has its own balance
     /// envelope — asset-lock spends BIP44 duffs, transparent shield spends
     /// DIP-17 credits.
+    /// True when the picked route spends Core UTXOs but the chain hasn't
+    /// finished syncing — Continue stays disabled and the screen explains
+    /// why (a stale UTXO set can't safely fund an asset lock).
+    var isBlockedBySync: Bool {
+        switch route {
+        case .coreToShielded, .coreToPlatform:
+            return !isChainSynced
+        default:
+            return false
+        }
+    }
+
     var canContinue: Bool {
         // Gate on duffs, not raw DASH: a sub-duff amount (e.g. 1e-9 DASH)
         // renders as 0 in the confirm sheet, so it must not enable Continue —
         // otherwise the credit routes would submit a nonzero amount while the
         // UI shows 0.
-        guard dashDuffsUnsigned > 0 else { return false }
+        guard dashDuffsUnsigned > 0, !isBlockedBySync else { return false }
         switch route {
         case .coreToShielded, .coreToPlatform:
             // Asset-lock routes: the pool/processing fee is carved from the
@@ -552,5 +577,19 @@ final class InternalTransferViewModel: ObservableObject {
         formatter.decimalSeparator = "."
         let rounded = NSDecimalNumber(decimal: value)
         return formatter.string(from: rounded) ?? "\(value)"
+    }
+}
+
+
+// MARK: - SyncingActivityMonitorObserver
+
+extension InternalTransferViewModel: SyncingActivityMonitorObserver {
+    nonisolated func syncingActivityMonitorProgressDidChange(_ progress: Double) {}
+
+    nonisolated func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State,
+                                                          state: SyncingActivityMonitor.State) {
+        Task { @MainActor in
+            self.isChainSynced = state == .syncDone
+        }
     }
 }
