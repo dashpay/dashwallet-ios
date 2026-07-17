@@ -49,6 +49,10 @@ struct HomeBalanceView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if viewModel.isTestnet {
+                testnetBadge
+            }
+
             ZStack {
                 if !viewModel.isBalanceHidden && viewModel.state == .syncing {
                     Text(NSLocalizedString("Syncing Balance", comment: ""))
@@ -150,6 +154,18 @@ struct HomeBalanceView: View {
         .padding(.horizontal, 12)
         .background(Color.white.opacity(0.12))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    /// Unmissable "these are not real funds" marker while the wallet runs
+    /// on testnet.
+    private var testnetBadge: some View {
+        Text(NSLocalizedString("TESTNET", comment: "Badge on the home balance while the wallet runs on testnet"))
+            .font(.system(size: 11, weight: .bold))
+            .kerning(1.2)
+            .foregroundColor(.white)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 3)
+            .background(Capsule().fill(Color.orange.opacity(0.9)))
     }
 
     private var rowDivider: some View {

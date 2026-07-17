@@ -3544,6 +3544,9 @@
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
 
+/* Badge on the home balance while the wallet runs on testnet */
+"TESTNET" = "TESTNET";
+
 /* Wallets */
 "That is not this wallet's recovery phrase." = "That is not this wallet's recovery phrase.";
 
