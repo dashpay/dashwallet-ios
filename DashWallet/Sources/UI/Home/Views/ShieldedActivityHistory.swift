@@ -83,19 +83,29 @@ struct ShieldedActivityItem: Identifiable {
     let memoText: String?
     /// Created identity id (hex) for `identityCreate` entries.
     let createdIdentityIdHex: String?
-    /// Destination Core address for a withdrawal that did NOT go to one
-    /// of the active wallet's own addresses (external withdrawals are
-    /// the only `withdrawal` entries projected into the history — the
-    /// internal ones render as their Core receipt row instead). Nil for
-    /// every other kind, and for the rare undecodable-script external.
-    let externalWithdrawalAddress: String?
+    /// Decoded destination, when the entry's counterparty names one:
+    /// the Base58Check Core address for a withdrawal, the bech32m
+    /// Platform address for an unshield. Nil for other kinds and for
+    /// undecodable counterparties.
+    let destinationAddress: String?
+    /// True when the destination is NOT one of the active wallet's own
+    /// addresses — the operation is money leaving the wallet, not an
+    /// internal move. Set at fetch time (the ownership lookup needs the
+    /// store). All projected withdrawals are external by construction;
+    /// unshields can be either.
+    let isExternalDestination: Bool
 
     var id: String {
         "shielded-" + entryId.map { String(format: "%02x", $0) }.joined() + "-\(accountIndex)"
     }
 
-    init(row: PersistentShieldedActivity, externalWithdrawalAddress: String? = nil) {
-        self.externalWithdrawalAddress = externalWithdrawalAddress
+    init(
+        row: PersistentShieldedActivity,
+        destinationAddress: String? = nil,
+        isExternalDestination: Bool = false
+    ) {
+        self.destinationAddress = destinationAddress
+        self.isExternalDestination = isExternalDestination
         entryId = row.entryId
         accountIndex = row.accountIndex
         kind = Kind(rawValue: row.kindTag) ?? .shieldedSpend
@@ -121,10 +131,10 @@ struct ShieldedActivityItem: Identifiable {
             return NSLocalizedString("Received", comment: "")
         case .sent:
             return NSLocalizedString("Sent", comment: "")
-        case .withdrawal where isExternalWithdrawal:
-            return NSLocalizedString("Sent", comment: "")
         case .unshield, .withdrawal:
-            return NSLocalizedString("Unshielded", comment: "Shielded activity: funds moved out of the private shielded balance")
+            return isExternalDestination
+                ? NSLocalizedString("Sent", comment: "")
+                : NSLocalizedString("Unshielded", comment: "Shielded activity: funds moved out of the private shielded balance")
         case .identityCreate:
             return NSLocalizedString("Identity registration", comment: "Asset lock funding a DashPay identity registration")
         case .shieldedSpend:
@@ -140,14 +150,16 @@ struct ShieldedActivityItem: Identifiable {
         switch kind {
         case .shield, .shieldFromAssetLock:
             return NSLocalizedString("Platform → Shielded", comment: "Transfer of own funds from the Platform balance into the private shielded balance")
-        case .withdrawal where isExternalWithdrawal:
-            // External withdrawal: show where the money went, shortened
-            // to row-pill size (the detail sheet carries the full address).
-            if let address = externalWithdrawalAddress {
-                return String(address.prefix(6)) + "…" + String(address.suffix(6))
-            }
-            return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
         case .unshield, .withdrawal:
+            if isExternalDestination {
+                // External destination: show where the money went,
+                // shortened to row-pill size (the detail sheet carries
+                // the full address).
+                if let address = destinationAddress {
+                    return String(address.prefix(6)) + "…" + String(address.suffix(6))
+                }
+                return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
+            }
             return NSLocalizedString("Shielded → Platform", comment: "Transfer of own funds from the private shielded balance to the Platform balance")
         case .received, .sent, .identityCreate, .shieldedSpend:
             return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
@@ -160,33 +172,26 @@ struct ShieldedActivityItem: Identifiable {
         switch kind {
         case .received: return "arrow.down"
         case .sent: return "arrow.up"
-        case .withdrawal: return isExternalWithdrawal ? "arrow.up" : nil
+        case .unshield, .withdrawal: return isExternalDestination ? "arrow.up" : nil
         case .identityCreate: return "person.crop.circle.fill"
         case .shieldedSpend: return "questionmark"
-        case .shield, .shieldFromAssetLock, .unshield: return nil
+        case .shield, .shieldFromAssetLock: return nil
         }
-    }
-
-    /// A withdrawal item in the history is external by construction —
-    /// internal ones (destination = own Core address) are dropped at
-    /// fetch time in favor of their Core receipt row. Kept as a named
-    /// predicate so the display code reads as intent, not coincidence.
-    var isExternalWithdrawal: Bool {
-        kind == .withdrawal
     }
 
     /// Internal moves between the user's own balances (Platform ↔
     /// Shielded). The recorded direction reflects the shielded pool's
     /// perspective (a shield is "incoming"), but no funds were gained
     /// or lost — these render signless, like self-transfers. An
-    /// external withdrawal is real money leaving the wallet, so it is
-    /// NOT internal despite its kind being an own-initiated one.
+    /// unshield or withdrawal to an EXTERNAL address is real money
+    /// leaving the wallet, so it is NOT internal despite its kind
+    /// being an own-initiated one.
     var isInternalMove: Bool {
         switch kind {
-        case .shield, .shieldFromAssetLock, .unshield:
+        case .shield, .shieldFromAssetLock:
             return true
-        case .withdrawal:
-            return !isExternalWithdrawal
+        case .unshield, .withdrawal:
+            return !isExternalDestination
         case .received, .sent, .identityCreate, .shieldedSpend:
             return false
         }
@@ -199,7 +204,9 @@ struct ShieldedActivityItem: Identifiable {
 
     /// From/To wording for the detail sheet. Internal moves name the
     /// user's own balances on both sides (a guarantee — see the fetch
-    /// doc); an external withdrawal names the destination address.
+    /// doc); an external unshield/withdrawal names the destination
+    /// address (or an honest "External address" when the counterparty
+    /// script couldn't be decoded).
     var internalMoveRoute: (source: String, destination: String)? {
         let platform = NSLocalizedString("Your Platform balance", comment: "Shielded activity: source/destination of an internal move")
         let shielded = NSLocalizedString("Your Shielded balance", comment: "Shielded activity: source/destination of an internal move")
@@ -207,12 +214,12 @@ struct ShieldedActivityItem: Identifiable {
         switch kind {
         case .shield: return (platform, shielded)
         case .shieldFromAssetLock: return (transparent, shielded)
-        case .unshield: return (shielded, platform)
-        case .withdrawal:
-            if let address = externalWithdrawalAddress {
-                return (shielded, address)
+        case .unshield, .withdrawal:
+            if isExternalDestination {
+                let fallback = NSLocalizedString("External address", comment: "Shielded activity: destination outside this wallet whose exact address is unknown")
+                return (shielded, destinationAddress ?? fallback)
             }
-            return isExternalWithdrawal ? (shielded, transparent) : nil
+            return kind == .unshield ? (shielded, platform) : (shielded, transparent)
         case .received, .sent, .identityCreate, .shieldedSpend: return nil
         }
     }
@@ -308,7 +315,17 @@ struct ShieldedActivityDetailsView: View {
                 // Saying From/To here is therefore a guarantee, not a guess.
                 if let route = item.internalMoveRoute {
                     infoRow(NSLocalizedString("From", comment: ""), route.source)
-                    infoRow(NSLocalizedString("To", comment: ""), route.destination)
+                    if item.isExternalDestination, let address = item.destinationAddress {
+                        copyableRow(NSLocalizedString("To", comment: ""), address)
+                    } else {
+                        infoRow(NSLocalizedString("To", comment: ""), route.destination)
+                    }
+                    // Internal unshields still name the exact receiving
+                    // address (the counterparty the SDK recorded), not
+                    // just "your Platform balance".
+                    if !item.isExternalDestination, let address = item.destinationAddress {
+                        copyableRow(NSLocalizedString("Address", comment: ""), address)
+                    }
                 }
                 infoRow(
                     NSLocalizedString("Status", comment: ""),

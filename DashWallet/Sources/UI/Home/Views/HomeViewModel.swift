@@ -1092,7 +1092,8 @@ class SwiftDashSDKWalletSource: TransactionSource {
 
         var items: [ShieldedActivityItem] = []
         for row in byEntry.values {
-            if row.kindTag == ShieldedActivityItem.Kind.withdrawal.rawValue {
+            switch row.kindTag {
+            case ShieldedActivityItem.Kind.withdrawal.rawValue:
                 let address = withdrawalDestinationAddress(counterparty: row.counterparty)
                 if let address, isActiveWalletCoreAddress(address, walletId: walletId, in: context) {
                     // Internal Shielded→Transparent transfer — the Core
@@ -1102,12 +1103,55 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 // External (or undecodable-script) withdrawal: nothing
                 // else in the history covers it — hiding it would make
                 // funds silently vanish from the timeline.
-                items.append(ShieldedActivityItem(row: row, externalWithdrawalAddress: address))
-            } else {
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    destinationAddress: address,
+                    isExternalDestination: true))
+            case ShieldedActivityItem.Kind.unshield.rawValue:
+                // Unshield destination = 21-byte serialized PlatformAddress.
+                // Unlike withdrawals, both flavors stay in the list (there
+                // is never a Core row for either); the ownership check only
+                // decides internal-move vs Sent presentation. An
+                // undecodable counterparty defaults to the internal
+                // presentation — the honest reading of "destination
+                // unknown" for an own-initiated operation.
+                let address = unshieldDestinationAddress(counterparty: row.counterparty)
+                let isExternal = address.map {
+                    !isActiveWalletPlatformAddress($0, walletId: walletId, in: context)
+                } ?? false
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    destinationAddress: address,
+                    isExternalDestination: isExternal))
+            default:
                 items.append(ShieldedActivityItem(row: row))
             }
         }
         return items
+    }
+
+    /// Decode an unshield entry's counterparty (21-byte serialized
+    /// PlatformAddress) to its bech32m string (`dash1…` / `tdash1…`).
+    private static func unshieldDestinationAddress(counterparty: Data) -> String? {
+        guard counterparty.count == 21 else { return nil }
+        return AddressTransformer.formatAddress(
+            counterparty,
+            asBech32m: true,
+            isTestnet: WalletEnvironment.isTestnet)
+    }
+
+    /// True when `address` is one of the ACTIVE wallet's own DIP-17
+    /// Platform Payment addresses (same active-wallet scoping rationale
+    /// as `isActiveWalletCoreAddress`).
+    private static func isActiveWalletPlatformAddress(
+        _ address: String,
+        walletId: Data,
+        in context: ModelContext
+    ) -> Bool {
+        var descriptor = FetchDescriptor<PersistentPlatformAddress>(
+            predicate: #Predicate { $0.address == address && $0.walletId == walletId })
+        descriptor.fetchLimit = 1
+        return ((try? context.fetch(descriptor)) ?? []).isEmpty == false
     }
 
     /// Decode a withdrawal entry's counterparty (a Core scriptPubKey)
