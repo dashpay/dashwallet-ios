@@ -268,23 +268,27 @@ struct PlatformSyncStatusScreen: View {
                 .font(.system(size: 14, weight: .semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(coordinator.isSyncing ? Color.gray300.opacity(0.3) : Color.blue.opacity(0.15))
-                .foregroundColor(coordinator.isSyncing ? .secondary : .blue)
+                .background(coordinator.isSyncing || coordinator.isClearing ? Color.gray300.opacity(0.3) : Color.blue.opacity(0.15))
+                .foregroundColor(coordinator.isSyncing || coordinator.isClearing ? .secondary : .blue)
                 .cornerRadius(8)
             }
-            .disabled(coordinator.isSyncing)
+            .disabled(coordinator.isSyncing || coordinator.isClearing)
 
             Button(action: {
-                coordinator.clearDisplay()
+                // Full local wipe (Rust watermark + persisted balances +
+                // display), so the next Sync Now does the complete
+                // trunk/branch rescan — not just a display reset.
+                Task { await coordinator.clearLocalState() }
             }) {
                 Text("Clear")
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(Color.gray300.opacity(0.3))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(coordinator.isClearing ? .secondary : .primaryText)
                     .cornerRadius(8)
             }
+            .disabled(coordinator.isClearing || coordinator.isSyncing)
 
             Button(action: {
                 PlatformAddressSyncCoordinator.stop()

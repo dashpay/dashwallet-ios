@@ -52,6 +52,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     @Published public private(set) var runningNetwork: Network? = nil
 
     @Published public private(set) var isSyncing: Bool = false
+    /// True for the whole Clear sequence (Rust reset → SwiftData zeroing
+    /// → display wipe → loop re-arm); gates the Sync Now / Clear buttons.
+    @Published public private(set) var isClearing: Bool = false
     @Published public private(set) var lastSyncTime: Date? = nil
     @Published public private(set) var lastError: String? = nil
 
@@ -465,6 +468,83 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         let recipient = ManagedPlatformAddressWallet.FundFromAssetLockRecipient(
             addressType: 0, hash: parsed.hash, credits: nil)
         return (addressWallet, container, recipient, target.accountIndex)
+    }
+
+    /// Full local wipe of the platform-address sync state — the Sync Info
+    /// screen's "Clear" button. Ported from the SwiftExampleApp
+    /// `PlatformBalanceSyncService.clearLocalState` contract:
+    ///
+    /// 1. Reset the Rust-owned incremental-sync watermark FIRST
+    ///    (`resetPlatformAddressSyncState`) — without this, the in-memory
+    ///    watermark survives and the next Sync Now resumes incrementally
+    ///    (Recent queries only) instead of the full trunk/branch rescan.
+    ///    Fail closed: on error, surface it and keep the current display
+    ///    rather than showing a false "cleared" state.
+    /// 2. Zero the volatile balance/sync fields of this network's
+    ///    `PersistentPlatformAddress` rows IN PLACE — never delete them:
+    ///    they are durable derivation state the rescan upserts against
+    ///    (the balance callback skips rows it can't find, and no
+    ///    in-session sync re-emits them).
+    /// 3. Delete the network's `PersistentPlatformAddressesSyncState`
+    ///    watermark rows outright — pure volatile state, recreated by
+    ///    the next sync.
+    /// 4. Clear the published display, then re-arm the background loop
+    ///    (the Rust reset deliberately leaves it stopped).
+    public func clearLocalState() async {
+        guard !isClearing else { return }
+        guard let manager = walletManager else {
+            // BLAST never started — nothing Rust-side or persisted to
+            // reset; wiping the display is the whole job.
+            clearDisplay()
+            return
+        }
+        isClearing = true
+        defer { isClearing = false }
+
+        do {
+            try await manager.resetPlatformAddressSyncState()
+        } catch {
+            lastError = "Failed to reset platform-address sync state: \(error.localizedDescription)"
+            Self.logger.error("🛰️ PLATFORM-ADDR :: clear reset failed: \(String(describing: error), privacy: .public)")
+            return
+        }
+
+        if let container = modelContainer, let network = runningNetwork {
+            do {
+                let context = container.mainContext
+                let networkRaw = network.rawValue
+                let wallets = try context.fetch(FetchDescriptor<PersistentWallet>(
+                    predicate: #Predicate { $0.networkRaw == networkRaw }))
+                let walletIds = Set(wallets.map(\.walletId))
+                let addresses = try context.fetch(FetchDescriptor<PersistentPlatformAddress>())
+                for row in addresses where walletIds.contains(row.walletId) {
+                    row.balance = 0
+                    row.nonce = 0
+                    row.isUsed = false
+                    row.firstSeenHeight = 0
+                    row.lastSeenHeight = 0
+                    row.lastUpdated = Date()
+                }
+                let syncStates = try context.fetch(FetchDescriptor<PersistentPlatformAddressesSyncState>())
+                for row in syncStates where row.networkRaw == networkRaw {
+                    context.delete(row)
+                }
+                try context.save()
+            } catch {
+                lastError = "Failed to clear persisted platform-address state: \(error.localizedDescription)"
+                Self.logger.error("🛰️ PLATFORM-ADDR :: clear persist failed: \(String(describing: error), privacy: .public)")
+                return
+            }
+        }
+
+        clearDisplay()
+
+        do {
+            try manager.startPlatformAddressSync()
+        } catch {
+            lastError = "startPlatformAddressSync failed after clear: \(error.localizedDescription)"
+            Self.logger.error("🛰️ PLATFORM-ADDR :: post-clear restart failed: \(String(describing: error), privacy: .public)")
+        }
     }
 
     /// Clear the UI counters/display without tearing down the sync loop.
