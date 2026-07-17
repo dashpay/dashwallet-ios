@@ -509,7 +509,10 @@ final class InternalTransferViewModel: ObservableObject {
         let sourceDuffs: UInt64
         switch route {
         case .coreToShielded, .coreToPlatform:
-            sourceDuffs = coreBalanceDuffs
+            // Fee-aware max: spendable minus the send fee reserve (mirrors
+            // DSAccount.maxOutputAmount), never the raw total — the asset-lock
+            // spends core UTXOs and still needs room for the L1 fee.
+            sourceDuffs = SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
         case .platformToShielded:
             // Reserve the fee the SDK charges on top of the amount so Max
             // stays sendable (credits → duffs: integer divide by 1000).

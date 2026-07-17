@@ -528,7 +528,10 @@ final class SendViewModel: ObservableObject {
         let sourceDuffs: UInt64
         switch route {
         case .coreToCore, .coreToShielded, nil:
-            sourceDuffs = coreBalanceDuffs
+            // Fee-aware max: spendable minus the send fee reserve (mirrors
+            // DSAccount.maxOutputAmount), never the raw total — which would
+            // include unconfirmed/immature funds and leave no room for the fee.
+            sourceDuffs = SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
         case .platformToPlatform:
             sourceDuffs = creditsMinusFeeReserve(platformCredits) / 1000
         case .platformToCore:

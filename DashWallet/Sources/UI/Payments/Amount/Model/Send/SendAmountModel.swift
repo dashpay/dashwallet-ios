@@ -76,7 +76,10 @@ class SendAmountModel: BaseAmountModel {
     }
 
     internal func selectAllFundsWithoutAuth() {
-        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.spendable ?? 0
+        // Fee-aware max: spendable minus the send fee reserve (the app-wide
+        // WalletBalance.maxSendable contract), not raw spendable — the latter
+        // leaves no room for the fee, so the send fails to build.
+        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
 
         if allAvailableFunds > 0 {
             updateCurrentAmountObject(with: allAvailableFunds)
