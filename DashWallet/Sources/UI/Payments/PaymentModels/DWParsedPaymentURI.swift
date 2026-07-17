@@ -13,6 +13,53 @@
 //
 
 import Foundation
+import SwiftDashSDK
+
+// MARK: - DashAddressClassifier
+
+/// Decode a destination string into what it actually is on the wire. Lives
+/// here (nonisolated) rather than on `SendViewModel` because the QR scan
+/// pipeline classifies on its capture queue; `SendViewModel.classify`
+/// forwards to this.
+enum DashAddressClassifier {
+    enum Kind: Equatable {
+        case core
+        case platform
+        /// Carries the recipient's raw 43-byte Orchard payload so confirm
+        /// flows don't re-decode the bech32m.
+        case shielded(raw43: Data)
+    }
+
+    /// - Base58Check L1 address (network-checked) → `.core`
+    /// - bech32m HRP `dash`/`tdash` (current network), 21-byte payload with a
+    ///   DIP-0018 wire type byte (0xb0 P2PKH / 0x80 P2SH) → `.platform`
+    /// - bech32m, 44-byte payload `0x10` + 43 raw Orchard bytes → `.shielded`
+    /// Anything else (wrong-network HRP included) → nil.
+    static func classify(_ text: String) -> Kind? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        if trimmed.isValidDashAddressForCurrentNetwork {
+            return .core
+        }
+
+        guard let decoded = Bech32m.decode(trimmed.lowercased()) else { return nil }
+        let expectedHrp = Bech32m.platformHrp(mainnet: !WalletEnvironment.isTestnet)
+        guard decoded.hrp == expectedHrp else { return nil }
+
+        if decoded.data.count == 21,
+           decoded.data[0] == 0xb0 || decoded.data[0] == 0x80 {
+            return .platform
+        }
+        // DIP-0018 shielded display form: 0x10 type byte + 43 raw Orchard
+        // bytes (the encoding `PaymentsLandingViewModel.reloadShieldedAddress`
+        // produces for our own address).
+        if decoded.data.count == 44, decoded.data[0] == 0x10 {
+            return .shielded(raw43: decoded.data.subdata(in: 1..<44))
+        }
+        return nil
+    }
+}
 
 @objc(DWParsedPaymentURI)
 final class ParsedPaymentURI: NSObject {
@@ -41,12 +88,22 @@ final class ParsedPaymentURI: NSObject {
     /// false for bare schemeless inputs (implicit dash) — drives the invalid-QR error copy.
     @objc let hasExplicitScheme: Bool
     /// `String.isValidDashAddressForCurrentNetwork`, computed at parse time.
+    /// Core (base58) only — the BIP70-fallback path still keys on this.
     @objc let isAddressValidForCurrentNetwork: Bool
+    /// True when `address` is payable in ANY form this wallet supports on
+    /// the current network: base58 Core, DIP-0018 bech32m Platform, or
+    /// shielded. The QR scanner's accept gate.
+    @objc let isAddressPayableForCurrentNetwork: Bool
+    /// True when the address is a bech32m Platform/Shielded destination —
+    /// those can't ride the classic L1 payment processor, so scan entry
+    /// points route them into the Send screen instead.
+    @objc let requiresSendScreenRouting: Bool
 
     /// Mirrors `DSPaymentRequest.isValidAsNonDashpayPaymentRequest` (dash-only arm; the `bitcoin:`
-    /// arms are compiled out under `SHAPESHIFT_ENABLED`, undefined in this app).
+    /// arms are compiled out under `SHAPESHIFT_ENABLED`, undefined in this app), widened to accept
+    /// every payable address form (bech32m Platform/Shielded included).
     @objc var isValidDashPaymentIntent: Bool {
-        scheme == "dash" && (isAddressValidForCurrentNetwork || rURL != nil)
+        scheme == "dash" && (isAddressPayableForCurrentNetwork || rURL != nil)
     }
 
     private init(rawString: String,
@@ -61,7 +118,9 @@ final class ParsedPaymentURI: NSObject {
                  fiatCurrencyCode: String?,
                  fiatAmount: Float,
                  hasExplicitScheme: Bool,
-                 isAddressValidForCurrentNetwork: Bool) {
+                 isAddressValidForCurrentNetwork: Bool,
+                 isAddressPayableForCurrentNetwork: Bool,
+                 requiresSendScreenRouting: Bool) {
         self.rawString = rawString
         self.scheme = scheme
         self.address = address
@@ -75,6 +134,8 @@ final class ParsedPaymentURI: NSObject {
         self.fiatAmount = fiatAmount
         self.hasExplicitScheme = hasExplicitScheme
         self.isAddressValidForCurrentNetwork = isAddressValidForCurrentNetwork
+        self.isAddressPayableForCurrentNetwork = isAddressPayableForCurrentNetwork
+        self.requiresSendScreenRouting = requiresSendScreenRouting
         super.init()
     }
 
@@ -87,10 +148,14 @@ final class ParsedPaymentURI: NSObject {
             return ParsedPaymentURI(rawString: raw, scheme: nil, address: nil, amount: 0,
                                     label: nil, message: nil, rURL: nil, callbackScheme: nil,
                                     dashpayUsername: nil, fiatCurrencyCode: nil, fiatAmount: 0,
-                                    hasExplicitScheme: false, isAddressValidForCurrentNetwork: false)
+                                    hasExplicitScheme: false, isAddressValidForCurrentNetwork: false,
+                                    isAddressPayableForCurrentNetwork: false,
+                                    requiresSendScreenRouting: false)
         }
 
         let addressValid = uri.address?.isValidDashAddressForCurrentNetwork ?? false
+        let classified = uri.address.flatMap(DashAddressClassifier.classify)
+        let isBech32Destination = !addressValid && classified != nil
 
         return ParsedPaymentURI(rawString: raw,
                                 scheme: uri.scheme,
@@ -104,7 +169,9 @@ final class ParsedPaymentURI: NSObject {
                                 fiatCurrencyCode: uri.fiatCurrencyCode,
                                 fiatAmount: uri.fiatAmount ?? 0,
                                 hasExplicitScheme: uri.kind != .bareAddress,
-                                isAddressValidForCurrentNetwork: addressValid)
+                                isAddressValidForCurrentNetwork: addressValid,
+                                isAddressPayableForCurrentNetwork: addressValid || classified != nil,
+                                requiresSendScreenRouting: isBech32Destination)
     }
 
     /// The fetch-failed fallback: a copy without the BIP70 request URL (was the
@@ -123,6 +190,8 @@ final class ParsedPaymentURI: NSObject {
                          fiatCurrencyCode: fiatCurrencyCode,
                          fiatAmount: fiatAmount,
                          hasExplicitScheme: hasExplicitScheme,
-                         isAddressValidForCurrentNetwork: isAddressValidForCurrentNetwork)
+                         isAddressValidForCurrentNetwork: isAddressValidForCurrentNetwork,
+                         isAddressPayableForCurrentNetwork: isAddressPayableForCurrentNetwork,
+                         requiresSendScreenRouting: requiresSendScreenRouting)
     }
 }
