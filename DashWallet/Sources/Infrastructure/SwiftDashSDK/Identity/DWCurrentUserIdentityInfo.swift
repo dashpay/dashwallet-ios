@@ -168,6 +168,16 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             selector: #selector(handleInvalidationNotification(_:)),
             name: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
             object: nil)
+        // A network switch rebinds the host to the destination network's
+        // container, whose identity set is entirely different (or empty) —
+        // the walletId can be identical across networks (same seed), so the
+        // active-wallet notification alone doesn't cover it. Without this
+        // the testnet identity kept rendering on mainnet.
+        center.addObserver(
+            self,
+            selector: #selector(handleInvalidationNotification(_:)),
+            name: NSNotification.Name.DWCurrentNetworkDidChange,
+            object: nil)
     }
 
     // MARK: - Obj-C / Swift read API

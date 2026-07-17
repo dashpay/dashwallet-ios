@@ -114,6 +114,17 @@ public final class WalletEnvironment: NSObject {
             return false
         }
 
+        // The DashPay mirror (username + registration flag) is a single
+        // global slot while identities are per-network — without this, a
+        // testnet-registered username keeps rendering after switching to
+        // mainnet (avatar, menu, Join DashPay gating all read the mirror).
+        // Clearing is safe: re-entering a network that has a registered
+        // identity re-backfills the mirror from the SDK's
+        // `PersistentIdentity` rows on the next read
+        // (`DWCurrentUserIdentityInfo`'s self-heal).
+        DWGlobalOptions.sharedInstance().dashpayUsername = nil
+        DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = false
+
         UserDefaults.standard.set(kind.rawValue, forKey: currentChainTypeKey)
         NotificationCenter.default.post(name: NSNotification.Name.DWCurrentNetworkDidChange, object: nil)
         return true
