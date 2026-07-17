@@ -55,6 +55,11 @@ struct InternalTransferScreen: View {
                     directionCards
                         .padding(.horizontal, 20)
 
+                    if viewModel.isBlockedBySync {
+                        SyncGateNote()
+                            .padding(.horizontal, 20)
+                    }
+
                     if viewModel.canContinue {
                         transferPreview
                             .padding(.horizontal, 20)

@@ -74,6 +74,12 @@ final class SendViewModel: ObservableObject {
     @Published private(set) var withdrawalPreflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
     private var preflightTask: Task<Void, Never>?
 
+    /// True once the L1 chain sync completed (`SyncingActivityMonitor`
+    /// `.syncDone`). Core-funded routes can't Continue before that — the
+    /// UTXO set may be stale (see `WalletSendService.ensureChainSynced`,
+    /// the boundary backstop behind this UI gate).
+    @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
+
     private var cancellables = Set<AnyCancellable>()
 
     /// Set by the balance-row send sheet: the source is fixed to the tapped
@@ -82,12 +88,19 @@ final class SendViewModel: ObservableObject {
     /// rather than silently re-picking the source.
     let pinnedSource: ChainNetwork?
 
+    deinit {
+        // The monitor holds observers strongly — without this the VM (and
+        // its Combine pipelines) outlive the screen.
+        SyncingActivityMonitor.shared.remove(observer: self)
+    }
+
     init(pinnedSource: ChainNetwork? = nil) {
         self.pinnedSource = pinnedSource
         if let pinnedSource {
             source = pinnedSource
         }
         refreshClipboardSuggestion()
+        SyncingActivityMonitor.shared.add(observer: self)
 
         NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)
             .receive(on: RunLoop.main)
@@ -468,8 +481,21 @@ final class SendViewModel: ObservableObject {
             && dashDuffsUnsigned == platformWithdrawableDuffs
     }
 
+    /// True when the picked route spends Core UTXOs but the chain hasn't
+    /// finished syncing — Continue stays disabled and the screen explains
+    /// why (a stale UTXO set can't safely fund a send).
+    var isBlockedBySync: Bool {
+        guard let route else { return false }
+        switch route {
+        case .coreToCore, .coreToShielded:
+            return !isChainSynced
+        default:
+            return false
+        }
+    }
+
     var canContinue: Bool {
-        guard dashDuffsUnsigned > 0, let route else { return false }
+        guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
         switch route {
         case .coreToCore:
             // The L1 fee rides on top; the payment processor rejects an
@@ -547,6 +573,20 @@ final class SendViewModel: ObservableObject {
             }
         } catch {
             // Rate fetch failed — leave `amountText` as-is so the user can re-type.
+        }
+    }
+}
+
+
+// MARK: - SyncingActivityMonitorObserver
+
+extension SendViewModel: SyncingActivityMonitorObserver {
+    nonisolated func syncingActivityMonitorProgressDidChange(_ progress: Double) {}
+
+    nonisolated func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State,
+                                                          state: SyncingActivityMonitor.State) {
+        Task { @MainActor in
+            self.isChainSynced = state == .syncDone
         }
     }
 }
