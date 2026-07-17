@@ -21,10 +21,12 @@ final class SendScreenViewController: DWBasePayViewController {
             viewModel: sendViewModel,
             onClose: { [weak self] in self?.dismiss(animated: true) },
             onScanQR: { [weak self] in self?.performScanQRCodeAction() },
-            onContinueCore: { [weak self] address, amountDuffs in
-                self?.continueCore(address: address, amountDuffs: amountDuffs)
-            },
-            onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
+            onContinue: { [weak self] in
+                guard let self else { return }
+                self.pushExternalSendSource(
+                    viewModel: self.sendViewModel,
+                    onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
+            })
         return UIHostingController(rootView: screen)
     }()
 
@@ -86,6 +88,51 @@ extension DWBasePayViewController {
         }
         guard let url = URL(string: uriString) else { return }
         performPay(to: url)
+    }
+
+    /// Push the external-send SOURCE step (From picker) onto the current
+    /// navigation stack, sharing the address step's view model. Continue there
+    /// pushes the amount step. Shared by the Send screen and the balance-row
+    /// send sheet (both `DWBasePayViewController` hosts inside a nav
+    /// controller).
+    func pushExternalSendSource(viewModel: SendViewModel,
+                                onSendCompleted: @escaping () -> Void) {
+        let screen = SendSourceScreen(
+            viewModel: viewModel,
+            onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
+            onContinue: { [weak self] in
+                guard let self else { return }
+                if viewModel.route == .coreToCore {
+                    // Transparent → Transparent: skip our amount step and use
+                    // the classic L1 amount screen (real fee math + its own
+                    // confirm) reached through the payment processor.
+                    self.continueCore(address: viewModel.trimmedAddress, amountDuffs: 0)
+                } else {
+                    // Legs the L1 amount screen can't fund (asset-lock shield,
+                    // platform/shielded sources): our amount step + confirm.
+                    self.pushExternalSendAmount(viewModel: viewModel, onSendCompleted: onSendCompleted)
+                }
+            })
+        // Every UIHostingController already conforms to NavigationBarDisplayable
+        // (nav bar + back button hidden); the screen draws its own back + title.
+        let host = UIHostingController(rootView: screen)
+        navigationController?.pushViewController(host, animated: true)
+    }
+
+    /// Push the external-send AMOUNT step (final). Core → Core rides
+    /// `continueCore` (the L1 payment processor); every other route confirms in
+    /// `SendConfirmSheet`.
+    func pushExternalSendAmount(viewModel: SendViewModel,
+                                onSendCompleted: @escaping () -> Void) {
+        let screen = ExternalSendAmountScreen(
+            viewModel: viewModel,
+            onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
+            onContinueCore: { [weak self] address, amountDuffs in
+                self?.continueCore(address: address, amountDuffs: amountDuffs)
+            },
+            onSendCompleted: onSendCompleted)
+        let host = UIHostingController(rootView: screen)
+        navigationController?.pushViewController(host, animated: true)
     }
 }
 

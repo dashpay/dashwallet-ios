@@ -34,10 +34,12 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             onTransferCompleted: { [weak self] in self?.dismiss(animated: true) },
             transferSendFrom: transferSendFrom,
             embeddedSendViewModel: embeddedSendViewModel,
-            onContinueCore: { [weak self] address, amountDuffs in
-                self?.continueCore(address: address, amountDuffs: amountDuffs)
+            onSendContinue: { [weak self] in
+                guard let self else { return }
+                self.pushExternalSendSource(
+                    viewModel: self.embeddedSendViewModel,
+                    onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
             },
-            onSendCompleted: { [weak self] in self?.dismiss(animated: true) },
             showsHeader: showsHeader)
         return UIHostingController(rootView: screen)
     }()
