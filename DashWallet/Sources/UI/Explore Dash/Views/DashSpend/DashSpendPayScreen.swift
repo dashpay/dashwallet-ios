@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import SDWebImageSwiftUI
 
 struct DashSpendPayScreen: View {
@@ -99,7 +100,7 @@ struct DashSpendPayScreen: View {
             }
             overlays
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .onAppear {
             viewModel.subscribeToUpdates()
 
@@ -162,7 +163,7 @@ struct DashSpendPayScreen: View {
                 positiveButtonAction: { showErrorDialog = false }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.black.opacity(0.7))
+            .background(Color.dash.backgroundOverlay)
             .edgesIgnoringSafeArea(.all)
         }
 
@@ -181,7 +182,7 @@ struct DashSpendPayScreen: View {
                 }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.black.opacity(0.7))
+            .background(Color.dash.backgroundOverlay)
             .edgesIgnoringSafeArea(.all)
         }
     }
@@ -266,7 +267,7 @@ private struct DashSpendPayConfirmationSheet: View {
 
         if #available(iOS 16.4, *) {
             dialog
-                .presentationBackground(Color.primaryBackground)
+                .presentationBackground(Color.dash.primaryBackground)
                 .selfSizingSheet(fallback: 500)
                 .presentationCornerRadius(32)
                 .presentationDragIndicator(.hidden)

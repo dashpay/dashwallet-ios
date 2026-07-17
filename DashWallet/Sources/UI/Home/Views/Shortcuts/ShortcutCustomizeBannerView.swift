@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct ShortcutCustomizeBannerView: View {
     let onDismiss: () -> Void
@@ -28,11 +29,11 @@ struct ShortcutCustomizeBannerView: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(NSLocalizedString("Customize shortcut bar", comment: "Shortcut banner"))
                     .font(.footnoteMedium)
-                    .foregroundStyle(Color.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
 
                 Text(NSLocalizedString("Hold any button above to replace it with the function you need", comment: "Shortcut banner"))
                     .font(.footnote)
-                    .foregroundStyle(Color.gray500)
+                    .foregroundStyle(Color.dash.gray500)
             }
 
             Spacer(minLength: 0)
@@ -49,9 +50,9 @@ struct ShortcutCustomizeBannerView: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
-        .background(Color.white)
+        .background(Color.dash.white)
         .clipShape(.rect(cornerRadius: 20))
-        .shadow(color: Color.shadow, radius: 10, x: 0, y: 5)
+        .shadow(color: Color.dash.shadow, radius: 10, x: 0, y: 5)
     }
 }
 
@@ -61,7 +62,7 @@ private func bannerPreview() -> some View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(.vertical, 20)
         .padding(.horizontal, 20)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 }
 
 #Preview("Light") {

@@ -17,6 +17,7 @@
 
 import UIKit
 import SwiftUI
+import DashUIKit
 
 class CreateUsernameViewController: UIViewController {
     @objc var completionHandler: ((Bool) -> ())?
@@ -124,11 +125,11 @@ struct CreateUsernameView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(NSLocalizedString("Create your username", comment: "Usernames"))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .font(.title1)
                 .padding(.top, 12)
             Text(NSLocalizedString("Please note that you will not be able to change it in future", comment: "Usernames"))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .font(.system(size: 14))
             TextInput(label: "Username", text: $viewModel.username, isEnabled: !screenLockedAfterAuth)
                 .padding(.top, 20)
@@ -201,7 +202,7 @@ struct CreateUsernameView: View {
             if !viewModel.isInvitationMode, viableFundingSources.count >= 2 {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("Pay with", comment: "Usernames"))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .font(.caption)
                     Picker("", selection: userFundingSourceBinding) {
                         ForEach(viableFundingSources, id: \.rawValue) { source in
@@ -356,13 +357,13 @@ struct CreateUsernameView: View {
                         .foregroundColor(.blue)
                     Text(shieldedHintText(for: snapshot))
                         .font(.caption)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.blue.opacity(0.08))
+            .background(Color.dash.blue.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(.top, 20)
         }
@@ -406,7 +407,7 @@ struct CreateUsernameView: View {
                     "This name requires a masternode vote.",
                     comment: "Usernames"))
                     .font(.caption)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
         }
         .padding(12)
@@ -426,16 +427,16 @@ struct CreateUsernameView: View {
     private var invitationFundingBanner: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "envelope.open")
-                .foregroundColor(.dashBlue)
+                .foregroundColor(.dash.blue)
                 .font(.system(size: 20))
             Text(NSLocalizedString("Your invitation pays the registration fee for this username.", comment: "DashPay Invitations"))
                 .font(.caption)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.dashBlue.opacity(0.08))
+        .background(Color.dash.blue.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
@@ -536,7 +537,7 @@ struct CreateUsernameView: View {
             ? NSLocalizedString("Funded from your Shielded balance — your username can't be linked to your other Dash.", comment: "Usernames")
             : NSLocalizedString("Transparent funding publicly links your username to these funds.", comment: "Usernames"))
             .font(.caption2)
-            .foregroundColor(.secondaryText)
+            .foregroundColor(.dash.secondaryText)
             .fixedSize(horizontal: false, vertical: true)
     }
 

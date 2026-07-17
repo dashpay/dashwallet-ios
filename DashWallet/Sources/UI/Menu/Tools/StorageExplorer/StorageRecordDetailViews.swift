@@ -1,4 +1,5 @@
 import SwiftUI
+import DashUIKit
 import SwiftData
 import SwiftDashSDK
 
@@ -11,7 +12,7 @@ private struct FieldRow: View {
 
     var body: some View {
         HStack {
-            Text(label).foregroundColor(.secondary)
+            Text(label).foregroundColor(Color.dash.secondaryText)
             Spacer()
             Text(value).lineLimit(1).truncationMode(.middle).textSelection(.enabled)
             if didCopy {
@@ -21,7 +22,7 @@ private struct FieldRow: View {
             } else {
                 Image(systemName: "doc.on.doc")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             }
         }
         .contentShape(Rectangle())
@@ -595,7 +596,7 @@ struct AccountStorageDetailView: View {
                                     }
                                 }
                                 .font(.caption2)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(Color.dash.secondaryText)
                             }
                         }
                     }
@@ -640,7 +641,7 @@ struct CoreAddressDetailView: View {
             Form {
                 Section("Address") {
                     HStack {
-                        Text("Address").foregroundColor(.secondary)
+                        Text("Address").foregroundColor(Color.dash.secondaryText)
                         Spacer()
                         Text(record.address).lineLimit(1).truncationMode(.middle)
                     }

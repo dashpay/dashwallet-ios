@@ -19,6 +19,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct JoinDashPayReadinessScreen: View {
     @ObservedObject private var readiness = ShieldedIdentityFundingReadiness.shared
@@ -47,12 +48,12 @@ struct JoinDashPayReadinessScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             Text(NSLocalizedString("Get ready to join DashPay", comment: "Usernames"))
                 .font(.title1)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .padding(.top, 12)
 
             Text(NSLocalizedString("Your username is visible to everyone. Funding it from your Shielded balance — after letting the funds rest for a few hours — means no one can link your username to your other Dash.", comment: "Usernames"))
                 .font(.system(size: 14))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 8)
 
@@ -63,7 +64,7 @@ struct JoinDashPayReadinessScreen: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .padding(.top, 24)
 
@@ -80,7 +81,7 @@ struct JoinDashPayReadinessScreen: View {
                 Button(action: onProceed) {
                     Text(NSLocalizedString("Use transparent balance instead", comment: "Usernames"))
                         .font(.footnote)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .frame(maxWidth: .infinity)
                 }
                 .padding(.top, 12)
@@ -89,7 +90,7 @@ struct JoinDashPayReadinessScreen: View {
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.primaryBackground.ignoresSafeArea())
+        .background(Color.dash.primaryBackground.ignoresSafeArea())
         .onAppear {
             readiness.refresh()
             // Pull fresh notes + the pool count so the checklist isn't
@@ -198,17 +199,17 @@ struct JoinDashPayReadinessScreen: View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: met ? "checkmark.circle.fill" : pendingIcon)
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(met ? .green : .gray300)
+                .foregroundColor(met ? .green : .dash.gray300)
                 .frame(width: 24, height: 24)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(subtitle)
                     .font(.system(size: 13))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -217,10 +218,10 @@ struct JoinDashPayReadinessScreen: View {
                 Button(action: action) {
                     Text(label)
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dash.whiteText)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
-                        .background(Color.dashBlue)
+                        .background(Color.dash.blue)
                         .clipShape(Capsule())
                 }
             }

@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import SDWebImageSwiftUI
 
 struct DashSpendConfirmationDialog: View {
@@ -54,14 +55,14 @@ struct DashSpendConfirmationDialog: View {
     var body: some View {
         VStack(spacing: 0) {
             Capsule()
-                .fill(Color(red: 0.69, green: 0.71, blue: 0.74).opacity(0.5))
+                .fill(Color.dash.grabberFill)
                 .frame(width: 36, height: 5)
                 .padding(.top, 6)
                 .padding(.bottom, 13)
 
             Text(NSLocalizedString("Confirm", comment: "DashSpend"))
                 .font(.calloutMedium)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .frame(height: 44)
 
             VStack(spacing: 20) {
@@ -80,7 +81,7 @@ struct DashSpendConfirmationDialog: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 7))
                             Text(NSLocalizedString("Dash Wallet", comment: "DashSpend"))
                                 .font(.subhead)
-                                .foregroundColor(.primaryText)
+                                .foregroundColor(.dash.primaryText)
                         }
                     }
 
@@ -95,14 +96,14 @@ struct DashSpendConfirmationDialog: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 7))
                             Text(merchantName)
                                 .font(.subhead)
-                                .foregroundColor(.primaryText)
+                                .foregroundColor(.dash.primaryText)
                         }
                     }
 
                     detailsRow(title: NSLocalizedString("Gift card", comment: "DashSpend")) {
                         Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "")
                             .font(.subhead)
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                     }
 
                     if !quantityLines.isEmpty {
@@ -111,7 +112,7 @@ struct DashSpendConfirmationDialog: View {
                                 ForEach(quantityLines, id: \.self) { line in
                                     Text(line)
                                         .font(.subhead)
-                                        .foregroundColor(.primaryText)
+                                        .foregroundColor(.dash.primaryText)
                                 }
                             }
                         }
@@ -120,27 +121,27 @@ struct DashSpendConfirmationDialog: View {
                     detailsRow(title: NSLocalizedString("Discount", comment: "DashSpend")) {
                         Text(PercentageFormatter.format(percent: NSDecimalNumber(decimal: discount * 100).doubleValue))
                             .font(.subhead)
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                     }
 
                     detailsRow(title: NSLocalizedString("You pay", comment: "DashSpend")) {
                         Text(fiatFormatter.string(from: NSDecimalNumber(decimal: youPayAmount)) ?? "")
                             .font(.subhead)
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                     }
                 }
                 .padding(6)
-                .background(Color.secondaryBackground)
+                .background(Color.dash.secondaryBackground)
                 .cornerRadius(20)
-                .shadow(color: Color(red: 0.72, green: 0.76, blue: 0.8).opacity(0.1), radius: 20, x: 0, y: 5)
+                .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
 
                 HStack(spacing: 20) {
                     DashButton(
                         text: NSLocalizedString("Cancel", comment: "DashSpend"),
                         action: onCancel
                     )
-                    .overrideForegroundColor(.primaryText)
-                    .overrideBackgroundColor(.gray300Alpha10)
+                    .overrideForegroundColor(.dash.primaryText)
+                    .overrideBackgroundColor(.dash.gray300Alpha10)
 
                     DashButton(
                         text: NSLocalizedString("Confirm", comment: "DashSpend"),
@@ -173,7 +174,7 @@ struct DashSpendConfirmationDialog: View {
             Text(title)
                 .font(.subhead)
                 .fontWeight(.medium)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
 
             Spacer()
 
@@ -215,7 +216,7 @@ private struct DashSpendConfirmationDialogPreview: View {
 
             if #available(iOS 16.4, *) {
                 content
-                    .presentationBackground(Color.primaryBackground)
+                    .presentationBackground(Color.dash.primaryBackground)
                     .selfSizingSheet()
                     .presentationCornerRadius(32)
                     .presentationDragIndicator(.hidden)

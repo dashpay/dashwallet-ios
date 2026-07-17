@@ -20,6 +20,7 @@
 import OSLog
 import SwiftData
 import SwiftUI
+import DashUIKit
 import UIKit
 import SwiftDashSDK
 
@@ -78,10 +79,10 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color.dash.primaryText)
                         .frame(width: 36, height: 36)
                         .overlay(
-                            Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1)
+                            Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1)
                         )
                 }
                 Spacer()
@@ -94,7 +95,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 Text("Core Sync Status")
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             .padding(.top, 30)
@@ -117,7 +118,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
             }
         }
         .padding(.horizontal, 20)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
         .confirmationDialog(
             NSLocalizedString("Rescan Filters", comment: "SPV diagnostics"),
@@ -215,11 +216,11 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 .frame(width: 12, height: 12)
             Text(stateLabel)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Spacer()
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -228,27 +229,27 @@ struct SwiftDashSDKSPVStatusScreen: View {
             HStack {
                 Text("Aggregate Progress")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
                 Text(percentageText)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             }
             // Custom bar — local UIKit `ProgressView` shadows SwiftUI's,
             // so we draw our own to avoid the name collision.
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.gray300.opacity(0.3))
+                        .fill(Color.dash.gray300.opacity(0.3))
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.blue)
+                        .fill(Color.dash.blue)
                         .frame(width: max(0, geo.size.width * clampedProgress))
                 }
             }
             .frame(height: 8)
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -264,11 +265,11 @@ struct SwiftDashSDKSPVStatusScreen: View {
             HStack {
                 Text(NSLocalizedString("Wallet birth height", comment: "SPV diagnostics"))
                     .font(.system(size: 13))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
                 Text(walletBirthHeight.map { "\($0)" } ?? "—")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .monospacedDigit()
                 Button(action: {
                     birthHeightEntryText = walletBirthHeight.map { "\($0)" } ?? ""
@@ -276,13 +277,13 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 }) {
                     Image(systemName: "pencil")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                 }
                 .disabled(walletBirthHeight == nil)
             }
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -291,11 +292,11 @@ struct SwiftDashSDKSPVStatusScreen: View {
             HStack {
                 Text("Connected Peers")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
                 Text("\(coordinator.connectedPeers.count)")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .monospacedDigit()
             }
             .padding(.bottom, 4)
@@ -303,13 +304,13 @@ struct SwiftDashSDKSPVStatusScreen: View {
             if coordinator.connectedPeers.isEmpty {
                 Text("No peers connected")
                     .font(.system(size: 13))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             } else {
                 ForEach(coordinator.connectedPeers) { peer in
                     HStack {
                         Text(peer.address)
                             .font(.system(size: 13))
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                             .monospacedDigit()
                             .lineLimit(1)
                         Spacer()
@@ -319,7 +320,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
             }
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -355,7 +356,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Per-Phase Progress")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .padding(.bottom, 4)
 
             phaseRow(
@@ -388,7 +389,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
             )
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -396,13 +397,13 @@ struct SwiftDashSDKSPVStatusScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString("Filters", comment: "SPV diagnostics"))
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
 
             Text(NSLocalizedString(
                 "Rewind this wallet's filter scan to re-download and re-match compact block filters, rediscovering any missed transactions.",
                 comment: "SPV diagnostics"))
                 .font(.system(size: 12))
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             Button(action: {
@@ -413,8 +414,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.gray300.opacity(0.3))
-                    .foregroundColor(rescanEnabled ? .primaryText : .secondary)
+                    .background(Color.dash.gray300.opacity(0.3))
+                    .foregroundColor(rescanEnabled ? .dash.primaryText : .secondary)
                     .cornerRadius(8)
             }
             .disabled(!rescanEnabled)
@@ -424,7 +425,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     "Available only while SPV is running with a wallet bound.",
                     comment: "SPV diagnostics"))
                     .font(.system(size: 12))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             }
 
             if let message = rescanResultMessage {
@@ -436,7 +437,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -465,8 +466,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.gray300.opacity(0.3))
-                    .foregroundColor(.primaryText)
+                    .background(Color.dash.gray300.opacity(0.3))
+                    .foregroundColor(.dash.primaryText)
                     .cornerRadius(8)
             }
             Button(action: {
@@ -477,8 +478,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.gray300.opacity(0.3))
-                    .foregroundColor(.primaryText)
+                    .background(Color.dash.gray300.opacity(0.3))
+                    .foregroundColor(.dash.primaryText)
                     .cornerRadius(8)
             }
         }
@@ -490,11 +491,11 @@ struct SwiftDashSDKSPVStatusScreen: View {
         HStack {
             Text(title)
                 .font(.system(size: 13))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Spacer()
             Text(value)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .monospacedDigit()
         }
     }
@@ -503,11 +504,11 @@ struct SwiftDashSDKSPVStatusScreen: View {
         HStack {
             Text(title)
                 .font(.system(size: 13))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Spacer()
             Text(phaseDetail(state: state, percentage: percentage, current: current, target: target))
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
                 .monospacedDigit()
         }
     }

@@ -14,6 +14,7 @@
 
 import SwiftDashSDK
 import SwiftUI
+import DashUIKit
 
 struct AddContactScreen: View {
     @Environment(\.dismiss) private var dismiss
@@ -42,7 +43,7 @@ struct AddContactScreen: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.primaryBackground.ignoresSafeArea()
+                Color.dash.primaryBackground.ignoresSafeArea()
                 VStack(spacing: 0) {
                     header
                     ContactsSearchField(
@@ -58,7 +59,7 @@ struct AddContactScreen: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(NSLocalizedString("Cancel", comment: "")) { dismiss() }
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                 }
             }
             .onChange(of: query) { _, _ in
@@ -101,14 +102,14 @@ struct AddContactScreen: View {
         VStack(spacing: 6) {
             Image(systemName: "person.crop.circle.badge.plus")
                 .font(.system(size: 56, weight: .light))
-                .foregroundColor(.dashBlue)
+                .foregroundColor(.dash.blue)
                 .padding(.bottom, 14)
             Text(NSLocalizedString("Add a New Contact", comment: "DashPay Contacts"))
                 .font(.system(size: 20, weight: .bold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Text(NSLocalizedString("Find a User", comment: "DashPay Contacts"))
                 .font(.system(size: 16))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
         }
         .padding(.top, 28)
     }
@@ -123,19 +124,19 @@ struct AddContactScreen: View {
                 } else if results.isEmpty && trimmedQuery.count >= 2 {
                     Text(NSLocalizedString("No usernames found", comment: "DashPay Contacts"))
                         .font(.system(size: 14))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .padding(.top, 32)
                 } else if trimmedQuery.count < 2 && !trimmedQuery.isEmpty {
                     Text(NSLocalizedString("Type at least 2 characters to search usernames", comment: "DashPay Contacts"))
                         .font(.system(size: 14))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .padding(.top, 32)
                 }
                 ForEach(results) { result in
                     resultRow(result)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.secondaryBackground))
+                                .fill(Color.dash.secondaryBackground))
                         .contentShape(Rectangle())
                         .onTapGesture { previewTarget = result }
                         .onAppear { checkEligibilityIfNeeded(result) }
@@ -193,12 +194,12 @@ struct AddContactScreen: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(result.fullName.withoutDashSuffix)
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .lineLimit(1)
                 if let hint = collisionText(state) {
                     Text(hint)
                         .font(.system(size: 12))
-                        .foregroundColor(state == .alreadyRequested ? .dashGolden : .tertiaryText)
+                        .foregroundColor(state == .alreadyRequested ? .dashGolden : .dash.tertiaryText)
                 }
             }
             Spacer()
@@ -230,11 +231,11 @@ struct AddContactScreen: View {
                     previewTarget = result
                 } label: {
                     Image(systemName: "person.badge.plus")
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                         .frame(width: 30, height: 30)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.dashBlue.opacity(0.1)))
+                                .fill(Color.dash.blue.opacity(0.1)))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts"))
@@ -250,7 +251,7 @@ struct AddContactScreen: View {
                 EmptyView()
             case .missingDashPayKeys:
                 Image(systemName: "lock.slash")
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(.dash.tertiaryText)
             }
         }
     }
@@ -378,7 +379,7 @@ struct AddContactPreviewSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.primaryBackground.ignoresSafeArea()
+                Color.dash.primaryBackground.ignoresSafeArea()
                 VStack(spacing: 12) {
                     ContactAvatarView(
                         title: title,
@@ -388,23 +389,23 @@ struct AddContactPreviewSheet: View {
                         .padding(.top, 28)
                     Text(title)
                         .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                     if username != title {
                         Text(username)
                             .font(.system(size: 14))
-                            .foregroundColor(.secondaryText)
+                            .foregroundColor(.dash.secondaryText)
                     }
                     if let message = contact?.publicMessage, !message.isEmpty {
                         Text(message)
                             .font(.system(size: 14))
-                            .foregroundColor(.secondaryText)
+                            .foregroundColor(.dash.secondaryText)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 32)
                             .padding(.top, 2)
                     }
                     Text(rationale)
                         .font(.system(size: 14))
-                        .foregroundColor(.tertiaryText)
+                        .foregroundColor(.dash.tertiaryText)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 28)
                         .padding(.top, 4)
@@ -418,7 +419,7 @@ struct AddContactPreviewSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(NSLocalizedString("Close", comment: "")) { dismiss() }
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                 }
             }
         }
@@ -451,7 +452,7 @@ struct AddContactPreviewSheet: View {
     private var cta: some View {
         switch collision {
         case .none:
-            primaryButton(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts"), color: .dashBlue) {
+            primaryButton(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts"), color: .dash.blue) {
                 onSend()
                 dismiss()
             }
@@ -467,7 +468,7 @@ struct AddContactPreviewSheet: View {
         case .isSelf:
             EmptyView()
         case .missingDashPayKeys:
-            statusLabel(NSLocalizedString("Can't receive contact requests", comment: "DashPay Contacts"), systemImage: "lock.slash", color: .tertiaryText)
+            statusLabel(NSLocalizedString("Can't receive contact requests", comment: "DashPay Contacts"), systemImage: "lock.slash", color: .dash.tertiaryText)
         }
     }
 
@@ -475,7 +476,7 @@ struct AddContactPreviewSheet: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(Color.dash.whiteText)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
                 .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(color))

@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct DashSpendDenominationRow: View {
     let denomination: Decimal
@@ -36,7 +37,7 @@ struct DashSpendDenominationRow: View {
                 Text(fiatFormatter.string(from: NSDecimalNumber(decimal: denomination)) ?? "")
                     .font(.headline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -52,7 +53,7 @@ struct DashSpendDenominationRow: View {
         DashSpendDenominationRowPreview(denomination: 100)
     }
     .padding(20)
-    .background(Color.secondaryBackground)
+    .background(Color.dash.secondaryBackground)
     .cornerRadius(20)
     .padding(20)
 }

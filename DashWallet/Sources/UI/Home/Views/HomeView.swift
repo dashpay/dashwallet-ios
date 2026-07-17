@@ -312,7 +312,7 @@ struct HomeViewContent<Content: View>: View {
                                     }
                                 }
                                 .padding(.bottom, 4)
-                                .background(Color.secondaryBackground)
+                                .background(Color.dash.secondaryBackground)
                                 .clipShape(RoundedShape(corners: [.bottomLeft, .bottomRight], radii: 10))
                                 .padding(15)
                                 .shadow(color: .shadow, radius: 10, x: 0, y: 5)
@@ -428,14 +428,14 @@ struct HomeViewContent<Content: View>: View {
                 
                 Text(DWDateFormatter.sharedInstance.dayOfWeek(from: date))
                     .font(.footnote)
-                    .foregroundStyle(Color.tertiaryText)
+                    .foregroundStyle(Color.dash.tertiaryText)
                     .padding(.trailing, 15)
             }
             .padding(.bottom, 6)
         }
         .frame(height: 38)
         .frame(maxWidth: .infinity)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .clipShape(RoundedShape(corners: [.topLeft, .topRight], radii: 10))
         .padding(.horizontal, 15)
     }
@@ -502,9 +502,9 @@ struct HomeViewContent<Content: View>: View {
         AnyView(
             Image(systemName: systemName)
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.dashBlue)
+                .foregroundColor(.dash.blue)
                 .frame(width: 30, height: 30)
-                .background(Circle().fill(Color.dashBlue.opacity(0.08)))
+                .background(Circle().fill(Color.dash.blue.opacity(0.08)))
         )
     }
 
@@ -710,13 +710,13 @@ struct GiftCardDetailsSheet: View {
             if #available(iOS 16.4, *) {
                 if showsTxDetailRoute {
                     dialog
-                        .presentationBackground(Color.primaryBackground)
+                        .presentationBackground(Color.dash.primaryBackground)
                         .presentationDetents([.large])
                         .presentationCornerRadius(32)
                         .presentationDragIndicator(.hidden)
                 } else {
                     dialog
-                        .presentationBackground(Color.primaryBackground)
+                        .presentationBackground(Color.dash.primaryBackground)
                         .selfSizingSheet(fallback: calculatedSelectionSheetHeight)
                         .presentationCornerRadius(32)
                         .presentationDragIndicator(.hidden)
@@ -733,7 +733,7 @@ struct GiftCardDetailsSheet: View {
                 dialog
             }
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .onAppear {
             viewModel.startObserving()
             showBackButton = shouldShowBackButton
@@ -818,7 +818,7 @@ struct TransactionDetailsSheet: View {
         }) {
             TxDetailsDestination(from: item)
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
     
     @ViewBuilder

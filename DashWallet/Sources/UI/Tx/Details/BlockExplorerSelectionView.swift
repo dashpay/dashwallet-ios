@@ -1,4 +1,5 @@
 import SwiftUI
+import DashUIKit
 
 struct BlockExplorerSelectionView: View {
     @Environment(\.dismiss) private var dismiss
@@ -21,7 +22,7 @@ struct BlockExplorerSelectionView: View {
                             Text(explorer.title)
                                 .font(.subhead)
                                 .fontWeight(.medium)
-                                .foregroundColor(.primaryText)
+                                .foregroundColor(.dash.primaryText)
                             
                             Spacer()
                         }
@@ -31,7 +32,7 @@ struct BlockExplorerSelectionView: View {
                 }
             }
             .padding(6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .cornerRadius(12)
             .shadow(color: .shadow, radius: 5, y: 2)
             .padding(.horizontal, 20)

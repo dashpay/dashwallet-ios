@@ -59,7 +59,7 @@ struct SendAmountView<AvatarView: View>: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            Color.primaryBackground
+            Color.dash.primaryBackground
                 .ignoresSafeArea(edges: .top)
 
             VStack(spacing: 0) {
@@ -102,7 +102,7 @@ struct SendAmountView<AvatarView: View>: View {
                         onSend: onSend
                     )
                 }
-                .background(Color.secondaryBackground)
+                .background(Color.dash.secondaryBackground)
             }
         }
     }
@@ -219,7 +219,7 @@ private struct SendAmountErrorRow: View {
 
     private var errorColor: Color {
         guard let colorizedError = error as? ColorizedText else {
-            return .systemRed
+            return .dash.red
         }
 
         return Color(uiColor: colorizedError.textColor)

@@ -18,6 +18,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 // MARK: - DerivationPathKeysViewModel
@@ -190,7 +191,7 @@ struct KeyInfoRow: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(copiedBackground)
-                        .foregroundColor(.whiteText)
+                        .foregroundColor(.dash.whiteText)
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
             }
@@ -202,10 +203,10 @@ struct KeyInfoRow: View {
         if colorScheme == .dark {
             ZStack {
                 BackgroundBlurView()
-                Color.whiteAlpha15
+                Color.dash.whiteAlpha15
             }
         } else {
-            Color.black.opacity(0.8)
+            Color.dash.backgroundOverlay
         }
     }
 }

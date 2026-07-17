@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 public struct VerifyIdentityScreen: View {
     @State private var link: String = ""
@@ -35,13 +36,13 @@ public struct VerifyIdentityScreen: View {
                     .font(.title1)
                     .multilineTextAlignment(.leading)
                     .lineSpacing(3)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
               
                 Text(NSLocalizedString("The link you send will be visible only to the network owners", comment: "Usernames"))
                     .font(.subhead)
                     .multilineTextAlignment(.leading)
                     .lineSpacing(3)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
 
                 HStack(spacing: 0) {
                     let text = String.localizedStringWithFormat(NSLocalizedString("Please vote to approve my requested Dash username - %@", comment: "Usernames"), viewModel.username)
@@ -49,7 +50,7 @@ public struct VerifyIdentityScreen: View {
                     VStack(alignment: .leading, spacing: 0) {
                         Text(NSLocalizedString("Copy text", comment: ""))
                             .font(.footnote)
-                            .foregroundStyle(Color.secondaryText)
+                            .foregroundStyle(Color.dash.secondaryText)
                         
                         Text(text)
                             .font(.subhead)
@@ -67,14 +68,14 @@ public struct VerifyIdentityScreen: View {
                         }
                     }) {
                         Image("icon_copy_outline")
-                            .foregroundStyle(Color.primaryText)
+                            .foregroundStyle(Color.dash.primaryText)
                             .frame(width: 40, height: 40)
                             .scaledToFit()
                     }
                     .padding(.trailing, 10)
                 }
                 .frame(maxWidth: .infinity)
-                .background(Color.gray400.opacity(0.13))
+                .background(Color.dash.gray400.opacity(0.13))
                 .cornerRadius(10)
                 .padding(.vertical, 20)
                 
@@ -82,14 +83,14 @@ public struct VerifyIdentityScreen: View {
                     .font(.calloutMedium)
                     .multilineTextAlignment(.leading)
                     .lineSpacing(3)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .padding(.top, 8)
               
                 Text(NSLocalizedString("Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link bellow", comment: "Usernames"))
                     .font(.subhead)
                     .multilineTextAlignment(.leading)
                     .lineSpacing(3)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .padding(.top, 1)
                 
                 TextInput(
@@ -101,7 +102,7 @@ public struct VerifyIdentityScreen: View {
                 if isInputError {
                     Text(errorText)
                         .font(.footnote)
-                        .foregroundColor(.systemRed)
+                        .foregroundColor(.dash.red)
                         .padding(.leading, 4)
                 }
                 

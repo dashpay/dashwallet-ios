@@ -15,6 +15,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 struct PlatformSyncStatusScreen: View {
@@ -35,10 +36,10 @@ struct PlatformSyncStatusScreen: View {
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color.dash.primaryText)
                         .frame(width: 36, height: 36)
                         .overlay(
-                            Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1)
+                            Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1)
                         )
                 }
                 Spacer()
@@ -51,7 +52,7 @@ struct PlatformSyncStatusScreen: View {
                 Text("Platform Sync Status")
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             .padding(.top, 30)
@@ -75,7 +76,7 @@ struct PlatformSyncStatusScreen: View {
             }
         }
         .padding(.horizontal, 20)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
     }
 
@@ -87,29 +88,29 @@ struct PlatformSyncStatusScreen: View {
                 SwiftUI.ProgressView().scaleEffect(0.7)
                 Text("Syncing…")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             } else if let lastSync = coordinator.lastSyncTime {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
                 Text("Last sync: \(lastSync, style: .relative) ago")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             } else {
                 Image(systemName: "circle.dashed")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                 Text(coordinator.isRunning ? "Not synced yet" : "Idle")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             }
             Spacer()
             if let network = coordinator.runningNetwork {
                 Text(network.networkName)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             }
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -123,7 +124,7 @@ struct PlatformSyncStatusScreen: View {
                 value: "\(coordinator.activeAddressCount)")
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -132,13 +133,13 @@ struct PlatformSyncStatusScreen: View {
             HStack {
                 Text("Platform Addresses (\(coordinator.derivedAddresses.count))")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             if coordinator.derivedAddresses.isEmpty {
                 Text("No addresses derived yet")
                     .font(.system(size: 12))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             } else {
                 ForEach(coordinator.derivedAddresses) { addr in
                     addressRow(addr)
@@ -149,7 +150,7 @@ struct PlatformSyncStatusScreen: View {
             }
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -160,7 +161,7 @@ struct PlatformSyncStatusScreen: View {
                     .font(.system(.caption, design: .monospaced))
                     .lineLimit(1)
                     .truncationMode(.middle)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 HStack(spacing: 6) {
                     Text("#\(addr.accountIndex)/\(addr.addressIndex)")
                     if addr.isUsed { Text("• used") }
@@ -169,13 +170,13 @@ struct PlatformSyncStatusScreen: View {
                     }
                 }
                 .font(.caption2)
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
             }
             Spacer()
             Button(action: { UIPasteboard.general.string = addr.address }) {
                 Image(systemName: "doc.on.doc")
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                     .padding(6)
             }
             .buttonStyle(.plain)
@@ -201,19 +202,19 @@ struct PlatformSyncStatusScreen: View {
                 HStack {
                     Text("Block Time")
                         .font(.system(size: 13))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                     Spacer()
                     Text(blockTime, style: .date)
                         .font(.system(size: 12))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                     Text(blockTime, style: .time)
                         .font(.system(size: 12))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -222,11 +223,11 @@ struct PlatformSyncStatusScreen: View {
             HStack {
                 Text("Queries Since Launch")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
                 Text("\(coordinator.syncCountSinceLaunch) syncs")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             }
             HStack(spacing: 8) {
                 queryBadge(label: "Trunk", count: coordinator.totalTrunkQueries, detail: nil, color: .blue)
@@ -236,7 +237,7 @@ struct PlatformSyncStatusScreen: View {
             }
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -268,7 +269,7 @@ struct PlatformSyncStatusScreen: View {
                 .font(.system(size: 14, weight: .semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(coordinator.isSyncing || coordinator.isClearing ? Color.gray300.opacity(0.3) : Color.blue.opacity(0.15))
+                .background(coordinator.isSyncing || coordinator.isClearing ? Color.dash.gray300.opacity(0.3) : Color.dash.blue.opacity(0.15))
                 .foregroundColor(coordinator.isSyncing || coordinator.isClearing ? .secondary : .blue)
                 .cornerRadius(8)
             }
@@ -284,8 +285,8 @@ struct PlatformSyncStatusScreen: View {
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.gray300.opacity(0.3))
-                    .foregroundColor(coordinator.isClearing ? .secondary : .primaryText)
+                    .background(Color.dash.gray300.opacity(0.3))
+                    .foregroundColor(coordinator.isClearing ? .secondary : .dash.primaryText)
                     .cornerRadius(8)
             }
             .disabled(coordinator.isClearing || coordinator.isSyncing)
@@ -297,7 +298,7 @@ struct PlatformSyncStatusScreen: View {
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(coordinator.isRunning ? Color.red.opacity(0.15) : Color.gray300.opacity(0.3))
+                    .background(coordinator.isRunning ? Color.red.opacity(0.15) : Color.dash.gray300.opacity(0.3))
                     .foregroundColor(coordinator.isRunning ? .red : .secondary)
                     .cornerRadius(8)
             }
@@ -311,11 +312,11 @@ struct PlatformSyncStatusScreen: View {
         HStack {
             Text(title)
                 .font(.system(size: 13))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Spacer()
             Text(value)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .monospacedDigit()
         }
     }
@@ -328,7 +329,7 @@ struct PlatformSyncStatusScreen: View {
                 .monospacedDigit()
             Text(label)
                 .font(.system(size: 11, weight: .medium))
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
             if let detail {
                 Text("\(detail)")
                     .font(.system(size: 10))

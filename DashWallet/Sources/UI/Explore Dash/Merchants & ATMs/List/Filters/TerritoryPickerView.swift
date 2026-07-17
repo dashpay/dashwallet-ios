@@ -45,14 +45,14 @@ struct TerritoryPickerView: View {
                 // Search Bar
                 HStack {
                     Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
+                        .foregroundColor(Color.dash.gray500)
                     
                     TextField(NSLocalizedString("Search territories", comment: ""), text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color.gray400.opacity(0.1))
+                .background(Color.dash.gray400.opacity(0.1))
                 .cornerRadius(10)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
@@ -75,7 +75,7 @@ struct TerritoryPickerView: View {
                                     onTerritorySelected(nil)
                                     presentationMode.wrappedValue.dismiss()
                                 }
-                                .background(Color.secondaryBackground)
+                                .background(Color.dash.secondaryBackground)
                                 .clipShape(RoundedShape(corners: .allCorners, radii: 12))
                                 .padding(.horizontal, 20)
                                 .padding(.bottom, 8)
@@ -94,7 +94,7 @@ struct TerritoryPickerView: View {
                                         .id(territory)
                                     }
                                 }
-                                .background(Color.secondaryBackground)
+                                .background(Color.dash.secondaryBackground)
                                 .clipShape(RoundedShape(corners: .allCorners, radii: 12))
                                 .padding(.horizontal, 20)
                             }
@@ -114,7 +114,7 @@ struct TerritoryPickerView: View {
                     }
                 }
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationTitle(NSLocalizedString("Location", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
@@ -125,7 +125,7 @@ struct TerritoryPickerView: View {
                 }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                 }
             }
         }

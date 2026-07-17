@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import SwiftDashSDK
 
 /// Confirmation half-sheet shown when the user taps `Continue` on the
@@ -49,7 +50,7 @@ struct InternalTransferConfirmSheet: View {
             Text(NSLocalizedString("Confirm", comment: ""))
                 .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .padding(.top, 20)
 
             switch coordinator.phase {
@@ -61,7 +62,7 @@ struct InternalTransferConfirmSheet: View {
                 detailsBody
             }
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(isInFlight)
     }
 
@@ -156,7 +157,7 @@ struct InternalTransferConfirmSheet: View {
             Text(NSLocalizedString("Transfer complete", comment: ""))
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
 
             DashAmount(
                 amount: dashDuffs,
@@ -182,7 +183,7 @@ struct InternalTransferConfirmSheet: View {
 
     private var dragHandle: some View {
         Rectangle()
-            .fill(Color(red: 0.83, green: 0.83, blue: 0.85))
+            .fill(Color.dash.grabberFill)
             .frame(width: 36, height: 5)
             .cornerRadius(2.5)
     }
@@ -190,7 +191,7 @@ struct InternalTransferConfirmSheet: View {
     private var secondaryLine: some View {
         Text(fiatText)
             .font(.subheadline)
-            .foregroundColor(.secondaryText)
+            .foregroundColor(.dash.secondaryText)
     }
 
     // MARK: - Network fee estimate
@@ -266,7 +267,7 @@ struct InternalTransferConfirmSheet: View {
                 label: NSLocalizedString("Total", comment: ""),
                 value: dashDuffs.formattedDashAmount)
         }
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -302,14 +303,14 @@ struct InternalTransferConfirmSheet: View {
             valueView: AnyView(
                 Text(value)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.primaryText)))
+                    .foregroundColor(.dash.primaryText)))
     }
 
     private func summaryRow(label: String, valueView: AnyView) -> some View {
         HStack {
             Text(label)
                 .font(.system(size: 14))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             Spacer()
             valueView
         }
@@ -319,7 +320,7 @@ struct InternalTransferConfirmSheet: View {
 
     private var divider: some View {
         Rectangle()
-            .fill(Color.gray300.opacity(0.3))
+            .fill(Color.dash.gray300.opacity(0.3))
             .frame(height: 1)
             .padding(.horizontal, 14)
     }
@@ -330,27 +331,27 @@ struct InternalTransferConfirmSheet: View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color.dashBlue)
+                    .fill(Color.dash.blue)
                     .frame(width: 30, height: 30)
                 Image(systemName: privacyTipIcon)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(privacyTipTitle)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Text(privacyTipBody)
                     .font(.system(size: 13))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer()
         }
         .padding(14)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -520,7 +521,7 @@ struct ShieldedRecoverySheet: View {
             Text(NSLocalizedString("Finish shielded transfer", comment: "InternalTransfer recovery"))
                 .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .padding(.top, 20)
 
             switch coordinator.phase {
@@ -538,7 +539,7 @@ struct ShieldedRecoverySheet: View {
                 }
             }
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(isInFlight)
     }
 
@@ -607,7 +608,7 @@ struct ShieldedRecoverySheet: View {
                 "Building the privacy proof can take up to a minute. Keep the app open.",
                 comment: "InternalTransfer recovery"))
                 .font(.caption)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
             Spacer(minLength: 12)
@@ -630,7 +631,7 @@ struct ShieldedRecoverySheet: View {
             Text(NSLocalizedString("Transfer complete", comment: ""))
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
 
             DashAmount(
                 amount: Int64(transaction.dashAmount),
@@ -654,7 +655,7 @@ struct ShieldedRecoverySheet: View {
 
     private var dragHandle: some View {
         Rectangle()
-            .fill(Color(red: 0.83, green: 0.83, blue: 0.85))
+            .fill(Color.dash.grabberFill)
             .frame(width: 36, height: 5)
             .cornerRadius(2.5)
     }
@@ -663,29 +664,29 @@ struct ShieldedRecoverySheet: View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color.dashBlue)
+                    .fill(Color.dash.blue)
                     .frame(width: 30, height: 30)
                 Image(systemName: "shield.fill")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(NSLocalizedString("Your Dash is safe", comment: "InternalTransfer recovery"))
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Text(NSLocalizedString(
                     "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.",
                     comment: "InternalTransfer recovery"))
                     .font(.system(size: 13))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer()
         }
         .padding(14)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -786,7 +787,7 @@ struct ShieldedTransferStepList: View {
             stepIndicator(state: state)
             Text(label)
                 .font(.system(size: 15, weight: state == .active ? .semibold : .regular))
-                .foregroundColor(state == .pending ? .secondaryText : .primaryText)
+                .foregroundColor(state == .pending ? .dash.secondaryText : .dash.primaryText)
             Spacer()
             if state == .active {
                 SwiftUI.ProgressView()
@@ -801,25 +802,25 @@ struct ShieldedTransferStepList: View {
         switch state {
         case .pending:
             Circle()
-                .stroke(Color.gray300.opacity(0.6), lineWidth: 1.5)
+                .stroke(Color.dash.gray300.opacity(0.6), lineWidth: 1.5)
                 .frame(width: 20, height: 20)
         case .active:
             ZStack {
                 Circle()
-                    .stroke(Color.dashBlue, lineWidth: 1.5)
+                    .stroke(Color.dash.blue, lineWidth: 1.5)
                     .frame(width: 20, height: 20)
                 Circle()
-                    .fill(Color.dashBlue)
+                    .fill(Color.dash.blue)
                     .frame(width: 10, height: 10)
             }
         case .complete:
             ZStack {
                 Circle()
-                    .fill(Color.dashBlue)
+                    .fill(Color.dash.blue)
                     .frame(width: 20, height: 20)
                 Image(systemName: "checkmark")
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
             }
         }
     }
@@ -840,19 +841,19 @@ struct ShieldedSubmittedUnconfirmedView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 56, height: 56)
-                .foregroundColor(.dashBlue)
+                .foregroundColor(.dash.blue)
                 .padding(.top, 24)
 
             Text(NSLocalizedString("Submitted — confirming", comment: "InternalTransfer"))
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
 
             Text(NSLocalizedString(
                 "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.",
                 comment: "InternalTransfer"))
                 .font(.callout)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 24)

@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct WalletSwitchDialog: View {
     let rows: [WalletRow]
@@ -34,25 +35,25 @@ struct WalletSwitchDialog: View {
                                 Text(row.displayName)
                                     .font(.subhead)
                                     .fontWeight(.medium)
-                                    .foregroundColor(.primaryText)
+                                    .foregroundColor(.dash.primaryText)
                                     .lineLimit(1)
                                 if let username = row.username {
                                     Text("@\(username)")
                                         .font(.caption)
-                                        .foregroundColor(.dashBlue)
+                                        .foregroundColor(.dash.blue)
                                         .lineLimit(1)
                                 }
                                 if let balance = row.balanceText {
                                     Text(balance)
                                         .font(.caption)
-                                        .foregroundColor(.secondaryText)
+                                        .foregroundColor(.dash.secondaryText)
                                         .lineLimit(1)
                                 }
                             }
                             Spacer(minLength: 8)
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.secondaryText)
+                                .foregroundColor(.dash.secondaryText)
                         }
                         .padding(.horizontal, 16)
                         .contentShape(Rectangle())
@@ -62,11 +63,11 @@ struct WalletSwitchDialog: View {
                 }
             }
             .padding(.vertical, 6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(RoundedShape(corners: .allCorners, radii: 12))
             .padding(.horizontal, 20)
             .padding(.top, 25)
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 }

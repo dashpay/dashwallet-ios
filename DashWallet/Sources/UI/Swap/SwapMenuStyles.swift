@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct SwapMenuCardStyle: ViewModifier {
     var shadowRadius: CGFloat = 10
@@ -23,7 +24,7 @@ struct SwapMenuCardStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(.rect(cornerRadius: 20))
             .shadow(color: .shadow, radius: shadowRadius, x: 0, y: 5)
     }

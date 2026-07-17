@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct MerchantCellRow: View {
     let pointOfUse: ExplorePointOfUse
@@ -46,7 +47,7 @@ struct MerchantCellRow: View {
             chevron
         }
         .padding(Layout.contentPadding)
-        .background(Color.gray300Alpha10)
+        .background(Color.dash.gray300Alpha10)
         .clipShape(.rect(cornerRadius: Layout.cornerRadius))
     }
 
@@ -64,7 +65,7 @@ struct MerchantCellRow: View {
                 Icon(name: .custom(Asset.distanceIcon, maxHeight: Layout.distanceIconHeight))
                 Text(distanceText)
                     .font(.footnote)
-                    .foregroundStyle(Color.gray500)
+                    .foregroundStyle(Color.dash.gray500)
             }
         }
     }
@@ -72,7 +73,7 @@ struct MerchantCellRow: View {
     private var addressLabel: some View {
         Text(pointOfUse.address)
             .font(.subhead)
-            .foregroundStyle(Color.primaryText)
+            .foregroundStyle(Color.dash.primaryText)
             .lineLimit(Layout.addressLineLimit)
             .fixedSize(horizontal: false, vertical: true)
     }

@@ -18,6 +18,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // MARK: - AddressSourceType
 
@@ -81,7 +82,7 @@ struct AddressSourceView: View {
                         Text(subtitleText)
                             .font(.footnote)
                             .lineSpacing(4)
-                            .foregroundColor(Color.tertiaryText)
+                            .foregroundColor(Color.dash.tertiaryText)
                             .lineLimit(sourceType == .clipboard ? 2 : nil)
                             .multilineTextAlignment(.leading)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -130,7 +131,7 @@ struct AddressSourceView: View {
             AnyView(
                 Text(NSLocalizedString("Log In", comment: "Dash DEX"))
                     .font(.subheadMedium)
-                    .foregroundColor(.dashBlue)
+                    .foregroundColor(.dash.blue)
             )
         case .loading:
             AnyView(SwiftUI.ProgressView())
@@ -168,7 +169,7 @@ struct AddressSourceView: View {
         AddressSourceView(sourceType: .coinbase, state: .loading, onTap: {})
     }
     .padding(6)
-    .background(Color.secondaryBackground)
+    .background(Color.dash.secondaryBackground)
     .cornerRadius(12)
     .padding()
 }
@@ -179,7 +180,7 @@ struct AddressSourceView: View {
         AddressSourceView(sourceType: .coinbase, state: .notAvailable, onTap: {})
     }
     .padding(6)
-    .background(Color.secondaryBackground)
+    .background(Color.dash.secondaryBackground)
     .cornerRadius(12)
     .padding()
 }

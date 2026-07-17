@@ -1,4 +1,5 @@
 import SwiftUI
+import DashUIKit
 
 struct BlockExplorerSelectionView: View {
     @Environment(\.dismiss) private var dismiss
@@ -8,7 +9,7 @@ struct BlockExplorerSelectionView: View {
         VStack(spacing: 0) {
             Text(NSLocalizedString("Select block explorer", comment: "Block explorer selection title"))
                 .font(.calloutMedium)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .padding(.vertical, 16)
             
             VStack(spacing: 2) {
@@ -25,19 +26,19 @@ struct BlockExplorerSelectionView: View {
                             
                             Text(explorer.title)
                                 .font(.subhead)
-                                .foregroundColor(.primaryText)
+                                .foregroundColor(.dash.primaryText)
                             
                             Spacer()
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 12)
-                        .background(Color.secondaryBackground)
+                        .background(Color.dash.secondaryBackground)
                         .cornerRadius(8)
                     }
                 }
             }
             .padding(6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .cornerRadius(12)
             .shadow(color: .shadow, radius: 5, y: 2)
             .padding(.horizontal, 20)
@@ -46,7 +47,7 @@ struct BlockExplorerSelectionView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 }
 

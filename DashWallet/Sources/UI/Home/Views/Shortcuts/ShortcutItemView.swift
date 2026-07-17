@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 struct ShortcutItemView: View {
@@ -40,7 +41,7 @@ struct ShortcutItemView: View {
 
             Text(title)
                 .font(.caption2.weight(.semibold))
-                .foregroundStyle(Color.primaryText)
+                .foregroundStyle(Color.dash.primaryText)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .padding(.horizontal, 8)
@@ -65,7 +66,7 @@ private func shortcutItemGrid() -> some View {
         )
     }
     .padding(8)
-    .background(Color.secondaryBackground)
+    .background(Color.dash.secondaryBackground)
 }
 
 #Preview("Enabled") {

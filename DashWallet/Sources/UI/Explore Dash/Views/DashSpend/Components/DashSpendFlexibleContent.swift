@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 enum DashSpendMode: CaseIterable, Hashable {
     case single
@@ -251,7 +252,7 @@ struct DashSpendFlexibleContent: View {
 
 #Preview("Single / Keyboard") {
     DashSpendFlexibleContentPreview()
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 }
 
 private struct DashSpendFlexibleContentPreview: View {

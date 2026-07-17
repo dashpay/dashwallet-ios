@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // NOTE: `ShortcutsActionDelegate` is still declared in the legacy `ShortcutsView.swift` (same
 // module), so this bar reuses it for now. When `ShortcutsView.swift` is deleted, move the
@@ -27,10 +28,10 @@ import SwiftUI
 /// (`ShortcutsView.swift` + `ShortcutsView.xib`). Always shows one row of 4 shortcut buttons.
 ///
 /// Layered back-to-front, matching the old xib:
-///   1. grey content background  (`Color.primaryBackground`, #F7F7F7),
+///   1. grey content background  (`Color.dash.primaryBackground`, #F7F7F7),
 ///   2. a 30pt blue strip at the top (`Color.navigationBarColor`) so the navigation-bar blue
 ///      continues down behind the top of the card and merges with the balance view above,
-///   3. a white rounded card (`Color.secondaryBackground`, #FFFFFF) inset 20pt on the sides,
+///   3. a white rounded card (`Color.dash.secondaryBackground`, #FFFFFF) inset 20pt on the sides,
 ///      holding the 4 evenly-spaced shortcut buttons.
 ///
 /// Data comes straight from `HomeViewModel.shortcutItems` (`@Published`), so the bar updates
@@ -50,7 +51,7 @@ struct ShortcutsBarView: View {
     var body: some View {
         ZStack(alignment: .top) {
             // 1. Grey content background, full bleed.
-            Color.primaryBackground
+            Color.dash.primaryBackground
 
             // 2. Blue fills the top half of the block, reaching the vertical middle of the card
             //    (the card is centred by its equal 4pt top/bottom insets). The card's upper half
@@ -78,7 +79,7 @@ struct ShortcutsBarView: View {
             }
         }
         .padding(4)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .clipShape(.rect(cornerRadius: cardCornerRadius))
     }
 }

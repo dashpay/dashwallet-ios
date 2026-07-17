@@ -71,7 +71,7 @@ struct LocalCurrencyView: View {
     }
 
     private var background: some View {
-        Color.primaryBackground
+        Color.dash.primaryBackground
     }
 }
 
@@ -108,12 +108,12 @@ private struct LocalCurrencyScrollContentView: View {
         VStack {
             Text(noResultsText)
                 .font(.footnote)
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
         }
         .frame(maxWidth: .infinity, minHeight: Layout.noResultsMinHeight, alignment: .center)
         .background(
             RoundedRectangle(cornerRadius: Layout.containerCornerRadius)
-                .fill(Color.secondaryBackground)
+                .fill(Color.dash.secondaryBackground)
         )
     }
 
@@ -137,7 +137,7 @@ private struct LocalCurrencyScrollContentView: View {
             .padding(filteredItems.isEmpty ? 0 : 6)
             .background(
                 RoundedRectangle(cornerRadius: Layout.containerCornerRadius)
-                    .fill(Color.secondaryBackground)
+                    .fill(Color.dash.secondaryBackground)
             )
         }
     }
@@ -189,7 +189,7 @@ private struct LocalCurrencyTopOverlayView: View {
                 Text(NSLocalizedString("Local Currency", comment: "Settings"))
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             }
         }
     }
@@ -198,11 +198,11 @@ private struct LocalCurrencyTopOverlayView: View {
         ZStack(alignment: .bottom) {
             Rectangle()
                 .fill(.clear)
-                .background(Color.primaryBackground)
+                .background(Color.dash.primaryBackground)
                 .ignoresSafeArea()
 
             Divider()
-                .background(Color(red: 176 / 255, green: 182 / 255, blue: 188 / 255, opacity: 0.15))
+                .background(Color.dash.gray400Alpha13)
                 .opacity(scrollOffset < -20 ? 1 : 0)
         }
     }

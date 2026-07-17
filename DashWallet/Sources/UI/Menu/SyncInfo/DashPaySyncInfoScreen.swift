@@ -19,6 +19,7 @@ import Combine
 import OSLog
 import SwiftDashSDK
 import SwiftUI
+import DashUIKit
 import UIKit
 
 // MARK: - ViewModel
@@ -145,10 +146,10 @@ struct DashPaySyncInfoScreen: View {
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color.dash.primaryText)
                         .frame(width: 36, height: 36)
                         .overlay(
-                            Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1)
+                            Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1)
                         )
                 }
                 Spacer()
@@ -161,7 +162,7 @@ struct DashPaySyncInfoScreen: View {
                 Text("DashPay Sync Info")
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             .padding(.top, 30)
@@ -182,7 +183,7 @@ struct DashPaySyncInfoScreen: View {
             }
         }
         .padding(.horizontal, 20)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
         .onAppear {
             viewModel.refresh()
@@ -198,24 +199,24 @@ struct DashPaySyncInfoScreen: View {
                     .foregroundColor(.orange)
                 Text("Platform sync is not running")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             } else if viewModel.isSyncing {
                 SwiftUI.ProgressView().scaleEffect(0.7)
                 Text("Syncing…")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             } else if let lastSync = viewModel.lastSync {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
                 Text("Last sync: \(lastSync, style: .relative) ago")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             } else {
                 Image(systemName: "circle.dashed")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                 Text("Not synced yet")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             }
             Spacer()
             if let running = viewModel.isLoopRunning {
@@ -225,7 +226,7 @@ struct DashPaySyncInfoScreen: View {
             }
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -234,14 +235,14 @@ struct DashPaySyncInfoScreen: View {
             HStack {
                 Text("Last Manual Pass")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             row(title: "Wallets Synced", value: "\(summary.success)")
             row(title: "Wallets Failed", value: "\(summary.errors)")
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -272,7 +273,7 @@ struct DashPaySyncInfoScreen: View {
             .font(.system(size: 14, weight: .semibold))
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .background(syncNowDisabled ? Color.gray300.opacity(0.3) : Color.blue.opacity(0.15))
+            .background(syncNowDisabled ? Color.dash.gray300.opacity(0.3) : Color.dash.blue.opacity(0.15))
             .foregroundColor(syncNowDisabled ? .secondary : .blue)
             .cornerRadius(8)
         }
@@ -289,11 +290,11 @@ struct DashPaySyncInfoScreen: View {
         HStack {
             Text(title)
                 .font(.system(size: 13))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Spacer()
             Text(value)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .monospacedDigit()
         }
     }

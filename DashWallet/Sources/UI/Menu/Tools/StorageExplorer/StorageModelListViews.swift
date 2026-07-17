@@ -1,4 +1,5 @@
 import SwiftUI
+import DashUIKit
 import SwiftData
 import SwiftDashSDK
 
@@ -15,7 +16,7 @@ struct IdentityStorageListView: View {
                     Text(record.dpnsName ?? record.alias ?? record.identityIdBase58)
                         .font(.body).lineLimit(1)
                     Text(record.formattedBalance)
-                        .font(.caption).foregroundColor(.secondary)
+                        .font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -35,7 +36,7 @@ struct DocumentStorageListView: View {
             NavigationLink(destination: DocumentStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.displayTitle).font(.body).lineLimit(1)
-                    Text(record.documentType).font(.caption).foregroundColor(.secondary)
+                    Text(record.documentType).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -55,7 +56,7 @@ struct DataContractStorageListView: View {
             NavigationLink(destination: DataContractStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name).font(.body).lineLimit(1)
-                    Text(record.idBase58).font(.caption).foregroundColor(.secondary).lineLimit(1).truncationMode(.middle)
+                    Text(record.idBase58).font(.caption).foregroundColor(Color.dash.secondaryText).lineLimit(1).truncationMode(.middle)
                 }
             }
         }
@@ -76,7 +77,7 @@ struct PublicKeyStorageListView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Key \(record.keyId)").font(.body)
                     Text("\(record.purpose) / \(record.securityLevel)")
-                        .font(.caption).foregroundColor(.secondary)
+                        .font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -96,7 +97,7 @@ struct TokenStorageListView: View {
             NavigationLink(destination: TokenStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name).font(.body).lineLimit(1)
-                    Text(record.formattedBaseSupply).font(.caption).foregroundColor(.secondary)
+                    Text(record.formattedBaseSupply).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -116,7 +117,7 @@ struct TokenBalanceStorageListView: View {
             NavigationLink(destination: TokenBalanceStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.tokenName ?? record.tokenId).font(.body).lineLimit(1)
-                    Text(record.displayBalance).font(.caption).foregroundColor(.secondary)
+                    Text(record.displayBalance).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -136,7 +137,7 @@ struct TokenHistoryStorageListView: View {
             NavigationLink(destination: TokenHistoryStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.displayTitle).font(.body).lineLimit(1)
-                    Text(record.eventTimestamp, style: .date).font(.caption).foregroundColor(.secondary)
+                    Text(record.eventTimestamp, style: .date).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -156,7 +157,7 @@ struct DocumentTypeStorageListView: View {
             NavigationLink(destination: DocumentTypeStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name).font(.body).lineLimit(1)
-                    Text(record.contractIdBase58).font(.caption).foregroundColor(.secondary).lineLimit(1).truncationMode(.middle)
+                    Text(record.contractIdBase58).font(.caption).foregroundColor(Color.dash.secondaryText).lineLimit(1).truncationMode(.middle)
                 }
             }
         }
@@ -176,7 +177,7 @@ struct IndexStorageListView: View {
             NavigationLink(destination: IndexStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name).font(.body).lineLimit(1)
-                    Text(record.documentTypeName).font(.caption).foregroundColor(.secondary)
+                    Text(record.documentTypeName).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -196,7 +197,7 @@ struct PropertyStorageListView: View {
             NavigationLink(destination: PropertyStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name).font(.body).lineLimit(1)
-                    Text(record.type).font(.caption).foregroundColor(.secondary)
+                    Text(record.type).font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -236,10 +237,10 @@ struct SyncStateStorageListView: View {
                         .font(.body)
                     Text("Height \(record.syncHeight)")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                     Text("Updated \(record.lastUpdated, style: .relative)")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -261,7 +262,7 @@ struct WalletStorageListView: View {
                     Text(record.name ?? record.walletId.map { String(format: "%02x", $0) }.prefix(16).joined())
                         .font(.body).lineLimit(1)
                     Text("\(record.network) · height \(record.syncedHeight)")
-                        .font(.caption).foregroundColor(.secondary)
+                        .font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -299,7 +300,7 @@ struct AccountStorageListView: View {
                 Section(header: Text(walletHeader(for: wallet))) {
                     let sorted = sortedAccounts(wallet.accounts)
                     if sorted.isEmpty {
-                        Text("No accounts").font(.caption).foregroundColor(.secondary)
+                        Text("No accounts").font(.caption).foregroundColor(Color.dash.secondaryText)
                     } else {
                         ForEach(sorted) { account in
                             NavigationLink(destination: AccountStorageDetailView(record: account)) {
@@ -349,7 +350,7 @@ struct AccountStorageListView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(record.accountTypeName).font(.body).lineLimit(1)
             Text("Index \(record.accountIndex)")
-                .font(.caption).foregroundColor(.secondary)
+                .font(.caption).foregroundColor(Color.dash.secondaryText)
         }
     }
 }
@@ -510,7 +511,7 @@ struct CoreAddressStorageListView: View {
                 if record.balance > 0 { Text("• \(record.balance)") }
             }
             .font(.caption2)
-            .foregroundColor(.secondary)
+            .foregroundColor(Color.dash.secondaryText)
         }
     }
 }
@@ -614,7 +615,7 @@ struct PlatformAddressStorageListView: View {
                 if record.balance > 0 { Text("• \(record.balance)") }
             }
             .font(.caption2)
-            .foregroundColor(.secondary)
+            .foregroundColor(Color.dash.secondaryText)
         }
     }
 }
@@ -661,7 +662,7 @@ struct WalletManagerMetadataStorageListView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.network.networkName).font(.body)
                     Text("Height \(record.combinedSyncHeight) · \(record.walletCount) wallets")
-                        .font(.caption).foregroundColor(.secondary)
+                        .font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -697,7 +698,7 @@ struct DPNSNameStorageListView: View {
                     Text("\(record.label).\(record.parentDomainName)")
                         .font(.body).lineLimit(1)
                     Text(record.identity.identityIdBase58)
-                        .font(.caption).foregroundColor(.secondary)
+                        .font(.caption).foregroundColor(Color.dash.secondaryText)
                         .lineLimit(1).truncationMode(.middle)
                 }
             }
@@ -722,7 +723,7 @@ struct DashpayProfileStorageListView: View {
                     Text(record.displayName ?? "(no display name)")
                         .font(.body).lineLimit(1)
                     Text(record.identity.identityIdBase58)
-                        .font(.caption).foregroundColor(.secondary)
+                        .font(.caption).foregroundColor(Color.dash.secondaryText)
                         .lineLimit(1).truncationMode(.middle)
                 }
             }
@@ -747,7 +748,7 @@ struct DashpayContactProfileStorageListView: View {
                         .font(.body).lineLimit(1)
                     Text(shortIdHex(record.contactIdentityId))
                         .font(.system(.caption, design: .monospaced))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
@@ -807,7 +808,7 @@ struct DashpayContactRequestStorageListView: View {
                     .font(.system(.body, design: .monospaced))
                     .lineLimit(1).truncationMode(.middle)
                 Text("from \(shortIdHex(record.ownerIdentityId))")
-                    .font(.caption).foregroundColor(.secondary)
+                    .font(.caption).foregroundColor(Color.dash.secondaryText)
                     .lineLimit(1).truncationMode(.middle)
             }
         }
@@ -833,7 +834,7 @@ struct DashpayPaymentStorageListView: View {
                     }
                     Text(record.txid)
                         .font(.system(.caption2, design: .monospaced))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                         .lineLimit(1).truncationMode(.middle)
                 }
             }
@@ -858,11 +859,11 @@ struct InvitationStorageListView: View {
                         .lineLimit(1).truncationMode(.middle)
                     HStack(spacing: 8) {
                         Text(invitationStatusLabel(record.statusRaw))
-                            .font(.caption2).foregroundColor(.secondary)
+                            .font(.caption2).foregroundColor(Color.dash.secondaryText)
                         Spacer()
                         Text(String(format: "%.8f DASH", Double(record.amountDuffs) / 100_000_000))
                             .font(.system(.caption2, design: .monospaced))
-                            .foregroundColor(.secondary)
+                            .foregroundColor(Color.dash.secondaryText)
                     }
                 }
             }
@@ -887,11 +888,11 @@ struct DashpayIgnoredSenderStorageListView: View {
                             .font(.body)
                         Spacer()
                         Text(record.ignoredAt, style: .date)
-                            .font(.caption).foregroundColor(.secondary)
+                            .font(.caption).foregroundColor(Color.dash.secondaryText)
                     }
                     Text(shortIdHex(record.ignoredSenderId))
                         .font(.system(.caption2, design: .monospaced))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                 }
             }
         }

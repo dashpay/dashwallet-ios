@@ -200,7 +200,7 @@ struct MerchantFiltersView: View {
                             Text(NSLocalizedString("Reset Filters", comment: "Explore Dash"))
                                 .font(.subheadline)
                                 .fontWeight(.medium)
-                                .foregroundColor(viewModel.canReset ? .red : Color.tertiaryText)
+                                .foregroundColor(viewModel.canReset ? .red : Color.dash.tertiaryText)
                                 .padding()
                                 .frame(maxWidth: .infinity, alignment: .center)
                         }
@@ -221,21 +221,21 @@ struct MerchantFiltersView: View {
                 EmptyView()
             }
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarTitle(NSLocalizedString("Filters", comment: "Explore Dash"), displayMode: .inline)
         .navigationBarItems(
             leading: Button(NSLocalizedString("Close", comment: "")) {
                 presentationMode.wrappedValue.dismiss()
             }
             .font(.system(size: 15, weight: .medium))
-            .foregroundColor(.dashBlue),
+            .foregroundColor(.dash.blue),
             trailing: Button(NSLocalizedString("Apply", comment: "")) {
                 let filters = viewModel.buildFilters()
                 onApplyFilters(filters)
                 presentationMode.wrappedValue.dismiss()
             }
             .font(.system(size: 15, weight: .medium))
-            .foregroundColor(viewModel.canApply ? .dashBlue : Color.tertiaryText)
+            .foregroundColor(viewModel.canApply ? .dash.blue : Color.dash.tertiaryText)
             .disabled(!viewModel.canApply)
         )
     }
@@ -253,7 +253,7 @@ private struct FilterSection<Content: View>: View {
                 Text(title)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .padding(.leading, 15)
                     .padding(.vertical, 12)
             }
@@ -262,7 +262,7 @@ private struct FilterSection<Content: View>: View {
                 content()
             }
             .padding(.vertical, 6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(RoundedShape(corners: .allCorners, radii: 12))
             .padding(.bottom, 20)
         }
@@ -284,12 +284,12 @@ private struct FilterDisclosureItem: View {
             Text(title)
                 .font(.subhead)
                 .fontWeight(.medium)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .foregroundColor(.gray)
+                .foregroundColor(Color.dash.gray500)
                 .imageScale(.small)
         }
         .padding(.horizontal, 16)

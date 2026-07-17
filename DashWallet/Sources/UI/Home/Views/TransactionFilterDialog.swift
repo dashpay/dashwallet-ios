@@ -77,12 +77,12 @@ struct TransactionFilterDialog: View {
                 }
             }
             .padding(.vertical, 6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(RoundedShape(corners: .allCorners, radii: 12))
             .padding(.horizontal, 20)
             .padding(.top, 25)
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 
     private func toggle(_ category: TransactionFilterCategory) {
@@ -116,7 +116,7 @@ private struct FilterCheckboxRow: View {
                 Text(title)
                     .font(.subhead)
                     .fontWeight(.medium)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
 
                 Spacer()
 
@@ -125,7 +125,7 @@ private struct FilterCheckboxRow: View {
                         Text(NSLocalizedString("Only", comment: "Transaction filter"))
                             .font(.subhead)
                             .fontWeight(.medium)
-                            .foregroundColor(.dashBlue)
+                            .foregroundColor(.dash.blue)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .contentShape(Rectangle())

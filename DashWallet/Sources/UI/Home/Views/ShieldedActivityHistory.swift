@@ -37,6 +37,7 @@ import Foundation
 import SwiftData
 import SwiftDashSDK
 import SwiftUI
+import DashUIKit
 
 // MARK: - List item
 
@@ -277,15 +278,15 @@ struct ShieldedActivityDetailsView: View {
             ZStack(alignment: .bottomTrailing) {
                 Image(systemName: "shield.fill")
                     .font(.system(size: 26, weight: .semibold))
-                    .foregroundColor(.dashBlue)
+                    .foregroundColor(.dash.blue)
                     .frame(width: 56, height: 56)
-                    .background(Circle().fill(Color.dashBlue.opacity(0.08)))
+                    .background(Circle().fill(Color.dash.blue.opacity(0.08)))
                 if let badge = item.secondarySystemIcon {
                     Image(systemName: badge)
                         .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dash.whiteText)
                         .frame(width: 20, height: 20)
-                        .background(Circle().fill(Color.dashBlue))
+                        .background(Circle().fill(Color.dash.blue))
                         .offset(x: 4, y: 4)
                 }
             }
@@ -293,14 +294,14 @@ struct ShieldedActivityDetailsView: View {
 
             Text(item.title)
                 .font(.headline)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .padding(.top, 12)
 
             DashAmount(amount: item.signedDashAmount, font: .title2, showDirection: item.showsDirectionSign)
                 .padding(.top, 4)
             Text(item.fiatAmount)
                 .font(.footnote)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
                 .padding(.top, 2)
 
             VStack(spacing: 0) {
@@ -337,7 +338,7 @@ struct ShieldedActivityDetailsView: View {
                     HStack {
                         Text(NSLocalizedString("Network fee", comment: ""))
                             .font(.footnote)
-                            .foregroundColor(.tertiaryText)
+                            .foregroundColor(.dash.tertiaryText)
                         Spacer()
                         DashAmount(amount: Int64(fee), font: .footnote, showDirection: false)
                     }
@@ -352,7 +353,7 @@ struct ShieldedActivityDetailsView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal, 20)
             .padding(.top, 24)
@@ -360,7 +361,7 @@ struct ShieldedActivityDetailsView: View {
             if item.kind == .shieldedSpend {
                 Text(NSLocalizedString("Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data.", comment: "Shielded activity"))
                     .font(.caption)
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(.dash.tertiaryText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                     .padding(.top, 16)
@@ -375,11 +376,11 @@ struct ShieldedActivityDetailsView: View {
         HStack(alignment: .firstTextBaseline) {
             Text(label)
                 .font(.footnote)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
             Spacer()
             Text(value)
                 .font(.footnote)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .multilineTextAlignment(.trailing)
         }
         .padding(.vertical, 10)
@@ -393,15 +394,15 @@ struct ShieldedActivityDetailsView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(label)
                     .font(.footnote)
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(.dash.tertiaryText)
                 Spacer()
                 Text(value.prefix(8) + "…" + value.suffix(8))
                     .font(.footnote)
                     .monospaced()
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Image(systemName: "doc.on.doc")
                     .font(.caption2)
-                    .foregroundColor(.dashBlue)
+                    .foregroundColor(.dash.blue)
             }
             .padding(.vertical, 10)
         }

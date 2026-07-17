@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import UIKit
 
 // MARK: - WithdrawalLimitDialogModel

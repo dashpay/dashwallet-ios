@@ -12,6 +12,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct ContactProfileSheet: View {
     let contact: ContactItem
@@ -49,14 +50,14 @@ struct ContactProfileSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.primaryBackground.ignoresSafeArea()
+                Color.dash.primaryBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(spacing: 20) {
                         header
                         if let message = contact.publicMessage, !message.isEmpty {
                             Text(message)
                                 .font(.system(size: 14))
-                                .foregroundColor(.secondaryText)
+                                .foregroundColor(.dash.secondaryText)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 32)
                         }
@@ -81,7 +82,7 @@ struct ContactProfileSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(NSLocalizedString("Done", comment: "")) { dismiss() }
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                 }
             }
             .alert(
@@ -138,20 +139,20 @@ struct ContactProfileSheet: View {
                 size: 88)
             Text(contact.displayTitle)
                 .font(.system(size: 20, weight: .bold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             if let username = contact.username?.withoutDashSuffix,
                !username.isEmpty,
                username != contact.displayTitle {
                 Text(username)
                     .font(.system(size: 14))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
             if contact.relationship == .established {
                 // Disclosure hint: tapping the header toggles the
                 // Contact settings card below.
                 Image(systemName: "chevron.down")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(.dash.tertiaryText)
                     .rotationEffect(.degrees(showContactSettings ? 180 : 0))
                     .padding(.top, 2)
             }
@@ -176,7 +177,7 @@ struct ContactProfileSheet: View {
                     format: NSLocalizedString("%@ has requested to be your contact", comment: "DashPay Contacts"),
                     contact.displayTitle))
                     .font(.system(size: 13))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .multilineTextAlignment(.center)
                 if isProcessing {
                     SwiftUI.ProgressView()
@@ -187,7 +188,7 @@ struct ContactProfileSheet: View {
                         } label: {
                             Text(NSLocalizedString("Accept", comment: "DashPay Contacts"))
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(Color.dash.whiteText)
                                 .frame(width: 120, height: 39)
                                 .background(
                                     RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -200,11 +201,11 @@ struct ContactProfileSheet: View {
                         } label: {
                             Text(NSLocalizedString("Ignore", comment: "DashPay Contacts"))
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.primaryText)
+                                .foregroundColor(.dash.primaryText)
                                 .frame(width: 120, height: 39)
                                 .background(
                                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                        .fill(Color.gray300Alpha10))
+                                        .fill(Color.dash.gray300Alpha10))
                         }
                         .buttonStyle(.plain)
                     }
@@ -240,12 +241,12 @@ struct ContactProfileSheet: View {
                         NSLocalizedString("Pay", comment: "DashPay Contacts"),
                         systemImage: "arrow.up.circle.fill")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dash.whiteText)
                         .frame(maxWidth: .infinity)
                         .frame(height: 46)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.dashBlue))
+                                .fill(Color.dash.blue))
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 32)
@@ -261,12 +262,12 @@ struct ContactProfileSheet: View {
                             : NSLocalizedString("Hide Contact", comment: "DashPay Contacts"),
                         systemImage: isHidden ? "eye" : "eye.slash")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .frame(maxWidth: .infinity)
                         .frame(height: 42)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.gray300Alpha10))
+                                .fill(Color.dash.gray300Alpha10))
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 15)
@@ -280,10 +281,10 @@ struct ContactProfileSheet: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(NSLocalizedString("Contact settings", comment: "DashPay Contacts"))
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Text(NSLocalizedString("Only visible to you", comment: "DashPay Contacts"))
                 .font(.system(size: 12))
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
             TextField(
                 NSLocalizedString("Alias", comment: "DashPay Contacts"),
                 text: $aliasText)
@@ -292,7 +293,7 @@ struct ContactProfileSheet: View {
                 .frame(height: 44)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.primaryBackground))
+                        .fill(Color.dash.primaryBackground))
                 .onSubmit { saveMeta() }
             TextField(
                 NSLocalizedString("Note", comment: "DashPay Contacts"),
@@ -304,7 +305,7 @@ struct ContactProfileSheet: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.primaryBackground))
+                        .fill(Color.dash.primaryBackground))
                 .onSubmit { saveMeta() }
             if metaChanged {
                 Button {
@@ -312,12 +313,12 @@ struct ContactProfileSheet: View {
                 } label: {
                     Text(NSLocalizedString("Save", comment: ""))
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                         .frame(height: 30)
                         .padding(.horizontal, 14)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.dashBlue.opacity(0.1)))
+                                .fill(Color.dash.blue.opacity(0.1)))
                 }
                 .buttonStyle(.plain)
             }
@@ -326,7 +327,7 @@ struct ContactProfileSheet: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.secondaryBackground))
+                .fill(Color.dash.secondaryBackground))
         .padding(.horizontal, 15)
     }
 
@@ -384,17 +385,17 @@ struct ContactProfileSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString("Payments", comment: "DashPay Contacts"))
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             // Legacy profile's info tooltip, inlined: only payments
             // that flowed through the DashPay contact channel appear
             // here — direct-to-address sends are not retained.
             Text(NSLocalizedString("Payments made directly to an address aren't retained here.", comment: "DashPay Contacts"))
                 .font(.system(size: 12))
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
             if payments.isEmpty {
                 Text(NSLocalizedString("No payments with this contact yet", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .padding(.top, 2)
             } else {
                 ForEach(payments) { payment in
@@ -406,7 +407,7 @@ struct ContactProfileSheet: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.secondaryBackground))
+                .fill(Color.dash.secondaryBackground))
         .padding(.horizontal, 15)
     }
 
@@ -419,31 +420,31 @@ struct ContactProfileSheet: View {
         HStack(spacing: 10) {
             Image(systemName: payment.direction == .sent
                 ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
-                .foregroundColor(payment.direction == .sent ? .dashBlue : .dashGreen)
+                .foregroundColor(payment.direction == .sent ? .dash.blue : .dashGreen)
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(payment.direction == .sent ? "-" : "+")\(Self.dashString(duffs: payment.amountDuffs)) DASH")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 if let fiat = payment.fiatString {
                     Text(fiat)
                         .font(.system(size: 12))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                 }
                 if let memo = payment.memo, !memo.isEmpty {
                     Text(memo)
                         .font(.system(size: 12))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .lineLimit(1)
                 }
             }
             Spacer()
             Text(payment.date.formatted(date: .abbreviated, time: .omitted))
                 .font(.system(size: 12))
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
             if resolvedTx != nil {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(.dash.tertiaryText)
             }
         }
         .padding(.vertical, 6)
@@ -532,7 +533,7 @@ struct PayContactSheet: View {
                     Button(NSLocalizedString(sentTxid == nil ? "Cancel" : "Done", comment: "")) {
                         dismiss()
                     }
-                    .foregroundColor(.dashBlue)
+                    .foregroundColor(.dash.blue)
                 }
             }
             .alert(
@@ -560,7 +561,7 @@ struct PayContactSheet: View {
                 .onAppear { amountFocused = true }
             Text("DASH")
                 .font(.system(size: 17, weight: .bold))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
         }
         .padding(.top, 12)
 
@@ -568,11 +569,11 @@ struct PayContactSheet: View {
             format: NSLocalizedString("Available: %@ DASH", comment: "DashPay Contacts"),
             Self.dashString(duffs: maxSendable)))
             .font(.system(size: 13))
-            .foregroundColor(.secondaryText)
+            .foregroundColor(.dash.secondaryText)
 
         Text(NSLocalizedString("A network fee will be added on top of the amount.", comment: "DashPay Contacts"))
             .font(.system(size: 12))
-            .foregroundColor(.tertiaryText)
+            .foregroundColor(.dash.tertiaryText)
 
         if isSending {
             SwiftUI.ProgressView()
@@ -583,12 +584,12 @@ struct PayContactSheet: View {
             } label: {
                 Text(NSLocalizedString("Pay", comment: "DashPay Contacts"))
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
                     .frame(maxWidth: .infinity)
                     .frame(height: 46)
                     .background(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(parsedDuffs == nil ? Color.gray300 : Color.dashBlue))
+                            .fill(parsedDuffs == nil ? Color.dash.gray300 : Color.dash.blue))
             }
             .buttonStyle(.plain)
             .disabled(parsedDuffs == nil)
@@ -602,18 +603,18 @@ struct PayContactSheet: View {
                 .foregroundColor(.dashGreen)
             Text(NSLocalizedString("Payment Sent", comment: "DashPay Contacts"))
                 .font(.system(size: 17, weight: .bold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Text(String(
                 format: NSLocalizedString("%@ DASH sent to %@", comment: "DashPay Contacts"),
                 amountText, contact.displayTitle))
                 .font(.system(size: 14))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             if let fee = sentFeeDuffs {
                 Text(String(
                     format: NSLocalizedString("Network fee: %@ DASH", comment: "DashPay Contacts"),
                     Self.dashString(duffs: fee)))
                     .font(.system(size: 12))
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(.dash.tertiaryText)
             }
         }
         .padding(.top, 24)

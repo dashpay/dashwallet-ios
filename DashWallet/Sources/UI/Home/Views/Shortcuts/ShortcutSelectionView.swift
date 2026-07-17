@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct ShortcutSelectionView: View {
     let usedTypes: Set<ShortcutActionType>
@@ -33,7 +34,7 @@ struct ShortcutSelectionView: View {
                 if availableActions.isEmpty {
                     Text(NSLocalizedString("All shortcuts are already in use", comment: "Shortcut selection empty state"))
                         .font(.subheadline)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .padding(.vertical, 16)
                 } else {
                     ForEach(availableActions, id: \.rawValue) { actionType in
@@ -49,7 +50,7 @@ struct ShortcutSelectionView: View {
                 }
             }
             .padding(6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(.rect(cornerRadius: 20))
             .padding(.top, 10)
             .padding(.horizontal, 20)
@@ -72,7 +73,7 @@ struct ShortcutSelectionView: View {
 
 #Preview("Bottom sheet") {
     VStack {
-        Color.secondaryBackground.ignoresSafeArea()
+        Color.dash.secondaryBackground.ignoresSafeArea()
             .sheet(isPresented: .constant(true)) {
                 let sheet = BottomSheet(title: NSLocalizedString("Select option", comment: ""), showBackButton: .constant(false)) {
                     ShortcutSelectionView(usedTypes: [.receive, .send, .spend]) { _ in }
@@ -81,7 +82,7 @@ struct ShortcutSelectionView: View {
                 if #available(iOS 16.4, *) {
                     sheet
                         .presentationDetents([.large])
-                        .presentationBackground(Color.primaryBackground)
+                        .presentationBackground(Color.dash.primaryBackground)
                         .presentationCornerRadius(32)
                         .presentationDragIndicator(.hidden)
                 } else {
