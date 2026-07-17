@@ -25,6 +25,10 @@ final class BalanceModel: ObservableObject {
     
     @Published private(set) var state = SyncingActivityMonitor.shared.state
     @Published private(set) var value: UInt64 = 0
+    /// True while the wallet runs on testnet — drives the home header's
+    /// TESTNET badge so test funds can't be mistaken for real Dash
+    /// (fresh installs currently default to testnet by design).
+    @Published private(set) var isTestnet = WalletEnvironment.isTestnet
     @Published var isBalanceHidden: Bool {
         didSet {
             DWGlobalOptions.sharedInstance().balanceHidden = isBalanceHidden
@@ -52,6 +56,13 @@ final class BalanceModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 self?.reloadBalance()
+            }
+            .store(in: &cancellableBag)
+
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.isTestnet = WalletEnvironment.isTestnet
             }
             .store(in: &cancellableBag)
 
