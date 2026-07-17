@@ -152,35 +152,15 @@ final class SendViewModel: ObservableObject {
 
     // MARK: - Destination classification
 
-    /// Decode `text` into what it actually is on the wire:
-    /// - Base58Check L1 address (network-checked) → `.core`
-    /// - bech32m HRP `dash`/`tdash` (current network), 21-byte payload with a
-    ///   DIP-0018 wire type byte (0xb0 P2PKH / 0x80 P2SH) → `.platform`
-    /// - bech32m, 44-byte payload `0x10` + 43 raw Orchard bytes → `.shielded`
-    /// Anything else (wrong-network HRP included) → nil.
+    /// Forwards to `DashAddressClassifier` — the single wire-form decoder,
+    /// shared with the QR scan gate (which classifies off-main).
     static func classify(_ text: String) -> DestinationKind? {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
-
-        if trimmed.isValidDashAddressForCurrentNetwork {
-            return .core
+        switch DashAddressClassifier.classify(text) {
+        case .core: return .core
+        case .platform: return .platform
+        case .shielded(let raw43): return .shielded(raw43: raw43)
+        case nil: return nil
         }
-
-        guard let decoded = Bech32m.decode(trimmed.lowercased()) else { return nil }
-        let expectedHrp = Bech32m.platformHrp(mainnet: !WalletEnvironment.isTestnet)
-        guard decoded.hrp == expectedHrp else { return nil }
-
-        if decoded.data.count == 21,
-           decoded.data[0] == 0xb0 || decoded.data[0] == 0x80 {
-            return .platform
-        }
-        // DIP-0018 shielded display form: 0x10 type byte + 43 raw Orchard
-        // bytes (the encoding `PaymentsLandingViewModel.reloadShieldedAddress`
-        // produces for our own address).
-        if decoded.data.count == 44, decoded.data[0] == 0x10 {
-            return .shielded(raw43: decoded.data.subdata(in: 1..<44))
-        }
-        return nil
     }
 
     /// The trimmed entered address (what execution should use).
