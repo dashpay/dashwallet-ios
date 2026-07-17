@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct TopIntro: View {
     let title: String
@@ -25,12 +26,12 @@ struct TopIntro: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.title1)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
 
             if let subtitle = subtitle {
                 Text(subtitle)
                     .font(.subhead)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             }
         }
 

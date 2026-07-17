@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 struct ToastView: View {
@@ -50,17 +51,17 @@ struct ToastView: View {
             
             if let text = actionText, let action = action {
                 DashButton(text: text, style: .plain, size: .extraSmall, stretch: false, action: action)
-                    .overrideForegroundColor(Color.primaryBackground)
+                    .overrideForegroundColor(Color.dash.primaryBackground)
             }
             
             if let icon = closeButtonIcon, let action = closeAction {
                 DashButton(leadingIcon: icon, style: .plain, size: .small, stretch: false, action: action)
-                    .overrideForegroundColor(Color.primaryBackground)
+                    .overrideForegroundColor(Color.dash.primaryBackground)
             }
         }
         .padding(.horizontal, 8)
-        .foregroundColor(Color.primaryBackground)
-        .background(Color.primaryText.opacity(0.9))
+        .foregroundColor(Color.dash.primaryBackground)
+        .background(Color.dash.primaryText.opacity(0.9))
         .cornerRadius(10)
     }
 }

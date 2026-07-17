@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct TextIntro: View {
     var icon: IconName? = nil
@@ -58,7 +59,7 @@ struct TextIntro: View {
                     Text(info)
                         .multilineTextAlignment(.center)
                         .font(.footnote)
-                        .foregroundColor(.tertiaryText)
+                        .foregroundColor(.dash.tertiaryText)
                         .frame(maxWidth: .infinity)
                 }
           
@@ -75,7 +76,7 @@ struct TextIntro: View {
                         
                         if inProgress != nil && inProgress!.wrappedValue {
                             SwiftUI.ProgressView()
-                                .tint(.white)
+                                .tint(Color.dash.whiteText)
                         }
                     }
                     .padding(.top, 10)

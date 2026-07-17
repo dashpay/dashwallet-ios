@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // MARK: - ArrowDownIcon
 
@@ -23,7 +24,7 @@ import SwiftUI
 /// a vertical shaft and a chevron arrowhead. Scales cleanly to any `size`.
 struct ArrowDownIcon: View {
     var size: CGSize = CGSize(width: 9, height: 13)
-    var color: Color = .dashBlue
+    var color: Color = .dash.blue
     var lineWidth: CGFloat = 1.5
 
     var body: some View {
@@ -63,7 +64,7 @@ private struct ArrowDownShape: Shape {
         ArrowDownIcon(size: CGSize(width: 16, height: 24))
         ArrowDownIcon(size: CGSize(width: 24, height: 34), color: .white, lineWidth: 2)
             .padding(20)
-            .background(Color.dashBlue, in: RoundedRectangle(cornerRadius: 12))
+            .background(Color.dash.blue, in: RoundedRectangle(cornerRadius: 12))
     }
     .padding()
 }

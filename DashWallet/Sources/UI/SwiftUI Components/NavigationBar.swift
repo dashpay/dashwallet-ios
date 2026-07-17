@@ -21,6 +21,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct NavigationBar<Leading: View, Central: View, Trailing: View>: View {
     private let leading: Leading
@@ -165,7 +166,7 @@ struct NavBarBack: View {
                        .aspectRatio(contentMode: .fit)
                        .frame(height: 12)
                        .offset(x: -1)
-                       .foregroundColor(.primaryText)
+                       .foregroundColor(.dash.primaryText)
                }
            }
            .padding(.leading, 20)
@@ -176,7 +177,7 @@ struct NavBarBack: View {
    }
 
    private var borderColor: Color {
-       .gray300Alpha30
+       .dash.gray300Alpha30
    }
 
    private var iconName: String {
@@ -221,7 +222,7 @@ struct NavBarBackPlus: View {
                        .aspectRatio(contentMode: .fit)
                        .frame(height: 12)
                        .offset(x: -1)
-                       .foregroundColor(.primaryText)
+                       .foregroundColor(.dash.primaryText)
                }
            }
            .padding(.leading, 20)
@@ -242,7 +243,7 @@ struct NavBarBackPlus: View {
                        .resizable()
                        .aspectRatio(contentMode: .fit)
                        .frame(height: 11)
-                       .foregroundColor(.primaryText)
+                       .foregroundColor(.dash.primaryText)
                }
            }
            .padding(.trailing, 20)
@@ -251,7 +252,7 @@ struct NavBarBackPlus: View {
    }
 
    private var borderColor: Color {
-       .gray300Alpha30
+       .dash.gray300Alpha30
    }
 
    private var backIconName: String {
@@ -289,14 +290,14 @@ struct NavBarClose: View {
                        .frame(width: 44, height: 44)
 
                    Circle()
-                       .stroke(Color.gray300Alpha30, lineWidth: 1.5)
+                       .stroke(Color.dash.gray300Alpha30, lineWidth: 1.5)
                        .frame(width: 34, height: 34)
 
                    Image("toolbar-close")
                        .resizable()
                        .aspectRatio(contentMode: .fit)
                        .frame(height: 11)
-                       .foregroundColor(.primaryText)
+                       .foregroundColor(.dash.primaryText)
                }
            }
            .padding(.trailing, 20)

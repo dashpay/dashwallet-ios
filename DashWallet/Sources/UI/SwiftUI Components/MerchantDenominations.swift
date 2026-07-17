@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct MerchantDenominations: View {
     let denominations: [Int]
@@ -42,11 +43,11 @@ struct MerchantDenominations: View {
         VStack(alignment: .leading, spacing: 0) {
             Text(NSLocalizedString("Select amount", comment: "DashSpend"))
                 .font(.title1)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             
             Text(NSLocalizedString("This merchant sells gift cards at fixed prices", comment: "DashSpend"))
                 .font(.subhead)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .padding(.top, 4)
             
             LazyVGrid(columns: columns, spacing: 16) {
@@ -86,18 +87,18 @@ private struct DenominationChip: View {
         Button(action: onTap) {
             Text(formattedValue)
                 .font(.calloutMedium)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
                 .frame(width: 76, height: 54)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(isSelected ? Color.dashBlue.opacity(0.1) : Color.clear)
+                        .fill(isSelected ? Color.dash.blue.opacity(0.1) : Color.clear)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(
-                            isSelected ? Color.dashBlue : Color.primaryText.opacity(0.08),
+                            isSelected ? Color.dash.blue : Color.dash.primaryText.opacity(0.08),
                             lineWidth: 1.5
                         )
                 )
