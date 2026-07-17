@@ -9,6 +9,7 @@ import UIKit
 
 struct PaymentsLandingScreen: View {
     @ObservedObject var viewModel: PaymentsLandingViewModel
+    @Environment(\.colorScheme) private var colorScheme
 
     var onClose: () -> Void
     var onCopyAddress: () -> Void
@@ -137,12 +138,18 @@ struct PaymentsLandingScreen: View {
                         Text(tab.title)
                             .font(.system(size: 13, weight: .medium))
                     }
-                    .foregroundColor(viewModel.activeTab == tab ? .dash.primaryText : .secondary)
+                    .foregroundColor(viewModel.activeTab == tab ? Color.dash.primaryText : Color.dash.secondaryText)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(viewModel.activeTab == tab ? Color.dash.white : Color.clear)
+                            // Selected pill: a solid white raised card in light mode; a
+                            // translucent light fill in dark so the primaryText label stays
+                            // legible (pure white would be invisible on the dark selector).
+                            // Mirrors DashUIKit SegmentedControl's selected-fill treatment.
+                            .fill(viewModel.activeTab == tab
+                                ? (colorScheme == .dark ? Color.dash.whiteAlpha20 : Color.dash.white)
+                                : Color.clear)
                             .shadow(
                                 color: viewModel.activeTab == tab
                                     ? Color.dash.shadow : .clear,

@@ -41,7 +41,7 @@ struct ShortcutCustomizeBannerView: View {
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(Color(.dw_secondaryText()))
+                    .foregroundColor(Color.dash.secondaryText)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
             }
@@ -50,7 +50,7 @@ struct ShortcutCustomizeBannerView: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
-        .background(Color.dash.white)
+        .background(Color.dash.secondaryBackground)
         .clipShape(.rect(cornerRadius: 20))
         .shadow(color: Color.dash.shadow, radius: 10, x: 0, y: 5)
     }
