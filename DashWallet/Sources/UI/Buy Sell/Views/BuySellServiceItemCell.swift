@@ -15,7 +15,6 @@
 //  limitations under the License.
 //
 
-import DashUIKit
 import UIKit
 
 class BuySellServiceItemCell: UICollectionViewCell {

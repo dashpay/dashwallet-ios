@@ -45,7 +45,7 @@ struct TerritoryPickerView: View {
                 // Search Bar
                 HStack {
                     Image(systemName: "magnifyingglass")
-                        .foregroundColor(Color.dash.gray500)
+                        .foregroundColor(Color.dash.tertiaryText)
                     
                     TextField(NSLocalizedString("Search territories", comment: ""), text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
@@ -153,4 +153,3 @@ struct TerritoryPickerView: View {
         }
     }
 }
-

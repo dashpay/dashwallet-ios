@@ -3,8 +3,8 @@
 //  DashWallet
 //
 
-import SwiftUI
 import DashUIKit
+import SwiftUI
 import UIKit
 
 struct PaymentsLandingScreen: View {
@@ -146,7 +146,7 @@ struct PaymentsLandingScreen: View {
                             // Selected pill: a solid white raised card in light mode; a
                             // translucent light fill in dark so the primaryText label stays
                             // legible (pure white would be invisible on the dark selector).
-                            // Mirrors DashUIKit SegmentedControl's selected-fill treatment.
+                            // Mirrors the app's SegmentedControl selected-fill treatment.
                             .fill(viewModel.activeTab == tab
                                 ? (colorScheme == .dark ? Color.dash.whiteAlpha20 : Color.dash.white)
                                 : Color.clear)

@@ -289,7 +289,7 @@ private struct FilterDisclosureItem: View {
             Spacer()
             
             Image(systemName: "chevron.right")
-                .foregroundColor(Color.dash.gray500)
+                .foregroundColor(Color.dash.tertiaryText)
                 .imageScale(.small)
         }
         .padding(.horizontal, 16)

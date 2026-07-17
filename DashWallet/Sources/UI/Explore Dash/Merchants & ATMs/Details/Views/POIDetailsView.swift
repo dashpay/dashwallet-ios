@@ -570,7 +570,7 @@ struct POIDetailsView: View {
 
     private var separatorView: some View {
         Rectangle()
-            .fill(Color.dash.black.opacity(0.3))
+            .fill(Color.dash.primaryText.opacity(0.3))
             .frame(height: 1/UIScreen.main.scale)
     }
 }

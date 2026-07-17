@@ -17,9 +17,9 @@
 //  limitations under the License.
 //
 
-import SwiftUI
 import DashUIKit
 import SwiftDashSDK
+import SwiftUI
 import UIKit
 
 // MARK: - MasternodesViewModel
@@ -173,7 +173,7 @@ struct MasternodesScreen: View {
                     VStack(spacing: 12) {
                         Image(systemName: "server.rack")
                             .font(.system(size: 40))
-                            .foregroundColor(Color.dash.gray500)
+                            .foregroundColor(Color.dash.tertiaryText)
 
                         Text(NSLocalizedString("No masternodes yet", comment: "Masternodes"))
                             .font(.headline)

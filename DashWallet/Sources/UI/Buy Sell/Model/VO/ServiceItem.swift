@@ -15,7 +15,6 @@
 //  limitations under the License.
 //
 
-import DashUIKit
 import Foundation
 
 extension ServiceItem {
@@ -124,4 +123,3 @@ extension Status {
         }
     }
 }
-
