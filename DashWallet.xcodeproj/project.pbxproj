@@ -242,8 +242,6 @@
 		2A8B9E6F2302A9C200FF8653 /* DWPasteboardAddressExtractor.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressExtractor.m */; };
 		2A8B9E7A2302E67400FF8653 /* DWReceiveModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E792302E67400FF8653 /* DWReceiveModel.m */; };
 		2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
-		2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */; };
-		2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8C24B5233370A600000D43 /* QuickReceive.storyboard */; };
 		2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
 		2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */; };
 		2A913E6623A11DFE006A2A59 /* DWURLActions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A913E6523A11DFE006A2A59 /* DWURLActions.m */; };
@@ -1771,7 +1769,6 @@
 		C9D2C8F12A320AA000D15901 /* TxDetailCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5146328491C60005A8E3E /* TxDetailCells.swift */; };
 		C9D2C8F22A320AA000D15901 /* BaseViewController+NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477F501629543834003C7508 /* BaseViewController+NetworkReachability.swift */; };
 		C9D2C8F32A320AA000D15901 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; settings = {COMPILER_FLAGS = "-DASHPAY"; }; };
-		C9D2C8F42A320AA000D15901 /* DWQuickReceiveViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */; };
 		C9D2C90B2A320AA000D15901 /* DWShortcutCollectionViewCell~ipad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */; };
 		C9D2C90E2A320AA000D15901 /* TxDetailHeaderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C720C298A19D100475CA6 /* TxDetailHeaderCell.xib */; };
 		C9D2C9112A320AA000D15901 /* DWShortcutCollectionViewCell~iphone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */; };
@@ -1806,7 +1803,6 @@
 		C9D2C93A2A320AA000D15901 /* ResetWalletInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A10EB402358D2A900C38B61 /* ResetWalletInfo.storyboard */; };
 		C9D2C93B2A320AA000D15901 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
 		C9D2C93C2A320AA000D15901 /* Pay.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5B22FF6FE500FF8653 /* Pay.storyboard */; };
-		C9D2C93D2A320AA000D15901 /* QuickReceive.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A8C24B5233370A600000D43 /* QuickReceive.storyboard */; };
 		C9D2C93E2A320AA000D15901 /* Tx.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47A514612848FEAD005A8E3E /* Tx.storyboard */; };
 		C9D2C93F2A320AA000D15901 /* DashSyncCurrentCommit in Resources */ = {isa = PBXBuildFile; fileRef = 2A8F420821BED16300858B91 /* DashSyncCurrentCommit */; };
 		C9D2C9412A320AA000D15901 /* VerifiedSuccessfully.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9E22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard */; };
@@ -2363,9 +2359,6 @@
 		2A8B9E792302E67400FF8653 /* DWReceiveModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWReceiveModel.m; sourceTree = "<group>"; };
 		2A8B9E7B23034AC100FF8653 /* DWAppGroupOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAppGroupOptions.h; sourceTree = "<group>"; };
 		2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWAppGroupOptions.m; sourceTree = "<group>"; };
-		2A8C24B223336FEA00000D43 /* DWQuickReceiveViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWQuickReceiveViewController.h; sourceTree = "<group>"; };
-		2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWQuickReceiveViewController.m; sourceTree = "<group>"; };
-		2A8C24B5233370A600000D43 /* QuickReceive.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = QuickReceive.storyboard; sourceTree = "<group>"; };
 		2A8E79B9240676D400AA7C3D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = sk; path = sk.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		2A8E79BA240676D400AA7C3D /* sk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = sk; path = sk.lproj/Interface.strings; sourceTree = "<group>"; };
 		2A8E79BB2406772900AA7C3D /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cs; path = cs.lproj/Interface.strings; sourceTree = "<group>"; };
@@ -4741,7 +4734,6 @@
 		2A6300402328CCAC00827825 /* LockScreen */ = {
 			isa = PBXGroup;
 			children = (
-				2A8C24B123336FC800000D43 /* QuickReceive */,
 				2A6300462328D07800827825 /* Views */,
 				2A6300412328CCE900827825 /* LockScreen.storyboard */,
 				2A63004C2328F37C00827825 /* DWLockScreenViewController.h */,
@@ -5060,16 +5052,6 @@
 				2AB3415F23A81BAD004E37A7 /* DWReceiveModelProtocol.h */,
 			);
 			path = Models;
-			sourceTree = "<group>";
-		};
-		2A8C24B123336FC800000D43 /* QuickReceive */ = {
-			isa = PBXGroup;
-			children = (
-				2A8C24B223336FEA00000D43 /* DWQuickReceiveViewController.h */,
-				2A8C24B323336FEA00000D43 /* DWQuickReceiveViewController.m */,
-				2A8C24B5233370A600000D43 /* QuickReceive.storyboard */,
-			);
-			path = QuickReceive;
 			sourceTree = "<group>";
 		};
 		2A8DBA772630A6BE009094BD /* ExtendedKeys */ = {
@@ -9160,7 +9142,6 @@
 				2A10EB412358D2A900C38B61 /* ResetWalletInfo.storyboard in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
 				2A8B9E5C22FF6FE500FF8653 /* Pay.storyboard in Resources */,
-				2A8C24B6233370A600000D43 /* QuickReceive.storyboard in Resources */,
 				47A514622848FEAD005A8E3E /* Tx.storyboard in Resources */,
 				2A8F420921BED16300858B91 /* DashSyncCurrentCommit in Resources */,
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
@@ -9265,7 +9246,6 @@
 				C9D2C93A2A320AA000D15901 /* ResetWalletInfo.storyboard in Resources */,
 				C9D2C93B2A320AA000D15901 /* LaunchScreen.storyboard in Resources */,
 				C9D2C93C2A320AA000D15901 /* Pay.storyboard in Resources */,
-				C9D2C93D2A320AA000D15901 /* QuickReceive.storyboard in Resources */,
 				C9D2C93E2A320AA000D15901 /* Tx.storyboard in Resources */,
 				C9D2C93F2A320AA000D15901 /* DashSyncCurrentCommit in Resources */,
 				C9D2C9412A320AA000D15901 /* VerifiedSuccessfully.storyboard in Resources */,
@@ -10320,7 +10300,6 @@
 				47A5146428491C60005A8E3E /* TxDetailCells.swift in Sources */,
 				477F501729543834003C7508 /* BaseViewController+NetworkReachability.swift in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
-				2A8C24B423336FEA00000D43 /* DWQuickReceiveViewController.m in Sources */,
 				AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 				AA0001052AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */,
 				AA0020142FA0000000000014 /* SwapKitPortalView.swift in Sources */,
@@ -11325,7 +11304,6 @@
 				754565D12DABA5F300DA4E8E /* MerchantTypesDialog.swift in Sources */,
 				C9D2C8F22A320AA000D15901 /* BaseViewController+NetworkReachability.swift in Sources */,
 				C9D2C8F32A320AA000D15901 /* main.m in Sources */,
-				C9D2C8F42A320AA000D15901 /* DWQuickReceiveViewController.m in Sources */,
 				75A8C1692AE6A1AC0042256E /* VotingViewModel.swift in Sources */,
 				AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
 				AA0001062AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */,

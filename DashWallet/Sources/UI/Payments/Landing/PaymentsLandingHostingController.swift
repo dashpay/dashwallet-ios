@@ -103,6 +103,26 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    /// The lock screen's Quick Receive sheet: the landing narrowed to the
+    /// Receive tab, whose Transparent/Platform/Shielded toggle works
+    /// pre-auth (address derivation needs no unlock — same posture as the
+    /// legacy quick-receive screen this replaces). Receive-only on
+    /// purpose: no send/transfer surface while locked.
+    @objc static func quickReceiveController() -> UIViewController {
+        let controller = PaymentsLandingHostingController(
+            activeTab: .receive,
+            visibleTabs: [.receive],
+            showsHeader: false)
+        let navigationController = BaseNavigationController(rootViewController: controller)
+        navigationController.isNavigationBarHidden = true
+        navigationController.isModalInPresentation = false
+        if let sheet = navigationController.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+        }
+        return navigationController
+    }
+
     override func viewDidLoad() {
         if payModel == nil {
             payModel = DWPayModel()

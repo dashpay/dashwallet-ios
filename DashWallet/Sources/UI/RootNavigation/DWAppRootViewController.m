@@ -454,10 +454,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
     id<DWHomeProtocol> homeModel = self.model.homeModel;
     id<DWPayModelProtocol> payModel = homeModel.payModel;
-    id<DWReceiveModelProtocol> receiveModel = homeModel.receiveModel;
     DWLockScreenViewController *controller = [DWLockScreenViewController lockScreenWithUnlockMode:mode
-                                                                                         payModel:payModel
-                                                                                     receiveModel:receiveModel];
+                                                                                         payModel:payModel];
     controller.delegate = self;
 
     DWNavigationController *navigationController =

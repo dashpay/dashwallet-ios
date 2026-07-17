@@ -20,7 +20,6 @@
 #import "DWLockActionButton.h"
 #import "DWLockPinInputView.h"
 #import "DWLockScreenModel.h"
-#import "DWQuickReceiveViewController.h"
 #import "DWRecoverViewController.h"
 #import "DWSetPinViewController.h"
 #import "DWUIKit.h"
@@ -74,7 +73,6 @@ static CGFloat ActionButtonsHeight(void) {
                                           DWSetPinViewControllerDelegate>
 
 @property (strong, nonatomic) DWLockScreenModel *model;
-@property (nonatomic, strong) id<DWReceiveModelProtocol> receiveModel;
 
 @property (strong, nonatomic) IBOutlet DWLockPinInputView *pinInputView;
 @property (strong, nonatomic) IBOutlet UIButton *forgotPinButton;
@@ -94,13 +92,11 @@ static CGFloat ActionButtonsHeight(void) {
 @implementation DWLockScreenViewController
 
 + (instancetype)lockScreenWithUnlockMode:(DWLockScreenViewControllerUnlockMode)unlockMode
-                                payModel:(id<DWPayModelProtocol>)payModel
-                            receiveModel:(id<DWReceiveModelProtocol>)receiveModel {
+                                payModel:(id<DWPayModelProtocol>)payModel {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"LockScreen" bundle:nil];
     DWLockScreenViewController *controller = [storyboard instantiateInitialViewController];
     controller.unlockMode = unlockMode;
     controller.payModel = payModel;
-    controller.receiveModel = receiveModel;
 
     return controller;
 }
@@ -293,7 +289,9 @@ static CGFloat ActionButtonsHeight(void) {
 }
 
 - (IBAction)receiveButtonAction:(DWLockActionButton *)sender {
-    UIViewController *controller = [DWQuickReceiveViewController controllerWithModel:self.receiveModel];
+    // SwiftUI receive surface (Transparent / Platform / Shielded toggle),
+    // narrowed to the Receive tab for the locked context.
+    UIViewController *controller = [DWPaymentsLandingHostingController quickReceiveController];
     [self presentViewController:controller animated:YES completion:nil];
 }
 
