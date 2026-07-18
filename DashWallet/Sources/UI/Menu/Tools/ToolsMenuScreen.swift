@@ -17,6 +17,7 @@
 
 import UIKit
 import SwiftUI
+import DashUIKit
 import SafariServices
 
 struct ToolsMenuScreen: View {
@@ -62,9 +63,9 @@ struct ToolsMenuScreen: View {
                     }
                 }
                 .padding(6)
-                .background(Color.secondaryBackground)
+                .background(Color.dash.secondaryBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+                .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
                 .padding(.horizontal, 20)
 
                 // Menu list - ZenLedger
@@ -83,16 +84,16 @@ struct ToolsMenuScreen: View {
                         .frame(minHeight: 56)
                     }
                     .padding(6)
-                    .background(Color.secondaryBackground)
+                    .background(Color.dash.secondaryBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+                    .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
                     .padding(.horizontal, 20)
                 }
 
                 Spacer()
             }
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
         .onReceive(viewModel.$navigationDestination) { destination in
             handleNavigation(destination)

@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct GiftCardDetailsMerchantHeader: View {
     let merchantIcon: UIImage?
@@ -45,7 +46,7 @@ struct GiftCardDetailsMerchantHeader: View {
                         .scaledToFit()
                         .frame(width: 20, height: 20)
                         .frame(width: 23, height: 23)
-                        .background(Circle().fill(Color.secondaryBackground))
+                        .background(Circle().fill(Color.dash.secondaryBackground))
                         .offset(x: 2, y: 2)
                 }
             }
@@ -54,12 +55,12 @@ struct GiftCardDetailsMerchantHeader: View {
                 Text(merchantName)
                     .font(.subhead)
                     .fontWeight(.medium)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
 
                 if let purchaseDateText = purchaseDateText {
                     Text(purchaseDateText)
                         .font(.footnote)
-                        .foregroundColor(.tertiaryText)
+                        .foregroundColor(.dash.tertiaryText)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -74,7 +75,7 @@ struct GiftCardDetailsMerchantHeader: View {
         purchaseDateText: "May 04, 2026 at 5:35 PM"
     )
     .padding()
-    .background(Color.primaryBackground)
+    .background(Color.dash.primaryBackground)
 }
 
 #Preview("No Icon") {
@@ -84,5 +85,5 @@ struct GiftCardDetailsMerchantHeader: View {
         purchaseDateText: "May 04, 2026 at 3:10 PM"
     )
     .padding()
-    .background(Color.primaryBackground)
+    .background(Color.dash.primaryBackground)
 }

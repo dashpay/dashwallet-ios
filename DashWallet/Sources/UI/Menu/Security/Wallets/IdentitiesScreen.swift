@@ -26,6 +26,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import SwiftDashSDK
 import UIKit
 
@@ -40,7 +41,7 @@ struct IdentitiesScreen: View {
 
     var body: some View {
         ZStack {
-            Color.primaryBackground.ignoresSafeArea()
+            Color.dash.primaryBackground.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
                 header
@@ -59,9 +60,9 @@ struct IdentitiesScreen: View {
                                 }
                             }
                         }
-                        .background(Color.secondaryBackground)
+                        .background(Color.dash.secondaryBackground)
                         .cornerRadius(12)
-                        .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+                        .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
                         .padding(.horizontal, 20)
                         .padding(.top, 4)
                     }
@@ -118,9 +119,9 @@ struct IdentitiesScreen: View {
                 Button(action: { vc.popViewController(animated: true) }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color.dash.primaryText)
                         .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
                 }
                 Spacer()
                 // Explicit Find-identities command: DIP-9 scan of the active
@@ -133,9 +134,9 @@ struct IdentitiesScreen: View {
                     } else {
                         Image(systemName: "person.crop.circle.badge.questionmark")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.primary)
+                            .foregroundColor(Color.dash.primaryText)
                             .frame(width: 36, height: 36)
-                            .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                            .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
                     }
                 }
                 .disabled(viewModel.isDiscovering || viewModel.isRefreshing)
@@ -148,9 +149,9 @@ struct IdentitiesScreen: View {
                     } else {
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.primary)
+                            .foregroundColor(Color.dash.primaryText)
                             .frame(width: 36, height: 36)
-                            .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                            .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
                     }
                 }
                 .disabled(viewModel.isRefreshing || viewModel.isDiscovering)
@@ -163,7 +164,7 @@ struct IdentitiesScreen: View {
                 Text(NSLocalizedString("Identities", comment: "Identities"))
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             .padding(.horizontal, 20)
@@ -177,17 +178,17 @@ struct IdentitiesScreen: View {
             Spacer(minLength: 40)
             Image(systemName: "person.crop.circle.badge.plus")
                 .font(.system(size: 40))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
 
             Text(NSLocalizedString("No Identities", comment: "Identities"))
                 .font(.headline)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
 
             Text(NSLocalizedString(
                 "Your Dash Platform identity appears here once you register a username.",
                 comment: "Identities"))
                 .font(.caption)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
@@ -203,10 +204,10 @@ struct IdentitiesScreen: View {
                     Text(NSLocalizedString("Find identities", comment: "Identities"))
                 }
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.dashBlue)
+                .foregroundColor(.dash.blue)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(Color.dashBlue.opacity(0.1))
+                .background(Color.dash.blue.opacity(0.1))
                 .clipShape(Capsule())
             }
             .disabled(viewModel.isDiscovering)
@@ -228,7 +229,7 @@ private struct IdentityRowView: View {
                 HStack(spacing: 4) {
                     Text(row.title)
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(row.hasName ? .dashBlue : .primaryText)
+                        .foregroundColor(row.hasName ? .dash.blue : .dash.primaryText)
                         .lineLimit(1)
                     if row.isMainName {
                         Image(systemName: "star.fill")
@@ -239,18 +240,18 @@ private struct IdentityRowView: View {
                         IdentityBadge(
                             text: NSLocalizedString("Main", comment: "Identities — the wallet's main identity"),
                             icon: "checkmark.seal.fill",
-                            color: .dashBlue)
+                            color: .dash.blue)
                     }
                 }
                 if let subtitle = row.subtitle {
                     Text(subtitle)
                         .font(.system(size: 13))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .lineLimit(1)
                 }
                 Text(row.idBase58)
                     .font(.system(.caption, design: .monospaced))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .lineLimit(1)
                     .truncationMode(.middle)
 
@@ -260,7 +261,7 @@ private struct IdentityRowView: View {
             TransferSourceRow.dashBalanceTrailing(row.balanceText)
             Image(systemName: "chevron.right")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
@@ -345,7 +346,7 @@ struct IdentityDetailScreen: View {
 
     var body: some View {
         ZStack {
-            Color.primaryBackground.ignoresSafeArea()
+            Color.dash.primaryBackground.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
                 pageHeader
@@ -398,9 +399,9 @@ struct IdentityDetailScreen: View {
                 Button(action: { vc.popViewController(animated: true) }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color.dash.primaryText)
                         .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
                 }
                 Spacer()
             }
@@ -411,12 +412,12 @@ struct IdentityDetailScreen: View {
                 Text(row.title)
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .lineLimit(1)
                 if isMain {
                     Image(systemName: "checkmark.seal.fill")
                         .font(.system(size: 20))
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                 }
                 Spacer()
             }
@@ -434,16 +435,16 @@ struct IdentityDetailScreen: View {
             if isMain {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.seal.fill")
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                     Text(NSLocalizedString("This is your main identity", comment: "Identities"))
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                 }
                 Text(NSLocalizedString(
                     "Your username, profile, and contacts follow this identity.",
                     comment: "Identities"))
                     .font(.system(size: 13))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             } else if canBecomeMain {
                 Button(action: { confirmSetMain = true }) {
                     HStack(spacing: 8) {
@@ -451,10 +452,10 @@ struct IdentityDetailScreen: View {
                         Text(NSLocalizedString("Set as Main Identity", comment: "Identities"))
                     }
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(Color.dashBlue)
+                    .background(Color.dash.blue)
                     .cornerRadius(12)
                 }
             } else {
@@ -462,12 +463,12 @@ struct IdentityDetailScreen: View {
                     "The main identity can only be chosen from the active wallet",
                     comment: "Identities"))
                     .font(.system(size: 13))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -475,10 +476,10 @@ struct IdentityDetailScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString("Identity ID", comment: "Identities"))
                 .font(.caption)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             Text(row.idBase58)
                 .font(.system(.footnote, design: .monospaced))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .textSelection(.enabled)
 
             Button(action: copyId) {
@@ -489,12 +490,12 @@ struct IdentityDetailScreen: View {
                         : NSLocalizedString("Copy", comment: ""))
                 }
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.dashBlue)
+                .foregroundColor(.dash.blue)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -528,7 +529,7 @@ struct IdentityDetailScreen: View {
                 label: NSLocalizedString("Public keys", comment: "Identities"),
                 value: "\(row.publicKeyCount)")
         }
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -536,16 +537,16 @@ struct IdentityDetailScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString("Usernames", comment: "Identities"))
                 .font(.caption)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             ForEach(row.dpnsNames, id: \.self) { name in
                 Text(name)
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -561,11 +562,11 @@ struct IdentityDetailScreen: View {
         HStack {
             Text(label)
                 .font(.system(size: 14))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             Spacer()
             Text(value)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .multilineTextAlignment(.trailing)
         }
         .padding(.horizontal, 14)
@@ -574,7 +575,7 @@ struct IdentityDetailScreen: View {
 
     private var divider: some View {
         Rectangle()
-            .fill(Color.gray300.opacity(0.3))
+            .fill(Color.dash.gray300.opacity(0.3))
             .frame(height: 1)
             .padding(.horizontal, 14)
     }

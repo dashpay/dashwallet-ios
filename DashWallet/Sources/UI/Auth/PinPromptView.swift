@@ -15,6 +15,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // MARK: - Result
 
@@ -190,7 +191,7 @@ struct PinPromptView: View {
     var body: some View {
         ZStack {
             // Dimmed pass-through backdrop (the send screen shows through).
-            Color.black.opacity(0.5)
+            Color.dash.backgroundOverlay
                 .ignoresSafeArea()
 
             card
@@ -226,7 +227,7 @@ struct PinPromptView: View {
             VStack(spacing: 16) {
                 Text(viewModel.titleMessage)
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
 
                 dots
                     .modifier(ShakeEffect(animatableData: CGFloat(viewModel.shakeToken)))
@@ -234,14 +235,14 @@ struct PinPromptView: View {
                 if let subtitle = viewModel.subtitleMessage, viewModel.lockoutMessage == nil {
                     Text(subtitle)
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.tertiaryText)
+                        .foregroundColor(.dash.tertiaryText)
                         .multilineTextAlignment(.center)
                 }
 
                 if let lockout = viewModel.lockoutMessage {
                     Text(lockout)
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.systemRed)
+                        .foregroundColor(.dash.red)
                         .multilineTextAlignment(.center)
                 }
             }
@@ -254,7 +255,7 @@ struct PinPromptView: View {
             Button(action: viewModel.cancel) {
                 Text(NSLocalizedString("Cancel", comment: ""))
                     .font(.system(size: 17))
-                    .foregroundColor(.dashBlue)
+                    .foregroundColor(.dash.blue)
                     .frame(maxWidth: .infinity)
                     .frame(height: 52)
             }
@@ -274,7 +275,7 @@ struct PinPromptView: View {
                 .disabled(viewModel.isLockedOut)
                 .id(viewModel.fieldGeneration)
         )
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .cornerRadius(14)
     }
 
@@ -288,7 +289,7 @@ struct PinPromptView: View {
                     .frame(width: 60, height: 60)
                     .overlay(
                         Circle()
-                            .fill(Color.primaryText)
+                            .fill(Color.dash.primaryText)
                             .frame(width: 14, height: 14)
                             .opacity(index < viewModel.enteredPin.count ? 1 : 0)
                     )

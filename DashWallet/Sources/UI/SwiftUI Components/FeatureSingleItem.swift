@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct FeatureSingleItem: View {
     let iconName: IconName
@@ -33,11 +34,11 @@ struct FeatureSingleItem: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(title)
                     .font(.headline)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 
                 Text(description)
                     .font(.subheadline)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
             .padding(.top, 10)
         }

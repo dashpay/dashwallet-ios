@@ -17,6 +17,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 struct ShieldedSyncInfoScreen: View {
@@ -38,10 +39,10 @@ struct ShieldedSyncInfoScreen: View {
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color.dash.primaryText)
                         .frame(width: 36, height: 36)
                         .overlay(
-                            Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1)
+                            Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1)
                         )
                 }
                 Spacer()
@@ -54,7 +55,7 @@ struct ShieldedSyncInfoScreen: View {
                 Text("Shielded Sync Info")
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             .padding(.top, 30)
@@ -81,7 +82,7 @@ struct ShieldedSyncInfoScreen: View {
             }
         }
         .padding(.horizontal, 20)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
     }
 
@@ -94,40 +95,40 @@ struct ShieldedSyncInfoScreen: View {
                     .foregroundColor(.orange)
                 Text("Platform sync is not running")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             } else if monitor.isSyncing {
                 SwiftUI.ProgressView().scaleEffect(0.7)
                 Text("Syncing…")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             } else if monitor.isBound == false {
                 Image(systemName: "shield.slash")
                     .foregroundColor(.orange)
                 Text("Not bound")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             } else if let lastSync = monitor.lastSyncTime {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
                 Text("Last sync: \(lastSync, style: .relative) ago")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             } else {
                 Image(systemName: "circle.dashed")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                 Text("Not synced yet")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             }
             Spacer()
             if let network = coordinator.runningNetwork {
                 Text(network.networkName)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             }
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -141,7 +142,7 @@ struct ShieldedSyncInfoScreen: View {
                 value: formattedCount(monitor.notesSynced))
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -150,12 +151,12 @@ struct ShieldedSyncInfoScreen: View {
             HStack {
                 Text("Current Pass")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
                 if let elapsed = monitor.currentSyncElapsed {
                     Text(String(format: "%.1f s", elapsed))
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                         .monospacedDigit()
                 }
             }
@@ -174,7 +175,7 @@ struct ShieldedSyncInfoScreen: View {
             }
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -189,7 +190,7 @@ struct ShieldedSyncInfoScreen: View {
             }
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -198,11 +199,11 @@ struct ShieldedSyncInfoScreen: View {
             HStack {
                 Text("Queries Since Launch")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
                 Text("\(monitor.syncCountSinceLaunch) syncs")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             }
             HStack(spacing: 8) {
                 counterBadge(label: "Scanned", count: monitor.totalScanned, color: .blue)
@@ -211,7 +212,7 @@ struct ShieldedSyncInfoScreen: View {
             }
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -243,7 +244,7 @@ struct ShieldedSyncInfoScreen: View {
                 .font(.system(size: 14, weight: .semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(syncNowDisabled ? Color.gray300.opacity(0.3) : Color.purple.opacity(0.15))
+                .background(syncNowDisabled ? Color.dash.gray300.opacity(0.3) : Color.purple.opacity(0.15))
                 .foregroundColor(syncNowDisabled ? .secondary : .purple)
                 .cornerRadius(8)
             }
@@ -256,8 +257,8 @@ struct ShieldedSyncInfoScreen: View {
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.gray300.opacity(0.3))
-                    .foregroundColor(.primaryText)
+                    .background(Color.dash.gray300.opacity(0.3))
+                    .foregroundColor(.dash.primaryText)
                     .cornerRadius(8)
             }
         }
@@ -273,11 +274,11 @@ struct ShieldedSyncInfoScreen: View {
         HStack {
             Text(title)
                 .font(.system(size: 13))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Spacer()
             Text(value)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .monospacedDigit()
         }
     }
@@ -289,20 +290,20 @@ struct ShieldedSyncInfoScreen: View {
         HStack(spacing: 8) {
             Text(label)
                 .font(.system(size: 13))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .frame(width: 90, alignment: .leading)
             if let value, let total, total > 0 {
                 SwiftUI.ProgressView(value: Double(min(value, total)), total: Double(total))
                     .tint(.purple)
                 Text("\(formattedCount(min(value, total))) / \(formattedCount(total))")
                     .font(.system(size: 11))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                     .monospacedDigit()
             } else if let value {
                 SwiftUI.ProgressView().scaleEffect(0.6)
                 Text("\(formattedCount(value)) notes")
                     .font(.system(size: 11))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                     .monospacedDigit()
                 Spacer()
             } else {
@@ -320,7 +321,7 @@ struct ShieldedSyncInfoScreen: View {
                 .monospacedDigit()
             Text(label)
                 .font(.system(size: 11, weight: .medium))
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)

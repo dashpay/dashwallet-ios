@@ -3,6 +3,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct GiftCardPurchaseSelectionSheet: View {
     let merchantIcon: UIImage?
@@ -31,7 +32,7 @@ struct GiftCardPurchaseSelectionSheet: View {
             .padding(.top, 12)
             .padding(.bottom, 30)
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 
     @ViewBuilder
@@ -52,18 +53,18 @@ struct GiftCardPurchaseSelectionSheet: View {
             } else if hasBeenPollingForLongTime {
                 Text(NSLocalizedString("As soon as your code is generated, it will be displayed here", comment: "DashSpend"))
                     .font(.footnote)
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(.dash.tertiaryText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
             } else {
                 Text(NSLocalizedString("Gift card is being prepared", comment: "DashSpend"))
                     .font(.subheadline)
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(.dash.tertiaryText)
             }
         }
         .frame(maxWidth: .infinity)
         .frame(height: 120)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(20)
     }
 
@@ -79,7 +80,7 @@ struct GiftCardPurchaseSelectionSheet: View {
                                 Text("\(index + 1)")
                                     .font(.caption1.weight(.medium))
                                     .padding(.horizontal, 4)
-                                    .background(Color.gray50)
+                                    .background(Color.dash.gray50)
                                     .clipShape(.rect(cornerRadius: 5))
                             }
 
@@ -93,7 +94,7 @@ struct GiftCardPurchaseSelectionSheet: View {
                             Text(card.formattedPrice)
                                 .font(.title3)
                                 .fontWeight(.semibold)
-                                .foregroundColor(.primaryText)
+                                .foregroundColor(.dash.primaryText)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -107,7 +108,7 @@ struct GiftCardPurchaseSelectionSheet: View {
             }
         }
         .padding(20)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(20)
     }
 }

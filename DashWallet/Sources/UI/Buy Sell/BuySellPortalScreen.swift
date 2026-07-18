@@ -16,14 +16,15 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 private struct MenuCardStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+            .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
             .padding(.horizontal, 20)
     }
 }
@@ -84,11 +85,11 @@ struct BuySellPortalScreen: View {
                             .frame(width: 18, height: 18)
                         Text(NSLocalizedString("Powered by Uphold", comment: "Buy Sell Dash"))
                             .font(.caption)
-                            .foregroundColor(.secondaryText)
+                            .foregroundColor(.dash.secondaryText)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    .background(colorScheme == .dark ? Color.whiteAlpha5 : Color.primaryBackground)
+                    .background(colorScheme == .dark ? Color.dash.whiteAlpha5 : Color.dash.primaryBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
                 .modifier(MenuCardStyle())
@@ -122,7 +123,7 @@ struct BuySellPortalScreen: View {
 
             Spacer()
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
     }
 
@@ -162,11 +163,11 @@ struct BuySellPortalScreen: View {
                         .scaledToFit()
                         .frame(width: 12)
                 }
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 if let fiat = item.fiatBalanceFormatted, (item.dashBalance ?? 0) > 0 {
                     Text(fiat)
                         .font(.caption)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                 }
             }
         )

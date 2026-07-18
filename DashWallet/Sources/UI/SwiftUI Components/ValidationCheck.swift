@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct ValidationCheck: View {
     let validationResult: UsernameValidationRuleResult
@@ -30,10 +31,10 @@ struct ValidationCheck: View {
             } else {
                 Icon(name: getIconName())
                     .frame(width: 18, height: 18)
-                    .foregroundColor(.systemYellow)
+                    .foregroundColor(.dash.yellow)
             }
             Text(text)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .font(.subhead)
         }
     }

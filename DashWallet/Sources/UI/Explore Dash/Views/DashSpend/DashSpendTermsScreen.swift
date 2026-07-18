@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct DashSpendTermsScreen: View {
     @Environment(\.presentationMode) private var presentationMode
@@ -38,7 +39,7 @@ struct DashSpendTermsScreen: View {
                     }) {
                         Image(systemName: "xmark")
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                             .padding(10)
                     }
                 }
@@ -78,22 +79,22 @@ struct DashSpendTermsScreen: View {
                         ZStack {
                             if isTermsAccepted {
                                 RoundedRectangle(cornerRadius: 6)
-                                    .fill(Color.dashBlue)
+                                    .fill(Color.dash.blue)
                                     .frame(width: 22, height: 22)
                                 
                                 Image(systemName: "checkmark")
                                     .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(Color.dash.whiteText)
                             } else {
                                 RoundedRectangle(cornerRadius: 6)
-                                    .strokeBorder(Color.gray300, lineWidth: 1.5)
+                                    .strokeBorder(Color.dash.gray300, lineWidth: 1.5)
                                     .frame(width: 22, height: 22)
                             }
                         }
                         
                         Text(String(format: NSLocalizedString("I accept %@ terms and conditions", comment: "Accept terms checkbox"), provider.displayName))
                             .font(.system(size: 14))
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                             
                         Spacer()
                     }

@@ -17,6 +17,7 @@
 
 import UIKit
 import SwiftUI
+import DashUIKit
 import MessageUI
 
 
@@ -258,9 +259,9 @@ struct MainMenuScreen: View {
                             }
                         }
                         .padding(6)
-                        .background(Color.secondaryBackground)
+                        .background(Color.dash.secondaryBackground)
                         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                        .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+                        .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
                     }
 
                     // Menu list - second group (remaining items)
@@ -278,9 +279,9 @@ struct MainMenuScreen: View {
                             }
                         }
                         .padding(6)
-                        .background(Color.secondaryBackground)
+                        .background(Color.dash.secondaryBackground)
                         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                        .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+                        .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -318,7 +319,7 @@ struct MainMenuScreen: View {
                     negativeButtonText: NSLocalizedString("Maybe later", comment: "")
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.black.opacity(0.7))
+                .background(Color.dash.backgroundOverlay)
                 .edgesIgnoringSafeArea(.all)
             }
             #endif
@@ -368,7 +369,7 @@ struct MainMenuScreen: View {
                 EmptyView()
             }
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .onAppear {
             viewModel.buildMenuSections()
         }

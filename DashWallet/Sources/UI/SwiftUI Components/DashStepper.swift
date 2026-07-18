@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct DashStepper: View {
     @Binding var count: Int
@@ -38,7 +39,7 @@ struct DashStepper: View {
 
             Text("\(count)")
                 .font(.headline.weight(.semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .frame(width: 30)
                 .multilineTextAlignment(.center)
 
@@ -63,12 +64,12 @@ struct DashStepper: View {
             .renderingMode(.template)
             .scaledToFit()
             .frame(width: 11, height: 11)
-            .foregroundColor(enabled ? .primaryText : Color.gray300)
+            .foregroundColor(enabled ? .dash.primaryText : Color.dash.gray300)
             .frame(width: 34, height: 34)
             .overlay(
                 Circle()
                     .stroke(
-                        enabled ? Color.black1000Alpha8 : Color.black1000Alpha5,
+                        enabled ? Color.dash.black1000Alpha8 : Color.dash.black1000Alpha5,
                         lineWidth: 1.5
                     )
             )

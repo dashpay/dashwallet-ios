@@ -1,4 +1,5 @@
 import SwiftUI
+import DashUIKit
 import SwiftData
 import SwiftDashSDK
 
@@ -117,7 +118,7 @@ struct StorageExplorerView: View {
                 Label(name, systemImage: icon)
                 Spacer()
                 Text("\(counts[String(describing: type)] ?? 0)")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                     .font(.callout)
             }
         }
@@ -138,7 +139,7 @@ struct StorageExplorerView: View {
                 Label(name, systemImage: icon)
                 Spacer()
                 Text("\(counts[countKey] ?? 0)")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                     .font(.callout)
             }
         }

@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct TransferTimingSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -17,15 +18,15 @@ struct TransferTimingSheet: View {
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
                 }
             }
 
             Text(NSLocalizedString("Transfers take different times", comment: ""))
                 .font(.system(size: 24, weight: .bold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -56,7 +57,7 @@ struct TransferTimingSheet: View {
         .padding(.horizontal, 24)
         .padding(.top, 14)
         .padding(.bottom, 24)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 
     private func timingRow(
@@ -74,11 +75,11 @@ struct TransferTimingSheet: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(subtitle)
                     .font(.system(size: 13))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)

@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct GiftCardDetailsView: View {
     @StateObject private var viewModel: GiftCardDetailsViewModel
@@ -79,7 +80,7 @@ struct GiftCardDetailsView: View {
             poweredBySection
         }
         .padding(.horizontal, 20)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .onAppear {
             guard !isPreview else { return }
             if shouldObserve {
@@ -131,7 +132,7 @@ struct GiftCardDetailsView: View {
             HStack {
                 Text(NSLocalizedString("View transaction details", comment: "DashSpend"))
                     .font(.subheadMedium)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
 
                 Spacer()
 
@@ -143,7 +144,7 @@ struct GiftCardDetailsView: View {
             .frame(height: 46)
             .padding(6)
             .padding(.horizontal, 14)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(.rect(cornerRadius: 20))
         }
     }
@@ -159,7 +160,7 @@ struct GiftCardDetailsView: View {
                 }) {
                     Text(NSLocalizedString("See how to use this gift card", comment: "DashSpend"))
                         .font(.subheadMedium)
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                 }
                 .padding(.horizontal, 16)
             } else {

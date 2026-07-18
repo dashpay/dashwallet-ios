@@ -12,6 +12,7 @@
 import Combine
 import SwiftDashSDK
 import SwiftUI
+import DashUIKit
 
 // MARK: - SyncingAlertViewModel
 
@@ -144,7 +145,7 @@ struct SyncingAlertView: View {
 
             Text(title)
                 .font(.title3)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .multilineTextAlignment(.center)
                 .padding(.top, 16)
 
@@ -201,7 +202,7 @@ struct SyncingAlertView: View {
                             viewModel.snapshot.lastSyncBlockHeight,
                             viewModel.snapshot.estimatedBlockHeight))
                     .font(.footnote)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             } else {
                 VStack(spacing: 14) {
                     ForEach(Array(viewModel.snapshot.phases.enumerated()), id: \.offset) { _, phase in
@@ -220,7 +221,7 @@ struct SyncingAlertView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(label(for: phase.kind))
                     .font(.footnote)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer(minLength: 12)
                 if phase.isComplete {
                     Image(systemName: "checkmark.circle.fill")
@@ -229,14 +230,14 @@ struct SyncingAlertView: View {
                 } else {
                     Text("\(formattedHeight(phase.current)) / \(formattedHeight(phase.target))")
                         .font(.footnote.monospacedDigit())
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                 }
             }
             // Fully qualified: the app declares its own `ProgressView`
             // type, which shadows SwiftUI's in this scope.
             SwiftUI.ProgressView(value: fraction(of: phase))
                 .progressViewStyle(.linear)
-                .tint(phase.isComplete ? .green : .dashBlue)
+                .tint(phase.isComplete ? .green : .dash.blue)
         }
     }
 
@@ -245,11 +246,11 @@ struct SyncingAlertView: View {
             HStack {
                 Text(NSLocalizedString("Connected peers", comment: "SPV sync"))
                     .font(.footnote.weight(.semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
                 Text("\(viewModel.peers.count)")
                     .font(.footnote.monospacedDigit().weight(.semibold))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
             ForEach(viewModel.peers) { peer in
                 HStack {
@@ -258,12 +259,12 @@ struct SyncingAlertView: View {
                         .frame(width: 6, height: 6)
                     Text(peer.address)
                         .font(.caption.monospaced())
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .lineLimit(1)
                     Spacer()
                     Text(label(for: peer.nodeType))
                         .font(.caption)
-                        .foregroundColor(.tertiaryText)
+                        .foregroundColor(.dash.tertiaryText)
                 }
             }
         }
@@ -273,7 +274,7 @@ struct SyncingAlertView: View {
         HStack(spacing: 8) {
             Text(NSLocalizedString("Sync too slow?", comment: "SPV sync"))
                 .font(.footnote)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             Button {
                 viewModel.rotatePeers()
             } label: {
@@ -283,7 +284,7 @@ struct SyncingAlertView: View {
                 } else {
                     Text(NSLocalizedString("Change peers", comment: "SPV sync"))
                         .font(.footnote.weight(.semibold))
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                 }
             }
             .disabled(viewModel.isRotatingPeers)
@@ -293,7 +294,7 @@ struct SyncingAlertView: View {
     private func color(for nodeType: PlatformSpvPeerNodeType) -> Color {
         switch nodeType {
         case .evonode: return .purple
-        case .masternode: return .dashBlue
+        case .masternode: return .dash.blue
         case .normal: return .green
         case .unknown: return .gray
         }

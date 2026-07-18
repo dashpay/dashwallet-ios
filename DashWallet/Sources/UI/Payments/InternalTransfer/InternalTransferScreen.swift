@@ -79,7 +79,7 @@ struct InternalTransferScreen: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .sheet(isPresented: $showConfirm) {
             InternalTransferConfirmSheet(
                 route: viewModel.route,
@@ -104,7 +104,7 @@ struct InternalTransferScreen: View {
     private var header: some View {
         Text(NSLocalizedString("Internal transfer", comment: ""))
             .font(.system(size: 24, weight: .bold))
-            .foregroundColor(.primaryText)
+            .foregroundColor(.dash.primaryText)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -309,7 +309,7 @@ struct InternalTransferScreen: View {
             balanceTrailing: AnyView(
                 Text(viewModel.shieldedBalanceFormatted)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)))
+                    .foregroundColor(.dash.primaryText)))
     }
 
     // MARK: - Reverse-direction From card
@@ -326,7 +326,7 @@ struct InternalTransferScreen: View {
             balanceTrailing: AnyView(
                 Text(viewModel.shieldedBalanceFormatted)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)))
+                    .foregroundColor(.dash.primaryText)))
     }
 
     /// Caption for the reusable source rows: "From" in the forward direction,
@@ -368,16 +368,16 @@ struct InternalTransferScreen: View {
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(iconColor)
                 .frame(width: 36, height: 36)
-                .background(Color.blue.opacity(0.08))
+                .background(Color.dash.blue.opacity(0.08))
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(caption)
                     .font(.system(size: 11))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                 Text(title)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             }
 
             Spacer()
@@ -386,7 +386,7 @@ struct InternalTransferScreen: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -394,11 +394,11 @@ struct InternalTransferScreen: View {
         Button(action: toggleDirection) {
             Image(systemName: "arrow.up.arrow.down")
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .frame(width: 28, height: 28)
-                .background(Color.primaryBackground)
+                .background(Color.dash.primaryBackground)
                 .clipShape(Circle())
-                .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
         }
         .buttonStyle(.plain)
     }
@@ -413,11 +413,11 @@ struct InternalTransferScreen: View {
         VStack(spacing: 2) {
             Text(NSLocalizedString("You will transfer", comment: ""))
                 .font(.system(size: 12))
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
             HStack(spacing: 4) {
                 Text("~ \(viewModel.dashAmountFormatted)")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Image("icon_dash_currency")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -465,7 +465,7 @@ struct TransferSourceRow: View {
             HStack(spacing: 2) {
                 Text(formatted)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Image("icon_dash_currency")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -480,16 +480,16 @@ struct TransferSourceRow: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.blue)
                     .frame(width: 36, height: 36)
-                    .background(Color.blue.opacity(0.08))
+                    .background(Color.dash.blue.opacity(0.08))
                     .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(caption)
                         .font(.system(size: 11))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                     Text(title)
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                 }
 
                 Spacer()
@@ -502,10 +502,10 @@ struct TransferSourceRow: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(showsRadio && selected ? Color.dashBlue : Color.clear,
+                    .stroke(showsRadio && selected ? Color.dash.blue : Color.clear,
                             lineWidth: showsRadio && selected ? 1.5 : 0))
             .cornerRadius(12)
         }
@@ -516,11 +516,11 @@ struct TransferSourceRow: View {
     private var radioIndicator: some View {
         ZStack {
             Circle()
-                .stroke(selected ? Color.dashBlue : Color.gray300.opacity(0.6), lineWidth: 1.5)
+                .stroke(selected ? Color.dash.blue : Color.dash.gray300.opacity(0.6), lineWidth: 1.5)
                 .frame(width: 18, height: 18)
             if selected {
                 Circle()
-                    .fill(Color.dashBlue)
+                    .fill(Color.dash.blue)
                     .frame(width: 10, height: 10)
             }
         }
@@ -548,10 +548,10 @@ struct TransferAmountRow: View {
             Button(action: onMax) {
                 Text(NSLocalizedString("Max", comment: ""))
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.secondaryBackground)
+                    .background(Color.dash.secondaryBackground)
                     .clipShape(Capsule())
             }
 
@@ -560,7 +560,7 @@ struct TransferAmountRow: View {
 
                 Text(secondaryText)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
             }
             .frame(maxWidth: .infinity)
 
@@ -582,7 +582,7 @@ struct TransferAmountRow: View {
             case .dash:
                 Text(amountText)
                     .font(.system(size: 36, weight: .bold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
                 Image("icon_dash_currency")
@@ -592,10 +592,10 @@ struct TransferAmountRow: View {
             case .fiat:
                 Text(currencySymbol)
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Text(amountText)
                     .font(.system(size: 36, weight: .bold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
             }
@@ -606,10 +606,10 @@ struct TransferAmountRow: View {
         Button(action: action) {
             Text(label)
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(selected ? .primaryText : .secondary)
+                .foregroundColor(selected ? .dash.primaryText : .secondary)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(selected ? Color.secondaryBackground : Color.clear)
+                .background(selected ? Color.dash.secondaryBackground : Color.clear)
                 .clipShape(Capsule())
         }
     }

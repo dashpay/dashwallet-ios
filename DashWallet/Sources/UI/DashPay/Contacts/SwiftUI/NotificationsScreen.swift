@@ -15,6 +15,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct NotificationsScreen: View {
     @StateObject private var viewModel = ContactsViewModel()
@@ -27,7 +28,7 @@ struct NotificationsScreen: View {
 
     var body: some View {
         ZStack {
-            Color.primaryBackground.ignoresSafeArea()
+            Color.dash.primaryBackground.ignoresSafeArea()
             content
         }
         .navigationTitle(NSLocalizedString("Notifications", comment: "DashPay Notifications"))
@@ -97,10 +98,10 @@ struct NotificationsScreen: View {
             VStack(spacing: 12) {
                 Image(systemName: "bell")
                     .font(.system(size: 44, weight: .light))
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(.dash.tertiaryText)
                 Text(NSLocalizedString("You have no notifications", comment: "DashPay Notifications"))
                     .font(.system(size: 14))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
@@ -124,7 +125,7 @@ struct NotificationsScreen: View {
     private func sectionHeader(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 15, weight: .semibold))
-            .foregroundColor(.primaryText)
+            .foregroundColor(.dash.primaryText)
             .padding(.horizontal, 20)
             .padding(.top, 18)
             .padding(.bottom, 6)
@@ -142,7 +143,7 @@ struct NotificationsScreen: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.secondaryBackground))
+                .fill(Color.dash.secondaryBackground))
         .padding(.horizontal, 15)
     }
 
@@ -225,11 +226,11 @@ struct NotificationsScreen: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(text)
                     .font(.system(size: 14))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .lineLimit(2)
                 Text(Self.timestampFormatter.string(from: event.date))
                     .font(.system(size: 11))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
             Spacer()
             accessory()

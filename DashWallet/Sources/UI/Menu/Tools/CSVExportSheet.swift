@@ -18,6 +18,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct CSVExportSheet: View {
     @Environment(\.presentationMode) private var presentationMode
@@ -28,7 +29,7 @@ struct CSVExportSheet: View {
         VStack(spacing: 0) {
             // Grabber
             Capsule()
-                .fill(colorScheme == .dark ? Color.whiteAlpha20 : Color.gray300Alpha50)
+                .fill(colorScheme == .dark ? Color.dash.whiteAlpha20 : Color.dash.gray300Alpha50)
                 .frame(width: 36, height: 5)
                 .padding(.top, 6)
                 .padding(.bottom, 6)
@@ -52,13 +53,13 @@ struct CSVExportSheet: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(NSLocalizedString("The full transaction history will be exported as a CSV file", comment: ""))
                         .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(Color.primaryText)
+                        .foregroundColor(Color.dash.primaryText)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Text(NSLocalizedString("All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.", comment: ""))
                         .font(.system(size: 15))
-                        .foregroundColor(Color.secondaryText)
+                        .foregroundColor(Color.dash.secondaryText)
                         .multilineTextAlignment(.leading)
                         .lineSpacing(5)
                         .fixedSize(horizontal: false, vertical: true)
@@ -88,7 +89,7 @@ struct CSVExportSheet: View {
             .padding(.top, 20)
             .padding(.bottom, 20)
         }
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
     }
 }
 

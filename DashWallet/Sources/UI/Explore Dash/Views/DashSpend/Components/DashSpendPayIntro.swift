@@ -17,6 +17,7 @@
 
 
 import SwiftUI
+import DashUIKit
 import SDWebImageSwiftUI
 
 struct DashSpendPayIntro: View {
@@ -49,7 +50,7 @@ struct DashSpendPayIntro: View {
         } placeholder: {
             // No icon yet (missing URL or still loading): show a grey circle of the same size.
             Circle()
-                .fill(Color.gray300Alpha50)
+                .fill(Color.dash.gray300Alpha50)
         }
         .frame(width: Layout.merchantIconSize, height: Layout.merchantIconSize)
     }
@@ -57,15 +58,15 @@ struct DashSpendPayIntro: View {
     private var eyeIcon: some View {
         ZStack {
             Circle()
-                .fill(Color.gray300Alpha10)
+                .fill(Color.dash.gray300Alpha10)
                 .frame(width: Layout.eyeCircleSize, height: Layout.eyeCircleSize)
 
             Icon(name: .custom("eye_opened-icon", maxHeight: Layout.eyeIconSize))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .opacity(balanceHidden ? 1 : 0)
 
             Icon(name: .custom("eye_closed-icon", maxHeight: Layout.eyeIconSize))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .opacity(balanceHidden ? 0 : 1)
         }
         .compositingGroup()
@@ -100,7 +101,7 @@ struct DashSpendPayIntro: View {
                 }
             }
             .font(.subheadline)
-            .foregroundColor(.secondaryText)
+            .foregroundColor(.dash.secondaryText)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -111,13 +112,13 @@ struct DashSpendPayIntro: View {
 
         Text(text ?? NSLocalizedString("Not available", comment: ""))
             .font(.subheadline)
-            .foregroundColor(.secondaryText)
+            .foregroundColor(.dash.secondaryText)
     }
 }
 
 #Preview("DashSpendPayIntro") {
     VStack(spacing: 20) {
-        Text("DashSpendPayIntro").font(.caption).foregroundColor(.secondary)
+        Text("DashSpendPayIntro").font(.caption).foregroundColor(Color.dash.secondaryText)
         DashSpendPayIntro(
             merchantIconUrl: "",
             merchantTitle: "Amazon",
@@ -125,7 +126,7 @@ struct DashSpendPayIntro: View {
             dashBalance: 555566
         )
         Divider()
-        Text("SendIntro (reference)").font(.caption).foregroundColor(.secondary)
+        Text("SendIntro (reference)").font(.caption).foregroundColor(Color.dash.secondaryText)
         SendIntro(
             title: "Buy gift card",
             preposition: "at",

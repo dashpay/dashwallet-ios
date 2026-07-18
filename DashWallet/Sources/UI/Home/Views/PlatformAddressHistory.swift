@@ -25,6 +25,7 @@
 
 import Foundation
 import SwiftUI
+import DashUIKit
 
 // MARK: - List item
 
@@ -81,28 +82,28 @@ struct PlatformAddressActivityDetailsView: View {
             ZStack(alignment: .bottomTrailing) {
                 Image(systemName: "creditcard.fill")
                     .font(.system(size: 24, weight: .semibold))
-                    .foregroundColor(.dashBlue)
+                    .foregroundColor(.dash.blue)
                     .frame(width: 56, height: 56)
-                    .background(Circle().fill(Color.dashBlue.opacity(0.08)))
+                    .background(Circle().fill(Color.dash.blue.opacity(0.08)))
                 Image(systemName: "arrow.down")
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
                     .frame(width: 20, height: 20)
-                    .background(Circle().fill(Color.dashBlue))
+                    .background(Circle().fill(Color.dash.blue))
                     .offset(x: 4, y: 4)
             }
             .padding(.top, 24)
 
             Text(item.title)
                 .font(.headline)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .padding(.top, 12)
 
             DashAmount(amount: item.signedDashAmount, font: .title2, showDirection: true)
                 .padding(.top, 4)
             Text(item.fiatAmount)
                 .font(.footnote)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
                 .padding(.top, 2)
 
             VStack(spacing: 0) {
@@ -113,7 +114,7 @@ struct PlatformAddressActivityDetailsView: View {
                 HStack(alignment: .firstTextBaseline) {
                     Text(NSLocalizedString("Balance after", comment: "Platform address payment detail"))
                         .font(.footnote)
-                        .foregroundColor(.tertiaryText)
+                        .foregroundColor(.dash.tertiaryText)
                     Spacer()
                     DashAmount(amount: item.balanceAfterDuffs, font: .footnote, showDirection: false)
                 }
@@ -124,14 +125,14 @@ struct PlatformAddressActivityDetailsView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal, 20)
             .padding(.top, 24)
 
             Text(NSLocalizedString("Platform payments don't identify the sender. This payment was recorded when the wallet noticed the balance change — it may have arrived earlier.", comment: "Platform address payment detail"))
                 .font(.caption)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
                 .padding(.top, 16)
@@ -145,11 +146,11 @@ struct PlatformAddressActivityDetailsView: View {
         HStack(alignment: .firstTextBaseline) {
             Text(label)
                 .font(.footnote)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
             Spacer()
             Text(value)
                 .font(.footnote)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .multilineTextAlignment(.trailing)
         }
         .padding(.vertical, 10)
@@ -163,15 +164,15 @@ struct PlatformAddressActivityDetailsView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(label)
                     .font(.footnote)
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(.dash.tertiaryText)
                 Spacer()
                 Text(value.prefix(8) + "…" + value.suffix(8))
                     .font(.footnote)
                     .monospaced()
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Image(systemName: "doc.on.doc")
                     .font(.caption2)
-                    .foregroundColor(.dashBlue)
+                    .foregroundColor(.dash.blue)
             }
             .padding(.vertical, 10)
         }

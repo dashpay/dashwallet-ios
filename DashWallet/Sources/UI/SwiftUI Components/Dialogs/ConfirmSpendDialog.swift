@@ -1,4 +1,5 @@
 import SwiftUI
+import DashUIKit
 
 struct ConfirmSpendDialog: View {
     @State private var isAccepted: Bool = false
@@ -13,7 +14,7 @@ struct ConfirmSpendDialog: View {
             HStack(spacing: 0) {
                 Spacer()
                 Rectangle()
-                    .fill(Color(red: 0.83, green: 0.83, blue: 0.85))
+                    .fill(Color.dash.grabberFill)
                     .frame(width: 36, height: 5)
                     .cornerRadius(2.50)
                 Spacer()
@@ -76,7 +77,7 @@ struct ConfirmSpendDialog: View {
         let text = (try? CurrencyExchanger.shared.convertDash(amount: abs(dashAmount.dashAmount), to: App.fiatCurrency).formattedFiatAmount) ?? NSLocalizedString("Not available", comment: "")
         Text(text)
             .font(.subhead)
-            .foregroundStyle(Color.secondaryText)
+            .foregroundStyle(Color.dash.secondaryText)
     }
 }
 

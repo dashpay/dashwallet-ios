@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct DashSpendFixedContent: View {
     @ObservedObject var viewModel: DashSpendPayViewModel
@@ -83,7 +84,7 @@ struct DashSpendFixedContent: View {
 
 #Preview {
     DashSpendFixedContentPreview()
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 }
 
 private struct DashSpendFixedContentPreview: View {

@@ -19,6 +19,7 @@
 
 import AuthenticationServices
 import SwiftUI
+import DashUIKit
 import UIKit
 
 class EnterAddressHostingController: UIViewController, NavigationBarDisplayable {
@@ -79,7 +80,7 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
         )
 
         let hostingController = UIHostingController(rootView: enterAddressView)
-        // Match SwiftUI's Color.primaryBackground to prevent flash during system paste banner dismissal
+        // Match SwiftUI's Color.dash.primaryBackground to prevent flash during system paste banner dismissal
         hostingController.view.backgroundColor = UIColor(named: "SecondaryBackgroundColor")
 
         addChild(hostingController)

@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // MARK: - SyncingHeaderView
 
@@ -28,7 +29,7 @@ struct SyncingHeaderView: View {
         HStack {
             Text(NSLocalizedString("History", comment: ""))
                 .font(.subheadline)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             
             Spacer()
             
@@ -44,7 +45,7 @@ struct SyncingHeaderView: View {
                                 .fontWeight(.medium)
                         }
                     }
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 }
             }
             
@@ -55,10 +56,10 @@ struct SyncingHeaderView: View {
                 size: .small,
                 stretch: false,
                 action: onFilterTap
-            ).overrideForegroundColor(.dashBlue)
+            ).overrideForegroundColor(.dash.blue)
         }
         .padding(.leading, 16)
         .padding(.trailing, 10)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 }

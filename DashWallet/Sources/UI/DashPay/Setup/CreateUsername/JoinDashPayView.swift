@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 enum JoinDashPayState {
     case none
@@ -57,13 +58,13 @@ struct JoinDashPayView: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .fixedSize(horizontal: false, vertical: true)
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .multilineTextAlignment(.leading)
                     
                     if viewModel.state != .registered {
                         Text(subtitleText)
                             .font(.footnote)
-                            .foregroundColor(.tertiaryText)
+                            .foregroundColor(.dash.tertiaryText)
                             .fixedSize(horizontal: false, vertical: true)
                             .multilineTextAlignment(.leading)
                             .padding(.top, 2)
@@ -95,7 +96,7 @@ struct JoinDashPayView: View {
         .background(
             GeometryReader { geometry in
                 onSizeChange?(geometry.size)
-                return Color.secondaryBackground
+                return Color.dash.secondaryBackground
             }
         )
         .cornerRadius(8)

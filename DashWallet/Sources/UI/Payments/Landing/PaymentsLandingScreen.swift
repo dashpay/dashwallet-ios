@@ -3,11 +3,13 @@
 //  DashWallet
 //
 
+import DashUIKit
 import SwiftUI
 import UIKit
 
 struct PaymentsLandingScreen: View {
     @ObservedObject var viewModel: PaymentsLandingViewModel
+    @Environment(\.colorScheme) private var colorScheme
 
     var onClose: () -> Void
     var onCopyAddress: () -> Void
@@ -90,7 +92,7 @@ struct PaymentsLandingScreen: View {
                     showsHeader: false)
             }
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
     }
 
@@ -101,14 +103,14 @@ struct PaymentsLandingScreen: View {
             Button(action: onClose) {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.primary)
+                    .foregroundColor(Color.dash.primaryText)
                     .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                    .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
             }
             Spacer()
             Text(headerTitle)
                 .font(.headline)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Spacer()
             Color.clear.frame(width: 36, height: 36)
         }
@@ -136,21 +138,27 @@ struct PaymentsLandingScreen: View {
                         Text(tab.title)
                             .font(.system(size: 13, weight: .medium))
                     }
-                    .foregroundColor(viewModel.activeTab == tab ? .primaryText : .secondary)
+                    .foregroundColor(viewModel.activeTab == tab ? Color.dash.primaryText : Color.dash.secondaryText)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(viewModel.activeTab == tab ? Color.white : Color.clear)
+                            // Selected pill: a solid white raised card in light mode; a
+                            // translucent light fill in dark so the primaryText label stays
+                            // legible (pure white would be invisible on the dark selector).
+                            // Mirrors the app's SegmentedControl selected-fill treatment.
+                            .fill(viewModel.activeTab == tab
+                                ? (colorScheme == .dark ? Color.dash.whiteAlpha20 : Color.dash.white)
+                                : Color.clear)
                             .shadow(
                                 color: viewModel.activeTab == tab
-                                    ? Color.black.opacity(0.08) : .clear,
+                                    ? Color.dash.shadow : .clear,
                                 radius: 2, x: 0, y: 1))
                 }
             }
         }
         .padding(4)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(10)
     }
 
@@ -187,16 +195,16 @@ struct PaymentsLandingScreen: View {
                     .resizable()
                     .frame(width: 220, height: 220)
                     .padding(12)
-                    .background(Color.white)
+                    .background(Color.dash.white)
                     .cornerRadius(16)
 
                 VStack(spacing: 4) {
                     Text(NSLocalizedString("Your DASH address", comment: ""))
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                     Text(address)
                         .font(.system(.footnote, design: .monospaced))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .multilineTextAlignment(.center)
                 }
                 .padding(.horizontal, 20)
@@ -218,7 +226,7 @@ struct PaymentsLandingScreen: View {
             SwiftUI.ProgressView()
             Text(message)
                 .font(.footnote)
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
         }
         .frame(width: 220, height: 220)
     }
@@ -226,10 +234,10 @@ struct PaymentsLandingScreen: View {
     private func actionPill(title: String) -> some View {
         Text(title)
             .font(.system(size: 14, weight: .medium))
-            .foregroundColor(.primaryText)
+            .foregroundColor(.dash.primaryText)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .cornerRadius(12)
     }
 
@@ -239,7 +247,7 @@ struct PaymentsLandingScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString("Internal transfer to/from", comment: ""))
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
                 .padding(.horizontal, 20)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -266,12 +274,12 @@ struct PaymentsLandingScreen: View {
                     .frame(width: 24, height: 24)
                 Text(title)
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 14)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .cornerRadius(12)
         }
         .disabled(action == nil)

@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct GiftCardDetailsPoweredBySection: View {
     let provider: String?
@@ -24,7 +25,7 @@ struct GiftCardDetailsPoweredBySection: View {
         VStack(spacing: 5) {
             Text(NSLocalizedString("Powered by", comment: "DashSpend"))
                 .font(.caption)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
 
             if provider == "PiggyCards" {
                 Image("piggycards.logo")
@@ -45,11 +46,11 @@ struct GiftCardDetailsPoweredBySection: View {
 #Preview("CTX") {
     GiftCardDetailsPoweredBySection(provider: "CTX")
         .padding()
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 }
 
 #Preview("PiggyCards") {
     GiftCardDetailsPoweredBySection(provider: "PiggyCards")
         .padding()
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 }

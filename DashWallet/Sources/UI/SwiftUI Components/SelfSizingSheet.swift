@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // Self-sizing sheet: the sheet hugs its content height instead of using a fixed
 // detent. Measures the content via GeometryReader and feeds the height into a
@@ -75,11 +76,11 @@ extension View {
                     // iOS 16.4..<26: apply the custom corner radius.
                     modified
                         .presentationCornerRadius(r)
-                        .presentationBackground(Color.primaryBackground)
+                        .presentationBackground(Color.dash.primaryBackground)
                 } else {
                     // iOS 26+: keep the system corner styling, skip the custom radius.
                     modified
-                        .presentationBackground(Color.primaryBackground)
+                        .presentationBackground(Color.dash.primaryBackground)
                 }
             } else {
                 modified
