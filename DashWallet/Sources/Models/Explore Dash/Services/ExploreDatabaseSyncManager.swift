@@ -42,7 +42,16 @@ public class ExploreDatabaseSyncManager {
     static let databaseHasBeenUpdatedNotification = NSNotification.Name(rawValue: "databaseHasBeenUpdatedNotification")
 
     private let storage = Storage.storage()
-    private let storageRef: StorageReference
+
+    // Computed per access so a mainnet/testnet switch always targets the current network's archive.
+    // Caching this in `init()` meant the singleton kept downloading the launch-network's database
+    // after a chain switch, so the wrong network's merchants stayed on disk.
+    private var storageRef: StorageReference {
+        let databasePath = currentNetworkName == "mainnet"
+            ? "gs://dash-wallet-firebase.appspot.com/explore/explore-v4.db"
+            : "gs://dash-wallet-firebase.appspot.com/explore/explore-v4-testnet.db"
+        return storage.reference(forURL: databasePath)
+    }
 
     private var timer: Timer!
 
@@ -72,17 +81,6 @@ public class ExploreDatabaseSyncManager {
 
     init() {
         syncState = .inititialing
-
-        // Initialize storageRef with computed database path
-        let databasePath: String
-        let isMainnet = DWEnvironment.sharedInstance().currentChain.isMainnet()
-        if isMainnet {
-            databasePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v4.db"
-        } else {
-            databasePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v4-testnet.db"
-        }
-
-        storageRef = storage.reference(forURL: databasePath)
     }
 
     public func start() {

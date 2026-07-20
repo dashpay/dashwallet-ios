@@ -88,7 +88,7 @@ struct DashSpendConfirmationDialog: View {
                         HStack(spacing: 8) {
                             WebImage(url: URL(string: merchantIconUrl))
                                 .resizable()
-                                .indicator(.activity)
+                                .placeholder { MerchantLogoPlaceholder(merchantName: merchantName) }
                                 .transition(.fade(duration: 0.3))
                                 .scaledToFit()
                                 .frame(width: 20, height: 20)
