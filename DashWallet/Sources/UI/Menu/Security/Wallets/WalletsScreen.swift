@@ -103,7 +103,7 @@ struct WalletsScreen: View {
                 Spacer(minLength: 0)
             }
 
-            if viewModel.switchInProgress {
+            if viewModel.switchInProgress || viewModel.removeInProgress {
                 progressOverlay
             }
         }
@@ -222,7 +222,9 @@ struct WalletsScreen: View {
                 // that otherwise shadows SwiftUI's.
                 SwiftUI.ProgressView()
                     .tint(Color.dash.whiteText)
-                Text(NSLocalizedString("Switching wallet…", comment: "Wallets"))
+                Text(viewModel.removeInProgress
+                    ? NSLocalizedString("Removing wallet…", comment: "Wallets")
+                    : NSLocalizedString("Switching wallet…", comment: "Wallets"))
                     .font(.subheadline)
                     .foregroundColor(Color.dash.whiteText)
             }

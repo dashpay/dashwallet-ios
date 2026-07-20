@@ -90,7 +90,7 @@ Status meanings:
 |---|---|---|---|
 | 1 | Receive address | Done | None. Reads the active SDK wallet/account. |
 | 2 | Address validation | Done | None. Uses SwiftDashSDK address validation through app-owned parsing helpers. |
-| 3 | Mnemonic generation / create wallet | Done; teardown tail | Remove the adjacent `DSWallet standardWalletWithSeedPhrase` dual-write in C6-E. |
+| 3 | Mnemonic generation / create wallet | Done; teardown tail | SDK-owned mnemonic storage is verified before a wallet becomes live in `PlatformWalletManager`; remove the adjacent `DSWallet standardWalletWithSeedPhrase` dual-write in C6-E. |
 | 4 | Mnemonic validation | Done | None. Uses `Mnemonic.validate`. |
 | 5 | Wallet balance | Done | None. Uses `SwiftDashSDKWalletState`. |
 | 6 | Transaction list | Done | None. Uses SDK-persisted SwiftData rows. |
@@ -101,7 +101,7 @@ Status meanings:
 | 11 | SPV sync | Done; teardown tail | Remove `setupDashSyncOnce` / `DSOptionsManager` and remaining legacy notification names at unlink. |
 | 12 | Network switch | Done; teardown tail | Remove the temporary DashSync wallet-registry mirror with C6-E. |
 | 13 | Backup seed phrase | Done | Reads the active SDK wallet mnemonic from host-owned storage. |
-| 14 | Wipe wallet | Done; teardown tail | Reinstall recovery waits for the asynchronous SDK wipe before entering app root; remove the DashSync registry/Core Data wipe arm after all consumers are gone. |
+| 14 | Wipe wallet | Done; teardown tail | Reinstall recovery waits for the asynchronous SDK wipe's explicit success result before entering app root; a failed delete preserves mnemonic/runtime state for retry. Remove the DashSync registry/Core Data wipe arm after all consumers are gone. |
 | 15 | Provider-key derivation | Done | All four families are SDK-native: Owner/Voting via the key-wallet path surface, Operator (BLS) and Evonode Operator (Ed25519) via `ManagedPlatformWallet.providerKeyAtIndex` (`platform_wallet_provider_key_at_index` grew per-index BLS/EdDSA public-key export, removing the earlier blocker). Overview counts and per-keypair “used at” restored from the Rust masternode aggregation (`PlatformWalletManager.masternodes(for:)`). |
 | 16 | DashPay identity creation | Done; invitation tail | Standard SDK-funded identity/name registration is migrated, with three funding paths (Core asset-lock, Platform Payment, shielded Type-20 — the privacy-preserving default, gated by `ShieldedIdentityFundingReadiness`). Invitation-funded create/accept remains part of the invitation decision. |
 | 17 | DashPay identity/profile read-write | Done; compatibility tail | Retire remaining `DSBlockchainIdentity`-typed profile properties/categories and route every old view directly through `DWCurrentUserIdentityInfo` / `DWProfileUpdateBridge`. |

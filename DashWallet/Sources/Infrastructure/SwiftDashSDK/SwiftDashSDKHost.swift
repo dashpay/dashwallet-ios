@@ -31,6 +31,45 @@ import OSLog
 import SwiftData
 import SwiftDashSDK
 
+enum MnemonicFirstWalletCreationError: Error {
+    case mnemonicPersistence(Error)
+    case mnemonicRoundTripMismatch
+    case walletCreation(Error)
+}
+
+/// Enforces the seed-safety ordering for wallet creation: persist and verify
+/// the mnemonic before making the wallet live in a manager. If creation then
+/// fails, only the provisional mnemonic is rolled back.
+enum MnemonicFirstWalletCreation {
+    static func run<Wallet>(
+        mnemonic: String,
+        persistMnemonic: () throws -> Void,
+        retrieveMnemonic: () throws -> String,
+        rollbackMnemonic: () -> Void,
+        createWallet: () throws -> Wallet
+    ) throws -> Wallet {
+        do {
+            try persistMnemonic()
+            guard try retrieveMnemonic() == mnemonic else {
+                rollbackMnemonic()
+                throw MnemonicFirstWalletCreationError.mnemonicRoundTripMismatch
+            }
+        } catch let error as MnemonicFirstWalletCreationError {
+            throw error
+        } catch {
+            rollbackMnemonic()
+            throw MnemonicFirstWalletCreationError.mnemonicPersistence(error)
+        }
+
+        do {
+            return try createWallet()
+        } catch {
+            rollbackMnemonic()
+            throw MnemonicFirstWalletCreationError.walletCreation(error)
+        }
+    }
+}
+
 @MainActor
 final class SwiftDashSDKHost {
 
@@ -249,8 +288,8 @@ final class SwiftDashSDKHost {
 
     /// Create or import a wallet as the SOLE active managed platform wallet.
     /// This is the fresh-install / recover path: it rebuilds the runtime from
-    /// scratch (`buildRuntime` tears down any running manager), creates the
-    /// wallet, stores its mnemonic, pins it active in the registry, and
+    /// scratch (`buildRuntime` tears down any running manager), stores and
+    /// verifies its mnemonic, creates the wallet, pins it active in the registry, and
     /// publishes it as bound. Onboarding's first wallet uses this.
     ///
     /// For adding a wallet ALONGSIDE existing ones without rebinding the
@@ -271,11 +310,10 @@ final class SwiftDashSDKHost {
         let handles = try buildRuntime(for: network)
         let createdWallet: ManagedPlatformWallet
         do {
-            createdWallet = try await createAndPersist(
+            createdWallet = try createAndPersist(
                 mnemonic: mnemonic,
                 manager: handles.manager,
                 network: handles.network,
-                modelContainer: handles.modelContainer,
                 // Imported mnemonics may hold history from long before
                 // this device: scan from the network's import floor
                 // (genesis on testnet, block 200,000 on mainnet — see
@@ -288,7 +326,7 @@ final class SwiftDashSDKHost {
         } catch {
             // `createOrImportWallet` owns a freshly-built (not yet published)
             // runtime, so tear it down on failure. `createAndPersist` has
-            // already rolled back the wallet row + mnemonic it wrote.
+            // already rolled back any provisional mnemonic it wrote.
             stop()
             throw error
         }
@@ -325,7 +363,7 @@ final class SwiftDashSDKHost {
     /// already persisted (`manager.createWallet` is idempotent by walletId, so
     /// re-adding would silently no-op — the caller surfaces this instead).
     ///
-    /// Shares the create-then-persist-with-rollback body with
+    /// Shares the persist-then-create transaction with
     /// `createOrImportWallet` (`createAndPersist`); differs only in that it
     /// uses the LIVE manager and does not publish or set-active.
     @discardableResult
@@ -334,7 +372,7 @@ final class SwiftDashSDKHost {
             throw HostError.invalidMnemonic
         }
         guard let manager = manager,
-              let modelContainer = modelContainer,
+              modelContainer != nil,
               let network = runningNetwork else {
             throw HostError.walletNotFound(runningNetwork ?? .mainnet)
         }
@@ -349,11 +387,10 @@ final class SwiftDashSDKHost {
             return .alreadyExists(walletId: derivedId)
         }
 
-        let createdWallet = try await createAndPersist(
+        let createdWallet = try createAndPersist(
             mnemonic: mnemonic,
             manager: manager,
             network: network,
-            modelContainer: modelContainer,
             // Same semantics as `createOrImportWallet`: imports scan
             // from the network's import floor, freshly generated
             // wallets from the tip.
@@ -365,10 +402,10 @@ final class SwiftDashSDKHost {
         return .added(walletId: createdWallet.walletId)
     }
 
-    /// Create a wallet in `manager` and persist its mnemonic in `WalletStorage`,
-    /// verifying the round-trip. On any failure, rolls back both the wallet row
-    /// (from `modelContainer`) and the mnemonic, then rethrows a typed
-    /// `HostError`. Does NOT touch the registry, publish, or stop the host —
+    /// Derive the deterministic wallet id, persist and verify its mnemonic, then
+    /// create the wallet in `manager`. The manager is never touched when secret
+    /// persistence fails; a later create failure removes only the provisional
+    /// mnemonic. Does NOT touch the registry, publish, or stop the host —
     /// runtime bookkeeping is the caller's (so this body is shared by the
     /// rebuild path `createOrImportWallet` and the additive `addWallet`).
     /// `birthHeight` follows the SDK's `createWallet` contract: `nil`
@@ -380,47 +417,71 @@ final class SwiftDashSDKHost {
         mnemonic: String,
         manager: PlatformWalletManager,
         network: Network,
-        modelContainer: ModelContainer,
         birthHeight: UInt32?
-    ) async throws -> ManagedPlatformWallet {
-        let createdWallet: ManagedPlatformWallet
+    ) throws -> ManagedPlatformWallet {
+        let walletId: Data
         do {
-            createdWallet = try manager.createWallet(
-                mnemonic: mnemonic,
-                network: network,
-                name: "dashwallet",
-                createDefaultAccounts: true,
-                birthHeight: birthHeight)
+            // This is the same deterministic id contract used by addWallet's
+            // duplicate guard and PlatformWalletManager.createWallet.
+            walletId = try Wallet(mnemonic: mnemonic, network: network).id
         } catch {
-            Self.logger.error("🪺 HOST :: createWallet failed: \(String(describing: error), privacy: .public)")
+            Self.logger.error("🪺 HOST :: walletId derivation failed: \(String(describing: error), privacy: .public)")
             throw HostError.walletCreationFailed(error)
         }
 
         let storage = WalletStorage()
+        let previousMnemonic: String?
         do {
-            try storage.storeMnemonic(mnemonic, for: createdWallet.walletId)
-            let storedMnemonic = try storage.retrieveMnemonic(for: createdWallet.walletId)
-            guard storedMnemonic == mnemonic else {
-                throw HostError.mnemonicRoundTripMismatch
-            }
+            previousMnemonic = try storage.retrieveMnemonic(for: walletId)
+        } catch WalletStorageError.mnemonicNotFound {
+            previousMnemonic = nil
         } catch {
-            Self.logger.error("🪺 HOST :: mnemonic persistence failed: \(String(describing: error), privacy: .public)")
-            do {
-                // Preserve the SwiftData identity snapshot until the SDK has
-                // used it to purge identity-scoped Keychain material.
-                try await manager.deleteWallet(walletId: createdWallet.walletId)
-            } catch {
-                Self.logger.error("🪺 HOST :: full wallet rollback failed; using local persistence fallback: \(String(describing: error), privacy: .public)")
-                deletePersistedWallet(walletId: createdWallet.walletId, in: modelContainer)
-                try? storage.deleteMnemonic(for: createdWallet.walletId)
-            }
-            if let hostError = error as? HostError {
-                throw hostError
-            }
+            Self.logger.error("🪺 HOST :: existing mnemonic lookup failed: \(String(describing: error), privacy: .public)")
             throw HostError.mnemonicPersistenceFailed(error)
         }
 
-        return createdWallet
+        do {
+            return try MnemonicFirstWalletCreation.run(
+                mnemonic: mnemonic,
+                persistMnemonic: {
+                    try storage.storeMnemonic(mnemonic, for: walletId)
+                },
+                retrieveMnemonic: {
+                    try storage.retrieveMnemonic(for: walletId)
+                },
+                rollbackMnemonic: {
+                    if let previousMnemonic {
+                        try? storage.storeMnemonic(previousMnemonic, for: walletId)
+                    } else {
+                        try? storage.deleteMnemonic(for: walletId)
+                    }
+                },
+                createWallet: {
+                    try manager.createWallet(
+                        mnemonic: mnemonic,
+                        network: network,
+                        name: "dashwallet",
+                        createDefaultAccounts: true,
+                        birthHeight: birthHeight)
+                })
+        } catch MnemonicFirstWalletCreationError.mnemonicRoundTripMismatch {
+            Self.logger.error("🪺 HOST :: mnemonic persistence round-trip mismatch")
+            throw HostError.mnemonicRoundTripMismatch
+        } catch MnemonicFirstWalletCreationError.mnemonicPersistence(let error) {
+            Self.logger.error("🪺 HOST :: mnemonic persistence failed: \(String(describing: error), privacy: .public)")
+            throw HostError.mnemonicPersistenceFailed(error)
+        } catch MnemonicFirstWalletCreationError.walletCreation(let error) {
+            Self.logger.error("🪺 HOST :: createWallet failed: \(String(describing: error), privacy: .public)")
+            throw HostError.walletCreationFailed(error)
+        } catch {
+            // The transaction exhaustively maps its own failures; keep an
+            // explicit fallback so a future case cannot escape untyped.
+            Self.logger.error("🪺 HOST :: wallet creation transaction failed: \(String(describing: error), privacy: .public)")
+            if let hostError = error as? HostError {
+                throw hostError
+            }
+            throw HostError.walletCreationFailed(error)
+        }
     }
 
     /// Tear down the host's references. The actual SDK / FFI handles drop
@@ -602,22 +663,6 @@ final class SwiftDashSDKHost {
         wallet = resolvedWallet
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
-    }
-
-    private func deletePersistedWallet(walletId: Data, in container: ModelContainer) {
-        let context = container.mainContext
-        let descriptor = FetchDescriptor<PersistentWallet>(
-            predicate: #Predicate<PersistentWallet> { $0.walletId == walletId })
-        do {
-            let rows = try context.fetch(descriptor)
-            for row in rows {
-                context.delete(row)
-            }
-            try context.save()
-            Self.logger.info("🪺 HOST :: rolled back \(rows.count, privacy: .public) persisted wallet row(s)")
-        } catch {
-            Self.logger.error("🪺 HOST :: persisted wallet rollback failed: \(String(describing: error), privacy: .public)")
-        }
     }
 
     // MARK: - ModelContainer

@@ -144,13 +144,13 @@ NS_ASSUME_NONNULL_BEGIN
         // observe a stale wallet and present a PIN screen after the PIN is gone.
         [[DWEnvironment sharedInstance] clearAllWalletsAndRemovePin:YES];
 
-        [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^{
+        [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
             typeof(self) completedSelf = weakSelf;
             if (completedSelf == nil) {
                 return;
             }
             [controller.view dw_hideProgressHUD];
-            if (DWWalletEnvironment.hasWallet) {
+            if (!wipeSucceeded) {
                 [completedSelf presentRecoveredWalletDeleteFailureFromController:controller];
                 return;
             }

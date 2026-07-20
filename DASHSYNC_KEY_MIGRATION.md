@@ -96,6 +96,11 @@ valid stored mnemonic. Wallet creation is idempotent by SDK wallet ID. Because
 mnemonics are network-agnostic while wallet IDs can be network-specific, the
 host re-stores the mnemonic under the created ID when needed.
 
+Create/import derives the deterministic SDK wallet ID, stores and verifies the
+SDK-owned mnemonic under that ID, and only then creates the live managed
+wallet. A Keychain persistence failure therefore cannot leave a live seedless
+wallet; a later manager-creation failure removes only the provisional mnemonic.
+
 ## Wipe contract
 
 The app-level wipe posts `DWWillWipeWalletNotification`. The SDK wiper deletes
@@ -105,12 +110,14 @@ entries, and tears down runtime state. During the migration window,
 but it still must not delete the frozen DashSync mnemonic keychain entries.
 
 The post-reinstall Delete path waits for the SDK wiper's serial-queue barrier
-before constructing app root. PIN removal is synchronous while SDK mnemonic
-deletion is asynchronous; entering root between those operations can otherwise
-show an impossible-to-unlock PIN screen for a wallet that is being deleted. The
-SwiftData sweep uses the SDK's awaitable persistence-queue API, keeping
-MainActor responsive while the onboarding screen shows a blocking
-“Deleting Wallet…” progress HUD.
+and its explicit success result before constructing app root. PIN removal is
+synchronous while SDK mnemonic deletion is asynchronous; entering root between
+those operations can otherwise show an impossible-to-unlock PIN screen for a
+wallet that is being deleted. A failed per-wallet SDK delete never triggers an
+app-side mnemonic fallback, and a failed full wipe preserves runtime/registry
+state so the user can retry. The SwiftData sweep uses the SDK's awaitable
+persistence-queue API, keeping MainActor responsive while the onboarding screen
+shows a blocking “Deleting Wallet…” progress HUD.
 
 The DashSync wipe arm is removed with C6-E after invitations/profile and Watch
 no longer require DashSync wallet objects.
@@ -122,8 +129,10 @@ no longer require DashSync wallet objects.
 - a partial failure resumes without duplicating successful wallets;
 - mainnet and testnet retain separate active-wallet choices;
 - create/import/recovery use the same host boundary;
+- create/import persist and verify the mnemonic before the wallet becomes live;
 - network switch mirrors only the active wallet while the legacy shim exists;
-- wipe deletes all SDK-owned mnemonic/managed-wallet/active-wallet state;
+- a successful wipe deletes all SDK-owned mnemonic/managed-wallet/active-wallet
+  state, while a failed wipe reports failure without an app-side seed deletion;
 - no migration code deletes `org.dashfoundation.dash` entries;
 - both app schemes build and upgrade/multi-wallet/wipe runtime smokes pass.
 

@@ -59,6 +59,10 @@ final class WalletsViewModel: ObservableObject {
     /// True while an add-wallet (create or import) is in flight — the add sheet
     /// shows a progress state and disables its controls.
     @Published private(set) var addInProgress = false
+    /// True for the complete remove transaction, including an active-wallet
+    /// pre-switch. Prevents a second destructive operation from interleaving
+    /// while the SDK deletion is suspended.
+    @Published private(set) var removeInProgress = false
     /// Set to surface an error alert; the screen clears it on dismiss.
     @Published var errorMessage: String? = nil
 
@@ -130,7 +134,7 @@ final class WalletsViewModel: ObservableObject {
     /// fires and `reload()` refreshes the list; on failure the error surfaces
     /// and the list is left unchanged.
     func switchWallet(to walletId: Data) {
-        guard !switchInProgress else { return }
+        guard !switchInProgress, !removeInProgress else { return }
         switchInProgress = true
         Task {
             defer { switchInProgress = false }
@@ -192,7 +196,7 @@ final class WalletsViewModel: ObservableObject {
     /// Returns the outcome; returns nil after surfacing an error (the sheet
     /// stays open on failure — never claims a success that didn't happen).
     func addWallet(mnemonic: String, isImported: Bool) async -> AddOutcome? {
-        guard !addInProgress, !switchInProgress else { return nil }
+        guard !addInProgress, !switchInProgress, !removeInProgress else { return nil }
         let normalized = Self.normalize(mnemonic)
 
         addInProgress = true
@@ -299,7 +303,9 @@ final class WalletsViewModel: ObservableObject {
     /// per-wallet primitive (`SwiftDashSDKWalletWiper.deleteWalletFromSDK`) and
     /// clears the per-network registry entry if it still names this wallet.
     func removeWallet(walletId: Data) async {
-        guard !switchInProgress else { return }
+        guard !addInProgress, !switchInProgress, !removeInProgress else { return }
+        removeInProgress = true
+        defer { removeInProgress = false }
 
         if walletId == activeWalletId() {
             guard let other = rows.first(where: { $0.walletId != walletId })?.walletId else {
@@ -321,7 +327,14 @@ final class WalletsViewModel: ObservableObject {
             switchInProgress = false
         }
 
-        await SwiftDashSDKWalletWiper.deleteWalletFromSDK(walletId)
+        do {
+            try await SwiftDashSDKWalletWiper.deleteWalletFromSDK(walletId)
+        } catch {
+            Self.logger.error("removeWallet failed: \(String(describing: error), privacy: .public)")
+            errorMessage = error.localizedDescription
+            reload()
+            return
+        }
 
         // Keep the registry honest: if the removed wallet is still recorded as
         // active for either registry network, drop it so a stale id can't be
