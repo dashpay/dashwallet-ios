@@ -104,6 +104,14 @@ entries, and tears down runtime state. During the migration window,
 `DWEnvironment` also unregisters DashSync wallets and clears DashSync Core Data,
 but it still must not delete the frozen DashSync mnemonic keychain entries.
 
+The post-reinstall Delete path waits for the SDK wiper's serial-queue barrier
+before constructing app root. PIN removal is synchronous while SDK mnemonic
+deletion is asynchronous; entering root between those operations can otherwise
+show an impossible-to-unlock PIN screen for a wallet that is being deleted. The
+SwiftData sweep uses the SDK's awaitable persistence-queue API, keeping
+MainActor responsive while the onboarding screen shows a blocking
+“Deleting Wallet…” progress HUD.
+
 The DashSync wipe arm is removed with C6-E after invitations/profile and Watch
 no longer require DashSync wallet objects.
 

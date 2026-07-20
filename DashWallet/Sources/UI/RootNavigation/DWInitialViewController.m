@@ -24,6 +24,7 @@
 #import "DWGlobalOptions.h"
 #import "DWOnboardingViewController.h"
 #import "DWUIKit.h"
+#import "UIView+DWHUD.h"
 #import "dashwallet-Swift.h"
 
 #if SNAPSHOT
@@ -118,13 +119,62 @@ NS_ASSUME_NONNULL_BEGIN
                                             return;
                                         }
                                         if (!keep) {
-                                            // Posts DWWillWipeWalletNotification, which
-                                            // `SwiftDashSDKWalletWiper` observes to clear
-                                            // the SwiftDashSDK keychain + runtime state.
-                                            [[DWEnvironment sharedInstance] clearAllWalletsAndRemovePin:YES];
+                                            [strongSelf deleteRecoveredWalletThenTransitionFromController:controller];
+                                            return;
                                         }
                                         [strongSelf transitionToAppRoot];
                                     }];
+}
+
+- (void)deleteRecoveredWalletThenTransitionFromController:(UIViewController *)controller {
+    [controller.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting Wallet…", nil)];
+
+    __weak typeof(self) weakSelf = self;
+    // Let UIKit commit the HUD before starting the legacy synchronous part of
+    // the wipe. The SDK/SwiftData portion is awaitable and keeps MainActor free.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        typeof(self) strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
+
+        // This synchronously removes the PIN and posts
+        // DWWillWipeWalletNotification. The SDK observer performs its Keychain /
+        // runtime deletion asynchronously, so entering app root immediately can
+        // observe a stale wallet and present a PIN screen after the PIN is gone.
+        [[DWEnvironment sharedInstance] clearAllWalletsAndRemovePin:YES];
+
+        [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^{
+            typeof(self) completedSelf = weakSelf;
+            if (completedSelf == nil) {
+                return;
+            }
+            [controller.view dw_hideProgressHUD];
+            if (DWWalletEnvironment.hasWallet) {
+                [completedSelf presentRecoveredWalletDeleteFailureFromController:controller];
+                return;
+            }
+            [completedSelf transitionToAppRoot];
+        }];
+    });
+}
+
+- (void)presentRecoveredWalletDeleteFailureFromController:(UIViewController *)controller {
+    UIAlertController *alert =
+        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Couldn’t Delete Wallet", nil)
+                                            message:NSLocalizedString(@"The wallet is still stored on this device. Please try again.", nil)
+                                     preferredStyle:UIAlertControllerStyleAlert];
+
+    __weak typeof(self) weakSelf = self;
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Retry", nil)
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction *_Nonnull action) {
+                                                typeof(self) strongSelf = weakSelf;
+                                                if (strongSelf != nil) {
+                                                    [strongSelf deleteRecoveredWalletThenTransitionFromController:controller];
+                                                }
+                                            }]];
+    [controller presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)transitionToAppRoot {

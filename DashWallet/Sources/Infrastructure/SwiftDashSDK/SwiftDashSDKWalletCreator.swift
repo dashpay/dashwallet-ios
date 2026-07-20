@@ -158,14 +158,16 @@ final class SwiftDashSDKWalletCreator: NSObject {
         var result: Result<Data, Error>?
 
         Task { @MainActor in
-            result = Result {
-                try SwiftDashSDKHost.shared.createOrImportWallet(
+            defer { semaphore.signal() }
+            do {
+                result = .success(try await SwiftDashSDKHost.shared.createOrImportWallet(
                     mnemonic: mnemonic,
                     network: network,
                     isImported: isImported
-                ).walletId
+                ).walletId)
+            } catch {
+                result = .failure(error)
             }
-            semaphore.signal()
         }
 
         semaphore.wait()

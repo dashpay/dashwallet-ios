@@ -24,6 +24,33 @@ import Foundation
 import OSLog
 import SwiftDashSDK
 
+/// Serializes full-wallet wipes and provides a FIFO barrier for callers that
+/// must not continue while a wipe is still mutating Keychain/runtime state.
+///
+/// `NotificationCenter` delivers `DWWillWipeWalletNotification` synchronously,
+/// so enqueueing the wipe from its observer and then enqueueing a barrier from
+/// the caller guarantees the barrier runs after that wipe.
+final class WalletWipeSerialExecutor {
+    private let queue: DispatchQueue
+
+    init(label: String = "org.dashfoundation.dash.wallet-wiper") {
+        queue = DispatchQueue(label: label, qos: .userInitiated)
+    }
+
+    func enqueue(_ operation: @escaping () -> Void) {
+        queue.async(execute: operation)
+    }
+
+    func notifyWhenIdle(
+        on completionQueue: DispatchQueue = .main,
+        completion: @escaping () -> Void
+    ) {
+        queue.async {
+            completionQueue.async(execute: completion)
+        }
+    }
+}
+
 @objc(DWSwiftDashSDKWalletWiper)
 final class SwiftDashSDKWalletWiper: NSObject {
 
@@ -47,6 +74,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// closure-based observer would be eligible for deallocation and
     /// would silently stop firing.
     private static var observerToken: NSObjectProtocol?
+    private static let wipeExecutor = WalletWipeSerialExecutor()
 
     // MARK: - Public entry point
 
@@ -64,11 +92,20 @@ final class SwiftDashSDKWalletWiper: NSObject {
             object: nil,
             queue: nil
         ) { _ in
-            DispatchQueue.global(qos: .userInitiated).async {
+            wipeExecutor.enqueue {
                 performWipe()
             }
         }
         logger.info("registered DWWillWipeWalletNotification observer")
+    }
+
+    /// Invoke `completion` on the main queue after every wipe enqueued before
+    /// this call has finished. The reinstall Delete flow uses this barrier
+    /// before entering app root: PIN removal is synchronous, while SDK
+    /// mnemonic/runtime deletion happens on `wipeExecutor`.
+    @objc(waitForPendingWipeWithCompletion:)
+    static func waitForPendingWipe(completion: @escaping () -> Void) {
+        wipeExecutor.notifyWhenIdle(completion: completion)
     }
 
     // MARK: - Background wipe body
@@ -81,6 +118,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// Idempotent. Never throws, never crashes; all errors swallowed
     /// to os.log.
     private static func performWipe() {
+        let startedAt = ContinuousClock.now
+
         // Clear app-level CoinJoin state that is NOT per-wallet-keyed and
         // therefore survives the SDK/SwiftData/Keychain teardown below. Done
         // FIRST so it runs on every wipe — including the enumeration-failure
@@ -140,7 +179,9 @@ final class SwiftDashSDKWalletWiper: NSObject {
         WalletEnvironment.setActiveWalletId(nil, for: .mainnet)
         WalletEnvironment.setActiveWalletId(nil, for: .testnet)
 
-        logger.info("wiped \(walletIds.count) wallet(s) from SwiftDashSDK")
+        let elapsed = startedAt.duration(to: .now)
+        logger.info(
+            "wiped \(walletIds.count) wallet(s) from SwiftDashSDK in \(String(describing: elapsed), privacy: .public)")
 
         // Tear down the app-owned runtime now that all wallet material is
         // gone. This stops BLAST/SPV, drops the host-owned manager/wallet, and
@@ -150,23 +191,19 @@ final class SwiftDashSDKWalletWiper: NSObject {
         SwiftDashSDKWalletRuntime.handleWalletWiped()
     }
 
-    /// Run `PlatformWalletManager.deleteWallet(walletId:)` for each wallet.
-    /// The manager is `@MainActor`-isolated, but `performWipe()` runs on a
-    /// background `DispatchQueue`, so hop to main (or run inline if already
-    /// there). Mirrors `HomeViewModel`'s main-thread trampoline pattern.
+    /// Run the manager's asynchronous full deletion for each wallet. The
+    /// serial wipe executor waits on this semaphore, while the expensive
+    /// SwiftData work awaits off-main inside SwiftDashSDK. Only the manager's
+    /// brief Rust/in-memory mutations execute on MainActor.
     private static func deleteWalletsFromSDK(_ walletIds: [Data]) {
-        let work = {
-            MainActor.assumeIsolated {
-                for walletId in walletIds {
-                    deleteWalletFromSDK(walletId)
-                }
+        let finished = DispatchSemaphore(value: 0)
+        Task { @MainActor in
+            for walletId in walletIds {
+                await deleteWalletFromSDK(walletId)
             }
+            finished.signal()
         }
-        if Thread.isMainThread {
-            work()
-        } else {
-            DispatchQueue.main.sync { work() }
-        }
+        finished.wait()
     }
 
     /// Full per-wallet SwiftDashSDK deletion of a single wallet: the Rust
@@ -184,10 +221,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// (the wipe tears the runtime down; the remove flow rebinds via
     /// `switchWallet` before deleting the active wallet).
     @MainActor
-    static func deleteWalletFromSDK(_ walletId: Data) {
+    static func deleteWalletFromSDK(_ walletId: Data) async {
         if let manager = SwiftDashSDKHost.shared.manager {
             do {
-                try manager.deleteWallet(walletId: walletId)
+                try await manager.deleteWallet(walletId: walletId)
             } catch {
                 logger.error("deleteWallet failed: \(String(describing: error), privacy: .public)")
             }

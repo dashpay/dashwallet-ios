@@ -261,7 +261,7 @@ final class SwiftDashSDKHost {
         mnemonic: String,
         network: Network,
         isImported: Bool
-    ) throws -> ManagedPlatformWallet {
+    ) async throws -> ManagedPlatformWallet {
         guard !mnemonic.isEmpty, Mnemonic.validate(mnemonic) else {
             throw HostError.invalidMnemonic
         }
@@ -271,7 +271,7 @@ final class SwiftDashSDKHost {
         let handles = try buildRuntime(for: network)
         let createdWallet: ManagedPlatformWallet
         do {
-            createdWallet = try createAndPersist(
+            createdWallet = try await createAndPersist(
                 mnemonic: mnemonic,
                 manager: handles.manager,
                 network: handles.network,
@@ -329,7 +329,7 @@ final class SwiftDashSDKHost {
     /// `createOrImportWallet` (`createAndPersist`); differs only in that it
     /// uses the LIVE manager and does not publish or set-active.
     @discardableResult
-    func addWallet(mnemonic: String, isImported: Bool) throws -> AddWalletResult {
+    func addWallet(mnemonic: String, isImported: Bool) async throws -> AddWalletResult {
         guard !mnemonic.isEmpty, Mnemonic.validate(mnemonic) else {
             throw HostError.invalidMnemonic
         }
@@ -349,7 +349,7 @@ final class SwiftDashSDKHost {
             return .alreadyExists(walletId: derivedId)
         }
 
-        let createdWallet = try createAndPersist(
+        let createdWallet = try await createAndPersist(
             mnemonic: mnemonic,
             manager: manager,
             network: network,
@@ -382,7 +382,7 @@ final class SwiftDashSDKHost {
         network: Network,
         modelContainer: ModelContainer,
         birthHeight: UInt32?
-    ) throws -> ManagedPlatformWallet {
+    ) async throws -> ManagedPlatformWallet {
         let createdWallet: ManagedPlatformWallet
         do {
             createdWallet = try manager.createWallet(
@@ -405,11 +405,15 @@ final class SwiftDashSDKHost {
             }
         } catch {
             Self.logger.error("🪺 HOST :: mnemonic persistence failed: \(String(describing: error), privacy: .public)")
-            try? storage.deleteMnemonic(for: createdWallet.walletId)
-            deletePersistedWallet(walletId: createdWallet.walletId, in: modelContainer)
-            // Also drop the just-created wallet from the live manager so an
-            // additive add doesn't leave an orphan in `manager.wallets`.
-            try? manager.deleteWallet(walletId: createdWallet.walletId)
+            do {
+                // Preserve the SwiftData identity snapshot until the SDK has
+                // used it to purge identity-scoped Keychain material.
+                try await manager.deleteWallet(walletId: createdWallet.walletId)
+            } catch {
+                Self.logger.error("🪺 HOST :: full wallet rollback failed; using local persistence fallback: \(String(describing: error), privacy: .public)")
+                deletePersistedWallet(walletId: createdWallet.walletId, in: modelContainer)
+                try? storage.deleteMnemonic(for: createdWallet.walletId)
+            }
             if let hostError = error as? HostError {
                 throw hostError
             }

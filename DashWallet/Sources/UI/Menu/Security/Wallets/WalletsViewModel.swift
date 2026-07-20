@@ -200,7 +200,9 @@ final class WalletsViewModel: ObservableObject {
 
         let result: SwiftDashSDKHost.AddWalletResult
         do {
-            result = try SwiftDashSDKHost.shared.addWallet(mnemonic: normalized, isImported: isImported)
+            result = try await SwiftDashSDKHost.shared.addWallet(
+                mnemonic: normalized,
+                isImported: isImported)
         } catch {
             Self.logger.error("addWallet failed: \(String(describing: error), privacy: .public)")
             errorMessage = error.localizedDescription
@@ -319,7 +321,7 @@ final class WalletsViewModel: ObservableObject {
             switchInProgress = false
         }
 
-        SwiftDashSDKWalletWiper.deleteWalletFromSDK(walletId)
+        await SwiftDashSDKWalletWiper.deleteWalletFromSDK(walletId)
 
         // Keep the registry honest: if the removed wallet is still recorded as
         // active for either registry network, drop it so a stale id can't be

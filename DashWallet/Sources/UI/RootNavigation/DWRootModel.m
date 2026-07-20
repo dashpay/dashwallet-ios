@@ -50,10 +50,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)hasAWallet {
-    // Post-wipe, the SDK-keychain term of `hasWallet` clears asynchronously
-    // (the wiper runs on a background queue) — a stale-true read within that
-    // window at worst shows one spurious lock screen; the wipe→setup routing
-    // itself doesn't read this property.
+    // The SDK-keychain term clears asynchronously during a wipe. Callers that
+    // navigate immediately after deleting a wallet must await
+    // `SwiftDashSDKWalletWiper.waitForPendingWipe`; the reinstall recovery
+    // flow does so before constructing app root.
     return DWWalletEnvironment.hasWallet;
 }
 
