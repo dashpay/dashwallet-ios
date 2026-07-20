@@ -27,7 +27,7 @@ extension IntegrationViewController {
 //        case .convertCrypto:
 //            return CustodialSwapsViewController()
         case .transferDash:
-            return TransferAmountViewController()
+            return TransferAmountHostingController()
         }
     }
 }

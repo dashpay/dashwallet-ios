@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 extension View {
@@ -130,9 +131,10 @@ struct DashSpendSinglePanel: View {
 
             Spacer(minLength: 0)
 
-            NumericKeyboardView(
+            DashUIKit.NumericKeyboardView(
                 value: $input,
                 showDecimalSeparator: true,
+                locale: .autoupdatingCurrent,
                 actionButtonText: NSLocalizedString("Continue", comment: ""),
                 actionEnabled: actionEnabled && !showLimits && hasValidLimits,
                 inProgress: inProgress,

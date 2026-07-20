@@ -587,30 +587,16 @@ final class OrderPreviewViewModel: ObservableObject {
 
     private func formatCryptoAmount(_ value: Decimal) -> String {
         // Amount first, then coin code (e.g. "0.00042 BTC").
-        "\(formatDecimal(value)) \(coin.code)"
+        "\(MayaAmountFormatter.coinDisplayString(value, usesGroupingSeparator: true)) \(coin.code)"
     }
 
     private func formatFeeAmount(_ value: Decimal) -> String {
         value > 0 ? formatCryptoAmount(value) : "—"
     }
 
-    /// Formats a fiat value in `fiatCurrencyCode`. Mirrors `MayaInputFormatter.fiat(_:currencyCode:)`
+    /// Formats a fiat value in `fiatCurrencyCode`. Mirrors `MayaAmountFormatter.fiat(_:currencyCode:)`
     /// so the Purchase/fee fiat lines match the source-side fiat format.
     private func formatFiat(_ value: Decimal) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = fiatCurrencyCode
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
-        return formatter.string(from: value as NSDecimalNumber) ?? "\(value)"
-    }
-
-    private func formatDecimal(_ value: Decimal) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 8
-        formatter.decimalSeparator = "."
-        return formatter.string(from: value as NSDecimalNumber) ?? "\(value)"
+        MayaAmountFormatter.fiat(value, currencyCode: fiatCurrencyCode)
     }
 }
