@@ -540,6 +540,22 @@
 		5151CDF12F928D7D00F0A604 /* LocalCurrencyCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5151CDEF2F928D7D00F0A604 /* LocalCurrencyCellView.swift */; };
 		5151CE182F9624D000F0A604 /* CurrencyItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5151CE172F9624D000F0A604 /* CurrencyItem.swift */; };
 		5151CE192F9624D000F0A604 /* CurrencyItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5151CE172F9624D000F0A604 /* CurrencyItem.swift */; };
+		51646C56300625E000BE3070 /* GiftCardDetailsInfoCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B001D6C0B001D6C0B001 /* GiftCardDetailsInfoCard.swift */; };
+		51646C57300625E000BE3070 /* GiftCardDetailsMerchantHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B002D6C0B002D6C0B002 /* GiftCardDetailsMerchantHeader.swift */; };
+		51646C58300625E000BE3070 /* GiftCardPurchaseSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B003D6C0B003D6C0B003 /* GiftCardPurchaseSelectionSheet.swift */; };
+		51646C59300625E000BE3070 /* GiftCardDetailsPoweredBySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B004D6C0B004D6C0B004 /* GiftCardDetailsPoweredBySection.swift */; };
+		51646C5A300625E000BE3070 /* GiftCardDetailsHowToUseSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B005D6C0B005D6C0B005 /* GiftCardDetailsHowToUseSection.swift */; };
+		51646C5B300625E000BE3070 /* DashSpendFixedContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B003D5A0B003D5A0B003 /* DashSpendFixedContent.swift */; };
+		51646C5C300625E000BE3070 /* DashSpendFlexibleContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B004D5A0B004D5A0B004 /* DashSpendFlexibleContent.swift */; };
+		51646C5D300625E000BE3070 /* DashSpendAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B001D5A0B001D5A0B001 /* DashSpendAmountView.swift */; };
+		51646C5E300625E000BE3070 /* DashSpendDenominationRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B002D5A0B002D5A0B002 /* DashSpendDenominationRow.swift */; };
+		51646C5F300625E000BE3070 /* DashSpendMultiplePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B005D5A0B005D5A0B005 /* DashSpendMultiplePanel.swift */; };
+		51646C60300625E000BE3070 /* DashSpendPayIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B006D5A0B006D5A0B006 /* DashSpendPayIntro.swift */; };
+		51646C61300625E000BE3070 /* DashSpendSinglePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B007D5A0B007D5A0B007 /* DashSpendSinglePanel.swift */; };
+		51646C62300625E000BE3070 /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10175DFA10175DFA101 /* DashStepper.swift */; };
+		51646C63300625E000BE3070 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10275DFA10275DFA102 /* SegmentedControl.swift */; };
+		51646C723006263C00BE3070 /* Uphold-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51646C713006263C00BE3070 /* Uphold-Info.plist */; };
+		51646C733006263C00BE3070 /* Uphold-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51646C713006263C00BE3070 /* Uphold-Info.plist */; };
 		516983A32FCAEDEB00BA91A2 /* SuccessIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983A22FCAEDEB00BA91A2 /* SuccessIllustration.swift */; };
 		516983A42FCAEDEB00BA91A2 /* SuccessIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983A22FCAEDEB00BA91A2 /* SuccessIllustration.swift */; };
 		516983A62FCAEF1300BA91A2 /* ErrorIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983A52FCAEF1300BA91A2 /* ErrorIllustration.swift */; };
@@ -2677,6 +2693,7 @@
 		5151CD612F926D1900F0A604 /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 		5151CDEF2F928D7D00F0A604 /* LocalCurrencyCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCurrencyCellView.swift; sourceTree = "<group>"; };
 		5151CE172F9624D000F0A604 /* CurrencyItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyItem.swift; sourceTree = "<group>"; };
+		51646C713006263C00BE3070 /* Uphold-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Uphold-Info.plist"; sourceTree = "<group>"; };
 		516983A22FCAEDEB00BA91A2 /* SuccessIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuccessIllustration.swift; sourceTree = "<group>"; };
 		516983A52FCAEF1300BA91A2 /* ErrorIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorIllustration.swift; sourceTree = "<group>"; };
 		516983B02FCAEDEB00BA91A2 /* LoadingIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingIllustration.swift; sourceTree = "<group>"; };
@@ -6430,6 +6447,14 @@
 			path = OrderPreview;
 			sourceTree = "<group>";
 		};
+		51646C64300625E000BE3070 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				51DFA7FB2FA8EAF2001EDB3A /* Components */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
 		516983A12FCAEDD600BA91A2 /* Illustrations */ = {
 			isa = PBXGroup;
 			children = (
@@ -6780,6 +6805,7 @@
 		75D5F3C7191EC270004AB296 /* DashWallet */ = {
 			isa = PBXGroup;
 			children = (
+				51646C713006263C00BE3070 /* Uphold-Info.plist */,
 				5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */,
 				5151C8C32F913BF100F0A604 /* GoogleService-Info.plist */,
 				5151C8C42F913BF100F0A604 /* Topper-Info.plist */,
@@ -8294,7 +8320,6 @@
 			buildConfigurationList = 75D5F3F6191EC270004AB296 /* Build configuration list for PBXNativeTarget "dashwallet" */;
 			buildPhases = (
 				28DD713340F825108DBF3E6C /* [CP] Check Pods Manifest.lock */,
-				2AF134F821DE95FC004B9859 /* Run Script - Uphold Constants */,
 				2A4431D722D6391F009BAF7F /* Run Script - clang-format */,
 				FB0ACB9A1F9A99E400F4AB52 /* Run Script - bartycrouch */,
 				75D5F3BA191EC270004AB296 /* Sources */,
@@ -8302,7 +8327,6 @@
 				75D5F3BC191EC270004AB296 /* Resources */,
 				BAE12BF71B2DEE7F00895CC5 /* Embed Foundation Extensions */,
 				BA913C021BD57E4E005A7C0E /* Embed Watch Content */,
-				2A1AF9FD23C86A4400442AF5 /* Run Script - Cleanup Uphold Constants */,
 				622C18F9EEFCADF772D1DBB5 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
@@ -8402,13 +8426,11 @@
 			buildConfigurationList = C9D2C94E2A320AA000D15901 /* Build configuration list for PBXNativeTarget "dashpay" */;
 			buildPhases = (
 				1F064526D281DEF5E5CC2729 /* [CP] Check Pods Manifest.lock */,
-				C9D2C6902A320AA000D15901 /* Run Script - Uphold Constants */,
 				C9D2C6912A320AA000D15901 /* Run Script - clang-format */,
 				C9D2C6922A320AA000D15901 /* Run Script - bartycrouch */,
 				C9D2C6932A320AA000D15901 /* Sources */,
 				C9D2C8F52A320AA000D15901 /* Frameworks */,
 				C9D2C90A2A320AA000D15901 /* Resources */,
-				C9D2C94D2A320AA000D15901 /* Run Script - Cleanup Uphold Constants */,
 				525BB766C4C0A1764D4BD70A /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
@@ -8567,6 +8589,7 @@
 				5151C8CB2F913BF100F0A604 /* ZenLedger-Info.plist in Resources */,
 				5151C8CC2F913BF100F0A604 /* GoogleService-Info.plist in Resources */,
 				5151C8CD2F913BF100F0A604 /* Topper-Info.plist in Resources */,
+				51646C723006263C00BE3070 /* Uphold-Info.plist in Resources */,
 				75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */,
 				753CD8792E2E218800BCF070 /* mixing_anim.json in Resources */,
 				2A2CD71822F99CAE008C7BC9 /* ShortcutsView.xib in Resources */,
@@ -8661,6 +8684,7 @@
 				C9D2C9172A320AA000D15901 /* Localizable.strings in Resources */,
 				C9D2C9182A320AA000D15901 /* LockScreen.storyboard in Resources */,
 				C9D2C91A2A320AA000D15901 /* Migrations.bundle in Resources */,
+				51646C733006263C00BE3070 /* Uphold-Info.plist in Resources */,
 				C9D2C91B2A320AA000D15901 /* TxDetailTaxCategoryCell.xib in Resources */,
 				C9D2C91C2A320AA000D15901 /* Localizable.stringsdict in Resources */,
 				C943B4C12A40A54600AF23C5 /* DWTitleActionHeaderView.xib in Resources */,
@@ -8760,24 +8784,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		2A1AF9FD23C86A4400442AF5 /* Run Script - Cleanup Uphold Constants */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script - Cleanup Uphold Constants";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ \"${CONFIGURATION}\" = \"Release\" ] ; then\nif [ ! -f \"DWUpholdMainnetConstants__Empty.m\" ]; then\n    echo \"error: DWUpholdMainnetConstants__Empty.m file not found!\"\n    exit 1\nfi\n\ncp \"DWUpholdMainnetConstants__Empty.m\" \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\"\nelse\n    # check if original file exist (in case it was moved or deleted while refactoring)\n    if [ ! -f \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\" ]; then\n        echo \"error: DWUpholdMainnetConstants.m file not found! Fix Uphold Constants build phase\"\n        exit 1\n    fi\nfi\n";
-		};
 		2A4431D722D6391F009BAF7F /* Run Script - clang-format */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -8795,7 +8801,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        formatObjCFiles $SUBDIR\n    done\n    \n    formatObjCFiles TodayExtension\n    formatObjCFiles Shared/Sources\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
+			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        formatObjCFiles $SUBDIR\n    done\n    \n    formatObjCFiles TodayExtension\n    formatObjCFiles Shared/Sources\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
 		};
 		2A858A15237EED350097A7B5 /* Swift Format */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -8850,24 +8856,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if which swiftformat >/dev/null; then\n    swiftformat \"DashWalletScreenshotsUITests\"\nelse\n    echo \"warning: SwiftFormat not installed, download from https://github.com/nicklockwood/SwiftFormat\"\nfi\n";
-		};
-		2AF134F821DE95FC004B9859 /* Run Script - Uphold Constants */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script - Uphold Constants";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [ \"${CONFIGURATION}\" = \"Release\" ] ; then\n    if [ ! -f \"DWUpholdMainnetConstants__Release.m\" ]; then\n        echo \"error: DWUpholdMainnetConstants__Release.m file not found!\"\n        exit 1\n    fi\n\n    cp \"DWUpholdMainnetConstants__Release.m\" \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\"\nelse\n    # check if original file exist (in case it was moved or deleted while refactoring)\n    if [ ! -f \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\" ]; then\n        echo \"error: DWUpholdMainnetConstants.m file not found! Fix Uphold Constants build phase\"\n        exit 1\n    fi\nfi\n";
 		};
 		3235F5C725A891BC8E502835 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -9057,24 +9045,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C9D2C6902A320AA000D15901 /* Run Script - Uphold Constants */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script - Uphold Constants";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [ \"${CONFIGURATION}\" = \"Release\" ] ; then\n    if [ ! -f \"DWUpholdMainnetConstants__Release.m\" ]; then\n        echo \"error: DWUpholdMainnetConstants__Release.m file not found!\"\n        exit 1\n    fi\n\n    cp \"DWUpholdMainnetConstants__Release.m\" \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\"\nelse\n    # check if original file exist (in case it was moved or deleted while refactoring)\n    if [ ! -f \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\" ]; then\n        echo \"error: DWUpholdMainnetConstants.m file not found! Fix Uphold Constants build phase\"\n        exit 1\n    fi\nfi\n";
-		};
 		C9D2C6912A320AA000D15901 /* Run Script - clang-format */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -9092,7 +9062,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -not -path \"*/DWUpholdMainnetConstants.m\" -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        formatObjCFiles $SUBDIR\n    done\n    \n    formatObjCFiles TodayExtension\n    formatObjCFiles Shared/Sources\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
+			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        formatObjCFiles $SUBDIR\n    done\n    \n    formatObjCFiles TodayExtension\n    formatObjCFiles Shared/Sources\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
 		};
 		C9D2C6922A320AA000D15901 /* Run Script - bartycrouch */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -9107,24 +9077,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if which bartycrouch > /dev/null; then\n    BTCRCH=`which bartycrouch`\n    env -i $BTCRCH update -x\n    env -i $BTCRCH lint -x\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
-		};
-		C9D2C94D2A320AA000D15901 /* Run Script - Cleanup Uphold Constants */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script - Cleanup Uphold Constants";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nif [ \"${CONFIGURATION}\" = \"Release\" ] ; then\nif [ ! -f \"DWUpholdMainnetConstants__Empty.m\" ]; then\n    echo \"error: DWUpholdMainnetConstants__Empty.m file not found!\"\n    exit 1\nfi\n\ncp \"DWUpholdMainnetConstants__Empty.m\" \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\"\nelse\n    # check if original file exist (in case it was moved or deleted while refactoring)\n    if [ ! -f \"DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m\" ]; then\n        echo \"error: DWUpholdMainnetConstants.m file not found! Fix Uphold Constants build phase\"\n        exit 1\n    fi\nfi\n";
 		};
 		FB0ACB9A1F9A99E400F4AB52 /* Run Script - bartycrouch */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -11736,8 +11688,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
-				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -11872,8 +11822,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
-				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -12006,8 +11954,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
-				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -12150,8 +12096,6 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CLIENT_ID = 0c38beb67db0c68191326be347d7ec0abd7d77adb02a79db1abeba343f16a0f7;
-				CLIENT_SECRET = cc980185754f905e24250f877792817c03540b3d0e0959721df291c816797e59;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;

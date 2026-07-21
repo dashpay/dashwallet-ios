@@ -19,10 +19,25 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSString *DWUpholdInfoPlistValue(NSString *key) {
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"Uphold-Info" ofType:@"plist"];
+    if (path.length == 0) {
+        return @"";
+    }
+
+    NSDictionary *dictionary = [NSDictionary dictionaryWithContentsOfFile:path];
+    id value = dictionary[key];
+    if ([value isKindOfClass:[NSString class]]) {
+        return value;
+    }
+
+    return @"";
+}
+
 @implementation DWUpholdMainnetConstants
 
 + (NSString *)authorizeURLFormat {
-    return @"";
+    return DWUpholdInfoPlistValue(@"AUTHORIZE_URL_FORMAT");
 }
 
 + (NSString *)baseURLString {
@@ -30,11 +45,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 + (NSString *)clientID {
-    return @"";
+    return DWUpholdInfoPlistValue(@"CLIENT_ID");
 }
 
 + (NSString *)clientSecret {
-    return @"";
+    return DWUpholdInfoPlistValue(@"CLIENT_SECRET");
 }
 
 + (NSString *)buyCardURLFormat {
@@ -47,7 +62,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)logoutURLString {
     return @"https://uphold.com/";
-
 }
 
 @end
