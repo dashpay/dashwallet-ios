@@ -90,8 +90,7 @@ struct SecurityMenuScreen: View {
         .alert("Reset Wallet (Debug)", isPresented: $showResetWalletDebugAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Wipe", role: .destructive) {
-                DWRecoverModel(action: .wipe).wipeWallet()
-                delegateInternal.didWipeWallet()
+                delegateInternal.beginWipeWallet()
             }
         } message: {
             Text("Wipes the wallet immediately without asking for the recovery phrase.")
@@ -186,6 +185,21 @@ extension SecurityMenuScreen {
             if let wipeDelegate {
                 wipeDelegate.didWipeWallet()
             } else {
+                onHide()
+            }
+        }
+
+        /// Debug Reset must not expose a live onboarding screen while the SDK
+        /// wipe is still queued. The root coordinator presents a blocking wipe
+        /// gate first, then starts deletion after its HUD is visible.
+        func beginWipeWallet() {
+            if let wipeDelegate,
+               wipeDelegate.responds(to: #selector(DWWipeDelegate.beginWipeWallet)) {
+                wipeDelegate.beginWipeWallet?()
+            } else {
+                // This screen can be embedded without the app-root delegate in
+                // previews. Preserve the legacy local behavior in that case.
+                DWRecoverModel(action: .wipe).wipeWallet()
                 onHide()
             }
         }

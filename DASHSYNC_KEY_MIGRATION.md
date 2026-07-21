@@ -111,13 +111,17 @@ but it still must not delete the frozen DashSync mnemonic keychain entries.
 
 The post-reinstall Delete path waits for the SDK wiper's serial-queue barrier
 and its explicit success result before constructing app root. PIN removal is
-synchronous while SDK mnemonic deletion is asynchronous; entering root between
-those operations can otherwise show an impossible-to-unlock PIN screen for a
-wallet that is being deleted. A failed per-wallet SDK delete never triggers an
-app-side mnemonic fallback, and a failed full wipe preserves runtime/registry
-state so the user can retry. The SwiftData sweep uses the SDK's awaitable
-persistence-queue API, keeping MainActor responsive while the onboarding screen
-shows a blocking “Deleting Wallet…” progress HUD.
+synchronous while the full SDK wipe is queued on the app's wipe executor;
+entering root between those operations can otherwise show an impossible-to-
+unlock PIN screen for a wallet that is being deleted. A failed per-wallet SDK
+delete never triggers an app-side mnemonic fallback, and a failed full wipe
+preserves runtime/registry state so the user can retry. Per-wallet SDK deletion
+uses SwiftDashSDK's synchronous API on MainActor; the onboarding screen shows a
+blocking “Deleting Wallet…” progress HUD while the app-level wipe completes.
+The Settings → Security → Reset Wallet (Debug) path uses the same gate: it
+first replaces the main stack with a HUD-blocked setup screen, then triggers
+the wipe only after that HUD has rendered; the setup controls unlock only after
+the barrier reports success.
 
 The DashSync wipe arm is removed with C6-E after invitations/profile and Watch
 no longer require DashSync wallet objects.

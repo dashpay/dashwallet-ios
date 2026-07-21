@@ -11,27 +11,9 @@ import XCTest
 @testable import dashwallet
 
 private enum WalletLifecycleTestError: Error {
-    case deletionInProgress
+    case walletDeletion
     case mnemonicPersistence
     case walletCreation
-}
-
-private actor WalletDeletionTestGate {
-    private var continuation: CheckedContinuation<Void, Never>?
-    private var isReleased = false
-
-    func wait() async {
-        guard !isReleased else { return }
-        await withCheckedContinuation { continuation in
-            self.continuation = continuation
-        }
-    }
-
-    func release() {
-        isReleased = true
-        continuation?.resume()
-        continuation = nil
-    }
 }
 
 final class WalletWipeSerialExecutorTests: XCTestCase {
@@ -95,56 +77,21 @@ final class WalletWipeSerialExecutorTests: XCTestCase {
     }
 
     @MainActor
-    func testOverlappingDeleteFailurePreservesSecondWalletMnemonicAndAppState() async throws {
-        let firstWalletId = Data(repeating: 0x11, count: 32)
-        let secondWalletId = Data(repeating: 0x22, count: 32)
-        var walletIdsWithMnemonic: Set<Data> = [firstWalletId, secondWalletId]
-        var clearedAppState: Set<Data> = []
-        var deletionInProgress = false
-        let firstDeleteStarted = expectation(description: "first delete started")
-        let gate = WalletDeletionTestGate()
+    func testDeleteFailureDoesNotRunDestructiveAppCleanup() {
+        let walletId = Data(repeating: 0x22, count: 32)
+        var appStateCleared = false
 
-        let deleteWallet: @MainActor (Data) async throws -> Void = { walletId in
-            guard !deletionInProgress else {
-                throw WalletLifecycleTestError.deletionInProgress
+        XCTAssertThrowsError(try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
+            walletId,
+            deleteWallet: { _ in
+                throw WalletLifecycleTestError.walletDeletion
+            },
+            clearAppState: { _ in
+                appStateCleared = true
             }
-            deletionInProgress = true
-            if walletId == firstWalletId {
-                firstDeleteStarted.fulfill()
-                await gate.wait()
-            }
-            walletIdsWithMnemonic.remove(walletId)
-            deletionInProgress = false
-        }
-        let clearAppState: @MainActor (Data) -> Void = { walletId in
-            clearedAppState.insert(walletId)
-        }
+        ))
 
-        let firstDelete = Task { @MainActor in
-            try await SwiftDashSDKWalletWiper.deleteWalletFromSDK(
-                firstWalletId,
-                deleteWallet: deleteWallet,
-                clearAppState: clearAppState)
-        }
-        await fulfillment(of: [firstDeleteStarted], timeout: 1)
-
-        do {
-            try await SwiftDashSDKWalletWiper.deleteWalletFromSDK(
-                secondWalletId,
-                deleteWallet: deleteWallet,
-                clearAppState: clearAppState)
-            XCTFail("overlapping delete should fail")
-        } catch WalletLifecycleTestError.deletionInProgress {
-            // Expected: no destructive fallback follows this error.
-        }
-
-        XCTAssertTrue(walletIdsWithMnemonic.contains(secondWalletId))
-        XCTAssertFalse(clearedAppState.contains(secondWalletId))
-
-        await gate.release()
-        try await firstDelete.value
-        XCTAssertFalse(walletIdsWithMnemonic.contains(firstWalletId))
-        XCTAssertTrue(clearedAppState.contains(firstWalletId))
+        XCTAssertFalse(appStateCleared)
     }
 }
 

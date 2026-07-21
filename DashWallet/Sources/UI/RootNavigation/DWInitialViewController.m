@@ -130,9 +130,12 @@ NS_ASSUME_NONNULL_BEGIN
     [controller.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting Wallet…", nil)];
 
     __weak typeof(self) weakSelf = self;
-    // Let UIKit commit the HUD before starting the legacy synchronous part of
-    // the wipe. The SDK/SwiftData portion is awaitable and keeps MainActor free.
-    dispatch_async(dispatch_get_main_queue(), ^{
+    // `PlatformWalletManager.deleteWallet` is synchronous and blocks the main
+    // thread. Give UIKit enough time to commit the HUD's first frame before
+    // starting the wipe; a zero-delay main-queue dispatch can still run before
+    // the current render pass and leave the user staring at a frozen screen.
+    dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC));
+    dispatch_after(startTime, dispatch_get_main_queue(), ^{
         typeof(self) strongSelf = weakSelf;
         if (strongSelf == nil) {
             return;

@@ -220,17 +220,16 @@ final class SwiftDashSDKWalletWiper: NSObject {
         return true
     }
 
-    /// Run the manager's asynchronous full deletion for each wallet. The
-    /// serial wipe executor waits on this semaphore, while the expensive
-    /// SwiftData work awaits off-main inside SwiftDashSDK. Only the manager's
-    /// brief Rust/in-memory mutations execute on MainActor.
+    /// Run the manager's synchronous full deletion for each wallet. The
+    /// serial wipe executor waits on this semaphore while the manager-owned
+    /// deletion runs on MainActor, matching SwiftDashSDK's synchronous API.
     private static func deleteWalletsFromSDK(_ walletIds: [Data]) -> Bool {
         let finished = DispatchSemaphore(value: 0)
         let result = WalletWipeResultAccumulator()
         Task { @MainActor in
             for walletId in walletIds {
                 do {
-                    try await deleteWalletFromSDK(walletId)
+                    try deleteWalletFromSDK(walletId)
                 } catch {
                     result.recordFailure()
                     let walletLabel = walletId.prefix(4)
@@ -261,18 +260,18 @@ final class SwiftDashSDKWalletWiper: NSObject {
     @MainActor
     static func deleteWalletFromSDK(
         _ walletId: Data,
-        deleteWallet: (@MainActor (Data) async throws -> Void)? = nil,
+        deleteWallet: (@MainActor (Data) throws -> Void)? = nil,
         clearAppState: (@MainActor (Data) -> Void)? = nil
-    ) async throws {
+    ) throws {
         let deleteWallet = deleteWallet ?? { walletId in
             guard let manager = SwiftDashSDKHost.shared.manager else {
                 throw SwiftDashSDKWalletDeletionError.managerUnavailable
             }
-            try await manager.deleteWallet(walletId: walletId)
+            try manager.deleteWallet(walletId: walletId)
         }
 
         do {
-            try await deleteWallet(walletId)
+            try deleteWallet(walletId)
         } catch {
             logger.error("deleteWallet failed: \(String(describing: error), privacy: .public)")
             throw error

@@ -413,6 +413,10 @@ extension MainTabbarController: DWWipeDelegate {
     func didWipeWallet() {
         wipeDelegate?.didWipeWallet()
     }
+
+    func beginWipeWallet() {
+        wipeDelegate?.beginWipeWallet?()
+    }
 }
 
 // MARK: PaymentsViewControllerDelegate

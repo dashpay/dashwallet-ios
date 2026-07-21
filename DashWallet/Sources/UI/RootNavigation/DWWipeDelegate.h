@@ -23,6 +23,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)didWipeWallet;
 
+/// Begin a full wipe from a live app screen. Implementers that support this
+/// optional path must first present the onboarding wipe gate, then trigger the
+/// destructive wipe after the gate's progress HUD has rendered.
+@optional
+- (void)beginWipeWallet;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -53,6 +53,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
 @property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
+@property (nonatomic, assign) BOOL walletWipeInProgress;
 #if DASHPAY
 @property (null_resettable, nonatomic, strong) DWInvitationSetupState *invitationSetup;
 #endif
@@ -305,6 +306,70 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [self.model.homeModel walletDidWipe];
     // reset main controller stack
     _mainController = nil;
+}
+
+/// Debug Reset's coordinated wipe path. Unlike the legacy `didWipeWallet`
+/// notification, this transitions to the setup screen BEFORE deleting state,
+/// then blocks that screen with a HUD until the SDK wiper's FIFO barrier has
+/// completed. This avoids displaying a tappable-looking onboarding screen
+/// while synchronous SDK deletion still occupies MainActor.
+- (void)beginWipeWallet {
+    if (self.walletWipeInProgress) {
+        return;
+    }
+    self.walletWipeInProgress = YES;
+
+    UIViewController *setupController = [self setupController];
+    [self transitionToController:setupController
+                  transitionType:DWContainerTransitionType_WithoutAnimation];
+
+    [self.model.homeModel walletDidWipe];
+    _mainController = nil;
+
+    [setupController.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting Wallet…", nil)];
+
+    __weak typeof(self) weakSelf = self;
+    // The SDK delete is synchronous on MainActor. Let UIKit commit the setup
+    // screen and HUD first; otherwise the first visible frame is only drawn
+    // after the blocking deletion has already finished.
+    dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC));
+    dispatch_after(startTime, dispatch_get_main_queue(), ^{
+        typeof(self) strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
+
+        // Preserve Debug Reset's legacy cleanup notification before it clears
+        // wallet state (the previous menu-local path called this explicitly).
+        [DWApp cleanUp];
+        [strongSelf.model wipeWallet];
+        [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
+            typeof(self) completedSelf = weakSelf;
+            if (completedSelf == nil) {
+                return;
+            }
+            [setupController.view dw_hideProgressHUD];
+            completedSelf.walletWipeInProgress = NO;
+            if (!wipeSucceeded) {
+                [completedSelf presentWalletWipeFailure];
+            }
+        }];
+    });
+}
+
+- (void)presentWalletWipeFailure {
+    UIAlertController *alert =
+        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Couldn’t Delete Wallet", nil)
+                                            message:NSLocalizedString(@"The wallet is still stored on this device. Please try again.", nil)
+                                     preferredStyle:UIAlertControllerStyleAlert];
+
+    __weak typeof(self) weakSelf = self;
+    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Retry", nil)
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction *_Nonnull action) {
+                                                [weakSelf beginWipeWallet];
+                                            }]];
+    [self.currentController presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - DWLockScreenViewControllerDelegate

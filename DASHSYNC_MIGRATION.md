@@ -44,9 +44,12 @@ included.
 
 ## Platform pin
 
-The app builds against sibling `../platform` on **`v4.1-dev`** (verified
-2026-07-17: dashpay arm64-sim build green at app tip `1f195c6fb` against
-`origin/v4.1-dev` tip `b889e05a1e`; the tip's breaking change — platform
+The app consumes sibling `../platform` on **`v4.1-dev`** (verified 2026-07-21
+at `origin/v4.1-dev` tip `7f4aaa2a44`: both XCFramework slices and the SDK
+example app build green, and the dashpay arm64-sim build is green. The
+dashwallet build and focused tests remain blocked before compilation by the
+local watchOS runtime mismatch, `23S303` vs SDK `23T570`). The branch's earlier
+breaking change — platform
 #4140 removing `EstablishedContact`'s clone-mutating setters, which never
 wrote real state — requires app tip ≥ #834, where contact alias/note/hidden
 write through `setDashPayContactInfo` instead. Earlier drift notes (the
@@ -101,7 +104,7 @@ Status meanings:
 | 11 | SPV sync | Done; teardown tail | Remove `setupDashSyncOnce` / `DSOptionsManager` and remaining legacy notification names at unlink. |
 | 12 | Network switch | Done; teardown tail | Remove the temporary DashSync wallet-registry mirror with C6-E. |
 | 13 | Backup seed phrase | Done | Reads the active SDK wallet mnemonic from host-owned storage. |
-| 14 | Wipe wallet | Done; teardown tail | Reinstall recovery waits for the asynchronous SDK wipe's explicit success result before entering app root; a failed delete preserves mnemonic/runtime state for retry. Remove the DashSync registry/Core Data wipe arm after all consumers are gone. |
+| 14 | Wipe wallet | Done; teardown tail | Reinstall recovery and Settings Debug Reset both gate onboarding behind the background wipe executor's explicit success result; per-wallet SDK deletion remains synchronous, and a failed delete preserves mnemonic/runtime state for retry. Remove the DashSync registry/Core Data wipe arm after all consumers are gone. |
 | 15 | Provider-key derivation | Done | All four families are SDK-native: Owner/Voting via the key-wallet path surface, Operator (BLS) and Evonode Operator (Ed25519) via `ManagedPlatformWallet.providerKeyAtIndex` (`platform_wallet_provider_key_at_index` grew per-index BLS/EdDSA public-key export, removing the earlier blocker). Overview counts and per-keypair “used at” restored from the Rust masternode aggregation (`PlatformWalletManager.masternodes(for:)`). |
 | 16 | DashPay identity creation | Done; invitation tail | Standard SDK-funded identity/name registration is migrated, with three funding paths (Core asset-lock, Platform Payment, shielded Type-20 — the privacy-preserving default, gated by `ShieldedIdentityFundingReadiness`). Invitation-funded create/accept remains part of the invitation decision. |
 | 17 | DashPay identity/profile read-write | Done; compatibility tail | Retire remaining `DSBlockchainIdentity`-typed profile properties/categories and route every old view directly through `DWCurrentUserIdentityInfo` / `DWProfileUpdateBridge`. |

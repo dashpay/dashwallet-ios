@@ -328,7 +328,7 @@ final class WalletsViewModel: ObservableObject {
         }
 
         do {
-            try await SwiftDashSDKWalletWiper.deleteWalletFromSDK(walletId)
+            try SwiftDashSDKWalletWiper.deleteWalletFromSDK(walletId)
         } catch {
             Self.logger.error("removeWallet failed: \(String(describing: error), privacy: .public)")
             errorMessage = error.localizedDescription
