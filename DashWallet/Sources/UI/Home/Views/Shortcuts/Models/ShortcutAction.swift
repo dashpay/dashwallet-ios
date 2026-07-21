@@ -62,9 +62,11 @@ extension ShortcutActionType {
             .send, .scanToPay, .payToAddress,
             .coinbase, .uphold, .topper
         ]
-        // Dash DEX is withheld for the SwiftDashSDK migration release (its swap
-        // path builds through frozen DashSync), so it is not offered as a
-        // customizable shortcut. Mirrors the gated Buy & Sell portal card.
+        // Dash DEX swaps real assets, so it's offered only on mainnet and only when
+        // the SwapKit API key is configured. Mirrors the gated Buy & Sell portal card.
+        if !WalletEnvironment.isTestnet && SwapKitConstants.isConfigured {
+            actions.append(.dashDEX)
+        }
         let state = CrowdNode.shared.signUpState
         if state == .finished || state == .linkedOnline {
             actions.append(.crowdNode)
