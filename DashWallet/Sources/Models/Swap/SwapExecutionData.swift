@@ -20,7 +20,8 @@
 import Foundation
 
 struct SwapExecutionData {
+    /// The route's unique deposit address. DashDEX exposes only memo-less NEAR-intents routes,
+    /// so a plain send to this address is the whole swap — no OP_RETURN memo is involved.
     let vaultAddress: String
-    let memo: String?
     let executionNetwork: String
 }

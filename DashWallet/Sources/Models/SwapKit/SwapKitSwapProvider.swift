@@ -139,7 +139,18 @@ final class SwapKitSwapProvider: SwapProvider {
     /// so `SelectCoinViewModel` shows its error/retry state rather than an unfiltered list.
     /// Sell is always unaffected — all pools are returned regardless of classification state.
     private func filteredPools(_ pools: [SwapPool], for direction: SwapDirection) async throws -> [SwapPool] {
-        guard direction == .buy else { return pools }
+        guard direction == .buy else {
+            // Sell: hide coins that can ONLY route via MAYACHAIN. Those routes require an
+            // OP_RETURN memo on the DASH deposit, which SwiftDashSDK cannot build. Coins also
+            // routable via NEAR (nearOnly or both) stay — the Sell quote forces NEAR intents,
+            // so they deposit memo-less. If classification is unusable (network error)
+            // mayaOnlyAssets is empty and nothing is hidden; a mayaOnly coin tapped in that
+            // state simply returns "no route" from the NEAR-forced quote, so no OP_RETURN swap
+            // can be built.
+            if !classificationBuilt { await buildClassification() }
+            guard classificationUsable, !mayaOnlyAssets.isEmpty else { return pools }
+            return pools.filter { !mayaOnlyAssets.contains($0.asset.uppercased()) }
+        }
 
         if !classificationUsable {
             await buildClassification()
@@ -401,6 +412,15 @@ final class SwapKitSwapProvider: SwapProvider {
             return errorResult(NSLocalizedString("No vault address returned by SwapKit", comment: "SwapKit"))
         }
 
+        // Defense-in-depth: NEAR-forced routing must never carry a memo. If a memo does come
+        // back, the deposit would need an OP_RETURN output that SwiftDashSDK cannot build, so
+        // fail loudly here instead of silently building an invalid (memo-less) deposit that the
+        // network would treat as a plain send and never credit the swap.
+        if let memo = swapResponse.memo, !memo.isEmpty {
+            DSLogger.log("SwapKit: rejecting memo-bearing route for \(toAsset) — OP_RETURN unsupported")
+            return errorResult(NSLocalizedString("This coin isn’t available for swapping right now.", comment: "SwapKit"))
+        }
+
         // Step 4: map to neutral result.
         let expectedOut = humanToBaseUnits(swapResponse.expectedBuyAmount ?? best.expectedBuyAmount)
         let fees = swapResponse.fees ?? best.fees ?? []
@@ -417,7 +437,8 @@ final class SwapKitSwapProvider: SwapProvider {
             expectedAmountOut: expectedOut,
             fees: SwapFeeResult(total: feeBaseUnits, outbound: feeBaseUnits),
             inboundAddress: vaultAddress,
-            memo: swapResponse.memo,
+            // Always nil after the NEAR-forced routing + guard above; the deposit is a plain send.
+            memo: nil,
             executionNetwork: executionNetwork
         )
     }
@@ -533,7 +554,12 @@ final class SwapKitSwapProvider: SwapProvider {
             slippage: SwapKitConstants.defaultSlippagePercent,
             sourceAddress: nil,
             destinationAddress: destination,
-            providers: nil,
+            // Force NEAR-intents routing: those routes deposit to a unique address with NO
+            // memo, so the DASH tx is a plain send that SwiftDashSDK can build. MAYACHAIN
+            // routes would return an OP_RETURN memo the SDK cannot express, so we never ask
+            // for them here (mayaOnly coins are hidden from the picker; both-routable coins
+            // stay memoless via NEAR). Mirrors requestBuyRoute, which already forces NEAR.
+            providers: [SwapKitConstants.providerNear],
             affiliateFee: nil
         )
 
@@ -907,8 +933,9 @@ final class SwapKitSwapProvider: SwapProvider {
 
     private func walletSourceAddress() -> String {
         // Current receive address is always valid for SwapKit's format check.
-        // Any SwapKit refund will be returned here.
-        DWEnvironment.sharedInstance().currentAccount.receiveAddress ?? ""
+        // Any SwapKit refund will be returned here. Read from SwiftDashSDK — the frozen
+        // DashSync account's receiveAddress is stale post-migration.
+        SwiftDashSDKReceiveAddressReader.receiveAddress() ?? ""
     }
 
     // MARK: - Private: Helpers

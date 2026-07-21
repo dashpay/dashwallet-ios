@@ -16,6 +16,7 @@
 //
 
 import Combine
+import CoreData
 import Foundation
 
 private extension Error {
@@ -223,11 +224,9 @@ final class OrderPreviewViewModel: ObservableObject {
     private let swapProvider: SwapProvider
     private var daoCancellable: AnyCancellable?
     private var isLockCancellable: AnyCancellable?
-    // Strong reference to the broadcast Dash tx. DashSync mutates its `blockHeight` in place
-    // when the tx is included in a block, which the confirmation observer re-reads on each
-    // transaction-status notification.
-    private var submittedTransaction: DSTransaction?
-    private var confirmationCancellable: AnyCancellable?
+    /// Wire-order txid (`Transaction.txHashData` convention) of the broadcast swap deposit,
+    /// returned by `WalletSendService.send`. Used to re-fetch the tx's SDK-tracked state.
+    private var submittedTxidWire: Data?
     private var didInitialLoad = false
     private var lastDepositAddress: String?
     private let networkStatus: NetworkStatusProviding
@@ -266,7 +265,6 @@ final class OrderPreviewViewModel: ObservableObject {
         countdownCancellable?.cancel()
         daoCancellable?.cancel()
         isLockCancellable?.cancel()
-        confirmationCancellable?.cancel()
         networkCancellable?.cancel()
     }
 
@@ -290,9 +288,7 @@ final class OrderPreviewViewModel: ObservableObject {
         daoCancellable = nil
         isLockCancellable?.cancel()
         isLockCancellable = nil
-        confirmationCancellable?.cancel()
-        confirmationCancellable = nil
-        submittedTransaction = nil
+        submittedTxidWire = nil
         swapStatus = .idle
         submittedTxId = nil
         lastDepositAddress = nil
@@ -429,8 +425,8 @@ final class OrderPreviewViewModel: ObservableObject {
             applyQuote(freshQuote)
 
             let execution = try resolveExecutionData(from: freshQuote)
-            let tx = try await submitDashTransaction(using: execution)
-            setSubmittedTransaction(tx, depositAddress: execution.vaultAddress)
+            let txidWire = try await submitDashTransaction(using: execution)
+            setSubmittedSwap(txidWire: txidWire, depositAddress: execution.vaultAddress)
         } catch {
             if case .some(.previousSwapPending) = error as? DashSpendError {
                 pendingSwapAlertMessage = error.localizedDescription
@@ -449,31 +445,27 @@ final class OrderPreviewViewModel: ObservableObject {
         }
     }
 
-    private func mayaFieldError(_ message: String) -> Error {
-        NSError(domain: "Maya", code: 0, userInfo: [NSLocalizedDescriptionKey: message])
+    private func swapFieldError(_ message: String) -> Error {
+        NSError(domain: "DashDEX", code: 0, userInfo: [NSLocalizedDescriptionKey: message])
     }
 
     private func resolveExecutionData(from quote: SwapQuoteResult) throws -> SwapExecutionData {
         guard let vaultAddress = quote.inboundAddress, !vaultAddress.isEmpty else {
-            throw mayaFieldError(NSLocalizedString("Vault address is missing. Please refresh and try again.", comment: "Dash DEX"))
+            throw swapFieldError(NSLocalizedString("Deposit address is missing. Please refresh and try again.", comment: "Dash DEX"))
         }
 
-        let memo: String?
-        if let quoteMemo = quote.memo, !quoteMemo.isEmpty {
-            memo = quoteMemo
-        } else if swapProvider.buildsSwapKitDeposit {
-            let shortAsset = coin.swapAsset.uppercased().components(separatedBy: "-").first
-                ?? coin.swapAsset.uppercased()
-            memo = "=:\(shortAsset):\(address)"
-        } else {
-            throw mayaFieldError(NSLocalizedString("Swap memo is missing. Please refresh and try again.", comment: "Dash DEX"))
+        // Safety net: the deposit is a plain send with NO OP_RETURN (SwiftDashSDK can't build
+        // one). A memo-bearing quote (e.g. a MAYACHAIN route) would need that memo encoded
+        // on-chain — sending memo-less would silently orphan the funds at the vault. Refuse it
+        // here, provider-agnostically, so no swap can ever be submitted without its required memo.
+        if let memo = quote.memo, !memo.isEmpty {
+            throw swapFieldError(NSLocalizedString("This coin isn’t available for swapping right now.", comment: "Dash DEX"))
         }
 
         let resolvedExecutionNetwork = quote.executionNetwork?
             .trimmingCharacters(in: .whitespacesAndNewlines)
         return SwapExecutionData(
             vaultAddress: vaultAddress,
-            memo: memo,
             executionNetwork: {
                 if let resolvedExecutionNetwork, !resolvedExecutionNetwork.isEmpty {
                     return resolvedExecutionNetwork
@@ -483,23 +475,13 @@ final class OrderPreviewViewModel: ObservableObject {
         )
     }
 
-    private func submitDashTransaction(using execution: SwapExecutionData) async throws -> DSTransaction {
-        if swapProvider.buildsSwapKitDeposit {
-            return try await sendCoinsService.sendSwapKitSwap(
-                depositAddress: execution.vaultAddress,
-                dashAmount: UInt64(dashSatoshis),
-                memo: execution.memo
-            )
-        } else {
-            guard let memo = execution.memo, !memo.isEmpty else {
-                throw mayaFieldError(NSLocalizedString("Swap memo is missing. Please refresh and try again.", comment: "Dash DEX"))
-            }
-            return try await sendCoinsService.sendMayaSwap(
-                vaultAddress: execution.vaultAddress,
-                dashAmount: UInt64(dashSatoshis),
-                memo: memo
-            )
-        }
+    /// Broadcasts the DASH deposit and returns its wire-order txid. DashDEX routes are memo-less
+    /// (NEAR intents), so this is a plain send built by SwiftDashSDK — no OP_RETURN output.
+    private func submitDashTransaction(using execution: SwapExecutionData) async throws -> Data {
+        try await sendCoinsService.sendSwapKitSwap(
+            depositAddress: execution.vaultAddress,
+            dashAmount: UInt64(dashSatoshis)
+        )
     }
 
     // MARK: - Private: State Mutation
@@ -514,25 +496,23 @@ final class OrderPreviewViewModel: ObservableObject {
         SwapKitErrorCopy.message(for: message, coin: coin)
     }
 
-    private func setSubmittedTransaction(_ tx: DSTransaction, depositAddress: String) {
-        submittedTransaction = tx
-        submittedTxId = tx.txHashHexString
+    private func setSubmittedSwap(txidWire: Data, depositAddress: String) {
+        let txidHex = Transaction.displayHex(txidWire)
+        submittedTxidWire = txidWire
+        submittedTxId = txidHex
         lastDepositAddress = depositAddress
         swapStatus = .pendingConfirmation
-        saveSwapOrder(tx: tx, depositAddress: depositAddress)
-        startObservingISLock(txid: tx.txHashHexString)
-        if Self.successTrigger == .onDashConfirmation {
-            startObservingDashConfirmation(tx: tx)
-        }
-        startObservingDAO(orderId: tx.txHashHexString)
+        saveSwapOrder(txidHex: txidHex, depositAddress: depositAddress)
+        startObservingISLock(txidWire: txidWire)
+        startObservingDAO(orderId: txidHex)
     }
 
     // MARK: - Private: Swap order persistence
 
-    private func saveSwapOrder(tx: DSTransaction, depositAddress: String) {
+    private func saveSwapOrder(txidHex: String, depositAddress: String) {
         let service = swapProvider is MayaSwapProvider ? "maya" : "swapkit"
         let order = SwapOrder(
-            id: tx.txHashHexString,
+            id: txidHex,
             direction: "sell",
             service: service,
             provider: resolvedExecutionNetwork,
@@ -550,101 +530,56 @@ final class OrderPreviewViewModel: ObservableObject {
 
     // MARK: - Private: IS-Lock Observation
 
-    private func startObservingISLock(txid: String) {
+    /// Observes the broadcast deposit's InstantSend lock via SwiftDashSDK. The Rust persister
+    /// updates the tx's context byte (0=mempool → 1=instantSend) and saves, which fires
+    /// `NSManagedObjectContextDidSave` — the same signal `HomeViewModel` refreshes on. On each
+    /// save we re-read the tx's `state`; `.ok` means context >= 1 (InstantSend-locked or
+    /// better). No `DS*` notifications and no `DSTransaction` are involved.
+    private func startObservingISLock(txidWire: Data) {
+        // Fast path: already locked (e.g. re-entry after a quick lock).
+        if handleISLockIfLocked(txidWire: txidWire) { return }
+
         isLockCancellable = NotificationCenter.default
-            .publisher(for: .DSTransactionManagerTransactionStatusDidChange)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] notification in
-                guard let self else { return }
-
-                guard
-                    let userInfo = notification.userInfo,
-                    let tx = userInfo[DSTransactionManagerNotificationTransactionKey] as? DSTransaction,
-                    tx.txHashHexString == txid
-                else { return }
-
-                guard
-                    let changes = userInfo[DSTransactionManagerNotificationTransactionChangesKey] as? [String: Any],
-                    changes[DSTransactionManagerNotificationInstantSendTransactionLockKey] != nil
-                else { return }
-
-                DSLogger.log("sendMayaSwap IS-lock received for \(txid)")
-
-                switch Self.successTrigger {
-                case .onISLock:
-                    switch self.swapStatus {
-                    case .pendingConfirmation, .processingSwap:
-                        // IS-lock is the user-facing success point for this trigger.
-                        // DAO/tracking stays background-only and must not block Done.
-                        self.swapStatus = .completed(outHashes: [])
-                    default:
-                        break
-                    }
-                case .onObserved, .onDone, .onDashConfirmation:
-                    if case .pendingConfirmation = self.swapStatus {
-                        // IS-lock alone is NOT success here — it only advances the UI to
-                        // "processing". Success requires a block confirmation (or, for the
-                        // other triggers, their own backend condition).
-                        self.swapStatus = .processingSwap
-                    }
-                }
-
-                self.isLockCancellable = nil  // one-shot
-            }
-    }
-
-    // MARK: - Private: Dash Confirmation Observation
-
-    /// Observes the broadcast Dash transaction locally and shows success once it reaches
-    /// its first block confirmation. Uses DashSync state/notifications only — no external
-    /// explorer. The transaction-status notification fires on every block/mempool sync
-    /// update (sometimes without a transaction payload), so each firing simply re-reads the
-    /// tracked tx's confirmation count.
-    private func startObservingDashConfirmation(tx: DSTransaction) {
-        // Fast path: already confirmed (e.g. re-entry after a quick block).
-        if completeIfConfirmed(tx: tx) { return }
-
-        confirmationCancellable = NotificationCenter.default
-            .publisher(for: .DSTransactionManagerTransactionStatusDidChange)
+            .publisher(for: .NSManagedObjectContextDidSave)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.completeIfConfirmed(tx: tx)
+                _ = self?.handleISLockIfLocked(txidWire: txidWire)
             }
     }
 
-    /// Flips `swapStatus` to `.completed` when `tx` has >= 1 confirmation.
-    /// Never regresses a terminal user-facing state. Returns true once terminal so the
-    /// caller can stop observing.
+    /// Advances `swapStatus` once the deposit tx is InstantSend-locked (SDK `state == .ok`).
+    /// Returns true once locked so the caller can stop observing. Never regresses a terminal state.
     @discardableResult
-    private func completeIfConfirmed(tx: DSTransaction) -> Bool {
-        switch swapStatus {
-        case .completed, .failed:
-            confirmationCancellable?.cancel()
-            confirmationCancellable = nil
-            return true
-        default:
-            break
+    private func handleISLockIfLocked(txidWire: Data) -> Bool {
+        guard let tx = SwiftDashSDKWalletSource.fetch(txid: txidWire), tx.state == .ok else {
+            return false
         }
 
-        let confirmations = Self.confirmations(for: tx)
-        guard confirmations >= 1 else { return false }
+        DSLogger.log("DashDEX: IS-lock observed for \(Transaction.displayHex(txidWire))")
 
-        DSLogger.log("Maya: Dash tx \(tx.txHashHexString) confirmed in block "
-            + "(blockHeight=\(tx.blockHeight), confirmations=\(confirmations)) — showing success")
-        swapStatus = .completed(outHashes: [])
-        confirmationCancellable?.cancel()
-        confirmationCancellable = nil
+        switch Self.successTrigger {
+        case .onISLock, .onDashConfirmation:
+            // context >= 1 (InstantSend-locked) is the on-chain finality signal under
+            // SwiftDashSDK. DAO/tracking stays background-only and must not block Done.
+            // TODO(swap-sdk-confirmation): a strict ".onDashConfirmation" (>= 1 block) would need
+            // an SDK accessor for context >= 2 (inBlock); today `Transaction.state` only exposes
+            // context == 0 vs >= 1, and IS-lock is a stronger finality signal than a single block.
+            switch swapStatus {
+            case .pendingConfirmation, .processingSwap:
+                swapStatus = .completed(outHashes: [])
+            default:
+                break
+            }
+        case .onObserved, .onDone:
+            if case .pendingConfirmation = swapStatus {
+                // IS-lock alone is NOT success here — it only advances the UI to "processing".
+                // Success requires the backend condition, surfaced via the DAO observer.
+                swapStatus = .processingSwap
+            }
+        }
+
+        isLockCancellable = nil  // one-shot
         return true
-    }
-
-    /// Number of block confirmations for `tx` against the current chain tip.
-    /// Returns 0 while the tx is still in the mempool (`blockHeight == TX_UNCONFIRMED`).
-    /// Mirrors the calculation in `Transaction.swift`.
-    private static func confirmations(for tx: DSTransaction) -> Int {
-        let lastHeight = DWEnvironment.sharedInstance().currentChain.lastTerminalBlockHeight
-        let txHeight = tx.blockHeight
-        guard txHeight != UInt32(TX_UNCONFIRMED), txHeight <= lastHeight else { return 0 }
-        return Int(lastHeight - txHeight) + 1
     }
 
     // MARK: - Private: DAO observation (replaces the in-memory 30-min polling loop)
@@ -746,10 +681,10 @@ final class OrderPreviewViewModel: ObservableObject {
 
         let firstQuote = try await fetchFreshQuote(dashSatoshis: dashSatoshis)
         if let apiError = firstQuote.error {
-            throw mayaFieldError(apiError)
+            throw swapFieldError(apiError)
         }
         guard let firstPoint = makeQuotePoint(dashSatoshis: dashSatoshis, quote: firstQuote) else {
-            throw mayaFieldError(NSLocalizedString("Unable to refresh quote. Please try again.", comment: "Swap"))
+            throw swapFieldError(NSLocalizedString("Unable to refresh quote. Please try again.", comment: "Swap"))
         }
         points.append(firstPoint)
 
@@ -856,7 +791,9 @@ final class OrderPreviewViewModel: ObservableObject {
     }
 
     private var dashBalance: Int64 {
-        Int64(DWEnvironment.sharedInstance().currentAccount.balance)
+        // Cap swaps at the SDK's max-sendable balance (spendable minus the send fee reserve);
+        // the frozen DashSync account balance reads stale/zero post-migration.
+        Int64(SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0)
     }
 
     // MARK: - Private: Formatting
