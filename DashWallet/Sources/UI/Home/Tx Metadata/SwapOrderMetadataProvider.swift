@@ -27,10 +27,10 @@ import DashUIKit
 ///   Convert: `Data(hex: order.id).map { Data($0.reversed()) }`.
 /// - **Buy**: prefer `order.outboundTxHash` once tracking has resolved it, but re-validate
 ///   that hash against the precise buy matcher before trusting it. Otherwise walk
-///   `DWEnvironment.sharedInstance().currentWallet.allTransactions` and match the incoming
-///   Dash tx by address + time + approximate amount. Return that tx's `txHashData`.
-///   Re-resolves on `NSNotification.Name.DSWalletBalanceDidChange` so a buy that lands
-///   after the order is stored still gets labelled.
+///   `SwiftDashSDKWalletSource.fetchAll()` and match the incoming Dash tx by address + time
+///   + approximate amount. Return that tx's `txHashData`. Re-resolves on
+///   `SwiftDashSDKWalletState.balanceDidChangeNotification` so a buy that lands after the
+///   order is stored still gets labelled.
 class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     static let shared = SwapOrderMetadataProvider()
 
@@ -52,7 +52,11 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             }
             .store(in: &cancellables)
 
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+        // Re-resolve buy orders when the wallet state changes (the incoming DASH landing is
+        // what lets the matcher key a buy order to its tx). Uses the SwiftDashSDK balance
+        // notification — the legacy DSWalletBalanceDidChange is frozen post-migration and
+        // never fires, so buy metadata never attached.
+        NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.balanceDidChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in self?.refreshMetadata() }
             .store(in: &cancellables)
@@ -88,7 +92,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             if let outboundTxHash = order.outboundTxHash?.trimmingCharacters(in: .whitespacesAndNewlines),
                !outboundTxHash.isEmpty,
                let txHashData = Data(hex: outboundTxHash),
-               let matchingTx = DWEnvironment.sharedInstance().currentWallet.allTransactions.first(
+               let matchingTx = SwiftDashSDKWalletSource.fetchAll().first(
                     where: { $0.txHashHexString.caseInsensitiveCompare(outboundTxHash) == .orderedSame }
                ),
                SwapBuyTransactionMatcher.matchedTransaction(for: order, in: [matchingTx]) != nil {
@@ -100,7 +104,8 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     }
 
     private func walletTxHashData(for order: SwapOrder) -> Data? {
-        let transactions = DWEnvironment.sharedInstance().currentWallet.allTransactions
+        // SwiftDashSDK tx set; DashSync's allTransactions is frozen (empty) post-migration.
+        let transactions = SwiftDashSDKWalletSource.fetchAll()
         return SwapBuyTransactionMatcher.walletTxHashData(for: order, in: transactions)
     }
 
