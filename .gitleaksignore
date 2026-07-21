@@ -1,0 +1,2 @@
+# gitleaks fingerprints to ignore (format: <commit>:<path>:<rule>:<line>).
+# Add ONLY reviewed false positives or already-rotated historical leaks here.

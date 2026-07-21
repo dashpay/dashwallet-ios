@@ -22,6 +22,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+static NSString *DWUpholdInfoPlistValue(NSString *key) {
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"Uphold-Info" ofType:@"plist"];
+    if (path.length == 0) {
+        return @"";
+    }
+
+    NSDictionary *dictionary = [NSDictionary dictionaryWithContentsOfFile:path];
+    id value = dictionary[key];
+    if ([value isKindOfClass:[NSString class]]) {
+        return value;
+    }
+
+    return @"";
+}
+
 @implementation DWUpholdConstants
 
 + (NSString *)authorizeURLFormat {
@@ -56,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)clientSecret {
     if ([[DWEnvironment sharedInstance].currentChain isTestnet]) {
-        return @"7db0b6bbf766233c0eafcad6b9d8667d526c899e";
+        return DWUpholdInfoPlistValue(@"SANDBOX_CLIENT_SECRET");
     }
     else if ([[DWEnvironment sharedInstance].currentChain isMainnet]) {
         return [DWUpholdMainnetConstants clientSecret];

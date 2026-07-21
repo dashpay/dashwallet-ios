@@ -1,0 +1,26 @@
+#!/bin/sh
+# Local secret-scan check — fast feedback before a secret ever enters a commit.
+# Enable once per clone:  git config core.hooksPath .githooks
+#
+# Requires gitleaks:  brew install gitleaks
+#
+# Best-effort only, NOT a gate: it is opt-in per clone, skipped by `--no-verify`,
+# and skipped when gitleaks is missing. There is no CI secret scan behind it, so a
+# clean commit is not proof that no secret was committed.
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+    echo "⚠️  gitleaks not installed — secret scan SKIPPED, nothing else will check this commit."
+    echo "    Install with: brew install gitleaks"
+    exit 0
+fi
+
+echo "🔎 gitleaks: scanning staged changes for secrets…"
+if ! gitleaks protect --staged --redact --config .gitleaks.toml; then
+    echo ""
+    echo "🛑 Potential secret detected in staged changes — commit blocked."
+    echo "   Secrets belong in gitignored *-Info.plist / __Release.m / *.xcconfig only."
+    echo "   If this is a false positive, add the printed fingerprint to .gitleaksignore."
+    exit 1
+fi
+
+exit 0

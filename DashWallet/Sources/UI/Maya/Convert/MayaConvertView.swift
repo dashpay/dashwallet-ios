@@ -39,8 +39,6 @@ struct MayaConvertView: View {
     @StateObject private var viewModel: MayaConvertViewModel
     @StateObject private var reachability = NetworkReachabilityMonitor()
     @State private var showLocalCurrency = false
-    @State private var topMenuItemHeight: CGFloat = Layout.topMenuItemHeightFallback
-    @State private var bottomMenuItemHeight: CGFloat = Layout.topMenuItemHeightFallback
     private let onBack: (() -> Void)?
     private let onContinue: () -> Void
 
@@ -109,87 +107,30 @@ struct MayaConvertView: View {
 
     // MARK: - Conversion Card
 
+    /// One-directional (Dash → coin) card built on DashUIKit's `ConverterCard`. No `onSwap`, so it
+    /// shows the static `arrow-down` badge. The Dash row keeps its formatted entered-amount balance
+    /// and the coin row keeps the remote icon + full (unwrapped) address.
     private var conversionCard: some View {
-        VStack(spacing: Layout.cardSpacing) {
-            MayaConvertCardRow(slot: .top) { dashSourceRow }
-            MayaConvertCardRow(slot: .bottom) { coinDestinationRow }
-        }
-        .overlay(alignment: .top) {
-            arrowDivider
-                .offset(y: arrowCenterY - (Layout.arrowBadgeSize / 2) - Layout.cardSpacing - 3)
-        }
-        .onPreferenceChange(MayaConvertRowHeightKey.self) { heights in
-            if let h = heights[.top], h > 0 { topMenuItemHeight = h }
-            if let h = heights[.bottom], h > 0 { bottomMenuItemHeight = h }
-        }
-    }
-
-    /// Source row: Dash / Dash Wallet with the trailing balance + fiat. Non-interactive
-    /// (`action: nil`); the card chrome / non-interactivity live in `MayaConvertCardRow`.
-    private var dashSourceRow: some View {
-        MenuItem(
-            title: NSLocalizedString("Dash", comment: "Maya"),
-            subtitleView: AnyView(
-                Text(NSLocalizedString("Dash Wallet", comment: "Maya"))
-                    .font(.footnote)
-                    .lineSpacing(4)
-                    .foregroundColor(.primaryText)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            ),
-            icon: .custom("dashCircleFilled"),
-            trailingView: AnyView(
-                DashBalanceView(
-                    balance: viewModel.enteredDashFormatted,
-                    fiat: viewModel.enteredAmountIsZero ? nil : viewModel.enteredFiatFormatted
-                )
-            ),
-            action: nil
-        )
-    }
-
-    /// Destination row: coin name / address with the remote coin icon. The address can be long,
-    /// so its subtitle keeps the previous unlimited wrapping.
-    private var coinDestinationRow: some View {
-        MenuItem(
-            title: viewModel.coin.name,
-            subtitleView: AnyView(
-                Text(viewModel.address)
-                    .font(.footnote)
-                    .lineSpacing(4)
-                    .foregroundColor(.primaryText)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            ),
-            iconView: AnyView(MayaCoinIconView(coin: viewModel.coin, size: Layout.iconSize, cornerRadius: 7)),
-            action: nil
-        )
-    }
-
-    private var arrowCenterY: CGFloat {
-        let topCenterY = topMenuItemHeight / 2
-        let bottomCenterY = topMenuItemHeight + Layout.cardSpacing + (bottomMenuItemHeight / 2)
-        return (topCenterY + bottomCenterY) / 2
-    }
-
-    private var arrowDivider: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: Layout.arrowBadgeCornerRadius, style: .continuous)
-                .fill(Color.secondaryBackground)
-                .frame(width: Layout.arrowBadgeSize + 5, height: Layout.arrowBadgeSize + 5)
-                .overlay(
-                    RoundedRectangle(cornerRadius: Layout.arrowBadgeCornerRadius, style: .continuous)
-                        .stroke(Color.primaryBackground, lineWidth: Layout.arrowBadgeInset)
-                )
-                .overlay(
-                    ArrowDownIcon(
-                        size: CGSize(width: 6.6, height: 11),
-                        color: Color(uiColor: UIColor(red: 0, green: 0.55, blue: 0.89, alpha: 1))
+        ConverterCard(
+            fromItem: ConverterCardItem(
+                icon: .custom("dashCircleFilled", bundle: .main),
+                title: NSLocalizedString("Dash", comment: "Maya"),
+                subtitle: NSLocalizedString("Dash Wallet", comment: "Maya"),
+                trailingView: AnyView(
+                    DashBalanceView(
+                        balance: viewModel.enteredDashFormatted,
+                        fiat: viewModel.enteredAmountIsZero ? nil : viewModel.enteredFiatFormatted
                     )
                 )
-        }
-        .frame(height: Layout.arrowBadgeSize + 5)
-        .padding(.horizontal, Layout.padding)
+            ),
+            toItem: ConverterCardItem(
+                iconView: AnyView(MayaCoinIconView(coin: viewModel.coin, size: Layout.iconSize, cornerRadius: 7)),
+                title: viewModel.coin.name,
+                subtitle: viewModel.address,
+                subtitleLineLimit: nil,
+                showsBalance: false
+            )
+        )
     }
 
     // MARK: - Receive Section
