@@ -950,12 +950,16 @@ if condition1 || additionalCondition || condition3 {
   source file. (This is exactly how the Uphold `client_secret` and the redundant Coinbase `CLIENT_*` leaked.)
 - **A git revert does NOT undo a leak** — the value stays in history and must be treated as compromised.
   Response = **rotate the credential**, then squash-merge / delete the branch that carried it.
-- **Enforcement (local pre-commit hook):** enable once with `git config core.hooksPath .githooks`
-  (`brew install gitleaks`). The hook (`.githooks/pre-commit`) runs gitleaks on staged changes and blocks
+- **The rule above is mandatory; the tooling that checks it is best-effort.** There is no fail-closed
+  control — the rule is upheld by the author and by code review, not by a gate.
+- **Detection (opt-in, local only):** enable once with `git config core.hooksPath .githooks`
+  (`brew install gitleaks`). The hook (`.githooks/pre-commit`) runs gitleaks on staged changes and fails
   the commit on a detected secret. Config lives in `.gitleaks.toml`; reviewed false positives go in
   `.gitleaksignore` (by fingerprint), never by allowlisting the secret string.
-  (There is intentionally no CI secret-scan workflow — the org-licensed `gitleaks-action` was dropped in
-  favor of local-only scanning.)
+- **Known gaps — do not treat a clean commit as proof there is no secret:** the hook only runs in clones
+  that opted into `core.hooksPath`, it is skipped entirely by `git commit --no-verify`, and it does not run
+  if `gitleaks` isn't installed. There is intentionally no CI secret-scan workflow (the org-licensed
+  `gitleaks-action` was dropped), so nothing scans on the server side.
 
 ### Multi-target Builds
 - Main app, Today extension, and Watch app share core components

@@ -1,13 +1,15 @@
 #!/bin/sh
-# Local secret-scan gate — fast feedback before a secret ever enters a commit.
+# Local secret-scan check — fast feedback before a secret ever enters a commit.
 # Enable once per clone:  git config core.hooksPath .githooks
 #
 # Requires gitleaks:  brew install gitleaks
-# If gitleaks isn't installed, the hook warns and lets the commit through — CI
-# (.github/workflows/gitleaks.yml) is the non-bypassable backstop.
+#
+# Best-effort only, NOT a gate: it is opt-in per clone, skipped by `--no-verify`,
+# and skipped when gitleaks is missing. There is no CI secret scan behind it, so a
+# clean commit is not proof that no secret was committed.
 
 if ! command -v gitleaks >/dev/null 2>&1; then
-    echo "⚠️  gitleaks not installed — skipping local secret scan (CI will still check)."
+    echo "⚠️  gitleaks not installed — secret scan SKIPPED, nothing else will check this commit."
     echo "    Install with: brew install gitleaks"
     exit 0
 fi
