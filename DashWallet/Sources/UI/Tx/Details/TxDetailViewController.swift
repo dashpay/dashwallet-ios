@@ -114,6 +114,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case taxCategory
         case rawTransaction
         case explorer
+        case swapExplorer
     }
 
     enum Item: Hashable {
@@ -130,6 +131,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case viewTransaction
         case copyRawTransaction
         case explorer
+        case swapExplorer(String)
 
         /// Per-case identity strings — the diffable-identifier content. The
         /// leading case tag keeps two different cases with identical (notably
@@ -151,6 +153,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
             case .viewTransaction: return ["ViewTransaction"]
             case .copyRawTransaction: return ["CopyRawTransaction"]
             case .explorer: return ["Explorer"]
+            case .swapExplorer(let title): return ["SwapExplorer", title]
             }
         }
 
@@ -192,6 +195,12 @@ class TXDetailViewController: BaseTxDetailsViewController {
 
         configureDataSource()
         reloadDataSource()
+
+        // Dash DEX swap legs get an extra "View NEAR/Maya Explorer" action; the order lookup
+        // is async (DAO reads), so resolve then rebuild the rows when it lands.
+        model.resolveSwapExplorerLink { [weak self] in
+            self?.reloadDataSource()
+        }
     }
 }
 
@@ -220,6 +229,15 @@ extension TXDetailViewController {
         let hostingController = UIHostingController(rootView: swiftUIView)
         hostingController.setDetent(240)
         present(hostingController, animated: true, completion: nil)
+    }
+
+    /// Opens the Dash DEX (NEAR/Maya) explorer for a swap transaction in an in-app browser.
+    private func openSwapExplorer() {
+        guard let link = model.swapExplorerLink else { return }
+        let vc = SFSafariViewController.dw_controller(with: link.url)
+        vc.modalPresentationStyle = .overFullScreen
+        vc.modalPresentationCapturesStatusBarAppearance = true
+        present(vc, animated: true)
     }
 
     /// Full consensus-field inspector for this transaction's stored raw bytes.
@@ -293,6 +311,14 @@ extension TXDetailViewController {
                                                              for: indexPath) as! TxDetailActionCell
                     cell.titleLabel.text = NSLocalizedString("View in Block Explorer", comment: "")
                     return cell
+
+                case .swapExplorer:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.reuseIdentifier,
+                                                             for: indexPath) as! TxDetailActionCell
+                    if case .swapExplorer(let title) = item {
+                        cell.titleLabel.text = title
+                    }
+                    return cell
                 }
         }
     }
@@ -352,6 +378,10 @@ extension TXDetailViewController {
         currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
         currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
+        if let swapLink = model.swapExplorerLink {
+            currentSnapshot.appendSections([.swapExplorer])
+            currentSnapshot.appendItems([.swapExplorer(swapLink.title)], toSection: .swapExplorer)
+        }
         dataSource.apply(currentSnapshot, animatingDifferences: false)
         dataSource.defaultRowAnimation = .none
     }
@@ -380,6 +410,8 @@ extension TXDetailViewController {
             }
         case .explorer:
             viewInBlockExplorer()
+        case .swapExplorer:
+            openSwapExplorer()
         default:
             break
         }

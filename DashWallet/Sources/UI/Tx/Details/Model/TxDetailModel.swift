@@ -118,6 +118,71 @@ class TxDetailModel: NSObject {
         UIPasteboard.general.string = transactionId
         return true
     }
+
+    // MARK: - Dash DEX (swap) explorer
+
+    /// A "View NEAR/Maya Explorer" action for a transaction that belongs to a Dash DEX swap.
+    struct SwapExplorerLink {
+        let title: String
+        let url: URL
+    }
+
+    /// Resolved on demand (see `resolveSwapExplorerLink`); nil until resolved or when this
+    /// transaction is not part of a swap order.
+    private(set) var swapExplorerLink: SwapExplorerLink?
+
+    /// Looks up whether this transaction is the on-chain leg of a stored swap order and, if so,
+    /// builds the provider explorer link. Runs off the main actor (DAO reads), then calls
+    /// `completion` on the main actor so the caller can rebuild its rows.
+    func resolveSwapExplorerLink(completion: @escaping () -> Void) {
+        let transaction = self.transaction
+        let transactionId = self.transactionId
+        Task {
+            let link = await Self.swapExplorerLink(transaction: transaction, transactionId: transactionId)
+            await MainActor.run {
+                self.swapExplorerLink = link
+                completion()
+            }
+        }
+    }
+
+    private static func swapExplorerLink(transaction: Transaction, transactionId: String) async -> SwapExplorerLink? {
+        let dao = SwapOrdersDAOImpl.shared
+
+        // Sell: the swap order id IS the Dash deposit tx id (display-order hex == transactionId).
+        if let order = await dao.get(byId: transactionId), order.direction == "sell" {
+            return link(for: order, dashTxId: transactionId)
+        }
+
+        // Buy: the incoming Dash tx is matched to a buy order by address + amount + time.
+        let orders = await dao.all()
+        if let order = orders.first(where: { candidate in
+            candidate.direction == "buy"
+                && SwapBuyTransactionMatcher.matchedTransaction(for: candidate, in: [transaction]) != nil
+        }) {
+            return link(for: order, dashTxId: transactionId)
+        }
+
+        return nil
+    }
+
+    private static func link(for order: SwapOrder, dashTxId: String) -> SwapExplorerLink? {
+        let provider = order.provider?.lowercased() ?? ""
+
+        // Maya-routed legacy orders (retired for new swaps) link to the Maya explorer by Dash txid.
+        if provider.contains("maya") || order.service == "maya" {
+            return SwapExplorerLink(
+                title: NSLocalizedString("View Maya Explorer", comment: "Dash DEX / tx details action"),
+                url: MayaConstants.mayaScanTransactionURL(txHash: dashTxId.uppercased()))
+        }
+
+        // NEAR intents: tracked by the deposit address, not the Dash txid.
+        let title = NSLocalizedString("View NEAR Explorer", comment: "Dash DEX / tx details action")
+        if let deposit = order.depositAddress?.trimmingCharacters(in: .whitespacesAndNewlines), !deposit.isEmpty {
+            return SwapExplorerLink(title: title, url: NearConstants.explorerTransactionURL(depositAddress: deposit))
+        }
+        return SwapExplorerLink(title: title, url: NearConstants.explorerHomeURL)
+    }
 }
 
 extension TxDetailModel {
