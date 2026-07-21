@@ -970,10 +970,12 @@ extension HomeViewModel {
                     if type == .switchWallet && !canSwitchWallet {
                         type = .receive
                     }
-                    // Dash DEX swaps real assets, so it's mainnet-only; a saved DEX
-                    // shortcut degrades to Spend on testnet. The saved config is
-                    // untouched, so it returns when the wallet is back on mainnet.
-                    if type == .dashDEX && isTestnet {
+                    // Dash DEX is offered only on mainnet with SwapKit configured (mirrors
+                    // ShortcutActionType.customizableActions and ServiceDataProvider.shouldShow);
+                    // a saved DEX shortcut degrades to Spend whenever that gate isn't met. The
+                    // saved config is untouched, so it returns once the gate passes again.
+                    let dashDEXAvailable = !isTestnet && SwapKitConstants.isConfigured
+                    if type == .dashDEX && !dashDEXAvailable {
                         type = .spend
                     }
                     return ShortcutAction(type: type)

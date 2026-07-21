@@ -327,10 +327,13 @@ final class SwapKitSwapProvider: SwapProvider {
         sellAmount: String,
         refundAddress: String
     ) async throws {
+        guard let destination = walletSourceAddress() else {
+            throw Self.walletUnavailableError()
+        }
         _ = try await requestBuyRoute(
             sellAsset: sellAsset,
             sellAmount: sellAmount,
-            destination: walletSourceAddress(),
+            destination: destination,
             refundAddress: refundAddress
         )
     }
@@ -384,7 +387,9 @@ final class SwapKitSwapProvider: SwapProvider {
         // Step 3: build swap — get vault address + memo.
         // sourceAddress must be a real wallet address for SwapKit's format check and
         // so any SwapKit refund is returned to this wallet.
-        let sourceAddress = walletSourceAddress()
+        guard let sourceAddress = walletSourceAddress() else {
+            return errorResult(Self.walletUnavailableMessage)
+        }
         let swapRequest = SwapKitSwapRequest(
             routeId: best.routeId,
             sourceAddress: sourceAddress,
@@ -931,11 +936,24 @@ final class SwapKitSwapProvider: SwapProvider {
 
     // MARK: - Private: Wallet
 
-    private func walletSourceAddress() -> String {
-        // Current receive address is always valid for SwapKit's format check.
-        // Any SwapKit refund will be returned here. Read from SwiftDashSDK — the frozen
-        // DashSync account's receiveAddress is stale post-migration.
-        SwiftDashSDKReceiveAddressReader.receiveAddress() ?? ""
+    /// Current receive address, used for SwapKit's source-address format check and refund
+    /// routing. Read from SwiftDashSDK (the frozen DashSync account's receiveAddress is stale
+    /// post-migration). Returns `nil` when the wallet isn't bound yet (or FFI failure) — callers
+    /// must fail fast rather than send an empty address into the swap request, which would
+    /// surface as an opaque provider error.
+    private func walletSourceAddress() -> String? {
+        guard let address = SwiftDashSDKReceiveAddressReader.receiveAddress(), !address.isEmpty else {
+            return nil
+        }
+        return address
+    }
+
+    private static var walletUnavailableMessage: String {
+        NSLocalizedString("Your wallet isn’t ready yet. Please try again in a moment.", comment: "SwapKit")
+    }
+
+    private static func walletUnavailableError() -> Error {
+        NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: walletUnavailableMessage])
     }
 
     // MARK: - Private: Helpers
