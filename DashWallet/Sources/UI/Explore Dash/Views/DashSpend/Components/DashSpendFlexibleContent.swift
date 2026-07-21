@@ -179,7 +179,10 @@ struct DashSpendFlexibleContent: View {
                             if newValue == .single {
                                 // Restore single-mode amount-driven validation after returning
                                 // from multiple mode where total is derived from quantities.
-                                viewModel.updateTotalAmount(viewModel.input.decimal() ?? 0)
+                                // Region-agnostic parse: `input.decimal()` (nil-locale
+                                // `Decimal(string:)`) truncates "5,5" to 5 on comma-decimal
+                                // locales, dropping the fraction.
+                                viewModel.updateTotalAmount(PastedAmountParser.parse(viewModel.input, locale: .current)?.decimalValue ?? viewModel.amount)
                             }
                         }
                     ),
