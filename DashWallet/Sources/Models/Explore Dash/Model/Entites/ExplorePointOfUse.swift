@@ -210,7 +210,7 @@ struct ExplorePointOfUse {
 
 extension ExplorePointOfUse {
     var address: String {
-        [name, address1, address2, address3, address4, city, territory]
+        [address1, address2, address3, address4, city, territory]
             .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
             .joined(separator: ", ")

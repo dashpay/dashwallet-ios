@@ -57,8 +57,7 @@ struct MerchantCellRow: View {
         }
     }
 
-    @ViewBuilder
-    private var distanceLabel: some View {
+    @ViewBuilder private var distanceLabel: some View {
         if let distanceText {
             HStack(spacing: Layout.distanceSpacing) {
                 Icon(name: .custom(Asset.distanceIcon, maxHeight: Layout.distanceIconHeight))
@@ -69,8 +68,16 @@ struct MerchantCellRow: View {
         }
     }
 
+    // The merchant name is already shown once in the screen header, so rows carry the
+    // address alone — except for records with no address parts at all, where the name is
+    // the only thing left to identify the row.
+    private var addressText: String {
+        let address = pointOfUse.address
+        return address.isEmpty ? pointOfUse.name : address
+    }
+
     private var addressLabel: some View {
-        Text(pointOfUse.address)
+        Text(addressText)
             .font(.subhead)
             .foregroundStyle(Color.primaryText)
             .lineLimit(Layout.addressLineLimit)

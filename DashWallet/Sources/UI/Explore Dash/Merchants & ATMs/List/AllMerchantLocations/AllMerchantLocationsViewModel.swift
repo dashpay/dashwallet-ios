@@ -22,6 +22,7 @@ import Foundation
 class AllMerchantLocationsViewModel: ObservableObject {
     private let model: PointOfUseListModel?
     private var distanceComputationRevision = 0
+    private var hasLoadedOnce = false
 
     @Published private(set) var currentItem: ExplorePointOfUse
     @Published private(set) var items: [ExplorePointOfUse] = []
@@ -30,7 +31,7 @@ class AllMerchantLocationsViewModel: ObservableObject {
     @Published private(set) var isLoadingNextPage: Bool = false
     @Published private(set) var hasNextPage: Bool = false
     @Published private(set) var showMap: Bool = true
-    @Published var selectedItem: ExplorePointOfUse? = nil
+    @Published var selectedItem: ExplorePointOfUse?
 
     var onItemsUpdated: (([ExplorePointOfUse]) -> Void)?
 
@@ -108,6 +109,15 @@ class AllMerchantLocationsViewModel: ObservableObject {
 
     func onAppear() {
         guard let model else { return }
+
+        // Only the first appearance needs to load: the model is configured (search center,
+        // map bounds, filters) after `PointOfUseListModel.init` has already kicked off a
+        // fetch, so this is the first fetch that sees the final configuration. Re-appearances
+        // reuse what is already loaded instead of dropping the cache and showing the
+        // empty-state spinner again.
+        guard !hasLoadedOnce else { return }
+        hasLoadedOnce = true
+
         isLoading = true
         model.currentMapBounds = nil
         model.currentSegment.dataProvider.clearCache()
