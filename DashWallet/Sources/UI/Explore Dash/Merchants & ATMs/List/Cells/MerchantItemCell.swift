@@ -18,6 +18,10 @@
 import CoreLocation
 import UIKit
 
+#if DEBUG
+import SwiftUI
+#endif
+
 // MARK: - MerchantItemCell
 
 class MerchantItemCell: PointOfUseItemCell {
@@ -102,3 +106,88 @@ extension MerchantItemCell {
         ])
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+
+private struct MerchantItemCellRepresentable: UIViewRepresentable {
+    let pointOfUse: ExplorePointOfUse
+
+    func makeUIView(context: Context) -> UIView {
+        let cell = MerchantItemCell(style: .default, reuseIdentifier: nil)
+        cell.update(with: pointOfUse)
+        return cell.contentView
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
+#Preview("Dash payment — no discount") {
+    MerchantItemCellRepresentable(
+        pointOfUse: .previewMock(
+            name: "Starbucks",
+            logoLocation: "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png",
+            paymentMethod: .dash,
+            type: .onlineAndPhysical,
+            savingsBasisPoints: 0
+        )
+    )
+    .frame(width: 375, height: 60)
+    .background(Color(.systemBackground))
+    .padding()
+}
+
+#Preview("Gift card — 4%") {
+    MerchantItemCellRepresentable(
+        pointOfUse: .previewMock(
+            name: "Amazon",
+            logoLocation: "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png",
+            paymentMethod: .giftCard,
+            type: .online,
+            savingsBasisPoints: 0,
+            giftCardProviders: [
+                ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                    providerId: "ctx",
+                    savingsPercentage: 400,
+                    denominationsType: "Fixed",
+                    sourceId: nil
+                )
+            ]
+        )
+    )
+    .frame(width: 375, height: 60)
+    .background(Color(.systemBackground))
+    .padding()
+}
+
+#Preview("Gift card — 10% (multi-provider, max)") {
+    MerchantItemCellRepresentable(
+        pointOfUse: .previewMock(
+            name: "Domino's",
+            logoLocation: "https://piggy.cards/image/catalog/piggycards/logo2023_mobile.png",
+            paymentMethod: .giftCard,
+            type: .online,
+            savingsBasisPoints: 0,
+            giftCardProviders: [
+                ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                    providerId: "ctx",
+                    savingsPercentage: 1000,
+                    denominationsType: "Fixed",
+                    sourceId: nil
+                ),
+                ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                    providerId: "ctx",
+                    savingsPercentage: 500,
+                    denominationsType: "Fixed",
+                    sourceId: nil
+                )
+            ]
+        )
+    )
+    .frame(width: 375, height: 60)
+    .background(Color(.systemBackground))
+    .padding()
+}
+
+#endif

@@ -77,6 +77,7 @@ class ExplorePointOfUseListViewController: UIViewController {
     internal var filterCell: PointOfUseListFiltersCell?
     internal var searchCell: PointOfUseListSearchCell?
     internal var appliedFiltersLabel: UILabel!
+    internal var expandedTableTopInset: CGFloat { 0 }
 
     internal var isFiltered: Bool { model.hasFilters }
     internal var emptyResultsView: PointOfUseListEmptyResultsView!
@@ -115,6 +116,7 @@ class ExplorePointOfUseListViewController: UIViewController {
                                               right: 0)
             self.view.layoutIfNeeded()
         } completion: { [weak self] _ in
+            self?.updateTableViewInsetsForCurrentSheetPosition()
             self?.updateShowMapButtonVisibility()
         }
     }
@@ -128,6 +130,7 @@ class ExplorePointOfUseListViewController: UIViewController {
                                               right: 0)
             self.view.layoutIfNeeded()
         } completion: { [weak self] _ in
+            self?.updateTableViewInsetsForCurrentSheetPosition()
             self?.updateShowMapButtonVisibility()
         }
     }
@@ -206,6 +209,7 @@ class ExplorePointOfUseListViewController: UIViewController {
         }
 
         configureHierarchy()
+        updateTableViewInsetsForCurrentSheetPosition()
         
         // Check database sync status
         checkDatabaseSyncStatus()
@@ -528,6 +532,37 @@ extension ExplorePointOfUseListViewController {
             showMapButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -15),
         ])
     }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        updateTableViewInsetsForCurrentSheetPosition()
+    }
+
+    internal func updateTableViewInsetsForCurrentSheetPosition() {
+        guard tableView != nil else { return }
+
+        let topInset = isSheetFullyExpanded ? expandedTableTopInset : 0
+        let bottomInset = tableView.contentInset.bottom
+
+        guard tableView.contentInset.top != topInset || tableView.verticalScrollIndicatorInsets.top != topInset else {
+            if tableView.contentOffset.y < -topInset {
+                tableView.contentOffset.y = -topInset
+            }
+            return
+        }
+
+        tableView.contentInset.top = topInset
+        tableView.verticalScrollIndicatorInsets.top = topInset
+        tableView.contentInset.bottom = bottomInset
+
+        if tableView.contentOffset.y < -topInset {
+            tableView.contentOffset.y = -topInset
+        }
+    }
+
+    private var isSheetFullyExpanded: Bool {
+        contentViewTopLayoutConstraint.constant <= kDefaultClosedMapPosition + 1
+    }
 }
 
 // MARK: Actions
@@ -632,6 +667,7 @@ extension ExplorePointOfUseListViewController {
                 self.contentViewTopLayoutConstraint.constant = finalY
                 self.view.layoutIfNeeded()
             } completion: { _ in
+                self.updateTableViewInsetsForCurrentSheetPosition()
                 self.updateShowMapButtonVisibility()
             }
         }

@@ -176,6 +176,13 @@ class ExploreViewController: UIViewController, NavigationFullscreenable {
     
     private func showMerchants() {
         let vc = MerchantListViewController()
+        vc.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
+            title: NSLocalizedString("Where to Spend", comment: ""),
+            onBack: { [weak vc] in
+                vc?.navigationController?.popViewController(animated: true)
+            },
+            onInfo: nil
+        )
         vc.payWithDashHandler = { [weak self] in
             guard let self = self else { return }
             self.delegate?.exploreViewControllerShowSendPayment(self)

@@ -44,65 +44,67 @@ struct POIDetailsView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 20) {
-                headerView
-                
-                if case .atm = merchant.category {
-                    atmButtonsView
-                    separatorView
-                }
-                
-                if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
-                    if viewModel.showProviderPicker {
-                        providerSectionView
-                    } else {
-                        singleProviderInfoView
+        ScrollView {
+            VStack(spacing: 0) {
+                VStack(spacing: 20) {
+                    headerView
+
+                    if case .atm = merchant.category {
+                        atmButtonsView
+                        separatorView
+                    }
+
+                    if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
+                        if viewModel.showProviderPicker {
+                            providerSectionView
+                        } else {
+                            singleProviderInfoView
+                        }
+                    }
+
+                    if case .merchant = merchant.category {
+                        countryRestrictionView
+                        bottomButtonView
+                        loginStatusView
                     }
                 }
-                
-                if case .merchant = merchant.category {
-                    countryRestrictionView
-                    bottomButtonView
-                    loginStatusView
-                }
-            }
-            .padding(20)
-            .background(Color.secondaryBackground)
-            .cornerRadius(12)
-            
-            // Location and contact info card
-            if shouldShowLocationView || hasContactInfo {
-                VStack(spacing: 2) {
-                    if shouldShowLocationView {
-                        locationCardView
-                    }
-                    
-                    if let phone = merchant.phone, !phone.isEmpty {
-                        phoneCardView
-                    }
-                    
-                    if merchant.website != nil {
-                        websiteCardView
-                    }
-                }
-                .padding(10)
+                .padding(20)
                 .background(Color.secondaryBackground)
                 .cornerRadius(12)
-                .padding(.top, 16)
-            }
-            
-            // Show all locations button (only if more than 1 location)
-            if !isShowAllHidden && shouldShowLocationView && viewModel.locationCount > 1 {
-                showAllLocationsButton
+
+                // Location and contact info card
+                if shouldShowLocationView || hasContactInfo {
+                    VStack(spacing: 2) {
+                        if shouldShowLocationView {
+                            locationCardView
+                        }
+
+                        if let phone = merchant.phone, !phone.isEmpty {
+                            phoneCardView
+                        }
+
+                        if merchant.website != nil {
+                            websiteCardView
+                        }
+                    }
+                    .padding(10)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(12)
                     .padding(.top, 16)
+                }
+
+                // Show all locations button (only if more than 1 location)
+                if !isShowAllHidden && shouldShowLocationView && viewModel.locationCount > 1 {
+                    showAllLocationsButton
+                        .padding(.top, 16)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
             }
-            
-            Spacer()
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+            .padding(.bottom, 20)
+            .animation(.easeInOut(duration: 0.2), value: viewModel.locationCount)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 10)
-        .padding(.bottom, 20)
     }
     
     // MARK: - Header View
@@ -269,6 +271,7 @@ struct POIDetailsView: View {
             .background(Color.secondaryBackground)
             .cornerRadius(12)
             .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
+            .contentShape(.rect)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -571,138 +574,55 @@ struct POIDetailsView: View {
     }
 }
 
-// MARK: - Previews
-
 #if DEBUG
-
-private extension ExplorePointOfUse {
-    static func previewMock(
-        id: Int64 = 1,
-        name: String = "Merchant",
-        category: Category,
-        active: Bool = true,
-        city: String? = nil,
-        territory: String? = nil,
-        address1: String? = nil,
-        address2: String? = nil,
-        address3: String? = nil,
-        address4: String? = nil,
-        latitude: Double? = nil,
-        longitude: Double? = nil,
-        website: String? = nil,
-        phone: String? = nil,
-        logoLocation: String? = nil,
-        coverImage: String? = nil,
-        source: String? = nil
-    ) -> ExplorePointOfUse {
+extension ExplorePointOfUse {
+    static func previewBurgerKing() -> ExplorePointOfUse {
         ExplorePointOfUse(
-            id: id,
-            name: name,
-            category: category,
-            active: active,
-            city: city,
-            territory: territory,
-            address1: address1,
-            address2: address2,
-            address3: address3,
-            address4: address4,
-            latitude: latitude,
-            longitude: longitude,
-            website: website,
-            phone: phone,
-            logoLocation: logoLocation,
-            coverImage: coverImage,
-            source: source
+            id: 1,
+            name: "Burger King",
+            category: .merchant(
+                .init(
+                    merchantId: "burger-king-123",
+                    paymentMethod: .giftCard,
+                    type: .physical,
+                    deeplink: nil,
+                    savingsBasisPoints: 150,
+                    denominationsType: "Flexible",
+                    redeemType: "in_store",
+                    giftCardProviders: [
+                        .init(
+                            providerId: "piggycards",
+                            savingsPercentage: 150,
+                            denominationsType: "Flexible"
+                        ),
+                        .init(
+                            providerId: "ctx",
+                            savingsPercentage: 100,
+                            denominationsType: "Flexible"
+                        ),
+                    ]
+                )
+            ),
+            active: true,
+            city: "Beebe",
+            territory: "AR",
+            address1: "206 W Center St",
+            address2: nil,
+            address3: nil,
+            address4: nil,
+            latitude: 35.0717,
+            longitude: -91.8746,
+            website: nil,
+            phone: nil,
+            logoLocation: nil,
+            coverImage: nil,
+            source: "preview"
         )
     }
 }
 
-#Preview("Merchant — Gift Card (single provider)") {
-    let merchant = ExplorePointOfUse.previewMock(
-        name: "Amazon",
-        category: .merchant(
-            ExplorePointOfUse.Merchant(
-                merchantId: "amazon-ctx",
-                paymentMethod: .giftCard,
-                type: .online,
-                deeplink: nil,
-                savingsBasisPoints: 1000,
-                denominationsType: "Fixed",
-                denominations: [],
-                redeemType: "online",
-                giftCardProviders: [
-                    ExplorePointOfUse.Merchant.GiftCardProviderInfo(
-                        providerId: "ctx",
-                        savingsPercentage: 1000,
-                        denominationsType: "Fixed",
-                        sourceId: "84793fe2-603d-465c-8899-6c90f6e11b63"
-                    )
-                ]
-            )
-        )
-    )
-    ScrollView {
-        POIDetailsView(merchant: merchant)
-    }
-    .background(Color.primaryBackground)
+#Preview("Merchant details") {
+    POIDetailsView(merchant: .previewBurgerKing())
+        .background(Color.primaryBackground)
 }
-
-#if PIGGYCARDS_ENABLED
-#Preview("Merchant — Gift Card (multi-provider)") {
-    let merchant = ExplorePointOfUse.previewMock(
-        name: "Domino's",
-        category: .merchant(
-            ExplorePointOfUse.Merchant(
-                merchantId: "dominos-multi",
-                paymentMethod: .giftCard,
-                type: .online,
-                deeplink: nil,
-                savingsBasisPoints: 1000,
-                denominationsType: "Fixed",
-                denominations: [],
-                redeemType: "online",
-                giftCardProviders: [
-                    ExplorePointOfUse.Merchant.GiftCardProviderInfo(
-                        providerId: "ctx",
-                        savingsPercentage: 1000,
-                        denominationsType: "Fixed",
-                        sourceId: nil
-                    ),
-                    ExplorePointOfUse.Merchant.GiftCardProviderInfo(
-                        providerId: "piggycards",
-                        savingsPercentage: 800,
-                        denominationsType: "Fixed",
-                        sourceId: "45"
-                    )
-                ]
-            )
-        )
-    )
-    ScrollView {
-        POIDetailsView(merchant: merchant)
-    }
-    .background(Color.primaryBackground)
-}
-#endif
-
-#Preview("ATM — Buy & Sell") {
-    let merchant = ExplorePointOfUse.previewMock(
-        id: 42,
-        name: "Coinsource",
-        category: .atm(ExplorePointOfUse.Atm(manufacturer: "Coinsource", type: .buySell)),
-        city: "Phoenix",
-        territory: "AZ",
-        address1: "2800 E Camelback Rd",
-        latitude: 33.5092,
-        longitude: -112.0186,
-        website: "https://coinsource.net",
-        phone: "6025551234",
-        source: "Coinsource"
-    )
-    ScrollView {
-        POIDetailsView(merchant: merchant)
-    }
-    .background(Color.primaryBackground)
-}
-
 #endif
