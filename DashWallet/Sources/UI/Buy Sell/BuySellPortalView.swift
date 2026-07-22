@@ -47,6 +47,9 @@ private struct MenuCardStyle: ViewModifier {
 
 struct BuySellPortalView: View {
     let showCoinbase: Bool
+    /// Dash DEX (SwapKit) entry visibility, decided by the controller (mainnet + API key
+    /// configured). Dash DEX now runs on SwiftDashSDK via memo-less NEAR-intents routes.
+    let showSwapKit: Bool
 
     @ObservedObject var model: BuySellPortalModel
     var onBack: () -> Void
@@ -56,15 +59,9 @@ struct BuySellPortalView: View {
     var onMaya: () -> Void
     var onSwapKit: () -> Void
 
-    // Maya and SwapKit (Dash DEX) are both withheld for the SwiftDashSDK migration
-    // release: their swap paths build a DSTransaction and broadcast through DashSync,
-    // whose SPV is frozen post-M6 (balances/UTXOs read stale/zero), so a swap would be
-    // built against dead state and fail. The screens stay compiled; only the entry
-    // points are withheld.
-    // TODO(swap-sdk-port): restore once the SwiftDashSDK sender can build these swaps
-    // (Maya needs an OP_RETURN output with preserved output order).
+    // Maya remains withheld: its swap path is inherently OP_RETURN (memo-based), which
+    // SwiftDashSDK cannot build. Dash DEX (SwapKit) replaces it via memo-less NEAR routing.
     private var showsMaya: Bool { false }
-    private var showsSwapKit: Bool { false }
 
     var body: some View {
         ScrollView {
@@ -82,7 +79,7 @@ struct BuySellPortalView: View {
                     if showsMaya {
                         mayaCard
                     }
-                    if showsSwapKit {
+                    if showSwapKit {
                         swapKitCard
                     }
                 }
@@ -200,6 +197,7 @@ private extension BuySellPortalModel {
 #Preview("BuySell Portal - Coinbase") {
     BuySellPortalView(
         showCoinbase: true,
+        showSwapKit: true,
         model: .preview,
         onBack: {},
         onUphold: {},
@@ -213,6 +211,7 @@ private extension BuySellPortalModel {
 #Preview("BuySell Portal - No Coinbase") {
     BuySellPortalView(
         showCoinbase: false,
+        showSwapKit: false,
         model: .preview,
         onBack: {},
         onUphold: {},

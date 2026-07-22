@@ -153,7 +153,9 @@ final class RefundAddressViewModel: ObservableObject {
         shouldShowAddressValidationError = true
         guard SwapAddressValidator.isValid(address: candidate, for: coin) else { return nil }
 
-        guard let destination = DWEnvironment.sharedInstance().currentAccount.receiveAddress,
+        // SwiftDashSDK receive address — the frozen DashSync account's receiveAddress reads
+        // stale post-migration.
+        guard let destination = SwiftDashSDKReceiveAddressReader.receiveAddress(),
               !destination.isEmpty else {
             orderError = NSLocalizedString("Unable to determine your Dash receive address.", comment: "Dash DEX")
             return nil

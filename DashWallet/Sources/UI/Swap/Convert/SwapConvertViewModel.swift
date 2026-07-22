@@ -69,18 +69,25 @@ final class SwapConvertViewModel: ObservableObject {
 
     // MARK: - Computed Properties
 
+    /// Max Dash (duffs) available to convert: SDK spendable balance minus the send fee reserve.
+    /// The frozen DashSync account balance reads stale/zero post-migration, so all balance reads
+    /// in this flow go through SwiftDashSDK.
+    private var availableDashDuffs: UInt64 {
+        SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
+    }
+
     var dashBalance: Int64 {
-        Int64(DWEnvironment.sharedInstance().currentAccount.balance)
+        Int64(availableDashDuffs)
     }
 
     /// Symbol-free formatted Dash balance (e.g. "1.5") for the convert source row.
     var dashBalanceFormatted: String {
-        DWEnvironment.sharedInstance().currentAccount.balance.formattedDashAmountWithoutCurrencySymbol
+        availableDashDuffs.formattedDashAmountWithoutCurrencySymbol
     }
 
     var dashBalanceFiat: String {
         do {
-            let balance = DWEnvironment.sharedInstance().currentAccount.balance.dashAmount
+            let balance = availableDashDuffs.dashAmount
             let amount = try CurrencyExchanger.shared.convertDash(amount: balance, to: currentFiatCurrency)
             return NumberFormatter.fiatDisplayFormatter(currencyCode: currentFiatCurrency)
                 .string(from: amount as NSNumber) ?? "\(amount)"
@@ -145,7 +152,7 @@ final class SwapConvertViewModel: ObservableObject {
 
     /// Sets the input to the wallet's full balance, preserving the active currency display.
     func setMax() {
-        let balance = DWEnvironment.sharedInstance().currentAccount.balance
+        let balance = availableDashDuffs
         amount.setDash(Self.dashRoundedDown(balance.dashAmount))
         isMaxFromBalance = true
         clearQuoteState()
@@ -252,7 +259,7 @@ final class SwapConvertViewModel: ObservableObject {
         let satoshis = activeSellSatoshis
         guard satoshis > 0 else { return .empty }
 
-        let accountBalance = Int64(DWEnvironment.sharedInstance().currentAccount.balance)
+        let accountBalance = Int64(availableDashDuffs)
         if satoshis > accountBalance { return .insufficientBalance }
 
         return .valid(dashSatoshis: satoshis)
@@ -260,7 +267,7 @@ final class SwapConvertViewModel: ObservableObject {
 
     private func checkBalance() {
         let satoshis = activeSellSatoshis
-        let accountBalance = Int64(DWEnvironment.sharedInstance().currentAccount.balance)
+        let accountBalance = Int64(availableDashDuffs)
         errorMessage = satoshis > accountBalance
             ? maximumTransactionAmountMessage()
             : nil

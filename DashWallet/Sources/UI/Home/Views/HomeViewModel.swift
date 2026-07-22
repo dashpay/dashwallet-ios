@@ -970,10 +970,12 @@ extension HomeViewModel {
                     if type == .switchWallet && !canSwitchWallet {
                         type = .receive
                     }
-                    // Dash DEX is withheld for the migration release (frozen-DashSync
-                    // swap path); a saved DEX shortcut degrades to Spend. The saved
-                    // config is untouched, so it returns if DEX is restored.
-                    if type == .dashDEX {
+                    // Dash DEX is offered only on mainnet with SwapKit configured (mirrors
+                    // ShortcutActionType.customizableActions and ServiceDataProvider.shouldShow);
+                    // a saved DEX shortcut degrades to Spend whenever that gate isn't met. The
+                    // saved config is untouched, so it returns once the gate passes again.
+                    let dashDEXAvailable = !isTestnet && SwapKitConstants.isConfigured
+                    if type == .dashDEX && !dashDEXAvailable {
                         type = .spend
                     }
                     return ShortcutAction(type: type)

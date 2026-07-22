@@ -140,6 +140,9 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
     private func setupSwiftUIView() {
         let portalView = BuySellPortalView(
             showCoinbase: CoinbaseDataSource.shouldShow(),
+            // Dash DEX swaps real assets — mainnet only, and only when the SwapKit API key
+            // is configured. Mirrors ServiceDataProvider.shouldShow(.swapKit).
+            showSwapKit: DWEnvironment.sharedInstance().currentChain.isMainnet() && SwapKitConstants.isConfigured,
             model: model,
             onBack: { [weak self] in
                 guard let self else { return }

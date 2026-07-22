@@ -37,8 +37,8 @@ enum SwapBuyTransactionMatcher {
 
     static func matchedTransaction(
         for order: SwapOrder,
-        in transactions: [DSTransaction]
-    ) -> DSTransaction? {
+        in transactions: [Transaction]
+    ) -> Transaction? {
         guard order.direction == "buy" else { return nil }
 
         let receiveAddress = order.toAddress.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -59,8 +59,10 @@ enum SwapBuyTransactionMatcher {
         }
 
         return candidates.min(by: { lhs, rhs in
-            if lhs.timestamp != rhs.timestamp {
-                return lhs.timestamp < rhs.timestamp
+            let lhsTimestamp = lhs.date.timeIntervalSince1970
+            let rhsTimestamp = rhs.date.timeIntervalSince1970
+            if lhsTimestamp != rhsTimestamp {
+                return lhsTimestamp < rhsTimestamp
             }
 
             let lhsDifference = amountDifference(
@@ -84,26 +86,26 @@ enum SwapBuyTransactionMatcher {
 
     static func walletTxHashData(
         for order: SwapOrder,
-        in transactions: [DSTransaction]
+        in transactions: [Transaction]
     ) -> Data? {
         matchedTransaction(for: order, in: transactions)?.txHashData
     }
 
     static func walletTxHashHexString(
         for order: SwapOrder,
-        in transactions: [DSTransaction]
+        in transactions: [Transaction]
     ) -> String? {
         matchedTransaction(for: order, in: transactions)?.txHashHexString
     }
 
     private static func matches(
-        _ tx: DSTransaction,
+        _ tx: Transaction,
         receiveAddress: String,
         minimumTimestamp: TimeInterval,
         expectedDashAmount: Decimal
     ) -> Bool {
         guard tx.direction == .received else { return false }
-        guard tx.timestamp >= minimumTimestamp - timestampSlack else { return false }
+        guard tx.date.timeIntervalSince1970 >= minimumTimestamp - timestampSlack else { return false }
         guard tx.outputReceiveAddresses.contains(receiveAddress) else { return false }
 
         guard let receivedDashAmount = receivedDashAmount(for: tx) else { return false }
@@ -122,13 +124,13 @@ enum SwapBuyTransactionMatcher {
         return Decimal(string: raw, locale: Locale(identifier: "en_US_POSIX"))
     }
 
-    private static func receivedDashAmount(for tx: DSTransaction) -> Decimal? {
+    private static func receivedDashAmount(for tx: Transaction) -> Decimal? {
         guard tx.dashAmount != UInt64.max else { return nil }
         return Decimal(tx.dashAmount) / baseUnits
     }
 
     private static func amountDifference(
-        tx: DSTransaction,
+        tx: Transaction,
         expectedDashAmount: Decimal
     ) -> Decimal {
         (receivedDashAmount(for: tx) ?? 0) - expectedDashAmount

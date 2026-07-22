@@ -200,7 +200,9 @@ class SelectCoinViewModel: ObservableObject {
     }
 
     private func normalizedNetworkLabels(_ labels: [String: String]) -> [String: String] {
-        guard direction == .buy else { return labels }
+        // Both Buy and Sell now route exclusively through NEAR intents (mayaOnly coins are
+        // hidden and the quote layer forces NEAR), so a "Multiple networks" label is never
+        // accurate — a both-routable coin effectively resolves to a single provider (NEAR).
         return labels.mapValues { $0 == RouteProvider.multiple.shortLabel ? RouteProvider.near.shortLabel : $0 }
     }
 

@@ -211,7 +211,9 @@ final class SwapTrackingService {
 
     @MainActor
     private func completedWalletTxHash(for order: SwapOrder) -> String? {
-        let transactions = DWEnvironment.sharedInstance().currentWallet.allTransactions
+        // Read the wallet's transactions from SwiftDashSDK; DashSync's allTransactions is frozen
+        // (empty) post-migration, so a buy's incoming DASH would never match.
+        let transactions = SwiftDashSDKWalletSource.fetchAll()
         return SwapBuyTransactionMatcher.walletTxHashHexString(for: order, in: transactions)
     }
 }
