@@ -79,12 +79,23 @@ public class ExploreDatabaseSyncManager {
         set { UserDefaults.standard.setValue(newValue, forKey: kExploreDatabaseInstalledNetworkKey) }
     }
 
+    private var networkDidChangeObserver: NSObjectProtocol?
+
     init() {
         syncState = .inititialing
     }
 
     public func start() {
         syncIfNeeded()
+
+        // A chain switch at runtime otherwise goes unnoticed until the next launch: the
+        // version check only runs from here and the 24h timer. Re-run it on a network
+        // change so the installedDatabaseNetwork mismatch forces a same-session re-download.
+        networkDidChangeObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.DWCurrentNetworkDidChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.syncIfNeeded()
+        }
 
         // Try to sync every 24h
         timer = Timer.scheduledTimer(withTimeInterval: 60*60*24, repeats: true) { [weak self] _ in
@@ -142,6 +153,9 @@ public class ExploreDatabaseSyncManager {
     deinit {
         timer.invalidate()
         timer = nil
+        if let networkDidChangeObserver {
+            NotificationCenter.default.removeObserver(networkDidChangeObserver)
+        }
     }
 
     static let share = ExploreDatabaseSyncManager()
