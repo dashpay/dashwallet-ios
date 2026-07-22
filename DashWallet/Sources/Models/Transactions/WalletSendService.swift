@@ -60,6 +60,10 @@ final class PreparedStandardSend: NSObject {
 
     @objc(broadcastAndReturnError:)
     func broadcast() throws {
+        // Catches airplane mode toggled on the confirm sheet after the tx was
+        // prepared: without this the offline broadcast is silently accepted.
+        try WalletSendService.ensureOnline()
+
         claimLock.lock()
         guard !broadcastClaimed else {
             claimLock.unlock()
@@ -164,6 +168,23 @@ final class WalletSendService: NSObject {
         }
     }
 
+    /// Blocks a send when the device is offline. The SDK's broadcast accepts a
+    /// tx offline (queuing it to send on reconnect) without throwing, so a send
+    /// confirmed after airplane mode was enabled would silently "succeed" with
+    /// no feedback — and a user who assumes it failed could retry into a
+    /// double-spend. Fail loudly instead. Only blocks when the reachability
+    /// monitor is live and reports offline; if monitoring hasn't started, falls
+    /// through (fail-open) rather than block a send on an unknown signal.
+    static func ensureOnline() throws {
+        if NetworkReachability.shared.isMonitoring, !NetworkReachability.shared.isReachable {
+            throw Self.makeError(
+                code: .offline,
+                description: NSLocalizedString(
+                    "No internet connection. Reconnect to the network and try again.",
+                    comment: "Send blocked while the device is offline"))
+        }
+    }
+
     func prepareStandardSendForConfirmation(address: String, amount: UInt64, sessionAuthSufficient: Bool = false) async throws -> PreparedStandardSend {
         Self.logger.info("💸 TXSEND :: preparing standard send")
         try Self.ensureChainSynced()
@@ -183,6 +204,9 @@ final class WalletSendService: NSObject {
         sessionAuthSufficient: Bool = false
     ) async throws -> Data {
         try Self.ensureChainSynced()
+        // Also covers the selected-input path below, whose `buildAndSignFromAddress`
+        // broadcasts internally and never reaches `PreparedStandardSend.broadcast()`.
+        try Self.ensureOnline()
         if let inputSelector {
             Self.logger.info("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
             try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
@@ -490,6 +514,7 @@ private extension WalletSendService {
         case alreadyBroadcast = 5
         case dashPayPaymentUnavailable = 6
         case chainNotSynced = 7
+        case offline = 8
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"
