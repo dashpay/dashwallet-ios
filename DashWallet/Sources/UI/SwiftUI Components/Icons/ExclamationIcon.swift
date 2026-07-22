@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 // MARK: - ExclamationIcon
@@ -25,9 +26,9 @@ import UIKit
 /// to any `size` without needing raster assets.
 struct ExclamationIcon: View {
     var size: CGSize = CGSize(width: 18, height: 17)
-    var fillColor: Color = Color(uiColor: UIColor(red: 1.0, green: 192.0 / 255.0, blue: 67.0 / 255.0, alpha: 1.0))
-    var strokeColor: Color = Color(uiColor: UIColor(red: 1.0, green: 192.0 / 255.0, blue: 67.0 / 255.0, alpha: 1.0))
-    var symbolColor: Color = Color(uiColor: UIColor(red: 10.0 / 255.0, green: 11.0 / 255.0, blue: 13.0 / 255.0, alpha: 1.0))
+    var fillColor: Color = Color.dash.yellow
+    var strokeColor: Color = Color.dash.yellow
+    var symbolColor: Color = Color.dash.black
     var lineWidth: CGFloat = 1.5
 
     var body: some View {

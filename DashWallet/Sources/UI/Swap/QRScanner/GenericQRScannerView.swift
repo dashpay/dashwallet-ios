@@ -18,6 +18,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 /// Full-screen SwiftUI QR scanner with camera preview, scan frame, and torch toggle.
 struct GenericQRScannerView: View {
@@ -52,14 +53,14 @@ struct GenericQRScannerView: View {
                     Button(action: { onCancel?() }) {
                         Text(NSLocalizedString("Cancel", comment: ""))
                             .font(.system(size: 17))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.dash.whiteText)
                     }
 
                     Spacer()
 
                     Button(action: { torchOn.toggle() }) {
                         Image(systemName: torchOn ? "bolt.slash.fill" : "bolt.fill")
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.dash.whiteText)
                             .font(.system(size: 20))
                     }
                 }
@@ -70,20 +71,20 @@ struct GenericQRScannerView: View {
 
                 // Scan frame
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.white.opacity(0.6), lineWidth: 2)
+                    .stroke(Color.dash.white.opacity(0.6), lineWidth: 2)
                     .frame(width: 250, height: 250)
 
                 // Instruction label
                 Text(NSLocalizedString("Scan QR Code", comment: "Dash DEX"))
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
                     .padding(.top, 24)
 
                 Spacer()
                 Spacer()
             }
         }
-        .background(Color.black.ignoresSafeArea())
+        .background(Color.dash.black.ignoresSafeArea())
         .alert(isPresented: $showCameraAlert) {
             Alert(
                 title: Text(NSLocalizedString("Camera Unavailable", comment: "")),

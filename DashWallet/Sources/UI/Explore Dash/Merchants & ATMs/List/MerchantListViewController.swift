@@ -19,6 +19,7 @@ import CoreLocation
 import MapKit
 import UIKit
 import SwiftUI
+import DashUIKit
 
 // MARK: - MerchantsListSegment
 
@@ -455,6 +456,6 @@ private struct MerchantListNavBar: View {
             central: { Text(title).font(.subheadMedium) },
             trailing: { NavigationBarElement.info.button(action: onInfo) }
         )
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 }

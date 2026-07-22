@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct TextInput: View {
     @FocusState private var isFocused: Bool
@@ -35,7 +36,7 @@ struct TextInput: View {
             ZStack(alignment: .leading) {
                 Text(label)
                     .font(.subhead)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .offset(y: labelOffset)
                     .scaleEffect(labelScale, anchor: .leading)
                     .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isFocused || !text.isEmpty)
@@ -58,7 +59,7 @@ struct TextInput: View {
                         trailingAction?() ?? clearText()
                     }) {
                         (trailingIcon ?? Image(systemName: "xmark.circle.fill"))
-                            .foregroundColor(.tertiaryText)
+                            .foregroundColor(.dash.tertiaryText)
                     }
                     .opacity(text.isEmpty ? 0 : 1)
                 }
@@ -76,7 +77,7 @@ struct TextInput: View {
             Group {
                 if isFocused && !isError {
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.dashBlue.opacity(0.1), lineWidth: 3)
+                        .stroke(Color.dash.blue.opacity(0.1), lineWidth: 3)
                         .padding(-2)
                 }
             }
@@ -97,23 +98,23 @@ struct TextInput: View {
     
     private var backgroundColor: Color {
         if isError {
-            return Color.systemRed.opacity(0.1)
+            return Color.dash.red.opacity(0.1)
         }
         
         if isFocused {
             return Color.clear
         }
         
-        return Color.gray400.opacity(0.13)
+        return Color.dash.gray400.opacity(0.13)
     }
     
     private var borderColor: Color {
         if isError {
-            return .systemRed
+            return .dash.red
         }
         
         if isFocused {
-            return .dashBlue
+            return .dash.blue
         }
         
         return Color.clear

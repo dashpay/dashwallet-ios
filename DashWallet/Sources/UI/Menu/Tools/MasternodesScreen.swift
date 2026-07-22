@@ -17,8 +17,9 @@
 //  limitations under the License.
 //
 
-import SwiftUI
+import DashUIKit
 import SwiftDashSDK
+import SwiftUI
 import UIKit
 
 // MARK: - MasternodesViewModel
@@ -172,14 +173,14 @@ struct MasternodesScreen: View {
                     VStack(spacing: 12) {
                         Image(systemName: "server.rack")
                             .font(.system(size: 40))
-                            .foregroundColor(.gray)
+                            .foregroundColor(Color.dash.tertiaryText)
 
                         Text(NSLocalizedString("No masternodes yet", comment: "Masternodes"))
                             .font(.headline)
 
                         Text(NSLocalizedString("Masternodes and evonodes registered with this wallet's keys will appear here after the wallet syncs.", comment: "Masternodes"))
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(Color.dash.secondaryText)
                             .multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity)
@@ -221,7 +222,7 @@ private struct MasternodeListRow: View {
                 if let service = masternode.serviceAddress {
                     Text(service)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                 }
             }
 
@@ -359,7 +360,7 @@ struct MasternodeDetailScreen: View {
                             // `ProgressView` UIKit class that shadows it here.
                             SwiftUI.ProgressView().scaleEffect(0.8)
                             Text(NSLocalizedString("Fetching…", comment: "Masternodes"))
-                                .foregroundColor(.secondary)
+                                .foregroundColor(Color.dash.secondaryText)
                         }
                     } else if let credits = claimableCredits {
                         MasternodeDetailRow(
@@ -369,7 +370,7 @@ struct MasternodeDetailScreen: View {
                     } else if let error = balanceError {
                         Text(error)
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(Color.dash.secondaryText)
                     }
 
                     Button {
@@ -440,7 +441,7 @@ private struct MasternodeDetailRow: View {
         HStack {
             Text(label)
                 .font(.subheadline)
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
             Spacer()
             Text(value)
                 .font(.subheadline)
@@ -468,15 +469,15 @@ private struct MasternodeCopyRow: View {
                 HStack {
                     Text(label)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                     Spacer()
                     Image(systemName: copied ? "checkmark" : "doc.on.doc")
                         .font(.caption)
-                        .foregroundColor(copied ? .green : .dashBlue)
+                        .foregroundColor(copied ? .green : .dash.blue)
                 }
                 Text(value)
                     .font(.system(.footnote, design: .monospaced))
-                    .foregroundColor(.primary)
+                    .foregroundColor(Color.dash.primaryText)
                     .lineLimit(nil)
                     .fixedSize(horizontal: false, vertical: true)
             }

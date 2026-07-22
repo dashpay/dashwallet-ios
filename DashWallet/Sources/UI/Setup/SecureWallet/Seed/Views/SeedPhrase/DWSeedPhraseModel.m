@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
             [words addObject:newWord];
         }
 
-        _words = [words shuffledArray];
+        _words = [[GKRandomSource sharedRandom] arrayByShufflingObjectsInArray:words];
     }
     return self;
 }

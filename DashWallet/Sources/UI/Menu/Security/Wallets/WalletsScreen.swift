@@ -24,6 +24,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 struct WalletsScreen: View {
@@ -49,7 +50,7 @@ struct WalletsScreen: View {
 
     var body: some View {
         ZStack {
-            Color.primaryBackground.ignoresSafeArea()
+            Color.dash.primaryBackground.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
                 header
@@ -92,9 +93,9 @@ struct WalletsScreen: View {
                             }
                         }
                     }
-                    .background(Color.secondaryBackground)
+                    .background(Color.dash.secondaryBackground)
                     .cornerRadius(12)
-                    .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+                    .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
                     .padding(.horizontal, 20)
                     .padding(.top, 4)
                 }
@@ -183,17 +184,17 @@ struct WalletsScreen: View {
                 Button(action: { vc.popViewController(animated: true) }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color.dash.primaryText)
                         .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
                 }
                 Spacer()
                 Button(action: { showAddWallet = true }) {
                     Image(systemName: "plus")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color.dash.primaryText)
                         .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
                 }
                 .accessibilityLabel(NSLocalizedString("Add Wallet", comment: "Wallets"))
             }
@@ -204,7 +205,7 @@ struct WalletsScreen: View {
                 Text(NSLocalizedString("Wallets", comment: "Wallets"))
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             .padding(.horizontal, 20)
@@ -215,18 +216,18 @@ struct WalletsScreen: View {
 
     private var progressOverlay: some View {
         ZStack {
-            Color.black.opacity(0.35).ignoresSafeArea()
+            Color.dash.backgroundOverlay.ignoresSafeArea()
             VStack(spacing: 14) {
                 // Fully qualified: the app has a UIKit `ProgressView: UIView`
                 // that otherwise shadows SwiftUI's.
                 SwiftUI.ProgressView()
-                    .tint(.white)
+                    .tint(Color.dash.whiteText)
                 Text(NSLocalizedString("Switching wallet…", comment: "Wallets"))
                     .font(.subheadline)
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
             }
             .padding(24)
-            .background(Color.black.opacity(0.6))
+            .background(Color.dash.backgroundOverlay)
             .cornerRadius(14)
         }
     }
@@ -270,18 +271,18 @@ private struct WalletRowView: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(row.displayName)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .lineLimit(1)
                 if let username = row.username {
                     Text("@\(username)")
                         .font(.system(size: 13))
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                         .lineLimit(1)
                 }
                 if let balance = row.balanceText {
                     Text(balance)
                         .font(.system(size: 13))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .lineLimit(1)
                 }
             }
@@ -289,7 +290,7 @@ private struct WalletRowView: View {
             if row.isActive {
                 Image(systemName: "checkmark")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.dashBlue)
+                    .foregroundColor(.dash.blue)
             }
             // Visible entry point for switch/rename/remove — the long-press
             // context menu duplicates these but is undiscoverable on its own.
@@ -314,13 +315,13 @@ private struct WalletRowView: View {
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .frame(width: 32, height: 32)
                     .contentShape(Rectangle())
             }
             Image(systemName: "chevron.right")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
@@ -346,31 +347,31 @@ private struct RemoveWalletSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.primaryBackground.ignoresSafeArea()
+                Color.dash.primaryBackground.ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
                         Text(String(
                             format: NSLocalizedString("Remove \"%@\"", comment: "Wallets"),
                             row.displayName))
                             .font(.title2).fontWeight(.bold)
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
 
                         Text(NSLocalizedString(
                             "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.",
                             comment: "Wallets"))
                             .font(.subheadline)
-                            .foregroundColor(.secondaryText)
+                            .foregroundColor(.dash.secondaryText)
 
                         Text(NSLocalizedString(
                             "Type this wallet's recovery phrase to confirm.",
                             comment: "Wallets"))
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
 
                         TextEditor(text: $phrase)
                             .frame(minHeight: 100)
                             .padding(8)
-                            .background(Color.secondaryBackground)
+                            .background(Color.dash.secondaryBackground)
                             .cornerRadius(10)
                             .autocorrectionDisabled(true)
                             .textInputAutocapitalization(.never)
@@ -380,16 +381,16 @@ private struct RemoveWalletSheet: View {
                                 "That is not this wallet's recovery phrase.",
                                 comment: "Wallets"))
                                 .font(.footnote)
-                                .foregroundColor(.systemRed)
+                                .foregroundColor(.dash.red)
                         }
 
                         Button(action: confirm) {
                             Text(NSLocalizedString("Remove Wallet", comment: "Wallets"))
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(Color.dash.whiteText)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
-                                .background(canConfirm ? Color.systemRed : Color.systemRed.opacity(0.4))
+                                .background(canConfirm ? Color.dash.red : Color.dash.red.opacity(0.4))
                                 .cornerRadius(12)
                         }
                         .disabled(!canConfirm)
@@ -446,7 +447,7 @@ private struct AddWalletSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.primaryBackground.ignoresSafeArea()
+                Color.dash.primaryBackground.ignoresSafeArea()
                 content
             }
             .navigationTitle(navigationTitle)
@@ -493,7 +494,7 @@ private struct AddWalletSheet: View {
                 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.",
                 comment: "Wallets"))
                 .font(.subheadline)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
 
@@ -518,23 +519,23 @@ private struct AddWalletSheet: View {
         HStack(spacing: 14) {
             Image(systemName: systemImage)
                 .font(.system(size: 22))
-                .foregroundColor(.dashBlue)
+                .foregroundColor(.dash.blue)
                 .frame(width: 32)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Text(subtitle)
                     .font(.system(size: 13))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
         }
         .padding(16)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 }
@@ -561,29 +562,29 @@ private struct CreateWalletView: View {
                     "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.",
                     comment: "Wallets"))
                     .font(.subheadline)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
 
                 phraseGrid
 
                 Toggle(isOn: $confirmedWrittenDown) {
                     Text(NSLocalizedString("I have written down my recovery phrase.", comment: "Wallets"))
                         .font(.system(size: 15))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                 }
                 .disabled(mnemonic == nil || viewModel.addInProgress || viewModel.switchInProgress)
 
                 Button(action: create) {
                     HStack {
                         if viewModel.addInProgress || viewModel.switchInProgress {
-                            SwiftUI.ProgressView().tint(.white)
+                            SwiftUI.ProgressView().tint(Color.dash.whiteText)
                         }
                         Text(NSLocalizedString("Create Wallet", comment: "Wallets"))
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.dash.whiteText)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(canCreate ? Color.dashBlue : Color.dashBlue.opacity(0.4))
+                    .background(canCreate ? Color.dash.blue : Color.dash.blue.opacity(0.4))
                     .cornerRadius(12)
                 }
                 .disabled(!canCreate)
@@ -604,16 +605,16 @@ private struct CreateWalletView: View {
                 HStack(spacing: 8) {
                     Text("\(index + 1)")
                         .font(.system(size: 13, design: .monospaced))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .frame(width: 22, alignment: .trailing)
                     Text(word)
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                     Spacer(minLength: 0)
                 }
                 .padding(.vertical, 10)
                 .padding(.horizontal, 12)
-                .background(Color.secondaryBackground)
+                .background(Color.dash.secondaryBackground)
                 .cornerRadius(10)
             }
         }
@@ -654,12 +655,12 @@ private struct ImportWalletView: View {
                     "Enter the recovery phrase of the wallet you want to add.",
                     comment: "Wallets"))
                     .font(.subheadline)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
 
                 TextEditor(text: $phrase)
                     .frame(minHeight: 120)
                     .padding(8)
-                    .background(Color.secondaryBackground)
+                    .background(Color.dash.secondaryBackground)
                     .cornerRadius(10)
                     .autocorrectionDisabled(true)
                     .textInputAutocapitalization(.never)
@@ -671,27 +672,27 @@ private struct ImportWalletView: View {
                             "This wallet is already on this device.",
                             comment: "Wallets"))
                             .font(.footnote)
-                            .foregroundColor(.secondaryText)
+                            .foregroundColor(.dash.secondaryText)
                         Button(NSLocalizedString("Switch to it", comment: "Wallets")) {
                             onSwitchToExisting(existingWalletId)
                         }
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                     }
                 }
 
                 Button(action: importWallet) {
                     HStack {
                         if viewModel.addInProgress || viewModel.switchInProgress {
-                            SwiftUI.ProgressView().tint(.white)
+                            SwiftUI.ProgressView().tint(Color.dash.whiteText)
                         }
                         Text(NSLocalizedString("Import Wallet", comment: "Wallets"))
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.dash.whiteText)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(canImport ? Color.dashBlue : Color.dashBlue.opacity(0.4))
+                    .background(canImport ? Color.dash.blue : Color.dash.blue.opacity(0.4))
                     .cornerRadius(12)
                 }
                 .disabled(!canImport)

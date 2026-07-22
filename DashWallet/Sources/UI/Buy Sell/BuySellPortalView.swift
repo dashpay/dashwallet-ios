@@ -18,6 +18,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // MARK: - MenuItemButtonStyle
 
@@ -36,7 +37,7 @@ private struct MenuCardStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(.rect(cornerRadius: 20))
             .shadow(color: .shadow, radius: 10, x: 0, y: 5)
     }
@@ -89,7 +90,7 @@ struct BuySellPortalView: View {
                 .padding(.horizontal, 20)
             }
         }
-        .background(Color.primaryBackground.ignoresSafeArea())
+        .background(Color.dash.primaryBackground.ignoresSafeArea())
     }
 
     // MARK: - Cards
@@ -140,11 +141,11 @@ struct BuySellPortalView: View {
 
             Text(NSLocalizedString("Powered by Uphold", comment: "Buy Sell Portal"))
                 .font(.caption1)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 5)
-        .background(Color.gray300Alpha10)
+        .background(Color.dash.gray300Alpha10)
         .clipShape(.rect(cornerRadius: 14))
     }
 

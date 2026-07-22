@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct DashSpendMultiplePanel: View {
     let denominations: [Decimal]
@@ -54,10 +55,10 @@ struct DashSpendMultiplePanel: View {
                 if let warning = inventoryWarning {
                     Text(warning)
                         .font(.caption)
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dash.whiteText)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(Color(red: 10/255, green: 11/255, blue: 13/255).opacity(0.7))
+                        .background(Color.dash.black1000Alpha70)
                         .cornerRadius(10)
                         .offset(y: 20)
                 }
@@ -69,7 +70,7 @@ struct DashSpendMultiplePanel: View {
                 if let error = error {
                     Text(error.localizedDescription)
                         .font(.caption)
-                        .foregroundColor(Color.systemRed)
+                        .foregroundColor(Color.dash.red)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity)
@@ -77,7 +78,7 @@ struct DashSpendMultiplePanel: View {
                 } else if showCost {
                     Text(costMessage)
                         .font(.subhead)
-                        .foregroundColor(Color.primaryText)
+                        .foregroundColor(Color.dash.primaryText)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
                         .padding(.bottom, 4)
@@ -129,14 +130,14 @@ private struct DenominationCard: View {
                         size: .extraSmall,
                         action: onReset
                     )
-                    .overrideForegroundColor(.primaryText)
-                    .overrideBackgroundColor(.gray300Alpha10)
+                    .overrideForegroundColor(.dash.primaryText)
+                    .overrideBackgroundColor(.dash.gray300Alpha10)
                     .frame(maxWidth: 126, alignment: .trailing)
                 }
             }
         }
         .padding(20)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(20)
     }
 }
@@ -150,7 +151,7 @@ private struct DashSpendMultiplePanelPreview: View {
 
     var body: some View {
         ZStack {
-            Color.primaryBackground.ignoresSafeArea()
+            Color.dash.primaryBackground.ignoresSafeArea()
 
             DashSpendMultiplePanel(
                 denominations: [5, 10, 50, 100],

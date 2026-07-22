@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // MARK: - HomeBalanceViewState
 
@@ -57,7 +58,7 @@ struct HomeBalanceView: View {
                 if !viewModel.isBalanceHidden && viewModel.state == .syncing {
                     Text(NSLocalizedString("Syncing Balance", comment: ""))
                         .font(.caption)
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dash.whiteText)
                         .opacity(opacity)
                         .onAppear {
                             withAnimation(
@@ -74,20 +75,20 @@ struct HomeBalanceView: View {
             ZStack {
                 if viewModel.isBalanceHidden {
                     Image(systemName: "eye.slash.fill")
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dash.whiteText)
                         .padding(10)
                         .background(
                             Circle()
-                                .fill(Color.black.opacity(0.2))
+                                .fill(Color.dash.black.opacity(0.2))
                         )
                         .frame(width: 58, height: 58)
                 } else {
                     VStack(spacing: 0) {
                         DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.dash.whiteText)
                         Text(viewModel.fiatString(forDuffs: totalDuffs))
                             .font(.subhead)
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.dash.whiteText)
 
                         ZStack {
                             if viewModel.shouldShowTapToHideBalance {
@@ -152,7 +153,7 @@ struct HomeBalanceView: View {
                 outAction: { onSend(.shielded) })
         }
         .padding(.horizontal, 12)
-        .background(Color.white.opacity(0.12))
+        .background(Color.dash.white.opacity(0.12))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -162,7 +163,7 @@ struct HomeBalanceView: View {
         Text(NSLocalizedString("TESTNET", comment: "Badge on the home balance while the wallet runs on testnet"))
             .font(.system(size: 11, weight: .bold))
             .kerning(1.2)
-            .foregroundColor(.white)
+            .foregroundColor(Color.dash.whiteText)
             .padding(.horizontal, 10)
             .padding(.vertical, 3)
             .background(Capsule().fill(Color.orange.opacity(0.9)))
@@ -170,7 +171,7 @@ struct HomeBalanceView: View {
 
     private var rowDivider: some View {
         Rectangle()
-            .fill(Color.white.opacity(0.18))
+            .fill(Color.dash.white.opacity(0.18))
             .frame(height: 0.5)
     }
 
@@ -188,20 +189,20 @@ struct HomeBalanceView: View {
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 15))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
                     .frame(width: 20)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title)
                         .font(.footnote)
                         .fontWeight(.medium)
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dash.whiteText)
                     Text(viewModel.fiatString(forDuffs: duffs))
                         .font(.caption2)
                         .foregroundColor(.white.opacity(0.7))
                 }
                 Spacer(minLength: 8)
                 DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
             }
             .contentShape(Rectangle())
             .onTapGesture { infoAction() }
@@ -224,9 +225,9 @@ struct HomeBalanceView: View {
         Button(action: action) {
             Image(systemName: systemName)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(Color.dash.whiteText)
                 .frame(width: 28, height: 28)
-                .background(Circle().fill(Color.white.opacity(0.18)))
+                .background(Circle().fill(Color.dash.white.opacity(0.18)))
                 // Keep the visual small but the tap target comfortable.
                 .contentShape(Rectangle().inset(by: -8))
         }

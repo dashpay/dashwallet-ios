@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 /// Push-based navigation glue shared by every redeem entry (deep link,
@@ -121,11 +122,11 @@ struct ClaimInvitationScreen: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(NSLocalizedString("Claim your invitation", comment: "DashPay Invitations"))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .font(.title1)
                 .padding(.top, 12)
             Text(NSLocalizedString("Paste the invitation link you received, or scan its QR code. It funds your username registration.", comment: "DashPay Invitations"))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .font(.system(size: 14))
                 .padding(.top, 4)
 
@@ -140,7 +141,7 @@ struct ClaimInvitationScreen: View {
             .lineLimit(2...5)
             .focused($isInputFocused)
             .padding(12)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .padding(.top, 20)
 
@@ -214,7 +215,7 @@ struct ClaimInvitationScreen: View {
         case .valid:
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: "envelope.open")
-                    .foregroundColor(.dashBlue)
+                    .foregroundColor(.dash.blue)
                     .font(.system(size: 20))
                 VStack(alignment: .leading, spacing: 4) {
                     if let inviter = viewModel.inviterUsername {
@@ -222,24 +223,24 @@ struct ClaimInvitationScreen: View {
                             NSLocalizedString("Invitation from %@", comment: "DashPay Invitations"),
                             inviter))
                             .font(.subheadline.bold())
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                     } else {
                         Text(NSLocalizedString("Valid invitation", comment: "DashPay Invitations"))
                             .font(.subheadline.bold())
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                     }
                     // The voucher amount is not in the link — it is read
                     // from the funding transaction during the claim — so
                     // no amount is shown here.
                     Text(NSLocalizedString("Continue to pick your username. The invitation pays the registration fee.", comment: "DashPay Invitations"))
                         .font(.caption)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.dashBlue.opacity(0.08))
+            .background(Color.dash.blue.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }

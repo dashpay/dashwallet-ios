@@ -83,7 +83,7 @@ struct DashSpendUserAuthScreen: View {
                     }) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                             .padding(10)
                     }
                     
@@ -91,7 +91,7 @@ struct DashSpendUserAuthScreen: View {
                     
                     Text("DashSpend")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .frame(maxWidth: .infinity)
                     
                     Spacer()
@@ -109,11 +109,11 @@ struct DashSpendUserAuthScreen: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(authType.screenTitle)
                             .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                         
                         Text(authType.screenSubtitle)
                             .font(.system(size: 13))
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                             .lineSpacing(4)
                     }
                     .padding(.horizontal, 20)
@@ -133,7 +133,7 @@ struct DashSpendUserAuthScreen: View {
                         if viewModel.showError {
                             Text(viewModel.errorMessage)
                                 .font(.footnote)
-                                .foregroundColor(.systemRed)
+                                .foregroundColor(.dash.red)
                                 .padding(.horizontal, 8)
                         }
                     }
@@ -175,7 +175,7 @@ struct DashSpendUserAuthScreen: View {
                     
                     if viewModel.isLoading {
                         SwiftUI.ProgressView()
-                            .tint(.white)
+                            .tint(Color.dash.whiteText)
                     }
                 }
                 .padding(.bottom, 20)
@@ -192,7 +192,7 @@ struct DashSpendUserAuthScreen: View {
                 EmptyView()
             }
         }
-        .background(Color.secondaryBackground.ignoresSafeArea(edges: .top))
+        .background(Color.dash.secondaryBackground.ignoresSafeArea(edges: .top))
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
         .onAppear {

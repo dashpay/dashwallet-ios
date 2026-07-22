@@ -198,7 +198,7 @@ struct SelectCoinView: View {
         }) {
             Text(NSLocalizedString("Retry", comment: ""))
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(Color.dash.whiteText)
                 .padding(.horizontal, 24)
                 .padding(.vertical, 10)
                 .background(Color.dash.blue)

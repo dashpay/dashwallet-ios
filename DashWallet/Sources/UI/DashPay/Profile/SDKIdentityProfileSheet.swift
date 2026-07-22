@@ -19,6 +19,7 @@
 import SwiftData
 import SwiftDashSDK
 import SwiftUI
+import DashUIKit
 
 struct SDKIdentityProfileSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -56,7 +57,7 @@ struct SDKIdentityProfileSheet: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 24)
             }
-            .background(Color.primaryBackground)
+            .background(Color.dash.primaryBackground)
             .navigationTitle(NSLocalizedString("My Profile", comment: "SDK identity profile sheet — title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -70,10 +71,10 @@ struct SDKIdentityProfileSheet: View {
                 if let toast = copyToast {
                     Text(toast)
                         .font(.subheadline)
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dash.whiteText)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
-                        .background(Color.black.opacity(0.8))
+                        .background(Color.dash.backgroundOverlay)
                         .clipShape(Capsule())
                         .padding(.bottom, 32)
                         .transition(.opacity)
@@ -101,10 +102,10 @@ struct SDKIdentityProfileSheet: View {
             Text(NSLocalizedString("Edit Profile", comment: "SDK identity profile sheet — edit button"))
                 .font(.body)
                 .fontWeight(.semibold)
-                .foregroundColor(.white)
+                .foregroundColor(Color.dash.whiteText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
-                .background(Color.dashBlue)
+                .background(Color.dash.blue)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -115,16 +116,16 @@ struct SDKIdentityProfileSheet: View {
         VStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color.dashBlue)
+                    .fill(Color.dash.blue)
                     .frame(width: 96, height: 96)
                 Text(initial)
                     .font(.system(size: 40, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
             }
             Text(username)
                 .font(.title2)
                 .fontWeight(.semibold)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
         }
         .frame(maxWidth: .infinity)
     }
@@ -158,20 +159,20 @@ struct SDKIdentityProfileSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString("DPNS Names", comment: "SDK identity profile sheet — usernames list"))
                 .font(.caption)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(dpnsNames.enumerated()), id: \.offset) { index, name in
                     HStack {
                         Text(name)
                             .font(.body)
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                         Spacer()
                         Button {
                             UIPasteboard.general.string = name
                             showCopyToast()
                         } label: {
                             Image(systemName: "doc.on.doc")
-                                .foregroundColor(.secondaryText)
+                                .foregroundColor(.dash.secondaryText)
                         }
                         .buttonStyle(.plain)
                     }
@@ -182,7 +183,7 @@ struct SDKIdentityProfileSheet: View {
                 }
             }
             .padding(.horizontal, 12)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -191,11 +192,11 @@ struct SDKIdentityProfileSheet: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.caption)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             HStack(alignment: .top, spacing: 8) {
                 Text(value)
                     .font(monospaced ? .system(.body, design: .monospaced) : .body)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if copyable {
@@ -204,7 +205,7 @@ struct SDKIdentityProfileSheet: View {
                         showCopyToast()
                     } label: {
                         Image(systemName: "doc.on.doc")
-                            .foregroundColor(.secondaryText)
+                            .foregroundColor(.dash.secondaryText)
                     }
                     .buttonStyle(.plain)
                 }

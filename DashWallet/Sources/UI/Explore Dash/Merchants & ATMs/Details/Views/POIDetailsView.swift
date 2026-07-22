@@ -70,7 +70,7 @@ struct POIDetailsView: View {
                     }
                 }
                 .padding(20)
-                .background(Color.secondaryBackground)
+                .background(Color.dash.secondaryBackground)
                 .cornerRadius(12)
 
                 // Location and contact info card
@@ -89,7 +89,7 @@ struct POIDetailsView: View {
                         }
                     }
                     .padding(10)
-                    .background(Color.secondaryBackground)
+                    .background(Color.dash.secondaryBackground)
                     .cornerRadius(12)
                     .padding(.top, 16)
                 }
@@ -131,12 +131,12 @@ struct POIDetailsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(merchant.title ?? "")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 
                 if let subtitle = merchant.subtitle {
                     Text(subtitle)
                         .font(.system(size: 13))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                 }
             }
             
@@ -155,26 +155,26 @@ struct POIDetailsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(NSLocalizedString("Address", comment: "Explore Dash"))
                     .font(.caption)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
 
                 if merchant.address1?.isEmpty == false {
                     Text(merchant.address1 ?? "")
                         .font(.subhead)
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
                 if merchant.address2?.isEmpty == false {
                     Text(merchant.address2 ?? "")
                         .font(.subhead)
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
                 if merchant.address3?.isEmpty == false {
                     Text(merchant.address3 ?? "")
                         .font(.subhead)
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -183,14 +183,14 @@ struct POIDetailsView: View {
                 if !cityAndTerritory.isEmpty {
                     Text(cityAndTerritory)
                         .font(.subhead)
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
                 if let distanceText = viewModel.distanceText {
                     Text(distanceText)
                         .font(.caption)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                 }
             }
             
@@ -200,7 +200,7 @@ struct POIDetailsView: View {
                 Button(action: directionAction) {
                     Image(systemName: "arrow.triangle.turn.up.right.circle.fill")
                         .font(.system(size: 22))
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                 }
             }
         }
@@ -214,11 +214,11 @@ struct POIDetailsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(NSLocalizedString("Phone", comment: ""))
                         .font(.caption)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                     
                     Text(viewModel.formattedPhoneNumber ?? merchant.phone ?? "")
                         .font(.subhead)
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                 }
                 
                 Spacer()
@@ -235,11 +235,11 @@ struct POIDetailsView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(NSLocalizedString("Website", comment: ""))
                         .font(.caption)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                             
                     Text(merchant.website ?? "merchant.com")
                         .font(.subhead)
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
@@ -259,19 +259,19 @@ struct POIDetailsView: View {
             HStack {
                 Text(viewModel.locationCount > 0 ? "\(NSLocalizedString("Show all locations", comment: "Explore Dash")) (\(viewModel.locationCount))" : NSLocalizedString("Show all locations", comment: "Explore Dash"))
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 20)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 5)
+            .shadow(color: Color.dash.shadow, radius: 10, x: 0, y: 5)
             .contentShape(.rect)
         }
         .buttonStyle(PlainButtonStyle())
@@ -284,7 +284,7 @@ struct POIDetailsView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(NSLocalizedString("Select gift card provider", comment: "DashSpend"))
                 .font(.caption)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .padding(.horizontal, 16)
             
             VStack(spacing: 8) {
@@ -293,7 +293,7 @@ struct POIDetailsView: View {
                 }
             }
             .padding(6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .cornerRadius(12)
         }
     }
@@ -304,13 +304,13 @@ struct POIDetailsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(viewModel.selectedProvider?.displayName ?? "")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
 
                 if let selectedProvider = viewModel.selectedProvider,
                    let providerData = viewModel.supportedProviders[selectedProvider] {
                     Text(providerStatusText(for: selectedProvider, isFixed: providerData.isFixed))
                         .font(.system(size: 13))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                 }
             }
 
@@ -321,7 +321,7 @@ struct POIDetailsView: View {
                providerData.discount > 0 {
                 Text(formatDiscount(providerData.discount))
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             }
         }
         .padding(.horizontal, 16)
@@ -346,10 +346,10 @@ struct POIDetailsView: View {
         ) {
             viewModel.selectProvider(provider)
         }
-        .background(viewModel.selectedProvider == provider ? Color.dashBlue.opacity(0.05) : Color.clear)
+        .background(viewModel.selectedProvider == provider ? Color.dash.blue.opacity(0.05) : Color.clear)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(viewModel.selectedProvider == provider ? Color.dashBlue : Color.secondaryText.opacity(0.2), lineWidth: 1)
+                .stroke(viewModel.selectedProvider == provider ? Color.dash.blue : Color.dash.secondaryText.opacity(0.2), lineWidth: 1)
         )
         .cornerRadius(12)
     }
@@ -372,7 +372,7 @@ struct POIDetailsView: View {
         if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
             Text(NSLocalizedString("This card works only in the United States.", comment: "DashSpend"))
                 .font(.system(size: 13))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 8)
         }
@@ -402,7 +402,7 @@ struct POIDetailsView: View {
             HStack(spacing: 6) {
                 Text(providerLoginText)
                     .font(.system(size: 13))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .lineLimit(1)
                     .truncationMode(.head)
                 
@@ -413,7 +413,7 @@ struct POIDetailsView: View {
                 }) {
                     Text(NSLocalizedString("Log Out", comment: "Log out button"))
                         .font(.system(size: 13))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .underline()
                 }
             }
@@ -455,9 +455,9 @@ struct POIDetailsView: View {
     
     private var buttonTintColor: Color {
         if case .merchant(let m) = merchant.category, m.paymentMethod == .giftCard {
-            return Color(UIColor.dw_orange())
+            return Color.dash.orange
         } else {
-            return .dashBlue
+            return .dash.blue
         }
     }
     
@@ -546,7 +546,7 @@ struct POIDetailsView: View {
                 size: .large,
                 action: payAction
             )
-            .overrideBackgroundColor(Color(red: 0.235, green: 0.722, blue: 0.471))
+            .overrideBackgroundColor(Color.dash.green)
             
             if case .atm(let atm) = merchant.category, 
                atm.type == .buySell || atm.type == .sell {
@@ -570,7 +570,7 @@ struct POIDetailsView: View {
 
     private var separatorView: some View {
         Rectangle()
-            .fill(Color.black.opacity(0.3))
+            .fill(Color.dash.primaryText.opacity(0.3))
             .frame(height: 1/UIScreen.main.scale)
     }
 }
@@ -624,6 +624,6 @@ extension ExplorePointOfUse {
 
 #Preview("Merchant details") {
     POIDetailsView(merchant: .previewBurgerKing())
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 }
 #endif

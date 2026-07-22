@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 // MARK: - RawTransactionViewModel
@@ -67,16 +68,16 @@ struct RawTransactionView: View {
                 loadedBody(details)
             }
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .onAppear { viewModel.load() }
         .overlay(alignment: .bottom) {
             if copiedFeedback {
                 Text(NSLocalizedString("Copied", comment: ""))
                     .font(.footnote.weight(.semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(Capsule().fill(Color.black.opacity(0.75)))
+                    .background(Capsule().fill(Color.dash.black.opacity(0.75)))
                     .padding(.bottom, 24)
                     .transition(.opacity)
             }
@@ -87,13 +88,13 @@ struct RawTransactionView: View {
         VStack(spacing: 8) {
             Image(systemName: "doc.questionmark")
                 .font(.system(size: 34))
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
             Text(NSLocalizedString("Raw transaction unavailable", comment: "Raw transaction inspector"))
                 .font(.subheadline)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             Text(NSLocalizedString("This transaction's raw bytes are not stored on this device.", comment: "Raw transaction inspector"))
                 .font(.caption)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
         }
@@ -242,15 +243,15 @@ struct RawTransactionView: View {
                     HStack {
                         Text(NSLocalizedString("Tap to copy", comment: ""))
                             .font(.caption)
-                            .foregroundColor(.secondaryText)
+                            .foregroundColor(.dash.secondaryText)
                         Spacer()
                         Image(systemName: "doc.on.doc")
                             .font(.caption)
-                            .foregroundColor(.dashBlue)
+                            .foregroundColor(.dash.blue)
                     }
                     Text(hex)
                         .font(.system(size: 11, design: .monospaced))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -267,13 +268,13 @@ struct RawTransactionView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
     private var divider: some View {
         Rectangle()
-            .fill(Color.gray300.opacity(0.3))
+            .fill(Color.dash.gray300.opacity(0.3))
             .frame(height: 1)
     }
 
@@ -281,10 +282,10 @@ struct RawTransactionView: View {
         VStack(alignment: .leading, spacing: 3) {
             Text(label)
                 .font(.caption)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             Text(value)
                 .font(.footnote)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -295,15 +296,15 @@ struct RawTransactionView: View {
                 HStack {
                     Text(label)
                         .font(.caption)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                     Spacer()
                     Image(systemName: "doc.on.doc")
                         .font(.system(size: 10))
-                        .foregroundColor(.dashBlue)
+                        .foregroundColor(.dash.blue)
                 }
                 Text(value)
                     .font(monospaced ? .system(size: 12, design: .monospaced) : .footnote)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -314,7 +315,7 @@ struct RawTransactionView: View {
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .font(.footnote.weight(.semibold))
-            .foregroundColor(.secondaryText)
+            .foregroundColor(.dash.secondaryText)
             .padding(.top, 4)
     }
 

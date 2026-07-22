@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 private enum SegmentedControlLayout {
     static let containerPadding: CGFloat = 4
@@ -52,7 +53,7 @@ struct SegmentedControl<T: Hashable>: View {
     var body: some View {
         ZStack(alignment: .leading) {
             RoundedRectangle(cornerRadius: Layout.segmentCornerRadius)
-                .fill(colorScheme == .dark ? Color.whiteAlpha20 : Color.white)
+                .fill(colorScheme == .dark ? Color.dash.whiteAlpha20 : Color.dash.white)
                 .shadow(color: .shadow, radius: Layout.shadowRadius, x: 0, y: Layout.shadowY)
                 .frame(width: max(1, segmentWidth))
                 .offset(x: indicatorOffset)
@@ -66,7 +67,7 @@ struct SegmentedControl<T: Hashable>: View {
                     }) {
                         Text(label(option))
                             .font(.footnoteMedium)
-                            .foregroundColor(selection == option ? .primaryText : .primaryText.opacity(0.4))
+                            .foregroundColor(selection == option ? .dash.primaryText : .dash.primaryText.opacity(0.4))
                             .lineLimit(1)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, Layout.segmentVerticalPadding)
@@ -99,7 +100,7 @@ struct SegmentedControl<T: Hashable>: View {
         )
         .padding(Layout.containerPadding)
         .frame(height: Layout.height)
-        .background(Color.gray300Alpha20)
+        .background(Color.dash.gray300Alpha20)
         .clipShape(RoundedRectangle(cornerRadius: Layout.containerCornerRadius))
     }
 

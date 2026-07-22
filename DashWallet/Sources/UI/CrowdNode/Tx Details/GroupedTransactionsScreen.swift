@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct GroupedTransactionsScreen: View {
     @State private var currentTag: String?
@@ -40,13 +41,13 @@ struct GroupedTransactionsScreen: View {
                             Text(model.fiatAmount)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .font(.caption)
-                                .foregroundColor(.tertiaryText)
+                                .foregroundColor(.dash.tertiaryText)
 
                             if let summary = model.summaryText {
                                 Text(summary)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .font(.caption)
-                                    .foregroundColor(.tertiaryText)
+                                    .foregroundColor(.dash.tertiaryText)
                                     .padding(.top, 2)
                             }
                         }
@@ -57,7 +58,7 @@ struct GroupedTransactionsScreen: View {
                         Icon(name: .custom(model.iconName))
                             .padding(10)
                             .frame(width: 50, height: 50)
-                            .background(Color.secondaryBackground)
+                            .background(Color.dash.secondaryBackground)
                             .clipShape(.circle)
                     }
                     .padding(.horizontal, 25)
@@ -69,17 +70,17 @@ struct GroupedTransactionsScreen: View {
                         Text(NSLocalizedString("Why do I see all these transactions?", comment: "Grouped Transactions"))
                             .font(.footnote)
                             .fontWeight(.medium)
-                            .foregroundStyle(Color.tertiaryText)
+                            .foregroundStyle(Color.dash.tertiaryText)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             
                         Text(model.infoText)
                             .font(.subheadline)
-                            .foregroundColor(Color.primaryText)
+                            .foregroundColor(Color.dash.primaryText)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(15)
                     .frame(maxWidth: .infinity)
-                    .background(Color.secondaryBackground)
+                    .background(Color.dash.secondaryBackground)
                     .cornerRadius(10)
                     .padding()
                 }
@@ -118,7 +119,7 @@ struct GroupedTransactionsScreen: View {
                         }
                     }
                     .padding(5)
-                    .background(Color.secondaryBackground)
+                    .background(Color.dash.secondaryBackground)
                     .cornerRadius(10)
                     .padding(.horizontal, 15)
                     .shadow(color: .shadow, radius: 10, x: 0, y: 5)
@@ -126,6 +127,6 @@ struct GroupedTransactionsScreen: View {
             }
         }
         .frame(maxHeight: .infinity)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 }

@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct GiftCardDetailsHowToUseSection: View {
     var body: some View {
@@ -23,7 +24,7 @@ struct GiftCardDetailsHowToUseSection: View {
             Text(NSLocalizedString("How to use your gift card", comment: "DashSpend"))
                 .font(.subhead)
                 .fontWeight(.medium)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             FeatureSingleItem(
@@ -45,7 +46,7 @@ struct GiftCardDetailsHowToUseSection: View {
             )
         }
         .padding(20)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(20)
     }
 }
@@ -53,5 +54,5 @@ struct GiftCardDetailsHowToUseSection: View {
 #Preview {
     GiftCardDetailsHowToUseSection()
         .padding()
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 }

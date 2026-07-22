@@ -110,10 +110,33 @@ NS_ASSUME_NONNULL_BEGIN
     self.view.userInteractionEnabled = NO;
     [self dismissViewControllerAnimated:YES
                              completion:^{
-                                 [self processPaymentInput:paymentInput];
+                                 // A bech32m Platform/Shielded destination can't ride the classic
+                                 // L1 payment processor — open the Send screen prefilled instead
+                                 // (its route model handles all destination forms). Base58 Core
+                                 // scans keep the legacy processor path unchanged.
+                                 DWParsedPaymentURI *parsed = paymentInput.parsedURI;
+                                 if (parsed.requiresSendScreenRouting && parsed.address != nil) {
+                                     [self routeScannedBech32Address:parsed];
+                                 }
+                                 else {
+                                     [self processPaymentInput:paymentInput];
+                                 }
 
                                  self.view.userInteractionEnabled = YES;
                              }];
+}
+
+/// Present the Send screen prefilled with a scanned bech32m destination —
+/// same presentation chrome as the payments landing (hidden-bar navigation
+/// controller, full screen; the screen draws its own X/title header).
+- (void)routeScannedBech32Address:(DWParsedPaymentURI *)parsed {
+    DWSendScreenViewController *controller = [[DWSendScreenViewController alloc] init];
+    [controller prefillWithAddress:parsed.address amountDuffs:parsed.amount];
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.navigationBarHidden = YES;
+    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:navigationController animated:YES completion:nil];
 }
 
 - (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel {

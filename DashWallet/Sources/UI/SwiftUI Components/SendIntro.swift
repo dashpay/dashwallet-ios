@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct SendIntro<Content: View>: View {
     @State private var balanceHidden: Bool = true
@@ -74,13 +75,13 @@ struct SendIntro<Content: View>: View {
                             .imageScale(.medium)
                             .frame(width: 17, height: 17)
                             .frame(width: 28, height: 28)
-                            .foregroundColor(.gray500)
-                            .background(Color.primaryText.opacity(0.05))
+                            .foregroundColor(.dash.gray500)
+                            .background(Color.dash.primaryText.opacity(0.05))
                             .clipShape(Circle())
                     }
                     .frame(width: 36, height: 36)
                 }
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             }
         }.frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -103,6 +104,6 @@ struct SendIntro<Content: View>: View {
             
         Text(text)
             .font(.subheadline)
-            .foregroundColor(.secondaryText)
+            .foregroundColor(.dash.secondaryText)
     }
 }

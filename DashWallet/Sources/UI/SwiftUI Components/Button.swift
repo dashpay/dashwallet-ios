@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct DashButton: View {
     var text: String? = nil
@@ -62,7 +63,7 @@ struct DashButton: View {
                 if isLoading {
                     SwiftUI.ProgressView()
                         .progressViewStyle(.circular)
-                        .tint(.white)
+                        .tint(Color.dash.whiteText)
                         .scaleEffect(0.8)
                         .padding(.vertical, 2)
                 } else if let text = text {
@@ -115,19 +116,19 @@ struct DashButton: View {
         if !isEnabled {
             switch style {
             case .filled, .filledBlue:
-                return Color.black1000Alpha5
+                return Color.dash.black1000Alpha5
             default:
-                return Color.black1000Alpha5
+                return Color.dash.black1000Alpha5
             }
         }
 
         switch style {
         case .filled:
-            return overridenBackgroundColor ?? Color.dashBlue
+            return overridenBackgroundColor ?? Color.dash.blue
         case .filledBlue:
-            return Color.blue
+            return Color.dash.blue
         case .tintedBlue:
-            return Color.blueAlpha5
+            return Color.dash.blueAlpha5
         default:
             return Color.clear
         }
@@ -137,21 +138,21 @@ struct DashButton: View {
         if !isEnabled {
             switch style {
             case .filledBlue:
-                return Color.blackAlpha40
+                return Color.dash.black1000Alpha40
             default:
-                return colorScheme == .light ? Color.black1000Alpha40 : Color.whiteAlpha20
+                return colorScheme == .light ? Color.dash.black1000Alpha40 : Color.dash.whiteAlpha20
             }
         }
 
         switch style {
         case .filled:
-            return Color.white
+            return Color.dash.white
         case .filledBlue:
-            return Color.white
+            return Color.dash.white
         case .tintedBlue:
-            return Color.blue
+            return Color.dash.blue
         default:
-            return Color.primaryText
+            return Color.dash.primaryText
         }
     }
 
@@ -162,7 +163,7 @@ struct DashButton: View {
         
         switch style {
         case .outlined:
-            return Color.tertiaryText.opacity(0.25)
+            return Color.dash.tertiaryText.opacity(0.25)
         default:
             return Color.clear
         }
@@ -297,7 +298,7 @@ struct DashButtonStyle: ButtonStyle {
         configuration.label
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(Color.black.opacity(configuration.isPressed ? 0.2 : 0))
+                    .fill(Color.dash.black.opacity(configuration.isPressed ? 0.2 : 0))
             )
     }
 }
@@ -339,6 +340,6 @@ private struct DashButtonPreview: View {
             )
         }
         .padding(20)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 }

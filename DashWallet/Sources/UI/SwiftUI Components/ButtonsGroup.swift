@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct ButtonsGroup: View {
     enum Style {
@@ -65,20 +66,20 @@ struct ButtonsGroup: View {
         if orientation == .vertical {
             VStack(spacing: 6) {
                 positiveButton
-                    .overrideBackgroundColor(style == .regular ? .dashBlue : .buttonRed)
-                    .overrideForegroundColor(negativeButtonText == nil ? .dashBlue : .white)
+                    .overrideBackgroundColor(style == .regular ? .dash.blue : .buttonRed)
+                    .overrideForegroundColor(negativeButtonText == nil ? .dash.blue : .white)
                 negativeButton
-                    .overrideForegroundColor(.dashBlue)
+                    .overrideForegroundColor(.dash.blue)
             }
         } else {
             HStack(spacing: 6) {
                 negativeButton
                     .frame(maxWidth: .infinity)
-                    .overrideForegroundColor(.dashBlue)
+                    .overrideForegroundColor(.dash.blue)
                 positiveButton
                     .frame(maxWidth: .infinity)
-                    .overrideBackgroundColor(style == .regular ? .dashBlue : .buttonRed)
-                    .overrideForegroundColor(negativeButtonText == nil ? .dashBlue : .white)
+                    .overrideBackgroundColor(style == .regular ? .dash.blue : .buttonRed)
+                    .overrideForegroundColor(negativeButtonText == nil ? .dash.blue : .white)
             }
             .frame(maxWidth: .infinity)
         }

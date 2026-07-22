@@ -25,6 +25,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 struct WalletAccountDetailScreen: View {
@@ -42,7 +43,7 @@ struct WalletAccountDetailScreen: View {
 
     var body: some View {
         ZStack {
-            Color.primaryBackground.ignoresSafeArea()
+            Color.dash.primaryBackground.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
                 header
@@ -94,9 +95,9 @@ struct WalletAccountDetailScreen: View {
                 Button(action: { vc.popViewController(animated: true) }) {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color.dash.primaryText)
                         .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
                 }
                 Spacer()
             }
@@ -107,11 +108,11 @@ struct WalletAccountDetailScreen: View {
                 Text(viewModel.detail?.typeName ?? NSLocalizedString("Account", comment: "Wallet accounts"))
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 if let detail = viewModel.detail, detail.showsBalance {
                     Text("#\(detail.accountIndex)")
                         .font(.subheadline)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                 }
             }
             .padding(.horizontal, 20)
@@ -155,11 +156,11 @@ struct WalletAccountDetailScreen: View {
                 HStack {
                     Text(NSLocalizedString("Total Balance", comment: "Wallet accounts"))
                         .font(.footnote)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                     Spacer()
                     Text((detail.confirmed + detail.unconfirmed).formattedDashAmount)
                         .font(.system(size: 15, weight: .bold))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                 }
             }
         }
@@ -220,7 +221,7 @@ struct WalletAccountDetailScreen: View {
                     .font(.system(.caption, design: .monospaced))
                     .lineLimit(1)
                     .truncationMode(.middle)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 HStack(spacing: 6) {
                     Text("#\(item.index)")
                     if item.isUsed {
@@ -233,7 +234,7 @@ struct WalletAccountDetailScreen: View {
                     }
                 }
                 .font(.caption2)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             }
             Spacer()
             if copiedAddress == item.address {
@@ -243,7 +244,7 @@ struct WalletAccountDetailScreen: View {
             } else {
                 Image(systemName: "doc.on.doc")
                     .font(.caption2)
-                    .foregroundColor(.dashBlue)
+                    .foregroundColor(.dash.blue)
             }
         }
         .padding(.vertical, 4)
@@ -265,17 +266,17 @@ struct WalletAccountDetailScreen: View {
                     "This account derives masternode keys. It has no on-chain addresses or balance.",
                     comment: "Wallet accounts"))
                     .font(.caption)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                 Text(hex)
                     .font(.system(.caption2, design: .monospaced))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .textSelection(.enabled)
             } else {
                 Text(NSLocalizedString(
                     "No extended public key has been persisted for this account yet.",
                     comment: "Wallet accounts"))
                     .font(.caption)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
         }
     }
@@ -290,27 +291,27 @@ struct WalletAccountDetailScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             Label(title, systemImage: systemImage)
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Divider()
             content()
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
-        .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+        .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
     }
 
     private func infoRow(_ label: String, _ value: String, monospaced: Bool = false) -> some View {
         HStack {
             Text(label)
                 .font(.footnote)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             Spacer()
             Text(value)
                 .font(monospaced ? .system(.footnote, design: .monospaced) : .system(.footnote))
                 .fontWeight(.medium)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .multilineTextAlignment(.trailing)
         }
     }

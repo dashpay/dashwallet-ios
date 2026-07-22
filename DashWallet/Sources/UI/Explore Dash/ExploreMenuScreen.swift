@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 struct ExploreMenuScreen: View {
@@ -100,7 +101,7 @@ struct ExploreMenuScreen: View {
                         subtitleView: AnyView(
                             Text(NSLocalizedString("Easily stake Dash and earn passive income with a few simple clicks", comment: ""))
                                 .font(.footnote)
-                                .foregroundColor(.tertiaryText)
+                                .foregroundColor(.dash.tertiaryText)
                                 .multilineTextAlignment(.leading)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         ),
@@ -112,9 +113,9 @@ struct ExploreMenuScreen: View {
                 }
             }
             .padding(6)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+            .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
             .padding(.horizontal, 20)
 
             if balanceReminder.shouldShowOnExplore {
@@ -127,7 +128,7 @@ struct ExploreMenuScreen: View {
 
             Spacer()
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
         .alert(NSLocalizedString("The chain is syncing…", comment: ""), isPresented: $showSyncingAlert) {
             Button(NSLocalizedString("Go to CrowdNode website", comment: "")) {
@@ -144,7 +145,7 @@ struct ExploreMenuScreen: View {
         VStack(alignment: .leading, spacing: 11) {
             Text(NSLocalizedString("Easily stake Dash and earn passive income with a few simple clicks", comment: ""))
                 .font(.footnote)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

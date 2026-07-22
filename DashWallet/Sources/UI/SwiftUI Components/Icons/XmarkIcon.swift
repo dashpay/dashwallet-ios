@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // MARK: - XmarkIcon
 
@@ -23,7 +24,7 @@ import SwiftUI
 /// inset from 0.75 to 7.75, round caps/joins). Scales cleanly to any `size`.
 struct XmarkIcon: View {
     var size: CGFloat = 9
-    var color: Color = .primaryText
+    var color: Color = .dash.primaryText
     var lineWidth: CGFloat = 1.5
 
     var body: some View {
@@ -61,7 +62,7 @@ private struct XmarkShape: Shape {
         XmarkIcon()
         XmarkIcon(size: 24, color: .white, lineWidth: 2)
             .padding(20)
-            .background(Color.dashBlue, in: .circle)
+            .background(Color.dash.blue, in: .circle)
         XmarkIcon(size: 40, color: .red, lineWidth: 3)
     }
     .padding()

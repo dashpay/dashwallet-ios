@@ -18,6 +18,7 @@
 import CoreLocation
 import SDWebImageSwiftUI
 import SwiftUI
+import DashUIKit
 
 private enum Layout {
     static let contentSpacing: CGFloat = 20
@@ -78,13 +79,13 @@ struct AllMerchantLocationsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(20)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .clipShape(.rect(cornerRadius: 20))
         .padding(.horizontal, Layout.contentInsets)
         .padding(.top, Layout.topInset)
         .padding(.bottom, Layout.bottomInset)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .onAppear {
             viewModel.onItemsUpdated = onItemsUpdated
             onItemsUpdated?(viewModel.items)
@@ -120,12 +121,12 @@ private struct MerchantHeaderView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(pointOfUse.name)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
 
                 if let subtitle = pointOfUse.subtitle {
                     Text(subtitle)
                         .font(.system(size: 13))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                 }
             }
 
@@ -150,7 +151,7 @@ private struct LocationsSection: View {
             HStack(spacing: 8) {
                 Text(NSLocalizedString("Select location", comment: "Explore Dash"))
                     .font(.footnoteMedium)
-                    .foregroundStyle(Color.primaryText)
+                    .foregroundStyle(Color.dash.primaryText)
 
                 if isLoading && !items.isEmpty {
                     SwiftUI.ProgressView()
@@ -211,7 +212,7 @@ private struct LocationsSection: View {
             Spacer()
             Text(NSLocalizedString("No locations found.", comment: "Explore Dash"))
                 .font(.subhead)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
             Spacer()
         }

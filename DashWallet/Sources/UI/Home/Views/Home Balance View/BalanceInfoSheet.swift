@@ -24,7 +24,7 @@ struct BalanceInfoSheet: View {
 
                     Text(info.summary)
                         .font(.subheadline)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -53,21 +53,21 @@ struct BalanceInfoSheet: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 
     private var header: some View {
         VStack(spacing: 12) {
             Image(systemName: info.iconSystemName)
                 .font(.system(size: 26, weight: .semibold))
-                .foregroundColor(.dashBlue)
+                .foregroundColor(.dash.blue)
                 .frame(width: 56, height: 56)
-                .background(Circle().fill(Color.dashBlue.opacity(0.08)))
+                .background(Circle().fill(Color.dash.blue.opacity(0.08)))
 
             Text(info.title)
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
         }
     }
 
@@ -75,7 +75,7 @@ struct BalanceInfoSheet: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.footnote.weight(.semibold))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
 
             ForEach(points, id: \.self) { point in
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -84,14 +84,14 @@ struct BalanceInfoSheet: View {
                         .foregroundColor(tint)
                     Text(point)
                         .font(.subheadline)
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 

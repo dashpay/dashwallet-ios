@@ -15,6 +15,17 @@ final class SendScreenViewController: DWBasePayViewController {
     /// action as tapping the clipboard suggestion chip.
     var prefillsFromClipboard = false
 
+    /// Scan-routing prefill (`DWBasePayViewController`'s ObjC scan handler):
+    /// a scanned bech32m Platform/Shielded destination opens this screen
+    /// with the address (and BIP21 amount, when present) applied on load.
+    @objc func prefill(address: String, amountDuffs: UInt64) {
+        prefillAddress = address
+        prefillAmountDuffs = amountDuffs
+    }
+
+    private var prefillAddress: String?
+    private var prefillAmountDuffs: UInt64 = 0
+
     private let sendViewModel = SendViewModel()
     private lazy var hostingController: UIHostingController<SendScreen> = {
         let screen = SendScreen(
@@ -51,6 +62,13 @@ final class SendScreenViewController: DWBasePayViewController {
 
         if prefillsFromClipboard {
             sendViewModel.useClipboardSuggestion()
+        }
+        if let prefillAddress {
+            sendViewModel.addressText = prefillAddress
+            if prefillAmountDuffs > 0 {
+                sendViewModel.unit = .dash
+                sendViewModel.amountText = prefillAmountDuffs.formattedDashAmountWithoutCurrencySymbol
+            }
         }
     }
 

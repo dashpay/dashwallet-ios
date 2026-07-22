@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct ModalDialog: View {
     enum Style {
@@ -57,7 +58,7 @@ struct ModalDialog: View {
                         .imageScale(.medium)
                         .frame(width: 20, height: 20)
                         .frame(width: 48, height: 48)
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.dash.whiteText)
                         .background(iconBackgroundColor(for: style))
                         .clipShape(Circle())
                         .padding(.top, 12)
@@ -82,7 +83,7 @@ struct ModalDialog: View {
                     .font(.subhead)
                     .lineSpacing(3)
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .padding(.top, 1)
             }
             
@@ -91,7 +92,7 @@ struct ModalDialog: View {
                     .font(.subhead)
                     .lineSpacing(3)
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .padding(.top, 1)
             }
             
@@ -106,7 +107,7 @@ struct ModalDialog: View {
                 ) {
                     smallButtonAction?()
                 }
-                .overrideForegroundColor(.dashBlue)
+                .overrideForegroundColor(.dash.blue)
             }
             
             ButtonsGroup(
@@ -120,7 +121,7 @@ struct ModalDialog: View {
             .padding(.top, 24)
         }
         .padding(20)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(16)
         .shadow(radius: 10)
         .frame(maxWidth: 340)
@@ -129,11 +130,11 @@ struct ModalDialog: View {
     private func iconBackgroundColor(for style: Style) -> Color {
         switch style {
         case .regular:
-            return .dashBlue
+            return .dash.blue
         case .warning:
-            return .systemYellow
+            return .dash.yellow
         case .error:
-            return .systemRed
+            return .dash.red
         }
     }
 }
@@ -185,7 +186,7 @@ extension UIViewController {
         let hostingController = UIHostingController(rootView: dialog)
         hostingController.modalPresentationStyle = .overFullScreen
         hostingController.modalTransitionStyle = .crossDissolve
-        hostingController.view.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        hostingController.view.backgroundColor = UIColor(Color.dash.backgroundOverlay)
             
         present(hostingController, animated: true, completion: nil)
     }
@@ -235,7 +236,7 @@ extension UIViewController {
             let hostingController = UIHostingController(rootView: dialog)
             hostingController.modalPresentationStyle = .overFullScreen
             hostingController.modalTransitionStyle = .crossDissolve
-            hostingController.view.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+            hostingController.view.backgroundColor = UIColor(Color.dash.backgroundOverlay)
             
             present(hostingController, animated: true, completion: nil)
         }

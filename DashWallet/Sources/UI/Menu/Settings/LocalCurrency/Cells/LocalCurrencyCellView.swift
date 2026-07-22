@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct LocalCurrencyCellView: View {
 
@@ -53,7 +54,7 @@ struct LocalCurrencyCellView: View {
                     .resizable()
                     .scaledToFill()
             } else {
-                Color.gray200
+                Color.dash.gray200
             }
         }
         .frame(width: Layout.flagSize, height: Layout.flagSize)
@@ -64,13 +65,13 @@ struct LocalCurrencyCellView: View {
         VStack(alignment: .leading, spacing: Layout.infoSpacing) {
             highlightedText(item.name, query: searchQuery)
                 .font(.subhead.weight(.medium))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .lineLimit(1)
 
             if let priceString = item.priceString {
                 Text(priceString)
                     .font(.footnote)
-                    .foregroundColor(.tertiaryText)
+                    .foregroundColor(.dash.tertiaryText)
                     .lineLimit(1)
             }
         }
@@ -88,14 +89,14 @@ struct LocalCurrencyCellView: View {
     private var currencyCodeView: some View {
         highlightedText(item.code, query: searchQuery)
             .font(.caption1)
-            .foregroundColor(.tertiaryText)
+            .foregroundColor(.dash.tertiaryText)
             .lineLimit(1)
     }
 
     private var checkboxView: some View {
         Circle()
             .strokeBorder(
-                isSelected ? Color.dashBlue : Color.gray300,
+                isSelected ? Color.dash.blue : Color.dash.gray300,
                 lineWidth: isSelected ? Layout.checkboxSelectedBorderWidth : Layout.checkboxDefaultBorderWidth
             )
             .frame(width: Layout.checkboxSize, height: Layout.checkboxSize)
@@ -112,7 +113,7 @@ struct LocalCurrencyCellView: View {
         let match  = String(text[range])
         let after  = String(text[range.upperBound...])
 
-        return Text("\(before)\(Text(match).foregroundColor(.dashBlue))\(after)")
+        return Text("\(before)\(Text(match).foregroundColor(.dash.blue))\(after)")
     }
 }
 

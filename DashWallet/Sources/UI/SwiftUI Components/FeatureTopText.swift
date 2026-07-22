@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct FeatureTopText: View {
     var title: String
@@ -34,14 +35,14 @@ struct FeatureTopText: View {
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(3)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
           
             if let text = text {
                 Text(text)
                     .font(.subhead)
                     .multilineTextAlignment(alignment)
                     .lineSpacing(3)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
             
             if let label = label {
@@ -49,7 +50,7 @@ struct FeatureTopText: View {
                     linkAction?()
                 }
                 .padding(.top, 8)
-                .overrideForegroundColor(.dashBlue)
+                .overrideForegroundColor(.dash.blue)
                 .wiggle(shakeLabel)
             }
         }

@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 public struct JoinDashPayScreen: View {
     @StateObject private var viewModel = CreateUsernameViewModel.shared
@@ -56,7 +57,7 @@ public struct JoinDashPayScreen: View {
                     Button(action: onClaimInvitation) {
                         Text(NSLocalizedString("Have an invitation?", comment: "DashPay Invitations"))
                             .font(.subheadline)
-                            .foregroundColor(.dashBlue)
+                            .foregroundColor(.dash.blue)
                     }
                     .padding(.bottom, 12)
                 }

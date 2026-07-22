@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 typealias TransactionPreview = MenuItem
 
@@ -37,7 +38,7 @@ struct MenuItem: View {
     var showDashAmountDirection: Bool = true
     var overrideFiatAmount: String?
     var trailingStatusText: String? = nil
-    var trailingStatusColor: Color = Color(UIColor.dw_orange())
+    var trailingStatusColor: Color = Color.dash.orange
     var trailingView: AnyView?
     var showToggle: Bool = false
     @State private var isToggled: Bool = false
@@ -60,7 +61,7 @@ struct MenuItem: View {
          showDashAmountDirection: Bool = true,
          overrideFiatAmount: String? = nil,
          trailingStatusText: String? = nil,
-         trailingStatusColor: Color = Color(UIColor.dw_orange()),
+         trailingStatusColor: Color = Color.dash.orange,
          trailingView: AnyView? = nil,
          showToggle: Bool = false,
          isToggled: Bool = false,
@@ -73,7 +74,7 @@ struct MenuItem: View {
                     Text(text)
                         .font(.footnote)
                         .lineSpacing(4)
-                        .foregroundColor(.tertiaryText)
+                        .foregroundColor(.dash.tertiaryText)
                         .lineLimit(subtitleLineLimit)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 )
@@ -115,7 +116,7 @@ struct MenuItem: View {
          showDashAmountDirection: Bool = true,
          overrideFiatAmount: String? = nil,
          trailingStatusText: String? = nil,
-         trailingStatusColor: Color = Color(UIColor.dw_orange()),
+         trailingStatusColor: Color = Color.dash.orange,
          trailingView: AnyView? = nil,
          showToggle: Bool = false,
          isToggled: Bool = false,
@@ -168,7 +169,7 @@ struct MenuItem: View {
                                     Icon(name: secondaryIcon)
                                         .padding(2)
                                         .frame(width: 20, height: 20)
-                                        .background(Color.secondaryBackground)
+                                        .background(Color.dash.secondaryBackground)
                                         .clipShape(.circle)
                                         .offset(x: 2, y: 2)
                                 }
@@ -183,7 +184,7 @@ struct MenuItem: View {
                         Text(topText)
                             .font(.caption)
                             .lineSpacing(3)
-                            .foregroundColor(.tertiaryText)
+                            .foregroundColor(.dash.tertiaryText)
                     }
                     
                     HStack(spacing: 6) {
@@ -191,11 +192,11 @@ struct MenuItem: View {
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .lineSpacing(3)
-                            .foregroundColor(.primaryText)
+                            .foregroundColor(.dash.primaryText)
                         
                         if showInfo {
                             Image(systemName: "info.circle.fill")
-                                .foregroundColor(.gray300)
+                                .foregroundColor(.dash.gray300)
                                 .imageScale(.small)
                         }
                         
@@ -204,10 +205,10 @@ struct MenuItem: View {
                         if let badgeText = badgeText {
                             Text(badgeText)
                                 .font(.caption)
-                                .foregroundColor(.systemYellow)
+                                .foregroundColor(.dash.yellow)
                                 .padding(.vertical, 4)
                                 .padding(.horizontal, 8)
-                                .background(Color.systemYellow.opacity(0.2))
+                                .background(Color.dash.yellow.opacity(0.2))
                                 .clipShape(RoundedRectangle(cornerRadius: 6))
                         }
                     }
@@ -221,7 +222,7 @@ struct MenuItem: View {
                         Text(details)
                             .font(.caption)
                             .lineSpacing(3)
-                            .foregroundColor(.tertiaryText)
+                            .foregroundColor(.dash.tertiaryText)
                     }
                 }
                 .padding(.leading, 6)
@@ -229,7 +230,7 @@ struct MenuItem: View {
 
                 if showToggle {
                     Toggle(isOn: $isToggled) { }
-                        .tint(Color.dashBlue)
+                        .tint(Color.dash.blue)
                         .scaleEffect(0.75)
                         .frame(maxWidth: 60)
                 }
@@ -237,7 +238,7 @@ struct MenuItem: View {
                 if showChevron {
                     Image(systemName: "chevron.right")
                         .imageScale(.small)
-                        .foregroundColor(Color.gray)
+                        .foregroundColor(Color.dash.tertiaryText)
                         .padding(.trailing, 10)
                 } else if let trailingView = trailingView {
                     trailingView
@@ -252,14 +253,14 @@ struct MenuItem: View {
                                         .foregroundColor(trailingStatusColor)
                                 }
                                 DashAmount(amount: dashAmount, showDirection: showDashAmountDirection)
-                                    .foregroundColor(.primaryText)
+                                    .foregroundColor(.dash.primaryText)
                             }
 
                             if dashAmount != 0 && dashAmount != Int64.max && dashAmount != Int64.min {
                                 if let overriden = overrideFiatAmount {
                                     Text(overriden)
                                         .font(.caption)
-                                        .foregroundColor(.secondaryText)
+                                        .foregroundColor(.dash.secondaryText)
                                 } else {
                                     FormattedFiatText(from: dashAmount)
                                 }
@@ -283,7 +284,7 @@ struct MenuItem: View {
             
         Text(text)
             .font(.caption)
-            .foregroundColor(.secondaryText)
+            .foregroundColor(.dash.secondaryText)
     }
 }
 

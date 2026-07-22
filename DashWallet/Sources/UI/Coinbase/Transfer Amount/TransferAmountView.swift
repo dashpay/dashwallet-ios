@@ -110,9 +110,9 @@ struct TransferAmountView<ViewModel: TransferAmountViewModelProtocol>: View {
             actionHandler: { viewModel.transfer() }
         )
         .frame(maxWidth: .infinity, maxHeight: 320)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .clipShape(.rect(cornerRadius: 20))
-        .background(Color.secondaryBackground, ignoresSafeAreaEdges: .bottom)
+        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 }
 
@@ -192,12 +192,12 @@ final class MockTransferAmountViewModel: TransferAmountViewModelProtocol {
 
 #Preview("Online") {
     TransferAmountView(viewModel: MockTransferAmountViewModel())
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 }
 
 #Preview("Offline") {
     TransferAmountView(viewModel: MockTransferAmountViewModel(isNetworkOnline: false))
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 }
 
 #Preview("Error") {
@@ -207,6 +207,6 @@ final class MockTransferAmountViewModel: TransferAmountViewModelProtocol {
             errorMessage: NSLocalizedString("Amount too low", comment: "")
         )
     )
-    .background(Color.primaryBackground)
+    .background(Color.dash.primaryBackground)
 }
 #endif

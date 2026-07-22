@@ -18,6 +18,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 // MARK: - ExtendedPublicKeySheetViewModel
@@ -83,7 +84,7 @@ struct ExtendedPublicKeySheet: View {
             // Grabber
             VStack {
                 RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    .fill(Color.gray300.opacity(0.5))
+                    .fill(Color.dash.gray300.opacity(0.5))
                     .frame(width: 36, height: 5)
             }
             .frame(maxWidth: .infinity, minHeight: 18)
@@ -102,7 +103,7 @@ struct ExtendedPublicKeySheet: View {
                         .frame(width: 180, height: 180)
                 } else {
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.gray300.opacity(0.2))
+                        .fill(Color.dash.gray300.opacity(0.2))
                         .frame(width: 180, height: 180)
                 }
             }
@@ -112,7 +113,7 @@ struct ExtendedPublicKeySheet: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(NSLocalizedString("Extended public key (BIP44)", comment: ""))
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Button(action: {
@@ -127,7 +128,7 @@ struct ExtendedPublicKeySheet: View {
                          ? NSLocalizedString("Not available", comment: "")
                          : viewModel.keyValue)
                         .font(.system(size: 15))
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                         .multilineTextAlignment(.leading)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -140,7 +141,7 @@ struct ExtendedPublicKeySheet: View {
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
                                 .background(copiedBackground)
-                                .foregroundColor(.whiteText)
+                                .foregroundColor(.dash.whiteText)
                                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         }
                     }
@@ -161,7 +162,7 @@ struct ExtendedPublicKeySheet: View {
             .padding(.horizontal, 60)
             .padding(.bottom, 20)
         }
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .sheet(isPresented: $showShareSheet) {
             if !viewModel.keyValue.isEmpty {
                 ShareSheet(items: [viewModel.keyValue])
@@ -174,10 +175,10 @@ struct ExtendedPublicKeySheet: View {
         if colorScheme == .dark {
             ZStack {
                 BackgroundBlurView()
-                Color.whiteAlpha15
+                Color.dash.whiteAlpha15
             }
         } else {
-            Color.black.opacity(0.8)
+            Color.dash.backgroundOverlay
         }
     }
 }

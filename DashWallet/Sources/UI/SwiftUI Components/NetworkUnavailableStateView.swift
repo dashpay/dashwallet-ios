@@ -17,6 +17,7 @@
 
 import Combine
 import SwiftUI
+import DashUIKit
 
 // MARK: - NetworkReachabilityMonitor
 
@@ -78,11 +79,11 @@ struct NetworkUnavailableStateView: View {
             VStack(spacing: Layout.textSpacing) {
                 Text(NSLocalizedString("Network Unavailable", comment: "Network Unavailable"))
                     .font(.system(size: 17, weight: .medium))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
 
                 Text(NSLocalizedString("Please check your network connection", comment: "Network Unavailable"))
                     .font(.footnote)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
             .multilineTextAlignment(.center)
         }
@@ -93,6 +94,6 @@ struct NetworkUnavailableStateView: View {
 #Preview {
     NetworkUnavailableStateView()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 }
 #endif

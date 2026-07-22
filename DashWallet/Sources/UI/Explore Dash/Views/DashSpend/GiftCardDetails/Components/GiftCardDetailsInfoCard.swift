@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct GiftCardDetailsInfoCard: View {
     let formattedPrice: String
@@ -33,7 +34,7 @@ struct GiftCardDetailsInfoCard: View {
             barcodeSection
             detailsRowsSection
         }
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(20)
     }
 
@@ -57,7 +58,7 @@ struct GiftCardDetailsInfoCard: View {
                     if hasBeenPollingForLongTime {
                         Text(NSLocalizedString("As soon as your code is generated, it will be displayed here", comment: "DashSpend"))
                             .font(.footnote)
-                            .foregroundColor(.tertiaryText)
+                            .foregroundColor(.dash.tertiaryText)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 50)
                     } else {
@@ -68,7 +69,7 @@ struct GiftCardDetailsInfoCard: View {
                 } else if loadingError != nil {
                     Text(NSLocalizedString("Failed to load barcode", comment: "DashSpend"))
                         .font(.footnote)
-                        .foregroundColor(.systemRed)
+                        .foregroundColor(.dash.red)
                 }
             }
             .padding(.horizontal, 6)
@@ -155,21 +156,21 @@ struct GiftCardDetailsInfoCard: View {
         HStack(alignment: .top, spacing: 0) {
             Text(title)
                 .font(.subheadMedium)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 0) {
                 Text(value)
                     .font(.subhead)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
 
                 if let actionConfig {
                     Button(action: actionConfig.action) {
                         Text(actionConfig.actionName)
                             .font(.footnote)
                             .fontWeight(.medium)
-                            .foregroundColor(.dashBlue)
+                            .foregroundColor(.dash.blue)
                             .padding(.vertical, 4)
                     }
                     .buttonStyle(.plain)
@@ -184,18 +185,18 @@ struct GiftCardDetailsInfoCard: View {
         HStack(alignment: .center) {
             Text(title)
                 .font(.subheadMedium)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
 
             Spacer()
 
             HStack(spacing: 6) {
                 Text(value)
                     .font(.subheadline)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
 
                 Button(action: onCopy) {
                     Icon(name: .custom("icon_copy_outline", maxHeight: 14))
-                        .tint(.primaryText)
+                        .tint(.dash.primaryText)
                 }
             }
         }
@@ -207,11 +208,11 @@ struct GiftCardDetailsInfoCard: View {
             Text(title)
                 .font(.subheadline)
                 .fontWeight(.medium)
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
 
             Text(value)
                 .font(.subheadline)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.vertical, 12)
@@ -238,7 +239,7 @@ struct GiftCardDetailsInfoCard: View {
         onCopy: { _ in }
     )
     .padding()
-    .background(Color.primaryBackground)
+    .background(Color.dash.primaryBackground)
 }
 
 #Preview("Claim Link") {
@@ -260,7 +261,7 @@ struct GiftCardDetailsInfoCard: View {
         onCopy: { _ in }
     )
     .padding()
-    .background(Color.primaryBackground)
+    .background(Color.dash.primaryBackground)
 }
 
 #Preview("Loading") {
@@ -274,5 +275,5 @@ struct GiftCardDetailsInfoCard: View {
         onCopy: { _ in }
     )
     .padding()
-    .background(Color.primaryBackground)
+    .background(Color.dash.primaryBackground)
 }

@@ -8,6 +8,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // MARK: - Design tokens (Android parity)
 
@@ -55,7 +56,7 @@ struct ContactAvatarView: View {
             Circle().fill(backgroundColor)
             Text(initial)
                 .font(.system(size: size * 0.5, weight: .regular))
-                .foregroundColor(.white)
+                .foregroundColor(Color.dash.whiteText)
         }
     }
 
@@ -93,12 +94,12 @@ struct AcceptPillButton: View {
         Button(action: action) {
             Text(NSLocalizedString("Accept", comment: "DashPay Contacts"))
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.dashBlue)
+                .foregroundColor(.dash.blue)
                 .frame(minWidth: 64)
                 .frame(height: 30)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.dashBlue.opacity(0.1)))
+                        .fill(Color.dash.blue.opacity(0.1)))
         }
         .buttonStyle(.plain)
     }
@@ -113,9 +114,9 @@ struct IgnoreCircleButton: View {
         Button(action: action) {
             Image(systemName: "xmark")
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .frame(width: 30, height: 30)
-                .background(Circle().fill(Color.gray300Alpha10))
+                .background(Circle().fill(Color.dash.gray300Alpha10))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(NSLocalizedString("Ignore", comment: "DashPay Contacts"))
@@ -132,7 +133,7 @@ struct ContactsSearchField: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.tertiaryText)
+                .foregroundColor(.dash.tertiaryText)
             TextField(placeholder, text: $text)
                 .font(.system(size: 15))
                 .autocorrectionDisabled()
@@ -142,7 +143,7 @@ struct ContactsSearchField: View {
                     text = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.tertiaryText)
+                        .foregroundColor(.dash.tertiaryText)
                 }
                 .buttonStyle(.plain)
             }
@@ -151,7 +152,7 @@ struct ContactsSearchField: View {
         .frame(height: height)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.secondaryBackground)
+                .fill(Color.dash.secondaryBackground)
                 .shadow(color: .shadow, radius: 4, y: 1))
     }
 }
@@ -164,6 +165,6 @@ struct ContactsCard<Content: View>: View {
         VStack(spacing: 0) { content }
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color.secondaryBackground))
+                    .fill(Color.dash.secondaryBackground))
     }
 }

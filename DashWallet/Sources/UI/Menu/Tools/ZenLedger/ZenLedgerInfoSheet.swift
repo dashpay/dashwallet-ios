@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct ZenLedgerInfoSheet: View {
     @ObservedObject private var viewModel = ZenLedgerViewModel()
@@ -31,7 +32,7 @@ struct ZenLedgerInfoSheet: View {
         VStack(spacing: 0) {
             // Grabber
             Capsule()
-                .fill(colorScheme == .dark ? Color.whiteAlpha20 : Color.gray300Alpha50)
+                .fill(colorScheme == .dark ? Color.dash.whiteAlpha20 : Color.dash.gray300Alpha50)
                 .frame(width: 36, height: 5)
                 .padding(.top, 6)
                 .padding(.bottom, 6)
@@ -55,13 +56,13 @@ struct ZenLedgerInfoSheet: View {
                 VStack(alignment: .center, spacing: 6) {
                     Text(NSLocalizedString("Simplify your crypto taxes", comment: "ZenLedger"))
                         .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(Color.primaryText)
+                        .foregroundColor(Color.dash.primaryText)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Text(NSLocalizedString("Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.", comment: "ZenLedger"))
                         .font(.system(size: 15))
-                        .foregroundColor(Color.secondaryText)
+                        .foregroundColor(Color.dash.secondaryText)
                         .multilineTextAlignment(.center)
                         .lineSpacing(5)
                         .fixedSize(horizontal: false, vertical: true)
@@ -100,7 +101,7 @@ struct ZenLedgerInfoSheet: View {
             .padding(.top, 20)
             .padding(.bottom, 20)
         }
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .alert(isPresented: $showAlert) {
             resolveAlert()
         }

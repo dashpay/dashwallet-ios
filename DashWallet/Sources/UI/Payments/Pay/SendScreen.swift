@@ -68,7 +68,7 @@ struct SendScreen: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
     }
 
@@ -79,14 +79,14 @@ struct SendScreen: View {
             Button(action: onClose) {
                 Image(systemName: "xmark")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.primary)
+                    .foregroundColor(Color.dash.primaryText)
                     .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+                    .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
             }
             Spacer()
             Text(NSLocalizedString("Send", comment: ""))
                 .font(.headline)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Spacer()
             Color.clear.frame(width: 36, height: 36)
         }
@@ -99,26 +99,54 @@ struct SendScreen: View {
             HStack {
                 Text(NSLocalizedString("Address", comment: ""))
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                 Spacer()
                 if let destination = viewModel.destination {
                     destinationBadge(destination)
                 }
             }
-            TextField(
-                NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
-                text: $viewModel.addressText,
-                axis: .vertical)
-                .font(.system(.footnote, design: .monospaced))
-                .foregroundColor(.primaryText)
-                .padding(12)
-                .background(Color.secondaryBackground)
-                .cornerRadius(10)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .keyboardType(.asciiCapable)
-                .lineLimit(2...4)
-                .focused($addressFieldFocused)
+            if isAddressLocked {
+                lockedAddressCard
+            } else {
+                TextField(
+                    NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
+                    text: $viewModel.addressText,
+                    axis: .vertical)
+                    .font(.system(.footnote, design: .monospaced))
+                    .foregroundColor(.dash.primaryText)
+                    .padding(12)
+                    .background(Color.dash.secondaryBackground)
+                    .cornerRadius(10)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.asciiCapable)
+                    .lineLimit(2...4)
+                    .focused($addressFieldFocused)
+                    .onAppear {
+                        // Rendered after tapping the locked card → put the
+                        // cursor straight back into the field.
+                        if isEditingAddress {
+                            addressFieldFocused = true
+                        }
+                    }
+                    .onChange(of: addressFieldFocused) { _, focused in
+                        // Focus left the field → re-lock (when valid).
+                        if !focused {
+                            isEditingAddress = false
+                        }
+                    }
+                    .onChange(of: viewModel.destination) { _, destination in
+                        // The address just became valid (a paste, or the
+                        // final typed character) → lock in right away.
+                        // Software-keyboard-less setups (simulator with a
+                        // hardware keyboard) never drop focus on their own,
+                        // so don't wait for that.
+                        if destination != nil {
+                            addressFieldFocused = false
+                            isEditingAddress = false
+                        }
+                    }
+            }
 
             if viewModel.showsInvalidAddress {
                 Text(NSLocalizedString("This is not a valid Dash address for this network", comment: "Send screen"))
@@ -135,6 +163,58 @@ struct SendScreen: View {
         .padding(.horizontal, 20)
     }
 
+    /// The locked-in address: middle-truncated single line + pencil.
+    /// Tapping reopens the editable field with the cursor in place.
+    private var lockedAddressCard: some View {
+        Button(action: { isEditingAddress = true }) {
+            HStack(spacing: 8) {
+                Text(truncateMiddle(viewModel.trimmedAddress, visible: 10))
+                    .font(.system(.footnote, design: .monospaced))
+                    .foregroundColor(.dash.primaryText)
+                    .lineLimit(1)
+                Spacer()
+                Image(systemName: "pencil")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Color.dash.secondaryText)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity)
+            .background(Color.dash.secondaryBackground)
+            .cornerRadius(10)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: destinationIconName(destination))
+                .font(.system(size: 10, weight: .semibold))
+            Text(destinationTitle(destination))
+                .font(.caption2.weight(.semibold))
+        }
+        .foregroundColor(.dash.blue)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(Color.dash.blue.opacity(0.1))
+        .clipShape(Capsule())
+    }
+
+    private func destinationIconName(_ destination: SendViewModel.DestinationKind) -> String {
+        switch destination {
+        case .core: return "d.circle.fill"
+        case .platform: return "creditcard.fill"
+        case .shielded: return "shield.fill"
+        }
+    }
+
+    private func destinationTitle(_ destination: SendViewModel.DestinationKind) -> String {
+        switch destination {
+        case .core: return NSLocalizedString("Transparent address", comment: "Send screen destination type")
+        case .platform: return NSLocalizedString("Platform address", comment: "Send screen destination type")
+        case .shielded: return NSLocalizedString("Shielded address", comment: "Send screen destination type")
+        }
+    }
+
     private func clipboardChip(for suggestion: SendViewModel.ClipboardSuggestion) -> some View {
         Button(action: { viewModel.useClipboardSuggestion() }) {
             HStack(spacing: 10) {
@@ -143,24 +223,24 @@ struct SendScreen: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(NSLocalizedString("Send to copied address", comment: ""))
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.dash.secondaryText)
                     Text(truncateMiddle(suggestion.address))
                         .font(.system(.footnote, design: .monospaced))
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .lineLimit(1)
                         .truncationMode(.middle)
                 }
                 Spacer()
                 Text(destinationTitle(suggestion.kind))
                     .font(.caption2)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color.dash.secondaryText)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(Color.gray300.opacity(0.3))
+                    .background(Color.dash.gray300.opacity(0.3))
                     .cornerRadius(8)
             }
             .padding(12)
-            .background(Color.blue.opacity(0.08))
+            .background(Color.dash.blue.opacity(0.08))
             .cornerRadius(10)
         }
         .padding(.horizontal, 20)
@@ -176,7 +256,7 @@ struct SendScreen: View {
             .foregroundColor(.blue)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 12)
-            .background(Color.blue.opacity(0.12))
+            .background(Color.dash.blue.opacity(0.12))
             .cornerRadius(10)
         }
         .padding(.horizontal, 20)
@@ -563,7 +643,7 @@ struct SendConfirmSheet: View {
             Text(NSLocalizedString("Confirm", comment: ""))
                 .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
                 .padding(.top, 20)
 
             switch coordinator.phase {
@@ -575,7 +655,7 @@ struct SendConfirmSheet: View {
                 detailsBody
             }
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(isInFlight)
     }
 
@@ -601,7 +681,7 @@ struct SendConfirmSheet: View {
 
             Text(fiatText)
                 .font(.subheadline)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .padding(.top, 6)
 
             summaryCard
@@ -671,7 +751,7 @@ struct SendConfirmSheet: View {
             Text(NSLocalizedString("Sent", comment: "Send confirm sheet"))
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
 
             DashAmount(
                 amount: dashDuffs,
@@ -681,7 +761,7 @@ struct SendConfirmSheet: View {
 
             Text(fiatText)
                 .font(.subheadline)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
 
             Spacer(minLength: 12)
 
@@ -699,7 +779,7 @@ struct SendConfirmSheet: View {
 
     private var dragHandle: some View {
         Rectangle()
-            .fill(Color(red: 0.83, green: 0.83, blue: 0.85))
+            .fill(Color.dash.grabberFill)
             .frame(width: 36, height: 5)
             .cornerRadius(2.5)
     }
@@ -713,11 +793,11 @@ struct SendConfirmSheet: View {
             HStack {
                 Text(NSLocalizedString("To", comment: ""))
                     .font(.system(size: 14))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                 Spacer()
                 Text(truncateMiddle(destinationAddress))
                     .font(.system(.footnote, design: .monospaced))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .lineLimit(1)
             }
             .padding(.horizontal, 14)
@@ -731,7 +811,7 @@ struct SendConfirmSheet: View {
                 label: NSLocalizedString("Total", comment: ""),
                 value: dashDuffs.formattedDashAmount)
         }
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -750,11 +830,11 @@ struct SendConfirmSheet: View {
         HStack {
             Text(label)
                 .font(.system(size: 14))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
             Spacer()
             Text(value)
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 14)
@@ -762,7 +842,7 @@ struct SendConfirmSheet: View {
 
     private var divider: some View {
         Rectangle()
-            .fill(Color.gray300.opacity(0.3))
+            .fill(Color.dash.gray300.opacity(0.3))
             .frame(height: 1)
             .padding(.horizontal, 14)
     }
@@ -812,27 +892,27 @@ struct SendConfirmSheet: View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color.dashBlue)
+                    .fill(Color.dash.blue)
                     .frame(width: 30, height: 30)
                 Image(systemName: infoIcon)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(infoTitle)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Text(infoBody)
                     .font(.system(size: 13))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer()
         }
         .padding(14)
-        .background(Color.secondaryBackground)
+        .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
@@ -978,7 +1058,7 @@ struct SyncGateNote: View {
                 "Your wallet is still syncing. Sending from your Transparent balance will be available once syncing completes.",
                 comment: "Core send blocked until chain sync completes"))
                 .font(.caption)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

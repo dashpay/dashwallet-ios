@@ -4,16 +4,17 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct StorageExplorerUnavailableView: View {
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "cylinder.split.1x2")
                 .font(.largeTitle)
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
             Text("Storage Explorer requires the Platform sync runtime.")
                 .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
+                .foregroundColor(Color.dash.secondaryText)
             Button("Start Platform Sync") {
                 PlatformAddressSyncCoordinator.startForCurrentNetwork()
             }

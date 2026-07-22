@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 struct BottomSheet<Content: View>: View {
     @Environment(\.presentationMode) private var presentationMode
@@ -38,7 +39,7 @@ struct BottomSheet<Content: View>: View {
 
             contentSection
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
 
         if fillsHeight {
             sheet.edgesIgnoringSafeArea(.bottom)
@@ -68,7 +69,7 @@ struct BottomSheet<Content: View>: View {
         Rectangle()
             .foregroundColor(.clear)
             .frame(width: 36, height: 5)
-            .background(Color.gray300Alpha50)
+            .background(Color.dash.gray300Alpha50)
             .cornerRadius(5)
     }
 
@@ -84,7 +85,7 @@ struct BottomSheet<Content: View>: View {
             central: {
                 Text(title)
                     .font(.calloutMedium)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             },
             trailing: {
                 NavigationBarElement.close.button { presentationMode.wrappedValue.dismiss() }
@@ -99,13 +100,13 @@ struct BottomSheet<Content: View>: View {
                 content()
                     .navigationBarHidden(true)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.primaryBackground)
+                    .background(Color.dash.primaryBackground)
             }
         } else {
             // Natural height — no greedy NavigationView / maxHeight so the sheet can self-size.
             content()
                 .frame(maxWidth: .infinity)
-                .background(Color.primaryBackground)
+                .background(Color.dash.primaryBackground)
         }
     }
 }

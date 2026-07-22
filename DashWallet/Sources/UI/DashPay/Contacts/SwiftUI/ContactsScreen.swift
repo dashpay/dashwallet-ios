@@ -14,6 +14,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 // MARK: - ContactsViewModel
 
@@ -99,7 +100,7 @@ struct ContactsScreen: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.primaryBackground.ignoresSafeArea()
+                Color.dash.primaryBackground.ignoresSafeArea()
                 content
             }
             .navigationTitle(NSLocalizedString("Contacts", comment: "DashPay Contacts"))
@@ -109,7 +110,7 @@ struct ContactsScreen: View {
                         showingAddContact = true
                     } label: {
                         Image(systemName: "person.badge.plus")
-                            .foregroundColor(.dashBlue)
+                            .foregroundColor(.dash.blue)
                     }
                     .accessibilityLabel(NSLocalizedString("Add a New Contact", comment: "DashPay Contacts"))
                 }
@@ -213,7 +214,7 @@ struct ContactsScreen: View {
         HStack {
             Text(text)
                 .font(.system(size: size, weight: .semibold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Spacer()
         }
         .padding(.horizontal, 15)
@@ -225,7 +226,7 @@ struct ContactsScreen: View {
         content()
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color.secondaryBackground))
+                    .fill(Color.dash.secondaryBackground))
             .padding(.horizontal, 15)
             .padding(.vertical, 3)
             .contentShape(Rectangle())
@@ -238,14 +239,14 @@ struct ContactsScreen: View {
             Spacer()
             Image(systemName: "person.crop.circle.badge.plus")
                 .font(.system(size: 72, weight: .light))
-                .foregroundColor(.dashBlue)
+                .foregroundColor(.dash.blue)
                 .padding(.bottom, 12)
             Text(NSLocalizedString("Add a New Contact", comment: "DashPay Contacts"))
                 .font(.system(size: 20, weight: .bold))
-                .foregroundColor(.primaryText)
+                .foregroundColor(.dash.primaryText)
             Text(NSLocalizedString("Find a user and add them to your contacts.", comment: "DashPay Contacts"))
                 .font(.system(size: 16))
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             Button {
@@ -255,12 +256,12 @@ struct ContactsScreen: View {
                     NSLocalizedString("Search for a User", comment: "DashPay Contacts"),
                     systemImage: "magnifyingglass")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.dash.whiteText)
                     .frame(maxWidth: .infinity)
                     .frame(height: 46)
                     .background(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(Color.dashBlue))
+                            .fill(Color.dash.blue))
             }
             .buttonStyle(.plain)
             .padding(.horizontal, 32)
@@ -301,12 +302,12 @@ struct ContactRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.displayTitle)
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .lineLimit(1)
                 if let secondary = secondaryLine {
                     Text(secondary)
                         .font(.system(size: 12))
-                        .foregroundColor(.tertiaryText)
+                        .foregroundColor(.dash.tertiaryText)
                         .lineLimit(1)
                 }
             }
@@ -347,12 +348,12 @@ struct IncomingRequestRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.displayTitle)
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                     .lineLimit(1)
                 if let username = item.username?.withoutDashSuffix, !username.isEmpty, username != item.displayTitle {
                     Text(username)
                         .font(.system(size: 12))
-                        .foregroundColor(.tertiaryText)
+                        .foregroundColor(.dash.tertiaryText)
                         .lineLimit(1)
                 }
             }

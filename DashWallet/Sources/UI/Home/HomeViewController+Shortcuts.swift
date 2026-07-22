@@ -18,6 +18,7 @@
 import UIKit
 import SafariServices
 import SwiftUI
+import DashUIKit
 import SwiftDashSDK
 
 extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
@@ -454,7 +455,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             return AnyView(
                 sheet
                     .presentationDetents([.large])
-                    .presentationBackground(Color.primaryBackground)
+                    .presentationBackground(Color.dash.primaryBackground)
                     .presentationCornerRadius(32)
                     .presentationDragIndicator(.hidden)
             )

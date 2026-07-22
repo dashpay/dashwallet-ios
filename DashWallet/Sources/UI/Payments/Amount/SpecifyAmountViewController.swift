@@ -145,7 +145,7 @@ private struct SpecifyAmountView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            Color.primaryBackground
+            Color.dash.primaryBackground
                 .ignoresSafeArea(edges: .top)
 
             VStack(spacing: 0) {
@@ -157,7 +157,7 @@ private struct SpecifyAmountView: View {
                 VStack(alignment: .leading, spacing: 26) {
                     Text(NSLocalizedString("Specify Amount", comment: "Specify Amount"))
                         .font(.largeTitle.weight(.bold))
-                        .foregroundColor(Color.primaryText)
+                        .foregroundColor(Color.dash.primaryText)
                         .padding(.top, 10)
 
                     DashUIKit.EnterAmountView(
@@ -198,7 +198,7 @@ private struct SpecifyAmountView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
-                .background(Color.secondaryBackground)
+                .background(Color.dash.secondaryBackground)
             }
         }
     }

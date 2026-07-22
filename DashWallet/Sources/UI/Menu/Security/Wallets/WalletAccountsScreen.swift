@@ -25,6 +25,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 import UIKit
 
 struct WalletAccountsScreen: View {
@@ -42,7 +43,7 @@ struct WalletAccountsScreen: View {
 
     var body: some View {
         ZStack {
-            Color.primaryBackground.ignoresSafeArea()
+            Color.dash.primaryBackground.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
                 header
@@ -66,9 +67,9 @@ struct WalletAccountsScreen: View {
                                 }
                             }
                         }
-                        .background(Color.secondaryBackground)
+                        .background(Color.dash.secondaryBackground)
                         .cornerRadius(12)
-                        .shadow(color: Color.shadow, radius: 20, x: 0, y: 5)
+                        .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
                         .padding(.horizontal, 20)
                         .padding(.top, 4)
                     }
@@ -96,7 +97,7 @@ struct WalletAccountsScreen: View {
                 central: {
                     Text(viewModel.walletName)
                         .font(.headline)
-                        .foregroundColor(.primaryText)
+                        .foregroundColor(.dash.primaryText)
                         .lineLimit(1)
                         .padding(.horizontal, 60)
                 }
@@ -106,7 +107,7 @@ struct WalletAccountsScreen: View {
                 Text(NSLocalizedString("Accounts", comment: "Wallet accounts"))
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
                 Spacer()
             }
             .padding(.horizontal, 20)
@@ -180,7 +181,7 @@ private struct AccountRowView: View {
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
             }
 
             if row.isPlatformPayment {
@@ -190,7 +191,7 @@ private struct AccountRowView: View {
             } else {
                 Text(NSLocalizedString("Special Purpose Account", comment: "Wallet accounts"))
                     .font(.caption)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                     .italic()
             }
 
@@ -205,18 +206,18 @@ private struct AccountRowView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(NSLocalizedString("Confirmed", comment: "Wallet accounts"))
                     .font(.caption)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                 Text(row.confirmed.formattedDashAmount)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundColor(.primaryText)
+                    .foregroundColor(.dash.primaryText)
             }
 
             if row.unconfirmed > 0 {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(NSLocalizedString("Pending", comment: "Wallet accounts"))
                         .font(.caption)
-                        .foregroundColor(.secondaryText)
+                        .foregroundColor(.dash.secondaryText)
                     Text(row.unconfirmed.formattedDashAmount)
                         .font(.subheadline)
                         .fontWeight(.medium)
@@ -229,7 +230,7 @@ private struct AccountRowView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(NSLocalizedString("Total", comment: "Wallet accounts"))
                     .font(.caption)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                 Text((row.confirmed + row.unconfirmed).formattedDashAmount)
                     .font(.subheadline)
                     .fontWeight(.semibold)
@@ -245,7 +246,7 @@ private struct AccountRowView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(NSLocalizedString("Balance", comment: "Wallet accounts"))
                     .font(.caption)
-                    .foregroundColor(.secondaryText)
+                    .foregroundColor(.dash.secondaryText)
                 Text(Self.formatCredits(row.platformCredits))
                     .font(.subheadline)
                     .fontWeight(.medium)
@@ -269,7 +270,7 @@ private struct AccountRowView: View {
                 Spacer()
             }
             .font(.caption)
-            .foregroundColor(.secondaryText)
+            .foregroundColor(.dash.secondaryText)
         } else if row.receiveAddressCount > 0 || row.changeAddressCount > 0 {
             HStack(spacing: 16) {
                 if row.receiveAddressCount > 0 {
@@ -285,7 +286,7 @@ private struct AccountRowView: View {
                 Spacer()
             }
             .font(.caption)
-            .foregroundColor(.secondaryText)
+            .foregroundColor(.dash.secondaryText)
         }
     }
 

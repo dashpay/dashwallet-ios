@@ -22,7 +22,7 @@ extension View {
     func bottomPanelStyle() -> some View {
         self
             .padding(.horizontal, 20)
-            .background(Color.secondaryBackground)
+            .background(Color.dash.secondaryBackground)
 //            .padding(.bottom, 30)
             .cornerRadius(20)
     }
@@ -66,7 +66,7 @@ struct DashSpendSinglePanel: View {
         if showCost {
             Text(costMessage)
                 .font(.subhead)
-                .foregroundColor(Color.primaryText)
+                .foregroundColor(Color.dash.primaryText)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
                 .padding(.top, 12)
@@ -78,7 +78,7 @@ struct DashSpendSinglePanel: View {
         if let error = error {
             Text(error.localizedDescription)
                 .font(.caption)
-                .foregroundColor(Color.systemRed)
+                .foregroundColor(Color.dash.red)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 12)
@@ -87,11 +87,11 @@ struct DashSpendSinglePanel: View {
             HStack {
                 Text(minimumLimitMessage)
                     .font(.caption)
-                    .foregroundColor(amount > 0 && amount < minimumAmount ? Color.systemRed : Color.tertiaryText)
+                    .foregroundColor(amount > 0 && amount < minimumAmount ? Color.dash.red : Color.dash.tertiaryText)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text(maximumLimitMessage)
                     .font(.caption)
-                    .foregroundColor(amount > maximumAmount ? Color.systemRed : Color.tertiaryText)
+                    .foregroundColor(amount > maximumAmount ? Color.dash.red : Color.dash.tertiaryText)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
             .padding(.top, 12)
@@ -102,7 +102,7 @@ struct DashSpendSinglePanel: View {
         VStack(spacing: 20) {
             Text(NSLocalizedString("Loading gift card options...", comment: "DashSpend"))
                 .font(.subhead)
-                .foregroundColor(.secondaryText)
+                .foregroundColor(.dash.secondaryText)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -142,7 +142,7 @@ struct DashSpendSinglePanel: View {
             )
             .frame(maxWidth: .infinity)
             .bottomPanelStyle()
-            .background(Color.secondaryBackground, ignoresSafeAreaEdges: .bottom)
+            .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
         }
 
     }
@@ -205,7 +205,7 @@ private struct DashSpendSinglePanelKeyboardPreview: View {
             onDenominationSelected: { _ in },
             onAction: {}
         )
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 }
 
@@ -234,6 +234,6 @@ private struct DashSpendSinglePanelDenominationsPreview: View {
             onDenominationSelected: { selected = $0 },
             onAction: {}
         )
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
     }
 }
