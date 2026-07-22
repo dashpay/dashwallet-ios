@@ -408,12 +408,10 @@
 		478C98372943A60000FAA0F0 /* PaymentMethodCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C98362943A60000FAA0F0 /* PaymentMethodCell.swift */; };
 		478C983C2945801D00FAA0F0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C983B2945801D00FAA0F0 /* Constants.swift */; };
 		47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47976E492987772700612988 /* AmountObjectTests.swift */; };
-		5EAD222230A0000000A1B202 /* DashAmountFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */; };
 		47976E4B2987781A00612988 /* DWAmountInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E92214566A009906DC /* DWAmountInputValidator.m */; };
 		479DBDDD2995168C00F30AF1 /* Transactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479DBDDC2995168C00F30AF1 /* Transactions.swift */; };
 		479E7924287C00EC00D0F7D7 /* DatabaseConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */; };
 		47A184E5299CC19A0017E32C /* rates.json in Resources */ = {isa = PBXBuildFile; fileRef = 47A184E4299CC19A0017E32C /* rates.json */; };
-		47A1B00130B5A10000D15A01 /* SendAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A1B00030B5A10000D15A01 /* SendAmountScreen.swift */; };
 		47A2A2E2293DCCEA00938DB7 /* Coinbase+Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2E1293DCCEA00938DB7 /* Coinbase+Constants.swift */; };
 		47A2A2E9293E612900938DB7 /* CBAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2E8293E612900938DB7 /* CBAuth.swift */; };
 		47A2A2EC293E618600938DB7 /* CBUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2A2EB293E618600938DB7 /* CBUser.swift */; };
@@ -467,7 +465,6 @@
 		47C661AB28F9707A00028A8D /* NumberKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AA28F9707A00028A8D /* NumberKeyboard.swift */; };
 		47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */; };
 		47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */; };
-
 		47C661B428FDCF7800028A8D /* ActionButtonViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B328FDCF7800028A8D /* ActionButtonViewController.swift */; };
 		47C661B628FE75A700028A8D /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B528FE75A700028A8D /* BaseViewController.swift */; };
 		47C661B828FE907300028A8D /* AmountInputControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B728FE907300028A8D /* AmountInputControl.swift */; };
@@ -513,7 +510,6 @@
 		510336DB2FEBB0C9002E0899 /* DashSpendSinglePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B007D5A0B007D5A0B007 /* DashSpendSinglePanel.swift */; };
 		510336DC2FEBB0C9002E0899 /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10175DFA10175DFA101 /* DashStepper.swift */; };
 		510336DD2FEBB0C9002E0899 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10275DFA10275DFA102 /* SegmentedControl.swift */; };
-		510336ED2FEBB1B4002E0899 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 510336EC2FEBB1B4002E0899 /* DashUIKit */; };
 		514AEA132FB324FA00F9B54C /* SwapConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* SwapConvertView.swift */; };
 		514AEA142FB324FA00F9B54C /* SwapConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* SwapConvertView.swift */; };
 		514AEA492FB33B4300F9B54C /* SwapConvertHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */; };
@@ -562,31 +558,6 @@
 		514AF1C12FB5F02D00F9B54C /* SwapConvertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AF1BF2FB5F02D00F9B54C /* SwapConvertViewModel.swift */; };
 		514BEA012FB5F02D00F9B54C /* SwapConvertAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514BEA002FB5F02D00F9B54C /* SwapConvertAmount.swift */; };
 		514BEA022FB5F02D00F9B54C /* SwapConvertAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514BEA002FB5F02D00F9B54C /* SwapConvertAmount.swift */; };
-		4A36341D70A94778AF408757 /* MayaCoinIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20554F992205428BA790F6CF /* MayaCoinIconView.swift */; };
-		5149DA082FF3DA5200207AE5 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5149DA072FF3DA5200207AE5 /* DashUIKit */; };
-		51760D812FF7C2CF00E70F0B /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 51760D802FF7C2CF00E70F0B /* DashUIKit */; };
-		514AE85E2FB1F9DB00F9B54C /* DashSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE85D2FB1F9DB00F9B54C /* DashSwitch.swift */; };
-		514AE85F2FB1F9DB00F9B54C /* DashSwitch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE85D2FB1F9DB00F9B54C /* DashSwitch.swift */; };
-		514AE9F32FB2F4C500F9B54C /* HaltedToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE9F22FB2F4C500F9B54C /* HaltedToast.swift */; };
-		514AE9F42FB2F4C500F9B54C /* HaltedToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AE9F22FB2F4C500F9B54C /* HaltedToast.swift */; };
-		514AEA0F2FB31BD800F9B54C /* AddressFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */; };
-		514AEA102FB31BD800F9B54C /* AddressFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */; };
-		514AEA132FB324FA00F9B54C /* MayaConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* MayaConvertView.swift */; };
-		514AEA142FB324FA00F9B54C /* MayaConvertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA122FB324FA00F9B54C /* MayaConvertView.swift */; };
-		514AEA492FB33B4300F9B54C /* MayaConvertHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA4A2FB33B4300F9B54C /* MayaConvertHostingController.swift */; };
-		514AEA4B2FB33B4300F9B54C /* MayaConvertHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEA4A2FB33B4300F9B54C /* MayaConvertHostingController.swift */; };
-		514AEAD52FB34F8600F9B54C /* OrderPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */; };
-		514AEAD62FB34F8600F9B54C /* OrderPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */; };
-		514AF1C02FB5F02D00F9B54C /* MayaConvertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AF1BF2FB5F02D00F9B54C /* MayaConvertViewModel.swift */; };
-		514AF1C12FB5F02D00F9B54C /* MayaConvertViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514AF1BF2FB5F02D00F9B54C /* MayaConvertViewModel.swift */; };
-		2E08EC52344E430F9BC8DEAA /* TransferAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */; };
-		10853C84CC9043928BA2205A /* TransferAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */; };
-		D5E6F7A8B9C0D1E2F3A4B5C6 /* TransferAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */; };
-		E9F0A1B2C3D4E5F6A7B8C9D0 /* TransferAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */; };
-		F2A3B4C5D6E7F8091A2B3C4D /* TransferAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */; };
-		1C2D3E4F5A6B7C8D9E0F1A2B /* TransferAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */; };
-		514BEA012FB5F02D00F9B54C /* MayaConvertAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514BEA002FB5F02D00F9B54C /* MayaConvertAmount.swift */; };
-		514BEA022FB5F02D00F9B54C /* MayaConvertAmount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514BEA002FB5F02D00F9B54C /* MayaConvertAmount.swift */; };
 		5151C8C62F913BF100F0A604 /* Coinbase-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */; };
 		5151C8C72F913BF100F0A604 /* ZenLedger-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C52F913BF100F0A604 /* ZenLedger-Info.plist */; };
 		5151C8C82F913BF100F0A604 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5151C8C32F913BF100F0A604 /* GoogleService-Info.plist */; };
@@ -607,64 +578,8 @@
 		516983C32FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */; };
 		51733DB22FCF04B300CF8713 /* SwapKit-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51733DB12FCF04B300CF8713 /* SwapKit-Info.plist */; };
 		51733DB32FCF04B300CF8713 /* SwapKit-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51733DB12FCF04B300CF8713 /* SwapKit-Info.plist */; };
-		A1060800B100000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */; };
-		A1060800B200000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */; };
-		51530E6E2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */; };
-		51530E6F2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */; };
-		51530E702FD6EE1D00175308 /* MerchantCellRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E682FD6EE1D00175308 /* MerchantCellRow.swift */; };
-		51530E712FD6EE1D00175308 /* AllMerchantLocationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */; };
-		51530E722FD6EE1D00175308 /* AllMerchantLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */; };
-		51530E732FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */; };
-		51530E742FD6EE1D00175308 /* MerchantCellRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E682FD6EE1D00175308 /* MerchantCellRow.swift */; };
-		51530E752FD6EE1D00175308 /* AllMerchantLocationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */; };
-		5193BE482F9FC05E00C24A58 /* DashSpendPayIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE472F9FC05E00C24A58 /* DashSpendPayIntro.swift */; };
-		5193BE492F9FC05E00C24A58 /* DashSpendPayIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE472F9FC05E00C24A58 /* DashSpendPayIntro.swift */; };
-		5193BE4A2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE4B2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift */; };
-		5193BE4C2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE4B2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift */; };
-		5193BE4D2F9FC05E00C24A58 /* DashSpendSinglePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE4E2F9FC05E00C24A58 /* DashSpendSinglePanel.swift */; };
-		5193BE4F2F9FC05E00C24A58 /* DashSpendSinglePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE4E2F9FC05E00C24A58 /* DashSpendSinglePanel.swift */; };
-		5193BE502F9FC05E00C24A58 /* DashSpendAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE522F9FC05E00C24A58 /* DashSpendAmountView.swift */; };
-		5193BE512F9FC05E00C24A58 /* DashSpendAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE522F9FC05E00C24A58 /* DashSpendAmountView.swift */; };
-		5193BE532F9FC05E00C24A58 /* DashSpendDenominationRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE552F9FC05E00C24A58 /* DashSpendDenominationRow.swift */; };
-		5193BE542F9FC05E00C24A58 /* DashSpendDenominationRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE552F9FC05E00C24A58 /* DashSpendDenominationRow.swift */; };
-		5193BE562F9FC05E00C24A58 /* DashSpendFlexibleContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE582F9FC05E00C24A58 /* DashSpendFlexibleContent.swift */; };
-		5193BE572F9FC05E00C24A58 /* DashSpendFlexibleContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE582F9FC05E00C24A58 /* DashSpendFlexibleContent.swift */; };
-		5193BE592F9FC05E00C24A58 /* DashSpendFixedContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE5B2F9FC05E00C24A58 /* DashSpendFixedContent.swift */; };
-		5193BE5A2F9FC05E00C24A58 /* DashSpendFixedContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE5B2F9FC05E00C24A58 /* DashSpendFixedContent.swift */; };
-		51DFA7F82FA8A9DF001EDB3A /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */; };
-		51DFA7F92FA8A9DF001EDB3A /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */; };
-		736A08CB9556A395E59D3F78 /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9BF7550EF8D4BA009CB1EB5 /* libPods-WatchApp Extension.a */; };
-		51646C723006263C00BE3070 /* Uphold-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51646C713006263C00BE3070 /* Uphold-Info.plist */; };
-		51646C733006263C00BE3070 /* Uphold-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51646C713006263C00BE3070 /* Uphold-Info.plist */; };
-		516983A32FCAEDEB00BA91A2 /* SuccessIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983A22FCAEDEB00BA91A2 /* SuccessIllustration.swift */; };
-		516983A42FCAEDEB00BA91A2 /* SuccessIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983A22FCAEDEB00BA91A2 /* SuccessIllustration.swift */; };
-		516983A62FCAEF1300BA91A2 /* ErrorIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983A52FCAEF1300BA91A2 /* ErrorIllustration.swift */; };
-		516983A72FCAEF1300BA91A2 /* ErrorIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983A52FCAEF1300BA91A2 /* ErrorIllustration.swift */; };
-		516983B12FCAEDEB00BA91A2 /* LoadingIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983B02FCAEDEB00BA91A2 /* LoadingIllustration.swift */; };
-		516983B22FCAEDEB00BA91A2 /* LoadingIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983B02FCAEDEB00BA91A2 /* LoadingIllustration.swift */; };
-		516983C22FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */; };
-		516983C32FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */; };
-		516C63C62FE9BCC600DD6BC3 /* GiftCardDetailsInfoCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B001D6C0B001D6C0B001 /* GiftCardDetailsInfoCard.swift */; };
-		516C63C72FE9BCC600DD6BC3 /* GiftCardDetailsMerchantHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B002D6C0B002D6C0B002 /* GiftCardDetailsMerchantHeader.swift */; };
-		516C63C82FE9BCC600DD6BC3 /* GiftCardPurchaseSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B003D6C0B003D6C0B003 /* GiftCardPurchaseSelectionSheet.swift */; };
-		516C63C92FE9BCC600DD6BC3 /* GiftCardDetailsPoweredBySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B004D6C0B004D6C0B004 /* GiftCardDetailsPoweredBySection.swift */; };
-		516C63CA2FE9BCC600DD6BC3 /* GiftCardDetailsHowToUseSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B005D6C0B005D6C0B005 /* GiftCardDetailsHowToUseSection.swift */; };
-		516C63CB2FE9BCC600DD6BC3 /* DashSpendFixedContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B003D5A0B003D5A0B003 /* DashSpendFixedContent.swift */; };
-		516C63CC2FE9BCC600DD6BC3 /* DashSpendFlexibleContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B004D5A0B004D5A0B004 /* DashSpendFlexibleContent.swift */; };
-		516C63CD2FE9BCC600DD6BC3 /* DashSpendAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B001D5A0B001D5A0B001 /* DashSpendAmountView.swift */; };
-		516C63CE2FE9BCC600DD6BC3 /* DashSpendDenominationRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B002D5A0B002D5A0B002 /* DashSpendDenominationRow.swift */; };
-		516C63CF2FE9BCC600DD6BC3 /* DashSpendMultiplePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B005D5A0B005D5A0B005 /* DashSpendMultiplePanel.swift */; };
-		516C63D02FE9BCC600DD6BC3 /* DashSpendPayIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B006D5A0B006D5A0B006 /* DashSpendPayIntro.swift */; };
-		516C63D12FE9BCC600DD6BC3 /* DashSpendSinglePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B007D5A0B007D5A0B007 /* DashSpendSinglePanel.swift */; };
-		516C63D22FE9BCC600DD6BC3 /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10175DFA10175DFA101 /* DashStepper.swift */; };
-		516C63D32FE9BCC600DD6BC3 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10275DFA10275DFA102 /* SegmentedControl.swift */; };
-		516C63E52FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */; };
-		516C63E62FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */; };
-		516C63E82FE9BE0A00DD6BC3 /* AboutDashViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */; };
-		516C63E92FE9BE0A00DD6BC3 /* AboutDashViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */; };
 		51A577482FBB3A6000FB4097 /* OrderPreviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A577472FBB3A6000FB4097 /* OrderPreviewViewModel.swift */; };
 		51A577492FBB3A6000FB4097 /* OrderPreviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A577472FBB3A6000FB4097 /* OrderPreviewViewModel.swift */; };
-		5EAD111230A0000000A1B201 /* MayaAmountFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAD111130A0000000A1B201 /* MayaAmountFormatter.swift */; };
 		51A5774B2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A5774A2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift */; };
 		51A5774C2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A5774A2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift */; };
 		51A57B022FBB41DE00FB4097 /* OrderPreviewTableRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57B012FBB41DE00FB4097 /* OrderPreviewTableRow.swift */; };
@@ -679,16 +594,6 @@
 		51A57C0A2FBB5A0000FB4097 /* SwapTransactionPendingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57C082FBB5A0000FB4097 /* SwapTransactionPendingView.swift */; };
 		51BA2EA02F0B2E0100A1B201 /* SwapPendingGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BA2E9F2F0B2E0100A1B201 /* SwapPendingGate.swift */; };
 		51BA2EA12F0B2E0100A1B201 /* SwapPendingGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BA2E9F2F0B2E0100A1B201 /* SwapPendingGate.swift */; };
-		51A57B042FBB41DE00FB4097 /* MayaFeeInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57B052FBB41DE00FB4097 /* MayaFeeInfoSheet.swift */; };
-		51A57B062FBB41DE00FB4097 /* MayaFeeInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57B052FBB41DE00FB4097 /* MayaFeeInfoSheet.swift */; };
-		51A57C042FBB5A0000FB4097 /* MayaTransactionSuccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57C022FBB5A0000FB4097 /* MayaTransactionSuccessView.swift */; };
-		51A57C052FBB5A0000FB4097 /* MayaTransactionSuccessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57C022FBB5A0000FB4097 /* MayaTransactionSuccessView.swift */; };
-		51A57C062FBB5A0000FB4097 /* MayaTransactionFailureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57C032FBB5A0000FB4097 /* MayaTransactionFailureView.swift */; };
-		51A57C072FBB5A0000FB4097 /* MayaTransactionFailureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57C032FBB5A0000FB4097 /* MayaTransactionFailureView.swift */; };
-		51A57C092FBB5A0000FB4097 /* MayaTransactionPendingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57C082FBB5A0000FB4097 /* MayaTransactionPendingView.swift */; };
-		51A57C0A2FBB5A0000FB4097 /* MayaTransactionPendingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A57C082FBB5A0000FB4097 /* MayaTransactionPendingView.swift */; };
-		51BA2EA02F0B2E0100A1B201 /* MayaSwapPendingGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BA2E9F2F0B2E0100A1B201 /* MayaSwapPendingGate.swift */; };
-		51BA2EA12F0B2E0100A1B201 /* MayaSwapPendingGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BA2E9F2F0B2E0100A1B201 /* MayaSwapPendingGate.swift */; };
 		51F0D10130BF97A900B27E11 /* ExclamationIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51F0D10030BF97A900B27E11 /* ExclamationIcon.swift */; };
 		51F0D10230BF97A900B27E11 /* ExclamationIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51F0D10030BF97A900B27E11 /* ExclamationIcon.swift */; };
 		51F0D10430BF98BA00B27E11 /* ArrowDownIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51F0D10330BF98BA00B27E11 /* ArrowDownIcon.swift */; };
@@ -1016,9 +921,6 @@
 		AA00300F2FD000000000000F /* SwapOrderMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00300E2FD000000000000E /* SwapOrderMetadataProvider.swift */; };
 		AA0030102FD0000000000010 /* SwapOrderMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00300E2FD000000000000E /* SwapOrderMetadataProvider.swift */; };
 		AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */; };
-		AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000062DUMMYID001234567 /* DashSpend/GiftCardProvider.swift */; };
-		F4C406090000000100000001 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
-		F4C406090000000100000002 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
 		AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */; };
 		AA0001032AA9F58E00A1B201 /* MayaPortalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001012AA9F58E00A1B201 /* MayaPortalView.swift */; };
 		AA0001052AA9F58E00A1B202 /* MayaPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042AA9F58E00A1B202 /* MayaPortalViewController.swift */; };
@@ -1091,10 +993,8 @@
 		AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */; };
 		AA29B7041CF55787428E1A04 /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9BF7550EF8D4BA009CB1EB5 /* libPods-WatchApp Extension.a */; };
 		ABA7230759067F4D4EB39AE9 /* SwapTransactionStatusHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B5469F5588395FA0668C4B /* SwapTransactionStatusHostingController.swift */; };
-		ABA7230759067F4D4EB39AE9 /* MayaTransactionStatusHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B5469F5588395FA0668C4B /* MayaTransactionStatusHostingController.swift */; };
 		AEAE60406265A73AFD573FD1 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		B059B6E200A57A699E6EED84 /* libPods-DashWalletTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1940CA64E8FD6DDD0CFC14A2 /* libPods-DashWalletTests.a */; };
-		B1E3A0013A0A000000000002 /* NumericKeyboardLocaleSupportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E3A0013A0A000000000001 /* NumericKeyboardLocaleSupportTests.swift */; };
 		B3A1F2C4D5E6078901234568 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
 		B3A1F2C4D5E6078901234569 /* ExtendedPublicKeySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */; };
 		B3D26F853F876FE4F2081CFF /* libPods-dashpay.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B6C652479D19F2169F565A6C /* libPods-dashpay.a */; };
@@ -1354,7 +1254,6 @@
 		C9829CDE2A562822007132E4 /* TappableLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9829CDD2A562822007132E4 /* TappableLabel.swift */; };
 		C9829CE22A562CEE007132E4 /* TappableTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9829CE12A562CEE007132E4 /* TappableTextView.swift */; };
 		C9903A5429E6A5F600535A4E /* KeysOverviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9903A5329E6A5F600535A4E /* KeysOverviewViewController.swift */; };
-		C9A1B00230B5A10000D15A01 /* SendAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A1B00030B5A10000D15A01 /* SendAmountScreen.swift */; };
 		C9C1335A2A561FFA00B66651 /* PasteboardContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C133592A561FFA00B66651 /* PasteboardContentView.swift */; };
 		C9D2C6942A320AA000D15901 /* DWReceiveModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416123A81E8B004E37A7 /* DWReceiveModelStub.m */; };
 		C9D2C6952A320AA000D15901 /* DWBaseAdvancedSecurityModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3417E23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m */; };
@@ -1702,7 +1601,6 @@
 		C9D2C8492A320AA000D15901 /* DWAppRootViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9CEBAC22E1DA4000A50237 /* DWAppRootViewController.m */; };
 		C9D2C84A2A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C84B2A320AA000D15901 /* UITableView+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F005FE297164600029EB10 /* UITableView+DashWallet.swift */; };
-
 		C9D2C84D2A320AA000D15901 /* ShortcutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8D29D404850034FD57 /* ShortcutCell.swift */; };
 		C9D2C84F2A320AA000D15901 /* UIColor+DWStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */; };
 		C9D2C8502A320AA000D15901 /* DWEnvironment.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEF3AF021823CD800917AB6 /* DWEnvironment.m */; };
@@ -1928,15 +1826,6 @@
 		CC0000182DUMMYID001234567 /* PiggyCardsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000092DUMMYID001234567 /* PiggyCardsRepository.swift */; };
 		CC0000192DUMMYID001234567 /* PiggyCardsTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000102DUMMYID001234567 /* PiggyCardsTokenService.swift */; };
 		CC0000202DUMMYID001234567 /* PiggyCardsTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000102DUMMYID001234567 /* PiggyCardsTokenService.swift */; };
-		CNR0000012FF100000000001 /* CrowdNodeBalanceReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000072FF100000000001 /* CrowdNodeBalanceReminder.swift */; };
-		CNR0000022FF100000000001 /* CrowdNodeBalanceReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000072FF100000000001 /* CrowdNodeBalanceReminder.swift */; };
-		CNR0000032FF100000000001 /* CrowdNodeBalanceReminderSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */; };
-		CNR0000042FF100000000001 /* CrowdNodeBalanceReminderSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */; };
-		CNR0000052FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */; };
-		CNR0000062FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */; };
-		CNR0000112FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */; };
-		CNR0000122FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */; };
-		D0D3F0F33D9F162622F0A6E5 /* DashBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF95E0E0B636AFB810D62116 /* DashBalanceView.swift */; };
 		D5A0C001D5A0C001D5A0C001 /* DashSpendAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B001D5A0B001D5A0B001 /* DashSpendAmountView.swift */; };
 		D5A0C002D5A0C002D5A0C002 /* DashSpendDenominationRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B002D5A0B002D5A0B002 /* DashSpendDenominationRow.swift */; };
 		D5A0C003D5A0C003D5A0C003 /* DashSpendFixedContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B003D5A0B003D5A0B003 /* DashSpendFixedContent.swift */; };
@@ -1950,7 +1839,6 @@
 		D6C0C004D6C0C004D6C0C004 /* GiftCardDetailsPoweredBySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B004D6C0B004D6C0B004 /* GiftCardDetailsPoweredBySection.swift */; };
 		D6C0C005D6C0C005D6C0C005 /* GiftCardDetailsHowToUseSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B005D6C0B005D6C0B005 /* GiftCardDetailsHowToUseSection.swift */; };
 		DA38F1C5CD32A52891D02D0E /* MayaConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7708BBFDD14AFF237FB72D71 /* MayaConstants.swift */; };
-		DA57A1010000000000000002 /* PastedAmountNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */; };
 		DE3A167A235B79D705C0A962 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		E5767AEAEF7C4921886E915A /* BuySellPortalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */; };
 		E88FE13A3079496C9A5EA8D4 /* SwapCoinIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20554F992205428BA790F6CF /* SwapCoinIconView.swift */; };
@@ -1992,6 +1880,76 @@
 		RC00A0052FA0000000000001 /* ExploreMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00A0062FA0000000000001 /* ExploreMenuScreen.swift */; };
 		RC00C0012FA0000000000001 /* CSVExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00C0032FA0000000000001 /* CSVExportSheet.swift */; };
 		RC00C0022FA0000000000001 /* CSVExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00C0032FA0000000000001 /* CSVExportSheet.swift */; };
+		5EAD222230A0000000A1B202 /* DashAmountFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */; };
+		47A1B00130B5A10000D15A01 /* SendAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A1B00030B5A10000D15A01 /* SendAmountScreen.swift */; };
+		5149DA082FF3DA5200207AE5 /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5149DA072FF3DA5200207AE5 /* DashUIKit */; };
+		51760D812FF7C2CF00E70F0B /* DashUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 51760D802FF7C2CF00E70F0B /* DashUIKit */; };
+		2E08EC52344E430F9BC8DEAA /* TransferAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */; };
+		10853C84CC9043928BA2205A /* TransferAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */; };
+		D5E6F7A8B9C0D1E2F3A4B5C6 /* TransferAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */; };
+		E9F0A1B2C3D4E5F6A7B8C9D0 /* TransferAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */; };
+		F2A3B4C5D6E7F8091A2B3C4D /* TransferAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */; };
+		1C2D3E4F5A6B7C8D9E0F1A2B /* TransferAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */; };
+		A1060800B100000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */; };
+		A1060800B200000000000001 /* ExplorePointOfUse+PreviewMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */; };
+		51530E6E2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */; };
+		51530E6F2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */; };
+		51530E702FD6EE1D00175308 /* MerchantCellRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E682FD6EE1D00175308 /* MerchantCellRow.swift */; };
+		51530E712FD6EE1D00175308 /* AllMerchantLocationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */; };
+		51530E722FD6EE1D00175308 /* AllMerchantLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */; };
+		51530E732FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */; };
+		51530E742FD6EE1D00175308 /* MerchantCellRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E682FD6EE1D00175308 /* MerchantCellRow.swift */; };
+		51530E752FD6EE1D00175308 /* AllMerchantLocationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */; };
+		5193BE482F9FC05E00C24A58 /* DashSpendPayIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE472F9FC05E00C24A58 /* DashSpendPayIntro.swift */; };
+		5193BE492F9FC05E00C24A58 /* DashSpendPayIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE472F9FC05E00C24A58 /* DashSpendPayIntro.swift */; };
+		5193BE4A2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE4B2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift */; };
+		5193BE4C2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE4B2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift */; };
+		5193BE4D2F9FC05E00C24A58 /* DashSpendSinglePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE4E2F9FC05E00C24A58 /* DashSpendSinglePanel.swift */; };
+		5193BE4F2F9FC05E00C24A58 /* DashSpendSinglePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE4E2F9FC05E00C24A58 /* DashSpendSinglePanel.swift */; };
+		5193BE502F9FC05E00C24A58 /* DashSpendAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE522F9FC05E00C24A58 /* DashSpendAmountView.swift */; };
+		5193BE512F9FC05E00C24A58 /* DashSpendAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE522F9FC05E00C24A58 /* DashSpendAmountView.swift */; };
+		5193BE532F9FC05E00C24A58 /* DashSpendDenominationRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE552F9FC05E00C24A58 /* DashSpendDenominationRow.swift */; };
+		5193BE542F9FC05E00C24A58 /* DashSpendDenominationRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE552F9FC05E00C24A58 /* DashSpendDenominationRow.swift */; };
+		5193BE562F9FC05E00C24A58 /* DashSpendFlexibleContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE582F9FC05E00C24A58 /* DashSpendFlexibleContent.swift */; };
+		5193BE572F9FC05E00C24A58 /* DashSpendFlexibleContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE582F9FC05E00C24A58 /* DashSpendFlexibleContent.swift */; };
+		5193BE592F9FC05E00C24A58 /* DashSpendFixedContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE5B2F9FC05E00C24A58 /* DashSpendFixedContent.swift */; };
+		5193BE5A2F9FC05E00C24A58 /* DashSpendFixedContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5193BE5B2F9FC05E00C24A58 /* DashSpendFixedContent.swift */; };
+		51DFA7F82FA8A9DF001EDB3A /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */; };
+		51DFA7F92FA8A9DF001EDB3A /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */; };
+		736A08CB9556A395E59D3F78 /* libPods-WatchApp Extension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9BF7550EF8D4BA009CB1EB5 /* libPods-WatchApp Extension.a */; };
+		51646C723006263C00BE3070 /* Uphold-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51646C713006263C00BE3070 /* Uphold-Info.plist */; };
+		51646C733006263C00BE3070 /* Uphold-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51646C713006263C00BE3070 /* Uphold-Info.plist */; };
+		516C63C62FE9BCC600DD6BC3 /* GiftCardDetailsInfoCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B001D6C0B001D6C0B001 /* GiftCardDetailsInfoCard.swift */; };
+		516C63C72FE9BCC600DD6BC3 /* GiftCardDetailsMerchantHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B002D6C0B002D6C0B002 /* GiftCardDetailsMerchantHeader.swift */; };
+		516C63C82FE9BCC600DD6BC3 /* GiftCardPurchaseSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B003D6C0B003D6C0B003 /* GiftCardPurchaseSelectionSheet.swift */; };
+		516C63C92FE9BCC600DD6BC3 /* GiftCardDetailsPoweredBySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B004D6C0B004D6C0B004 /* GiftCardDetailsPoweredBySection.swift */; };
+		516C63CA2FE9BCC600DD6BC3 /* GiftCardDetailsHowToUseSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B005D6C0B005D6C0B005 /* GiftCardDetailsHowToUseSection.swift */; };
+		516C63CB2FE9BCC600DD6BC3 /* DashSpendFixedContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B003D5A0B003D5A0B003 /* DashSpendFixedContent.swift */; };
+		516C63CC2FE9BCC600DD6BC3 /* DashSpendFlexibleContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B004D5A0B004D5A0B004 /* DashSpendFlexibleContent.swift */; };
+		516C63CD2FE9BCC600DD6BC3 /* DashSpendAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B001D5A0B001D5A0B001 /* DashSpendAmountView.swift */; };
+		516C63CE2FE9BCC600DD6BC3 /* DashSpendDenominationRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B002D5A0B002D5A0B002 /* DashSpendDenominationRow.swift */; };
+		516C63CF2FE9BCC600DD6BC3 /* DashSpendMultiplePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B005D5A0B005D5A0B005 /* DashSpendMultiplePanel.swift */; };
+		516C63D02FE9BCC600DD6BC3 /* DashSpendPayIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B006D5A0B006D5A0B006 /* DashSpendPayIntro.swift */; };
+		516C63D12FE9BCC600DD6BC3 /* DashSpendSinglePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A0B007D5A0B007D5A0B007 /* DashSpendSinglePanel.swift */; };
+		516C63D22FE9BCC600DD6BC3 /* DashStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10175DFA10175DFA101 /* DashStepper.swift */; };
+		516C63D32FE9BCC600DD6BC3 /* SegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DFA10275DFA10275DFA102 /* SegmentedControl.swift */; };
+		516C63E52FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */; };
+		516C63E62FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */; };
+		516C63E82FE9BE0A00DD6BC3 /* AboutDashViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */; };
+		516C63E92FE9BE0A00DD6BC3 /* AboutDashViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */; };
+		5EAD111230A0000000A1B201 /* MayaAmountFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EAD111130A0000000A1B201 /* MayaAmountFormatter.swift */; };
+		F4C406090000000100000001 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
+		F4C406090000000100000002 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
+		C9A1B00230B5A10000D15A01 /* SendAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A1B00030B5A10000D15A01 /* SendAmountScreen.swift */; };
+		CNR0000012FF100000000001 /* CrowdNodeBalanceReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000072FF100000000001 /* CrowdNodeBalanceReminder.swift */; };
+		CNR0000022FF100000000001 /* CrowdNodeBalanceReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000072FF100000000001 /* CrowdNodeBalanceReminder.swift */; };
+		CNR0000032FF100000000001 /* CrowdNodeBalanceReminderSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */; };
+		CNR0000042FF100000000001 /* CrowdNodeBalanceReminderSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */; };
+		CNR0000052FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */; };
+		CNR0000062FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */; };
+		CNR0000112FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */; };
+		CNR0000122FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */; };
+		DA57A1010000000000000002 /* PastedAmountNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2714,7 +2672,6 @@
 		479DBDDC2995168C00F30AF1 /* Transactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transactions.swift; sourceTree = "<group>"; };
 		479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseConnection.swift; sourceTree = "<group>"; };
 		47A184E4299CC19A0017E32C /* rates.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = rates.json; sourceTree = "<group>"; };
-		47A1B00030B5A10000D15A01 /* SendAmountScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendAmountScreen.swift; sourceTree = "<group>"; };
 		47A2A2E1293DCCEA00938DB7 /* Coinbase+Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coinbase+Constants.swift"; sourceTree = "<group>"; };
 		47A2A2E8293E612900938DB7 /* CBAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBAuth.swift; sourceTree = "<group>"; };
 		47A2A2EB293E618600938DB7 /* CBUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBUser.swift; sourceTree = "<group>"; };
@@ -2770,7 +2727,6 @@
 		47C661AA28F9707A00028A8D /* NumberKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberKeyboard.swift; sourceTree = "<group>"; };
 		47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberKeyboardButton.swift; sourceTree = "<group>"; };
 		47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseAmountViewController.swift; sourceTree = "<group>"; };
-
 		47C661B328FDCF7800028A8D /* ActionButtonViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButtonViewController.swift; sourceTree = "<group>"; };
 		47C661B528FE75A700028A8D /* BaseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseViewController.swift; sourceTree = "<group>"; };
 		47C661B728FE907300028A8D /* AmountInputControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountInputControl.swift; sourceTree = "<group>"; };
@@ -2818,18 +2774,6 @@
 		B1300000B1300000B1300001 /* BuyReceiveViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveViewModel.swift; sourceTree = "<group>"; };
 		B1300000B1300000B1300002 /* BuyReceiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveView.swift; sourceTree = "<group>"; };
 		B1300000B1300000B1300003 /* BuyReceiveHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveHostingController.swift; sourceTree = "<group>"; };
-		514AE85D2FB1F9DB00F9B54C /* DashSwitch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSwitch.swift; sourceTree = "<group>"; };
-		514AE9F22FB2F4C500F9B54C /* HaltedToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HaltedToast.swift; sourceTree = "<group>"; };
-		514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressFieldView.swift; sourceTree = "<group>"; };
-		514AEA122FB324FA00F9B54C /* MayaConvertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConvertView.swift; sourceTree = "<group>"; };
-		514AEA4A2FB33B4300F9B54C /* MayaConvertHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConvertHostingController.swift; sourceTree = "<group>"; };
-		514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewView.swift; sourceTree = "<group>"; };
-		5EAD111130A0000000A1B201 /* MayaAmountFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAmountFormatter.swift; sourceTree = "<group>"; };
-		514AF1BF2FB5F02D00F9B54C /* MayaConvertViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConvertViewModel.swift; sourceTree = "<group>"; };
-		31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountViewModel.swift; sourceTree = "<group>"; };
-		C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountView.swift; sourceTree = "<group>"; };
-		B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountHostingController.swift; sourceTree = "<group>"; };
-		514BEA002FB5F02D00F9B54C /* MayaConvertAmount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConvertAmount.swift; sourceTree = "<group>"; };
 		5151C8C22F913BF100F0A604 /* Coinbase-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Coinbase-Info.plist"; sourceTree = "<group>"; };
 		5151C8C32F913BF100F0A604 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		5151C8C42F913BF100F0A604 /* Topper-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Topper-Info.plist"; sourceTree = "<group>"; };
@@ -2841,34 +2785,7 @@
 		516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XmarkIcon.swift; sourceTree = "<group>"; };
 		516C4047DB43CFFBB8ED541B /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		51733DB12FCF04B300CF8713 /* SwapKit-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SwapKit-Info.plist"; sourceTree = "<group>"; };
-		51530E682FD6EE1D00175308 /* MerchantCellRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantCellRow.swift; sourceTree = "<group>"; };
-		51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsView.swift; sourceTree = "<group>"; };
-		51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewController.swift; sourceTree = "<group>"; };
-		51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewModel.swift; sourceTree = "<group>"; };
-		A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExplorePointOfUse+PreviewMock.swift"; sourceTree = "<group>"; };
-		5193BE472F9FC05E00C24A58 /* DashSpendPayIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPayIntro.swift; sourceTree = "<group>"; };
-		5193BE4B2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendMultiplePanel.swift; sourceTree = "<group>"; };
-		5193BE4E2F9FC05E00C24A58 /* DashSpendSinglePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendSinglePanel.swift; sourceTree = "<group>"; };
-		5193BE522F9FC05E00C24A58 /* DashSpendAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendAmountView.swift; sourceTree = "<group>"; };
-		5193BE552F9FC05E00C24A58 /* DashSpendDenominationRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendDenominationRow.swift; sourceTree = "<group>"; };
-		5193BE582F9FC05E00C24A58 /* DashSpendFlexibleContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendFlexibleContent.swift; sourceTree = "<group>"; };
-		5193BE5B2F9FC05E00C24A58 /* DashSpendFixedContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendFixedContent.swift; sourceTree = "<group>"; };
-		51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashStepper.swift; sourceTree = "<group>"; };
-		53BDDD3E12330AE76EDA4EAD /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
-		5DFA759187A098DA886E713B /* Pods-DashWalletTests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.testnet.xcconfig"; sourceTree = "<group>"; };
-		646B58A0778B71376DAE6C1D /* Pods-DashWalletScreenshotsUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.release.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.release.xcconfig"; sourceTree = "<group>"; };
-		6C742C25446DB994AEE3D0D3 /* Pods-TodayExtension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testnet.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testnet.xcconfig"; sourceTree = "<group>"; };
-		6E3F49C8769F764449379B47 /* Pods-WatchApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.release.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.release.xcconfig"; sourceTree = "<group>"; };
-		51646C713006263C00BE3070 /* Uphold-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Uphold-Info.plist"; sourceTree = "<group>"; };
-		516983A22FCAEDEB00BA91A2 /* SuccessIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuccessIllustration.swift; sourceTree = "<group>"; };
-		516983A52FCAEF1300BA91A2 /* ErrorIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorIllustration.swift; sourceTree = "<group>"; };
-		516983B02FCAEDEB00BA91A2 /* LoadingIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingIllustration.swift; sourceTree = "<group>"; };
-		516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XmarkIcon.swift; sourceTree = "<group>"; };
-		516C4047DB43CFFBB8ED541B /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
-		516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutDashView.swift; sourceTree = "<group>"; };
-		516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutDashViewModel.swift; sourceTree = "<group>"; };
 		51A577472FBB3A6000FB4097 /* OrderPreviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewViewModel.swift; sourceTree = "<group>"; };
-		5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashAmountFormatterTests.swift; sourceTree = "<group>"; };
 		51A5774A2FBB3A6E00FB4097 /* OrderPreviewHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewHostingController.swift; sourceTree = "<group>"; };
 		51A57B012FBB41DE00FB4097 /* OrderPreviewTableRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewTableRow.swift; sourceTree = "<group>"; };
 		51A57B052FBB41DE00FB4097 /* SwapFeeInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapFeeInfoSheet.swift; sourceTree = "<group>"; };
@@ -2879,14 +2796,6 @@
 		51F0D10030BF97A900B27E11 /* ExclamationIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExclamationIcon.swift; sourceTree = "<group>"; };
 		51F0D10330BF98BA00B27E11 /* ArrowDownIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrowDownIcon.swift; sourceTree = "<group>"; };
 		52B5469F5588395FA0668C4B /* SwapTransactionStatusHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapTransactionStatusHostingController.swift; sourceTree = "<group>"; };
-		51A57B052FBB41DE00FB4097 /* MayaFeeInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaFeeInfoSheet.swift; sourceTree = "<group>"; };
-		51A57C022FBB5A0000FB4097 /* MayaTransactionSuccessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaTransactionSuccessView.swift; sourceTree = "<group>"; };
-		51A57C032FBB5A0000FB4097 /* MayaTransactionFailureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaTransactionFailureView.swift; sourceTree = "<group>"; };
-		51A57C082FBB5A0000FB4097 /* MayaTransactionPendingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaTransactionPendingView.swift; sourceTree = "<group>"; };
-		51BA2E9F2F0B2E0100A1B201 /* MayaSwapPendingGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaSwapPendingGate.swift; sourceTree = "<group>"; };
-		51F0D10030BF97A900B27E11 /* ExclamationIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExclamationIcon.swift; sourceTree = "<group>"; };
-		51F0D10330BF98BA00B27E11 /* ArrowDownIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrowDownIcon.swift; sourceTree = "<group>"; };
-		52B5469F5588395FA0668C4B /* MayaTransactionStatusHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaTransactionStatusHostingController.swift; sourceTree = "<group>"; };
 		5CBC0F417B9E8DE631F9DE2A /* Pods-DashWalletTests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.testnet.xcconfig"; sourceTree = "<group>"; };
 		62613C0D937CA301FBBF2356 /* Pods-dashpay.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashpay.debug.xcconfig"; path = "Target Support Files/Pods-dashpay/Pods-dashpay.debug.xcconfig"; sourceTree = "<group>"; };
 		726054552E79221F6B9D97AE /* Pods-dashwallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.debug.xcconfig"; path = "Target Support Files/Pods-dashwallet/Pods-dashwallet.debug.xcconfig"; sourceTree = "<group>"; };
@@ -3150,9 +3059,6 @@
 		AA29A8515217AC4232F794C2 /* Pods-TodayExtension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testnet.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testnet.xcconfig"; sourceTree = "<group>"; };
 		AD6615F1246B5935365B05BD /* NavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBar.swift; sourceTree = "<group>"; };
 		B2F0351CAD174EEB8E64012A /* SwapCoinIconLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinIconLoader.swift; sourceTree = "<group>"; };
-		AF95E0E0B636AFB810D62116 /* DashBalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashBalanceView.swift; sourceTree = "<group>"; };
-		B1E3A0013A0A000000000001 /* NumericKeyboardLocaleSupportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumericKeyboardLocaleSupportTests.swift; sourceTree = "<group>"; };
-		B2F0351CAD174EEB8E64012A /* MayaCoinIconLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaCoinIconLoader.swift; sourceTree = "<group>"; };
 		B3A1F2C4D5E6078901234567 /* ExtendedPublicKeySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedPublicKeySheet.swift; sourceTree = "<group>"; };
 		B6C652479D19F2169F565A6C /* libPods-dashpay.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashpay.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9BF7550EF8D4BA009CB1EB5 /* libPods-WatchApp Extension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WatchApp Extension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3638,10 +3544,6 @@
 		CC0000082DUMMYID001234567 /* PiggyCardsEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsEndpoint.swift; sourceTree = "<group>"; };
 		CC0000092DUMMYID001234567 /* PiggyCardsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsRepository.swift; sourceTree = "<group>"; };
 		CC0000102DUMMYID001234567 /* PiggyCardsTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsTokenService.swift; sourceTree = "<group>"; };
-		CNR0000072FF100000000001 /* CrowdNodeBalanceReminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalanceReminder.swift; sourceTree = "<group>"; };
-		CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalanceReminderSheet.swift; sourceTree = "<group>"; };
-		CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalanceReminderBanner.swift; sourceTree = "<group>"; };
-		CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWithdrawalRouter.swift; sourceTree = "<group>"; };
 		D53435DCAF024BC82E0247F3 /* ImportPrivateKeySheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImportPrivateKeySheet.swift; sourceTree = "<group>"; };
 		D5A0B001D5A0B001D5A0B001 /* DashSpendAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendAmountView.swift; sourceTree = "<group>"; };
 		D5A0B002D5A0B002D5A0B002 /* DashSpendDenominationRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendDenominationRow.swift; sourceTree = "<group>"; };
@@ -3656,15 +3558,12 @@
 		D6C0B004D6C0B004D6C0B004 /* GiftCardDetailsPoweredBySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardDetailsPoweredBySection.swift; sourceTree = "<group>"; };
 		D6C0B005D6C0B005D6C0B005 /* GiftCardDetailsHowToUseSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardDetailsHowToUseSection.swift; sourceTree = "<group>"; };
 		D99130732DE8F2E95F635F6B /* SwapConvertCardRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertCardRow.swift; sourceTree = "<group>"; };
-		D99130732DE8F2E95F635F6B /* MayaConvertCardRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConvertCardRow.swift; sourceTree = "<group>"; };
-		DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastedAmountNormalizationTests.swift; sourceTree = "<group>"; };
 		E2A832899A499C24C7A43E47 /* Pods-WatchApp Extension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testnet.xcconfig"; path = "Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testnet.xcconfig"; sourceTree = "<group>"; };
 		E83D8CEAFF69B6D666C02116 /* Pods-WatchApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.release.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.release.xcconfig"; sourceTree = "<group>"; };
 		EE0000032DUMMYID001234567 /* POIDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POIDetailsViewModel.swift; sourceTree = "<group>"; };
 		EE0000052DUMMYID001234567 /* PercentageFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PercentageFormatter.swift; sourceTree = "<group>"; };
 		EE15E7C0EEFF1E6930A90DA6 /* Pods-WatchApp Extension.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp Extension.testflight.xcconfig"; path = "Target Support Files/Pods-WatchApp Extension/Pods-WatchApp Extension.testflight.xcconfig"; sourceTree = "<group>"; };
 		F203E5FB195609E2B3F255C7 /* Pods-dashwallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.release.xcconfig"; path = "Target Support Files/Pods-dashwallet/Pods-dashwallet.release.xcconfig"; sourceTree = "<group>"; };
-		F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRedeemUrlChallengeToGiftCardsTable.swift; sourceTree = "<group>"; };
 		F5121ED6CEEEAEDBE95414EE /* Pods-DashWalletTests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.testflight.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.testflight.xcconfig"; sourceTree = "<group>"; };
 		FB0ACB9E1F9AB76800F4AB52 /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB0ACBA01F9ABB6200F4AB52 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -3713,12 +3612,45 @@
 		RC00A0032FA0000000000001 /* TopIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopIntro.swift; sourceTree = "<group>"; };
 		RC00A0062FA0000000000001 /* ExploreMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMenuScreen.swift; sourceTree = "<group>"; };
 		RC00C0032FA0000000000001 /* CSVExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVExportSheet.swift; sourceTree = "<group>"; };
+		47A1B00030B5A10000D15A01 /* SendAmountScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendAmountScreen.swift; sourceTree = "<group>"; };
+		5EAD111130A0000000A1B201 /* MayaAmountFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAmountFormatter.swift; sourceTree = "<group>"; };
+		31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountViewModel.swift; sourceTree = "<group>"; };
+		C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountView.swift; sourceTree = "<group>"; };
+		B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountHostingController.swift; sourceTree = "<group>"; };
+		51530E682FD6EE1D00175308 /* MerchantCellRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantCellRow.swift; sourceTree = "<group>"; };
+		51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsView.swift; sourceTree = "<group>"; };
+		51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewController.swift; sourceTree = "<group>"; };
+		51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewModel.swift; sourceTree = "<group>"; };
+		A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExplorePointOfUse+PreviewMock.swift"; sourceTree = "<group>"; };
+		5193BE472F9FC05E00C24A58 /* DashSpendPayIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPayIntro.swift; sourceTree = "<group>"; };
+		5193BE4B2F9FC05E00C24A58 /* DashSpendMultiplePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendMultiplePanel.swift; sourceTree = "<group>"; };
+		5193BE4E2F9FC05E00C24A58 /* DashSpendSinglePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendSinglePanel.swift; sourceTree = "<group>"; };
+		5193BE522F9FC05E00C24A58 /* DashSpendAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendAmountView.swift; sourceTree = "<group>"; };
+		5193BE552F9FC05E00C24A58 /* DashSpendDenominationRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendDenominationRow.swift; sourceTree = "<group>"; };
+		5193BE582F9FC05E00C24A58 /* DashSpendFlexibleContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendFlexibleContent.swift; sourceTree = "<group>"; };
+		5193BE5B2F9FC05E00C24A58 /* DashSpendFixedContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendFixedContent.swift; sourceTree = "<group>"; };
+		51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashStepper.swift; sourceTree = "<group>"; };
+		53BDDD3E12330AE76EDA4EAD /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
+		5DFA759187A098DA886E713B /* Pods-DashWalletTests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.testnet.xcconfig"; sourceTree = "<group>"; };
+		646B58A0778B71376DAE6C1D /* Pods-DashWalletScreenshotsUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.release.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.release.xcconfig"; sourceTree = "<group>"; };
+		6C742C25446DB994AEE3D0D3 /* Pods-TodayExtension.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TodayExtension.testnet.xcconfig"; path = "Target Support Files/Pods-TodayExtension/Pods-TodayExtension.testnet.xcconfig"; sourceTree = "<group>"; };
+		6E3F49C8769F764449379B47 /* Pods-WatchApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.release.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.release.xcconfig"; sourceTree = "<group>"; };
+		51646C713006263C00BE3070 /* Uphold-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Uphold-Info.plist"; sourceTree = "<group>"; };
+		516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutDashView.swift; sourceTree = "<group>"; };
+		516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutDashViewModel.swift; sourceTree = "<group>"; };
+		5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashAmountFormatterTests.swift; sourceTree = "<group>"; };
+		CNR0000072FF100000000001 /* CrowdNodeBalanceReminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalanceReminder.swift; sourceTree = "<group>"; };
+		CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalanceReminderSheet.swift; sourceTree = "<group>"; };
+		CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeBalanceReminderBanner.swift; sourceTree = "<group>"; };
+		CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeWithdrawalRouter.swift; sourceTree = "<group>"; };
+		DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PastedAmountNormalizationTests.swift; sourceTree = "<group>"; };
+		F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRedeemUrlChallengeToGiftCardsTable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		51DFA7FB2FA8EAF2001EDB3A /* Components */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Components; sourceTree = "<group>"; };
 		5151CDF22F929C2300F0A604 /* Geometry Readers */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Geometry Readers"; sourceTree = "<group>"; };
 		5151CDF62F929D3F00F0A604 /* ScrollViews */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ScrollViews; sourceTree = "<group>"; };
-		51DFA7FB2FA8EAF2001EDB3A /* Components */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Components; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -3735,7 +3667,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0FC75A8F28F03E22000E4858 /* libDashSync.a in Frameworks */,
-				510336ED2FEBB1B4002E0899 /* DashUIKit in Frameworks */,
 				5149DA082FF3DA5200207AE5 /* DashUIKit in Frameworks */,
 				2A5279BC23D994BC00F856D3 /* CoreNFC.framework in Frameworks */,
 				FB3E9F60236125F600C09C5C /* BackgroundTasks.framework in Frameworks */,
@@ -6617,26 +6548,6 @@
 			sourceTree = "<group>";
 		};
 		514AE9F12FB2F48F00F9B54C /* Components */ = {
-		51530E692FD6EE1D00175308 /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				51530E682FD6EE1D00175308 /* MerchantCellRow.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
-		51530E6D2FD6EE1D00175308 /* AllMerchantLocations */ = {
-			isa = PBXGroup;
-			children = (
-				51530E692FD6EE1D00175308 /* Components */,
-				51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */,
-				51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */,
-				51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */,
-			);
-			path = AllMerchantLocations;
-			sourceTree = "<group>";
-		};
-		5193BE462F9FC05000C24A58 /* Components */ = {
 			isa = PBXGroup;
 			children = (
 				20554F992205428BA790F6CF /* SwapCoinIconView.swift */,
@@ -6660,11 +6571,7 @@
 				514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */,
 				514AF1BF2FB5F02D00F9B54C /* SwapConvertViewModel.swift */,
 				514BEA002FB5F02D00F9B54C /* SwapConvertAmount.swift */,
-				514AEA122FB324FA00F9B54C /* MayaConvertView.swift */,
-				514AEA4A2FB33B4300F9B54C /* MayaConvertHostingController.swift */,
 				5EAD111130A0000000A1B201 /* MayaAmountFormatter.swift */,
-				514AF1BF2FB5F02D00F9B54C /* MayaConvertViewModel.swift */,
-				514BEA002FB5F02D00F9B54C /* MayaConvertAmount.swift */,
 			);
 			path = Convert;
 			sourceTree = "<group>";
@@ -6673,8 +6580,6 @@
 			isa = PBXGroup;
 			children = (
 				D99130732DE8F2E95F635F6B /* SwapConvertCardRow.swift */,
-				AF95E0E0B636AFB810D62116 /* DashBalanceView.swift */,
-				D99130732DE8F2E95F635F6B /* MayaConvertCardRow.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -6738,14 +6643,6 @@
 				516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */,
 			);
 			path = Icons;
-			sourceTree = "<group>";
-		};
-		516C63D42FE9BCC600DD6BC3 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				51DFA7FB2FA8EAF2001EDB3A /* Components */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		51A5774D2FBB3A7100FB4097 /* Components */ = {
@@ -6861,9 +6758,6 @@
 			children = (
 				516983C02FCAEDD600BA91A2 /* Icons */,
 				51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */,
-				516983A12FCAEDD600BA91A2 /* Illustrations */,
-				516983C02FCAEDD600BA91A2 /* Icons */,
-				514AEA0E2FB31BD800F9B54C /* AddressFieldView.swift */,
 				7581B19C2CE3509A00714007 /* Dialogs */,
 				75EBAA112BB99B6B004488E3 /* BottomSheet.swift */,
 				96CB7E093E994D2391D36DEC /* SelfSizingSheet.swift */,
@@ -7012,7 +6906,6 @@
 				75D5F3BF191EC270004AB296 /* Products */,
 				8AE9CD5705796B04FF0033B6 /* Pods */,
 				510336DE2FEBB0C9002E0899 /* Recovered References */,
-				516C63D42FE9BCC600DD6BC3 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 			wrapsLines = 0;
@@ -7123,8 +7016,6 @@
 				AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */,
 				5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */,
 				DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */,
-				B1E3A0013A0A000000000001 /* NumericKeyboardLocaleSupportTests.swift */,
-				AA0003032CA0F58E00A1B402 /* MayaAddressValidatorTests.swift */,
 			);
 			path = DashWalletTests;
 			sourceTree = "<group>";
@@ -8541,16 +8432,6 @@
 			path = "Sync View";
 			sourceTree = "<group>";
 		};
-		CNR0000102FF100000000001 /* BalanceReminder */ = {
-			isa = PBXGroup;
-			children = (
-				CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */,
-				CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */,
-				CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */,
-			);
-			path = BalanceReminder;
-			sourceTree = "<group>";
-		};
 		D5A0D000D5A0D000D5A0D000 /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -8606,6 +8487,43 @@
 				2AB66E0723572379007BE825 /* Overview */,
 			);
 			path = "Masternode Keys";
+			sourceTree = "<group>";
+		};
+		51530E692FD6EE1D00175308 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				51530E682FD6EE1D00175308 /* MerchantCellRow.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		51530E6D2FD6EE1D00175308 /* AllMerchantLocations */ = {
+			isa = PBXGroup;
+			children = (
+				51530E692FD6EE1D00175308 /* Components */,
+				51530E6A2FD6EE1D00175308 /* AllMerchantLocationsView.swift */,
+				51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */,
+				51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */,
+			);
+			path = AllMerchantLocations;
+			sourceTree = "<group>";
+		};
+		5193BE462F9FC05000C24A58 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				20554F992205428BA790F6CF /* MayaCoinIconView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		CNR0000102FF100000000001 /* BalanceReminder */ = {
+			isa = PBXGroup;
+			children = (
+				CNR0000082FF100000000001 /* CrowdNodeBalanceReminderSheet.swift */,
+				CNR0000092FF100000000001 /* CrowdNodeBalanceReminderBanner.swift */,
+				CNR0000132FF100000000001 /* CrowdNodeWithdrawalRouter.swift */,
+			);
+			path = BalanceReminder;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -8857,7 +8775,6 @@
 			);
 			mainGroup = 75D5F3B5191EC270004AB296;
 			packageReferences = (
-				510336EB2FEBB1B4002E0899 /* XCLocalSwiftPackageReference "../Packages/DashUIKit" */,
 				5149DA062FF3DA5200207AE5 /* XCRemoteSwiftPackageReference "DashUIKit" */,
 			);
 			productRefGroup = 75D5F3BF191EC270004AB296 /* Products */;
@@ -9468,7 +9385,6 @@
 				CNR0000032FF100000000001 /* CrowdNodeBalanceReminderSheet.swift in Sources */,
 				CNR0000052FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */,
 				CNR0000112FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */,
-				514AEA0F2FB31BD800F9B54C /* AddressFieldView.swift in Sources */,
 				2A7A7BD62348CB6600451078 /* SettingsScreen.swift in Sources */,
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
 				47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */,
@@ -9726,8 +9642,6 @@
 				114D16B829828BCC009A124C /* OnlineAccountConfirmationController.swift in Sources */,
 				47838B8C29068F110003E8AB /* BaseResponse.swift in Sources */,
 				279C16F9AF0575C540E312E5 /* SwapConvertCardRow.swift in Sources */,
-				A70C83C906AC1349DF3B9C98 /* DashBalanceView.swift in Sources */,
-				279C16F9AF0575C540E312E5 /* MayaConvertCardRow.swift in Sources */,
 				2AB3417723A92978004E37A7 /* DWDemoAdvancedSecurityViewController.m in Sources */,
 				C9829CDE2A562822007132E4 /* TappableLabel.swift in Sources */,
 				111C3C50296D5A4700788E18 /* TxWithinTimePeriod.swift in Sources */,
@@ -9853,8 +9767,6 @@
 				47AE8C0528C1F74A00490F5E /* PointOfUseListFiltersCell.swift in Sources */,
 				47AE8C1A28C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift in Sources */,
 				754565CC2DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendAPI.swift in Sources */,
-				516983A32FCAEDEB00BA91A2 /* SuccessIllustration.swift in Sources */,
-				516983B12FCAEDEB00BA91A2 /* LoadingIllustration.swift in Sources */,
 				51F0D10430BF98BA00B27E11 /* ArrowDownIcon.swift in Sources */,
 				516983C22FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */,
 				51F0D10130BF97A900B27E11 /* ExclamationIcon.swift in Sources */,
@@ -10179,8 +10091,6 @@
 				AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */,
 				5EAD222230A0000000A1B202 /* DashAmountFormatterTests.swift in Sources */,
 				DA57A1010000000000000002 /* PastedAmountNormalizationTests.swift in Sources */,
-				B1E3A0013A0A000000000002 /* NumericKeyboardLocaleSupportTests.swift in Sources */,
-				AA0003042CA0F58E00A1B402 /* MayaAddressValidatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -10506,20 +10416,6 @@
 				510336DB2FEBB0C9002E0899 /* DashSpendSinglePanel.swift in Sources */,
 				510336DC2FEBB0C9002E0899 /* DashStepper.swift in Sources */,
 				510336DD2FEBB0C9002E0899 /* SegmentedControl.swift in Sources */,
-				516C63C62FE9BCC600DD6BC3 /* GiftCardDetailsInfoCard.swift in Sources */,
-				516C63C72FE9BCC600DD6BC3 /* GiftCardDetailsMerchantHeader.swift in Sources */,
-				516C63C82FE9BCC600DD6BC3 /* GiftCardPurchaseSelectionSheet.swift in Sources */,
-				516C63C92FE9BCC600DD6BC3 /* GiftCardDetailsPoweredBySection.swift in Sources */,
-				516C63CA2FE9BCC600DD6BC3 /* GiftCardDetailsHowToUseSection.swift in Sources */,
-				516C63CB2FE9BCC600DD6BC3 /* DashSpendFixedContent.swift in Sources */,
-				516C63CC2FE9BCC600DD6BC3 /* DashSpendFlexibleContent.swift in Sources */,
-				516C63CD2FE9BCC600DD6BC3 /* DashSpendAmountView.swift in Sources */,
-				516C63CE2FE9BCC600DD6BC3 /* DashSpendDenominationRow.swift in Sources */,
-				516C63CF2FE9BCC600DD6BC3 /* DashSpendMultiplePanel.swift in Sources */,
-				516C63D02FE9BCC600DD6BC3 /* DashSpendPayIntro.swift in Sources */,
-				516C63D12FE9BCC600DD6BC3 /* DashSpendSinglePanel.swift in Sources */,
-				516C63D22FE9BCC600DD6BC3 /* DashStepper.swift in Sources */,
-				516C63D32FE9BCC600DD6BC3 /* SegmentedControl.swift in Sources */,
 				C943B4EF2A40A54600AF23C5 /* DWUserProfileHeaderView.m in Sources */,
 				C9D2C7392A320AA000D15901 /* CoinbaseAmount.swift in Sources */,
 				C9D2C73B2A320AA000D15901 /* SendAmountModel.swift in Sources */,
@@ -10564,8 +10460,6 @@
 				C9D2C74D2A320AA000D15901 /* CoinbasePlaceBuyOrderResponse.swift in Sources */,
 				C9D2C74E2A320AA000D15901 /* ExploreMapView.swift in Sources */,
 				40AB5A54235FDE2747ECE3F5 /* SwapConvertCardRow.swift in Sources */,
-				D0D3F0F33D9F162622F0A6E5 /* DashBalanceView.swift in Sources */,
-				40AB5A54235FDE2747ECE3F5 /* MayaConvertCardRow.swift in Sources */,
 				C943B32F2A408CED00AF23C5 /* DWSaveAlertViewController.m in Sources */,
 				C930784C2A6AD59700906E4B /* TitleValueCell.swift in Sources */,
 				7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */,
@@ -11330,7 +11224,6 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11368,7 +11261,6 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11405,7 +11297,6 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11442,7 +11333,6 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11604,7 +11494,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11736,7 +11625,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11874,7 +11762,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11910,7 +11797,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11946,7 +11832,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11969,7 +11854,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -11990,7 +11874,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3BA20785E162F1AF2F455D9C /* Pods-WatchApp Extension.debug.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
@@ -12018,7 +11901,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4457C976B1DB0CF402FF3C5F /* Pods-WatchApp Extension.release.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
@@ -12047,7 +11929,6 @@
 			baseConfigurationReference = 3B0E86557754B86DD3A389CC /* Pods-TodayExtension.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -12077,7 +11958,6 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -12110,7 +11990,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12245,7 +12124,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12378,7 +12256,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12521,7 +12398,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12726,7 +12602,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12864,7 +12739,6 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -12895,7 +12769,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12931,7 +12804,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -12952,7 +12824,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EE15E7C0EEFF1E6930A90DA6 /* Pods-WatchApp Extension.testflight.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
@@ -13052,7 +12923,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwallet.entitlements;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -13179,7 +13049,6 @@
 			baseConfigurationReference = AA29A8515217AC4232F794C2 /* Pods-TodayExtension.testnet.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = dashwallet/dashwalletTodayExtension.entitlements;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
@@ -13209,7 +13078,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/dashwallet.app/dashwallet";
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -13245,7 +13113,6 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				EXCLUDED_ARCHS = "";
@@ -13266,7 +13133,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E2A832899A499C24C7A43E47 /* Pods-WatchApp Extension.testnet.xcconfig */;
 			buildSettings = {
-				CURRENT_PROJECT_VERSION = 20;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 44RJ69WHFF;
 				ENABLE_BITCODE = NO;
@@ -13383,27 +13249,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		510336EB2FEBB1B4002E0899 /* XCLocalSwiftPackageReference "../Packages/DashUIKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../Packages/DashUIKit;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		510336EC2FEBB1B4002E0899 /* DashUIKit */ = {
-			isa = XCSwiftPackageProductDependency;
-/* Begin XCRemoteSwiftPackageReference section */
-		5149DA062FF3DA5200207AE5 /* XCRemoteSwiftPackageReference "DashUIKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/dashpay/DashUIKit";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
 		5149DA072FF3DA5200207AE5 /* DashUIKit */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -13416,6 +13261,35 @@
 			productName = DashUIKit;
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		5149DA062FF3DA5200207AE5 /* XCRemoteSwiftPackageReference "DashUIKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/dashpay/DashUIKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	};
 	rootObject = 75D5F3B6191EC270004AB296 /* Project object */;
 }
