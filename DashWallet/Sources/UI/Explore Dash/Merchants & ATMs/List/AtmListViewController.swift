@@ -90,11 +90,11 @@ class AtmListViewController: ExplorePointOfUseListViewController {
     override func subtitleForFilterCell() -> String? {
         if DWLocationManager.shared.isAuthorized && currentSegment.showMap {
             if Locale.current.usesMetricSystem {
-                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"), items.count,
+                return String.localizedStringWithFormat(NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"), items.count,
                               ExploreDash.distanceFormatter
                                   .string(from: Measurement(value: model.currentRadius, unit: UnitLength.meters)))
             } else {
-                return String(format: NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"), items.count,
+                return String.localizedStringWithFormat(NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"), items.count,
                               ExploreDash.distanceFormatter
                                   .string(from: Measurement(value: model.currentRadiusMiles, unit: UnitLength.miles)))
             }
