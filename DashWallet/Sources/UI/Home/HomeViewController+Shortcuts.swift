@@ -155,16 +155,21 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     private func showWhereToSpend() {
         let controller = MerchantListViewController()
         controller.initialSegment = .all
+        controller.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
+            title: NSLocalizedString("Where to Spend", comment: ""),
+            onBack: { [weak controller] in controller?.dismiss(animated: true) },
+            onInfo: nil
+        )
         controller.payWithDashHandler = { [weak self] in
             guard let self = self else { return }
             self.delegate?.showPaymentsController(withActivePage: PaymentsViewControllerState.pay.rawValue)
         }
         controller.onGiftCardPurchased = { [weak self] txId in
             guard let self = self else { return }
-            self.dismiss(animated: true)
             self.showGiftCardDetails(txId: txId)
         }
         let navigationController = BaseNavigationController(rootViewController: controller)
+        navigationController.modalPresentationStyle = .fullScreen
         present(navigationController, animated: true, completion: nil)
     }
 

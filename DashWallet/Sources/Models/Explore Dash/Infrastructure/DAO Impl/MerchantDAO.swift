@@ -206,11 +206,13 @@ class MerchantDAO: PointOfUseDAO {
                     var allItems: [ExplorePointOfUse] = try wSelf.connection.execute(query: allLocationsQuery)
 
                     // Fetch gift card providers for each merchant that accepts gift cards
+                    #if PIGGYCARDS_ENABLED
+                    let excludePiggyCards = isPiggyCardsGeoRestricted()
+                    #endif
                     for (index, item) in allItems.enumerated() {
                         if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
                             // Only fetch CTX providers when PiggyCards is disabled or user is in restricted region
                             #if PIGGYCARDS_ENABLED
-                            let excludePiggyCards = isPiggyCardsGeoRestricted()
                             let providersQuery: String
                             if excludePiggyCards {
                                 providersQuery = """
@@ -447,11 +449,13 @@ class MerchantDAO: PointOfUseDAO {
                 var items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
                 
                 // Fetch gift card providers for each merchant that accepts gift cards
+                #if PIGGYCARDS_ENABLED
+                let excludePiggyCards = isPiggyCardsGeoRestricted()
+                #endif
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
                         // Only fetch CTX providers when PiggyCards is disabled or user is in restricted region
                         #if PIGGYCARDS_ENABLED
-                        let excludePiggyCards = isPiggyCardsGeoRestricted()
                         let providersQuery: String
                         if excludePiggyCards {
                             providersQuery = """
@@ -549,6 +553,43 @@ class MerchantDAO: PointOfUseDAO {
 }
 
 extension MerchantDAO {
+    private struct ExpandedBounds {
+        let swLat: Double
+        let neLat: Double
+        let swLon: Double
+        let neLon: Double
+    }
+
+    private func expandedCoordinates(for bounds: ExploreMapBounds) -> ExpandedBounds {
+        let latBuffer = (bounds.neCoordinate.latitude - bounds.swCoordinate.latitude) * 0.5
+        let lonBuffer = (bounds.neCoordinate.longitude - bounds.swCoordinate.longitude) * 0.5
+
+        return ExpandedBounds(
+            swLat: bounds.swCoordinate.latitude - latBuffer,
+            neLat: bounds.neCoordinate.latitude + latBuffer,
+            swLon: bounds.swCoordinate.longitude - lonBuffer,
+            neLon: bounds.neCoordinate.longitude + lonBuffer
+        )
+    }
+
+    private func circularFilterRadius(for bounds: ExploreMapBounds) -> Double {
+        let latDiff = bounds.neCoordinate.latitude - bounds.swCoordinate.latitude
+        let lonDiff = bounds.neCoordinate.longitude - bounds.swCoordinate.longitude
+        return min(latDiff, lonDiff) * 111000 / 2
+    }
+
+    private func coordinateValue(from rawValue: Any?) -> Double? {
+        if let value = rawValue as? Double {
+            return value
+        }
+
+        if let value = rawValue as? Int64 {
+            return Double(value)
+        }
+
+        return nil
+    }
+
     func onlineMerchants(query: String?, onlineOnly: Bool, userPoint: CLLocationCoordinate2D?, sortBy: PointOfUseListFilters.SortBy?,
                          paymentMethods: [PointOfUseListFilters.SpendingOptions]?, denominationType: PointOfUseListFilters.DenominationType?, offset: Int = 0,
                          completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
@@ -574,7 +615,7 @@ extension MerchantDAO {
               completion: completion)
     }
 
-    func allLocations(for merchantId: String, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+    func allLocations(for merchantId: String, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, offset: Int = 0,
                       completion: @escaping (Swift.Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
         serialQueue.async { [weak self] in
             guard let wSelf = self else { return }
@@ -587,21 +628,12 @@ extension MerchantDAO {
             queryFilter = queryFilter && Expression<Bool>(merchantIdColumn == merchantId)
 
             if let bounds {
-                // Make the rectangular bounds more generous to ensure we don't exclude locations
-                // that should be within the circular radius. Add 50% buffer to each dimension.
-                let latBuffer = (bounds.neCoordinate.latitude - bounds.swCoordinate.latitude) * 0.5
-                let lonBuffer = (bounds.neCoordinate.longitude - bounds.swCoordinate.longitude) * 0.5
+                let expandedBounds = wSelf.expandedCoordinates(for: bounds)
 
-                let expandedSWLat = bounds.swCoordinate.latitude - latBuffer
-                let expandedNELat = bounds.neCoordinate.latitude + latBuffer
-                let expandedSWLon = bounds.swCoordinate.longitude - lonBuffer
-                let expandedNELon = bounds.neCoordinate.longitude + lonBuffer
-
-
-                let boundsFilter = Expression<Bool>(literal: "latitude > \(expandedSWLat)") &&
-                    Expression<Bool>(literal: "latitude < \(expandedNELat)") &&
-                    Expression<Bool>(literal: "longitude > \(expandedSWLon)") &&
-                    Expression<Bool>(literal: "longitude < \(expandedNELon)")
+                let boundsFilter = Expression<Bool>(literal: "latitude > \(expandedBounds.swLat)") &&
+                    Expression<Bool>(literal: "latitude < \(expandedBounds.neLat)") &&
+                    Expression<Bool>(literal: "longitude > \(expandedBounds.swLon)") &&
+                    Expression<Bool>(literal: "longitude < \(expandedBounds.neLon)")
 
                 queryFilter = queryFilter && boundsFilter
             }
@@ -620,7 +652,9 @@ extension MerchantDAO {
                     Expression<Bool>(literal: "ABS(latitude-\(anchorLatitude)) + ABS(longitude - \(anchorLongitude)) ASC")
             }
 
-            query = query.order(distanceSorting)
+            // Stable secondary sort (id) so offset pagination is deterministic across pages.
+            query = query.order([distanceSorting, ExplorePointOfUse.id])
+            query = query.limit(pageLimit, offset: offset)
 
             do {
                 var items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
@@ -630,32 +664,23 @@ extension MerchantDAO {
                 if let bounds = bounds, let userLocation = userPoint {
                     let userCLLocation = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
 
-                    // Calculate the radius from the bounds diagonal divided by √2
-                    // Since bounds are square around a circle, diagonal = 2 * radius
-                    let latDiff = bounds.neCoordinate.latitude - bounds.swCoordinate.latitude
-                    let lonDiff = bounds.neCoordinate.longitude - bounds.swCoordinate.longitude
-                    let boundsRadius = min(latDiff, lonDiff) * 111000 / 2 // Convert degrees to meters, divide by 2
-                    let filterRadius = boundsRadius
+                    let filterRadius = wSelf.circularFilterRadius(for: bounds)
 
-
-                    let initialCount = items.count
                     items = items.filter { item in
                         guard let lat = item.latitude, let lon = item.longitude else { return false }
                         let distance = userCLLocation.distance(from: CLLocation(latitude: lat, longitude: lon))
-                        let isWithinRadius = distance <= filterRadius
-                        if !isWithinRadius {
-                        }
-                        return isWithinRadius
+                        return distance <= filterRadius
                     }
-
                 }
 
                 // Fetch gift card provider information for gift card merchants
+                #if PIGGYCARDS_ENABLED
+                let excludePiggyCards = isPiggyCardsGeoRestricted()
+                #endif
                 for (index, item) in items.enumerated() {
                     if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
                         // Filter out PiggyCards providers when user is in restricted region
                         #if PIGGYCARDS_ENABLED
-                        let excludePiggyCards = isPiggyCardsGeoRestricted()
                         let providersQuery: String
                         if excludePiggyCards {
                             providersQuery = """
@@ -750,9 +775,94 @@ extension MerchantDAO {
                     }
                 }
 
-                completion(.success(PaginationResult(items: items, offset: Int.max)))
+                completion(.success(PaginationResult(items: items, offset: offset)))
             } catch {
                 print(error)
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func allLocationsCount(for merchantId: String, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+                           completion: @escaping (Swift.Result<Int, Error>) -> Void) {
+        serialQueue.async { [weak self] in
+            guard let self else { return }
+            guard let db = self.connection.db else {
+                completion(.failure(NSError(domain: "MerchantDAO", code: 1, userInfo: [NSLocalizedDescriptionKey: "Database connection is unavailable."])))
+                return
+            }
+
+            do {
+                if let bounds, let userPoint {
+                    let expandedBounds = self.expandedCoordinates(for: bounds)
+                    let radius = self.circularFilterRadius(for: bounds)
+                    let centerLocation = CLLocation(latitude: userPoint.latitude, longitude: userPoint.longitude)
+                    let query = """
+                        SELECT latitude, longitude
+                        FROM merchant
+                        WHERE merchantId = ?
+                          AND latitude > ?
+                          AND latitude < ?
+                          AND longitude > ?
+                          AND longitude < ?
+                    """
+
+                    let rows = try db.prepare(
+                        query,
+                        merchantId,
+                        expandedBounds.swLat,
+                        expandedBounds.neLat,
+                        expandedBounds.swLon,
+                        expandedBounds.neLon
+                    )
+
+                    var count = 0
+                    for row in rows {
+                        guard let latitude = self.coordinateValue(from: row[0]),
+                              let longitude = self.coordinateValue(from: row[1]) else {
+                            continue
+                        }
+
+                        let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                        guard CLLocationCoordinate2DIsValid(coordinate) else { continue }
+
+                        let distance = centerLocation.distance(from: CLLocation(latitude: latitude, longitude: longitude))
+                        if distance <= radius {
+                            count += 1
+                        }
+                    }
+
+                    completion(.success(count))
+                } else if let bounds {
+                    let expandedBounds = self.expandedCoordinates(for: bounds)
+                    let query = """
+                        SELECT COUNT(*)
+                        FROM merchant
+                        WHERE merchantId = ?
+                          AND latitude > ?
+                          AND latitude < ?
+                          AND longitude > ?
+                          AND longitude < ?
+                    """
+
+                    let rows = try db.prepare(
+                        query,
+                        merchantId,
+                        expandedBounds.swLat,
+                        expandedBounds.neLat,
+                        expandedBounds.swLon,
+                        expandedBounds.neLon
+                    )
+
+                    let count = Int((rows.makeIterator().next()?[0] as? Int64) ?? 0)
+                    completion(.success(count))
+                } else {
+                    let query = "SELECT COUNT(*) FROM merchant WHERE merchantId = ?"
+                    let rows = try db.prepare(query, merchantId)
+                    let count = Int((rows.makeIterator().next()?[0] as? Int64) ?? 0)
+                    completion(.success(count))
+                }
+            } catch {
                 completion(.failure(error))
             }
         }

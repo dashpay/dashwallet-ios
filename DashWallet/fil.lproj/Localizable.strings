@@ -10,6 +10,9 @@
 /* Maya */
 "%@ address" = "%@ address";
 
+/* Maya */
+"%@ address is not valid" = "%@ address is not valid";
+
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
 
@@ -160,8 +163,7 @@
 /* No comment provided by engineer. */
 "Address" = "Address";
 
-/* Maya
-   SwapKit */
+/* Maya */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
 
 /* CoinJoin */
@@ -189,7 +191,10 @@
 "All" = "Lahat";
 
 /* CSV Export */
-"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "Ang lahat ng mga pagbabayad ay ituturing bilang isang gastos at lahat ng mga papasok na transaksyon ay magiging kita.\nAng may-ari ng wallet na ito ay may pananagutan sa paggawa ng anumang mga pagsasaayos sa batayan ng gastos sa kanilang napiling sistema ng pag-uulat ng buwis.";
+
+/* Shortcut selection empty state */
+"All shortcuts are already in use" = "All shortcuts are already in use";
 
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Ang lahat ng paglilipat papunta at mula sa CrowdNode mula sa device na ito ay isasagawa gamit ang ibaba ng Dash address mula sa device na ito.";
@@ -300,10 +305,10 @@
 "Autohide Balance" = "Awtimatikong Pagtago ng Balanse";
 
 /* Backup */
-"Back Up Now" = "Back Up Now";
+"Back Up Now" = "I-back Up Ngayon";
 
 /* Backup */
-"Back Up Your Wallet" = "Back Up Your Wallet";
+"Back Up Your Wallet" = "I-back Up ang Iyong Wallet";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "back-up";
@@ -480,6 +485,9 @@
 /* No comment provided by engineer. */
 "Clear" = "Burahin";
 
+/* Maya */
+"Clear address" = "Clear address";
+
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Burahin ang pinagkakatiwalaang node?";
 
@@ -561,7 +569,7 @@
 "Contact Coinbase Support" = "Makipag-ugnayan sa Suporta sa Coinbase";
 
 /* Maya */
-"Contact Maya Support" = "Contact Maya Support";
+"Contact Maya Support" = "Makipag-ugnayan sa Suporta ni Maya";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Nakabinbin ang Kahilingan sa Pakikipag-ugnay";
@@ -590,11 +598,11 @@
 /* Coinbase Entry Point */
 "Convert Crypto" = "I-convert ang Crypto";
 
-/* Swap portal */
-"Convert Dash" = "Convert Dash";
+/* Maya Portal */
+"Convert Dash" = "I-convert ang Dash";
 
 /* Maya Portal */
-"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
+"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "I-convert ang Dash mula sa Dash Wallet sa anumang crypto na sinusuportahan sa Maya at ipadala ito sa anumang wallet";
 
 /* No comment provided by engineer. */
 "Copied" = "Kinopya";
@@ -680,6 +688,9 @@
 
 /* CrowdNode */
 "CrowdNode benefits" = "Mga benepisyo ng CrowdNode";
+
+/* CrowdNode */
+"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
 
 /* CrowdNode Portal */
 "CrowdNode Support" = "Suporta sa CrowdNode";
@@ -867,7 +878,7 @@
 "Earlier" = "Mas maaga";
 
 /* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
+"Easily stake Dash and earn passive income with a few simple clicks" = "Madaling i-stake ang Dash at kumita ng passive income sa ilang simpleng pag-click";
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "Madaling i-stake ang Dash at kumita ng passive income sa ilang simpleng pag-click.";
@@ -1023,13 +1034,13 @@
 "Find a user on the Dash Network" = "Maghanap ng gumagamit sa Network ng Dash";
 
 /* Explore Dash */
-"Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
+"Find ATMs where you can buy or sell Dash" = "Maghanap ng mga ATM kung saan maaari kang bumili o magbenta ng Dash";
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Maghanap ng mga ATM kung saan maaari kang bumili o magbenta ng Dash.";
 
 /* Explore Dash */
-"Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
+"Find merchants that accept Dash payments" = "Maghanap ng mga merchant na tumatanggap ng mga pagbabayad sa Dash";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Maghanap ng mga merchant na tumatanggap ng mga pagbabayad sa Dash.";
@@ -1082,8 +1093,8 @@
 /* from Dash Wallet */
 "from Dash Wallet" = "mula sa Dash Wallet";
 
-/* Swap portal */
-"From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
+/* Maya Portal */
+"From Dash Wallet to any crypto" = "Mula sa Dash Wallet hanggang sa anumang crypto";
 
 /* Uphold Entry Point */
 "From Uphold to Dash Wallet" = "Mula sa Uphold hanggang Dash Wallet";
@@ -1130,7 +1141,7 @@
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
 
 /* DashSpend */
@@ -1162,6 +1173,9 @@
 
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "Magbigay ng mga pahintulot sa GPS upang maipakita namin sa iyo ang mga lokasyong malapit sa iyo.";
+
+/* Maya */
+"halted" = "halted";
 
 /* Voting */
 "Has blocked votes" = "May mga naka-block na boto";
@@ -1540,7 +1554,7 @@
 "Loading gift card options..." = "Loading gift card options...";
 
 /* Maya */
-"Loading..." = "Loading...";
+"Loading..." = "Nagkakarga...";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Lokal na pananalapi";
@@ -1558,7 +1572,7 @@
 "Log in" = "mag-log in";
 
 /* Maya */
-"Log In" = "Log In";
+"Log In" = "Mag log in";
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Mag-log in sa CrowdNode";
@@ -1653,6 +1667,9 @@
 /* Dash Portal
    Maya Portal */
 "Maya" = "Maya";
+
+/* Maya */
+"Maya fee" = "Maya fee";
 
 /* Maya */
 "Maya Protocol has received your transaction and is processing the swap." = "Maya Protocol has received your transaction and is processing the swap.";
@@ -1787,7 +1804,7 @@
 "No coins found" = "No coins found";
 
 /* local currency empty state */
-"No matches for \"%@\"" = "No matches for \"%@\"";
+"No matches for \"%@\"" = "Walang tugma para sa\"%@\"";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Walang paraan ng pagbabayad";
@@ -2147,7 +2164,7 @@
 "Receive" = "Tumanggap";
 
 /* Maya */
-"Receive amount" = "Receive amount";
+"Receive amount" = "Tumanggap ng halaga";
 
 /* Coinbase Entry Point */
 "Receive directly into Coinbase" = "Direktang tumanggap sa Coinbase";
@@ -2339,7 +2356,7 @@
 "Security Level" = "Lebel ng seguridad";
 
 /* DashSpend */
-"See card details" = "See card details";
+"See card details" = "Tingnan ang mga detalye ng card";
 
 /* No comment provided by engineer. */
 "See how to use this gift card" = "Tingnan kung paano gamitin ang gift card na ito";
@@ -2715,7 +2732,7 @@
 "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "Ang una ay direktang tumatanggap ng Dash. Ang iba ay tumatanggap ng mga gift card na maaari mong bilhin gamit ang Dash para sa eksaktong halaga ng iyong pagbili sa dalawang pag-tap.";
 
 /* CSV Export */
-"The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
+"The full transaction history will be exported as a CSV file" = "Ang buong kasaysayan ng transaksyon ay ie-export bilang isang CSV file";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Ang larawang pipiliin mo ay ia-upload sa Imgur nang hindi nagpapakilala.";
@@ -3104,7 +3121,7 @@
 "Voting keys" = "Mga susi ng pagboto";
 
 /* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
+"Wait until the chain is fully synced before using CrowdNode." = "Maghintay hanggang sa ganap na ma-sync ang chain bago gamitin ang CrowdNode.";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "Maghintay hanggang sa ganap na ma-sync ang chain, para masuri namin ang iyong history ng transaksyon.";
@@ -3114,6 +3131,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Maghintay hanggang ma-sync ang wallet upang makumpleto ang transaksyon";
+
+/* Maya */
+"Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins." = "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.";
 
 /* Enter Address Screen */
 "Wallet Address" = "address ng pitaka";
@@ -3306,7 +3326,7 @@
 "You have to backup your passphrase in Dash Wallet" = "Kailangan mong i-backup ang iyong passphrase sa Dash Wallet";
 
 /* Backup */
-"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
+"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "Hindi mo pa naba-back up ang iyong recovery phrase. Gusto mo bang mag-back up ngayon bago alisin ang shortcut na ito?";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Kailangan ilagay ang iyong PIN upang mabuksan ang Dash Wallet";
@@ -3392,6 +3412,9 @@
 /* CrowdNode */
 "Your CrowdNode address has been validated, but verification is required." = "Na-validate na ang iyong CrowdNode address, ngunit kailangan ang pag-verify.";
 
+/* Maya */
+"Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.";
+
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
@@ -3403,6 +3426,9 @@
 
 /* Swap refund message — %@ is the provider name e.g. Maya */
 "Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
+
+/* Maya */
+"Your DASH was refunded by Maya Protocol." = "Your DASH was refunded by Maya Protocol.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Handa nang gamitin ang iyong DashPay Username";

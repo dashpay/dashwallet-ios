@@ -10,6 +10,9 @@
 /* Maya */
 "%@ address" = "%@ address";
 
+/* Maya */
+"%@ address is not valid" = "%@ address is not valid";
+
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
 
@@ -160,8 +163,7 @@
 /* No comment provided by engineer. */
 "Address" = "주소";
 
-/* Maya
-   SwapKit */
+/* Maya */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
 
 /* CoinJoin */
@@ -189,7 +191,10 @@
 "All" = "모두";
 
 /* CSV Export */
-"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "모든 지불 거래는 비용으로, 입금 거래는 수입으로 계산됩니다. 이 지갑의 소유자는 자신이 선택한 세금 보고 시스템에 따라 원가주의의 조정을 거칠 책임을 집니다.";
+
+/* Shortcut selection empty state */
+"All shortcuts are already in use" = "All shortcuts are already in use";
 
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "이 기기의 크라우드노드에서/로부터 발생하는 모든 거래는 이 기기의 아래 대시 주소로 이루어집니다.";
@@ -300,10 +305,10 @@
 "Autohide Balance" = "잔고 자동숨김";
 
 /* Backup */
-"Back Up Now" = "Back Up Now";
+"Back Up Now" = "지금 백업하세요";
 
 /* Backup */
-"Back Up Your Wallet" = "Back Up Your Wallet";
+"Back Up Your Wallet" = "당신의 지갑을 백업하세요";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "백업";
@@ -442,7 +447,7 @@
 "Card PIN" = "카드 PIN";
 
 /* DashSpend */
-"Cashier instructions" = "Cashier instructions";
+"Cashier instructions" = "캐셔 안내";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "변경";
@@ -479,6 +484,9 @@
 
 /* No comment provided by engineer. */
 "Clear" = "삭제";
+
+/* Maya */
+"Clear address" = "Clear address";
 
 /* No comment provided by engineer. */
 "Clear trusted node?" = "신뢰할 수 있는 노드를 삭제하시겠습니까?";
@@ -561,7 +569,7 @@
 "Contact Coinbase Support" = "코인베이스 지원센터에 문의하기";
 
 /* Maya */
-"Contact Maya Support" = "Contact Maya Support";
+"Contact Maya Support" = "Maya 지원팀에 문의하기";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "연락처 요청 대기 중";
@@ -590,11 +598,11 @@
 /* Coinbase Entry Point */
 "Convert Crypto" = "암호화폐를 환전하세요";
 
-/* Swap portal */
-"Convert Dash" = "Convert Dash";
+/* Maya Portal */
+"Convert Dash" = "대시 변환하기";
 
 /* Maya Portal */
-"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
+"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Maya에서는 대시 지갑에서 대시를 어떤 암호화폐로도 전환하고 이를 어떤 지갑으로도 보낼 수 있도록 지원합니다";
 
 /* No comment provided by engineer. */
 "Copied" = "복사됨";
@@ -676,10 +684,13 @@
 "Credit Card" = "신용카드";
 
 /* Translate it as short as possible! (24 symbols max) */
-"CrowdNode" = "CrowdNode";
+"CrowdNode" = "크라우드노드";
 
 /* CrowdNode */
 "CrowdNode benefits" = "크라우드노드의 이점";
+
+/* CrowdNode */
+"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
 
 /* CrowdNode Portal */
 "CrowdNode Support" = "크라우드노드 지원";
@@ -867,7 +878,7 @@
 "Earlier" = "이전";
 
 /* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
+"Easily stake Dash and earn passive income with a few simple clicks" = "몇 번의 간단한 클릭만으로 손쉽게 대시를 스테이킹하고 소극적 소득을 얻으세요";
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "간단한 클릭만으로 대시를 손쉽게 스테이킹하고 소극적 소득을 얻으세요.";
@@ -1023,13 +1034,13 @@
 "Find a user on the Dash Network" = "대시 네트워크에서 사용자를 검색합니다";
 
 /* Explore Dash */
-"Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
+"Find ATMs where you can buy or sell Dash" = "대시를 사고 팔 수 있는 ATM을 찾아보세요";
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "대시를 사고 팔 수 있는 ATM을 찾아보세요.";
 
 /* Explore Dash */
-"Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
+"Find merchants that accept Dash payments" = "대시 지불을 수락하는 판매자를 찾아보세요";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "대시를 통화로 사용하는 판매자를 찾아보세요.";
@@ -1082,8 +1093,8 @@
 /* from Dash Wallet */
 "from Dash Wallet" = "대시 지갑에서";
 
-/* Swap portal */
-"From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
+/* Maya Portal */
+"From Dash Wallet to any crypto" = "대시 지갑에서 다른 어떤 암호화폐로";
 
 /* Uphold Entry Point */
 "From Uphold to Dash Wallet" = "업홀드에서 대시 지갑으로";
@@ -1130,7 +1141,7 @@
 /* No comment provided by engineer. */
 "Gift card" = "기프트 카드";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
 
 /* DashSpend */
@@ -1162,6 +1173,9 @@
 
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "GPS를 허락하여 당신 근처의 장소를 확인하세요.";
+
+/* Maya */
+"halted" = "halted";
 
 /* Voting */
 "Has blocked votes" = "투표를 차단했습니다";
@@ -1540,7 +1554,7 @@
 "Loading gift card options..." = "Loading gift card options...";
 
 /* Maya */
-"Loading..." = "Loading...";
+"Loading..." = "로딩중...";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "현지 통화";
@@ -1558,7 +1572,7 @@
 "Log in" = "로그인";
 
 /* Maya */
-"Log In" = "Log In";
+"Log In" = "로그인";
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "크라우드노드에 로그인";
@@ -1655,6 +1669,9 @@
 "Maya" = "Maya";
 
 /* Maya */
+"Maya fee" = "Maya fee";
+
+/* Maya */
 "Maya Protocol has received your transaction and is processing the swap." = "Maya Protocol has received your transaction and is processing the swap.";
 
 /* No comment provided by engineer. */
@@ -1667,7 +1684,7 @@
 "Members are free to leave the pool and can most often leave immediately." = "멤버들은 풀을 자유롭게 떠날 수 있으며, 즉시 떠날 수도 있습니다.";
 
 /* DashSpend */
-"Merchant has only %d cards available" = "Merchant has only %d cards available";
+"Merchant has only %d cards available" = "판매자에게 %d 카드만 남아있습니다";
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "상점 검색은 위치 서비스를 켰을 때 보다 잘 작동합니다.";
@@ -1724,7 +1741,7 @@
 "Moved to Address" = "주소로 이동";
 
 /* DashSpend */
-"Multiple" = "Multiple";
+"Multiple" = "다중";
 
 /* CoinJoin */
 "Multiple hours" = "다중 시간";
@@ -1787,7 +1804,7 @@
 "No coins found" = "No coins found";
 
 /* local currency empty state */
-"No matches for \"%@\"" = "No matches for \"%@\"";
+"No matches for \"%@\"" = "\"%@\" 에 일치하는 항목 없음";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "지불 방법 없음";
@@ -2123,7 +2140,7 @@
 "Purchase Failed" = "매수에 실패하였습니다";
 
 /* DashSpend */
-"Quantity" = "Quantity";
+"Quantity" = "수량";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "빠른 송금 수령";
@@ -2147,7 +2164,7 @@
 "Receive" = "받기";
 
 /* Maya */
-"Receive amount" = "Receive amount";
+"Receive amount" = "받은 금액";
 
 /* Coinbase Entry Point */
 "Receive directly into Coinbase" = "코인베이스로 직접 받기";
@@ -2339,7 +2356,7 @@
 "Security Level" = "보안 수준";
 
 /* DashSpend */
-"See card details" = "See card details";
+"See card details" = "카드 상세 정보 보기";
 
 /* No comment provided by engineer. */
 "See how to use this gift card" = "이 기프트 카드 사용 방법을 확인하세요";
@@ -2533,7 +2550,7 @@
 "Simplify your crypto taxes" = "당신의 암호화폐 세금을 간소화하세요";
 
 /* DashSpend */
-"Single" = "Single";
+"Single" = "단일";
 
 /* No comment provided by engineer. */
 "Skip" = "건너뛰기";
@@ -2599,7 +2616,7 @@
 "Support" = "지원";
 
 /* Dash Portal */
-"Swap Dash · No account needed" = "Swap Dash · No account needed";
+"Swap Dash · No account needed" = "대시 스왑하기 - 계정이 필요하지 않습니다";
 
 /* Maya/SwapKit order preview */
 "Swap fee" = "Swap fee";
@@ -2715,7 +2732,7 @@
 "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "첫 번째는 대시를 직접 수락합니다. 나머지는 두번의 탭 만으로 정확히 필요한 금액만 구매할 수 있는 기프트 카드를 통해 거래할 수 있습니다.";
 
 /* CSV Export */
-"The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
+"The full transaction history will be exported as a CSV file" = "전체 거래 히스토리가 CSV 파일로 출력됩니다";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "당신이 선택한 이미지는 Imgur에 익명으로 업로드됩니다.";
@@ -3104,7 +3121,7 @@
 "Voting keys" = "투표 키";
 
 /* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
+"Wait until the chain is fully synced before using CrowdNode." = "크라우드노드를 사용하기 전 체인이 완전히 동기화 되도록 기다리세요.";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "블록체인이 완전히 동기화될 때까지 기다리셔야 거래 내역을 확인할 수 있습니다.";
@@ -3114,6 +3131,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "거래를 완료하기 위해서는 지갑의 동기화가 끝날 때까지 기다려 주십시오";
+
+/* Maya */
+"Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins." = "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.";
 
 /* Enter Address Screen */
 "Wallet Address" = "지갑 주소";
@@ -3306,7 +3326,7 @@
 "You have to backup your passphrase in Dash Wallet" = "대시 지갑에 암호 문구를 백업해야 합니다";
 
 /* Backup */
-"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
+"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "아직 복구 문구를 백업하지 않았습니다. 이 단축어를 삭제하기 전에 백업하시겠습니까?";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "대시 지갑에 접근하시려면 PIN을 입력해야 합니다";
@@ -3392,6 +3412,9 @@
 /* CrowdNode */
 "Your CrowdNode address has been validated, but verification is required." = "당신의 크라우드노드 주소가 확인되었으나, 인증이 필요합니다.";
 
+/* Maya */
+"Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.";
+
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
@@ -3403,6 +3426,9 @@
 
 /* Swap refund message — %@ is the provider name e.g. Maya */
 "Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
+
+/* Maya */
+"Your DASH was refunded by Maya Protocol." = "Your DASH was refunded by Maya Protocol.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "당신의 대시페이 사용자 이름을 사용할 수 있습니다";

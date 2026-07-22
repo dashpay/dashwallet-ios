@@ -53,7 +53,8 @@ final class BalanceModel: ObservableObject {
     }
 
     func reloadBalance() {
-        let balanceValue = DWEnvironment.sharedInstance().currentWallet.balance
+        let wallet = DWEnvironment.sharedInstance().currentWallet
+        let balanceValue = wallet.balance + wallet.lockedBalance
 
         if balanceValue > value &&
             value > 0 &&

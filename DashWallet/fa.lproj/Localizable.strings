@@ -10,6 +10,9 @@
 /* Maya */
 "%@ address" = "%@ address";
 
+/* Maya */
+"%@ address is not valid" = "%@ address is not valid";
+
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
 
@@ -160,8 +163,7 @@
 /* No comment provided by engineer. */
 "Address" = "نشانی";
 
-/* Maya
-   SwapKit */
+/* Maya */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
 
 /* CoinJoin */
@@ -190,6 +192,9 @@
 
 /* CSV Export */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+
+/* Shortcut selection empty state */
+"All shortcuts are already in use" = "All shortcuts are already in use";
 
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "همه تراکنش‌ها از و به کراودنود از این دستگاه از طریق نشانی زیر از این دستگاه صورت می‌گیرد. ";
@@ -480,6 +485,9 @@
 /* No comment provided by engineer. */
 "Clear" = "Clear";
 
+/* Maya */
+"Clear address" = "Clear address";
+
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Clear trusted node?";
 
@@ -561,7 +569,7 @@
 "Contact Coinbase Support" = "با پشتیبانی کوین‌بیس تماس بگیرید";
 
 /* Maya */
-"Contact Maya Support" = "Contact Maya Support";
+"Contact Maya Support" = "تماس با پشتیبانی مایا";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "درخواست تماس پاسخی دریافت نکرده است";
@@ -590,11 +598,11 @@
 /* Coinbase Entry Point */
 "Convert Crypto" = "تبدیل رمزارز";
 
-/* Swap portal */
-"Convert Dash" = "Convert Dash";
+/* Maya Portal */
+"Convert Dash" = "تبدیل دش";
 
 /* Maya Portal */
-"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
+"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "موجودی دش در دش والت را به هر نوع رمزارزی که در مایا پشتیبانی می‌شود تبدیل کنید و آن را به هر کیف‌پولی که می‌خواهید بفرستید";
 
 /* No comment provided by engineer. */
 "Copied" = "کپی شد";
@@ -680,6 +688,9 @@
 
 /* CrowdNode */
 "CrowdNode benefits" = "مزایای کراودنود";
+
+/* CrowdNode */
+"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
 
 /* CrowdNode Portal */
 "CrowdNode Support" = "پشتیبانی کراودنود";
@@ -957,7 +968,7 @@
 "Export CSV" = "Export CSV";
 
 /* Extended public key (BIP44) */
-"Extended public key (BIP44)" = "Extended public key (BIP44)";
+"Extended public key (BIP44)" = "کلید عمومی جامع (بی‌ای‌پی۴۴)";
 
 /* Extended public keys */
 "Extended public keys" = "Extended public keys";
@@ -1082,8 +1093,8 @@
 /* from Dash Wallet */
 "from Dash Wallet" = "از دش والت";
 
-/* Swap portal */
-"From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
+/* Maya Portal */
+"From Dash Wallet to any crypto" = "از کیف پول به هر نوع کریپتو";
 
 /* Uphold Entry Point */
 "From Uphold to Dash Wallet" = "از آپهولد به دش والت";
@@ -1130,7 +1141,7 @@
 /* No comment provided by engineer. */
 "Gift card" = "کارت هدیه";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
 
 /* DashSpend */
@@ -1162,6 +1173,9 @@
 
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "دریافت اجازه استفاده از جی‌پی‌اس به منظور نمایش موقعیت‌های نزدیک به شما";
+
+/* Maya */
+"halted" = "halted";
 
 /* Voting */
 "Has blocked votes" = "Has blocked votes";
@@ -1281,7 +1295,7 @@
 "Import Private Key" = "وارد کردن کلید خصوصی";
 
 /* Import private key */
-"Import private key" = "Import private key";
+"Import private key" = "وارد کردن کلید خصوصی";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.";
@@ -1540,7 +1554,7 @@
 "Loading gift card options..." = "Loading gift card options...";
 
 /* Maya */
-"Loading..." = "Loading...";
+"Loading..." = "در حال بارگذاری...";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "واحد پول محلی";
@@ -1558,7 +1572,7 @@
 "Log in" = "ورود به حساب";
 
 /* Maya */
-"Log In" = "Log In";
+"Log In" = "ورود";
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "ورود به کراودنود";
@@ -1652,7 +1666,10 @@
 
 /* Dash Portal
    Maya Portal */
-"Maya" = "Maya";
+"Maya" = "مایا";
+
+/* Maya */
+"Maya fee" = "Maya fee";
 
 /* Maya */
 "Maya Protocol has received your transaction and is processing the swap." = "Maya Protocol has received your transaction and is processing the swap.";
@@ -2147,7 +2164,7 @@
 "Receive" = "دریافت";
 
 /* Maya */
-"Receive amount" = "Receive amount";
+"Receive amount" = "دریافت مقدار";
 
 /* Coinbase Entry Point */
 "Receive directly into Coinbase" = "Receive directly into Coinbase";
@@ -2339,7 +2356,7 @@
 "Security Level" = "سطح امنیتی";
 
 /* DashSpend */
-"See card details" = "See card details";
+"See card details" = "مشاهده جزئیات کارت";
 
 /* No comment provided by engineer. */
 "See how to use this gift card" = "See how to use this gift card";
@@ -2715,7 +2732,7 @@
 "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
 
 /* CSV Export */
-"The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
+"The full transaction history will be exported as a CSV file" = "کل سابقه تراکنش‌ها در قالب یک فایل سی‌اس‌وی به صورت خروجی داده می‌شود";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "تصویری که انتخاب می‌کنید به صورت بدون نام روی پلتفرم ایمجور آپلود می‌شود";
@@ -3115,6 +3132,9 @@
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
 
+/* Maya */
+"Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins." = "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.";
+
 /* Enter Address Screen */
 "Wallet Address" = "نشانی کیف پول";
 
@@ -3392,6 +3412,9 @@
 /* CrowdNode */
 "Your CrowdNode address has been validated, but verification is required." = "نشانی کراودنود شما اعتبارسنجی شد، اما نیازمند تائید است. ";
 
+/* Maya */
+"Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.";
+
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
@@ -3403,6 +3426,9 @@
 
 /* Swap refund message — %@ is the provider name e.g. Maya */
 "Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
+
+/* Maya */
+"Your DASH was refunded by Maya Protocol." = "Your DASH was refunded by Maya Protocol.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Your DashPay Username is ready to use";

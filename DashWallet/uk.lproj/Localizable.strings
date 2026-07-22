@@ -10,6 +10,9 @@
 /* Maya */
 "%@ address" = "%@ address";
 
+/* Maya */
+"%@ address is not valid" = "%@ address is not valid";
+
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
 
@@ -160,8 +163,7 @@
 /* No comment provided by engineer. */
 "Address" = "Адреса";
 
-/* Maya
-   SwapKit */
+/* Maya */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
 
 /* CoinJoin */
@@ -189,7 +191,10 @@
 "All" = "Все";
 
 /* CSV Export */
-"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "Усі платежі вважатимуться витратами, а всі вхідні транзакції – доходами.\nВласник цього гаманця несе відповідальність за внесення будь-яких коригувань вартості у вибрану ним систему податкової звітності.";
+
+/* Shortcut selection empty state */
+"All shortcuts are already in use" = "All shortcuts are already in use";
 
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Усі вхідні та вихідні перекази CrowdNode на цьому пристрої будуть здійснюватися з адреси Dash, яка вказана нижче.";
@@ -276,7 +281,7 @@
 "at" = "в";
 
 /* Translate it as short as possible! (24 symbols max) */
-"ATM" = "ATM";
+"ATM" = "Банкомат";
 
 /* No comment provided by engineer. */
 "ATM search works better with Location Services turned on." = "Пошук банкоматів працює краще, якщо ввімкнено служби визначення місцезнаходження.";
@@ -300,10 +305,10 @@
 "Autohide Balance" = "Автоматично приховати баланс";
 
 /* Backup */
-"Back Up Now" = "Back Up Now";
+"Back Up Now" = "Створити резервну копію зараз";
 
 /* Backup */
-"Back Up Your Wallet" = "Back Up Your Wallet";
+"Back Up Your Wallet" = "Зробіть резервну копію свого гаманця";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "Резервне копіювання";
@@ -480,6 +485,9 @@
 /* No comment provided by engineer. */
 "Clear" = "Очистити";
 
+/* Maya */
+"Clear address" = "Clear address";
+
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Видалити довірений вузол?";
 
@@ -590,7 +598,7 @@
 /* Coinbase Entry Point */
 "Convert Crypto" = "Конвертувати криптовалюту";
 
-/* Swap portal */
+/* Maya Portal */
 "Convert Dash" = "Convert Dash";
 
 /* Maya Portal */
@@ -680,6 +688,9 @@
 
 /* CrowdNode */
 "CrowdNode benefits" = "Переваги CrowdNode";
+
+/* CrowdNode */
+"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
 
 /* CrowdNode Portal */
 "CrowdNode Support" = "CrowdNode Підтримка";
@@ -867,7 +878,7 @@
 "Earlier" = "Раніше";
 
 /* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
+"Easily stake Dash and earn passive income with a few simple clicks" = "Легко ставте Dash та отримуйте пасивний дохід кількома простими кліками";
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "Застейкайте Dash і отримайте пасивний дохід за кілька кліків.";
@@ -957,10 +968,10 @@
 "Export CSV" = "Експорт CSV";
 
 /* Extended public key (BIP44) */
-"Extended public key (BIP44)" = "Extended public key (BIP44)";
+"Extended public key (BIP44)" = "Розширений відкритий ключ (BIP44)";
 
 /* Extended public keys */
-"Extended public keys" = "Extended public keys";
+"Extended public keys" = "Розширені відкриті ключі";
 
 /* No comment provided by engineer. */
 "Face ID limit" = "Ліміт Face ID";
@@ -1023,13 +1034,13 @@
 "Find a user on the Dash Network" = "Знайдіть користувача в Dash Network";
 
 /* Explore Dash */
-"Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
+"Find ATMs where you can buy or sell Dash" = "Знайдіть банкомати, де можна купити або продати Dash";
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Знайдіть банкомати, де можна купити або продати Dash.";
 
 /* Explore Dash */
-"Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
+"Find merchants that accept Dash payments" = "Знайдіть продавців, які приймають платежі Dash";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Знайдіть торговців, які приймають платежі в Dash.";
@@ -1082,7 +1093,7 @@
 /* from Dash Wallet */
 "from Dash Wallet" = "з Dash Wallet";
 
-/* Swap portal */
+/* Maya Portal */
 "From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
 
 /* Uphold Entry Point */
@@ -1130,7 +1141,7 @@
 /* No comment provided by engineer. */
 "Gift card" = "Подарункова карта";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
 
 /* DashSpend */
@@ -1162,6 +1173,9 @@
 
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "Надайте дозволи GPS, щоб ми могли відображати точки поблизу вас.";
+
+/* Maya */
+"halted" = "halted";
 
 /* Voting */
 "Has blocked votes" = "Має заблоковані голоси";
@@ -1209,7 +1223,7 @@
 "How to use your gift card" = "Як використовувати вашу подарункову карту";
 
 /* HPMN Operator keys */
-"HPMN Operator keys" = "HPMN Operator keys";
+"HPMN Operator keys" = "Ключі оператора HPMN";
 
 /* No comment provided by engineer. */
 "I Accept" = "Я приймаю";
@@ -1281,7 +1295,7 @@
 "Import Private Key" = "Імпорт ключа";
 
 /* Import private key */
-"Import private key" = "Import private key";
+"Import private key" = "Імпорт приватного ключа";
 
 /* Coinbase/Fee info */
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "На додаток до відображеної комісії Coinbase ми включаємо спред у ціну. Під час використання Advanced Trade спред не включається, оскільки ви взаємодієте безпосередньо з книгою замовлень. \n\nКриптовалютні ринки нестабільні, що дозволяє нам тимчасово зафіксувати ціну на здійснення торгів.";
@@ -1540,7 +1554,7 @@
 "Loading gift card options..." = "Loading gift card options...";
 
 /* Maya */
-"Loading..." = "Loading...";
+"Loading..." = "Завантаження...";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Локальна валюта";
@@ -1558,7 +1572,7 @@
 "Log in" = "Вхід";
 
 /* Maya */
-"Log In" = "Log In";
+"Log In" = "Увійти";
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Ввійти в CrowdNode";
@@ -1624,7 +1638,7 @@
 "Masternode IP address" = "IP-адреса Мастернод";
 
 /* Masternode keys */
-"Masternode keys" = "Masternode keys";
+"Masternode keys" = "Ключі мастернод";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "список Мастернод #%1$d з %2$d";
@@ -1653,6 +1667,9 @@
 /* Dash Portal
    Maya Portal */
 "Maya" = "Maya";
+
+/* Maya */
+"Maya fee" = "Maya fee";
 
 /* Maya */
 "Maya Protocol has received your transaction and is processing the swap." = "Maya Protocol has received your transaction and is processing the swap.";
@@ -1787,7 +1804,7 @@
 "No coins found" = "No coins found";
 
 /* local currency empty state */
-"No matches for \"%@\"" = "No matches for \"%@\"";
+"No matches for \"%@\"" = "Немає збігів для запиту \"%@\"";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Немає способів оплати";
@@ -1880,7 +1897,7 @@
 "Only with links" = "Тільки з посиланнями";
 
 /* Operator keys */
-"Operator keys" = "Operator keys";
+"Operator keys" = "Ключі оператора";
 
 /* No comment provided by engineer. */
 "or" = "або";
@@ -1898,7 +1915,7 @@
 "Owner Address" = "Адреса власника";
 
 /* Owner keys */
-"Owner keys" = "Owner keys";
+"Owner keys" = "Ключі власника";
 
 /* DashSpend */
 "Password" = "Пароль";
@@ -2282,7 +2299,7 @@
 "Scan Private Key" = "Сканувати приватний ключ";
 
 /* Scan private key */
-"Scan private key" = "Scan private key";
+"Scan private key" = "Сканувати приватний ключ";
 
 /* No comment provided by engineer. */
 "Scan QR" = "Сканувати QR";
@@ -2339,7 +2356,7 @@
 "Security Level" = "Рівень безпеки";
 
 /* DashSpend */
-"See card details" = "See card details";
+"See card details" = "Переглянути деталі картки";
 
 /* No comment provided by engineer. */
 "See how to use this gift card" = "Подивіться, як користуватися подарунковою карткою";
@@ -2497,7 +2514,7 @@
 "Share address" = "Поділитися адресою";
 
 /* Share key */
-"Share key" = "Share key";
+"Share key" = "Ключ спільного доступу";
 
 /* Explore Dash */
 "Show all locations" = "Показати всі точки";
@@ -2715,7 +2732,7 @@
 "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "Перший приймає Dash безпосередньо. Інші приймають подарункові картки, які ви можете купити за Dash на точну суму покупки всього за два натискання.";
 
 /* CSV Export */
-"The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
+"The full transaction history will be exported as a CSV file" = "Повна історія транзакцій буде експортована у форматі CSV";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Вибране вами зображення буде анонімно завантажено в Imgur.";
@@ -2757,7 +2774,7 @@
 "There was an error, please try again later" = "Сталася помилка, спробуйте пізніше";
 
 /* This action will move all coins from the Dash paper wallet to your DashPay app on this device. */
-"This action will move all coins from the Dash paper wallet to your DashPay app on this device." = "This action will move all coins from the Dash paper wallet to your DashPay app on this device.";
+"This action will move all coins from the Dash paper wallet to your DashPay app on this device." = "Ця дія перемістить усі монети з паперового гаманця Dash до вашого застосунку DashPay на цьому пристрої.";
 
 /* No comment provided by engineer. */
 "This app is open source:" = "Це програма з відкритим кодом:";
@@ -3101,10 +3118,10 @@
 "Voting is only required in some cases" = "Голосування потрібне лише в деяких випадках";
 
 /* Voting keys */
-"Voting keys" = "Voting keys";
+"Voting keys" = "Ключі для голосування";
 
 /* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
+"Wait until the chain is fully synced before using CrowdNode." = "Зачекайте, поки ланцюжок буде повністю синхронізовано, перш ніж використовувати CrowdNode.";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "Зачекайте, доки ланцюжок буде повністю синхронізовано, щоб ми могли переглянути історію ваших транзакцій.";
@@ -3114,6 +3131,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Зачекайте, поки гаманець синхронізується, щоб завершити транзакцію";
+
+/* Maya */
+"Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins." = "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.";
 
 /* Enter Address Screen */
 "Wallet Address" = "Адреса гаманця";
@@ -3306,7 +3326,7 @@
 "You have to backup your passphrase in Dash Wallet" = "Вам необхідно створити резервну копію фрази відновлення Dash Wallet";
 
 /* Backup */
-"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
+"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "Ви ще не створили резервну копію фрази для відновлення. Бажаєте створити резервну копію зараз, перш ніж видаляти цей ярлик?";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Ви повинні ввести свій PIN-код, щоб увійти в Dash Wallet";
@@ -3392,6 +3412,9 @@
 /* CrowdNode */
 "Your CrowdNode address has been validated, but verification is required." = "Вашу адресу CrowdNode підтверджено, але потрібна перевірка.";
 
+/* Maya */
+"Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.";
+
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
@@ -3403,6 +3426,9 @@
 
 /* Swap refund message — %@ is the provider name e.g. Maya */
 "Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
+
+/* Maya */
+"Your DASH was refunded by Maya Protocol." = "Your DASH was refunded by Maya Protocol.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Ваше ім’я користувача DashPay готове до використання";

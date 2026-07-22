@@ -8,7 +8,10 @@
 " Terms of Use " = "Termini di utilizzo";
 
 /* Maya */
-"%@ address" = "%@ address";
+"%@ address" = "%@ indirizzo";
+
+/* Maya */
+"%@ address is not valid" = "%@ l'indirizzo non è valido";
 
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
@@ -113,7 +116,7 @@
 "A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "Un Masternode ha bisogno di 1000 Dash come garanzia e ogni Masternode è attualmente ricompensato approssimativamente %@ per anno";
 
 /* DashSpend/Maya */
-"A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
+"A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "La conversione Dash precedente è ancora in fase di conferma. Attendi la conferma (circa 2-5 minuti) prima di avviarne una nuova.";
 
 /* No comment provided by engineer. */
 "About" = "A proposito di";
@@ -160,9 +163,8 @@
 /* No comment provided by engineer. */
 "Address" = "Indirizzo";
 
-/* Maya
-   SwapKit */
-"Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
+/* Maya */
+"Address validation unavailable — please check your connection" = "Validazione dell'indirizzo non disponibile - controlla la tua connessione.";
 
 /* CoinJoin */
 "Advanced" = "Avanzate";
@@ -189,7 +191,10 @@
 "All" = "Tutte";
 
 /* CSV Export */
-"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "Tutti i pagamenti saranno considerati come spese e tutte le transazioni in entrata come entrate.\nIl proprietario di questo portafoglio è responsabile di apportare eventuali rettifiche al costo di acquisto nel sistema di dichiarazione dei redditi prescelto.";
+
+/* Shortcut selection empty state */
+"All shortcuts are already in use" = "Tutte le scorciatoie sono già in uso";
 
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Tutti i trasferimenti da e verso CrowdNode da questo dispositivo verranno eseguiti con l'indirizzo Dash sottostante da questo dispositivo.";
@@ -213,7 +218,7 @@
 "Amount Sent" = "Importo Inviato";
 
 /* Maya */
-"Amount too small to cover fees" = "Amount too small to cover fees";
+"Amount too small to cover fees" = "Importo insufficiente a coprire le commissioni";
 
 /* No comment provided by engineer. */
 "An error occurred" = "Si è verificato un errore";
@@ -270,7 +275,7 @@
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "Poiché la maggior parte delle persone non ha esattamente 1000 Dash a portata di mano, CrowdNode ha creato un servizio in cui, mettendo in comune i depositi dei membri, è possibile ottenere i vantaggi di possedere un Masternode.";
 
 /* DashSpend */
-"As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
+"As soon as your code is generated, it will be displayed here" = "Non appena il codice sarà generato, verrà visualizzato qui.";
 
 /* DashSpend */
 "at" = "a";
@@ -300,10 +305,10 @@
 "Autohide Balance" = "Mascheramento Automatico Bilancio ";
 
 /* Backup */
-"Back Up Now" = "Back Up Now";
+"Back Up Now" = "Esegui il Backup ora";
 
 /* Backup */
-"Back Up Your Wallet" = "Back Up Your Wallet";
+"Back Up Your Wallet" = "Fai il Backup del tuo Portafoglio";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "Backup";
@@ -418,10 +423,10 @@
 "By wiping this device you will no longer have access to funds on this device. This should only be done if you no longer have access to your passphrase and have also forgotten your PIN code." = "Cancellando questo dispositivo non avrai più accesso ai fondi su questo dispositivo. Questo dovrebbe essere fatto solo se non hai più accesso alla tua \"passphrase\" e hai anche dimenticato il tuo codice PIN.";
 
 /* No comment provided by engineer. */
-"Camera is required to scan QR codes." = "Camera is required to scan QR codes.";
+"Camera is required to scan QR codes." = "Per scansionare i codici QR è necessaria una fotocamera.";
 
 /* No comment provided by engineer. */
-"Camera Unavailable" = "Camera Unavailable";
+"Camera Unavailable" = "Fotocamera non disponibile";
 
 /* No comment provided by engineer. */
 "Cancel" = "Cancella";
@@ -442,7 +447,7 @@
 "Card PIN" = "PIN della carta";
 
 /* DashSpend */
-"Cashier instructions" = "Cashier instructions";
+"Cashier instructions" = "Istruzioni per il cassiere";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "Cambiare";
@@ -479,6 +484,9 @@
 
 /* No comment provided by engineer. */
 "Clear" = "Rimuovere";
+
+/* Maya */
+"Clear address" = "Pulisci Indirizzo";
 
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Rimuovere il nodo affidabile?";
@@ -526,7 +534,7 @@
 "Confirm (%d%@)" = "Confermare (%1$d%2$@)";
 
 /* Maya */
-"Confirm (%lds)" = "Confirm (%lds)";
+"Confirm (%lds)" = "Conferma (%lds)";
 
 /* No comment provided by engineer. */
 "Confirm PIN" = "Conferma PIN";
@@ -551,17 +559,17 @@
 "Connecting to payment server" = "Connessione al server di pagamento";
 
 /* DashSpend */
-"Connection Error" = "Connection Error";
+"Connection Error" = "Errore di Connessione";
 
 /* DashSpend */
-"Contact %@ Support" = "Contact %@ Support";
+"Contact %@ Support" = "Contatta il Support %@";
 
 /* Coinbase
    Coinbase Two Factor Auth */
 "Contact Coinbase Support" = "Contatta il supporto di Coinbase";
 
 /* Maya */
-"Contact Maya Support" = "Contact Maya Support";
+"Contact Maya Support" = "Contatta il Supporto Maya";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Richiesta di contatto in sospeso";
@@ -582,19 +590,19 @@
 "Continue Anyway" = "Continua comunque";
 
 /* Maya */
-"Conversion failed" = "Conversion failed";
+"Conversion failed" = "Conversione fallita";
 
 /* Maya */
-"Conversion in progress" = "Conversion in progress";
+"Conversion in progress" = "Conversione in corso";
 
 /* Coinbase Entry Point */
 "Convert Crypto" = "Converti criptovalute";
 
-/* Swap portal */
-"Convert Dash" = "Convert Dash";
+/* Maya Portal */
+"Convert Dash" = "Converti Dash";
 
 /* Maya Portal */
-"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
+"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Converti Dash dal portafoglio Dash in qualsiasi criptovaluta supportata da Maya e inviala a qualsiasi portafoglio.";
 
 /* No comment provided by engineer. */
 "Copied" = "Copiato";
@@ -680,6 +688,9 @@
 
 /* CrowdNode */
 "CrowdNode benefits" = "Vantaggi di CrowNode";
+
+/* CrowdNode */
+"CrowdNode sign-up and deposits are temporarily unavailable." = "La registrazione e i depositi su CrowdNode sono temporaneamente non disponibili.";
 
 /* CrowdNode Portal */
 "CrowdNode Support" = "Supporto CrowdNode";
@@ -772,13 +783,13 @@
 "Date: Old to new" = "Data: dal Vecchio al nuovo";
 
 /* DashSpend */
-"Decrease quantity" = "Decrease quantity";
+"Decrease quantity" = "Diminuisci la quantità";
 
 /* Voting */
 "Default filter setting" = "Impostazione del filtro predefinita";
 
 /* Explore Dash */
-"Default filters applied" = "Default filters applied";
+"Default filters applied" = "Filtri predefiniti applicati";
 
 /* Location Service Status */
 "Denied" = "Nega";
@@ -837,10 +848,10 @@
 "Done" = "Fatto";
 
 /* DashSpend */
-"Double tap to change quantity" = "Double tap to change quantity";
+"Double tap to change quantity" = "Tocca due volte per modificare la quantità";
 
 /* SegmentedControl */
-"Double tap to select" = "Double tap to select";
+"Double tap to select" = "Tocca due volte per selezionare";
 
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "Scarica peer: %@";
@@ -867,7 +878,7 @@
 "Earlier" = "Prima";
 
 /* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
+"Easily stake Dash and earn passive income with a few simple clicks" = "Metti in staking Dash e guadagna un reddito passivo con pochi semplici clic.";
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "Vincola facilmente Dash e guadagna entrate passive con pochi semplici clic.";
@@ -900,7 +911,7 @@
 "Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work." = "Enter a valid %1$@ address. %2$@ here is on %3$@, so an Ethereum (0x…) address won’t work.";
 
 /* Maya */
-"Enter address" = "Enter address";
+"Enter address" = "Inserisci indirizzo";
 
 /* Coinbase Two Factor Auth */
 "Enter Coinbase 2FA code" = "Inserisci il codice Coinbase 2FA";
@@ -936,7 +947,7 @@
 "Error ·" = "Errore ·";
 
 /* Maya */
-"Exchange rate not available" = "Exchange rate not available";
+"Exchange rate not available" = "Tasso di cambio non disponibile";
 
 /* No comment provided by engineer. */
 "Exit" = "Esci";
@@ -1023,13 +1034,13 @@
 "Find a user on the Dash Network" = "Trova un utente su Dash Network";
 
 /* Explore Dash */
-"Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
+"Find ATMs where you can buy or sell Dash" = "Trova gli ATM dove puoi acquistare o vendere Dash";
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Trova gli ATM dove puoi acquistare o vendere Dash.";
 
 /* Explore Dash */
-"Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
+"Find merchants that accept Dash payments" = "Trova i commercianti che accettano pagamenti in Dash";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Trova i commercianti che accettano Dash come pagamento.";
@@ -1082,8 +1093,8 @@
 /* from Dash Wallet */
 "from Dash Wallet" = "dal Portafoglio Dash";
 
-/* Swap portal */
-"From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
+/* Maya Portal */
+"From Dash Wallet to any crypto" = "Dal Dash Wallet a qualsiasi criptovaluta";
 
 /* Uphold Entry Point */
 "From Uphold to Dash Wallet" = "Da Uphold al Portafoglio Dash ";
@@ -1130,11 +1141,11 @@
 /* No comment provided by engineer. */
 "Gift card" = "Carta Regalo";
 
-/* No comment provided by engineer. */
-"Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
+/* DashSpend */
+"Gift card details are unavailable. Please contact support." = "I dettagli della carta regalo non sono disponibili. Si prega di contattare l'assistenza.";
 
 /* DashSpend */
-"Gift card is being prepared" = "Gift card is being prepared";
+"Gift card is being prepared" = "La carta regalo è in fase di preparazione.";
 
 /* DashSpend */
 "Gift card purchase successful" = "Acquisto della carta regalo riuscito";
@@ -1152,7 +1163,7 @@
 "Go to CrowdNode website" = "Vai al sito Web CrowdNode";
 
 /* Maya */
-"Go to Home" = "Go to Home";
+"Go to Home" = "Vai alla Home";
 
 /* No comment provided by engineer. */
 "Go to Website" = "Vai al sito web";
@@ -1162,6 +1173,9 @@
 
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "Concedi le autorizzazioni GPS in modo che possiamo mostrarti le posizioni vicino a te.";
+
+/* Maya */
+"halted" = "fermato";
 
 /* Voting */
 "Has blocked votes" = "Ha bloccato i voti";
@@ -1287,7 +1301,7 @@
 "In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n\nCryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution." = "Oltre alla commissione Coinbase visualizzata, includiamo uno spread nel prezzo. Quando si utilizza Advanced Trade, non è incluso nessuno spread perché si interagisce direttamente con il portafoglio ordini.\n\nI mercati delle criptovalute sono volatili e questo ci consente di bloccare temporaneamente un prezzo per l'esecuzione degli scambi.";
 
 /* Maya */
-"In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution." = "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.";
+"In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution." = "Oltre alla commissione Maya visualizzata, nel prezzo è incluso uno spread. \nI mercati delle criptovalute sono volatili e questo ci permette di bloccare temporaneamente un prezzo per l'esecuzione della transazione.";
 
 /* CrowdNode */
 "In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "In caso di prelievi maggiori CrowdNode pagherà i prelievi entro due settimane. Ciò è dovuto ai loro protocolli di sicurezza e molto spesso verrà gestito molto più velocemente.";
@@ -1308,7 +1322,7 @@
 "Income" = "Reddito";
 
 /* DashSpend */
-"Increase quantity" = "Increase quantity";
+"Increase quantity" = "Aumenta la quantità";
 
 /* CrowdNode */
 "Information about your online account" = "Informazioni sul tuo account online";
@@ -1317,7 +1331,7 @@
 "Initializing" = "Inizializzazione";
 
 /* Maya */
-"Insufficient balance" = "Insufficient balance";
+"Insufficient balance" = "Saldo insufficiente";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "Fondi insufficenti";
@@ -1431,7 +1445,7 @@
 "It can take a minute for your funds to arrive." = "Potrebbe volerci un minuto prima che i tuoi fondi arrivino.";
 
 /* Maya */
-"It can take up to a few minutes for your \(coinName) to arrive at the destination address" = "It can take up to a few minutes for your \(coinName) to arrive at the destination address";
+"It can take up to a few minutes for your \(coinName) to arrive at the destination address" = "Potrebbero essere necessari alcuni minuti prima che la tua \(coinName) arrivi all'indirizzo di destinazione.";
 
 /* Coinbase Two Factor Auth */
 "It could be the code from the SMS on your phone. If not, enter the code from the authentication app." = "Potrebbe essere il codice tramite SMS sul tuo telefono. In caso contrario, inserisci il codice dall'app di autenticazione.";
@@ -1443,7 +1457,7 @@
 "It is recommended to be on a Wi-Fi network to avoid incurring additional mixing fees" = "Si consiglia di utilizzare una rete Wi-Fi per evitare di incorrere in costi di mixaggio aggiuntivi";
 
 /* DashSpend */
-"It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.";
+"It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "Sembra che tu non abbia utilizzato DashSpend da un po' di tempo. Per motivi di sicurezza, il tuo account è stato disattivato.\n\nAccedi di nuovo per continuare a scoprire dove spendere i tuoi Dash.";
 
 /* Coinbase */
 "It would be very difficult for advanced users with any level of technical expertise to determine your transaction history" = "Sarebbe molto difficile per gli utenti avanzati con qualsiasi livello di competenza tecnica determinare la cronologia delle transazioni";
@@ -1486,7 +1500,7 @@
 "Last server update" = "Ultimo aggiornamento del server";
 
 /* Maya */
-"Learn more" = "Learn more";
+"Learn more" = "Per saperne di più";
 
 /* Info Screen */
 "Learn More..." = "Per saperne di più...";
@@ -1537,10 +1551,10 @@
 "Link your Uphold account" = "Collega il tuo account Uphold";
 
 /* DashSpend */
-"Loading gift card options..." = "Loading gift card options...";
+"Loading gift card options..." = "Caricamento delle opzioni per le carte regalo...";
 
 /* Maya */
-"Loading..." = "Loading...";
+"Loading..." = "Caricamento...";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Moneta Locale";
@@ -1558,7 +1572,7 @@
 "Log in" = "Log in";
 
 /* Maya */
-"Log In" = "Log In";
+"Log In" = "Accedi";
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Accedi a CrowdNode";
@@ -1594,7 +1608,7 @@
 "Logout after" = "posponi il Logout";
 
 /* Maya */
-"Long press to paste" = "Long press to paste";
+"Long press to paste" = "Tieni premuto per incollare";
 
 /* Leftover balance warning */
 "Looks like you are emptying your Dash Wallet" = "Sembra che tu stia svuotando il tuo Portafoglio Dash";
@@ -1655,7 +1669,10 @@
 "Maya" = "Maya";
 
 /* Maya */
-"Maya Protocol has received your transaction and is processing the swap." = "Maya Protocol has received your transaction and is processing the swap.";
+"Maya fee" = "Commissione Maya";
+
+/* Maya */
+"Maya Protocol has received your transaction and is processing the swap." = "Maya Protocol ha ricevuto la tua transazione e sta elaborando lo scambio.";
 
 /* No comment provided by engineer. */
 "Maybe later" = "Magari più tardi";
@@ -1667,7 +1684,7 @@
 "Members are free to leave the pool and can most often leave immediately." = "I membri sono liberi di lasciare la pool e nella maggior parte dei casi possono andarsene immediatamente.";
 
 /* DashSpend */
-"Merchant has only %d cards available" = "Merchant has only %d cards available";
+"Merchant has only %d cards available" = "Il commerciante ha a disposizione solo carte %d";
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "La ricerca commerciante funziona meglio con i servizi di localizzazione attivati.";
@@ -1724,7 +1741,7 @@
 "Moved to Address" = "Spostato in Indirizzo";
 
 /* DashSpend */
-"Multiple" = "Multiple";
+"Multiple" = "Multiplo";
 
 /* CoinJoin */
 "Multiple hours" = "Molteplici ore";
@@ -1784,10 +1801,10 @@
 "No cash account found" = "Nessun conto in contanti trovato";
 
 /* Maya */
-"No coins found" = "No coins found";
+"No coins found" = "Nessuna coin trovata";
 
 /* local currency empty state */
-"No matches for \"%@\"" = "No matches for \"%@\"";
+"No matches for \"%@\"" = "Nessuna corrispondenza per \"%@\"";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Nessun metodo di pagamento";
@@ -1892,7 +1909,7 @@
 "Order preview" = "Order preview";
 
 /* DashSpend */
-"Original Price" = "Original Price";
+"Original Price" = "Prezzo Originale";
 
 /* No comment provided by engineer. */
 "Owner Address" = "Indirizzo del proprietario";
@@ -1904,7 +1921,7 @@
 "Password" = "Password";
 
 /* Maya */
-"Paste address from" = "Paste address from";
+"Paste address from" = "Incolla indirizzo da";
 
 /* Usernames */
 "Paste link here" = "Incolla il link qui";
@@ -2123,7 +2140,7 @@
 "Purchase Failed" = "Acquisto fallito";
 
 /* DashSpend */
-"Quantity" = "Quantity";
+"Quantity" = "Quantità";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Rapido Ricevi";
@@ -2147,7 +2164,7 @@
 "Receive" = "Ricevi";
 
 /* Maya */
-"Receive amount" = "Receive amount";
+"Receive amount" = "Ricevere l'importo";
 
 /* Coinbase Entry Point */
 "Receive directly into Coinbase" = "Ricevi direttamente in Coinbase";
@@ -2192,7 +2209,7 @@
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "La frase di recupero deve avere 12, 15, 18, 21 o 24 parole";
 
 /* Maya */
-"Refresh quote" = "Refresh quote";
+"Refresh quote" = "Aggiorna il preventivo";
 
 /* Button title, Register (username) */
 "Register" = "Registrati";
@@ -2339,7 +2356,7 @@
 "Security Level" = "Livello di sicurezza";
 
 /* DashSpend */
-"See card details" = "See card details";
+"See card details" = "Vedi i dettagli della carta";
 
 /* No comment provided by engineer. */
 "See how to use this gift card" = "Scopri come utilizzare questa carta regalo";
@@ -2364,7 +2381,7 @@
 "Select block explorer" = "Seleziona il block explorer";
 
 /* Maya */
-"Select coin" = "Select coin";
+"Select coin" = "Seleziona una coin";
 
 /* No comment provided by engineer. */
 "Select from Gallery" = "Seleziona dalla Galleria";
@@ -2533,13 +2550,13 @@
 "Simplify your crypto taxes" = "Semplifica le tue tasse sulle criptovalute";
 
 /* DashSpend */
-"Single" = "Single";
+"Single" = "Singolo";
 
 /* No comment provided by engineer. */
 "Skip" = "Salta";
 
 /* Maya */
-"Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
+"Some coins are not available because of the halted chain" = "Alcune coin non sono disponibili a causa dell'interruzione della catena";
 
 /* Shown when a payment tries to reuse inputs already spent by a pending transaction. */
 "Some selected funds are still pending from a previous transaction. Please wait a moment and try again." = "Some selected funds are still pending from a previous transaction. Please wait a moment and try again.";
@@ -2599,20 +2616,20 @@
 "Support" = "Supporto";
 
 /* Dash Portal */
-"Swap Dash · No account needed" = "Swap Dash · No account needed";
+"Swap Dash · No account needed" = "Swap Dash · Non è necessario alcun account";
 
 /* Maya/SwapKit order preview */
 "Swap fee" = "Swap fee";
 
 /* Maya
    Shown when a previous Dash conversion is still confirming and blocks a new general send. */
-"Swap in progress" = "Swap in progress";
+"Swap in progress" = "Scambio in corso";
 
 /* Maya */
-"Swap memo is missing. Please refresh and try again." = "Swap memo is missing. Please refresh and try again.";
+"Swap memo is missing. Please refresh and try again." = "Il memo dello scambio non è presente. Aggiorna la pagina e riprova.";
 
 /* Maya */
-"Swap timed out after 30 minutes. Contact Maya support if funds were sent." = "Swap timed out after 30 minutes. Contact Maya support if funds were sent.";
+"Swap timed out after 30 minutes. Contact Maya support if funds were sent." = "Lo scambio è scaduto dopo 30 minuti. Contatta l'assistenza Maya se sono stati inviati dei fondi.";
 
 /* Dash Portal
    SwapKit Portal */
@@ -2715,7 +2732,7 @@
 "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "Il primo accetta Dash direttamente. Gli altri accettano carte regalo che puoi acquistare con Dash per l'importo esatto del tuo acquisto in due tocchi.";
 
 /* CSV Export */
-"The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
+"The full transaction history will be exported as a CSV file" = "L'intera cronologia delle transazioni verrà esportata come file CSV";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "L'immagine che selezioni verrà caricata su Imgur in forma anonima.";
@@ -2763,7 +2780,7 @@
 "This app is open source:" = "Questa app è open source:";
 
 /* DashSpend */
-"This card works only in the United States." = "This card works only in the United States.";
+"This card works only in the United States." = "Questa carta funziona solo negli Stati Uniti.";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "Questo passaggio aggiuntivo mostra che stai davvero cercando di effettuare una transazione.";
@@ -2906,7 +2923,7 @@
 "Unable to get new QR code" = "Impossibile ottenere un nuovo codice QR";
 
 /* DashSpend */
-"Unable to load merchant details. Please try again." = "Unable to load merchant details. Please try again.";
+"Unable to load merchant details. Please try again." = "Impossibile caricare i dettagli del venditore. Riprova.";
 
 /* No comment provided by engineer. */
 "Unable to provide suggestions" = "Impossibile fornire suggerimenti";
@@ -2921,10 +2938,10 @@
 "Unable to upload your picture. Please try again." = "Impossibile caricare la tua foto. Per favore riprova.";
 
 /* DashSpend */
-"Unable to verify your session. Please check your internet connection and try again." = "Unable to verify your session. Please check your internet connection and try again.";
+"Unable to verify your session. Please check your internet connection and try again." = "Impossibile verificare la sessione. Controlla la connessione a Internet e riprova.";
 
 /* DashSpend */
-"Unavailable at this limit" = "Unavailable at this limit";
+"Unavailable at this limit" = "Non disponibile a questo limite";
 
 /* Voting */
 "Unblock" = "Sbloccare";
@@ -3032,7 +3049,7 @@
 "Validating username…" = "Convalida nome utente...";
 
 /* Maya */
-"Vault address is missing. Please refresh and try again." = "Vault address is missing. Please refresh and try again.";
+"Vault address is missing. Please refresh and try again." = "L'indirizzo del vault non è presente. Aggiorna la pagina e riprova.";
 
 /* CrowdNode Portal */
 "Verification Required" = "Verifica richiesta";
@@ -3074,7 +3091,7 @@
 "View transaction details" = "Visualizza i dettagli della transazione";
 
 /* Maya */
-"View transaction on MayaScan" = "View transaction on MayaScan";
+"View transaction on MayaScan" = "Visualizza la transazione su MayaScan";
 
 /* Voting */
 "Vote for All" = "Vota per tutti";
@@ -3104,7 +3121,7 @@
 "Voting keys" = "Chiavi di Voto";
 
 /* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
+"Wait until the chain is fully synced before using CrowdNode." = "Attendi che la blockchain sia completamente sincronizzata prima di utilizzare CrowdNode.";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "Attendi fino a quando la catena non sarà completamente sincronizzata, in modo da poter rivedere la cronologia delle transazioni.";
@@ -3114,6 +3131,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Attendi fino a quando il portafoglio non viene sincronizzato per completare la transazione";
+
+/* Maya */
+"Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins." = "In attesa della conferma del blocco. Gli scambi in Maya richiedono un blocco Dash (~2-5 minuti) prima che lo scambio abbia inizio.";
 
 /* Enter Address Screen */
 "Wallet Address" = "Indirizzo del portafoglio";
@@ -3228,13 +3248,13 @@
 "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase." = "Stai per cancellare il portafoglio da questo dispositivo. Tutti i fondi associati ad esso potranno essere recuperati solo se si dispone della frase di recupero.";
 
 /* DashSpend */
-"You are buying a %@ gift card for %@ (%@%% discount)" = "You are buying a %1$@ gift card for %2$@ (%3$@%% discount)";
+"You are buying a %@ gift card for %@ (%@%% discount)" = "Stai acquistando una %1$@ carta regalo per %2$@ (%3$@%% sconto)";
 
 /* No comment provided by engineer. */
 "You can always delete the image uploaded, as long as you have access to this wallet." = "Puoi sempre eliminare l'immagine caricata, purché tu abbia accesso a questo Portafoglio.";
 
 /* No comment provided by engineer. */
-"You can authenticate with biometrics for payments below" = "You can authenticate with biometrics for payments below";
+"You can authenticate with biometrics for payments below" = "Di seguito è possibile autenticarsi tramite dati biometrici per i pagamenti.";
 
 /* No comment provided by engineer. */
 "You can authenticate with Face ID for payments below" = "Puoi effettuare l'autenticazione con Face ID per i pagamenti di seguito";
@@ -3243,7 +3263,7 @@
 "You can authenticate with Touch ID for payments below" = "Puoi effettuare l'autenticazione con Touch ID per i pagamenti di seguito";
 
 /* DashSpend */
-"You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
+"You can buy up to %@ in gift cards per order" = "Puoi acquistare fino a %@ in carte regalo per ordine";
 
 /* CrowdNode */
 "You can change how / when your reward earnings are paid to you." = "Puoi modificare come/quando ti vengono pagati i guadagni del premio.";
@@ -3306,7 +3326,7 @@
 "You have to backup your passphrase in Dash Wallet" = "Devi eseguire il backup della tua passphrase nel Portafoglio Dash";
 
 /* Backup */
-"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
+"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "Non hai ancora eseguito il backup della tua frase di recupero. Vuoi eseguirlo ora prima di rimuovere questo collegamento?";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Devi inserire il tuo PIN per accedere al Portafoglio Dash";
@@ -3351,7 +3371,7 @@
 "You should have at least %@ to proceed with the CrowdNode verification." = "Dovresti avere almeno %@ per procedere con la verifica in CrowdNode.";
 
 /* Maya */
-"You successfully converted DASH to \(coinCode)" = "You successfully converted DASH to \(coinCode)";
+"You successfully converted DASH to \(coinCode)" = "Hai convertito correttamente DASH in \(coinCode)";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Sarà inoltre necessario disconnettersi dal sito Web di Uphold utilizzando il browser";
@@ -3392,6 +3412,9 @@
 /* CrowdNode */
 "Your CrowdNode address has been validated, but verification is required." = "Il tuo indirizzo CrowdNode è stato convalidato, ma è richiesta la verifica.";
 
+/* Maya */
+"Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "La tua transazione Dash è stata inviata. Attendo la conferma del blocco - questa operazione richiede dai 2 ai 5 minuti perché gli scambi Maya non utilizzano InstantSend.";
+
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
@@ -3399,10 +3422,13 @@
 "Your Dash was mixed using these transactions." = "I tuoi Dash sono stati mixati utilizzando queste transazioni.";
 
 /* Maya */
-"Your DASH was not converted and no funds were deducted. Try again, or come back later." = "Your DASH was not converted and no funds were deducted. Try again, or come back later.";
+"Your DASH was not converted and no funds were deducted. Try again, or come back later." = "I tuoi DASH non sono stati convertiti e non sono stati detratti fondi. Riprova o torna più tardi.";
 
 /* Swap refund message — %@ is the provider name e.g. Maya */
 "Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
+
+/* Maya */
+"Your DASH was refunded by Maya Protocol." = "I tuoi DASH sono stati rimborsati da Maya Protocol.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Il tuo nome utente DashPay è pronto per l'uso";

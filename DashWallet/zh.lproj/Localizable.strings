@@ -10,6 +10,9 @@
 /* Maya */
 "%@ address" = "%@ address";
 
+/* Maya */
+"%@ address is not valid" = "%@ address is not valid";
+
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
 
@@ -160,8 +163,7 @@
 /* No comment provided by engineer. */
 "Address" = "地址";
 
-/* Maya
-   SwapKit */
+/* Maya */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
 
 /* CoinJoin */
@@ -189,7 +191,10 @@
 "All" = "所有";
 
 /* CSV Export */
-"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "所有付款将被视为支出, 所有汇入都将标为收入. \n此钱包的所有者对其在所选报税系统做出的任何成本基础调整负责.";
+
+/* Shortcut selection empty state */
+"All shortcuts are already in use" = "All shortcuts are already in use";
 
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "从此设备与CrowdNode之间的所有来往交易都会使用此设备下方的Dash地址.";
@@ -270,7 +275,7 @@
 "As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "由于大多数人手中没有 1000个 Dash, CrowdNode提供了一项服务, 他们通过汇集成员的存款来帮助成员获得主节点的收益.";
 
 /* DashSpend */
-"As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
+"As soon as your code is generated, it will be displayed here" = "一旦生成付款码, 它将显示在此处";
 
 /* DashSpend */
 "at" = "在";
@@ -300,10 +305,10 @@
 "Autohide Balance" = "自动隐藏余额";
 
 /* Backup */
-"Back Up Now" = "Back Up Now";
+"Back Up Now" = "立刻备份";
 
 /* Backup */
-"Back Up Your Wallet" = "Back Up Your Wallet";
+"Back Up Your Wallet" = "备份您的钱包";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "备份";
@@ -442,7 +447,7 @@
 "Card PIN" = "卡密码";
 
 /* DashSpend */
-"Cashier instructions" = "Cashier instructions";
+"Cashier instructions" = "收银员提示";
 
 /* A verb. Action button title for an alert 'Change payment amount?' */
 "Change" = "更改";
@@ -479,6 +484,9 @@
 
 /* No comment provided by engineer. */
 "Clear" = "清除";
+
+/* Maya */
+"Clear address" = "Clear address";
 
 /* No comment provided by engineer. */
 "Clear trusted node?" = "清除可信节点?";
@@ -561,7 +569,7 @@
 "Contact Coinbase Support" = "联系 Coinbase客服";
 
 /* Maya */
-"Contact Maya Support" = "Contact Maya Support";
+"Contact Maya Support" = "联系 Maya 客服";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "朋友申请等待中";
@@ -590,11 +598,11 @@
 /* Coinbase Entry Point */
 "Convert Crypto" = "兑换加密货币";
 
-/* Swap portal */
-"Convert Dash" = "Convert Dash";
+/* Maya Portal */
+"Convert Dash" = "转换 Dash";
 
 /* Maya Portal */
-"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
+"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "从 Dash 钱包将 Dash 转换成 Maya 支持的任何加密数字货币并发送到任意钱包";
 
 /* No comment provided by engineer. */
 "Copied" = "已复制";
@@ -680,6 +688,9 @@
 
 /* CrowdNode */
 "CrowdNode benefits" = "CrowdNode 的福利";
+
+/* CrowdNode */
+"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
 
 /* CrowdNode Portal */
 "CrowdNode Support" = "CrowdNode帮助";
@@ -772,7 +783,7 @@
 "Date: Old to new" = "日期: 从旧到新";
 
 /* DashSpend */
-"Decrease quantity" = "Decrease quantity";
+"Decrease quantity" = "减少数量";
 
 /* Voting */
 "Default filter setting" = "默认过滤器设置";
@@ -837,10 +848,10 @@
 "Done" = "完成";
 
 /* DashSpend */
-"Double tap to change quantity" = "Double tap to change quantity";
+"Double tap to change quantity" = "双击更改数量";
 
 /* SegmentedControl */
-"Double tap to select" = "Double tap to select";
+"Double tap to select" = "双击进行选择";
 
 /* ex., Download peer: 127.0.0.1:9999 */
 "Download peer: %@" = "下载节点: %@";
@@ -867,7 +878,7 @@
 "Earlier" = "先前的";
 
 /* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
+"Easily stake Dash and earn passive income with a few simple clicks" = "只需点击几下, 即可轻松质押 Dash 并赚取被动收益";
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "只需点击几下, 即可轻松质押Dash并赚取被动收益.";
@@ -1023,13 +1034,13 @@
 "Find a user on the Dash Network" = "在Dash网络上查找用户";
 
 /* Explore Dash */
-"Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
+"Find ATMs where you can buy or sell Dash" = "查找可以购买或出售 Dash 的自动取款机";
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "查找可以购买或出售 Dash 的自动取款机.";
 
 /* Explore Dash */
-"Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
+"Find merchants that accept Dash payments" = "查找接收 Dash 付款的商户";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "查找接受 Dash 付款的商户.";
@@ -1082,8 +1093,8 @@
 /* from Dash Wallet */
 "from Dash Wallet" = "来自Dash钱包";
 
-/* Swap portal */
-"From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
+/* Maya Portal */
+"From Dash Wallet to any crypto" = "从 Dash 钱包到任何加密数字货币";
 
 /* Uphold Entry Point */
 "From Uphold to Dash Wallet" = "从 Uphold 转到您的Dash钱包";
@@ -1130,11 +1141,11 @@
 /* No comment provided by engineer. */
 "Gift card" = "礼品卡";
 
-/* No comment provided by engineer. */
-"Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
+/* DashSpend */
+"Gift card details are unavailable. Please contact support." = "礼品卡详细信息不可用. 请联系客服.";
 
 /* DashSpend */
-"Gift card is being prepared" = "Gift card is being prepared";
+"Gift card is being prepared" = "礼品卡正在准备中";
 
 /* DashSpend */
 "Gift card purchase successful" = "礼品卡购买成功";
@@ -1162,6 +1173,9 @@
 
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "授予 GPS权限, 以便我们能向您显示您附近的位置.";
+
+/* Maya */
+"halted" = "halted";
 
 /* Voting */
 "Has blocked votes" = "已阻止投票";
@@ -1308,7 +1322,7 @@
 "Income" = "收入";
 
 /* DashSpend */
-"Increase quantity" = "Increase quantity";
+"Increase quantity" = "增加数量";
 
 /* CrowdNode */
 "Information about your online account" = "有关您线上账户的信息";
@@ -1537,10 +1551,10 @@
 "Link your Uphold account" = "关联您的Uphold账户";
 
 /* DashSpend */
-"Loading gift card options..." = "Loading gift card options...";
+"Loading gift card options..." = "正在载入礼品卡选项...";
 
 /* Maya */
-"Loading..." = "Loading...";
+"Loading..." = "加载中...";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "本地货币";
@@ -1558,7 +1572,7 @@
 "Log in" = "登录";
 
 /* Maya */
-"Log In" = "Log In";
+"Log In" = "登录";
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "登录到CrowdNode";
@@ -1655,6 +1669,9 @@
 "Maya" = "Maya";
 
 /* Maya */
+"Maya fee" = "Maya fee";
+
+/* Maya */
 "Maya Protocol has received your transaction and is processing the swap." = "Maya Protocol has received your transaction and is processing the swap.";
 
 /* No comment provided by engineer. */
@@ -1667,7 +1684,7 @@
 "Members are free to leave the pool and can most often leave immediately." = "会员可以自由离开资金池, 并且通常可以立刻离开.";
 
 /* DashSpend */
-"Merchant has only %d cards available" = "Merchant has only %d cards available";
+"Merchant has only %d cards available" = "商家只有 %d 卡片可用";
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "开启位置服务能获得更好的商户搜索效果.";
@@ -1724,7 +1741,7 @@
 "Moved to Address" = "移动至地址";
 
 /* DashSpend */
-"Multiple" = "Multiple";
+"Multiple" = "多张";
 
 /* CoinJoin */
 "Multiple hours" = "多小时";
@@ -1787,7 +1804,7 @@
 "No coins found" = "No coins found";
 
 /* local currency empty state */
-"No matches for \"%@\"" = "No matches for \"%@\"";
+"No matches for \"%@\"" = "没有与 \"%@\" 匹配的记录";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "没有支付方式";
@@ -1892,7 +1909,7 @@
 "Order preview" = "Order preview";
 
 /* DashSpend */
-"Original Price" = "Original Price";
+"Original Price" = "原价";
 
 /* No comment provided by engineer. */
 "Owner Address" = "所有者地址";
@@ -2123,7 +2140,7 @@
 "Purchase Failed" = "购买失败";
 
 /* DashSpend */
-"Quantity" = "Quantity";
+"Quantity" = "数量";
 
 /* No comment provided by engineer. */
 "Quick Receive" = "快速接收";
@@ -2147,7 +2164,7 @@
 "Receive" = "接收";
 
 /* Maya */
-"Receive amount" = "Receive amount";
+"Receive amount" = "接收金额";
 
 /* Coinbase Entry Point */
 "Receive directly into Coinbase" = "直接在Coinbase上收款";
@@ -2339,7 +2356,7 @@
 "Security Level" = "安全级别";
 
 /* DashSpend */
-"See card details" = "See card details";
+"See card details" = "查看礼品卡详情";
 
 /* No comment provided by engineer. */
 "See how to use this gift card" = "查看如何使用礼品卡";
@@ -2533,7 +2550,7 @@
 "Simplify your crypto taxes" = "简化您的加密数字货币税务";
 
 /* DashSpend */
-"Single" = "Single";
+"Single" = "一张";
 
 /* No comment provided by engineer. */
 "Skip" = "跳过";
@@ -2599,7 +2616,7 @@
 "Support" = "帮助支持";
 
 /* Dash Portal */
-"Swap Dash · No account needed" = "Swap Dash · No account needed";
+"Swap Dash · No account needed" = "兑换 Dash · 无需账号";
 
 /* Maya/SwapKit order preview */
 "Swap fee" = "Swap fee";
@@ -2715,7 +2732,7 @@
 "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "第一个商家可以直接接受 Dash. 其他商家则接受礼品卡, 而您只需两次点击就能用 Dash 购买与订单金额完全相符的礼品卡.";
 
 /* CSV Export */
-"The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
+"The full transaction history will be exported as a CSV file" = "完整的交易历史记录将导出为 CSV 文件";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "您选择的图片将匿名上传到 Imgur.";
@@ -2906,7 +2923,7 @@
 "Unable to get new QR code" = "未能获得新的QR码";
 
 /* DashSpend */
-"Unable to load merchant details. Please try again." = "Unable to load merchant details. Please try again.";
+"Unable to load merchant details. Please try again." = "无法载入商家详细信息. 请再试一次.";
 
 /* No comment provided by engineer. */
 "Unable to provide suggestions" = "无法提供建议";
@@ -2924,7 +2941,7 @@
 "Unable to verify your session. Please check your internet connection and try again." = "Unable to verify your session. Please check your internet connection and try again.";
 
 /* DashSpend */
-"Unavailable at this limit" = "Unavailable at this limit";
+"Unavailable at this limit" = "在此限制下不可用";
 
 /* Voting */
 "Unblock" = "解禁";
@@ -3104,7 +3121,7 @@
 "Voting keys" = "投票者密钥";
 
 /* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
+"Wait until the chain is fully synced before using CrowdNode." = "等待区块链同步完成后再使用 CrowdNode.";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "等待区块链完全同步, 我们便可以回顾您的交易历史.";
@@ -3114,6 +3131,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "等待钱包同步以完成此交易";
+
+/* Maya */
+"Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins." = "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.";
 
 /* Enter Address Screen */
 "Wallet Address" = "钱包地址";
@@ -3243,7 +3263,7 @@
 "You can authenticate with Touch ID for payments below" = "您可以使用指纹识别来认证下方交易";
 
 /* DashSpend */
-"You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
+"You can buy up to %@ in gift cards per order" = "每次下单您最多可以购买 %@ 张礼品卡";
 
 /* CrowdNode */
 "You can change how / when your reward earnings are paid to you." = "您可以更改向您支付奖励收入的方式 / 时间.";
@@ -3306,7 +3326,7 @@
 "You have to backup your passphrase in Dash Wallet" = "您必须在Dash钱包重备份您的密码";
 
 /* Backup */
-"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
+"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "您尚未备份您的助记词. 在移除此快捷方式前是否先立刻备份?";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "您必须输入密码才能进入Dash钱包";
@@ -3392,6 +3412,9 @@
 /* CrowdNode */
 "Your CrowdNode address has been validated, but verification is required." = "您的CrowdNode地址已经被确认, 但需要验证.";
 
+/* Maya */
+"Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.";
+
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
@@ -3403,6 +3426,9 @@
 
 /* Swap refund message — %@ is the provider name e.g. Maya */
 "Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
+
+/* Maya */
+"Your DASH was refunded by Maya Protocol." = "Your DASH was refunded by Maya Protocol.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "您的DashPay用户名已经可以使用了";

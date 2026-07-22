@@ -30,6 +30,7 @@ protocol GiftCardsDAO {
     func update(dto: GiftCard) async
     func updateCardDetails(txId: Data, number: String, pin: String?) async
     func updateBarcode(txId: Data, value: String, format: String) async
+    func updateRedeemUrl(txId: Data, url: String, challenge: String?) async
     func delete(byTxId txId: Data) async
     func all() async -> [GiftCard]
 }
@@ -39,6 +40,30 @@ protocol GiftCardsDAO {
 class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
     private var db: Connection { DatabaseConnection.shared.db }
     private var cache: [String: GiftCard] = [:]
+    // `cache` is read/written from several concurrent async contexts (DB continuations resume on a
+    // global queue, the details-screen ticker and loadGiftCard run in parallel). A plain Dictionary
+    // is not thread-safe, and concurrent mutation corrupts its storage — which crashed as
+    // "-[__NSTaggedDate count]: unrecognized selector" on garbage. Serialize all access with a lock.
+    private let cacheLock = NSLock()
+
+    private func cacheSet(_ value: GiftCard?, forKey key: String) {
+        cacheLock.lock()
+        cache[key] = value
+        cacheLock.unlock()
+    }
+
+    private func cacheRemoveAll() {
+        cacheLock.lock()
+        cache.removeAll()
+        cacheLock.unlock()
+    }
+
+    private func cacheValues() -> [GiftCard] {
+        cacheLock.lock()
+        defer { cacheLock.unlock() }
+        return Array(cache.values)
+    }
+
     @Published private var giftCardTxId: Data?
     private var allCardsSubject = CurrentValueSubject<[GiftCard], Never>([])
     
@@ -67,10 +92,11 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                                               GiftCard.barcodeValue <- dto.barcodeValue,
                                               GiftCard.barcodeFormat <- dto.barcodeFormat,
                                               GiftCard.note <- dto.note,
-                                              GiftCard.provider <- dto.provider)
+                                              GiftCard.provider <- dto.provider,
+                                              GiftCard.redeemUrlChallenge <- dto.redeemUrlChallenge)
             try await execute(insert)
             let key = dto.txId.hexEncodedString()
-            self.cache[key] = dto
+            cacheSet(dto, forKey: key)
             self.giftCardTxId = dto.txId
             updateAllCardsSubject()
         } catch {
@@ -84,7 +110,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
         do {
             let results: [GiftCard] = try await prepare(statement)
             let key = txId.hexEncodedString()
-            self.cache[key] = results.first
+            cacheSet(results.first, forKey: key)
             return results.first
         } catch {
             print(error)
@@ -122,10 +148,11 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                     barcodeValue: existingCard.barcodeValue,
                     barcodeFormat: existingCard.barcodeFormat,
                     note: nil,
-                    provider: existingCard.provider
+                    provider: existingCard.provider,
+                    redeemUrlChallenge: existingCard.redeemUrlChallenge
                 )
                 let key = txId.hexEncodedString()
-                cache[key] = updatedCard
+                cacheSet(updatedCard, forKey: key)
                 self.giftCardTxId = txId
                 updateAllCardsSubject()
             }
@@ -153,10 +180,42 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                     barcodeValue: value,
                     barcodeFormat: format,
                     note: existingCard.note,
-                    provider: existingCard.provider
+                    provider: existingCard.provider,
+                    redeemUrlChallenge: existingCard.redeemUrlChallenge
                 )
                 let key = txId.hexEncodedString()
-                cache[key] = updatedCard
+                cacheSet(updatedCard, forKey: key)
+                self.giftCardTxId = txId
+                updateAllCardsSubject()
+            }
+        } catch {
+            print(error)
+        }
+    }
+
+    func updateRedeemUrl(txId: Data, url: String, challenge: String?) async {
+        do {
+            let update = GiftCard.table.filter(GiftCard.txId == txId)
+                .update(GiftCard.number <- url,
+                        GiftCard.redeemUrlChallenge <- challenge)
+            try await execute(update)
+
+            if let existingCard = await get(byTxId: txId) {
+                let updatedCard = GiftCard(
+                    txId: existingCard.txId,
+                    merchantName: existingCard.merchantName,
+                    merchantUrl: existingCard.merchantUrl,
+                    price: existingCard.price,
+                    number: url,
+                    pin: existingCard.pin,
+                    barcodeValue: existingCard.barcodeValue,
+                    barcodeFormat: existingCard.barcodeFormat,
+                    note: existingCard.note,
+                    provider: existingCard.provider,
+                    redeemUrlChallenge: challenge
+                )
+                let key = txId.hexEncodedString()
+                cacheSet(updatedCard, forKey: key)
                 self.giftCardTxId = txId
                 updateAllCardsSubject()
             }
@@ -167,7 +226,7 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
     
     func delete(byTxId txId: Data) async {
         let key = txId.hexEncodedString()
-        self.cache[key] = nil
+        cacheSet(nil, forKey: key)
         self.giftCardTxId = txId
         
         do {
@@ -191,16 +250,16 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
     
     private func loadAllCards() async {
         let cards = await all()
-        cache.removeAll()
+        cacheRemoveAll()
         for card in cards {
             let key = card.txId.hexEncodedString()
-            cache[key] = card
+            cacheSet(card, forKey: key)
         }
         updateAllCardsSubject()
     }
     
     private func updateAllCardsSubject() {
-        let allCards = Array(cache.values)
+        let allCards = cacheValues()
         allCardsSubject.send(allCards)
     }
 }

@@ -10,6 +10,9 @@
 /* Maya */
 "%@ address" = "%@ address";
 
+/* Maya */
+"%@ address is not valid" = "%@ address is not valid";
+
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
 
@@ -160,8 +163,7 @@
 /* No comment provided by engineer. */
 "Address" = "Διεύθυνση";
 
-/* Maya
-   SwapKit */
+/* Maya */
 "Address validation unavailable — please check your connection" = "Address validation unavailable — please check your connection";
 
 /* CoinJoin */
@@ -189,7 +191,10 @@
 "All" = "Όλα";
 
 /* CSV Export */
-"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
+"All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "Όλες οι πληρωμές θα θεωρούνται έξοδα και όλες οι εισερχόμενες συναλλαγές θα θεωρούνται έσοδα.\nΟ κάτοχος αυτού του πορτοφολιού είναι υπεύθυνος για την πραγματοποίηση τυχόν προσαρμογών της βάσης κοστολόγησης στο φορολογικό σύστημα που έχει επιλέξει.";
+
+/* Shortcut selection empty state */
+"All shortcuts are already in use" = "All shortcuts are already in use";
 
 /* CrowdNode */
 "All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "Όλες οι μεταφορές από και προς το CrowdNode από αυτή τη συσκευή θα πραγματοποιούνται με την παρακάτω διεύθυνση Dash από αυτή τη συσκευή.";
@@ -300,10 +305,10 @@
 "Autohide Balance" = "Αυτόματη απόκρυψη Υπολοίπου";
 
 /* Backup */
-"Back Up Now" = "Back Up Now";
+"Back Up Now" = "Backup τώρα";
 
 /* Backup */
-"Back Up Your Wallet" = "Back Up Your Wallet";
+"Back Up Your Wallet" = "Backup πορτοφολιού";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "Αντίγραφο ασφαλείας";
@@ -480,6 +485,9 @@
 /* No comment provided by engineer. */
 "Clear" = "Εκκαθάριση";
 
+/* Maya */
+"Clear address" = "Clear address";
+
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Εκκαθάριση εμπίστου κόμβου;";
 
@@ -561,7 +569,7 @@
 "Contact Coinbase Support" = "Επικοινωνία με την υποστήριξη της Coinbase";
 
 /* Maya */
-"Contact Maya Support" = "Contact Maya Support";
+"Contact Maya Support" = "Επικοινωνήστε με την υποστήριξη της Maya";
 
 /* No comment provided by engineer. */
 "Contact Request Pending" = "Εκκρεμεί Αίτημα Επαφής";
@@ -590,11 +598,11 @@
 /* Coinbase Entry Point */
 "Convert Crypto" = "Μετατροπή Κρυπτονομισμάτων";
 
-/* Swap portal */
-"Convert Dash" = "Convert Dash";
+/* Maya Portal */
+"Convert Dash" = "Μετατροπή Dash";
 
 /* Maya Portal */
-"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet";
+"Convert Dash from Dash Wallet to any crypto that is supported on Maya and send it to any wallet" = "Μετατρέψτε τα Dash από το πορτοφόλι σε οποιοδήποτε κρυπτονόμισμα υποστηρίζεται από το Maya και στείλτε τα σε οποιοδήποτε πορτοφόλι";
 
 /* No comment provided by engineer. */
 "Copied" = "Αντιγράφηκε";
@@ -680,6 +688,9 @@
 
 /* CrowdNode */
 "CrowdNode benefits" = "Πλεονεκτήματα του CrowdNode";
+
+/* CrowdNode */
+"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
 
 /* CrowdNode Portal */
 "CrowdNode Support" = "Υποστήριξη CrowdNode";
@@ -867,7 +878,7 @@
 "Earlier" = "Νωρίτερα";
 
 /* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
+"Easily stake Dash and earn passive income with a few simple clicks" = "Συμμετέχετε εύκολα στο staking του Dash και κερδίστε παθητικό εισόδημα με μερικά απλά κλικ";
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "Κάντε εύκολα Stake το Dash και κερδίστε παθητικό εισόδημα με μερικά απλά κλικ.";
@@ -1023,13 +1034,13 @@
 "Find a user on the Dash Network" = "Βρείτε έναν χρήστη στο Δίκτυο του Dash";
 
 /* Explore Dash */
-"Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
+"Find ATMs where you can buy or sell Dash" = "Βρείτε ΑΤΜ όπου μπορείτε να αγοράσετε ή να πουλήσετε Dash";
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Βρείτε ΑΤΜ όπου μπορείτε να αγοράσετε ή να πουλήσετε Dash.";
 
 /* Explore Dash */
-"Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
+"Find merchants that accept Dash payments" = "Βρείτε καταστήματα που δέχονται πληρωμές με Dash";
 
 /* No comment provided by engineer. */
 "Find merchants that accept Dash payments." = "Βρείτε εμπόρους που δέχονται πληρωμές σε Dash.";
@@ -1082,8 +1093,8 @@
 /* from Dash Wallet */
 "from Dash Wallet" = "από το Dash Wallet";
 
-/* Swap portal */
-"From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
+/* Maya Portal */
+"From Dash Wallet to any crypto" = "Από το πορτοφόλι Dash σε οποιοδήποτε κρυπτονόμισμα";
 
 /* Uphold Entry Point */
 "From Uphold to Dash Wallet" = "Από την Uphold στο Dash Wallet";
@@ -1130,7 +1141,7 @@
 /* No comment provided by engineer. */
 "Gift card" = "Δωροκάρτα";
 
-/* No comment provided by engineer. */
+/* DashSpend */
 "Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
 
 /* DashSpend */
@@ -1162,6 +1173,9 @@
 
 /* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "Χορηγήστε δικαιώματα GPS ώστε να μπορούμε να σας δείξουμε τοποθεσίες κοντά σας.";
+
+/* Maya */
+"halted" = "halted";
 
 /* Voting */
 "Has blocked votes" = "Έχει αποκλεισμένες ψήφους";
@@ -1540,7 +1554,7 @@
 "Loading gift card options..." = "Loading gift card options...";
 
 /* Maya */
-"Loading..." = "Loading...";
+"Loading..." = "Φορτώνει...";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "Τοπικό νόμισμα";
@@ -1558,7 +1572,7 @@
 "Log in" = "Είσοδος";
 
 /* Maya */
-"Log In" = "Log In";
+"Log In" = "Είσοδος";
 
 /* CrowdNode WebView */
 "Log in to CrowdNode" = "Συνδεθείτε στο CrowdNode";
@@ -1653,6 +1667,9 @@
 /* Dash Portal
    Maya Portal */
 "Maya" = "Maya";
+
+/* Maya */
+"Maya fee" = "Maya fee";
 
 /* Maya */
 "Maya Protocol has received your transaction and is processing the swap." = "Maya Protocol has received your transaction and is processing the swap.";
@@ -1787,7 +1804,7 @@
 "No coins found" = "No coins found";
 
 /* local currency empty state */
-"No matches for \"%@\"" = "No matches for \"%@\"";
+"No matches for \"%@\"" = "Δεν βρέθηκαν αποτελέσματα για \"%@\"";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "Δεν υπάρχουν τρόποι πληρωμής";
@@ -2147,7 +2164,7 @@
 "Receive" = "Λήψη";
 
 /* Maya */
-"Receive amount" = "Receive amount";
+"Receive amount" = "Ποσό λήψης";
 
 /* Coinbase Entry Point */
 "Receive directly into Coinbase" = "Λάβετε απευθείας στην Coinbase";
@@ -2339,7 +2356,7 @@
 "Security Level" = "Επίπεδο Ασφάλειας";
 
 /* DashSpend */
-"See card details" = "See card details";
+"See card details" = "Δείτε τις λεπτομέρειες της κάρτας";
 
 /* No comment provided by engineer. */
 "See how to use this gift card" = "Δείτε πώς να χρησιμοποιήσετε αυτήν την δωροκάρτα";
@@ -2715,7 +2732,7 @@
 "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "Ο πρώτος δέχεται απευθείας Dash. Οι άλλοι δέχονται δωροκάρτες που μπορείτε να αγοράσετε με Dash για το ακριβές ποσό της αγοράς σας με δύο πατήματα.";
 
 /* CSV Export */
-"The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
+"The full transaction history will be exported as a CSV file" = "Το πλήρες ιστορικό συναλλαγών θα εξαχθεί ως αρχείο CSV";
 
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "Η εικόνα που επιλέγετε θα μεταφορτωθεί στο Imgur ανώνυμα.";
@@ -3104,7 +3121,7 @@
 "Voting keys" = "Κλειδιά ψηφοφορίας";
 
 /* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
+"Wait until the chain is fully synced before using CrowdNode." = "Περιμένετε μέχρι να ολοκληρωθεί ο συγχρονισμός του blockchain πριν να χρησιμοποιήσετε το CrowdNode.";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "Περιμένετε μέχρι να συγχρονιστεί πλήρως το blockchain, ώστε να μπορέσουμε να επανεξετάσουμε το ιστορικό των συναλλαγών σας.";
@@ -3114,6 +3131,9 @@
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Περιμένετε μέχρι να συγχρονιστεί το πορτοφόλι για να ολοκληρώσετε τη συναλλαγή";
+
+/* Maya */
+"Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins." = "Waiting for block confirmation. Maya swaps require one Dash block (~2–5 min) before the swap begins.";
 
 /* Enter Address Screen */
 "Wallet Address" = "Διεύθυνση πορτοφόλιού";
@@ -3306,7 +3326,7 @@
 "You have to backup your passphrase in Dash Wallet" = "Πρέπει να δημιουργήσετε αντίγραφο ασφαλείας της φράση πρόσβασης στο Dash Wallet";
 
 /* Backup */
-"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
+"You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "Δεν έχετε δημιουργήσει ακόμα αντίγραφο ασφαλείας της φράσης ανάκτησης. Θέλετε να δημιουργήσετε αντίγραφο ασφαλείας τώρα, πριν διαγράψετε αυτή τη συντόμευση;";
 
 /* No comment provided by engineer. */
 "You must enter your PIN in order to enter Dash Wallet" = "Πρέπει να εισάγετε το PIN σας για να μπείτε στο Dash Πορτοφόλι";
@@ -3392,6 +3412,9 @@
 /* CrowdNode */
 "Your CrowdNode address has been validated, but verification is required." = "Η διεύθυνση CrowdNode έχει επικυρωθεί, αλλά απαιτείται επαλήθευση.";
 
+/* Maya */
+"Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.";
+
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
@@ -3403,6 +3426,9 @@
 
 /* Swap refund message — %@ is the provider name e.g. Maya */
 "Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
+
+/* Maya */
+"Your DASH was refunded by Maya Protocol." = "Your DASH was refunded by Maya Protocol.";
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "Το DashPay Username σας είναι έτοιμο για χρήση";
