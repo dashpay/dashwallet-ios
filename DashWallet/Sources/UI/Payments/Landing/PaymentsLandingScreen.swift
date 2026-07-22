@@ -30,8 +30,9 @@ struct PaymentsLandingScreen: View {
     /// balance as source on the balance-row send sheet, un-pinned (full
     /// From picker) on the full landing.
     var embeddedSendViewModel: SendViewModel
-    var onContinueCore: (String, UInt64) -> Void = { _, _ in }
-    var onSendCompleted: () -> Void = {}
+    /// The Send tab's address is valid → advance to the amount step. The host
+    /// pushes `ExternalSendAmountScreen` onto the landing's navigation stack.
+    var onSendContinue: () -> Void = {}
     /// False for the balance-row receive/send sheets: their grabber + hero
     /// selector are the top chrome — no X close button or title row.
     var showsHeader: Bool = true
@@ -87,8 +88,7 @@ struct PaymentsLandingScreen: View {
                     viewModel: embeddedSendViewModel,
                     onClose: onClose,
                     onScanQR: onScanQR,
-                    onContinueCore: onContinueCore,
-                    onSendCompleted: onSendCompleted,
+                    onContinue: onSendContinue,
                     showsHeader: false)
             }
         }

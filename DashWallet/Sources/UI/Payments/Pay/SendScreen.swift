@@ -2,12 +2,13 @@
 //  SendScreen.swift
 //  DashWallet
 //
-//  External-send form: recipient address (typed / pasted / scanned) decides
-//  the destination type (Transparent L1 / Platform / Shielded); the From
-//  picker chooses which balance funds it; the amount is entered inline on
-//  the numeric keypad. Core → Core continues into the classic payment
-//  processor (real fee math + its own confirm); every other route confirms
-//  in `SendConfirmSheet` and executes via `ShieldedTransferCoordinator`.
+//  External-send flow, split across two steps. Step one (`SendScreen`) is
+//  address only: the recipient address (typed / pasted / scanned) decides the
+//  destination type (Transparent L1 / Platform / Shielded); Continue advances
+//  to step two. Step two (`ExternalSendAmountScreen`) is the From picker plus
+//  the amount keypad — Core → Core continues into the classic payment
+//  processor (real fee math + its own confirm); every other route confirms in
+//  `SendConfirmSheet` and executes via `ShieldedTransferCoordinator`.
 //
 
 import SwiftUI
@@ -15,24 +16,19 @@ import DashUIKit
 import SwiftDashSDK
 import UIKit
 
+// MARK: - Step 1: address
+
 struct SendScreen: View {
     @ObservedObject var viewModel: SendViewModel
     var onClose: () -> Void
     var onScanQR: () -> Void
-    /// Core → Core: hand (address, amount in duffs) to the hosting
-    /// controller, which routes through the L1 payment processor.
-    var onContinueCore: (String, UInt64) -> Void
-    /// A non-core route finished successfully (confirm sheet's Done).
-    var onSendCompleted: () -> Void
+    /// The entered address is valid → advance to the amount step. The host
+    /// pushes `ExternalSendAmountScreen` onto the same navigation stack.
+    var onContinue: () -> Void
     /// False when embedded under a host that renders its own chrome
     /// (the balance-row send sheet) — hides the X + title header.
     var showsHeader: Bool = true
 
-    @State private var showConfirm = false
-    /// True while the user is deliberately editing an already-valid address
-    /// (they tapped the locked card). A valid address otherwise renders
-    /// locked-in — compact, single line — while the amount is entered.
-    @State private var isEditingAddress = false
     @FocusState private var addressFieldFocused: Bool
 
     var body: some View {
@@ -54,77 +50,26 @@ struct SendScreen: View {
                     }
 
                     scanRow
-
-                    if viewModel.destination != nil {
-                        sourceCards
-
-                        if viewModel.isBlockedBySync {
-                            SyncGateNote()
-                                .padding(.horizontal, 20)
-                        }
-
-                        TransferAmountRow(
-                            unit: $viewModel.unit,
-                            amountText: viewModel.amountText,
-                            secondaryText: viewModel.secondaryDisplayString,
-                            currencySymbol: viewModel.primaryCurrencySymbol,
-                            fiatCurrencyCode: viewModel.fiatCurrencyCode,
-                            onMax: { viewModel.fillMaxFromWallet() })
-                            .padding(.horizontal, 20)
-                            .padding(.top, 6)
-                    }
                 }
                 .padding(.bottom, 8)
             }
             .scrollBounceBehavior(.basedOnSize)
             .scrollDismissesKeyboard(.interactively)
 
-            NumericKeyboardView(
-                value: keypadBinding,
-                showDecimalSeparator: true,
-                actionButtonText: NSLocalizedString("Continue", comment: ""),
-                actionEnabled: viewModel.canContinue,
-                inProgress: false,
-                actionHandler: continueAction)
+            DashButton(
+                text: NSLocalizedString("Continue", comment: ""),
+                style: .filled,
+                stretch: true,
+                isEnabled: viewModel.canAdvanceToAmount,
+                action: {
+                    addressFieldFocused = false
+                    onContinue()
+                })
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
-        .sheet(isPresented: $showConfirm) {
-            if let route = viewModel.route, route != .coreToCore {
-                SendConfirmSheet(
-                    route: route,
-                    destinationAddress: viewModel.trimmedAddress,
-                    destinationRaw43: shieldedRecipientRaw43,
-                    dashDuffs: viewModel.dashDuffs,
-                    creditsAmount: viewModel.creditsPreview,
-                    fiatText: viewModel.fiatAmountString,
-                    withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
-                    isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
-                    onCancel: { showConfirm = false },
-                    onCompleted: {
-                        showConfirm = false
-                        onSendCompleted()
-                    })
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.hidden)
-            }
-        }
-    }
-
-    private var shieldedRecipientRaw43: Data? {
-        if case .shielded(let raw43) = viewModel.destination { return raw43 }
-        return nil
-    }
-
-    private func continueAction() {
-        guard let route = viewModel.route else { return }
-        if route == .coreToCore {
-            onContinueCore(viewModel.trimmedAddress, viewModel.dashDuffsUnsigned)
-        } else {
-            showConfirm = true
-        }
     }
 
     // MARK: - Header
@@ -148,14 +93,6 @@ struct SendScreen: View {
     }
 
     // MARK: - Address
-
-    /// A valid address locks in as a compact single-line card while the
-    /// amount is entered; tapping it reopens the editable field. The lock
-    /// waits for focus to leave the field (first keypad tap, scroll, or
-    /// keyboard dismissal) so the field never vanishes mid-typing.
-    private var isAddressLocked: Bool {
-        viewModel.destination != nil && !isEditingAddress && !addressFieldFocused
-    }
 
     private var addressField: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -324,6 +261,57 @@ struct SendScreen: View {
         }
         .padding(.horizontal, 20)
     }
+}
+
+// MARK: - Step 2: amount
+
+/// The amount step for the split external-send flow. The address is already
+/// chosen (locked, read-only) — this screen carries the From picker, the
+/// sync gate, and the amount keypad, plus the balance/affordability
+/// validations. Continue routes exactly as the old single-screen form did:
+/// Core → Core into the L1 payment processor, everything else into
+/// `SendConfirmSheet`.
+struct SendSourceScreen: View {
+    @ObservedObject var viewModel: SendViewModel
+    /// Pop back to the address step.
+    var onBack: () -> Void
+    /// A valid source is chosen → advance to the amount step.
+    var onContinue: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            SendStepHeader(onBack: onBack)
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+
+            ScrollView {
+                VStack(spacing: 14) {
+                    SendAddressSummary(viewModel: viewModel, onEdit: onBack)
+                        .padding(.top, 12)
+
+                    sourceCards
+
+                    if viewModel.isBlockedBySync {
+                        SyncGateNote()
+                            .padding(.horizontal, 20)
+                    }
+                }
+                .padding(.bottom, 8)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+
+            DashButton(
+                text: NSLocalizedString("Continue", comment: ""),
+                style: .filled,
+                stretch: true,
+                isEnabled: viewModel.route != nil && !viewModel.isBlockedBySync,
+                action: onContinue)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+        }
+        .background(Color.primaryBackground)
+        .navigationBarHidden(true)
+    }
 
     // MARK: - From picker
 
@@ -345,49 +333,271 @@ struct SendScreen: View {
     }
 
     private func sourceRow(_ network: ChainNetwork, showsRadio: Bool = true) -> some View {
-        let icon: String
-        let title: String
         let balance: String
         switch network {
-        case .core:
-            icon = "d.circle.fill"
-            title = NSLocalizedString("Transparent", comment: "Balance breakdown")
-            balance = viewModel.coreBalanceFormatted
-        case .platform:
-            icon = "creditcard.fill"
-            title = NSLocalizedString("Platform", comment: "Dash Platform chain")
-            balance = viewModel.platformCreditsFormatted
-        case .shielded:
-            icon = "shield.fill"
-            title = NSLocalizedString("Shielded", comment: "")
-            balance = viewModel.shieldedBalanceFormatted
+        case .core: balance = viewModel.coreBalanceFormatted
+        case .platform: balance = viewModel.platformCreditsFormatted
+        case .shielded: balance = viewModel.shieldedBalanceFormatted
         }
         return TransferSourceRow(
-            iconSystemName: icon,
+            iconSystemName: sourceIconName(network),
             caption: NSLocalizedString("From", comment: ""),
-            title: title,
+            title: sourceTitle(network),
             balanceTrailing: TransferSourceRow.dashBalanceTrailing(balance),
             selected: viewModel.source == network,
             showsRadio: showsRadio,
             action: { viewModel.source = network })
     }
+}
 
-    // MARK: - Helpers
+// MARK: - Step 3: amount
+
+/// The final step of the split external-send flow: the address and source are
+/// already chosen (both shown read-only), leaving only the amount keypad and
+/// the balance/affordability validation. Continue routes exactly as the old
+/// single-screen form did — Core → Core into the L1 payment processor,
+/// everything else into `SendConfirmSheet`.
+struct ExternalSendAmountScreen: View {
+    @ObservedObject var viewModel: SendViewModel
+    /// Pop back to the source step.
+    var onBack: () -> Void
+    /// Core → Core: hand (address, amount in duffs) to the hosting
+    /// controller, which routes through the L1 payment processor.
+    var onContinueCore: (String, UInt64) -> Void
+    /// A non-core route finished successfully (confirm sheet's Done).
+    var onSendCompleted: () -> Void
+
+    @State private var showConfirm = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            SendStepHeader(onBack: onBack)
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+
+            ScrollView {
+                VStack(spacing: 14) {
+                    SendAddressSummary(viewModel: viewModel, onEdit: onBack)
+                        .padding(.top, 12)
+
+                    fromSummary
+
+                    TransferAmountRow(
+                        unit: $viewModel.unit,
+                        amountText: viewModel.amountText,
+                        secondaryText: viewModel.secondaryDisplayString,
+                        currencySymbol: viewModel.primaryCurrencySymbol,
+                        fiatCurrencyCode: viewModel.fiatCurrencyCode,
+                        onMax: { viewModel.fillMaxFromWallet() })
+                        .padding(.horizontal, 20)
+                        .padding(.top, 6)
+                }
+                .padding(.bottom, 8)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+
+            NumericKeyboardView(
+                value: keypadBinding,
+                showDecimalSeparator: true,
+                actionButtonText: NSLocalizedString("Continue", comment: ""),
+                actionEnabled: viewModel.canContinue,
+                inProgress: false,
+                actionHandler: continueAction)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+        }
+        .background(Color.primaryBackground)
+        .navigationBarHidden(true)
+        .sheet(isPresented: $showConfirm) {
+            if let route = viewModel.route, route != .coreToCore {
+                SendConfirmSheet(
+                    route: route,
+                    destinationAddress: viewModel.trimmedAddress,
+                    destinationRaw43: shieldedRecipientRaw43,
+                    dashDuffs: viewModel.dashDuffs,
+                    creditsAmount: viewModel.creditsPreview,
+                    fiatText: viewModel.fiatAmountString,
+                    withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
+                    isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
+                    onCancel: { showConfirm = false },
+                    onCompleted: {
+                        showConfirm = false
+                        onSendCompleted()
+                    })
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.hidden)
+            }
+        }
+    }
+
+    private var shieldedRecipientRaw43: Data? {
+        if case .shielded(let raw43) = viewModel.destination { return raw43 }
+        return nil
+    }
+
+    private func continueAction() {
+        guard let route = viewModel.route else { return }
+        if route == .coreToCore {
+            onContinueCore(viewModel.trimmedAddress, viewModel.dashDuffsUnsigned)
+        } else {
+            showConfirm = true
+        }
+    }
+
+    /// The source picked on the previous step, read-only. Tapping goes back.
+    private var fromSummary: some View {
+        Button(action: onBack) {
+            HStack(spacing: 10) {
+                Image(systemName: sourceIconName(viewModel.source))
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.dashBlue)
+                    .frame(width: 24)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(NSLocalizedString("From", comment: ""))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text(sourceTitle(viewModel.source))
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(.primaryText)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity)
+            .background(Color.secondaryBackground)
+            .cornerRadius(10)
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 20)
+    }
+
+    // MARK: - Keypad
 
     private var keypadBinding: Binding<String> {
         Binding(
             get: { viewModel.amountText == "0" ? "" : viewModel.amountText },
             set: { newValue in
-                // First keypad tap moves the user from address entry to
-                // amount entry: drop the field's focus so a valid address
-                // locks in (and the system keyboard leaves).
-                addressFieldFocused = false
                 if newValue.isEmpty {
                     viewModel.amountText = "0"
                 } else {
                     viewModel.amountText = newValue
                 }
             })
+    }
+}
+
+// MARK: - Shared step chrome
+
+/// Back-chevron + "Send" title, shared by the source and amount steps.
+private struct SendStepHeader: View {
+    var onBack: () -> Void
+
+    var body: some View {
+        HStack {
+            Button(action: onBack) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .frame(width: 36, height: 36)
+                    .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
+            }
+            Spacer()
+            Text(NSLocalizedString("Send", comment: ""))
+                .font(.headline)
+                .foregroundColor(.primaryText)
+            Spacer()
+            Color.clear.frame(width: 36, height: 36)
+        }
+    }
+}
+
+/// The chosen destination address, read-only. Tapping (`onEdit`) pops back to
+/// the address step. Shared by the source and amount steps.
+private struct SendAddressSummary: View {
+    @ObservedObject var viewModel: SendViewModel
+    var onEdit: () -> Void
+
+    var body: some View {
+        Button(action: onEdit) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(NSLocalizedString("Address", comment: ""))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                    if let destination = viewModel.destination {
+                        destinationBadge(destination)
+                    }
+                }
+                HStack(spacing: 8) {
+                    Text(truncateMiddle(viewModel.trimmedAddress, visible: 10))
+                        .font(.system(.footnote, design: .monospaced))
+                        .foregroundColor(.primaryText)
+                        .lineLimit(1)
+                    Spacer()
+                    Image(systemName: "pencil")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity)
+                .background(Color.secondaryBackground)
+                .cornerRadius(10)
+            }
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 20)
+    }
+}
+
+// MARK: - Shared helpers
+
+private func sourceIconName(_ network: ChainNetwork) -> String {
+    switch network {
+    case .core: return "d.circle.fill"
+    case .platform: return "creditcard.fill"
+    case .shielded: return "shield.fill"
+    }
+}
+
+private func sourceTitle(_ network: ChainNetwork) -> String {
+    switch network {
+    case .core: return NSLocalizedString("Transparent", comment: "Balance breakdown")
+    case .platform: return NSLocalizedString("Platform", comment: "Dash Platform chain")
+    case .shielded: return NSLocalizedString("Shielded", comment: "")
+    }
+}
+
+private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {
+    HStack(spacing: 4) {
+        Image(systemName: destinationIconName(destination))
+            .font(.system(size: 10, weight: .semibold))
+        Text(destinationTitle(destination))
+            .font(.caption2.weight(.semibold))
+    }
+    .foregroundColor(.dashBlue)
+    .padding(.horizontal, 8)
+    .padding(.vertical, 3)
+    .background(Color.dashBlue.opacity(0.1))
+    .clipShape(Capsule())
+}
+
+private func destinationIconName(_ destination: SendViewModel.DestinationKind) -> String {
+    switch destination {
+    case .core: return "d.circle.fill"
+    case .platform: return "creditcard.fill"
+    case .shielded: return "shield.fill"
+    }
+}
+
+private func destinationTitle(_ destination: SendViewModel.DestinationKind) -> String {
+    switch destination {
+    case .core: return NSLocalizedString("Transparent address", comment: "Send screen destination type")
+    case .platform: return NSLocalizedString("Platform address", comment: "Send screen destination type")
+    case .shielded: return NSLocalizedString("Shielded address", comment: "Send screen destination type")
     }
 }
 

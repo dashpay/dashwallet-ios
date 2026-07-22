@@ -474,6 +474,15 @@ final class SendViewModel: ObservableObject {
         }
     }
 
+    /// Gate for advancing from the address step to the amount step: the
+    /// entered address decodes to a known destination and — on the balance-row
+    /// send sheet — the pinned source can actually pay that destination type.
+    /// The amount, balance, and sync checks live on the amount step
+    /// (`canContinue`).
+    var canAdvanceToAmount: Bool {
+        destination != nil && !pinnedSourceMismatch
+    }
+
     var canContinue: Bool {
         guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
         switch route {
