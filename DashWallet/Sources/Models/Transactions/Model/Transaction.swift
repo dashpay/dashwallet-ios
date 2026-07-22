@@ -57,6 +57,9 @@ class Transaction: TransactionDataItem, Identifiable {
         let fee: UInt64?
         /// 0=mempool, 1=instantSend, 2=inBlock, 3=chainLocked.
         let context: UInt32
+        /// Block height the tx was mined at (0 when unconfirmed). Drives
+        /// coinbase-reward maturity (locked until COINBASE_MATURITY deep).
+        let blockHeight: UInt32
         /// The Rust transaction router's typed discriminant
         /// (`SwiftDashSDK.TransactionTypeKind` raw value; 0xFF = pre-feature
         /// sentinel for rows not yet re-persisted by SPV).
@@ -82,6 +85,7 @@ class Transaction: TransactionDataItem, Identifiable {
             netAmount = p.netAmount
             fee = p.fee
             context = p.context
+            blockHeight = p.blockHeight
             typeKind = p.transactionTypeKind
             outputAddresses = Array(Set(p.outputs.map { $0.address }.filter { !$0.isEmpty }))
             inputAddresses = Array(Set(p.inputs.map { $0.address }.filter { !$0.isEmpty }))
@@ -100,6 +104,8 @@ class Transaction: TransactionDataItem, Identifiable {
             self.netAmount = netAmount
             self.fee = fee
             self.context = context
+            // Synthetics have no mined block yet (demo rows / just-broadcast sends).
+            blockHeight = 0
             // Synthetics are only ever demo rows or our own standard sends.
             typeKind = TransactionTypeKind.standard.rawValue
             outputAddresses = []
@@ -448,8 +454,29 @@ class Transaction: TransactionDataItem, Identifiable {
         // "ok" — instant-send is a strong-enough confirmation for
         // home-screen UX (matches the legacy DSTransaction codepath
         // which exited `.processing` once `instantSendReceived` flipped).
-        snapshot.context == 0 ? .processing : .ok
+        if snapshot.context == 0 { return .processing }
+        // Coinbase rewards are unspendable until COINBASE_MATURITY blocks sit
+        // on top of the minting block; surface that window as `.locked`
+        // (mirrors the legacy DSTransaction.getBlocksToMaturity rule).
+        if isCoinbaseTransaction, isCoinbaseRewardLocked { return .locked }
+        return .ok
     }()
+
+    /// Coinbase maturity in blocks — a coinbase output becomes spendable only
+    /// once this many blocks sit on top of the one that minted it (network rule).
+    private static let coinbaseMaturity: UInt32 = 100
+
+    /// A confirmed coinbase reward that hasn't reached maturity yet. False when
+    /// the block height or chain tip is unknown, so an unresolved state never
+    /// gets stuck showing "Locked"; recomputed each time the home feed rebuilds
+    /// its `Transaction` wrappers, so it clears once the reward matures.
+    private var isCoinbaseRewardLocked: Bool {
+        let height = snapshot.blockHeight
+        guard height > 0 else { return false }
+        let tip = SwiftDashSDKSPVCoordinator.shared.tipHeight
+        guard tip >= height else { return false }
+        return (tip - height) < Self.coinbaseMaturity
+    }
 
     /// Display-order txid hex from wire-order bytes (block explorers, copy-to-
     /// pasteboard convention). The wire-order `Data` itself stays the
