@@ -129,7 +129,7 @@ extension MerchantLogoPlaceholder {
         let fontSize = fittedFontSize(words: words, side: side, usableFraction: usableFraction)
 
         let renderer = UIGraphicsImageRenderer(size: size)
-        return renderer.image { ctx in
+        return renderer.image { _ in
             let rect = CGRect(origin: .zero, size: size)
             let path = UIBezierPath(roundedRect: rect, cornerRadius: min(cornerRadius, side / 2))
             uiColor(for: merchantName).setFill()

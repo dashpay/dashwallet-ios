@@ -61,12 +61,6 @@ public class ExploreDatabaseSyncManager {
     var syncState: State
     var lastServerUpdateDate: Date { Date(timeIntervalSince1970: exploreDatabaseLastVersion) }
 
-    // Network-specific name for the downloaded archive only — the database itself always unzips to
-    // the single `explore.db`, so see `installedDatabaseNetwork` for the mainnet/testnet conflict.
-    private var networkSpecificFileName: String {
-        return currentNetworkName == "mainnet" ? "explore-mainnet" : "explore-testnet"
-    }
-
     private var currentNetworkName: String {
         return DWEnvironment.sharedInstance().currentChain.isMainnet() ? "mainnet" : "testnet"
     }
@@ -106,8 +100,18 @@ public class ExploreDatabaseSyncManager {
     private func syncIfNeeded() {
         syncState = .fetchingInfo
 
-        storageRef.getMetadata { [weak self] metadata, _ in
+        // Snapshot the network and its storage reference for the whole operation. `storageRef`
+        // and `currentNetworkName` are computed from the live chain, so a switch between the
+        // metadata fetch, the data fetch and the marker save would otherwise mix one archive's
+        // timestamp/checksum with another's bytes, or record the marker for a network whose
+        // archive was never extracted. Everything below uses this snapshot, and each async hop
+        // bails if the chain has moved on — the switch already scheduled its own syncIfNeeded.
+        let syncNetwork = currentNetworkName
+        let syncStorageRef = storageRef
+
+        syncStorageRef.getMetadata { [weak self] metadata, _ in
             guard let wSelf = self else { return }
+            guard syncNetwork == wSelf.currentNetworkName else { return }
 
             guard let metadata else {
                 wSelf.syncState = .error(Date(), nil)
@@ -128,16 +132,16 @@ public class ExploreDatabaseSyncManager {
             // regardless of saved version timestamp to avoid falling back to in-memory DB.
             if !localDatabaseExists {
                 DSLogger.log("ExploreDash: local explore.db missing, forcing cloud database download")
-                wSelf.downloadDatabase(metadata: metadata)
+                wSelf.downloadDatabase(metadata: metadata, network: syncNetwork, storageRef: syncStorageRef)
                 return
             }
 
             // The file on disk may belong to the other network (the chain was switched since it was
             // downloaded). Its version is tracked under that network's key, so the check below would
             // read as up to date and leave us serving the wrong network's merchants.
-            if wSelf.installedDatabaseNetwork != wSelf.currentNetworkName {
-                DSLogger.log("ExploreDash: explore.db belongs to \(wSelf.installedDatabaseNetwork ?? "an unknown network"), current network is \(wSelf.currentNetworkName) — forcing download")
-                wSelf.downloadDatabase(metadata: metadata)
+            if wSelf.installedDatabaseNetwork != syncNetwork {
+                DSLogger.log("ExploreDash: explore.db belongs to \(wSelf.installedDatabaseNetwork ?? "an unknown network"), current network is \(syncNetwork) — forcing download")
+                wSelf.downloadDatabase(metadata: metadata, network: syncNetwork, storageRef: syncStorageRef)
                 return
             }
 
@@ -146,7 +150,7 @@ public class ExploreDatabaseSyncManager {
                 return
             }
 
-            wSelf.downloadDatabase(metadata: metadata)
+            wSelf.downloadDatabase(metadata: metadata, network: syncNetwork, storageRef: syncStorageRef)
         }
     }
 
@@ -162,7 +166,7 @@ public class ExploreDatabaseSyncManager {
 }
 
 extension ExploreDatabaseSyncManager {
-    private func downloadDatabase(metadata: StorageMetadata) {
+    private func downloadDatabase(metadata: StorageMetadata, network: String, storageRef: StorageReference) {
         guard let timestamp = metadata.customMetadata?[timestampKey],
               let checksum = metadata.customMetadata?[checksumKey],
               let timeIntervalMillesecond = TimeInterval(timestamp) else {
@@ -171,8 +175,11 @@ extension ExploreDatabaseSyncManager {
         }
 
         syncState = .syncing
-        let urlToSave = getDocumentsDirectory().appendingPathComponent("\(networkSpecificFileName)-\(timestamp).zip")
+        let fileName = network == "mainnet" ? "explore-mainnet" : "explore-testnet"
+        let urlToSave = getDocumentsDirectory().appendingPathComponent("\(fileName)-\(timestamp).zip")
 
+        // The same snapshot's reference the metadata came from, so timestamp/checksum and bytes
+        // always describe one archive.
         storageRef.getData(maxSize: metadata.size) { [weak self] data, error in
             let date = Date()
             let now = date.timeIntervalSince1970
@@ -181,13 +188,22 @@ extension ExploreDatabaseSyncManager {
                 self?.syncState = .error(date, e)
             } else {
                 try? data?.write(to: urlToSave)
-                
+
                 Task {
                     do {
+                        // The chain may have switched while the archive downloaded. Unzipping now
+                        // would overwrite explore.db with the wrong network's data and save a
+                        // marker that hides the mismatch; the switch already scheduled a fresh
+                        // sync, so drop this one instead.
+                        guard network == self?.currentNetworkName else {
+                            try? FileManager.default.removeItem(at: URL(fileURLWithPath: urlToSave.path))
+                            return
+                        }
+
                         try await self?.unzipFile(at: urlToSave.path, password: checksum)
                         self?.exploreDatabaseLastSyncTimestamp = now
                         self?.exploreDatabaseLastVersion = timeIntervalMillesecond / 1000
-                        self?.installedDatabaseNetwork = self?.currentNetworkName
+                        self?.installedDatabaseNetwork = network
                         self?.syncState = .synced(date)
 
                         NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
