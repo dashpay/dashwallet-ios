@@ -191,7 +191,11 @@ struct DashSpendPayScreen: View {
         if !viewModel.isUserSignedIn { showSignInError(); return }
         let snapshotQuantities = quantities.filter { $0.value > 0 }
         let snapshotTotal = snapshotQuantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) }
-        let snapshotSingleAmount = viewModel.input.decimal() ?? viewModel.amount
+        // `input.decimal()` is `Decimal(string:locale:)` with a nil locale, which only
+        // understands "." as the decimal mark — on a comma-decimal locale it truncates
+        // "5,5" to 5, silently dropping the fraction. Use the same region-agnostic parser
+        // the view model already feeds `amount` from so both agree.
+        let snapshotSingleAmount = PastedAmountParser.parse(viewModel.input, locale: .current)?.decimalValue ?? viewModel.amount
 
         confirmationQuantities = snapshotQuantities
         confirmationOriginalPrice = snapshotQuantities.isEmpty ? snapshotSingleAmount : snapshotTotal
