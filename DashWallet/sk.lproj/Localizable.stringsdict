@@ -36,6 +36,10 @@
 			<string>%d ATM in %@</string>
 			<key>other</key>
 			<string>%d ATMs in %@</string>
+			<key>few</key>
+			<string>%d ATMs in %@</string>
+			<key>many</key>
+			<string>%d ATMs in %@</string>
 		</dict>
 	</dict>
 	<key>%d merchant(s) in %@</key>
