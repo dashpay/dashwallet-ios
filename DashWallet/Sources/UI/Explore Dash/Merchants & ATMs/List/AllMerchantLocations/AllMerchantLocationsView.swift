@@ -137,10 +137,10 @@ private struct MerchantHeaderView: View {
         }
     }
 
+    // Rounded square, so the text may use almost the whole box — same fraction as the
+    // POI details header.
     private var emptyLogo: some View {
-        Image(pointOfUse.emptyLogoImageName)
-            .resizable()
-            .aspectRatio(contentMode: .fit)
+        MerchantLogoPlaceholder(merchantName: pointOfUse.name, usableFraction: 0.84)
     }
 }
 
