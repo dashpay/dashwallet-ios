@@ -13,6 +13,9 @@
 /* Maya */
 "%@ address is not valid" = "%@ alamat tidak valid";
 
+/* Maya/SwapKit order preview */
+"%@ fee" = "%@ fee";
+
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ telah menerima permintaan kontak Anda";
 
@@ -286,6 +289,9 @@
 /* No comment provided by engineer. */
 "ATMs" = "ATM";
 
+/* DashSpend/Maya */
+"Authentication cancelled" = "Authentication cancelled";
+
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Otentikasi tidak tersedia";
 
@@ -484,6 +490,9 @@
 
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Bersihkan node terpercaya?";
+
+/* Maya */
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "Tutup";
@@ -897,6 +906,9 @@
 
 /* No comment provided by engineer. */
 "Enter" = "Masuk";
+
+/* Swap */
+"Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work." = "Enter a valid %1$@ address. %2$@ here is on %3$@, so an Ethereum (0x…) address won’t work.";
 
 /* Maya */
 "Enter address" = "Masukkan alamat";
@@ -1803,6 +1815,15 @@
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "Tidak ada hasil yang ditemukan";
 
+/* SwapKit */
+"No route available" = "No route available";
+
+/* Swap */
+"No routes available for this coin right now" = "No routes available for this coin right now";
+
+/* SwapKit */
+"No vault address returned by SwapKit" = "No vault address returned by SwapKit";
+
 /* Voting */
 "No votes left" = "Tidak ada suara tersisa";
 
@@ -1883,6 +1904,9 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Pratinjau Pesanan";
+
+/* Maya */
+"Order preview" = "Order preview";
 
 /* DashSpend */
 "Original Price" = "Harga asli";
@@ -2383,6 +2407,9 @@
 /* Buy Dash */
 "Sell Dash" = "Jual Dash";
 
+/* Dash Portal */
+"Sell Dash · Best price across networks" = "Sell Dash · Best price across networks";
+
 /* No comment provided by engineer. */
 "Send" = "Kirim";
 
@@ -2531,6 +2558,9 @@
 /* Maya */
 "Some coins are not available because of the halted chain" = "Beberapa koin tidak tersedia karena rantai yang terhenti";
 
+/* Shown when a payment tries to reuse inputs already spent by a pending transaction. */
+"Some selected funds are still pending from a previous transaction. Please wait a moment and try again." = "Some selected funds are still pending from a previous transaction. Please wait a moment and try again.";
+
 /* Usernames */
 "Some usernames can be blocked" = "Beberapa nama pengguna dapat diblokir";
 
@@ -2588,6 +2618,9 @@
 /* Dash Portal */
 "Swap Dash · No account needed" = "Tukar Dash · Tidak perlu akun";
 
+/* Maya/SwapKit order preview */
+"Swap fee" = "Swap fee";
+
 /* Maya
    Shown when a previous Dash conversion is still confirming and blocks a new general send. */
 "Swap in progress" = "Pertukaran sedang berlangsung.";
@@ -2597,6 +2630,13 @@
 
 /* Maya */
 "Swap timed out after 30 minutes. Contact Maya support if funds were sent." = "Transaksi gagal setelah 30 menit. Hubungi dukungan Maya jika dana telah dikirim.";
+
+/* Dash Portal
+   SwapKit Portal */
+"SwapKit" = "SwapKit";
+
+/* Maya/SwapKit */
+"Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later." = "Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later.";
 
 /* No comment provided by engineer. */
 "Swept!" = "bersihkan!";
@@ -2681,6 +2721,12 @@
 
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "Filter default hanya menampilkan nama pengguna duplikat yang BELUM Anda pilih, tetapi Anda dapat melihat dan memilih nama pengguna yang diperebutkan dengan mengubah filter.";
+
+/* Swap */
+"The destination address isn’t valid for %@ (%@). Go back and enter a %@ address." = "The destination address isn’t valid for %1$@ (%2$@). Go back and enter a %3$@ address.";
+
+/* SwapKit */
+"The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it." = "The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it.";
 
 /* Explore */
 "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "Yang pertama menerima Dash secara langsung. Yang lainnya menerima kartu hadiah yang dapat Anda beli dengan Dash dengan jumlah yang sama dengan jumlah pembelian Anda dalam dua ketukan.";
@@ -2882,6 +2928,9 @@
 /* No comment provided by engineer. */
 "Unable to provide suggestions" = "Tidak dapat memberikan saran";
 
+/* Swap */
+"Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
+
 /* No comment provided by engineer. */
 "Unable to send contact request" = "Tidak dapat mengirim permintaan kontak";
 
@@ -3028,6 +3077,9 @@
 
 /* No comment provided by engineer. */
 "View All" = "Lihat semua";
+
+/* Maya/SwapKit */
+"View details" = "View details";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Lihat di Explorer";
@@ -3363,11 +3415,17 @@
 /* Maya */
 "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Transaksi Dash Anda telah terkirim. Menunggu konfirmasi blok — ini membutuhkan waktu 2–5 menit karena pertukaran Maya tidak menggunakan InstantSend.";
 
+/* Maya/SwapKit */
+"Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
+
 /* CoinJoin */
 "Your Dash was mixed using these transactions." = "Dash Anda di Mix menggunakan transaksi ini.";
 
 /* Maya */
 "Your DASH was not converted and no funds were deducted. Try again, or come back later." = "DASH Anda tidak berhasil dikonversi dan tidak ada dana yang dipotong. Coba lagi, atau kembali lagi nanti.";
+
+/* Swap refund message — %@ is the provider name e.g. Maya */
+"Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
 
 /* Maya */
 "Your DASH was refunded by Maya Protocol." = "Pembayaran DASH Anda telah dikembalikan oleh Maya Protocol.";

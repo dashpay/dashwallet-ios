@@ -75,7 +75,8 @@ extension DatabaseConnection {
             AddGiftCardsTable(),
             AddIconBitmapsTable(),
             AddProviderToGiftCardsTable(),
-            AddRedeemUrlChallengeToGiftCardsTable()
+            AddRedeemUrlChallengeToGiftCardsTable(),
+            AddSwapOrdersTable()
         ]
     }
 

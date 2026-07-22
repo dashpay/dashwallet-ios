@@ -15,9 +15,10 @@
 //  limitations under the License.
 //
 
-import SwiftUI
+import DashUIKit
 import MapKit
 import SDWebImageSwiftUI
+import SwiftUI
 
 struct POIDetailsView: View {
     @StateObject private var viewModel: POIDetailsViewModel

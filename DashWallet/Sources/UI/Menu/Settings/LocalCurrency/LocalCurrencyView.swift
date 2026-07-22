@@ -168,7 +168,7 @@ private struct LocalCurrencyTopOverlayView: View {
             header
 
             if scrollOffset > -20 {
-                SearchBar(text: $searchQuery)
+                DashUIKit.SearchBar(text: $searchQuery)
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .padding(.horizontal, 20)
             }

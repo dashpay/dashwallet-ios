@@ -13,6 +13,9 @@
 /* Maya */
 "%@ address is not valid" = "%@ address is not valid";
 
+/* Maya/SwapKit order preview */
+"%@ fee" = "%@ fee";
+
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ has accepted your contact request";
 
@@ -286,6 +289,9 @@
 /* No comment provided by engineer. */
 "ATMs" = "ATMs";
 
+/* DashSpend/Maya */
+"Authentication cancelled" = "Authentication cancelled";
+
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Удостоверяването не е налично";
 
@@ -484,6 +490,9 @@
 
 /* No comment provided by engineer. */
 "Clear trusted node?" = "Изчистване на познатите нодове?";
+
+/* Maya */
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "Затвори";
@@ -897,6 +906,9 @@
 
 /* No comment provided by engineer. */
 "Enter" = "Вход";
+
+/* Swap */
+"Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work." = "Enter a valid %1$@ address. %2$@ here is on %3$@, so an Ethereum (0x…) address won’t work.";
 
 /* Maya */
 "Enter address" = "Enter address";
@@ -1803,6 +1815,15 @@
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "No Results Found";
 
+/* SwapKit */
+"No route available" = "No route available";
+
+/* Swap */
+"No routes available for this coin right now" = "No routes available for this coin right now";
+
+/* SwapKit */
+"No vault address returned by SwapKit" = "No vault address returned by SwapKit";
+
 /* Voting */
 "No votes left" = "No votes left";
 
@@ -1883,6 +1904,9 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "Order Preview";
+
+/* Maya */
+"Order preview" = "Order preview";
 
 /* DashSpend */
 "Original Price" = "Original Price";
@@ -2385,6 +2409,9 @@
 /* Buy Dash */
 "Sell Dash" = "Sell Dash";
 
+/* Dash Portal */
+"Sell Dash · Best price across networks" = "Sell Dash · Best price across networks";
+
 /* No comment provided by engineer. */
 "Send" = "Изпрати";
 
@@ -2533,6 +2560,9 @@
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
+/* Shown when a payment tries to reuse inputs already spent by a pending transaction. */
+"Some selected funds are still pending from a previous transaction. Please wait a moment and try again." = "Some selected funds are still pending from a previous transaction. Please wait a moment and try again.";
+
 /* Usernames */
 "Some usernames can be blocked" = "Some usernames can be blocked";
 
@@ -2590,6 +2620,9 @@
 /* Dash Portal */
 "Swap Dash · No account needed" = "Swap Dash · No account needed";
 
+/* Maya/SwapKit order preview */
+"Swap fee" = "Swap fee";
+
 /* Maya
    Shown when a previous Dash conversion is still confirming and blocks a new general send. */
 "Swap in progress" = "Swap in progress";
@@ -2599,6 +2632,13 @@
 
 /* Maya */
 "Swap timed out after 30 minutes. Contact Maya support if funds were sent." = "Swap timed out after 30 minutes. Contact Maya support if funds were sent.";
+
+/* Dash Portal
+   SwapKit Portal */
+"SwapKit" = "SwapKit";
+
+/* Maya/SwapKit */
+"Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later." = "Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later.";
 
 /* No comment provided by engineer. */
 "Swept!" = "Изчистен!";
@@ -2683,6 +2723,12 @@
 
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter.";
+
+/* Swap */
+"The destination address isn’t valid for %@ (%@). Go back and enter a %@ address." = "The destination address isn’t valid for %1$@ (%2$@). Go back and enter a %3$@ address.";
+
+/* SwapKit */
+"The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it." = "The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it.";
 
 /* Explore */
 "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.";
@@ -2884,6 +2930,9 @@
 /* No comment provided by engineer. */
 "Unable to provide suggestions" = "Unable to provide suggestions";
 
+/* Swap */
+"Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
+
 /* No comment provided by engineer. */
 "Unable to send contact request" = "Unable to send contact request";
 
@@ -3030,6 +3079,9 @@
 
 /* No comment provided by engineer. */
 "View All" = "View All";
+
+/* Maya/SwapKit */
+"View details" = "View details";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "Преглед в Explorer";
@@ -3365,11 +3417,17 @@
 /* Maya */
 "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend.";
 
+/* Maya/SwapKit */
+"Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
+
 /* CoinJoin */
 "Your Dash was mixed using these transactions." = "Your Dash was mixed using these transactions.";
 
 /* Maya */
 "Your DASH was not converted and no funds were deducted. Try again, or come back later." = "Your DASH was not converted and no funds were deducted. Try again, or come back later.";
+
+/* Swap refund message — %@ is the provider name e.g. Maya */
+"Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
 
 /* Maya */
 "Your DASH was refunded by Maya Protocol." = "Your DASH was refunded by Maya Protocol.";

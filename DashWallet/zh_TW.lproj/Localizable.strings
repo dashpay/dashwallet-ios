@@ -13,6 +13,9 @@
 /* Maya */
 "%@ address is not valid" = "%@ 位址無效";
 
+/* Maya/SwapKit order preview */
+"%@ fee" = "%@ fee";
+
 /* No comment provided by engineer. */
 "%@ has accepted your contact request" = "%@ 已接受您的聯繫請求";
 
@@ -286,6 +289,9 @@
 /* No comment provided by engineer. */
 "ATMs" = "自動提款機";
 
+/* DashSpend/Maya */
+"Authentication cancelled" = "Authentication cancelled";
+
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "身份驗證不可用";
 
@@ -484,6 +490,9 @@
 
 /* No comment provided by engineer. */
 "Clear trusted node?" = "清除可信節點?";
+
+/* Maya */
+"Clipboard" = "Clipboard";
 
 /* No comment provided by engineer. */
 "Close" = "關閉";
@@ -897,6 +906,9 @@
 
 /* No comment provided by engineer. */
 "Enter" = "輸入";
+
+/* Swap */
+"Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work." = "Enter a valid %1$@ address. %2$@ here is on %3$@, so an Ethereum (0x…) address won’t work.";
 
 /* Maya */
 "Enter address" = "輸入位址";
@@ -1803,6 +1815,15 @@
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "未找到結果";
 
+/* SwapKit */
+"No route available" = "No route available";
+
+/* Swap */
+"No routes available for this coin right now" = "No routes available for this coin right now";
+
+/* SwapKit */
+"No vault address returned by SwapKit" = "No vault address returned by SwapKit";
+
 /* Voting */
 "No votes left" = "沒有剩餘選票";
 
@@ -1883,6 +1904,9 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "訂單預覽";
+
+/* Maya */
+"Order preview" = "Order preview";
 
 /* DashSpend */
 "Original Price" = "原價";
@@ -2383,6 +2407,9 @@
 /* Buy Dash */
 "Sell Dash" = "出售達世幣";
 
+/* Dash Portal */
+"Sell Dash · Best price across networks" = "Sell Dash · Best price across networks";
+
 /* No comment provided by engineer. */
 "Send" = "付款";
 
@@ -2531,6 +2558,9 @@
 /* Maya */
 "Some coins are not available because of the halted chain" = "部分幣因斷鏈而無法使用";
 
+/* Shown when a payment tries to reuse inputs already spent by a pending transaction. */
+"Some selected funds are still pending from a previous transaction. Please wait a moment and try again." = "Some selected funds are still pending from a previous transaction. Please wait a moment and try again.";
+
 /* Usernames */
 "Some usernames can be blocked" = "某些使用者名稱可能會被阻止";
 
@@ -2588,6 +2618,9 @@
 /* Dash Portal */
 "Swap Dash · No account needed" = "兌換 達世幣 · 無需帳戶";
 
+/* Maya/SwapKit order preview */
+"Swap fee" = "Swap fee";
+
 /* Maya
    Shown when a previous Dash conversion is still confirming and blocks a new general send. */
 "Swap in progress" = "兌換正在進行中";
@@ -2597,6 +2630,13 @@
 
 /* Maya */
 "Swap timed out after 30 minutes. Contact Maya support if funds were sent." = "兌換在 30 分鐘後逾時。如果資金已發送，請聯絡 Maya 支援人員。";
+
+/* Dash Portal
+   SwapKit Portal */
+"SwapKit" = "SwapKit";
+
+/* Maya/SwapKit */
+"Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later." = "Swaps via NEAR can take up to an hour to complete. Your Dash has been sent — you can safely close this screen and check back later.";
 
 /* No comment provided by engineer. */
 "Swept!" = "掃一掃!";
@@ -2681,6 +2721,12 @@
 
 /* Voting */
 "The default filter shows only duplicate usernames that you have NOT voted on, but you can see and vote on any contested username by changing the filter." = "默認過濾器僅顯示您尚未投票的重複用戶名，但是您可以通過更改過濾器在任何有爭議的用戶名上查看和投票。";
+
+/* Swap */
+"The destination address isn’t valid for %@ (%@). Go back and enter a %@ address." = "The destination address isn’t valid for %1$@ (%2$@). Go back and enter a %3$@ address.";
+
+/* SwapKit */
+"The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it." = "The displayed fee combines SwapKit routing costs, including service, outbound, and on-chain network fees. It is shown in the coin you are buying, and the quoted receive amount already accounts for it.";
 
 /* Explore */
 "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps." = "第一個直接接受達世幣。其他商戶則接受禮品卡，您可以用達世幣購買這些禮品卡，點擊兩次你就可以買入與訂單相同金額的禮品卡。";
@@ -2882,6 +2928,9 @@
 /* No comment provided by engineer. */
 "Unable to provide suggestions" = "無法提供建議";
 
+/* Swap */
+"Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
+
 /* No comment provided by engineer. */
 "Unable to send contact request" = "無法發送聯繫請求";
 
@@ -3028,6 +3077,9 @@
 
 /* No comment provided by engineer. */
 "View All" = "查看全部";
+
+/* Maya/SwapKit */
+"View details" = "View details";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "在瀏覽器中查看";
@@ -3363,11 +3415,17 @@
 /* Maya */
 "Your Dash transaction has been sent. Waiting for block confirmation — this takes 2–5 minutes because Maya swaps don't use InstantSend." = "您的達世幣交易已發送。等待區塊確認 - 這需要 2-5 分鐘，因為 Maya 兌換不會使用 InstantSend。";
 
+/* Maya/SwapKit */
+"Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
+
 /* CoinJoin */
 "Your Dash was mixed using these transactions." = "您的 Dash 通过这些交易被混合.";
 
 /* Maya */
 "Your DASH was not converted and no funds were deducted. Try again, or come back later." = "您的 達世幣並 未兌換，也沒有扣除任何資金。請再試一次，或稍後再回來。";
+
+/* Swap refund message — %@ is the provider name e.g. Maya */
+"Your DASH was refunded by %@." = "Your DASH was refunded by %@.";
 
 /* Maya */
 "Your DASH was refunded by Maya Protocol." = "Maya Protocol已退還您的 達世幣。";

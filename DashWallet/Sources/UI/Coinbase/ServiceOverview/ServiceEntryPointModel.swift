@@ -68,6 +68,7 @@ extension Service {
             
         case .topper: return []
         case .maya: return []
+        case .swapKit: return []
         }
     }
 
@@ -77,6 +78,7 @@ extension Service {
         case .uphold: return NSLocalizedString("Link your Uphold account", comment: "Dash Service Overview")
         case .topper: return ""
         case .maya: return ""
+        case .swapKit: return ""
         }
     }
 
@@ -86,6 +88,7 @@ extension Service {
         case .uphold: return "uphold_logo"
         case .topper: return "portal.topper"
         case .maya: return "portal.maya"
+        case .swapKit: return "menu-swapkit"
         }
     }
 
@@ -95,6 +98,7 @@ extension Service {
         case .uphold: return NSLocalizedString("Link Uphold account", comment: "Dash Service Overview")
         case .topper: return ""
         case .maya: return ""
+        case .swapKit: return ""
         }
     }
 }
