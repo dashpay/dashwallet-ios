@@ -30,6 +30,14 @@ struct SendScreen: View {
     var showsHeader: Bool = true
 
     @FocusState private var addressFieldFocused: Bool
+    @State private var isEditingAddress = false
+
+    /// The address is "locked" (shown as a truncated card) once a valid
+    /// destination is decoded and focus has left the field; tapping it reopens
+    /// the editable field.
+    private var isAddressLocked: Bool {
+        viewModel.destination != nil && !isEditingAddress && !addressFieldFocused
+    }
 
     var body: some View {
         VStack(spacing: 0) {
