@@ -34,7 +34,9 @@ struct ExtendedPublicKeysView: View {
                 }
 
                 // Title
-                Text("Extended Public Keys")
+                // Reuses the key already carried by ExtendedPublicKeysViewController so both
+                // screens share one title and its existing translations.
+                Text(NSLocalizedString("Extended public keys", comment: ""))
                     .font(.system(size: 28, weight: .semibold))
                     .foregroundColor(.primaryText)
                     .padding(.horizontal, 20)
