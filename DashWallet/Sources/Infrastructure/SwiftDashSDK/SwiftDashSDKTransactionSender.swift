@@ -367,6 +367,44 @@ final class SwiftDashSDKTransactionSender: NSObject {
         UInt64(10 + inputCount * 148 + 2 * 34)
     }
 
+    /// Fee reserve for a "Max" / all-funds core send, sized from the BIP44
+    /// account's actual spendable-UTXO count instead of a flat constant.
+    ///
+    /// The flat `WalletBalance.sendFeeReserveDuffs` (100_000 duffs) is a large
+    /// worst-case over-estimate — a typical send costs ~1–2k duffs, so Max used
+    /// to leave ~0.001 DASH behind as change. Here the reserve is the same
+    /// size model as `estimatedSignalFee` (1 duff/byte over the enumerated
+    /// inputs) plus a **+50 % safety margin** so it can never *under*-reserve —
+    /// an under-estimate would make the Max send fail to build.
+    ///
+    /// Fail-safe: any inability to enumerate the account (no wallet/manager, no
+    /// UTXOs) falls back to the flat reserve, i.e. the previous behaviour — the
+    /// change never makes Max worse than before, only tighter when it can.
+    static func maxSendFeeReserveDuffs() -> UInt64 {
+        let read = { @MainActor () -> UInt64? in
+            let host = SwiftDashSDKHost.shared
+            guard let manager = host.manager, let wallet = host.wallet else { return nil }
+            let walletId = wallet.walletId
+            guard let bip44 = manager.accountBalances(for: walletId).first(where: {
+                $0.typeTag == Self.bip44TypeTag && $0.index == 0
+            }) else { return nil }
+            let count = manager.accountUtxos(for: walletId, balance: bip44).count
+            guard count > 0 else { return nil }
+            let base = estimatedSignalFee(inputCount: count)
+            return base + base / 2 // +50 % margin — must never under-reserve
+        }
+
+        let dynamic: UInt64?
+        if Thread.isMainThread {
+            dynamic = MainActor.assumeIsolated { read() }
+        } else {
+            var captured: UInt64?
+            DispatchQueue.main.sync { captured = MainActor.assumeIsolated { read() } }
+            dynamic = captured
+        }
+        return dynamic ?? WalletBalance.sendFeeReserveDuffs
+    }
+
     // MARK: - Broadcast
 
     /// Broadcast a transaction previously built by `buildAndSign`. Resolves the

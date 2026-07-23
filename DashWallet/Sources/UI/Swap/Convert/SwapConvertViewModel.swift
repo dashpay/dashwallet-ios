@@ -73,7 +73,7 @@ final class SwapConvertViewModel: ObservableObject {
     /// The frozen DashSync account balance reads stale/zero post-migration, so all balance reads
     /// in this flow go through SwiftDashSDK.
     private var availableDashDuffs: UInt64 {
-        SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
+        SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
     }
 
     var dashBalance: Int64 {
