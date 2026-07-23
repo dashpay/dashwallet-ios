@@ -37,6 +37,26 @@ enum MnemonicFirstWalletCreationError: Error {
     case walletCreation(Error)
 }
 
+/// Process-lifetime cache used for network-scoped objects that must not be
+/// opened twice over the same backing store. Generic so identity and network
+/// separation can be tested without constructing SwiftData.
+@MainActor
+final class ProcessNetworkValueCache<Value> {
+    private var values: [String: Value] = [:]
+
+    func value(
+        for networkKey: String,
+        create: () throws -> Value
+    ) rethrows -> (value: Value, reused: Bool) {
+        if let existing = values[networkKey] {
+            return (existing, true)
+        }
+        let created = try create()
+        values[networkKey] = created
+        return (created, false)
+    }
+}
+
 /// Enforces the seed-safety ordering for wallet creation: persist and verify
 /// the mnemonic before making the wallet live in a manager. If creation then
 /// fails, only the provisional mnemonic is rolled back.
@@ -90,6 +110,7 @@ final class SwiftDashSDKHost {
     private(set) var wallet: ManagedPlatformWallet?
     private(set) var modelContainer: ModelContainer?
     private(set) var runningNetwork: Network?
+    private let modelContainerCache = ProcessNetworkValueCache<ModelContainer>()
 
     // MARK: - Process-wide SDK init guard
 
@@ -262,6 +283,7 @@ final class SwiftDashSDKHost {
 
         let handles = try buildRuntime(for: network)
         let resolvedWallet: ManagedPlatformWallet
+        Self.logger.info("🪺 HOST :: stage 4/4 restoring wallet for \(network.rawValue, privacy: .public)")
         do {
             resolvedWallet = try loadPersistedWallet(manager: handles.manager, network: network)
         } catch HostError.walletNotFound {
@@ -282,6 +304,7 @@ final class SwiftDashSDKHost {
         }
 
         publish(handles: handles, wallet: resolvedWallet)
+        Self.logger.info("🪺 HOST :: stage 4/4 wallet restored for \(network.rawValue, privacy: .public)")
         Self.logger.info("🪺 HOST :: started for \(network.rawValue, privacy: .public)")
         return (handles.manager, resolvedWallet)
     }
@@ -484,8 +507,9 @@ final class SwiftDashSDKHost {
         }
     }
 
-    /// Tear down the host's references. The actual SDK / FFI handles drop
-    /// when their last strong reference goes away.
+    /// Tear down the host's active references. The per-network
+    /// `ModelContainer` remains process-cached so a later runtime rebuild does
+    /// not open a second container over the same SQLite store.
     ///
     /// Persisted-row cleanup on wipe is owned by `PlatformAddressSyncCoordinator`
     /// — it must happen BEFORE BLAST's tokio task winds down so in-flight
@@ -514,6 +538,7 @@ final class SwiftDashSDKHost {
         }
 
         Self.ensureSDKInitialized()
+        Self.logger.info("🪺 HOST :: stage 1/4 creating SDK for \(network.rawValue, privacy: .public)")
 
         let newSDK: SDK
         do {
@@ -529,6 +554,7 @@ final class SwiftDashSDKHost {
             // the `DashSDKConfig.platform_version` field (dashpay/platform
             // #3751); bump this when the agreed protocol moves past v12.
             newSDK = try SDK(network: network, platformVersion: 12)
+            Self.logger.info("🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public)")
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
@@ -536,7 +562,12 @@ final class SwiftDashSDKHost {
 
         let container: ModelContainer
         do {
-            container = try buildModelContainer(for: network)
+            Self.logger.info("🪺 HOST :: stage 2/4 obtaining ModelContainer for \(network.rawValue, privacy: .public)")
+            let cached = try modelContainerCache.value(for: network.networkName) {
+                try buildModelContainer(for: network)
+            }
+            container = cached.value
+            Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.reused ? "reused" : "created", privacy: .public) for \(network.rawValue, privacy: .public)")
         } catch {
             Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
             throw HostError.modelContainerFailed(error)
@@ -544,7 +575,9 @@ final class SwiftDashSDKHost {
 
         let newManager = PlatformWalletManager()
         do {
+            Self.logger.info("🪺 HOST :: stage 3/4 configuring manager for \(network.rawValue, privacy: .public)")
             try newManager.configure(sdk: newSDK, modelContainer: container)
+            Self.logger.info("🪺 HOST :: stage 3/4 manager configured for \(network.rawValue, privacy: .public)")
         } catch {
             Self.logger.error("🪺 HOST :: configure failed: \(String(describing: error), privacy: .public)")
             throw HostError.configureFailed(error)

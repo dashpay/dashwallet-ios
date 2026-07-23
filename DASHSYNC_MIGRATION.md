@@ -1,6 +1,6 @@
 # DashSync -> SwiftDashSDK migration status
 
-Current-state ledger for the DashSync removal. Updated 2026-07-11 from the
+Current-state ledger for the DashSync removal. Updated 2026-07-22 from the
 working tree on `swift-sdk-integration`; historical stage-by-stage detail is
 available in Git history.
 
@@ -101,7 +101,7 @@ Status meanings:
 | 8 | Send Dash | Done | None. Money movement goes through `WalletSendService` / `SwiftDashSDKTransactionSender`. |
 | 9 | Fee estimation | Done | None. Confirmation uses the transaction builder's fee. |
 | 10 | PIN / biometrics | Done; teardown tail | Remove incidental DashSync imports/constants and retain the byte-compatible app-owned keychain contract. |
-| 11 | SPV sync | Done; teardown tail | Remove `setupDashSyncOnce` / `DSOptionsManager` and remaining legacy notification names at unlink. |
+| 11 | SPV sync | Done; teardown tail | Core restart/peer rotation is serialized `stopSpv → startSpv` on the existing manager, preserving Platform sync, wallet state and the process-cached per-network `ModelContainer`; clear-and-resync deletes the chain store off MainActor on the next process launch. Remove `setupDashSyncOnce` / `DSOptionsManager` and remaining legacy notification names at unlink. |
 | 12 | Network switch | Done; teardown tail | Remove the temporary DashSync wallet-registry mirror with C6-E. |
 | 13 | Backup seed phrase | Done | Reads the active SDK wallet mnemonic from host-owned storage. |
 | 14 | Wipe wallet | Done; teardown tail | Reinstall recovery and Settings Debug Reset both gate onboarding behind the background wipe executor's explicit success result; per-wallet SDK deletion remains synchronous, and a failed delete preserves mnemonic/runtime state for retry. Remove the DashSync registry/Core Data wipe arm after all consumers are gone. |

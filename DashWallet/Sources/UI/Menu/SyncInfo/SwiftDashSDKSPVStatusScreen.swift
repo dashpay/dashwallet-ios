@@ -201,7 +201,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
         } message: { height in
             Text(String(
                 format: NSLocalizedString(
-                    "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start.",
+                    "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset.",
                     comment: "SPV diagnostics"),
                 height))
         }
@@ -460,7 +460,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
     private var controlsCard: some View {
         HStack(spacing: 12) {
             Button(action: {
-                SwiftDashSDKWalletRuntime.stop()
+                SwiftDashSDKWalletRuntime.stopCoreSPV()
             }) {
                 Text("Stop")
                     .font(.system(size: 14, weight: .semibold))
@@ -470,19 +470,30 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     .foregroundColor(.dash.primaryText)
                     .cornerRadius(8)
             }
+            .disabled(coreLifecycleBusy)
             Button(action: {
-                SwiftDashSDKWalletRuntime.stop()
-                SwiftDashSDKWalletRuntime.startIfReady()
+                SwiftDashSDKWalletRuntime.restartCoreSPV()
             }) {
-                Text("Restart")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.dash.gray300.opacity(0.3))
-                    .foregroundColor(.dash.primaryText)
-                    .cornerRadius(8)
+                HStack(spacing: 8) {
+                    if coordinator.isRestarting {
+                        SwiftUI.ProgressView()
+                            .controlSize(.small)
+                    }
+                    Text(coordinator.isRestarting ? "Restarting…" : "Restart")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.dash.gray300.opacity(0.3))
+                .foregroundColor(.dash.primaryText)
+                .cornerRadius(8)
             }
+            .disabled(coreLifecycleBusy)
         }
+    }
+
+    private var coreLifecycleBusy: Bool {
+        coordinator.isRestarting || coordinator.isApplyingChainResync
     }
 
     // MARK: - Row builders
@@ -602,6 +613,9 @@ extension SwiftDashSDKSPVStatusScreen {
     /// True when SPV is running AND a wallet is bound — the two
     /// conditions `spvRescanFilters` needs for an immediate rescan.
     var rescanEnabled: Bool {
+        guard !coordinator.isRestarting, !coordinator.isApplyingChainResync else {
+            return false
+        }
         guard SwiftDashSDKHost.shared.wallet != nil,
               let manager = SwiftDashSDKHost.shared.manager else {
             return false
@@ -795,7 +809,7 @@ extension SwiftDashSDKSPVStatusScreen {
         rescanResultIsError = false
         rescanResultMessage = String(
             format: NSLocalizedString(
-                "Resync armed from height %u — quit and reopen the app to start.",
+                "Resync armed from height %u. Fully close the app, then launch it again to start. The in-app Restart button does not apply this reset.",
                 comment: "SPV diagnostics"),
             height)
     }
