@@ -426,7 +426,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private var canShowInsufficientFunds: Bool {
         let dashAmount = (try? CurrencyExchanger.shared.convertToDash(amount: amount, currency: kDefaultCurrencyCode)) ?? 0
 
-        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
+        let allAvailableFunds = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
 
         return dashAmount.plainDashAmount > allAvailableFunds
     }

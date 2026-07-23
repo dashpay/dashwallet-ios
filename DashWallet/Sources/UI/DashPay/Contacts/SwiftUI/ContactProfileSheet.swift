@@ -623,7 +623,7 @@ struct PayContactSheet: View {
     // MARK: Amounts
 
     private var maxSendable: UInt64 {
-        walletState.balance?.maxSendable ?? 0
+        walletState.feeAwareMaxSendable()
     }
 
     /// Entered DASH amount in duffs, or nil when unparseable, zero,

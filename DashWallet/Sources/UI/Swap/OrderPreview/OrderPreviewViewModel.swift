@@ -793,7 +793,7 @@ final class OrderPreviewViewModel: ObservableObject {
     private var dashBalance: Int64 {
         // Cap swaps at the SDK's max-sendable balance (spendable minus the send fee reserve);
         // the frozen DashSync account balance reads stale/zero post-migration.
-        Int64(SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0)
+        Int64(SwiftDashSDKWalletState.shared.feeAwareMaxSendable())
     }
 
     // MARK: - Private: Formatting
