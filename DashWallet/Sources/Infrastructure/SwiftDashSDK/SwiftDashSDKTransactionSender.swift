@@ -385,8 +385,13 @@ final class SwiftDashSDKTransactionSender: NSObject {
             let host = SwiftDashSDKHost.shared
             guard let manager = host.manager, let wallet = host.wallet else { return nil }
             let walletId = wallet.walletId
+            // `typeTag == 0` is the whole Standard family; account 0 can exist as
+            // both BIP44 (`standardTag == 0`) and BIP32 (`standardTag == 1`), so
+            // require the standard tag too — mirrors `addressUtxos(script:)`.
             guard let bip44 = manager.accountBalances(for: walletId).first(where: {
-                $0.typeTag == Self.bip44TypeTag && $0.index == 0
+                $0.typeTag == Self.bip44TypeTag
+                    && $0.standardTag == Self.bip44StandardTag
+                    && $0.index == Self.bip44AccountIndex
             }) else { return nil }
             let count = manager.accountUtxos(for: walletId, balance: bip44).count
             guard count > 0 else { return nil }
