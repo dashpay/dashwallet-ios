@@ -1369,8 +1369,20 @@ private struct HomeViewModelPreviewTransactionSource: TransactionSource {
 #if DASHPAY
 extension HomeViewModel {
     func checkJoinDashPay() {
+        let options = DWGlobalOptions.sharedInstance()
+        var hasRegisteredUsername =
+            options.dashpayRegistrationCompleted &&
+            options.dashpayUsername?.isEmpty == false
+        if !hasRegisteredUsername {
+            hasRegisteredUsername = MainActor.assumeIsolated {
+                options.dashpayRegistrationCompleted &&
+                DWCurrentUserIdentityInfo.shared.username?.isEmpty == false
+            }
+        }
+
         self.showJoinDashpay = syncModel.state == .syncDone &&
             !UsernamePrefs.shared.joinDashPayDismissed &&
+            !hasRegisteredUsername &&
             joinDashPayState != .voting && joinDashPayState != .registered
     }
     

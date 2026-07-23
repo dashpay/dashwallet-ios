@@ -220,26 +220,21 @@ struct MainMenuScreen: View {
                     .padding(.bottom, 20)
 
                 #if DASHPAY
-                // FIXME: TEMPORARY — bypasses `viewModel.showJoinDashpay`
-                // (which becomes false once sync isn't done, the user
-                // dismissed the banner, or registration completed) so
-                // the Join DashPay entry point stays reachable for
-                // SwiftDashSDK identity registration testing. Restore
-                // the `if viewModel.showJoinDashpay { ... }` guard
-                // before merging anything that depends on this file.
-                JoinDashPayView(
-                    viewModel: joinDPViewModel,
-                    onTap: { state in
-                        handleJoinDashPayTap(state: state)
-                    },
-                    onActionButton: { state in
-                        handleJoinDashPayAction(state: state)
-                    },
-                    onDismissButton: { state in
-                        joinDPViewModel.markAsDismissed()
-                    }
-                )
-                .padding(.horizontal, 18)
+                if viewModel.showJoinDashpay {
+                    JoinDashPayView(
+                        viewModel: joinDPViewModel,
+                        onTap: { state in
+                            handleJoinDashPayTap(state: state)
+                        },
+                        onActionButton: { state in
+                            handleJoinDashPayAction(state: state)
+                        },
+                        onDismissButton: { state in
+                            joinDPViewModel.markAsDismissed()
+                        }
+                    )
+                    .padding(.horizontal, 18)
+                }
                 #endif
                 
                 // Menu items grouped in sections
@@ -397,15 +392,16 @@ struct MainMenuScreen: View {
     
     #if DASHPAY
     private func handleJoinDashPayTap(state: JoinDashPayState) {
-        // FIXME: TEMPORARY — every banner tap routes straight to
-        // `joinDashPay()` (Create Username) so the SwiftDashSDK
-        // identity registration flow stays reachable for debugging
-        // even after a successful registration (when the banner state
-        // becomes `.registered` and would normally open Edit Profile).
-        // Restore the state switch (registered → editProfile, voting →
-        // showRequestDetails, none → handleJoinButtonAction) before
-        // shipping anything that depends on this file.
-        handleJoinButtonAction()
+        switch state {
+        case .registered:
+            editProfile()
+        case .voting:
+            showRequestDetails()
+        case .none:
+            handleJoinButtonAction()
+        default:
+            break
+        }
     }
     
     private func handleJoinDashPayAction(state: JoinDashPayState) {
