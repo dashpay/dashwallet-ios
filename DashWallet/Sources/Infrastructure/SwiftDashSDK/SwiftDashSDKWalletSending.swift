@@ -26,7 +26,8 @@ final class SwiftDashSDKWalletSending: WalletSending {
             throw SwiftDashSDKTransactionSender.SendError.invalidInput(
                 "PreparedSend carries no SDK transaction handle")
         }
-        _ = try SwiftDashSDKTransactionSender.broadcast(tx)
+        let outcome = try SwiftDashSDKTransactionSender.broadcast(tx)
+        _ = try SwiftDashSDKTransactionSender.requireAccepted(outcome)
         // Return contract is the display-order txid hex; keep the deterministic
         // app-computed value (the sender logs the SDK-reported txid alongside).
         return prepared.txHashDisplay.map { String(format: "%02x", $0) }.joined()
