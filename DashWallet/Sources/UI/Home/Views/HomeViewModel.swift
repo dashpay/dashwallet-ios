@@ -81,6 +81,10 @@ class HomeViewModel: ObservableObject {
     @Published var shortcutItems: [ShortcutAction] = []
     @Published var showTimeSkewAlertDialog: Bool = false
     @Published var showCoinJoinSweepDialog: Bool = false
+    /// Post-sync destination-choice sheet (`CoinJoinMoveFundsSheet`) —
+    /// presented instead of `showCoinJoinSweepDialog` when the CoinJoin
+    /// balance is large enough to offer the Shielded destination.
+    @Published var showCoinJoinMoveFundsSheet: Bool = false
     @Published private(set) var timeSkew: TimeInterval = 0
     @Published private(set) var showJoinDashpay: Bool = true
     /// Selected filter categories (multi-select checkboxes). Defaults to every
@@ -712,18 +716,52 @@ extension HomeViewModel {
             .store(in: &cancellableBag)
     }
 
+    /// Whether the post-sync popup can offer the Shielded-balance destination:
+    /// the wallet's shielded sub-wallet is bound (an Orchard address resolves)
+    /// AND the CoinJoin balance is comfortably above the flow's fee overhead —
+    /// the shield pool fee (carved from the locked value) plus the L1 send-fee
+    /// reserve the asset lock keeps — so at least half the moved amount
+    /// survives the fees. Fails closed (BIP44-only popup) when the fee
+    /// estimate or the shielded binding is unavailable.
+    var coinJoinShieldDestinationAvailable: Bool {
+        let balanceDuffs = coinJoinSweepAmountDuffs
+        // Host + manager are `@MainActor`-isolated — reuse the wallet source's
+        // main-thread trampoline (same file).
+        return SwiftDashSDKWalletSource.onMain {
+            guard let manager = SwiftDashSDKHost.shared.manager,
+                  let wallet = SwiftDashSDKHost.shared.wallet,
+                  ((try? manager.shieldedDefaultAddress(walletId: wallet.walletId)) ?? nil) != nil,
+                  let shieldedFeeCredits = try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+            else { return false }
+            // Pool fee = base shielded fee + the asset-lock processing base cost
+            // (same estimate the transfer confirm sheets show); credits → duffs
+            // is ÷ 1000. The L1 reserve mirrors `waitForSweptCoinJoinFunds`.
+            let overheadDuffs = (shieldedFeeCredits + InternalTransferConfirmSheet.assetLockBaseCostCredits) / 1000
+                + WalletBalance.sendFeeReserveDuffs
+            return balanceDuffs >= overheadDuffs * 2
+        }
+    }
+
     /// Proactively surface the "move your mixed coins" popup once per session
     /// after sync completes, while a recoverable CoinJoin balance exists.
     /// Bound to the live balance (not a persistent flag): it re-prompts each
     /// launch until the user sweeps, then self-stops (balance → 0). The durable
     /// Settings row covers the same action for users who dismiss it.
+    ///
+    /// When the balance is large enough to shield, the destination-choice
+    /// sheet (`CoinJoinMoveFundsSheet`) is shown instead of the BIP44-only
+    /// dialog.
     func maybeShowCoinJoinSweepDialog() {
         DWLogger.log("CJTEST HomeViewModel: sweep dialog check — \(coinJoinSweepAmountDuffs) duffs (\(String(format: "%.6f", Double(coinJoinSweepAmountDuffs) / Double(DUFFS))) DASH), threshold \(CoinJoinRecovery.recoveryDustThresholdDuffs), above=\(coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
         guard !coinJoinSweepDialogShown,
               syncModel.state == .syncDone,
               coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs else { return }
         coinJoinSweepDialogShown = true
-        showCoinJoinSweepDialog = true
+        if coinJoinShieldDestinationAvailable {
+            showCoinJoinMoveFundsSheet = true
+        } else {
+            showCoinJoinSweepDialog = true
+        }
     }
 
     /// Sweep the leftover CoinJoin balance into the user's spendable balance
@@ -1254,7 +1292,9 @@ class SwiftDashSDKWalletSource: TransactionSource {
     }
 
     /// Main-thread trampoline for the `@MainActor`-isolated host reads.
-    private static func onMain<T>(_ body: @MainActor () -> T) -> T {
+    /// Internal: `HomeViewModel.coinJoinShieldDestinationAvailable` reuses it
+    /// for its host/manager reads.
+    static func onMain<T>(_ body: @MainActor () -> T) -> T {
         if Thread.isMainThread {
             return MainActor.assumeIsolated(body)
         }

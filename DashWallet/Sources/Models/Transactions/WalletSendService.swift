@@ -268,7 +268,7 @@ final class WalletSendService: NSObject {
         }
 
         Self.logger.info("💸 TXSEND :: CJTEST CoinJoin sweep destination resolved \(destination, privacy: .public)")
-        let txids = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
+        let (txids, _) = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
         guard !txids.isEmpty else {
             // A reported-success sweep that produced no transaction is treated
             // as a failure, so the caller surfaces an error (the sweep alert)
@@ -304,6 +304,106 @@ final class WalletSendService: NSObject {
             // a legitimate re-widen after an interrupted scan.
         }
         return amount
+    }
+
+    /// Result of the sweep leg of the CoinJoin → Shielded flow: what landed on
+    /// the user's own BIP44 receive address and where, so the caller can wait
+    /// for the funds and asset-lock them (`waitForSweptCoinJoinFunds`).
+    struct CoinJoinShieldedSweep {
+        /// Gross CoinJoin balance at sweep time (duffs) — the popup's display amount.
+        let grossDuffs: UInt64
+        /// Net duffs delivered to `destinationAddress` (gross − L1 sweep fees).
+        let netDuffs: UInt64
+        /// The user's own BIP44 receive address the sweep paid.
+        let destinationAddress: String
+    }
+
+    /// Leg 1 of the CoinJoin → Shielded flow: authorize (PIN/biometric) and
+    /// sweep the CoinJoin balance to the user's own BIP44 receive address —
+    /// the same sweep as `sweepCoinJoin()`, but returning what landed where so
+    /// leg 2 (`waitForSweptCoinJoinFunds` + the shield asset lock) can run on
+    /// exactly the swept funds. Split from leg 2 so a retry after a leg-2
+    /// failure (e.g. UTXO-wait timeout) does NOT re-sweep: the CoinJoin
+    /// account is already empty and the funds sit safely in the BIP44 balance.
+    ///
+    /// The single authorization here covers the whole two-hop flow — the
+    /// follow-up asset lock is invoked with `alreadyAuthorized` so the user
+    /// isn't prompted twice for one user-visible action.
+    func sweepCoinJoinForShielding() async throws -> CoinJoinShieldedSweep {
+        // Fail loudly before moving anything: an offline broadcast would be
+        // silently queued and the follow-up UTXO wait would just time out.
+        try Self.ensureOnline()
+        let amount = await MainActor.run { SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs }
+        guard amount > 0 else {
+            throw Self.makeError(
+                code: .coinJoinSweepUnavailable,
+                description: "No CoinJoin balance to move"
+            )
+        }
+
+        Self.logger.info("💸 TXSEND :: preparing CoinJoin → Shielded sweep — balance \(amount, privacy: .public) duffs")
+        try await sendAuthorizer.authorizeSend(spendAmount: amount)
+
+        guard let destination = SwiftDashSDKReceiveAddressReader.receiveAddress() else {
+            throw Self.makeError(
+                code: .coinJoinSweepUnavailable,
+                description: "Could not resolve a destination address for the CoinJoin sweep"
+            )
+        }
+
+        let (txids, netDuffs) = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
+        guard !txids.isEmpty, netDuffs > 0 else {
+            throw Self.makeError(
+                code: .coinJoinSweepUnavailable,
+                description: "CoinJoin sweep produced no transactions"
+            )
+        }
+        // Same home-screen grouping as the BIP44-destination sweep: the L1 leg
+        // IS a CoinJoin withdrawal either way.
+        for txid in txids {
+            CoinJoinWithdrawalStore.shared.record(txid: txid)
+        }
+
+        await MainActor.run {
+            SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
+        }
+        Self.logger.info("💸 TXSEND :: CoinJoin → Shielded sweep broadcast — net \(netDuffs, privacy: .public) of \(amount, privacy: .public) duffs → \(destination, privacy: .public)")
+        return CoinJoinShieldedSweep(grossDuffs: amount, netDuffs: netDuffs, destinationAddress: destination)
+    }
+
+    /// Leg 2 (wait) of the CoinJoin → Shielded flow: wait for the sweep's
+    /// outputs to become spendable BIP44 UTXOs (the SDK applies its own
+    /// broadcasts to the local mempool asynchronously), then return the amount
+    /// to asset-lock: the swept net minus the standard send-fee reserve —
+    /// the same headroom `WalletBalance.maxSendable` keeps for the asset
+    /// lock's L1 fee (the internal transfer's Max uses the same envelope).
+    /// The reserve remainder stays in the spendable BIP44 balance.
+    ///
+    /// Throws `.coinJoinSweepUnavailable` if the funds don't appear within the
+    /// polling window — the swept funds are NOT lost (they're in the BIP44
+    /// balance); the caller's retry re-runs this wait without re-sweeping.
+    func waitForSweptCoinJoinFunds(_ sweep: CoinJoinShieldedSweep) async throws -> UInt64 {
+        let available = try await SwiftDashSDKTransactionSender.waitForFunds(
+            onAddress: sweep.destinationAddress, minimumTotal: sweep.netDuffs)
+        guard available >= sweep.netDuffs else {
+            Self.logger.error("💸 TXSEND :: swept CoinJoin funds not yet spendable — saw \(available, privacy: .public) of \(sweep.netDuffs, privacy: .public) duffs")
+            throw Self.makeError(
+                code: .coinJoinSweepUnavailable,
+                description: NSLocalizedString(
+                    "The moved funds are not spendable yet. Your Dash is safe in your wallet balance — try again in a moment.",
+                    comment: "CoinJoin")
+            )
+        }
+        let reserve = WalletBalance.sendFeeReserveDuffs
+        guard sweep.netDuffs > reserve else {
+            throw Self.makeError(
+                code: .coinJoinSweepUnavailable,
+                description: NSLocalizedString(
+                    "The remaining balance is too small to move to the shielded balance.",
+                    comment: "CoinJoin")
+            )
+        }
+        return sweep.netDuffs - reserve
     }
 
 #if DASHPAY

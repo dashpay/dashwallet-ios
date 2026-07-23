@@ -146,7 +146,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// internal transfer); an external Send passes the recipient's raw
     /// 43-byte payload. Type 18's remainder semantics apply either way: the
     /// recipient receives `lock_value − pool_fee`.
-    func performAssetLock(amountDuffs: UInt64, recipientRaw43 recipientOverride: Data? = nil) async {
+    ///
+    /// `alreadyAuthorized` skips the PIN/biometric gate — pass `true` ONLY when
+    /// the caller ran its own spend authorization for the same user-visible
+    /// action moments earlier (the CoinJoin → Shielded flow authorizes once via
+    /// `WalletSendService` before its sweep leg); every direct entry point
+    /// keeps the default `false`.
+    func performAssetLock(amountDuffs: UInt64, recipientRaw43 recipientOverride: Data? = nil, alreadyAuthorized: Bool = false) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route amount=\(amountDuffs) external=\(recipientOverride != nil)")
@@ -159,11 +165,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        do {
-            try await authorize()
-        } catch {
-            handleFailure(error)
-            return
+        if !alreadyAuthorized {
+            do {
+                try await authorize()
+            } catch {
+                handleFailure(error)
+                return
+            }
         }
 
         phase = .locking
