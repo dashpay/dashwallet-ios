@@ -129,10 +129,13 @@ class SwapAddressValidatorTests: XCTestCase {
     private let zecCoin = SwapCryptoCurrency(id: "zec", code: "ZEC", name: "Zcash", swapAsset: "ZEC.ZEC", chain: "ZEC")
     private let xrpCoin = SwapCryptoCurrency(id: "xrp", code: "XRP", name: "XRP", swapAsset: "XRP.XRP", chain: "XRP")
     private let tronCoin = SwapCryptoCurrency(id: "trx", code: "TRX", name: "Tron", swapAsset: "TRON.TRX", chain: "TRON")
+    private let solCoin = SwapCryptoCurrency(id: "sol", code: "SOL", name: "Solana", swapAsset: "SOL.SOL", chain: "SOL")
 
     func testDashAddress_rejectedForDefaultBranchChains() {
         // These chains hit the permissive `default` branch — the source of the original bug.
-        for coin in [zecCoin, xrpCoin, tronCoin] {
+        // Before the guard, `default: return true` accepted these Dash strings, so each
+        // assertion here fails without the fix.
+        for coin in [zecCoin, xrpCoin, tronCoin, solCoin] {
             XCTAssertFalse(SwapAddressValidator.isValid(address: dashP2PKHAddress, for: coin),
                            "Dash P2PKH address must be rejected for \(coin.code)")
             XCTAssertFalse(SwapAddressValidator.isValid(address: dashP2SHAddress, for: coin),
@@ -140,11 +143,14 @@ class SwapAddressValidatorTests: XCTestCase {
         }
     }
 
-    func testDashAddress_rejectedForExplicitlyValidatedChains() {
-        for coin in [btcCoin, ethCoin, thorCoin] {
-            XCTAssertFalse(SwapAddressValidator.isValid(address: dashP2PKHAddress, for: coin),
-                           "Dash address must be rejected for \(coin.code)")
-        }
+    func testSolana_acceptsRealAddress_rejectsDashAddress() {
+        // SOL is a `default`-branch chain: a real Solana address must still pass while a Dash
+        // address is rejected. This is the exact scenario reproduced on device (Sell DASH → SOL).
+        let realSolanaAddress = "9A7Nbez3va6r9Z6tG8cuPTcrMR8HfdHYMv2FUX3sQVDY"
+        XCTAssertTrue(SwapAddressValidator.isValid(address: realSolanaAddress, for: solCoin),
+                      "A real Solana address must be accepted for SOL")
+        XCTAssertFalse(SwapAddressValidator.isValid(address: dashP2PKHAddress, for: solCoin),
+                       "A Dash address must be rejected for SOL")
     }
 
     func testDashGuard_doesNotRejectLegitimateDestinationAddresses() {
