@@ -28,6 +28,23 @@ import Foundation
 import OSLog
 import SwiftDashSDK
 
+/// The exact transaction used for an in-process Core SPV restart. It is kept
+/// free of SDK types so the stop → start ordering, error propagation and busy
+/// state cleanup can be tested with closures.
+@MainActor
+enum CoreSPVRestartOperation {
+    static func run(
+        setRestarting: (Bool) -> Void,
+        stop: () async throws -> Void,
+        start: () async throws -> Void
+    ) async throws {
+        setRestarting(true)
+        defer { setRestarting(false) }
+        try await stop()
+        try await start()
+    }
+}
+
 // MARK: - Local stand-ins for SDK surface that consumers still expect
 
 /// Local replacement for the SDK's removed `SPVSyncState`. Shape matches
@@ -101,6 +118,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @Published public private(set) var bestPeerHeight: UInt32 = 0
     @Published public private(set) var lastError: String? = nil
     @Published public private(set) var syncProgress: SPVSyncProgress = .default()
+    @Published public private(set) var isRestarting = false
+    @Published public private(set) var isApplyingChainResync = false
     /// Peers the SPV client is currently connected to, classified against
     /// the masternode list (Evonode / Masternode / Normal, or Unknown while
     /// the masternode phase hasn't synced).
@@ -118,6 +137,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// complete when nothing remains to recover. `nil` when no widen is active.
     private var coinJoinRecoveryWidenedNetwork: Network?
 
+    @MainActor
+    var isRunning: Bool { runningNetwork != nil }
+
     // MARK: - Init
 
     private override init() {
@@ -132,7 +154,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     @MainActor
     func startAsync(for network: Network) async throws {
-        switch performStart(for: network) {
+        switch await performStart(for: network) {
         case .success: return
         case .failure(let error): throw error
         }
@@ -140,13 +162,62 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     @MainActor
     func stopAsync(lastError: String?) async {
-        performStop(lastError: lastError)
+        do {
+            try performStop(lastError: lastError, clearBalance: true)
+        } catch {
+            Self.logger.error("🛰️ SPVCOORD :: stop failed during full reset: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Stop only Core SPV, preserving the host, wallet and published balance.
+    @MainActor
+    func stopCoreAsync() async {
+        do {
+            try performStop(lastError: nil, clearBalance: false)
+        } catch {
+            Self.logger.error("🛰️ SPVCOORD :: Core-only stop failed: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Atomically stop and start Core SPV on the manager already owned by the
+    /// host. Runtime serialization prevents a second lifecycle request from
+    /// entering until this whole transaction completes.
+    @MainActor
+    func restartAsync() async throws {
+        let host = SwiftDashSDKHost.shared
+        guard let manager = host.manager,
+              host.wallet != nil,
+              let network = host.runningNetwork else {
+            let error = StartError.runtimeNotRunning
+            lastError = error.localizedDescription
+            throw error
+        }
+
+        do {
+            try await CoreSPVRestartOperation.run(
+                setRestarting: { self.isRestarting = $0 },
+                stop: {
+                    try self.performStop(lastError: nil, clearBalance: false)
+                },
+                start: {
+                    switch await self.performStart(manager: manager, for: network) {
+                    case .success:
+                        return
+                    case .failure(let error):
+                        throw error
+                    }
+                })
+        } catch {
+            lastError = error.localizedDescription
+            Self.logger.error("🛰️ SPVCOORD :: restart failed: \(String(describing: error), privacy: .public)")
+            throw error
+        }
     }
 
     // MARK: - Implementation
 
     @MainActor
-    private func performStart(for network: Network) -> Result<Void, Error> {
+    private func performStart(for network: Network) async -> Result<Void, Error> {
         let host = SwiftDashSDKHost.shared
         let manager: PlatformWalletManager
         do {
@@ -156,6 +227,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             return .failure(StartError.walletImport(error))
         }
 
+        return await performStart(manager: manager, for: network)
+    }
+
+    @MainActor
+    private func performStart(
+        manager: PlatformWalletManager,
+        for network: Network
+    ) async -> Result<Void, Error> {
         // If SPV is already running on this network, treat it as a
         // success. Mirrors `SwiftDashSDKWalletRuntime.shouldSkipRefresh`'s
         // start-elision intent.
@@ -198,7 +277,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // run before startSpv so the delete never races the sync loop's
         // segment writes. See `SPVChainResyncMarker` for why this only
         // happens on the launch after the marker was armed.
-        let appliedChainResync = applyPendingChainResyncIfNeeded(
+        let appliedChainResync = await applyPendingChainResyncIfNeeded(
             for: network, dataDir: dataDir, manager: manager)
 
         do {
@@ -226,7 +305,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     @MainActor
-    private func performStop(lastError: String?) {
+    private func performStop(lastError: String?, clearBalance: Bool) throws {
         progressCancellable?.cancel()
         progressCancellable = nil
         peersCancellable?.cancel()
@@ -242,20 +321,24 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 Self.logger.info("🛰️ SPVCOORD :: stopped")
             } catch {
                 Self.logger.error("🛰️ SPVCOORD :: stopSpv threw: \(String(describing: error), privacy: .public)")
+                subscribeToManagerProgress(manager: manager)
+                self.lastError = error.localizedDescription
+                state = .error
+                throw StartError.stopSpv(error)
             }
         }
 
-        // Drop the bridge'd balance so a network switch / wipe doesn't leak
-        // the previous wallet's value into the next session. The next
-        // `performStart` re-seeds via `refreshBalanceBridge()`.
-        SwiftDashSDKWalletState.shared.clearBalance()
+        if clearBalance {
+            // Drop the bridge'd balance so a network switch / wipe doesn't
+            // leak the previous wallet's value into the next session. A
+            // Core-only stop/restart deliberately preserves it.
+            SwiftDashSDKWalletState.shared.clearBalance()
+        }
 
         runningNetwork = nil
         coinJoinRecoveryWidenedNetwork = nil
         resetPublishedState()
-        if let lastError {
-            self.lastError = lastError
-        }
+        self.lastError = lastError
     }
 
     // MARK: - CoinJoin recovery (one-time wide gap)
@@ -313,19 +396,17 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         for network: Network,
         dataDir: String,
         manager: PlatformWalletManager
-    ) -> Bool {
+    ) async -> Bool {
         guard let pending = SPVChainResyncMarker.pending(for: network) else { return false }
         guard !pending.armedByThisSession else {
             Self.logger.info("🛰️ SPVCOORD :: chain resync armed this session — deferred to next launch")
             return false
         }
 
-        let dir = URL(fileURLWithPath: dataDir, isDirectory: true)
+        isApplyingChainResync = true
+        defer { isApplyingChainResync = false }
         do {
-            if FileManager.default.fileExists(atPath: dir.path) {
-                try FileManager.default.removeItem(at: dir)
-            }
-            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            try await Self.resetSPVStore(atPath: dataDir)
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: chain resync store delete failed: \(String(describing: error), privacy: .public)")
             return false
@@ -341,6 +422,20 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
         Self.logger.info("🛰️ SPVCOORD :: chain store cleared for resync from height \(pending.fromHeight, privacy: .public)")
         return true
+    }
+
+    /// Potentially large directory deletion is never performed on MainActor.
+    /// The caller resumes on MainActor before rewinding the filter checkpoint
+    /// and starting SPV.
+    private nonisolated static func resetSPVStore(atPath dataDir: String) async throws {
+        try await Task.detached(priority: .userInitiated) {
+            let fileManager = FileManager()
+            let dir = URL(fileURLWithPath: dataDir, isDirectory: true)
+            if fileManager.fileExists(atPath: dir.path) {
+                try fileManager.removeItem(at: dir)
+            }
+            try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+        }.value
     }
 
     /// After a widened recovery scan reaches `.synced`, mark recovery complete
@@ -521,8 +616,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     enum StartError: LocalizedError {
         case dataDirectory(Error)
         case spvClient(Error)
+        case stopSpv(Error)
         case walletImport(Error)
         case walletIdMismatch
+        case runtimeNotRunning
 
         var errorDescription: String? {
             switch self {
@@ -530,10 +627,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 return "Failed to create SPV data directory: \(error.localizedDescription)"
             case .spvClient(let error):
                 return "Failed to start SPV client: \(error.localizedDescription)"
+            case .stopSpv(let error):
+                return "Failed to stop SPV client: \(error.localizedDescription)"
             case .walletImport(let error):
                 return "Failed to import wallet: \(error.localizedDescription)"
             case .walletIdMismatch:
                 return "Imported wallet ID mismatch"
+            case .runtimeNotRunning:
+                return "Core SPV cannot restart because the wallet runtime is not running"
             }
         }
     }

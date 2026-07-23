@@ -33,7 +33,8 @@ final class SyncingAlertViewModel: ObservableObject {
     /// True after `stallThreshold` seconds without a progress change
     /// while syncing — shows the "Sync too slow?" row.
     @Published private(set) var isStalled = false
-    /// True from the Change-peers tap until progress moves again.
+    /// Mirrors the coordinator's complete stop → start transaction, including
+    /// restarts initiated from the diagnostics screen.
     @Published private(set) var isRotatingPeers = false
 
     private let monitor = SyncingActivityMonitor.shared
@@ -51,6 +52,13 @@ final class SyncingAlertViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] peers in
                 self?.peers = peers
+            }
+            .store(in: &cancellables)
+
+        SwiftDashSDKSPVCoordinator.shared.$isRestarting
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isRestarting in
+                self?.isRotatingPeers = isRestarting
             }
             .store(in: &cancellables)
 
@@ -83,7 +91,6 @@ final class SyncingAlertViewModel: ObservableObject {
     @MainActor
     func rotatePeers() {
         guard canRotatePeers else { return }
-        isRotatingPeers = true
         isStalled = false
         lastProgressChange = Date()
         SwiftDashSDKWalletRuntime.rotatePeers()
@@ -105,7 +112,6 @@ extension SyncingAlertViewModel: SyncingActivityMonitorObserver {
         if progress != self.progress {
             lastProgressChange = Date()
             isStalled = false
-            isRotatingPeers = false
         }
         self.progress = progress
         snapshot = monitor.snapshot
