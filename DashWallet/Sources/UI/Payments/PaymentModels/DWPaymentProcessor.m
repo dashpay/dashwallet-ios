@@ -154,8 +154,15 @@ static NSString *DWReversedHexString(NSData *data) {
 
         dispatch_async(dispatch_get_main_queue(), ^{
             if (error) {
+                NSString *title = NSLocalizedString(@"Couldn't make payment", nil);
+                if ([DWWalletSendService isBroadcastUnknownError:error]) {
+                    title = NSLocalizedString(@"Transaction status unknown", nil);
+                }
+                else if ([DWWalletSendService isBroadcastRejectedError:error]) {
+                    title = NSLocalizedString(@"Transaction not sent", nil);
+                }
                 [self failedWithError:error
-                                title:NSLocalizedString(@"Couldn't make payment", nil)
+                                title:title
                               message:error.localizedDescription];
             }
             else {

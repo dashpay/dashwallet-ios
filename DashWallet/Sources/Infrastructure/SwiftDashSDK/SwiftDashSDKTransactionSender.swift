@@ -188,7 +188,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     let tx = try builder.buildSigned(
                         wallet: wallet, accountType: .coinJoin,
                         accountIndex: Self.coinJoinAccountIndex)
-                    _ = try core.broadcastTransaction(tx)
+                    let outcome = try core.broadcastTransactionWithOutcome(tx)
+                    _ = try Self.requireAccepted(outcome)
                     // Wire (internal) byte order to match `Transaction.txHashData` /
                     // `CoinJoinWithdrawalStore`: `computeTxHash` yields display order,
                     // so reverse it back to wire order.
@@ -310,7 +311,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
             try builder.setFeeRate(satPerKb: Self.feeRateSatPerKb)
             let tx = try builder.buildSigned(
                 wallet: wallet, accountType: .bip44, accountIndex: Self.bip44AccountIndex)
-            _ = try core.broadcastTransaction(tx)
+            let outcome = try core.broadcastTransactionWithOutcome(tx)
+            _ = try Self.requireAccepted(outcome)
             return (tx.data, tx.fee)
         }
 
@@ -417,33 +419,54 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// submits the held `CoreTransaction`'s bytes to the network.
     ///
     /// - Parameter tx: The built transaction returned by `buildAndSign`.
-    /// - Returns: The txid string reported by the SDK.
+    /// - Returns: The SDK's authoritative network-acceptance outcome.
     @discardableResult
-    static func broadcast(_ tx: CoreTransaction) throws -> String {
-        let submit = { @MainActor () throws -> String in
+    static func broadcast(_ tx: CoreTransaction) throws -> CoreTransactionBroadcastOutcome {
+        let submit = { @MainActor () throws -> CoreTransactionBroadcastOutcome in
             guard let wallet = SwiftDashSDKHost.shared.wallet else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
             let core = try wallet.coreWallet()
-            return try core.broadcastTransaction(tx)
+            return try core.broadcastTransactionWithOutcome(tx)
         }
 
-        let txid: String
+        let outcome: CoreTransactionBroadcastOutcome
         if Thread.isMainThread {
-            txid = try MainActor.assumeIsolated { try submit() }
+            outcome = try MainActor.assumeIsolated { try submit() }
         } else {
-            var captured: Result<String, Error> = .failure(SendError.walletNotReady("uninitialized result"))
+            var captured: Result<CoreTransactionBroadcastOutcome, Error> =
+                .failure(SendError.walletNotReady("uninitialized result"))
             DispatchQueue.main.sync {
                 captured = Result { try MainActor.assumeIsolated { try submit() } }
             }
-            txid = try captured.get()
+            outcome = try captured.get()
         }
 
-        // Log both: the SDK-reported txid string and the app-computed
-        // display-order hash (the SDK string's byte order is unverified).
         let displayHash = computeTxHash(from: tx.data).map { String(format: "%02x", $0) }.joined()
-        logger.info("💸 TXSEND :: broadcast — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public)")
-        return txid
+        switch outcome {
+        case .accepted(let txid):
+            logger.info("💸 TXSEND :: broadcast accepted — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public)")
+        case .rejected(let txid, let reason):
+            logger.error("💸 TXSEND :: broadcast rejected — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)")
+        case .unknown(let txid, let reason):
+            logger.error("💸 TXSEND :: broadcast unknown — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)")
+        }
+        return outcome
+    }
+
+    /// Require a positive Core acceptance verdict for programmatic send paths
+    /// that do not expose the outcome enum directly. Rejected and unknown are
+    /// deliberately different errors: rejected may be retried, while unknown
+    /// must not be automatically broadcast again.
+    static func requireAccepted(_ outcome: CoreTransactionBroadcastOutcome) throws -> String {
+        switch outcome {
+        case .accepted(let txid):
+            return txid
+        case .rejected(let txid, let reason):
+            throw SendError.transactionRejected(txid: txid, reason: reason)
+        case .unknown(let txid, let reason):
+            throw SendError.transactionStatusUnknown(txid: txid, reason: reason)
+        }
     }
 
     // MARK: - Helpers
@@ -495,6 +518,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
         case invalidInput(String)
         case walletNotReady(String)
         case insufficientSelectedFunds(selected: UInt64, amount: UInt64, fee: UInt64)
+        case transactionRejected(txid: String, reason: String)
+        case transactionStatusUnknown(txid: String, reason: String)
 
         var errorDescription: String? {
             switch self {
@@ -504,6 +529,10 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 return "Wallet not ready: \(reason)"
             case .insufficientSelectedFunds(let selected, let amount, let fee):
                 return "Not enough funds. Selected: \(selected), Amount: \(amount), Fee: \(fee)"
+            case .transactionRejected(_, let reason):
+                return "The transaction wasn't sent. You can try again. \(reason)"
+            case .transactionStatusUnknown(_, let reason):
+                return "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
             }
         }
     }

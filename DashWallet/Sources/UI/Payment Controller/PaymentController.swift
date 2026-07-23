@@ -59,6 +59,10 @@ final class PaymentController: NSObject {
     private weak var confirmViewController: ConfirmPaymentViewController?
     private weak var provideAmountViewController: AmountProviding?
 
+    static func shouldReenableSending(after error: NSError) -> Bool {
+        !WalletSendService.isBroadcastUnknownError(error)
+    }
+
     override init() {
         paymentProcessor = DWPaymentProcessor()
 
@@ -154,14 +158,15 @@ extension PaymentController: DWPaymentProcessorDelegate {
         // Pre-existing behavior kept: nil-error failures (invalid-address rejections)
         // stay silent here. The DashSync DSErrorDomain special-case is gone — live
         // errors carry WalletSendService / SDK / BIP70 domains.
-        guard error != nil else {
+        guard let error else {
             return
         }
 
         presentationAnchor?.topController().view.dw_hideProgressHUD()
         provideAmountViewController?.hideActivityIndicator()
 
-        confirmViewController?.isSendingEnabled = true
+        confirmViewController?.isSendingEnabled =
+            Self.shouldReenableSending(after: error as NSError)
 
         showAlert(with: title, message: message)
     }
