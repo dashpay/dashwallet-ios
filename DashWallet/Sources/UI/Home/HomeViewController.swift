@@ -178,13 +178,12 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     // MARK: - Private
 
     #if DASHPAY
-    /// Row #17 stage A — re-evaluate avatar visibility + notification
-    /// bell from the central model state. Called from the legacy
-    /// `homeView(_:didUpdateProfile:)` delegate (DashSync-side
-    /// updates), from the `DWDashPayRegistrationStatusUpdated`
-    /// observer in `configureObservers()` (SwiftDashSDK-side
-    /// updates), and once from `viewDidLoad` to seed visibility on
-    /// re-launch for an already-registered wallet.
+    /// Re-evaluate avatar content, visibility, and the notification
+    /// bell from the central model state. Called from the
+    /// `homeViewDidUpdateProfile()` delegate, from the
+    /// `DWDashPayRegistrationStatusUpdated` observer in
+    /// `configureObservers()`, and once from `viewDidLoad` to seed
+    /// visibility on re-launch for an already-registered wallet.
     func refreshIdentityAvatar() {
         let hasIdentity = model.dashPayModel.hasIdentity
         let hasNotifications = model.dashPayModel.unreadNotificationsCount > 0
@@ -348,17 +347,11 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     
     private func configureObservers() {
         #if DASHPAY
-        // Row #17 stage A — the legacy `homeView(_:didUpdateProfile:)`
-        // delegate callback only fires when DashSync's
-        // `defaultBlockchainIdentity` flips. A SwiftDashSDK-side
-        // registration (Platform-Payment path, or Core path on a
-        // wallet without DashSync identity reconstruction) never
-        // toggles that delegate, so the avatar wouldn't appear until
-        // a screen change forced a redraw. Subscribing to the
+        // The `homeViewDidUpdateProfile()` delegate only fires on
+        // `JoinDashPayViewModel` state transitions. Subscribing to the
         // canonical `DWDashPayRegistrationStatusUpdatedNotification`
-        // re-evaluates the visibility gate against the central
-        // `hasIdentity` flag as soon as the bridge posts a terminal
-        // phase.
+        // additionally refreshes the avatar as soon as the registration
+        // bridge posts a terminal phase or a profile edit lands.
         NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -696,23 +689,8 @@ extension HomeViewController: HomeViewDelegate {
     }
     
     #if DASHPAY
-    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt) {
-        updateAvatarContent(identity: identity)
-        // Row #17 stage A — visibility gate uses
-        // `model.dashPayModel.hasIdentity` (OR of DashSync's
-        // `defaultBlockchainIdentity != nil` and SwiftDashSDK's
-        // `dashpayRegistrationCompleted`) so SDK-registered
-        // identities surface in the avatar even when DashSync has
-        // no `DSBlockchainIdentity` object to populate it with.
-        // The `DSBlockchainIdentity` passed in is still assigned to
-        // `avatarView.blockchainIdentity` so DashSync-side avatar
-        // rendering (letter, branded color, profile image) keeps
-        // working; SDK-only identities use the current-user avatar
-        // data from `DWCurrentUserIdentityInfo`.
-        let hasIdentity = model.dashPayModel.hasIdentity
-        let hasNotifications = unreadNotifications > 0
-        avatarView.isHidden = !hasIdentity
-        refreshNotificationBell(hasIdentity: hasIdentity, hasNotifications: hasNotifications)
+    func homeViewDidUpdateProfile() {
+        refreshIdentityAvatar()
     }
 
     func homeViewEditProfile() {

@@ -31,13 +31,23 @@ typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
 @interface DWDPAvatarView : UIView
 
 @property (nonatomic, assign) DWDPAvatarBackgroundMode backgroundMode;
-@property (nullable, nonatomic, copy) DSBlockchainIdentity *blockchainIdentity;
+
+/// TODO(invitations-sdk-rebuild): invitation-flow-only legacy setter, kept so the
+/// DashSync-backed invitation screens compile untouched until they are rebuilt on
+/// SwiftDashSDK. Everything else configures with
+/// `configureWithUsername:avatarURLString:` or `configureAsCurrentUser`.
+@property (nullable, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 @property (nonatomic, assign, getter=isSmall) BOOL small;
 
 - (void)setAsDashPlaceholder;
 - (void)configureWithUsername:(NSString *)username;
 /// Current-user render path backed by `DWCurrentUserIdentityInfo.shared`.
 - (void)configureAsCurrentUser;
+
+/// Letter + remote profile image from plain strings (no identity object needed).
+/// `avatarURLString` is the raw profile `avatarUrl` — percent-encoding is applied
+/// here. Falls back to the username letter when the URL is nil or fails to load.
+- (void)configureWithUsername:(nullable NSString *)username avatarURLString:(nullable NSString *)avatarURLString;
 
 @end
 

@@ -36,7 +36,9 @@ protocol HomeViewDelegate: AnyObject {
     func homeViewDidChangeTopBarVisibility(shouldShow: Bool)
 
 #if DASHPAY
-    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
+    /// The current user's DashPay profile/registration state changed; the
+    /// controller re-reads avatar content + visibility from the central model.
+    func homeViewDidUpdateProfile()
     func homeViewRequestUsername()
     func homeViewClaimInvitation()
     func homeViewEditProfile()
@@ -142,20 +144,7 @@ final class HomeView: UIView {
     #if DASHPAY
     
     private func setIdentity() {
-        guard let model = model else { return }
-        
-        let status = model.dashPayModel.registrationStatus
-        let completed = model.dashPayModel.registrationCompleted
-        
-        if status?.state == .done || completed {
-            let identity = model.dashPayModel.blockchainIdentity
-            let notificationAmount = model.dashPayModel.unreadNotificationsCount
-            
-            delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificationAmount)
-        } else {
-            delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
-        }
-        
+        delegate?.homeViewDidUpdateProfile()
         setNeedsLayout()
     }
     

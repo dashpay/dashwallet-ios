@@ -75,31 +75,8 @@ NS_ASSUME_NONNULL_END
 - (void)setBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity {
     _blockchainIdentity = blockchainIdentity;
 
-    [self.imageView sd_cancelCurrentImageLoad];
-
-    NSString *username = blockchainIdentity.currentDashpayUsername;
-    NSString *avatarUrlString = [blockchainIdentity.avatarPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-
-    [self setUsername:username];
-
-    __block typeof(self) weakSelf = self;
-
-    [self.imageView dw_setAvatarWithURLString:avatarUrlString
-                                   completion:^(UIImage *_Nullable image) {
-                                       __strong typeof(weakSelf) strongSelf = weakSelf;
-                                       if (!strongSelf) {
-                                           return;
-                                       }
-
-                                       if (image) {
-                                           strongSelf.imageView.hidden = NO;
-                                           strongSelf.letterLabel.hidden = YES;
-                                           strongSelf.imageView.image = image;
-                                       }
-                                       else {
-                                           [strongSelf setUsername:username];
-                                       }
-                                   }];
+    [self configureWithUsername:blockchainIdentity.currentDashpayUsername
+                avatarURLString:blockchainIdentity.avatarPath];
 }
 
 - (void)configureWithUsername:(NSString *)username {
@@ -107,16 +84,20 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)configureAsCurrentUser {
+    [self configureWithUsername:DWCurrentUserIdentityInfo.shared.username
+                avatarURLString:DWCurrentUserIdentityInfo.shared.avatarURL];
+}
+
+- (void)configureWithUsername:(nullable NSString *)username avatarURLString:(nullable NSString *)avatarURLString {
     [self.imageView sd_cancelCurrentImageLoad];
 
-    NSString *username = DWCurrentUserIdentityInfo.shared.username;
-    NSString *avatarRaw = DWCurrentUserIdentityInfo.shared.avatarURL;
-    NSString *avatarUrlString = [avatarRaw stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    NSString *encodedUrlString = [avatarURLString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
 
     [self setUsername:username];
 
     __block typeof(self) weakSelf = self;
-    [self.imageView dw_setAvatarWithURLString:avatarUrlString
+
+    [self.imageView dw_setAvatarWithURLString:encodedUrlString
                                    completion:^(UIImage *_Nullable image) {
                                        __strong typeof(weakSelf) strongSelf = weakSelf;
                                        if (!strongSelf) {
