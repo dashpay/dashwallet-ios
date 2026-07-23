@@ -9,19 +9,17 @@
 //
 //   - Dash Wallet balance — the existing one-hop sweep
 //     (`WalletSendService.sweepCoinJoin`), and
-//   - Shielded balance — a two-hop flow: sweep the CoinJoin account to the
-//     user's own BIP44 receive address (`sweepCoinJoinForShielding`), wait for
-//     the swept outputs to become spendable (`waitForSweptCoinJoinFunds`),
-//     then asset-lock the net amount into the shielded pool via
-//     `ShieldedTransferCoordinator.performAssetLock` (authorized once, at the
-//     sweep — `alreadyAuthorized` skips the second PIN prompt).
+//   - Shielded balance — a single CoinJoin-drain asset lock
+//     (`ShieldedTransferCoordinator.performAssetLock(funding: .coinJoinDrain)`):
+//     every mixed-coin UTXO funds the Type 18 lock directly and the shielded
+//     pool receives `lock_value − pool_fee` — no transparent intermediate hop.
 //
-//  Failure posture of the two-hop flow: the sweep leg is recorded on the
-//  ViewModel, so "Try again" after a post-sweep failure never re-sweeps — it
-//  resumes from the wait (or, when the asset lock already committed, resumes
-//  that exact outpoint via `resumeAssetLock`, mirroring the internal transfer
-//  confirm sheet). A stuck lock that survives the session is picked up by the
-//  home tx list's `ShieldedRecoverySheet` on the next launch.
+//  Failure posture of the shielded flow: a committed asset lock is resumed on
+//  its exact outpoint via `resumeAssetLock` (mirroring the internal transfer
+//  confirm sheet's "Try again"); a stuck lock that survives the session is
+//  picked up by the home tx list's `ShieldedRecoverySheet` on the next
+//  launch. A pre-broadcast failure moves nothing — the coins stay in the
+//  CoinJoin account and the popup/Settings surfaces keep offering the move.
 //
 
 import Combine
@@ -41,20 +39,18 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     enum Stage: Equatable {
         /// Destination choice screen.
         case choice
-        /// One-hop BIP44 sweep in flight.
+        /// BIP44 sweep in flight.
         case movingToWallet
-        /// Two-hop flow, leg 1–2: auth + sweep + wait for spendable UTXOs.
-        case sweepingForShield
-        /// Two-hop flow, leg 3: the coordinator drives the asset-lock shield;
-        /// progress detail comes from `coordinator.phase`.
+        /// CoinJoin-drain asset lock in flight; progress detail comes from
+        /// `coordinator.phase`.
         case shielding
         case success(Destination)
         /// Shield broadcast accepted but unconfirmed — terminal, non-retryable
         /// (see `ShieldedTransferCoordinator.Phase.submittedUnconfirmed`).
         case submittedUnconfirmed
         /// `destination` picks the retry path: a failed wallet sweep retries
-        /// the one-hop sweep, a failed shielded flow re-enters the two-hop
-        /// flow at the leg that failed.
+        /// the sweep, a failed shielded flow retries (or resumes) the drain
+        /// asset lock.
         case failed(message: String, destination: Destination)
     }
 
@@ -65,12 +61,6 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     let amountDuffs: UInt64
 
     let coordinator = ShieldedTransferCoordinator()
-
-    /// Sweep-leg result, kept across retries so "Try again" never re-sweeps
-    /// an already-emptied CoinJoin account.
-    private var sweep: WalletSendService.CoinJoinShieldedSweep?
-    /// Lock amount resolved by the wait leg, kept for the same reason.
-    private var lockAmountDuffs: UInt64?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -85,34 +75,10 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
 
     var isInFlight: Bool {
         switch stage {
-        case .movingToWallet, .sweepingForShield, .shielding:
+        case .movingToWallet, .shielding:
             return true
         default:
             return false
-        }
-    }
-
-    /// Row index for the shielded flow's positional step list
-    /// (Moving funds → Locking funds → Generating proof → Broadcasting).
-    var shieldStepIndex: Int? {
-        switch stage {
-        case .sweepingForShield:
-            return 0
-        case .shielding:
-            switch coordinator.phase {
-            case .signing, .locking:
-                return 1
-            case .proving:
-                return 2
-            case .broadcasting:
-                return 3
-            case .success:
-                return 4
-            case .idle, .failed, .submittedUnconfirmed:
-                return nil
-            }
-        default:
-            return nil
         }
     }
 
@@ -135,51 +101,27 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         }
     }
 
-    /// Destination 2: the two-hop CoinJoin → Shielded flow. Each leg's result
-    /// is kept so a retry resumes where the previous attempt failed instead of
-    /// repeating side-effectful work.
+    /// Destination 2: one CoinJoin-drain asset lock — every mixed-coin UTXO
+    /// funds the Type 18 lock directly (no transparent hop) and the shielded
+    /// pool receives the drained value minus the pool fee. The coordinator
+    /// runs its own PIN/biometric gate, so this is the flow's single prompt.
     func moveToShielded() async {
         guard !isInFlight else { return }
-        stage = .sweepingForShield
-        do {
-            if sweep == nil {
-                sweep = try await WalletSendService.shared.sweepCoinJoinForShielding()
-            }
-            if lockAmountDuffs == nil, let sweep {
-                lockAmountDuffs = try await WalletSendService.shared.waitForSweptCoinJoinFunds(sweep)
-            }
-        } catch {
-            if WalletSendService.isAuthenticationCancelledError(error as NSError), sweep == nil {
-                stage = .choice
-            } else {
-                stage = .failed(message: (error as NSError).localizedDescription, destination: .shielded)
-            }
-            return
-        }
-        guard let lockAmountDuffs else {
-            stage = .failed(
-                message: NSLocalizedString(
-                    "Couldn't move your CoinJoin funds. Please try again.", comment: "CoinJoin"),
-                destination: .shielded)
-            return
-        }
-
         stage = .shielding
         // A prior failed attempt leaves the coordinator terminal; reset so
         // `beginTransfer()` doesn't silently bail.
         if coordinator.phase != .idle {
             coordinator.reset()
         }
-        // The sweep leg already ran the spend authorization for this action.
-        await coordinator.performAssetLock(amountDuffs: lockAmountDuffs, alreadyAuthorized: true)
+        await coordinator.performAssetLock(funding: .coinJoinDrain)
         finishFromCoordinatorPhase()
     }
 
     /// "Try again" from a failed shielded attempt. Mirrors
     /// `InternalTransferConfirmSheet.tryAgain`: a committed asset lock is
     /// RESUMED on its exact outpoint (building a second lock would strand the
-    /// first); otherwise the flow re-enters `moveToShielded`, which skips the
-    /// legs that already completed.
+    /// first); otherwise a fresh drain build runs — a pre-broadcast failure
+    /// left the CoinJoin account untouched.
     func retryShielded() async {
         guard !isInFlight else { return }
         if let op = coordinator.lastAssetLockOutPoint {
@@ -195,13 +137,27 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     }
 
     private func finishFromCoordinatorPhase() {
+        // The drain consumed (or may have consumed) the CoinJoin balance —
+        // re-tally so the popup/Settings surfaces self-clear without waiting
+        // for the next SPV balance event. Also correct for failures: the
+        // re-tally just reads the SDK's current UTXO set.
+        SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
         switch coordinator.phase {
         case .success:
             stage = .success(.shielded)
         case .submittedUnconfirmed:
             stage = .submittedUnconfirmed
         case .failed(let message):
-            stage = .failed(message: message, destination: .shielded)
+            // A cancelled PIN prompt is a user decision, not an error —
+            // return to the destination choice (mirrors the wallet leg's
+            // auth-cancel handling). Message-compare against the same
+            // localized source the coordinator maps the cancel to.
+            if message == ShieldedTransferCoordinator.CoordinatorError.authCancelled.errorDescription {
+                coordinator.reset()
+                stage = .choice
+            } else {
+                stage = .failed(message: message, destination: .shielded)
+            }
         default:
             // The coordinator's single-flight gate refused the call (phase
             // wasn't idle). Surface a retryable failure rather than hang.
@@ -241,7 +197,7 @@ struct CoinJoinMoveFundsSheet: View {
                 choiceBody
             case .movingToWallet:
                 walletInFlightBody
-            case .sweepingForShield, .shielding:
+            case .shielding:
                 shieldInFlightBody
             case .success(let destination):
                 successBody(destination: destination)
@@ -359,14 +315,16 @@ struct CoinJoinMoveFundsSheet: View {
 
     private var shieldInFlightBody: some View {
         VStack(alignment: .leading, spacing: 16) {
+            // Same steps as the internal transfer's Core → Shielded route —
+            // the drain is one asset lock, driven by the same coordinator.
             ShieldedTransferStepList(
-                labels: [
-                    NSLocalizedString("Moving funds", comment: "CoinJoin"),
-                    NSLocalizedString("Locking funds", comment: ""),
-                    NSLocalizedString("Generating proof", comment: ""),
-                    NSLocalizedString("Broadcasting", comment: ""),
-                ],
-                currentIndex: viewModel.shieldStepIndex)
+                currentPhase: viewModel.coordinator.phase,
+                steps: [
+                    .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing),
+                    .init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking),
+                    .init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving),
+                    .init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting),
+                ])
 
             Text(NSLocalizedString(
                 "Building the privacy proof can take up to a minute. Keep the app open.",

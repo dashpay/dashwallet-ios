@@ -140,13 +140,11 @@ final class SwiftDashSDKTransactionSender: NSObject {
     ///   receive address, resolved via `SwiftDashSDKReceiveAddressReader`).
     /// - Returns: The **wire-order** txids of the broadcast sweep transactions
     ///   (one per chunk) — ready to record in `CoinJoinWithdrawalStore`
-    ///   (matches `Transaction.txHashData`) — plus the net duffs delivered to
-    ///   `address` (Σ chunk inputs − Σ chunk fees, broadcast chunks only). The
-    ///   CoinJoin → Shielded flow locks exactly this net amount afterwards.
-    static func sweepCoinJoin(to address: String) throws -> (txids: [Data], netDuffs: UInt64) {
+    ///   (matches `Transaction.txHashData`).
+    static func sweepCoinJoin(to address: String) throws -> [Data] {
         logger.info("💸 TXSEND :: sweeping CoinJoin account → spendable balance")
 
-        let sweep = { @MainActor () throws -> (txids: [Data], netDuffs: UInt64) in
+        let sweep = { @MainActor () throws -> [Data] in
             let host = SwiftDashSDKHost.shared
             guard let wallet = host.wallet, let manager = host.manager,
                   let network = host.runningNetwork else {
@@ -161,13 +159,13 @@ final class SwiftDashSDKTransactionSender: NSObject {
             guard let cjBalance = manager.accountBalances(for: walletId).first(where: {
                 $0.typeTag == Self.coinJoinTypeTag && $0.index == Self.coinJoinAccountIndex
             }) else {
-                return ([], 0)
+                return []
             }
 
             // Snapshot the account's spendable UTXOs (after the recovery scan has
             // materialized deep `/0/` + `/1/` addresses).
             let utxos = manager.accountUtxos(for: walletId, balance: cjBalance)
-            guard !utxos.isEmpty else { return ([], 0) }
+            guard !utxos.isEmpty else { return [] }
 
             // Drain each balanced ≤500-input chunk to `address`. `SelectionStrategy.all`
             // makes core compute output = Σinputs − fee with no change (the addOutput
@@ -175,7 +173,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
             // Partial-failure tolerant: keep the txs that broadcast, log the rest, and
             // throw only if nothing broadcast at all (a re-run sweeps the remainder).
             var txids: [Data] = []
-            var netDuffs: UInt64 = 0
             var firstError: Error?
             for (index, chunk) in Self.balancedChunks(utxos).enumerated() {
                 do {
@@ -196,9 +193,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
                     // `CoinJoinWithdrawalStore`: `computeTxHash` yields display order,
                     // so reverse it back to wire order.
                     txids.append(Data(Self.computeTxHash(from: tx.data).reversed()))
-                    // `.all` drain: single output = Σ chunk inputs − exact fee.
-                    let chunkInputs = chunk.reduce(UInt64(0)) { $0 + $1.valueDuffs }
-                    netDuffs += chunkInputs > tx.fee ? chunkInputs - tx.fee : 0
                 } catch {
                     firstError = firstError ?? error
                     Self.logger.error(
@@ -206,49 +200,26 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 }
             }
             if txids.isEmpty, let error = firstError { throw error }
-            return (txids, netDuffs)
+            return txids
         }
 
-        let result: (txids: [Data], netDuffs: UInt64)
+        let txids: [Data]
         if Thread.isMainThread {
-            result = try MainActor.assumeIsolated { try sweep() }
+            txids = try MainActor.assumeIsolated { try sweep() }
         } else {
-            var captured: Result<(txids: [Data], netDuffs: UInt64), Error> =
-                .failure(SendError.walletNotReady("uninitialized result"))
+            var captured: Result<[Data], Error> = .failure(SendError.walletNotReady("uninitialized result"))
             DispatchQueue.main.sync {
                 captured = Result { try MainActor.assumeIsolated { try sweep() } }
             }
-            result = try captured.get()
+            txids = try captured.get()
         }
 
         // Log display-order hex (byte-reversed wire order) to match explorers.
-        let hexes = result.txids.map { txid -> String in
+        let hexes = txids.map { txid -> String in
             Data(txid.reversed()).map { String(format: "%02x", $0) }.joined()
         }
-        logger.info("💸 TXSEND :: coinjoin sweep broadcast — \(result.txids.count, privacy: .public) tx(s), net \(result.netDuffs, privacy: .public) duffs: \(hexes.joined(separator: ","), privacy: .public)")
-        return result
-    }
-
-    /// Wait for the BIP44 account-0 UTXOs sitting on `address` to reach
-    /// `minimumTotal` duffs, tolerating the SDK's async local-mempool apply of
-    /// just-broadcast transactions (same polling contract as the selected-input
-    /// send). Returns the observed total (which may be below `minimumTotal` if
-    /// the timeout elapsed — the caller decides sufficiency).
-    ///
-    /// Used by the CoinJoin → Shielded flow to wait for the sweep's outputs to
-    /// become spendable before funding the shield asset lock from them.
-    static func waitForFunds(onAddress address: String, minimumTotal: UInt64) async throws -> UInt64 {
-        let network: PaymentNetwork
-        do {
-            network = try PaymentNetworkResolver.current()
-        } catch {
-            throw SendError.walletNotReady("unsupported network for UTXO wait")
-        }
-        guard let script = ScriptAddressCodec.scriptPubKey(forAddress: address, network: network) else {
-            throw SendError.invalidInput("cannot derive scriptPubKey for the address")
-        }
-        let utxos = try await waitForAddressUtxos(script: script, minimumTotal: minimumTotal)
-        return utxos.reduce(UInt64(0)) { $0 + $1.valueDuffs }
+        logger.info("💸 TXSEND :: coinjoin sweep broadcast — \(txids.count, privacy: .public) tx(s): \(hexes.joined(separator: ","), privacy: .public)")
+        return txids
     }
 
     // MARK: - Selected-input send (CrowdNode signal txs)

@@ -2187,12 +2187,6 @@
 /* CoinJoin */
 "Your mixed coins were moved to your Dash Wallet balance." = "Your mixed coins were moved to your Dash Wallet balance.";
 
-/* CoinJoin */
-"The moved funds are not spendable yet. Your Dash is safe in your wallet balance — try again in a moment." = "The moved funds are not spendable yet. Your Dash is safe in your wallet balance — try again in a moment.";
-
-/* CoinJoin */
-"The remaining balance is too small to move to the shielded balance." = "The remaining balance is too small to move to the shielded balance.";
-
 /* No comment provided by engineer. */
 "Moved from" = "Moved from";
 

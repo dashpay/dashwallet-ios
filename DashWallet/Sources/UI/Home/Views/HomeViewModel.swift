@@ -718,11 +718,11 @@ extension HomeViewModel {
 
     /// Whether the post-sync popup can offer the Shielded-balance destination:
     /// the wallet's shielded sub-wallet is bound (an Orchard address resolves)
-    /// AND the CoinJoin balance is comfortably above the flow's fee overhead —
-    /// the shield pool fee (carved from the locked value) plus the L1 send-fee
-    /// reserve the asset lock keeps — so at least half the moved amount
-    /// survives the fees. Fails closed (BIP44-only popup) when the fee
-    /// estimate or the shielded binding is unavailable.
+    /// AND the CoinJoin balance is comfortably above the drain's fee overhead
+    /// — the Type 18 pool fee (carved from the locked value) plus an L1-fee
+    /// allowance for the many-input drain transaction — so at least half the
+    /// moved amount survives the fees. Fails closed (BIP44-only popup) when
+    /// the fee estimate or the shielded binding is unavailable.
     var coinJoinShieldDestinationAvailable: Bool {
         let balanceDuffs = coinJoinSweepAmountDuffs
         // Host + manager are `@MainActor`-isolated — reuse the wallet source's
@@ -735,7 +735,8 @@ extension HomeViewModel {
             else { return false }
             // Pool fee = base shielded fee + the asset-lock processing base cost
             // (same estimate the transfer confirm sheets show); credits → duffs
-            // is ÷ 1000. The L1 reserve mirrors `waitForSweptCoinJoinFunds`.
+            // is ÷ 1000. `sendFeeReserveDuffs` (0.001 DASH) allows for the L1
+            // fee of a drain spending hundreds of mixed-coin inputs.
             let overheadDuffs = (shieldedFeeCredits + InternalTransferConfirmSheet.assetLockBaseCostCredits) / 1000
                 + WalletBalance.sendFeeReserveDuffs
             return balanceDuffs >= overheadDuffs * 2
