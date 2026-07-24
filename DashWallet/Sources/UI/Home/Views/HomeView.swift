@@ -583,7 +583,9 @@ struct HomeViewContent<Content: View>: View {
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
-                    : txItem.isPendingPlatformFunding || txItem.isPendingIdentityFunding
+                    : txItem.isPendingIdentityFunding
+                        ? NSLocalizedString("Pending — tap to finish", comment: "DashPay registration recovery")
+                    : txItem.isPendingPlatformFunding
                         ? NSLocalizedString("Pending", comment: "")
                         : (metadata?.details?.isEmpty == false
                             ? metadata?.details
@@ -599,6 +601,12 @@ struct HomeViewContent<Content: View>: View {
                 // instead of the read-only detail/gift-card sheets.
                 if txItem.isPendingShieldedTransfer {
                     self.pendingShieldedRecovery = txItem
+                } else if txItem.isPendingIdentityFunding {
+                    #if DASHPAY
+                    delegate?.homeViewRequestUsername()
+                    #else
+                    self.selectedTxDataItem = txDataItem
+                    #endif
                 } else if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
                     // Check if this is a gift card transaction
                     self.giftCardTxId = txItem.txHashData

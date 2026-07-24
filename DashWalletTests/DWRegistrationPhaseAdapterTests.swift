@@ -256,4 +256,40 @@ final class DWRegistrationPhaseAdapterTests: XCTestCase {
                 failedAtPhase: .creatingID),
             .creatingID)
     }
+
+    // MARK: - Registration interruption recovery
+
+    func test_registrationRecoveryOutPoint_decodesDisplayTxidToWireOrder() {
+        let displayTxid = "e8b43025641eea4fd21190f01bd870ef90f1a8b199d8fc3376c5b62c0b1a179d"
+        let parsed = DWIdentityRegistrationCoordinator.parseOutPointHex(
+            "\(displayTxid):1")
+
+        XCTAssertEqual(
+            parsed?.txidWire.map { String(format: "%02x", $0) }.joined(),
+            "9d171a0b2cb6c57633fcd899b1a8f190ef70d81bf09011d24fea1e642530b4e8")
+        XCTAssertEqual(parsed?.vout, 1)
+    }
+
+    func test_registrationRecoveryOutPoint_rejectsMalformedValues() {
+        XCTAssertNil(DWIdentityRegistrationCoordinator.parseOutPointHex("missing-vout"))
+        XCTAssertNil(DWIdentityRegistrationCoordinator.parseOutPointHex("00:1"))
+        XCTAssertNil(DWIdentityRegistrationCoordinator.parseOutPointHex(
+            "\(String(repeating: "z", count: 64)):1"))
+        XCTAssertNil(DWIdentityRegistrationCoordinator.parseOutPointHex(
+            "\(String(repeating: "0", count: 64)):not-a-number"))
+    }
+
+    func test_registrationRecoveryIdentityIdentifier_matchesDIP27Vector() {
+        let parsed = DWIdentityRegistrationCoordinator.parseOutPointHex(
+            "e8b43025641eea4fd21190f01bd870ef90f1a8b199d8fc3376c5b62c0b1a179d:1")
+        let identifier = parsed.flatMap {
+            DWIdentityRegistrationCoordinator.identityIdentifier(
+                txidWire: $0.txidWire,
+                vout: $0.vout)
+        }
+
+        XCTAssertEqual(
+            identifier?.map { String(format: "%02x", $0) }.joined(),
+            "993e6ac24139e41ea9a4541bca4e1642bd0832321754c2b4ff60dc4e8b340633")
+    }
 }
