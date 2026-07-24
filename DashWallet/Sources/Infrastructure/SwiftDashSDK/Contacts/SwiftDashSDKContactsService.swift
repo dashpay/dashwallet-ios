@@ -580,21 +580,14 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
     // MARK: - Contact-request eligibility
 
-    /// Check whether identities can participate in DashPay contact
-    /// requests: an enabled ECDSA_SECP256K1 key with purpose
-    /// ENCRYPTION *and* one with purpose DECRYPTION. The ENCRYPTION
-    /// predicate mirrors the SDK send path verbatim
-    /// (`rs-platform-wallet/…/contact_requests.rs`: `purpose ==
-    /// ENCRYPTION && key_type == ECDSA_SECP256K1 &&
-    /// disabled_at.is_none()`, over the identity's plain public keys —
-    /// deliberately NO contract-bounds requirement; a contract-keys
-    /// query false-negatives identities whose DashPay keys aren't
-    /// contract-bound). DECRYPTION is additionally required so the
-    /// recipient can actually open incoming requests. Identities
-    /// registered before DashPay keys existed fail `sendContactRequest`
-    /// with "Identity has no enabled ECDSA_SECP256K1 encryption key" —
-    /// checking up front lets the add-contact UI mark them instead of
-    /// letting the user hit the PIN gate and a network error.
+    /// Check whether identities can receive a DashPay contact request:
+    /// an enabled ECDSA_SECP256K1 DECRYPTION key (preferred by the SDK)
+    /// or ENCRYPTION key (the supported mobile-cohort fallback).
+    /// Deliberately NO contract-bounds requirement; a contract-keys
+    /// query false-negatives identities whose compatible keys aren't
+    /// contract-bound. Identities with neither compatible key fail the
+    /// SDK's recipient-key selector, so checking up front lets the UI
+    /// explain the state before the PIN gate.
     ///
     /// Returns eligibility per requested id; an id whose key query
     /// fails is omitted — callers treat absent as "unknown" and leave
@@ -614,15 +607,9 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 // requested-but-missing key id.
                 let keys = try await sdk.identityGetKeys(identityId: base58)
                 let usable = keys.values.compactMap { $0 as? [String: Any] }
-                func hasEnabledECDSAKey(purpose: Int) -> Bool {
-                    usable.contains { key in
-                        (key["purpose"] as? Int) == purpose
-                            && (key["type"] as? Int) == 0  // ECDSA_SECP256K1
-                            && (key["disabledAt"] == nil || key["disabledAt"] is NSNull)
-                    }
+                if let eligible = DWDashPayIdentityKeys.recipientEligibility(from: usable) {
+                    result[id] = eligible
                 }
-                result[id] = hasEnabledECDSAKey(purpose: 1)  // ENCRYPTION
-                    && hasEnabledECDSAKey(purpose: 2)        // DECRYPTION
             } catch {
                 Self.logger.error("👥 CONTACTS :: key eligibility query failed for \(base58, privacy: .public): \(String(describing: error), privacy: .public)")
             }
@@ -669,14 +656,14 @@ final class SwiftDashSDKContactsService: ObservableObject {
         return (wallet, modelContainer, ownerId)
     }
 
-    /// Lazily bring the current identity up to the DashPay key set
-    /// before its first contact action: dashwallet's registration
-    /// derives AUTHENTICATION keys only, and both `sendContactRequest`
-    /// and the reciprocal request inside `acceptContactRequest` need
-    /// our own enabled ECDSA ENCRYPTION key for the DIP-15 ECDH.
-    /// No-op once the keys exist; called after the PIN gate so the
-    /// IdentityUpdate broadcast is covered by the same user approval
-    /// as the contact action it unblocks.
+    /// Lazily repair an incomplete identity before a contact action.
+    /// New registrations include the full DashPay key pair, but the
+    /// fallback remains for earlier/development identities because
+    /// both `sendContactRequest` and the reciprocal request inside
+    /// `acceptContactRequest` need our own enabled ECDSA ENCRYPTION
+    /// key for DIP-15 ECDH. No-op once both keys exist; called after
+    /// the PIN gate so any IdentityUpdate is covered by the same user
+    /// approval as the contact action it unblocks.
     private func ensureOwnDashPayKeys(
         wallet: ManagedPlatformWallet,
         ownerId: Data,
