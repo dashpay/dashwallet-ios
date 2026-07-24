@@ -51,6 +51,38 @@ enum InternalTransferRoute: Equatable {
     case platformToCore
 }
 
+/// Shared Type-18 amount boundary for Core → Shielded transfers.
+///
+/// `ShieldFromAssetLock` carves its pool fee from the single-use asset-lock
+/// value, so the lock must contain strictly more credits than that fee. Keep
+/// the estimator here as the one source of truth for amount validation and
+/// both transfer confirmation screens.
+@MainActor
+enum CoreToShieldedAmountPolicy {
+    /// Asset-lock processing base cost folded into a ShieldFromAssetLock
+    /// pool fee on top of `compute_minimum_shielded_fee`. Mirrors Rust
+    /// `required_asset_lock_duff_balance_for_processing_start_for_address_funding`
+    /// (50_000 duffs) × 1000 credits/duff.
+    static let assetLockBaseCostCredits: UInt64 = 50_000_000
+
+    static var poolFeeCredits: UInt64? {
+        guard let shieldedFee = try? PlatformWalletManager.estimateShieldedFee(
+            kind: .transfer,
+            numActions: 2)
+        else { return nil }
+
+        let (total, overflow) = shieldedFee.addingReportingOverflow(assetLockBaseCostCredits)
+        return overflow ? nil : total
+    }
+
+    /// User-entered Core amounts have duff precision (1000 Platform credits).
+    /// The SDK rejects `amountCredits <= poolFeeCredits`, so the smallest valid
+    /// value is the first whole duff strictly above the fee.
+    static func minimumAmountDuffs(poolFeeCredits: UInt64) -> UInt64 {
+        poolFeeCredits / 1000 + 1
+    }
+}
+
 @MainActor
 final class InternalTransferViewModel: ObservableObject {
 
@@ -329,6 +361,34 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
+    var coreToShieldedMinimumAmountDuffs: UInt64? {
+        guard route == .coreToShielded,
+              let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits
+        else { return nil }
+        return CoreToShieldedAmountPolicy.minimumAmountDuffs(
+            poolFeeCredits: poolFeeCredits)
+    }
+
+    /// Inline, user-facing explanation for a Core → Shielded amount rejected
+    /// before Confirm. Zero stays quiet while the user has not entered an
+    /// amount; a fee-estimation failure fails closed with a generic retry.
+    var amountValidationMessage: String? {
+        guard route == .coreToShielded, dashDuffsUnsigned > 0 else { return nil }
+        guard let minimumDuffs = coreToShieldedMinimumAmountDuffs else {
+            return NSLocalizedString(
+                "There was an error, please try again later",
+                comment: "Internal transfer fee estimate unavailable")
+        }
+        guard dashDuffsUnsigned < minimumDuffs else { return nil }
+
+        let formattedMinimum = "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "The minimum amount you can send is %@",
+                comment: "Internal transfer minimum amount"),
+            formattedMinimum)
+    }
+
     var canContinue: Bool {
         // Gate on duffs, not raw DASH: a sub-duff amount (e.g. 1e-9 DASH)
         // renders as 0 in the confirm sheet, so it must not enable Continue —
@@ -336,7 +396,15 @@ final class InternalTransferViewModel: ObservableObject {
         // UI shows 0.
         guard dashDuffsUnsigned > 0, !isBlockedBySync else { return false }
         switch route {
-        case .coreToShielded, .coreToPlatform:
+        case .coreToShielded:
+            // The Type-18 pool fee is carved from the asset-lock value. The
+            // SDK refuses to broadcast a single-use lock at or below that fee;
+            // enforce the same strict boundary before opening Confirm.
+            guard let minimumDuffs = coreToShieldedMinimumAmountDuffs,
+                  dashDuffsUnsigned >= minimumDuffs
+            else { return false }
+            return dashDuffsUnsigned <= coreBalanceDuffs
+        case .coreToPlatform:
             // Asset-lock routes: the pool/processing fee is carved from the
             // locked value (not charged on top of the Core balance) and the
             // Rust side rejects an undersized lock, so no source-balance fee
