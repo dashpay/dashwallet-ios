@@ -66,8 +66,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// DashPay identity per wallet.
     private static let pinnedIdentityIndex: UInt32 = 0
 
-    /// Number of identity keys to pre-derive. Matches the
-    /// `SwiftExampleApp` reference (`Self.defaultKeyCount`).
+    /// Number of SDK base keys to pre-derive: AUTHENTICATION/MASTER,
+    /// AUTHENTICATION/CRITICAL, AUTHENTICATION/HIGH, and
+    /// TRANSFER/CRITICAL. The DashPay ENCRYPTION/DECRYPTION pair is
+    /// appended separately at ids 4 and 5 below.
     private static let defaultKeyCount: UInt32 = 4
 
     /// BIP44 account index used for asset-lock funding. dashwallet
@@ -327,13 +329,21 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // to Keychain. Synchronous on the FFI side; the resolver
         // callback reads the mnemonic via WalletStorage.
         newController.enterPreparingKeys()
-        let pubkeys: [ManagedPlatformWallet.IdentityPubkey]
+        var pubkeys: [ManagedPlatformWallet.IdentityPubkey]
         do {
             pubkeys = try wallet.prePersistIdentityKeysForRegistration(
                 identityIndex: Self.pinnedIdentityIndex,
                 keyCount: Self.defaultKeyCount,
                 network: network)
-            Self.logger.info("🪪 IDENT-COORD :: pre-derived \(pubkeys.count, privacy: .public) keys")
+            let dashPaySpecifications = DWDashPayIdentityKeys.registrationSpecifications(
+                firstKeyId: Self.defaultKeyCount)
+            pubkeys.append(contentsOf: try DWDashPayIdentityKeys.deriveAndPersist(
+                wallet: wallet,
+                identityIdString: "",
+                identityIndex: Self.pinnedIdentityIndex,
+                specifications: dashPaySpecifications,
+                network: network))
+            Self.logger.info("🪪 IDENT-COORD :: pre-derived \(pubkeys.count, privacy: .public) keys including DashPay contact pair")
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: key derivation failed: \(String(describing: error), privacy: .public)")
             failedAtPhase = .processingPayment

@@ -5,22 +5,12 @@
 //  Adds missing DashPay ENCRYPTION / DECRYPTION keys to the current
 //  identity via an IdentityUpdate transition (migration Row #18).
 //
-//  Why this exists: dashwallet's registration flow
-//  (`prePersistIdentityKeysForRegistration`) derives AUTHENTICATION
-//  keys only — the Rust ladder is pinned to
-//  `(ECDSA_SECP256K1, AUTHENTICATION, MASTER|HIGH)` — so identities
-//  registered here can't send contact requests: the SDK's
-//  `select_own_encryption_key` fails with "Identity has no enabled
-//  ECDSA_SECP256K1 encryption key". This upgrader runs lazily before
-//  the first contact action and brings the identity up to the DashPay
-//  key set (ENCRYPTION + DECRYPTION, MEDIUM security, ECDSA — the
-//  same shape SwiftExampleApp's add-key flow produces, verified
-//  working on testnet).
+//  New registrations include both keys in IdentityCreate. This
+//  upgrader remains as a lazy fallback for identities created before
+//  that policy or whose Platform key set is otherwise incomplete.
 //
-//  The derive → validate → persist → updateIdentity sequence is a
-//  port of SwiftExampleApp's `IdentityKeyAddition.prepareKeys`
-//  (packages/swift-sdk/SwiftExampleApp/Views/IdentityKeyAddition.swift),
-//  narrowed to the two ECDSA DashPay purposes.
+//  Key derivation/persistence is shared with the registration flow
+//  through `DWDashPayIdentityKeys`.
 //
 //  dashpay target only.
 //
@@ -37,31 +27,7 @@ enum DWIdentityKeyUpgrader {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.identity-key-upgrader")
 
-    /// DashPay system contract id — `dashpay_contract::ID_BYTES` in
-    /// the platform repo (base58 `Bwr4WHCPz5rFVAD87RqTs3izo4zpzwsEdKPWUT1NS1C7`).
-    private static let dashPayContractId = Data([
-        162, 161, 180, 172, 111, 239, 34, 234,
-        42, 26, 104, 232, 18, 54, 68, 179,
-        87, 135, 95, 107, 65, 44, 24, 16,
-        146, 129, 193, 70, 231, 178, 113, 188,
-    ])
-
-    enum UpgradeError: LocalizedError {
-        case noIdentityRow
-        case derivationMismatch
-        case keychainWriteFailed
-
-        var errorDescription: String? {
-            switch self {
-            case .noIdentityRow:
-                return NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
-            case .derivationMismatch:
-                return "Derived key didn't match its public key — refusing to broadcast."
-            case .keychainWriteFailed:
-                return "Could not persist new key to the iOS Keychain — aborted before broadcast."
-            }
-        }
-    }
+    typealias UpgradeError = DWDashPayIdentityKeys.KeyError
 
     /// Ensure the identity has enabled ECDSA_SECP256K1 keys with
     /// purposes ENCRYPTION and DECRYPTION, broadcasting one
@@ -110,76 +76,19 @@ enum DWIdentityKeyUpgrader {
         let localMaxId = identityRow.identityPublicKeys.map(\.id).max()
         var nextKeyId = (max(networkMaxId ?? 0, localMaxId ?? 0)) + 1
 
-        var rows: [ManagedPlatformWallet.IdentityPubkey] = []
+        var specifications: [DWDashPayIdentityKeys.KeySpecification] = []
         for purpose in missingPurposes {
             let chosenKeyId = nextKeyId
             nextKeyId += 1
-
-            // 1. Derive the keypair at the slot (path build + secp256k1
-            //    derive happen Rust-side; mnemonic stays behind the
-            //    resolver trampoline).
-            let preview = try wallet.deriveIdentityAuthKeyAtSlot(
-                identityIndex: identityRow.identityIndex,
-                keyId: chosenKeyId,
-                network: network)
-
-            // 2. Defence against derivation drift before anything is
-            //    persisted or broadcast.
-            guard KeyValidation.validatePrivateKeyForPublicKey(
-                privateKeyHex: preview.privateKeyData.toHexString(),
-                publicKeyHex: preview.publicKeyHex,
-                keyType: .ecdsaSecp256k1,
-                network: network)
-            else {
-                throw UpgradeError.derivationMismatch
-            }
-
-            // 3. Persist the private scalar so the KeychainSigner
-            //    trampoline can use the key later (and sign the
-            //    update transition's proof-of-possession if required).
-            let pubKeyHashHex = SwiftDashSDK.KeychainManager.computePublicKeyHashHex(preview.publicKeyData)
-            let metadata = IdentityPrivateKeyMetadata(
-                identityId: identityRow.identityIdString,
-                keyId: chosenKeyId,
-                walletId: wallet.walletId.toHexString(),
-                identityIndex: identityRow.identityIndex,
-                keyIndex: chosenKeyId,
-                derivationPath: preview.derivationPath,
-                publicKey: preview.publicKeyHex,
-                publicKeyHash: pubKeyHashHex,
-                keyType: KeyType.ecdsaSecp256k1.rawValue,
-                purpose: purpose.rawValue,
-                securityLevel: SecurityLevel.medium.rawValue)
-            guard KeychainManager.shared.storeIdentityPrivateKey(
-                preview.privateKeyData,
-                derivationPath: preview.derivationPath,
-                metadata: metadata) != nil
-            else {
-                throw UpgradeError.keychainWriteFailed
-            }
-
-            // 4. The on-chain key row. MEDIUM security. Drive REQUIRES
-            //    contract bounds on Encryption/Decryption keys added
-            //    via IdentityUpdate, and DashPay's contract config only
-            //    declares the bounds requirement at the DOCUMENT-TYPE
-            //    level — `SingleContract` (kind 1) is rejected, it must
-            //    be `SingleContractDocumentType(DashPay, "contactRequest")`
-            //    (kind 2). See rs-drive-abci
-            //    `validate_identity_public_key_contract_bounds/v0/mod.rs`
-            //    and SwiftExampleApp's AddIdentityKeyView, whose added
-            //    keys (this exact shape) verifiably work on testnet.
-            //    The send path's own-key selector checks purpose/type/
-            //    enabled only, so the bound doesn't affect selection.
-            rows.append(ManagedPlatformWallet.IdentityPubkey(
-                keyId: chosenKeyId,
-                keyType: .ecdsaSecp256k1,
-                purpose: purpose,
-                securityLevel: .medium,
-                pubkeyBytes: preview.publicKeyData,
-                contractBounds: .singleContractDocumentType(
-                    id: Self.dashPayContractId,
-                    documentTypeName: "contactRequest")))
+            specifications.append(.init(keyId: chosenKeyId, purpose: purpose))
         }
+
+        let rows = try DWDashPayIdentityKeys.deriveAndPersist(
+            wallet: wallet,
+            identityIdString: identityRow.identityIdString,
+            identityIndex: identityRow.identityIndex,
+            specifications: specifications,
+            network: network)
 
         let signer = KeychainSigner(modelContainer: modelContainer)
         try await wallet.updateIdentity(
