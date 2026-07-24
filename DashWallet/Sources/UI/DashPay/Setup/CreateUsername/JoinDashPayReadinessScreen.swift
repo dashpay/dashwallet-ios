@@ -32,6 +32,8 @@ struct JoinDashPayReadinessScreen: View {
     /// transparent escape (the picker pins to the viable transparent
     /// source).
     let onProceed: () -> Void
+    /// Return to the screen that opened this interstitial.
+    let onClose: () -> Void
 
     /// Suggested deposit headroom (0.001 DASH in credits) added to the
     /// shortfall prefill: the Core→Shielded route carves the Platform
@@ -46,10 +48,28 @@ struct JoinDashPayReadinessScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Spacer()
+
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.dash.primaryText)
+                        .frame(width: 36, height: 36)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.dash.gray300Alpha30, lineWidth: 1.5)
+                        )
+                }
+                .frame(width: 44, height: 44)
+                .accessibilityLabel(NSLocalizedString("Close", comment: "Accessibility"))
+            }
+            .padding(.top, 4)
+
             Text(NSLocalizedString("Get ready to join DashPay", comment: "Usernames"))
                 .font(.title1)
                 .foregroundColor(.dash.primaryText)
-                .padding(.top, 12)
+                .padding(.top, 4)
 
             Text(NSLocalizedString("Your username is visible to everyone. Funding it from your Shielded balance — after letting the funds rest for a few hours — means no one can link your username to your other Dash.", comment: "Usernames"))
                 .font(.system(size: 14))
