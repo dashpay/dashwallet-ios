@@ -874,13 +874,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Captures only `manager` (a long-lived singleton) — no retain on the
     /// coordinator past the sheet's lifetime.
     private func scheduleShieldedResync(manager: PlatformWalletManager) {
-        Task {
-            do {
-                try await manager.syncShieldedNow()
-            } catch {
-                Self.logger.warning("🛡️ SHIELD-TX :: syncShieldedNow failed (ignored): \(String(describing: error), privacy: .public)")
-            }
-        }
+        PlatformAddressSyncCoordinator.shared
+            .refreshShieldedBalanceAfterSpend(using: manager)
     }
 
     /// Kick the Platform-address (BLAST) sync after a transfer that changes the

@@ -1126,7 +1126,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
         Self.logger.info("🪪 IDENT-COORD :: shielded create denomination=\(denomination, privacy: .public) contested=\(contested, privacy: .public)")
         do {
-            return try await manager.shieldedIdentityCreateFromPool(
+            let identityId = try await manager.shieldedIdentityCreateFromPool(
                 walletId: walletId,
                 // Per-operation Orchard spend authority (seedless
                 // shielded bind) — same pattern as the app's other
@@ -1138,8 +1138,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 denomination: denomination,
                 sendToAddressOnCreationFailure: fallbackAddressBytes,
                 identitySigner: signer)
+            PlatformAddressSyncCoordinator.shared
+                .refreshShieldedBalanceAfterSpend(using: manager)
+            return identityId
         } catch let unconfirmed as ShieldedIdentityCreateUnconfirmedError {
             Self.logger.warning("🪪 IDENT-COORD :: shielded create unconfirmed id=\(unconfirmed.identityId.map { String(format: "%02x", $0) }.joined().prefix(8), privacy: .public)…")
+            PlatformAddressSyncCoordinator.shared
+                .refreshShieldedBalanceAfterSpend(using: manager)
             throw CoordinatorError.shieldedCreateUnconfirmed
         }
     }

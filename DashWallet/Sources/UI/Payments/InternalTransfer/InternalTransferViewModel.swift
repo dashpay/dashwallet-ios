@@ -264,10 +264,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// drawing transparent credits directly).
     @Published private(set) var platformCredits: UInt64 = 0
 
-    /// Real shielded balance in credits, fed by the SDK's shielded sync
-    /// pass (`PlatformWalletManager.$lastShieldedSyncEvent → result(for:)`).
-    /// Updates whenever the shielded sync loop completes a pass — including
-    /// the manual `syncShieldedNow()` kick after a successful transfer.
+    /// Real shielded balance in credits, fed by the coordinator's reconciled
+    /// balance mirror. Updates whenever a shielded sync pass completes.
     @Published private(set) var shieldedBalance: UInt64 = 0
 
     /// True once the L1 chain sync completed (`SyncingActivityMonitor`
@@ -303,27 +301,13 @@ final class InternalTransferViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        if let manager = SwiftDashSDKHost.shared.manager,
-           let wallet = SwiftDashSDKHost.shared.wallet {
-            let walletId = wallet.walletId
-            // Seed once from whatever the manager already saw — the
-            // publisher only fires on new sync events.
-            shieldedBalance = manager.lastShieldedSyncEvent?
-                .result(for: walletId)?
-                .balance ?? 0
-
-            manager.$lastShieldedSyncEvent
-                .receive(on: RunLoop.main)
-                .sink { [weak self] event in
-                    guard let self else { return }
-                    if let walletResult = event?.result(for: walletId),
-                       walletResult.success,
-                       !walletResult.cooldownSkip {
-                        self.shieldedBalance = walletResult.balance
-                    }
-                }
-                .store(in: &cancellables)
-        }
+        shieldedBalance = PlatformAddressSyncCoordinator.shared.shieldedBalance
+        PlatformAddressSyncCoordinator.shared.$shieldedBalance
+            .receive(on: RunLoop.main)
+            .sink { [weak self] credits in
+                self?.shieldedBalance = credits
+            }
+            .store(in: &cancellables)
     }
 
     /// The raw numeric value the user has typed, with locale comma normalised
