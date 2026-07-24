@@ -309,6 +309,13 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 currentNetwork = network
                 if trigger == .walletMaterialChanged {
                     publishActiveWalletDidChange(reason: "wallet-started")
+                } else if trigger == .networkDidChange {
+                    // The same walletId can exist on both networks, but its
+                    // SwiftData container and identity set are network-scoped.
+                    // Publish only after the destination runtime is fully
+                    // bound so identity/banner consumers re-read destination
+                    // state instead of the cleared transition mirror.
+                    publishActiveWalletDidChange(reason: "network-changed")
                 }
             } catch {
                 Self.logger.error("🧭 RUNTIME :: start failed: \(String(describing: error), privacy: .public)")
