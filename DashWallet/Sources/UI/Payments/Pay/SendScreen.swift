@@ -865,11 +865,7 @@ struct SendConfirmSheet: View {
     private var networkFeeCredits: UInt64? {
         switch route {
         case .coreToShielded:
-            // ShieldFromAssetLock: base shielded fee + asset-lock base cost
-            // (same estimate as the internal Core → Shielded transfer).
-            guard let base = try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
-            else { return nil }
-            return base + InternalTransferConfirmSheet.assetLockBaseCostCredits
+            return CoreToShieldedAmountPolicy.poolFeeCredits
         case .platformToPlatform:
             // Credit transfer: the metered transition fee. The executor
             // states ~0.001 DASH as the conservative max.

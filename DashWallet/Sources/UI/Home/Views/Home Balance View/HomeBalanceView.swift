@@ -36,6 +36,7 @@ enum HomeBalanceViewState: Int {
 struct HomeBalanceView: View {
     @ObservedObject var viewModel: BalanceModel
     @ObservedObject private var platformSync = PlatformAddressSyncCoordinator.shared
+    @ObservedObject private var shieldedSync = ShieldedSyncMonitor.shared
     @State private var opacity: Double = 0.3
     var onLongPress: () -> Void
     var onReceive: (ChainNetwork) -> Void = { _ in }
@@ -148,6 +149,7 @@ struct HomeBalanceView: View {
                 icon: "shield",
                 title: NSLocalizedString("Shielded", comment: ""),
                 duffs: shieldedDuffs,
+                isSyncing: shieldedSync.isSyncing || platformSync.isShieldedBalanceReconciling,
                 infoAction: { onInfo(.shielded) },
                 inAction: { onReceive(.shielded) },
                 outAction: { onSend(.shielded) })
@@ -179,6 +181,7 @@ struct HomeBalanceView: View {
         icon: String,
         title: String,
         duffs: UInt64,
+        isSyncing: Bool = false,
         infoAction: @escaping () -> Void,
         inAction: @escaping () -> Void,
         outAction: @escaping () -> Void
@@ -192,11 +195,23 @@ struct HomeBalanceView: View {
                     .foregroundColor(Color.dash.whiteText)
                     .frame(width: 20)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(title)
-                        .font(.footnote)
-                        .fontWeight(.medium)
-                        .foregroundColor(Color.dash.whiteText)
-                    Text(viewModel.fiatString(forDuffs: duffs))
+                    HStack(spacing: 5) {
+                        Text(title)
+                            .font(.footnote)
+                            .fontWeight(.medium)
+                            .foregroundColor(Color.dash.whiteText)
+                        if isSyncing {
+                            SwiftUI.ProgressView()
+                                .scaleEffect(0.7)
+                                .tint(Color.dash.whiteText)
+                                .accessibilityHidden(true)
+                        }
+                    }
+                    Text(
+                        isSyncing
+                            ? NSLocalizedString("Syncing", comment: "Shielded balance")
+                            : viewModel.fiatString(forDuffs: duffs)
+                    )
                         .font(.caption2)
                         .foregroundColor(.white.opacity(0.7))
                 }

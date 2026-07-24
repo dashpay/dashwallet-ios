@@ -51,6 +51,38 @@ enum InternalTransferRoute: Equatable {
     case platformToCore
 }
 
+/// Shared Type-18 amount boundary for Core → Shielded transfers.
+///
+/// `ShieldFromAssetLock` carves its pool fee from the single-use asset-lock
+/// value, so the lock must contain strictly more credits than that fee. Keep
+/// the estimator here as the one source of truth for amount validation and
+/// both transfer confirmation screens.
+@MainActor
+enum CoreToShieldedAmountPolicy {
+    /// Asset-lock processing base cost folded into a ShieldFromAssetLock
+    /// pool fee on top of `compute_minimum_shielded_fee`. Mirrors Rust
+    /// `required_asset_lock_duff_balance_for_processing_start_for_address_funding`
+    /// (50_000 duffs) × 1000 credits/duff.
+    static let assetLockBaseCostCredits: UInt64 = 50_000_000
+
+    static var poolFeeCredits: UInt64? {
+        guard let shieldedFee = try? PlatformWalletManager.estimateShieldedFee(
+            kind: .transfer,
+            numActions: 2)
+        else { return nil }
+
+        let (total, overflow) = shieldedFee.addingReportingOverflow(assetLockBaseCostCredits)
+        return overflow ? nil : total
+    }
+
+    /// User-entered Core amounts have duff precision (1000 Platform credits).
+    /// The SDK rejects `amountCredits <= poolFeeCredits`, so the smallest valid
+    /// value is the first whole duff strictly above the fee.
+    static func minimumAmountDuffs(poolFeeCredits: UInt64) -> UInt64 {
+        poolFeeCredits / 1000 + 1
+    }
+}
+
 @MainActor
 final class InternalTransferViewModel: ObservableObject {
 
@@ -232,10 +264,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// drawing transparent credits directly).
     @Published private(set) var platformCredits: UInt64 = 0
 
-    /// Real shielded balance in credits, fed by the SDK's shielded sync
-    /// pass (`PlatformWalletManager.$lastShieldedSyncEvent → result(for:)`).
-    /// Updates whenever the shielded sync loop completes a pass — including
-    /// the manual `syncShieldedNow()` kick after a successful transfer.
+    /// Real shielded balance in credits, fed by the coordinator's reconciled
+    /// balance mirror. Updates whenever a shielded sync pass completes.
     @Published private(set) var shieldedBalance: UInt64 = 0
 
     /// True once the L1 chain sync completed (`SyncingActivityMonitor`
@@ -271,27 +301,13 @@ final class InternalTransferViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        if let manager = SwiftDashSDKHost.shared.manager,
-           let wallet = SwiftDashSDKHost.shared.wallet {
-            let walletId = wallet.walletId
-            // Seed once from whatever the manager already saw — the
-            // publisher only fires on new sync events.
-            shieldedBalance = manager.lastShieldedSyncEvent?
-                .result(for: walletId)?
-                .balance ?? 0
-
-            manager.$lastShieldedSyncEvent
-                .receive(on: RunLoop.main)
-                .sink { [weak self] event in
-                    guard let self else { return }
-                    if let walletResult = event?.result(for: walletId),
-                       walletResult.success,
-                       !walletResult.cooldownSkip {
-                        self.shieldedBalance = walletResult.balance
-                    }
-                }
-                .store(in: &cancellables)
-        }
+        shieldedBalance = PlatformAddressSyncCoordinator.shared.shieldedBalance
+        PlatformAddressSyncCoordinator.shared.$shieldedBalance
+            .receive(on: RunLoop.main)
+            .sink { [weak self] credits in
+                self?.shieldedBalance = credits
+            }
+            .store(in: &cancellables)
     }
 
     /// The raw numeric value the user has typed, with locale comma normalised
@@ -329,6 +345,34 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
+    var coreToShieldedMinimumAmountDuffs: UInt64? {
+        guard route == .coreToShielded,
+              let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits
+        else { return nil }
+        return CoreToShieldedAmountPolicy.minimumAmountDuffs(
+            poolFeeCredits: poolFeeCredits)
+    }
+
+    /// Inline, user-facing explanation for a Core → Shielded amount rejected
+    /// before Confirm. Zero stays quiet while the user has not entered an
+    /// amount; a fee-estimation failure fails closed with a generic retry.
+    var amountValidationMessage: String? {
+        guard route == .coreToShielded, dashDuffsUnsigned > 0 else { return nil }
+        guard let minimumDuffs = coreToShieldedMinimumAmountDuffs else {
+            return NSLocalizedString(
+                "There was an error, please try again later",
+                comment: "Internal transfer fee estimate unavailable")
+        }
+        guard dashDuffsUnsigned < minimumDuffs else { return nil }
+
+        let formattedMinimum = "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "The minimum amount you can send is %@",
+                comment: "Internal transfer minimum amount"),
+            formattedMinimum)
+    }
+
     var canContinue: Bool {
         // Gate on duffs, not raw DASH: a sub-duff amount (e.g. 1e-9 DASH)
         // renders as 0 in the confirm sheet, so it must not enable Continue —
@@ -336,7 +380,15 @@ final class InternalTransferViewModel: ObservableObject {
         // UI shows 0.
         guard dashDuffsUnsigned > 0, !isBlockedBySync else { return false }
         switch route {
-        case .coreToShielded, .coreToPlatform:
+        case .coreToShielded:
+            // The Type-18 pool fee is carved from the asset-lock value. The
+            // SDK refuses to broadcast a single-use lock at or below that fee;
+            // enforce the same strict boundary before opening Confirm.
+            guard let minimumDuffs = coreToShieldedMinimumAmountDuffs,
+                  dashDuffsUnsigned >= minimumDuffs
+            else { return false }
+            return dashDuffsUnsigned <= coreBalanceDuffs
+        case .coreToPlatform:
             // Asset-lock routes: the pool/processing fee is carved from the
             // locked value (not charged on top of the Core balance) and the
             // Rust side rejects an undersized lock, so no source-balance fee

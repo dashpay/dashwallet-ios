@@ -386,7 +386,8 @@ class HomeViewModel: ObservableObject {
             // Platform↔Shielded moves, shielded identity fundings) — the
             // Core rows above only cover operations with an L1 leg. The
             // day-grouping sort below merges the two timelines.
-            let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity()
+            let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity(
+                coreTransactions: transactions)
             for shielded in shieldedItems {
                 guard self.passesShieldedFilter(
                     item: shielded,
@@ -1103,17 +1104,18 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// - ShieldFromAssetLock entries are dropped: their Core asset-lock
     ///   spend always renders as a history row already
     ///   (`Transaction.isShieldedTransfer`).
-    /// - Withdrawal entries are dropped ONLY when the destination script
-    ///   is one of the active wallet's own Core addresses — that's the
-    ///   internal Shielded→Transparent transfer, whose Core receipt
-    ///   renders via `Transaction.isShieldedWithdrawalReceipt`. A
-    ///   withdrawal to an EXTERNAL Core address produces no wallet-side
-    ///   Core transaction at all, so it stays and renders as a Sent row.
+    /// - An internal Withdrawal is projected as Pending until its matching
+    ///   Core receipt appears, then dropped so the receipt becomes the single
+    ///   authoritative history row. A withdrawal to an EXTERNAL Core address
+    ///   produces no wallet-side Core transaction, so it always stays and
+    ///   renders as a Sent row.
     /// - Rows are deduped by `entryId`: an intra-wallet transfer writes
     ///   a Sent row on the sending account and a Received row on the
     ///   receiving account for the same operation; the outgoing
     ///   (initiating) side wins.
-    static func fetchShieldedActivity() -> [ShieldedActivityItem] {
+    static func fetchShieldedActivity(
+        coreTransactions: [Transaction] = []
+    ) -> [ShieldedActivityItem] {
         guard let (container, walletId) = hostHandles() else { return [] }
         let context = ModelContext(container)
         let descriptor = FetchDescriptor<PersistentShieldedActivity>(
@@ -1139,8 +1141,21 @@ class SwiftDashSDKWalletSource: TransactionSource {
             case ShieldedActivityItem.Kind.withdrawal.rawValue:
                 let address = withdrawalDestinationAddress(counterparty: row.counterparty)
                 if let address, isActiveWalletCoreAddress(address, walletId: walletId, in: context) {
-                    // Internal Shielded→Transparent transfer — the Core
-                    // receipt row represents it.
+                    let pendingItem = ShieldedActivityItem(
+                        row: row,
+                        destinationAddress: address,
+                        isAwaitingTransparentReceipt: true)
+                    // Keep a local Pending row during the gap between the
+                    // shielded spend and the asynchronously persisted L1
+                    // receipt. Once a matching receipt exists, suppress the
+                    // placeholder so the operation never renders twice.
+                    if hasMatchingCoreReceipt(
+                        for: pendingItem,
+                        address: address,
+                        in: coreTransactions) {
+                        continue
+                    }
+                    items.append(pendingItem)
                     continue
                 }
                 // External (or undecodable-script) withdrawal: nothing
@@ -1171,6 +1186,26 @@ class SwiftDashSDKWalletSource: TransactionSource {
             }
         }
         return items
+    }
+
+    /// Match the eventual Core receipt without relying on a txid the opaque
+    /// shielded-withdraw call does not return. Address + principal + a bounded
+    /// time window avoids consuming an unrelated historical receipt of the
+    /// same amount while tolerating block timestamp skew and indexing delay.
+    private static func hasMatchingCoreReceipt(
+        for pending: ShieldedActivityItem,
+        address: String,
+        in transactions: [Transaction]
+    ) -> Bool {
+        transactions.contains { transaction in
+            guard transaction.isShieldedWithdrawalReceipt,
+                  transaction.dashAmount == pending.amountDuffs,
+                  transaction.outputReceiveAddresses.contains(address) else {
+                return false
+            }
+            let delta = transaction.date.timeIntervalSince(pending.date)
+            return delta >= -3600 && delta <= 86_400
+        }
     }
 
     /// Decode an unshield entry's counterparty (21-byte serialized

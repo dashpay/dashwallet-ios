@@ -35,12 +35,13 @@ struct JoinDashPayReadinessScreen: View {
     /// Return to the screen that opened this interstitial.
     let onClose: () -> Void
 
-    /// Suggested deposit headroom (0.001 DASH in credits) added to the
+    /// Suggested deposit headroom (0.003 DASH in credits) added to the
     /// shortfall prefill: the Core→Shielded route carves the Platform
-    /// pool fee from the locked value, so depositing the bare shortfall
-    /// would net slightly under the denomination. Only a suggestion —
-    /// the gates re-evaluate on the notes that actually land.
-    private static let fundingFeeHeadroomCredits: UInt64 = 100_000_000
+    /// pool fee from the locked value. The current Type-18 fee is about
+    /// 0.003 DASH, so depositing less headroom can leave the resulting
+    /// note below the required denomination. Only a suggestion — the
+    /// gates re-evaluate on the notes that actually land.
+    private static let fundingFeeHeadroomCredits: UInt64 = 300_000_000
 
     private var snapshot: ShieldedIdentityFundingReadiness.Snapshot? {
         readiness.standardSnapshot

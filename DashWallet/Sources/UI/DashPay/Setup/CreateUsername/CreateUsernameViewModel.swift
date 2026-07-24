@@ -107,6 +107,11 @@ class CreateUsernameViewModel: ObservableObject {
     /// Formatted unspent shielded balance in DASH, for the picker label.
     @Published private(set) var shieldedBalance: String = ""
 
+    /// A prior Core-funded attempt has already created an identity or
+    /// persisted an unfinished asset lock. The form must not require a
+    /// second balance or offer another funding source in this state.
+    @Published private(set) var hasPendingRegistrationRecovery = false
+
     /// Shielded funding is offerable right now: funded + matured + pool
     /// minimum cleared (or pool count unknown — Drive enforces the real
     /// rule at submit).
@@ -132,6 +137,10 @@ class CreateUsernameViewModel: ObservableObject {
     func configureInvitationMode(uri: String) {
         invitationURI = uri
         invitationInviterUsername = DWInvitationService.shared.preview(for: uri)?.inviterUsername
+        validateUsername(username: username)
+    }
+
+    func refreshRegistrationRecoveryState() {
         validateUsername(username: username)
     }
     
@@ -305,6 +314,12 @@ class CreateUsernameViewModel: ObservableObject {
     
     private func validateUsername(username: String) {
         let username = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Re-check on every normal form revalidation (typing, Core/PP
+        // balance refresh, shielded readiness). This catches the
+        // cold-launch window where the screen appears just before the
+        // SDK host finishes restoring the persisted asset-lock rows.
+        hasPendingRegistrationRecovery =
+            DWIdentityRegistrationCoordinator.shared.hasPendingRegistrationRecovery()
 
         // Kill any in-flight availability check — its result belongs to
         // an input the user has already changed (including changed-to-empty).
@@ -357,13 +372,14 @@ class CreateUsernameViewModel: ObservableObject {
         // surfaces an insufficient-voucher failure through the normal
         // error alert.
         let voucherFunded = isInvitationMode
-        let hasEnoughBalance = voucherFunded || hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
+        let recoveryFunded = hasPendingRegistrationRecovery && !voucherFunded
+        let hasEnoughBalance = recoveryFunded || voucherFunded || hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
 
         uiState = CreateUsernameUIState(
             lengthRule: lengthValid ? .valid : .invalid,
             allowedCharactersRule: hasIllegalCharacters || startsOrEndsWithHyphen ? .invalid : .valid,
-            costRule: voucherFunded ? .hidden : (hasEnoughBalance ? .valid : .invalid),
+            costRule: voucherFunded || recoveryFunded ? .hidden : (hasEnoughBalance ? .valid : .invalid),
             usernameBlockedRule: canContinue ? .loading : .hidden,
             requiredDash: requiredCost,
             canContinue: false
