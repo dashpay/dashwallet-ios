@@ -15,7 +15,7 @@ import SwiftUI
 import DashUIKit
 
 struct ContactProfileSheet: View {
-    let contact: ContactItem
+    @State private var contact: ContactItem
 
     @Environment(\.dismiss) private var dismiss
     @State private var isProcessing = false
@@ -46,6 +46,10 @@ struct ContactProfileSheet: View {
     @State private var showContactSettings = false
 
     private let service = SwiftDashSDKContactsService.shared
+
+    init(contact: ContactItem) {
+        _contact = State(initialValue: contact)
+    }
 
     var body: some View {
         NavigationStack {
@@ -112,7 +116,24 @@ struct ContactProfileSheet: View {
             .onReceive(NotificationCenter.default.publisher(
                 for: SwiftDashSDKContactsService.contactsDidChangeNotification)
             ) { _ in
-                if contact.relationship == .established {
+                guard let latestContact = service.contactItem(
+                    for: contact.contactIdentityId)
+                else {
+                    // The request was removed (ignored) or the active wallet
+                    // changed. Do not leave an actionable stale profile open.
+                    dismiss()
+                    return
+                }
+
+                let becameEstablished =
+                    contact.relationship != .established &&
+                    latestContact.relationship == .established
+                contact = latestContact
+
+                if latestContact.relationship == .established {
+                    if becameEstablished {
+                        service.refreshPaymentsProjection()
+                    }
                     loadPayments()
                 }
             }
