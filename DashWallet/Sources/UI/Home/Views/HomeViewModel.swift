@@ -1385,7 +1385,7 @@ extension HomeViewModel {
         self.showJoinDashpay = syncModel.state == .syncDone &&
             !UsernamePrefs.shared.joinDashPayDismissed &&
             !hasRegisteredUsername &&
-            joinDashPayState != .voting && joinDashPayState != .registered
+            joinDashPayState != .registered
     }
     
     private func observeDashPay() {

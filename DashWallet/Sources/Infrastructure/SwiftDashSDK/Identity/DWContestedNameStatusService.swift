@@ -59,6 +59,7 @@ public final class DWContestedNameStatusService: NSObject {
     /// UserDefaults key for the pending-submission bookmark. Name
     /// is dashwallet-private; no other component reads it.
     private static let pendingLabelKey = "DWPendingContestedDPNSLabel"
+    private static let pendingVotingEndTimeKey = "DWPendingContestedDPNSVotingEndTime"
 
     private override init() {
         super.init()
@@ -74,6 +75,14 @@ public final class DWContestedNameStatusService: NSObject {
         UserDefaults.standard.string(forKey: Self.pendingLabelKey)
     }
 
+    /// Authoritative voting deadline returned by `ContestVoteState`.
+    /// A nil value means the state has not become queryable yet; it must
+    /// never be interpreted as "the contest already resolved".
+    public var pendingVotingEndTime: Date? {
+        let timestamp = UserDefaults.standard.double(forKey: Self.pendingVotingEndTimeKey)
+        return timestamp > 0 ? Date(timeIntervalSince1970: timestamp) : nil
+    }
+
     /// Coordinator calls this immediately after `registerDpnsName`
     /// returns success for a contested label, before the
     /// `.completed` controller transition fan-outs through the
@@ -82,7 +91,17 @@ public final class DWContestedNameStatusService: NSObject {
     /// profile sheet via `DWCurrentUserIdentityInfo`'s filter.
     public func recordSubmission(label: String) {
         UserDefaults.standard.set(label, forKey: Self.pendingLabelKey)
+        UserDefaults.standard.removeObject(forKey: Self.pendingVotingEndTimeKey)
         Self.logger.info("🪪 CONTEST-SVC :: recordSubmission label=\(label, privacy: .public)")
+    }
+
+    /// Cache the real contest deadline once Platform exposes its vote state.
+    /// Used both for pending copy and to make the no-state resolution fallback
+    /// impossible before voting has actually ended.
+    public func recordVotingEndTime(_ endTime: Date) {
+        UserDefaults.standard.set(
+            endTime.timeIntervalSince1970,
+            forKey: Self.pendingVotingEndTimeKey)
     }
 
     /// Clear the pending bookmark. Called by the LOST/pruned branches of
@@ -90,7 +109,28 @@ public final class DWContestedNameStatusService: NSObject {
     /// (and by `finalizeWon` on the WON branch).
     public func clearPending() {
         UserDefaults.standard.removeObject(forKey: Self.pendingLabelKey)
+        UserDefaults.standard.removeObject(forKey: Self.pendingVotingEndTimeKey)
         Self.logger.info("🪪 CONTEST-SVC :: clearPending")
+    }
+
+    /// Compare DPNS labels in their canonical form. The registration form
+    /// preserves the user's capitalization while Platform can return the
+    /// normalized lowercase label, and some reads append `.dash`.
+    public nonisolated static func labelsMatch(_ lhs: String, _ rhs: String) -> Bool {
+        canonicalLabel(lhs) == canonicalLabel(rhs)
+    }
+
+    /// Objective-C-friendly check used by the legacy DashPay state bridge.
+    public func isPendingLabel(_ label: String) -> Bool {
+        guard let pendingLabel else { return false }
+        return Self.labelsMatch(label, pendingLabel)
+    }
+
+    private nonisolated static func canonicalLabel(_ label: String) -> String {
+        let normalized = label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return normalized.hasSuffix(".dash")
+            ? String(normalized.dropLast(".dash".count))
+            : normalized
     }
 
     /// Resolution-side counterpart of the DWGlobalOptions mirror writes

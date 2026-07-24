@@ -294,7 +294,7 @@ NS_ASSUME_NONNULL_END
         // Contested submissions complete with the username deliberately
         // unmirrored (masternode voting pending) — self.username is nil by
         // construction until checkPendingContestResolution finalizes the win.
-        BOOL contestedPending = [DWContestedNameStatusService.shared.pendingLabel isEqualToString:bridgeUsername];
+        BOOL contestedPending = [DWContestedNameStatusService.shared isPendingLabel:bridgeUsername];
         NSAssert(contestedPending || self.username != nil, @"SDK identity has an empty username");
         self.registrationStatus = nil;
         [[NSNotificationCenter defaultCenter] postNotificationName:DWDashPayRegistrationStatusUpdatedNotification object:nil];

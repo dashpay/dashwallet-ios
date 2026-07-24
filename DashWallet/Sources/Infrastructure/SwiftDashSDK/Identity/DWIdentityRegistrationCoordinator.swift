@@ -84,6 +84,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// expects on the Platform Payment funding path.
     /// 1 duff = 1000 credits.
     private static let creditsPerDuff: UInt64 = 1_000
+    /// Rust rejects Core identity top-ups below this floor. Keeping the
+    /// mirror here prevents a tiny resume shortfall from broadcasting an
+    /// asset lock that Platform cannot consume.
+    private static let minimumCoreTopUpDuffs: UInt64 = 50_500
 
     // MARK: - Published surface
 
@@ -319,6 +323,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // FFI captures an unretained pointer to it, so we hold the
         // strong reference here for the duration of the awaits.
         let signer = KeychainSigner(modelContainer: modelContainer)
+        // A contested DPNS registration reserves substantially more
+        // credits than a standard name. The form already gates Core /
+        // Platform Payment balances at 0.25 DASH for these labels; use
+        // that same amount for the actual IdentityCreate instead of
+        // always provisioning the standard 0.03 DASH.
+        let identityFundingDuffs = Self.requiredIdentityFundingDuffs(for: username)
 
         // Step 2: IdentityCreate. Two paths depending on funding
         // source, OR skipped entirely if a prior attempt at this
@@ -340,12 +350,39 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         {
             Self.logger.info("🪪 IDENT-COORD :: resume — identity already exists at index \(Self.pinnedIdentityIndex, privacy: .public), skipping IdentityCreate")
             identityId = resumedId
+            // Older attempts may have created this identity with the
+            // standard 0.03-DASH amount and then failed the contested
+            // DPNS transition. Repair that recoverable state before
+            // retrying the name, rather than sending the same
+            // underfunded transition again.
+            do {
+                try await topUpResumedIdentityIfNeeded(
+                    identityId: resumedId,
+                    requiredDuffs: identityFundingDuffs,
+                    fundingSource: fundingSource,
+                    wallet: wallet,
+                    walletId: wallet.walletId,
+                    modelContainer: modelContainer,
+                    signer: signer)
+            } catch let coordError as CoordinatorError {
+                Self.logger.error("🪪 IDENT-COORD :: resume top-up precondition failed: \(String(describing: coordError), privacy: .public)")
+                failedAtPhase = .processingPayment
+                lastErrorMessage = coordError.localizedDescription
+                newController.enterFailed(coordError.localizedDescription)
+                throw coordError
+            } catch {
+                Self.logger.error("🪪 IDENT-COORD :: resume top-up failed: \(String(describing: error), privacy: .public)")
+                failedAtPhase = fundingSource == .core ? .processingPayment : .creatingID
+                lastErrorMessage = error.localizedDescription
+                newController.enterFailed(error.localizedDescription)
+                throw CoordinatorError.identityRegistration(error)
+            }
         } else {
         do {
             switch fundingSource {
             case .core:
                 let result = try await wallet.registerIdentityWithFunding(
-                    amountDuffs: DWDP_MIN_BALANCE_TO_CREATE_USERNAME,
+                    amountDuffs: identityFundingDuffs,
                     accountIndex: Self.defaultAccountIndex,
                     identityIndex: Self.pinnedIdentityIndex,
                     identityPubkeys: pubkeys,
@@ -353,7 +390,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 identityId = result.0
 
             case .platformPayment:
-                let targetCredits = UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) * Self.creditsPerDuff
+                let targetCredits = identityFundingDuffs * Self.creditsPerDuff
                 let inputs = try buildPlatformPaymentInputs(
                     walletId: wallet.walletId,
                     modelContainer: modelContainer,
@@ -476,6 +513,16 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             } catch {
                 Self.logger.warning("🪪 IDENT-COORD :: syncContestedDpnsNames failed: \(String(describing: error), privacy: .public)")
             }
+            do {
+                if let voteState = try await wallet.fetchContestVoteState(
+                    identityId: identityId,
+                    label: username) {
+                    DWContestedNameStatusService.shared
+                        .recordVotingEndTime(voteState.endTime)
+                }
+            } catch {
+                Self.logger.warning("🪪 IDENT-COORD :: initial contest vote-state fetch failed: \(String(describing: error), privacy: .public)")
+            }
         }
 
         // Step 4: mark complete + mirror to DWGlobalOptions. The
@@ -560,13 +607,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// foreground; O(1) no-op when nothing is pending. Never throws — a
     /// failed check logs and retries on the next trigger.
     ///
-    /// Outcomes: the label appears in `getDpnsNames`, or
-    /// `ContestVoteState.winner` is us → `finalizeWon(username:)` performs
-    /// the DWGlobalOptions mirror writes deferred by `handlePhaseChange`;
-    /// another winner / locked / contest pruned → `clearPending()` so the
-    /// user can register a different name (the identity-resume skip in
-    /// `startCreateUsername` makes a second attempt viable); still voting
-    /// → nothing.
+    /// Outcomes: `ContestVoteState.winner` is us →
+    /// `finalizeWon(username:)` performs the DWGlobalOptions mirror writes
+    /// deferred by `handlePhaseChange`; another winner / locked / a contest
+    /// that disappeared after its recorded deadline → clear the bookmark;
+    /// still voting or not indexed yet → nothing. `getDpnsNames()` alone is
+    /// never proof of a win because preregistration writes that document
+    /// before voting begins.
     ///
     /// Deliberate omission: no in-session timer — appear/foreground covers
     /// the testnet (~45 min) and mainnet (~2 week) voting windows.
@@ -617,11 +664,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
         let outcome: ContestOutcome
         do {
-            _ = try await wallet.syncDpnsNames(identityId: identityId)
-            let owned = try wallet.managedIdentity(identityId: identityId).getDpnsNames()
-            if owned.contains(where: { $0 == label || $0 == "\(label).dash" }) {
-                outcome = .won
-            } else if let state = try await wallet.fetchContestVoteState(identityId: identityId, label: label) {
+            if let state = try await wallet.fetchContestVoteState(identityId: identityId, label: label) {
+                DWContestedNameStatusService.shared
+                    .recordVotingEndTime(state.endTime)
                 switch state.winner {
                 case .none:
                     return // still voting
@@ -637,10 +682,23 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 // above), the contest resolved against us.
                 _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
                 let contested = try wallet.managedIdentity(identityId: identityId).getContestedDpnsNames()
-                if contested.contains(label) {
+                if contested.contains(where: {
+                    DWContestedNameStatusService.labelsMatch($0, label)
+                }) {
                     return // transient inconsistency — retry next trigger
                 }
-                outcome = .lost
+                // A missing vote state immediately after registration means
+                // "not indexed yet", not "won". Only resolve the canonical
+                // name owner after an authoritative deadline was observed and
+                // has passed. The local getDpnsNames cache is intentionally
+                // not consulted: preregistration puts the label there before
+                // voting and therefore cannot prove ownership.
+                guard let votingEnd = DWContestedNameStatusService.shared.pendingVotingEndTime,
+                      Date() >= votingEnd else {
+                    return
+                }
+                let resolvedOwner = try await wallet.resolveDpnsName(label)
+                outcome = (resolvedOwner == identityId) ? .won : .lost
             }
         } catch {
             Self.logger.warning("🪪 IDENT-COORD :: contest check failed (retry on next trigger): \(String(describing: error), privacy: .public)")
@@ -788,6 +846,72 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         )
         descriptor.fetchLimit = 1
         return (try? context.fetch(descriptor))?.first?.identityId
+    }
+
+    private static func requiredIdentityFundingDuffs(for username: String) -> UInt64 {
+        DWContestedNameStatusService.isContestedLabel(username)
+            ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
+            : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+    }
+
+    /// Bring a previously-created identity up to the amount this name
+    /// requires before resuming at DPNS registration.
+    ///
+    /// This primarily repairs identities created by the old contested
+    /// path with only 0.03 DASH. Core and Platform Payment both expose
+    /// native top-up operations. Shielded / invitation retries stay
+    /// untouched because silently switching either to transparent
+    /// funding would violate the source the user selected.
+    private func topUpResumedIdentityIfNeeded(
+        identityId: Identifier,
+        requiredDuffs: UInt64,
+        fundingSource: DWIdentityFundingSource,
+        wallet: ManagedPlatformWallet,
+        walletId: Data,
+        modelContainer: ModelContainer,
+        signer: KeychainSigner
+    ) async throws {
+        let currentCredits = try wallet.managedIdentity(identityId: identityId).getBalance()
+        let requiredCredits = requiredDuffs * Self.creditsPerDuff
+        guard currentCredits < requiredCredits else { return }
+
+        let missingCredits = requiredCredits - currentCredits
+        Self.logger.info(
+            "🪪 IDENT-COORD :: resume identity underfunded balance=\(currentCredits, privacy: .public) target=\(requiredCredits, privacy: .public)")
+
+        switch fundingSource {
+        case .core:
+            let roundedShortfallDuffs =
+                (missingCredits + Self.creditsPerDuff - 1) / Self.creditsPerDuff
+            let amountDuffs = max(roundedShortfallDuffs, Self.minimumCoreTopUpDuffs)
+            _ = try await wallet.topUpIdentityWithFunding(
+                identityId: identityId,
+                amountDuffs: amountDuffs,
+                accountIndex: Self.defaultAccountIndex)
+
+        case .platformPayment:
+            // Include the same Core minimum as conservative fee
+            // headroom. The address-funded transition deducts its fee
+            // from the supplied credits.
+            let topUpCredits = max(
+                missingCredits,
+                Self.minimumCoreTopUpDuffs * Self.creditsPerDuff)
+            let inputs = try buildPlatformPaymentInputs(
+                walletId: walletId,
+                modelContainer: modelContainer,
+                targetCredits: topUpCredits)
+            _ = try await wallet.topUpFromAddresses(
+                identityId: identityId,
+                inputs: inputs,
+                addressSigner: signer)
+
+        case .shielded, .invitation:
+            // No identity-top-up primitive exists for these sources.
+            // Continue to DPNS so the existing typed SDK failure is
+            // preserved without unexpectedly linking private funding
+            // to a transparent source.
+            return
+        }
     }
 
     /// Greedy-select DIP-17 Platform Payment addresses to cover
