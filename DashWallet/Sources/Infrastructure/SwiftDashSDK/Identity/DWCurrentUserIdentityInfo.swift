@@ -254,6 +254,19 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         invalidate()
     }
 
+    /// Install an authoritative empty snapshot at the wallet-removal boundary.
+    /// Unlike a regular invalidation this does not depend on the SDK host being
+    /// available, because the host has already stopped by the time the wipe
+    /// lifecycle invokes it.
+    @nonobjc
+    func resetForWalletRemoval() {
+        currentRevision &+= 1
+        cachedSnapshot = .empty
+        cachedRevision = currentRevision
+        Self.logger.info(
+            "🪪 IDENT-INFO :: wallet-context reset; revision → \(self.currentRevision, privacy: .public)")
+    }
+
     /// Fire-and-forget blockchain refresh of the local DPNS-names
     /// cache via `wallet.syncDpnsNames(identityId:)`. The local
     /// cache (`ManagedIdentity.dpns_names`) only contains names

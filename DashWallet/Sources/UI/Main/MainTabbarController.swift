@@ -18,7 +18,6 @@
 import SwiftUI
 import UIKit
 import Combine
-import SwiftUI
 
 // MARK: - MainTabbarTabs
 
@@ -246,6 +245,11 @@ extension MainTabbarController {
         nvc.tabBarItem = item
         viewControllers.append(nvc)
 
+        #if !DASHPAY
+        let identityAvailable = false
+        #endif
+        DWLogger.log(
+            "TABBAR wallet-context: \(identityAvailable ? "dashpay" : "core") layout, \(viewControllers.count) items")
         self.viewControllers = viewControllers
     }
 

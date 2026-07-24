@@ -172,10 +172,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             throw SwitchError.bindFailed
         }
 
-        NotificationCenter.default.post(
-            name: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
-            object: nil)
-        Self.logger.info("🧭 RUNTIME :: switchWallet — bound new active wallet and posted change")
+        publishActiveWalletDidChange(reason: "wallet-switch")
     }
 
     /// Validate that `walletId` is a switchable target on the current network:
@@ -310,6 +307,9 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)
                 try await PlatformAddressSyncCoordinator.shared.startAsync(for: network)
                 currentNetwork = network
+                if trigger == .walletMaterialChanged {
+                    publishActiveWalletDidChange(reason: "wallet-started")
+                }
             } catch {
                 Self.logger.error("🧭 RUNTIME :: start failed: \(String(describing: error), privacy: .public)")
                 await fullReset(lastError: error.localizedDescription, forWipe: false)
@@ -332,9 +332,22 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         SwiftDashSDKWalletState.shared.clearAllState()
         SwiftDashSDKHost.shared.stop()
         currentNetwork = nil
+        if forWipe {
+            DWCurrentUserIdentityInfo.shared.resetForWalletRemoval()
+            publishActiveWalletDidChange(reason: "wallet-removed")
+        }
     }
 
     // MARK: - Helpers
+
+    private func publishActiveWalletDidChange(reason: String) {
+        let walletId = SwiftDashSDKHost.shared.wallet?.walletId.hexEncodedString() ?? "none"
+        NotificationCenter.default.post(
+            name: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
+            object: nil)
+        Self.logger.info(
+            "🧭 RUNTIME :: active-wallet change reason=\(reason, privacy: .public) wallet=\(walletId, privacy: .public)")
+    }
 
     private func shouldSkipRefresh(for network: Network, trigger: RefreshTrigger) -> Bool {
         switch trigger {
