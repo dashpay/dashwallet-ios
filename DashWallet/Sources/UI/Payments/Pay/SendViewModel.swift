@@ -129,25 +129,13 @@ final class SendViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        if let manager = SwiftDashSDKHost.shared.manager,
-           let wallet = SwiftDashSDKHost.shared.wallet {
-            let walletId = wallet.walletId
-            shieldedBalance = manager.lastShieldedSyncEvent?
-                .result(for: walletId)?
-                .balance ?? 0
-
-            manager.$lastShieldedSyncEvent
-                .receive(on: RunLoop.main)
-                .sink { [weak self] event in
-                    guard let self else { return }
-                    if let walletResult = event?.result(for: walletId),
-                       walletResult.success,
-                       !walletResult.cooldownSkip {
-                        self.shieldedBalance = walletResult.balance
-                    }
-                }
-                .store(in: &cancellables)
-        }
+        shieldedBalance = PlatformAddressSyncCoordinator.shared.shieldedBalance
+        PlatformAddressSyncCoordinator.shared.$shieldedBalance
+            .receive(on: RunLoop.main)
+            .sink { [weak self] credits in
+                self?.shieldedBalance = credits
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Destination classification

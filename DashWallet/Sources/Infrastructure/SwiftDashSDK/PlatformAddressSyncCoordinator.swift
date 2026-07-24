@@ -60,6 +60,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     @Published public private(set) var platformBalance: UInt64 = 0
     @Published public private(set) var shieldedBalance: UInt64 = 0
+    /// True while a shielded spend has been observed but its change note has
+    /// not reached the local scan yet. During this window `shieldedBalance`
+    /// keeps the last reliable value instead of publishing a transient zero.
+    @Published public private(set) var isShieldedBalanceReconciling: Bool = false
     @Published public private(set) var activeAddressCount: Int = 0
     @Published public private(set) var derivedAddresses: [DerivedPlatformAddress] = []
 
@@ -97,6 +101,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private var syncEventCancellable: AnyCancellable?
     private var syncStateCancellable: AnyCancellable?
     private var shieldedEventCancellable: AnyCancellable?
+    private var shieldedReconciliationTask: Task<Void, Never>?
+    private var latestObservedShieldedBalance: UInt64 = 0
 
     /// Long-lived resolver for the shielded sub-wallet bind in `performStart`.
     /// Stored (not local) because `MnemonicResolver` hands Rust an unretained
@@ -549,8 +555,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     /// Clear the UI counters/display without tearing down the sync loop.
     public func clearDisplay() {
+        shieldedReconciliationTask?.cancel()
+        shieldedReconciliationTask = nil
         platformBalance = 0
         shieldedBalance = 0
+        latestObservedShieldedBalance = 0
+        isShieldedBalanceReconciling = false
         activeAddressCount = 0
         derivedAddresses = []
         checkpointHeight = 0
@@ -835,9 +845,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         // Seed once from whatever the manager already saw (the publisher only
         // fires on new events), then mirror the shielded balance from each
-        // completed shielded sync pass — same source/filter as
-        // `InternalTransferViewModel`. Balance is in credits (1e11/DASH).
-        shieldedBalance = manager.lastShieldedSyncEvent?.result(for: walletId)?.balance ?? 0
+        // completed shielded sync pass. Balance is in credits (1e11/DASH).
+        // Cooldown skips carry a zero payload, so they are never a valid seed.
+        if let result = manager.lastShieldedSyncEvent?.result(for: walletId),
+           result.success,
+           !result.cooldownSkip {
+            shieldedBalance = result.balance
+            latestObservedShieldedBalance = result.balance
+        }
         // Seed the shielded funding-tx → locked-amount map (for the home tx
         // list's "Shielded transfer" rows) from whatever is already
         // persisted, then refresh it after each completed shielded sync pass
@@ -851,9 +866,89 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                       let result = event?.result(for: walletId),
                       result.success,
                       !result.cooldownSkip else { return }
-                self.shieldedBalance = result.balance
+                self.handleShieldedBalanceResult(result, manager: manager)
                 ShieldedTxLookup.shared.refresh()
             }
+    }
+
+    /// Run an immediate post-spend readback. If the first pass observes spent
+    /// inputs before their change output, `handleShieldedBalanceResult` starts
+    /// a bounded retry sequence and keeps the last reliable balance visible.
+    func refreshShieldedBalanceAfterSpend(using manager: PlatformWalletManager) {
+        Task {
+            do {
+                try await manager.syncShieldedNow()
+            } catch {
+                Self.logger.warning(
+                    "🛡️ SHIELD :: post-spend sync failed: \(String(describing: error), privacy: .public)")
+            }
+        }
+    }
+
+    private func handleShieldedBalanceResult(
+        _ result: ShieldedWalletSyncResult,
+        manager: PlatformWalletManager
+    ) {
+        latestObservedShieldedBalance = result.balance
+
+        if isShieldedBalanceReconciling {
+            guard result.balance > 0 else { return }
+            finishShieldedBalanceReconciliation(with: result.balance)
+            return
+        }
+
+        // A spend's nullifier and its change note can become visible in
+        // separate Platform reads. Publishing the intermediate zero makes the
+        // user's remaining funds appear to vanish. Hold the previous snapshot
+        // only when this pass actually discovered newly-spent notes; ordinary
+        // zero balances still publish immediately.
+        if result.balance == 0, result.newlySpent > 0, shieldedBalance > 0 {
+            isShieldedBalanceReconciling = true
+            Self.logger.info(
+                "🛡️ SHIELD :: holding transient zero after \(result.newlySpent, privacy: .public) newly-spent note(s)")
+            scheduleShieldedBalanceReconciliation(using: manager)
+            return
+        }
+
+        shieldedBalance = result.balance
+    }
+
+    private func scheduleShieldedBalanceReconciliation(using manager: PlatformWalletManager) {
+        shieldedReconciliationTask?.cancel()
+        shieldedReconciliationTask = Task { [weak self] in
+            // The background loop sleeps for 60 seconds. These bounded kicks
+            // cover the common Platform-indexing window without leaving a
+            // legitimate fully-spent balance stale indefinitely.
+            for delayNanos in [UInt64(4_000_000_000), 12_000_000_000, 24_000_000_000] {
+                do {
+                    try await Task.sleep(nanoseconds: delayNanos)
+                } catch {
+                    return
+                }
+                guard let self, self.isShieldedBalanceReconciling else { return }
+                do {
+                    try await manager.syncShieldedNow()
+                } catch {
+                    Self.logger.warning(
+                        "🛡️ SHIELD :: reconciliation sync failed: \(String(describing: error), privacy: .public)")
+                }
+            }
+
+            // Combine delivers the completion on the main run loop. Give that
+            // delivery one turn before deciding the bounded retries are done.
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            guard let self, self.isShieldedBalanceReconciling else { return }
+            Self.logger.info("🛡️ SHIELD :: reconciliation window ended with zero balance")
+            self.finishShieldedBalanceReconciliation(
+                with: self.latestObservedShieldedBalance)
+        }
+    }
+
+    private func finishShieldedBalanceReconciliation(with balance: UInt64) {
+        shieldedBalance = balance
+        isShieldedBalanceReconciling = false
+        shieldedReconciliationTask?.cancel()
+        shieldedReconciliationTask = nil
     }
 
     private func handleSyncEvent(_ event: PlatformAddressSyncEvent, walletId: Data) {
