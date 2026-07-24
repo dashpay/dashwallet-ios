@@ -267,6 +267,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         currentFundingSource = fundingSource
         failedAtPhase = nil
         lastErrorMessage = nil
+        let isContestedSubmission = DWContestedNameStatusService.isContestedLabel(username)
+        let requiredIdentityFundingDuffs = isContestedSubmission
+            ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
+            : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        Self.logger.info(
+            "🪪 IDENT-COORD :: contested=\(isContestedSubmission, privacy: .public) identityFundingDuffs=\(requiredIdentityFundingDuffs, privacy: .public)")
 
         let newController = DWIdentityRegistrationController()
         controller = newController
@@ -345,7 +351,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             switch fundingSource {
             case .core:
                 let result = try await wallet.registerIdentityWithFunding(
-                    amountDuffs: DWDP_MIN_BALANCE_TO_CREATE_USERNAME,
+                    amountDuffs: requiredIdentityFundingDuffs,
                     accountIndex: Self.defaultAccountIndex,
                     identityIndex: Self.pinnedIdentityIndex,
                     identityPubkeys: pubkeys,
@@ -353,7 +359,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 identityId = result.0
 
             case .platformPayment:
-                let targetCredits = UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME) * Self.creditsPerDuff
+                let targetCredits = UInt64(requiredIdentityFundingDuffs) * Self.creditsPerDuff
                 let inputs = try buildPlatformPaymentInputs(
                     walletId: wallet.walletId,
                     modelContainer: modelContainer,
@@ -466,7 +472,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         //      `handlePhaseChange` — they run when
         //      `checkPendingContestResolution()` detects the win and
         //      calls `DWContestedNameStatusService.finalizeWon(username:)`.
-        let isContestedSubmission = DWContestedNameStatusService.isContestedLabel(username)
         Self.logger.info("🪪 IDENT-COORD :: contested=\(isContestedSubmission, privacy: .public) label=\(username, privacy: .public)")
         if isContestedSubmission {
             DWContestedNameStatusService.shared.recordSubmission(label: username)
