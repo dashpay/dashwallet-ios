@@ -448,6 +448,7 @@
 		478C983C2945801D00FAA0F0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478C983B2945801D00FAA0F0 /* Constants.swift */; };
 		47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47976E492987772700612988 /* AmountObjectTests.swift */; };
 		A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */; };
+		B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */; };
 		C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */; };
 		47976E4B2987781A00612988 /* DWAmountInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A2120E92214566A009906DC /* DWAmountInputValidator.m */; };
 		479DBDDD2995168C00F30AF1 /* Transactions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479DBDDC2995168C00F30AF1 /* Transactions.swift */; };
@@ -2713,6 +2714,7 @@
 		478C983B2945801D00FAA0F0 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		47976E492987772700612988 /* AmountObjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountObjectTests.swift; sourceTree = "<group>"; };
 		A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletWipeSerialExecutorTests.swift; sourceTree = "<group>"; };
+		B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWContestedNameStatusServiceTests.swift; sourceTree = "<group>"; };
 		C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKCoreLifecycleTests.swift; sourceTree = "<group>"; };
 		479DBDDC2995168C00F30AF1 /* Transactions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transactions.swift; sourceTree = "<group>"; };
 		479E7923287C00EC00D0F7D7 /* DatabaseConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseConnection.swift; sourceTree = "<group>"; };
@@ -7177,6 +7179,7 @@
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
 				A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */,
+				B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */,
 				C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */,
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
 				AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */,
@@ -10474,6 +10477,7 @@
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
 				A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */,
+				B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */,
 				C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
 				AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */,

@@ -7,8 +7,8 @@
 //  persists active contested labels via `syncContestedDpnsNames`,
 //  but a label drops out of `getContestedDpnsNames()` once the
 //  contest resolves — won names move to `getDpnsNames()`, lost
-//  ones disappear entirely. We add a single UserDefaults slot so
-//  the helper (`DWCurrentUserIdentityInfo`) can filter the
+//  ones disappear entirely. We add one network-scoped UserDefaults
+//  bookmark so the helper (`DWCurrentUserIdentityInfo`) can filter the
 //  pending label out of the displayed username until resolution.
 //
 //  Scope:
@@ -36,9 +36,10 @@
 //      `syncDpnsNames`/`fetchContestVoteState` was fixed in the v11
 //      pin, 2026-05-27.) A user-facing contest-status VIEW remains
 //      future work.
-//    - Single UserDefaults slot — v1 pins to one in-flight
-//      contested submission per identity. NOT read by any
-//      carveout viewmodel (`JoinDashPayViewModel`, `HomeViewModel`).
+//    - One UserDefaults bookmark per Platform network — v1 pins to
+//      one in-flight contested submission per identity and network.
+//      NOT read by any carveout viewmodel (`JoinDashPayViewModel`,
+//      `HomeViewModel`).
 //
 
 import Foundation
@@ -56,10 +57,21 @@ public final class DWContestedNameStatusService: NSObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.contested-name")
 
-    /// UserDefaults key for the pending-submission bookmark. Name
-    /// is dashwallet-private; no other component reads it.
-    private static let pendingLabelKey = "DWPendingContestedDPNSLabel"
-    private static let pendingVotingEndTimeKey = "DWPendingContestedDPNSVotingEndTime"
+    /// UserDefaults key prefixes for the pending-submission bookmark.
+    /// A suffix is added for the active Platform network: contested
+    /// submissions and their deadlines must never leak across a
+    /// Testnet/Mainnet round-trip.
+    private static let pendingLabelKeyPrefix = "DWPendingContestedDPNSLabel"
+    private static let pendingVotingEndTimeKeyPrefix = "DWPendingContestedDPNSVotingEndTime"
+
+    /// Protocol vote-poll durations in the Platform v2 settings. The fallback
+    /// starts at OUR submission time, which is at or after the first contender's
+    /// timestamp, and adds a grace period, so it cannot resolve earlier than the
+    /// real poll. Platform's authoritative `ContestVoteState.endTime` replaces
+    /// this estimate as soon as the contest becomes queryable.
+    private static let mainnetFallbackDuration: TimeInterval = 14 * 24 * 60 * 60
+    private static let testnetFallbackDuration: TimeInterval = 90 * 60
+    private static let fallbackResolutionGrace: TimeInterval = 5 * 60
 
     private override init() {
         super.init()
@@ -72,15 +84,16 @@ public final class DWContestedNameStatusService: NSObject {
     /// service); single-reader (`DWCurrentUserIdentityInfo`
     /// snapshot filter).
     public var pendingLabel: String? {
-        UserDefaults.standard.string(forKey: Self.pendingLabelKey)
+        guard let network = WalletEnvironment.network else { return nil }
+        return pendingLabel(for: network)
     }
 
-    /// Authoritative voting deadline returned by `ContestVoteState`.
-    /// A nil value means the state has not become queryable yet; it must
-    /// never be interpreted as "the contest already resolved".
+    /// Best-known voting deadline for the active network. Submission writes a
+    /// conservative fallback immediately; `ContestVoteState.endTime` replaces
+    /// it once Platform indexes the contest.
     public var pendingVotingEndTime: Date? {
-        let timestamp = UserDefaults.standard.double(forKey: Self.pendingVotingEndTimeKey)
-        return timestamp > 0 ? Date(timeIntervalSince1970: timestamp) : nil
+        guard let network = WalletEnvironment.network else { return nil }
+        return pendingVotingEndTime(for: network)
     }
 
     /// Coordinator calls this immediately after `registerDpnsName`
@@ -90,27 +103,62 @@ public final class DWContestedNameStatusService: NSObject {
     /// owned label from leaking into Edit Profile + the SDK
     /// profile sheet via `DWCurrentUserIdentityInfo`'s filter.
     public func recordSubmission(label: String) {
-        UserDefaults.standard.set(label, forKey: Self.pendingLabelKey)
-        UserDefaults.standard.removeObject(forKey: Self.pendingVotingEndTimeKey)
-        Self.logger.info("🪪 CONTEST-SVC :: recordSubmission label=\(label, privacy: .public)")
+        guard let network = WalletEnvironment.network else {
+            Self.logger.error("🪪 CONTEST-SVC :: cannot record submission without a supported network")
+            return
+        }
+        recordSubmission(label: label, network: network)
+    }
+
+    /// Network-explicit variant used by the registration coordinator. It
+    /// captures the runtime network before any async FFI work, avoiding a
+    /// late completion being written into the newly-selected network.
+    @nonobjc
+    func recordSubmission(
+        label: String,
+        network: Network,
+        submittedAt: Date = Date()
+    ) {
+        let fallbackEnd = Self.fallbackVotingEndTime(
+            submittedAt: submittedAt,
+            network: network)
+        UserDefaults.standard.set(label, forKey: Self.pendingLabelKey(for: network))
+        UserDefaults.standard.set(
+            fallbackEnd.timeIntervalSince1970,
+            forKey: Self.pendingVotingEndTimeKey(for: network))
+        Self.logger.info(
+            "🪪 CONTEST-SVC :: recordSubmission label=\(label, privacy: .public) network=\(network.rawValue, privacy: .public) fallbackEnd=\(fallbackEnd.timeIntervalSince1970, privacy: .public)")
     }
 
     /// Cache the real contest deadline once Platform exposes its vote state.
-    /// Used both for pending copy and to make the no-state resolution fallback
-    /// impossible before voting has actually ended.
+    /// It replaces the conservative submission-time estimate.
     public func recordVotingEndTime(_ endTime: Date) {
+        guard let network = WalletEnvironment.network else { return }
+        recordVotingEndTime(endTime, network: network)
+    }
+
+    @nonobjc
+    func recordVotingEndTime(_ endTime: Date, network: Network) {
         UserDefaults.standard.set(
             endTime.timeIntervalSince1970,
-            forKey: Self.pendingVotingEndTimeKey)
+            forKey: Self.pendingVotingEndTimeKey(for: network))
+        Self.logger.info(
+            "🪪 CONTEST-SVC :: authoritative voting end network=\(network.rawValue, privacy: .public) end=\(endTime.timeIntervalSince1970, privacy: .public)")
     }
 
     /// Clear the pending bookmark. Called by the LOST/pruned branches of
     /// `DWIdentityRegistrationCoordinator.checkPendingContestResolution()`
     /// (and by `finalizeWon` on the WON branch).
     public func clearPending() {
-        UserDefaults.standard.removeObject(forKey: Self.pendingLabelKey)
-        UserDefaults.standard.removeObject(forKey: Self.pendingVotingEndTimeKey)
-        Self.logger.info("🪪 CONTEST-SVC :: clearPending")
+        guard let network = WalletEnvironment.network else { return }
+        clearPending(for: network)
+    }
+
+    @nonobjc
+    func clearPending(for network: Network) {
+        UserDefaults.standard.removeObject(forKey: Self.pendingLabelKey(for: network))
+        UserDefaults.standard.removeObject(forKey: Self.pendingVotingEndTimeKey(for: network))
+        Self.logger.info("🪪 CONTEST-SVC :: clearPending network=\(network.rawValue, privacy: .public)")
     }
 
     /// Compare DPNS labels in their canonical form. The registration form
@@ -143,9 +191,15 @@ public final class DWContestedNameStatusService: NSObject {
     /// canonical registration notification so the home avatar / tab
     /// config / join-banner observers re-read state live.
     public func finalizeWon(username: String) {
+        guard let network = WalletEnvironment.network else { return }
+        finalizeWon(username: username, network: network)
+    }
+
+    @nonobjc
+    func finalizeWon(username: String, network: Network) {
         DWGlobalOptions.sharedInstance().dashpayUsername = username
         DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
-        clearPending()
+        clearPending(for: network)
         Self.logger.info("🪪 CONTEST-SVC :: finalizeWon label=\(username, privacy: .public)")
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
         NotificationCenter.default.post(
@@ -166,5 +220,41 @@ public final class DWContestedNameStatusService: NSObject {
         label.withCString { namePtr in
             dash_sdk_dpns_is_contested_username(namePtr) == 1
         }
+    }
+
+    // MARK: - Network-scoped storage
+
+    @nonobjc
+    func pendingLabel(for network: Network) -> String? {
+        UserDefaults.standard.string(forKey: Self.pendingLabelKey(for: network))
+    }
+
+    @nonobjc
+    func pendingVotingEndTime(for network: Network) -> Date? {
+        let timestamp = UserDefaults.standard.double(
+            forKey: Self.pendingVotingEndTimeKey(for: network))
+        return timestamp > 0 ? Date(timeIntervalSince1970: timestamp) : nil
+    }
+
+    nonisolated static func fallbackVotingEndTime(
+        submittedAt: Date,
+        network: Network
+    ) -> Date {
+        let duration = network == .mainnet
+            ? mainnetFallbackDuration
+            : testnetFallbackDuration
+        return submittedAt.addingTimeInterval(duration + fallbackResolutionGrace)
+    }
+
+    private nonisolated static func pendingLabelKey(for network: Network) -> String {
+        "\(pendingLabelKeyPrefix).\(networkKey(network))"
+    }
+
+    private nonisolated static func pendingVotingEndTimeKey(for network: Network) -> String {
+        "\(pendingVotingEndTimeKeyPrefix).\(networkKey(network))"
+    }
+
+    private nonisolated static func networkKey(_ network: Network) -> String {
+        network == .mainnet ? "mainnet" : "testnet"
     }
 }
