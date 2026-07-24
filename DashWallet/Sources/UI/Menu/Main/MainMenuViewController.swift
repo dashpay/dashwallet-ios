@@ -158,6 +158,7 @@ struct MainMenuScreen: View {
     @State private var showSecurity: Bool = false
     @State private var showDashPayInfo: Bool = false
     @State private var showCreditsPurchasedToast: Bool = false
+    @State private var navigateToDashPayFlow: Bool = false
     
     #if DASHPAY
     private let joinDPViewModel = JoinDashPayViewModel(initialState: .none)
@@ -372,10 +373,15 @@ struct MainMenuScreen: View {
             handleNavigation(destination)
         }
         #if DASHPAY
-        .sheet(isPresented: $showDashPayInfo) {
+        .sheet(isPresented: $showDashPayInfo, onDismiss: {
+            if navigateToDashPayFlow {
+                navigateToDashPayFlow = false
+                joinDashPay()
+            }
+        }) {
             let dialog = JoinDashPayInfoDialog(
                 action: {
-                    self.joinDashPay()
+                    navigateToDashPayFlow = true
                 },
                 onClaimInvitation: {
                     self.claimInvitation()
@@ -527,24 +533,70 @@ struct MainMenuScreen: View {
 
     private func joinDashPay() {
         guard let dashPayModel = viewModel.dashPayModel else { return }
-        
+
+        let readiness = ShieldedIdentityFundingReadiness.shared.evaluate(
+            requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits)
+        if let readiness, readiness.state != .ready {
+            showJoinDashPayReadiness(dashPayModel: dashPayModel)
+        } else {
+            pushCreateUsernameForm(dashPayModel: dashPayModel)
+        }
+    }
+
+    private func showJoinDashPayReadiness(dashPayModel: DWDashPayProtocol) {
+        weak var readinessNavigationController: UINavigationController?
+        weak var menuNavigationController = vc
+
+        let screen = JoinDashPayReadinessScreen(
+            onAddFunds: { suggestedDash in
+                let controller = InternalTransferHostingController(prefillDashAmount: suggestedDash)
+                readinessNavigationController?.pushViewController(controller, animated: true)
+            },
+            onProceed: {
+                readinessNavigationController?.dismiss(animated: true) {
+                    guard let menuNavigationController else { return }
+                    Self.pushCreateUsernameForm(
+                        on: menuNavigationController,
+                        dashPayModel: dashPayModel)
+                }
+            },
+            onClose: {
+                readinessNavigationController?.dismiss(animated: true)
+            })
+        let hosting = UIHostingController(rootView: screen)
+        hosting.view.backgroundColor = UIColor.dw_background()
+        let modalNavigationController = BaseNavigationController(rootViewController: hosting)
+        modalNavigationController.isNavigationBarHidden = true
+        modalNavigationController.modalPresentationStyle = .fullScreen
+        readinessNavigationController = modalNavigationController
+        vc.present(modalNavigationController, animated: true)
+    }
+
+    private func pushCreateUsernameForm(dashPayModel: DWDashPayProtocol) {
+        Self.pushCreateUsernameForm(on: vc, dashPayModel: dashPayModel)
+    }
+
+    private static func pushCreateUsernameForm(
+        on navigationController: UINavigationController,
+        dashPayModel: DWDashPayProtocol
+    ) {
         let controller = CreateUsernameViewController(
             dashPayModel: dashPayModel,
             invitationURL: nil,
             definedUsername: nil
         )
         controller.hidesBottomBarWhenPushed = true
-        controller.completionHandler = { result in
+        controller.completionHandler = { [weak navigationController] result in
             let message = result 
                 ? NSLocalizedString("Username was successfully requested", comment: "Usernames")
                 : NSLocalizedString("Your request was cancelled", comment: "Usernames")
             
             // Find the root view controller to show HUD
-            if let rootVC = self.vc.viewControllers.first {
+            if let rootVC = navigationController?.viewControllers.first {
                 rootVC.view.dw_showInfoHUD(withText: message, offsetForNavBar: true)
             }
         }
-        vc.pushViewController(controller, animated: true)
+        navigationController.pushViewController(controller, animated: true)
     }
     #endif
 }
