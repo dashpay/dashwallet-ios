@@ -452,7 +452,7 @@ struct InternalTransferScreen: View {
 /// Inline explanation for a route-specific amount that cannot be submitted.
 /// Keeping this next to the amount/source controls prevents a protective SDK
 /// build-time refusal from becoming the user's first feedback.
-private struct TransferAmountValidationNote: View {
+struct TransferAmountValidationNote: View {
     let message: String
 
     var body: some View {

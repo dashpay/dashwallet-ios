@@ -68,32 +68,61 @@ enum PinPromptPresenter {
     /// The controller a modal should be presented from: the top of the key
     /// window's presentation stack.
     private static func topPresentedController() -> UIViewController? {
-        let foregroundScenes = UIApplication.shared.connectedScenes
+        let scenes = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
-            .filter { $0.activationState == .foregroundActive }
 
-        // Prefer the app delegate's long-lived DWWindow. While a SwiftUI text
-        // field resigns first responder, a transient presentation/keyboard
-        // window can briefly become `isKeyWindow`; resolving from it produced
-        // a detached PresentationHostingController and UIKit dropped the PIN.
+        // This app still owns its UIWindow in AppDelegate and does not use a
+        // SceneDelegate. On those launches `connectedScenes` can be empty
+        // even while the legacy DWWindow is visible. Conversely, after the
+        // lock-window handoff, neither the app-delegate window nor the
+        // formerly-key lock window is guaranteed to be returned by the
+        // foreground-scene-only path. Include all three sources and validate
+        // attachment below.
+        //
+        // Keep the app window first. While a SwiftUI text field resigns first
+        // responder, a transient keyboard window can briefly become key;
+        // presenting from it produces a detached hosting controller.
         var windows: [UIWindow] = []
         if let appWindow = UIApplication.shared.delegate?.window ?? nil {
             windows.append(appWindow)
         }
-        windows.append(contentsOf: foregroundScenes.flatMap(\.windows))
+        windows.append(contentsOf: scenes.flatMap(\.windows))
+        // Legacy-window fallback is required for the AppDelegate-managed
+        // lifecycle above. `UIApplication.windows` is deprecated for
+        // scene-based apps, but here it is deliberately the compatibility
+        // source when there is no active UIWindowScene.
+        windows.append(contentsOf: UIApplication.shared.windows)
 
         var seen = Set<ObjectIdentifier>()
         for window in windows where seen.insert(ObjectIdentifier(window)).inserted {
             guard !window.isHidden,
                   window.alpha > 0,
                   window.windowLevel == .normal,
-                  let root = window.rootViewController,
-                  let anchor = attachedTopController(from: root, in: window)
+                  let root = window.rootViewController
             else {
                 continue
             }
-            return anchor
+
+            if let anchor = attachedTopController(from: root, in: window) {
+                return anchor
+            }
+
+            // Defensive compatibility path for custom containers that do not
+            // expose their current controller through `children`. It is still
+            // safe because we require the resolved view to be attached to the
+            // exact candidate window and reject dismissing controllers.
+            let fallback = root.topController()
+            if fallback.viewIfLoaded?.window === window,
+               !fallback.isBeingDismissed {
+                return fallback
+            }
         }
+
+        NSLog(
+            "🔐 PINPROMPT :: anchor scan exhausted — windows=%ld scenes=%ld appWindow=%@",
+            windows.count,
+            scenes.count,
+            (UIApplication.shared.delegate?.window ?? nil) == nil ? "nil" : "set")
         return nil
     }
 
@@ -105,8 +134,14 @@ enum PinPromptPresenter {
         from controller: UIViewController,
         in window: UIWindow
     ) -> UIViewController? {
-        guard controller.viewIfLoaded?.window === window,
-              !controller.isBeingDismissed else {
+        guard !controller.isBeingDismissed else {
+            return nil
+        }
+
+        // Permit an unloaded container while walking down to its visible
+        // child, but reject a controller that is attached elsewhere.
+        if let attachedWindow = controller.viewIfLoaded?.window,
+           attachedWindow !== window {
             return nil
         }
 
@@ -135,6 +170,16 @@ enum PinPromptPresenter {
             }
         }
 
+        // DWInitialViewController and SwiftUI presentation hosts are custom
+        // containers. Following generic children is what reaches the visible
+        // Send confirmation sheet instead of stopping at the app root.
+        for child in controller.children.reversed() {
+            if let top = attachedTopController(from: child, in: window) {
+                return top
+            }
+        }
+
+        guard controller.viewIfLoaded?.window === window else { return nil }
         return controller
     }
 }
