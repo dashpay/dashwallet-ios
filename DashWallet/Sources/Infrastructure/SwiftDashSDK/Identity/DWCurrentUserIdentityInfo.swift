@@ -254,6 +254,80 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         invalidate()
     }
 
+    /// Adopt an identity that arrived through seed recovery/discovery into the
+    /// app-level DashPay state and notify every live UI consumer immediately.
+    ///
+    /// Identity discovery is an SDK operation, so it can populate SwiftData
+    /// without passing through `DWIdentityRegistrationBridge`. Posting that
+    /// bridge's internal notification is insufficient: the bridge has no
+    /// registration username in a recovery session and `DWDashPayModel`
+    /// deliberately ignores the event. Reconcile the mirror from SDK truth,
+    /// then post the canonical notification directly.
+    @discardableResult
+    @nonobjc
+    func reconcileRecoveredIdentity() -> Bool {
+        invalidate()
+
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let container = SwiftDashSDKHost.shared.modelContainer,
+              let recoveredIdentityId = snapshot.identityId
+        else {
+            return false
+        }
+
+        let walletId = wallet.walletId
+        if Self.mainIdentityId(walletId: walletId) == nil {
+            Self.setMainIdentityId(recoveredIdentityId, walletId: walletId)
+        }
+
+        // Prefer the managed-wallet DPNS cache. The scalar SwiftData fields
+        // are a short hydration fallback for the explicit Identities screen,
+        // whose legacy refresh path writes them directly.
+        var recoveredUsername = snapshot.usernames.first
+        if recoveredUsername == nil {
+            var walletDescriptor = FetchDescriptor<PersistentWallet>(
+                predicate: #Predicate { $0.walletId == walletId }
+            )
+            walletDescriptor.fetchLimit = 1
+            if let persistedWallet = try? container.mainContext.fetch(walletDescriptor).first,
+               let persistedIdentity = persistedWallet.identities.first(where: {
+                   $0.identityId == recoveredIdentityId
+               }) {
+                let pending = DWContestedNameStatusService.shared.pendingLabel
+                recoveredUsername = [persistedIdentity.mainDpnsName, persistedIdentity.dpnsName]
+                    .compactMap { Self.nilIfEmpty($0) }
+                    .first(where: { candidate in
+                        guard let pending else { return true }
+                        return candidate != pending && candidate != "\(pending).dash"
+                    })
+            }
+        }
+
+        if let recoveredUsername {
+            let options = DWGlobalOptions.sharedInstance()
+            options.dashpayUsername = recoveredUsername
+            options.dashpayRegistrationCompleted = true
+            Self.logger.info(
+                "🪪 IDENT-INFO :: adopted recovered identity with SDK username \(recoveredUsername, privacy: .public)")
+        } else {
+            // The recovered identity is authoritative for this wallet. Do not
+            // retain a username mirror from a previously-active wallet/network
+            // or from a contested label that is still being voted on.
+            let options = DWGlobalOptions.sharedInstance()
+            options.dashpayUsername = nil
+            options.dashpayRegistrationCompleted = false
+            Self.logger.info(
+                "🪪 IDENT-INFO :: adopted recovered identity without an owned DPNS name")
+        }
+
+        invalidate()
+        SwiftDashSDKContactsService.shared.refresh()
+        NotificationCenter.default.post(
+            name: Notification.Name("DWDashPayRegistrationStatusUpdatedNotification"),
+            object: nil)
+        return true
+    }
+
     /// Install an authoritative empty snapshot at the wallet-removal boundary.
     /// Unlike a regular invalidation this does not depend on the SDK host being
     /// available, because the host has already stopped by the time the wipe
@@ -428,10 +502,11 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         // SDK-sourced name qualifies (`usernames` — the fallback above
         // IS the mirror), and the pending-contested filter has already
         // run, so a deferred contested registration can't sneak in. The
-        // bridge notification is posted async: this runs lazily inside a
-        // property read, and DWDashPayModel re-posting the canonical
-        // status update reentrantly mid-read is the kind of surprise we
-        // don't need.
+        // canonical notification is posted async: this runs lazily inside a
+        // property read, and re-entering registration-status observers
+        // mid-read is the kind of surprise we don't need. Recovered
+        // identities do not have an active registration bridge username, so
+        // its internal notification would be ignored by DWDashPayModel.
         if let sdkUsername = usernames.first,
            DWGlobalOptions.sharedInstance().dashpayUsername?.isEmpty != false {
             let options = DWGlobalOptions.sharedInstance()
@@ -441,7 +516,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                 "🪪 IDENT-INFO :: backfilled username mirror from SDK: \(sdkUsername, privacy: .public)")
             DispatchQueue.main.async {
                 NotificationCenter.default.post(
-                    name: DWIdentityRegistrationBridge.stateChangedNotification,
+                    name: Notification.Name("DWDashPayRegistrationStatusUpdatedNotification"),
                     object: nil)
             }
         }
@@ -462,5 +537,165 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     private static func nilIfEmpty(_ value: String?) -> String? {
         guard let value, !value.isEmpty else { return nil }
         return value
+    }
+}
+
+// MARK: - Same-seed identity recovery
+
+/// Small dependency-injected core for the startup recovery flow. Keeping the
+/// sequencing independent from SwiftData/FFI makes the cold-install behavior
+/// regression-testable: discover only when the local store is empty, refresh
+/// names after discovery persistence, then reconcile app state.
+@MainActor
+enum SameSeedIdentityRecoveryPipeline {
+    struct Outcome: Equatable {
+        let discoveredCount: Int
+        let identityCount: Int
+        let adopted: Bool
+    }
+
+    static func run(
+        localIdentityIds: () -> [Data],
+        discover: () async throws -> [Data],
+        refreshNames: ([Data]) async throws -> Void,
+        adopt: () -> Bool
+    ) async throws -> Outcome {
+        var identityIds = localIdentityIds()
+        var discoveredIds: [Data] = []
+
+        if identityIds.isEmpty {
+            discoveredIds = try await discover()
+            identityIds = localIdentityIds()
+            // The SDK persister normally makes the rows visible before the
+            // discovery call returns. Keep the authoritative discovery result
+            // as a hydration fallback instead of losing the same launch.
+            if identityIds.isEmpty {
+                identityIds = discoveredIds
+            }
+        }
+
+        guard !identityIds.isEmpty else {
+            return Outcome(discoveredCount: discoveredIds.count, identityCount: 0, adopted: false)
+        }
+
+        try await refreshNames(identityIds)
+        return Outcome(
+            discoveredCount: discoveredIds.count,
+            identityCount: identityIds.count,
+            adopted: adopt())
+    }
+}
+
+/// Best-effort startup recovery for an identity created by the same seed on a
+/// different device/install. One successful attempt is enough per
+/// network-scoped wallet and process; failures remain retryable on the next
+/// runtime start.
+@MainActor
+final class DWSameSeedIdentityRecoveryCoordinator {
+    static let shared = DWSameSeedIdentityRecoveryCoordinator()
+
+    private static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "swift-sdk-migration.identity-recovery")
+
+    private var completedContexts: Set<String> = []
+    private var activeContexts: Set<String> = []
+
+    private init() {}
+
+    func recoverIfNeeded(
+        wallet: ManagedPlatformWallet,
+        modelContainer: ModelContainer,
+        network: Network
+    ) async {
+        let walletId = wallet.walletId
+        let walletHex = walletId.map { String(format: "%02x", $0) }.joined()
+        let contextKey = "\(network.rawValue):\(walletHex)"
+
+        guard !completedContexts.contains(contextKey),
+              !activeContexts.contains(contextKey)
+        else {
+            return
+        }
+
+        activeContexts.insert(contextKey)
+        defer { activeContexts.remove(contextKey) }
+
+        do {
+            let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+                localIdentityIds: {
+                    Self.localIdentityIds(walletId: walletId, modelContainer: modelContainer)
+                },
+                discover: {
+                    Self.logger.info(
+                        "🪪 IDENT-RECOVERY :: no local identities; scanning seed from index 0")
+                    return try await wallet.discoverIdentities(startIndex: 0)
+                },
+                refreshNames: { identityIds in
+                    for identityId in identityIds {
+                        _ = try await wallet.syncDpnsNames(identityId: identityId)
+
+                        // Contested-name refresh is important for correctly
+                        // withholding a still-voting label, but it must not
+                        // block restoration of an already-owned identity when
+                        // that auxiliary endpoint is temporarily unavailable.
+                        do {
+                            _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
+                            let contested = try wallet
+                                .managedIdentity(identityId: identityId)
+                                .getContestedDpnsNames()
+                            let pending = DWContestedNameStatusService.shared.pendingLabel
+                            if let recoveredPending = contested.min(),
+                               pending != recoveredPending,
+                               pending != "\(recoveredPending).dash" {
+                                // A second install has no local submission
+                                // bookmark. Reconstruct it from Platform so
+                                // the pre-vote DPNS document cannot be
+                                // mistaken for ownership.
+                                DWContestedNameStatusService.shared.recordSubmission(
+                                    label: recoveredPending)
+                            }
+                        } catch {
+                            Self.logger.warning(
+                                """
+                                🪪 IDENT-RECOVERY :: contested-name refresh failed: \
+                                \(String(describing: error), privacy: .public)
+                                """)
+                        }
+                    }
+                },
+                adopt: {
+                    DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
+                })
+
+            completedContexts.insert(contextKey)
+            Self.logger.info(
+                """
+                🪪 IDENT-RECOVERY :: complete \
+                discovered=\(outcome.discoveredCount, privacy: .public) \
+                identities=\(outcome.identityCount, privacy: .public) \
+                adopted=\(outcome.adopted, privacy: .public)
+                """)
+        } catch {
+            Self.logger.warning(
+                """
+                🪪 IDENT-RECOVERY :: failed; will retry after next runtime start: \
+                \(String(describing: error), privacy: .public)
+                """)
+        }
+    }
+
+    private static func localIdentityIds(
+        walletId: Data,
+        modelContainer: ModelContainer
+    ) -> [Data] {
+        var descriptor = FetchDescriptor<PersistentWallet>(
+            predicate: #Predicate { $0.walletId == walletId }
+        )
+        descriptor.fetchLimit = 1
+        return ((try? modelContainer.mainContext.fetch(descriptor).first)?
+            .identities ?? [])
+            .sorted { $0.identityIndex < $1.identityIndex }
+            .map(\.identityId)
     }
 }

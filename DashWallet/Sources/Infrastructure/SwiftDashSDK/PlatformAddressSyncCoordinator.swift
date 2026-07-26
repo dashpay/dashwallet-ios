@@ -694,6 +694,21 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             walletId: resolvedWallet.walletId,
             modelContainer: SwiftDashSDKHost.shared.modelContainer)
 
+#if DASHPAY
+        // A restored seed can already own a Platform identity even though this
+        // install's SwiftData store is empty. Recover it as part of the
+        // serialized runtime start so the wallet handle cannot be torn down
+        // mid-FFI scan, and reconcile the DashPay tabs/banner in this session.
+        // The coordinator is best-effort and owns its error logging; identity
+        // recovery must never turn a healthy BLAST start into a sync failure.
+        if let container = SwiftDashSDKHost.shared.modelContainer {
+            await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
+                wallet: resolvedWallet,
+                modelContainer: container,
+                network: network)
+        }
+#endif
+
         Self.logger.info("🛰️ PLATFORM-ADDR :: started for \(network.rawValue, privacy: .public)")
     }
 

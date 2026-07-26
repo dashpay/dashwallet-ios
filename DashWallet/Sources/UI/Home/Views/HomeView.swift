@@ -134,6 +134,16 @@ final class HomeView: UIView {
                 }
             }
             .store(in: &cancellableBag)
+
+        // Identity recovery completes after Home is already on screen. Re-read
+        // the recovered owned/pending username on the canonical event instead
+        // of waiting for another Home appearance or app relaunch.
+        NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.joinDPViewModel.checkUsername()
+            }
+            .store(in: &cancellableBag)
         #endif
     }
 

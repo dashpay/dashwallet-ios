@@ -83,7 +83,12 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
                 DWCurrentUserIdentityInfo.shared.username?.isEmpty == false
             }
         }
-        showJoinDashpay = model.state == .syncDone && !hasUsername
+        let hasPendingRecoveredName = MainActor.assumeIsolated {
+            DWContestedNameStatusService.shared.pendingLabel != nil
+        }
+        showJoinDashpay = model.state == .syncDone &&
+            !hasUsername &&
+            !hasPendingRecoveredName
     }
     
     @objc func update() {
