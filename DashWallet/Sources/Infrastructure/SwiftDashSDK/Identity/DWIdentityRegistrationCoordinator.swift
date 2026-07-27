@@ -53,6 +53,182 @@ import OSLog
 import SwiftData
 import SwiftDashSDK
 
+/// Plans Platform-Payment identity funding while preserving the
+/// `DeductFromInput(0)` fee source used by SwiftDashSDK.
+///
+/// The SDK currently has no public identity-from-addresses fee estimator.
+/// Keep a conservative reserve on the BTreeMap-smallest selected address,
+/// matching the input-order and fee-source rules enforced by the Rust
+/// transition builder. Only the actual transition fee is deducted; unused
+/// reserve remains in the Platform-Payment address.
+enum PlatformPaymentIdentityFundingPolicy {
+    static let creditsPerDuff: UInt64 = 1_000
+
+    /// 0.002 DASH of headroom reserved on the fee-source (BTreeMap input 0)
+    /// address. The observed identity-from-addresses base fee is ~0.0004 DASH
+    /// (`required 41500000` credits), so this keeps a ~5x margin that also
+    /// absorbs metered execution cost and additional-input overhead.
+    ///
+    /// It is deliberately much smaller than a typical Platform-address payment
+    /// (~0.01 DASH): the reserve doubles as the *minimum* balance an address
+    /// must hold to qualify as the fee source, and any smaller-hash address
+    /// below it is dropped from the plan (it cannot be a valid input 0). An
+    /// oversized reserve therefore strands funds — e.g. a 0.05 DASH balance
+    /// fragmented across 0.03 + 0.01 + 0.01 addresses would be rejected if the
+    /// reserve exceeded 0.01. Keeping it at 0.002 lets realistic fragments
+    /// remain usable fee sources while still covering the fee.
+    ///
+    /// TODO(SwiftDashSDK): replace this reserve with the SDK's authoritative
+    /// identity-from-addresses fee estimate once one is exposed.
+    static let feeHeadroomCredits: UInt64 = 200_000_000
+
+    struct Candidate: Equatable {
+        let addressType: UInt8
+        let hash: Data
+        let balance: UInt64
+    }
+
+    enum PlanningError: Error, Equatable {
+        case insufficient(required: UInt64, available: UInt64)
+    }
+
+    static func requiredAvailableCredits(fundingDuffs: UInt64) -> UInt64 {
+        let (fundingCredits, multiplicationOverflow) =
+            fundingDuffs.multipliedReportingOverflow(by: creditsPerDuff)
+        guard !multiplicationOverflow else { return .max }
+        let (required, additionOverflow) =
+            fundingCredits.addingReportingOverflow(feeHeadroomCredits)
+        return additionOverflow ? .max : required
+    }
+
+    static func canFund(
+        candidates: [Candidate],
+        fundingDuffs: UInt64
+    ) -> Bool {
+        let (targetCredits, overflow) =
+            fundingDuffs.multipliedReportingOverflow(by: creditsPerDuff)
+        guard !overflow else { return false }
+        return (try? makeInputs(
+            candidates: candidates,
+            targetCredits: targetCredits)) != nil
+    }
+
+    /// Resolve the active wallet's persisted Platform-Payment address rows.
+    /// Both UI eligibility and submit-time planning consume this exact
+    /// candidate representation so fragmented balances cannot produce
+    /// different answers at the two call sites.
+    @MainActor
+    static func currentCandidates() throws -> [Candidate] {
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
+            return []
+        }
+        return try candidates(
+            walletId: wallet.walletId,
+            modelContainer: modelContainer)
+    }
+
+    @MainActor
+    static func candidates(
+        walletId: Data,
+        modelContainer: ModelContainer
+    ) throws -> [Candidate] {
+        let descriptor = FetchDescriptor<PersistentAccount>(
+            predicate: #Predicate { account in
+                account.accountType == 14
+                    && account.wallet.walletId == walletId
+            }
+        )
+        return try modelContainer.mainContext.fetch(descriptor)
+            .flatMap { $0.platformAddresses }
+            .filter { $0.balance > 0 }
+            .map {
+                Candidate(
+                    addressType: $0.addressType,
+                    hash: $0.addressHash,
+                    balance: $0.balance)
+            }
+    }
+
+    @MainActor
+    static func canFundCurrentWallet(fundingDuffs: UInt64) -> Bool {
+        guard let candidates = try? currentCandidates() else { return false }
+        return canFund(
+            candidates: candidates,
+            fundingDuffs: fundingDuffs)
+    }
+
+    /// Builds inputs in PlatformAddress/BTreeMap order. Rust's derived order
+    /// compares the address variant first (P2PKH before P2SH), then its
+    /// 20-byte hash.
+    static func makeInputs(
+        candidates: [Candidate],
+        targetCredits: UInt64
+    ) throws -> [ManagedPlatformWallet.IdentityAddressInput] {
+        let sorted = candidates
+            .filter { $0.balance > 0 }
+            .sorted { lhs, rhs in
+                if lhs.addressType != rhs.addressType {
+                    return lhs.addressType < rhs.addressType
+                }
+                return lhs.hash.lexicographicallyPrecedes(rhs.hash)
+            }
+        let totalAvailable = sorted.reduce(UInt64(0)) {
+            let (sum, overflow) = $0.addingReportingOverflow($1.balance)
+            return overflow ? .max : sum
+        }
+        let required = {
+            let (sum, overflow) = targetCredits.addingReportingOverflow(feeHeadroomCredits)
+            return overflow ? UInt64.max : sum
+        }()
+
+        // Any selected address before the fee source would become BTreeMap
+        // input 0 itself. Skip leading addresses that cannot retain the
+        // reserve, then plan exclusively from the viable suffix.
+        guard let feeSourceIndex = sorted.firstIndex(where: {
+            $0.balance > feeHeadroomCredits
+        }) else {
+            throw PlanningError.insufficient(
+                required: required,
+                available: totalAvailable)
+        }
+        let usable = Array(sorted[feeSourceIndex...])
+        let usableAvailable = usable.reduce(UInt64(0)) {
+            let (sum, overflow) = $0.addingReportingOverflow($1.balance)
+            return overflow ? .max : sum
+        }
+        guard usableAvailable >= required else {
+            throw PlanningError.insufficient(
+                required: required,
+                available: usableAvailable)
+        }
+
+        var remaining = targetCredits
+        var inputs: [ManagedPlatformWallet.IdentityAddressInput] = []
+        for (index, candidate) in usable.enumerated() {
+            guard remaining > 0 else { break }
+            let maximumContribution = index == 0
+                ? candidate.balance - feeHeadroomCredits
+                : candidate.balance
+            let contribution = min(maximumContribution, remaining)
+            guard contribution > 0 else { continue }
+            inputs.append(
+                ManagedPlatformWallet.IdentityAddressInput(
+                    addressType: candidate.addressType,
+                    hash: candidate.hash,
+                    credits: contribution))
+            remaining -= contribution
+        }
+
+        guard remaining == 0 else {
+            throw PlanningError.insufficient(
+                required: required,
+                available: usableAvailable)
+        }
+        return inputs
+    }
+}
+
 @MainActor
 final class DWIdentityRegistrationCoordinator: ObservableObject {
 
@@ -82,13 +258,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// 0.5s cadence is plenty without burning CPU.
     private static let assetLockPollInterval: TimeInterval = 0.5
 
-    /// Credits per DASH on Platform — 1e11 credits per DASH per
-    /// `SwiftExampleApp/Views/CreateIdentityView.swift:54`. Used to
-    /// convert the `DWDP_MIN_BALANCE_*` duff-denominated targets to
-    /// the credit-denominated targets that `IdentityAddressInput`
-    /// expects on the Platform Payment funding path.
-    /// 1 duff = 1000 credits.
-    private static let creditsPerDuff: UInt64 = 1_000
     /// Rust rejects Core identity top-ups below this floor. Keeping the
     /// mirror here prevents a tiny resume shortfall from broadcasting an
     /// asset lock that Platform cannot consume.
@@ -190,8 +359,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 return underlying.localizedDescription
             case .availabilityCheck(let underlying):
                 return underlying.localizedDescription
-            case .insufficientPlatformCredits:
-                return NSLocalizedString("Not enough Platform credits to register an identity", comment: "DashPay")
+            case .insufficientPlatformCredits(let required, let available):
+                let requiredDuffs =
+                    (required + PlatformPaymentIdentityFundingPolicy.creditsPerDuff - 1)
+                    / PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+                let availableDuffs =
+                    available / PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Platform Payment needs at least %@ DASH available; you have %@ DASH. Add funds to Platform and try again.",
+                        comment: "DashPay Platform Payment funding shortfall"),
+                    requiredDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
+                    availableDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
             case .insufficientShieldedBalance:
                 return NSLocalizedString("Not enough shielded balance to register an identity", comment: "DashPay")
             case .shieldedBalanceImmature(let readyAt):
@@ -441,20 +620,34 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     identityId = result.0
 
                 case .platformPayment:
-                    let targetCredits = UInt64(requiredIdentityFundingDuffs) * Self.creditsPerDuff
+                    let targetCredits =
+                        UInt64(requiredIdentityFundingDuffs)
+                        * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
                     let inputs = try buildPlatformPaymentInputs(
                         walletId: wallet.walletId,
                         modelContainer: modelContainer,
                         targetCredits: targetCredits)
                     Self.logger.info("🪪 IDENT-COORD :: PP inputs=\(inputs.count, privacy: .public) targetCredits=\(targetCredits, privacy: .public)")
-                    let created = try await wallet.registerIdentityFromAddresses(
-                        inputs: inputs,
-                        output: nil,
-                        identityIndex: Self.pinnedIdentityIndex,
-                        identityPubkeys: pubkeys,
-                        identitySigner: signer,
-                        addressSigner: signer)
-                    identityId = created.identityId
+                    do {
+                        let created = try await wallet.registerIdentityFromAddresses(
+                            inputs: inputs,
+                            output: nil,
+                            identityIndex: Self.pinnedIdentityIndex,
+                            identityPubkeys: pubkeys,
+                            identitySigner: signer,
+                            addressSigner: signer)
+                        identityId = created.identityId
+                    } catch {
+                        guard Self.isPlatformAddressInsufficientFunds(error) else {
+                            throw error
+                        }
+                        throw CoordinatorError.insufficientPlatformCredits(
+                            required: PlatformPaymentIdentityFundingPolicy
+                                .requiredAvailableCredits(
+                                    fundingDuffs: UInt64(requiredIdentityFundingDuffs)),
+                            available: SwiftDashSDKWalletState.shared
+                                .platformPaymentCredits)
+                    }
 
                 case .shielded:
                     identityId = try await createIdentityFromShieldedPool(
@@ -971,7 +1164,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         signer: KeychainSigner
     ) async throws {
         let currentCredits = try wallet.managedIdentity(identityId: identityId).getBalance()
-        let requiredCredits = requiredDuffs * Self.creditsPerDuff
+        let requiredCredits =
+            requiredDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
         guard currentCredits < requiredCredits else { return }
 
         let missingCredits = requiredCredits - currentCredits
@@ -981,7 +1175,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         switch fundingSource {
         case .core:
             let roundedShortfallDuffs =
-                (missingCredits + Self.creditsPerDuff - 1) / Self.creditsPerDuff
+                (missingCredits + PlatformPaymentIdentityFundingPolicy.creditsPerDuff - 1)
+                / PlatformPaymentIdentityFundingPolicy.creditsPerDuff
             let amountDuffs = max(roundedShortfallDuffs, Self.minimumCoreTopUpDuffs)
             _ = try await wallet.topUpIdentityWithFunding(
                 identityId: identityId,
@@ -994,7 +1189,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // from the supplied credits.
             let topUpCredits = max(
                 missingCredits,
-                Self.minimumCoreTopUpDuffs * Self.creditsPerDuff)
+                Self.minimumCoreTopUpDuffs
+                    * PlatformPaymentIdentityFundingPolicy.creditsPerDuff)
             let inputs = try buildPlatformPaymentInputs(
                 walletId: walletId,
                 modelContainer: modelContainer,
@@ -1126,71 +1322,49 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         return Data(SHA256.hash(data: first))
     }
 
-    /// Greedy-select DIP-17 Platform Payment addresses to cover
-    /// `targetCredits`, returning the flat `IdentityAddressInput` list
-    /// `registerIdentityFromAddresses` expects.
-    ///
-    /// Ported from `SwiftExampleApp/Views/CreateIdentityView.swift:1086-1113`.
-    /// Sorts candidates by balance descending so the smallest number
-    /// of inputs covers the target — keeps the resulting state
-    /// transition compact.
-    ///
-    /// `PersistentPlatformAddress.balance` is in credits (1e11 per
-    /// DASH), matching `IdentityAddressInput.credits`, so no
-    /// conversion is needed inside this function. Each `spend` is
-    /// clamped to `addr.balance` so a single fat address doesn't
-    /// over-spend; remaining target rolls onto the next address.
-    ///
-    /// Throws `CoordinatorError.insufficientPlatformCredits` if the
-    /// candidate set can't cover the target — surfacing the precise
-    /// shortfall is more useful than a generic FFI error from the
-    /// SDK on a too-short inputs list.
+    /// The Platform Wallet FFI currently folds DPP consensus errors into a
+    /// message-bearing `PlatformWalletError`, so this is the narrowest
+    /// recoverable classification available to the app. Keep both the DPP
+    /// type name and its stable user-facing text for compatibility across
+    /// SDK revisions.
+    nonisolated static func isPlatformAddressInsufficientFunds(
+        _ error: Error
+    ) -> Bool {
+        let message = error.localizedDescription
+        return message.localizedCaseInsensitiveContains(
+            "AddressesNotEnoughFundsError")
+            || message.localizedCaseInsensitiveContains(
+                "Insufficient combined address balances")
+    }
+
+    /// Select DIP-17 Platform Payment inputs while leaving fee headroom
+    /// on the address that becomes the SDK's `DeductFromInput(0)` source.
     private func buildPlatformPaymentInputs(
         walletId: Data,
         modelContainer: ModelContainer,
         targetCredits: UInt64
     ) throws -> [ManagedPlatformWallet.IdentityAddressInput] {
-        let context = modelContainer.mainContext
-        // PlatformPayment accounts (`accountType == 14`) hold the only
-        // `platformAddresses`. Read every account for this wallet —
-        // dashwallet only has one PP account today but the example
-        // app's pattern doesn't assume that, and the cost is the same.
-        let accountDescriptor = FetchDescriptor<PersistentAccount>(
-            predicate: #Predicate { account in
-                account.accountType == 14
-                    && account.wallet.walletId == walletId
-            }
-        )
-        let accounts: [PersistentAccount]
+        let candidates: [PlatformPaymentIdentityFundingPolicy.Candidate]
         do {
-            accounts = try context.fetch(accountDescriptor)
+            candidates = try PlatformPaymentIdentityFundingPolicy.candidates(
+                walletId: walletId,
+                modelContainer: modelContainer)
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: PP account fetch failed: \(String(describing: error), privacy: .public)")
             throw CoordinatorError.identityRegistration(error)
         }
-        let candidates = accounts
-            .flatMap { $0.platformAddresses }
-            .filter { $0.balance > 0 }
-            .sorted { $0.balance > $1.balance }
-        let totalAvailable = candidates.reduce(UInt64(0)) { $0 + $1.balance }
-        guard totalAvailable >= targetCredits else {
+        do {
+            return try PlatformPaymentIdentityFundingPolicy.makeInputs(
+                candidates: candidates,
+                targetCredits: targetCredits)
+        } catch let error as PlatformPaymentIdentityFundingPolicy.PlanningError {
+            guard case .insufficient(let required, let available) = error else {
+                throw CoordinatorError.identityRegistration(error)
+            }
             throw CoordinatorError.insufficientPlatformCredits(
-                required: targetCredits,
-                available: totalAvailable)
+                required: required,
+                available: available)
         }
-        var remaining = targetCredits
-        var inputs: [ManagedPlatformWallet.IdentityAddressInput] = []
-        for addr in candidates {
-            guard remaining > 0 else { break }
-            let spend = min(addr.balance, remaining)
-            inputs.append(
-                ManagedPlatformWallet.IdentityAddressInput(
-                    addressType: addr.addressType,
-                    hash: addr.addressHash,
-                    credits: spend))
-            remaining -= spend
-        }
-        return inputs
     }
 
     /// Shielded (Type-20) funding path: spend a fixed exit denomination
