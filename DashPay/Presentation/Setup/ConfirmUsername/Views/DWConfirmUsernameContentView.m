@@ -20,7 +20,6 @@
 #import "DWCheckbox.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
-#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -133,10 +132,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)supplementaryAmountStringForAmount:(uint64_t)amount {
-    DSPriceManager *priceManager = [DSPriceManager sharedInstance];
-    NSString *supplementaryAmount = [priceManager localCurrencyStringForDashAmount:amount];
-
-    return supplementaryAmount;
+    return [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:amount];
 }
 
 @end

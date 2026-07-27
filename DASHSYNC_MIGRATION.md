@@ -1,8 +1,7 @@
 # DashSync -> SwiftDashSDK migration status
 
-Current-state ledger for the DashSync removal. Updated 2026-07-24 from the
-working tree on `swift-sdk-integration`; historical stage-by-stage detail is
-available in Git history.
+Current-state ledger for the DashSync removal. Updated 2026-07-27 from the
+working tree; historical stage-by-stage detail is available in Git history.
 
 This file answers **what is migrated**. Use
 [`DASHSYNC_TEARDOWN_PLAN.md`](./DASHSYNC_TEARDOWN_PLAN.md) for the remaining
@@ -33,11 +32,10 @@ DashSync is still linked for four bounded tails:
    networks.
 4. **Pod-unlink mechanics and compatibility surfaces** — Uphold networking,
    DashSync keychain helpers used outside wallet migration, app-internal
-   `DS*` notifications, `DashSyncCurrentCommit`, `DSCurrencyPriceObject`,
-   one residual `DSPriceManager` formatter on the Confirm Username screen,
-   `DSLocalizedString`/`DSUtils`, AppDelegate setup, and project/Podfile link entries.
+   `DS*` notifications, `DashSyncCurrentCommit`, `DSLocalizedString`/`DSUtils`,
+   AppDelegate setup, and project/Podfile link entries.
 
-As of this audit, 29 app source files directly import DashSync. Counts of all
+As of this audit, 27 app source files directly import DashSync. Counts of all
 `DS*` tokens are not a useful progress metric because app-owned names such as
 `DSTransactionDirection`, comments, and frozen compatibility contracts are
 included.

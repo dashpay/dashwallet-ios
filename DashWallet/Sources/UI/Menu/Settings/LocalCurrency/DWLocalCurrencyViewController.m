@@ -17,8 +17,6 @@
 
 #import "DWLocalCurrencyViewController.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWLocalCurrencyModel.h"
 
 #import "DWLocalCurrencyTableViewCell.h"
