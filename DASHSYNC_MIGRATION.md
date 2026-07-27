@@ -32,8 +32,8 @@ DashSync is still linked for four bounded tails:
    networks.
 4. **Pod-unlink mechanics and compatibility surfaces** — Uphold networking,
    DashSync keychain helpers used outside wallet migration, app-internal
-   `DS*` notifications, `DashSyncCurrentCommit`, `DSLocalizedString`/`DSUtils`,
-   AppDelegate setup, and project/Podfile link entries.
+   `DS*` notifications, `DSLocalizedString`/`DSUtils`, AppDelegate setup, and
+   project/Podfile link entries.
 
 As of this audit, 27 app source files directly import DashSync. Counts of all
 `DS*` tokens are not a useful progress metric because app-owned names such as
