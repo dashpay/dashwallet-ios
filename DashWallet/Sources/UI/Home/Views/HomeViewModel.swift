@@ -301,6 +301,16 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        NotificationCenter.default.publisher(for: .swiftDashSDKTransactionProjectionDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    ShieldedTxLookup.shared.refresh()
+                    self?.txReloadRequests.send()
+                }
+            }
+            .store(in: &cancellableBag)
+
         // The platform-address recorder inserts into the app's SQLite —
         // invisible to the SwiftData save trigger above — so it posts its
         // own signal when a received row lands.
@@ -1141,9 +1151,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
         var byEntry: [Data: PersistentShieldedActivity] = [:]
         for row in rows where row.kindTag != ShieldedActivityItem.Kind.shieldFromAssetLock.rawValue {
             if let existing = byEntry[row.entryId] {
-                let existingOutgoing = existing.direction == ShieldedActivityItem.Direction.outgoing.rawValue
-                let rowOutgoing = row.direction == ShieldedActivityItem.Direction.outgoing.rawValue
-                if !existingOutgoing && rowOutgoing {
+                if shouldPreferShieldedProjection(row, over: existing) {
                     byEntry[row.entryId] = row
                 }
             } else {
@@ -1151,14 +1159,24 @@ class SwiftDashSDKWalletSource: TransactionSource {
             }
         }
 
+        let noteValueByCmx = shieldedNoteValueByCmx(in: context, walletId: walletId)
+        let outgoingNoteValueByCmx = outgoingShieldedNoteValueByCmx(in: context, walletId: walletId)
+
         var items: [ShieldedActivityItem] = []
         for row in byEntry.values {
+            let reconstructedAmountCredits = projectedShieldedAmountCredits(
+                for: row,
+                noteValueByCmx: noteValueByCmx,
+                outgoingNoteValueByCmx: outgoingNoteValueByCmx)
+            let reconstructedAmountDuffs = reconstructedAmountCredits / 1000
+
             switch row.kindTag {
             case ShieldedActivityItem.Kind.withdrawal.rawValue:
                 let address = withdrawalDestinationAddress(counterparty: row.counterparty)
                 if let address, isActiveWalletCoreAddress(address, walletId: walletId, in: context) {
                     let pendingItem = ShieldedActivityItem(
                         row: row,
+                        amountCreditsOverride: reconstructedAmountCredits,
                         destinationAddress: address,
                         isAwaitingTransparentReceipt: true)
                     // Keep a local Pending row during the gap between the
@@ -1179,6 +1197,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 // funds silently vanish from the timeline.
                 items.append(ShieldedActivityItem(
                     row: row,
+                    amountCreditsOverride: reconstructedAmountCredits,
                     destinationAddress: address,
                     isExternalDestination: true))
             case ShieldedActivityItem.Kind.unshield.rawValue:
@@ -1195,13 +1214,168 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 } ?? false
                 items.append(ShieldedActivityItem(
                     row: row,
+                    amountCreditsOverride: reconstructedAmountCredits,
                     destinationAddress: address,
                     isExternalDestination: isExternal))
+            case ShieldedActivityItem.Kind.received.rawValue:
+                if matchingCoreInternalTransfer(
+                    for: row,
+                    amountDuffs: reconstructedAmountDuffs,
+                    route: .coreToShielded,
+                    in: coreTransactions) != nil {
+                    // Restored Core → Shielded transfers are already covered by
+                    // the authoritative L1 asset-lock row in the main list.
+                    continue
+                }
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    amountCreditsOverride: reconstructedAmountCredits))
+            case ShieldedActivityItem.Kind.shieldedSpend.rawValue:
+                if let address = unshieldDestinationAddress(counterparty: row.counterparty) {
+                    let isExternal = !isActiveWalletPlatformAddress(address, walletId: walletId, in: context)
+                    items.append(ShieldedActivityItem(
+                        row: row,
+                        kindOverride: .unshield,
+                        amountCreditsOverride: reconstructedAmountCredits,
+                        destinationAddress: address,
+                        isExternalDestination: isExternal))
+                    continue
+                }
+
+                if let address = withdrawalDestinationAddress(counterparty: row.counterparty) {
+                    let receipt = matchingCoreReceipt(
+                        amountDuffs: reconstructedAmountDuffs,
+                        address: address,
+                        around: Date(timeIntervalSince1970: Double(row.createdAtMs) / 1000.0),
+                        in: coreTransactions)
+                    let receiptAmountCredits = receipt.map { $0.dashAmount * 1000 }
+                    let effectiveAmount = receiptAmountCredits ?? reconstructedAmountCredits
+
+                    if isActiveWalletCoreAddress(address, walletId: walletId, in: context) {
+                        // Same-seed restore: once the transparent receipt is in
+                        // the wallet's L1 history, that row is authoritative.
+                        if receipt != nil {
+                            continue
+                        }
+                        items.append(ShieldedActivityItem(
+                            row: row,
+                            kindOverride: .withdrawal,
+                            amountCreditsOverride: effectiveAmount,
+                            destinationAddress: address,
+                            isAwaitingTransparentReceipt: true))
+                    } else {
+                        items.append(ShieldedActivityItem(
+                            row: row,
+                            kindOverride: .withdrawal,
+                            amountCreditsOverride: effectiveAmount,
+                            destinationAddress: address,
+                            isExternalDestination: true))
+                    }
+                    continue
+                }
+
+                if row.identityId.count == 32 {
+                    items.append(ShieldedActivityItem(
+                        row: row,
+                        kindOverride: .identityCreate,
+                        amountCreditsOverride: reconstructedAmountCredits))
+                    continue
+                }
+
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    amountCreditsOverride: reconstructedAmountCredits))
             default:
-                items.append(ShieldedActivityItem(row: row))
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    amountCreditsOverride: reconstructedAmountCredits))
             }
         }
         return items
+    }
+
+    private static func shouldPreferShieldedProjection(
+        _ lhs: PersistentShieldedActivity,
+        over rhs: PersistentShieldedActivity
+    ) -> Bool {
+        let lhsScore = shieldedProjectionPreferenceScore(lhs)
+        let rhsScore = shieldedProjectionPreferenceScore(rhs)
+        if lhsScore != rhsScore {
+            return lhsScore > rhsScore
+        }
+        return lhs.createdAtMs > rhs.createdAtMs
+    }
+
+    private static func shieldedProjectionPreferenceScore(_ row: PersistentShieldedActivity) -> Int {
+        var score = 0
+        if row.kindTag != ShieldedActivityItem.Kind.shieldedSpend.rawValue { score += 100 }
+        if row.kindTag != ShieldedActivityItem.Kind.received.rawValue { score += 40 }
+        if row.amount > 0 { score += 30 }
+        if !row.identityId.isEmpty { score += 20 }
+        if !row.counterparty.isEmpty { score += 10 }
+        if row.direction == ShieldedActivityItem.Direction.outgoing.rawValue { score += 5 }
+        if row.hasBlockHeight { score += 3 }
+        score += row.status
+        return score
+    }
+
+    private static func projectedShieldedAmountCredits(
+        for row: PersistentShieldedActivity,
+        noteValueByCmx: [Data: UInt64],
+        outgoingNoteValueByCmx: [Data: UInt64]
+    ) -> UInt64 {
+        if row.amount > 0 { return row.amount }
+
+        let incomingCredits = sumChunked32Values(from: row.noteCmxs, using: noteValueByCmx)
+        if incomingCredits > 0 { return incomingCredits }
+
+        let outgoingCredits = sumChunked32Values(from: row.noteCmxs, using: outgoingNoteValueByCmx)
+        if outgoingCredits > 0 { return outgoingCredits }
+
+        return 0
+    }
+
+    private static func matchingCoreInternalTransfer(
+        for row: PersistentShieldedActivity,
+        amountDuffs: UInt64,
+        route: Transaction.InternalTransferRoute,
+        in transactions: [Transaction]
+    ) -> Transaction? {
+        let rowDate = Date(timeIntervalSince1970: Double(row.createdAtMs) / 1000.0)
+        let candidates = transactions.filter {
+            $0.internalTransferRoute == route
+                && isWithinProjectionMatchWindow($0.date, around: rowDate)
+        }
+
+        if amountDuffs > 0,
+           let exact = candidates.first(where: { $0.dashAmount == amountDuffs }) {
+            return exact
+        }
+
+        return candidates.count == 1 ? candidates.first : nil
+    }
+
+    private static func matchingCoreReceipt(
+        amountDuffs: UInt64,
+        address: String,
+        around date: Date,
+        in transactions: [Transaction]
+    ) -> Transaction? {
+        let candidates = transactions.filter { transaction in
+            guard transaction.isShieldedWithdrawalReceipt,
+                  transaction.outputReceiveAddresses.contains(address),
+                  isWithinProjectionMatchWindow(transaction.date, around: date) else {
+                return false
+            }
+            return amountDuffs == 0 || transaction.dashAmount == amountDuffs
+        }
+
+        if amountDuffs > 0,
+           let exact = candidates.first(where: { $0.dashAmount == amountDuffs }) {
+            return exact
+        }
+
+        return candidates.count == 1 ? candidates.first : nil
     }
 
     /// Match the eventual Core receipt without relying on a txid the opaque
@@ -1213,15 +1387,54 @@ class SwiftDashSDKWalletSource: TransactionSource {
         address: String,
         in transactions: [Transaction]
     ) -> Bool {
-        transactions.contains { transaction in
-            guard transaction.isShieldedWithdrawalReceipt,
-                  transaction.dashAmount == pending.amountDuffs,
-                  transaction.outputReceiveAddresses.contains(address) else {
-                return false
-            }
-            let delta = transaction.date.timeIntervalSince(pending.date)
-            return delta >= -3600 && delta <= 86_400
+        matchingCoreReceipt(
+            amountDuffs: pending.amountDuffs,
+            address: address,
+            around: pending.date,
+            in: transactions) != nil
+    }
+
+    private static func isWithinProjectionMatchWindow(_ date: Date, around anchor: Date) -> Bool {
+        let delta = date.timeIntervalSince(anchor)
+        return delta >= -3600 && delta <= 86_400
+    }
+
+    private static func shieldedNoteValueByCmx(
+        in context: ModelContext,
+        walletId: Data
+    ) -> [Data: UInt64] {
+        let descriptor = FetchDescriptor<PersistentShieldedNote>(
+            predicate: #Predicate { $0.walletId == walletId })
+        let rows = (try? context.fetch(descriptor)) ?? []
+        return Dictionary(uniqueKeysWithValues: rows.map { ($0.cmx, $0.value) })
+    }
+
+    private static func outgoingShieldedNoteValueByCmx(
+        in context: ModelContext,
+        walletId: Data
+    ) -> [Data: UInt64] {
+        let descriptor = FetchDescriptor<PersistentShieldedOutgoingNote>(
+            predicate: #Predicate { $0.walletId == walletId })
+        let rows = (try? context.fetch(descriptor)) ?? []
+        return Dictionary(uniqueKeysWithValues: rows.map { ($0.cmx, $0.value) })
+    }
+
+    private static func sumChunked32Values(
+        from data: Data,
+        using map: [Data: UInt64]
+    ) -> UInt64 {
+        guard !data.isEmpty else { return 0 }
+
+        var total: UInt64 = 0
+        var index = data.startIndex
+        while index < data.endIndex {
+            let next = data.index(index, offsetBy: 32, limitedBy: data.endIndex) ?? data.endIndex
+            guard data.distance(from: index, to: next) == 32 else { break }
+            let chunk = Data(data[index..<next])
+            total += map[chunk] ?? 0
+            index = next
         }
+        return total
     }
 
     /// Decode an unshield entry's counterparty (21-byte serialized
