@@ -32,7 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSURL *)supportURL;
 
 - (NSString *)appVersion;
-- (NSString *)dashSyncVersion;
 - (NSString *)exploreDashSyncState;
 - (NSString *)exploreLastServerUpdateDate;
 

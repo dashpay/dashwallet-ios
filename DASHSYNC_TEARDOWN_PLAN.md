@@ -30,6 +30,9 @@ and contacts, and CoinJoin recovery/sweep.
 The local-currency Objective-C boundary is app-owned, including the currency
 picker DTO and Confirm Username fiat formatter.
 
+About now reports app/network information without a DashSync commit resource
+or CocoaPods generation hook.
+
 The contacts rebuild in PR #787 is complete. Do not describe C10 as “contacts
 pending”; the remaining C10 scope is invitations plus legacy identity/profile
 compatibility types.
@@ -116,7 +119,6 @@ These are active repo tasks, not externally assigned work:
 | Uphold/profile HTTP | `HTTPLoaderManager`, `HTTPLoaderFactory`, `DSNetworkingCoordinator` | App-owned URLSession/Moya boundary preserving bearer and OTP behavior. |
 | Generic keychain helpers | `getKeychainData`, `setKeychainData`, `getKeychainInt` in Coinbase, Uphold, global options | App-owned compatibility shim preserving service/account/accessibility bytes. |
 | App-internal notifications | `DSWillRequestOSPermissionNotification`, `DSApplicationTerminationRequestNotification`, residual transaction notification names | App-owned typed notification names; migrate posters and observers together. |
-| About/build metadata | `DashSyncCurrentCommit`, `scripts/dashsync_version.sh` | Remove resource/script and show app/platform information only. |
 | Localization/utilities | `DSLocalizedString`, `UIWindow+DSUtils`, umbrella-only constants such as `DUFFS` | Foundation/app helpers and app-owned constants. |
 | Logger compatibility | `dwLogLevel` workaround | Revert to normal CocoaLumberjack `ddLogLevel` after DashSync headers disappear. |
 | App startup | `setupDashSyncOnce`, `DSOptionsManager` | Delete once every required service has an app/SDK owner. |
@@ -129,7 +131,7 @@ After T1-T4:
 1. Remove `pod 'DashSync'` from both app targets.
 2. Run CocoaPods 1.15.2 install.
 3. Remove `libDashSync`, `DashSync.framework`, header paths, linker flags,
-   `DashSync.bundle`, `DashSyncCurrentCommit`, and stale project references.
+   `DashSync.bundle`, and stale project references.
 4. Remove DashSync-only bridging-header and prefix-header imports.
 5. Run the audit gates and build both schemes.
 

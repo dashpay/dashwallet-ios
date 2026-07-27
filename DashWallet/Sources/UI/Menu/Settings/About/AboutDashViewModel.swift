@@ -23,7 +23,6 @@ import StoreKit
 final class AboutDashViewModel: ObservableObject {
 
     @Published private(set) var appVersion: String = ""
-    @Published private(set) var dashSyncVersion: String = ""
     @Published private(set) var exploreStatus: String = ""
     @Published private(set) var lastDeviceSync: String = ""
     @Published private(set) var lastDeviceUpdate: String = ""
@@ -55,7 +54,6 @@ final class AboutDashViewModel: ObservableObject {
         }
 
         appVersion = Self.makeAppVersion()
-        dashSyncVersion = Self.makeDashSyncVersion()
         reloadExploreState()
 
         databaseObserver = NotificationCenter.default.addObserver(
@@ -117,21 +115,11 @@ final class AboutDashViewModel: ObservableObject {
         let shortVersion = info?["CFBundleShortVersionString"] as? String ?? "?"
         let buildVersion = info?["CFBundleVersion"] as? String ?? "?"
 
-        let chain = DWEnvironment.sharedInstance().currentChain
-        let networkSuffix = chain.isMainnet() ? "" : " (\(chain.name))"
+        let networkSuffix = WalletEnvironment.isMainnet
+            ? ""
+            : " (\(WalletEnvironment.networkDisplayName))"
 
         return "\(shortVersion) - \(buildVersion)\(networkSuffix)"
-    }
-
-    private static func makeDashSyncVersion() -> String {
-        guard let path = Bundle.main.path(forResource: "DashSyncCurrentCommit", ofType: nil),
-              let raw = try? String(contentsOfFile: path, encoding: .utf8) else {
-            return "DashSync ?"
-        }
-
-        let commit = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        let shortCommit = commit.count > 7 ? String(commit.prefix(7)) : commit
-        return "\(shortCommit.isEmpty ? "?" : shortCommit)"
     }
 
     // MARK: - Preview
@@ -142,7 +130,6 @@ final class AboutDashViewModel: ObservableObject {
 
     private func applyPreviewData() {
         appVersion = "8.6.0 - 1"
-        dashSyncVersion = "1a2b3c4"
         exploreStatus = "Synced"
         lastDeviceSync = "Jun 22, 2026 at 7:26 PM"
         lastDeviceUpdate = "Jun 22, 2026"

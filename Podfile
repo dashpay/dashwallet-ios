@@ -130,8 +130,4 @@ post_install do |installer|
     File.write(grpc_file, new_contents)
   end
 
-  # update info about current DashSync version
-  # the command runs in the background after 1 sec, when `pod install` updates Podfile.lock
-  system("(sleep 1; sh ./scripts/dashsync_version.sh) &")
-
 end

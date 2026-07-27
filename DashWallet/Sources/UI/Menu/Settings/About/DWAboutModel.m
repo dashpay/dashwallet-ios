@@ -65,22 +65,6 @@ NS_ASSUME_NONNULL_BEGIN
                                       networkString];
 }
 
-- (NSString *)dashSyncVersion {
-    static NSString *dashSyncCommit = nil;
-    if (!dashSyncCommit) {
-        NSString *path = [[NSBundle mainBundle] pathForResource:@"DashSyncCurrentCommit" ofType:nil];
-        dashSyncCommit = [[NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
-        NSParameterAssert(dashSyncCommit);
-        if (!dashSyncCommit) {
-            dashSyncCommit = @"?";
-        }
-        // use first 7 characters of commit sha (same as GitHub)
-        dashSyncCommit = dashSyncCommit.length > 7 ? [dashSyncCommit substringToIndex:7] : dashSyncCommit;
-    }
-
-    return [NSString stringWithFormat:@"DashSync %@", dashSyncCommit];
-}
-
 - (NSString *)exploreDashSyncState {
     static NSDateFormatter *dateFormatter = nil;
     if (!dateFormatter) {

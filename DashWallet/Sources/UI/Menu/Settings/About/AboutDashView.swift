@@ -44,7 +44,6 @@ struct AboutDashView: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     List1View(label: NSLocalizedString("App version", comment: "AboutDash"), value: viewModel.appVersion)
-                    List1View(label: NSLocalizedString("DashSync", comment: "AboutDash"), value: viewModel.dashSyncVersion)
                 }
                 .modifier(MenuViewModifier())
 
