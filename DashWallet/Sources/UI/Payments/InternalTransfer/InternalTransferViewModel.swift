@@ -13,28 +13,10 @@ enum InternalTransferUnit: String {
     case fiat
 }
 
-/// Source bucket the user is funding the shielded transfer from. Decides
-/// which SDK route the `ShieldedTransferCoordinator` runs (asset-lock vs
-/// transparent shield) and which balance the screen validates against.
-enum InternalTransferSource: String {
-    case core
-    case platform
-}
-
-/// Direction of the transfer, toggled by the swap badge. `.toShielded`
-/// funds the shielded balance from Core/Platform (forward); `.fromShielded`
-/// withdraws from the shielded balance back to the transparent Dash Wallet
-/// (reverse, via `PlatformWalletManager.shieldedWithdraw`).
-enum InternalTransferDirection {
-    case toShielded
-    case fromShielded
-}
-
 /// Every balance-to-balance route the transfer engine can execute. The
 /// canonical read for validation, fees, and execution — derived from the
-/// receive sheet's (source, target) pair when pinned, otherwise from the
-/// standalone screen's legacy (direction, source) pair (which can only
-/// express the four shielded-centric routes).
+/// current explicit (from, to) pair, whether the screen is standalone or
+/// one side is pinned by the send/receive sheet host.
 enum InternalTransferRoute: Equatable {
     /// BIP44 UTXOs → asset lock → Type 18 shield.
     case coreToShielded
@@ -94,42 +76,38 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
-    /// Which "From" bucket the user picked on the source rows. Defaults to
-    /// `.core` because most users have BIP44 balance before they have
-    /// Platform Payment credits. Only meaningful while `.toShielded`.
-    @Published var source: InternalTransferSource = .core
-
-    /// Forward (Core/Platform → Shielded) vs reverse (Shielded → Dash Wallet),
-    /// toggled by the swap badge. Reverse has a single fixed destination
-    /// (Dash Wallet), so `source` is ignored while `.fromShielded`.
-    @Published var direction: InternalTransferDirection = .toShielded
+    /// Standalone screen's selected source balance. Defaults to `.core`
+    /// because most users have BIP44 funds before they have Platform or
+    /// Shielded balance.
+    @Published var source: ChainNetwork = .core {
+        didSet { guard oldValue != source else { return }; routeDidChange() }
+    }
 
     /// Fixed destination when this VM drives the receive sheet's embedded
-    /// form: the balance being received into. `nil` = the standalone
-    /// swappable screen (legacy direction/source model).
-    @Published private(set) var receiveTarget: ChainNetwork? = nil
+    /// form: the balance being received into. `nil` = the standalone form.
+    @Published private(set) var receiveTarget: ChainNetwork? = nil {
+        didSet { guard oldValue != receiveTarget else { return }; routeDidChange() }
+    }
 
     /// Fixed source when this VM drives the send sheet's embedded form
     /// (the balance-row out arrows): the balance being sent FROM. The To
     /// rows pick `sendTarget` among the other two balances. Mutually
     /// exclusive with `receiveTarget`; `nil` = not the send sheet.
-    @Published private(set) var sendSource: ChainNetwork? = nil
+    @Published private(set) var sendSource: ChainNetwork? = nil {
+        didSet { guard oldValue != sendSource else { return }; routeDidChange() }
+    }
 
     /// The destination balance picked on the send sheet's To rows. Only
-    /// meaningful while `sendSource` is set. Changing it re-derives `route`
-    /// and kicks the withdrawal preflight when Platform → Core becomes
-    /// active.
+    /// meaningful while `sendSource` is set, but reused by the standalone
+    /// screen as the selected To balance as well.
     @Published var sendTarget: ChainNetwork = .shielded {
-        didSet { routeDidChange() }
+        didSet { guard oldValue != sendTarget else { return }; routeDidChange() }
     }
 
     /// The source balance picked on the receive sheet's From rows. Only
-    /// meaningful for `receiveTarget` .core / .platform (the .shielded
-    /// target reuses the legacy `source` picker). Changing it re-derives
-    /// `route`, and kicks the withdrawal preflight when the full-balance
-    /// Platform → Core route becomes active.
+    /// meaningful while `receiveTarget` is set.
     @Published var receiveSource: ChainNetwork = .shielded {
-        didSet { routeDidChange() }
+        didSet { guard oldValue != receiveSource else { return }; routeDidChange() }
     }
 
     /// Live result of `preflightWithdrawal()` for the Platform → Core route:
@@ -140,24 +118,11 @@ final class InternalTransferViewModel: ObservableObject {
     private var preflightTask: Task<Void, Never>?
 
     /// Pins the route for the receive sheet: a transfer INTO `target`.
-    /// The From rows pick the source among the other two balances —
-    /// `source` for the .shielded target (legacy-expressible routes),
-    /// `receiveSource` for .core/.platform targets.
+    /// The From rows then pick the source among the other two balances.
     func applyReceiveRoute(into target: ChainNetwork) {
+        sendSource = nil
         receiveTarget = target
-        switch target {
-        case .shielded:
-            direction = .toShielded
-            // `source` keeps the user's pick (.core default).
-        case .core:
-            // Valid sources: shielded (withdraw) or platform (full-balance
-            // address withdrawal). Reset an out-of-range carryover.
-            if receiveSource != .platform { receiveSource = .shielded }
-        case .platform:
-            // Valid sources: shielded (unshield) or core (asset-lock fund).
-            if receiveSource != .core { receiveSource = .shielded }
-        }
-        routeDidChange()
+        receiveSource = Self.sanitizedSource(into: target, proposed: receiveSource)
     }
 
     /// Pins the route for the send sheet: a transfer OUT OF `from`. The To
@@ -166,43 +131,83 @@ final class InternalTransferViewModel: ObservableObject {
     /// Platform default to Shielded (privacy-forward); Shielded defaults
     /// to Core.
     func applySendRoute(from source: ChainNetwork) {
+        receiveTarget = nil
         sendSource = source
-        switch source {
-        case .core, .platform:
-            if sendTarget == source { sendTarget = .shielded }
-        case .shielded:
-            if sendTarget == .shielded { sendTarget = .core }
-        }
-        routeDidChange()
+        sendTarget = Self.sanitizedDestination(from: source, proposed: sendTarget)
+    }
+
+    func selectStandaloneSource(_ network: ChainNetwork) {
+        source = network
+        sendTarget = Self.sanitizedDestination(from: network, proposed: sendTarget)
+    }
+
+    func selectStandaloneTarget(_ network: ChainNetwork) {
+        sendTarget = Self.sanitizedDestination(from: source, proposed: network)
+    }
+
+    func selectSendTarget(_ network: ChainNetwork) {
+        let from = sendSource ?? source
+        sendTarget = Self.sanitizedDestination(from: from, proposed: network)
+    }
+
+    func selectReceiveSource(_ network: ChainNetwork) {
+        guard let receiveTarget else { return }
+        receiveSource = Self.sanitizedSource(into: receiveTarget, proposed: network)
     }
 
     /// The canonical route for validation/fees/execution.
     var route: InternalTransferRoute {
         if let source = sendSource {
-            switch (source, sendTarget) {
-            case (.core, .platform): return .coreToPlatform
-            case (.platform, .core): return .platformToCore
-            case (.platform, _): return .platformToShielded
-            case (.shielded, .platform): return .shieldedToPlatform
-            case (.shielded, _): return .shieldedToCore
-            case (.core, _): return .coreToShielded
-            }
+            return Self.route(
+                from: source,
+                to: Self.sanitizedDestination(from: source, proposed: sendTarget))
         }
         if let target = receiveTarget {
-            switch target {
-            case .shielded:
-                return source == .core ? .coreToShielded : .platformToShielded
-            case .core:
-                return receiveSource == .platform ? .platformToCore : .shieldedToCore
-            case .platform:
-                return receiveSource == .core ? .coreToPlatform : .shieldedToPlatform
-            }
+            return Self.route(
+                from: Self.sanitizedSource(into: target, proposed: receiveSource),
+                to: target)
         }
-        switch (direction, source) {
-        case (.toShielded, .core): return .coreToShielded
-        case (.toShielded, .platform): return .platformToShielded
-        case (.fromShielded, .core): return .shieldedToCore
-        case (.fromShielded, .platform): return .shieldedToPlatform
+        return Self.route(
+            from: source,
+            to: Self.sanitizedDestination(from: source, proposed: sendTarget))
+    }
+
+    private static func defaultDestination(for source: ChainNetwork) -> ChainNetwork {
+        switch source {
+        case .core, .platform:
+            return .shielded
+        case .shielded:
+            return .core
+        }
+    }
+
+    private static func defaultSource(for target: ChainNetwork) -> ChainNetwork {
+        switch target {
+        case .shielded:
+            return .core
+        case .core, .platform:
+            return .shielded
+        }
+    }
+
+    private static func sanitizedDestination(from source: ChainNetwork, proposed target: ChainNetwork) -> ChainNetwork {
+        source == target ? defaultDestination(for: source) : target
+    }
+
+    private static func sanitizedSource(into target: ChainNetwork, proposed source: ChainNetwork) -> ChainNetwork {
+        source == target ? defaultSource(for: target) : source
+    }
+
+    private static func route(from source: ChainNetwork, to target: ChainNetwork) -> InternalTransferRoute {
+        switch (source, target) {
+        case (.core, .shielded): return .coreToShielded
+        case (.core, .platform): return .coreToPlatform
+        case (.platform, .shielded): return .platformToShielded
+        case (.platform, .core): return .platformToCore
+        case (.shielded, .core): return .shieldedToCore
+        case (.shielded, .platform): return .shieldedToPlatform
+        case (.core, .core), (.platform, .platform), (.shielded, .shielded):
+            return route(from: source, to: defaultDestination(for: source))
         }
     }
 
