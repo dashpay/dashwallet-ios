@@ -64,13 +64,23 @@ import SwiftDashSDK
 enum PlatformPaymentIdentityFundingPolicy {
     static let creditsPerDuff: UInt64 = 1_000
 
-    /// 0.01 DASH of headroom. The current six-key identity-create minimum
-    /// is much smaller, while this also absorbs metered execution cost and
-    /// additional-input overhead.
+    /// 0.002 DASH of headroom reserved on the fee-source (BTreeMap input 0)
+    /// address. The observed identity-from-addresses base fee is ~0.0004 DASH
+    /// (`required 41500000` credits), so this keeps a ~5x margin that also
+    /// absorbs metered execution cost and additional-input overhead.
+    ///
+    /// It is deliberately much smaller than a typical Platform-address payment
+    /// (~0.01 DASH): the reserve doubles as the *minimum* balance an address
+    /// must hold to qualify as the fee source, and any smaller-hash address
+    /// below it is dropped from the plan (it cannot be a valid input 0). An
+    /// oversized reserve therefore strands funds — e.g. a 0.05 DASH balance
+    /// fragmented across 0.03 + 0.01 + 0.01 addresses would be rejected if the
+    /// reserve exceeded 0.01. Keeping it at 0.002 lets realistic fragments
+    /// remain usable fee sources while still covering the fee.
     ///
     /// TODO(SwiftDashSDK): replace this reserve with the SDK's authoritative
     /// identity-from-addresses fee estimate once one is exposed.
-    static let feeHeadroomCredits: UInt64 = 1_000_000_000
+    static let feeHeadroomCredits: UInt64 = 200_000_000
 
     struct Candidate: Equatable {
         let addressType: UInt8

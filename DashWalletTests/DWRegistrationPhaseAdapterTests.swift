@@ -313,7 +313,7 @@ final class PlatformPaymentIdentityFundingPolicyTests: XCTestCase {
         XCTAssertEqual(
             PlatformPaymentIdentityFundingPolicy.requiredAvailableCredits(
                 fundingDuffs: standardFundingDuffs),
-            4_000_000_000)
+            3_200_000_000)
     }
 
     func test_exactFundingWithoutFeeHeadroomIsRejectedBeforeSDKCall() {
@@ -327,18 +327,40 @@ final class PlatformPaymentIdentityFundingPolicyTests: XCTestCase {
             XCTAssertEqual(
                 error as? PlatformPaymentIdentityFundingPolicy.PlanningError,
                 .insufficient(
-                    required: 4_000_000_000,
+                    required: 3_200_000_000,
                     available: 3_000_000_000))
         }
     }
 
     func test_fragmentedAggregateBalanceDoesNotProduceEligibilityFalsePositive() {
+        // Aggregate (3.25e9) clears the funding+headroom requirement (3.2e9),
+        // but the smaller-hash 0.001-DASH address is below the fee reserve and
+        // cannot be BTreeMap input 0, so it drops from the plan and the usable
+        // suffix (3.15e9) no longer covers it. Eligibility must follow the
+        // buildable plan, not the raw aggregate.
         let candidates = [
-            candidate(hashByte: 1, balance: 500_000_000),
-            candidate(hashByte: 2, balance: 3_500_000_000)
+            candidate(hashByte: 1, balance: 100_000_000),
+            candidate(hashByte: 2, balance: 3_150_000_000)
         ]
 
         XCTAssertFalse(
+            PlatformPaymentIdentityFundingPolicy.canFund(
+                candidates: candidates,
+                fundingDuffs: standardFundingDuffs))
+    }
+
+    func test_fragmentedBalanceAboveReserveFundsWithoutStrandingLeadingAddress() {
+        // 0.05 DASH split 0.03 + 0.01 + 0.01 across three addresses — each
+        // comfortably above the 0.002 reserve, so none is stranded and the
+        // plan funds a standard registration. Regression for the picker hiding
+        // Platform when a real balance was fragmented by many small receives.
+        let candidates = [
+            candidate(hashByte: 1, balance: 1_000_000_000),
+            candidate(hashByte: 2, balance: 1_000_000_000),
+            candidate(hashByte: 3, balance: 3_000_000_000)
+        ]
+
+        XCTAssertTrue(
             PlatformPaymentIdentityFundingPolicy.canFund(
                 candidates: candidates,
                 fundingDuffs: standardFundingDuffs))
@@ -371,7 +393,7 @@ final class PlatformPaymentIdentityFundingPolicyTests: XCTestCase {
     func test_leadingAddressWithoutHeadroomIsNotSelectedAsInputZero() throws {
         let inputs = try PlatformPaymentIdentityFundingPolicy.makeInputs(
             candidates: [
-                candidate(hashByte: 1, balance: 500_000_000),
+                candidate(hashByte: 1, balance: 100_000_000),
                 candidate(hashByte: 2, balance: 4_000_000_000)
             ],
             targetCredits: 3_000_000_000)
@@ -391,9 +413,9 @@ final class PlatformPaymentIdentityFundingPolicyTests: XCTestCase {
 
         XCTAssertEqual(inputs.count, 2)
         XCTAssertEqual(inputs[0].hash, Data(repeating: 1, count: 20))
-        XCTAssertEqual(inputs[0].credits, 500_000_000)
+        XCTAssertEqual(inputs[0].credits, 1_300_000_000)
         XCTAssertEqual(inputs[1].hash, Data(repeating: 2, count: 20))
-        XCTAssertEqual(inputs[1].credits, 2_500_000_000)
+        XCTAssertEqual(inputs[1].credits, 1_700_000_000)
     }
 
     func test_sdkInsufficientFundsMessageIsRecognizedForFriendlyFallback() {
