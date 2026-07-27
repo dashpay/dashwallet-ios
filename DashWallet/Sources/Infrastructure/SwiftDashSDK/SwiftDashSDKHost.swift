@@ -542,19 +542,25 @@ final class SwiftDashSDKHost {
 
         let newSDK: SDK
         do {
-            // Pin Platform protocol version 12. v12 is the current server
-            // version and the floor for shielded transitions —
-            // `ShieldFromAssetLock` / `Shield` fees were introduced in v12,
-            // and pinning v11 made the client compute a stale, too-low
-            // shielded pool fee (testnet rejected the asset lock as
-            // underfunded, "needs … credits to start processing"). Pinning
-            // explicitly rather than relying on the auto-detect default
-            // (`platformVersion: 0`, which floors at mainnet 11 / testnet 12)
-            // keeps the wire format consistent across networks. The knob is
-            // the `DashSDKConfig.platform_version` field (dashpay/platform
-            // #3751); bump this when the agreed protocol moves past v12.
-            newSDK = try SDK(network: network, platformVersion: 12)
-            Self.logger.info("🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public)")
+            // Pin Platform protocol version 13. Testnet Drive has moved past
+            // v12 to v13, whose validation set changed the shielded
+            // identity-create exit denominations (v12/V8 `[0.1, 0.3, 0.5,
+            // 1.0]` → v13/V9 `[0.03, 0.1, 0.25, 0.5, 1.0]`). Staying pinned at
+            // v12 made the client build shielded transitions against the old
+            // set, so a contested (0.25 DASH) shielded username create failed
+            // client-side ("denomination 25000000000 is not a member …") even
+            // though the server (v13) requires exactly 0.25. v13 is a superset
+            // of v12's shielded fee logic, so the reason v11→v12 was pinned
+            // (correct `ShieldFromAssetLock` / `Shield` fees) still holds.
+            // Pinning explicitly rather than the auto-detect default
+            // (`platformVersion: 0`, floor + ratchet) avoids a race where the
+            // shielded build runs before the SDK has ratcheted to the network
+            // version. The knob is `DashSDKConfig.platform_version`
+            // (dashpay/platform #3751); bump this when the agreed protocol
+            // moves past v13.
+            let pinnedPlatformVersion: UInt32 = 13
+            newSDK = try SDK(network: network, platformVersion: pinnedPlatformVersion)
+            Self.logger.info("🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public), pinned protocol v\(pinnedPlatformVersion, privacy: .public)")
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
