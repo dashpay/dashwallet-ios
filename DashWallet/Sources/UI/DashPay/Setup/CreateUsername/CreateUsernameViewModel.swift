@@ -359,11 +359,10 @@ class CreateUsernameViewModel: ObservableObject {
         // user choose among the viable sources; the form is unblocked
         // as soon as any one is.
         let coreBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
-        let platformCredits = SwiftDashSDKWalletState.shared.platformPaymentCredits
         let hasEnoughCore = coreBalance >= requiredCost
-        let hasEnoughPlatform = PlatformPaymentIdentityFundingPolicy.canFund(
-            availableCredits: platformCredits,
-            fundingDuffs: UInt64(requiredCost))
+        let hasEnoughPlatform = PlatformPaymentIdentityFundingPolicy
+            .canFundCurrentWallet(
+                fundingDuffs: UInt64(requiredCost))
         let shieldedRequired = ShieldedIdentityFundingReadiness.requiredCredits(forContestedName: isContested)
         shieldedReadiness = ShieldedIdentityFundingReadiness.shared.evaluate(requiredCredits: shieldedRequired)
         armShieldedMaturityRevalidation()
@@ -500,7 +499,6 @@ class CreateUsernameViewModel: ObservableObject {
 
     private func checkBalance() {
         let balance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
-        let platformCredits = SwiftDashSDKWalletState.shared.platformPaymentCredits
         let platformDuffs = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
         let trimmedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
         let requiredDuffs = trimmedUsername.isEmpty
@@ -519,16 +517,15 @@ class CreateUsernameViewModel: ObservableObject {
         // balance that covers 0.03 DASH but not a contested name's
         // 0.25 DASH is still offered and fails only inside the SDK.
         hasMinimumRequiredCoreBalance = balance >= requiredDuffs
-        hasMinimumRequiredPlatformBalance = PlatformPaymentIdentityFundingPolicy.canFund(
-            availableCredits: platformCredits,
-            fundingDuffs: UInt64(requiredDuffs))
+        hasMinimumRequiredPlatformBalance = PlatformPaymentIdentityFundingPolicy
+            .canFundCurrentWallet(
+                fundingDuffs: UInt64(requiredDuffs))
         // `hasMinimumRequiredBalance` stays as the legacy OR view —
         // any pre-PR-5 consumer (banner gate, etc.) keeps seeing
         // "user has enough to register" without caring about source.
         hasMinimumRequiredBalance = hasMinimumRequiredCoreBalance || hasMinimumRequiredPlatformBalance
         hasRecommendedBalance = balance >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
-            || PlatformPaymentIdentityFundingPolicy.canFund(
-                availableCredits: platformCredits,
+            || PlatformPaymentIdentityFundingPolicy.canFundCurrentWallet(
                 fundingDuffs: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME))
     }
 }

@@ -91,8 +91,61 @@ enum PlatformPaymentIdentityFundingPolicy {
         return additionOverflow ? .max : required
     }
 
-    static func canFund(availableCredits: UInt64, fundingDuffs: UInt64) -> Bool {
-        availableCredits >= requiredAvailableCredits(fundingDuffs: fundingDuffs)
+    static func canFund(
+        candidates: [Candidate],
+        fundingDuffs: UInt64
+    ) -> Bool {
+        let (targetCredits, overflow) =
+            fundingDuffs.multipliedReportingOverflow(by: creditsPerDuff)
+        guard !overflow else { return false }
+        return (try? makeInputs(
+            candidates: candidates,
+            targetCredits: targetCredits)) != nil
+    }
+
+    /// Resolve the active wallet's persisted Platform-Payment address rows.
+    /// Both UI eligibility and submit-time planning consume this exact
+    /// candidate representation so fragmented balances cannot produce
+    /// different answers at the two call sites.
+    @MainActor
+    static func currentCandidates() throws -> [Candidate] {
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
+            return []
+        }
+        return try candidates(
+            walletId: wallet.walletId,
+            modelContainer: modelContainer)
+    }
+
+    @MainActor
+    static func candidates(
+        walletId: Data,
+        modelContainer: ModelContainer
+    ) throws -> [Candidate] {
+        let descriptor = FetchDescriptor<PersistentAccount>(
+            predicate: #Predicate { account in
+                account.accountType == 14
+                    && account.wallet.walletId == walletId
+            }
+        )
+        return try modelContainer.mainContext.fetch(descriptor)
+            .flatMap { $0.platformAddresses }
+            .filter { $0.balance > 0 }
+            .map {
+                Candidate(
+                    addressType: $0.addressType,
+                    hash: $0.addressHash,
+                    balance: $0.balance)
+            }
+    }
+
+    @MainActor
+    static func canFundCurrentWallet(fundingDuffs: UInt64) -> Bool {
+        guard let candidates = try? currentCandidates() else { return false }
+        return canFund(
+            candidates: candidates,
+            fundingDuffs: fundingDuffs)
     }
 
     /// Builds inputs in PlatformAddress/BTreeMap order. Rust's derived order
@@ -1281,33 +1334,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         modelContainer: ModelContainer,
         targetCredits: UInt64
     ) throws -> [ManagedPlatformWallet.IdentityAddressInput] {
-        let context = modelContainer.mainContext
-        // PlatformPayment accounts (`accountType == 14`) hold the only
-        // `platformAddresses`. Read every account for this wallet —
-        // dashwallet only has one PP account today but the example
-        // app's pattern doesn't assume that, and the cost is the same.
-        let accountDescriptor = FetchDescriptor<PersistentAccount>(
-            predicate: #Predicate { account in
-                account.accountType == 14
-                    && account.wallet.walletId == walletId
-            }
-        )
-        let accounts: [PersistentAccount]
+        let candidates: [PlatformPaymentIdentityFundingPolicy.Candidate]
         do {
-            accounts = try context.fetch(accountDescriptor)
+            candidates = try PlatformPaymentIdentityFundingPolicy.candidates(
+                walletId: walletId,
+                modelContainer: modelContainer)
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: PP account fetch failed: \(String(describing: error), privacy: .public)")
             throw CoordinatorError.identityRegistration(error)
         }
-        let candidates = accounts
-            .flatMap { $0.platformAddresses }
-            .filter { $0.balance > 0 }
-            .map {
-                PlatformPaymentIdentityFundingPolicy.Candidate(
-                    addressType: $0.addressType,
-                    hash: $0.addressHash,
-                    balance: $0.balance)
-            }
         do {
             return try PlatformPaymentIdentityFundingPolicy.makeInputs(
                 candidates: candidates,

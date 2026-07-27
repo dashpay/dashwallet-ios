@@ -23,6 +23,7 @@ import DashUIKit
 
 struct JoinDashPayReadinessScreen: View {
     @ObservedObject private var readiness = ShieldedIdentityFundingReadiness.shared
+    @ObservedObject private var walletState = SwiftDashSDKWalletState.shared
 
     /// Open the Shielded-balance transfer screen pre-filled with the
     /// suggested deposit (in DASH).
@@ -255,11 +256,9 @@ struct JoinDashPayReadinessScreen: View {
     /// complete a registration — otherwise it would land the user on a
     /// form whose Continue is disabled by the cost rule.
     private var transparentSourceViable: Bool {
-        let core = SwiftDashSDKWalletState.shared.balance?.total ?? 0
-        let platformCredits = SwiftDashSDKWalletState.shared.platformPaymentCredits
+        let core = walletState.balance?.total ?? 0
         return core >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-            || PlatformPaymentIdentityFundingPolicy.canFund(
-                availableCredits: platformCredits,
+            || PlatformPaymentIdentityFundingPolicy.canFundCurrentWallet(
                 fundingDuffs: UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME))
     }
 

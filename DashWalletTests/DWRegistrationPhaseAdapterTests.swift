@@ -332,6 +332,30 @@ final class PlatformPaymentIdentityFundingPolicyTests: XCTestCase {
         }
     }
 
+    func test_fragmentedAggregateBalanceDoesNotProduceEligibilityFalsePositive() {
+        let candidates = [
+            candidate(hashByte: 1, balance: 500_000_000),
+            candidate(hashByte: 2, balance: 3_500_000_000)
+        ]
+
+        XCTAssertFalse(
+            PlatformPaymentIdentityFundingPolicy.canFund(
+                candidates: candidates,
+                fundingDuffs: standardFundingDuffs))
+    }
+
+    func test_candidateAwareEligibilityMatchesSuccessfulMultiInputPlan() {
+        let candidates = [
+            candidate(hashByte: 1, balance: 1_500_000_000),
+            candidate(hashByte: 2, balance: 2_500_000_000)
+        ]
+
+        XCTAssertTrue(
+            PlatformPaymentIdentityFundingPolicy.canFund(
+                candidates: candidates,
+                fundingDuffs: standardFundingDuffs))
+    }
+
     func test_singleInputLeavesFeeHeadroomUnclaimed() throws {
         let inputs = try PlatformPaymentIdentityFundingPolicy.makeInputs(
             candidates: [
