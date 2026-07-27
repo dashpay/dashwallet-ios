@@ -181,12 +181,24 @@ struct QRCaptureView: UIViewRepresentable {
 
                 self.metadataOutput = output
 
+                self.captureSession = session
+
+                // Assigning the preview layer's session commits a
+                // configuration transaction on the main thread
+                // (`-[AVCaptureSession commitConfiguration]`), while
+                // `startRunning()` mutates the same session on `sessionQueue`.
+                // Running the two concurrently races the session's internal
+                // configuration lock and AVFoundation throws from
+                // `startRunning` — an uncaught ObjC exception that aborts the
+                // app (reported as "Crash when tapping the Scan icon on Dex").
+                // Serialize them: assign the preview session on main, then hop
+                // back to `sessionQueue` to start, so they never overlap.
                 DispatchQueue.main.async {
                     previewLayer.session = session
+                    self.sessionQueue.async {
+                        session.startRunning()
+                    }
                 }
-
-                self.captureSession = session
-                session.startRunning()
             }
         }
     }
