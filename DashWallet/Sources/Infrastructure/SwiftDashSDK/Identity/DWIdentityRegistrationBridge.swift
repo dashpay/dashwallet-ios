@@ -29,6 +29,15 @@ import Foundation
 import OSLog
 import SwiftDashSDK
 
+extension Notification.Name {
+    /// Posted after persisted SwiftDashSDK transaction-purpose metadata may
+    /// have changed. Transaction-history projections observe this signal to
+    /// invalidate snapshots that are not covered by a balance change (for
+    /// example, an identity asset lock gaining its funding type/status).
+    static let swiftDashSDKTransactionProjectionDidChange =
+        Notification.Name("DWSwiftDashSDKTransactionProjectionDidChange")
+}
+
 /// Funding source for new-identity registration. Surfaced to Obj-C
 /// as an NSInteger-backed enum so the SwiftUI form can route the
 /// user's picker selection through the bridge without changing
@@ -284,6 +293,27 @@ public final class DWIdentityRegistrationBridge: NSObject {
         NotificationCenter.default.post(
             name: DWIdentityRegistrationBridge.stateChangedNotification,
             object: nil)
+
+        // `assetLockStatus` is populated by polling the persisted
+        // `PersistentAssetLock`, so a non-zero value proves that the SDK's
+        // funding purpose/status is now available to the transaction
+        // projection. A terminal phase is the fallback for a fast FFI call
+        // that completes between poll ticks. Notify on failures too: the
+        // asset lock may have been persisted before a later Platform step
+        // failed, and the pending history row still needs its real purpose
+        // and amount in the current session.
+        let transactionProjectionMayHaveChanged: Bool
+        switch phase {
+        case .completed, .failed:
+            transactionProjectionMayHaveChanged = true
+        default:
+            transactionProjectionMayHaveChanged = assetLockStatus > 0
+        }
+        if transactionProjectionMayHaveChanged {
+            NotificationCenter.default.post(
+                name: .swiftDashSDKTransactionProjectionDidChange,
+                object: nil)
+        }
     }
 
     private static func nsError(from error: Error) -> NSError {
