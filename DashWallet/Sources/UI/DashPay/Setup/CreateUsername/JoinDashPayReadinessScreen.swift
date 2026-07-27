@@ -256,9 +256,11 @@ struct JoinDashPayReadinessScreen: View {
     /// form whose Continue is disabled by the cost rule.
     private var transparentSourceViable: Bool {
         let core = SwiftDashSDKWalletState.shared.balance?.total ?? 0
-        let platform = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
+        let platformCredits = SwiftDashSDKWalletState.shared.platformPaymentCredits
         return core >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-            || platform >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+            || PlatformPaymentIdentityFundingPolicy.canFund(
+                availableCredits: platformCredits,
+                fundingDuffs: UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME))
     }
 
     /// Credits → whole-DASH decimal (1e11 credits per DASH).

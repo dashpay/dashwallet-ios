@@ -293,3 +293,110 @@ final class DWRegistrationPhaseAdapterTests: XCTestCase {
             "993e6ac24139e41ea9a4541bca4e1642bd0832321754c2b4ff60dc4e8b340633")
     }
 }
+
+final class PlatformPaymentIdentityFundingPolicyTests: XCTestCase {
+
+    private let standardFundingDuffs: UInt64 = 3_000_000
+
+    private func candidate(
+        type: UInt8 = 0,
+        hashByte: UInt8,
+        balance: UInt64
+    ) -> PlatformPaymentIdentityFundingPolicy.Candidate {
+        PlatformPaymentIdentityFundingPolicy.Candidate(
+            addressType: type,
+            hash: Data(repeating: hashByte, count: 20),
+            balance: balance)
+    }
+
+    func test_standardRegistrationRequiresFundingPlusFeeHeadroom() {
+        XCTAssertEqual(
+            PlatformPaymentIdentityFundingPolicy.requiredAvailableCredits(
+                fundingDuffs: standardFundingDuffs),
+            4_000_000_000)
+    }
+
+    func test_exactFundingWithoutFeeHeadroomIsRejectedBeforeSDKCall() {
+        XCTAssertThrowsError(
+            try PlatformPaymentIdentityFundingPolicy.makeInputs(
+                candidates: [
+                    candidate(hashByte: 1, balance: 3_000_000_000)
+                ],
+                targetCredits: 3_000_000_000)
+        ) { error in
+            XCTAssertEqual(
+                error as? PlatformPaymentIdentityFundingPolicy.PlanningError,
+                .insufficient(
+                    required: 4_000_000_000,
+                    available: 3_000_000_000))
+        }
+    }
+
+    func test_singleInputLeavesFeeHeadroomUnclaimed() throws {
+        let inputs = try PlatformPaymentIdentityFundingPolicy.makeInputs(
+            candidates: [
+                candidate(hashByte: 1, balance: 4_000_000_000)
+            ],
+            targetCredits: 3_000_000_000)
+
+        XCTAssertEqual(inputs.count, 1)
+        XCTAssertEqual(inputs[0].hash, Data(repeating: 1, count: 20))
+        XCTAssertEqual(inputs[0].credits, 3_000_000_000)
+    }
+
+    func test_leadingAddressWithoutHeadroomIsNotSelectedAsInputZero() throws {
+        let inputs = try PlatformPaymentIdentityFundingPolicy.makeInputs(
+            candidates: [
+                candidate(hashByte: 1, balance: 500_000_000),
+                candidate(hashByte: 2, balance: 4_000_000_000)
+            ],
+            targetCredits: 3_000_000_000)
+
+        XCTAssertEqual(inputs.count, 1)
+        XCTAssertEqual(inputs[0].hash, Data(repeating: 2, count: 20))
+        XCTAssertEqual(inputs[0].credits, 3_000_000_000)
+    }
+
+    func test_multipleInputsReserveHeadroomOnlyOnBTreeMapInputZero() throws {
+        let inputs = try PlatformPaymentIdentityFundingPolicy.makeInputs(
+            candidates: [
+                candidate(hashByte: 2, balance: 2_500_000_000),
+                candidate(hashByte: 1, balance: 1_500_000_000)
+            ],
+            targetCredits: 3_000_000_000)
+
+        XCTAssertEqual(inputs.count, 2)
+        XCTAssertEqual(inputs[0].hash, Data(repeating: 1, count: 20))
+        XCTAssertEqual(inputs[0].credits, 500_000_000)
+        XCTAssertEqual(inputs[1].hash, Data(repeating: 2, count: 20))
+        XCTAssertEqual(inputs[1].credits, 2_500_000_000)
+    }
+
+    func test_sdkInsufficientFundsMessageIsRecognizedForFriendlyFallback() {
+        let error = NSError(
+            domain: "SwiftDashSDK",
+            code: 1,
+            userInfo: [
+                NSLocalizedDescriptionKey:
+                    "Protocol error: Insufficient combined address balances: "
+                    + "total available is less than required 41500000"
+            ])
+
+        XCTAssertTrue(
+            DWIdentityRegistrationCoordinator
+                .isPlatformAddressInsufficientFunds(error))
+    }
+
+    func test_unrelatedSDKErrorIsNotMisclassifiedAsFundingShortfall() {
+        let error = NSError(
+            domain: "SwiftDashSDK",
+            code: 2,
+            userInfo: [
+                NSLocalizedDescriptionKey: "Address nonce mismatch"
+            ])
+
+        XCTAssertFalse(
+            DWIdentityRegistrationCoordinator
+                .isPlatformAddressInsufficientFunds(error))
+    }
+}
