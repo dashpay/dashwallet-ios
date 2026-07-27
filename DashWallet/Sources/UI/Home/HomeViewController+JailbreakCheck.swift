@@ -35,7 +35,7 @@ extension HomeViewController: DWRecoverViewControllerDelegate {
         } else {
             message = NSLocalizedString("DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash).", comment: "")
             mainAction = UIAlertAction(title: NSLocalizedString("Close App", comment: ""), style: .default) { action in
-                NotificationCenter.default.post(name: NSNotification.Name.DSApplicationTerminationRequest, object: nil)
+                NotificationCenter.default.post(name: .applicationTerminationRequest, object: nil)
             }
         }
 

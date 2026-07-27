@@ -31,11 +31,11 @@ DashSync is still linked for four bounded tails:
    observed; `DWEnvironment` mirrors the active SDK wallet when switching
    networks.
 4. **Pod-unlink mechanics and compatibility surfaces** — Uphold networking,
-   DashSync keychain helpers used outside wallet migration, app-internal
-   `DS*` notifications, `DSLocalizedString`/`DSUtils`, AppDelegate setup, and
-   project/Podfile link entries.
+   DashSync keychain helpers used outside wallet migration,
+   `DSLocalizedString`/`DSUtils`, AppDelegate setup, and project/Podfile link
+   entries.
 
-As of this audit, 27 app source files directly import DashSync. Counts of all
+As of this audit, 25 app source files directly import DashSync. Counts of all
 `DS*` tokens are not a useful progress metric because app-owned names such as
 `DSTransactionDirection`, comments, and frozen compatibility contracts are
 included.
@@ -99,7 +99,7 @@ Status meanings:
 | 8 | Send Dash | Done | None. Money movement goes through `WalletSendService` / `SwiftDashSDKTransactionSender`. |
 | 9 | Fee estimation | Done | None. Confirmation uses the transaction builder's fee. |
 | 10 | PIN / biometrics | Done; teardown tail | Remove incidental DashSync imports/constants and retain the byte-compatible app-owned keychain contract. |
-| 11 | SPV sync | Done; teardown tail | Core restart/peer rotation is serialized `stopSpv → startSpv` on the existing manager, preserving Platform sync, wallet state and the process-cached per-network `ModelContainer`; clear-and-resync deletes the chain store off MainActor on the next process launch. Remove `setupDashSyncOnce` / `DSOptionsManager` and remaining legacy notification names at unlink. |
+| 11 | SPV sync | Done; teardown tail | Core restart/peer rotation is serialized `stopSpv → startSpv` on the existing manager, preserving Platform sync, wallet state and the process-cached per-network `ModelContainer`; clear-and-resync deletes the chain store off MainActor on the next process launch. Remove `setupDashSyncOnce` / `DSOptionsManager` at unlink; the chain-wallet notification is removed separately with C6-E. |
 | 12 | Network switch | Done; teardown tail | Remove the temporary DashSync wallet-registry mirror with C6-E. |
 | 13 | Backup seed phrase | Done | Reads the active SDK wallet mnemonic from host-owned storage. |
 | 14 | Wipe wallet | Done; teardown tail | Reinstall recovery and Settings Debug Reset both gate onboarding behind the background wipe executor's explicit success result; per-wallet SDK deletion remains synchronous, and a failed delete preserves mnemonic/runtime state and the in-memory identity snapshot for retry. After a successful wipe the stopped runtime installs an empty identity snapshot and publishes the wallet-context change; a newly started wallet publishes the same event, rebuilding the DashPay tab bar as 3 or 5 items from that wallet's identity state. Remove the DashSync registry/Core Data wipe arm after all consumers are gone. |

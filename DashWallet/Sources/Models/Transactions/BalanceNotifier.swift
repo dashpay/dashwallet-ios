@@ -57,11 +57,11 @@ class DWBalanceNotifier: NSObject {
 
     @objc
     func registerForPushNotifications() {
-        NotificationCenter.default.post(name: NSNotification.Name("org.dash.will-request-permission-notification"), object: nil)
+        NotificationCenter.default.post(name: .willRequestOSPermission, object: nil)
         let options: UNAuthorizationOptions = [.badge, .sound, .alert]
         UNUserNotificationCenter.current().requestAuthorization(options: options) { granted, error in
             DispatchQueue.main.async {
-                NotificationCenter.default.post(name: NSNotification.Name("org.dash.did-request-permission-notification"), object: nil)
+                NotificationCenter.default.post(name: .didRequestOSPermission, object: nil)
             }
             DWGlobalOptions.sharedInstance().localNotificationsEnabled = granted
             DWLogger.log("DWBalanceNotifier: register for notifications result \(granted), error \(String(describing: error))")
@@ -133,4 +133,3 @@ class DWBalanceNotifier: NSObject {
         cancellableBag.removeAll()
     }
 }
-
