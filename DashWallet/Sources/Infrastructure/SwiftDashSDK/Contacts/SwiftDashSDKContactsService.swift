@@ -107,7 +107,6 @@ final class SwiftDashSDKContactsService: ObservableObject {
     private let authorizer = DWIdentityAuthorizer()
     private var saveObserverCancellable: AnyCancellable?
     private var activeWalletCancellable: AnyCancellable?
-    private var repairingIgnoredSenderIds: Set<Data> = []
 
     /// Last run of the payments projection (see
     /// `refreshPaymentsProjection`). Throttles the piggyback call in
@@ -170,31 +169,15 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
         let requestRows: [PersistentDashpayContactRequest]
         let profileRows: [PersistentDashpayContactProfile]
-        let ignoredSenderRows: [PersistentDashpayIgnoredSender]
         do {
             requestRows = try context.fetch(FetchDescriptor<PersistentDashpayContactRequest>(
                 predicate: PersistentDashpayContactRequest.predicate(ownerIdentityId: ownerId)))
             profileRows = try context.fetch(FetchDescriptor<PersistentDashpayContactProfile>(
                 predicate: PersistentDashpayContactProfile.predicate(ownerIdentityId: ownerId)))
-            ignoredSenderRows = try context.fetch(FetchDescriptor<PersistentDashpayIgnoredSender>(
-                predicate: PersistentDashpayIgnoredSender.predicate(ownerIdentityId: ownerId)))
         } catch {
             Self.logger.error("👥 CONTACTS :: SwiftData fetch failed: \(String(describing: error), privacy: .public)")
             return
         }
-
-        // An ignored sender cannot also be someone we sent a request to:
-        // the outgoing row means we deliberately established or initiated
-        // that relationship. This contradictory state can only be produced
-        // by a stale incoming-row action. Repair it so an already-established
-        // contact is not permanently downgraded to "outgoing".
-        let outgoingIds = Set(
-            requestRows.lazy.filter(\.isOutgoing).map(\.contactIdentityId))
-        let contradictoryIgnoredIds = Set(
-            ignoredSenderRows.map(\.ignoredSenderId)).intersection(outgoingIds)
-        repairContradictoryIgnoredSenders(
-            contradictoryIgnoredIds,
-            ownerId: ownerId)
 
         let profilesByContact = Dictionary(
             profileRows.map { ($0.contactIdentityId, $0) },
@@ -266,42 +249,6 @@ final class SwiftDashSDKContactsService: ObservableObject {
         if Date().timeIntervalSince(lastPaymentsProjection) > 60 {
             lastPaymentsProjection = Date()
             refreshPaymentsProjection()
-        }
-    }
-
-    private func repairContradictoryIgnoredSenders(
-        _ senderIds: Set<Data>,
-        ownerId: Data
-    ) {
-        guard let wallet = SwiftDashSDKHost.shared.wallet else { return }
-        let pendingIds = senderIds.filter {
-            repairingIgnoredSenderIds.insert($0).inserted
-        }
-        guard !pendingIds.isEmpty else { return }
-
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            defer {
-                self.repairingIgnoredSenderIds.subtract(pendingIds)
-            }
-
-            var repairedAny = false
-            for senderId in pendingIds {
-                do {
-                    try await wallet.unignoreContactSender(
-                        ourIdentityId: ownerId,
-                        contactIdentityId: senderId)
-                    repairedAny = true
-                    Self.logger.info(
-                        "👥 CONTACTS :: repaired stale ignored+outgoing state for \(senderId.prefix(4).map { String(format: "%02x", $0) }.joined(), privacy: .public)…")
-                } catch {
-                    Self.logger.error(
-                        "👥 CONTACTS :: stale ignore repair failed: \(String(describing: error), privacy: .public)")
-                }
-            }
-            if repairedAny {
-                await self.syncNow()
-            }
         }
     }
 
