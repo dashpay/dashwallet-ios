@@ -168,3 +168,50 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             212_852)
     }
 }
+
+final class JoinDashPayRegistrationPolicyTests: XCTestCase {
+    func testSDKUsernameWinsWhenLegacyMirrorWasClearedByNetworkSwitch() {
+        XCTAssertTrue(
+            JoinDashPayRegistrationPolicy.hasRegisteredUsername(
+                hasIdentity: true,
+                sdkUsername: "alice",
+                legacyRegistrationCompleted: false,
+                legacyUsername: nil))
+    }
+
+    func testLegacyMirrorRemainsACompatibleFallback() {
+        XCTAssertTrue(
+            JoinDashPayRegistrationPolicy.hasRegisteredUsername(
+                hasIdentity: true,
+                sdkUsername: nil,
+                legacyRegistrationCompleted: true,
+                legacyUsername: "alice"))
+    }
+
+    func testIdentityWithoutOwnedUsernameStillShowsJoinFlow() {
+        XCTAssertFalse(
+            JoinDashPayRegistrationPolicy.hasRegisteredUsername(
+                hasIdentity: false,
+                sdkUsername: nil,
+                legacyRegistrationCompleted: false,
+                legacyUsername: nil))
+    }
+
+    func testLegacyUsernameWithoutCompletionDoesNotSuppressJoinFlow() {
+        XCTAssertFalse(
+            JoinDashPayRegistrationPolicy.hasRegisteredUsername(
+                hasIdentity: true,
+                sdkUsername: nil,
+                legacyRegistrationCompleted: false,
+                legacyUsername: "stale"))
+    }
+
+    func testLegacyMirrorCannotLeakAcrossNetworkWithoutIdentity() {
+        XCTAssertFalse(
+            JoinDashPayRegistrationPolicy.hasRegisteredUsername(
+                hasIdentity: false,
+                sdkUsername: nil,
+                legacyRegistrationCompleted: true,
+                legacyUsername: "testnet-alice"))
+    }
+}
