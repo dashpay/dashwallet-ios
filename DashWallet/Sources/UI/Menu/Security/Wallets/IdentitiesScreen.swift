@@ -288,6 +288,12 @@ private struct IdentityRowView: View {
                     icon: "location",
                     color: .orange)
             }
+            if row.pendingContestedName != nil {
+                IdentityBadge(
+                    text: NSLocalizedString("Voting", comment: "Usernames"),
+                    icon: "clock",
+                    color: .orange)
+            }
         }
     }
 }
@@ -355,6 +361,9 @@ struct IdentityDetailScreen: View {
                     VStack(alignment: .leading, spacing: 14) {
                         idCard
                         infoCard
+                        if row.pendingContestedName != nil {
+                            pendingNameCard
+                        }
                         if !row.dpnsNames.isEmpty {
                             namesCard
                         }
@@ -440,9 +449,15 @@ struct IdentityDetailScreen: View {
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(.dash.primaryText)
                 }
-                Text(NSLocalizedString(
-                    "Your username, profile, and contacts follow this identity.",
-                    comment: "Identities"))
+                Text(
+                    row.pendingContestedName == nil
+                        ? NSLocalizedString(
+                            "Your username, profile, and contacts follow this identity.",
+                            comment: "Identities")
+                        : NSLocalizedString(
+                            "This identity is being used for your pending username request.",
+                            comment: "Identities")
+                )
                     .font(.system(size: 13))
                     .foregroundColor(.dash.secondaryText)
             } else if canBecomeMain {
@@ -542,6 +557,28 @@ struct IdentityDetailScreen: View {
                 Text(name)
                     .font(.system(size: 15, weight: .medium))
                     .foregroundColor(.dash.primaryText)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color.dash.secondaryBackground)
+        .cornerRadius(12)
+    }
+
+    private var pendingNameCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(NSLocalizedString("Username request", comment: "Usernames"))
+                .font(.caption)
+                .foregroundColor(.dash.secondaryText)
+            HStack {
+                Text(row.pendingContestedName ?? "")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.dash.primaryText)
+                Spacer()
+                IdentityBadge(
+                    text: NSLocalizedString("Voting", comment: "Usernames"),
+                    icon: "clock",
+                    color: .orange)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

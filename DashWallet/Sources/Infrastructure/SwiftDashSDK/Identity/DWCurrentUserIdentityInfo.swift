@@ -419,7 +419,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         let pendingContested = DWContestedNameStatusService.shared.pendingLabel
         let isPending: (String) -> Bool = { name in
             guard let pending = pendingContested else { return false }
-            return name == pending || name == "\(pending).dash"
+            return DWContestedNameStatusService.labelsMatch(name, pending)
         }
 
         if let managed = try? wallet.managedIdentity(identityId: identityId) {

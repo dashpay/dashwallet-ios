@@ -1,6 +1,6 @@
 # DashSync -> SwiftDashSDK migration status
 
-Current-state ledger for the DashSync removal. Updated 2026-07-23 from the
+Current-state ledger for the DashSync removal. Updated 2026-07-24 from the
 working tree on `swift-sdk-integration`; historical stage-by-stage detail is
 available in Git history.
 
@@ -106,9 +106,9 @@ Status meanings:
 | 13 | Backup seed phrase | Done | Reads the active SDK wallet mnemonic from host-owned storage. |
 | 14 | Wipe wallet | Done; teardown tail | Reinstall recovery and Settings Debug Reset both gate onboarding behind the background wipe executor's explicit success result; per-wallet SDK deletion remains synchronous, and a failed delete preserves mnemonic/runtime state and the in-memory identity snapshot for retry. After a successful wipe the stopped runtime installs an empty identity snapshot and publishes the wallet-context change; a newly started wallet publishes the same event, rebuilding the DashPay tab bar as 3 or 5 items from that wallet's identity state. Remove the DashSync registry/Core Data wipe arm after all consumers are gone. |
 | 15 | Provider-key derivation | Done | All four families are SDK-native: Owner/Voting via the key-wallet path surface, Operator (BLS) and Evonode Operator (Ed25519) via `ManagedPlatformWallet.providerKeyAtIndex` (`platform_wallet_provider_key_at_index` grew per-index BLS/EdDSA public-key export, removing the earlier blocker). Overview counts and per-keypair “used at” restored from the Rust masternode aggregation (`PlatformWalletManager.masternodes(for:)`). |
-| 16 | DashPay identity creation | Done; invitation tail | Standard SDK-funded identity/name registration is migrated, with three funding paths (Core asset-lock, Platform Payment, shielded Type-20 — the privacy-preserving default, gated by `ShieldedIdentityFundingReadiness`). Invitation-funded create/accept remains part of the invitation decision. |
+| 16 | DashPay identity creation | Done; invitation tail | Standard SDK-funded identity/name registration is migrated, with three funding paths (Core asset-lock, Platform Payment, shielded Type-20 — the privacy-preserving default, gated by `ShieldedIdentityFundingReadiness`). Every new identity registers the DashPay ENCRYPTION/DECRYPTION pair in IdentityCreate; the lazy IdentityUpdate upgrader remains as a fallback for incomplete identities. Invitation-funded create/accept remains part of the invitation decision. |
 | 17 | DashPay identity/profile read-write | Done; compatibility tail | Retire remaining `DSBlockchainIdentity`-typed profile properties/categories and route every old view directly through `DWCurrentUserIdentityInfo` / `DWProfileUpdateBridge`. |
-| 18 | DashPay contacts and pay-to-contact | Done | PR #787 rebuilt contacts on SwiftDashSDK/SwiftData/SwiftUI and removed the old contacts subsystem. Invitations were explicitly out of scope. |
+| 18 | DashPay contacts and pay-to-contact | Done | PR #787 rebuilt contacts on SwiftDashSDK/SwiftData/SwiftUI and removed the old contacts subsystem. Recipient eligibility matches the SDK's DECRYPTION-preferred, ENCRYPTION-fallback policy so encryption-only mobile identities remain reachable. Invitations were explicitly out of scope. |
 | 18a | Contested DPNS-name detection | Done for retained scope | Warning/bookmark behavior is SDK-native; richer resolution/status UX remains optional product work, not a DashSync blocker. |
 | 19 | DPNS lookup | Done | Availability and contact search use SDK APIs. |
 | 20 | CoinJoin | Done for retained scope | Mixing was dropped; recovery/sweep is SDK-native. Only stale imports/comments should be removed during unlink. |

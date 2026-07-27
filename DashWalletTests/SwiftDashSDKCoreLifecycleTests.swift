@@ -2,8 +2,7 @@
 //  SwiftDashSDKCoreLifecycleTests.swift
 //  DashWalletTests
 //
-//  Regression coverage for Core-only SPV restart and process-lifetime
-//  network-scoped runtime caching.
+//  Regression coverage for SDK lifecycle and freshness policies.
 //
 
 import XCTest
@@ -15,6 +14,8 @@ private enum CoreLifecycleTestError: Error {
 
 @MainActor
 final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
+    private let now = Date(timeIntervalSince1970: 10_000)
+
     func testRestartRunsExactlyStopThenStartAndResetsBusyState() async throws {
         var events: [String] = []
         var restartingStates: [Bool] = []
@@ -90,6 +91,81 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(testnet.reused)
         XCTAssertTrue(mainnetFirst.value === mainnetSecond.value)
         XCTAssertFalse(mainnetFirst.value === testnet.value)
+    }
+
+    func testWatchdogRefreshesOnlyAfterFullScanBecomesStale() {
+        XCTAssertFalse(ShieldedSyncFreshnessPolicy.shouldRefreshForWatchdog(
+            now: now,
+            lastFullScanAt: now.addingTimeInterval(-89),
+            monitoringStartedAt: now.addingTimeInterval(-300),
+            isSyncing: false,
+            refreshInFlight: false))
+
+        XCTAssertTrue(ShieldedSyncFreshnessPolicy.shouldRefreshForWatchdog(
+            now: now,
+            lastFullScanAt: now.addingTimeInterval(-90),
+            monitoringStartedAt: now.addingTimeInterval(-300),
+            isSyncing: false,
+            refreshInFlight: false))
+    }
+
+    func testWatchdogUsesMonitoringStartUntilFirstFullScan() {
+        XCTAssertFalse(ShieldedSyncFreshnessPolicy.shouldRefreshForWatchdog(
+            now: now,
+            lastFullScanAt: nil,
+            monitoringStartedAt: now.addingTimeInterval(-89),
+            isSyncing: false,
+            refreshInFlight: false))
+
+        XCTAssertTrue(ShieldedSyncFreshnessPolicy.shouldRefreshForWatchdog(
+            now: now,
+            lastFullScanAt: nil,
+            monitoringStartedAt: now.addingTimeInterval(-90),
+            isSyncing: false,
+            refreshInFlight: false))
+    }
+
+    func testForegroundRefreshSkipsRecentFullScan() {
+        XCTAssertFalse(ShieldedSyncFreshnessPolicy.shouldRefreshOnForeground(
+            now: now,
+            lastFullScanAt: now.addingTimeInterval(-29),
+            monitoringStartedAt: now.addingTimeInterval(-300),
+            isSyncing: false,
+            refreshInFlight: false))
+
+        XCTAssertTrue(ShieldedSyncFreshnessPolicy.shouldRefreshOnForeground(
+            now: now,
+            lastFullScanAt: now.addingTimeInterval(-30),
+            monitoringStartedAt: now.addingTimeInterval(-300),
+            isSyncing: false,
+            refreshInFlight: false))
+    }
+
+    func testRefreshesAreDeduplicatedAgainstActiveWork() {
+        XCTAssertFalse(ShieldedSyncFreshnessPolicy.shouldRefreshForWatchdog(
+            now: now,
+            lastFullScanAt: now.addingTimeInterval(-300),
+            monitoringStartedAt: now.addingTimeInterval(-300),
+            isSyncing: true,
+            refreshInFlight: false))
+
+        XCTAssertFalse(ShieldedSyncFreshnessPolicy.shouldRefreshOnForeground(
+            now: now,
+            lastFullScanAt: now.addingTimeInterval(-300),
+            monitoringStartedAt: now.addingTimeInterval(-300),
+            isSyncing: false,
+            refreshInFlight: true))
+    }
+
+    func testCoreToShieldedMinimumIsFirstWholeDuffStrictlyAbovePoolFee() {
+        XCTAssertEqual(
+            CoreToShieldedAmountPolicy.minimumAmountDuffs(
+                poolFeeCredits: 212_851_200),
+            212_852)
+        XCTAssertEqual(
+            CoreToShieldedAmountPolicy.minimumAmountDuffs(
+                poolFeeCredits: 212_851_000),
+            212_852)
     }
 }
 

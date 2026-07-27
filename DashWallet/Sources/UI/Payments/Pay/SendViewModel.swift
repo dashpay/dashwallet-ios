@@ -462,6 +462,36 @@ final class SendViewModel: ObservableObject {
         }
     }
 
+    /// Type-18's pool fee is carved out of the one-time asset-lock value.
+    /// Reuse the internal-transfer policy so external sends to a shielded
+    /// address cannot reach Confirm with an amount the SDK must reject.
+    var coreToShieldedMinimumAmountDuffs: UInt64? {
+        guard route == .coreToShielded,
+              let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits
+        else { return nil }
+        return CoreToShieldedAmountPolicy.minimumAmountDuffs(
+            poolFeeCredits: poolFeeCredits)
+    }
+
+    /// Inline explanation for a Core → external Shielded amount that cannot
+    /// cover the Type-18 pool fee. Keep zero quiet until the user types.
+    var amountValidationMessage: String? {
+        guard route == .coreToShielded, dashDuffsUnsigned > 0 else { return nil }
+        guard let minimumDuffs = coreToShieldedMinimumAmountDuffs else {
+            return NSLocalizedString(
+                "There was an error, please try again later",
+                comment: "External shielded send fee estimate unavailable")
+        }
+        guard dashDuffsUnsigned < minimumDuffs else { return nil }
+
+        let formattedMinimum = "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "The minimum amount you can send is %@",
+                comment: "External shielded send minimum amount"),
+            formattedMinimum)
+    }
+
     /// Gate for advancing from the address step to the amount step: the
     /// entered address decodes to a known destination and — on the balance-row
     /// send sheet — the pinned source can actually pay that destination type.
@@ -480,8 +510,12 @@ final class SendViewModel: ObservableObject {
             return dashDuffsUnsigned <= coreBalanceDuffs
         case .coreToShielded:
             // Asset-lock route: the pool fee is carved from the locked value
-            // and the Rust side rejects an undersized lock — same envelope
-            // as the internal Core → Shielded transfer.
+            // and the Rust side rejects an undersized lock. Enforce the same
+            // strict minimum as the internal Core → Shielded transfer before
+            // opening Confirm.
+            guard let minimumDuffs = coreToShieldedMinimumAmountDuffs,
+                  dashDuffsUnsigned >= minimumDuffs
+            else { return false }
             return dashDuffsUnsigned <= coreBalanceDuffs
         case .platformToPlatform:
             guard let reserve = feeReserveCredits else { return false }

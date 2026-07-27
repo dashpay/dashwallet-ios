@@ -36,7 +36,10 @@ class JoinDashPayViewModel: ObservableObject {
 
     @MainActor
     func checkUsername() {
-        if blockchainIdentity != nil && DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted && UsernamePrefs.shared.joinDashPayDismissed { // TODO: MOCK_DASHPAY simplify
+        if let pending = DWContestedNameStatusService.shared.pendingLabel {
+            self.state = .voting
+            self.username = pending
+        } else if blockchainIdentity != nil && DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted && UsernamePrefs.shared.joinDashPayDismissed { // TODO: MOCK_DASHPAY simplify
             self.state = .registered
             self.username = blockchainIdentity?.currentDashpayUsername ?? ""
         } else {
