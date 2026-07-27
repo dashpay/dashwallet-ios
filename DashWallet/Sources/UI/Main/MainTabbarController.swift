@@ -267,6 +267,11 @@ extension MainTabbarController {
     #if DASHPAY
     private func reconfigureDashPayTabsIfNeeded() {
         guard hasDashPayIdentity else { return }
+        // The canonical registration notification can be emitted by multiple
+        // reconciliation paths. Once the five-tab DashPay layout is already
+        // installed, rebuilding it again would shift the selected index by
+        // another +2 and can select a non-existent controller.
+        guard viewControllers?.count != MainTabbarTabs.allCases.count else { return }
 
         if containsCreateUsernameController(in: self) {
             pendingDashPayTabReconfiguration = true

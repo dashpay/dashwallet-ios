@@ -93,6 +93,54 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(mainnetFirst.value === testnet.value)
     }
 
+    func testSameSeedIdentityRecoveryDiscoversRefreshesAndAdoptsInOneRun() async throws {
+        let identityId = Data(repeating: 0x16, count: 32)
+        var storedIdentityIds: [Data] = []
+        var events: [String] = []
+
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            localIdentityIds: { storedIdentityIds },
+            discover: {
+                events.append("discover")
+                storedIdentityIds = [identityId]
+                return [identityId]
+            },
+            refreshNames: { identityIds in
+                XCTAssertEqual(identityIds, [identityId])
+                events.append("refresh")
+            },
+            adopt: {
+                events.append("adopt")
+                return true
+            })
+
+        XCTAssertEqual(events, ["discover", "refresh", "adopt"])
+        XCTAssertEqual(
+            outcome,
+            .init(discoveredCount: 1, identityCount: 1, adopted: true))
+    }
+
+    func testSameSeedIdentityRecoveryUsesPersistedIdentityWithoutRescanning() async throws {
+        let identityId = Data(repeating: 0x17, count: 32)
+        var discoveryCalls = 0
+        var refreshedIdentityIds: [Data] = []
+
+        let outcome = try await SameSeedIdentityRecoveryPipeline.run(
+            localIdentityIds: { [identityId] },
+            discover: {
+                discoveryCalls += 1
+                return []
+            },
+            refreshNames: { refreshedIdentityIds = $0 },
+            adopt: { true })
+
+        XCTAssertEqual(discoveryCalls, 0)
+        XCTAssertEqual(refreshedIdentityIds, [identityId])
+        XCTAssertEqual(
+            outcome,
+            .init(discoveredCount: 0, identityCount: 1, adopted: true))
+    }
+
     func testWatchdogRefreshesOnlyAfterFullScanBecomesStale() {
         XCTAssertFalse(ShieldedSyncFreshnessPolicy.shouldRefreshForWatchdog(
             now: now,

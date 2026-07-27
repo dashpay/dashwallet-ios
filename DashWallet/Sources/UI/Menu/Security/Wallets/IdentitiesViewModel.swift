@@ -121,17 +121,7 @@ final class IdentitiesViewModel: ObservableObject {
         }
 
         DWCurrentUserIdentityInfo.setMainIdentityId(row.identityId, walletId: activeWalletId)
-        DWCurrentUserIdentityInfo.shared.refreshFromSDK()
-
-        let options = DWGlobalOptions.sharedInstance()
-        let username = DWCurrentUserIdentityInfo.shared.username
-        options.dashpayUsername = username
-        options.dashpayRegistrationCompleted = username?.isEmpty == false
-
-        NotificationCenter.default.post(
-            name: DWIdentityRegistrationBridge.stateChangedNotification,
-            object: nil)
-        SwiftDashSDKContactsService.shared.refresh()
+        _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
         reload()
     }
 
@@ -214,53 +204,24 @@ final class IdentitiesViewModel: ObservableObject {
                     : String(
                         format: NSLocalizedString("Found %d new identities", comment: "Identities"),
                         found.count)
-                // Backfill balances / usernames for the fresh rows, THEN
-                // adopt — the discovered row usually arrives nameless and
-                // the DPNS backfill supplies the username adoption needs.
-                reload()
-                await refreshFromNetwork()
-                adoptActiveWalletIdentityIfNeeded()
             }
+            // Backfill balances / usernames, THEN adopt. Run this even when
+            // the scan found no new row: an earlier discovery may already be
+            // persisted while the app-level DashPay mirror/UI is stale.
+            reload()
+            await refreshFromNetwork()
+            adoptActiveWalletIdentityIfNeeded()
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    /// A discovery that surfaced the ACTIVE wallet's pinned identity
-    /// (index 0) flips the app into DashPay mode — the same
-    /// `DWGlobalOptions` mirror + notification chain a fresh registration
-    /// performs on `.completed` — provided the identity already owns a
-    /// DPNS username. A nameless identity stays list-only: Join DashPay
-    /// later completes the name (the coordinator skips IdentityCreate for
-    /// an existing identity at the pinned slot). No-op when the mirror is
-    /// already set, so re-running Find can't clobber live state.
+    /// Reconcile an identity found by the explicit scan through the same
+    /// recovery path startup uses. In particular this posts the canonical
+    /// registration notification directly — there is no active registration
+    /// bridge username in a seed-recovery session.
     private func adoptActiveWalletIdentityIfNeeded() {
-        let options = DWGlobalOptions.sharedInstance()
-        guard options.dashpayUsername?.isEmpty != false else { return }
-        guard let container = SwiftDashSDKHost.shared.modelContainer,
-              let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId else { return }
-
-        var descriptor = FetchDescriptor<PersistentIdentity>(
-            predicate: #Predicate { identity in
-                identity.wallet?.walletId == activeWalletId && identity.identityIndex == 0
-            })
-        descriptor.fetchLimit = 1
-        guard let identity = try? container.mainContext.fetch(descriptor).first else { return }
-        let username = [identity.mainDpnsName, identity.dpnsName]
-            .compactMap { $0?.nonEmptyString }
-            .first
-        guard let username else { return }
-
-        options.dashpayUsername = username
-        options.dashpayRegistrationCompleted = true
-        DWCurrentUserIdentityInfo.shared.refreshFromSDK()
-        // Internal bridge notification: DWDashPayModel observes it, rebuilds
-        // its state, and posts the canonical
-        // DWDashPayRegistrationStatusUpdatedNotification for the wider UI —
-        // same ordering as a registration completion.
-        NotificationCenter.default.post(
-            name: DWIdentityRegistrationBridge.stateChangedNotification,
-            object: nil)
+        _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
     }
 
     // MARK: - Mapping

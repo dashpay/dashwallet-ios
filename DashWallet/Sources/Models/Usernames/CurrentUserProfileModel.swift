@@ -110,9 +110,13 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
             sdkUsername: identityState.username,
             legacyRegistrationCompleted: options.dashpayRegistrationCompleted,
             legacyUsername: options.dashpayUsername)
+        let hasPendingRecoveredName = MainActor.assumeIsolated {
+            DWContestedNameStatusService.shared.pendingLabel != nil
+        }
         showJoinDashpay = identityState.contextReady
             && model.state == .syncDone
             && !hasUsername
+            && !hasPendingRecoveredName
     }
     
     @objc func update() {
