@@ -481,7 +481,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         actionWithTitle:NSLocalizedString(@"Close App", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DWApp.applicationTerminationRequestNotification
+                                                                        object:nil];
                 }];
     [alert addAction:closeButton];
     [self presentViewController:alert animated:NO completion:nil];

@@ -33,6 +33,9 @@ picker DTO and Confirm Username fiat formatter.
 About now reports app/network information without a DashSync commit resource
 or CocoaPods generation hook.
 
+Permission and termination notifications are app-owned. Receive-address
+refresh no longer observes the dead DashSync transaction-manager notification.
+
 The contacts rebuild in PR #787 is complete. Do not describe C10 as “contacts
 pending”; the remaining C10 scope is invitations plus legacy identity/profile
 compatibility types.
@@ -118,7 +121,6 @@ These are active repo tasks, not externally assigned work:
 |---|---|---|
 | Uphold/profile HTTP | `HTTPLoaderManager`, `HTTPLoaderFactory`, `DSNetworkingCoordinator` | App-owned URLSession/Moya boundary preserving bearer and OTP behavior. |
 | Generic keychain helpers | `getKeychainData`, `setKeychainData`, `getKeychainInt` in Coinbase, Uphold, global options | App-owned compatibility shim preserving service/account/accessibility bytes. |
-| App-internal notifications | `DSWillRequestOSPermissionNotification`, `DSApplicationTerminationRequestNotification`, residual transaction notification names | App-owned typed notification names; migrate posters and observers together. |
 | Localization/utilities | `DSLocalizedString`, `UIWindow+DSUtils`, umbrella-only constants such as `DUFFS` | Foundation/app helpers and app-owned constants. |
 | Logger compatibility | `dwLogLevel` workaround | Revert to normal CocoaLumberjack `ddLogLevel` after DashSync headers disappear. |
 | App startup | `setupDashSyncOnce`, `DSOptionsManager` | Delete once every required service has an app/SDK owner. |
@@ -196,6 +198,7 @@ xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay \
 - Watch payload compatibility if retained;
 - Uphold/Coinbase sessions survive the keychain-helper replacement;
 - local-currency picker and About diagnostics after unlink.
+- camera/push permission handoff and app-termination alerts.
 
 Before the final release build, also verify that CrowdNode is unavailable as
 intended and that `../platform` is on `v4.1-dev` rather than the temporary local

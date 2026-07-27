@@ -125,8 +125,8 @@ NS_ASSUME_NONNULL_BEGIN
     [SwapTrackingServiceObjcWrapper start];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(dsApplicationTerminationRequestNotification:)
-                                                 name:DSApplicationTerminationRequestNotification
+                                             selector:@selector(applicationTerminationRequestNotification:)
+                                                 name:DWApp.applicationTerminationRequestNotification
                                                object:nil];
     
     [CLMCloudInAppMessaging setupWithCloudKitContainerIdentifier:@"iCloud.org.dash.dashwallet"];
@@ -369,7 +369,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
 #pragma mark - Notifications
 
-- (void)dsApplicationTerminationRequestNotification:(NSNotification *)sender {
+- (void)applicationTerminationRequestNotification:(NSNotification *)sender {
     CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication); // force NSUserDefaults to save
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

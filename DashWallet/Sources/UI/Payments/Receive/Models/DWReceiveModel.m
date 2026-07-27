@@ -47,11 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 
         [self updateReceivingInfo];
 
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(transactionReceivedNotification)
-                                                     name:DSTransactionManagerTransactionReceivedNotification
-                                                   object:nil];
-
         // Re-fetch the receive address as SwiftDashSDK's SPV catches up.
         // Rust's persister writes PersistentTransaction rows on every Core
         // SPV / BLAST batch and SwiftData posts NSManagedObjectContextDidSave

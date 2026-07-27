@@ -17,7 +17,7 @@
 
 #import "DWWindow.h"
 
-#import <DashSync/DSPermissionNotification.h>
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -46,11 +46,11 @@ NSString *const DWDeviceDidShakeNotification = @"DWDeviceDidShakeNotification";
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(willRequestOSPermissionNotification)
-                                   name:DSWillRequestOSPermissionNotification
+                                   name:DWApp.willRequestOSPermissionNotification
                                  object:nil];
         [notificationCenter addObserver:self
                                selector:@selector(didRequestOSPermissionNotification)
-                                   name:DSDidRequestOSPermissionNotification
+                                   name:DWApp.didRequestOSPermissionNotification
                                  object:nil];
     }
     return self;
