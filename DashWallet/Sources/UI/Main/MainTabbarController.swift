@@ -142,6 +142,17 @@ class MainTabbarController: UITabBarController {
                 self?.reconfigureDashPayTabsForActiveWalletChange()
             }
             .store(in: &cancellableBag)
+
+        // Remove destination-inappropriate tabs immediately when the selected
+        // network flips. `DWCurrentUserIdentityInfo` deliberately reports no
+        // identity until the destination SDK runtime is bound; the post-ready
+        // active-wallet notification above rebuilds again with final state.
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.reconfigureDashPayTabsForActiveWalletChange()
+            }
+            .store(in: &cancellableBag)
         #endif
     }
 

@@ -399,6 +399,11 @@ struct ExternalSendAmountScreen: View {
                         onMax: { viewModel.fillMaxFromWallet() })
                         .padding(.horizontal, 20)
                         .padding(.top, 6)
+
+                    if let message = viewModel.amountValidationMessage {
+                        TransferAmountValidationNote(message: message)
+                            .padding(.horizontal, 20)
+                    }
                 }
                 .padding(.bottom, 8)
             }

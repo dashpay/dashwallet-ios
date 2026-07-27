@@ -57,6 +57,10 @@ struct IdentityRowModel: Identifiable {
     let publicKeyCount: Int
     /// Every DPNS label owned by this identity (detail sheet list).
     let dpnsNames: [String]
+    /// Contested label submitted by this wallet but not owned yet.
+    /// Kept separate from `dpnsNames` so every identities surface can
+    /// render it explicitly as voting rather than as a confirmed name.
+    let pendingContestedName: String?
     /// True when this identity is the wallet's resolved MAIN identity —
     /// the one `DWCurrentUserIdentityInfo` reads, i.e. the owner of
     /// DashPay mode (username, avatar, contacts). Resolution = stored
@@ -223,17 +227,40 @@ final class IdentitiesViewModel: ObservableObject {
     // MARK: - Mapping
 
     private static func rowModel(for identity: PersistentIdentity, mainIdentityId: Data?) -> IdentityRowModel {
-        let hasName = (identity.alias?.isEmpty == false)
-            || (identity.mainDpnsName?.isEmpty == false)
-            || (identity.dpnsName?.isEmpty == false)
+        let pendingLabel = DWContestedNameStatusService.shared.pendingLabel
+        let isPending: (String?) -> Bool = { candidate in
+            guard let candidate, let pendingLabel else { return false }
+            return DWContestedNameStatusService.labelsMatch(candidate, pendingLabel)
+        }
+        let allNames = identity.dpnsNames.map(\.label)
+        let pendingBelongsToIdentity = pendingLabel != nil && (
+            isPending(identity.mainDpnsName)
+                || isPending(identity.dpnsName)
+                || allNames.contains(where: { isPending($0) })
+        )
+        let ownedNames = allNames.filter { !isPending($0) }
+        let alias = identity.alias?.nonEmptyString
+        let mainName = isPending(identity.mainDpnsName)
+            ? nil
+            : identity.mainDpnsName?.nonEmptyString
+        let preferredName = isPending(identity.dpnsName)
+            ? nil
+            : identity.dpnsName?.nonEmptyString
+        let title = alias
+            ?? mainName
+            ?? preferredName
+            ?? ownedNames.first
+            ?? (pendingBelongsToIdentity ? pendingLabel : nil)
+            ?? (String(identity.identityIdString.prefix(12)) + "...")
+        let hasName = alias != nil || mainName != nil || preferredName != nil || !ownedNames.isEmpty
         // Balance is stored as Int64 bit-pattern of the UInt64 credits.
         let credits = UInt64(bitPattern: identity.balance)
         return IdentityRowModel(
             identityId: identity.identityId,
-            title: identity.displayName,
+            title: title,
             hasName: hasName,
-            isMainName: identity.mainDpnsName?.isEmpty == false,
-            subtitle: hasName ? identity.alias?.nonEmptyString : nil,
+            isMainName: mainName != nil,
+            subtitle: hasName ? alias : nil,
             idBase58: identity.identityIdBase58,
             balanceText: InternalTransferViewModel.cardBalanceString(duffs: credits / 1000),
             balanceDetailText: identity.formattedBalance,
@@ -243,7 +270,8 @@ final class IdentitiesViewModel: ObservableObject {
             walletId: identity.wallet?.walletId,
             identityIndex: identity.identityIndex,
             publicKeyCount: identity.publicKeys.count,
-            dpnsNames: identity.dpnsNames.map(\.label),
+            dpnsNames: ownedNames,
+            pendingContestedName: pendingBelongsToIdentity ? pendingLabel : nil,
             isMainIdentity: mainIdentityId != nil && identity.identityId == mainIdentityId)
     }
 

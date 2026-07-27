@@ -38,7 +38,7 @@ struct AddContactScreen: View {
     @State private var errorMessage: String? = nil
     @State private var sentToast = false
 
-    private let service = SwiftDashSDKContactsService.shared
+    @ObservedObject private var service = SwiftDashSDKContactsService.shared
 
     var body: some View {
         NavigationStack {

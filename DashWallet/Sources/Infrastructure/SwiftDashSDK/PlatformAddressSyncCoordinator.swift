@@ -29,8 +29,45 @@
 import Combine
 import Foundation
 import OSLog
-import SwiftData
 import SwiftDashSDK
+import SwiftData
+import UIKit
+
+/// Decides when the app should supplement the SDK's regular shielded polling
+/// with a forced pass. External same-seed spends do not produce a local
+/// invalidation signal, and iOS may suspend the SDK's background timer, so a
+/// bounded freshness check is required even while Core sync is caught up.
+struct ShieldedSyncFreshnessPolicy {
+    static let watchdogInterval: TimeInterval = 15
+    static let maximumFullScanAge: TimeInterval = 90
+    /// Matches the SDK's caught-up cooldown. Requesting a forced pass sooner
+    /// would only produce `cooldownSkip` and leave the external spend unseen.
+    static let foregroundFreshnessGrace: TimeInterval = 30
+
+    static func shouldRefreshForWatchdog(
+        now: Date,
+        lastFullScanAt: Date?,
+        monitoringStartedAt: Date,
+        isSyncing: Bool,
+        refreshInFlight: Bool
+    ) -> Bool {
+        guard !isSyncing, !refreshInFlight else { return false }
+        let freshnessBaseline = lastFullScanAt ?? monitoringStartedAt
+        return now.timeIntervalSince(freshnessBaseline) >= maximumFullScanAge
+    }
+
+    static func shouldRefreshOnForeground(
+        now: Date,
+        lastFullScanAt: Date?,
+        monitoringStartedAt: Date,
+        isSyncing: Bool,
+        refreshInFlight: Bool
+    ) -> Bool {
+        guard !isSyncing, !refreshInFlight else { return false }
+        let freshnessBaseline = lastFullScanAt ?? monitoringStartedAt
+        return now.timeIntervalSince(freshnessBaseline) >= foregroundFreshnessGrace
+    }
+}
 
 @MainActor
 @objc(DWPlatformAddressSyncCoordinator)
@@ -101,6 +138,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private var syncEventCancellable: AnyCancellable?
     private var syncStateCancellable: AnyCancellable?
     private var shieldedEventCancellable: AnyCancellable?
+    private var shieldedForegroundCancellable: AnyCancellable?
+    private var shieldedFreshnessTask: Task<Void, Never>?
+    private var shieldedRefreshTask: Task<Void, Never>?
+    private var shieldedRefreshGeneration: UInt64 = 0
+    private var shieldedMonitoringStartedAt = Date()
+    private var lastFullShieldedSyncAt: Date?
     private var shieldedReconciliationTask: Task<Void, Never>?
     private var latestObservedShieldedBalance: UInt64 = 0
 
@@ -744,6 +787,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         syncStateCancellable = nil
         shieldedEventCancellable?.cancel()
         shieldedEventCancellable = nil
+        shieldedForegroundCancellable?.cancel()
+        shieldedForegroundCancellable = nil
+        shieldedFreshnessTask?.cancel()
+        shieldedFreshnessTask = nil
+        shieldedRefreshGeneration &+= 1
+        shieldedRefreshTask?.cancel()
+        shieldedRefreshTask = nil
+        lastFullShieldedSyncAt = nil
 
         if let manager = walletManager {
             do {
@@ -845,6 +896,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     // MARK: - Combine subscriptions
 
     private func subscribeToManager(manager: PlatformWalletManager, walletId: Data) {
+        shieldedMonitoringStartedAt = Date()
+        lastFullShieldedSyncAt = nil
+
         syncStateCancellable = manager.$platformAddressSyncIsSyncing
             .receive(on: RunLoop.main)
             .sink { [weak self] syncing in
@@ -867,6 +921,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
            !result.cooldownSkip {
             shieldedBalance = result.balance
             latestObservedShieldedBalance = result.balance
+            lastFullShieldedSyncAt = Date()
         }
         // Seed the shielded funding-tx → locked-amount map (for the home tx
         // list's "Shielded transfer" rows) from whatever is already
@@ -881,9 +936,89 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                       let result = event?.result(for: walletId),
                       result.success,
                       !result.cooldownSkip else { return }
+                self.lastFullShieldedSyncAt = Date()
                 self.handleShieldedBalanceResult(result, manager: manager)
                 ShieldedTxLookup.shared.refresh()
             }
+
+        // A suspended app cannot run the SDK's 60-second timer. Force one pass
+        // after returning to the foreground when the last real scan is no
+        // longer fresh. This is what makes an external same-seed spend appear
+        // without requiring a full process relaunch.
+        shieldedForegroundCancellable = NotificationCenter.default
+            .publisher(for: UIApplication.didBecomeActiveNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self, weak manager] _ in
+                guard let self, let manager else { return }
+                self.refreshShieldedOnForeground(using: manager)
+            }
+
+        // Keep a low-overhead guard around the SDK's regular polling. Healthy
+        // 60-second passes keep moving `lastFullShieldedSyncAt`, so this task
+        // does no extra network work. If the loop stalls or repeatedly fails,
+        // one forced pass is requested once the snapshot is 90 seconds old.
+        shieldedFreshnessTask?.cancel()
+        shieldedFreshnessTask = Task { [weak self, weak manager] in
+            while !Task.isCancelled {
+                do {
+                    try await Task.sleep(
+                        nanoseconds: UInt64(
+                            ShieldedSyncFreshnessPolicy.watchdogInterval * 1_000_000_000))
+                } catch {
+                    return
+                }
+                guard let self, let manager else { return }
+                self.refreshShieldedIfStale(using: manager)
+            }
+        }
+    }
+
+    private func refreshShieldedOnForeground(using manager: PlatformWalletManager) {
+        let shouldRefresh = ShieldedSyncFreshnessPolicy.shouldRefreshOnForeground(
+            now: Date(),
+            lastFullScanAt: lastFullShieldedSyncAt,
+            monitoringStartedAt: shieldedMonitoringStartedAt,
+            isSyncing: manager.shieldedSyncIsSyncing,
+            refreshInFlight: shieldedRefreshTask != nil)
+        guard shouldRefresh else { return }
+        requestShieldedRefresh(using: manager, reason: "foreground")
+    }
+
+    private func refreshShieldedIfStale(using manager: PlatformWalletManager) {
+        let shouldRefresh = ShieldedSyncFreshnessPolicy.shouldRefreshForWatchdog(
+            now: Date(),
+            lastFullScanAt: lastFullShieldedSyncAt,
+            monitoringStartedAt: shieldedMonitoringStartedAt,
+            isSyncing: manager.shieldedSyncIsSyncing,
+            refreshInFlight: shieldedRefreshTask != nil)
+        guard shouldRefresh else { return }
+        requestShieldedRefresh(using: manager, reason: "stale watchdog")
+    }
+
+    private func requestShieldedRefresh(
+        using manager: PlatformWalletManager,
+        reason: String
+    ) {
+        guard isRunning, walletManager === manager, shieldedRefreshTask == nil else { return }
+
+        shieldedRefreshGeneration &+= 1
+        let generation = shieldedRefreshGeneration
+        Self.logger.info(
+            "🛡️ SHIELD :: requesting forced sync (\(reason, privacy: .public))")
+
+        shieldedRefreshTask = Task { [weak self, weak manager] in
+            guard let manager else { return }
+            do {
+                try await manager.syncShieldedNow()
+            } catch {
+                let errorDescription = String(describing: error)
+                Self.logger.warning(
+                    "🛡️ SHIELD :: force failed (\(reason, privacy: .public)): \(errorDescription, privacy: .public)")
+            }
+
+            guard let self, self.shieldedRefreshGeneration == generation else { return }
+            self.shieldedRefreshTask = nil
+        }
     }
 
     /// Run an immediate post-spend readback. If the first pass observes spent

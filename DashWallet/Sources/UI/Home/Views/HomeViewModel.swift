@@ -82,7 +82,7 @@ class HomeViewModel: ObservableObject {
     @Published var showTimeSkewAlertDialog: Bool = false
     @Published var showCoinJoinSweepDialog: Bool = false
     @Published private(set) var timeSkew: TimeInterval = 0
-    @Published private(set) var showJoinDashpay: Bool = true
+    @Published private(set) var showJoinDashpay: Bool = false
     /// Selected filter categories (multi-select checkboxes). Defaults to every
     /// category — i.e. "All". Never empty: the dialog blocks unchecking the
     /// last box.
@@ -180,6 +180,12 @@ class HomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.clearCachedData()
+#if DASHPAY
+                // The selected network changes before its SDK runtime is
+                // ready. Keep the banner hidden during that transition; the
+                // post-ready wallet-context notification re-evaluates it.
+                self?.showJoinDashpay = false
+#endif
             }
             .store(in: &cancellableBag)
 
@@ -194,6 +200,16 @@ class HomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.clearCachedData()
+#if DASHPAY
+                // The runtime posts this only after the destination
+                // network's wallet + SwiftData container are bound. Defer
+                // one main-queue turn so DWCurrentUserIdentityInfo's
+                // notification observer invalidates its old-network snapshot
+                // before the banner asks for the destination username.
+                DispatchQueue.main.async { [weak self] in
+                    self?.checkJoinDashPay()
+                }
+#endif
             }
             .store(in: &cancellableBag)
     }
@@ -1401,26 +1417,65 @@ private struct HomeViewModelPreviewTransactionSource: TransactionSource {
 }
 #endif
 
+/// SDK identity data is authoritative for Join DashPay visibility. The
+/// DWGlobalOptions fields are a legacy UI mirror and are deliberately cleared
+/// at the start of every network switch; requiring that mirror before reading
+/// the SDK username creates a short-circuit where the mirror can never
+/// self-heal after returning to a network with an existing identity.
+enum JoinDashPayRegistrationPolicy {
+    static func hasRegisteredUsername(
+        hasIdentity: Bool,
+        sdkUsername: String?,
+        legacyRegistrationCompleted: Bool,
+        legacyUsername: String?
+    ) -> Bool {
+        // The legacy mirror is global, while identities are network-scoped.
+        // It can only be a fallback for an identity that exists in the
+        // currently-bound SDK context.
+        guard hasIdentity else {
+            return false
+        }
+        if sdkUsername?.isEmpty == false {
+            return true
+        }
+        return legacyRegistrationCompleted && legacyUsername?.isEmpty == false
+    }
+}
+
 // MARK: - DashPay
 
 #if DASHPAY
 extension HomeViewModel {
     func checkJoinDashPay() {
         let options = DWGlobalOptions.sharedInstance()
-        var hasRegisteredUsername =
-            options.dashpayRegistrationCompleted &&
-            options.dashpayUsername?.isEmpty == false
-        if !hasRegisteredUsername {
-            hasRegisteredUsername = MainActor.assumeIsolated {
-                options.dashpayRegistrationCompleted &&
-                DWCurrentUserIdentityInfo.shared.username?.isEmpty == false
-            }
+        // Read the network-scoped SDK truth unconditionally.
+        let identityState = MainActor.assumeIsolated {
+            let identity = DWCurrentUserIdentityInfo.shared
+            return (
+                contextReady: identity.isCurrentNetworkContextReady,
+                hasIdentity: identity.hasIdentity,
+                username: identity.username
+            )
         }
+        let hasRegisteredUsername = JoinDashPayRegistrationPolicy.hasRegisteredUsername(
+            hasIdentity: identityState.hasIdentity,
+            sdkUsername: identityState.username,
+            legacyRegistrationCompleted: options.dashpayRegistrationCompleted,
+            legacyUsername: options.dashpayUsername)
+        // Dismissal and registration-progress prefs predate network-scoped
+        // identity storage. They may still describe the previous network, so
+        // they can suppress the banner only when this network has an identity.
+        let identityScopedDismissal =
+            identityState.hasIdentity && UsernamePrefs.shared.joinDashPayDismissed
+        let identityScopedRegistrationState =
+            identityState.hasIdentity &&
+            (joinDashPayState == .voting || joinDashPayState == .registered)
 
-        self.showJoinDashpay = syncModel.state == .syncDone &&
-            !UsernamePrefs.shared.joinDashPayDismissed &&
+        self.showJoinDashpay = identityState.contextReady &&
+            syncModel.state == .syncDone &&
+            !identityScopedDismissal &&
             !hasRegisteredUsername &&
-            joinDashPayState != .voting && joinDashPayState != .registered
+            !identityScopedRegistrationState
     }
     
     private func observeDashPay() {

@@ -158,9 +158,20 @@ struct JoinDashPayView: View {
                 return NSLocalizedString("Add to your Shielded balance now and register your username privately a few hours later", comment: "Usernames")
             }
         case .voting:
-            let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime)
-            let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
-            return String.localizedStringWithFormat(NSLocalizedString("Username %@ has been requested on the Dash network. After the voting ends (%@) we will notify you about its results", comment: "Usernames"), viewModel.username, endDateStr)
+            if let endTime = DWContestedNameStatusService.shared.pendingVotingEndTime {
+                let endDate = DWDateFormatter.sharedInstance.longString(from: endTime)
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Username %@ has been submitted for voting. Voting ends around %@.",
+                        comment: "Usernames"),
+                    viewModel.username,
+                    endDate)
+            }
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "Username %@ has been submitted for voting. We will notify you when voting ends.",
+                    comment: "Usernames"),
+                viewModel.username)
         case .approved:
             return NSLocalizedString("Get started by setting up your profile picture and other information.", comment: "Usernames")
         case .failed:

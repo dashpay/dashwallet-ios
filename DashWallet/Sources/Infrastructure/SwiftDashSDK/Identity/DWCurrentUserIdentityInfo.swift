@@ -133,6 +133,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     private var cachedSnapshot: Snapshot = .empty
     private var cachedRevision: Int = -1
     private var currentRevision: Int = 0
+    private var cachedNetwork: Network?
 
     private override init() {
         super.init()
@@ -187,6 +188,20 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     /// `DWDashPayProtocol.hasIdentity` semantics from Row #17 stage A.
     @objc public var hasIdentity: Bool {
         snapshot.identityId != nil
+    }
+
+    /// True only after the SDK host has rebound to the network currently
+    /// selected by the app. During a network switch the persisted selection
+    /// changes before the old host is stopped, so destination UI must not
+    /// consume that old host's identity.
+    @objc public var isCurrentNetworkContextReady: Bool {
+        guard let selectedNetwork = WalletEnvironment.network else {
+            return false
+        }
+        let host = SwiftDashSDKHost.shared
+        return host.runningNetwork == selectedNetwork
+            && host.wallet != nil
+            && host.modelContainer != nil
     }
 
     /// First DPNS label for the current identity, or
@@ -337,6 +352,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         currentRevision &+= 1
         cachedSnapshot = .empty
         cachedRevision = currentRevision
+        cachedNetwork = nil
         Self.logger.info(
             "🪪 IDENT-INFO :: wallet-context reset; revision → \(self.currentRevision, privacy: .public)")
     }
@@ -378,10 +394,21 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     }
 
     private var snapshot: Snapshot {
-        if cachedRevision != currentRevision {
+        // Never serve or recompute the previous network's snapshot while the
+        // selected network and the still-running SDK host disagree. That
+        // transition window previously leaked a Testnet identity into Mainnet
+        // and repopulated the cleared global username mirror.
+        guard isCurrentNetworkContextReady,
+              let selectedNetwork = WalletEnvironment.network
+        else {
+            return .empty
+        }
+
+        if cachedNetwork != selectedNetwork || cachedRevision != currentRevision {
             if let computed = computeSnapshot() {
                 cachedSnapshot = computed
                 cachedRevision = currentRevision
+                cachedNetwork = selectedNetwork
             }
             // else: host wasn't ready (wallet/container hydrating).
             // Don't bump cachedRevision so the next read retries
@@ -466,7 +493,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         let pendingContested = DWContestedNameStatusService.shared.pendingLabel
         let isPending: (String) -> Bool = { name in
             guard let pending = pendingContested else { return false }
-            return name == pending || name == "\(pending).dash"
+            return DWContestedNameStatusService.labelsMatch(name, pending)
         }
 
         if let managed = try? wallet.managedIdentity(identityId: identityId) {
