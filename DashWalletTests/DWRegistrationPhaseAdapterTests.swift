@@ -292,4 +292,14 @@ final class DWRegistrationPhaseAdapterTests: XCTestCase {
             identifier?.map { String(format: "%02x", $0) }.joined(),
             "993e6ac24139e41ea9a4541bca4e1642bd0832321754c2b4ff60dc4e8b340633")
     }
+
+    func test_contestedShieldedFundingUsesCurrentProtocolDenomination() {
+        XCTAssertEqual(
+            ShieldedIdentityFundingReadiness.contestedDenominationCredits,
+            25_000_000_000)
+        XCTAssertEqual(
+            ShieldedIdentityFundingReadiness.requiredCredits(
+                forContestedName: true),
+            25_000_000_000)
+    }
 }
