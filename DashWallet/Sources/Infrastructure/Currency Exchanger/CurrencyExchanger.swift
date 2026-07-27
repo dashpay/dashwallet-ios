@@ -17,6 +17,22 @@
 
 import Foundation
 
+// MARK: - CurrencyRateObjc
+
+@objcMembers
+final class CurrencyRateObjc: NSObject {
+    let code: String
+    let name: String
+    let price: NSNumber
+
+    init(code: String, name: String, price: NSNumber) {
+        self.code = code
+        self.name = name
+        self.price = price
+        super.init()
+    }
+}
+
 // MARK: - CurrencyExchangerObjcWrapper
 
 @objc
@@ -32,13 +48,9 @@ class CurrencyExchangerObjcWrapper: NSObject {
         }
     }
 
-    // TODO(PR2b): the last DSCurrencyPriceObject surface — a facade minted for
-    // the ObjC currency picker (DWLocalCurrencyModel/DWCurrencyObject). Swap to
-    // an app-owned DTO after the SwiftUI local-currency rework on master
-    // integrates (deferred 2026-07-08 to avoid colliding with it).
     @objc
-    static var prices: [DSCurrencyPriceObject] {
-        wrapped.currencies.compactMap { .init(code: $0.code, name: $0.name, price: $0.price as NSNumber) }
+    static var prices: [CurrencyRateObjc] {
+        wrapped.currencies.map { .init(code: $0.code, name: $0.name, price: $0.price as NSNumber) }
     }
 
     @objc
@@ -117,10 +129,6 @@ public typealias CurrencyExchangerObserverHandler = (CurrencyExchanger) -> ()
 public final class CurrencyExchanger {
 
     /// All available currencies
-    ///
-    /// - Returns: Array of `DSCurrencyPriceObject`
-    ///
-    ///
     var currencies: [RateObject] = []
 
     private let dataProvider: RatesProvider

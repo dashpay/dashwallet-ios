@@ -1,6 +1,6 @@
 # DashSync pod teardown plan
 
-Current unlink plan, audited against the working tree on 2026-07-11. This file
+Current unlink plan, audited against the working tree on 2026-07-27. This file
 answers **what still prevents removing `pod 'DashSync'`**. Functional migration
 status lives in [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md).
 
@@ -26,6 +26,9 @@ transaction list/detail, receive, standard sends and fees, BIP70, address and
 mnemonic validation, authentication, reachability, the app-owned fiat-rate pipeline, logging, CrowdNode
 signing/APY, network identity/switch ownership, xpub export, DashPay registration
 and contacts, and CoinJoin recovery/sweep.
+
+The local-currency Objective-C boundary is app-owned, including the currency
+picker DTO and Confirm Username fiat formatter.
 
 The contacts rebuild in PR #787 is complete. Do not describe C10 as “contacts
 pending”; the remaining C10 scope is invitations plus legacy identity/profile
@@ -114,8 +117,6 @@ These are active repo tasks, not externally assigned work:
 | Generic keychain helpers | `getKeychainData`, `setKeychainData`, `getKeychainInt` in Coinbase, Uphold, global options | App-owned compatibility shim preserving service/account/accessibility bytes. |
 | App-internal notifications | `DSWillRequestOSPermissionNotification`, `DSApplicationTerminationRequestNotification`, residual transaction notification names | App-owned typed notification names; migrate posters and observers together. |
 | About/build metadata | `DashSyncCurrentCommit`, `scripts/dashsync_version.sh` | Remove resource/script and show app/platform information only. |
-| Local currency DTO | `DSCurrencyPriceObject` | App-owned value/ObjC DTO returned by `CurrencyExchanger`. |
-| Confirm Username fiat amount | Direct `DSPriceManager.localCurrencyStringForDashAmount` call in `DWConfirmUsernameContentView` | Route through `CurrencyExchanger_Objc` / the app-owned exchanger. |
 | Localization/utilities | `DSLocalizedString`, `UIWindow+DSUtils`, umbrella-only constants such as `DUFFS` | Foundation/app helpers and app-owned constants. |
 | Logger compatibility | `dwLogLevel` workaround | Revert to normal CocoaLumberjack `ddLogLevel` after DashSync headers disappear. |
 | App startup | `setupDashSyncOnce`, `DSOptionsManager` | Delete once every required service has an app/SDK owner. |

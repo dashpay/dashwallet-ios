@@ -20,13 +20,13 @@
 #import "DWCurrencyItem.h"
 #import "DWCurrencyItemPriceProvider.h"
 
-@class DSCurrencyPriceObject;
+@class CurrencyRateObjc;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DWCurrencyObject : NSObject <DWCurrencyItem>
 
-- (instancetype)initWithPriceObject:(DSCurrencyPriceObject *)object
+- (instancetype)initWithPriceObject:(CurrencyRateObjc *)object
                            flagName:(NSString *)flagName
                            provider:(id<DWCurrencyItemPriceProvider>)provider;
 

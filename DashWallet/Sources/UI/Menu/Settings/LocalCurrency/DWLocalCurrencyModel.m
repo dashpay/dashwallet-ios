@@ -17,10 +17,6 @@
 
 #import "DWLocalCurrencyModel.h"
 
-#import <DashSync/DSCurrencyPriceObject.h>
-#import <DashSync/DashSync.h>
-#import <objc/runtime.h>
-
 #import "DWCurrencyItemPriceProvider.h"
 #import "DWCurrencyObject.h"
 #import "NSPredicate+DWFullTextSearch.h"
@@ -54,11 +50,11 @@ NS_ASSUME_NONNULL_BEGIN
         _numberFormatter = numberFormatter;
 
         NSString *selectedCurrencyCode = currencyCode ?: DWApp.localCurrencyCode;
-        NSArray<DSCurrencyPriceObject *> *prices = [CurrencyExchangerObjcWrapper prices];
+        NSArray<CurrencyRateObjc *> *prices = [CurrencyExchangerObjcWrapper prices];
 
         NSMutableArray<DWCurrencyObject *> *allItems = [NSMutableArray array];
         for (size_t i = 0; i < prices.count; i++) {
-            DSCurrencyPriceObject *priceObject = prices[i];
+            CurrencyRateObjc *priceObject = prices[i];
 
             DWCurrencyObject *object =
                 [[DWCurrencyObject alloc] initWithPriceObject:priceObject
@@ -89,10 +85,10 @@ NS_ASSUME_NONNULL_BEGIN
         DWApp.localCurrencyCode = item.code;
     }
 
-    NSArray<DSCurrencyPriceObject *> *prices = [CurrencyExchangerObjcWrapper prices];
+    NSArray<CurrencyRateObjc *> *prices = [CurrencyExchangerObjcWrapper prices];
 
     for (size_t i = 0; i < prices.count; i++) {
-        DSCurrencyPriceObject *priceObject = prices[i];
+        CurrencyRateObjc *priceObject = prices[i];
         if ([priceObject.code isEqualToString:item.code]) {
             self.selectedIndex = i;
             return;
