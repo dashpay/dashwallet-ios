@@ -107,6 +107,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case noPlatformAddress
         case authCancelled
         case authFailed
+        case amountBelowCoreToShieldedMinimum(UInt64)
         case transferFailed(Error)
 
         var errorDescription: String? {
@@ -129,6 +130,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString("Authentication cancelled", comment: "InternalTransfer")
             case .authFailed:
                 return NSLocalizedString("Authentication failed", comment: "InternalTransfer")
+            case .amountBelowCoreToShieldedMinimum(let minimumDuffs):
+                let formattedMinimum = "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "The minimum amount you can send is %@",
+                        comment: "Core to Shielded minimum amount"),
+                    formattedMinimum)
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
             }
@@ -150,6 +158,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route amount=\(amountDuffs) external=\(recipientOverride != nil)")
+
+        // Backstop both amount screens at the execution boundary. Besides
+        // protecting programmatic callers, this keeps a stale Confirm sheet
+        // from surfacing the Rust SDK's raw ShieldFromAssetLock build error.
+        if let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits {
+            let minimumDuffs = CoreToShieldedAmountPolicy.minimumAmountDuffs(
+                poolFeeCredits: poolFeeCredits)
+            guard amountDuffs >= minimumDuffs else {
+                handleFailure(
+                    CoordinatorError.amountBelowCoreToShieldedMinimum(minimumDuffs))
+                return
+            }
+        }
 
         let env: Environment
         do {
