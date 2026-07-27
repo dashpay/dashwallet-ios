@@ -103,6 +103,8 @@ struct ShieldedActivityItem: Identifiable {
 
     init(
         row: PersistentShieldedActivity,
+        kindOverride: Kind? = nil,
+        amountCreditsOverride: UInt64? = nil,
         destinationAddress: String? = nil,
         isExternalDestination: Bool = false,
         isAwaitingTransparentReceipt: Bool = false
@@ -110,19 +112,20 @@ struct ShieldedActivityItem: Identifiable {
         self.destinationAddress = destinationAddress
         self.isExternalDestination = isExternalDestination
         self.isAwaitingTransparentReceipt = isAwaitingTransparentReceipt
+        let effectiveKind = kindOverride ?? Kind(rawValue: row.kindTag) ?? .shieldedSpend
         entryId = row.entryId
         accountIndex = row.accountIndex
-        kind = Kind(rawValue: row.kindTag) ?? .shieldedSpend
+        kind = effectiveKind
         direction = Direction(rawValue: row.direction) ?? .selfTransfer
         status = isAwaitingTransparentReceipt
             ? .pending
             : Status(rawValue: row.status) ?? .confirmed
-        amountDuffs = row.amount / 1000
+        amountDuffs = (amountCreditsOverride ?? row.amount) / 1000
         feeDuffs = row.hasFee ? row.fee / 1000 : nil
         blockHeight = row.hasBlockHeight ? row.blockHeight : nil
         date = Date(timeIntervalSince1970: Double(row.createdAtMs) / 1000.0)
         memoText = Self.decodeTextMemo(row.memo)
-        createdIdentityIdHex = row.kindTag == Kind.identityCreate.rawValue && row.identityId.count == 32
+        createdIdentityIdHex = effectiveKind == .identityCreate && row.identityId.count == 32
             ? row.identityId.map { String(format: "%02x", $0) }.joined()
             : nil
     }
