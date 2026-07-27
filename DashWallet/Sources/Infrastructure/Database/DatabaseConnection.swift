@@ -77,7 +77,8 @@ extension DatabaseConnection {
             AddProviderToGiftCardsTable(),
             AddRedeemUrlChallengeToGiftCardsTable(),
             AddSwapOrdersTable(),
-            AddPlatformAddressActivityTables()
+            AddPlatformAddressActivityTables(),
+            NormalizePlatformAddressActivityUnitsAndAddCreditReconciliations()
         ]
     }
 

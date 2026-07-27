@@ -492,16 +492,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // transfer, the wallet's own next receive address. Resolve before
         // advancing the phase.
         let platformAddress: String
+        let platformBalanceBefore: UInt64?
         if let destinationOverride, !destinationOverride.isEmpty {
             platformAddress = destinationOverride
+            platformBalanceBefore = nil
         } else {
-            guard let ownAddress = PlatformAddressSyncCoordinator.shared
-                    .derivedAddresses.nextReceiveAddress?.address,
-                  !ownAddress.isEmpty else {
+            guard let ownDestination = PlatformAddressSyncCoordinator.shared
+                    .derivedAddresses.nextReceiveAddress,
+                  !ownDestination.address.isEmpty else {
                 handleFailure(CoordinatorError.noPlatformAddress)
                 return
             }
-            platformAddress = ownAddress
+            platformAddress = ownDestination.address
+            platformBalanceBefore = ownDestination.balance
         }
 
         do {
@@ -531,8 +534,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .success
         scheduleShieldedResync(manager: env.manager)
         // Unshield credits the Platform-address balance; the shielded resync
-        // above only refreshes the shielded side, so kick the Platform-address
-        // (BLAST) sync to surface the credit promptly.
+        // above only refreshes the shielded side. Read the exact destination
+        // directly as a reliable postcondition, then retain the BLAST kicks as
+        // the normal wallet-wide background reconciliation.
+        if let platformBalanceBefore {
+            PlatformAddressSyncCoordinator.shared.reconcileIncomingCredit(
+                address: platformAddress,
+                baselineBalance: platformBalanceBefore,
+                creditedAmount: amountCredits)
+        }
         schedulePlatformResync()
     }
 

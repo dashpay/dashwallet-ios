@@ -69,6 +69,56 @@ struct ShieldedSyncFreshnessPolicy {
     }
 }
 
+/// Bounded retry policy for the direct Platform-address readback performed
+/// after an unshield. BLAST remains the background source of truth, but its
+/// incremental cursor can temporarily miss a just-committed address credit;
+/// querying that one known destination closes the user-visible balance gap.
+struct PlatformCreditReconciliationPolicy {
+    /// Cumulative schedule: immediately, then 2, 6, 14, and 30 seconds.
+    static let retryDelaysNanos: [UInt64] = [
+        0,
+        2_000_000_000,
+        4_000_000_000,
+        8_000_000_000,
+        16_000_000_000,
+    ]
+
+    static func expectedBalance(baseline: UInt64, creditedAmount: UInt64) -> UInt64 {
+        let sum = baseline.addingReportingOverflow(creditedAmount)
+        return sum.overflow ? UInt64.max : sum.partialValue
+    }
+
+    static func isSatisfied(observedBalance: UInt64, expectedBalance: UInt64) -> Bool {
+        observedBalance >= expectedBalance
+    }
+
+    /// A targeted incoming-credit read must never roll a newer local snapshot
+    /// back to a lagging evonode's value. Decreases remain BLAST's job because
+    /// that pipeline has a height with which to order snapshots.
+    static func shouldApply(
+        observedBalance: UInt64,
+        currentBalance: UInt64,
+        expectedBalance: UInt64
+    ) -> Bool {
+        observedBalance >= expectedBalance && observedBalance >= currentBalance
+    }
+
+    /// Jobs created by this app persist their exact pre-transfer expectation.
+    /// This fallback is only for confirmed unshields created before that job
+    /// table existed. A row updated after the operation already passed may
+    /// contain the credit, so adding the principal again would create an
+    /// impossible target and retry forever.
+    static func legacyExpectedBalance(
+        currentBalance: UInt64,
+        rowLastUpdated: Date,
+        activityCreatedAt: Date,
+        creditedAmount: UInt64
+    ) -> UInt64 {
+        guard rowLastUpdated < activityCreatedAt else { return currentBalance }
+        return expectedBalance(baseline: currentBalance, creditedAmount: creditedAmount)
+    }
+}
+
 @MainActor
 @objc(DWPlatformAddressSyncCoordinator)
 public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
@@ -146,6 +196,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     private var lastFullShieldedSyncAt: Date?
     private var shieldedReconciliationTask: Task<Void, Never>?
     private var latestObservedShieldedBalance: UInt64 = 0
+    private var platformCreditReconciliationTasks: [String: Task<Void, Never>] = [:]
+    private var platformCreditReconciliationTokens: [String: UUID] = [:]
 
     /// Long-lived resolver for the shielded sub-wallet bind in `performStart`.
     /// Stored (not local) because `MnemonicResolver` hands Rust an unretained
@@ -348,6 +400,360 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             row.lastUpdated = Date()
         }
         try? context.save()
+        // Keep the published balance and address-use flags in lockstep with
+        // the proof-attested rows. In particular, `nextReceiveAddress` must
+        // not keep selecting an address that a just-completed top-up marked
+        // used merely because the next BLAST event has not arrived yet.
+        refreshDerivedAddresses()
+        SwiftDashSDKWalletState.shared.refreshPlatformPaymentCredits()
+    }
+
+    /// Reconcile the one known destination of a successful shielded →
+    /// Platform unshield using an authoritative address-info proof.
+    ///
+    /// The shielded API returns no address-balance changeset, so the regular
+    /// BLAST pass is normally responsible for surfacing the credit. A pass
+    /// that was already in flight can miss the new recent-tree entry and a
+    /// subsequent incremental cursor may keep the persisted row stale. Since
+    /// the operation gives us the exact destination and credited principal,
+    /// directly reading that address is both cheaper and more reliable than
+    /// resetting the wallet-wide BLAST watermark.
+    public func reconcileIncomingCredit(
+        address: String,
+        baselineBalance: UInt64,
+        creditedAmount: UInt64,
+        creditedAtHeight: UInt64? = nil
+    ) {
+        guard
+            let sdk,
+            let container = modelContainer,
+            let walletId = wallet?.walletId,
+            let network = runningNetwork,
+            let parsed = Self.parsePlatformRecipient(bech32m: address)
+        else {
+            Self.logger.warning(
+                "🛰️ PLATFORM-CREDIT :: targeted reconciliation skipped; coordinator/address not ready")
+            return
+        }
+
+        let addressHash = parsed.hash
+        let descriptor = FetchDescriptor<PersistentPlatformAddress>(
+            predicate: #Predicate {
+                $0.walletId == walletId && $0.addressHash == addressHash
+            })
+        guard (try? container.mainContext.fetch(descriptor).first) != nil else {
+            Self.logger.warning(
+                "🛰️ PLATFORM-CREDIT :: destination is not a persisted wallet address")
+            return
+        }
+
+        let expectedBalance = PlatformCreditReconciliationPolicy.expectedBalance(
+            baseline: baselineBalance,
+            creditedAmount: creditedAmount)
+        let job = PlatformCreditReconciliationDAO.shared.create(
+            walletId: walletId,
+            networkRaw: Int64(network.rawValue),
+            address: address,
+            addressHash: addressHash,
+            amountCredits: creditedAmount,
+            expectedBalanceCredits: expectedBalance,
+            creditedHeight: creditedAtHeight)
+        scheduleCreditReconciliation(job, addressService: sdk.addresses)
+    }
+
+    private func scheduleCreditReconciliation(
+        _ job: PlatformCreditReconciliationRecord,
+        addressService: Addresses
+    ) {
+        guard platformCreditReconciliationTasks[job.id] == nil else { return }
+        let taskToken = UUID()
+        platformCreditReconciliationTokens[job.id] = taskToken
+
+        platformCreditReconciliationTasks[job.id] = Task { [weak self] in
+            guard let self else { return }
+            defer {
+                if self.platformCreditReconciliationTokens[job.id] == taskToken {
+                    self.platformCreditReconciliationTasks.removeValue(forKey: job.id)
+                    self.platformCreditReconciliationTokens.removeValue(forKey: job.id)
+                }
+            }
+
+            guard !Task.isCancelled, self.isActiveCreditReconciliation(job) else { return }
+            if self.completeCreditReconciliationFromPersistedStateIfPossible(job) {
+                return
+            }
+
+            for delayNanos in PlatformCreditReconciliationPolicy.retryDelaysNanos {
+                if delayNanos > 0 {
+                    do {
+                        try await Task.sleep(nanoseconds: delayNanos)
+                    } catch {
+                        return
+                    }
+                }
+                guard !Task.isCancelled else { return }
+
+                do {
+                    let info = try await Task.detached(priority: .utility) {
+                        try addressService.getInfo(address: job.address)
+                    }.value
+                    guard !Task.isCancelled, self.isActiveCreditReconciliation(job) else {
+                        return
+                    }
+                    guard let info else {
+                        Self.logger.info(
+                            "🛰️ PLATFORM-CREDIT :: destination not indexed yet; retrying")
+                        continue
+                    }
+
+                    guard self.applyAuthoritativeIncomingCredit(
+                        info,
+                        job: job)
+                    else {
+                        Self.logger.info(
+                            "🛰️ PLATFORM-CREDIT :: observed \(info.balance, privacy: .public), awaiting \(job.expectedBalanceCredits, privacy: .public)")
+                        continue
+                    }
+
+                    self.finishCreditReconciliation(job)
+                    Self.logger.info(
+                        "🛰️ PLATFORM-CREDIT :: reconciled balance=\(info.balance, privacy: .public)")
+                    return
+                } catch {
+                    Self.logger.warning(
+                        "🛰️ PLATFORM-CREDIT :: targeted read failed: \(String(describing: error), privacy: .public)")
+                }
+            }
+        }
+    }
+
+    private func isActiveCreditReconciliation(
+        _ job: PlatformCreditReconciliationRecord
+    ) -> Bool {
+        wallet?.walletId == job.walletId
+            && runningNetwork.map { Int64($0.rawValue) } == job.networkRaw
+            && !isClearing
+    }
+
+    private func completeCreditReconciliationFromPersistedStateIfPossible(
+        _ job: PlatformCreditReconciliationRecord
+    ) -> Bool {
+        guard let container = modelContainer else { return false }
+        let walletId = job.walletId
+        let addressHash = job.addressHash
+        let descriptor = FetchDescriptor<PersistentPlatformAddress>(
+            predicate: #Predicate {
+                $0.walletId == walletId && $0.addressHash == addressHash
+            })
+        guard let row = try? container.mainContext.fetch(descriptor).first else { return false }
+
+        if let creditedHeight = job.creditedHeight, row.lastSeenHeight >= creditedHeight {
+            finishCreditReconciliation(job)
+            return true
+        }
+        guard row.balance >= job.expectedBalanceCredits else { return false }
+        finishCreditReconciliation(job)
+        return true
+    }
+
+    /// Applies only monotonic incoming-credit observations. An address-info
+    /// response has no height, so a lower balance cannot safely supersede a
+    /// newer BLAST snapshot and is retained only as a retry signal.
+    private func applyAuthoritativeIncomingCredit(
+        _ info: PlatformAddressInfo,
+        job: PlatformCreditReconciliationRecord
+    ) -> Bool {
+        guard let container = modelContainer else { return false }
+        let walletId = job.walletId
+        let addressHash = job.addressHash
+        let descriptor = FetchDescriptor<PersistentPlatformAddress>(
+            predicate: #Predicate {
+                $0.walletId == walletId && $0.addressHash == addressHash
+            })
+        guard let row = try? container.mainContext.fetch(descriptor).first else { return false }
+        guard PlatformCreditReconciliationPolicy.shouldApply(
+            observedBalance: info.balance,
+            currentBalance: row.balance,
+            expectedBalance: job.expectedBalanceCredits)
+        else { return false }
+
+        row.balance = info.balance
+        row.nonce = max(row.nonce, info.nonce)
+        row.isUsed = row.isUsed || info.balance > 0 || info.nonce > 0
+        if let creditedHeight = job.creditedHeight {
+            if row.firstSeenHeight == 0 {
+                row.firstSeenHeight = UInt32(clamping: creditedHeight)
+            }
+            row.lastSeenHeight = max(row.lastSeenHeight, creditedHeight)
+        }
+        row.lastUpdated = Date()
+        do {
+            try container.mainContext.save()
+        } catch {
+            Self.logger.warning(
+                "🛰️ PLATFORM-CREDIT :: address-row save failed: \(String(describing: error), privacy: .public)")
+            return false
+        }
+
+        refreshDerivedAddresses()
+        SwiftDashSDKWalletState.shared.refreshPlatformPaymentCredits()
+        return true
+    }
+
+    private func finishCreditReconciliation(_ job: PlatformCreditReconciliationRecord) {
+        let dao = PlatformCreditReconciliationDAO.shared
+        dao.markCompleted(id: job.id)
+        guard let creditedHeight = job.creditedHeight else { return }
+        if advanceLastSeenHeight(
+            creditedHeight,
+            addressHash: job.addressHash,
+            walletId: job.walletId)
+        {
+            dao.delete(id: job.id)
+        }
+    }
+
+    @discardableResult
+    private func advanceLastSeenHeight(
+        _ height: UInt64,
+        addressHash: Data,
+        walletId: Data
+    ) -> Bool {
+        guard let container = modelContainer else { return false }
+        let descriptor = FetchDescriptor<PersistentPlatformAddress>(
+            predicate: #Predicate {
+                $0.walletId == walletId && $0.addressHash == addressHash
+            })
+        guard let row = try? container.mainContext.fetch(descriptor).first else { return false }
+        if row.firstSeenHeight == 0 {
+            row.firstSeenHeight = UInt32(clamping: height)
+        }
+        row.lastSeenHeight = max(row.lastSeenHeight, height)
+        row.isUsed = true
+        row.lastUpdated = Date()
+        do {
+            try container.mainContext.save()
+            return true
+        } catch {
+            Self.logger.warning(
+                "🛰️ PLATFORM-CREDIT :: height save failed: \(String(describing: error), privacy: .public)")
+            return false
+        }
+    }
+
+    /// Recover confirmed internal unshields that predate the targeted
+    /// readback fix. A confirmed activity carries the destination hash and
+    /// Platform height; if its wallet-owned address row has never reached
+    /// that height, its persisted balance may still be the pre-unshield
+    /// value. Scheduling the same bounded proof read repairs the existing
+    /// balance after an app update/relaunch, not only future transfers.
+    private func reconcileMissedIncomingCredits() {
+        guard
+            let container = modelContainer,
+            let walletId = wallet?.walletId,
+            let network = runningNetwork,
+            let sdk
+        else { return }
+
+        let unshieldKind = ShieldedActivityValue.unshieldKind
+        let confirmedStatus = ShieldedActivityValue.confirmedStatus
+        let activityDescriptor = FetchDescriptor<PersistentShieldedActivity>(
+            predicate: #Predicate {
+                $0.walletId == walletId
+                    && $0.kindTag == unshieldKind
+                    && $0.status == confirmedStatus
+                    && $0.hasBlockHeight
+            },
+            sortBy: [SortDescriptor(\.blockHeight, order: .reverse)])
+
+        guard let activities = try? container.mainContext.fetch(activityDescriptor) else { return }
+        let dao = PlatformCreditReconciliationDAO.shared
+        var jobs = dao.records(walletId: walletId, networkRaw: Int64(network.rawValue))
+
+        for activity in activities {
+            guard activity.counterparty.count == 21 else { continue }
+            let addressHash = activity.counterparty.subdata(in: 1..<21)
+            let addressDescriptor = FetchDescriptor<PersistentPlatformAddress>(
+                predicate: #Predicate {
+                    $0.walletId == walletId && $0.addressHash == addressHash
+                })
+            guard let row = try? container.mainContext.fetch(addressDescriptor).first else { continue }
+
+            let activityDate = Date(
+                timeIntervalSince1970: Double(activity.createdAtMs) / 1_000)
+            let exactIndex = jobs.firstIndex {
+                $0.activityEntryId == activity.entryId
+            }
+            let unlinkedIndex = jobs.enumerated()
+                .filter { _, job in
+                    job.activityEntryId == nil
+                        && job.addressHash == addressHash
+                        && job.amountCredits == activity.amount
+                        && abs(job.createdAt.timeIntervalSince(activityDate))
+                            <= PlatformAddressActivityRecorder.ownOperationWindow
+                }
+                .min {
+                    abs($0.element.createdAt.timeIntervalSince(activityDate))
+                        < abs($1.element.createdAt.timeIntervalSince(activityDate))
+                }?
+                .offset
+
+            if let jobIndex = exactIndex ?? unlinkedIndex {
+                let job = jobs.remove(at: jobIndex)
+                dao.attachActivity(
+                    id: job.id,
+                    entryId: activity.entryId,
+                    creditedHeight: activity.blockHeight)
+                let attachedJob = PlatformCreditReconciliationRecord(
+                    id: job.id,
+                    walletId: job.walletId,
+                    networkRaw: job.networkRaw,
+                    address: job.address,
+                    addressHash: job.addressHash,
+                    amountCredits: job.amountCredits,
+                    expectedBalanceCredits: job.expectedBalanceCredits,
+                    activityEntryId: activity.entryId,
+                    creditedHeight: activity.blockHeight,
+                    isCompleted: job.isCompleted,
+                    createdAt: job.createdAt)
+
+                if row.lastSeenHeight >= activity.blockHeight || job.isCompleted {
+                    finishCreditReconciliation(attachedJob)
+                } else {
+                    scheduleCreditReconciliation(attachedJob, addressService: sdk.addresses)
+                }
+                continue
+            }
+
+            guard row.lastSeenHeight < activity.blockHeight else { continue }
+
+            // One-time upgrade recovery for activity created before durable
+            // jobs existed. `lastUpdated` distinguishes a row already repaired
+            // after the operation from a genuinely pre-credit baseline.
+            let expectedBalance = PlatformCreditReconciliationPolicy.legacyExpectedBalance(
+                currentBalance: row.balance,
+                rowLastUpdated: row.lastUpdated,
+                activityCreatedAt: activityDate,
+                creditedAmount: activity.amount)
+            let legacyJob = dao.create(
+                walletId: walletId,
+                networkRaw: Int64(network.rawValue),
+                address: row.address,
+                addressHash: addressHash,
+                amountCredits: activity.amount,
+                expectedBalanceCredits: expectedBalance,
+                activityEntryId: activity.entryId,
+                creditedHeight: activity.blockHeight,
+                createdAt: activityDate)
+            scheduleCreditReconciliation(legacyJob, addressService: sdk.addresses)
+        }
+
+        // A process may have stopped after creating a durable job but before
+        // the shielded activity reached Confirmed. Resume those exact
+        // expectations without deriving a new baseline.
+        for job in jobs where !job.isCompleted {
+            scheduleCreditReconciliation(job, addressService: sdk.addresses)
+        }
     }
 
     // MARK: - Core ↔ Platform balance movement
@@ -549,6 +955,12 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
         isClearing = true
         defer { isClearing = false }
+        cancelPlatformCreditReconciliations()
+        if let walletId = wallet?.walletId, let network = runningNetwork {
+            PlatformCreditReconciliationDAO.shared.markAllPending(
+                walletId: walletId,
+                networkRaw: Int64(network.rawValue))
+        }
 
         do {
             try await manager.resetPlatformAddressSyncState()
@@ -590,6 +1002,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         do {
             try manager.startPlatformAddressSync()
+            refreshDerivedAddresses()
+            reconcileMissedIncomingCredits()
         } catch {
             lastError = "startPlatformAddressSync failed after clear: \(error.localizedDescription)"
             Self.logger.error("🛰️ PLATFORM-ADDR :: post-clear restart failed: \(String(describing: error), privacy: .public)")
@@ -600,6 +1014,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     public func clearDisplay() {
         shieldedReconciliationTask?.cancel()
         shieldedReconciliationTask = nil
+        cancelPlatformCreditReconciliations()
         platformBalance = 0
         shieldedBalance = 0
         latestObservedShieldedBalance = 0
@@ -728,6 +1143,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         subscribeToManager(manager: manager, walletId: resolvedWallet.walletId)
         refreshDerivedAddresses()
+        reconcileMissedIncomingCredits()
 
         // Hand the shielded diagnostics monitor the new manager generation.
         // Attach AFTER the state above is committed so the monitor's initial
@@ -756,6 +1172,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     private func performStop(deletingPersistedWallet: Bool) async {
+        cancelPlatformCreditReconciliations()
+
         // Detach the shielded diagnostics monitor before the manager handles
         // drop, so it never observes a manager whose loops are being torn down.
         ShieldedSyncMonitor.shared.detach()
@@ -778,6 +1196,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         //      it referenced here means SwiftData contexts captured by
         //      Rust-side persister closures don't dangle while tokio winds down.
         if deletingPersistedWallet {
+            if let walletId = wallet?.walletId, let network = runningNetwork {
+                PlatformCreditReconciliationDAO.shared.deleteAll(
+                    walletId: walletId,
+                    networkRaw: Int64(network.rawValue))
+            }
             deletePersistedWalletIfAny()
         }
 
@@ -840,6 +1263,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         runningNetwork = nil
         isRunning = false
         clearDisplay()
+    }
+
+    private func cancelPlatformCreditReconciliations() {
+        for task in platformCreditReconciliationTasks.values {
+            task.cancel()
+        }
+        platformCreditReconciliationTasks.removeAll()
+        platformCreditReconciliationTokens.removeAll()
     }
 
     private func deletePersistedWalletIfAny() {

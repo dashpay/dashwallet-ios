@@ -205,6 +205,77 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             refreshInFlight: true))
     }
 
+    func testPlatformCreditReconciliationWaitsForTheFullCreditedPrincipal() {
+        let baseline: UInt64 = 19_985_113_480
+        let credit: UInt64 = 10_000_000_000
+        let expected = PlatformCreditReconciliationPolicy.expectedBalance(
+            baseline: baseline,
+            creditedAmount: credit)
+
+        XCTAssertEqual(expected, 29_985_113_480)
+        XCTAssertFalse(PlatformCreditReconciliationPolicy.isSatisfied(
+            observedBalance: baseline,
+            expectedBalance: expected))
+        XCTAssertTrue(PlatformCreditReconciliationPolicy.isSatisfied(
+            observedBalance: expected,
+            expectedBalance: expected))
+    }
+
+    func testPlatformCreditExpectedBalanceSaturatesOnOverflow() {
+        XCTAssertEqual(
+            PlatformCreditReconciliationPolicy.expectedBalance(
+                baseline: UInt64.max - 5,
+                creditedAmount: 10),
+            UInt64.max)
+    }
+
+    func testPlatformActivityConvertsCreditsToDuffsBeforeMatchingUnshield() {
+        let creditedAmount: UInt64 = 10_000_000_000
+
+        XCTAssertEqual(
+            PlatformAddressActivityUnitPolicy.duffs(fromCredits: creditedAmount),
+            10_000_000)
+        XCTAssertTrue(PlatformAddressActivityUnitPolicy.unshieldMatches(
+            creditedAmountCredits: creditedAmount,
+            observedDeltaDuffs: 10_000_000))
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldMatches(
+            creditedAmountCredits: creditedAmount,
+            observedDeltaDuffs: Int64(creditedAmount)))
+    }
+
+    func testPlatformCreditReadbackNeverRegressesPersistedBalance() {
+        XCTAssertFalse(PlatformCreditReconciliationPolicy.shouldApply(
+            observedBalance: 29_985_113_480,
+            currentBalance: 30_000_000_000,
+            expectedBalance: 29_985_113_480))
+        XCTAssertFalse(PlatformCreditReconciliationPolicy.shouldApply(
+            observedBalance: 19_985_113_480,
+            currentBalance: 19_985_113_480,
+            expectedBalance: 29_985_113_480))
+        XCTAssertTrue(PlatformCreditReconciliationPolicy.shouldApply(
+            observedBalance: 29_985_113_480,
+            currentBalance: 19_985_113_480,
+            expectedBalance: 29_985_113_480))
+    }
+
+    func testLegacyRecoveryDoesNotAddCreditToAlreadyUpdatedRow() {
+        let activityDate = Date(timeIntervalSince1970: 100)
+        XCTAssertEqual(
+            PlatformCreditReconciliationPolicy.legacyExpectedBalance(
+                currentBalance: 29_985_113_480,
+                rowLastUpdated: activityDate.addingTimeInterval(1),
+                activityCreatedAt: activityDate,
+                creditedAmount: 10_000_000_000),
+            29_985_113_480)
+        XCTAssertEqual(
+            PlatformCreditReconciliationPolicy.legacyExpectedBalance(
+                currentBalance: 19_985_113_480,
+                rowLastUpdated: activityDate.addingTimeInterval(-1),
+                activityCreatedAt: activityDate,
+                creditedAmount: 10_000_000_000),
+            29_985_113_480)
+    }
+
     func testCoreToShieldedMinimumIsFirstWholeDuffStrictlyAbovePoolFee() {
         XCTAssertEqual(
             CoreToShieldedAmountPolicy.minimumAmountDuffs(
