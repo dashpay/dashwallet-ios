@@ -91,6 +91,34 @@ final class ContactsViewModel: ObservableObject {
 
 // MARK: - ContactsScreen
 
+/// SwiftUI otherwise reuses a contact row by `ContactItem.id` when the same
+/// identity moves between incoming / established / outgoing sections. That
+/// can preserve the old row type and its action closures (for example an
+/// Accept button rendered inside the Pending section).
+private struct ContactListEntry: Identifiable {
+    enum Section: Hashable {
+        case incoming
+        case established
+        case outgoing
+        case hidden
+    }
+
+    struct ID: Hashable {
+        let section: Section
+        let contactIdentityId: Data
+    }
+
+    let item: ContactItem
+    let id: ID
+
+    init(item: ContactItem, section: Section) {
+        self.item = item
+        id = ID(
+            section: section,
+            contactIdentityId: item.contactIdentityId)
+    }
+}
+
 struct ContactsScreen: View {
     @StateObject private var viewModel = ContactsViewModel()
     @State private var filterText = ""
@@ -159,7 +187,8 @@ struct ContactsScreen: View {
                             format: NSLocalizedString("Contact Requests (%d)", comment: "DashPay Contacts"),
                             filteredIncoming.count),
                         size: 15)
-                    ForEach(filteredIncoming) { item in
+                    ForEach(entries(filteredIncoming, section: .incoming)) { entry in
+                        let item = entry.item
                         cardRow {
                             IncomingRequestRow(
                                 item: item,
@@ -174,7 +203,8 @@ struct ContactsScreen: View {
 
                 if !filteredContacts.isEmpty {
                     sectionHeader(NSLocalizedString("My Contacts", comment: "DashPay Contacts"), size: 17)
-                    ForEach(filteredContacts) { item in
+                    ForEach(entries(filteredContacts, section: .established)) { entry in
+                        let item = entry.item
                         cardRow {
                             ContactRow(item: item)
                         }
@@ -184,7 +214,8 @@ struct ContactsScreen: View {
 
                 if !filteredOutgoing.isEmpty {
                     sectionHeader(NSLocalizedString("Pending Requests", comment: "DashPay Contacts"), size: 15)
-                    ForEach(filteredOutgoing) { item in
+                    ForEach(entries(filteredOutgoing, section: .outgoing)) { entry in
+                        let item = entry.item
                         cardRow {
                             ContactRow(item: item, showPendingBadge: true)
                         }
@@ -195,7 +226,8 @@ struct ContactsScreen: View {
 
                 if !filteredHidden.isEmpty {
                     sectionHeader(NSLocalizedString("Hidden", comment: "DashPay Contacts"), size: 15)
-                    ForEach(filteredHidden) { item in
+                    ForEach(entries(filteredHidden, section: .hidden)) { entry in
+                        let item = entry.item
                         cardRow {
                             ContactRow(item: item)
                         }
@@ -284,6 +316,13 @@ struct ContactsScreen: View {
     private var filteredHidden: [ContactItem] { viewModel.contacts.filter { $0.isHidden && matches($0) } }
     private var filteredIncoming: [ContactItem] { viewModel.incomingRequests.filter(matches) }
     private var filteredOutgoing: [ContactItem] { viewModel.outgoingRequests.filter(matches) }
+
+    private func entries(
+        _ items: [ContactItem],
+        section: ContactListEntry.Section
+    ) -> [ContactListEntry] {
+        items.map { ContactListEntry(item: $0, section: section) }
+    }
 }
 
 // MARK: - Rows (Android dashpay_contact_row: 70pt, avatar 36, name 17sb)

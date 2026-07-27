@@ -370,6 +370,18 @@ final class SwiftDashSDKContactsService: ObservableObject {
     func acceptContactRequest(from senderId: Data) async throws {
         let (wallet, modelContainer, ownerId) = try requireContext()
 
+        // UI actions can arrive from a SwiftUI row that was rendered for an
+        // older relationship snapshot. Treat them as idempotent no-ops once
+        // the request has already moved to established/outgoing.
+        guard incomingRequests.contains(where: {
+            $0.contactIdentityId == senderId
+        }) else {
+            Self.logger.info(
+                "👥 CONTACTS :: ignored stale accept — sender is no longer pending incoming")
+            refresh()
+            return
+        }
+
         // Resolve the live ContactRequest handle from the SDK's
         // in-memory state. That state is PER-SESSION — the SwiftData row
         // the UI acted on may have been persisted by an earlier session's
@@ -429,6 +441,19 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// via `unignoreContactSender`.
     func ignoreSender(_ senderId: Data) async throws {
         let (wallet, _, ownerId) = try requireContext()
+
+        // Never let an obsolete incoming row mute an established contact.
+        // Besides avoiding a misleading action, this preserves the invariant
+        // that ignored senders have no outgoing request from us.
+        guard incomingRequests.contains(where: {
+            $0.contactIdentityId == senderId
+        }) else {
+            Self.logger.info(
+                "👥 CONTACTS :: ignored stale ignore — sender is no longer pending incoming")
+            refresh()
+            return
+        }
+
         do {
             try await wallet.ignoreContactSender(
                 ourIdentityId: ownerId,

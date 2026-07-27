@@ -57,7 +57,7 @@ struct NotificationsScreen: View {
 
     // MARK: Events
 
-    private enum EventKind {
+    private enum EventKind: Hashable {
         /// Pending incoming request — actionable.
         case incomingRequest
         /// Pending outgoing request we sent — awaiting their acceptance.
@@ -69,9 +69,18 @@ struct NotificationsScreen: View {
     }
 
     private struct Event: Identifiable {
+        struct ID: Hashable {
+            let contactIdentityId: Data
+            let kind: EventKind
+        }
+
         let item: ContactItem
         let kind: EventKind
-        var id: Data { item.contactIdentityId }
+        var id: ID {
+            ID(
+                contactIdentityId: item.contactIdentityId,
+                kind: kind)
+        }
         var date: Date { item.createdAt }
     }
 
