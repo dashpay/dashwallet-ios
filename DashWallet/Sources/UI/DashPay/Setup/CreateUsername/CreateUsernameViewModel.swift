@@ -171,6 +171,10 @@ class CreateUsernameViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] text in
                 self?.validateUsername(username: text)
+                // The current label changes the required amount
+                // (0.03 standard / 0.25 contested), so refresh the
+                // source-picker eligibility in the same event.
+                self?.checkBalance()
             }
             .store(in: &cancellableBag)
 
@@ -189,6 +193,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// registration and then show the right native alert.
     enum UsernameRegistrationOutcome {
         case success
+        case submittedForVoting
         case cancelled
         case failure(String)
     }
@@ -228,7 +233,7 @@ class CreateUsernameViewModel: ObservableObject {
                 _ = try await DWIdentityRegistrationCoordinator.shared.startClaimInvitation(
                     username: submittedUsername,
                     invitationURI: invitationURI)
-                return .success
+                return registrationOutcome(for: submittedUsername)
             } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
                 return .cancelled
             } catch {
@@ -244,7 +249,9 @@ class CreateUsernameViewModel: ObservableObject {
                     self?.onRegistrationStarted = nil
 
                     guard let error else {
-                        continuation.resume(returning: .success)
+                        continuation.resume(
+                            returning: self?.registrationOutcome(for: submittedUsername)
+                                ?? .success)
                         return
                     }
                     // PIN / biometric cancel surfaces as the canonical Cocoa
@@ -257,6 +264,14 @@ class CreateUsernameViewModel: ObservableObject {
                 }
             }
         }
+    }
+
+    private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {
+        guard let pending = DWContestedNameStatusService.shared.pendingLabel,
+              DWContestedNameStatusService.labelsMatch(pending, username) else {
+            return .success
+        }
+        return .submittedForVoting
     }
 
     private func handleRegistrationPhase(_ phase: DWIdentityRegistrationController.Phase) {
@@ -484,14 +499,24 @@ class CreateUsernameViewModel: ObservableObject {
     private func checkBalance() {
         let balance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         let platformDuffs = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
+        let trimmedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        let requiredDuffs = trimmedUsername.isEmpty
+            ? DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+            : (DWContestedNameStatusService.isContestedLabel(trimmedUsername)
+                ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
+                : DWDP_MIN_BALANCE_TO_CREATE_USERNAME)
         self.balance = balance.dashAmount.formattedDashAmountWithoutCurrencySymbol
         self.platformPaymentBalance = platformDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
         // Credits → duffs (÷1000) for display; the readiness snapshot
         // keeps the canonical credit-denominated values.
         let shieldedDuffs = (shieldedReadiness?.unspentCredits ?? 0) / 1_000
         self.shieldedBalance = shieldedDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
-        hasMinimumRequiredCoreBalance = balance >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        hasMinimumRequiredPlatformBalance = platformDuffs >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        // These flags drive the actual funding-source picker. They must
+        // follow the current name's cost, otherwise a Core/Platform
+        // balance that covers 0.03 DASH but not a contested name's
+        // 0.25 DASH is still offered and fails only inside the SDK.
+        hasMinimumRequiredCoreBalance = balance >= requiredDuffs
+        hasMinimumRequiredPlatformBalance = platformDuffs >= requiredDuffs
         // `hasMinimumRequiredBalance` stays as the legacy OR view —
         // any pre-PR-5 consumer (banner gate, etc.) keeps seeing
         // "user has enough to register" without caring about source.

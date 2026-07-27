@@ -107,6 +107,7 @@ struct CreateUsernameView: View {
     /// Drives the success alert shown when registration reaches the
     /// terminal `.completed` phase. OK dismisses the screen.
     @State private var showSuccess: Bool = false
+    @State private var showVotingSubmitted: Bool = false
     /// Non-nil drives the error alert; holds the coordinator's
     /// human-readable failure message. OK clears it and keeps the
     /// screen up so the user can edit or retry.
@@ -320,6 +321,18 @@ struct CreateUsernameView: View {
             }
         }
         .alert(
+            NSLocalizedString("Username submitted", comment: "Usernames"),
+            isPresented: $showVotingSubmitted
+        ) {
+            Button(NSLocalizedString("OK", comment: "")) { finish() }
+        } message: {
+            Text(String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.",
+                    comment: "Usernames"),
+                viewModel.username))
+        }
+        .alert(
             NSLocalizedString("Contact request failed", comment: "DashPay Invitations"),
             isPresented: Binding(
                 get: { inviterContactErrorMessage != nil },
@@ -516,6 +529,8 @@ struct CreateUsernameView: View {
             switch outcome {
             case .success:
                 showSuccess = true
+            case .submittedForVoting:
+                showVotingSubmitted = true
             case .cancelled:
                 screenLockedAfterAuth = false
                 break // user backed out of the PIN — stay on screen, allow retry
