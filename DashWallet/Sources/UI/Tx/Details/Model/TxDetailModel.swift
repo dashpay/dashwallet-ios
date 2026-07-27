@@ -81,6 +81,20 @@ extension TxDetailModel {
                                                 font: font)
     }
 
+    /// A "View in <Provider> Explorer" link when this tx is the DASH leg of a DashDEX swap.
+    /// `nil` for ordinary transactions, or while the swap has no explorer identifier yet.
+    var swapProviderExplorer: (title: String, url: URL)? {
+        guard let order = SwapOrderMetadataProvider.shared.order(forTxHashData: transaction.txHashData),
+              let link = order.providerExplorer else {
+            return nil
+        }
+        let title = String(
+            format: NSLocalizedString("View in %@ Explorer", comment: "Tx details: opens the swap provider's block explorer"),
+            link.providerName
+        )
+        return (title, link.url)
+    }
+
     func getExplorerURL(explorer: BlockExplorer) -> URL? {
         switch explorer {
         case .insight:

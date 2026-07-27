@@ -42,6 +42,14 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     var availableMetadata: [Data: TxRowMetadata] {
         metadataQueue.sync { _availableMetadata }
     }
+
+    /// The swap order behind each wallet tx, keyed the same way as `availableMetadata`. Lets the tx
+    /// details screen offer a provider block-explorer link without re-running the order matching.
+    private var _ordersByTx: [Data: SwapOrder] = [:]
+    func order(forTxHashData txHashData: Data) -> SwapOrder? {
+        metadataQueue.sync { _ordersByTx[txHashData] }
+    }
+
     let metadataUpdated = PassthroughSubject<Data, Never>()
 
     private init() {
@@ -62,9 +70,11 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
 
     private func updateMetadata(from orders: [SwapOrder]) {
         var current: [Data: TxRowMetadata] = [:]
+        var currentOrders: [Data: SwapOrder] = [:]
         for order in orders {
             if let key = metadataKey(for: order) {
                 current[key] = makeMetadata(for: order)
+                currentOrders[key] = order
             }
         }
 
@@ -73,6 +83,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
             let staleKeys = Set(self._availableMetadata.keys).subtracting(current.keys)
             let changedKeys = Set(current.keys).union(staleKeys)
             self._availableMetadata = current
+            self._ordersByTx = currentOrders
             DispatchQueue.main.async {
                 for key in changedKeys {
                     self.metadataUpdated.send(key)
