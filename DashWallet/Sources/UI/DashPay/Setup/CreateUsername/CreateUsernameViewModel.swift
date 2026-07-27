@@ -59,7 +59,7 @@ class CreateUsernameViewModel: ObservableObject {
     private var availabilityCheckTask: Task<Void, Never>?
     /// One-shot revalidation alarm for a `.maturing` shielded snapshot.
     /// The shared readiness service arms its own flip timer only for
-    /// the STANDARD denomination; a contested name's (0.3 DASH) ready
+    /// the STANDARD denomination; a contested name's (0.25 DASH) ready
     /// moment can be later, so the form re-validates itself at the
     /// snapshot's own `readyAt`. Re-armed on every validation.
     private var shieldedMaturityRevalidationTask: Task<Void, Never>?
@@ -100,7 +100,7 @@ class CreateUsernameViewModel: ObservableObject {
     @Published private(set) var platformPaymentBalance: String = ""
 
     /// Shielded-funding readiness for the CURRENT typed name (contested
-    /// names need the 0.3 DASH exit denomination instead of 0.1).
+    /// names need the 0.25 DASH exit denomination instead of 0.1).
     /// Recomputed by `validateUsername` and on every readiness publish.
     /// nil while the SDK host has no hydrated wallet.
     @Published private(set) var shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot? = nil
