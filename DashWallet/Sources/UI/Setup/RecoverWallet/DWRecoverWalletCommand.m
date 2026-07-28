@@ -17,9 +17,9 @@
 
 #import "DWRecoverWalletCommand.h"
 
-
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "DWSecureAllocator.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self = [super init];
     if (self) {
-        _phrase = CFBridgingRelease(CFStringCreateCopy(SecureAllocator(), (CFStringRef)phrase));
+        _phrase = CFBridgingRelease(CFStringCreateCopy(DWSecureAllocator(), (CFStringRef)phrase));
     }
     return self;
 }

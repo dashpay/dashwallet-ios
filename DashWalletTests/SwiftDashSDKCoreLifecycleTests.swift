@@ -205,6 +205,52 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             refreshInFlight: true))
     }
 
+    func testPlatformActivityConvertsCreditsToDuffsBeforeMatchingUnshield() {
+        let creditedAmount: UInt64 = 10_000_000_000
+
+        XCTAssertEqual(
+            PlatformAddressActivityUnitPolicy.duffs(fromCredits: creditedAmount),
+            10_000_000)
+        XCTAssertTrue(PlatformAddressActivityUnitPolicy.unshieldMatches(
+            creditedAmountCredits: creditedAmount,
+            observedDeltaDuffs: 10_000_000))
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldMatches(
+            creditedAmountCredits: creditedAmount,
+            observedDeltaDuffs: Int64(creditedAmount)))
+    }
+
+    func testOwnUnshieldSuppressionAcceptsOnlyLiveUnshieldWithPlatformCounterparty() {
+        XCTAssertTrue(PlatformAddressActivityUnitPolicy.isOwnUnshieldCandidate(
+            kindTag: ShieldedActivityItem.Kind.unshield.rawValue,
+            counterpartyLength: 21))
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.isOwnUnshieldCandidate(
+            kindTag: ShieldedActivityItem.Kind.shieldedSpend.rawValue,
+            counterpartyLength: 21))
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.isOwnUnshieldCandidate(
+            kindTag: ShieldedActivityItem.Kind.shieldedSpend.rawValue,
+            counterpartyLength: 43))
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.isOwnUnshieldCandidate(
+            kindTag: ShieldedActivityItem.Kind.received.rawValue,
+            counterpartyLength: 21))
+    }
+
+    func testOwnUnshieldSuppressionDoesNotMatchAnExternalReceive() {
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.exactUnshieldMatches(
+            destinationAddress: "tdash1own",
+            observedAddress: "tdash1external",
+            creditedAmountCredits: 10_000_000_000,
+            observedDeltaDuffs: 10_000_000))
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.exactUnshieldMatches(
+            destinationAddress: "tdash1own",
+            observedAddress: "tdash1own",
+            creditedAmountCredits: 10_000_000_000,
+            observedDeltaDuffs: 9_999_999))
+    }
+
+    func testPlatformActivityUnitMigrationKeepsPrereleaseVersion() {
+        XCTAssertEqual(NormalizePlatformAddressActivityUnits().version, 20260727140000)
+    }
+
     func testCoreToShieldedMinimumIsFirstWholeDuffStrictlyAbovePoolFee() {
         XCTAssertEqual(
             CoreToShieldedAmountPolicy.minimumAmountDuffs(
@@ -252,6 +298,36 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 inputCredits: 300,
                 feeCredits: 100,
                 noteCount: 2))
+    }
+
+    func testShieldedSpendableBalanceSubtractsFeeReserve() {
+        XCTAssertEqual(
+            ShieldedSpendAmountPolicy.spendableCredits(
+                balanceCredits: 10_000_000_000,
+                feeReserveCredits: 2_000_000_000),
+            8_000_000_000)
+        XCTAssertEqual(
+            ShieldedSpendAmountPolicy.spendableCredits(
+                balanceCredits: 1_000_000_000,
+                feeReserveCredits: 2_000_000_000),
+            0)
+    }
+
+    func testShieldedInsufficientBalanceMessageUsesSpendableAmount() {
+        let message = ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+            requestedCredits: 8_000_000_001,
+            balanceCredits: 10_000_000_000,
+            feeReserveCredits: 2_000_000_000)
+
+        XCTAssertNotNil(message)
+        XCTAssertTrue(
+            message?.contains("0.08 DASH") == true
+                || message?.contains("0,08 DASH") == true)
+        XCTAssertNil(
+            ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+                requestedCredits: 8_000_000_000,
+                balanceCredits: 10_000_000_000,
+                feeReserveCredits: 2_000_000_000))
     }
 }
 

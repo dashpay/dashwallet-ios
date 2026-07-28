@@ -17,6 +17,7 @@
 
 #import "DWAboutModel.h"
 
+#import "DWAmountConstants.h"
 #import "DWGlobalOptions.h"
 #import "dashwallet-Swift.h"
 
@@ -115,8 +116,8 @@ NS_ASSUME_NONNULL_BEGIN
     }
 
     NSString *rateString = [NSString stringWithFormat:NSLocalizedString(@"Rate: %@ = %@", @"ex., Rate 1 US $ = 0.000009 Dash"),
-                                                      [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue],
-                                                      [CurrencyExchangerObjcWrapper stringForDashAmount:DUFFS / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue]];
+                                                      [CurrencyExchangerObjcWrapper localCurrencyStringForDashAmount:DW_DUFFS_PER_DASH / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue],
+                                                      [CurrencyExchangerObjcWrapper stringForDashAmount:DW_DUFFS_PER_DASH / CurrencyExchangerObjcWrapper.localCurrencyDashPrice.doubleValue]];
     NSString *updatedString = [NSString stringWithFormat:NSLocalizedString(@"Updated: %@", @"ex., Updated: 27.12, 8:30"),
                                                          [dateFormatter stringFromDate:[NSDate dateWithTimeIntervalSince1970:[DWAuthenticationService shared].secureTime]].lowercaseString];
     // Block + connection lines read SwiftDashSDK SPV state (C1 cat 4) — the

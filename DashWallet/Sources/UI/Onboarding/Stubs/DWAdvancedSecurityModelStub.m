@@ -17,8 +17,7 @@
 
 #import "DWAdvancedSecurityModelStub.h"
 
-#import <DashSync/DashSync.h>
-
+#import "DWAmountConstants.h"
 #import "DWBiometricAuthModel.h"
 #import "DevicesCompatibility.h"
 
@@ -83,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (NSNumber *)spendingConfirmationLimit {
-    return @(DUFFS / 2);
+    return @(DW_DUFFS_PER_DASH / 2);
 }
 
 - (void)setSpendingConfirmationLimit:(NSNumber *)spendingConfirmationLimit {

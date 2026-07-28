@@ -51,6 +51,47 @@ extension Notification.Name {
     static let platformAddressActivityRecorded = Notification.Name("DWPlatformAddressActivityRecorded")
 }
 
+// MARK: - Units
+
+/// Platform-address balances arrive from the SDK in credits (1e11/DASH),
+/// while the app's transaction/history presentation uses duffs (1e8/DASH).
+/// Convert once at the recorder boundary so every persisted baseline and
+/// activity value has the unit promised by its API.
+struct PlatformAddressActivityUnitPolicy {
+    static let creditsPerDuff: UInt64 = 1_000
+
+    static func duffs(fromCredits credits: UInt64) -> Int64 {
+        Int64(clamping: credits / creditsPerDuff)
+    }
+
+    static func unshieldMatches(
+        creditedAmountCredits: UInt64,
+        observedDeltaDuffs: Int64
+    ) -> Bool {
+        duffs(fromCredits: creditedAmountCredits) == observedDeltaDuffs
+    }
+
+    static func isOwnUnshieldCandidate(
+        kindTag: Int,
+        counterpartyLength: Int
+    ) -> Bool {
+        counterpartyLength == 21
+            && kindTag == ShieldedActivityItem.Kind.unshield.rawValue
+    }
+
+    static func exactUnshieldMatches(
+        destinationAddress: String,
+        observedAddress: String,
+        creditedAmountCredits: UInt64,
+        observedDeltaDuffs: Int64
+    ) -> Bool {
+        destinationAddress == observedAddress
+            && unshieldMatches(
+                creditedAmountCredits: creditedAmountCredits,
+                observedDeltaDuffs: observedDeltaDuffs)
+    }
+}
+
 // MARK: - Record
 
 struct PlatformAddressActivityRecord: Identifiable {
@@ -108,6 +149,30 @@ struct AddPlatformAddressActivityTables: Migration {
             t.column(S.colObservedAt)
         })
         try db.run(S.activity.createIndex(S.colWalletId, S.colNetwork, ifNotExists: true))
+    }
+}
+
+/// Correct the first recorder schema, which stored SDK credits in columns
+/// documented and rendered as duffs.
+///
+/// Dividing existing observations is lossless for wallet-originated amounts
+/// (all public transfer amounts are whole duffs). A fresh install runs this
+/// immediately after creating empty activity tables.
+///
+/// Keep this version stable: prerelease builds briefly used the same migration
+/// for an app-owned reconciliation table. Reusing the version prevents those
+/// test installs from dividing their activity rows a second time; the now-dead
+/// table is harmless and no longer read.
+struct NormalizePlatformAddressActivityUnits: Migration {
+    var version: Int64 = 20260727140000
+
+    func migrateDatabase(_ db: Connection) throws {
+        try db.run("UPDATE platform_address_baseline SET balance = balance / 1000")
+        try db.run("""
+            UPDATE platform_address_activity
+            SET amount = amount / 1000,
+                balance_after = balance_after / 1000
+            """)
     }
 }
 
@@ -213,7 +278,9 @@ enum PlatformAddressActivityRecorder {
             for entry in addresses where entry.balance > 0 {
                 dao.upsertBaseline(
                     walletId: walletId, networkRaw: networkRaw,
-                    address: entry.address, balanceDuffs: Int64(entry.balance))
+                    address: entry.address,
+                    balanceDuffs: PlatformAddressActivityUnitPolicy.duffs(
+                        fromCredits: entry.balance))
             }
             return
         }
@@ -221,7 +288,7 @@ enum PlatformAddressActivityRecorder {
         var increases: [(address: String, delta: Int64, after: Int64)] = []
         var netChange: Int64 = 0
         for entry in addresses {
-            let after = Int64(entry.balance)
+            let after = PlatformAddressActivityUnitPolicy.duffs(fromCredits: entry.balance)
             let before = baseline[entry.address] ?? 0
             let delta = after - before
             if delta == 0 { continue }
@@ -270,8 +337,9 @@ enum PlatformAddressActivityRecorder {
     }
 
     /// Exact match against an own internal unshield: same destination
-    /// address, credited amount == entry.amount − fee (the recipient
-    /// receives the principal net of the pool fee).
+    /// address and credited principal. The unshield builder reserves the fee
+    /// in addition to `amount`; the Platform address receives `amount`
+    /// exactly, while the shielded pool is debited by amount + fee.
     private static func matchesOwnUnshield(
         address: String,
         deltaDuffs: Int64,
@@ -280,19 +348,27 @@ enum PlatformAddressActivityRecorder {
         container: ModelContainer
     ) -> Bool {
         let cutoffMs = UInt64(max(0, Date().timeIntervalSince1970 - ownOperationWindow) * 1000)
-        let unshieldKind = 4
+        let unshieldKind = ShieldedActivityItem.Kind.unshield.rawValue
         let descriptor = FetchDescriptor<PersistentShieldedActivity>(
             predicate: #Predicate {
                 $0.walletId == walletId && $0.kindTag == unshieldKind && $0.createdAtMs >= cutoffMs
             })
         guard let rows = try? container.mainContext.fetch(descriptor) else { return false }
         for row in rows {
-            guard row.counterparty.count == 21 else { continue }
+            guard PlatformAddressActivityUnitPolicy.isOwnUnshieldCandidate(
+                kindTag: row.kindTag,
+                counterpartyLength: row.counterparty.count)
+            else { continue }
             let destination = AddressTransformer.formatAddress(
-                row.counterparty, asBech32m: true, isTestnet: network != .mainnet)
-            guard destination == address else { continue }
-            let creditedCredits = row.amount - (row.hasFee ? row.fee : 0)
-            if Int64(creditedCredits / 1000) == deltaDuffs {
+                row.counterparty,
+                asBech32m: true,
+                isTestnet: network != .mainnet)
+            if PlatformAddressActivityUnitPolicy.exactUnshieldMatches(
+                destinationAddress: destination,
+                observedAddress: address,
+                creditedAmountCredits: row.amount,
+                observedDeltaDuffs: deltaDuffs)
+            {
                 return true
             }
         }

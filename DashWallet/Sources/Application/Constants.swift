@@ -17,7 +17,8 @@
 
 import Foundation
 
-let kOneDash: UInt64 = 100_000_000;
+let kOneDash = UInt64(DW_DUFFS_PER_DASH)
+let kMaxDashSupplyDuffs = UInt64(DW_MAX_MONEY)
 let kDefaultCurrencyCode = "USD"
 let kWalletName = "Dash Wallet"
 let kDashCurrency = "DASH"

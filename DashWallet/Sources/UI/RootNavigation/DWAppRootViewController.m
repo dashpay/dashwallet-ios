@@ -17,9 +17,6 @@
 
 #import "DWAppRootViewController.h"
 
-#import <DashSync/DashSync.h>
-#import <DashSync/UIWindow+DSUtils.h>
-
 #import "DWLockScreenViewController.h"
 #import "DWRootModel.h"
 #import "DWSetupViewController.h"
@@ -130,7 +127,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         [alert addAction:okAction];
 
         UIApplication *application = [UIApplication sharedApplication];
-        UIViewController *presentingController = [application.keyWindow ds_presentingViewController];
+        UIViewController *presentingController = [application.keyWindow.rootViewController topController];
         [presentingController presentViewController:alert animated:YES completion:nil];
 
         return;

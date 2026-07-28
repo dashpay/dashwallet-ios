@@ -189,7 +189,7 @@ class BaseAmountModel: ObservableObject {
             .dash,
         ]
 
-        let max = NSDecimalNumber(value: MAX_MONEY/DUFFS)
+        let max = NSDecimalNumber(value: kMaxDashSupplyDuffs/kOneDash)
         localFormatter.maximum = NSDecimalNumber(decimal: price).multiplying(by: max)
 
         rebuildAmounts()

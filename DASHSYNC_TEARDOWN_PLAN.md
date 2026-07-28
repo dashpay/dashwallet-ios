@@ -1,6 +1,6 @@
 # DashSync pod teardown plan
 
-Current unlink plan, audited against the working tree on 2026-07-27. This file
+Current unlink plan, audited against the working tree on 2026-07-28. This file
 answers **what still prevents removing `pod 'DashSync'`**. Functional migration
 status lives in [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md).
 
@@ -35,6 +35,14 @@ or CocoaPods generation hook.
 
 Permission and termination notifications are app-owned. Receive-address
 refresh no longer observes the dead DashSync transaction-manager notification.
+
+Dash amount and maximum-supply constants are app-owned in both Swift and
+Objective-C; amount formatting and security defaults no longer import them
+through DashSync.
+
+Lockout localization/duration formatting, top-controller lookup, and the secure
+mnemonic allocator are app-owned. Root navigation and wallet recovery no longer
+carry incidental DashSync umbrella imports.
 
 The contacts rebuild in PR #787 is complete. Do not describe C10 as “contacts
 pending”; the remaining C10 scope is invitations plus legacy identity/profile
@@ -121,7 +129,6 @@ These are active repo tasks, not externally assigned work:
 |---|---|---|
 | Uphold/profile HTTP | `HTTPLoaderManager`, `HTTPLoaderFactory`, `DSNetworkingCoordinator` | App-owned URLSession/Moya boundary preserving bearer and OTP behavior. |
 | Generic keychain helpers | `getKeychainData`, `setKeychainData`, `getKeychainInt` in Coinbase, Uphold, global options | App-owned compatibility shim preserving service/account/accessibility bytes. |
-| Localization/utilities | `DSLocalizedString`, `UIWindow+DSUtils`, umbrella-only constants such as `DUFFS` | Foundation/app helpers and app-owned constants. |
 | Logger compatibility | `dwLogLevel` workaround | Revert to normal CocoaLumberjack `ddLogLevel` after DashSync headers disappear. |
 | App startup | `setupDashSyncOnce`, `DSOptionsManager` | Delete once every required service has an app/SDK owner. |
 | Transitive pods | `DSDynamicOptions`, `DWAlertController`, CocoaLumberjack | Keep required libraries directly declared before removing DashSync. `DSDynamicOptions` is already direct for TodayExtension; verify both app targets. |
@@ -199,6 +206,7 @@ xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay \
 - Uphold/Coinbase sessions survive the keychain-helper replacement;
 - local-currency picker and About diagnostics after unlink.
 - camera/push permission handoff and app-termination alerts.
+- amount formatting, biometric defaults, and DashPay registration thresholds.
 
 Before the final release build, also verify that CrowdNode is unavailable as
 intended and that `../platform` is on `v4.1-dev` rather than the temporary local

@@ -65,6 +65,44 @@ enum CoreToShieldedAmountPolicy {
     }
 }
 
+/// Shared affordability boundary for every route that spends Orchard notes.
+///
+/// Shielded spends debit both the requested amount and a route-specific fee.
+/// Keeping the calculation here makes the inline validation, Continue gate,
+/// and Max amount describe the same spendable envelope.
+enum ShieldedSpendAmountPolicy {
+    static func spendableCredits(
+        balanceCredits: UInt64,
+        feeReserveCredits: UInt64
+    ) -> UInt64 {
+        balanceCredits > feeReserveCredits
+            ? balanceCredits - feeReserveCredits
+            : 0
+    }
+
+    static func insufficientBalanceMessage(
+        requestedCredits: UInt64,
+        balanceCredits: UInt64,
+        feeReserveCredits: UInt64
+    ) -> String? {
+        let spendableCredits = spendableCredits(
+            balanceCredits: balanceCredits,
+            feeReserveCredits: feeReserveCredits)
+        guard requestedCredits > spendableCredits else { return nil }
+
+        // The amount input supports duff precision, so report the largest
+        // value the user can actually enter rather than rounding credits up.
+        let spendableDuffs = spendableCredits / 1000
+        let formattedSpendable =
+            "\(spendableDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "Insufficient Shielded balance. Available to spend: %@",
+                comment: "Shielded send amount exceeds spendable balance"),
+            formattedSpendable)
+    }
+}
+
 @MainActor
 final class InternalTransferViewModel: ObservableObject {
 
@@ -371,25 +409,44 @@ final class InternalTransferViewModel: ObservableObject {
             poolFeeCredits: poolFeeCredits)
     }
 
-    /// Inline, user-facing explanation for a Core → Shielded amount rejected
-    /// before Confirm. Zero stays quiet while the user has not entered an
-    /// amount; a fee-estimation failure fails closed with a generic retry.
+    /// Inline, user-facing explanation for an amount rejected before Confirm.
+    /// Zero stays quiet while the user has not entered an amount; a
+    /// fee-estimation failure fails closed with a generic retry.
     var amountValidationMessage: String? {
         if let shieldedMaxNotice { return shieldedMaxNotice }
-        guard route == .coreToShielded, dashDuffsUnsigned > 0 else { return nil }
-        guard let minimumDuffs = coreToShieldedMinimumAmountDuffs else {
-            return NSLocalizedString(
-                "There was an error, please try again later",
-                comment: "Internal transfer fee estimate unavailable")
-        }
-        guard dashDuffsUnsigned < minimumDuffs else { return nil }
+        guard dashDuffsUnsigned > 0 else { return nil }
 
-        let formattedMinimum = "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "The minimum amount you can send is %@",
-                comment: "Internal transfer minimum amount"),
-            formattedMinimum)
+        switch route {
+        case .coreToShielded:
+            guard let minimumDuffs = coreToShieldedMinimumAmountDuffs else {
+                return NSLocalizedString(
+                    "There was an error, please try again later",
+                    comment: "Internal transfer fee estimate unavailable")
+            }
+            guard dashDuffsUnsigned < minimumDuffs else { return nil }
+
+            let formattedMinimum =
+                "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "The minimum amount you can send is %@",
+                    comment: "Internal transfer minimum amount"),
+                formattedMinimum)
+
+        case .shieldedToCore, .shieldedToPlatform:
+            guard let reserve = feeReserveCredits else {
+                return NSLocalizedString(
+                    "There was an error, please try again later",
+                    comment: "Shielded transfer fee estimate unavailable")
+            }
+            return ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+                requestedCredits: creditsPreview,
+                balanceCredits: shieldedBalance,
+                feeReserveCredits: reserve)
+
+        default:
+            return nil
+        }
     }
 
     var canContinue: Bool {
@@ -483,7 +540,9 @@ final class InternalTransferViewModel: ObservableObject {
     /// amount. Fails closed (returns 0) when the reserve is unavailable.
     private func creditsMinusFeeReserve(_ balanceCredits: UInt64) -> UInt64 {
         guard let fee = feeReserveCredits else { return 0 }
-        return balanceCredits > fee ? balanceCredits - fee : 0
+        return ShieldedSpendAmountPolicy.spendableCredits(
+            balanceCredits: balanceCredits,
+            feeReserveCredits: fee)
     }
 
     /// `parsedDashAmount` expressed as Int64 duffs, for `DashAmount` views.

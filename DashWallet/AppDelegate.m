@@ -18,7 +18,6 @@
 #import "AppDelegate.h"
 
 #import <DashSync/DashSync.h>
-#import <DashSync/UIWindow+DSUtils.h>
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
 #import <UserNotifications/UserNotifications.h>
 
@@ -275,7 +274,7 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
         [alert addAction:okAction];
         
-        UIViewController *presentingController = [application.keyWindow ds_presentingViewController];
+        UIViewController *presentingController = [application.keyWindow.rootViewController topController];
         [presentingController presentViewController:alert animated:YES completion:nil];
         
         return NO;

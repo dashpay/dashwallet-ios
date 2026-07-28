@@ -80,7 +80,7 @@ class CurrencyExchangerObjcWrapper: NSObject {
 
         var n = local
             .multiplying(by: NSDecimalNumber(value: llabs(Int64(amount))))
-            .dividing(by: NSDecimalNumber(value: DUFFS))
+            .dividing(by: NSDecimalNumber(value: kOneDash))
         let min = NSDecimalNumber(value: 1)
             .multiplying(byPowerOf10: -Int16(localFormat.maximumFractionDigits))
 

@@ -17,6 +17,8 @@
 
 #import "DWUpholdTransactionObject+DWView.h"
 
+#import "DWAmountConstants.h"
+
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
 #import "dashwallet-Swift.h"
@@ -28,7 +30,7 @@
 }
 
 - (uint64_t)amountToDisplay {
-    NSDecimalNumber *duffs = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DUFFS];
+    NSDecimalNumber *duffs = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DW_DUFFS_PER_DASH];
     const uint64_t amountValue = [self.amount decimalNumberByMultiplyingBy:duffs].longLongValue;
 
     return amountValue;
@@ -57,7 +59,7 @@
 }
 
 - (nullable id<DWTitleDetailItem>)feeWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
-    NSDecimalNumber *duffs = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DUFFS];
+    NSDecimalNumber *duffs = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DW_DUFFS_PER_DASH];
     const uint64_t feeValue = [self.fee decimalNumberByMultiplyingBy:duffs].longLongValue;
     NSAttributedString *feeString = [NSAttributedString dw_dashAttributedStringForAmount:feeValue
                                                                                tintColor:tintColor
@@ -72,7 +74,7 @@
 }
 
 - (id<DWTitleDetailItem>)totalWithFont:(UIFont *)font tintColor:(UIColor *)tintColor {
-    NSDecimalNumber *duffs = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DUFFS];
+    NSDecimalNumber *duffs = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DW_DUFFS_PER_DASH];
     const uint64_t totalValue = [self.total decimalNumberByMultiplyingBy:duffs].longLongValue;
     NSAttributedString *detail = [NSAttributedString dw_dashAttributedStringForAmount:totalValue
                                                                             tintColor:tintColor
