@@ -492,16 +492,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // transfer, the wallet's own next receive address. Resolve before
         // advancing the phase.
         let platformAddress: String
+        let isOwnPlatformDestination: Bool
         if let destinationOverride, !destinationOverride.isEmpty {
             platformAddress = destinationOverride
+            isOwnPlatformDestination = false
         } else {
-            guard let ownAddress = PlatformAddressSyncCoordinator.shared
-                    .derivedAddresses.nextReceiveAddress?.address,
-                  !ownAddress.isEmpty else {
+            guard let ownDestination = PlatformAddressSyncCoordinator.shared
+                    .derivedAddresses.nextReceiveAddress,
+                  !ownDestination.address.isEmpty else {
                 handleFailure(CoordinatorError.noPlatformAddress)
                 return
             }
-            platformAddress = ownAddress
+            platformAddress = ownDestination.address
+            isOwnPlatformDestination = true
         }
 
         do {
@@ -522,6 +525,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 toPlatformAddress: platformAddress,
                 amount: amountCredits)
         } catch {
+            // The transition may already have credited our Platform address.
+            // There is no proof height on this ambiguous path, so never invent
+            // an absolute balance; let the height-aware BLAST sync reconcile it.
+            if isOwnPlatformDestination,
+               case PlatformWalletError.shieldedSpendUnconfirmed = error {
+                schedulePlatformResync()
+            }
             handleSpendError(error, manager: env.manager)
             return
         }
@@ -530,9 +540,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .broadcasting
         phase = .success
         scheduleShieldedResync(manager: env.manager)
-        // Unshield credits the Platform-address balance; the shielded resync
-        // above only refreshes the shielded side, so kick the Platform-address
-        // (BLAST) sync to surface the credit promptly.
+        // Refresh the Platform side after the backend accepts the transition.
+        // BLAST remains the source of truth for the persisted balance.
         schedulePlatformResync()
     }
 
@@ -909,11 +918,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// `performPlatformSend` relies on the same kick after a Platform send.
     private func schedulePlatformResync() {
         Task {
-            for delayNanos in [UInt64(0), 4_000_000_000, 12_000_000_000] {
-                if delayNanos > 0 {
-                    try? await Task.sleep(nanoseconds: delayNanos)
+            var previousDelaySeconds: UInt64 = 0
+            for delaySeconds in [UInt64(0), 4, 12] {
+                let intervalSeconds = delaySeconds - previousDelaySeconds
+                if intervalSeconds > 0 {
+                    try? await Task.sleep(nanoseconds: intervalSeconds * 1_000_000_000)
                 }
                 await PlatformAddressSyncCoordinator.shared.syncNow()
+                previousDelaySeconds = delaySeconds
             }
         }
     }
