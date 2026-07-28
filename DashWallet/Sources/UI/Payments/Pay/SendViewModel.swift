@@ -53,10 +53,22 @@ final class SendViewModel: ObservableObject {
     @Published var source: ChainNetwork = .core {
         didSet { sourceDidChange() }
     }
-    @Published var amountText: String = "0"
+    private var isApplyingShieldedMax = false
+    @Published var amountText: String = "0" {
+        didSet {
+            guard !isApplyingShieldedMax else { return }
+            clearShieldedMaxSelection()
+        }
+    }
+    @Published private(set) var isFullShieldedSweep = false
+    @Published private(set) var shieldedMaxNotice: String?
+    private var shieldedSweepAmountCredits: UInt64?
     @Published var unit: InternalTransferUnit = .dash {
         didSet {
             guard oldValue != unit else { return }
+            let preserveShieldedMax = isFullShieldedSweep
+            isApplyingShieldedMax = preserveShieldedMax
+            defer { isApplyingShieldedMax = false }
             convertAmountText(from: oldValue, to: unit)
         }
     }
@@ -241,6 +253,7 @@ final class SendViewModel: ObservableObject {
     /// Refreshes route-dependent async state — the Platform → Core route
     /// needs the withdrawal preflight (fee headroom + full-balance payout).
     private func routeDidChange() {
+        clearShieldedMaxSelection()
         guard route == .platformToCore else {
             preflightTask?.cancel()
             preflightTask = nil
@@ -336,7 +349,10 @@ final class SendViewModel: ObservableObject {
     /// Credit amount handed to the SDK, aligned to duff precision (1 duff =
     /// 1000 credits) — same rationale as the internal transfer's.
     var creditsPreview: UInt64 {
-        NSDecimalNumber(decimal: Decimal(dashDuffsUnsigned) * 1000).uint64Value
+        if isFullShieldedSweep, let shieldedSweepAmountCredits {
+            return shieldedSweepAmountCredits
+        }
+        return NSDecimalNumber(decimal: Decimal(dashDuffsUnsigned) * 1000).uint64Value
     }
 
     var fiatAmountString: String {
@@ -476,6 +492,7 @@ final class SendViewModel: ObservableObject {
     /// Inline explanation for a Core → external Shielded amount that cannot
     /// cover the Type-18 pool fee. Keep zero quiet until the user types.
     var amountValidationMessage: String? {
+        if let shieldedMaxNotice { return shieldedMaxNotice }
         guard route == .coreToShielded, dashDuffsUnsigned > 0 else { return nil }
         guard let minimumDuffs = coreToShieldedMinimumAmountDuffs else {
             return NSLocalizedString(
@@ -526,6 +543,9 @@ final class SendViewModel: ObservableObject {
             if isFullPlatformWithdrawal { return true }
             return creditsPreview <= partialWithdrawCapCredits
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
+            if isFullShieldedSweep {
+                return shieldedSweepAmountCredits != nil
+            }
             guard let reserve = feeReserveCredits else { return false }
             return shieldedBalance >= reserve
                 && creditsPreview <= shieldedBalance - reserve
@@ -536,6 +556,7 @@ final class SendViewModel: ObservableObject {
 
     /// Source-aware Max fill — same envelopes as the internal transfer.
     func fillMaxFromWallet() {
+        clearShieldedMaxSelection()
         let sourceDuffs: UInt64
         switch route {
         case .coreToCore, .coreToShielded, nil:
@@ -547,10 +568,32 @@ final class SendViewModel: ObservableObject {
             sourceDuffs = creditsMinusFeeReserve(platformCredits) / 1000
         case .platformToCore:
             sourceDuffs = platformWithdrawableDuffs ?? 0
-        case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
+        case .shieldedToCore, .shieldedToPlatform:
+            let feeKind: PlatformWalletManager.ShieldedFeeKind =
+                route == .shieldedToCore ? .withdrawal : .unshield
+            switch ShieldedTransferCoordinator.sweepAvailability(feeKind: feeKind) {
+            case .ready(let plan):
+                isFullShieldedSweep = true
+                shieldedSweepAmountCredits = plan.amountCredits
+                if plan.remainingCredits > 0 {
+                    shieldedMaxNotice = Self.shieldedRemainderMessage(plan.remainingCredits)
+                }
+                sourceDuffs = plan.amountCredits / 1000
+            case .waitingForConfirmation(let credits):
+                shieldedMaxNotice = Self.shieldedConfirmingMessage(credits)
+                sourceDuffs = 0
+            case .unavailable:
+                shieldedMaxNotice = NSLocalizedString(
+                    "Your Shielded balance is not ready to withdraw. Sync and try Max again.",
+                    comment: "Shielded Max unavailable")
+                sourceDuffs = 0
+            }
+        case .shieldedToShielded:
             sourceDuffs = creditsMinusFeeReserve(shieldedBalance) / 1000
         }
 
+        isApplyingShieldedMax = true
+        defer { isApplyingShieldedMax = false }
         switch unit {
         case .dash:
             amountText = sourceDuffs.formattedDashAmountWithoutCurrencySymbol
@@ -566,6 +609,30 @@ final class SendViewModel: ObservableObject {
                 amountText = "0"
             }
         }
+    }
+
+    private func clearShieldedMaxSelection() {
+        isFullShieldedSweep = false
+        shieldedSweepAmountCredits = nil
+        shieldedMaxNotice = nil
+    }
+
+    private static func shieldedConfirmingMessage(_ credits: UInt64) -> String {
+        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "%@ DASH is still confirming. Withdraw again once it settles.",
+                comment: "Shielded Max pending change"),
+            formatted)
+    }
+
+    private static func shieldedRemainderMessage(_ credits: UInt64) -> String {
+        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "%@ DASH requires another Shielded withdrawal. Use Max again after this transfer settles.",
+                comment: "Shielded Max multi-bundle remainder"),
+            formatted)
     }
 
     // MARK: - Conversion on unit toggle

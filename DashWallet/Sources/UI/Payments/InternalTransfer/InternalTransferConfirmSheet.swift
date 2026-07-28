@@ -37,6 +37,9 @@ struct InternalTransferConfirmSheet: View {
     /// so Confirm runs the AUTO (all-addresses) withdrawal instead of the
     /// single-input partial form.
     var isFullPlatformWithdrawal: Bool = false
+    /// Shielded reverse routes only: execute the note-aware Max plan and
+    /// revalidate it immediately before proving.
+    var isFullShieldedSweep: Bool = false
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
@@ -438,9 +441,13 @@ struct InternalTransferConfirmSheet: View {
             case .platformToShielded:
                 await coordinator.performShield(amountCredits: creditsAmount)
             case .shieldedToCore:
-                await coordinator.performWithdraw(amountCredits: creditsAmount)
+                await coordinator.performWithdraw(
+                    amountCredits: creditsAmount,
+                    sweepAll: isFullShieldedSweep)
             case .shieldedToPlatform:
-                await coordinator.performUnshield(amountCredits: creditsAmount)
+                await coordinator.performUnshield(
+                    amountCredits: creditsAmount,
+                    sweepAll: isFullShieldedSweep)
             case .coreToPlatform:
                 await coordinator.performFundPlatform(amountDuffs: amountDuffsUnsigned)
             case .platformToCore:

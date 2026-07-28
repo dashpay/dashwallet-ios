@@ -86,6 +86,7 @@ struct InternalTransferScreen: View {
                 fiatText: viewModel.fiatAmountString,
                 withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
                 isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
+                isFullShieldedSweep: viewModel.isFullShieldedSweep,
                 onCancel: { showConfirm = false },
                 onCompleted: {
                     showConfirm = false
