@@ -418,6 +418,7 @@ struct ExternalSendAmountScreen: View {
                     fiatText: viewModel.fiatAmountString,
                     withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
                     isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
+                    isFullShieldedSweep: viewModel.isFullShieldedSweep,
                     onCancel: { showConfirm = false },
                     onCompleted: {
                         showConfirm = false
@@ -717,6 +718,7 @@ struct SendConfirmSheet: View {
     /// Preflighted withdrawal fee — only meaningful for `.platformToCore`.
     var withdrawalFeeCredits: UInt64? = nil
     var isFullPlatformWithdrawal: Bool = false
+    var isFullShieldedSweep: Bool = false
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
@@ -1083,10 +1085,12 @@ struct SendConfirmSheet: View {
             case .shieldedToCore:
                 await coordinator.performWithdraw(
                     amountCredits: creditsAmount,
+                    sweepAll: isFullShieldedSweep,
                     toCoreAddress: destinationAddress)
             case .shieldedToPlatform:
                 await coordinator.performUnshield(
                     amountCredits: creditsAmount,
+                    sweepAll: isFullShieldedSweep,
                     toPlatformAddress: destinationAddress)
             case .shieldedToShielded:
                 guard let destinationRaw43 else {
