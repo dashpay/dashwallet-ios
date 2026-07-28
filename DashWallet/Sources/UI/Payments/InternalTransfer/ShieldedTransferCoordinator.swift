@@ -56,6 +56,107 @@ struct ShieldedSweepPlan: Equatable {
     let remainingCredits: UInt64
 }
 
+struct ShieldedSweepCandidate: Equatable {
+    let amountCredits: UInt64
+    let inputCredits: UInt64
+    let feeCredits: UInt64
+    let noteCount: Int
+}
+
+/// Pure counterpart of Rust's largest-first shielded note selector. Keeping
+/// prefix optimization separate from SwiftData makes the dust/action-fee edge
+/// cases deterministic and regression-testable.
+enum ShieldedSweepPlanner {
+    static func bestCandidate(
+        noteValues: [UInt64],
+        maxActions: Int = 16,
+        feeForActions: (Int) -> UInt64?
+    ) -> ShieldedSweepCandidate? {
+        guard maxActions > 0 else { return nil }
+
+        let values = noteValues.sorted(by: >).prefix(maxActions)
+        var prefixInput: UInt64 = 0
+        var best: ShieldedSweepCandidate?
+
+        for (offset, value) in values.enumerated() {
+            let next = prefixInput.addingReportingOverflow(value)
+            guard !next.overflow else { return nil }
+            prefixInput = next.partialValue
+
+            let noteCount = offset + 1
+            guard let fee = feeForActions(max(noteCount, 2)),
+                  prefixInput > fee
+            else { continue }
+
+            let candidate = ShieldedSweepCandidate(
+                amountCredits: prefixInput - fee,
+                inputCredits: prefixInput,
+                feeCredits: fee,
+                noteCount: noteCount)
+
+            // Keep the earlier/smaller prefix on a tie. Rust will stop at that
+            // prefix too, and the payout is identical without an extra action.
+            if let currentBest = best {
+                if candidate.amountCredits > currentBest.amountCredits {
+                    best = candidate
+                }
+            } else {
+                best = candidate
+            }
+        }
+
+        return best
+    }
+
+    /// Re-run Rust's iterative selection for the chosen amount and require an
+    /// exact spend (`inputs == amount + fee`). A best-prefix plan should never
+    /// create change; failing closed here protects against policy drift.
+    static func revalidate(
+        noteValues: [UInt64],
+        amountCredits: UInt64,
+        maxActions: Int = 16,
+        feeForActions: (Int) -> UInt64?
+    ) -> ShieldedSweepCandidate? {
+        let values = noteValues.sorted(by: >)
+        guard let initialFee = feeForActions(2) else { return nil }
+        var feeEstimate = initialFee
+
+        for _ in 0..<6 {
+            let required = amountCredits.addingReportingOverflow(feeEstimate)
+            guard !required.overflow else { return nil }
+
+            var accumulated: UInt64 = 0
+            var count = 0
+            for value in values {
+                let next = accumulated.addingReportingOverflow(value)
+                guard !next.overflow else { return nil }
+                accumulated = next.partialValue
+                count += 1
+                if accumulated >= required.partialValue { break }
+            }
+            guard accumulated >= required.partialValue, count <= maxActions,
+                  let exactFee = feeForActions(max(count, 2))
+            else { return nil }
+
+            let exactRequired = amountCredits.addingReportingOverflow(exactFee)
+            guard !exactRequired.overflow else { return nil }
+            if accumulated >= exactRequired.partialValue {
+                guard accumulated == exactRequired.partialValue else {
+                    return nil
+                }
+                return ShieldedSweepCandidate(
+                    amountCredits: amountCredits,
+                    inputCredits: accumulated,
+                    feeCredits: exactFee,
+                    noteCount: count)
+            }
+            feeEstimate = exactFee
+        }
+
+        return nil
+    }
+}
+
 enum ShieldedSweepAvailability: Equatable {
     case ready(ShieldedSweepPlan)
     /// A previous outgoing activity is still pending, so persisted notes can
@@ -216,78 +317,25 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         guard !noteValues.isEmpty else { return .unavailable }
 
-        // Consensus caps a shielded transition at 16 Orchard actions. Plan the
-        // largest spendable batch; a second Max clears any explicit remainder.
-        let selectedValues = Array(noteValues.prefix(16))
-        let targetInputCredits = selectedValues.reduce(into: UInt64(0)) { partial, value in
-            let (sum, overflow) = partial.addingReportingOverflow(value)
-            partial = overflow ? UInt64.max : sum
-        }
-        guard targetInputCredits != UInt64.max else { return .unavailable }
-
-        let actionCount = max(selectedValues.count, 2)
-        guard let targetFee = try? PlatformWalletManager.estimateShieldedFee(
-            kind: feeKind,
-            numActions: actionCount),
-              targetInputCredits > targetFee
-        else { return .unavailable }
-
         let allCredits = noteValues.reduce(into: UInt64(0)) { partial, value in
             let (sum, overflow) = partial.addingReportingOverflow(value)
             partial = overflow ? UInt64.max : sum
         }
         guard allCredits != UInt64.max else { return .unavailable }
 
-        // Mirror Rust's iterative largest-first selection. A very small final
-        // note can be cheaper to leave behind than the extra action needed to
-        // spend it, even when the target was derived from every note. Predict
-        // that change here and disclose it instead of promising an empty pool.
-        let amountCredits = targetInputCredits - targetFee
-        var feeEstimate = (try? PlatformWalletManager.estimateShieldedFee(
-            kind: feeKind,
-            numActions: 2)) ?? targetFee
-        var actualInputCredits: UInt64?
-        var actualFeeCredits: UInt64?
-
-        for _ in 0..<6 {
-            let required = amountCredits.addingReportingOverflow(feeEstimate)
-            guard !required.overflow else { return .unavailable }
-
-            var accumulated: UInt64 = 0
-            var count = 0
-            for value in noteValues {
-                let next = accumulated.addingReportingOverflow(value)
-                guard !next.overflow else { return .unavailable }
-                accumulated = next.partialValue
-                count += 1
-                if accumulated >= required.partialValue { break }
-            }
-            guard accumulated >= required.partialValue, count <= 16 else {
-                return .unavailable
-            }
-
-            guard let exactFee = try? PlatformWalletManager.estimateShieldedFee(
+        let feeForActions: (Int) -> UInt64? = { actionCount in
+            try? PlatformWalletManager.estimateShieldedFee(
                 kind: feeKind,
-                numActions: max(count, 2))
-            else { return .unavailable }
-
-            let exactRequired = amountCredits.addingReportingOverflow(exactFee)
-            guard !exactRequired.overflow else { return .unavailable }
-            if accumulated >= exactRequired.partialValue {
-                actualInputCredits = accumulated
-                actualFeeCredits = exactFee
-                break
-            }
-            feeEstimate = exactFee
+                numActions: actionCount)
         }
-
-        guard let inputCredits = actualInputCredits,
-              let feeCredits = actualFeeCredits
+        guard let best = ShieldedSweepPlanner.bestCandidate(
+            noteValues: noteValues,
+            feeForActions: feeForActions),
+              let exact = ShieldedSweepPlanner.revalidate(
+                noteValues: noteValues,
+                amountCredits: best.amountCredits,
+                feeForActions: feeForActions)
         else { return .unavailable }
-        let spentCredits = amountCredits.addingReportingOverflow(feeCredits)
-        guard !spentCredits.overflow, spentCredits.partialValue <= allCredits else {
-            return .unavailable
-        }
 
         // Persisted notes and the published balance must describe the same
         // snapshot. A mismatch is the post-spend indexing window; do not build
@@ -299,10 +347,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         return .ready(
             ShieldedSweepPlan(
-                amountCredits: amountCredits,
-                feeCredits: feeCredits,
-                inputCredits: inputCredits,
-                remainingCredits: allCredits - spentCredits.partialValue))
+                amountCredits: exact.amountCredits,
+                feeCredits: exact.feeCredits,
+                inputCredits: exact.inputCredits,
+                remainingCredits: allCredits - exact.inputCredits))
     }
 
     // MARK: - Public API

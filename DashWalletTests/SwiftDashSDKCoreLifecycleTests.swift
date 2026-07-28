@@ -215,6 +215,44 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 poolFeeCredits: 212_851_000),
             212_852)
     }
+
+    func testShieldedSweepChoosesPrefixWithLargestNetPayout() {
+        let fees: [Int: UInt64] = [2: 100, 3: 150]
+
+        let candidate = ShieldedSweepPlanner.bestCandidate(
+            noteValues: [1_000, 1_000, 1],
+            feeForActions: { fees[$0] })
+
+        XCTAssertEqual(
+            candidate,
+            ShieldedSweepCandidate(
+                amountCredits: 1_900,
+                inputCredits: 2_000,
+                feeCredits: 100,
+                noteCount: 2))
+        XCTAssertEqual(
+            ShieldedSweepPlanner.revalidate(
+                noteValues: [1_000, 1_000, 1],
+                amountCredits: 1_900,
+                feeForActions: { fees[$0] }),
+            candidate)
+    }
+
+    func testShieldedSweepUsesSpendablePrefixWhenFullPrefixCannotPayFee() {
+        let notes = [UInt64(200), 100] + Array(repeating: UInt64(1), count: 14)
+
+        let candidate = ShieldedSweepPlanner.bestCandidate(
+            noteValues: notes,
+            feeForActions: { actions in actions <= 2 ? 100 : 1_000 })
+
+        XCTAssertEqual(
+            candidate,
+            ShieldedSweepCandidate(
+                amountCredits: 200,
+                inputCredits: 300,
+                feeCredits: 100,
+                noteCount: 2))
+    }
 }
 
 final class JoinDashPayRegistrationPolicyTests: XCTestCase {
