@@ -390,13 +390,7 @@ struct ExternalSendAmountScreen: View {
 
                     fromSummary
 
-                    TransferAmountRow(
-                        unit: $viewModel.unit,
-                        amountText: viewModel.amountText,
-                        secondaryText: viewModel.secondaryDisplayString,
-                        currencySymbol: viewModel.primaryCurrencySymbol,
-                        fiatCurrencyCode: viewModel.fiatCurrencyCode,
-                        onMax: { viewModel.fillMaxFromWallet() })
+                    amountRow
                         .padding(.horizontal, 20)
                         .padding(.top, 6)
 
@@ -409,17 +403,9 @@ struct ExternalSendAmountScreen: View {
             }
             .scrollBounceBehavior(.basedOnSize)
 
-            NumericKeyboardView(
-                value: keypadBinding,
-                showDecimalSeparator: true,
-                actionButtonText: NSLocalizedString("Continue", comment: ""),
-                actionEnabled: viewModel.canContinue,
-                inProgress: false,
-                actionHandler: continueAction)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
+            keyboardSection
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
         .sheet(isPresented: $showConfirm) {
             if let route = viewModel.route, route != .coreToCore {
@@ -446,6 +432,43 @@ struct ExternalSendAmountScreen: View {
     private var shieldedRecipientRaw43: Data? {
         if case .shielded(let raw43) = viewModel.destination { return raw43 }
         return nil
+    }
+
+    // MARK: - Amount
+
+    private var amountRow: some View {
+        EnterAmountView(
+            primaryAmount: dashAmountText,
+            secondaryAmount: fiatAmountText,
+            primaryCurrency: .dash,
+            secondaryCurrency: .fiat(viewModel.fiatCurrencyCode),
+            isPrimarySelected: isDashInputSelected,
+            currencyCodes: amountCurrencyCodes,
+            selectedCurrencyCode: selectedAmountCurrencyCode,
+            onMax: { viewModel.fillMaxFromWallet() },
+            onSwap: toggleAmountUnit,
+            onCurrencyTap: toggleAmountUnit,
+            onSelectInputType: selectAmountCurrency
+        )
+    }
+
+    // MARK: - Keyboard
+
+    private var keyboardSection: some View {
+        NumericKeyboardView(
+            value: keypadBinding,
+            showDecimalSeparator: true,
+            actionButtonText: NSLocalizedString("Continue", comment: ""),
+            actionEnabled: viewModel.canContinue,
+            inProgress: false,
+            actionHandler: continueAction
+        )
+        .padding(.top, 12)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 12)
+        .background(Color.dash.secondaryBackground)
+        .clipShape(.rect(cornerRadius: 20))
+        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 
     private func continueAction() {
@@ -487,7 +510,58 @@ struct ExternalSendAmountScreen: View {
         .padding(.horizontal, 20)
     }
 
-    // MARK: - Keypad
+    // MARK: - Amount helpers
+
+    private var isDashInputSelected: Bool {
+        viewModel.unit == .dash
+    }
+
+    private var dashAmountText: String {
+        switch viewModel.unit {
+        case .dash:
+            return keypadBinding.wrappedValue
+        case .fiat:
+            guard viewModel.parsedDashAmount > 0 else { return "" }
+            return InternalTransferViewModel.formatTyped(
+                viewModel.parsedDashAmount,
+                fractionDigits: 8)
+        }
+    }
+
+    private var fiatAmountText: String {
+        switch viewModel.unit {
+        case .dash:
+            guard viewModel.parsedDashAmount > 0,
+                  let fiatAmount = try? CurrencyExchanger.shared.convertDash(
+                    amount: viewModel.parsedDashAmount,
+                    to: viewModel.fiatCurrencyCode)
+            else { return "" }
+            return InternalTransferViewModel.formatTyped(
+                fiatAmount,
+                fractionDigits: 2)
+        case .fiat:
+            return keypadBinding.wrappedValue
+        }
+    }
+
+    private var amountCurrencyCodes: [String] {
+        ["DASH", viewModel.fiatCurrencyCode]
+    }
+
+    private var selectedAmountCurrencyCode: String {
+        isDashInputSelected ? "DASH" : viewModel.fiatCurrencyCode
+    }
+
+    private func toggleAmountUnit() {
+        viewModel.unit = isDashInputSelected ? .fiat : .dash
+    }
+
+    private func selectAmountCurrency(_ currencyCode: String) {
+        viewModel.unit =
+            currencyCode.caseInsensitiveCompare("DASH") == .orderedSame
+            ? .dash
+            : .fiat
+    }
 
     private var keypadBinding: Binding<String> {
         Binding(
