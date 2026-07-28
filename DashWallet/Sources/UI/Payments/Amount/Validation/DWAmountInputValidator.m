@@ -17,7 +17,7 @@
 
 #import "DWAmountInputValidator.h"
 
-#import <DashSync/DSWallet.h>
+#import "DWAmountConstants.h"
 
 #import "DWDecimalInputValidator.h"
 
@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
         switch (type) {
             case DWAmountInputValidatorTypeDash: {
                 numberFormatter.maximumFractionDigits = 8;
-                numberFormatter.maximum = @(MAX_MONEY / (int64_t)pow(10.0, numberFormatter.maximumFractionDigits));
+                numberFormatter.maximum = @(DW_MAX_MONEY / (int64_t)pow(10.0, numberFormatter.maximumFractionDigits));
 
                 break;
             }

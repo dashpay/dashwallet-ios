@@ -839,6 +839,8 @@
 		759C8FA02B593589004B1305 /* CrowdNodeAPYView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */; };
 		75A0A3F32CA7DBCF003ED48B /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */; };
 		75A0A3F42CA7DBCF003ED48B /* TimeUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */; };
+		DA8890010000000000000001 /* DWSecureAllocator.m in Sources */ = {isa = PBXBuildFile; fileRef = DA8890040000000000000004 /* DWSecureAllocator.m */; };
+		DA8890020000000000000002 /* DWSecureAllocator.m in Sources */ = {isa = PBXBuildFile; fileRef = DA8890040000000000000004 /* DWSecureAllocator.m */; };
 		75A2F3032DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */; };
 		75A2F3042DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */; };
 		75A8C1652AE5726B0042256E /* UsernameRequestsDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */; };
@@ -2709,6 +2711,7 @@
 		478C983129433C5700FAA0F0 /* PaymentMethodsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentMethodsController.swift; sourceTree = "<group>"; };
 		478C98362943A60000FAA0F0 /* PaymentMethodCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentMethodCell.swift; sourceTree = "<group>"; };
 		478C983B2945801D00FAA0F0 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		DAD0FF5C0000000000000001 /* DWAmountConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountConstants.h; sourceTree = "<group>"; };
 		47976E492987772700612988 /* AmountObjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountObjectTests.swift; sourceTree = "<group>"; };
 		A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletWipeSerialExecutorTests.swift; sourceTree = "<group>"; };
 		B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWContestedNameStatusServiceTests.swift; sourceTree = "<group>"; };
@@ -2993,6 +2996,8 @@
 		759AFDE22CC67E89007072D2 /* VotingInfoScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingInfoScreen.swift; sourceTree = "<group>"; };
 		759C8F9E2B593589004B1305 /* CrowdNodeAPYView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrowdNodeAPYView.swift; sourceTree = "<group>"; };
 		75A0A3F22CA7DBCF003ED48B /* TimeUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TimeUtils.swift; sourceTree = "<group>"; };
+		DA8890030000000000000003 /* DWSecureAllocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecureAllocator.h; sourceTree = "<group>"; };
+		DA8890040000000000000004 /* DWSecureAllocator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSecureAllocator.m; sourceTree = "<group>"; };
 		75A2F3022DE48C860046BE17 /* CTXSpendTokenService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/CTX/CTXSpendTokenService.swift; sourceTree = "<group>"; };
 		75A8C1632AE5725C0042256E /* UsernameRequestsDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequestsDAO.swift; sourceTree = "<group>"; };
 		75A8C1662AE5734A0042256E /* UsernameRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRequest.swift; sourceTree = "<group>"; };
@@ -6486,6 +6491,7 @@
 				47AF180429070B720025803E /* Types.swift */,
 				471DD1B7290A92CD00E030C8 /* Tools.swift */,
 				478C983B2945801D00FAA0F0 /* Constants.swift */,
+				DAD0FF5C0000000000000001 /* DWAmountConstants.h */,
 				475AE2B82974348F009A1055 /* App.swift */,
 			);
 			path = Application;
@@ -8803,6 +8809,8 @@
 				B47594B5DDCF9D335C0C7AB7 /* SecureTimeService.swift */,
 				132FE91D9C90E736DB1634A5 /* PinStore.swift */,
 				0EE3302C1C5DF898D1A0F915 /* AuthenticationService.swift */,
+				DA8890030000000000000003 /* DWSecureAllocator.h */,
+				DA8890040000000000000004 /* DWSecureAllocator.m */,
 			);
 			path = Authentication;
 			sourceTree = "<group>";
@@ -10294,6 +10302,7 @@
 				471A260A289ACDF70056B7B2 /* Taxes.swift in Sources */,
 				2AD1CE9722DD0E8E00C99324 /* DWSeedWordModel+DWLayoutSupport.m in Sources */,
 				75A0A3F32CA7DBCF003ED48B /* TimeUtils.swift in Sources */,
+				DA8890010000000000000001 /* DWSecureAllocator.m in Sources */,
 				47EEE243293F436200049E0B /* CoinbaseAPIClient.swift in Sources */,
 				47B30D80291123D30080C326 /* SendAmountViewController.swift in Sources */,
 				47CF46A1296540EF0067B6EE /* AccountService.swift in Sources */,
@@ -11163,6 +11172,7 @@
 				C943B53F2A40A6BE00AF23C5 /* DPAlertChildContentsView.m in Sources */,
 				C9D2C85B2A320AA000D15901 /* PointOfUseListEmptyResultsView.swift in Sources */,
 				75A0A3F42CA7DBCF003ED48B /* TimeUtils.swift in Sources */,
+				DA8890020000000000000002 /* DWSecureAllocator.m in Sources */,
 				75D9EBC82DE5CE14009416A2 /* GiftCardDetailsViewModel.swift in Sources */,
 				75D9EBC92DE5CE14009416A2 /* GiftCardDetailsView.swift in Sources */,
 				91F0B8B92F3FAB7C00E713AE /* KeysOverviewView.swift in Sources */,

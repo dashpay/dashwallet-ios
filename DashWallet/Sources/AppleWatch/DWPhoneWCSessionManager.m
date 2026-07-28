@@ -277,7 +277,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
     if (date) {
         NSDate *now = [NSDate date];
         NSTimeInterval secondsSinceTransaction = [now timeIntervalSinceDate:date];
-        return [NSString waitTimeFromNow:secondsSinceTransaction];
+        return [DWDurationFormatter stringFromTimeInterval:secondsSinceTransaction];
     }
 
     return nil;

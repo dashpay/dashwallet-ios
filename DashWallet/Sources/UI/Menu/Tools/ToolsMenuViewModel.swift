@@ -63,7 +63,7 @@ class ToolsMenuViewModel: ObservableObject {
 
     /// Formatted leftover amount for the confirmation dialog.
     var coinJoinLeftoverFormatted: String {
-        String(format: "%.6f DASH", Double(coinJoinLeftoverDuffs) / Double(DUFFS))
+        String(format: "%.6f DASH", Double(coinJoinLeftoverDuffs) / Double(kOneDash))
     }
 
     init() {
