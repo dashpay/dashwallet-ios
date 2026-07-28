@@ -292,20 +292,55 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 feeReserveCredits: 2_000_000_000))
     }
 
-    func testWithdrawalAwaitingCoreReceiptStaysPending() {
+    func testUniqueWithdrawalAddressMatchesDespiteRestoreTimeAndAmountSkew() {
+        let activityDate = Date(timeIntervalSince1970: 1_000_000)
+
         XCTAssertEqual(
-            ShieldedActivityItem.Status.projected(
-                persistedRawValue: ShieldedActivityItem.Status.confirmed.rawValue,
-                isAwaitingTransparentReceipt: true),
-            .pending)
+            CoreWithdrawalReceiptMatchPolicy.selectedIndex(
+                expectedAmountDuffs: 2_000,
+                activityDate: activityDate,
+                candidates: [
+                    CoreWithdrawalReceiptCandidate(
+                        amountDuffs: 1_950,
+                        date: activityDate.addingTimeInterval(-172_800)),
+                ]),
+            0)
     }
 
-    func testNonReceiptProjectionPreservesPersistedShieldedStatus() {
+    func testReusedWithdrawalAddressUsesUniqueAmountAndTimeMatch() {
+        let activityDate = Date(timeIntervalSince1970: 1_000_000)
+
         XCTAssertEqual(
-            ShieldedActivityItem.Status.projected(
-                persistedRawValue: ShieldedActivityItem.Status.failed.rawValue,
-                isAwaitingTransparentReceipt: false),
-            .failed)
+            CoreWithdrawalReceiptMatchPolicy.selectedIndex(
+                expectedAmountDuffs: 2_000,
+                activityDate: activityDate,
+                candidates: [
+                    CoreWithdrawalReceiptCandidate(
+                        amountDuffs: 2_000,
+                        date: activityDate.addingTimeInterval(-172_800)),
+                    CoreWithdrawalReceiptCandidate(
+                        amountDuffs: 2_000,
+                        date: activityDate.addingTimeInterval(60)),
+                ]),
+            1)
+    }
+
+    func testAmbiguousReusedWithdrawalAddressRemainsPending() {
+        let activityDate = Date(timeIntervalSince1970: 1_000_000)
+        let candidates = [
+            CoreWithdrawalReceiptCandidate(
+                amountDuffs: 2_000,
+                date: activityDate.addingTimeInterval(60)),
+            CoreWithdrawalReceiptCandidate(
+                amountDuffs: 2_000,
+                date: activityDate.addingTimeInterval(120)),
+        ]
+
+        XCTAssertNil(
+            CoreWithdrawalReceiptMatchPolicy.selectedIndex(
+                expectedAmountDuffs: 2_000,
+                activityDate: activityDate,
+                candidates: candidates))
     }
 }
 

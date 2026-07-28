@@ -358,6 +358,11 @@ class HomeViewModel: ObservableObject {
             DWLogger.log("HomeViewModel: Starting full transaction reload")
 
             let transactions = transactionSource.allTransactions
+            // Reconcile restored Shielded → Core destinations before Core rows
+            // are filtered/classified. The activity projection can recover a
+            // destination tag that was absent from the local withdrawal store.
+            let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity(
+                coreTransactions: transactions)
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets = [:]
             self.coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet()
@@ -412,8 +417,6 @@ class HomeViewModel: ObservableObject {
             // Platform↔Shielded moves, shielded identity fundings) — the
             // Core rows above only cover operations with an L1 leg. The
             // day-grouping sort below merges the two timelines.
-            let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity(
-                coreTransactions: transactions)
             for shielded in shieldedItems {
                 guard self.passesShieldedFilter(
                     item: shielded,
@@ -1087,6 +1090,48 @@ protocol TransactionSource {
     var allTransactions: Array<Transaction> { get }
 }
 
+struct CoreWithdrawalReceiptCandidate: Equatable {
+    let amountDuffs: UInt64
+    let date: Date
+}
+
+struct CoreWithdrawalReceiptMatchPolicy {
+    /// A withdrawal destination is the wallet's next unused Core receive
+    /// address, so one transaction paying it is authoritative even when the
+    /// restored shielded activity timestamp or reconstructed amount differs.
+    /// Address reuse is handled conservatively: require one unambiguous
+    /// amount/time candidate rather than consuming an unrelated receipt.
+    static func selectedIndex(
+        expectedAmountDuffs: UInt64,
+        activityDate: Date,
+        candidates: [CoreWithdrawalReceiptCandidate]
+    ) -> Int? {
+        guard !candidates.isEmpty else { return nil }
+        if candidates.count == 1 { return 0 }
+
+        let inWindow = candidates.indices.filter {
+            isWithinMatchWindow(candidates[$0].date, around: activityDate)
+        }
+        if expectedAmountDuffs > 0 {
+            let exactInWindow = inWindow.filter {
+                candidates[$0].amountDuffs == expectedAmountDuffs
+            }
+            if exactInWindow.count == 1 { return exactInWindow[0] }
+
+            let exact = candidates.indices.filter {
+                candidates[$0].amountDuffs == expectedAmountDuffs
+            }
+            if exact.count == 1 { return exact[0] }
+        }
+        return inWindow.count == 1 ? inWindow[0] : nil
+    }
+
+    private static func isWithinMatchWindow(_ date: Date, around anchor: Date) -> Bool {
+        let delta = date.timeIntervalSince(anchor)
+        return delta >= -3600 && delta <= 86_400
+    }
+}
+
 /// Pure SwiftDashSDK source for the home screen tx list. Queries the
 /// `PersistentTransaction` rows persisted by Rust's SwiftData callbacks
 /// (Core SPV block apply + BLAST events) directly from
@@ -1130,13 +1175,11 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// - ShieldFromAssetLock entries are dropped: their Core asset-lock
     ///   spend always renders as a history row already
     ///   (`Transaction.isShieldedTransfer`).
-    /// - An internal Withdrawal is projected as Pending while its matching
-    ///   Core receipt is absent, then dropped so the receipt becomes the
-    ///   single authoritative history row. Only that Core row carries the
-    ///   payout's mined/confirmation state; the shielded activity height is a
-    ///   scan-batch/proof-anchor height. A withdrawal to an EXTERNAL Core
-    ///   address produces no wallet-side Core transaction, so it always stays
-    ///   and renders as a Sent row.
+    /// - An internal Withdrawal is projected as Pending until its matching
+    ///   Core receipt appears, then dropped so the receipt becomes the single
+    ///   authoritative history row. A withdrawal to an EXTERNAL Core address
+    ///   produces no wallet-side Core transaction, so it always stays and
+    ///   renders as a Sent row.
     /// - Rows are deduped by `entryId`: an intra-wallet transfer writes
     ///   a Sent row on the sending account and a Received row on the
     ///   receiving account for the same operation; the outgoing
@@ -1176,17 +1219,18 @@ class SwiftDashSDKWalletSource: TransactionSource {
             case ShieldedActivityItem.Kind.withdrawal.rawValue:
                 let address = withdrawalDestinationAddress(counterparty: row.counterparty)
                 if let address, isActiveWalletCoreAddress(address, walletId: walletId, in: context) {
+                    // Live withdrawals record this before the payout arrives,
+                    // but restored activity can rebuild the same durable tag.
+                    ShieldedWithdrawalStore.shared.record(address: address)
                     let pendingItem = ShieldedActivityItem(
                         row: row,
                         amountCreditsOverride: reconstructedAmountCredits,
                         destinationAddress: address,
                         isAwaitingTransparentReceipt: true)
-                    // Keep a Pending local row during the gap between the
+                    // Keep a local Pending row during the gap between the
                     // shielded spend and the asynchronously persisted L1
-                    // receipt. The shielded row's block height is not evidence
-                    // that the Core payout was mined. Once a matching Core
-                    // receipt exists, suppress this placeholder; the Core row's
-                    // own context/block height then drives its visible state.
+                    // receipt. Once a matching receipt exists, suppress the
+                    // placeholder so the operation never renders twice.
                     if hasMatchingCoreReceipt(
                         for: pendingItem,
                         address: address,
@@ -1247,6 +1291,13 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 }
 
                 if let address = withdrawalDestinationAddress(counterparty: row.counterparty) {
+                    let isOwnAddress = isActiveWalletCoreAddress(
+                        address,
+                        walletId: walletId,
+                        in: context)
+                    if isOwnAddress {
+                        ShieldedWithdrawalStore.shared.record(address: address)
+                    }
                     let receipt = matchingCoreReceipt(
                         amountDuffs: reconstructedAmountDuffs,
                         address: address,
@@ -1255,7 +1306,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
                     let receiptAmountCredits = receipt.map { $0.dashAmount * 1000 }
                     let effectiveAmount = receiptAmountCredits ?? reconstructedAmountCredits
 
-                    if isActiveWalletCoreAddress(address, walletId: walletId, in: context) {
+                    if isOwnAddress {
                         // Same-seed restore: once the transparent receipt is in
                         // the wallet's L1 history, that row is authoritative.
                         if receipt != nil {
@@ -1365,27 +1416,31 @@ class SwiftDashSDKWalletSource: TransactionSource {
         around date: Date,
         in transactions: [Transaction]
     ) -> Transaction? {
+        // Do not require `ShieldedWithdrawalStore` classification here. A
+        // restored activity row may be the source that rehydrates that store,
+        // while the Core transaction is already persisted and mined.
         let candidates = transactions.filter { transaction in
-            guard transaction.isShieldedWithdrawalReceipt,
-                  transaction.outputReceiveAddresses.contains(address),
-                  isWithinProjectionMatchWindow(transaction.date, around: date) else {
-                return false
-            }
-            return amountDuffs == 0 || transaction.dashAmount == amountDuffs
+            transaction.direction == .received
+                && transaction.outputReceiveAddresses.contains(address)
         }
-
-        if amountDuffs > 0,
-           let exact = candidates.first(where: { $0.dashAmount == amountDuffs }) {
-            return exact
+        let summaries = candidates.map {
+            CoreWithdrawalReceiptCandidate(
+                amountDuffs: $0.dashAmount,
+                date: $0.date)
         }
-
-        return candidates.count == 1 ? candidates.first : nil
+        guard let index = CoreWithdrawalReceiptMatchPolicy.selectedIndex(
+            expectedAmountDuffs: amountDuffs,
+            activityDate: date,
+            candidates: summaries)
+        else { return nil }
+        return candidates[index]
     }
 
     /// Match the eventual Core receipt without relying on a txid the opaque
-    /// shielded-withdraw call does not return. Address + principal + a bounded
-    /// time window avoids consuming an unrelated historical receipt of the
-    /// same amount while tolerating block timestamp skew and indexing delay.
+    /// shielded-withdraw call does not return. The fresh destination address is
+    /// the primary key; principal/time only disambiguate unexpected address
+    /// reuse. This tolerates restore-time timestamp skew and amount
+    /// reconstruction differences without leaving a mined receipt unmatched.
     private static func hasMatchingCoreReceipt(
         for pending: ShieldedActivityItem,
         address: String,
@@ -1538,12 +1593,12 @@ class SwiftDashSDKWalletSource: TransactionSource {
         guard let row = (try? context.fetch(descriptor))?.first else {
             return nil
         }
-        // Membership check: a tx the active wallet doesn't participate in
-        // (no TXO row denorm'd to its walletId, via either the producing
-        // `transaction` or the spending `spendingTransaction`) is not its
-        // transaction and reads as absent.
+        // Membership can arrive through either side of the SDK's documented
+        // union: wallet-scoped TXOs or an account's involved-transactions
+        // relation. Accept both so an out-of-order receipt is not discarded.
         guard row.outputs.contains(where: { $0.walletId == walletId })
-            || row.inputs.contains(where: { $0.walletId == walletId }) else {
+            || row.inputs.contains(where: { $0.walletId == walletId })
+            || row.involvedAccounts.contains(where: { $0.wallet.walletId == walletId }) else {
             return nil
         }
         let tx = Transaction(persistentTransaction: row)
@@ -1551,25 +1606,33 @@ class SwiftDashSDKWalletSource: TransactionSource {
         return tx
     }
 
-    /// Every txid the active wallet participates in, recovered by the
-    /// TXO join `PersistentTransaction` deliberately can't express itself
-    /// (it has no walletId — one row is shared across wallets; see the
-    /// model doc). A wallet's TXO rows carry its walletId denorm; each row
-    /// names the wallet's transactions on both sides — the producing
-    /// `transaction` (funds in) and the `spendingTransaction` (funds out).
-    /// One walletId-scoped fetch per reload (not per transaction), so the
-    /// timeline stays a single indexed scan on large wallets.
+    /// Every txid the active wallet participates in. Union the canonical TXO
+    /// membership with `PersistentAccount.involvedTransactions`, as required
+    /// by the SDK model: the latter closes out-of-order/payload-only indexing
+    /// gaps where the transaction record is saved before its TXO relationship
+    /// is available to the home timeline.
     private static func activeWalletTxids(
         in context: ModelContext,
         walletId: Data
     ) -> Set<Data> {
-        let descriptor = FetchDescriptor<PersistentTxo>(
+        let txoDescriptor = FetchDescriptor<PersistentTxo>(
             predicate: #Predicate { $0.walletId == walletId })
-        guard let txos = try? context.fetch(descriptor) else { return [] }
+        let txos = (try? context.fetch(txoDescriptor)) ?? []
         var txids = Set<Data>()
         for txo in txos {
             if let producing = txo.transaction { txids.insert(producing.txid) }
             if let spending = txo.spendingTransaction { txids.insert(spending.txid) }
+        }
+
+        var walletDescriptor = FetchDescriptor<PersistentWallet>(
+            predicate: #Predicate { $0.walletId == walletId })
+        walletDescriptor.fetchLimit = 1
+        if let wallet = (try? context.fetch(walletDescriptor))?.first {
+            for account in wallet.accounts {
+                for transaction in account.involvedTransactions {
+                    txids.insert(transaction.txid)
+                }
+            }
         }
         return txids
     }

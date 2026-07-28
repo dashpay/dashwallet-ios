@@ -28,8 +28,6 @@
 //  renders via `Transaction.isShieldedTransfer`. An internal Withdrawal is
 //  temporarily projected as Pending until its Core receipt appears, then
 //  matched by destination, amount, and time and replaced by that receipt.
-//  Only the Core transaction's context/block height may confirm the payout;
-//  the shielded activity height belongs to its scan batch/proof anchor.
 //
 
 import Foundation
@@ -66,20 +64,6 @@ struct ShieldedActivityItem: Identifiable {
         case pending = 0
         case confirmed = 1
         case failed = 2
-
-        /// A Shielded → Core placeholder has no Core-chain confirmation signal
-        /// of its own. Its activity block height is the shielded scan batch /
-        /// proof-anchor height, not the payout transaction's mined height, so
-        /// it must remain Pending until the real Core receipt replaces it.
-        static func projected(
-            persistedRawValue: Int,
-            isAwaitingTransparentReceipt: Bool
-        ) -> Status {
-            if isAwaitingTransparentReceipt {
-                return .pending
-            }
-            return Status(rawValue: persistedRawValue) ?? .confirmed
-        }
     }
 
     let entryId: Data
@@ -110,9 +94,7 @@ struct ShieldedActivityItem: Identifiable {
     /// True for the temporary Shielded → Transparent row shown after the
     /// shielded spend is recorded but before its matching Core receipt is
     /// persisted. The row is replaced by the real Core transaction once it
-    /// arrives, so the history never has a silent post-spend gap. This
-    /// placeholder remains Pending regardless of the shielded activity's
-    /// proof-anchor height.
+    /// arrives, so the history never has a silent post-spend gap.
     let isAwaitingTransparentReceipt: Bool
 
     var id: String {
@@ -135,9 +117,9 @@ struct ShieldedActivityItem: Identifiable {
         accountIndex = row.accountIndex
         kind = effectiveKind
         direction = Direction(rawValue: row.direction) ?? .selfTransfer
-        status = Status.projected(
-            persistedRawValue: row.status,
-            isAwaitingTransparentReceipt: isAwaitingTransparentReceipt)
+        status = isAwaitingTransparentReceipt
+            ? .pending
+            : Status(rawValue: row.status) ?? .confirmed
         amountDuffs = (amountCreditsOverride ?? row.amount) / 1000
         feeDuffs = row.hasFee ? row.fee / 1000 : nil
         blockHeight = row.hasBlockHeight ? row.blockHeight : nil
