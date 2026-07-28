@@ -364,6 +364,57 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 balanceCredits: 10_000_000_000,
                 feeReserveCredits: 2_000_000_000))
     }
+
+    func testUniqueWithdrawalAddressMatchesDespiteRestoreTimeAndAmountSkew() {
+        let activityDate = Date(timeIntervalSince1970: 1_000_000)
+
+        XCTAssertEqual(
+            CoreWithdrawalReceiptMatchPolicy.selectedIndex(
+                expectedAmountDuffs: 2_000,
+                activityDate: activityDate,
+                candidates: [
+                    CoreWithdrawalReceiptCandidate(
+                        amountDuffs: 1_950,
+                        date: activityDate.addingTimeInterval(-172_800)),
+                ]),
+            0)
+    }
+
+    func testReusedWithdrawalAddressUsesUniqueAmountAndTimeMatch() {
+        let activityDate = Date(timeIntervalSince1970: 1_000_000)
+
+        XCTAssertEqual(
+            CoreWithdrawalReceiptMatchPolicy.selectedIndex(
+                expectedAmountDuffs: 2_000,
+                activityDate: activityDate,
+                candidates: [
+                    CoreWithdrawalReceiptCandidate(
+                        amountDuffs: 2_000,
+                        date: activityDate.addingTimeInterval(-172_800)),
+                    CoreWithdrawalReceiptCandidate(
+                        amountDuffs: 2_000,
+                        date: activityDate.addingTimeInterval(60)),
+                ]),
+            1)
+    }
+
+    func testAmbiguousReusedWithdrawalAddressRemainsPending() {
+        let activityDate = Date(timeIntervalSince1970: 1_000_000)
+        let candidates = [
+            CoreWithdrawalReceiptCandidate(
+                amountDuffs: 2_000,
+                date: activityDate.addingTimeInterval(60)),
+            CoreWithdrawalReceiptCandidate(
+                amountDuffs: 2_000,
+                date: activityDate.addingTimeInterval(120)),
+        ]
+
+        XCTAssertNil(
+            CoreWithdrawalReceiptMatchPolicy.selectedIndex(
+                expectedAmountDuffs: 2_000,
+                activityDate: activityDate,
+                candidates: candidates))
+    }
 }
 
 final class JoinDashPayRegistrationPolicyTests: XCTestCase {
