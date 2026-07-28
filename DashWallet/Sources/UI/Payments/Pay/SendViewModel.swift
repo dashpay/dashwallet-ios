@@ -422,7 +422,9 @@ final class SendViewModel: ObservableObject {
 
     private func creditsMinusFeeReserve(_ balanceCredits: UInt64) -> UInt64 {
         guard let fee = feeReserveCredits else { return 0 }
-        return balanceCredits > fee ? balanceCredits - fee : 0
+        return ShieldedSpendAmountPolicy.spendableCredits(
+            balanceCredits: balanceCredits,
+            feeReserveCredits: fee)
     }
 
     /// Net payout of the full-balance Platform → Core withdrawal (duffs);
@@ -473,23 +475,42 @@ final class SendViewModel: ObservableObject {
             poolFeeCredits: poolFeeCredits)
     }
 
-    /// Inline explanation for a Core → external Shielded amount that cannot
-    /// cover the Type-18 pool fee. Keep zero quiet until the user types.
+    /// Inline explanation for an amount rejected before Confirm. Keep zero
+    /// quiet until the user types.
     var amountValidationMessage: String? {
-        guard route == .coreToShielded, dashDuffsUnsigned > 0 else { return nil }
-        guard let minimumDuffs = coreToShieldedMinimumAmountDuffs else {
-            return NSLocalizedString(
-                "There was an error, please try again later",
-                comment: "External shielded send fee estimate unavailable")
-        }
-        guard dashDuffsUnsigned < minimumDuffs else { return nil }
+        guard dashDuffsUnsigned > 0, let route else { return nil }
 
-        let formattedMinimum = "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "The minimum amount you can send is %@",
-                comment: "External shielded send minimum amount"),
-            formattedMinimum)
+        switch route {
+        case .coreToShielded:
+            guard let minimumDuffs = coreToShieldedMinimumAmountDuffs else {
+                return NSLocalizedString(
+                    "There was an error, please try again later",
+                    comment: "External shielded send fee estimate unavailable")
+            }
+            guard dashDuffsUnsigned < minimumDuffs else { return nil }
+
+            let formattedMinimum =
+                "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "The minimum amount you can send is %@",
+                    comment: "External shielded send minimum amount"),
+                formattedMinimum)
+
+        case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
+            guard let reserve = feeReserveCredits else {
+                return NSLocalizedString(
+                    "There was an error, please try again later",
+                    comment: "External Shielded send fee estimate unavailable")
+            }
+            return ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+                requestedCredits: creditsPreview,
+                balanceCredits: shieldedBalance,
+                feeReserveCredits: reserve)
+
+        default:
+            return nil
+        }
     }
 
     /// Gate for advancing from the address step to the amount step: the
