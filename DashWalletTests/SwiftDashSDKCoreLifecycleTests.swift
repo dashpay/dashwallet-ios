@@ -292,20 +292,10 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 feeReserveCredits: 2_000_000_000))
     }
 
-    func testKnownBlockConfirmsWithdrawalBeforeCoreReceiptProjectionArrives() {
-        XCTAssertEqual(
-            ShieldedActivityItem.Status.projected(
-                persistedRawValue: ShieldedActivityItem.Status.pending.rawValue,
-                hasBlockHeight: true,
-                isAwaitingTransparentReceipt: true),
-            .confirmed)
-    }
-
-    func testWithdrawalWithoutBlockRemainsPendingWhileAwaitingCoreReceipt() {
+    func testWithdrawalAwaitingCoreReceiptStaysPending() {
         XCTAssertEqual(
             ShieldedActivityItem.Status.projected(
                 persistedRawValue: ShieldedActivityItem.Status.confirmed.rawValue,
-                hasBlockHeight: false,
                 isAwaitingTransparentReceipt: true),
             .pending)
     }
@@ -314,7 +304,6 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(
             ShieldedActivityItem.Status.projected(
                 persistedRawValue: ShieldedActivityItem.Status.failed.rawValue,
-                hasBlockHeight: false,
                 isAwaitingTransparentReceipt: false),
             .failed)
     }

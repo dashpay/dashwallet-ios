@@ -1130,13 +1130,13 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// - ShieldFromAssetLock entries are dropped: their Core asset-lock
     ///   spend always renders as a history row already
     ///   (`Transaction.isShieldedTransfer`).
-    /// - An internal Withdrawal is projected while its matching Core receipt
-    ///   is absent, then dropped so the receipt becomes the single
-    ///   authoritative history row. The placeholder is Pending only until its
-    ///   own persisted activity learns a block height; Core receipt indexing
-    ///   is not required to confirm an already-mined payout. A withdrawal to
-    ///   an EXTERNAL Core address produces no wallet-side Core transaction, so
-    ///   it always stays and renders as a Sent row.
+    /// - An internal Withdrawal is projected as Pending while its matching
+    ///   Core receipt is absent, then dropped so the receipt becomes the
+    ///   single authoritative history row. Only that Core row carries the
+    ///   payout's mined/confirmation state; the shielded activity height is a
+    ///   scan-batch/proof-anchor height. A withdrawal to an EXTERNAL Core
+    ///   address produces no wallet-side Core transaction, so it always stays
+    ///   and renders as a Sent row.
     /// - Rows are deduped by `entryId`: an intra-wallet transfer writes
     ///   a Sent row on the sending account and a Received row on the
     ///   receiving account for the same operation; the outgoing
@@ -1181,11 +1181,12 @@ class SwiftDashSDKWalletSource: TransactionSource {
                         amountCreditsOverride: reconstructedAmountCredits,
                         destinationAddress: address,
                         isAwaitingTransparentReceipt: true)
-                    // Keep a local row during the gap between the shielded
-                    // spend and the asynchronously persisted L1 receipt.
-                    // Its known block height can confirm it independently;
-                    // once a matching receipt exists, suppress the placeholder
-                    // so the operation never renders twice.
+                    // Keep a Pending local row during the gap between the
+                    // shielded spend and the asynchronously persisted L1
+                    // receipt. The shielded row's block height is not evidence
+                    // that the Core payout was mined. Once a matching Core
+                    // receipt exists, suppress this placeholder; the Core row's
+                    // own context/block height then drives its visible state.
                     if hasMatchingCoreReceipt(
                         for: pendingItem,
                         address: address,
