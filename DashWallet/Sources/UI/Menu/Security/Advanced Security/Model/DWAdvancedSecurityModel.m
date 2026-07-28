@@ -17,15 +17,14 @@
 
 #import "DWAdvancedSecurityModel.h"
 
-#import <DashSync/DashSync.h> // DUFFS
-
+#import "DWAmountConstants.h"
 #import "dashwallet-Swift.h"
 
 #import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-uint64_t const DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT = DUFFS / 2;
+uint64_t const DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT = DW_DUFFS_PER_DASH / 2;
 
 @implementation DWAdvancedSecurityModel
 

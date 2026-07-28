@@ -723,7 +723,7 @@ extension HomeViewModel {
 
     /// Formatted leftover amount for the popup message.
     var coinJoinSweepAmountFormatted: String {
-        String(format: "%.6f DASH", Double(coinJoinSweepAmountDuffs) / Double(DUFFS))
+        String(format: "%.6f DASH", Double(coinJoinSweepAmountDuffs) / Double(kOneDash))
     }
 
     private func observeCoinJoinSweep() {
@@ -745,7 +745,7 @@ extension HomeViewModel {
     /// launch until the user sweeps, then self-stops (balance → 0). The durable
     /// Settings row covers the same action for users who dismiss it.
     func maybeShowCoinJoinSweepDialog() {
-        DWLogger.log("CJTEST HomeViewModel: sweep dialog check — \(coinJoinSweepAmountDuffs) duffs (\(String(format: "%.6f", Double(coinJoinSweepAmountDuffs) / Double(DUFFS))) DASH), threshold \(CoinJoinRecovery.recoveryDustThresholdDuffs), above=\(coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
+        DWLogger.log("CJTEST HomeViewModel: sweep dialog check — \(coinJoinSweepAmountDuffs) duffs (\(String(format: "%.6f", Double(coinJoinSweepAmountDuffs) / Double(kOneDash))) DASH), threshold \(CoinJoinRecovery.recoveryDustThresholdDuffs), above=\(coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
         guard !coinJoinSweepDialogShown,
               syncModel.state == .syncDone,
               coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs else { return }

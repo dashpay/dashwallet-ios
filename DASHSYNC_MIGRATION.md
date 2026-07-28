@@ -1,6 +1,6 @@
 # DashSync -> SwiftDashSDK migration status
 
-Current-state ledger for the DashSync removal. Updated 2026-07-27 from the
+Current-state ledger for the DashSync removal. Updated 2026-07-28 from the
 working tree; historical stage-by-stage detail is available in Git history.
 
 This file answers **what is migrated**. Use
@@ -35,7 +35,7 @@ DashSync is still linked for four bounded tails:
    `DSLocalizedString`/`DSUtils`, AppDelegate setup, and project/Podfile link
    entries.
 
-As of this audit, 25 app source files directly import DashSync. Counts of all
+As of this audit, 19 app source files directly import DashSync. Counts of all
 `DS*` tokens are not a useful progress metric because app-owned names such as
 `DSTransactionDirection`, comments, and frozen compatibility contracts are
 included.
@@ -98,7 +98,7 @@ Status meanings:
 | 7 | Transaction detail | Done | None. Uses SDK snapshots and recent-send resolution. |
 | 8 | Send Dash | Done | None. Money movement goes through `WalletSendService` / `SwiftDashSDKTransactionSender`. |
 | 9 | Fee estimation | Done | None. Confirmation uses the transaction builder's fee. |
-| 10 | PIN / biometrics | Done; teardown tail | Remove incidental DashSync imports/constants and retain the byte-compatible app-owned keychain contract. |
+| 10 | PIN / biometrics | Done; teardown tail | Replace the lock screen's DashSync localization/time helper and retain the byte-compatible app-owned keychain contract. |
 | 11 | SPV sync | Done; teardown tail | Core restart/peer rotation is serialized `stopSpv → startSpv` on the existing manager, preserving Platform sync, wallet state and the process-cached per-network `ModelContainer`; clear-and-resync deletes the chain store off MainActor on the next process launch. Remove `setupDashSyncOnce` / `DSOptionsManager` at unlink; the chain-wallet notification is removed separately with C6-E. |
 | 12 | Network switch | Done; teardown tail | Remove the temporary DashSync wallet-registry mirror with C6-E. |
 | 13 | Backup seed phrase | Done | Reads the active SDK wallet mnemonic from host-owned storage. |

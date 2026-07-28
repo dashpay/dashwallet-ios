@@ -47,7 +47,7 @@ struct AmountObject: Equatable {
         self.localFormatter = localFormatter
 
         let dashNumber = Self.decimal(from: dashAmountString, locale: inputLocale) ?? 0
-        let duffsNumber = Decimal(DUFFS)
+        let duffsNumber = Decimal(kOneDash)
         let plainAmount = dashNumber * duffsNumber
 
         self.plainAmount = NSDecimalNumber(decimal: plainAmount.whole).uint64Value
@@ -113,7 +113,7 @@ struct AmountObject: Equatable {
 
     init(plainAmount: UInt64, fiatCurrencyCode: String, localFormatter: NumberFormatter, currencyExchanger: CurrencyExchanger, inputLocale: Locale = .current) {
         let plainNumber = Decimal(plainAmount)
-        let duffsNumber = Decimal(DUFFS)
+        let duffsNumber = Decimal(kOneDash)
         let dashNumber = plainNumber/duffsNumber
         let dashAmounString = Self.dashInputString(from: dashNumber, locale: inputLocale)
 
@@ -125,7 +125,7 @@ extension AmountObject {
     var dashAmount: AmountObject {
         if amountType == .main { return self }
 
-        let dashNumber = Decimal(plainAmount) / Decimal(DUFFS)
+        let dashNumber = Decimal(plainAmount) / Decimal(kOneDash)
         let amountInternalRepresentation = Self.dashInputString(from: dashNumber, locale: inputLocale)
 
         return AmountObject(amountInternalRepresentation: amountInternalRepresentation,

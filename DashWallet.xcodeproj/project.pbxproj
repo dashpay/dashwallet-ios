@@ -2709,6 +2709,7 @@
 		478C983129433C5700FAA0F0 /* PaymentMethodsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentMethodsController.swift; sourceTree = "<group>"; };
 		478C98362943A60000FAA0F0 /* PaymentMethodCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentMethodCell.swift; sourceTree = "<group>"; };
 		478C983B2945801D00FAA0F0 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		DAD0FF5C0000000000000001 /* DWAmountConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWAmountConstants.h; sourceTree = "<group>"; };
 		47976E492987772700612988 /* AmountObjectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountObjectTests.swift; sourceTree = "<group>"; };
 		A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletWipeSerialExecutorTests.swift; sourceTree = "<group>"; };
 		B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWContestedNameStatusServiceTests.swift; sourceTree = "<group>"; };
@@ -6486,6 +6487,7 @@
 				47AF180429070B720025803E /* Types.swift */,
 				471DD1B7290A92CD00E030C8 /* Tools.swift */,
 				478C983B2945801D00FAA0F0 /* Constants.swift */,
+				DAD0FF5C0000000000000001 /* DWAmountConstants.h */,
 				475AE2B82974348F009A1055 /* App.swift */,
 			);
 			path = Application;

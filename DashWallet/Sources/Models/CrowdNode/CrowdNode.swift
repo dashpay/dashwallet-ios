@@ -613,7 +613,7 @@ extension CrowdNode {
 
                     let result = try await webService.getBalance(address: accountAddress)
                     let dashNumber = Decimal(result.totalBalance)
-                    let duffsNumber = Decimal(DUFFS)
+                    let duffsNumber = Decimal(kOneDash)
                     let plainAmount = dashNumber * duffsNumber
                     currentBalance = NSDecimalNumber(decimal: plainAmount).uint64Value
                     prefs.lastKnownBalance = currentBalance

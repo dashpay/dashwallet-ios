@@ -17,8 +17,7 @@
 
 #import "DWBaseAdvancedSecurityModel.h"
 
-#import <DashSync/DashSync.h>
-
+#import "DWAmountConstants.h"
 #import "UIColor+DWStyle.h"
 #import "dashwallet-Swift.h"
 
@@ -102,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray<NSNumber *> *)spendingConfirmationValues {
     if (!_spendingConfirmationValues) {
         // Dash values: 0 / 0.1 / 0.5 / 1 / 5
-        _spendingConfirmationValues = @[ @(0), @(DUFFS / 10), @(DUFFS / 2), @(DUFFS), @(DUFFS * 5) ];
+        _spendingConfirmationValues = @[ @(0), @(DW_DUFFS_PER_DASH / 10), @(DW_DUFFS_PER_DASH / 2), @(DW_DUFFS_PER_DASH), @(DW_DUFFS_PER_DASH * 5) ];
     }
 
     return _spendingConfirmationValues;

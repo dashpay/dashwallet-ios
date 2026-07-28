@@ -151,7 +151,7 @@ extension String {
     func plainDashAmount(locale: Locale? = nil) -> UInt64? {
         guard let dashNumber = Decimal(string: self, locale: locale) else { return nil }
 
-        let duffsNumber = Decimal(DUFFS)
+        let duffsNumber = Decimal(kOneDash)
         let plainAmount = dashNumber * duffsNumber
         let dashAmount = NSDecimalNumber(decimal: plainAmount)
 

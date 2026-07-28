@@ -27,7 +27,7 @@ private var _dashFormatter: NumberFormatter = {
 
     var dashFormat = NumberFormatter.cryptoFormatter(currencyCode: DASH, exponent: maximumFractionDigits)
     dashFormat.locale = Locale.current
-    dashFormat.maximum = (Decimal(MAX_MONEY)/pow(10, maximumFractionDigits)) as NSNumber
+    dashFormat.maximum = (Decimal(kMaxDashSupplyDuffs)/pow(10, maximumFractionDigits)) as NSNumber
 
     return dashFormat
 }()
