@@ -385,7 +385,7 @@ class ExchangeAddressProvider {
     }
 
     private func getUpholdAccessToken() -> String? {
-        getKeychainString("DW_UPHOLD_ACCESS_TOKEN", nil)
+        KeychainStore.string(account: "DW_UPHOLD_ACCESS_TOKEN")
     }
 
     // MARK: - Coinbase

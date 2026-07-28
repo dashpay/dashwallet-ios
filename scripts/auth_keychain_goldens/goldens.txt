@@ -10,3 +10,11 @@ USES_AUTHENTICATION len=8 hex=0100000000000000 pdmn=cku   # int64 LE 1 — endia
 SPEND_LIMIT_AMOUNT absent (errSecItemNotFound -25300)      # limit never set on this wallet;
                                                            # spec accessibility when written: WhenUnlockedThisDeviceOnly (aku)
 BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY len=8 hex=ffffffffffffffff pdmn=cku  # UINT64_MAX = reset-to-NOT_SET sentinel
+
+# Generic app-owned records retain the same DashSync service and per-item
+# accessibility. Coinbase is raw JSON Data; Uphold is UTF-8; global flags are
+# int64 little-endian.
+coinbaseUserAccessKey format=raw-json-data pdmn=cku
+DW_UPHOLD_ACCESS_TOKEN format=utf8 pdmn=aku
+org.dash.wallet.lockscreen-disabled format=int64-le pdmn=cku
+org.dash.wallet.spending-confirmation-disabled format=int64-le pdmn=cku

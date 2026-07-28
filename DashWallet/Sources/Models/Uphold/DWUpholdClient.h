@@ -25,7 +25,6 @@ extern NSString *const DWUpholdClientUserDidLogoutNotification;
 
 @class DWUpholdCardObject;
 @class DWUpholdTransactionObject;
-@class DWUpholdAccountObject;
 
 // TODO: move methods to UpholdClient.swift
 @interface DWUpholdClient : NSObject
@@ -45,20 +44,11 @@ extern NSString *const DWUpholdClientUserDidLogoutNotification;
                                                   address:(NSString *)address
                                                  otpToken:(nullable NSString *)otpToken
                                                completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion;
-- (DWUpholdCancellationToken)createBuyTransactionForDashCard:(DWUpholdCardObject *)card
-                                                     account:(DWUpholdAccountObject *)account
-                                                      amount:(NSString *)amount
-                                                securityCode:(NSString *)securityCode
-                                                    otpToken:(nullable NSString *)otpToken
-                                                  completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion;
 - (void)commitTransaction:(DWUpholdTransactionObject *)transaction
                      card:(DWUpholdCardObject *)card
                  otpToken:(nullable NSString *)otpToken
                completion:(void (^)(BOOL success, BOOL otpRequired))completion;
-- (void)cancelTransaction:(DWUpholdTransactionObject *)transaction
-                     card:(DWUpholdCardObject *)card;
 
-- (nullable NSURL *)buyDashURLForCard:(DWUpholdCardObject *)card;
 - (nullable NSURL *)transactionURLForTransaction:(DWUpholdTransactionObject *)transaction;
 
 - (void)logOut;

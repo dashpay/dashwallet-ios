@@ -24,10 +24,8 @@ private let kStoredUserCoderKey = "kStoredUserCoderKey"
 
 class CBUserManager {
     var storedUser: CBUser? {
-        var error: NSError?
-        let data = getKeychainData(kKeychainUserAccessKey, &error)
-
-        guard error == nil, !data.isEmpty else {
+        guard let data = KeychainStore.data(account: kKeychainUserAccessKey),
+              !data.isEmpty else {
             return nil
         }
 
@@ -37,7 +35,9 @@ class CBUserManager {
 
     @discardableResult
     func removeUser() -> Bool {
-        setKeychainData(nil, kKeychainUserAccessKey, false)
+        KeychainStore.set(data: nil,
+                          account: kKeychainUserAccessKey,
+                          accessibility: .afterFirstUnlockThisDeviceOnly)
     }
 
     @discardableResult
@@ -45,7 +45,9 @@ class CBUserManager {
         let encoder = JSONEncoder()
         let data = try? encoder.encode(user)
 
-        let result = setKeychainData(data, kKeychainUserAccessKey, false)
+        let result = KeychainStore.set(data: data,
+                                       account: kKeychainUserAccessKey,
+                                       accessibility: .afterFirstUnlockThisDeviceOnly)
 
         return result
     }

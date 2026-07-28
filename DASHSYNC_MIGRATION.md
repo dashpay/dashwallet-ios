@@ -30,11 +30,11 @@ DashSync is still linked for four bounded tails:
    the DashSync registry; `DSChainWalletsDidChangeNotification` is still
    observed; `DWEnvironment` mirrors the active SDK wallet when switching
    networks.
-4. **Pod-unlink mechanics and compatibility surfaces** — Uphold networking,
-   DashSync keychain helpers used outside wallet migration,
-   AppDelegate setup, and project/Podfile link entries.
+4. **Pod-unlink mechanics and compatibility surfaces** — profile-avatar
+   networking, AppDelegate setup, and project/Podfile link entries. Coinbase
+   and Uphold keychain access and the reachable Uphold HTTP flows are app-owned.
 
-As of this audit, 15 app source files directly import DashSync. Counts of all
+As of this audit, 12 app source files directly import DashSync. Counts of all
 `DS*` tokens are not a useful progress metric because app-owned names such as
 `DSTransactionDirection`, comments, and frozen compatibility contracts are
 included.
@@ -134,7 +134,7 @@ No DashSync Core Data -> SwiftData copy is required:
 | DashPay contacts and profiles | Re-fetched/projected from Platform into SwiftData. |
 | Transaction metadata, tax categories, gift-card receipts | Already app-owned SQLite data; independent of DashSync. |
 | Mnemonics | Imported from the frozen DashSync keychain contract; see `DASHSYNC_KEY_MIGRATION.md`. |
-| PIN/auth counters and integration tokens | Preserved through app-owned byte-compatible keychain access; final generic helper replacement is an unlink task. |
+| PIN/auth counters and integration tokens | Preserved in place through app-owned, byte-compatible keychain access with the existing service/accounts/accessibility. |
 
 ## Decisions blocking teardown
 

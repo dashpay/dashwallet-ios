@@ -44,6 +44,15 @@ Lockout localization/duration formatting, top-controller lookup, and the secure
 mnemonic allocator are app-owned. Root navigation and wallet recovery no longer
 carry incidental DashSync umbrella imports.
 
+Generic keychain access is app-owned and byte-compatible for authentication,
+Coinbase, Uphold, and global security flags. Existing service/account names and
+per-item accessibility classes are adopted in place with no token migration.
+
+Uphold's reachable OAuth, cards, address, withdrawal, commit, and revoke
+requests use the app-owned Moya/`HTTPClient` stack. The Objective-C client
+remains only as a UI/model compatibility facade; unreachable account, legacy
+buy, and cancel endpoint chains were removed.
+
 The contacts rebuild in PR #787 is complete. Do not describe C10 as “contacts
 pending”; the remaining C10 scope is invitations plus legacy identity/profile
 compatibility types.
@@ -127,8 +136,7 @@ These are active repo tasks, not externally assigned work:
 
 | Surface | Current evidence | Required replacement |
 |---|---|---|
-| Uphold/profile HTTP | `HTTPLoaderManager`, `HTTPLoaderFactory`, `DSNetworkingCoordinator` | App-owned URLSession/Moya boundary preserving bearer and OTP behavior. |
-| Generic keychain helpers | `getKeychainData`, `setKeychainData`, `getKeychainInt` in Coinbase, Uphold, global options | App-owned compatibility shim preserving service/account/accessibility bytes. |
+| Profile avatar HTTP | `DWUploadAvatarModel` uses `HTTPLoaderManager` / `DSNetworkingCoordinator` | App-owned upload boundary preserving progress, cancellation, response parsing, and callback threading. |
 | Logger compatibility | `dwLogLevel` workaround | Revert to normal CocoaLumberjack `ddLogLevel` after DashSync headers disappear. |
 | App startup | `setupDashSyncOnce`, `DSOptionsManager` | Delete once every required service has an app/SDK owner. |
 | Transitive pods | `DSDynamicOptions`, `DWAlertController`, CocoaLumberjack | Keep required libraries directly declared before removing DashSync. `DSDynamicOptions` is already direct for TodayExtension; verify both app targets. |

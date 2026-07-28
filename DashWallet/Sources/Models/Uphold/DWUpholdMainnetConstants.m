@@ -52,10 +52,6 @@ static NSString *DWUpholdInfoPlistValue(NSString *key) {
     return DWUpholdInfoPlistValue(@"CLIENT_SECRET");
 }
 
-+ (NSString *)buyCardURLFormat {
-    return @"https://uphold.com/dashboard/cards/%@/add";
-}
-
 + (NSString *)transactionURLFormat {
     return @"https://uphold.com/reserve/transactions/%@";
 }

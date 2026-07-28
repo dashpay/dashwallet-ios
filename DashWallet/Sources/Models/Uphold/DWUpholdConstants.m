@@ -79,16 +79,6 @@ static NSString *DWUpholdInfoPlistValue(NSString *key) {
     return @"";
 }
 
-+ (NSString *)buyCardURLFormat {
-    if (DWWalletEnvironment.isTestnet) {
-        return @"https://sandbox.uphold.com/dashboard/cards/%@/add";
-    }
-    else if (DWWalletEnvironment.isMainnet) {
-        return [DWUpholdMainnetConstants buyCardURLFormat];
-    }
-    return @"";
-}
-
 + (NSString *)transactionURLFormat {
     if (DWWalletEnvironment.isTestnet) {
         return @"https://sandbox.uphold.com/reserve/transactions/%@";

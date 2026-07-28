@@ -213,12 +213,42 @@ class CancellableWrapper: Moya.Cancellable {
         }
     }
 
-    internal var innerCancellable: Moya.Cancellable = SimpleCancellable()
+    private let lock = NSLock()
+    private var cancellationRequested = false
+    private var _innerCancellable: Moya.Cancellable = SimpleCancellable()
 
-    var isCancelled: Bool { innerCancellable.isCancelled }
+    internal var innerCancellable: Moya.Cancellable {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return _innerCancellable
+        }
+        set {
+            lock.lock()
+            _innerCancellable = newValue
+            let shouldCancel = cancellationRequested
+            lock.unlock()
+
+            // `request` installs the real Moya token asynchronously. Preserve
+            // an earlier cancellation instead of losing it to the placeholder.
+            if shouldCancel {
+                newValue.cancel()
+            }
+        }
+    }
+
+    var isCancelled: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return cancellationRequested || _innerCancellable.isCancelled
+    }
 
     internal func cancel() {
-        innerCancellable.cancel()
+        lock.lock()
+        cancellationRequested = true
+        let cancellable = _innerCancellable
+        lock.unlock()
+        cancellable.cancel()
     }
 }
 
