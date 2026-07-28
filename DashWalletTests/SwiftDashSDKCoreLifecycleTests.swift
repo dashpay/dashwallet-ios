@@ -261,6 +261,36 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 poolFeeCredits: 212_851_000),
             212_852)
     }
+
+    func testShieldedSpendableBalanceSubtractsFeeReserve() {
+        XCTAssertEqual(
+            ShieldedSpendAmountPolicy.spendableCredits(
+                balanceCredits: 10_000_000_000,
+                feeReserveCredits: 2_000_000_000),
+            8_000_000_000)
+        XCTAssertEqual(
+            ShieldedSpendAmountPolicy.spendableCredits(
+                balanceCredits: 1_000_000_000,
+                feeReserveCredits: 2_000_000_000),
+            0)
+    }
+
+    func testShieldedInsufficientBalanceMessageUsesSpendableAmount() {
+        let message = ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+            requestedCredits: 8_000_000_001,
+            balanceCredits: 10_000_000_000,
+            feeReserveCredits: 2_000_000_000)
+
+        XCTAssertNotNil(message)
+        XCTAssertTrue(
+            message?.contains("0.08 DASH") == true
+                || message?.contains("0,08 DASH") == true)
+        XCTAssertNil(
+            ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+                requestedCredits: 8_000_000_000,
+                balanceCredits: 10_000_000_000,
+                feeReserveCredits: 2_000_000_000))
+    }
 }
 
 final class JoinDashPayRegistrationPolicyTests: XCTestCase {
