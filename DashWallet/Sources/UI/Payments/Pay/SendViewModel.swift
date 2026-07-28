@@ -343,19 +343,6 @@ final class SendViewModel: ObservableObject {
         CurrencyExchanger.shared.fiatAmountString(for: parsedDashAmount)
     }
 
-    var primaryCurrencySymbol: String {
-        NumberFormatter.fiatFormatter.currencySymbol ?? ""
-    }
-
-    var secondaryDisplayString: String {
-        switch unit {
-        case .dash:
-            return CurrencyExchanger.shared.fiatAmountString(for: parsedDashAmount)
-        case .fiat:
-            return parsedDashAmount.formattedDashAmount
-        }
-    }
-
     var fiatCurrencyCode: String {
         App.fiatCurrency
     }
