@@ -17,8 +17,6 @@
 
 #import "DWInitialViewController.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWAppRootViewController.h"
 #import "DWEnvironment.h"
 #import "DWGlobalOptions.h"

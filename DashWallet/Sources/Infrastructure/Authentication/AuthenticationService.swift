@@ -339,6 +339,19 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
             secureTime: secureTime)
     }
 
+    @objc var lockoutErrorMessage: String {
+        if failCount >= LockoutPolicy.maxFailCount {
+            return NSLocalizedString(
+                "Wallet disabled. Recover with your recovery phrase.",
+                comment: "PIN permanent lockout")
+        }
+
+        let formatted = DWDurationFormatter.string(from: lockoutWaitTime)
+        return String(
+            format: NSLocalizedString("Try again in %@", comment: "PIN lockout"),
+            formatted)
+    }
+
     // MARK: Biometric policy
 
     @objc var biometryType: LABiometryType {

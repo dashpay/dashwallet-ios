@@ -1,6 +1,21 @@
 import Foundation
 import Network
 
+@objc(DWDurationFormatter)
+final class DWDurationFormatter: NSObject {
+    @objc(stringFromTimeInterval:)
+    static func string(from timeInterval: TimeInterval) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute, .second]
+        formatter.unitsStyle = .full
+        formatter.maximumUnitCount = 1
+
+        let wholeSeconds = max(0, floor(timeInterval))
+        return formatter.string(from: wholeSeconds)
+            ?? String(format: NSLocalizedString("%ld second(s)", comment: ""), Int(wholeSeconds))
+    }
+}
+
 class TimeUtils {
     private static var lastTimeWhenSkewChecked: Int64 = 0
     private static var lastTimeSkew: TimeInterval = 0

@@ -17,10 +17,9 @@
 
 #import "DWRecoverContentView.h"
 
-#import <DashSync/DashSync.h>
-
 #import "DWRecoverModel.h"
 #import "DWRecoverTextView.h"
+#import "DWSecureAllocator.h"
 #import "DWSeedUIConstants.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
@@ -190,7 +189,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         NSArray<NSString *> *words = CFBridgingRelease(
             CFStringCreateArrayBySeparatingStrings(
-                SecureAllocator(), (CFStringRef)phrase,
+                DWSecureAllocator(), (CFStringRef)phrase,
                 CFSTR(" ")));
 
         for (NSString *word in words) {
