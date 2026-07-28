@@ -205,6 +205,41 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             refreshInFlight: true))
     }
 
+    func testStoppedPlatformSyncRequiresRuntimeRearm() {
+        XCTAssertTrue(
+            PlatformSyncRearmPolicy.requiresRuntimeRearm(
+                isRunning: false,
+                hasWalletManager: false))
+        XCTAssertTrue(
+            PlatformSyncRearmPolicy.requiresRuntimeRearm(
+                isRunning: true,
+                hasWalletManager: false))
+        XCTAssertFalse(
+            PlatformSyncRearmPolicy.requiresRuntimeRearm(
+                isRunning: true,
+                hasWalletManager: true))
+    }
+
+    func testWalletWithoutPlatformPaymentAccountUsesNeutralState() {
+        let availability = PlatformAccountAvailabilityPolicy.resolve(
+            hasWalletRecord: true,
+            hasPlatformPaymentAccount: false)
+
+        XCTAssertEqual(availability, .unavailable)
+        XCTAssertNil(
+            PlatformSyncStatusPresentationPolicy.visibleError(
+                availability: availability,
+                lastError: "Platform wallet not configured"))
+    }
+
+    func testMissingWalletRecordRemainsUnknownInsteadOfClaimingNoPlatformWallet() {
+        XCTAssertEqual(
+            PlatformAccountAvailabilityPolicy.resolve(
+                hasWalletRecord: false,
+                hasPlatformPaymentAccount: false),
+            .unknown)
+    }
+
     func testPlatformActivityConvertsCreditsToDuffsBeforeMatchingUnshield() {
         let creditedAmount: UInt64 = 10_000_000_000
 

@@ -121,6 +121,18 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: true) }
     }
 
+    /// Rebuild the shared runtime through the same serialized lifecycle used
+    /// at launch and after wallet recovery, then return only when Platform
+    /// sync is bound again (or the start has failed). Sync Info uses this to
+    /// turn "Sync Now" into a real in-session recovery action after Stop or a
+    /// recover-time binding race.
+    func rearmPlatformSync() async {
+        let task = enqueueAwaitable { [weak self] in
+            await self?.refresh(trigger: .platformSyncRearm)
+        }
+        await task.value
+    }
+
     /// Restart Core SPV to dial a fresh peer set ("sync too slow? change
     /// peers"). Shares the exact Core-only restart operation with the
     /// diagnostics screen.
@@ -364,7 +376,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             // network, so `currentNetwork == network` would otherwise wrongly
             // elide the rebind.
             return false
-        case .startIfReady, .networkDidChange:
+        case .startIfReady, .networkDidChange, .platformSyncRearm:
             // External callers (PlatformSyncStatusScreen, StorageExplorerUnavailableView,
             // the Platform send path) can mutate BLAST without touching
             // `currentNetwork`, so consult the live coordinator state too — otherwise
@@ -432,6 +444,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         case networkDidChange
         case walletMaterialChanged
         case walletDidChange
+        case platformSyncRearm
     }
 
     enum RuntimeError: LocalizedError {
