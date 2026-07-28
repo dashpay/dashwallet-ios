@@ -339,3 +339,45 @@ final class JoinDashPayRegistrationPolicyTests: XCTestCase {
                 legacyUsername: "testnet-alice"))
     }
 }
+
+final class JoinDashPayBannerPolicyTests: XCTestCase {
+    func testDismissalHidesBannerBeforeIdentityExists() {
+        XCTAssertFalse(
+            JoinDashPayBannerPolicy.shouldShow(
+                contextReady: true,
+                syncDone: true,
+                dismissed: true,
+                hasRegisteredUsername: false,
+                hasRegistrationInProgress: false))
+    }
+
+    func testEligibleUndismissedWalletShowsBanner() {
+        XCTAssertTrue(
+            JoinDashPayBannerPolicy.shouldShow(
+                contextReady: true,
+                syncDone: true,
+                dismissed: false,
+                hasRegisteredUsername: false,
+                hasRegistrationInProgress: false))
+    }
+
+    func testDismissalStorageIsScopedByNetworkAndWallet() {
+        let testnetWalletA = JoinDashPayDismissalScope.storageKey(
+            networkRawValue: WalletEnvironment.NetworkKind.testnet.rawValue,
+            walletIdHex: "wallet-a")
+        let mainnetWalletA = JoinDashPayDismissalScope.storageKey(
+            networkRawValue: WalletEnvironment.NetworkKind.mainnet.rawValue,
+            walletIdHex: "wallet-a")
+        let testnetWalletB = JoinDashPayDismissalScope.storageKey(
+            networkRawValue: WalletEnvironment.NetworkKind.testnet.rawValue,
+            walletIdHex: "wallet-b")
+
+        XCTAssertNotEqual(testnetWalletA, mainnetWalletA)
+        XCTAssertNotEqual(testnetWalletA, testnetWalletB)
+        XCTAssertEqual(
+            testnetWalletA,
+            JoinDashPayDismissalScope.storageKey(
+                networkRawValue: WalletEnvironment.NetworkKind.testnet.rawValue,
+                walletIdHex: "wallet-a"))
+    }
+}

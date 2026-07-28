@@ -1655,6 +1655,22 @@ enum JoinDashPayRegistrationPolicy {
     }
 }
 
+enum JoinDashPayBannerPolicy {
+    static func shouldShow(
+        contextReady: Bool,
+        syncDone: Bool,
+        dismissed: Bool,
+        hasRegisteredUsername: Bool,
+        hasRegistrationInProgress: Bool
+    ) -> Bool {
+        contextReady &&
+            syncDone &&
+            !dismissed &&
+            !hasRegisteredUsername &&
+            !hasRegistrationInProgress
+    }
+}
+
 // MARK: - DashPay
 
 #if DASHPAY
@@ -1675,20 +1691,19 @@ extension HomeViewModel {
             sdkUsername: identityState.username,
             legacyRegistrationCompleted: options.dashpayRegistrationCompleted,
             legacyUsername: options.dashpayUsername)
-        // Dismissal and registration-progress prefs predate network-scoped
-        // identity storage. They may still describe the previous network, so
-        // they can suppress the banner only when this network has an identity.
-        let identityScopedDismissal =
-            identityState.hasIdentity && UsernamePrefs.shared.joinDashPayDismissed
+        // Dismissal is persisted per active wallet + network. It is valid
+        // before an identity exists and remains valid when readiness is
+        // re-evaluated or the user leaves and returns to this network.
         let identityScopedRegistrationState =
             identityState.hasIdentity &&
             (joinDashPayState == .voting || joinDashPayState == .registered)
 
-        self.showJoinDashpay = identityState.contextReady &&
-            syncModel.state == .syncDone &&
-            !identityScopedDismissal &&
-            !hasRegisteredUsername &&
-            !identityScopedRegistrationState
+        self.showJoinDashpay = JoinDashPayBannerPolicy.shouldShow(
+            contextReady: identityState.contextReady,
+            syncDone: syncModel.state == .syncDone,
+            dismissed: UsernamePrefs.shared.joinDashPayDismissed,
+            hasRegisteredUsername: hasRegisteredUsername,
+            hasRegistrationInProgress: identityScopedRegistrationState)
     }
     
     private func observeDashPay() {
