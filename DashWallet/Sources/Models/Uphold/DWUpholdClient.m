@@ -40,6 +40,16 @@ static BOOL DWUpholdStatusRequiresOTP(UpholdAPIResponseStatus status) {
     return status == UpholdAPIResponseStatusOtpRequired || status == UpholdAPIResponseStatusOtpInvalid;
 }
 
+@interface DWUpholdNoopCancellationToken : NSObject <DWUpholdClientCancellationToken>
+@end
+
+@implementation DWUpholdNoopCancellationToken
+
+- (void)cancel {
+}
+
+@end
+
 @interface DWUpholdClient ()
 
 @property (nullable, copy, nonatomic) NSString *upholdState;
@@ -133,10 +143,18 @@ static BOOL DWUpholdStatusRequiresOTP(UpholdAPIResponseStatus status) {
 }
 
 - (void)getCards:(void (^)(DWUpholdCardObject *_Nullable dashCard, NSArray<DWUpholdCardObject *> *fiatCards))completion {
-    NSParameterAssert(self.accessToken);
+    NSString *accessToken = self.accessToken;
+    if (!accessToken) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(nil, @[]);
+            }
+        });
+        return;
+    }
 
     __weak typeof(self) weakSelf = self;
-    [[UpholdClientObjcBridge shared] getCardsWithAccessToken:self.accessToken
+    [[UpholdClientObjcBridge shared] getCardsWithAccessToken:accessToken
                                                   completion:^(NSArray<NSDictionary *> *_Nullable response, UpholdAPIResponseStatus statusCode) {
                                                       __strong typeof(weakSelf) strongSelf = weakSelf;
                                                       if (!strongSelf) {
@@ -228,17 +246,26 @@ static BOOL DWUpholdStatusRequiresOTP(UpholdAPIResponseStatus status) {
                                                   address:(NSString *)address
                                                  otpToken:(nullable NSString *)otpToken
                                                completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion {
-    NSParameterAssert(self.accessToken);
     NSParameterAssert(card);
     NSParameterAssert(amount);
     NSParameterAssert(address);
+
+    NSString *accessToken = self.accessToken;
+    if (!accessToken) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(nil, NO);
+            }
+        });
+        return [[DWUpholdNoopCancellationToken alloc] init];
+    }
 
     __weak typeof(self) weakSelf = self;
     return [[UpholdClientObjcBridge shared] createTransactionWithCardIdentifier:card.identifier
                                                                          amount:amount
                                                                         address:address
                                                                        otpToken:otpToken
-                                                                    accessToken:self.accessToken
+                                                                    accessToken:accessToken
                                                                      completion:^(NSDictionary *_Nullable response, UpholdAPIResponseStatus statusCode) {
                                                                          __strong typeof(weakSelf) strongSelf = weakSelf;
                                                                          if (!strongSelf) {
@@ -261,15 +288,24 @@ static BOOL DWUpholdStatusRequiresOTP(UpholdAPIResponseStatus status) {
                      card:(DWUpholdCardObject *)card
                  otpToken:(nullable NSString *)otpToken
                completion:(void (^)(BOOL success, BOOL otpRequired))completion {
-    NSParameterAssert(self.accessToken);
     NSParameterAssert(transaction);
     NSParameterAssert(card);
+
+    NSString *accessToken = self.accessToken;
+    if (!accessToken) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(NO, NO);
+            }
+        });
+        return;
+    }
 
     __weak typeof(self) weakSelf = self;
     [[UpholdClientObjcBridge shared] commitTransactionWithCardIdentifier:card.identifier
                                                    transactionIdentifier:transaction.identifier
                                                                 otpToken:otpToken
-                                                             accessToken:self.accessToken
+                                                             accessToken:accessToken
                                                               completion:^(NSDictionary *_Nullable response, UpholdAPIResponseStatus statusCode) {
                                                                   __strong typeof(weakSelf) strongSelf = weakSelf;
                                                                   if (!strongSelf) {
@@ -307,10 +343,18 @@ static BOOL DWUpholdStatusRequiresOTP(UpholdAPIResponseStatus status) {
 #pragma mark - Private
 
 - (void)createDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion {
-    NSParameterAssert(self.accessToken);
+    NSString *accessToken = self.accessToken;
+    if (!accessToken) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(nil);
+            }
+        });
+        return;
+    }
 
     __weak typeof(self) weakSelf = self;
-    [[UpholdClientObjcBridge shared] createDashCardWithAccessToken:self.accessToken
+    [[UpholdClientObjcBridge shared] createDashCardWithAccessToken:accessToken
                                                         completion:^(NSDictionary *_Nullable response, UpholdAPIResponseStatus statusCode) {
                                                             __strong typeof(weakSelf) strongSelf = weakSelf;
                                                             if (!strongSelf) {
@@ -336,13 +380,22 @@ static BOOL DWUpholdStatusRequiresOTP(UpholdAPIResponseStatus status) {
 }
 
 - (void)createDashCardAddress:(DWUpholdCardObject *)card completion:(void (^)(DWUpholdCardObject *_Nullable card))completion {
-    NSParameterAssert(self.accessToken);
     NSParameterAssert(card);
     NSAssert(!card.address, @"Card has address already");
 
+    NSString *accessToken = self.accessToken;
+    if (!accessToken) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(nil);
+            }
+        });
+        return;
+    }
+
     __weak typeof(self) weakSelf = self;
     [[UpholdClientObjcBridge shared] createAddressWithCardIdentifier:card.identifier
-                                                         accessToken:self.accessToken
+                                                         accessToken:accessToken
                                                           completion:^(NSDictionary *_Nullable response, UpholdAPIResponseStatus statusCode) {
                                                               __strong typeof(weakSelf) strongSelf = weakSelf;
                                                               if (!strongSelf) {

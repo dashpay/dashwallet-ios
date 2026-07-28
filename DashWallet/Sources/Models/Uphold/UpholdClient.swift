@@ -169,14 +169,34 @@ final class UpholdClient: HTTPClient<UpholdEndpoint> {
     case failed
 }
 
+fileprivate final class UpholdRequestCancellationState {
+    private let lock = NSLock()
+    private var cancellationRequested = false
+
+    var isCancelled: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return cancellationRequested
+    }
+
+    func cancel() {
+        lock.lock()
+        cancellationRequested = true
+        lock.unlock()
+    }
+}
+
 @objc final class UpholdRequestCancellationToken: NSObject, DWUpholdClientCancellationToken {
     private let cancellable: Cancellable
+    private let state: UpholdRequestCancellationState
 
-    init(cancellable: Cancellable) {
+    fileprivate init(cancellable: Cancellable, state: UpholdRequestCancellationState) {
         self.cancellable = cancellable
+        self.state = state
     }
 
     @objc func cancel() {
+        state.cancel()
         cancellable.cancel()
     }
 }
@@ -271,16 +291,19 @@ final class UpholdClient: HTTPClient<UpholdEndpoint> {
 
     private func perform(_ endpoint: UpholdEndpoint,
                          completion: @escaping (Any?, UpholdAPIResponseStatus) -> Void) -> UpholdRequestCancellationToken {
+        let cancellationState = UpholdRequestCancellationState()
         let cancellable = client.request(endpoint) { result in
+            guard !cancellationState.isCancelled else { return }
+
             let response: Moya.Response
             switch result {
             case .success(let successfulResponse):
                 response = successfulResponse
             case .failure(.statusCode(let failedResponse)):
                 response = failedResponse
-            case .failure(let error):
-                guard !Self.isCancellation(error) else { return }
+            case .failure:
                 DispatchQueue.main.async {
+                    guard !cancellationState.isCancelled else { return }
                     completion(nil, .failed)
                 }
                 return
@@ -289,10 +312,11 @@ final class UpholdClient: HTTPClient<UpholdEndpoint> {
             let object = try? JSONSerialization.jsonObject(with: response.data, options: .allowFragments)
             let status = Self.status(for: response, object: object)
             DispatchQueue.main.async {
+                guard !cancellationState.isCancelled else { return }
                 completion(object, status)
             }
         }
-        return UpholdRequestCancellationToken(cancellable: cancellable)
+        return UpholdRequestCancellationToken(cancellable: cancellable, state: cancellationState)
     }
 
     private static func status(for response: Moya.Response, object: Any?) -> UpholdAPIResponseStatus {
@@ -318,15 +342,5 @@ final class UpholdClient: HTTPClient<UpholdEndpoint> {
             return .otpInvalid
         }
         return .unauthorized
-    }
-
-    private static func isCancellation(_ error: HTTPClientError) -> Bool {
-        guard case .moya(let moyaError) = error,
-              case .underlying(let underlyingError, _) = moyaError else {
-            return false
-        }
-
-        let nsError = underlyingError as NSError
-        return nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled
     }
 }
