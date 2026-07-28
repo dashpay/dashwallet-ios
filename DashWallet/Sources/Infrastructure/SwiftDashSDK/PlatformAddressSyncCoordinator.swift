@@ -69,6 +69,31 @@ struct ShieldedSyncFreshnessPolicy {
     }
 }
 
+enum PlatformAccountAvailability: Equatable {
+    case unknown
+    case available
+    case unavailable
+}
+
+struct PlatformAccountAvailabilityPolicy {
+    static func resolve(
+        hasWalletRecord: Bool,
+        hasPlatformPaymentAccount: Bool
+    ) -> PlatformAccountAvailability {
+        guard hasWalletRecord else { return .unknown }
+        return hasPlatformPaymentAccount ? .available : .unavailable
+    }
+}
+
+struct PlatformSyncRearmPolicy {
+    static func requiresRuntimeRearm(
+        isRunning: Bool,
+        hasWalletManager: Bool
+    ) -> Bool {
+        !isRunning || !hasWalletManager
+    }
+}
+
 @MainActor
 @objc(DWPlatformAddressSyncCoordinator)
 public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
@@ -94,6 +119,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     @Published public private(set) var isClearing: Bool = false
     @Published public private(set) var lastSyncTime: Date? = nil
     @Published public private(set) var lastError: String? = nil
+    @Published private(set) var platformAccountAvailability: PlatformAccountAvailability = .unknown
 
     @Published public private(set) var platformBalance: UInt64 = 0
     @Published public private(set) var shieldedBalance: UInt64 = 0
@@ -241,13 +267,41 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     public func syncNow() async {
         guard !isSyncing else { return }
+
+        if PlatformSyncRearmPolicy.requiresRuntimeRearm(
+            isRunning: isRunning,
+            hasWalletManager: walletManager != nil
+        ) {
+            lastError = nil
+            await SwiftDashSDKWalletRuntime.shared.rearmPlatformSync()
+        }
+
         guard let manager = walletManager else {
-            lastError = "Platform wallet not configured"
+            // A missing SDK wallet is a valid post-wipe state, not a Platform
+            // sync failure. When wallet material does exist, the serialized
+            // runtime re-arm above owns the concrete start error and leaves it
+            // in `lastError`. A wallet that exists without a Platform Payment
+            // account is handled by `platformAccountAvailability`.
+            if !WalletEnvironment.hasSDKWallet {
+                platformAccountAvailability = .unavailable
+                lastError = nil
+            } else if platformAccountAvailability != .unavailable && lastError == nil {
+                lastError = "Platform sync could not be started"
+            }
             return
         }
-        isSyncing = true
-        lastError = nil
+
+        // Re-arming starts the background loop as part of binding the runtime.
+        // Its seeded publisher may have flipped this while we were awaiting
+        // the lifecycle queue, so do not launch a competing one-shot sync.
+        guard !isSyncing else { return }
+
         do {
+            if try !manager.isPlatformAddressSyncRunning() {
+                try manager.startPlatformAddressSync()
+            }
+            isSyncing = true
+            lastError = nil
             try await manager.syncPlatformAddressNow()
         } catch {
             isSyncing = false
@@ -654,13 +708,24 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             return
         }
 
-        let addressWallet: ManagedPlatformAddressWallet
+        let accountAvailability = resolvePlatformAccountAvailability(
+            walletId: resolvedWallet.walletId)
+        let addressWallet: ManagedPlatformAddressWallet?
         do {
             addressWallet = try resolvedWallet.platformAddressWallet()
         } catch {
-            Self.logger.error("🛰️ PLATFORM-ADDR :: platformAddressWallet() failed: \(String(describing: error), privacy: .public)")
-            lastError = "platformAddressWallet failed: \(error.localizedDescription)"
-            return
+            if accountAvailability == .unavailable {
+                // A wallet can legitimately have Shielded state without a
+                // DIP-17 Platform Payment account. Keep the shared manager
+                // alive for Shielded/DashPay and expose a neutral UI state.
+                addressWallet = nil
+                Self.logger.info(
+                    "🛰️ PLATFORM-ADDR :: no Platform Payment account; continuing without address wallet")
+            } else {
+                Self.logger.error("🛰️ PLATFORM-ADDR :: platformAddressWallet() failed: \(String(describing: error), privacy: .public)")
+                lastError = "platformAddressWallet failed: \(error.localizedDescription)"
+                return
+            }
         }
 
         // Seed from persisted state before kicking the sync loop, so the UI has
@@ -722,6 +787,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         self.walletManager = manager
         self.wallet = resolvedWallet
         self.platformAddressWallet = addressWallet
+        self.platformAccountAvailability = accountAvailability
         self.runningNetwork = network
         self.isRunning = true
         self.lastError = nil
@@ -839,6 +905,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         sdk = nil
         runningNetwork = nil
         isRunning = false
+        platformAccountAvailability = .unknown
         clearDisplay()
     }
 
@@ -1216,6 +1283,33 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     // MARK: - Helpers
+
+    private func resolvePlatformAccountAvailability(
+        walletId: Data
+    ) -> PlatformAccountAvailability {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            return .unknown
+        }
+
+        var descriptor = FetchDescriptor<PersistentWallet>(
+            predicate: #Predicate { $0.walletId == walletId })
+        descriptor.fetchLimit = 1
+
+        do {
+            guard let walletRow = try container.mainContext.fetch(descriptor).first else {
+                return PlatformAccountAvailabilityPolicy.resolve(
+                    hasWalletRecord: false,
+                    hasPlatformPaymentAccount: false)
+            }
+            return PlatformAccountAvailabilityPolicy.resolve(
+                hasWalletRecord: true,
+                hasPlatformPaymentAccount: walletRow.accounts.contains { $0.accountType == 14 })
+        } catch {
+            Self.logger.warning(
+                "🛰️ PLATFORM-ADDR :: platform-account availability lookup failed: \(String(describing: error), privacy: .public)")
+            return .unknown
+        }
+    }
 
     private func resolveCurrentNetwork() -> Network? {
         WalletEnvironment.network
