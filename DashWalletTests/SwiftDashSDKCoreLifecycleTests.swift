@@ -291,6 +291,33 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 balanceCredits: 10_000_000_000,
                 feeReserveCredits: 2_000_000_000))
     }
+
+    func testKnownBlockConfirmsWithdrawalBeforeCoreReceiptProjectionArrives() {
+        XCTAssertEqual(
+            ShieldedActivityItem.Status.projected(
+                persistedRawValue: ShieldedActivityItem.Status.pending.rawValue,
+                hasBlockHeight: true,
+                isAwaitingTransparentReceipt: true),
+            .confirmed)
+    }
+
+    func testWithdrawalWithoutBlockRemainsPendingWhileAwaitingCoreReceipt() {
+        XCTAssertEqual(
+            ShieldedActivityItem.Status.projected(
+                persistedRawValue: ShieldedActivityItem.Status.confirmed.rawValue,
+                hasBlockHeight: false,
+                isAwaitingTransparentReceipt: true),
+            .pending)
+    }
+
+    func testNonReceiptProjectionPreservesPersistedShieldedStatus() {
+        XCTAssertEqual(
+            ShieldedActivityItem.Status.projected(
+                persistedRawValue: ShieldedActivityItem.Status.failed.rawValue,
+                hasBlockHeight: false,
+                isAwaitingTransparentReceipt: false),
+            .failed)
+    }
 }
 
 final class JoinDashPayRegistrationPolicyTests: XCTestCase {

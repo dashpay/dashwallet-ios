@@ -26,8 +26,9 @@
 //  Kinds whose Core leg is already a history row are not projected twice:
 //  ShieldFromAssetLock is always omitted because its Core asset-lock spend
 //  renders via `Transaction.isShieldedTransfer`. An internal Withdrawal is
-//  temporarily projected as Pending until its Core receipt appears, then
-//  matched by destination, amount, and time and replaced by that receipt.
+//  temporarily projected until its Core receipt appears, then matched by
+//  destination, amount, and time and replaced by that receipt. The projection
+//  is Pending only while neither side has observed a block.
 //
 
 import Foundation
@@ -64,6 +65,25 @@ struct ShieldedActivityItem: Identifiable {
         case pending = 0
         case confirmed = 1
         case failed = 2
+
+        /// Derive the visible status without waiting for the matching Core
+        /// receipt row to enter the general transaction history. A persisted
+        /// block height is direct evidence that the L1 payout was mined, so it
+        /// must advance an awaiting receipt from Pending to Confirmed even if
+        /// shielded/nullifier reconciliation is still catching up.
+        static func projected(
+            persistedRawValue: Int,
+            hasBlockHeight: Bool,
+            isAwaitingTransparentReceipt: Bool
+        ) -> Status {
+            if hasBlockHeight {
+                return .confirmed
+            }
+            if isAwaitingTransparentReceipt {
+                return .pending
+            }
+            return Status(rawValue: persistedRawValue) ?? .confirmed
+        }
     }
 
     let entryId: Data
@@ -94,7 +114,8 @@ struct ShieldedActivityItem: Identifiable {
     /// True for the temporary Shielded → Transparent row shown after the
     /// shielded spend is recorded but before its matching Core receipt is
     /// persisted. The row is replaced by the real Core transaction once it
-    /// arrives, so the history never has a silent post-spend gap.
+    /// arrives, so the history never has a silent post-spend gap. It can
+    /// already be Confirmed when the shielded activity has a known block.
     let isAwaitingTransparentReceipt: Bool
 
     var id: String {
@@ -117,9 +138,10 @@ struct ShieldedActivityItem: Identifiable {
         accountIndex = row.accountIndex
         kind = effectiveKind
         direction = Direction(rawValue: row.direction) ?? .selfTransfer
-        status = isAwaitingTransparentReceipt
-            ? .pending
-            : Status(rawValue: row.status) ?? .confirmed
+        status = Status.projected(
+            persistedRawValue: row.status,
+            hasBlockHeight: row.hasBlockHeight,
+            isAwaitingTransparentReceipt: isAwaitingTransparentReceipt)
         amountDuffs = (amountCreditsOverride ?? row.amount) / 1000
         feeDuffs = row.hasFee ? row.fee / 1000 : nil
         blockHeight = row.hasBlockHeight ? row.blockHeight : nil
