@@ -86,13 +86,20 @@ struct DashSpendConfirmationDialog: View {
 
                     detailsRow(title: NSLocalizedString("To", comment: "DashSpend")) {
                         HStack(spacing: 8) {
-                            WebImage(url: URL(string: merchantIconUrl))
-                                .resizable()
-                                .indicator(.activity)
-                                .transition(.fade(duration: 0.3))
-                                .scaledToFit()
-                                .frame(width: 20, height: 20)
-                                .clipShape(RoundedRectangle(cornerRadius: 7))
+                            // The placeholder stands in while loading and on failure, so a
+                            // missing or broken icon URL still shows the merchant's initials.
+                            WebImage(url: URL(string: merchantIconUrl)) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                            } placeholder: {
+                                // Rounded-rect clip (below), so the text may fill almost the
+                                // whole box — same fraction as the other rounded-rect sites.
+                                MerchantLogoPlaceholder(merchantName: merchantName, usableFraction: 0.84)
+                            }
+                            .transition(.fade(duration: 0.3))
+                            .frame(width: 20, height: 20)
+                            .clipShape(RoundedRectangle(cornerRadius: 7))
                             Text(merchantName)
                                 .font(.subhead)
                                 .foregroundColor(.primaryText)

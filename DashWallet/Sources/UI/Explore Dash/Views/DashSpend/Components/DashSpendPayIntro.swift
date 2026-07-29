@@ -47,9 +47,9 @@ struct DashSpendPayIntro: View {
                 .scaledToFit()
                 .clipShape(Circle())
         } placeholder: {
-            // No icon yet (missing URL or still loading): show a grey circle of the same size.
-            Circle()
-                .fill(Color.gray300Alpha50)
+            // No icon yet (missing URL or still loading): show the generated name placeholder.
+            MerchantLogoPlaceholder(merchantName: merchantTitle)
+                .clipShape(Circle())
         }
         .frame(width: Layout.merchantIconSize, height: Layout.merchantIconSize)
     }

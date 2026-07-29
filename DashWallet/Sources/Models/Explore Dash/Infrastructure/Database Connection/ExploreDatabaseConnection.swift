@@ -49,6 +49,13 @@ class ExploreDatabaseConnection {
 
             // Add test merchant after database sync for TestFlight builds
             #if DEBUG || Testflight
+            // The database was just replaced on disk (a version update, or a re-download
+            // forced by a mainnet/testnet switch), so the file may no longer contain the
+            // test merchants even though they were seeded earlier this session. Clear the
+            // once-per-session guard so seeding re-evaluates against the new file; the
+            // count check inside `addPiggyCardsTestMerchants` still avoids redundant
+            // trigger churn when they are already present.
+            self?.didInsertTestMerchants = false
             self?.addTestMerchantAfterSync()
             #endif
         }
