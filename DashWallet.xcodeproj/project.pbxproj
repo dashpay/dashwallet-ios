@@ -261,7 +261,6 @@
 		2A9FFDF52230FF1A00956D5F /* SFSafariViewController+DashWallet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDF22230FF1A00956D5F /* SFSafariViewController+DashWallet.m */; };
 		2A9FFE032230FF2B00956D5F /* DWUpholdTransactionObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDFD2230FF2B00956D5F /* DWUpholdTransactionObject.m */; };
 		2A9FFE042230FF2B00956D5F /* DWUpholdConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFDFF2230FF2B00956D5F /* DWUpholdConstants.m */; };
-		2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE002230FF2B00956D5F /* DWUpholdAPIProvider.m */; };
 		2A9FFE062230FF2B00956D5F /* DWUpholdCardObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE012230FF2B00956D5F /* DWUpholdCardObject.m */; };
 		2A9FFE072230FF2B00956D5F /* DWUpholdClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE022230FF2B00956D5F /* DWUpholdClient.m */; };
 		2A9FFE7E2230FF4600956D5F /* DWSelectorFormCellModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE2A2230FF4600956D5F /* DWSelectorFormCellModel.m */; };
@@ -279,7 +278,6 @@
 		2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */; };
 		2A9FFF192233E56E00956D5F /* DWIntrinsicTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF072233E56E00956D5F /* DWIntrinsicTableView.m */; };
 		2A9FFF272233E5D000956D5F /* DWDecimalInputValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF252233E5CF00956D5F /* DWDecimalInputValidator.m */; };
-		2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF292233E60F00956D5F /* DWUpholdAccountObject.m */; };
 		2AA87CFA26E5681100F0CEA6 /* DWCurrencyObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AA87CF926E5681100F0CEA6 /* DWCurrencyObject.m */; };
 		2AB3415E23A8133A004E37A7 /* DWPayModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3415D23A8133A004E37A7 /* DWPayModelStub.m */; };
 		2AB3416223A81E8B004E37A7 /* DWReceiveModelStub.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AB3416123A81E8B004E37A7 /* DWReceiveModelStub.m */; };
@@ -1352,7 +1350,6 @@
 		C9D2C6B22A320AA000D15901 /* UISpringTimingParameters+DWInit.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69D92314727F001B8C90 /* UISpringTimingParameters+DWInit.m */; };
 		C9D2C6B62A320AA000D15901 /* NumberKeyboardButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */; };
 		C9D2C6B72A320AA000D15901 /* IsDefaultEmail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11AE3DD72997C599000856EE /* IsDefaultEmail.swift */; };
-		C9D2C6BA2A320AA000D15901 /* DWUpholdAccountObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFF292233E60F00956D5F /* DWUpholdAccountObject.m */; };
 		C9D2C6BB2A320AA000D15901 /* DWFormTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE2E2230FF4600956D5F /* DWFormTableViewController.m */; };
 		C9D2C6BC2A320AA000D15901 /* WalletKeysOverviewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909614C29EFF7D600002D82 /* WalletKeysOverviewModel.swift */; };
 		C9D2C6BD2A320AA000D15901 /* UIAssembly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751137428DAF28800223B77 /* UIAssembly.swift */; };
@@ -1497,7 +1494,6 @@
 		C9D2C75E2A320AA000D15901 /* KeyboardHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1193FF3829606151004EA8D7 /* KeyboardHeader.swift */; };
 		C9D2C75F2A320AA000D15901 /* DWUpholdOTPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE542230FF4600956D5F /* DWUpholdOTPViewController.m */; };
 		C9D2C7602A320AA000D15901 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
-		C9D2C7622A320AA000D15901 /* DWUpholdAPIProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE002230FF2B00956D5F /* DWUpholdAPIProvider.m */; };
 		C9D2C7642A320AA000D15901 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
 		C9D2C7662A320AA000D15901 /* CrowdNodeRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119E8D0329051F9900D406C1 /* CrowdNodeRequest.swift */; };
 		C9D2C7672A320AA000D15901 /* CoinbaseExchangeRateResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAF28C896BC000427E7 /* CoinbaseExchangeRateResponse.swift */; };
@@ -2424,14 +2420,12 @@
 		2A9FFDF22230FF1A00956D5F /* SFSafariViewController+DashWallet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "SFSafariViewController+DashWallet.m"; sourceTree = "<group>"; };
 		2A9FFDF72230FF2B00956D5F /* DWUpholdTransactionObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdTransactionObject.h; sourceTree = "<group>"; };
 		2A9FFDF82230FF2B00956D5F /* DWUpholdCardObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdCardObject.h; sourceTree = "<group>"; };
-		2A9FFDF92230FF2B00956D5F /* DWUpholdAPIProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdAPIProvider.h; sourceTree = "<group>"; };
 		2A9FFDFA2230FF2B00956D5F /* DWUpholdConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdConstants.h; sourceTree = "<group>"; };
 		2A9FFDFB2230FF2B00956D5F /* DWUpholdCardObject+Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DWUpholdCardObject+Internal.h"; sourceTree = "<group>"; };
 		2A9FFDFC2230FF2B00956D5F /* DWUpholdClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdClient.h; sourceTree = "<group>"; };
 		2A9FFDFD2230FF2B00956D5F /* DWUpholdTransactionObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdTransactionObject.m; sourceTree = "<group>"; };
 		2A9FFDFE2230FF2B00956D5F /* DWUpholdClientCancellationToken.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdClientCancellationToken.h; sourceTree = "<group>"; };
 		2A9FFDFF2230FF2B00956D5F /* DWUpholdConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdConstants.m; sourceTree = "<group>"; };
-		2A9FFE002230FF2B00956D5F /* DWUpholdAPIProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdAPIProvider.m; sourceTree = "<group>"; };
 		2A9FFE012230FF2B00956D5F /* DWUpholdCardObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdCardObject.m; sourceTree = "<group>"; };
 		2A9FFE022230FF2B00956D5F /* DWUpholdClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdClient.m; sourceTree = "<group>"; };
 		2A9FFE282230FF4600956D5F /* DWSelectorFormCellModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWSelectorFormCellModel.h; sourceTree = "<group>"; };
@@ -2463,8 +2457,6 @@
 		2A9FFF242233E5CF00956D5F /* DWDecimalInputValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDecimalInputValidator.h; sourceTree = "<group>"; };
 		2A9FFF252233E5CF00956D5F /* DWDecimalInputValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDecimalInputValidator.m; sourceTree = "<group>"; };
 		2A9FFF262233E5D000956D5F /* DWInputValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInputValidator.h; sourceTree = "<group>"; };
-		2A9FFF282233E60F00956D5F /* DWUpholdAccountObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdAccountObject.h; sourceTree = "<group>"; };
-		2A9FFF292233E60F00956D5F /* DWUpholdAccountObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdAccountObject.m; sourceTree = "<group>"; };
 		2A9FFF40223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Interface.strings; sourceTree = "<group>"; };
 		2A9FFF41223654D300956D5F /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2AA08533237D6CF500797F95 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
@@ -5271,10 +5263,6 @@
 				7531308C2B47EC910069C9B7 /* UpholdClient.swift */,
 				FB8ACEB422E0502100EE5035 /* DWUpholdMainnetConstants.h */,
 				FB8ACEB522E0502100EE5035 /* DWUpholdMainnetConstants.m */,
-				2A9FFF282233E60F00956D5F /* DWUpholdAccountObject.h */,
-				2A9FFF292233E60F00956D5F /* DWUpholdAccountObject.m */,
-				2A9FFDF92230FF2B00956D5F /* DWUpholdAPIProvider.h */,
-				2A9FFE002230FF2B00956D5F /* DWUpholdAPIProvider.m */,
 				2A9FFDF82230FF2B00956D5F /* DWUpholdCardObject.h */,
 				2A9FFE012230FF2B00956D5F /* DWUpholdCardObject.m */,
 				2A9FFDFB2230FF2B00956D5F /* DWUpholdCardObject+Internal.h */,
@@ -9703,7 +9691,6 @@
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
 				47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */,
 				11AE3DD82997C599000856EE /* IsDefaultEmail.swift in Sources */,
-				2A9FFF2A2233E60F00956D5F /* DWUpholdAccountObject.m in Sources */,
 				75A2F3042DE48C860046BE17 /* CTXSpendTokenService.swift in Sources */,
 				2A9FFE812230FF4700956D5F /* DWFormTableViewController.m in Sources */,
 				C909614D29EFF7D600002D82 /* WalletKeysOverviewModel.swift in Sources */,
@@ -9903,7 +9890,6 @@
 				1193FF3929606151004EA8D7 /* KeyboardHeader.swift in Sources */,
 				2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */,
 				2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */,
-				2A9FFE052230FF2B00956D5F /* DWUpholdAPIProvider.m in Sources */,
 				C94D98282A53035D00F3BEE1 /* EnterAddressViewController.swift in Sources */,
 				47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */,
 				119E8D0429051F9900D406C1 /* CrowdNodeRequest.swift in Sources */,
@@ -10572,7 +10558,6 @@
 				C9D2C6B62A320AA000D15901 /* NumberKeyboardButton.swift in Sources */,
 				C9D2C6B72A320AA000D15901 /* IsDefaultEmail.swift in Sources */,
 				750CEFA42CCA713300E87A32 /* CreateUsernameViewController.swift in Sources */,
-				C9D2C6BA2A320AA000D15901 /* DWUpholdAccountObject.m in Sources */,
 				C9D2C6BB2A320AA000D15901 /* DWFormTableViewController.m in Sources */,
 				C943B34D2A40A4C500AF23C5 /* DWInfoPopupViewController.m in Sources */,
 				75F990822AFD1065006759AB /* UsernameRequestDetailsViewController.swift in Sources */,
@@ -10851,7 +10836,6 @@
 				AA0030222FD0000000000022 /* CoinbaseMetadataProvider.swift in Sources */,
 				C943B3362A408CED00AF23C5 /* DWEditProfileBaseCell.m in Sources */,
 				C930784A2A6AD52400906E4B /* UpholdConfirmTransferModel.swift in Sources */,
-				C9D2C7622A320AA000D15901 /* DWUpholdAPIProvider.m in Sources */,
 				C943B5102A40A54600AF23C5 /* DWSendInviteFirstStepViewController.m in Sources */,
 				C943B50C2A40A54600AF23C5 /* DPAlertViewController+DWInvite.m in Sources */,
 				C943B3352A408CED00AF23C5 /* DWEditProfileTextViewCell.m in Sources */,

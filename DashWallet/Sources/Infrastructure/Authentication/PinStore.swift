@@ -28,13 +28,13 @@
 import Foundation
 import Security
 
-// MARK: - PinCodec (pure byte contract)
+// MARK: - KeychainCodec (pure byte contract)
 
 /// Value ↔ bytes, exactly as DashSync's `setKeychainString`/`setKeychainInt`
 /// produce them (NSData+Dash.m): UTF-8 external representation without BOM;
 /// `*(int64_t *)bytes = value` — native endianness (little-endian on every
 /// supported platform).
-enum PinCodec {
+enum KeychainCodec {
     static func encode(string: String) -> Data {
         Data(string.utf8)
     }
@@ -51,6 +51,154 @@ enum PinCodec {
     static func decodeInt64(_ data: Data) -> Int64? {
         guard data.count == MemoryLayout<Int64>.size else { return nil }
         return data.withUnsafeBytes { $0.loadUnaligned(as: Int64.self) }.littleEndian
+    }
+}
+
+/// Keep the authentication-facing name used by the frozen golden harness.
+typealias PinCodec = KeychainCodec
+
+// MARK: - KeychainStore
+
+/// App-owned access to the generic-password records historically written by
+/// DashSync's NSData+Dash helpers. This adopts the existing records in place:
+/// callers provide the same service/account/accessibility and no migration or
+/// copy is performed.
+enum KeychainStore {
+    static let dashService = "org.dashfoundation.dash"
+
+    enum Accessibility {
+        case whenUnlockedThisDeviceOnly
+        case afterFirstUnlockThisDeviceOnly
+
+        fileprivate var securityValue: CFString {
+            switch self {
+            case .whenUnlockedThisDeviceOnly:
+                return kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            case .afterFirstUnlockThisDeviceOnly:
+                return kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+            }
+        }
+    }
+
+    static func data(service: String = dashService, account: String) -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecReturnData as String: true,
+        ]
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        guard status == errSecSuccess, let data = result as? Data else { return nil }
+        return data
+    }
+
+    static func string(service: String = dashService, account: String) -> String? {
+        data(service: service, account: account).flatMap(KeychainCodec.decodeString)
+    }
+
+    /// Matches `getKeychainInt`: a missing or malformed item reads as zero.
+    static func int64(service: String = dashService, account: String) -> Int64 {
+        data(service: service, account: account).flatMap(KeychainCodec.decodeInt64) ?? 0
+    }
+
+    @discardableResult
+    static func set(data: Data?,
+                    service: String = dashService,
+                    account: String,
+                    accessibility: Accessibility) -> Bool {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+        ]
+
+        guard let data else {
+            let status = SecItemDelete(query as CFDictionary)
+            return status == errSecSuccess || status == errSecItemNotFound
+        }
+
+        if SecItemCopyMatching(query as CFDictionary, nil) == errSecItemNotFound {
+            var attributes = query
+            attributes[kSecAttrAccessible as String] = accessibility.securityValue
+            attributes[kSecValueData as String] = data
+            return SecItemAdd(attributes as CFDictionary, nil) == errSecSuccess
+        }
+
+        let update: [String: Any] = [
+            kSecAttrAccessible as String: accessibility.securityValue,
+            kSecValueData as String: data,
+        ]
+        return SecItemUpdate(query as CFDictionary, update as CFDictionary) == errSecSuccess
+    }
+
+    @discardableResult
+    static func set(string: String?,
+                    service: String = dashService,
+                    account: String,
+                    accessibility: Accessibility) -> Bool {
+        set(data: string.map { KeychainCodec.encode(string: $0) },
+            service: service,
+            account: account,
+            accessibility: accessibility)
+    }
+
+    @discardableResult
+    static func set(int64: Int64,
+                    service: String = dashService,
+                    account: String,
+                    accessibility: Accessibility) -> Bool {
+        set(data: KeychainCodec.encode(int64: int64),
+            service: service,
+            account: account,
+            accessibility: accessibility)
+    }
+}
+
+/// Narrow Objective-C boundary for the two remaining ObjC consumers.
+@objc final class DWKeychainStore: NSObject {
+    private static func accessibility(authenticated: Bool) -> KeychainStore.Accessibility {
+        authenticated ? .whenUnlockedThisDeviceOnly : .afterFirstUnlockThisDeviceOnly
+    }
+
+    @objc(dataForAccount:)
+    static func data(forAccount account: String) -> Data? {
+        KeychainStore.data(account: account)
+    }
+
+    @objc(stringForAccount:)
+    static func string(forAccount account: String) -> String? {
+        KeychainStore.string(account: account)
+    }
+
+    @objc(int64ForAccount:)
+    static func int64(forAccount account: String) -> Int64 {
+        KeychainStore.int64(account: account)
+    }
+
+    @objc(setData:forAccount:authenticated:)
+    @discardableResult
+    static func set(data: Data?, forAccount account: String, authenticated: Bool) -> Bool {
+        KeychainStore.set(data: data,
+                          account: account,
+                          accessibility: accessibility(authenticated: authenticated))
+    }
+
+    @objc(setString:forAccount:authenticated:)
+    @discardableResult
+    static func set(string: String?, forAccount account: String, authenticated: Bool) -> Bool {
+        KeychainStore.set(string: string,
+                          account: account,
+                          accessibility: accessibility(authenticated: authenticated))
+    }
+
+    @objc(setInt64:forAccount:authenticated:)
+    @discardableResult
+    static func set(int64: Int64, forAccount account: String, authenticated: Bool) -> Bool {
+        KeychainStore.set(int64: int64,
+                          account: account,
+                          accessibility: accessibility(authenticated: authenticated))
     }
 }
 
@@ -108,7 +256,7 @@ enum LockoutPolicy {
 /// check covers the I/O.
 enum PinStore {
     /// Same constant `SwiftDashSDKKeyMigrator.dashSyncService` reads.
-    static let service = "org.dashfoundation.dash"
+    static let service = KeychainStore.dashService
 
     enum Account: String {
         case pin
@@ -118,26 +266,16 @@ enum PinStore {
         case spendingLimit = "SPEND_LIMIT_AMOUNT"
         case biometricAmountLeft = "BIOMETRIC_ALLOWED_AMOUNT_LEFT_KEY"
 
-        /// DashSync's `authenticated:` flag per item: only the spending
-        /// limit uses the stricter class (DSAuthenticationManager.m:337).
-        var accessibility: CFString {
-            switch self {
-            case .spendingLimit:
-                return kSecAttrAccessibleWhenUnlockedThisDeviceOnly
-            default:
-                return kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-            }
-        }
     }
 
     // MARK: Typed accessors
 
     static func string(for account: Account) -> String? {
-        readData(account: account).flatMap(PinCodec.decodeString)
+        KeychainStore.string(account: account.rawValue)
     }
 
     static func int64(for account: Account) -> Int64? {
-        readData(account: account).flatMap(PinCodec.decodeInt64)
+        readData(account: account).flatMap(KeychainCodec.decodeInt64)
     }
 
     static func hasValue(for account: Account) -> Bool {
@@ -146,23 +284,23 @@ enum PinStore {
 
     @discardableResult
     static func set(string: String, for account: Account) -> Bool {
-        writeData(PinCodec.encode(string: string), account: account)
+        KeychainStore.set(string: string,
+                          account: account.rawValue,
+                          accessibility: account.keychainAccessibility)
     }
 
     @discardableResult
     static func set(int64 value: Int64, for account: Account) -> Bool {
-        writeData(PinCodec.encode(int64: value), account: account)
+        KeychainStore.set(int64: value,
+                          account: account.rawValue,
+                          accessibility: account.keychainAccessibility)
     }
 
     @discardableResult
     static func delete(account: Account) -> Bool {
-        let query: [String: Any] = [
-            kSecClass as String:       kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account.rawValue,
-        ]
-        let status = SecItemDelete(query as CFDictionary)
-        return status == errSecSuccess || status == errSecItemNotFound
+        KeychainStore.set(data: nil,
+                          account: account.rawValue,
+                          accessibility: account.keychainAccessibility)
     }
 
     // MARK: Raw I/O
@@ -175,39 +313,17 @@ enum PinStore {
     /// also the primitive behind `SwiftDashSDKKeyMigrator`'s mnemonic reads
     /// (promoted here so the byte-level keychain query exists exactly once).
     static func readData(service: String, account: String) -> Data? {
-        let query: [String: Any] = [
-            kSecClass as String:       kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecMatchLimit as String:  kSecMatchLimitOne,
-            kSecReturnData as String:  true,
-        ]
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess, let data = result as? Data else { return nil }
-        return data
+        KeychainStore.data(service: service, account: account)
     }
+}
 
-    /// Add-if-missing, else update-in-place with the accessibility class in
-    /// the update dictionary — the exact shape of DashSync's
-    /// `setKeychainData` (NSData+Dash.m:38-73), so no transient no-item
-    /// window exists during a write.
-    private static func writeData(_ data: Data, account: Account) -> Bool {
-        let query: [String: Any] = [
-            kSecClass as String:       kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account.rawValue,
-        ]
-        if SecItemCopyMatching(query as CFDictionary, nil) == errSecItemNotFound {
-            var attributes = query
-            attributes[kSecAttrAccessible as String] = account.accessibility
-            attributes[kSecValueData as String] = data
-            return SecItemAdd(attributes as CFDictionary, nil) == errSecSuccess
+private extension PinStore.Account {
+    var keychainAccessibility: KeychainStore.Accessibility {
+        switch self {
+        case .spendingLimit:
+            return .whenUnlockedThisDeviceOnly
+        default:
+            return .afterFirstUnlockThisDeviceOnly
         }
-        let update: [String: Any] = [
-            kSecAttrAccessible as String: account.accessibility,
-            kSecValueData as String:      data,
-        ]
-        return SecItemUpdate(query as CFDictionary, update as CFDictionary) == errSecSuccess
     }
 }

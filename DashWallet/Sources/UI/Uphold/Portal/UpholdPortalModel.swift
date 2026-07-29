@@ -133,14 +133,6 @@ final class UpholdPortalModel: BaseIntegrationModel {
         checkCapabilities()
     }
 
-    var buyDashURL: URL? {
-        guard let dashCard else {
-            return nil
-        }
-
-        return DWUpholdClient.sharedInstance().buyDashURL(forCard: dashCard)
-    }
-    
     override func logIn(callbackUrl: URL?) {
         guard let url = callbackUrl else { return }
         

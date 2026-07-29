@@ -17,12 +17,11 @@
 
 #import "DWUpholdClient.h"
 
-#import "DWUpholdAPIProvider.h"
-#import "DWUpholdAccountObject.h"
+#import "DWUpholdCardObject+Internal.h"
 #import "DWUpholdCardObject.h"
 #import "DWUpholdConstants.h"
 #import "DWUpholdTransactionObject.h"
-#import <DashSync/DashSync.h>
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,6 +29,26 @@ static NSString *const UPHOLD_ACCESS_TOKEN = @"DW_UPHOLD_ACCESS_TOKEN";
 static NSString *const UPHOLD_LAST_KNOWN_BALANCE = @"UPHOLD_LAST_KNOWN_BALANCE";
 
 NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDidLogoutNotification";
+
+static NSSet<NSString *> *FiatCurrencyCodes(void) {
+    return [NSSet setWithObjects:
+                      @"ARS", @"AUD", @"BRL", @"CAD", @"DKK", @"AED", @"EUR", @"HKD", @"INR", @"ILS", @"KES",
+                      @"MXN", @"NZD", @"NOK", @"PHP", @"PLN", @"GBP", @"SGD", @"SEK", @"CHF", @"USD", @"JPY", @"CNY", nil];
+}
+
+static BOOL DWUpholdStatusRequiresOTP(UpholdAPIResponseStatus status) {
+    return status == UpholdAPIResponseStatusOtpRequired || status == UpholdAPIResponseStatusOtpInvalid;
+}
+
+@interface DWUpholdNoopCancellationToken : NSObject <DWUpholdClientCancellationToken>
+@end
+
+@implementation DWUpholdNoopCancellationToken
+
+- (void)cancel {
+}
+
+@end
 
 @interface DWUpholdClient ()
 
@@ -53,7 +72,7 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _accessToken = getKeychainString(UPHOLD_ACCESS_TOKEN, nil);
+        _accessToken = [DWKeychainStore stringForAccount:UPHOLD_ACCESS_TOKEN];
     }
     return self;
 }
@@ -102,74 +121,124 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
     }
 
     __weak typeof(self) weakSelf = self;
-    [DWUpholdAPIProvider authOperationWithCode:code
-                                    completion:^(NSString *_Nullable accessToken) {
-                                        __strong typeof(weakSelf) strongSelf = weakSelf;
-                                        if (!strongSelf) {
-                                            return;
-                                        }
+    [[UpholdClientObjcBridge shared] authorizeWithCode:code
+                                            completion:^(NSString *_Nullable accessToken) {
+                                                __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                if (!strongSelf) {
+                                                    return;
+                                                }
 
-                                        strongSelf.accessToken = accessToken;
-                                        if (accessToken) {
-                                            setKeychainString(accessToken, UPHOLD_ACCESS_TOKEN, YES);
-                                            strongSelf.lastAccessDate = [NSDate date];
-                                        }
+                                                strongSelf.accessToken = accessToken;
+                                                if (accessToken) {
+                                                    [DWKeychainStore setString:accessToken
+                                                                    forAccount:UPHOLD_ACCESS_TOKEN
+                                                                 authenticated:YES];
+                                                    strongSelf.lastAccessDate = [NSDate date];
+                                                }
 
-                                        if (completion) {
-                                            completion(!!accessToken);
-                                        }
-                                    }];
+                                                if (completion) {
+                                                    completion(!!accessToken);
+                                                }
+                                            }];
 }
 
 - (void)getCards:(void (^)(DWUpholdCardObject *_Nullable dashCard, NSArray<DWUpholdCardObject *> *fiatCards))completion {
-    NSParameterAssert(self.accessToken);
+    NSString *accessToken = self.accessToken;
+    if (!accessToken) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(nil, @[]);
+            }
+        });
+        return;
+    }
 
     __weak typeof(self) weakSelf = self;
-    [DWUpholdAPIProvider getCardsAccessToken:self.accessToken
-                                  completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable dashCard, NSArray<DWUpholdCardObject *> *fiatCards) {
-                                      __strong typeof(weakSelf) strongSelf = weakSelf;
-                                      if (!strongSelf) {
-                                          return;
-                                      }
+    [[UpholdClientObjcBridge shared] getCardsWithAccessToken:accessToken
+                                                  completion:^(NSArray<NSDictionary *> *_Nullable response, UpholdAPIResponseStatus statusCode) {
+                                                      __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                      if (!strongSelf) {
+                                                          return;
+                                                      }
 
-                                      NSAssert(statusCode != DWUpholdAPIProviderResponseStatusCodeOTPRequired, @"OTP shouldn't be required here");
+                                                      NSAssert(statusCode != UpholdAPIResponseStatusOtpRequired, @"OTP shouldn't be required here");
 
-                                      if (success) {
-                                          if (dashCard) {
-                                              [strongSelf setLastKnownBalance:dashCard.available];
+                                                      NSMutableArray<DWUpholdCardObject *> *dashCards = [NSMutableArray array];
+                                                      NSMutableArray<DWUpholdCardObject *> *fiatCards = [NSMutableArray array];
+                                                      NSSet<NSString *> *fiatCurrencyCodes = FiatCurrencyCodes();
+                                                      for (NSDictionary *dictionary in response) {
+                                                          if (![dictionary isKindOfClass:NSDictionary.class]) {
+                                                              break;
+                                                          }
 
-                                              if (!dashCard.address) {
-                                                  [strongSelf createDashCardAddress:dashCard
-                                                                         completion:^(DWUpholdCardObject *_Nullable card) {
-                                                                             if (completion) {
-                                                                                 completion(card, fiatCards);
-                                                                             }
-                                                                         }];
-                                              }
-                                              else {
-                                                  if (completion) {
-                                                      completion(dashCard, fiatCards);
-                                                  }
-                                              }
-                                          }
-                                          else {
-                                              [strongSelf createDashCard:^(DWUpholdCardObject *_Nullable card) {
-                                                  if (completion) {
-                                                      completion(card, fiatCards);
-                                                  }
-                                              }];
-                                          }
-                                      }
-                                      else {
-                                          if (completion) {
-                                              completion(nil, @[]);
-                                          }
+                                                          NSString *currency = dictionary[@"currency"];
+                                                          if (![currency isKindOfClass:NSString.class]) {
+                                                              break;
+                                                          }
 
-                                          if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
-                                              [strongSelf performLogOutShouldNotifyObservers:YES];
-                                          }
-                                      }
-                                  }];
+                                                          currency = currency.uppercaseString;
+                                                          DWUpholdCardObject *card = [[DWUpholdCardObject alloc] initWithDictionary:dictionary];
+                                                          if ([currency isEqualToString:@"DASH"]) {
+                                                              if (card) {
+                                                                  [dashCards addObject:card];
+                                                              }
+                                                          }
+                                                          else if ([fiatCurrencyCodes containsObject:currency] &&
+                                                                   card &&
+                                                                   (card.available.doubleValue > 0.0 ||
+                                                                    [currency isEqualToString:@"USD"] ||
+                                                                    [currency isEqualToString:@"EUR"])) {
+                                                              [fiatCards addObject:card];
+                                                          }
+                                                      }
+
+                                                      NSArray<NSSortDescriptor *> *sortDescriptors = @[
+                                                          [NSSortDescriptor sortDescriptorWithKey:@"starred"
+                                                                                        ascending:NO],
+                                                          [NSSortDescriptor sortDescriptorWithKey:@"available"
+                                                                                        ascending:NO],
+                                                          [NSSortDescriptor sortDescriptorWithKey:@"position"
+                                                                                        ascending:YES],
+                                                      ];
+                                                      [dashCards sortUsingDescriptors:sortDescriptors];
+                                                      DWUpholdCardObject *dashCard = dashCards.firstObject;
+
+                                                      if (response && statusCode == UpholdAPIResponseStatusOk) {
+                                                          if (dashCard) {
+                                                              [strongSelf setLastKnownBalance:dashCard.available];
+
+                                                              if (!dashCard.address) {
+                                                                  [strongSelf createDashCardAddress:dashCard
+                                                                                         completion:^(DWUpholdCardObject *_Nullable card) {
+                                                                                             if (completion) {
+                                                                                                 completion(card, fiatCards);
+                                                                                             }
+                                                                                         }];
+                                                              }
+                                                              else {
+                                                                  if (completion) {
+                                                                      completion(dashCard, fiatCards);
+                                                                  }
+                                                              }
+                                                          }
+                                                          else {
+                                                              [strongSelf createDashCard:^(DWUpholdCardObject *_Nullable card) {
+                                                                  if (completion) {
+                                                                      completion(card, fiatCards);
+                                                                  }
+                                                              }];
+                                                          }
+                                                      }
+                                                      else {
+                                                          if (completion) {
+                                                              completion(nil, @[]);
+                                                          }
+
+                                                          if (statusCode == UpholdAPIResponseStatusUnauthorized) {
+                                                              [strongSelf performLogOutShouldNotifyObservers:YES];
+                                                          }
+                                                      }
+                                                  }];
 }
 
 - (DWUpholdCancellationToken)createTransactionForDashCard:(DWUpholdCardObject *)card
@@ -177,138 +246,82 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
                                                   address:(NSString *)address
                                                  otpToken:(nullable NSString *)otpToken
                                                completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion {
-    NSParameterAssert(self.accessToken);
     NSParameterAssert(card);
     NSParameterAssert(amount);
     NSParameterAssert(address);
 
-    __weak typeof(self) weakSelf = self;
-    return [DWUpholdAPIProvider createTransactionForDashCard:card
-                                                      amount:amount
-                                                     address:address
-                                                 accessToken:self.accessToken
-                                                    otpToken:otpToken
-                                                  completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdTransactionObject *_Nullable transaction) {
-                                                      __strong typeof(weakSelf) strongSelf = weakSelf;
-                                                      if (!strongSelf) {
-                                                          return;
-                                                      }
-
-                                                      if (completion) {
-                                                          BOOL otpRequired = (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPRequired) ||
-                                                                             (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPInvalid);
-                                                          completion(success ? transaction : nil, otpRequired);
-                                                      }
-
-                                                      if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
-                                                          [strongSelf performLogOutShouldNotifyObservers:YES];
-                                                      }
-                                                  }];
-}
-
-- (DWUpholdCancellationToken)createBuyTransactionForDashCard:(DWUpholdCardObject *)card
-                                                     account:(DWUpholdAccountObject *)account
-                                                      amount:(NSString *)amount
-                                                securityCode:(NSString *)securityCode
-                                                    otpToken:(nullable NSString *)otpToken
-                                                  completion:(void (^)(DWUpholdTransactionObject *_Nullable transaction, BOOL otpRequired))completion {
-    NSParameterAssert(self.accessToken);
-    NSParameterAssert(card);
-    NSParameterAssert(account);
-    NSParameterAssert(amount);
-    NSParameterAssert(securityCode);
+    NSString *accessToken = self.accessToken;
+    if (!accessToken) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(nil, NO);
+            }
+        });
+        return [[DWUpholdNoopCancellationToken alloc] init];
+    }
 
     __weak typeof(self) weakSelf = self;
-    return [DWUpholdAPIProvider createBuyTransactionForDashCard:card
-                                                        account:account
-                                                         amount:amount
-                                                   securityCode:securityCode
-                                                    accessToken:self.accessToken
-                                                       otpToken:otpToken
-                                                     completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdTransactionObject *_Nullable transaction) {
-                                                         __strong typeof(weakSelf) strongSelf = weakSelf;
-                                                         if (!strongSelf) {
-                                                             return;
-                                                         }
+    return [[UpholdClientObjcBridge shared] createTransactionWithCardIdentifier:card.identifier
+                                                                         amount:amount
+                                                                        address:address
+                                                                       otpToken:otpToken
+                                                                    accessToken:accessToken
+                                                                     completion:^(NSDictionary *_Nullable response, UpholdAPIResponseStatus statusCode) {
+                                                                         __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                         if (!strongSelf) {
+                                                                             return;
+                                                                         }
 
-                                                         if (completion) {
-                                                             BOOL otpRequired = (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPRequired) ||
-                                                                                (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPInvalid);
-                                                             completion(success ? transaction : nil, otpRequired);
-                                                         }
+                                                                         DWUpholdTransactionObject *transaction =
+                                                                             [[DWUpholdTransactionObject alloc] initWithDictionary:response];
+                                                                         if (completion) {
+                                                                             completion(transaction, DWUpholdStatusRequiresOTP(statusCode));
+                                                                         }
 
-                                                         if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
-                                                             [strongSelf performLogOutShouldNotifyObservers:YES];
-                                                         }
-                                                     }];
+                                                                         if (statusCode == UpholdAPIResponseStatusUnauthorized) {
+                                                                             [strongSelf performLogOutShouldNotifyObservers:YES];
+                                                                         }
+                                                                     }];
 }
 
 - (void)commitTransaction:(DWUpholdTransactionObject *)transaction
                      card:(DWUpholdCardObject *)card
                  otpToken:(nullable NSString *)otpToken
                completion:(void (^)(BOOL success, BOOL otpRequired))completion {
-    NSParameterAssert(self.accessToken);
     NSParameterAssert(transaction);
     NSParameterAssert(card);
 
-    __weak typeof(self) weakSelf = self;
-    [DWUpholdAPIProvider commitTransaction:transaction
-                                      card:card
-                               accessToken:self.accessToken
-                                  otpToken:otpToken
-                                completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode) {
-                                    __strong typeof(weakSelf) strongSelf = weakSelf;
-                                    if (!strongSelf) {
-                                        return;
-                                    }
-
-                                    if (completion) {
-                                        BOOL otpRequired = (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPRequired) ||
-                                                           (statusCode == DWUpholdAPIProviderResponseStatusCodeOTPInvalid);
-                                        completion(success, otpRequired);
-                                    }
-
-                                    if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
-                                        [strongSelf performLogOutShouldNotifyObservers:YES];
-                                    }
-                                }];
-}
-
-- (void)cancelTransaction:(DWUpholdTransactionObject *)transaction
-                     card:(DWUpholdCardObject *)card {
-    NSParameterAssert(self.accessToken);
-    NSParameterAssert(transaction);
-    NSParameterAssert(card);
-
-    __weak typeof(self) weakSelf = self;
-    [DWUpholdAPIProvider cancelTransaction:transaction
-                                      card:card
-                               accessToken:self.accessToken
-                                  otpToken:nil
-                                completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode) {
-                                    __strong typeof(weakSelf) strongSelf = weakSelf;
-                                    if (!strongSelf) {
-                                        return;
-                                    }
-
-                                    NSAssert(statusCode != DWUpholdAPIProviderResponseStatusCodeOTPRequired, @"OTP shouldn't be required here");
-
-                                    if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
-                                        [strongSelf performLogOutShouldNotifyObservers:YES];
-                                    }
-                                }];
-}
-
-- (nullable NSURL *)buyDashURLForCard:(DWUpholdCardObject *)card {
-    if (!card.identifier) {
-        return nil;
+    NSString *accessToken = self.accessToken;
+    if (!accessToken) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(NO, NO);
+            }
+        });
+        return;
     }
 
-    NSString *urlString = [NSString stringWithFormat:[DWUpholdConstants buyCardURLFormat], card.identifier];
-    NSURL *url = [NSURL URLWithString:urlString];
-    NSParameterAssert(url);
+    __weak typeof(self) weakSelf = self;
+    [[UpholdClientObjcBridge shared] commitTransactionWithCardIdentifier:card.identifier
+                                                   transactionIdentifier:transaction.identifier
+                                                                otpToken:otpToken
+                                                             accessToken:accessToken
+                                                              completion:^(NSDictionary *_Nullable response, UpholdAPIResponseStatus statusCode) {
+                                                                  __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                                  if (!strongSelf) {
+                                                                      return;
+                                                                  }
 
-    return url;
+                                                                  DWUpholdTransactionObject *responseTransaction =
+                                                                      [[DWUpholdTransactionObject alloc] initWithDictionary:response];
+                                                                  if (completion) {
+                                                                      completion(responseTransaction != nil, DWUpholdStatusRequiresOTP(statusCode));
+                                                                  }
+
+                                                                  if (statusCode == UpholdAPIResponseStatusUnauthorized) {
+                                                                      [strongSelf performLogOutShouldNotifyObservers:YES];
+                                                                  }
+                                                              }];
 }
 
 - (nullable NSURL *)transactionURLForTransaction:(DWUpholdTransactionObject *)transaction {
@@ -330,57 +343,80 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
 #pragma mark - Private
 
 - (void)createDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion {
-    NSParameterAssert(self.accessToken);
+    NSString *accessToken = self.accessToken;
+    if (!accessToken) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(nil);
+            }
+        });
+        return;
+    }
 
     __weak typeof(self) weakSelf = self;
-    [DWUpholdAPIProvider createDashCardAccessToken:self.accessToken
-                                        completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable card) {
-                                            __strong typeof(weakSelf) strongSelf = weakSelf;
-                                            if (!strongSelf) {
-                                                return;
-                                            }
+    [[UpholdClientObjcBridge shared] createDashCardWithAccessToken:accessToken
+                                                        completion:^(NSDictionary *_Nullable response, UpholdAPIResponseStatus statusCode) {
+                                                            __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                            if (!strongSelf) {
+                                                                return;
+                                                            }
 
-                                            NSAssert(statusCode != DWUpholdAPIProviderResponseStatusCodeOTPRequired, @"OTP shouldn't be required here");
+                                                            NSAssert(statusCode != UpholdAPIResponseStatusOtpRequired, @"OTP shouldn't be required here");
 
-                                            if (success && card) {
-                                                [strongSelf createDashCardAddress:card completion:completion];
-                                            }
-                                            else {
-                                                if (completion) {
-                                                    completion(nil);
-                                                }
+                                                            DWUpholdCardObject *card = [[DWUpholdCardObject alloc] initWithDictionary:response];
+                                                            if (card) {
+                                                                [strongSelf createDashCardAddress:card completion:completion];
+                                                            }
+                                                            else {
+                                                                if (completion) {
+                                                                    completion(nil);
+                                                                }
 
-                                                if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
-                                                    [strongSelf performLogOutShouldNotifyObservers:YES];
-                                                }
-                                            }
-                                        }];
+                                                                if (statusCode == UpholdAPIResponseStatusUnauthorized) {
+                                                                    [strongSelf performLogOutShouldNotifyObservers:YES];
+                                                                }
+                                                            }
+                                                        }];
 }
 
 - (void)createDashCardAddress:(DWUpholdCardObject *)card completion:(void (^)(DWUpholdCardObject *_Nullable card))completion {
-    NSParameterAssert(self.accessToken);
     NSParameterAssert(card);
     NSAssert(!card.address, @"Card has address already");
 
+    NSString *accessToken = self.accessToken;
+    if (!accessToken) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (completion) {
+                completion(nil);
+            }
+        });
+        return;
+    }
+
     __weak typeof(self) weakSelf = self;
-    [DWUpholdAPIProvider createAddressForDashCard:card
-                                      accessToken:self.accessToken
-                                       completion:^(BOOL success, DWUpholdAPIProviderResponseStatusCode statusCode, DWUpholdCardObject *_Nullable card) {
-                                           __strong typeof(weakSelf) strongSelf = weakSelf;
-                                           if (!strongSelf) {
-                                               return;
-                                           }
+    [[UpholdClientObjcBridge shared] createAddressWithCardIdentifier:card.identifier
+                                                         accessToken:accessToken
+                                                          completion:^(NSDictionary *_Nullable response, UpholdAPIResponseStatus statusCode) {
+                                                              __strong typeof(weakSelf) strongSelf = weakSelf;
+                                                              if (!strongSelf) {
+                                                                  return;
+                                                              }
 
-                                           NSAssert(statusCode != DWUpholdAPIProviderResponseStatusCodeOTPRequired, @"OTP shouldn't be required here");
+                                                              NSAssert(statusCode != UpholdAPIResponseStatusOtpRequired, @"OTP shouldn't be required here");
 
-                                           if (completion) {
-                                               completion(success ? card : nil);
-                                           }
+                                                              NSString *address = response[@"id"];
+                                                              if ([address isKindOfClass:NSString.class]) {
+                                                                  [card updateAddress:address];
+                                                              }
 
-                                           if (statusCode == DWUpholdAPIProviderResponseStatusCodeUnauthorized) {
-                                               [strongSelf performLogOutShouldNotifyObservers:YES];
-                                           }
-                                       }];
+                                                              if (completion) {
+                                                                  completion(response ? card : nil);
+                                                              }
+
+                                                              if (statusCode == UpholdAPIResponseStatusUnauthorized) {
+                                                                  [strongSelf performLogOutShouldNotifyObservers:YES];
+                                                              }
+                                                          }];
 }
 
 - (nullable NSDecimalNumber *)lastKnownBalance {
@@ -395,12 +431,12 @@ NSString *const DWUpholdClientUserDidLogoutNotification = @"DWUpholdClientUserDi
     NSAssert([NSThread isMainThread], @"Not allowed to call on thread other than main");
 
     if (self.accessToken) {
-        [DWUpholdAPIProvider revokeAccessToken:self.accessToken];
+        [[UpholdClientObjcBridge shared] revokeWithAccessToken:self.accessToken];
     }
 
     self.accessToken = nil;
     self.lastAccessDate = nil;
-    setKeychainData(nil, UPHOLD_ACCESS_TOKEN, YES);
+    [DWKeychainStore setData:nil forAccount:UPHOLD_ACCESS_TOKEN authenticated:YES];
 
     if (shouldNotify) {
         [[NSNotificationCenter defaultCenter] postNotificationName:DWUpholdClientUserDidLogoutNotification object:nil];
