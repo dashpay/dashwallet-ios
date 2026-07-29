@@ -45,36 +45,13 @@ cd ../platform/packages/swift-sdk && ./build_ios.sh --target ios --target sim
 ```
 If the app fails with missing SDK symbols (e.g. "no member …"), `../platform` is on the wrong branch — check the branch/commit pins recorded in `DASHSYNC_MIGRATION.md`.
 
-## MCP / Figma Setup
+## Figma
 
-This project uses the Figma Dev Mode MCP server, configured in `.mcp.json` (`http://127.0.0.1:3845/mcp`). To use it:
-
-1. Run Figma Desktop, enable Dev Mode (`Shift+D`), and click "Enable desktop MCP server" in the inspect panel.
-2. Restart Claude Code — MCP servers connect only at startup.
-3. Verify the server responds: `curl -s http://127.0.0.1:3845/mcp`
+Figma Dev Mode MCP setup and cleaning Figma-exported SVG assets for iOS are covered by the `figma-assets` skill (`.claude/skills/figma-assets/SKILL.md`).
 
 ## Architecture
 
-### Languages
-- **Objective-C**: legacy wallet functionality, core models, some view controllers
-- **Swift**: modern UI, SwiftUI, new features. Many view controllers bridge ObjC ↔ Swift.
-
-### Key directories
-- `DashWallet/Sources/Application/` — app lifecycle, constants, configuration
-- `DashWallet/Sources/UI/` — UI components, organized by feature
-- `DashWallet/Sources/Models/` — business logic, data models, services
-- `DashWallet/Sources/Infrastructure/` — core services (networking, database, currency)
 - `DashWallet/Sources/Infrastructure/SwiftDashSDK/` — the SwiftDashSDK adapter layer (host, wallet runtime/state, SPV coordinator, transaction sender, identity coordinators) — the app-side boundary to the Rust SDK
-
-### Targets
-Main app, `TodayExtension` (widget), and `WatchApp`, with shared code in `Shared/`. Each target has its own deployment target and capabilities.
-
-### Patterns
-- **MVVM** — ViewModels for SwiftUI views and modern controllers
-- **Protocol-based dependency injection**
-- **Service layer** — dedicated services for major functionality (e.g. `SendCoinsService`, `CurrencyExchanger`)
-- **Repository / DAO** — data access objects over SQLite
-- **Coordinator** — `DWAppRootViewController` manages navigation flow
 
 ### Notable services & files
 - `WalletSendService.swift` — the send boundary: auth → build+sign (`SwiftDashSDKTransactionSender`) → user confirm → broadcast. `SendCoinsService.swift` is a thin programmatic wrapper over it.
@@ -170,11 +147,3 @@ iOS `*.lproj/Localizable.strings` files are UTF-16 little-endian, so plain `grep
 iconv -f UTF-16LE -t UTF-8 DashWallet/de.lproj/Localizable.strings | grep '"Spend"'
 ```
 Translations sync via Transifex: `tx push -s` (push source) / `tx pull -a` (pull all). Let Xcode and BartyCrouch manage the files; keep them UTF-16LE.
-
-### Figma MCP assets need cleaning for iOS
-Figma MCP serves assets at ephemeral `http://localhost:3845/assets/{hash}.svg` URLs (valid only while Figma Desktop + Dev Mode are running). Download them into the asset catalog (`DashWallet/Resources/AppAssets.xcassets/...`) — never reference localhost URLs in code. Then strip web-only SVG features iOS can't render:
-- `fill="var(--fill-0, #78C4F5)"` → `fill="#78C4F5"` (CSS variables render invisible)
-- `width="100%" height="100%"` → explicit pixel dimensions from the viewBox
-- remove `preserveAspectRatio="none"`, `style="display: block;"`, `overflow="visible"`
-
-If icons appear blank after adding an SVG, check for `var(--fill-0, ...)` or `width="100%"` first.
