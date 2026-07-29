@@ -62,9 +62,7 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 @dynamic dashpayUsername;
 @dynamic dashpayRegistrationCompleted;
 @dynamic mostRecentViewedNotificationDate;
-@dynamic shouldShowInvitationsBadge;
 @dynamic dashPayRegistrationOpenedOnce;
-@dynamic dpInvitationFlowEnabled;
 @dynamic confirmationAcceptContactRequestIsOn;
 #endif
 

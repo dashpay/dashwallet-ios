@@ -66,8 +66,6 @@ NS_ASSUME_NONNULL_BEGIN
 #ifdef DASHPAY
 @property (nonatomic, assign) BOOL dashPayRegistrationOpenedOnce;
 @property (nonatomic, assign) BOOL dashpayRegistrationCompleted;
-@property (nonatomic, assign) BOOL dpInvitationFlowEnabled;
-@property (nonatomic, assign) BOOL shouldShowInvitationsBadge;
 @property (nonatomic, assign) BOOL confirmationAcceptContactRequestIsOn;
 @property (nullable, nonatomic, copy) NSString *dashpayUsername;
 @property (nullable, nonatomic, strong) NSDate *mostRecentViewedNotificationDate;

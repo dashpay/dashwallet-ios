@@ -17,8 +17,7 @@
 
 #import "DWUploadAvatarModel.h"
 
-#import "DWEnvironment.h"
-#import "UIImage+Utils.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,9 +27,11 @@ NSString *const ImageDeleteHash = @"ImgurImageDeleteHash";
 
 @property (nonatomic, assign) DWUploadAvatarModelState state;
 
-@property (atomic, assign) BOOL cancelled;
+@property (nonatomic, assign) BOOL cancelled;
 @property (nullable, nonatomic, copy) NSString *resultURLString;
-@property (nullable, weak, nonatomic) id<HTTPLoaderOperationProtocol> uploadOperation;
+@property (nonatomic, strong) DWAvatarUploadClient *client;
+@property (nullable, nonatomic, strong) id<DWAvatarUploadCancelling> uploadOperation;
+@property (nonatomic, assign) NSUInteger attemptGeneration;
 
 @end
 
@@ -42,6 +43,7 @@ NS_ASSUME_NONNULL_END
     self = [super init];
     if (self) {
         _image = image;
+        _client = [[DWAvatarUploadClient alloc] init];
 
         [self retry];
     }
@@ -49,121 +51,58 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)retry {
-    self.cancelled = NO;
-    self.state = DWUploadAvatarModelState_Loading;
-
-    NSString *imgurClientID = @"imgurId"; //TODO: DashPay
-    
-    NSString *deleteHash = [[NSUserDefaults standardUserDefaults] stringForKey:ImageDeleteHash];
-    if (deleteHash.length > 0) {
-        NSString *urlString = [NSString stringWithFormat:@"https://api.imgur.com/3/image/%@", deleteHash];
-        NSURL *url = [NSURL URLWithString:urlString];
-        HTTPRequest *request = [HTTPRequest requestWithURL:url method:HTTPRequestMethod_DELETE parameters:nil];
-        [request addValue:[NSString stringWithFormat:@"Client-ID %@", imgurClientID] forHeader:@"Authorization"];
-        request.maximumRetryCount = 3;
-
-        HTTPLoaderManager *loaderManager = [DSNetworkingCoordinator sharedInstance].loaderManager;
-        __weak typeof(self) weakSelf = self;
-        [loaderManager
-            sendRequest:request
-             completion:^(id _Nullable parsedData, NSDictionary *_Nullable responseHeaders, NSInteger statusCode, NSError *_Nullable error) {
-                 __strong typeof(weakSelf) strongSelf = weakSelf;
-                 if (!strongSelf) {
-                     return;
-                 }
-
-                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                     [strongSelf upload];
-                 });
-             }];
-    }
-    else {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            [self upload];
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self retry];
         });
-    }
-}
-
-- (void)cancel {
-    self.cancelled = YES;
-    [self.uploadOperation cancel];
-}
-
-- (void)upload {
-    if (self.cancelled) {
         return;
     }
 
-    const CGFloat maxImageSide = 600;
-    UIImage *resultImage = self.image;
-    if (self.image.size.width > maxImageSide || self.image.size.height > maxImageSide) {
-        resultImage = [self.image dw_resize:CGSizeMake(maxImageSide, maxImageSide)
-                   withInterpolationQuality:kCGInterpolationHigh];
-    }
-
-    NSURL *url = [NSURL URLWithString:@"https://api.imgur.com/3/upload"];
-    NSString *imgurClientID = @"imgurId"; //TODO: DashPay
-    
-    NSString *boundary = [NSUUID UUID].UUIDString;
-    NSData *body = [self createBodyWithBoundary:boundary image:resultImage];
-    HTTPRequest *request = [[HTTPRequest alloc] initWithURL:url method:HTTPRequestMethod_POST contentType:HTTPContentType_JSON parameters:nil body:body sourceIdentifier:nil];
-    [request addValue:[NSString stringWithFormat:@"Client-ID %@", imgurClientID]
-            forHeader:@"Authorization"];
-    [request addValue:[NSString stringWithFormat:@"multipart/form-data; boundary=%@", boundary]
-            forHeader:@"Content-Type"];
-
-    HTTPLoaderManager *loaderManager = [DSNetworkingCoordinator sharedInstance].loaderManager;
+    [self.uploadOperation cancel];
+    self.attemptGeneration += 1;
+    const NSUInteger generation = self.attemptGeneration;
+    self.cancelled = NO;
+    self.state = DWUploadAvatarModelState_Loading;
+    NSString *deleteHash = [[NSUserDefaults standardUserDefaults] stringForKey:ImageDeleteHash];
 
     __weak typeof(self) weakSelf = self;
-    self.uploadOperation = [loaderManager
-        sendRequest:request
-         completion:^(id _Nullable parsedData, NSDictionary *_Nullable responseHeaders, NSInteger statusCode, NSError *_Nullable error) {
+    self.uploadOperation = [self.client
+        uploadImage:self.image
+         deleteHash:deleteHash
+         completion:^(NSString *_Nullable link, NSString *_Nullable newDeleteHash, NSError *_Nullable error) {
              __strong typeof(weakSelf) strongSelf = weakSelf;
-             if (!strongSelf) {
+             if (!strongSelf || strongSelf.cancelled || strongSelf.attemptGeneration != generation) {
                  return;
              }
 
-             if (error) {
+             NSAssert([NSThread isMainThread], @"Avatar state is UI-observable and must update on main");
+             if (error != nil) {
                  strongSelf.state = DWUploadAvatarModelState_Error;
+                 return;
+             }
+
+             if (newDeleteHash.length > 0) {
+                 [[NSUserDefaults standardUserDefaults] setObject:newDeleteHash forKey:ImageDeleteHash];
              }
              else {
-                 NSDictionary *response = (NSDictionary *)parsedData;
-                 if ([response[@"success"] boolValue]) {
-                     NSDictionary *data = response[@"data"];
-
-                     NSDictionary *deleteHash = data[@"deletehash"];
-                     [[NSUserDefaults standardUserDefaults] setObject:deleteHash forKey:ImageDeleteHash];
-
-                     strongSelf.resultURLString = data[@"link"];
-
-                     strongSelf.state = DWUploadAvatarModelState_Success;
-                 }
-                 else {
-                     strongSelf.state = DWUploadAvatarModelState_Error;
-                 }
+                 [[NSUserDefaults standardUserDefaults] removeObjectForKey:ImageDeleteHash];
              }
+             strongSelf.resultURLString = link;
+             strongSelf.state = DWUploadAvatarModelState_Success;
          }];
 }
 
-- (NSData *)createBodyWithBoundary:(NSString *)boundary
-                             image:(UIImage *)image {
-    NSMutableData *httpBody = [NSMutableData data];
+- (void)cancel {
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self cancel];
+        });
+        return;
+    }
 
-    NSString *fieldName = @"image"; // Imgur field
-
-    NSString *filename = @"image.jpg";
-    NSData *data = UIImageJPEGRepresentation(image, 0.5);
-    NSString *mimetype = @"image/jpeg";
-
-    [httpBody appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
-    [httpBody appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\n", fieldName, filename] dataUsingEncoding:NSUTF8StringEncoding]];
-    [httpBody appendData:[[NSString stringWithFormat:@"Content-Type: %@\r\n\r\n", mimetype] dataUsingEncoding:NSUTF8StringEncoding]];
-    [httpBody appendData:data];
-    [httpBody appendData:[@"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
-
-    [httpBody appendData:[[NSString stringWithFormat:@"--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
-
-    return httpBody;
+    self.cancelled = YES;
+    self.attemptGeneration += 1;
+    [self.uploadOperation cancel];
 }
 
 @end

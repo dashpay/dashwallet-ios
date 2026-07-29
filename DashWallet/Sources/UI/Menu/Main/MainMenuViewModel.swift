@@ -29,7 +29,6 @@ enum MainMenuNavigationDestination {
     case tools
     case support
     #if DASHPAY
-    case invite
     case voting
     #endif
 }

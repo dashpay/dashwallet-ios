@@ -453,8 +453,6 @@ struct MainMenuScreen: View {
         case .support:
             onContactSupport()
         #if DASHPAY
-        case .invite:
-            showInvite()
         case .voting:
             showVoting()
         #endif
@@ -492,12 +490,6 @@ struct MainMenuScreen: View {
 
 
     #if DASHPAY
-    private func showInvite() {
-        let controller = DWInvitationHistoryViewController()
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
-    }
-    
     private func showVoting() {
         let controller = UsernameVotingViewController.controller()
         controller.hidesBottomBarWhenPushed = true

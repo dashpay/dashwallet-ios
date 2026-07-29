@@ -19,7 +19,6 @@
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
-#import "DSBlockchainIdentity+DWDisplayName.h"
 #import "DWAvatarEditSelectorViewController.h"
 #import "DWAvatarGravatarViewController.h"
 #import "DWAvatarPublicURLViewController.h"
@@ -27,16 +26,12 @@
 #import "DWEditProfileAvatarView.h"
 #import "DWEditProfileTextFieldCell.h"
 #import "DWEditProfileTextViewCell.h"
-#import "DWEnvironment.h"
 #import "DWProfileAboutCellModel.h"
 #import "DWProfileDisplayNameCellModel.h"
 #import "DWSharedUIConstants.h"
 #import "DWTextInputFormTableViewCell.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
-// if MOCK_DASHPAY
-#import "DWDashPayConstants.h"
-#import "DWGlobalOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -67,13 +62,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (BOOL)hasChanges {
-    // Row #17 proper: compare against `DWCurrentUserIdentityInfo`
-    // (SDK-side profile cache) so the "user has unsaved changes"
-    // dialog fires correctly for SDK-only identities. The category
-    // method `dw_displayNameOrUsername` on `DSBlockchainIdentity`
-    // returns nil for SDK identities (no DashSync row), which made
-    // the comparison always-true and incorrectly prompted the save
-    // dialog on Cancel.
+    // Compare against the SDK-side profile cache so the unsaved-changes
+    // dialog reflects the current app-owned profile snapshot.
     DWCurrentUserIdentityInfo *me = DWCurrentUserIdentityInfo.shared;
     NSString *currentTitle = me.displayTitle ?: @"";
     if (![self.displayName isEqualToString:currentTitle]) {
@@ -102,10 +92,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (NSString *)avatarURLString {
-    // Row #17 proper: fall back to the SDK-sourced avatar URL when
-    // the user hasn't picked a new image. Avatars set via DashSync
-    // were keyed on `DSBlockchainIdentity.avatarPath` — that read is
-    // nil for SDK-only identities.
+    // Fall back to the SDK-sourced avatar URL when the user hasn't
+    // picked a new image.
     return self.unsavedAvatarURL ?: DWCurrentUserIdentityInfo.shared.avatarURL;
 }
 
@@ -122,27 +110,6 @@ NS_ASSUME_NONNULL_END
     [super viewDidLoad];
 
     self.view.backgroundColor = [UIColor dw_secondaryBackgroundColor];
-
-    // Row #17 proper: the legacy `defaultBlockchainIdentity` read is
-    // retained for MOCK_DASHPAY and DashSync-identity backwards
-    // compatibility, but for the SDK-only path
-    // (`hasIdentity == YES && defaultBlockchainIdentity == nil`) the
-    // assertion would fire — so we only assert when MOCK_DASHPAY is
-    // on. The SDK path proceeds without a DSBlockchainIdentity; all
-    // reads go through `DWCurrentUserIdentityInfo`.
-    self.blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-
-    if (MOCK_DASHPAY && self.blockchainIdentity == nil) {
-        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
-
-        if (username != nil) {
-            self.blockchainIdentity = [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
-        }
-    }
-
-    if (MOCK_DASHPAY) {
-        NSParameterAssert(self.blockchainIdentity);
-    }
 
     [self setupItems];
     [self setupView];
@@ -183,10 +150,6 @@ NS_ASSUME_NONNULL_END
 - (void)setupView {
     self.headerView = [[DWEditProfileAvatarView alloc] initWithFrame:CGRectZero];
     self.headerView.delegate = self;
-    // Row #17 proper: source the avatar from SwiftDashSDK. The
-    // legacy `setImageWithBlockchainIdentity:` reads
-    // `DSBlockchainIdentity.avatarPath` which is nil for SDK-only
-    // identities.
     [self.headerView setImageForCurrentUser];
 
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;

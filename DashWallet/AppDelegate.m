@@ -96,10 +96,6 @@ NS_ASSUME_NONNULL_BEGIN
     }
 #endif /* FRESH_INSTALL */
     
-#if DASHPAY
-    [DWGlobalOptions sharedInstance].dpInvitationFlowEnabled = YES;
-#endif
-
     // Shortcut customization banner state machine
     DWGlobalOptions *bannerOptions = [DWGlobalOptions sharedInstance];
     if (bannerOptions.shortcutBannerState == 0) {

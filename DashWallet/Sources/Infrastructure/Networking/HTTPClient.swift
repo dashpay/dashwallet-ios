@@ -81,7 +81,8 @@ public class HTTPClient<Target: TargetType> {
 
     private var receiveMemoryWarningHandler: Any!
 
-    init(accessTokenProvider: AccessTokenProvider? = nil) {
+    init(accessTokenProvider: AccessTokenProvider? = nil,
+         provider injectedProvider: MoyaProvider<Target>? = nil) {
         self.accessTokenProvider = accessTokenProvider
 
         var plugins: [PluginType] = []
@@ -97,7 +98,7 @@ public class HTTPClient<Target: TargetType> {
         }
         plugins.append(etagPlugin)
 
-        provider = MoyaProvider<Target>(plugins: plugins)
+        provider = injectedProvider ?? MoyaProvider<Target>(plugins: plugins)
 
         receiveMemoryWarningHandler = NotificationCenter.default
             .addObserver(forName: UIApplication.didReceiveMemoryWarningNotification, object: nil, queue: .main) { [weak self] _ in
