@@ -56,7 +56,14 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
     /// network at the time `start(network:)` ran.
     @objc
     static func receiveAddress() -> String? {
-        onMain { readOnMain() }
+        receiveDestination()?.address
+    }
+
+    /// The receive address and wallet id captured from the same host-bound
+    /// wallet. Swift callers that retain work across wallet switches use this
+    /// to keep the destination tied to its originating wallet.
+    static func receiveDestination() -> (address: String, walletId: Data)? {
+        onMain { readDestinationOnMain() }
     }
 
     // MARK: Request-amount receive detection (DWReceiveModel)
@@ -121,13 +128,14 @@ final class SwiftDashSDKReceiveAddressReader: NSObject {
     }
 
     @MainActor
-    private static func readOnMain() -> String? {
+    private static func readDestinationOnMain() -> (address: String, walletId: Data)? {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             Self.logger.warning("📬 RECVADDR :: host has no wallet yet")
             return nil
         }
         do {
-            return try wallet.coreWallet().nextReceiveAddress(accountIndex: 0)
+            let address = try wallet.coreWallet().nextReceiveAddress(accountIndex: 0)
+            return (address, wallet.walletId)
         } catch {
             Self.logger.warning(
                 "📬 RECVADDR :: nextReceiveAddress failed: \(String(describing: error), privacy: .public)")

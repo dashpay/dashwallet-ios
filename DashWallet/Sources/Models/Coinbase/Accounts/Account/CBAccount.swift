@@ -104,9 +104,11 @@ extension CBAccount {
 
 // MARK: Transfer
 extension CBAccount {
-    public func send(amount: UInt64, verificationCode: String?, idem: UUID?) async throws -> CoinbaseTransaction {
+    public func send(amount: UInt64,
+                     verificationCode: String?,
+                     idem: UUID?) async throws -> (transaction: CoinbaseTransaction, walletId: Data) {
         // NOTE: Maybe better to get the address once and use it during the tx flow
-        guard let dashWalletAddress = SwiftDashSDKReceiveAddressReader.receiveAddress() else {
+        guard let destination = SwiftDashSDKReceiveAddressReader.receiveDestination() else {
             fatalError("No wallet")
         }
 
@@ -132,7 +134,7 @@ extension CBAccount {
         do {
             try await authInterop.refreshTokenIfNeeded()
             let dto = CoinbaseTransactionsRequest(type: .send,
-                                                  to: dashWalletAddress,
+                                                  to: destination.address,
                                                   amount: coinbaseAmount,
                                                   currency: kDashCurrency,
                                                   idem: currentIdem.uuidString.lowercased(),
@@ -142,7 +144,7 @@ extension CBAccount {
                 .request(.sendCoinsToWallet(accountId: accountId, verificationCode: verificationCode, dto: dto))
             let _ = try? await refreshAccount() // Ignore if fails
 
-            return result.data
+            return (result.data, destination.walletId)
         } catch HTTPClientError.statusCode(let r) where r.statusCode == 400 {
             DWLogger.log("Tranfer from coinbase: transferToWallet - failure - statusCode - 400")
             if let err = r.error?.errors.first {

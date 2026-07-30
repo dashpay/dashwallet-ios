@@ -163,9 +163,15 @@ extension Coinbase {
                                                  verificationCode: String?,
                                                  idem: UUID?) async throws -> CoinbaseTransaction {
         do {
-            let tx = try await accountService.send(from: kDashAccount, amount: amount, verificationCode: verificationCode, idem: idem)
+            let (tx, walletId) = try await accountService.send(
+                from: kDashAccount,
+                amount: amount,
+                verificationCode: verificationCode,
+                idem: idem)
 
-            CoinbaseTransactionMetadataTagger.shared.track(receivedTransfer: tx)
+            CoinbaseTransactionMetadataTagger.shared.track(
+                receivedTransfer: tx,
+                walletId: walletId)
 
             if let address = tx.to?.address {
                 Taxes.shared.mark(address: address, with: .transferIn)
@@ -450,36 +456,45 @@ final class CoinbaseTransactionMetadataTagger {
             .store(in: &cancellables)
     }
 
-    func track(receivedTransfer transaction: CoinbaseTransaction) {
+    func track(receivedTransfer transaction: CoinbaseTransaction, walletId: Data) {
         if let walletTxHash = Self.walletTxHashData(from: transaction.network?.hash) {
             markCoinbaseTransaction(txHash: walletTxHash)
             return
         }
 
-        guard let address = transaction.to?.address?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !address.isEmpty,
-              let amount = coinbaseDashAmount(from: transaction.amount),
-              amount > 0 else {
-            return
-        }
-
-        let minimumTimestamp = coinbaseTimestamp(from: transaction.createdAt)
-            ?? (Date().timeIntervalSince1970 - Self.receiveLookbackWindow)
-
-        guard let walletId = CoinbaseWalletTransactionSnapshot.current()?.walletId else {
+        guard let pendingTransfer = Self.pendingReceiveTransfer(
+            from: transaction,
+            walletId: walletId) else {
             return
         }
 
         queue.async { [weak self] in
             guard let self else { return }
-            self.pendingReceiveTransfers.append(
-                CoinbasePendingReceiveTransfer(
-                    walletId: walletId,
-                    address: address,
-                    amount: amount,
-                    minimumTimestamp: minimumTimestamp))
+            self.pendingReceiveTransfers.append(pendingTransfer)
             self.resolvePendingReceiveTransfersOnQueue()
         }
+    }
+
+    static func pendingReceiveTransfer(
+        from transaction: CoinbaseTransaction,
+        walletId: Data,
+        now: Date = Date()
+    ) -> CoinbasePendingReceiveTransfer? {
+        guard let address = transaction.to?.address?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !address.isEmpty,
+              let amount = coinbaseDashAmount(from: transaction.amount),
+              amount > 0 else {
+            return nil
+        }
+
+        let minimumTimestamp = coinbaseTimestamp(from: transaction.createdAt)
+            ?? (now.timeIntervalSince1970 - Self.receiveLookbackWindow)
+
+        return CoinbasePendingReceiveTransfer(
+            walletId: walletId,
+            address: address,
+            amount: amount,
+            minimumTimestamp: minimumTimestamp)
     }
 
     // txidWire follows the `Transaction.txHashData` convention (wire-order txid),
@@ -526,7 +541,7 @@ final class CoinbaseTransactionMetadataTagger {
         return Data(data.reversed())
     }
 
-    private func coinbaseDashAmount(from amount: Amount?) -> UInt64? {
+    private static func coinbaseDashAmount(from amount: Amount?) -> UInt64? {
         guard let amountString = amount?.amount,
               let decimal = Decimal(string: amountString, locale: Locale(identifier: "en_US_POSIX")) else {
             return nil
@@ -535,7 +550,7 @@ final class CoinbaseTransactionMetadataTagger {
         return decimal.plainDashAmount
     }
 
-    private func coinbaseTimestamp(from createdAt: String?) -> TimeInterval? {
+    private static func coinbaseTimestamp(from createdAt: String?) -> TimeInterval? {
         guard let createdAt = createdAt?.trimmingCharacters(in: .whitespacesAndNewlines),
               !createdAt.isEmpty else {
             return nil

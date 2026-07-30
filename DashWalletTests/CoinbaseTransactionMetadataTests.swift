@@ -91,9 +91,23 @@ final class CoinbaseTransactionMetadataTests: XCTestCase {
         XCTAssertEqual(resolution.unresolved, [pending])
     }
 
-    func testUnmatchedTransferCanResolveOnLaterSnapshot() {
+    func testFallbackTransferKeepsOriginatingWalletIdUntilLaterSnapshot() throws {
         let walletId = Data([0x01])
-        let pending = makePending(walletId: walletId)
+        let response = Data(
+            """
+            {
+              "amount": { "amount": "0.00000100", "currency": "DASH" },
+              "created_at": "1970-01-01T00:01:40Z",
+              "to": { "address": "Xreceive" }
+            }
+            """.utf8)
+        let transaction = try JSONDecoder().decode(CoinbaseTransaction.self, from: response)
+        let pending = try XCTUnwrap(
+            CoinbaseTransactionMetadataTagger.pendingReceiveTransfer(
+                from: transaction,
+                walletId: walletId))
+        XCTAssertEqual(pending.walletId, walletId)
+
         let emptySnapshot = CoinbaseWalletTransactionSnapshot(
             walletId: walletId,
             transactions: [])

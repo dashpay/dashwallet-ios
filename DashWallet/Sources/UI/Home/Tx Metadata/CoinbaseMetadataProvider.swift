@@ -72,6 +72,7 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
 
         NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
             .receive(on: DispatchQueue.main)
+            .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .sink { [weak self] _ in
                 Task {
                     await self?.refreshMetadata()
