@@ -20,7 +20,8 @@ DashSync is still linked for three bounded tails:
 1. **Apple Watch phone bridge** — the targets and bridge remain; transaction
    payload formatting still reads `DSAccount`/`DSTransaction`. The watch app is
    not embedded by either app target on this branch. Watch was deliberately
-   untouched and is out of scope for the invitation/profile tail.
+   untouched and still requires the remove-or-port decision described in the
+   teardown plan.
 2. **C6-E wallet-registry teardown** — create/recover still dual-write a
    `DSWallet`; wipe clears both stores; `WalletEnvironment.hasWallet` includes
    the DashSync registry; `DSChainWalletsDidChangeNotification` is still
@@ -29,9 +30,10 @@ DashSync is still linked for three bounded tails:
    `DSBlockchainIdentity` registration compatibility path; active profile UI
    no longer consumes that object.
 3. **Pod-unlink mechanics and compatibility surfaces** — AppDelegate setup,
-   a dormant `DSAccount` spent-input category, one stale payment import, and
-   project/Podfile link entries. Coinbase/Uphold keychain access, reachable
-   Uphold HTTP flows, and profile-avatar networking are app-owned.
+   the `DSTransaction.h` bridging exposure retained solely for
+   `DSTransactionDirection`, non-wallet exported helpers, and project/Podfile
+   link entries. Coinbase/Uphold keychain access, reachable Uphold HTTP flows,
+   profile-avatar networking, and Coinbase transaction metadata are app-owned.
 
 As of this audit, three app source files directly import DashSync. Counts of all
 `DS*` tokens are not a useful progress metric because app-owned names such as
