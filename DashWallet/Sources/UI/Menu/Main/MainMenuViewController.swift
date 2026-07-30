@@ -232,6 +232,7 @@ struct MainMenuScreen: View {
                         },
                         onDismissButton: { state in
                             joinDPViewModel.markAsDismissed()
+                            viewModel.refreshJoinDashPayBanner()
                         }
                     )
                     .padding(.horizontal, 18)
@@ -417,6 +418,7 @@ struct MainMenuScreen: View {
         default:
             editProfile()
             joinDPViewModel.markAsDismissed()
+            viewModel.refreshJoinDashPayBanner()
         }
     }
     

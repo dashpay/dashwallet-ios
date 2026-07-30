@@ -71,6 +71,10 @@ class MainMenuViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .assign(to: &$showJoinDashpay)
     }
+
+    func refreshJoinDashPayBanner() {
+        userProfileModel?.refreshJoinDashPayBanner()
+    }
     #else
     init() {
         buildMenuSections()

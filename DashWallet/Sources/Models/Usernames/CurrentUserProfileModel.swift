@@ -113,10 +113,19 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
         let hasPendingRecoveredName = MainActor.assumeIsolated {
             DWContestedNameStatusService.shared.pendingLabel != nil
         }
-        showJoinDashpay = identityState.contextReady
-            && model.state == .syncDone
-            && !hasUsername
-            && !hasPendingRecoveredName
+        showJoinDashpay = JoinDashPayBannerPolicy.shouldShow(
+            contextReady: identityState.contextReady,
+            syncDone: model.state == .syncDone,
+            dismissed: UsernamePrefs.shared.joinDashPayDismissed,
+            hasRegisteredUsername: hasUsername,
+            hasRegistrationInProgress: hasPendingRecoveredName)
+    }
+
+    /// Re-evaluates the menu banner after a local preference change such as
+    /// tapping Hide. Unlike sync/network notifications, preference writes do
+    /// not otherwise publish an event to this profile model.
+    func refreshJoinDashPayBanner() {
+        updateShowJoinDashpay()
     }
     
     @objc func update() {
