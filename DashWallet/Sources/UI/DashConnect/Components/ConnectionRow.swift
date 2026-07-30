@@ -1,0 +1,119 @@
+//
+//  ConnectionRow.swift
+//  DashWallet
+//
+//  Copyright © 2026 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import DashUIKit
+import SwiftUI
+
+/// One connected app: its name and url, the current status, and — once the
+/// connection is live — the switch that disconnects it.
+///
+/// An approved connection is not usable yet, so the row carries the prompt to
+/// finish the login underneath itself rather than leaving the list to know
+/// which rows need it.
+struct ConnectionRow: View {
+    let connection: DAppConnection
+    let onPrimaryAction: () -> Void
+    let onMockScan: () -> Void
+    let onDisconnect: () -> Void
+
+    private enum Layout {
+        /// `SwitchView` is a fixed 64×28 from the design system and sets that
+        /// width internally, so an outer `.frame` cannot shrink it — it would
+        /// only change the space reserved while the control kept overflowing.
+        /// Scaling is the only way to make it smaller from the outside; the
+        /// design ratio is preserved.
+        static let switchScale: CGFloat = 0.75
+        static let switchWidth: CGFloat = 64 * switchScale
+        static let switchHeight: CGFloat = 28 * switchScale
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 20) {
+                identity
+
+                ConnectionStatusBadge(status: connection.status, updatedAt: connection.updatedAt)
+                    .frame(maxWidth: .infinity, alignment: .topTrailing)
+
+                if connection.status == .active {
+                    disconnectSwitch
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if connection.status == .approved {
+                ScanToCompleteBanner(onScanQR: onPrimaryAction, onMockScan: onMockScan)
+            }
+        }
+    }
+
+    private var identity: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(connection.name)
+                .dashFont(.subhead)
+                .foregroundStyle(Color.dash.primaryText)
+
+            if !connection.url.isEmpty {
+                Text(connection.url)
+                    .dashFont(.footnote)
+                    .foregroundStyle(Color.dash.tertiaryText)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+
+    /// Always reads as on: the row only shows it for an active connection, and
+    /// switching it off is what disconnects. The binding therefore ignores the
+    /// on direction, which cannot be reached from here.
+    private var disconnectSwitch: some View {
+        SwitchView(isOn: Binding(
+            get: { true },
+            set: { isOn in
+                if !isOn {
+                    onDisconnect()
+                }
+            }
+        ))
+        .scaleEffect(Layout.switchScale)
+        .frame(width: Layout.switchWidth, height: Layout.switchHeight)
+    }
+}
+
+#Preview {
+    VStack(spacing: 2) {
+        ForEach(ConnectionStatus.allCases, id: \.self) { status in
+            ConnectionRow(
+                connection: DAppConnection(
+                    id: status.rawValue,
+                    name: "Example App",
+                    url: "https://example.org",
+                    status: status,
+                    updatedAt: Date()
+                ),
+                onPrimaryAction: {},
+                onMockScan: {},
+                onDisconnect: {}
+            )
+        }
+    }
+    .padding()
+    .background(Color.primaryBackground)
+}

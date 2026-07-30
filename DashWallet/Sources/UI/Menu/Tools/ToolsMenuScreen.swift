@@ -201,6 +201,8 @@ struct ToolsMenuScreen: View {
             showMasternodes()
         case .csvExport:
             showCSVExportSheet = true
+        case .connections:
+            showConnections()
         case .zenLedger:
             showZenLedgerSheet = true
         case .storageExplorer:
@@ -295,6 +297,13 @@ struct ToolsMenuScreen: View {
         )
         hosting.hidesBottomBarWhenPushed = true
         vc.pushViewController(hosting, animated: true)
+    }
+
+    private func showConnections() {
+        let screen = ConnectionsScreen(vc: vc)
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
     }
     
     private func handleCSVExport() {

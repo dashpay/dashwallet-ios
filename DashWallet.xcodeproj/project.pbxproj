@@ -3665,6 +3665,28 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		51DC0001300000000000DC01 /* DashConnect */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = DashConnect;
+			sourceTree = "<group>";
+		};
+		51DC0002300000000000DC02 /* DashConnect */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = DashConnect;
+			sourceTree = "<group>";
+		};
 		51DFA7FB2FA8EAF2001EDB3A /* Components */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -4508,6 +4530,7 @@
 		2A44313C22CF631E009BAF7F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				51DC0001300000000000DC01 /* DashConnect */,
 				7566F4882BB6CAD6005238D2 /* SwiftUI Components */,
 				C943B34F2A40A54500AF23C5 /* DashPay */,
 				4751137228DAF27300223B77 /* Assembly */,
@@ -4542,6 +4565,7 @@
 		2A44313D22CF632F009BAF7F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				51DC0002300000000000DC02 /* DashConnect */,
 				AA0002192BA0F58E00A1B309 /* Maya */,
 				AA0010002CA0B10001A0B100 /* SwapKit */,
 				AA0020012FA0000000000001 /* Swap */,
@@ -8659,6 +8683,8 @@
 			);
 			fileSystemSynchronizedGroups = (
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
+				51DC0001300000000000DC01 /* DashConnect */,
+				51DC0002300000000000DC02 /* DashConnect */,
 			);
 			name = dashwallet;
 			packageProductDependencies = (
@@ -8763,6 +8789,8 @@
 			);
 			fileSystemSynchronizedGroups = (
 				51DFA7FB2FA8EAF2001EDB3A /* Components */,
+				51DC0001300000000000DC01 /* DashConnect */,
+				51DC0002300000000000DC02 /* DashConnect */,
 			);
 			name = dashpay;
 			packageProductDependencies = (
@@ -13419,7 +13447,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/dashpay/DashUIKit";
 			requirement = {
-				branch = master;
+				branch = "fix/textfield-prompt-type";
 				kind = branch;
 			};
 		};
