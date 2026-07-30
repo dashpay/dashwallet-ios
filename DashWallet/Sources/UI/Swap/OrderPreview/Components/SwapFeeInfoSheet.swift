@@ -29,12 +29,12 @@ struct SwapFeeInfoSheet: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(NSLocalizedString("Fees in crypto purchases", comment: "Dash DEX"))
-                    .font(Font.dash.title1)
+                    .dashFont(.title1)
                     .foregroundColor(Color.dash.primaryText)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
 
                 Text(infoDescription)
-                .font(Font.dash.body)
+                .dashFont(.body)
                 .foregroundStyle(Color.dash.gray500)
                 .multilineTextAlignment(.leading)
             }

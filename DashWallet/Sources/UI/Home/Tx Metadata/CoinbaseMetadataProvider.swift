@@ -119,14 +119,14 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
     private func makeMetadata(for transaction: DSTransaction) -> TxRowMetadata {
         TxRowMetadata(
             icon: coinbaseIcon(),
-            iconName: .custom("transaction-coinbase.received", bundle: .dashUIKit),
+            iconName: .custom(DashIcon.Transaction.coinbaseReceived.assetName, bundle: .dashUIKit),
             secondaryIcon: transaction.direction == .sent
-                ? .custom("additional-info-sent", bundle: .dashUIKit)
-                : .custom("additional-info-received", bundle: .dashUIKit)
+                ? .custom(DashIcon.AdditionalInfo.sent.assetName, bundle: .dashUIKit)
+                : .custom(DashIcon.AdditionalInfo.received.assetName, bundle: .dashUIKit)
         )
     }
 
     private func coinbaseIcon() -> UIImage? {
-        UIImage(named: "transaction-coinbase.received", in: .dashUIKit, compatibleWith: nil)
+        UIImage(named: DashIcon.Transaction.coinbaseReceived.assetName, in: .dashUIKit, compatibleWith: nil)
     }
 }
