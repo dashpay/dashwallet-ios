@@ -30,11 +30,14 @@ DashSync is still linked for three bounded tails:
    networks. `DWDashPayModel` also retains an internal legacy
    `DSBlockchainIdentity` registration compatibility path; active profile UI
    no longer consumes that object.
-3. **Pod-unlink mechanics and compatibility surfaces** — AppDelegate setup,
-   non-wallet exported helpers, and project/Podfile link entries.
-   Coinbase/Uphold keychain access, reachable Uphold HTTP flows,
-   profile-avatar networking, Coinbase transaction/balance integration, and
-   the shared transaction-direction model are app-owned.
+3. **Pod-unlink mechanics and compatibility surfaces** — both app targets
+   directly declare CocoaLumberjack, `DSDynamicOptions`, and
+   `DWAlertController`, which app-owned code still needs after DashSync is
+   removed. AppDelegate setup, the logger collision workaround, and DashSync
+   project/Podfile link entries remain. Coinbase/Uphold keychain access,
+   reachable Uphold HTTP flows, profile-avatar networking, Coinbase
+   transaction/balance integration, and the shared transaction-direction model
+   are app-owned.
 
 As of this audit, three app source files directly import DashSync. Counts of all
 `DS*` tokens are not a useful progress metric because comments and frozen

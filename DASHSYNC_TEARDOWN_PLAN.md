@@ -72,6 +72,11 @@ the SDK FFI mapping, self-send promotion, DashPay override, UI formatting,
 metadata categories, and CrowdNode matching without exposing
 `DSTransaction.h` through the app bridging header.
 
+Both app targets directly declare CocoaLumberjack 3.7.2,
+`DSDynamicOptions` 0.1.2, and `DWAlertController` 0.2.1 instead of relying on
+DashSync's transitive dependencies. TodayExtension retains its existing direct
+`DSDynamicOptions` declaration.
+
 The passive Home, Explore, and Buy/Sell UI tail is app/SDK-owned. Home and its
 balance model consume `SwiftDashSDKWalletState`; Explore resolves the active SDK
 receive address at faucet action time; and Explore/Buy-Sell network gating uses
@@ -162,7 +167,6 @@ These are active repo tasks, not externally assigned work:
 |---|---|---|
 | Logger compatibility | `dwLogLevel` workaround | Revert to normal CocoaLumberjack `ddLogLevel` after DashSync headers disappear. |
 | App startup | `setupDashSyncOnce`, `DSOptionsManager` | Delete once every required service has an app/SDK owner. |
-| Transitive pods | `DSDynamicOptions`, `DWAlertController`, CocoaLumberjack | Keep required libraries directly declared before removing DashSync. `DSDynamicOptions` is already direct for TodayExtension; verify both app targets. |
 
 ### T5. Unlink mechanics
 

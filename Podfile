@@ -8,6 +8,10 @@ target 'dashwallet' do
   # DWLogger keeps CocoaLumberjack after the DashSync unlink. Pinned to the
   # version DashSync currently resolves to avoid a bump.
   pod 'CocoaLumberjack', '3.7.2'
+  # Imported directly by app-owned options and alert UI. Pin the versions
+  # currently provided by DashSync so unlinking it does not remove them.
+  pod 'DSDynamicOptions', '0.1.2'
+  pod 'DWAlertController', '0.2.1'
   pod 'SQLite.swift', '~> 0.15.3'
   pod 'SQLiteMigrationManager.swift', '0.8.3'
   pod 'CloudInAppMessaging', '0.1.0'
@@ -38,6 +42,10 @@ target 'dashpay' do
   # DWLogger keeps CocoaLumberjack after the DashSync unlink. Pinned to the
   # version DashSync currently resolves to avoid a bump.
   pod 'CocoaLumberjack', '3.7.2'
+  # Imported directly by app-owned options and alert UI. Pin the versions
+  # currently provided by DashSync so unlinking it does not remove them.
+  pod 'DSDynamicOptions', '0.1.2'
+  pod 'DWAlertController', '0.2.1'
   pod 'SQLite.swift', '~> 0.15.3'
   pod 'SQLiteMigrationManager.swift', '0.8.3'
   pod 'CloudInAppMessaging', '0.1.0'

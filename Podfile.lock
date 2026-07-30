@@ -743,6 +743,7 @@ DEPENDENCIES:
   - CocoaLumberjack (= 3.7.2)
   - DashSync (from `../DashSync/`)
   - DSDynamicOptions (= 0.1.2)
+  - DWAlertController (= 0.2.1)
   - Firebase/DynamicLinks
   - FirebaseStorage (= 8.15.0)
   - KVO-MVVM (= 0.5.6)
@@ -877,6 +878,6 @@ SPEC CHECKSUMS:
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   UIViewController-KeyboardAdditions: a691dc7e63a49854d341455a778ee8497dfc4662
 
-PODFILE CHECKSUM: a28c82e30ef534280b407ab407ceb88cc2b93bf4
+PODFILE CHECKSUM: aa50c4dfc7d45b01cbd94b06ffff0086b535dae1
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2
