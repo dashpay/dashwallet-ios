@@ -13,7 +13,6 @@ static const bool _SNAPSHOT = 0;
 //MARK: DashSync
 #import "DWLogger.h"
 #import "DSTransaction.h"
-#import "DSCoinbaseTransaction.h"
 #import "DSWallet.h"
 #import "DSPriceOperationProvider.h"
 #import "DSOperation.h"
@@ -30,8 +29,6 @@ static const bool _SNAPSHOT = 0;
 // project header map, so a bare quote-import is not found by the bridging-header
 // dependency scanner. $(SRCROOT) is on HEADER_SEARCH_PATHS.
 #import "DashWallet/Sources/Application/DWAmountConstants.h"
-#import "DashWallet/Sources/Models/Transactions/DSAccount+SpentInputCheck.h"
-#import "DashWallet/Sources/Categories/DSTransaction+DashWallet.h"
 #import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
