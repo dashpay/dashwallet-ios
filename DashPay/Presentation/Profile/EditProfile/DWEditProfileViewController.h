@@ -19,7 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DSBlockchainIdentity;
 @class DWEditProfileViewController;
 
 @protocol DWEditProfileViewControllerDelegate <NSObject>
@@ -30,7 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DWEditProfileViewController : UITableViewController
 
-@property (nullable, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 
 @property (readonly, nonatomic, copy) NSString *displayName;
 @property (readonly, nonatomic, copy) NSString *aboutMe;

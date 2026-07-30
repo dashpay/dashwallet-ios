@@ -22,30 +22,17 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
 
 @class DWDPRegistrationStatus;
-@class DSBlockchainIdentity;
 @class DWCurrentUserProfileModel;
 
 @protocol DWDashPayProtocol <NSObject>
 
 @property (nullable, readonly, nonatomic, copy) NSString *username;
-@property (nullable, readonly, nonatomic, strong) DSBlockchainIdentity *blockchainIdentity;
 @property (nullable, readonly, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (readonly, nonatomic, strong) DWCurrentUserProfileModel *userProfile;
 @property (nullable, readonly, nonatomic, strong) NSError *lastRegistrationError;
 @property (readonly, nonatomic, assign) BOOL registrationCompleted;
 @property (readonly, nonatomic, assign) NSUInteger unreadNotificationsCount;
-/// `YES` when the wallet has a DashPay identity from EITHER source —
-/// DashSync's `defaultBlockchainIdentity` (Core-funded path,
-/// reconstructed by DashSync's on-chain scanner) or
-/// SwiftDashSDK's `PersistentIdentity` row (any funding path,
-/// reflected by `DWGlobalOptions.dashpayRegistrationCompleted` after
-/// `DWIdentityRegistrationCoordinator` finishes). Row #17 stage A:
-/// the home-screen avatar visibility gate consults this so SDK-only
-/// identities surface in the UI without waiting for the full read-
-/// site migration. Callers that need the `DSBlockchainIdentity`
-/// object itself (Edit Profile, contacts) still read
-/// `blockchainIdentity` directly and get nil for the SDK path —
-/// row #17 proper migrates those.
+/// App/SDK-owned current-user identity availability.
 @property (readonly, nonatomic, assign) BOOL hasIdentity;
 
 - (BOOL)shouldPresentRegistrationPaymentConfirmation;
@@ -54,8 +41,6 @@ extern NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification;
 - (void)retry;
 - (void)completeRegistration;
 - (void)updateUsernameStatus;
-- (void)setHasEnoughBalanceForInvitationNotification:(BOOL)value;
-
 @end
 
 NS_ASSUME_NONNULL_END

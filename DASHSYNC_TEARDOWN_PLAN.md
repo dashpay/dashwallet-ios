@@ -1,6 +1,6 @@
 # DashSync pod teardown plan
 
-Current unlink plan, audited against the working tree on 2026-07-28. This file
+Current unlink plan, audited against the working tree on 2026-07-29. This file
 answers **what still prevents removing `pod 'DashSync'`**. Functional migration
 status lives in [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md).
 
@@ -53,9 +53,15 @@ requests use the app-owned Moya/`HTTPClient` stack. The Objective-C client
 remains only as a UI/model compatibility facade; unreachable account, legacy
 buy, and cancel endpoint chains were removed.
 
-The contacts rebuild in PR #787 is complete. Do not describe C10 as “contacts
-pending”; the remaining C10 scope is invitations plus legacy identity/profile
-compatibility types.
+The contacts rebuild in PR #787 is complete. The invitation/profile tail is
+also closed: the unreachable outgoing invitation chain and dead legacy profile
+containers were deleted; active incoming claims and profile UI are app/SDK-owned.
+
+`DWUploadAvatarModel` keeps its public Objective-C/KVO contract and automatic
+start, but delegates Imgur delete/upload to an internal Moya/`HTTPClient`
+client. It preserves resize/JPEG settings, delete retries, delete-before-upload,
+manual retry, response parsing, main-thread mutation, and cancellation/late-
+completion gates without importing DashSync HTTP types.
 
 CrowdNode is also not a teardown blocker. Its migrated implementation should be
 temporarily suspended/hidden for the migration release, but no CrowdNode path
@@ -78,25 +84,18 @@ but it is not an acceptable final migration or release pin.
 
 ## Remaining work
 
-### T1. Decide the DashPay invitation/profile tail
+### T1. DashPay invitation/profile tail — complete
 
-**Decision:** delete/compile-gate invitations or port them.
-
-Current coupling includes:
-
-- invitation create, accept, history, preview, and link UI using
-  `DSBlockchainInvitation`;
-- funding and status logic using `DSWallet`, `DSAccount`, `DSTransaction`, and
-  `DSBlockchainIdentity`;
-- old current-user profile/edit views retaining `DSBlockchainIdentity`-typed
-  properties/categories even when their displayed data comes from
-  `DWCurrentUserIdentityInfo`;
-- `JoinDashPayViewModel` compatibility reads.
-
-If invitations are kept, replace the whole async boundary and data model; do
-not adapt SDK values back into `DSBlockchainInvitation`. If they are removed,
-delete the entry points, types, project membership, and mock invitation paths
-in the same change.
+- Removed outgoing history/create/send/confirmation/legacy-preview UI,
+  `DWInvitationLinkBuilder`, dead menu/badge/preferences hooks, DS identity
+  categories, old current-profile/QR containers, and their exclusive project
+  membership/resources.
+- Retained the reachable claim graph unchanged: AppDelegate universal/custom
+  links → root deferred state → `ClaimInvitationScreen` → Create Username
+  invitation mode → SDK registration → optional contact request. Home paste and
+  scan entry points plus `DWInvitationSetupState` remain.
+- Home/profile/edit reads now use `DWCurrentUserIdentityInfo`; save always uses
+  `DWProfileUpdateBridge`. No `DSBlockchainInvitation` wrapper was introduced.
 
 ### T2. Decide the Apple Watch tail
 
@@ -114,7 +113,9 @@ depend on frozen DashSync account/transaction state.
 
 ### T3. Cut C6-E and delete `DWEnvironment`
 
-Do this after T1/T2 no longer need DashSync wallet objects.
+Do this after the Watch tail and `DWDashPayModel`'s internal legacy
+registration compatibility path no longer need DashSync wallet objects. T1 no
+longer consumes them.
 
 Remove together:
 
@@ -136,7 +137,6 @@ These are active repo tasks, not externally assigned work:
 
 | Surface | Current evidence | Required replacement |
 |---|---|---|
-| Profile avatar HTTP | `DWUploadAvatarModel` uses `HTTPLoaderManager` / `DSNetworkingCoordinator` | App-owned upload boundary preserving progress, cancellation, response parsing, and callback threading. |
 | Logger compatibility | `dwLogLevel` workaround | Revert to normal CocoaLumberjack `ddLogLevel` after DashSync headers disappear. |
 | App startup | `setupDashSyncOnce`, `DSOptionsManager` | Delete once every required service has an app/SDK owner. |
 | Transitive pods | `DSDynamicOptions`, `DWAlertController`, CocoaLumberjack | Keep required libraries directly declared before removing DashSync. `DSDynamicOptions` is already direct for TodayExtension; verify both app targets. |
@@ -155,15 +155,30 @@ After T1-T4:
 ## Sequence
 
 ```text
-T1 invitation/profile decision + implementation ----+
+T1 invitation/profile implementation [complete] ----+
                                                     +--> T3 C6-E / DWEnvironment
 T2 Watch decision + implementation -----------------+             |
                                                                   +--> T5 unlink
 T4 non-wallet export replacements -------------------------------+
 ```
 
-T4 can run independently before the two product decisions. T3 must wait until
-both remaining consumers of `DWEnvironment` have a final shape.
+The remaining T4 work can run independently before the Watch decision. T3 must
+wait until the Watch bridge and legacy registration consumer of `DWEnvironment`
+have a final shape.
+
+### Direct DashSync import classification after T1
+
+| Source | Classification |
+|---|---|
+| `DashWallet/AppDelegate.m` | C6-E/startup teardown: umbrella import for DashSync bootstrap. |
+| `DashWallet/Sources/Models/DWEnvironment.h` | C6-E wallet-registry compatibility owner. |
+| `DashWallet/Sources/Models/Transactions/DSAccount+SpentInputCheck.{h,m}` | Dormant DSAccount category, exposed only by the bridging header; remove with the remaining compatibility cleanup. |
+| `DashWallet/Sources/UI/Payments/PaymentModels/DWPaymentProcessor.m` | Stale, unused `DSTransactionInput` import; no live DS transaction read in the processor. |
+| `DashWallet/Sources/AppleWatch/DSWatchTransactionDataObject.h` | Apple Watch tail, deliberately untouched/out of scope. |
+
+These are six source files. The only functional `DSBlockchainIdentity` matches
+outside comments are internal to `DWDashPayModel`'s legacy registration path;
+there are no functional `DSBlockchainInvitation` matches.
 
 The non-blocking CrowdNode suspension and platform-upstream work can run in
 parallel with T1-T4. They do not change the order of the DashSync unlink.
@@ -209,7 +224,8 @@ xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay \
 - wipe from Settings, lock screen, and recovery/backup paths;
 - receive, standard send, BIP70, and pay-to-contact;
 - PIN lockout and biometric spending limit;
-- invitation flow if retained;
+- incoming invitation claim from link, Home paste/scan, inviter preview, and
+  optional post-claim contact request;
 - Watch payload compatibility if retained;
 - Uphold/Coinbase sessions survive the keychain-helper replacement;
 - local-currency picker and About diagnostics after unlink.

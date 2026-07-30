@@ -1,6 +1,6 @@
 # DashSync -> SwiftDashSDK migration status
 
-Current-state ledger for the DashSync removal. Updated 2026-07-28 from the
+Current-state ledger for the DashSync removal. Updated 2026-07-29 from the
 working tree; historical stage-by-stage detail is available in Git history.
 
 This file answers **what is migrated**. Use
@@ -15,38 +15,39 @@ transaction list/detail, standard sends, fees, BIP70, authentication, wallet
 creation/recovery, contacts, the fiat-rate pipeline, logging, CrowdNode signing, network
 selection, and xpub export no longer depend on live DashSync wallet state.
 
-DashSync is still linked for four bounded tails:
+DashSync is still linked for three bounded tails:
 
-1. **DashPay invitations and legacy current-user profile types** — contacts are
-   migrated, but invitations still use `DSBlockchainInvitation`, `DSWallet`,
-   `DSAccount`, `DSTransaction`, and `DSBlockchainIdentity`. A few old profile
-   views retain `DSBlockchainIdentity`-typed compatibility properties even
-   where their data now comes from `DWCurrentUserIdentityInfo`.
-2. **Apple Watch phone bridge** — the targets and bridge remain; transaction
+1. **Apple Watch phone bridge** — the targets and bridge remain; transaction
    payload formatting still reads `DSAccount`/`DSTransaction`. The watch app is
-   not embedded by either app target on this branch.
-3. **C6-E wallet-registry teardown** — create/recover still dual-write a
+   not embedded by either app target on this branch. Watch was deliberately
+   untouched and is out of scope for the invitation/profile tail.
+2. **C6-E wallet-registry teardown** — create/recover still dual-write a
    `DSWallet`; wipe clears both stores; `WalletEnvironment.hasWallet` includes
    the DashSync registry; `DSChainWalletsDidChangeNotification` is still
    observed; `DWEnvironment` mirrors the active SDK wallet when switching
-   networks.
-4. **Pod-unlink mechanics and compatibility surfaces** — profile-avatar
-   networking, AppDelegate setup, and project/Podfile link entries. Coinbase
-   and Uphold keychain access and the reachable Uphold HTTP flows are app-owned.
+   networks. `DWDashPayModel` also retains an internal legacy
+   `DSBlockchainIdentity` registration compatibility path; active profile UI
+   no longer consumes that object.
+3. **Pod-unlink mechanics and compatibility surfaces** — AppDelegate setup,
+   a dormant `DSAccount` spent-input category, one stale payment import, and
+   project/Podfile link entries. Coinbase/Uphold keychain access, reachable
+   Uphold HTTP flows, and profile-avatar networking are app-owned.
 
-As of this audit, 12 app source files directly import DashSync. Counts of all
+As of this audit, six app source files directly import DashSync. Counts of all
 `DS*` tokens are not a useful progress metric because app-owned names such as
 `DSTransactionDirection`, comments, and frozen compatibility contracts are
 included.
 
 ## Platform pin
 
-The app consumes sibling `../platform` on **`v4.1-dev`** (verified 2026-07-21
-at `origin/v4.1-dev` tip `7f4aaa2a44`: both XCFramework slices and the SDK
+The release pin remains **`v4.1-dev`** (verified 2026-07-21 at
+`origin/v4.1-dev` tip `7f4aaa2a44`: both XCFramework slices and the SDK
 example app build green, and the dashpay arm64-sim build is green. The
-dashwallet build and focused tests remain blocked before compilation by the
-local watchOS runtime mismatch, `23S303` vs SDK `23T570`). The branch's earlier
-breaking change — platform
+dashwallet build and native focused-test scheme remain blocked before app
+compilation by the local watchOS runtime mismatch, `23S303` vs SDK `23T570`;
+the avatar tests compile through an isolated dashpay-host diagnostic, but that
+non-production runner exits during bootstrap because it duplicates app
+classes). The branch's earlier breaking change — platform
 #4140 removing `EstablishedContact`'s clone-mutating setters, which never
 wrote real state — requires app tip ≥ #834, where contact alias/note/hidden
 write through `setDashPayContactInfo` instead. Earlier drift notes (the
@@ -58,6 +59,12 @@ classified SPV peers, the filter-rescan FFI (#4099), and the
 partial-amount platform address withdrawal wrapper (#4139). The
 `local/tx-decode-plus-v4.1-dev-dashwallet` integration branch and the
 `v4.1-dev-local` sidecar are retired.
+
+The sibling checkout observed during the 2026-07-29 avatar/profile-tail audit
+was clean but on **`v4.2-dev`** at `e1fb9115d8`; it was not changed because
+SDK/platform updates were outside this tail. This is a documented local
+baseline discrepancy and must be returned to the release pin before release
+verification.
 
 No open nuances: the verified tip includes
 [platform #4049](https://github.com/dashpay/platform/pull/4049) (merged as
@@ -103,8 +110,8 @@ Status meanings:
 | 13 | Backup seed phrase | Done | Reads the active SDK wallet mnemonic from host-owned storage. |
 | 14 | Wipe wallet | Done; teardown tail | Reinstall recovery and Settings Debug Reset both gate onboarding behind the background wipe executor's explicit success result; per-wallet SDK deletion remains synchronous, and a failed delete preserves mnemonic/runtime state and the in-memory identity snapshot for retry. After a successful wipe the stopped runtime installs an empty identity snapshot and publishes the wallet-context change; a newly started wallet publishes the same event, rebuilding the DashPay tab bar as 3 or 5 items from that wallet's identity state. Remove the DashSync registry/Core Data wipe arm after all consumers are gone. |
 | 15 | Provider-key derivation | Done | All four families are SDK-native: Owner/Voting via the key-wallet path surface, Operator (BLS) and Evonode Operator (Ed25519) via `ManagedPlatformWallet.providerKeyAtIndex` (`platform_wallet_provider_key_at_index` grew per-index BLS/EdDSA public-key export, removing the earlier blocker). Overview counts and per-keypair “used at” restored from the Rust masternode aggregation (`PlatformWalletManager.masternodes(for:)`). |
-| 16 | DashPay identity creation | Done; invitation tail | Standard SDK-funded identity/name registration is migrated, with three funding paths (Core asset-lock, Platform Payment, shielded Type-20 — the privacy-preserving default, gated by `ShieldedIdentityFundingReadiness`). Every new identity registers the DashPay ENCRYPTION/DECRYPTION pair in IdentityCreate; the lazy IdentityUpdate upgrader remains as a fallback for incomplete identities. Invitation-funded create/accept remains part of the invitation decision. |
-| 17 | DashPay identity/profile read-write | Done; compatibility tail | Retire remaining `DSBlockchainIdentity`-typed profile properties/categories and route every old view directly through `DWCurrentUserIdentityInfo` / `DWProfileUpdateBridge`. |
+| 16 | DashPay identity creation | Done | Standard SDK-funded identity/name registration is migrated, with three funding paths (Core asset-lock, Platform Payment, shielded Type-20 — the privacy-preserving default, gated by `ShieldedIdentityFundingReadiness`). Every new identity registers the DashPay ENCRYPTION/DECRYPTION pair in IdentityCreate; the lazy IdentityUpdate upgrader remains as a fallback for incomplete identities. Incoming invitation claims still enter through universal/custom links or Home paste/scan, then use Create Username invitation mode and SDK registration; the unreachable outgoing create/send/history chain was removed. |
+| 17 | DashPay identity/profile read-write | Done | Home avatar/profile reads, the profile sheet, editor, and save model use `DWCurrentUserIdentityInfo` / `DWProfileUpdateBridge`. The old current-profile/QR containers, duplicate avatar view, `DSBlockchainIdentity` categories/properties, and synthetic identity reads were removed. Avatar hosting now uses the app-owned Moya/`HTTPClient` Imgur client while preserving the Objective-C model contract. |
 | 18 | DashPay contacts and pay-to-contact | Done | PR #787 rebuilt contacts on SwiftDashSDK/SwiftData/SwiftUI and removed the old contacts subsystem. Recipient eligibility matches the SDK's DECRYPTION-preferred, ENCRYPTION-fallback policy so encryption-only mobile identities remain reachable. Invitations were explicitly out of scope. |
 | 18a | Contested DPNS-name detection | Done for retained scope | Warning/bookmark behavior is SDK-native; richer resolution/status UX remains optional product work, not a DashSync blocker. |
 | 19 | DPNS lookup | Done | Availability and contact search use SDK APIs. |
@@ -138,8 +145,11 @@ No DashSync Core Data -> SwiftData copy is required:
 
 ## Decisions blocking teardown
 
-- **Invitations:** delete/compile-gate the feature now, or port create/accept/link
-  behavior using the available lower-level SDK/FFI primitives.
+- **Invitations:** no longer a decision. The unreachable outgoing
+  create/send/history/confirmation/legacy-preview chain is deleted. Incoming
+  claim links plus Home paste/scan remain and register through the SDK-owned
+  Create Username invitation mode, including the optional post-claim contact
+  request.
 - **Apple Watch:** remove the non-embedded legacy targets/phone bridge, or port
   and deliberately restore shipping.
 - **CrowdNode:** temporarily suspend it for the migration release; this decision

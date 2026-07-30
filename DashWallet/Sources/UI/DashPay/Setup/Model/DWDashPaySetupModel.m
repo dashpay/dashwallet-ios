@@ -19,7 +19,7 @@
 
 @implementation DWDashPaySetupModel
 
-@synthesize blockchainIdentity;
+@synthesize hasIdentity;
 
 @synthesize lastRegistrationError;
 
@@ -48,10 +48,6 @@
 
 - (void)retry {
     NSAssert(NO, @"Should not be called");
-    // nop
-}
-
-- (void)setHasEnoughBalanceForInvitationNotification:(BOOL)value {
     // nop
 }
 

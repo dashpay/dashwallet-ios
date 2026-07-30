@@ -20,15 +20,6 @@ class JoinDashPayViewModel: ObservableObject {
     @Published private(set) var state: JoinDashPayState
     @Published private(set) var username: String = ""
     
-    private var blockchainIdentity: DSBlockchainIdentity? {
-        if MOCK_DASHPAY.boolValue {
-            if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
-            }
-        }
-        return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
-    }
-    
     init(initialState: JoinDashPayState) {
         self.initialState = initialState
         self.state = initialState
@@ -36,15 +27,20 @@ class JoinDashPayViewModel: ObservableObject {
 
     @MainActor
     func checkUsername() {
+        let identity = DWCurrentUserIdentityInfo.shared
+        let options = DWGlobalOptions.sharedInstance()
+
         if let pending = DWContestedNameStatusService.shared.pendingLabel {
             // Same-seed recovery reconstructs this bookmark from Platform.
             // Surface the real voting state instead of offering Join DashPay
             // for an identity that already has a submitted name.
             self.state = .voting
             self.username = pending
-        } else if blockchainIdentity != nil && DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted && UsernamePrefs.shared.joinDashPayDismissed { // TODO: MOCK_DASHPAY simplify
+        } else if let registeredUsername = identity.username ?? options.dashpayUsername,
+                  identity.hasIdentity || options.dashpayRegistrationCompleted,
+                  UsernamePrefs.shared.joinDashPayDismissed {
             self.state = .registered
-            self.username = blockchainIdentity?.currentDashpayUsername ?? ""
+            self.username = registeredUsername
         } else {
             Task {
                 // TODO: MOCK_DASHPAY replace with actual state check
