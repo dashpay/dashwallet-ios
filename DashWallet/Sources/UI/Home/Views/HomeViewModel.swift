@@ -958,7 +958,7 @@ extension HomeViewModel {
             if !isShieldedReceipt {
                 categories.insert(.received)
             }
-        default:
+        case .moved, .notAccountFunds:
             break
         }
         return categories

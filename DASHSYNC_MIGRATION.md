@@ -31,16 +31,16 @@ DashSync is still linked for three bounded tails:
    `DSBlockchainIdentity` registration compatibility path; active profile UI
    no longer consumes that object.
 3. **Pod-unlink mechanics and compatibility surfaces** — AppDelegate setup,
-   the `DSTransaction.h` bridging exposure retained solely for
-   `DSTransactionDirection`, non-wallet exported helpers, and project/Podfile
-   link entries. Coinbase/Uphold keychain access, reachable Uphold HTTP flows,
-   profile-avatar networking, and Coinbase transaction/balance integration are
-   app-owned.
+   non-wallet exported helpers, and project/Podfile link entries.
+   Coinbase/Uphold keychain access, reachable Uphold HTTP flows,
+   profile-avatar networking, Coinbase transaction/balance integration, and
+   the shared transaction-direction model are app-owned.
 
 As of this audit, three app source files directly import DashSync. Counts of all
-`DS*` tokens are not a useful progress metric because app-owned names such as
-`DSTransactionDirection`, comments, and frozen compatibility contracts are
-included.
+`DS*` tokens are not a useful progress metric because comments and frozen
+compatibility contracts are included. The app bridging header no longer
+exposes `DSTransaction.h`; functional `DSTransaction` references are confined
+to the Apple Watch phone bridge.
 
 ## Platform pin
 
@@ -104,7 +104,7 @@ Status meanings:
 | 3 | Mnemonic generation / create wallet | Done; teardown tail | SDK-owned mnemonic storage is verified before a wallet becomes live in `PlatformWalletManager`; remove the adjacent `DSWallet standardWalletWithSeedPhrase` dual-write in C6-E. |
 | 4 | Mnemonic validation | Done | None. Uses `Mnemonic.validate`. |
 | 5 | Wallet balance | Done | None. Production balance reads use `SwiftDashSDKWalletState`; Home reloads transaction projections only for distinct post-subscription balance changes, while `BalanceModel` binds directly to the SDK publisher. Coinbase transfer amount refreshes from its SDK-backed model balance and uses the fee-aware active-wallet maximum for its leftover warning. |
-| 6 | Transaction list | Done | None. History and Coinbase transaction metadata/tagging use active-wallet-scoped SDK-persisted SwiftData rows. The obsolete `DSTransaction` UI category and spent-input `DSAccount` category are removed. |
+| 6 | Transaction list | Done | None. History and Coinbase transaction metadata/tagging use active-wallet-scoped SDK-persisted SwiftData rows. Direction mapping and UI formatting use app-owned `TransactionDirection`; the obsolete `DSTransaction` UI category, spent-input `DSAccount` category, and `DSTransaction.h` bridging exposure are removed. |
 | 7 | Transaction detail | Done | None. Uses SDK snapshots and recent-send resolution. |
 | 8 | Send Dash | Done | None. Money movement goes through `WalletSendService` / `SwiftDashSDKTransactionSender`. |
 | 9 | Fee estimation | Done | None. Confirmation uses the transaction builder's fee. |

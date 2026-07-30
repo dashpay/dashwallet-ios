@@ -17,6 +17,15 @@
 
 import Foundation
 
+// MARK: - TransactionDirection
+
+enum TransactionDirection: Equatable {
+    case sent
+    case received
+    case moved
+    case notAccountFunds
+}
+
 // MARK: - TransactionDataItem
 
 protocol TransactionDataItem {
@@ -26,19 +35,16 @@ protocol TransactionDataItem {
     var txHashHexString: String { get }
     var dashAmount: UInt64 { get }
     var signedDashAmount: Int64 { get }
-    var direction: DSTransactionDirection { get }
+    var direction: TransactionDirection { get }
     var fiatAmount: String { get }
     var iconName: String { get }
     var stateTitle: String { get }
     var shortDateString: String { get }
 }
 
-// MARK: - DSTransactionDirection UI formatting
-// (Lives here with the rest of the tx-row formatting. The direction enum is
-// still DashSync's — replacing it with an app-owned enum is a separate,
-// repo-wide step tracked in the teardown plan.)
+// MARK: - TransactionDirection UI formatting
 
-extension DSTransactionDirection {
+extension TransactionDirection {
     var title: String {
         switch self {
         case .sent:
@@ -49,8 +55,6 @@ extension DSTransactionDirection {
             return NSLocalizedString("Moved to Address", comment: "");
         case .notAccountFunds:
             return NSLocalizedString("Registered Masternode", comment: "");
-        @unknown default:
-            fatalError()
         }
     }
 
@@ -63,8 +67,6 @@ extension DSTransactionDirection {
         case .moved:
             return .dw_orange()
         case .notAccountFunds:
-            return .dw_label()
-        @unknown default:
             return .dw_label()
         }
     }
@@ -79,8 +81,6 @@ extension DSTransactionDirection {
             return "tx.item.received.icon"
         case .notAccountFunds:
             return "tx.item.received.icon"
-        @unknown default:
-            fatalError()
         }
     }
 
@@ -94,7 +94,7 @@ extension DSTransactionDirection {
             return "+";
         case .sent:
             return "-";
-        default:
+        case .moved, .notAccountFunds:
             return "";
         }
     }
@@ -107,8 +107,6 @@ extension DSTransactionDirection {
             return .dw_darkTitle()
         case .received, .notAccountFunds:
             return .dw_dashBlue()
-        @unknown default:
-            fatalError()
         }
     }
 }

@@ -183,13 +183,13 @@ class Transaction: TransactionDataItem, Identifiable {
         return name
     }
 
-    var direction: DSTransactionDirection {
+    var direction: TransactionDirection {
         if let payment = dashPayPayment {
             return payment.isOutgoing ? .sent : .received
         }
         return _direction
     }
-    private lazy var _direction: DSTransactionDirection = {
+    private lazy var _direction: TransactionDirection = {
         // FFI direction encoding: 0=incoming, 1=outgoing, 2=internal,
         // 3=coinjoin. Promote outgoing→moved when the wallet's net
         // change equals just the fee (self-send) — mirrors DashSync's
@@ -383,8 +383,6 @@ class Transaction: TransactionDataItem, Identifiable {
             return 0
         case .notAccountFunds:
             return 0
-        @unknown default:
-            return UInt64(abs(snapshot.netAmount))
         }
     }()
 
@@ -550,8 +548,6 @@ class Transaction: TransactionDataItem, Identifiable {
                 return NSLocalizedString("Received", comment: "")
             case .moved:
                 return NSLocalizedString("Internal Transfer", comment:"Transaction within the wallet, transfer of own funds");
-            default:
-                fatalError()
             }
         case .reward:
             return NSLocalizedString("Mining Reward", comment: "Transaction type: coinbase/masternode mining reward")
