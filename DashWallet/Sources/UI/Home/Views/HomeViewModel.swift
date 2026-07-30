@@ -1148,6 +1148,11 @@ struct CoreWithdrawalReceiptMatchPolicy {
 /// thread mid-scroll. A private context reads the last SAVED state —
 /// which is exactly what the `NSManagedObjectContextDidSave` reload
 /// trigger guarantees is current.
+struct SwiftDashSDKWalletTransactionSnapshot {
+    let walletId: Data
+    let transactions: [Transaction]
+}
+
 class SwiftDashSDKWalletSource: TransactionSource {
     var allTransactions: Array<Transaction> {
         Self.fetchAll().sorted { $0.date > $1.date }
@@ -1157,8 +1162,17 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// Safe from any thread. Shared read for every tx-history consumer that
     /// used to enumerate DashSync's `DSWallet.allTransactions`.
     static func fetchAll() -> [Transaction] {
-        guard let (container, walletId) = hostHandles() else { return [] }
-        return fetchAndWrap(in: ModelContext(container), walletId: walletId)
+        fetchCurrentWalletSnapshot()?.transactions ?? []
+    }
+
+    /// Active wallet id and its persisted transactions, captured from one
+    /// host-handle read. Callers that retain work across wallet switches use
+    /// the id to prevent a pending operation from matching another wallet's
+    /// transaction set.
+    static func fetchCurrentWalletSnapshot() -> SwiftDashSDKWalletTransactionSnapshot? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        let transactions = fetchAndWrap(in: ModelContext(container), walletId: walletId)
+        return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: transactions)
     }
 
     /// Single transaction by txid (wire order — the same `Data` as

@@ -1,6 +1,6 @@
 # DashSync pod teardown plan
 
-Current unlink plan, audited against the working tree on 2026-07-29. This file
+Current unlink plan, audited against the working tree on 2026-07-30. This file
 answers **what still prevents removing `pod 'DashSync'`**. Functional migration
 status lives in [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md).
 
@@ -56,6 +56,11 @@ buy, and cancel endpoint chains were removed.
 The contacts rebuild in PR #787 is complete. The invitation/profile tail is
 also closed: the unreachable outgoing invitation chain and dead legacy profile
 containers were deleted; active incoming claims and profile UI are app/SDK-owned.
+
+Coinbase transaction tagging and Home metadata now read the active wallet's
+SDK-persisted transaction snapshot and refresh from SwiftData/app-owned wallet
+events. The obsolete `DSTransaction+DashWallet` and spent-input `DSAccount`
+categories plus the stale payment-processor import were removed.
 
 `DWUploadAvatarModel` keeps its public Objective-C/KVO contract and automatic
 start, but delegates Imgur delete/upload to an internal Moya/`HTTPClient`
@@ -172,11 +177,12 @@ have a final shape.
 |---|---|
 | `DashWallet/AppDelegate.m` | C6-E/startup teardown: umbrella import for DashSync bootstrap. |
 | `DashWallet/Sources/Models/DWEnvironment.h` | C6-E wallet-registry compatibility owner. |
-| `DashWallet/Sources/Models/Transactions/DSAccount+SpentInputCheck.{h,m}` | Dormant DSAccount category, exposed only by the bridging header; remove with the remaining compatibility cleanup. |
-| `DashWallet/Sources/UI/Payments/PaymentModels/DWPaymentProcessor.m` | Stale, unused `DSTransactionInput` import; no live DS transaction read in the processor. |
 | `DashWallet/Sources/AppleWatch/DSWatchTransactionDataObject.h` | Apple Watch tail, deliberately untouched/out of scope. |
 
-These are six source files. The only functional `DSBlockchainIdentity` matches
+These are three source files. The app bridging header still exposes
+`DSTransaction.h` solely for the widely used `DSTransactionDirection` enum; it
+does not expose a live DashSync transaction object path. Migrating that enum is
+a separate compatibility cleanup. The only functional `DSBlockchainIdentity` matches
 outside comments are internal to `DWDashPayModel`'s legacy registration path;
 there are no functional `DSBlockchainInvitation` matches.
 

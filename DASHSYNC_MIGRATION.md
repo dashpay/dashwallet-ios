@@ -1,6 +1,6 @@
 # DashSync -> SwiftDashSDK migration status
 
-Current-state ledger for the DashSync removal. Updated 2026-07-29 from the
+Current-state ledger for the DashSync removal. Updated 2026-07-30 from the
 working tree; historical stage-by-stage detail is available in Git history.
 
 This file answers **what is migrated**. Use
@@ -33,7 +33,7 @@ DashSync is still linked for three bounded tails:
    project/Podfile link entries. Coinbase/Uphold keychain access, reachable
    Uphold HTTP flows, and profile-avatar networking are app-owned.
 
-As of this audit, six app source files directly import DashSync. Counts of all
+As of this audit, three app source files directly import DashSync. Counts of all
 `DS*` tokens are not a useful progress metric because app-owned names such as
 `DSTransactionDirection`, comments, and frozen compatibility contracts are
 included.
@@ -100,7 +100,7 @@ Status meanings:
 | 3 | Mnemonic generation / create wallet | Done; teardown tail | SDK-owned mnemonic storage is verified before a wallet becomes live in `PlatformWalletManager`; remove the adjacent `DSWallet standardWalletWithSeedPhrase` dual-write in C6-E. |
 | 4 | Mnemonic validation | Done | None. Uses `Mnemonic.validate`. |
 | 5 | Wallet balance | Done | None. Uses `SwiftDashSDKWalletState`. |
-| 6 | Transaction list | Done | None. Uses SDK-persisted SwiftData rows. |
+| 6 | Transaction list | Done | None. History and Coinbase transaction metadata/tagging use active-wallet-scoped SDK-persisted SwiftData rows. The obsolete `DSTransaction` UI category and spent-input `DSAccount` category are removed. |
 | 7 | Transaction detail | Done | None. Uses SDK snapshots and recent-send resolution. |
 | 8 | Send Dash | Done | None. Money movement goes through `WalletSendService` / `SwiftDashSDKTransactionSender`. |
 | 9 | Fee estimation | Done | None. Confirmation uses the transaction builder's fee. |
