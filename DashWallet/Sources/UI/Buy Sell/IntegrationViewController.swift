@@ -282,7 +282,7 @@ extension IntegrationViewController: ASWebAuthenticationPresentationContextProvi
         guard let url = url,
               let scheme = url.scheme?.lowercased(),
               scheme == "https" || scheme == "http" else {
-            DSLogger.log("IntegrationViewController: auth URL missing or has unsupported scheme — integration not configured")
+            DWLogger.log("IntegrationViewController: auth URL missing or has unsupported scheme — integration not configured")
             return
         }
 

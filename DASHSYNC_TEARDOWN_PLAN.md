@@ -1,221 +1,79 @@
-# DashSync pod teardown plan
+# DashSync pod teardown verification
 
-Current unlink plan, audited against the working tree on 2026-07-30. This file
-answers **what still prevents removing `pod 'DashSync'`**. Functional migration
-status lives in [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md).
+Audited against the working tree on 2026-07-30. Functional ownership lives in
+[`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md); mnemonic upgrade behavior
+lives in [`DASHSYNC_KEY_MIGRATION.md`](./DASHSYNC_KEY_MIGRATION.md).
 
-## Exit criteria
+## Implementation status
 
-Teardown is complete only when all of the following are true:
+The dependency teardown is implemented in this working tree:
 
-- neither app target declares or links DashSync;
-- no app source file imports a DashSync header/module;
-- no live app path creates or reads `DSChain`, `DSWallet`, `DSAccount`,
-  `DSTransaction`, `DSBlockchainIdentity`, or `DSBlockchainInvitation`;
-- DashSync bundle, commit-hash resource, build scripts, linker flags, header
-  paths, and generated pod references are gone;
-- upgrade-time mnemonic and PIN/token compatibility remains readable through
-  app-owned code;
-- both `dashwallet` and `dashpay` build and the affected upgrade/wipe/send flows
-  pass runtime smoke tests.
+- `pod 'DashSync'` is removed from both app targets and CocoaPods 1.15.2 has
+  regenerated the lockfile/project;
+- DashSync and its no-longer-needed native/gRPC transitive pods are absent;
+- framework, bundle, commit-hash resource, header path, linker flag, build
+  script, bridging-header import, source membership, and project references
+  are removed;
+- AppDelegate no longer bootstraps DashSync or `DSOptionsManager`;
+- `DWEnvironment`, its wallet-registry mirroring, create/recover dual writes,
+  chain-wallet observer, and DashSync Core Data wipe arm are removed;
+- the DashPay registration compatibility path no longer creates or reads
+  `DSBlockchainIdentity`;
+- CocoaLumberjack uses its normal `ddLogLevel`; production call sites use the
+  app-owned logger;
+- direct app dependencies on CocoaLumberjack 3.7.2, `DSDynamicOptions` 0.1.2,
+  and `DWAlertController` 0.2.1 remain explicit. `DSDynamicOptions` is a
+  separate library, not DashSync.
 
-## Completed migration clusters
+There are no direct DashSync imports and no functional `DSChain`, `DSWallet`,
+`DSAccount`, `DSTransaction`, `DSBlockchainIdentity`, or
+`DSBlockchainInvitation` uses. Remaining matches are historical comments or
+the frozen upgrade contract and must be reviewed by ownership rather than
+counted as a raw `DS[A-Z]` gate.
 
-The following are no longer teardown blockers: SDK SPV and wallet state,
-transaction list/detail, receive, standard sends and fees, BIP70, address and
-mnemonic validation, authentication, reachability, the app-owned fiat-rate pipeline, logging, CrowdNode
-signing/APY, network identity/switch ownership, xpub export, DashPay registration
-and contacts, and CoinJoin recovery/sweep.
+## Apple Watch resolution
 
-The local-currency Objective-C boundary is app-owned, including the currency
-picker DTO and Confirm Username fiat formatter.
+The Watch app was ported, not removed.
 
-About now reports app/network information without a DashSync commit resource
-or CocoaPods generation hook.
+`DWPhoneWCSessionManager` now obtains wallet existence, balance/address data,
+recent transactions, and latest-transaction notifications from app/SDK-owned
+state. `DWAppleWatchSnapshotProvider` maps the active SwiftDashSDK transaction
+snapshot into the existing `BRAppleWatchTransactionData`.
 
-Permission and termination notifications are app-owned. Receive-address
-refresh no longer observes the dead DashSync transaction-manager notification.
+Compatibility intentionally preserved:
 
-Dash amount and maximum-supply constants are app-owned in both Swift and
-Objective-C; amount formatting and security defaults no longer import them
-through DashSync.
+- `NSCoding` field keys and serialized classes;
+- `BRAWTransactionType` raw values;
+- sent/received/moved/invalid mapping;
+- Dash and fiat amount formatting;
+- date formatting;
+- newest-first ordering and 100-transaction limit;
+- WatchConnectivity request/reply and notification keys.
 
-Lockout localization/duration formatting, top-controller lookup, and the secure
-mnemonic allocator are app-owned. Root navigation and wallet recovery no longer
-carry incidental DashSync umbrella imports.
+The deleted `DSWatchTransactionData*` files were DashSync-only phone adapters.
+Watch UI targets and resources remain unchanged.
 
-Generic keychain access is app-owned and byte-compatible for authentication,
-Coinbase, Uphold, and global security flags. Existing service/account names and
-per-item accessibility classes are adopted in place with no token migration.
+## Upgrade and wipe compatibility
 
-Uphold's reachable OAuth, cards, address, withdrawal, commit, and revoke
-requests use the app-owned Moya/`HTTPClient` stack. The Objective-C client
-remains only as a UI/model compatibility facade; unreachable account, legacy
-buy, and cancel endpoint chains were removed.
+The app-owned key migrator remains the only reader of the frozen DashSync
+keychain layout. It never mutates or deletes `org.dashfoundation.dash`.
+Create/recover and wipe are SDK-only after migration:
 
-The contacts rebuild in PR #787 is complete. The invitation/profile tail is
-also closed: the unreachable outgoing invitation chain and dead legacy profile
-containers were deleted; active incoming claims and profile UI are app/SDK-owned.
-
-Coinbase transaction tagging and Home metadata now read the active wallet's
-SDK-persisted transaction snapshot and refresh from SwiftData/app-owned wallet
-events. The obsolete `DSTransaction+DashWallet` and spent-input `DSAccount`
-categories plus the stale payment-processor import were removed.
-
-Coinbase transfer amount now refreshes from the SDK-backed balance published by
-its amount model and uses the active wallet's fee-aware maximum for the
-CrowdNode leftover warning. Its dead `DWEnvironment.currentAccount` protocol
-fallback and legacy balance notification observer were removed.
-
-Shared transaction direction is app-owned. `TransactionDirection` preserves
-the SDK FFI mapping, self-send promotion, DashPay override, UI formatting,
-metadata categories, and CrowdNode matching without exposing
-`DSTransaction.h` through the app bridging header.
-
-Both app targets directly declare CocoaLumberjack 3.7.2,
-`DSDynamicOptions` 0.1.2, and `DWAlertController` 0.2.1 instead of relying on
-DashSync's transitive dependencies. TodayExtension retains its existing direct
-`DSDynamicOptions` declaration.
-
-The passive Home, Explore, and Buy/Sell UI tail is app/SDK-owned. Home and its
-balance model consume `SwiftDashSDKWalletState`; Explore resolves the active SDK
-receive address at faucet action time; and Explore/Buy-Sell network gating uses
-`WalletEnvironment`. Their scoped legacy balance and `DWEnvironment` consumers
-were removed without changing network/wallet lifecycle notifications.
-
-`DWUploadAvatarModel` keeps its public Objective-C/KVO contract and automatic
-start, but delegates Imgur delete/upload to an internal Moya/`HTTPClient`
-client. It preserves resize/JPEG settings, delete retries, delete-before-upload,
-manual retry, response parsing, main-thread mutation, and cancellation/late-
-completion gates without importing DashSync HTTP types.
-
-CrowdNode is also not a teardown blocker. Its migrated implementation should be
-temporarily suspended/hidden for the migration release, but no CrowdNode path
-may be used as a reason to retain DashSync.
-
-## Non-blocking release actions
-
-These actions must be tracked for the migration release but do not participate
-in the T1-T5 dependency chain:
-
-- temporarily suspend/hide CrowdNode entry points; do not add a DashSync
-  fallback;
-- upstream/reconcile every app-required commit from
-  `local/tx-decode-plus-v4.1-dev-dashwallet` onto platform `v4.1-dev`;
-- switch the sibling `../platform` checkout to `v4.1-dev`, rebuild both device
-  and simulator xcframework slices, and pass both app builds before release.
-
-The temporary platform integration branch is acceptable during development,
-but it is not an acceptable final migration or release pin.
-
-## Remaining work
-
-### T1. DashPay invitation/profile tail — complete
-
-- Removed outgoing history/create/send/confirmation/legacy-preview UI,
-  `DWInvitationLinkBuilder`, dead menu/badge/preferences hooks, DS identity
-  categories, old current-profile/QR containers, and their exclusive project
-  membership/resources.
-- Retained the reachable claim graph unchanged: AppDelegate universal/custom
-  links → root deferred state → `ClaimInvitationScreen` → Create Username
-  invitation mode → SDK registration → optional contact request. Home paste and
-  scan entry points plus `DWInvitationSetupState` remain.
-- Home/profile/edit reads now use `DWCurrentUserIdentityInfo`; save always uses
-  `DWProfileUpdateBridge`. No `DSBlockchainInvitation` wrapper was introduced.
-
-### T2. Decide the Apple Watch tail
-
-**Decision:** remove or port.
-
-The Watch targets still exist. `dashwallet` still has and builds a WatchApp
-target dependency, although its Embed Watch Content phase is empty; `dashpay`
-has no Watch dependency. `DWPhoneWCSessionManager` and
-`DSWatchTransactionDataObject` still depend on frozen DashSync
-account/transaction state.
-
-- **Remove:** delete Watch targets, `Sources/AppleWatch`, Podfile watch targets,
-  and phone hooks.
-- **Port:** create an SDK snapshot provider, preserve the existing NSCoding
-  wire format for installed watches, replace the transaction/account reads,
-  and deliberately restore the embed phase.
-
-### T3. Cut C6-E and delete `DWEnvironment`
-
-Do this after the Watch tail and `DWDashPayModel`'s internal legacy
-registration compatibility path no longer need DashSync wallet objects. T1 no
-longer consumes them.
-
-Remove together:
-
-- create/recover `standardWalletWithSeedPhrase` dual-writes;
-- DashSync registry mirroring during network switch;
-- DashSync Core Data/registry wipe arm;
-- `DSChainWalletsDidChangeNotification` filtering;
-- the DashSync half of `WalletEnvironment.hasWallet`;
-- eager `DWEnvironment` bootstrap in AppDelegate;
-- `DWEnvironment.{h,m}` and bridging-header exposure.
-
-Multi-wallet warning: every operation must resolve the active wallet for the
-selected network through `WalletEnvironment.activeWalletId`. Never select the
-first mnemonic/wallet when more than one exists.
-
-### T4. Replace non-wallet DashSync exports
-
-These are active repo tasks, not externally assigned work:
-
-| Surface | Current evidence | Required replacement |
-|---|---|---|
-| Logger compatibility | `dwLogLevel` workaround | Revert to normal CocoaLumberjack `ddLogLevel` after DashSync headers disappear. |
-| App startup | `setupDashSyncOnce`, `DSOptionsManager` | Delete once every required service has an app/SDK owner. |
-
-### T5. Unlink mechanics
-
-After T1-T4:
-
-1. Remove `pod 'DashSync'` from both app targets.
-2. Run CocoaPods 1.15.2 install.
-3. Remove `libDashSync`, `DashSync.framework`, header paths, linker flags,
-   `DashSync.bundle`, and stale project references.
-4. Remove DashSync-only bridging-header and prefix-header imports.
-5. Run the audit gates and build both schemes.
-
-## Sequence
-
-```text
-T1 invitation/profile implementation [complete] ----+
-                                                    +--> T3 C6-E / DWEnvironment
-T2 Watch decision + implementation -----------------+             |
-                                                                  +--> T5 unlink
-T4 non-wallet export replacements -------------------------------+
-```
-
-The remaining T4 work can run independently before the Watch decision. T3 must
-wait until the Watch bridge and legacy registration consumer of `DWEnvironment`
-have a final shape.
-
-### Direct DashSync import classification after transaction-direction cleanup
-
-| Source | Classification |
-|---|---|
-| `DashWallet/AppDelegate.m` | C6-E/startup teardown: umbrella import for DashSync bootstrap. |
-| `DashWallet/Sources/Models/DWEnvironment.h` | C6-E wallet-registry compatibility owner. |
-| `DashWallet/Sources/AppleWatch/DSWatchTransactionDataObject.h` | Apple Watch tail, deliberately untouched/out of scope. |
-
-These are three source files. The app bridging header no longer exposes
-`DSTransaction.h`, and functional `DSTransaction` references are confined to
-the Apple Watch phone bridge. The only functional `DSBlockchainIdentity`
-matches outside comments are internal to `DWDashPayModel`'s legacy registration
-path; there are no functional `DSBlockchainInvitation` matches.
-
-The non-blocking CrowdNode suspension and platform-upstream work can run in
-parallel with T1-T4. They do not change the order of the DashSync unlink.
+- create/import persists and verifies the SDK mnemonic before exposing a live
+  wallet;
+- active wallet IDs remain independently scoped by network;
+- wipe posts the app-owned `DWWillWipeWalletNotification`, removes requested
+  PIN state synchronously, and serializes SDK wallet/runtime cleanup;
+- successful and failed wipes retain their existing explicit result/barrier
+  behavior.
 
 ## Audit gates
 
-Run before calling teardown complete:
+Run before release:
 
 ```bash
-rg -n "pod ['\"]DashSync|DashSync" Podfile Podfile.lock DashWallet.xcodeproj/project.pbxproj
+rg -n "pod ['\"]DashSync|libDashSync|DashSync\\.framework|DashSync\\.bundle" \
+  Podfile Podfile.lock DashWallet.xcodeproj/project.pbxproj
 
 rg -n --glob '*.{h,m,mm,swift}' \
   '(#import[[:space:]]*[<\"][^\n]*DashSync|@import DashSync|^[[:space:]]*import DashSync)' \
@@ -225,47 +83,57 @@ rg -n --glob '*.{h,m,mm,swift}' \
   '\b(DSChain|DSWallet|DSAccount|DSTransaction|DSBlockchainIdentity|DSBlockchainInvitation)\b' \
   DashWallet DashPay TodayExtension WatchApp 'WatchApp Extension'
 
+git diff --check
 plutil -lint DashWallet.xcodeproj/project.pbxproj
 ```
 
-Do not use a raw `DS[A-Z]` count as the completion gate; it includes app-owned
-compatibility names and comments. Review each remaining match by ownership.
+The first two commands must be empty. Classify every result from the third;
+historical comments and frozen key-migration constants are allowed, live
+objects are not.
 
 Build both targets with the arm64 simulator slice:
 
 ```bash
 xcodebuild -workspace DashWallet.xcworkspace -scheme dashwallet \
   -configuration Debug -destination 'generic/platform=iOS Simulator' \
-  CODE_SIGNING_ALLOWED=NO EXCLUDED_ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES build
+  CODE_SIGNING_ALLOWED=NO ARCHS=arm64 ONLY_ACTIVE_ARCH=YES \
+  COMPILER_INDEX_STORE_ENABLE=NO INDEX_ENABLE_DATA_STORE=NO build
 
 xcodebuild -workspace DashWallet.xcworkspace -scheme dashpay \
   -configuration Debug -destination 'generic/platform=iOS Simulator' \
-  CODE_SIGNING_ALLOWED=NO EXCLUDED_ARCHS=x86_64 ONLY_ACTIVE_ARCH=YES build
+  CODE_SIGNING_ALLOWED=NO ARCHS=arm64 ONLY_ACTIVE_ARCH=YES \
+  COMPILER_INDEX_STORE_ENABLE=NO INDEX_ENABLE_DATA_STORE=NO build
 ```
 
-## Required runtime checks
+On the current machine `dashpay` succeeds. `dashwallet` is blocked before app
+source compilation with: “This scheme builds an embedded Apple Watch app.
+watchOS 26.5 must be installed.” Repeat the identical build after installing
+that runtime.
 
-- upgrade from a DashSync-keychain wallet, including multiple wallets;
-- create, import, switch, rename/remove, and network switch with the correct
-  active wallet;
-- wipe from Settings, lock screen, and recovery/backup paths;
-- receive, standard send, BIP70, and pay-to-contact;
-- PIN lockout and biometric spending limit;
-- incoming invitation claim from link, Home paste/scan, inviter preview, and
-  optional post-claim contact request;
-- Watch payload compatibility if retained;
-- Uphold/Coinbase sessions survive the keychain-helper replacement;
-- local-currency picker and About diagnostics after unlink.
-- camera/push permission handoff and app-termination alerts.
-- amount formatting, biometric defaults, and DashPay registration thresholds.
+## Required runtime smoke
 
-Before the final release build, also verify that CrowdNode is unavailable as
-intended and that `../platform` is on `v4.1-dev` rather than the temporary local
-integration branch.
+- upgrade one and multiple wallets from the frozen DashSync keychain layout;
+- create, import, switch, rename/remove, and switch network without selecting
+  another wallet;
+- wipe from Settings, lock/reinstall, recovery, and backup paths;
+- receive, standard send, BIP70, pay-to-contact, PIN lockout, and biometrics;
+- incoming invitation link, Home paste/scan, inviter preview, and optional
+  post-claim contact request;
+- Coinbase/Uphold session continuity and transaction metadata;
+- profile display/edit/avatar upload and retry/cancel;
+- paired Watch compatibility with an existing installation: wallet status,
+  balance, address/QR, recent sent/received/moved transactions, and latest
+  transaction notification;
+- local currency, About diagnostics, camera/push handoff, and termination
+  alerts.
 
-## Maintenance rule
+CrowdNode should be unavailable for the migration release as separately
+decided. Before release, also reconcile the platform pin and perform Archive
+with both XCFramework slices.
 
-Keep only present-state inventory and sequencing in this file. When a tail is
-closed, remove it from the remaining-work section and update the matching row in
-`DASHSYNC_MIGRATION.md` in the same change. Ownership or staffing notes do not
-belong in the technical plan.
+## Completion boundary
+
+Code and dependency unlink are complete in this working tree. Release
+acceptance remains open until the matching watchOS runtime build and the
+runtime smokes above pass. A failed smoke must be fixed in the app/SDK owner;
+do not restore a DashSync fallback.

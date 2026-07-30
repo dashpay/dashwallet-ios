@@ -175,7 +175,7 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         return true
     }
 
-    /// Wipe-path only (`DWEnvironment.clearAllWalletsAndRemovePin`).
+    /// Wipe-path only (`SwiftDashSDKWalletWiper.wipeWallet`).
     @objc func removePin() {
         PinStore.delete(account: .pin)
         PinStore.delete(account: .pinFailCount)

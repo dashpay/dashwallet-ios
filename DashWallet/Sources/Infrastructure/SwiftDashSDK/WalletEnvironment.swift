@@ -19,8 +19,6 @@ import Foundation
 import SwiftDashSDK
 
 /// DashSync-free network identity + wallet presence for the app.
-/// (One deliberate DashSync read remains: `hasWallet`'s migration-window
-/// union term — see its doc.)
 ///
 /// Owns the persisted network selection — the `CURRENT_CHAIN_TYPE_KEY`
 /// UserDefaults integer holding a DashSync `ChainType_Tag` raw value
@@ -44,10 +42,9 @@ public final class WalletEnvironment: NSObject {
 
     private static let currentChainTypeKey = "CURRENT_CHAIN_TYPE_KEY"
 
-    /// The persisted network selection. A missing key means a fresh install
-    /// that hasn't run `DWEnvironment`'s init yet — testnet, matching the
-    /// deliberate migration-era default (`DWEnvironment.m`, owner decision
-    /// 2026-07-03). Unknown raw values classify as `.devnet` (unsupported).
+    /// The persisted network selection. A missing key means testnet, preserving
+    /// the app's migration-era default. Unknown raw values classify as
+    /// `.devnet` (unsupported).
     public static var networkKind: NetworkKind {
         let defaults = UserDefaults.standard
         guard defaults.object(forKey: currentChainTypeKey) != nil else { return .testnet }
@@ -83,12 +80,6 @@ public final class WalletEnvironment: NSObject {
     /// is on `kind` afterwards (including the already-there no-op), `false`
     /// for `.devnet` (no SDK network exists for it).
     ///
-    /// Before writing the key, mirrors the frozen DashSync wallet registry
-    /// onto the destination chain from the SDK-persisted mnemonic — nonnull
-    /// `DWEnvironment.currentWallet` consumers (DashPay, xpub export, watch)
-    /// must keep resolving on the new network until the C6-E dual-write cut.
-    /// The mirror derives BIP39 material synchronously (~100 ms).
-    ///
     /// Posting `DWCurrentNetworkDidChangeNotification` is what actually moves
     /// the app: the SDK wallet runtime restarts SPV for the new network and
     /// DWRootModel rebuilds the home stack.
@@ -97,22 +88,6 @@ public final class WalletEnvironment: NSObject {
     public static func switchToNetwork(_ kind: NetworkKind) -> Bool {
         guard kind != networkKind else { return true }
         guard kind != .devnet else { return false }
-
-        // Mirror the wallet that will be ACTIVE on the destination network —
-        // not whatever WalletStorage enumerates first (same wrong-wallet class
-        // #794 fixed for the recovery phrase). Destination registry entry
-        // first, then the current network's (the wallet the user is on now),
-        // then the sole stored wallet on pre-registry installs; with several
-        // wallets and no registry match, mirror nothing rather than the wrong
-        // wallet (nil phrase is a no-op for the shim).
-        let mnemonics = SwiftDashSDKHost.persistedMnemonics()
-        let activeId = activeWalletId(for: kind) ?? activeWalletId(for: networkKind)
-        let mnemonic = mnemonics.first(where: { $0.walletId == activeId })?.mnemonic
-            ?? (mnemonics.count == 1 ? mnemonics.first?.mnemonic : nil)
-        guard DWEnvironment.sharedInstance().mirrorWalletRegistry(toChainType: kind.rawValue,
-                                                                  seedPhrase: mnemonic) else {
-            return false
-        }
 
         // The DashPay mirror (username + registration flag) is a single
         // global slot while identities are per-network — without this, a
@@ -188,18 +163,21 @@ public final class WalletEnvironment: NSObject {
         return id.map { String(format: "%02x", $0) }.joined() as NSString
     }
 
-    /// App-level wallet existence. MIGRATION-WINDOW UNION: SDK presence OR
-    /// DashSync `chain.hasAWallet` — DashSync-only wallets exist transiently
-    /// (the recover flow's async SDK import; migrator-deferred multi-wallet /
-    /// unknown-chain cases), so existence checks must not flip false for them.
-    /// This is WalletEnvironment's one deliberate DashSync read.
-    /// TODO(C6-E): drop the DashSync term when the
-    /// `standardWalletWithSeedPhrase` dual-write is deleted.
+    /// App-level wallet existence is the SDK-owned mnemonic store. Upgrade-time
+    /// DashSync mnemonics are imported by `SwiftDashSDKKeyMigrator` before the
+    /// wallet runtime starts.
     @objc public static var hasWallet: Bool {
-        hasSDKWallet || DWEnvironment.sharedInstance().currentChain.hasAWallet
+        hasSDKWallet
     }
 
     private override init() {}
+}
+
+extension Notification.Name {
+    static let DWCurrentNetworkDidChange =
+        Notification.Name("DWCurrentNetworkDidChangeNotification")
+    static let DWWillWipeWallet =
+        Notification.Name("DWWillWipeWalletNotification")
 }
 
 extension String {

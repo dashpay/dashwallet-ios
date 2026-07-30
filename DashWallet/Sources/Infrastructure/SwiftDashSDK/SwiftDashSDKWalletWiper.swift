@@ -4,17 +4,11 @@
 //
 //  Wipes SwiftDashSDK wallet state — full per-wallet deletion (SwiftData
 //  rows incl. PersistentTransaction, Rust manager state, and Keychain
-//  material) via PlatformWalletManager.deleteWallet when DashSync's wipe
-//  flow fires the DWWillWipeWalletNotification. Hooks NotificationCenter once at app
-//  launch — covers all 5 user-facing wipe entry points (Settings →
-//  Reset Wallet, lock screen emergency wipe, legacy PIN reset, etc.)
-//  because they all funnel through `[DWEnvironment clearAllWalletsAndRemovePin:]`,
-//  which posts the notification before it wipes.
+//  material) via PlatformWalletManager.deleteWallet. All app wipe entry points
+//  call this app-owned boundary directly; no DashSync registry mirror or
+//  notification trampoline remains.
 //
-//  This file is intentionally decoupled from DashSync and from
-//  dashwallet-ios's own DWEnvironment header — it references the
-//  notification name as a plain string literal. The wipe-side concern
-//  lives separately from the create/import-side concerns in
+//  The wipe-side concern lives separately from the create/import-side concerns in
 //  SwiftDashSDKWalletCreator.swift, and from the upgrade-time concern
 //  in SwiftDashSDKKeyMigrator.swift.
 //
@@ -26,9 +20,6 @@ import SwiftDashSDK
 /// Serializes full-wallet wipes and provides a FIFO barrier for callers that
 /// must not continue while a wipe is still mutating Keychain/runtime state.
 ///
-/// `NotificationCenter` delivers `DWWillWipeWalletNotification` synchronously,
-/// so enqueueing the wipe from its observer and then enqueueing a barrier from
-/// the caller guarantees the barrier runs after that wipe.
 final class WalletWipeSerialExecutor {
     private let queue: DispatchQueue
     private var lastWipeSucceeded = true
@@ -95,43 +86,23 @@ final class SwiftDashSDKWalletWiper: NSObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.wallet-wiper")
 
-    // MARK: - Notification name
-
-    /// `DWWillWipeWalletNotification` posted by `[DWEnvironment
-    /// clearAllWalletsAndRemovePin:]` BEFORE the actual wipe runs.
-    /// Referenced by string literal here so this file has zero DashSync
-    /// (or DWEnvironment) imports.
-    private static let wipeNotificationName = NSNotification.Name("DWWillWipeWalletNotification")
-
-    // MARK: - Observer keepalive
-
-    /// Strong-ref keepalive for the observer token. Without this, the
-    /// closure-based observer would be eligible for deallocation and
-    /// would silently stop firing.
-    private static var observerToken: NSObjectProtocol?
     private static let wipeExecutor = WalletWipeSerialExecutor()
 
     // MARK: - Public entry point
 
-    /// Register the wipe-mirror observer once at app launch.
-    ///
-    /// Idempotent — subsequent calls are no-ops. Call from
-    /// `AppDelegate.application:didFinishLaunchingWithOptions:`
-    /// alongside `[DWSwiftDashSDKKeyMigrator migrateIfNeeded]`.
-    @objc(startObservingWipeNotification)
-    static func startObservingWipeNotification() {
-        guard observerToken == nil else { return }
-
-        observerToken = NotificationCenter.default.addObserver(
-            forName: wipeNotificationName,
-            object: nil,
-            queue: nil
-        ) { _ in
-            wipeExecutor.enqueue {
-                performWipe()
-            }
+    /// Starts a full app/SDK-owned wipe. PIN removal remains synchronous so the
+    /// caller cannot enter a wallet with stale authentication state; wallet
+    /// material is deleted on the serial executor and observed through
+    /// `waitForPendingWipe`.
+    @objc(wipeWalletRemovingPin:)
+    static func wipeWallet(removingPin: Bool) {
+        NotificationCenter.default.post(name: .DWWillWipeWallet, object: nil)
+        if removingPin {
+            AuthenticationService.shared.removePin()
         }
-        logger.info("registered DWWillWipeWalletNotification observer")
+        wipeExecutor.enqueue {
+            performWipe()
+        }
     }
 
     /// Invoke `completion` on the main queue with the last queued wipe's result

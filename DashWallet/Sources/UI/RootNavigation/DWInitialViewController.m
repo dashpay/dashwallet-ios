@@ -18,7 +18,6 @@
 #import "DWInitialViewController.h"
 
 #import "DWAppRootViewController.h"
-#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWOnboardingViewController.h"
 #import "DWUIKit.h"
@@ -95,14 +94,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onboardingViewControllerDidFinish:(DWOnboardingViewController *)controller {
     [self onboardingDidFinish];
 
-    // Reinstall detection: if wallet keychain material survived the wipe
-    // (DashSync's registration or the SDK mnemonic — `hasWallet` unions both)
+    // Reinstall detection: if SDK wallet keychain material survived while
+    // UserDefaults did not, ask whether to keep or delete it.
     // while UserDefaults didn't, the default transition to
     // `DWAppRootViewController` would jump straight to the wallet home
     // without ever asking the user. Gate the transition behind a Keep/Delete
     // prompt, mirroring the SwiftExampleApp orphan-mnemonic UX. (Delete
-    // clears the SDK keychain too, via DWWillWipeWalletNotification → wiper;
-    // Keep rides the KeyMigrator re-run until C6-C makes it first-class.)
+    // Keep lets the SDK host recover the persisted wallet.)
     if (!DWWalletEnvironment.hasWallet) {
         [self transitionToAppRoot];
         return;
@@ -139,11 +137,9 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
 
-        // This synchronously removes the PIN and posts
-        // DWWillWipeWalletNotification. The SDK observer performs its Keychain /
-        // runtime deletion asynchronously, so entering app root immediately can
-        // observe a stale wallet and present a PIN screen after the PIN is gone.
-        [[DWEnvironment sharedInstance] clearAllWalletsAndRemovePin:YES];
+        // PIN removal is synchronous; SDK Keychain/runtime deletion runs on the
+        // app-owned serial wipe executor.
+        [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:YES];
 
         [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
             typeof(self) completedSelf = weakSelf;

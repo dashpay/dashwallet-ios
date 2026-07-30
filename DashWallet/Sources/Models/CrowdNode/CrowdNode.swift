@@ -128,6 +128,7 @@ public final class CrowdNode {
     var crowdnodeAPY: Double
 
     public static let shared: CrowdNode = .init()
+    private static let topUpFeeReserve: UInt64 = 10_000
 
     init() {
         masternodeAPY = MasternodeAPYCalculator.estimatedAPY()
@@ -457,7 +458,8 @@ extension CrowdNode {
         guard !accountAddress.isEmpty else { return }
 
         let maxSendable = SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
-        let requiredTopUp = amount + TX_FEE_PER_INPUT
+        let addition = amount.addingReportingOverflow(Self.topUpFeeReserve)
+        let requiredTopUp = addition.overflow ? UInt64.max : addition.partialValue
         let finalTopUp = min(maxSendable, requiredTopUp)
 
         // One PIN per deposit action: the top-up (the flow's first send) keeps

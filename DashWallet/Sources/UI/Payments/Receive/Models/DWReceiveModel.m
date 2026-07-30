@@ -17,6 +17,7 @@
 
 #import "DWReceiveModel.h"
 
+#import <CoreData/CoreData.h>
 #import <UIKit/UIPasteboard.h>
 
 #import "DWAppGroupOptions.h"

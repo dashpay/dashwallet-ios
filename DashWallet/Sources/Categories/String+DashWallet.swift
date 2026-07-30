@@ -46,7 +46,7 @@ extension String {
         let attributedString = NSMutableAttributedString(string: trimmingCharacters(in: .whitespacesAndNewlines))
 
         let dashSymbolAttributedString = dashSymbolAttributedString(with: dashSymbolColor ?? tintColor)
-        let dashSymbolRange = attributedString.string.nsRange(of: DASH)
+        let dashSymbolRange = attributedString.string.nsRange(of: kDashCurrency)
         if dashSymbolRange.isValid {
             attributedString.replaceCharacters(in: dashSymbolRange, with: dashSymbolAttributedString)
         } else {

@@ -17,7 +17,6 @@
 
 #import "AppDelegate.h"
 
-#import <DashSync/DashSync.h>
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
 #import <UserNotifications/UserNotifications.h>
 
@@ -26,7 +25,6 @@
 #import "DWInitialViewController.h"
 #import "DWVersionManager.h"
 #import "DWWindow.h"
-#import "DWEnvironment.h"
 #import "DWURLParser.h"
 #import "dashwallet-Swift.h"
 #ifndef IGNORE_WATCH_TARGET
@@ -146,7 +144,6 @@ NS_ASSUME_NONNULL_BEGIN
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
     [DWSwiftDashSDKWalletRuntime startObservingNetworkChanges];
     [DWSwiftDashSDKWalletRuntime startIfReady];
-    [DWSwiftDashSDKWalletWiper startObservingWipeNotification];
 
     [self performNormalStartWithLaunchOptions:launchOptions];
     
@@ -298,24 +295,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 }
 
 - (void)setupDashWalletComponentsWithOptions:(NSDictionary *)launchOptions {
-
-    // The app fetches fiat exchange rates itself now (BaseRatesProvider →
-    // rates.ctx.com). Disable DashSync's own price poll BEFORE setupDashSyncOnce
-    // reads this flag, otherwise both poll CTX and both write PRICESBYCODE_KEY.
-    [[DSOptionsManager sharedInstance] setRetrievePriceInfo:NO];
-
-    [[DashSync sharedSyncController] setupDashSyncOnce];
-
-    // Materializes the DSChain singletons (+ chain managers) on the MAIN
-    // thread before any background consumer reaches the shim — DSChain's
-    // init asserts "Chains should only be created on main thread", and
-    // DWPhoneWCSessionManager's application-context dispatch below is such
-    // a first-toucher. A lazy first touch off-main crashes; a dispatch_sync
-    // trampoline inside the shim's dispatch_once would deadlock instead.
-    [DWEnvironment sharedInstance];
-
-    [[DSOptionsManager sharedInstance] setSyncType:DSSyncType_Default];
-    
     // TODO_outdated: bitcoin protocol/payment protocol over multipeer connectivity
     
     // TODO_outdated: accessibility for the visually impaired
@@ -332,8 +311,6 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 #ifndef IGNORE_WATCH_TARGET
     [DWPhoneWCSessionManager sharedInstance];
 #endif
-    
-    [DSShapeshiftManager sharedInstance];
 
     self.balanceNotifier = [[DWBalanceNotifier alloc] init];
     [self.balanceNotifier setupNotifications];

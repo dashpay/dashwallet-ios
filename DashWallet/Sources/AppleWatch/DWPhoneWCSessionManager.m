@@ -29,9 +29,7 @@
 
 #import "BRAppleWatchSharedConstants.h"
 #import "BRAppleWatchTransactionData.h"
-#import "DSWatchTransactionDataObject.h"
 #import "DWAppGroupConstants.h"
-#import "DWEnvironment.h"
 #import "UIImage+Utils.h"
 #import "dashwallet-Swift.h"
 
@@ -211,8 +209,8 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 }
 
 - (BRAppleWatchData *)applicationContextData {
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-    NSArray *transactions = account.recentTransactions;
+    NSArray<DWAppleWatchTransactionSnapshot *> *transactions = [DWAppleWatchSnapshotProvider recentTransactions];
+    BOOL hasWallet = [DWAppleWatchSnapshotProvider hasWallet];
     UIImage *qrCodeImage = self.qrCode;
     BRAppleWatchData *appleWatchData = [[BRAppleWatchData alloc] init];
 
@@ -226,66 +224,44 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
     appleWatchData.receiveMoneyAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
     appleWatchData.transactions = [self recentTransactionListFromTransactions:transactions];
     appleWatchData.receiveMoneyQRCodeImage = qrCodeImage;
-    appleWatchData.hasWallet = !!account; // if there is no account there is no wallet
+    appleWatchData.hasWallet = hasWallet;
 
     if (transactions.count > 0) {
-        appleWatchData.lastestTransction = [self lastTransactionStringFromTransaction:transactions[0]];
+        appleWatchData.lastestTransction = [self lastTransactionStringFromSnapshot:transactions[0]];
     }
 
     return appleWatchData;
 }
 
-- (nullable NSString *)lastTransactionStringFromTransaction:(DSTransaction *)transaction {
-    if (transaction) {
-        NSString *timeDescriptionString = [self timeDescriptionStringFrom:transaction.transactionDate];
-        NSString *transactionTypeString;
-
-        if (timeDescriptionString == nil) {
-            timeDescriptionString = transaction.dateText;
-        }
-
-        switch ([transaction transactionStatusInAccount:[DWEnvironment sharedInstance].currentAccount]) {
-            case BRAWTransactionTypeSent:
-                transactionTypeString = NSLocalizedString(@"Sent", @"Sent transaction");
-                break;
-            case BRAWTransactionTypeReceive:
-                transactionTypeString = NSLocalizedString(@"Received", @"Received transaction");
-                break;
-            case BRAWTransactionTypeMove:
-                transactionTypeString = NSLocalizedString(@"Internal Transfer", @"Transaction within the wallet, transfer of own funds");
-                break;
-            case BRAWTransactionTypeInvalid:
-                transactionTypeString = NSLocalizedString(@"Invalid", @"Invalid transaction");
-                break;
-        }
-        NSString *amountText = [transaction amountTextReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];
-        NSString *localCurrencyText = [transaction localCurrencyTextForAmountReceivedInAccount:[DWEnvironment sharedInstance].currentAccount];
-        return [NSString
-            stringWithFormat:@"%@ %@ %@ , %@", transactionTypeString,
-                             [amountText stringByReplacingOccurrencesOfString:@"-"
-                                                                   withString:@""],
-                             (localCurrencyText.length > 2)
-                                 ? localCurrencyText
-                                 : @"",
-                             timeDescriptionString];
+- (nullable NSString *)lastTransactionStringFromSnapshot:(DWAppleWatchTransactionSnapshot *)transaction {
+    NSString *transactionTypeString;
+    switch ((BRAWTransactionType)transaction.typeRawValue) {
+        case BRAWTransactionTypeSent:
+            transactionTypeString = NSLocalizedString(@"Sent", @"Sent transaction");
+            break;
+        case BRAWTransactionTypeReceive:
+            transactionTypeString = NSLocalizedString(@"Received", @"Received transaction");
+            break;
+        case BRAWTransactionTypeMove:
+            transactionTypeString = NSLocalizedString(@"Internal Transfer", @"Transaction within the wallet, transfer of own funds");
+            break;
+        case BRAWTransactionTypeInvalid:
+            transactionTypeString = NSLocalizedString(@"Invalid", @"Invalid transaction");
+            break;
     }
 
-    return nil;
-}
-
-- (NSString *)timeDescriptionStringFrom:(NSDate *)date {
-    if (date) {
-        NSDate *now = [NSDate date];
-        NSTimeInterval secondsSinceTransaction = [now timeIntervalSinceDate:date];
-        return [DWDurationFormatter stringFromTimeInterval:secondsSinceTransaction];
-    }
-
-    return nil;
+    return [NSString
+        stringWithFormat:@"%@ %@ %@ , %@", transactionTypeString,
+                         [transaction.amountText stringByReplacingOccurrencesOfString:@"-"
+                                                                           withString:@""],
+                         (transaction.amountTextInLocalCurrency.length > 2)
+                             ? transaction.amountTextInLocalCurrency
+                             : @"",
+                         transaction.dateText];
 }
 
 - (nullable UIImage *)qrCode {
-    DSAccount *account = [DWEnvironment sharedInstance].currentAccount;
-    if (!account) {
+    if (![DWAppleWatchSnapshotProvider hasWallet]) {
         return nil;
     }
 
@@ -325,36 +301,17 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 
 // MARK: - data helper methods
 
-- (NSArray *)recentTransactionListFromTransactions:(NSArray *)transactions {
+- (NSArray *)recentTransactionListFromTransactions:(NSArray<DWAppleWatchTransactionSnapshot *> *)transactions {
     NSMutableArray *transactionListData = [[NSMutableArray alloc] init];
 
-    for (DSTransaction *transaction in transactions) {
-        DSWatchTransactionDataObject *dataObject = [[DSWatchTransactionDataObject alloc] initWithTransaction:transaction];
-        if (dataObject) {
-            BRAppleWatchTransactionData *transactionData = [BRAppleWatchTransactionData appleWatchTransactionDataFrom:dataObject];
-            [transactionListData addObject:transactionData];
-        }
+    for (DWAppleWatchTransactionSnapshot *snapshot in transactions) {
+        BRAppleWatchTransactionData *transactionData = [BRAppleWatchTransactionData new];
+        transactionData.amountText = snapshot.amountText;
+        transactionData.amountTextInLocalCurrency = snapshot.amountTextInLocalCurrency;
+        transactionData.dateText = snapshot.dateText;
+        transactionData.type = (BRAWTransactionType)snapshot.typeRawValue;
+        [transactionListData addObject:transactionData];
     }
-
-#if SNAPSHOT
-//    DSWalletManager *manager = [DSWalletManager sharedInstance];
-//
-//    [transactionListData removeAllObjects];
-//
-//    for (int i = 0; i < 6; i++) {
-//        DSTransaction *tx = [DSTransaction new];
-//        BRAppleWatchTransactionData *txData = [BRAppleWatchTransactionData new];
-//        int64_t amount =
-//            [@[@(-1010000), @(-10010000), @(54000000), @(-82990000), @(-10010000), @(93000000)][i] longLongValue];
-//
-//        txData.type = (amount >= 0) ? BRAWTransactionTypeReceive : BRAWTransactionTypeSent;
-//        txData.amountText = [manager stringForDashAmount:amount];
-//        txData.amountTextInLocalCurrency = [manager localCurrencyStringForDashAmount:amount];
-//        tx.timestamp = [NSDate timeIntervalSince1970] - i * 100000;
-//        txData.dateText = tx.dateText;
-//        [transactionListData addObject:txData];
-//    }
-#endif
 
     return [transactionListData copy];
 }

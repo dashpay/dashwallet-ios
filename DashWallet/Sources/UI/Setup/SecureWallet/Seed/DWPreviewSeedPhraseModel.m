@@ -18,7 +18,6 @@
 #import "DWPreviewSeedPhraseModel.h"
 
 
-#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWSeedPhraseModel.h"
 #import "dashwallet-Swift.h"
@@ -36,10 +35,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (DWSeedPhraseModel *)getOrCreateNewWallet {
-    // TODO(C6-E): a union-true here with DashSync's `currentWallet` nil would
-    // skip the `standardWalletWithSeedPhrase` dual-write below — unreachable
-    // pre-C6-E (no SDK-only wallets exist outside the transient post-wipe
-    // window, during which this screen can't be on screen).
     BOOL hasAWallet = DWWalletEnvironment.hasWallet;
     NSString *seedPhrase;
 
@@ -56,14 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
             return [[DWSeedPhraseModel alloc] initWithSeed:nil];
         }
 
-        // Feed the SwiftDashSDK-generated mnemonic TO DashSync. DashSync
-        // still owns SPV sync — it needs the wallet structure.
-        [DSWallet standardWalletWithSeedPhrase:mnemonic
-                               setCreationDate:[[NSDate date] timeIntervalSince1970]
-                                      forChain:[DWEnvironment sharedInstance].currentChain
-                               storeSeedPhrase:YES
-                                   isTransient:NO];
-
         [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
 
         // Async: persists mnemonic to WalletStorage under the new walletId
@@ -76,13 +63,8 @@ NS_ASSUME_NONNULL_BEGIN
     else {
         // Settings → View Recovery Phrase path. Mnemonic was persisted earlier
         // (by migration / first-create) under an existing walletId. Two
-        // realistic ways this read still returns nil though:
-        //  1) migrator deferred this wallet (multi-wallet or unknown chain
-        //     — see `enumerateDashSyncMnemonicAccounts` / `detectNetwork`).
-        //  2) async `SwiftDashSDKHost.createOrImportWallet` failed earlier
-        //     in the lifecycle, leaving DashSync's wallet without a paired
-        //     SwiftDashSDK record.
-        // Both cases would otherwise crash `NSParameterAssert(seed)` in
+        // If persistence failed earlier this can still return nil. That would
+        // otherwise crash `NSParameterAssert(seed)` in
         // `DWSeedPhraseModel initWithSeed:`. Fall back to an empty string —
         // the screen renders blank words, which is a degraded UX but
         // survivable. Proper fix (DashSync fallback or error banner) is
@@ -118,7 +100,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)clearAllWallets {
-    [[DWEnvironment sharedInstance] clearAllWalletsAndRemovePin:NO];
+    [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:NO];
 }
 
 @end

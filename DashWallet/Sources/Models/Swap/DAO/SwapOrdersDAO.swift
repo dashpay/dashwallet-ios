@@ -52,7 +52,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
         do {
             try await save(dto: dto)
         } catch {
-            DSLogger.log("SwapOrdersDAO: create failed: \(error)")
+            DWLogger.log("SwapOrdersDAO: create failed: \(error)")
         }
     }
 
@@ -96,7 +96,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
             }
             return order
         } catch {
-            DSLogger.log("SwapOrdersDAO: get failed: \(error)")
+            DWLogger.log("SwapOrdersDAO: get failed: \(error)")
             return nil
         }
     }
@@ -105,7 +105,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
         do {
             try await save(dto: dto)
         } catch {
-            DSLogger.log("SwapOrdersDAO: update failed: \(error)")
+            DWLogger.log("SwapOrdersDAO: update failed: \(error)")
         }
     }
 
@@ -118,7 +118,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
             cache.removeValue(forKey: id)
             emitUpdate()
         } catch {
-            DSLogger.log("SwapOrdersDAO: delete failed: \(error)")
+            DWLogger.log("SwapOrdersDAO: delete failed: \(error)")
         }
     }
 
@@ -130,7 +130,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
             cache = Dictionary(uniqueKeysWithValues: orders.map { ($0.id, $0) })
             return orders
         } catch {
-            DSLogger.log("SwapOrdersDAO: all failed: \(error)")
+            DWLogger.log("SwapOrdersDAO: all failed: \(error)")
             return Array(cache.values)
         }
     }
@@ -155,7 +155,7 @@ actor SwapOrdersDAOImpl: SwapOrdersDAO {
             cache = Dictionary(uniqueKeysWithValues: orders.map { ($0.id, $0) })
             emitUpdate()
         } catch {
-            DSLogger.log("SwapOrdersDAO: bootstrap failed: \(error)")
+            DWLogger.log("SwapOrdersDAO: bootstrap failed: \(error)")
         }
     }
 

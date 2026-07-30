@@ -18,7 +18,6 @@
 #import "DWRecoverModel.h"
 
 #import "DWAppGroupOptions.h"
-#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "dashwallet-Swift.h"
 
@@ -53,7 +52,7 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 
 - (void)wipeWallet {
     [DWApp cleanUp]; // Send notificaiton
-    [[DWEnvironment sharedInstance] clearAllWallets];
+    [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:YES];
     [[DWGlobalOptions sharedInstance] restoreToDefaults];
     [[DWAppGroupOptions sharedInstance] restoreToDefaults];
 }
