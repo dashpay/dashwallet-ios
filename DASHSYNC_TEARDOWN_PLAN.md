@@ -67,6 +67,12 @@ its amount model and uses the active wallet's fee-aware maximum for the
 CrowdNode leftover warning. Its dead `DWEnvironment.currentAccount` protocol
 fallback and legacy balance notification observer were removed.
 
+The passive Home, Explore, and Buy/Sell UI tail is app/SDK-owned. Home and its
+balance model consume `SwiftDashSDKWalletState`; Explore resolves the active SDK
+receive address at faucet action time; and Explore/Buy-Sell network gating uses
+`WalletEnvironment`. Their scoped legacy balance and `DWEnvironment` consumers
+were removed without changing network/wallet lifecycle notifications.
+
 `DWUploadAvatarModel` keeps its public Objective-C/KVO contract and automatic
 start, but delegates Imgur delete/upload to an internal Moya/`HTTPClient`
 client. It preserves resize/JPEG settings, delete retries, delete-before-upload,
@@ -111,9 +117,11 @@ but it is not an acceptable final migration or release pin.
 
 **Decision:** remove or port.
 
-The Watch targets still exist, but the phone app does not embed WatchApp on
-this branch. `DWPhoneWCSessionManager` and `DSWatchTransactionDataObject` still
-depend on frozen DashSync account/transaction state.
+The Watch targets still exist. `dashwallet` still has and builds a WatchApp
+target dependency, although its Embed Watch Content phase is empty; `dashpay`
+has no Watch dependency. `DWPhoneWCSessionManager` and
+`DSWatchTransactionDataObject` still depend on frozen DashSync
+account/transaction state.
 
 - **Remove:** delete Watch targets, `Sources/AppleWatch`, Podfile watch targets,
   and phone hooks.

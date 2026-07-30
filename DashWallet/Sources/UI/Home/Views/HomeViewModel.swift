@@ -76,6 +76,20 @@ class HomeViewModel: ObservableObject {
     /// Throttled in `observeWallet()` so the save/balance notification storm
     /// during sync coalesces into at most one full reload per interval.
     private let txReloadRequests = PassthroughSubject<Void, Never>()
+
+    /// Converts the SDK's current-value balance publisher into actual balance
+    /// changes. The initial snapshot is already covered by the eager Home load,
+    /// while `removeDuplicates()` prevents the coordinator's repeated 1 Hz
+    /// snapshots from requesting redundant transaction-list reloads.
+    static func distinctBalanceChanges<P: Publisher>(
+        from publisher: P
+    ) -> AnyPublisher<Void, Never> where P.Output == WalletBalance?, P.Failure == Never {
+        publisher
+            .removeDuplicates()
+            .dropFirst()
+            .map { _ in () }
+            .eraseToAnyPublisher()
+    }
     
     @Published private(set) var txItems: [TransactionGroup] = []
     @Published var shortcutItems: [ShortcutAction] = []
@@ -321,10 +335,11 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
-        // Balance changes often indicate new transactions, so reload the full
-        // transaction list, not just shortcuts. This ensures newly received or
-        // sent transactions appear in the UI promptly.
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+        // Balance changes can precede or arrive without a SwiftData save (for
+        // example seed/clear transitions), so retain an independent trigger.
+        // Equal snapshots are filtered and the initial current-value emission
+        // is skipped because init already starts an eager full reload.
+        Self.distinctBalanceChanges(from: SwiftDashSDKWalletState.shared.$balance)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.txReloadRequests.send()

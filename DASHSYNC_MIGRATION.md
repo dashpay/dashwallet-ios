@@ -99,18 +99,18 @@ Status meanings:
 
 | # | Capability | Current status | Remaining work |
 |---|---|---|---|
-| 1 | Receive address | Done | None. Reads the active SDK wallet/account. |
+| 1 | Receive address | Done | None. Reads the active SDK wallet/account; Explore resolves the testnet faucet address from the active SDK wallet at action time. |
 | 2 | Address validation | Done | None. Uses SwiftDashSDK address validation through app-owned parsing helpers. |
 | 3 | Mnemonic generation / create wallet | Done; teardown tail | SDK-owned mnemonic storage is verified before a wallet becomes live in `PlatformWalletManager`; remove the adjacent `DSWallet standardWalletWithSeedPhrase` dual-write in C6-E. |
 | 4 | Mnemonic validation | Done | None. Uses `Mnemonic.validate`. |
-| 5 | Wallet balance | Done | None. Production balance reads use `SwiftDashSDKWalletState`; Coinbase transfer amount refreshes from its SDK-backed model balance and uses the fee-aware active-wallet maximum for its leftover warning. |
+| 5 | Wallet balance | Done | None. Production balance reads use `SwiftDashSDKWalletState`; Home reloads transaction projections only for distinct post-subscription balance changes, while `BalanceModel` binds directly to the SDK publisher. Coinbase transfer amount refreshes from its SDK-backed model balance and uses the fee-aware active-wallet maximum for its leftover warning. |
 | 6 | Transaction list | Done | None. History and Coinbase transaction metadata/tagging use active-wallet-scoped SDK-persisted SwiftData rows. The obsolete `DSTransaction` UI category and spent-input `DSAccount` category are removed. |
 | 7 | Transaction detail | Done | None. Uses SDK snapshots and recent-send resolution. |
 | 8 | Send Dash | Done | None. Money movement goes through `WalletSendService` / `SwiftDashSDKTransactionSender`. |
 | 9 | Fee estimation | Done | None. Confirmation uses the transaction builder's fee. |
 | 10 | PIN / biometrics | Done; teardown tail | Authentication, lockout copy/duration formatting, and secure mnemonic allocation are app-owned; retain the byte-compatible keychain contract through pod unlink. |
 | 11 | SPV sync | Done; teardown tail | Core restart/peer rotation is serialized `stopSpv → startSpv` on the existing manager, preserving Platform sync, wallet state and the process-cached per-network `ModelContainer`; clear-and-resync deletes the chain store off MainActor on the next process launch. Remove `setupDashSyncOnce` / `DSOptionsManager` at unlink; the chain-wallet notification is removed separately with C6-E. |
-| 12 | Network switch | Done; teardown tail | Remove the temporary DashSync wallet-registry mirror with C6-E. |
+| 12 | Network switch | Done; teardown tail | Explore and Buy/Sell gating use app-owned `WalletEnvironment` network state. Remove the temporary DashSync wallet-registry mirror with C6-E. |
 | 13 | Backup seed phrase | Done | Reads the active SDK wallet mnemonic from host-owned storage. |
 | 14 | Wipe wallet | Done; teardown tail | Reinstall recovery and Settings Debug Reset both gate onboarding behind the background wipe executor's explicit success result; per-wallet SDK deletion remains synchronous, and a failed delete preserves mnemonic/runtime state and the in-memory identity snapshot for retry. After a successful wipe the stopped runtime installs an empty identity snapshot and publishes the wallet-context change; a newly started wallet publishes the same event, rebuilding the DashPay tab bar as 3 or 5 items from that wallet's identity state. Remove the DashSync registry/Core Data wipe arm after all consumers are gone. |
 | 15 | Provider-key derivation | Done | All four families are SDK-native: Owner/Voting via the key-wallet path surface, Operator (BLS) and Evonode Operator (Ed25519) via `ManagedPlatformWallet.providerKeyAtIndex` (`platform_wallet_provider_key_at_index` grew per-index BLS/EdDSA public-key export, removing the earlier blocker). Overview counts and per-keypair “used at” restored from the Rust masternode aggregation (`PlatformWalletManager.masternodes(for:)`). |
