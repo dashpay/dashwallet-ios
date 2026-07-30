@@ -46,12 +46,8 @@ final class BalanceModel: ObservableObject {
         isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
         SyncingActivityMonitor.shared.add(observer: self)
 
-        // Subscribe to SwiftDashSDKWalletState's balance publisher.
         // After M6 retired DashSync's SPV, this is the authoritative source
-        // for the home screen balance — DSWallet.balance is frozen at
-        // whatever was cached pre-M6. The DSWalletBalanceDidChange observer
-        // in `observeWallet()` is kept as a backstop and now harmlessly
-        // re-fires `reloadBalance()` (which also reads from this publisher).
+        // for the home screen balance.
         SwiftDashSDKWalletState.shared.$balance
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
@@ -67,7 +63,7 @@ final class BalanceModel: ObservableObject {
             .store(in: &cancellableBag)
 
         reloadBalance()
-        observeWallet()
+        observeAppLifecycle()
     }
 
     func hideBalanceIfNeeded() {
@@ -119,18 +115,11 @@ final class BalanceModel: ObservableObject {
 }
 
 extension BalanceModel {
-    func observeWallet() {
+    func observeAppLifecycle() {
         NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
             .removeDuplicates()
             .sink { [weak self] _ in
                 self?.hideBalanceIfNeeded()
-            }
-            .store(in: &cancellableBag)
-        
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
-            .removeDuplicates()
-            .sink { [weak self] _ in
-                self?.reloadBalance()
             }
             .store(in: &cancellableBag)
     }
@@ -177,4 +166,3 @@ extension BalanceModel {
         CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount)
     }
 }
-

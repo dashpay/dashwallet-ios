@@ -89,9 +89,20 @@ class ServiceDataProviderImpl: ServiceDataProvider {
     }
 
     private func shouldShow(service: Service) -> Bool {
+        Self.shouldShow(
+            service: service,
+            isMainnet: WalletEnvironment.isMainnet,
+            swapKitConfigured: SwapKitConstants.isConfigured)
+    }
+
+    static func shouldShow(
+        service: Service,
+        isMainnet: Bool,
+        swapKitConfigured: Bool
+    ) -> Bool {
         switch service {
         case .swapKit:
-            return DWEnvironment.sharedInstance().currentChain.isMainnet() && SwapKitConstants.isConfigured
+            return isMainnet && swapKitConfigured
         case .maya:
             // Hidden from Buy & Sell — Dash DEX (SwapKit) replaces the standalone Maya entry.
             return false

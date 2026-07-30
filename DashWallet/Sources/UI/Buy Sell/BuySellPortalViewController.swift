@@ -142,7 +142,10 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
             showCoinbase: CoinbaseDataSource.shouldShow(),
             // Dash DEX swaps real assets — mainnet only, and only when the SwapKit API key
             // is configured. Mirrors ServiceDataProvider.shouldShow(.swapKit).
-            showSwapKit: DWEnvironment.sharedInstance().currentChain.isMainnet() && SwapKitConstants.isConfigured,
+            showSwapKit: ServiceDataProviderImpl.shouldShow(
+                service: .swapKit,
+                isMainnet: WalletEnvironment.isMainnet,
+                swapKitConfigured: SwapKitConstants.isConfigured),
             model: model,
             onBack: { [weak self] in
                 guard let self else { return }
