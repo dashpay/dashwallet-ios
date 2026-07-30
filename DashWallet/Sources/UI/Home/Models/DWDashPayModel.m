@@ -32,7 +32,6 @@ NSNotificationName const DWDashPayRegistrationStatusUpdatedNotification = @"DWDa
 
 @property (nullable, nonatomic, strong) DWDPRegistrationStatus *registrationStatus;
 @property (nullable, nonatomic, strong) NSError *lastRegistrationError;
-@property (nonatomic, assign) BOOL isInvitationNotificationAllowed;
 @end
 
 NS_ASSUME_NONNULL_END
@@ -63,9 +62,7 @@ NS_ASSUME_NONNULL_END
         DWLogPrivate(@"DWDP: Current username: %@", [DWGlobalOptions sharedInstance].dashpayUsername);
 
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-        // Row #18: the badge count now derives from the SwiftDashSDK
-        // contacts service; its snapshot-change notification replaces
-        // the retired DWNotificationsProvider will/did pair.
+        // The badge count derives from the SwiftDashSDK contacts snapshot.
         [notificationCenter addObserver:self
                                selector:@selector(contactsSnapshotDidChange)
                                    name:@"DWSwiftDashSDKContactsDidChangeNotification"
@@ -94,47 +91,18 @@ NS_ASSUME_NONNULL_END
     return DWCurrentUserIdentityInfo.shared.username ?: [DWGlobalOptions sharedInstance].dashpayUsername;
 }
 
-- (DSBlockchainIdentity *)blockchainIdentity {
-    if (MOCK_DASHPAY) {
-        NSString *username = [DWGlobalOptions sharedInstance].dashpayUsername;
-
-        if (username != nil) {
-            return [[DWEnvironment sharedInstance].currentWallet createBlockchainIdentityForUsername:username];
-        }
-    }
-
-    return [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-}
-
 - (BOOL)registrationCompleted {
     return [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted;
 }
 
 - (BOOL)hasIdentity {
-    // Row #17 stage A — true for either DashSync-side identity OR
-    // SwiftDashSDK-side identity. The legacy `blockchainIdentity`
-    // getter returns nil for the SDK path (DashSync has no on-chain
-    // footprint for PP-funded identities and no scanner-driven
-    // reconstruction), so consumers that only need to know "does
-    // this wallet have a DashPay identity?" should read this
-    // property instead. Callers that need the `DSBlockchainIdentity`
-    // object (Edit Profile, contacts) still read `blockchainIdentity`
-    // and handle nil — row #17 proper migrates those.
-    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
-    if (blockchainIdentity != nil) {
-        return YES;
-    }
-    return [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted;
+    return DWCurrentUserIdentityInfo.shared.hasIdentity ||
+           [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted;
 }
 
 - (NSUInteger)unreadNotificationsCount {
-    if (self.isInvitationNotificationAllowed &&
-        [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge) {
-        return 1;
-    }
-
-    // Row #18: SwiftDashSDK contacts service (incoming requests +
-    // established-contact events newer than the last-viewed marker).
+    // Incoming requests and established-contact events newer than the
+    // last-viewed marker are counted by the app-owned contacts bridge.
     return DWContactsNotificationsBridge.unreadCount;
 }
 
@@ -228,7 +196,6 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)completeRegistration {
-    [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge = YES;
     [DWGlobalOptions sharedInstance].dashpayRegistrationCompleted = YES;
 
     if (!MOCK_DASHPAY) {
@@ -258,10 +225,6 @@ NS_ASSUME_NONNULL_END
     [self didChangeValueForKey:key];
 }
 
-- (void)setHasEnoughBalanceForInvitationNotification:(BOOL)value {
-    self.isInvitationNotificationAllowed = ([DWGlobalOptions sharedInstance].dpInvitationFlowEnabled && value);
-}
-
 #pragma mark - Notifications
 
 - (void)contactsSnapshotDidChange {
@@ -288,9 +251,8 @@ NS_ASSUME_NONNULL_END
         // `wallet.defaultBlockchainIdentity.currentDashpayUsername`
         // becomes the source of truth, but the SDK path has no
         // DashSync identity, so nil'ing here would make `self.username`
-        // permanently nil. Keep the cached username; row #17 will
-        // eventually migrate the read sites off DashSync.
-        [DWGlobalOptions sharedInstance].shouldShowInvitationsBadge = YES;
+        // permanently nil. Keep the cached username as the app-owned
+        // fallback used by the current identity snapshot.
         // Contested submissions complete with the username deliberately
         // unmirrored (masternode voting pending) — self.username is nil by
         // construction until checkPendingContestResolution finalizes the win.
@@ -411,9 +373,10 @@ NS_ASSUME_NONNULL_END
 
     const BOOL failed = error != nil;
 
-    if (failed && self.blockchainIdentity.isFromIncomingInvitation) {
+    DSBlockchainIdentity *blockchainIdentity = [DWEnvironment sharedInstance].currentWallet.defaultBlockchainIdentity;
+    if (failed && blockchainIdentity.isFromIncomingInvitation) {
         [self cancel];
-        [self.blockchainIdentity unregisterLocally];
+        [blockchainIdentity unregisterLocally];
         return;
     }
 

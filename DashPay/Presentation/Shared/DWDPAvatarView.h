@@ -21,8 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const DPCropParameterName;
 
-@class DSBlockchainIdentity;
-
 typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
     DWDPAvatarBackgroundMode_DashBlue,
     DWDPAvatarBackgroundMode_Random,
@@ -31,7 +29,6 @@ typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
 @interface DWDPAvatarView : UIView
 
 @property (nonatomic, assign) DWDPAvatarBackgroundMode backgroundMode;
-@property (nullable, nonatomic, copy) DSBlockchainIdentity *blockchainIdentity;
 @property (nonatomic, assign, getter=isSmall) BOOL small;
 
 - (void)setAsDashPlaceholder;
@@ -39,10 +36,7 @@ typedef NS_ENUM(NSUInteger, DWDPAvatarBackgroundMode) {
 
 /// Paint the avatar for the current SwiftDashSDK-side user identity.
 /// Reads username + avatar URL from `DWCurrentUserIdentityInfo.shared`
-/// and triggers the same async image-load + letter-fallback pattern
-/// as `setBlockchainIdentity:`. Row #17 proper entry point; the
-/// legacy `setBlockchainIdentity:` path stays for contact / other-
-/// user rendering (Row #18).
+/// and triggers async image loading with a letter fallback.
 - (void)configureAsCurrentUser;
 
 @end

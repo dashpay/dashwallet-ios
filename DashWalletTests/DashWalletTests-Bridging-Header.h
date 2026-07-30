@@ -18,5 +18,6 @@
 #ifndef DashWalletTests_Bridging_Header_h
 #define DashWalletTests_Bridging_Header_h
 
+#import "DashPay/Presentation/Profile/EditProfile/Upload/DWUploadAvatarModel.h"
 
 #endif /* DashWalletTests_Bridging_Header_h */

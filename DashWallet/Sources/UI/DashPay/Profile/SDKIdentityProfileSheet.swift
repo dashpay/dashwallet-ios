@@ -2,18 +2,9 @@
 //  SDKIdentityProfileSheet.swift
 //  DashWallet
 //
-//  Read-only profile sheet for SwiftDashSDK-registered DashPay
-//  identities (row #17 stage A). Shown by `HomeViewController`'s
-//  avatar tap when the user has an SDK identity but no DashSync
-//  `defaultBlockchainIdentity` — which is the normal case for
-//  Platform-Payment-funded registrations (no Core-chain footprint
-//  for DashSync's scanner to pick up).
-//
-//  The legacy `RootEditProfileViewController` opens for DashSync-
-//  side identities. This sheet is the SDK-side counterpart and
-//  is intentionally minimal — username + identity ID + Platform
-//  credits + a "coming soon" hint for profile editing. Row #17
-//  proper replaces this with a real SDK-aware editor.
+//  Current-user DashPay profile sheet backed by the app-owned identity
+//  snapshot. It displays identity details and routes Edit to the existing
+//  SDK-aware profile editor.
 //
 
 import SwiftData

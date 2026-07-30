@@ -20,7 +20,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class DWEditProfileAvatarView;
-@class DSBlockchainIdentity;
 
 @protocol DWEditProfileAvatarViewDelegate <NSObject>
 
@@ -34,13 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, nonatomic, weak) id<DWEditProfileAvatarViewDelegate> delegate;
 
-- (void)setImageWithBlockchainIdentity:(DSBlockchainIdentity *)blockchainIdentity;
-
-/// Row #17 proper entry point — fetches the avatar URL from
-/// `DWCurrentUserIdentityInfo.shared.avatarURL` instead of a
-/// `DSBlockchainIdentity`. Falls back to the `dp_current_user_placeholder`
-/// image when no avatar URL is set, matching the behaviour of the
-/// DashSync path.
+/// Fetches the avatar URL from `DWCurrentUserIdentityInfo.shared.avatarURL`.
+/// Falls back to `dp_current_user_placeholder` when no URL is set.
 - (void)setImageForCurrentUser;
 
 @end

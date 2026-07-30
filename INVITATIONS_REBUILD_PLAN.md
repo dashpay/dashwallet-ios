@@ -1,9 +1,12 @@
-# DashPay Invitations Rebuild Plan (T1: port)
+# DashPay Invitations Rebuild Plan (superseded)
 
-Resolves teardown item T1 in `DASHSYNC_TEARDOWN_PLAN.md` as **port** (not delete):
-rebuild invitations on SwiftDashSDK, delete the DashSync invitation subsystem in
-the same change, cross-platform-compatible with Android's shipping
-implementation (dash-wallet master, dashj/dpp stack).
+> Historical proposal only. The approved avatar/profile-tail scope on
+> 2026-07-29 superseded the outgoing create/history/reclaim work below: the
+> unreachable outgoing flow was deleted, while the SDK-owned incoming claim
+> flow, link handling, Home paste/scan, inviter preview, and optional post-claim
+> contact request were retained. Current status lives in
+> `DASHSYNC_MIGRATION.md` and `DASHSYNC_TEARDOWN_PLAN.md`. Do not implement the
+> outgoing sections below without a new product decision.
 
 Readiness basis (surveyed 2026-07-16):
 

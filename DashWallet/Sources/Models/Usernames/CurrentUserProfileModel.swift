@@ -34,15 +34,6 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
     @objc let updateModel: DWDPUpdateProfileModel
     @Published private(set) var showJoinDashpay: Bool = false
     
-    @objc var blockchainIdentity: DSBlockchainIdentity? {
-        if MOCK_DASHPAY.boolValue {
-            if let username = DWGlobalOptions.sharedInstance().dashpayUsername {
-                return DWEnvironment.sharedInstance().currentWallet.createBlockchainIdentity(forUsername: username)
-            }
-        }
-        return DWEnvironment.sharedInstance().currentWallet.defaultBlockchainIdentity
-    }
-    
     override init() {
         updateModel = DWDPUpdateProfileModel()
         super.init()
@@ -119,28 +110,12 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
             && !hasPendingRecoveredName
     }
     
-    @objc func update() {
-        guard let _ = blockchainIdentity else {
-            state = .none
-            return
-        }
-        
-        if state == .loading {
-            return
-        }
-        
-        state = .loading
-        
-        if MOCK_DASHPAY.boolValue {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                self?.state = .done
-            }
-            return
-        }
-        
-        blockchainIdentity?.fetchProfile { [weak self] success, error in
-            guard let self = self else { return }
-            self.state = success ? .done : .error
-        }
+    @objc @MainActor func update() {
+        DWCurrentUserIdentityInfo.shared.refreshFromSDK()
+        let options = DWGlobalOptions.sharedInstance()
+        let hasIdentity = DWCurrentUserIdentityInfo.shared.hasIdentity
+            || options.dashpayRegistrationCompleted
+            || options.dashpayUsername?.isEmpty == false
+        state = hasIdentity ? .done : .none
     }
 }

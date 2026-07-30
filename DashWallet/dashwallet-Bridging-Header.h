@@ -99,11 +99,6 @@ static const bool _SNAPSHOT = 0;
 //MARK: DashPay
 #import "DWDPAvatarView.h"
 #import "DWDPRegistrationStatus.h"
-#import "DWInvitationActionsView.h"
-#import "DWInvitationPreviewViewController.h"
-#import "DWInvitationLinkBuilder.h"
-#import "DWSuccessInvitationView.h"
-#import "DWInvitationMessageView.h"
 #import "DWScrollingViewController.h"
 #import "UIView+DWEmbedding.h"
 #import "DWBasePressableControl.h"
@@ -126,7 +121,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWGetStarted.h"
 #import "DWGetStartedContentViewController.h"
 #import "DWDPUpdateProfileModel.h"
-#import "DWInvitationHistoryViewController.h"
 #endif
 
 //MARK: CrowdNode
@@ -150,9 +144,7 @@ static const bool _SNAPSHOT = 0;
 //MARK: Settings menu
 #import "UIViewController+DWDisplayError.h"
 #import "DWFormTableViewController.h"
-#import "DWCurrentUserProfileView.h"
 #import "DWSharedUIConstants.h"
-#import "DWUserProfileContainerView.h"
 #import "DWDashPayReadyProtocol.h"
 #import "DWSetPinViewController.h"
 #import "DWAdvancedSecurityViewController.h"

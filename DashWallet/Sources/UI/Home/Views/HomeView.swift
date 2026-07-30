@@ -36,7 +36,7 @@ protocol HomeViewDelegate: AnyObject {
     func homeViewDidChangeTopBarVisibility(shouldShow: Bool)
 
 #if DASHPAY
-    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt)
+    func homeView(_ homeView: HomeView, didUpdateProfileWithUnreadNotifications unreadNotifications: UInt)
     func homeViewRequestUsername()
     func homeViewClaimInvitation()
     func homeViewEditProfile()
@@ -158,12 +158,11 @@ final class HomeView: UIView {
         let completed = model.dashPayModel.registrationCompleted
         
         if status?.state == .done || completed {
-            let identity = model.dashPayModel.blockchainIdentity
             let notificationAmount = model.dashPayModel.unreadNotificationsCount
-            
-            delegate?.homeView(self, didUpdateProfile: identity, unreadNotifications: notificationAmount)
+
+            delegate?.homeView(self, didUpdateProfileWithUnreadNotifications: notificationAmount)
         } else {
-            delegate?.homeView(self, didUpdateProfile: nil, unreadNotifications: 0)
+            delegate?.homeView(self, didUpdateProfileWithUnreadNotifications: 0)
         }
         
         setNeedsLayout()
