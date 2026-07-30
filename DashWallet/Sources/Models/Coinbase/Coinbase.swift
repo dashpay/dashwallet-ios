@@ -341,7 +341,7 @@ struct CoinbaseWalletTransactionRecord: Equatable {
             direction = .received
         case .sent:
             direction = .sent
-        default:
+        case .moved, .notAccountFunds:
             direction = .other
         }
 

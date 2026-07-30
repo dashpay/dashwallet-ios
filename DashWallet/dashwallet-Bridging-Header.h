@@ -12,7 +12,6 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: DashSync
 #import "DWLogger.h"
-#import "DSTransaction.h"
 #import "DSWallet.h"
 #import "DSPriceOperationProvider.h"
 #import "DSOperation.h"

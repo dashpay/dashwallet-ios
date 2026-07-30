@@ -67,6 +67,11 @@ its amount model and uses the active wallet's fee-aware maximum for the
 CrowdNode leftover warning. Its dead `DWEnvironment.currentAccount` protocol
 fallback and legacy balance notification observer were removed.
 
+Shared transaction direction is app-owned. `TransactionDirection` preserves
+the SDK FFI mapping, self-send promotion, DashPay override, UI formatting,
+metadata categories, and CrowdNode matching without exposing
+`DSTransaction.h` through the app bridging header.
+
 `DWUploadAvatarModel` keeps its public Objective-C/KVO contract and automatic
 start, but delegates Imgur delete/upload to an internal Moya/`HTTPClient`
 client. It preserves resize/JPEG settings, delete retries, delete-before-upload,
@@ -176,7 +181,7 @@ The remaining T4 work can run independently before the Watch decision. T3 must
 wait until the Watch bridge and legacy registration consumer of `DWEnvironment`
 have a final shape.
 
-### Direct DashSync import classification after T1
+### Direct DashSync import classification after transaction-direction cleanup
 
 | Source | Classification |
 |---|---|
@@ -184,12 +189,11 @@ have a final shape.
 | `DashWallet/Sources/Models/DWEnvironment.h` | C6-E wallet-registry compatibility owner. |
 | `DashWallet/Sources/AppleWatch/DSWatchTransactionDataObject.h` | Apple Watch tail, deliberately untouched/out of scope. |
 
-These are three source files. The app bridging header still exposes
-`DSTransaction.h` solely for the widely used `DSTransactionDirection` enum; it
-does not expose a live DashSync transaction object path. Migrating that enum is
-a separate compatibility cleanup. The only functional `DSBlockchainIdentity` matches
-outside comments are internal to `DWDashPayModel`'s legacy registration path;
-there are no functional `DSBlockchainInvitation` matches.
+These are three source files. The app bridging header no longer exposes
+`DSTransaction.h`, and functional `DSTransaction` references are confined to
+the Apple Watch phone bridge. The only functional `DSBlockchainIdentity`
+matches outside comments are internal to `DWDashPayModel`'s legacy registration
+path; there are no functional `DSBlockchainInvitation` matches.
 
 The non-blocking CrowdNode suspension and platform-upstream work can run in
 parallel with T1-T4. They do not change the order of the DashSync unlink.

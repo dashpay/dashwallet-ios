@@ -55,11 +55,11 @@ struct ObservedTransaction {
     /// data). SDK-side stand-in for DashSync's `account.transactionIsValid`.
     let isChainAccepted: Bool
     /// Display wrapper; supplies direction/dashAmount with the existing
-    /// FFI → DSTransactionDirection mapping (including the outgoing → moved
+    /// FFI → TransactionDirection mapping (including the outgoing → moved
     /// fee-only promotion the top-up matcher relies on).
     let wrapped: Transaction
 
-    var direction: DSTransactionDirection { wrapped.direction }
+    var direction: TransactionDirection { wrapped.direction }
 }
 
 protocol TransactionFilter {

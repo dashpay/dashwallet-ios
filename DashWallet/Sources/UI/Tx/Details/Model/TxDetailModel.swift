@@ -45,7 +45,7 @@ class TxDetailModel: NSObject {
         return direction.title
     }
 
-    var direction: DSTransactionDirection {
+    var direction: TransactionDirection {
         transaction.direction
     }
 
@@ -331,8 +331,6 @@ extension TxDetailModel {
             title = NSLocalizedString("Moved from", comment: "");
         case .notAccountFunds:
             title = NSLocalizedString("Registered from", comment: "");
-        @unknown default:
-            title = ""
         }
 
         if hasSourceUser {
@@ -357,8 +355,6 @@ extension TxDetailModel {
         case .moved:
             title = NSLocalizedString("Internally moved to", comment: "")
         case .notAccountFunds: // this should not be possible
-            title = ""
-        @unknown default:
             title = ""
         }
 
