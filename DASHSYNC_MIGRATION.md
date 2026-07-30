@@ -18,9 +18,11 @@ selection, and xpub export no longer depend on live DashSync wallet state.
 DashSync is still linked for three bounded tails:
 
 1. **Apple Watch phone bridge** — the targets and bridge remain; transaction
-   payload formatting still reads `DSAccount`/`DSTransaction`. The watch app is
-   not embedded by either app target on this branch. Watch was deliberately
-   untouched and is out of scope for the invitation/profile tail.
+   payload formatting still reads `DSAccount`/`DSTransaction`. `dashwallet`
+   still builds the Watch app dependency (and therefore requires a matching
+   local Watch simulator runtime); `dashpay` does not. Watch was deliberately
+   untouched and still requires the remove-or-port decision described in the
+   teardown plan.
 2. **C6-E wallet-registry teardown** — create/recover still dual-write a
    `DSWallet`; wipe clears both stores; `WalletEnvironment.hasWallet` includes
    the DashSync registry; `DSChainWalletsDidChangeNotification` is still
@@ -29,9 +31,11 @@ DashSync is still linked for three bounded tails:
    `DSBlockchainIdentity` registration compatibility path; active profile UI
    no longer consumes that object.
 3. **Pod-unlink mechanics and compatibility surfaces** — AppDelegate setup,
-   a dormant `DSAccount` spent-input category, one stale payment import, and
-   project/Podfile link entries. Coinbase/Uphold keychain access, reachable
-   Uphold HTTP flows, and profile-avatar networking are app-owned.
+   the `DSTransaction.h` bridging exposure retained solely for
+   `DSTransactionDirection`, non-wallet exported helpers, and project/Podfile
+   link entries. Coinbase/Uphold keychain access, reachable Uphold HTTP flows,
+   profile-avatar networking, and Coinbase transaction/balance integration are
+   app-owned.
 
 As of this audit, three app source files directly import DashSync. Counts of all
 `DS*` tokens are not a useful progress metric because app-owned names such as
@@ -99,7 +103,7 @@ Status meanings:
 | 2 | Address validation | Done | None. Uses SwiftDashSDK address validation through app-owned parsing helpers. |
 | 3 | Mnemonic generation / create wallet | Done; teardown tail | SDK-owned mnemonic storage is verified before a wallet becomes live in `PlatformWalletManager`; remove the adjacent `DSWallet standardWalletWithSeedPhrase` dual-write in C6-E. |
 | 4 | Mnemonic validation | Done | None. Uses `Mnemonic.validate`. |
-| 5 | Wallet balance | Done | None. Uses `SwiftDashSDKWalletState`. |
+| 5 | Wallet balance | Done | None. Production balance reads use `SwiftDashSDKWalletState`; Coinbase transfer amount refreshes from its SDK-backed model balance and uses the fee-aware active-wallet maximum for its leftover warning. |
 | 6 | Transaction list | Done | None. History and Coinbase transaction metadata/tagging use active-wallet-scoped SDK-persisted SwiftData rows. The obsolete `DSTransaction` UI category and spent-input `DSAccount` category are removed. |
 | 7 | Transaction detail | Done | None. Uses SDK snapshots and recent-send resolution. |
 | 8 | Send Dash | Done | None. Money movement goes through `WalletSendService` / `SwiftDashSDKTransactionSender`. |

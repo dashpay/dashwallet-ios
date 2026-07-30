@@ -62,6 +62,11 @@ SDK-persisted transaction snapshot and refresh from SwiftData/app-owned wallet
 events. The obsolete `DSTransaction+DashWallet` and spent-input `DSAccount`
 categories plus the stale payment-processor import were removed.
 
+Coinbase transfer amount now refreshes from the SDK-backed balance published by
+its amount model and uses the active wallet's fee-aware maximum for the
+CrowdNode leftover warning. Its dead `DWEnvironment.currentAccount` protocol
+fallback and legacy balance notification observer were removed.
+
 `DWUploadAvatarModel` keeps its public Objective-C/KVO contract and automatic
 start, but delegates Imgur delete/upload to an internal Moya/`HTTPClient`
 client. It preserves resize/JPEG settings, delete retries, delete-before-upload,
