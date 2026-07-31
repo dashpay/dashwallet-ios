@@ -26,7 +26,7 @@ open DashWallet.xcworkspace   # Always open the workspace, not the .xcodeproj
 - Xcode 16+
 - CocoaPods (`gem install cocoapods`)
 - iOS deployment target: **18.0** (raised from 14.0 during the migration — Podfile `platform :ios, '18.0'` + post_install)
-- Rust toolchain (builds the SwiftDashSDK FFI; also legacy DashSync)
+- Rust toolchain (builds the SwiftDashSDK FFI)
 
 ### Optional tools
 - `swiftformat`, `swiftlint`, `clang-format` (Objective-C), `bartycrouch` (localization)
@@ -34,7 +34,6 @@ open DashWallet.xcworkspace   # Always open the workspace, not the .xcodeproj
 ### External repo dependencies (expected as sibling directories)
 ```
 ../platform/        # dashpay/platform monorepo — SwiftDashSDK lives at packages/swift-sdk (local SPM dependency)
-../DashSync/        # Legacy ObjC protocol library — being migrated OFF (see DASHSYNC_MIGRATION.md)
 ../dapi-grpc/       # gRPC API definitions
 ../dashwallet-ios/  # This repository
 ```
@@ -43,7 +42,8 @@ The SwiftDashSDK `DashSDKFFI.xcframework` is **gitignored** — after pulling `.
 ```bash
 cd ../platform/packages/swift-sdk && ./build_ios.sh --target ios --target sim
 ```
-If the app fails with missing SDK symbols (e.g. "no member …"), `../platform` is on the wrong branch — check the branch/commit pins recorded in `DASHSYNC_MIGRATION.md`.
+If the app fails with missing SDK symbols (e.g. "no member …"), verify the
+`../platform` checkout and rebuild both XCFramework slices.
 
 ## Figma
 
@@ -61,11 +61,13 @@ Figma Dev Mode MCP setup and cleaning Figma-exported SVG assets for iOS are cove
 - `MainTabbarController.swift` — tab-based navigation
 - `UIHostingController+DashWallet.swift` — UIKit ↔ SwiftUI bridge
 
-## DashSync → SwiftDashSDK Migration (endgame)
+## SwiftDashSDK ownership and upgrade compatibility
 
-The broad functional migration is complete; the branch is in pod-unlink teardown. `DASHSYNC_MIGRATION.md` is the current functional ledger, `DASHSYNC_TEARDOWN_PLAN.md` is the remaining unlink sequence, and `DASHSYNC_KEY_MIGRATION.md` owns upgrade-time key contracts. The `dashsync-migration` skill is the endgame playbook. Verify every status against the working tree; old Shadow/Flipped/Solo staging labels are retired.
+The DashSync dependency unlink is complete. The app and SwiftDashSDK own all
+live wallet behavior. `DASHSYNC_KEY_MIGRATION.md` remains the specification for
+the frozen upgrade-time mnemonic import contract.
 
-- **DashSync is frozen post-M6** — nothing starts its sync. `DWEnvironment.currentChain` / `currentAccount` still exist, but their balances, UTXOs, and `allTransactions` read stale/zero. Read wallet state from `SwiftDashSDKWalletState.shared`; DashSync reads are valid only for the not-yet-migrated surfaces tracked in DASHSYNC_MIGRATION.md.
+- **No DashSync runtime**: do not restore the pod, direct imports, `DWEnvironment`, or live `DS*` wallet/transaction/identity objects. Read wallet state through the app-owned SwiftDashSDK boundaries.
 - **Sync gating**: never gate on SPV `state == .synced` — dash-spv's steady state when fully synced is `waitForEvents` at progress ≈ 1.0 (`.synced` is a transient window). Gate on `SyncingActivityMonitor` (`.syncDone`).
 - **Sends**: every spend goes through `WalletSendService` (standard) or `SwiftDashSDKTransactionSender` (selected-input / sweep). Never call `CoreTransactionBuilder` from UI code. `prepare*` never broadcasts; broadcast happens only on explicit confirm.
 - **Mnemonic ownership**: stored as plain keychain bytes via SwiftDashSDK `WalletStorage` (the iOS keychain is the security boundary — there is no PIN-encryption layer). Creation/import/migration route through `SwiftDashSDKHost`; deletion routes through `SwiftDashSDKWalletWiper`. The migrator supports multiple wallets and never deletes DashSync-owned `org.dashfoundation.dash` entries. Don't add ad-hoc `WalletStorage()` readers or choose the first mnemonic — resolve the active wallet through `SwiftDashSDKHost` / `WalletEnvironment.activeWalletId(for:)`.
@@ -92,7 +94,7 @@ Distilled from the 2026-07 branch review (`ARCH_REVIEW_2026-07-03.md`) — each 
 4. **New singletons need a reason.** Don't add another `static let shared` in `Sources/Infrastructure/` without a protocol seam or a written justification in the type doc; prefer injecting. One file = one responsibility — a "coordinator" that accumulates published UI counters, storage wipes, and money movement gets split.
 5. **Never re-emit another system's notification names.** Re-posting `DS*` notification strings from new state poisons every future grep audit. New state gets a new typed publisher/notification; consumers migrate.
 6. **No debug residue in commits:** no session tags in log lines (à la `CJTEST`), no plan-diary comments ("Row #17 stage A", "M5/M6"), no stale line-number cross-references in doc comments. Use `TODO(label)` and link docs instead.
-7. **Migration seams stay bounded and honest.** New staged DashSync/SDK paths are not allowed. The only dual-library seams are the explicit teardown tails in `DASHSYNC_TEARDOWN_PLAN.md`; delete them with their final consumer. A seam method's name must match its behavior (`prepare` must not spend; `broadcast` must broadcast).
+7. **Legacy compatibility stays bounded and honest.** Do not restore staged DashSync/SDK paths. Only the frozen key migrator may read the old `org.dashfoundation.dash` keychain layout. A seam method's name must match its behavior (`prepare` must not spend; `broadcast` must broadcast).
 
 ## Code Style
 

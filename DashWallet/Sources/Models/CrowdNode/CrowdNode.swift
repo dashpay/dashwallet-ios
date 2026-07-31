@@ -363,7 +363,7 @@ extension CrowdNode {
     private func checkAPY() {
         // Estimated figure at the current SPV tip; recomputing is cheap.
         // TODO(masternode-stats-ffi): use the live virtual masternode count
-        // once the upstream stats FFI lands (DASHSYNC_TEARDOWN_PLAN.md C5).
+        // once the upstream stats FFI lands.
         masternodeAPY = MasternodeAPYCalculator.estimatedAPY()
         crowdnodeAPY = masternodeAPY * (1 - prefs.feePercentage)
     }
