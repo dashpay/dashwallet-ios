@@ -1,6 +1,6 @@
 # DashSync pod teardown verification
 
-Audited against the working tree on 2026-07-30. Functional ownership lives in
+Audited against the working tree on 2026-07-31. Functional ownership lives in
 [`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md); mnemonic upgrade behavior
 lives in [`DASHSYNC_KEY_MIGRATION.md`](./DASHSYNC_KEY_MIGRATION.md).
 
@@ -46,6 +46,7 @@ Compatibility intentionally preserved:
 - `BRAWTransactionType` raw values;
 - sent/received/moved/invalid mapping;
 - Dash and fiat amount formatting;
+- the legacy non-zero gross amount for ordinary internal moves;
 - date formatting;
 - newest-first ordering and 100-transaction limit;
 - WatchConnectivity request/reply and notification keys.
@@ -62,10 +63,13 @@ Create/recover and wipe are SDK-only after migration:
 - create/import persists and verifies the SDK mnemonic before exposing a live
   wallet;
 - active wallet IDs remain independently scoped by network;
-- wipe posts the app-owned `DWWillWipeWalletNotification`, removes requested
-  PIN state synchronously, and serializes SDK wallet/runtime cleanup;
-- successful and failed wipes retain their existing explicit result/barrier
-  behavior.
+- wipe posts the app-owned `DWWillWipeWalletNotification`, classifies
+  network-scoped wallet IDs, and deletes each through a manager bound to its
+  own mainnet/testnet SwiftData container;
+- success requires an empty global SDK mnemonic inventory; requested PIN,
+  active-wallet registry, and app state are cleared only at that commit point;
+- lock-screen, recovery, reinstall, Debug Reset, and screenshot replacement
+  flows await the same FIFO result barrier before navigation or wallet create.
 
 ## Audit gates
 

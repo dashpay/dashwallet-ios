@@ -415,8 +415,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self.lockWindow.hidden = YES;
     self.lockWindow.alpha = 1.0;
 
-    [self.model wipeWallet];
-    [self didWipeWallet];
+    // Use the same HUD + FIFO completion gate as Debug Reset. Navigating to
+    // onboarding before the SDK wipe result would let a failed deletion expose
+    // create/recover controls while the old wallet is still present.
+    [self beginWipeWallet];
 }
 
 #pragma mark - Notifications

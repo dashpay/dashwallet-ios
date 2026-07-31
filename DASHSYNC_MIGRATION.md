@@ -1,6 +1,6 @@
 # DashSync -> SwiftDashSDK migration status
 
-Current-state ledger for the DashSync removal. Updated 2026-07-30 from the
+Current-state ledger for the DashSync removal. Updated 2026-07-31 from the
 working tree; historical stage-by-stage detail is available in Git history.
 
 This file answers **what is migrated**. Use
@@ -24,8 +24,10 @@ dual writes, startup bootstrap, Core Data wipe arm, and internal
 Apple Watch remains a supported target. Its phone bridge now builds payloads
 from the active SwiftDashSDK wallet snapshot while preserving the existing
 `NSCoding` keys, transaction-type raw values, amount/date formatting, recent
-transaction limit, and latest-transaction notification contract. No DashSync
-wallet or transaction object crosses that bridge.
+transaction limit, and latest-transaction notification contract. Ordinary
+internal moves retain the legacy Watch gross amount from wallet-owned inputs
+instead of inheriting the phone UI's zero net-change presentation. No
+DashSync wallet or transaction object crosses that bridge.
 
 `DSDynamicOptions` is an independently retained direct dependency; its `DS`
 prefix does not make it part of DashSync. Historical `DS*` names may remain in
@@ -93,6 +95,13 @@ No DashSync Core Data to SwiftData copy is required:
 The frozen service `org.dashfoundation.dash` remains read-only so an upgraded
 installation can import mnemonics and retain rollback recovery. Final unlink
 does not authorize deleting those legacy entries.
+
+Full-device wipe classifies every SDK-owned mnemonic ID by its deterministic
+mainnet/testnet wallet ID, opens the matching network-scoped manager/container,
+and deletes both persisted rows and SDK Keychain material through that manager.
+It reports success only after the global SDK mnemonic inventory is empty. PIN
+removal and registry/app-state cleanup occur at that success commit point;
+failure leaves authentication intact for retry.
 
 ## Non-blocking release actions
 

@@ -137,8 +137,8 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
 
-        // PIN removal is synchronous; SDK Keychain/runtime deletion runs on the
-        // app-owned serial wipe executor.
+        // SDK Keychain/runtime deletion and the successful PIN commit run as
+        // one operation on the app-owned serial wipe executor.
         [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:YES];
 
         [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {

@@ -1235,7 +1235,7 @@ final class DWAppleWatchSnapshotProvider: NSObject {
             }
         }
 
-        let signedAmount = transaction.signedDashAmount
+        let signedAmount = transaction.appleWatchSignedAmount
         let localAmount = CurrencyExchanger.shared.fiatAmountString(for: signedAmount.dashAmount)
 
         return DWAppleWatchTransactionSnapshot(
@@ -1724,7 +1724,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
             || row.involvedAccounts.contains(where: { $0.wallet.walletId == walletId }) else {
             return nil
         }
-        let tx = Transaction(persistentTransaction: row)
+        let tx = Transaction(persistentTransaction: row, walletId: walletId)
         tx.sdkCoinJoinMixing = isCoinJoinMixingTx(row)
         return tx
     }
@@ -1774,7 +1774,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
             return []
         }
         return rows.map { row -> Transaction in
-            let tx = Transaction(persistentTransaction: row)
+            let tx = Transaction(persistentTransaction: row, walletId: walletId)
             tx.sdkCoinJoinMixing = Self.isCoinJoinMixingTx(row)
             return tx
         }
