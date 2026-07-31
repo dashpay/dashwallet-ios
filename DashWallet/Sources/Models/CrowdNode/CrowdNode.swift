@@ -135,10 +135,6 @@ public final class CrowdNode {
         crowdnodeAPY = masternodeAPY * (1 - prefs.feePercentage)
         print("CrowdNode: masternodeAPY: \(masternodeAPY), crowdnodeAPY: \(crowdnodeAPY)")
 
-        NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
-            .sink { [weak self] _ in self?.reset() }
-            .store(in: &cancellableBag)
-
         NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .sink { [weak self] _ in self?.reset() }
             .store(in: &cancellableBag)
@@ -336,6 +332,17 @@ extension CrowdNode {
         apiError = nil
         balance = 0
         prefs.resetUserDefaults()
+    }
+
+    /// Full-device wipe cleanup. Called only after every SDK wallet deletion
+    /// has succeeded, so a failed wipe leaves both published and persisted
+    /// CrowdNode state available for retry.
+    func resetForWipe() {
+        reset()
+        isBalanceLoading = false
+        isOnlineStateRestored = false
+        showNotificationOnResult = false
+        prefs.resetForWipe()
     }
 
     /// React to a runtime wallet switch: drop the in-memory state cached for the

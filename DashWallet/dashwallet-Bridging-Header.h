@@ -20,6 +20,7 @@ static const bool _SNAPSHOT = 0;
 #import "DashWallet/Sources/Application/DWAmountConstants.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
+#import "DWAppGroupOptions.h"
 #import "DWGlobalOptions.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"

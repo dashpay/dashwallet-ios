@@ -176,8 +176,6 @@ public final class WalletEnvironment: NSObject {
 extension Notification.Name {
     static let DWCurrentNetworkDidChange =
         Notification.Name("DWCurrentNetworkDidChangeNotification")
-    static let DWWillWipeWallet =
-        Notification.Name("DWWillWipeWalletNotification")
 }
 
 extension String {

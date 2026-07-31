@@ -336,9 +336,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             return;
         }
 
-        // Preserve Debug Reset's legacy cleanup notification before it clears
-        // wallet state (the previous menu-local path called this explicitly).
-        [DWApp cleanUp];
         [strongSelf.model wipeWallet];
         [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
             typeof(self) completedSelf = weakSelf;

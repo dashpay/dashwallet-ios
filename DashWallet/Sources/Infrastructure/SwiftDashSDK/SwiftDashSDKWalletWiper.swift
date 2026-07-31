@@ -101,7 +101,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// through `waitForPendingWipe`.
     @objc(wipeWalletRemovingPin:)
     static func wipeWallet(removingPin: Bool) {
-        NotificationCenter.default.post(name: .DWWillWipeWallet, object: nil)
         wipeExecutor.enqueue {
             performWipe(removingPin: removingPin)
         }
@@ -154,13 +153,17 @@ final class SwiftDashSDKWalletWiper: NSObject {
         }
 
         // The SDK wallet deletion is now known to have succeeded for every
-        // network. Remove the PIN and clear app-owned global/per-wallet
-        // remnants only at this commit point, so a failed wipe preserves a
-        // coherent wallet + authentication state for retry.
-        if removingPin {
-            DispatchQueue.main.sync {
+        // network. Clear every global app-owned store only at this commit
+        // point, so a failed wipe preserves a coherent wallet,
+        // authentication, metadata, and preferences state for retry.
+        DispatchQueue.main.sync {
+            if removingPin {
                 AuthenticationService.shared.removePin()
             }
+            App.shared.cleanUp()
+            DWGlobalOptions.sharedInstance().restoreToDefaults()
+            DWAppGroupOptions.sharedInstance().restoreToDefaults()
+            CrowdNode.shared.resetForWipe()
         }
 
         // These stores use UserDefaults + locks and are safe on this queue.
@@ -168,7 +171,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
         SPVChainResyncMarker.resetForWipe()
-        CrowdNodeDefaults.shared.resetForWipe()
 
         // Clear both network-scoped active-wallet registry entries only after
         // both network stores and the global SDK Keychain inventory are empty.

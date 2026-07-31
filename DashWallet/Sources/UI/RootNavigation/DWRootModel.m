@@ -17,7 +17,6 @@
 
 #import "DWRootModel.h"
 
-#import "DWAppGroupOptions.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
 #import "dashwallet-Swift.h"
@@ -100,9 +99,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)wipeWallet {
     [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:YES];
-
-    [[DWGlobalOptions sharedInstance] restoreToDefaults];
-    [[DWAppGroupOptions sharedInstance] restoreToDefaults];
 }
 
 #pragma mark - Notifications
