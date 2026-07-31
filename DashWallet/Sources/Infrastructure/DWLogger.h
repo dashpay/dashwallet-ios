@@ -28,20 +28,12 @@
 
 #import <CocoaLumberjack/CocoaLumberjack.h>
 
-// App-owned log-level symbol. CocoaLumberjack's DDLog* macros read the level
-// from `LOG_LEVEL_DEF` (default `ddLogLevel`); we point it at our own
-// `dwLogLevel` so this header never collides with DashSync's `DSLogger.h`
-// (which defines `ddLogLevel` and is still transitively imported while the pod
-// is linked). Same level values DSLogger used. At the final DashSync unlink,
-// this can revert to the plain `ddLogLevel` name.
+// App-owned log-level symbol using CocoaLumberjack's standard name.
 #ifdef DEBUG
-static const DDLogLevel dwLogLevel = DDLogLevelVerbose;
+static const DDLogLevel ddLogLevel = DDLogLevelVerbose;
 #else
-static const DDLogLevel dwLogLevel = DDLogLevelInfo;
+static const DDLogLevel ddLogLevel = DDLogLevelInfo;
 #endif /* DEBUG */
-
-#undef LOG_LEVEL_DEF
-#define LOG_LEVEL_DEF dwLogLevel
 
 NS_ASSUME_NONNULL_BEGIN
 

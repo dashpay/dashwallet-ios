@@ -103,28 +103,20 @@ wallet; a later manager-creation failure removes only the provisional mnemonic.
 
 ## Wipe contract
 
-The app-level wipe posts `DWWillWipeWalletNotification`. The SDK wiper deletes
-SDK-owned mnemonics and managed-wallet state, clears active-wallet registry
-entries, and tears down runtime state. During the migration window,
-`DWEnvironment` also unregisters DashSync wallets and clears DashSync Core Data,
-but it still must not delete the frozen DashSync mnemonic keychain entries.
+The SDK wiper deletes SDK-owned mnemonics and managed-wallet state through a
+manager bound to each wallet's mainnet/testnet store. It reports success only
+after the global SDK mnemonic inventory is empty.
 
-The post-reinstall Delete path waits for the SDK wiper's serial-queue barrier
-and its explicit success result before constructing app root. PIN removal is
-synchronous while the full SDK wipe is queued on the app's wipe executor;
-entering root between those operations can otherwise show an impossible-to-
-unlock PIN screen for a wallet that is being deleted. A failed per-wallet SDK
-delete never triggers an app-side mnemonic fallback, and a failed full wipe
-preserves runtime/registry state so the user can retry. Per-wallet SDK deletion
-uses SwiftDashSDK's synchronous API on MainActor; the onboarding screen shows a
-blocking “Deleting Wallet…” progress HUD while the app-level wipe completes.
-The Settings → Security → Reset Wallet (Debug) path uses the same gate: it
-first replaces the main stack with a HUD-blocked setup screen, then triggers
-the wipe only after that HUD has rendered; the setup controls unlock only after
-the barrier reports success.
+PIN removal, metadata deletion, app/global preference reset, CrowdNode cleanup,
+active-wallet registry cleanup, and runtime teardown happen only after that
+success point and before the serial-queue completion barrier fires. A failed
+full wipe preserves those app-owned stores so the user can retry. Per-wallet
+state belonging to a wallet already deleted successfully may be cleared with
+that wallet during a partially successful attempt.
 
-The DashSync wipe arm is removed with C6-E after invitations/profile and Watch
-no longer require DashSync wallet objects.
+Every wipe entry point waits for the same explicit result before navigating or
+creating a replacement wallet. The frozen DashSync mnemonic keychain service
+`org.dashfoundation.dash` remains read-only and is never deleted by app wipe.
 
 ## Acceptance criteria
 

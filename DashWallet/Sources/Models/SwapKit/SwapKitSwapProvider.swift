@@ -262,7 +262,7 @@ final class SwapKitSwapProvider: SwapProvider {
             let response = try await SwapKitAPIService.shared.quote(request)
             return response.error
         } catch {
-            DSLogger.log("SwapKit: address validation request failed: \(error)")
+            DWLogger.log("SwapKit: address validation request failed: \(error)")
             return NSLocalizedString("Address validation unavailable — please check your connection", comment: "SwapKit")
         }
     }
@@ -422,7 +422,7 @@ final class SwapKitSwapProvider: SwapProvider {
         // fail loudly here instead of silently building an invalid (memo-less) deposit that the
         // network would treat as a plain send and never credit the swap.
         if let memo = swapResponse.memo, !memo.isEmpty {
-            DSLogger.log("SwapKit: rejecting memo-bearing route for \(toAsset) — OP_RETURN unsupported")
+            DWLogger.log("SwapKit: rejecting memo-bearing route for \(toAsset) — OP_RETURN unsupported")
             return errorResult(NSLocalizedString("This coin isn’t available for swapping right now.", comment: "SwapKit"))
         }
 
@@ -460,7 +460,7 @@ final class SwapKitSwapProvider: SwapProvider {
             return mapTrackResponse(response)
         } catch {
             // Non-fatal; return not-yet-observed so polling continues.
-            DSLogger.log("SwapKit: track request failed (deposit=\(depositAddress ?? "nil")): \(error)")
+            DWLogger.log("SwapKit: track request failed (deposit=\(depositAddress ?? "nil")): \(error)")
             return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
         }
     }
@@ -496,7 +496,7 @@ final class SwapKitSwapProvider: SwapProvider {
             // An empty result (network error, bad decode, empty response) is indistinguishable
             // from "everything is both", which would wrongly pass all coins through Buy filter.
             guard !mayaIds.isEmpty || !nearIds.isEmpty else {
-                DSLogger.log("SwapKit: classification produced empty token lists — marking unusable")
+                DWLogger.log("SwapKit: classification produced empty token lists — marking unusable")
                 classificationUsable = false
                 // Drop any prior (now-stale) classification so networkLabels/haltedAssets,
                 // which skip rebuilding while classificationBuilt is true, can't render stale state.
@@ -520,11 +520,11 @@ final class SwapKitSwapProvider: SwapProvider {
             }
             logoURIByIdentifier = logos
 
-            DSLogger.log("SwapKit: classification built — mayaOnly=\(mayaOnlyAssets.count) nearOnly=\(nearOnlyAssets.count) both=\(bothAssets.count)")
+            DWLogger.log("SwapKit: classification built — mayaOnly=\(mayaOnlyAssets.count) nearOnly=\(nearOnlyAssets.count) both=\(bothAssets.count)")
         } catch {
             classificationUsable = false
             clearClassification()
-            DSLogger.log("SwapKit: classification fetch failed: \(error) — Buy will show error state")
+            DWLogger.log("SwapKit: classification fetch failed: \(error) — Buy will show error state")
         }
     }
 
@@ -858,7 +858,7 @@ final class SwapKitSwapProvider: SwapProvider {
             } else if chain == "DASH" || (asset?.contains("DASH") ?? false) {
                 total += amount * targetPerDash
             } else {
-                DSLogger.log("SwapKit fee skipped: type=\(fee.type ?? "?") asset=\(fee.asset ?? "?") chain=\(fee.chain ?? "?")")
+                DWLogger.log("SwapKit fee skipped: type=\(fee.type ?? "?") asset=\(fee.asset ?? "?") chain=\(fee.chain ?? "?")")
             }
         }
 

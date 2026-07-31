@@ -122,7 +122,7 @@ public class ExploreDatabaseSyncManager {
             // If local DB is missing (e.g. removed due to schema mismatch), force download
             // regardless of saved version timestamp to avoid falling back to in-memory DB.
             if !localDatabaseExists {
-                DSLogger.log("ExploreDash: local explore.db missing, forcing cloud database download")
+                DWLogger.log("ExploreDash: local explore.db missing, forcing cloud database download")
                 wSelf.downloadDatabase(metadata: metadata)
                 return
             }
@@ -131,7 +131,7 @@ public class ExploreDatabaseSyncManager {
             // downloaded). Its version is tracked under that network's key, so the check below would
             // read as up to date and leave us serving the wrong network's merchants.
             if wSelf.installedDatabaseNetwork != wSelf.currentNetworkName {
-                DSLogger.log("ExploreDash: explore.db belongs to \(wSelf.installedDatabaseNetwork ?? "an unknown network"), current network is \(wSelf.currentNetworkName) — forcing download")
+                DWLogger.log("ExploreDash: explore.db belongs to \(wSelf.installedDatabaseNetwork ?? "an unknown network"), current network is \(wSelf.currentNetworkName) — forcing download")
                 wSelf.downloadDatabase(metadata: metadata)
                 return
             }

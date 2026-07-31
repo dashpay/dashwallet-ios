@@ -268,7 +268,7 @@ extension VotingViewModel {
             let randomValue = Double.random(in: twoWeeksAgo..<now)
             let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
             let names = ["John", "Doe", "Sarah", "Jane", "Jack", "Jill", "Bob"]
-            let identity = (identityData as NSData).base58String()
+            let identity = ScriptAddressCodec.base58Encode(identityData)
             let randomName = names[Int.random(in: 0..<min(names.count, nameCount))]
             let link = nameCount % 2 == 0 ? "https://example.com" : nil
             let isApproved = false

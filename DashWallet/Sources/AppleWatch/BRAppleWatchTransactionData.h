@@ -23,8 +23,14 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
-#import "DSWatchTransactionData.h"
 #import <Foundation/Foundation.h>
+
+typedef enum : NSInteger {
+    BRAWTransactionTypeSent,
+    BRAWTransactionTypeReceive,
+    BRAWTransactionTypeMove,
+    BRAWTransactionTypeInvalid
+} BRAWTransactionType;
 
 @interface BRAppleWatchTransactionData : NSObject <NSCoding>
 
@@ -32,7 +38,5 @@
 @property (nonatomic, strong) NSString *amountTextInLocalCurrency;
 @property (nonatomic, strong) NSString *dateText;
 @property (nonatomic) BRAWTransactionType type;
-
-+ (instancetype)appleWatchTransactionDataFrom:(id<DSWatchTransactionData>)transactionData;
 
 @end

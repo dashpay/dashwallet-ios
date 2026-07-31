@@ -36,7 +36,7 @@ extension NumberFormatter {
         var currencySymbol = formattedString.extractCurrencySymbol(using: numberFormatter)
 
         if currencySymbol == nil &&
-            numberFormatter.currencySymbol.range(of: DASH) != nil {
+            numberFormatter.currencySymbol.range(of: kDashCurrency) != nil {
             currencySymbol = numberFormatter.currencySymbol
         }
 

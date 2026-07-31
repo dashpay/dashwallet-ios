@@ -88,7 +88,7 @@ final class SwapPendingGate {
               tx.state == .ok  // context >= 1: InstantSend-locked (or inBlock/chainLocked)
         else { return }
 
-        DSLogger.log("SwapPendingGate: IS-lock observed for \(Transaction.displayHex(expected)) — gate released")
+        DWLogger.log("SwapPendingGate: IS-lock observed for \(Transaction.displayHex(expected)) — gate released")
         lock.lock()
         clearLocked()
         lock.unlock()

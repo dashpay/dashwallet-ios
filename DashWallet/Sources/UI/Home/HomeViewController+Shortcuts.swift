@@ -405,7 +405,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         present(safariViewController, animated: true)
     }
     private func dashDEXAction() {
-        DSAuthenticationManager.sharedInstance().authenticate(
+        AuthenticationService.shared.authenticate(
             withPrompt: nil,
             usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
             alertIfLockout: true

@@ -31,7 +31,7 @@ import Foundation
 /// masternode list that no longer syncs, so its nil-fallback ran the same
 /// fixed-count estimate). TODO(masternode-stats-ffi): replace the fixed count
 /// with the live virtual count (regular + 4×evo) once the upstream
-/// masternode-list stats FFI lands, per DASHSYNC_TEARDOWN_PLAN.md C5.
+/// masternode-list stats FFI lands.
 ///
 /// The difficulty input is a per-network constant rather than a chain-tip
 /// read: at every height this calculator can see, the subsidy base CLAMPS —

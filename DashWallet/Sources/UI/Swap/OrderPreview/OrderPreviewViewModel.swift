@@ -555,7 +555,7 @@ final class OrderPreviewViewModel: ObservableObject {
             return false
         }
 
-        DSLogger.log("DashDEX: IS-lock observed for \(Transaction.displayHex(txidWire))")
+        DWLogger.log("DashDEX: IS-lock observed for \(Transaction.displayHex(txidWire))")
 
         switch Self.successTrigger {
         case .onISLock, .onDashConfirmation:
@@ -604,7 +604,7 @@ final class OrderPreviewViewModel: ObservableObject {
                 backendOutcome = .done(outHashes: [order.outboundTxHash].compactMap { $0 })
             case .refunded, .failed:
                 backendOutcome = .refunded
-                DSLogger.log("DEX: post-success \(order.status.rawValue) for \(order.id)")
+                DWLogger.log("DEX: post-success \(order.status.rawValue) for \(order.id)")
             default: break
             }
             return

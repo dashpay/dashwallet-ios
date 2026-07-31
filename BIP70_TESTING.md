@@ -1,9 +1,8 @@
 # BIP70 Testing Guide
 
-Practical notes for exercising the BIP70 (X.509-signed payment-protocol) send flow in
-dashwallet-ios, gathered while scoping the migration of BIP70 **off DashSync** (see
-[`DASHSYNC_MIGRATION.md`](./DASHSYNC_MIGRATION.md) row #22). This is the harness + findings;
-the implementation plan for re-doing BIP70 app-side (outside DashSync) is a separate doc.
+Historical notes for exercising the BIP70 (X.509-signed payment-protocol) send
+flow, gathered while porting it off DashSync. The production implementation is
+now app/SwiftDashSDK-owned; treat current code as the source of truth.
 
 ---
 
