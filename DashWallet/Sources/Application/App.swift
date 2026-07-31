@@ -106,6 +106,15 @@ final class App {
     #if DASHPAY
         UsernameRequestsDAOImpl.shared.deleteAll()
     #endif
+
+        _fiatCurrency = nil
+        UserDefaults.standard.removeObject(forKey: kFiatCurrencyCodeKey)
+        NotificationCenter.default.post(name: Notification.Name.fiatCurrencyDidChange, object: nil)
+
+        let upholdClient = DWUpholdClient.sharedInstance()
+        upholdClient.logOut()
+        upholdClient.lastKnownBalance = nil
+
         Coinbase.shared.reset()
     }
 }
