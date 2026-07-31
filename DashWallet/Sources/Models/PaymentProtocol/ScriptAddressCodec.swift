@@ -125,7 +125,7 @@ enum ScriptAddressCodec {
     }
 
     /// Big-integer base conversion 256 → 58 (mirrors `NSString+Bitcoin.m base58WithData:`).
-    private static func base58Encode(_ data: Data) -> String {
+    static func base58Encode(_ data: Data) -> String {
         let bytes = [UInt8](data)
         var leadingZeros = 0
         while leadingZeros < bytes.count, bytes[leadingZeros] == 0 { leadingZeros += 1 }

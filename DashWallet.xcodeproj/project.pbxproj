@@ -211,7 +211,6 @@
 		2A7F3B1F238C651200DEA3EF /* DWSecurityStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7F3B1E238C651200DEA3EF /* DWSecurityStatusView.m */; };
 		2A7F3B21238C653000DEA3EF /* DWSecurityStatusView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A7F3B20238C653000DEA3EF /* DWSecurityStatusView.xib */; };
 		2A811559269CE09300215F81 /* uphold-logout.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 2A811558269CE09300215F81 /* uphold-logout.jpg */; };
-		2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A06237EE89B0097A7B5 /* DSWatchTransactionDataObject.m */; };
 		2A858A10237EE89C0097A7B5 /* BRAppleWatchData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A08237EE89B0097A7B5 /* BRAppleWatchData.m */; };
 		2A858A11237EE89C0097A7B5 /* DWPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0C237EE89B0097A7B5 /* DWPhoneWCSessionManager.m */; };
 		2A858A12237EE89C0097A7B5 /* BRAppleWatchTransactionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */; };
@@ -926,6 +925,7 @@
 		75FFD6C72BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		76766A50AFDB7BC138F569DC /* NetworkUnavailableStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */; };
+		7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30000130A1000000000001 /* TransactionDirectionTests.swift */; };
 		7B18F4580CB3D24E417435DE /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		7B4F28EE00BA451DA8675B06 /* SwapCoinIconLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F0351CAD174EEB8E64012A /* SwapCoinIconLoader.swift */; };
 		7B9BBDE902964C57C44F68BD /* PinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132FE91D9C90E736DB1634A5 /* PinStore.swift */; };
@@ -1139,6 +1139,7 @@
 		BA913BE21BD57E4D005A7C0E /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA913BE01BD57E4D005A7C0E /* Interface.storyboard */; };
 		BA913BE41BD57E4D005A7C0E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA913BE31BD57E4D005A7C0E /* Assets.xcassets */; };
 		BA913BEB1BD57E4D005A7C0E /* WatchApp Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BA913BEA1BD57E4D005A7C0E /* WatchApp Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F1A2B3C4D5E6F708192A3B4C /* WatchApp.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = BA913BDE1BD57E4D005A7C0E /* WatchApp.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BA913BF21BD57E4D005A7C0E /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA913BF11BD57E4D005A7C0E /* ExtensionDelegate.swift */; };
 		BAA4843C1B3EFFAF0075C749 /* UIImage+Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = BAA4843B1B3EFFAF0075C749 /* UIImage+Utils.m */; };
 		BAA6E3EB1BD5C78500773205 /* DWSetupInfoInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3EA1BD5C78500773205 /* DWSetupInfoInterfaceController.swift */; };
@@ -1157,8 +1158,6 @@
 		BD509A68B1A0B6E4599F9C7A /* DWProfileUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */; };
 		C05FA6CE3DDE2D0327D334E5 /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
 		C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */; };
-		CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */; };
-		CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */; };
 		C124DF94278D4238FAE0975D /* OrderPreviewFeeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */; };
 		C1A0B2C3D4E5F60718293A02 /* ShortcutsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */; };
 		C1A0B2C3D4E5F60718293A03 /* ShortcutsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */; };
@@ -1564,7 +1563,6 @@
 		C9D2C7F42A320AA000D15901 /* DWQRScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AC92C831FEB0A6D008CAEE0 /* DWQRScanViewController.m */; };
 		C9D2C7F52A320AA000D15901 /* DWSelectorFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE2C2230FF4600956D5F /* DWSelectorFormTableViewCell.m */; };
 		C9D2C7F82A320AA000D15901 /* UIViewController+AlertPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */; };
-		C9D2C7F92A320AA000D15901 /* DSWatchTransactionDataObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A06237EE89B0097A7B5 /* DSWatchTransactionDataObject.m */; };
 		C9D2C7FA2A320AA000D15901 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3B0129364991008D58DC /* HTTPClient.swift */; };
 		C9D2C7FB2A320AA000D15901 /* DWPasteboardAddressExtractor.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E6E2302A9C200FF8653 /* DWPasteboardAddressExtractor.m */; };
 		C9D2C7FC2A320AA000D15901 /* ViewModel+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477F501429531C07003C7508 /* ViewModel+Coinbase.swift */; };
@@ -1627,7 +1625,6 @@
 		C9D2C84B2A320AA000D15901 /* UITableView+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F005FE297164600029EB10 /* UITableView+DashWallet.swift */; };
 		C9D2C84D2A320AA000D15901 /* ShortcutCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94F5E8D29D404850034FD57 /* ShortcutCell.swift */; };
 		C9D2C84F2A320AA000D15901 /* UIColor+DWStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */; };
-		C9D2C8502A320AA000D15901 /* DWEnvironment.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEF3AF021823CD800917AB6 /* DWEnvironment.m */; };
 		C9D2C8512A320AA000D15901 /* AtmItemCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BC928C1305E00490F5E /* AtmItemCell.swift */; };
 		C9D2C8522A320AA000D15901 /* CoinbaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFB628C896BC000427E7 /* CoinbaseService.swift */; };
 		C9D2C8532A320AA000D15901 /* DWControllerCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E5522FEDF2900FF8653 /* DWControllerCollectionView.m */; };
@@ -1808,6 +1805,9 @@
 		C9FAABB52AB793CE00878224 /* BuySellPortal.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C9FAABB42AB793CE00878224 /* BuySellPortal.storyboard */; };
 		C9FAABB72AB799AE00878224 /* UpholdPortalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9FAABB62AB799AE00878224 /* UpholdPortalModel.swift */; };
 		CB74BF16EB95CE2D1246C243 /* SwiftDashSDKKeyMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FB75FCD21FC8C62840E6FD /* SwiftDashSDKKeyMigrator.swift */; };
+		CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */; };
+		CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */; };
+		CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */; };
 		CC0000112DUMMYID001234567 /* PiggyCardsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */; };
 		CC0000122DUMMYID001234567 /* PiggyCardsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */; };
 		CC0000132DUMMYID001234567 /* PiggyCardsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000072DUMMYID001234567 /* PiggyCardsCache.swift */; };
@@ -1900,7 +1900,6 @@
 		FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
 		FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB8ACEB522E0502100EE5035 /* DWUpholdMainnetConstants.m */; };
 		FBE008F4BBBA9CC7BF299B93 /* PaymentProtocolTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B307E94B354351D4E3D3B /* PaymentProtocolTransport.swift */; };
-		FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */ = {isa = PBXBuildFile; fileRef = FBEF3AF021823CD800917AB6 /* DWEnvironment.m */; };
 		FCDF0FF6DC442DBE3C9713FD /* DiagnosticLogExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */; };
 		FF0000012DUMMYID001234567 /* PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* PiggyCardsConstants.swift */; };
 		FF0000022DUMMYID001234567 /* PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* PiggyCardsConstants.swift */; };
@@ -1975,6 +1974,7 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
 			dstSubfolderSpec = 16;
 			files = (
+				F1A2B3C4D5E6F708192A3B4C /* WatchApp.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2028,7 +2028,6 @@
 		0F71317628F436920072F454 /* ServiceOverviewTableCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceOverviewTableCell.swift; sourceTree = "<group>"; };
 		0F71317828F436ED0072F454 /* ServiceOverviewViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ServiceOverviewViewController.swift; sourceTree = "<group>"; };
 		0F8E2ECDE79849D01F613ADC /* StorageExplorerUnavailableView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StorageExplorerUnavailableView.swift; sourceTree = "<group>"; };
-		0FC75A8E28F03E22000E4858 /* libDashSync.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libDashSync.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		110C67942921147F006B580C /* GettingStartedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GettingStartedViewController.swift; sourceTree = "<group>"; };
 		110C679929227948006B580C /* UINavigationController+CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UINavigationController+CrowdNode.swift"; sourceTree = "<group>"; };
 		110D1780298BA9AF005BEB30 /* WKWebView+CrowdNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKWebView+CrowdNode.swift"; sourceTree = "<group>"; };
@@ -2137,7 +2136,6 @@
 		2A0C69E723157858001B8C90 /* DWModalInteractiveTransitionProgressHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWModalInteractiveTransitionProgressHandler.h; sourceTree = "<group>"; };
 		2A0C69F02316B93F001B8C90 /* DWTitleDetailCellView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWTitleDetailCellView.h; sourceTree = "<group>"; };
 		2A0C69F12316B93F001B8C90 /* DWTitleDetailCellView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWTitleDetailCellView.m; sourceTree = "<group>"; };
-		2A0C6C852362EFAE00C86F37 /* libDashSync-Shared.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libDashSync-Shared.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A10EB332358996700C38B61 /* DWImportWalletInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWImportWalletInfoViewController.h; sourceTree = "<group>"; };
 		2A10EB342358996700C38B61 /* DWImportWalletInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWImportWalletInfoViewController.m; sourceTree = "<group>"; };
 		2A10EB3D2358BDA500C38B61 /* ImportWalletInfo.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ImportWalletInfo.storyboard; sourceTree = "<group>"; };
@@ -2292,14 +2290,11 @@
 		2A7F3B22238C709100DEA3EF /* DWSecurityLevel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSecurityLevel.h; sourceTree = "<group>"; };
 		2A811558269CE09300215F81 /* uphold-logout.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "uphold-logout.jpg"; sourceTree = "<group>"; };
 		2A858A05237EE89B0097A7B5 /* BRAppleWatchTransactionData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppleWatchTransactionData.h; sourceTree = "<group>"; };
-		2A858A06237EE89B0097A7B5 /* DSWatchTransactionDataObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DSWatchTransactionDataObject.m; sourceTree = "<group>"; };
 		2A858A07237EE89B0097A7B5 /* DWPhoneWCSessionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWPhoneWCSessionManager.h; sourceTree = "<group>"; };
 		2A858A08237EE89B0097A7B5 /* BRAppleWatchData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAppleWatchData.m; sourceTree = "<group>"; };
-		2A858A09237EE89B0097A7B5 /* DSWatchTransactionData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionData.h; sourceTree = "<group>"; };
 		2A858A0A237EE89B0097A7B5 /* BRAppleWatchSharedConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppleWatchSharedConstants.h; sourceTree = "<group>"; };
 		2A858A0B237EE89B0097A7B5 /* BRAppleWatchData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BRAppleWatchData.h; sourceTree = "<group>"; };
 		2A858A0C237EE89B0097A7B5 /* DWPhoneWCSessionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWPhoneWCSessionManager.m; sourceTree = "<group>"; };
-		2A858A0D237EE89B0097A7B5 /* DSWatchTransactionDataObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DSWatchTransactionDataObject.h; sourceTree = "<group>"; };
 		2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BRAppleWatchTransactionData.m; sourceTree = "<group>"; };
 		2A885FD4244DFEF100B9F679 /* UIView+DWFindConstraints.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+DWFindConstraints.h"; sourceTree = "<group>"; };
 		2A885FD5244DFEF100B9F679 /* UIView+DWFindConstraints.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+DWFindConstraints.m"; sourceTree = "<group>"; };
@@ -3014,6 +3009,7 @@
 		76AB2C7C555FB7DC14FD5E17 /* IdentitiesViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IdentitiesViewModel.swift; sourceTree = "<group>"; };
 		7708BBFDD14AFF237FB72D71 /* MayaConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaConstants.swift; sourceTree = "<group>"; };
 		797D9070BF54A3533190584E /* libPods-dashwallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-dashwallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A30000130A1000000000001 /* TransactionDirectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDirectionTests.swift; sourceTree = "<group>"; };
 		7B56B94951BA51EAC9E0A6E1 /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalScreen.swift; sourceTree = "<group>"; };
 		7E62262597A8B22870184A36 /* SDKIdentityProfileSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SDKIdentityProfileSheet.swift; sourceTree = "<group>"; };
@@ -3150,8 +3146,6 @@
 		BCD0199D74601A6150ABC8D1 /* WalletAccountDetailViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletAccountDetailViewModel.swift; sourceTree = "<group>"; };
 		C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OrderPreviewFeeRow.swift; sourceTree = "<group>"; };
 		C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKCoreLifecycleTests.swift; sourceTree = "<group>"; };
-		CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseTransactionMetadataTests.swift; sourceTree = "<group>"; };
-		CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseTransferAmountTests.swift; sourceTree = "<group>"; };
 		C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsBarView.swift; sourceTree = "<group>"; };
 		C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountView.swift; sourceTree = "<group>"; };
 		C3DAD266246AA6F10001624F /* DWScreenshotWarningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWScreenshotWarningViewController.h; sourceTree = "<group>"; };
@@ -3545,6 +3539,9 @@
 		C9F4520A2A1209D100825057 /* HomeHeaderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeaderModel.swift; sourceTree = "<group>"; };
 		C9FAABB42AB793CE00878224 /* BuySellPortal.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BuySellPortal.storyboard; sourceTree = "<group>"; };
 		C9FAABB62AB799AE00878224 /* UpholdPortalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpholdPortalModel.swift; sourceTree = "<group>"; };
+		CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseTransactionMetadataTests.swift; sourceTree = "<group>"; };
+		CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseTransferAmountTests.swift; sourceTree = "<group>"; };
+		CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassiveWalletStateUITailTests.swift; sourceTree = "<group>"; };
 		CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsAPI.swift; sourceTree = "<group>"; };
 		CC0000072DUMMYID001234567 /* PiggyCardsCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsCache.swift; sourceTree = "<group>"; };
 		CC0000082DUMMYID001234567 /* PiggyCardsEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsEndpoint.swift; sourceTree = "<group>"; };
@@ -3639,9 +3636,6 @@
 		FB6DD3811F7FA48500BC1E4D /* dashwallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = dashwallet.entitlements; sourceTree = "<group>"; };
 		FB8ACEB422E0502100EE5035 /* DWUpholdMainnetConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWUpholdMainnetConstants.h; sourceTree = "<group>"; };
 		FB8ACEB522E0502100EE5035 /* DWUpholdMainnetConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUpholdMainnetConstants.m; sourceTree = "<group>"; };
-		FBEF3AED2182395800917AB6 /* DashSync.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = DashSync.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		FBEF3AEF21823CD800917AB6 /* DWEnvironment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWEnvironment.h; sourceTree = "<group>"; };
-		FBEF3AF021823CD800917AB6 /* DWEnvironment.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWEnvironment.m; sourceTree = "<group>"; };
 		FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		FBF3F42C1E42B00C00C7248E /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FBF3F42E1E42B01E00C7248E /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -4554,8 +4548,6 @@
 				2A913E6323A11DCF006A2A59 /* URL Handling */,
 				FB2E5535218BA161003A1B7C /* DWVersionManager.h */,
 				FB2E5536218BA161003A1B7C /* DWVersionManager.m */,
-				FBEF3AEF21823CD800917AB6 /* DWEnvironment.h */,
-				FBEF3AF021823CD800917AB6 /* DWEnvironment.m */,
 				2AD1CEA922E18F1800C99324 /* DWGlobalOptions.h */,
 				2AD1CEAA22E18F1800C99324 /* DWGlobalOptions.m */,
 				2A8B9E7B23034AC100FF8653 /* DWAppGroupOptions.h */,
@@ -4842,9 +4834,6 @@
 				2A858A0A237EE89B0097A7B5 /* BRAppleWatchSharedConstants.h */,
 				2A858A05237EE89B0097A7B5 /* BRAppleWatchTransactionData.h */,
 				2A858A0E237EE89B0097A7B5 /* BRAppleWatchTransactionData.m */,
-				2A858A09237EE89B0097A7B5 /* DSWatchTransactionData.h */,
-				2A858A0D237EE89B0097A7B5 /* DSWatchTransactionDataObject.h */,
-				2A858A06237EE89B0097A7B5 /* DSWatchTransactionDataObject.m */,
 				2A858A07237EE89B0097A7B5 /* DWPhoneWCSessionManager.h */,
 				2A858A0C237EE89B0097A7B5 /* DWPhoneWCSessionManager.m */,
 			);
@@ -6987,15 +6976,12 @@
 		75D5F3C0191EC270004AB296 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				0FC75A8E28F03E22000E4858 /* libDashSync.a */,
 				2A5279BB23D994BC00F856D3 /* CoreNFC.framework */,
 				2AA08533237D6CF500797F95 /* CloudKit.framework */,
-				2A0C6C852362EFAE00C86F37 /* libDashSync-Shared.a */,
 				FB3E9F5F236125F600C09C5C /* BackgroundTasks.framework */,
 				2ABCA9172357A61B00092C09 /* Foundation.framework */,
 				2AD1CE9822DE63FA00C99324 /* GameplayKit.framework */,
 				FB4FA9C222505DD60060B017 /* AudioToolbox.framework */,
-				FBEF3AED2182395800917AB6 /* DashSync.framework */,
 				FB248B621F79BB7C00405AE0 /* SafariServices.framework */,
 				FB248B5C1F73803100405AE0 /* UserNotifications.framework */,
 				FBF3F4301E42B02800C7248E /* ImageIO.framework */,
@@ -7075,6 +7061,8 @@
 				C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */,
 				CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */,
 				CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */,
+				7A30000130A1000000000001 /* TransactionDirectionTests.swift */,
+				CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */,
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
 				AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */,
 				AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */,
@@ -9239,31 +9227,25 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-dashpay/Pods-dashpay-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleDataTransport/GoogleDataTransport_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleUtilities/GoogleUtilities_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/PromisesObjC/FBLPromises_Privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/Protobuf/Protobuf_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImage/SDWebImage.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImageSwiftUI/SDWebImageSwiftUI.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.swift.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/TOCropViewController/TOCropViewControllerBundle.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC/gRPCCertificates.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/lottie-ios/LottiePrivacyInfo.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Alamofire.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleDataTransport_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleUtilities_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FBLPromises_Privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Protobuf_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImage.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImageSwiftUI.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SQLite.swift.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TOCropViewControllerBundle.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/gRPCCertificates.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LottiePrivacyInfo.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -9279,31 +9261,25 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-dashwallet/Pods-dashwallet-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/Alamofire/Alamofire.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/DashSync/DashSync.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleDataTransport/GoogleDataTransport_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleUtilities/GoogleUtilities_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/PromisesObjC/FBLPromises_Privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/Protobuf/Protobuf_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImage/SDWebImage.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/SDWebImageSwiftUI/SDWebImageSwiftUI.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/SQLite.swift/SQLite.swift.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/TOCropViewController/TOCropViewControllerBundle.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/gRPC/gRPCCertificates.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/lottie-ios/LottiePrivacyInfo.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Alamofire.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/DashSync.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleDataTransport_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleUtilities_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/FBLPromises_Privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Protobuf_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImage.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SDWebImageSwiftUI.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/SQLite.swift.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/TOCropViewControllerBundle.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/gRPCCertificates.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LottiePrivacyInfo.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -9787,7 +9763,6 @@
 				75C3EE032DA7C63C00A4E9C0 /* DashSpendUserAuthScreen.swift in Sources */,
 				75C3EE052DA7C63C00A4E9C0 /* DashSpendLoginInfoView.swift in Sources */,
 				47305872295C971F004641DA /* UIViewController+AlertPresenting.swift in Sources */,
-				2A858A0F237EE89C0097A7B5 /* DSWatchTransactionDataObject.m in Sources */,
 				47FA3B0229364991008D58DC /* HTTPClient.swift in Sources */,
 				7549BE582DEAECB8004F0BAF /* CustomIconMetadataProvider.swift in Sources */,
 				7549BE602DEAF628004F0BAF /* AddIconBitmapsTable.swift in Sources */,
@@ -9929,7 +9904,6 @@
 				75F9D1822FE0A00100C0D001 /* ShortcutItemView.swift in Sources */,
 				75B3C1A22E36100100CAFE02 /* ShortcutSelectionView.swift in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
-				FBEF3AF121823CD800917AB6 /* DWEnvironment.m in Sources */,
 				47AE8BF028C1306000490F5E /* AtmItemCell.swift in Sources */,
 				0F6EDFD728C896BD000427E7 /* CoinbaseService.swift in Sources */,
 				2A8B9E5622FEDF2900FF8653 /* DWControllerCollectionView.m in Sources */,
@@ -10232,6 +10206,8 @@
 				C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */,
 				CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */,
 				CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */,
+				7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */,
+				CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
 				AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */,
 				AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */,
@@ -10787,7 +10763,6 @@
 				C9D2C7F42A320AA000D15901 /* DWQRScanViewController.m in Sources */,
 				C9D2C7F52A320AA000D15901 /* DWSelectorFormTableViewCell.m in Sources */,
 				C9D2C7F82A320AA000D15901 /* UIViewController+AlertPresenting.swift in Sources */,
-				C9D2C7F92A320AA000D15901 /* DSWatchTransactionDataObject.m in Sources */,
 				75C3EE002DA7C63C00A4E9C0 /* DashSpendUserAuthScreen.swift in Sources */,
 				75C3EE022DA7C63C00A4E9C0 /* DashSpendLoginInfoView.swift in Sources */,
 				C9D2C7FA2A320AA000D15901 /* HTTPClient.swift in Sources */,
@@ -10889,7 +10864,6 @@
 				516C63E52FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */,
 				516C63E92FE9BE0A00DD6BC3 /* AboutDashViewModel.swift in Sources */,
 				C9D2C84F2A320AA000D15901 /* UIColor+DWStyle.m in Sources */,
-				C9D2C8502A320AA000D15901 /* DWEnvironment.m in Sources */,
 				C9D2C8512A320AA000D15901 /* AtmItemCell.swift in Sources */,
 				C9D2C8522A320AA000D15901 /* CoinbaseService.swift in Sources */,
 				C9D2C8532A320AA000D15901 /* DWControllerCollectionView.m in Sources */,
@@ -11641,7 +11615,6 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/secp256k1",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
@@ -11659,13 +11632,10 @@
 					"-l\"BlueCryptor\"",
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
-					"-l\"BoringSSL-GRPC\"",
 					"-l\"CloudInAppMessaging\"",
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
-					"-l\"DAPI-GRPC\"",
 					"-l\"DWAlertController\"",
-					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
 					"-l\"FirebaseDynamicLinks\"",
@@ -11681,28 +11651,19 @@
 					"-l\"MMSegmentSlider\"",
 					"-l\"Moya\"",
 					"-l\"PromisesObjC\"",
-					"-l\"Protobuf\"",
 					"-l\"SDWebImage\"",
 					"-l\"SQLite.swift\"",
 					"-l\"SQLiteMigrationManager.swift\"",
 					"-l\"SSZipArchive\"",
 					"-l\"SwiftJWT\"",
 					"-l\"TOCropViewController\"",
-					"-l\"TinyCborObjc\"",
 					"-l\"UIViewController-KeyboardAdditions\"",
-					"-l\"abseil\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
-					"-l\"dash_shared_core_ios\"",
-					"-l\"gRPC\"",
-					"-l\"gRPC-Core\"",
-					"-l\"gRPC-ProtoRPC\"",
-					"-l\"gRPC-RxLibrary\"",
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -11785,7 +11746,6 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/secp256k1",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
@@ -11803,13 +11763,10 @@
 					"-l\"BlueCryptor\"",
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
-					"-l\"BoringSSL-GRPC\"",
 					"-l\"CloudInAppMessaging\"",
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
-					"-l\"DAPI-GRPC\"",
 					"-l\"DWAlertController\"",
-					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
 					"-l\"FirebaseDynamicLinks\"",
@@ -11825,28 +11782,19 @@
 					"-l\"MMSegmentSlider\"",
 					"-l\"Moya\"",
 					"-l\"PromisesObjC\"",
-					"-l\"Protobuf\"",
 					"-l\"SDWebImage\"",
 					"-l\"SQLite.swift\"",
 					"-l\"SQLiteMigrationManager.swift\"",
 					"-l\"SSZipArchive\"",
 					"-l\"SwiftJWT\"",
 					"-l\"TOCropViewController\"",
-					"-l\"TinyCborObjc\"",
 					"-l\"UIViewController-KeyboardAdditions\"",
-					"-l\"abseil\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
-					"-l\"dash_shared_core_ios\"",
-					"-l\"gRPC\"",
-					"-l\"gRPC-Core\"",
-					"-l\"gRPC-ProtoRPC\"",
-					"-l\"gRPC-RxLibrary\"",
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -11905,10 +11853,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"${PODS_ROOT}/Headers/Public\"",
-					"\"${PODS_ROOT}/Headers/Public/DashSync\"",
 					"\"${PODS_ROOT}/Headers/Public/KVO-MVVM\"",
-					"\"${PODS_ROOT}/Headers/Public/bls-signatures-pod\"",
-					"\"${PODS_ROOT}/Headers/Public/secp256k1_dash\"",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWalletTests/Info.plist;
@@ -11940,10 +11885,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"${PODS_ROOT}/Headers/Public\"",
-					"\"${PODS_ROOT}/Headers/Public/DashSync\"",
 					"\"${PODS_ROOT}/Headers/Public/KVO-MVVM\"",
-					"\"${PODS_ROOT}/Headers/Public/bls-signatures-pod\"",
-					"\"${PODS_ROOT}/Headers/Public/secp256k1_dash\"",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWalletTests/Info.plist;
@@ -12144,7 +12086,6 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/secp256k1",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
@@ -12162,13 +12103,10 @@
 					"-l\"BlueCryptor\"",
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
-					"-l\"BoringSSL-GRPC\"",
 					"-l\"CloudInAppMessaging\"",
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
-					"-l\"DAPI-GRPC\"",
 					"-l\"DWAlertController\"",
-					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
 					"-l\"FirebaseDynamicLinks\"",
@@ -12184,28 +12122,19 @@
 					"-l\"MMSegmentSlider\"",
 					"-l\"Moya\"",
 					"-l\"PromisesObjC\"",
-					"-l\"Protobuf\"",
 					"-l\"SDWebImage\"",
 					"-l\"SQLite.swift\"",
 					"-l\"SQLiteMigrationManager.swift\"",
 					"-l\"SSZipArchive\"",
 					"-l\"SwiftJWT\"",
 					"-l\"TOCropViewController\"",
-					"-l\"TinyCborObjc\"",
 					"-l\"UIViewController-KeyboardAdditions\"",
-					"-l\"abseil\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
-					"-l\"dash_shared_core_ios\"",
-					"-l\"gRPC\"",
-					"-l\"gRPC-Core\"",
-					"-l\"gRPC-ProtoRPC\"",
-					"-l\"gRPC-RxLibrary\"",
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12277,7 +12206,6 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/secp256k1",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = "DashPay/dashpay-info.plist";
@@ -12295,13 +12223,10 @@
 					"-l\"BlueCryptor\"",
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
-					"-l\"BoringSSL-GRPC\"",
 					"-l\"CloudInAppMessaging\"",
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
-					"-l\"DAPI-GRPC\"",
 					"-l\"DWAlertController\"",
-					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
 					"-l\"FirebaseDynamicLinks\"",
@@ -12317,28 +12242,19 @@
 					"-l\"MMSegmentSlider\"",
 					"-l\"Moya\"",
 					"-l\"PromisesObjC\"",
-					"-l\"Protobuf\"",
 					"-l\"SDWebImage\"",
 					"-l\"SQLite.swift\"",
 					"-l\"SQLiteMigrationManager.swift\"",
 					"-l\"SSZipArchive\"",
 					"-l\"SwiftJWT\"",
 					"-l\"TOCropViewController\"",
-					"-l\"TinyCborObjc\"",
 					"-l\"UIViewController-KeyboardAdditions\"",
-					"-l\"abseil\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
-					"-l\"dash_shared_core_ios\"",
-					"-l\"gRPC\"",
-					"-l\"gRPC-Core\"",
-					"-l\"gRPC-ProtoRPC\"",
-					"-l\"gRPC-RxLibrary\"",
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12421,7 +12337,6 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/secp256k1",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
@@ -12439,13 +12354,10 @@
 					"-l\"BlueCryptor\"",
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
-					"-l\"BoringSSL-GRPC\"",
 					"-l\"CloudInAppMessaging\"",
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
-					"-l\"DAPI-GRPC\"",
 					"-l\"DWAlertController\"",
-					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
 					"-l\"FirebaseDynamicLinks\"",
@@ -12461,28 +12373,19 @@
 					"-l\"MMSegmentSlider\"",
 					"-l\"Moya\"",
 					"-l\"PromisesObjC\"",
-					"-l\"Protobuf\"",
 					"-l\"SDWebImage\"",
 					"-l\"SQLite.swift\"",
 					"-l\"SQLiteMigrationManager.swift\"",
 					"-l\"SSZipArchive\"",
 					"-l\"SwiftJWT\"",
 					"-l\"TOCropViewController\"",
-					"-l\"TinyCborObjc\"",
 					"-l\"UIViewController-KeyboardAdditions\"",
-					"-l\"abseil\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
-					"-l\"dash_shared_core_ios\"",
-					"-l\"gRPC\"",
-					"-l\"gRPC-Core\"",
-					"-l\"gRPC-ProtoRPC\"",
-					"-l\"gRPC-RxLibrary\"",
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12564,7 +12467,6 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/secp256k1",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
@@ -12582,13 +12484,10 @@
 					"-l\"BlueCryptor\"",
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
-					"-l\"BoringSSL-GRPC\"",
 					"-l\"CloudInAppMessaging\"",
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
-					"-l\"DAPI-GRPC\"",
 					"-l\"DWAlertController\"",
-					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
 					"-l\"FirebaseDynamicLinks\"",
@@ -12604,28 +12503,19 @@
 					"-l\"MMSegmentSlider\"",
 					"-l\"Moya\"",
 					"-l\"PromisesObjC\"",
-					"-l\"Protobuf\"",
 					"-l\"SDWebImage\"",
 					"-l\"SQLite.swift\"",
 					"-l\"SQLiteMigrationManager.swift\"",
 					"-l\"SSZipArchive\"",
 					"-l\"SwiftJWT\"",
 					"-l\"TOCropViewController\"",
-					"-l\"TinyCborObjc\"",
 					"-l\"UIViewController-KeyboardAdditions\"",
-					"-l\"abseil\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
-					"-l\"dash_shared_core_ios\"",
-					"-l\"gRPC\"",
-					"-l\"gRPC-Core\"",
-					"-l\"gRPC-ProtoRPC\"",
-					"-l\"gRPC-RxLibrary\"",
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12769,7 +12659,6 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/secp256k1",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
@@ -12787,13 +12676,10 @@
 					"-l\"BlueCryptor\"",
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
-					"-l\"BoringSSL-GRPC\"",
 					"-l\"CloudInAppMessaging\"",
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
-					"-l\"DAPI-GRPC\"",
 					"-l\"DWAlertController\"",
-					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
 					"-l\"FirebaseDynamicLinks\"",
@@ -12809,28 +12695,19 @@
 					"-l\"MMSegmentSlider\"",
 					"-l\"Moya\"",
 					"-l\"PromisesObjC\"",
-					"-l\"Protobuf\"",
 					"-l\"SDWebImage\"",
 					"-l\"SQLite.swift\"",
 					"-l\"SQLiteMigrationManager.swift\"",
 					"-l\"SSZipArchive\"",
 					"-l\"SwiftJWT\"",
 					"-l\"TOCropViewController\"",
-					"-l\"TinyCborObjc\"",
 					"-l\"UIViewController-KeyboardAdditions\"",
-					"-l\"abseil\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
-					"-l\"dash_shared_core_ios\"",
-					"-l\"gRPC\"",
-					"-l\"gRPC-Core\"",
-					"-l\"gRPC-ProtoRPC\"",
-					"-l\"gRPC-RxLibrary\"",
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12919,10 +12796,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"${PODS_ROOT}/Headers/Public\"",
-					"\"${PODS_ROOT}/Headers/Public/DashSync\"",
 					"\"${PODS_ROOT}/Headers/Public/KVO-MVVM\"",
-					"\"${PODS_ROOT}/Headers/Public/bls-signatures-pod\"",
-					"\"${PODS_ROOT}/Headers/Public/secp256k1_dash\"",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWalletTests/Info.plist;
@@ -13083,7 +12957,6 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/secp256k1",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWallet/Info.plist;
@@ -13101,13 +12974,10 @@
 					"-l\"BlueCryptor\"",
 					"-l\"BlueECC\"",
 					"-l\"BlueRSA\"",
-					"-l\"BoringSSL-GRPC\"",
 					"-l\"CloudInAppMessaging\"",
 					"-l\"CocoaImageHashing\"",
 					"-l\"CocoaLumberjack\"",
-					"-l\"DAPI-GRPC\"",
 					"-l\"DWAlertController\"",
-					"-l\"DashSync\"",
 					"-l\"FirebaseCore\"",
 					"-l\"FirebaseCoreDiagnostics\"",
 					"-l\"FirebaseDynamicLinks\"",
@@ -13123,28 +12993,19 @@
 					"-l\"MMSegmentSlider\"",
 					"-l\"Moya\"",
 					"-l\"PromisesObjC\"",
-					"-l\"Protobuf\"",
 					"-l\"SDWebImage\"",
 					"-l\"SQLite.swift\"",
 					"-l\"SQLiteMigrationManager.swift\"",
 					"-l\"SSZipArchive\"",
 					"-l\"SwiftJWT\"",
 					"-l\"TOCropViewController\"",
-					"-l\"TinyCborObjc\"",
 					"-l\"UIViewController-KeyboardAdditions\"",
-					"-l\"abseil\"",
 					"-l\"bz2\"",
 					"-l\"c++\"",
-					"-l\"dash_shared_core_ios\"",
-					"-l\"gRPC\"",
-					"-l\"gRPC-Core\"",
-					"-l\"gRPC-ProtoRPC\"",
-					"-l\"gRPC-RxLibrary\"",
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
 					"-l\"sqlite3\"",
-					"-l\"tinycbor\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -13231,10 +13092,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"${PODS_ROOT}/Headers/Public\"",
-					"\"${PODS_ROOT}/Headers/Public/DashSync\"",
 					"\"${PODS_ROOT}/Headers/Public/KVO-MVVM\"",
-					"\"${PODS_ROOT}/Headers/Public/bls-signatures-pod\"",
-					"\"${PODS_ROOT}/Headers/Public/secp256k1_dash\"",
 					"$(SRCROOT)",
 				);
 				INFOPLIST_FILE = DashWalletTests/Info.plist;

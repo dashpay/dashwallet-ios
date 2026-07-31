@@ -110,14 +110,14 @@ final class BuyEnterAmountViewModel: ObservableObject {
 
         let asset = coin.swapAsset.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !asset.isEmpty else {
-            DSLogger.log("Swap: Buy validation skipped for \(coin.code) because the asset is blank")
+            DWLogger.log("Swap: Buy validation skipped for \(coin.code) because the asset is blank")
             onSuccess(coin, sellAmount)
             return
         }
 
         guard let exampleAddress = coin.exampleAddress?.trimmingCharacters(in: .whitespacesAndNewlines),
               !exampleAddress.isEmpty else {
-            DSLogger.log("Swap: Buy validation skipped for \(coin.code) because no example address is available")
+            DWLogger.log("Swap: Buy validation skipped for \(coin.code) because no example address is available")
             onSuccess(coin, sellAmount)
             return
         }

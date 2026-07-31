@@ -10,28 +10,17 @@ static const bool _SNAPSHOT = 1;
 static const bool _SNAPSHOT = 0;
 #endif /* SNAPSHOT */
 
-//MARK: DashSync
+//MARK: Infrastructure
 #import "DWLogger.h"
-#import "DSTransaction.h"
-#import "DSWallet.h"
-#import "DSPriceOperationProvider.h"
-#import "DSOperation.h"
-#import "DSOperationQueue.h"
-#import "DSDerivationPathFactory.h"
-#import "DSKeyManager.h"
-#import "BigIntTypes.h"
-#import "NSString+Dash.h"
-#import "DSChainManager.h"
-#import "DSChain.h"
 
 //MARK: DashWallet
 // Imported via $(SRCROOT)-relative path: these headers are missing from the generated
 // project header map, so a bare quote-import is not found by the bridging-header
 // dependency scanner. $(SRCROOT) is on HEADER_SEARCH_PATHS.
 #import "DashWallet/Sources/Application/DWAmountConstants.h"
-#import "DWEnvironment.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
+#import "DWAppGroupOptions.h"
 #import "DWGlobalOptions.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
@@ -48,7 +37,6 @@ static const bool _SNAPSHOT = 0;
 #import "UIViewController+KeyboardAdditions.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "UIFont+DWFont.h"
-#import "NSData+Dash.h"
 #import "CALayer+DWShadow.h"
 #import "DWAlertController.h"
 #import "DWHomeProtocol.h"
@@ -125,7 +113,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
 #import "UIImage+Utils.h"
-#import "NSData+Dash.h"
 
 //MARK: Tabbar
 #import "DWWipeDelegate.h"
@@ -155,10 +142,3 @@ static const bool _SNAPSHOT = 0;
 #if SNAPSHOT
 #import "DWDemoAdvancedSecurityViewController.h"
 #endif
-
-//MARK: CoinJoin
-#import "DSCoinJoinManager.h"
-
-
-// TODO
-#import "DSInstantSendTransactionLock.h"

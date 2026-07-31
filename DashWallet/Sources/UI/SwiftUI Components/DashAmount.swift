@@ -73,7 +73,7 @@ struct DashAmount: View {
     private func cleanAmount(_ amount: String) -> String {
         var result = amount
         
-        if let dashSymbolRange = result.range(of: DASH) {
+        if let dashSymbolRange = result.range(of: kDashCurrency) {
             result.removeSubrange(dashSymbolRange)
         }
         

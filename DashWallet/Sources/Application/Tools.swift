@@ -25,7 +25,7 @@ private var _fiatFormatter: NumberFormatter!
 private var _dashFormatter: NumberFormatter = {
     let maximumFractionDigits = 5
 
-    var dashFormat = NumberFormatter.cryptoFormatter(currencyCode: DASH, exponent: maximumFractionDigits)
+    var dashFormat = NumberFormatter.cryptoFormatter(currencyCode: kDashCurrency, exponent: maximumFractionDigits)
     dashFormat.locale = Locale.current
     dashFormat.maximum = (Decimal(kMaxDashSupplyDuffs)/pow(10, maximumFractionDigits)) as NSNumber
 

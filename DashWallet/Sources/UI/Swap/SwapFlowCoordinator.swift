@@ -31,7 +31,7 @@ final class SwapFlowCoordinator {
         self.direction = direction
 
         if direction == .buy, !(swapProvider is SwapKitSwapProvider) {
-            DSLogger.log("Swap flow: Buy requires SwapKit backend; got \(swapProvider.displayName)")
+            DWLogger.log("Swap flow: Buy requires SwapKit backend; got \(swapProvider.displayName)")
             assertionFailure("Buy flow requires SwapKit backend")
             return
         }
@@ -39,7 +39,7 @@ final class SwapFlowCoordinator {
         let selectCoinVC = SelectCoinHostingController(swapProvider: swapProvider, direction: direction)
         selectCoinVC.onCoinSelected = { [weak self] coin in
             guard let self else { return }
-            DSLogger.log("Maya: Selected coin \(coin.code) (\(coin.name)) direction=\(self.direction)")
+            DWLogger.log("Maya: Selected coin \(coin.code) (\(coin.name)) direction=\(self.direction)")
             switch self.direction {
             case .sell:
                 self.navigateToEnterAddress(for: coin)
@@ -68,7 +68,7 @@ final class SwapFlowCoordinator {
     private func navigateToBuyEnterAmount(for coin: SwapCryptoCurrency) {
         guard !(navigationController?.topViewController is BuyEnterAmountHostingController) else { return }
         guard swapProvider is SwapKitSwapProvider else {
-            DSLogger.log("Swap flow: Buy requires SwapKit backend; got \(swapProvider.displayName)")
+            DWLogger.log("Swap flow: Buy requires SwapKit backend; got \(swapProvider.displayName)")
             assertionFailure("Buy flow requires SwapKit backend")
             return
         }
@@ -91,7 +91,7 @@ final class SwapFlowCoordinator {
 
     private func navigateToReceive(coin: SwapCryptoCurrency, order: BuyOrder) {
         guard !(navigationController?.topViewController is BuyReceiveHostingController) else { return }
-        DSLogger.log("Swap: Buy receive \(coin.code) amount=\(order.sellAmount) deposit=\(order.depositAddress)")
+        DWLogger.log("Swap: Buy receive \(coin.code) amount=\(order.sellAmount) deposit=\(order.depositAddress)")
         let receiveVC = BuyReceiveHostingController(coin: coin, order: order)
         navigationController?.pushViewController(receiveVC, animated: true)
     }

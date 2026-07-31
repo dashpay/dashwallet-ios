@@ -128,15 +128,12 @@ public final class CrowdNode {
     var crowdnodeAPY: Double
 
     public static let shared: CrowdNode = .init()
+    private static let topUpFeeReserve: UInt64 = 10_000
 
     init() {
         masternodeAPY = MasternodeAPYCalculator.estimatedAPY()
         crowdnodeAPY = masternodeAPY * (1 - prefs.feePercentage)
         print("CrowdNode: masternodeAPY: \(masternodeAPY), crowdnodeAPY: \(crowdnodeAPY)")
-
-        NotificationCenter.default.publisher(for: NSNotification.Name.DWWillWipeWallet)
-            .sink { [weak self] _ in self?.reset() }
-            .store(in: &cancellableBag)
 
         NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
             .sink { [weak self] _ in self?.reset() }
@@ -337,6 +334,17 @@ extension CrowdNode {
         prefs.resetUserDefaults()
     }
 
+    /// Full-device wipe cleanup. Called only after every SDK wallet deletion
+    /// has succeeded, so a failed wipe leaves both published and persisted
+    /// CrowdNode state available for retry.
+    func resetForWipe() {
+        reset()
+        isBalanceLoading = false
+        isOnlineStateRestored = false
+        showNotificationOnResult = false
+        prefs.resetForWipe()
+    }
+
     /// React to a runtime wallet switch: drop the in-memory state cached for the
     /// previous wallet and re-restore from the now-active wallet's per-wallet
     /// defaults. Unlike `reset()`, this does NOT call `prefs.resetUserDefaults()`
@@ -362,7 +370,7 @@ extension CrowdNode {
     private func checkAPY() {
         // Estimated figure at the current SPV tip; recomputing is cheap.
         // TODO(masternode-stats-ffi): use the live virtual masternode count
-        // once the upstream stats FFI lands (DASHSYNC_TEARDOWN_PLAN.md C5).
+        // once the upstream stats FFI lands.
         masternodeAPY = MasternodeAPYCalculator.estimatedAPY()
         crowdnodeAPY = masternodeAPY * (1 - prefs.feePercentage)
     }
@@ -457,7 +465,8 @@ extension CrowdNode {
         guard !accountAddress.isEmpty else { return }
 
         let maxSendable = SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
-        let requiredTopUp = amount + TX_FEE_PER_INPUT
+        let addition = amount.addingReportingOverflow(Self.topUpFeeReserve)
+        let requiredTopUp = addition.overflow ? UInt64.max : addition.partialValue
         let finalTopUp = min(maxSendable, requiredTopUp)
 
         // One PIN per deposit action: the top-up (the flow's first send) keeps

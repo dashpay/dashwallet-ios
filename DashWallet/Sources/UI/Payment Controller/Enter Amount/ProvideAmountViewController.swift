@@ -161,10 +161,6 @@ extension ProvideAmountViewController {
     }
 }
 
-extension Notification.Name {
-    static var balanceChangeNotification: NSNotification.Name { .init("DSWalletBalanceChangedNotification") }
-}
-
 struct ProvideAmountIntro<Content: View>: View {
     var destination: String? = nil
     var balanceLabel: String

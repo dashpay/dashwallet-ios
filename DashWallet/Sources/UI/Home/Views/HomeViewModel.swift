@@ -76,6 +76,20 @@ class HomeViewModel: ObservableObject {
     /// Throttled in `observeWallet()` so the save/balance notification storm
     /// during sync coalesces into at most one full reload per interval.
     private let txReloadRequests = PassthroughSubject<Void, Never>()
+
+    /// Converts the SDK's current-value balance publisher into actual balance
+    /// changes. The initial snapshot is already covered by the eager Home load,
+    /// while `removeDuplicates()` prevents the coordinator's repeated 1 Hz
+    /// snapshots from requesting redundant transaction-list reloads.
+    static func distinctBalanceChanges<P: Publisher>(
+        from publisher: P
+    ) -> AnyPublisher<Void, Never> where P.Output == WalletBalance?, P.Failure == Never {
+        publisher
+            .removeDuplicates()
+            .dropFirst()
+            .map { _ in () }
+            .eraseToAnyPublisher()
+    }
     
     @Published private(set) var txItems: [TransactionGroup] = []
     @Published var shortcutItems: [ShortcutAction] = []
@@ -321,10 +335,11 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
-        // Balance changes often indicate new transactions, so reload the full
-        // transaction list, not just shortcuts. This ensures newly received or
-        // sent transactions appear in the UI promptly.
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+        // Balance changes can precede or arrive without a SwiftData save (for
+        // example seed/clear transitions), so retain an independent trigger.
+        // Equal snapshots are filtered and the initial current-value emission
+        // is skipped because init already starts an eager full reload.
+        Self.distinctBalanceChanges(from: SwiftDashSDKWalletState.shared.$balance)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.txReloadRequests.send()
@@ -943,7 +958,7 @@ extension HomeViewModel {
             if !isShieldedReceipt {
                 categories.insert(.received)
             }
-        default:
+        case .moved, .notAccountFunds:
             break
         }
         return categories
@@ -1151,6 +1166,100 @@ struct CoreWithdrawalReceiptMatchPolicy {
 struct SwiftDashSDKWalletTransactionSnapshot {
     let walletId: Data
     let transactions: [Transaction]
+}
+
+/// Objective-C-facing, value-only projection used by the phone-side Watch
+/// bridge. The archived `BRAppleWatchTransactionData` wire model stays
+/// unchanged; only its source moves from frozen DashSync transactions to the
+/// active SwiftDashSDK wallet snapshot.
+@objcMembers
+final class DWAppleWatchTransactionSnapshot: NSObject {
+    let amountText: String
+    let amountTextInLocalCurrency: String
+    let dateText: String
+    let typeRawValue: Int
+
+    init(amountText: String,
+         amountTextInLocalCurrency: String,
+         dateText: String,
+         typeRawValue: Int) {
+        self.amountText = amountText
+        self.amountTextInLocalCurrency = amountTextInLocalCurrency
+        self.dateText = dateText
+        self.typeRawValue = typeRawValue
+    }
+}
+
+@objc
+final class DWAppleWatchSnapshotProvider: NSObject {
+    private enum WatchTransactionType: Int {
+        case sent
+        case received
+        case moved
+        case invalid
+    }
+
+    @objc
+    static func hasWallet() -> Bool {
+        SwiftDashSDKWalletSource.fetchCurrentWalletSnapshot() != nil
+    }
+
+    /// The legacy bridge sent at most the account's 100 newest Core
+    /// transactions. Keep that limit and ordering so existing watches receive
+    /// the same archive shape and list semantics.
+    @objc
+    static func recentTransactions() -> [DWAppleWatchTransactionSnapshot] {
+        guard let snapshot = SwiftDashSDKWalletSource.fetchCurrentWalletSnapshot() else {
+            return []
+        }
+
+        return snapshot.transactions
+            .sorted { $0.date > $1.date }
+            .prefix(100)
+            .map(makeSnapshot)
+    }
+
+    private static func makeSnapshot(_ transaction: Transaction) -> DWAppleWatchTransactionSnapshot {
+        let type: WatchTransactionType
+        switch transaction.state {
+        case .invalid:
+            type = .invalid
+        default:
+            switch transaction.direction {
+            case .sent:
+                type = .sent
+            case .received, .notAccountFunds:
+                type = .received
+            case .moved:
+                type = .moved
+            }
+        }
+
+        let signedAmount = transaction.appleWatchSignedAmount
+        let localAmount = CurrencyExchanger.shared.fiatAmountString(for: signedAmount.dashAmount)
+
+        return DWAppleWatchTransactionSnapshot(
+            amountText: signedAmount.formattedDashAmount,
+            amountTextInLocalCurrency: "(\(localAmount))",
+            dateText: watchDateText(transaction.date),
+            typeRawValue: type.rawValue)
+    }
+
+    private static func watchDateText(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "Mdja",
+                                                        options: 0,
+                                                        locale: Locale.current)
+        return formatter.string(from: date)
+            .replacingOccurrences(of: "am", with: "a")
+            .replacingOccurrences(of: "pm", with: "p")
+            .replacingOccurrences(of: "AM", with: "a")
+            .replacingOccurrences(of: "PM", with: "p")
+            .replacingOccurrences(of: "a.m.", with: "a")
+            .replacingOccurrences(of: "p.m.", with: "p")
+            .replacingOccurrences(of: "A.M.", with: "a")
+            .replacingOccurrences(of: "P.M.", with: "p")
+    }
 }
 
 class SwiftDashSDKWalletSource: TransactionSource {
@@ -1615,7 +1724,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
             || row.involvedAccounts.contains(where: { $0.wallet.walletId == walletId }) else {
             return nil
         }
-        let tx = Transaction(persistentTransaction: row)
+        let tx = Transaction(persistentTransaction: row, walletId: walletId)
         tx.sdkCoinJoinMixing = isCoinJoinMixingTx(row)
         return tx
     }
@@ -1665,7 +1774,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
             return []
         }
         return rows.map { row -> Transaction in
-            let tx = Transaction(persistentTransaction: row)
+            let tx = Transaction(persistentTransaction: row, walletId: walletId)
             tx.sdkCoinJoinMixing = Self.isCoinJoinMixingTx(row)
             return tx
         }

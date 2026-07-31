@@ -596,7 +596,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 }
 
                 await MainActor.run {
-                    DSLogger.log(
+                    DWLogger.log(
                         "DashSpend: PiggyCards mode=\(finalFixed ? "fixed" : "flexible"), " +
                         "range=[\(finalMin), \(finalMax)], fixedCount=\(finalDenominations.count)"
                     )
@@ -627,7 +627,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 self.checkAmountForErrors()
             }
         } catch {
-            DSLogger.log("DashSpend updateMerchantInfo failed for provider \(provider.displayName): \(error.localizedDescription)")
+            DWLogger.log("DashSpend updateMerchantInfo failed for provider \(provider.displayName): \(error.localizedDescription)")
 
             await MainActor.run {
                 self.isLoading = false

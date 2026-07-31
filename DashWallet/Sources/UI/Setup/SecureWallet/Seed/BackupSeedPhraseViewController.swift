@@ -53,14 +53,33 @@ class BackupSeedPhraseViewController: DWPreviewSeedPhraseViewController {
             return
         }
 
-        self.model.clearAllWallets()
+        view.dw_showProgressHUD(withMessage: NSLocalizedString("Deleting Wallet…", comment: "Wallets"))
+        model.clearAllWallets()
 
-        self.feedbackGenerator.notificationOccurred(.error)
+        SwiftDashSDKWalletWiper.waitForPendingWipe { [weak self] succeeded in
+            guard let self else { return }
+            self.view.dw_hideProgressHUD()
 
-        let seedPhrase = self.model.getOrCreateNewWallet()
-        self.contentView.updateSeedPhraseModelAnimated(seedPhrase)
-        self.contentView.showScreenshotDetectedErrorMessage()
+            guard succeeded else {
+                let alert = UIAlertController(
+                    title: NSLocalizedString("Couldn’t Delete Wallet", comment: "Wallets"),
+                    message: NSLocalizedString(
+                        "The wallet is still stored on this device. Please try again.",
+                        comment: "Wallets"),
+                    preferredStyle: .alert)
+                alert.addAction(UIAlertAction(
+                    title: NSLocalizedString("OK", comment: ""),
+                    style: .default))
+                self.present(alert, animated: true)
+                return
+            }
 
-        self.actionButton?.isEnabled = false
+            self.feedbackGenerator.notificationOccurred(.error)
+
+            let seedPhrase = self.model.getOrCreateNewWallet()
+            self.contentView.updateSeedPhraseModelAnimated(seedPhrase)
+            self.contentView.showScreenshotDetectedErrorMessage()
+            self.actionButton?.isEnabled = false
+        }
     }
 }

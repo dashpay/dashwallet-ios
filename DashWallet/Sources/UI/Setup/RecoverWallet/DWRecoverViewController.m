@@ -179,8 +179,27 @@ NS_ASSUME_NONNULL_BEGIN
     UIAlertAction *wipeAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Wipe", nil)
                                                          style:UIAlertActionStyleDestructive
                                                        handler:^(UIAlertAction *action) {
+                                                           [self.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting Wallet…", nil)];
                                                            [self.model wipeWallet];
-                                                           [self.delegate recoverViewControllerDidWipe:self];
+                                                           __weak typeof(self) weakSelf = self;
+                                                           [DWSwiftDashSDKWalletWiper
+                                                               waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
+                                                                   typeof(self) strongSelf = weakSelf;
+                                                                   if (strongSelf == nil) {
+                                                                       return;
+                                                                   }
+                                                                   [strongSelf.view dw_hideProgressHUD];
+                                                                   if (wipeSucceeded) {
+                                                                       [strongSelf.delegate recoverViewControllerDidWipe:strongSelf];
+                                                                       return;
+                                                                   }
+
+                                                                   [strongSelf
+                                                                       showAlertWithTitle:NSLocalizedString(@"Couldn’t Delete Wallet", nil)
+                                                                                  message:NSLocalizedString(
+                                                                                              @"The wallet is still stored on this device. Please try again.",
+                                                                                              nil)];
+                                                               }];
                                                        }];
     [alert addAction:wipeAction];
     [self presentViewController:alert animated:YES completion:nil];

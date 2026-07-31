@@ -29,7 +29,7 @@ extension NSAttributedString {
         let symbol = dashSymbolAttributedString(symbolSize: symbolSize, tintColor: tintColor)
 
         let attributedString = NSMutableAttributedString(string: dashAmount)
-        let range = (attributedString.string as NSString).range(of: DASH)
+        let range = (attributedString.string as NSString).range(of: kDashCurrency)
         if range.location == NSNotFound {
             attributedString.insert(NSAttributedString(string: " "), at: 0)
             attributedString.insert(symbol, at: 0)
@@ -80,7 +80,7 @@ extension NSAttributedString {
 
         let attributedString = NSMutableAttributedString(string: formattedAmount)
 
-        let range = (attributedString.string as NSString).range(of: DASH)
+        let range = (attributedString.string as NSString).range(of: kDashCurrency)
         let dashSymbolFound = range.location != NSNotFound
         if dashSymbolFound {
             attributedString.replaceCharacters(in: range, with: dashSymbolAttributedString)
