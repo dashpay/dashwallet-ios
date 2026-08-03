@@ -26,10 +26,10 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
 
 @interface DWCaptureSessionManager () <AVCaptureMetadataOutputObjectsDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
 
-@property (null_resettable, nonatomic, strong) AVCaptureSession *captureSession;
-@property (null_resettable, nonatomic, strong) dispatch_queue_t sessionQueue;
-@property (null_resettable, nonatomic, strong) dispatch_queue_t metadataQueue;
-@property (null_resettable, nonatomic, strong) dispatch_queue_t framesOutputQueue;
+@property (nullable, nonatomic, strong) AVCaptureSession *captureSession;
+@property (nullable, nonatomic, strong) dispatch_queue_t sessionQueue;
+@property (nullable, nonatomic, strong) dispatch_queue_t metadataQueue;
+@property (nullable, nonatomic, strong) dispatch_queue_t framesOutputQueue;
 @property (nonatomic, assign, getter=isCaptureSessionConfigured) BOOL captureSessionConfigured;
 @property (atomic, assign, getter=isActive) BOOL active;
 
@@ -62,20 +62,28 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
     [NSObject cancelPreviousPerformRequestsWithTarget:self
                                              selector:@selector(stopPreviewInternal)
                                                object:nil];
-    [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                             selector:@selector(tearDown)
-                                               object:nil];
 
     void (^doStartPreview)(void) = ^{
-#if !TARGET_OS_SIMULATOR
+        // Mark the session active before any setup/start work. A teardown
+        // already scheduled by an earlier `stopPreview` cannot be cancelled
+        // (`dispatch_after` has no cancel), so it reads this flag on main and
+        // bails instead — see `tearDown`.
+        self.active = YES;
         [self setupCaptureSessionIfNeeded];
-#endif /* TARGET_OS_SIMULATOR */
 
-        dispatch_async(self.sessionQueue, ^{
-            self.active = YES;
+        // Bind the queue and session once. `setupCaptureSessionIfNeeded` is a
+        // no-op when a session is already configured, so these can only be nil
+        // if the camera is unavailable (no capture device — simulator, or a
+        // device whose camera the system won't hand over).
+        dispatch_queue_t queue = self.sessionQueue;
+        AVCaptureSession *session = self.captureSession;
+        if (!queue || !session) {
+            return;
+        }
 
-            if (!self.captureSession.isRunning) {
-                [self.captureSession startRunning];
+        dispatch_async(queue, ^{
+            if (!session.isRunning) {
+                [session startRunning];
             }
 
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -123,8 +131,14 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
         return;
     }
 
-    dispatch_async(self.sessionQueue, ^{
-        if (!self.captureSession.isRunning) {
+    dispatch_queue_t queue = self.sessionQueue;
+    AVCaptureSession *session = self.captureSession;
+    if (!queue || !session) {
+        return;
+    }
+
+    dispatch_async(queue, ^{
+        if (!session.isRunning) {
             return;
         }
 
@@ -175,15 +189,32 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
 
 - (void)stopPreviewInternal {
     DWLog(@"DWCaptureSessionManager: Stopping preview...");
-    dispatch_async(self.sessionQueue, ^{
-        if (self.captureSession.isRunning) {
-            [self.captureSession stopRunning];
+    dispatch_queue_t queue = self.sessionQueue;
+    AVCaptureSession *session = self.captureSession;
+    if (!queue || !session) {
+        return;
+    }
 
-            dispatch_async(dispatch_get_main_queue(), ^{
-                DWLog(@"DWCaptureSessionManager: Preview has been stopped");
-                [self performSelector:@selector(tearDown) withObject:nil afterDelay:SESSION_KEEPALIVE];
-            });
+    dispatch_async(queue, ^{
+        if (session.isRunning) {
+            [session stopRunning];
         }
+
+        // The delayed teardown is scheduled back on MAIN, not on the session
+        // queue: `captureSession`, the three queues and `captureSessionConfigured`
+        // are only ever read/written from main (startPreview / stopPreview are
+        // both main-thread entry points), so keeping the state transition there
+        // is what makes it race-free. Tearing down on the session queue instead
+        // let `tearDown` nil `sessionQueue` while a concurrent `startPreview`
+        // on main had already passed the `isCaptureSessionConfigured` check —
+        // which then dispatched onto a NULL queue.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            DWLog(@"DWCaptureSessionManager: Preview has been stopped");
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SESSION_KEEPALIVE * NSEC_PER_SEC)),
+                           dispatch_get_main_queue(), ^{
+                               [self tearDown];
+                           });
+        });
     });
 }
 
@@ -191,6 +222,24 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
     if (self.isCaptureSessionConfigured) {
         return;
     }
+
+    // No capture device means no session to configure — the simulator, or a
+    // device that won't vend the camera. `+[AVCaptureDeviceInput
+    // deviceInputWithDevice:error:]` raises NSInvalidArgumentException on a nil
+    // device, so bail before anything is allocated and leave
+    // `captureSessionConfigured` NO. `startPreviewCompletion:` sees the nil
+    // session and no-ops; the scan screen renders without a preview instead of
+    // crashing. (This replaces the previous `#if !TARGET_OS_SIMULATOR` guard,
+    // which only covered the simulator case.)
+    if ([AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo] == nil) {
+        DWLog(@"DWCaptureSessionManager: no video capture device available");
+        return;
+    }
+
+    self.captureSession = [[AVCaptureSession alloc] init];
+    self.sessionQueue = dispatch_queue_create("DWQRScanViewModel.CaptureSession.queue", DISPATCH_QUEUE_SERIAL);
+    self.metadataQueue = dispatch_queue_create("DWQRScanViewModel.CaptureMetadataOutput.queue", DISPATCH_QUEUE_SERIAL);
+    self.framesOutputQueue = dispatch_queue_create("DWQRScanViewModel.VideoFramesOutput.queue", DISPATCH_QUEUE_SERIAL);
     self.captureSessionConfigured = YES;
 
     dispatch_async(self.sessionQueue, ^{
@@ -252,44 +301,42 @@ static NSTimeInterval const SESSION_KEEPALIVE = 6.0;
     });
 }
 
+/// Releases the session and its queues. Runs on MAIN — the same thread as
+/// `startPreviewCompletion:` / `stopPreview`, so `active` and the session state
+/// below are never read and written concurrently.
 - (void)tearDown {
     DWLog(@"DWCaptureSessionManager: Tearing down...");
+
+    // The scanner was reopened inside the keepalive window; the live session is
+    // in use. `active` is set on main by `doStartPreview`, so this check cannot
+    // race the assignment.
+    if (self.active) {
+        return;
+    }
+
+    AVCaptureSession *session = self.captureSession;
+    if (session) {
+        [session beginConfiguration];
+        for (AVCaptureOutput *output in [session.outputs copy]) {
+            if ([output isKindOfClass:[AVCaptureMetadataOutput class]]) {
+                [(AVCaptureMetadataOutput *)output setMetadataObjectsDelegate:nil queue:NULL];
+            }
+            else if ([output isKindOfClass:[AVCaptureVideoDataOutput class]]) {
+                [(AVCaptureVideoDataOutput *)output setSampleBufferDelegate:nil queue:NULL];
+            }
+            [session removeOutput:output];
+        }
+        for (AVCaptureInput *input in [session.inputs copy]) {
+            [session removeInput:input];
+        }
+        [session commitConfiguration];
+    }
+
     self.captureSession = nil;
     self.sessionQueue = nil;
     self.metadataQueue = nil;
     self.framesOutputQueue = nil;
     self.captureSessionConfigured = NO;
-}
-
-- (AVCaptureSession *)captureSession {
-    if (!_captureSession) {
-        _captureSession = [[AVCaptureSession alloc] init];
-    }
-
-    return _captureSession;
-}
-
-- (dispatch_queue_t)sessionQueue {
-    if (!_sessionQueue) {
-        _sessionQueue = dispatch_queue_create("DWQRScanViewModel.CaptureSession.queue", DISPATCH_QUEUE_SERIAL);
-    }
-
-    return _sessionQueue;
-}
-
-- (dispatch_queue_t)metadataQueue {
-    if (!_metadataQueue) {
-        _metadataQueue = dispatch_queue_create("DWQRScanViewModel.CaptureMetadataOutput.queue", DISPATCH_QUEUE_SERIAL);
-    }
-
-    return _metadataQueue;
-}
-
-- (dispatch_queue_t)framesOutputQueue {
-    if (!_framesOutputQueue) {
-        _framesOutputQueue = dispatch_queue_create("DWQRScanViewModel.VideoFramesOutput.queue", DISPATCH_QUEUE_SERIAL);
-    }
-    return _framesOutputQueue;
 }
 
 @end

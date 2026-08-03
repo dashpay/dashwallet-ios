@@ -50,7 +50,9 @@ extension NetworkReachabilityHandling {
     }
 
     public func stopNetworkMonitoring() {
-        NotificationCenter.default.removeObserver(reachabilityObserver!)
+        guard let observer = reachabilityObserver else { return }
+        NotificationCenter.default.removeObserver(observer)
+        reachabilityObserver = nil
     }
 
     private func updateNetworkStatus() {

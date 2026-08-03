@@ -84,7 +84,8 @@ final class UpholdAmountModel: BaseAmountModel {
 
     private func createTransaction(for amount: String, feeWasDeductedFromAmount: Bool, otpToken: String?) {
         guard let receiveAddress = SwiftDashSDKReceiveAddressReader.receiveAddress() else {
-            fatalError("Address should exist")
+            state = .fail
+            return
         }
 
         state = .loading
@@ -110,7 +111,10 @@ final class UpholdAmountModel: BaseAmountModel {
 
                 let notSufficientFunds = tx.total.compare(card.available) == .orderedDescending
                 guard !notSufficientFunds else {
-                    let amountNumber = Decimal(string: amount)!
+                    guard let amountNumber = Decimal(string: amount) else {
+                        self.state = .fail
+                        return
+                    }
                     let correctedAmountNumber = amountNumber - tx.fee.decimalValue
                     let correctedAmount = String(describing: correctedAmountNumber)
 

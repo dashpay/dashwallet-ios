@@ -229,6 +229,14 @@ final class SwiftDashSDKWalletWiper: NSObject {
     private static func deleteWalletsFromSDK(
         _ storedWalletIdsByNetwork: [Network: Set<Data>]
     ) -> Bool {
+        // `finished.wait()` below blocks this thread until the `@MainActor`
+        // task signals it. On the main thread that task could never be
+        // scheduled, so the wait would deadlock rather than fail.
+        guard !Thread.isMainThread else {
+            logger.error("Refusing synchronous wallet deletion on the main thread")
+            return false
+        }
+
         let finished = DispatchSemaphore(value: 0)
         let result = WalletWipeResultAccumulator()
         Task { @MainActor in

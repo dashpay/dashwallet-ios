@@ -19,13 +19,13 @@ extension Amount {
         assert(currency != kDashCurrency)
 
         guard let decimal = amount.decimal() else {
-            fatalError("Trying to convert non number string")
+            return "—"
         }
 
         let numberFormatter = NumberFormatter.fiatFormatter(currencyCode: currency)
 
         guard let string = numberFormatter.string(from: decimal as NSNumber) else {
-            fatalError("Trying to convert non number string")
+            return "—"
         }
 
         return string
@@ -35,11 +35,11 @@ extension Amount {
         assert(currency == kDashCurrency)
 
         guard let decimal = amount.decimal() else {
-            fatalError("Trying to convert non number string")
+            return "—"
         }
 
         guard let string = NumberFormatter.dashFormatter.string(from: decimal as NSNumber) else {
-            fatalError("Trying to convert non number string")
+            return "—"
         }
 
         return string

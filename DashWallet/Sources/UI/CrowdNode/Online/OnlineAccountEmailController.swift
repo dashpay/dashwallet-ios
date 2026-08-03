@@ -102,7 +102,7 @@ final class OnlineAccountEmailController: UIViewController {
             .sink { [weak self] error in
                 if error is CrowdNode.Error {
                     self?.viewModel.clearError()
-                    self?.navigationController?.toErrorScreen(error: error as! CrowdNode.Error)
+                    self?.navigationController?.toErrorScreen(error: error as? CrowdNode.Error ?? .messageStatus(error: error.localizedDescription))
                 }
             }
             .store(in: &cancellableBag)

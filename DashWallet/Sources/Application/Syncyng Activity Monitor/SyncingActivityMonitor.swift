@@ -136,7 +136,7 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     @objc
     public var progress: Double = 0 {
         didSet {
-            observers.forEach { $0.syncingActivityMonitorProgressDidChange(progress) }
+            observerSnapshot().forEach { $0.syncingActivityMonitorProgressDidChange(progress) }
         }
     }
 
@@ -157,7 +157,7 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
                                                 kSyncStateChangedNewStateKey: state,
                                             ])
 
-            observers.forEach { $0.syncingActivityMonitorStateDidChange(previousState: oldValue, state: state) }
+            observerSnapshot().forEach { $0.syncingActivityMonitorStateDidChange(previousState: oldValue, state: state) }
         }
     }
 
@@ -178,7 +178,8 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     private var lastPeakDate: Date?
     private var cancellables = Set<AnyCancellable>()
 
-    private lazy var observers: [SyncingActivityMonitorObserver] = []
+    private var observers: [SyncingActivityMonitorObserver] = []
+    private let observersLock = NSLock()
 
     override init() {
         super.init()
@@ -196,19 +197,32 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
 
     @objc(addObserver:)
     public func add(observer: SyncingActivityMonitorObserver) {
+        observersLock.lock()
+        defer { observersLock.unlock() }
         observers.append(observer)
     }
 
     @objc(removeObserver:)
     public func remove(observer: SyncingActivityMonitorObserver) {
+        observersLock.lock()
+        defer { observersLock.unlock() }
         if let idx = observers.firstIndex(where: { $0 === observer }) {
             observers.remove(at: idx)
         }
     }
 
+    private func observerSnapshot() -> [SyncingActivityMonitorObserver] {
+        observersLock.lock()
+        defer { observersLock.unlock() }
+        return observers
+    }
+
     deinit {
         NotificationCenter.default.removeObserver(self)
-        NotificationCenter.default.removeObserver(reachabilityObserver!)
+        if let observer = reachabilityObserver {
+            NotificationCenter.default.removeObserver(observer)
+            reachabilityObserver = nil
+        }
     }
 
     /// ObjC-visible accessor for `.syncStateChangedNotification` (same

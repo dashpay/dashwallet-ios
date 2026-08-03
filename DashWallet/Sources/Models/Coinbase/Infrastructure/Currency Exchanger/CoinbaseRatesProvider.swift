@@ -45,6 +45,7 @@ extension CoinbaseRatesProvider {
 
     private func fetchPrices() {
         Task {
+            do {
             let response: BaseDataResponse<CoinbaseExchangeRate> = try await httpClient.request(.exchangeRates(kDashCurrency))
             guard let rates = response.data.rates else { return }
 
@@ -53,11 +54,14 @@ extension CoinbaseRatesProvider {
 
             for rate in rates {
                 let key = rate.key
-                let price = Decimal(string: rate.value)!
+                guard let price = Decimal(string: rate.value) else { continue }
                 array.append(.init(code: key, name: key, price: price))
             }
 
             self.updateHandler?(array)
+            } catch {
+                DWLogger.log("Coinbase exchange rates request failed: \(error.localizedDescription)")
+            }
         }
     }
 }

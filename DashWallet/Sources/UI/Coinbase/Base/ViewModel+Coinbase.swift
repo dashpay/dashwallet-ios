@@ -65,10 +65,9 @@ extension CoinbaseTransactionSendable {
             }
         } catch {
             await MainActor.run {
-                self.transactionDelegate?.transferFromCoinbaseToWalletDidFail(with: error as! Coinbase.Error)
+                self.transactionDelegate?.transferFromCoinbaseToWalletDidFail(with: error as? Coinbase.Error ?? .unknownError)
             }
         }
     }
 }
-
 
