@@ -100,9 +100,10 @@ final class OnlineAccountEmailController: UIViewController {
         viewModel.$error
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
-                if error is CrowdNode.Error {
+                if let error, error is CrowdNode.Error {
                     self?.viewModel.clearError()
-                    self?.navigationController?.toErrorScreen(error: error as? CrowdNode.Error ?? .messageStatus(error: error.localizedDescription))
+                    self?.navigationController?.toErrorScreen(
+                        error: error as? CrowdNode.Error ?? .messageStatus(error: error.localizedDescription))
                 }
             }
             .store(in: &cancellableBag)
