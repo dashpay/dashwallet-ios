@@ -638,6 +638,10 @@ extension HomeViewController: HomeViewDelegate {
     func homeViewEditProfile() {
         profileAction()
     }
+
+    func homeViewShowNotifications() {
+        notificationAction()
+    }
     #endif
 }
 

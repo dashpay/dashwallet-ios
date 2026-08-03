@@ -487,6 +487,7 @@
 		47B30D7C29100ABA0080C326 /* UIStackView+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D7B29100ABA0080C326 /* UIStackView+DashWallet.swift */; };
 		47B30D7E29102F6E0080C326 /* SendAmountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D7D29102F6E0080C326 /* SendAmountModel.swift */; };
 		47B30D80291123D30080C326 /* SendAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D7F291123D30080C326 /* SendAmountViewController.swift */; };
+		47B81672DEBF6B7B565F0AC8 /* HomeUsernameRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */; };
 		47C661AB28F9707A00028A8D /* NumberKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AA28F9707A00028A8D /* NumberKeyboard.swift */; };
 		47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AC28F972BD00028A8D /* NumberKeyboardButton.swift */; };
 		47C661AF28FDAA3400028A8D /* BaseAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AE28FDAA3300028A8D /* BaseAmountViewController.swift */; };
@@ -983,6 +984,7 @@
 		A15ED0B9E7AAF29C694E4E17 /* DWIdentityAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FBA94DA84A9EE303FF48B4 /* DWIdentityAuthorizer.swift */; };
 		A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */; };
 		A361573C34CF9107E6B8A221 /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B697D56A525CBF142F4401FE /* SwiftDashSDKWalletCreator.swift */; };
+		A365C2F95472285830E6CDEB /* HomeUsernameRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */; };
 		A3ED42ED80F32AA5CA530A40 /* DamerauLevenshtein.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CE60A95629A2883710A75C /* DamerauLevenshtein.swift */; };
 		A5C8B5B00075FB8E84009327 /* SendViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */; };
 		A6AAB271A1ADA69C272DA1D4 /* PinPromptPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D385FC174E5B887CF3398CCD /* PinPromptPresenter.swift */; };
@@ -2747,6 +2749,7 @@
 		487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkUnavailableStateView.swift; sourceTree = "<group>"; };
 		48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DWPreviewSeedPhraseModel+Mnemonic.swift"; sourceTree = "<group>"; };
 		4C4833BE986D59F69A555C5F /* PaymentProtocolMessages.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentProtocolMessages.swift; sourceTree = "<group>"; };
+		4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HomeUsernameRow.swift; sourceTree = "<group>"; };
 		4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
 		514AEA122FB324FA00F9B54C /* SwapConvertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertView.swift; sourceTree = "<group>"; };
 		514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertHostingController.swift; sourceTree = "<group>"; };
@@ -4330,6 +4333,7 @@
 				5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */,
 				5A1EC0FE2E29A20000000014 /* PlatformAddressHistory.swift */,
 				75D657662DF579F300ACE570 /* TransactionFilterDialog.swift */,
+				4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -10190,6 +10194,7 @@
 				3B9C0EAAC6DE69DBF8271920 /* BIP70PaymentOutputFactory.swift in Sources */,
 				F498EAE11BC0B3684DBABCC7 /* DiagnosticLogExporter.swift in Sources */,
 				197F19679BBAABA2E99503B8 /* DWAvatarUploadClient.swift in Sources */,
+				47B81672DEBF6B7B565F0AC8 /* HomeUsernameRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -11190,6 +11195,7 @@
 				FCDF0FF6DC442DBE3C9713FD /* DiagnosticLogExporter.swift in Sources */,
 				4720E26BFE56A4559C602ED5 /* ShieldedIdentityFundingReadiness.swift in Sources */,
 				D15607B6987D27ACDC844F9E /* DWAvatarUploadClient.swift in Sources */,
+				A365C2F95472285830E6CDEB /* HomeUsernameRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

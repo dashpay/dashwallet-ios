@@ -40,6 +40,8 @@ protocol HomeViewDelegate: AnyObject {
     func homeViewRequestUsername()
     func homeViewClaimInvitation()
     func homeViewEditProfile()
+    /// Opens the notifications list (header nav-bar bell).
+    func homeViewShowNotifications()
 #endif
 }
 
@@ -199,6 +201,25 @@ private struct HomeScrollOffsetKey: PreferenceKey {
     }
 }
 
+/// Total scrollable-content height, measured off the same sentinel as
+/// `HomeScrollOffsetKey` — feeds the short-feed reveal fallback.
+private struct HomeContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+/// The `ScrollView`'s own viewport height — compared against
+/// `HomeContentHeightKey` to detect a feed too short to cross
+/// `kTopBarShowThreshold` by scrolling.
+private struct HomeViewportHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 struct HomeViewContent<Content: View>: View {
     @State private var selectedTxDataItem: TransactionListDataItem? = nil
     @State private var showFilterDialog: Bool = false
@@ -210,6 +231,18 @@ struct HomeViewContent<Content: View>: View {
     /// Balance whose explainer sheet is up (tap on a breakdown row's body).
     @State private var balanceInfoNetwork: ChainNetwork? = nil
 
+    #if DASHPAY
+    /// Persistent username-row state (SB-11) — read from the same
+    /// app-owned identity snapshot the nav-bar avatar uses. Nil username
+    /// hides the row (no identity registered).
+    @State private var currentUsername: String? = nil
+    @State private var currentAvatarURL: String? = nil
+    @State private var currentIdentitySeed: Data = Data()
+    /// Drives the header bell's unread state. Read from the same contacts
+    /// bridge that feeds the UIKit nav-bar bell, refreshed on the contacts
+    /// snapshot-change notification so an incoming request lights it live.
+    @State private var currentHasNotifications: Bool = false
+    #endif
 
     @ObservedObject var viewModel: HomeViewModel
     @ObservedObject private var balanceModel = BalanceModel()
@@ -227,6 +260,12 @@ struct HomeViewContent<Content: View>: View {
     private let topOverscrollSize: CGFloat = 1000 // Fixed value for top overscroll area
 
     @State private var isTopBarShown = false
+    /// Measured scrollable-content height vs. the ScrollView's own viewport
+    /// height — a short feed can never scroll `kTopBarShowThreshold` pt, so
+    /// without this the nav-bar avatar/username row would be permanently
+    /// stranded behind an unreachable reveal gesture.
+    @State private var scrollContentHeight: CGFloat = 0
+    @State private var scrollViewportHeight: CGFloat = 0
 
     var body: some View {
         ZStack {
@@ -236,6 +275,10 @@ struct HomeViewContent<Content: View>: View {
                     .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
 
                 LazyVStack(pinnedViews: [.sectionHeaders]) {
+                    // The header nav bar (username · Dash logo · notifications)
+                    // lives inside HomeBalanceView so the registered-username
+                    // entry point (SB-11) sits in the always-visible balance
+                    // header — reachable without scrolling the feed.
                     HomeBalanceView(
                         viewModel: balanceModel,
                         onLongPress: {
@@ -249,7 +292,13 @@ struct HomeViewContent<Content: View>: View {
                         },
                         onInfo: { network in
                             balanceInfoNetwork = network
-                        })
+                        },
+                        username: navUsername,
+                        avatarURL: navAvatarURL,
+                        identitySeed: navIdentitySeed,
+                        hasUnreadNotifications: navHasUnreadNotifications,
+                        onProfileTap: { openProfileFromNav() },
+                        onNotificationsTap: { openNotificationsFromNav() })
                     .frame(maxWidth: .infinity)
                     .background(Color.navigationBarColor)
                     .padding(.top, 5)
@@ -337,14 +386,40 @@ struct HomeViewContent<Content: View>: View {
                 // the user scrolls down; drives the collapsing top bar.
                 .background(
                     GeometryReader { proxy in
-                        Color.clear.preference(
-                            key: HomeScrollOffsetKey.self,
-                            value: proxy.frame(in: .named("homeScroll")).minY)
+                        Color.clear
+                            .preference(
+                                key: HomeScrollOffsetKey.self,
+                                value: proxy.frame(in: .named("homeScroll")).minY)
+                            .preference(key: HomeContentHeightKey.self, value: proxy.size.height)
                     }
                 )
             }
             .coordinateSpace(name: "homeScroll")
+            .background(
+                GeometryReader { proxy in
+                    Color.clear.preference(key: HomeViewportHeightKey.self, value: proxy.size.height)
+                }
+            )
+            .onPreferenceChange(HomeContentHeightKey.self) { scrollContentHeight = $0 }
+            .onPreferenceChange(HomeViewportHeightKey.self) { scrollViewportHeight = $0 }
             .onPreferenceChange(HomeScrollOffsetKey.self) { minY in
+                // A feed shorter than the viewport can never be scrolled
+                // `kTopBarShowThreshold` pt, so the reveal gesture below
+                // would never fire — keep the bar shown so the avatar/
+                // username row stays reachable instead of stranded.
+                // `scrollViewportHeight == 0` means the viewport hasn't
+                // reported its size yet (first layout pass) — wait for a
+                // real measurement rather than flash the bar on a feed
+                // that's actually long enough to scroll normally.
+                if scrollViewportHeight > 0,
+                   scrollContentHeight - scrollViewportHeight < kTopBarShowThreshold {
+                    if !isTopBarShown {
+                        isTopBarShown = true
+                        delegate?.homeViewDidChangeTopBarVisibility(shouldShow: true)
+                    }
+                    return
+                }
+
                 // minY == 0 at rest; more negative the further down the
                 // user has scrolled.
                 let scrolled = -minY
@@ -413,13 +488,86 @@ struct HomeViewContent<Content: View>: View {
             viewModel.checkJoinDashPay()
         }
         #endif
+        #if DASHPAY
+        .onReceive(NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)) { _ in
+            refreshUsernameRow()
+        }
+        // Live-refresh the header bell when the contacts snapshot changes
+        // (a new incoming request / established contact), so unread lights
+        // up without leaving Home.
+        .onReceive(NotificationCenter.default.publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification)) { _ in
+            refreshUsernameRow()
+        }
+        #endif
         .onAppear {
             viewModel.checkTimeSkew()
             #if DASHPAY
             viewModel.checkJoinDashPay()
             joinDPViewModel.checkUsername()
+            refreshUsernameRow()
             #endif
         }
+    }
+
+    #if DASHPAY
+    /// Refresh the persistent username row from the app-owned identity
+    /// snapshot — the same source `HomeViewController.refreshIdentityAvatar()`
+    /// reads for the nav-bar avatar, so both surfaces always agree.
+    private func refreshUsernameRow() {
+        let info = DWCurrentUserIdentityInfo.shared
+        currentUsername = info.hasIdentity ? info.username : nil
+        currentAvatarURL = info.avatarURL
+        currentIdentitySeed = info.identityId ?? Data()
+        currentHasNotifications = SwiftDashSDKContactsService.shared.unreadNotificationCount > 0
+    }
+    #endif
+
+    // Non-`#if`-gated bridges so the (config-agnostic) HomeBalanceView call
+    // site stays clean: the header nav-bar inputs and actions resolve to the
+    // DashPay identity state when compiled with DASHPAY, and to inert
+    // defaults otherwise.
+    private var navUsername: String? {
+        #if DASHPAY
+        return currentUsername
+        #else
+        return nil
+        #endif
+    }
+
+    private var navAvatarURL: String? {
+        #if DASHPAY
+        return currentAvatarURL
+        #else
+        return nil
+        #endif
+    }
+
+    private var navIdentitySeed: Data {
+        #if DASHPAY
+        return currentIdentitySeed
+        #else
+        return Data()
+        #endif
+    }
+
+    private var navHasUnreadNotifications: Bool {
+        #if DASHPAY
+        return currentHasNotifications
+        #else
+        return false
+        #endif
+    }
+
+    private func openProfileFromNav() {
+        #if DASHPAY
+        delegate?.homeViewEditProfile()
+        #endif
+    }
+
+    private func openNotificationsFromNav() {
+        #if DASHPAY
+        delegate?.homeViewShowNotifications()
+        #endif
     }
 
     @ViewBuilder
