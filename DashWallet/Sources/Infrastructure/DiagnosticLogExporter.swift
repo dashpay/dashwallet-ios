@@ -179,6 +179,35 @@ struct DiagnosticLogExporter {
         return zipURL
     }
 
+    /// Main-actor entry point: captures the context that must be read on
+    /// the main actor, then runs the blocking staging + zip detached.
+    /// Shared by every caller that offers a log export (Tools menu row,
+    /// About-screen shake gesture) so the capture rules live in one place.
+    @MainActor
+    static func exportArchive() async -> Result<URL, Error> {
+        let network = SwiftDashSDKHost.shared.runningNetwork.map { String(describing: $0) } ?? "unknown"
+        let bundle = Bundle.main
+        let short = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+        let appVersion = "\(short) (\(build))"
+        // Authoritative record of which directory this run is writing
+        // to — timestamp sorting alone can be fooled by a clock
+        // rollback or a stale future-dated directory.
+        let currentSession = LoggingPreferences.currentSessionDirectory
+        let appLogFiles = DWLogger.sharedInstance().logFiles()
+
+        return await Task.detached(priority: .userInitiated) {
+            Result {
+                try export(
+                    network: network,
+                    appVersion: appVersion,
+                    currentSession: currentSession,
+                    appLogFiles: appLogFiles
+                )
+            }
+        }.value
+    }
+
     /// Pure SDK-session selection policy, split out for unit testing.
     ///
     /// The current session (when known) is always first and always
