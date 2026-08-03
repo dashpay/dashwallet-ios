@@ -369,7 +369,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 gapLimit: CoinJoinRecovery.recoveryGapLimit)
             coinJoinRecoveryWidenedNetwork = network
             Self.logger.info(
-                "🛰️ SPVCOORD :: CJTEST coinjoin recovery gap widened on \(network.rawValue, privacy: .public) to \(CoinJoinRecovery.recoveryGapLimit, privacy: .public)")
+                "🛰️ SPVCOORD :: coinjoin recovery gap widened on \(network.rawValue, privacy: .public) to \(CoinJoinRecovery.recoveryGapLimit, privacy: .public)")
         } catch {
             Self.logger.error(
                 "🛰️ SPVCOORD :: coinjoin recovery widen failed: \(String(describing: error), privacy: .public)")
@@ -452,7 +452,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
               let network = coinJoinRecoveryWidenedNetwork,
               network == runningNetwork else { return }
 
-        Self.logger.info("🛰️ SPVCOORD :: CJTEST coinjoin recovery scan reached .synced on \(network.rawValue, privacy: .public) — marking recovered")
+        Self.logger.info("🛰️ SPVCOORD :: coinjoin recovery scan reached .synced on \(network.rawValue, privacy: .public) — marking recovered")
         CoinJoinRecovery.shared.markRecovered(for: network)
         coinJoinRecoveryWidenedNetwork = nil
     }

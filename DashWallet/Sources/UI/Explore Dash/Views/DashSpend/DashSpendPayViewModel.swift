@@ -328,7 +328,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
             // PiggyCards returns a simple address and amount, not a BIP70 URL
             // Convert DASH amount to satoshis (1 DASH = 100,000,000 satoshis)
-            let dashAmountInSatoshis = UInt64(giftCardInfo.amount * 100_000_000)
+            guard giftCardInfo.amount.isFinite,
+                  giftCardInfo.amount >= 0 else {
+                throw DashSpendError.paymentProcessingError("Invalid gift card amount")
+            }
+
+            let satoshis = NSDecimalNumber(decimal: Decimal(giftCardInfo.amount) * Decimal(100_000_000))
+            guard satoshis.compare(NSDecimalNumber.zero) != .orderedAscending,
+                  satoshis.compare(NSDecimalNumber(value: UInt64.max)) != .orderedDescending else {
+                throw DashSpendError.paymentProcessingError("Gift card amount is out of range")
+            }
+            let dashAmountInSatoshis = satoshis.uint64Value
 
             // Use sendCoins directly with address and amount
             // This will properly trigger PIN authorization

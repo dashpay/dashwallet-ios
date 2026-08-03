@@ -372,6 +372,11 @@ class HomeViewModel: ObservableObject {
             self.isReloading = true
             DWLogger.log("HomeViewModel: Starting full transaction reload")
 
+            // SwiftUI mutates the filter on the main thread. Snapshot it once
+            // before doing the worker-queue computation instead of reading the
+            // published property concurrently during the reload.
+            let selectedFilters = DispatchQueue.main.sync { self.selectedFilters }
+
             let transactions = transactionSource.allTransactions
             // Reconcile restored Shielded → Core destinations before Core rows
             // are filtered/classified. The activity projection can recover a
@@ -397,7 +402,7 @@ class HomeViewModel: ObservableObject {
             var items: [TransactionListDataItem] = transactions.compactMap { wrappedTx -> TransactionListDataItem? in
                 Tx.shared.updateRateIfNeeded(for: wrappedTx)
 
-                if !self.passesFilter(transaction: wrappedTx, selected: self.selectedFilters, hasRewards: hasRewards, hasMasternodes: hasMasternodes, giftCardTxIds: giftCardTxIds) {
+                if !self.passesFilter(transaction: wrappedTx, selected: selectedFilters, hasRewards: hasRewards, hasMasternodes: hasMasternodes, giftCardTxIds: giftCardTxIds) {
                     return nil
                 }
 
@@ -435,7 +440,7 @@ class HomeViewModel: ObservableObject {
             for shielded in shieldedItems {
                 guard self.passesShieldedFilter(
                     item: shielded,
-                    selected: self.selectedFilters,
+                    selected: selectedFilters,
                     hasRewards: hasRewards,
                     hasMasternodes: hasMasternodes)
                 else { continue }
@@ -450,7 +455,7 @@ class HomeViewModel: ObservableObject {
             for platform in platformItems {
                 guard self.passesCategoryFilter(
                     categories: [.received],
-                    selected: self.selectedFilters,
+                    selected: selectedFilters,
                     hasRewards: hasRewards,
                     hasMasternodes: hasMasternodes)
                 else { continue }
@@ -530,20 +535,23 @@ class HomeViewModel: ObservableObject {
                 return
             }
 
+            let selectedFilters = DispatchQueue.main.sync { self.selectedFilters }
+            let historyFlags = DispatchQueue.main.sync { (self.hasRewardsHistory, self.hasMasternodeHistory) }
+
             // A coinbase / masternode tx arriving incrementally unlocks its
             // filter row without waiting for the next full reload.
-            if tx.isCoinbaseTransaction && !self.hasRewardsHistory {
+            if tx.isCoinbaseTransaction && !historyFlags.0 {
                 DispatchQueue.main.async {
                     self.hasRewardsHistory = true
                 }
             }
-            if tx.isMasternodeTransaction && !self.hasMasternodeHistory {
+            if tx.isMasternodeTransaction && !historyFlags.1 {
                 DispatchQueue.main.async {
                     self.hasMasternodeHistory = true
                 }
             }
 
-            if !self.passesFilter(transaction: tx, selected: self.selectedFilters, hasRewards: self.hasRewardsHistory, hasMasternodes: self.hasMasternodeHistory) {
+            if !self.passesFilter(transaction: tx, selected: selectedFilters, hasRewards: historyFlags.0, hasMasternodes: historyFlags.1) {
                 return
             }
 
@@ -570,7 +578,8 @@ class HomeViewModel: ObservableObject {
                 var oldItemIndex: Int? = nil
                 var oldDateKey: String? = nil
 
-                for (gIdx, group) in self.txItems.enumerated() {
+                let currentGroups = DispatchQueue.main.sync { self.txItems }
+                for (gIdx, group) in currentGroups.enumerated() {
                     if let iIdx = group.items.firstIndex(where: { $0.id == itemId }) {
                         oldGroupIndex = gIdx
                         oldItemIndex = iIdx
@@ -629,7 +638,7 @@ class HomeViewModel: ObservableObject {
                         DispatchQueue.main.async {
                             guard groupIndex < self.txItems.count,
                                   itemIndex < self.txItems[groupIndex].items.count else { return }
-                            let updatedGroup = self.txItems[groupIndex]
+                            var updatedGroup = self.txItems[groupIndex]
                             var updatedItems = updatedGroup.items
                             updatedItems[itemIndex] = txItem
                             updatedGroup.items = updatedItems
@@ -642,26 +651,22 @@ class HomeViewModel: ObservableObject {
                 self.txByHash[itemId] = txItem
                 let shouldShowReclassify = self.shouldDisplayReclassifyTransaction && tx.date > reclassifyTransactionsActivatedAt
 
-                if let groupIndex = self.txItems.firstIndex(where: { $0.id == newDateKey }) {
-                    // Add to an existing date group
-                    DispatchQueue.main.async {
-                        self.txItems[groupIndex].items.append(txItem)
-                        self.txItems[groupIndex].items.sort { $0.date > $1.date }
-                        self.showReclassifyTransaction = shouldShowReclassify ? tx : nil
-                    }
-                } else {
-                    // Create a new date group
-                    let newGroup = TransactionGroup(id: newDateKey, date: txItem.date, items: [txItem])
-                    let insertIndex = self.txItems.firstIndex(where: { $0.date < txItem.date })
-
-                    DispatchQueue.main.async {
+                // Re-check the current data source inside the main-queue hop;
+                // a full reload may replace all groups between these queues.
+                DispatchQueue.main.async {
+                    if let currentGroupIndex = self.txItems.firstIndex(where: { $0.id == newDateKey }) {
+                        self.txItems[currentGroupIndex].items.append(txItem)
+                        self.txItems[currentGroupIndex].items.sort { $0.date > $1.date }
+                    } else {
+                        let newGroup = TransactionGroup(id: newDateKey, date: txItem.date, items: [txItem])
+                        let insertIndex = self.txItems.firstIndex(where: { $0.date < txItem.date })
                         if let index = insertIndex {
                             self.txItems.insert(newGroup, at: index)
                         } else {
                             self.txItems.append(newGroup)
                         }
-                        self.showReclassifyTransaction = shouldShowReclassify ? tx : nil
                     }
+                    self.showReclassifyTransaction = shouldShowReclassify ? tx : nil
                 }
             }
         }
@@ -763,7 +768,7 @@ extension HomeViewModel {
     /// launch until the user sweeps, then self-stops (balance → 0). The durable
     /// Settings row covers the same action for users who dismiss it.
     func maybeShowCoinJoinSweepDialog() {
-        DWLogger.log("CJTEST HomeViewModel: sweep dialog check — \(coinJoinSweepAmountDuffs) duffs (\(String(format: "%.6f", Double(coinJoinSweepAmountDuffs) / Double(kOneDash))) DASH), threshold \(CoinJoinRecovery.recoveryDustThresholdDuffs), above=\(coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
+        DWLogger.log("HomeViewModel: sweep dialog check — \(coinJoinSweepAmountDuffs) duffs (\(String(format: "%.6f", Double(coinJoinSweepAmountDuffs) / Double(kOneDash))) DASH), threshold \(CoinJoinRecovery.recoveryDustThresholdDuffs), above=\(coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
         guard !coinJoinSweepDialogShown,
               syncModel.state == .syncDone,
               coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs else { return }
@@ -780,7 +785,7 @@ extension HomeViewModel {
             _ = try await WalletSendService.shared.sweepCoinJoin()
             return nil
         } catch {
-            DWLogger.log("CJTEST HomeViewModel: sweep (home popup) failed: \(error)")
+            DWLogger.log("HomeViewModel: sweep (home popup) failed: \(error)")
             // nil when the user cancelled auth; a message on real failures.
             return WalletSendService.coinJoinSweepUserMessage(for: error)
         }

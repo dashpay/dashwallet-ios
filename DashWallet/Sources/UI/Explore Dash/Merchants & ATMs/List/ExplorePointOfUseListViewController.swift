@@ -190,22 +190,16 @@ class ExplorePointOfUseListViewController: UIViewController {
             wSelf.updateEmptyResultsForFilters()
         }
 
-        model.nextPageDidLoaded = { [weak self] offset, count in
+        model.nextPageDidLoaded = { [weak self] _, _ in
             guard let wSelf = self else { return }
 
-            var indexPathes: [IndexPath] = Array()
-            indexPathes.reserveCapacity(count)
-
-            let start = offset
-            let total = (offset+count)
-            for i in start..<total {
-                indexPathes.append(.init(row: i, section: ExplorePointOfUseSections.items.rawValue))
-            }
-
-            wSelf.tableView.beginUpdates()
-            wSelf.tableView.insertRows(at: indexPathes, with: .top)
-            wSelf.tableView.reloadSections([ExplorePointOfUseSections.nextPage.rawValue], with: .none)
-            wSelf.tableView.endUpdates()
+            // The request may finish after a filter/search/location update has
+            // replaced the data source. Reconcile from the current model rather
+            // than applying stale pager indexes in a UITableView batch update.
+            wSelf.tableView.reloadSections([
+                ExplorePointOfUseSections.items.rawValue,
+                ExplorePointOfUseSections.nextPage.rawValue
+            ], with: .none)
         }
 
         configureHierarchy()

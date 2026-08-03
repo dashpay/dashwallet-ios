@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-class TransactionGroup: Identifiable {
+struct TransactionGroup: Identifiable {
     let id: String
     let date: Date
     var items: [TransactionListDataItem]
