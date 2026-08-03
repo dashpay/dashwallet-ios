@@ -71,9 +71,15 @@ struct BIP70URI {
         var rest = String(trimmed[trimmed.index(after: colon)...])
         if rest.hasPrefix("//") { rest = String(rest.dropFirst(2)) }
 
+        // BIP21 introduces the query with `?`, but wallets and payment pages in
+        // the wild also emit `dash:<address>&amount=…`. Splitting only on `?`
+        // left the whole tail inside the address, which then failed validation
+        // and the scan was rejected outright rather than losing just the amount.
+        // Accept whichever separator comes first; `&` is already the pair
+        // separator below, so a leading one yields the same key/value list.
         let addressPart: String
         let queryPart: String?
-        if let q = rest.firstIndex(of: "?") {
+        if let q = rest.firstIndex(where: { $0 == "?" || $0 == "&" }) {
             addressPart = String(rest[..<q])
             queryPart = String(rest[rest.index(after: q)...])
         } else {
