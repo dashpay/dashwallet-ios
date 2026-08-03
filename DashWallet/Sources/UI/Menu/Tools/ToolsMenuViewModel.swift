@@ -134,7 +134,7 @@ class ToolsMenuViewModel: ObservableObject {
             ),
             MenuItemModel(
                 title: NSLocalizedString("Connections", comment: "DashConnect"),
-                icon: .custom("menu.connections", maxHeight: 30),
+                icon: .custom("menu-connections", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .connections
                 }

@@ -14,7 +14,7 @@
 import XCTest
 import Security
 import SwiftDashSDK
-@testable import dashwallet
+@testable import dashpay
 
 final class PaymentProtocolTests: XCTestCase {
 

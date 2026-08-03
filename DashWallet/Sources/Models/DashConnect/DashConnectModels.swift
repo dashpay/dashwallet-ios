@@ -19,11 +19,32 @@
 
 import Foundation
 
+enum DashConnectQr: Equatable {
+    case login(DashKeyRequest)
+    case keyRegistration(DashStRequest)
+}
+
 /// Lifecycle of an app connection.
 enum ConnectionStatus: String, Codable, CaseIterable {
     case approved
     case active
-    case disconnected
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        guard let status = ConnectionStatus(rawValue: rawValue) else {
+            throw DecodingError.dataCorruptedError(
+                in: container,
+                debugDescription: "Unknown DashConnect status: \(rawValue)"
+            )
+        }
+        self = status
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
 }
 
 /// A connected app identified by its stable contract id.
@@ -40,6 +61,45 @@ struct ConnectionRequest: Equatable {
     let appLabel: String
     let appUrl: String
     let appContractId: String
-    let walletUsername: String
-    let walletIdentityId: String
+    let walletUsername: String?
+    let walletIdentityId: String?
+    let existingConnection: DAppConnection?
+}
+
+extension ConnectionRequest {
+    /// Declaring an initializer inside the struct body would suppress the memberwise one,
+    /// so this convenience lives in an extension.
+    init(loginRequest: DashKeyRequest) {
+        let contractId = (loginRequest.contractId as NSData).base58String()
+        let branding = DashConnectFallbackAppMetadata.resolve(
+            contractId: contractId,
+            unauthenticatedLabel: loginRequest.label
+        )
+        self.init(
+            appLabel: branding.name,
+            appUrl: branding.url,
+            appContractId: contractId,
+            walletUsername: nil,
+            walletIdentityId: nil,
+            existingConnection: nil
+        )
+    }
+
+    init(
+        loginRequest: DashKeyRequest,
+        appLabel: String,
+        appUrl: String,
+        walletUsername: String?,
+        walletIdentityId: String?,
+        existingConnection: DAppConnection?
+    ) {
+        self.init(
+            appLabel: appLabel.trimmingCharacters(in: .whitespacesAndNewlines),
+            appUrl: appUrl.trimmingCharacters(in: .whitespacesAndNewlines),
+            appContractId: (loginRequest.contractId as NSData).base58String(),
+            walletUsername: walletUsername,
+            walletIdentityId: walletIdentityId,
+            existingConnection: existingConnection
+        )
+    }
 }

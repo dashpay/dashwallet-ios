@@ -21,7 +21,8 @@ import DashUIKit
 import SwiftUI
 
 /// Prompt attached to an approved connection: approval alone does not log the
-/// user in, the app still has to scan the login QR to finish.
+/// user in, and the same button accepts either the follow-up `dash-st:` QR or
+/// a fresh `dash-key:` QR for the same app.
 struct ScanToCompleteBanner: View {
     let onScanQR: () -> Void
     let onMockScan: () -> Void

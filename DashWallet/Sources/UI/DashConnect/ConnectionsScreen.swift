@@ -19,6 +19,7 @@
 
 import SwiftUI
 import UIKit
+import DashUIKit
 
 /// Lists the apps connected to this wallet. The states it can be in live in
 /// `Components/`; this type owns navigation, the QR scanner and the approval
@@ -34,27 +35,48 @@ struct ConnectionsScreen: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            NavBarBack {
-                vc.popViewController(animated: true)
+        ZStack {
+            VStack(alignment: .leading, spacing: 0) {
+                DashUIKit.NavigationBar(
+                    leading: {
+                        NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                    }
+                )
+
+                TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+                    .padding(.bottom, 20)
+
+                content
+                    .alert(item: pendingRemovalBinding) { connection in
+                        removalAlert(for: connection)
+                    }
             }
 
-            TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
-                .padding(.leading, 20)
-                .padding(.trailing, 60)
-                .padding(.top, 10)
-                .padding(.bottom, 20)
+            if viewModel.isProcessingKeyRegistration {
+                Color.black.opacity(0.08)
+                    .ignoresSafeArea()
 
-            content
+                // The app declares its own `ProgressView: UIView`, which shadows
+                // SwiftUI's in any file importing both.
+                SwiftUI.ProgressView(NSLocalizedString("Completing DashConnect request…", comment: "DashConnect"))
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(Color.primaryBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
-        .alert(NSLocalizedString("Error", comment: ""), isPresented: errorIsPresented) {
-            Button(NSLocalizedString("OK", comment: "")) {
-                viewModel.errorMessage = nil
-            }
-        } message: {
-            Text(viewModel.errorMessage ?? "")
+        .alert(item: messageBinding) { message in
+            Alert(
+                title: Text(message.title),
+                message: Text(message.text),
+                dismissButton: .default(Text(NSLocalizedString("OK", comment: ""))) {
+                    viewModel.message = nil
+                }
+            )
         }
         .sheet(isPresented: isApproveSheetPresented) {
             if let request = viewModel.pendingRequest {
@@ -75,8 +97,9 @@ struct ConnectionsScreen: View {
                 connections: viewModel.connections,
                 onScanQR: showScanner,
                 onMockScan: mockScan,
-                onDisconnect: viewModel.disconnect
+                onRemove: viewModel.requestRemoval
             )
+            .padding(.horizontal, 20)
         }
     }
 
@@ -84,6 +107,7 @@ struct ConnectionsScreen: View {
         ApproveConnectionSheet(
             request: request,
             isLoading: viewModel.isApproving,
+            errorText: viewModel.approveError,
             onApprove: { viewModel.approvePendingRequest() },
             onDeny: { viewModel.denyPendingRequest() }
         )
@@ -103,14 +127,17 @@ struct ConnectionsScreen: View {
         )
     }
 
-    private var errorIsPresented: Binding<Bool> {
+    private var messageBinding: Binding<ConnectionsScreenMessage?> {
         Binding(
-            get: { viewModel.errorMessage != nil },
-            set: { isPresented in
-                if !isPresented {
-                    viewModel.errorMessage = nil
-                }
-            }
+            get: { viewModel.message },
+            set: { viewModel.message = $0 }
+        )
+    }
+
+    private var pendingRemovalBinding: Binding<DAppConnection?> {
+        Binding(
+            get: { viewModel.pendingRemoval },
+            set: { viewModel.pendingRemoval = $0 }
         )
     }
 
@@ -119,8 +146,6 @@ struct ConnectionsScreen: View {
     private func showScanner() {
         let scanner = GenericQRScannerController()
 
-        // The mock UI flow accepts any scanned payload for now; MO-945 will
-        // replace this with real login-QR parsing.
         scanner.onQRCodeScanned = { value in
             vc.dismiss(animated: true) {
                 viewModel.onQRScanned(value)
@@ -134,7 +159,33 @@ struct ConnectionsScreen: View {
     }
 
     private func mockScan() {
-        viewModel.onQRScanned("dash-key:mock")
+        viewModel.onQRScanned(MockDashConnectDataSource.sampleLoginQRCode)
+    }
+
+    private func removalAlert(for connection: DAppConnection) -> Alert {
+        Alert(
+            title: Text(
+                String(
+                    format: NSLocalizedString("Disconnect %@?", comment: "DashConnect"),
+                    connection.name
+                )
+            ),
+            message: Text(
+                String(
+                    format: NSLocalizedString(
+                        "This removes the connection from this wallet. %@ may stay signed in until you sign out there.",
+                        comment: "DashConnect"
+                    ),
+                    connection.name
+                )
+            ),
+            primaryButton: .destructive(Text(NSLocalizedString("Disconnect", comment: "DashConnect"))) {
+                viewModel.removeConnection(connection)
+            },
+            secondaryButton: .cancel {
+                viewModel.cancelPendingRemoval()
+            }
+        )
     }
 }
 
@@ -181,16 +232,6 @@ struct ConnectionsScreen: View {
         vc: UINavigationController(),
         viewModel: ConnectionsViewModel(
             dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.active)]),
-            featureUnavailable: false
-        )
-    )
-}
-
-#Preview("Disconnected") {
-    ConnectionsScreen(
-        vc: UINavigationController(),
-        viewModel: ConnectionsViewModel(
-            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.disconnected)]),
             featureUnavailable: false
         )
     )

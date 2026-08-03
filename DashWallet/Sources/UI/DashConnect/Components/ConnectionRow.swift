@@ -21,7 +21,7 @@ import DashUIKit
 import SwiftUI
 
 /// One connected app: its name and url, the current status, and — once the
-/// connection is live — the switch that disconnects it.
+/// connection is live — the switch that lets this wallet forget it.
 ///
 /// An approved connection is not usable yet, so the row carries the prompt to
 /// finish the login underneath itself rather than leaving the list to know
@@ -30,7 +30,7 @@ struct ConnectionRow: View {
     let connection: DAppConnection
     let onPrimaryAction: () -> Void
     let onMockScan: () -> Void
-    let onDisconnect: () -> Void
+    let onRemove: () -> Void
 
     private enum Layout {
         /// `SwitchView` is a fixed 64×28 from the design system and sets that
@@ -52,7 +52,7 @@ struct ConnectionRow: View {
                     .frame(maxWidth: .infinity, alignment: .topTrailing)
 
                 if connection.status == .active {
-                    disconnectSwitch
+                    activeSwitch
                 }
             }
             .padding(.horizontal, 14)
@@ -81,14 +81,15 @@ struct ConnectionRow: View {
     }
 
     /// Always reads as on: the row only shows it for an active connection, and
-    /// switching it off is what disconnects. The binding therefore ignores the
-    /// on direction, which cannot be reached from here.
-    private var disconnectSwitch: some View {
+    /// only the off direction is reachable from here. Turning it off removes
+    /// this wallet's record of the connection; it does not sign the user out
+    /// of the app, because the wallet has no channel to end that session.
+    private var activeSwitch: some View {
         SwitchView(isOn: Binding(
             get: { true },
             set: { isOn in
                 if !isOn {
-                    onDisconnect()
+                    onRemove()
                 }
             }
         ))
@@ -110,7 +111,7 @@ struct ConnectionRow: View {
                 ),
                 onPrimaryAction: {},
                 onMockScan: {},
-                onDisconnect: {}
+                onRemove: {}
             )
         }
     }

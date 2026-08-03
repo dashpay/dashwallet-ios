@@ -17,11 +17,16 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 
 struct ApproveConnectionSheet: View {
     let request: ConnectionRequest
     var isLoading: Bool = false
+    /// Why the last approve attempt failed. Shown here rather than as a screen alert:
+    /// an alert on the presenting screen cannot appear over this sheet, so the user
+    /// would otherwise see nothing at all.
+    var errorText: String?
     var onApprove: () -> Void
     var onDeny: () -> Void
 
@@ -36,10 +41,7 @@ struct ApproveConnectionSheet: View {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(
-                        String(
-                            format: NSLocalizedString("Approve connection to %@?", comment: "DashConnect"),
-                            resolvedAppLabel
-                        )
+                        String(format: titleFormat, resolvedAppLabel)
                     )
                     .font(.title2)
                     .foregroundColor(.primaryText)
@@ -49,56 +51,51 @@ struct ApproveConnectionSheet: View {
                         .foregroundColor(.secondaryText)
                 }
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(NSLocalizedString("This app will be able to:", comment: "DashConnect"))
-                        .font(.subhead)
-                        .foregroundColor(.primaryText)
-
-                    PermissionRow(
-                        icon: .custom("dashconnect.check.circle", maxHeight: 18),
-                        text: NSLocalizedString("See your username", comment: "DashConnect")
-                    )
-                    PermissionRow(
-                        icon: .custom("dashconnect.check.circle", maxHeight: 18),
-                        text: NSLocalizedString("Verify your identity", comment: "DashConnect")
-                    )
+                if let existingConnection = request.existingConnection {
+                    reloginNotice(existingConnection)
                 }
 
-                VStack(spacing: 4) {
-                    DetailRow(
-                        label: NSLocalizedString("Username", comment: "DashConnect"),
-                        value: request.walletUsername
-                    )
-                    DetailRow(
-                        label: NSLocalizedString("Identity", comment: "DashConnect"),
-                        value: truncateMiddle(request.walletIdentityId)
-                    )
+                if isRelogin {
+                    reloginPermissionsSummary
+                } else {
+                    fullPermissions
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.gray300, lineWidth: 1.5)
-                )
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(NSLocalizedString("This app will NOT have access to:", comment: "DashConnect"))
-                        .font(.subhead)
-                        .foregroundColor(.primaryText)
-
-                    PermissionRow(
-                        icon: .custom("dashconnect.xmark.circle", maxHeight: 18),
-                        text: NSLocalizedString("Your private keys", comment: "DashConnect")
-                    )
-                    PermissionRow(
-                        icon: .custom("dashconnect.xmark.circle", maxHeight: 18),
-                        text: NSLocalizedString("Withdraw funds", comment: "DashConnect")
+                if request.walletUsername != nil || request.walletIdentityId != nil {
+                    VStack(spacing: 4) {
+                        if let walletUsername = request.walletUsername {
+                            DetailRow(
+                                label: NSLocalizedString("Username", comment: "DashConnect"),
+                                value: walletUsername
+                            )
+                        }
+                        if let walletIdentityId = request.walletIdentityId {
+                            DetailRow(
+                                label: NSLocalizedString("Identity", comment: "DashConnect"),
+                                value: truncateMiddle(walletIdentityId)
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(Color.gray300, lineWidth: 1.5)
                     )
                 }
 
                 Spacer(minLength: 0)
 
                 VStack(spacing: 8) {
+                    if let errorText {
+                        Text(errorText)
+                            .font(.footnote)
+                            .foregroundColor(Color.dash.errorText)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.bottom, 4)
+                    }
+
                     DashButton(
                         text: NSLocalizedString("Approve", comment: "DashConnect"),
                         style: .filledBlue,
@@ -132,6 +129,18 @@ struct ApproveConnectionSheet: View {
         return trimmed.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : trimmed
     }
 
+    private var isRelogin: Bool {
+        request.existingConnection != nil
+    }
+
+    private var titleFormat: String {
+        if isRelogin {
+            return NSLocalizedString("Sign in to %@ again?", comment: "DashConnect re-login")
+        } else {
+            return NSLocalizedString("Approve connection to %@?", comment: "DashConnect")
+        }
+    }
+
     private var resolvedSubtitle: String {
         let candidates = [
             request.appUrl.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -141,12 +150,87 @@ struct ApproveConnectionSheet: View {
         return candidates.first(where: { !$0.isEmpty }) ?? NSLocalizedString("Unknown app", comment: "DashConnect")
     }
 
+    private var fullPermissions: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(NSLocalizedString("This app will be able to:", comment: "DashConnect"))
+                    .font(.subhead)
+                    .foregroundColor(.primaryText)
+
+                PermissionRow(
+                    icon: .custom("dashconnect.check.circle", maxHeight: 18),
+                    text: NSLocalizedString("See your username", comment: "DashConnect")
+                )
+                PermissionRow(
+                    icon: .custom("dashconnect.check.circle", maxHeight: 18),
+                    text: NSLocalizedString("Verify your identity", comment: "DashConnect")
+                )
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text(NSLocalizedString("This app will NOT have access to:", comment: "DashConnect"))
+                    .font(.subhead)
+                    .foregroundColor(.primaryText)
+
+                PermissionRow(
+                    icon: .custom("dashconnect.xmark.circle", maxHeight: 18),
+                    text: NSLocalizedString("Your private keys", comment: "DashConnect")
+                )
+                PermissionRow(
+                    icon: .custom("dashconnect.xmark.circle", maxHeight: 18),
+                    text: NSLocalizedString("Withdraw funds", comment: "DashConnect")
+                )
+            }
+        }
+    }
+
+    private var reloginPermissionsSummary: some View {
+        HStack(spacing: 8) {
+            Icon(name: .custom("dashconnect.check.circle", maxHeight: 18))
+                .frame(width: 18, height: 18)
+
+            Text(NSLocalizedString("Same permissions as before", comment: "DashConnect re-login"))
+                .font(.subhead)
+                .foregroundColor(.primaryText)
+        }
+    }
+
+    private func reloginNotice(_ existingConnection: DAppConnection) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(NSLocalizedString("This connection already exists.", comment: "DashConnect re-login"))
+                .font(.subhead)
+                .foregroundColor(.primaryText)
+
+            Text(
+                String(
+                    format: NSLocalizedString("Connected since %@", comment: "DashConnect re-login"),
+                    Self.connectedSinceFormatter.string(from: existingConnection.updatedAt)
+                )
+            )
+            .font(.footnote)
+            .foregroundColor(.secondaryText)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.gray300, lineWidth: 1.5)
+        )
+    }
+
     /// Truncates a long identifier in the middle, keeping `prefix` leading and
     /// `suffix` trailing characters (e.g. "5DbLwAx…7zUo8").
     fileprivate func truncateMiddle(_ value: String, prefix: Int = 7, suffix: Int = 5) -> String {
         guard value.count > prefix + suffix + 1 else { return value }
         return "\(value.prefix(prefix))…\(value.suffix(suffix))"
     }
+
+    private static let connectedSinceFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
 }
 
 private struct PermissionRow: View {
@@ -211,6 +295,21 @@ private let dashConnectTruncateMiddleCheck: Bool = {
     ApproveConnectionSheet(
         request: MockDashConnectDataSource.sampleRequest,
         isLoading: true,
+        onApprove: {},
+        onDeny: {}
+    )
+}
+
+#Preview("Approve Re-Login") {
+    ApproveConnectionSheet(
+        request: ConnectionRequest(
+            loginRequest: MockDashConnectDataSource.sampleLoginRequest,
+            appLabel: "Yappr",
+            appUrl: "yap.pr",
+            walletUsername: "dashuser",
+            walletIdentityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8",
+            existingConnection: MockDashConnectDataSource.sample(.active)
+        ),
         onApprove: {},
         onDeny: {}
     )

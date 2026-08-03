@@ -26,7 +26,7 @@ struct ConnectionsList: View {
     let connections: [DAppConnection]
     let onScanQR: () -> Void
     let onMockScan: () -> Void
-    let onDisconnect: (DAppConnection) -> Void
+    let onRemove: (DAppConnection) -> Void
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -36,7 +36,7 @@ struct ConnectionsList: View {
                         connection: connection,
                         onPrimaryAction: onScanQR,
                         onMockScan: onMockScan,
-                        onDisconnect: { onDisconnect(connection) }
+                        onRemove: { onRemove(connection) }
                     )
                 }
             }
@@ -58,7 +58,7 @@ struct ConnectionsList: View {
         },
         onScanQR: {},
         onMockScan: {},
-        onDisconnect: { _ in }
+        onRemove: { _ in }
     )
     .padding(20)
     .background(Color.primaryBackground)

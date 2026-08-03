@@ -20,27 +20,58 @@
 import Combine
 import Foundation
 
+struct ConnectionsScreenMessage: Identifiable, Equatable {
+    enum Kind: String {
+        case error
+        case success
+    }
+
+    let kind: Kind
+    let text: String
+
+    var id: String {
+        "\(kind.rawValue):\(text)"
+    }
+
+    var title: String {
+        switch kind {
+        case .error:
+            return NSLocalizedString("Error", comment: "")
+        case .success:
+            return NSLocalizedString("Success", comment: "DashConnect")
+        }
+    }
+}
+
 @MainActor
 final class ConnectionsViewModel: ObservableObject {
     @Published private(set) var connections: [DAppConnection] = []
     @Published private(set) var featureUnavailable: Bool
     @Published var pendingRequest: ConnectionRequest?
     @Published var isApproving = false
-    @Published var errorMessage: String?
+    @Published var isProcessingKeyRegistration = false
+    @Published var message: ConnectionsScreenMessage?
+    @Published var pendingRemoval: DAppConnection?
+    /// Failure of the last approve attempt, rendered **inside** the approve sheet.
+    /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
+    /// through `message` would leave the user with no feedback at all.
+    @Published var approveError: String?
 
     private let dataSource: any DashConnectDataSource
+    private var pendingLoginRequest: DashKeyRequest?
     private var cancellables = Set<AnyCancellable>()
 
     init(
-        dataSource: any DashConnectDataSource = MockDashConnectDataSource(),
+        dataSource: (any DashConnectDataSource)? = nil,
         featureUnavailable: Bool? = nil
     ) {
-        self.dataSource = dataSource
-        self.featureUnavailable = featureUnavailable ?? (
+        let computedFeatureUnavailable = featureUnavailable ?? (
             DWEnvironment.sharedInstance().currentChain.chainType.tag != ChainType_TestNet
         )
+        self.featureUnavailable = computedFeatureUnavailable
+        self.dataSource = dataSource ?? Self.defaultDataSource(featureUnavailable: computedFeatureUnavailable)
 
-        dataSource.connections
+        self.dataSource.connections
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.connections = $0.sorted(by: { $0.updatedAt > $1.updatedAt })
@@ -53,29 +84,52 @@ final class ConnectionsViewModel: ObservableObject {
 
         Task {
             do {
-                pendingRequest = try await dataSource.parseQR(content)
+                pendingRequest = nil
+                pendingLoginRequest = nil
+
+                switch try await dataSource.parseQR(content) {
+                case let .login(request):
+                    pendingLoginRequest = request
+                    pendingRequest = await dataSource.makeConnectionRequest(from: request)
+                case let .keyRegistration(request):
+                    isProcessingKeyRegistration = true
+                    defer { isProcessingKeyRegistration = false }
+
+                    try await dataSource.completeKeyRegistration(request)
+                    message = ConnectionsScreenMessage(
+                        kind: .success,
+                        text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
+                    )
+                }
             } catch {
-                errorMessage = String(
-                    format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
-                    error.localizedDescription
+                message = ConnectionsScreenMessage(
+                    kind: .error,
+                    text: String(
+                        format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
+                        error.localizedDescription
+                    )
                 )
             }
         }
     }
 
     func approvePendingRequest() {
-        guard let pendingRequest, !isApproving else { return }
+        guard pendingRequest != nil, let pendingLoginRequest, !isApproving else { return }
 
         isApproving = true
+        approveError = nil
 
         Task {
             defer { isApproving = false }
 
             do {
-                _ = try await dataSource.approve(pendingRequest)
+                _ = try await dataSource.approveLogin(pendingLoginRequest)
                 self.pendingRequest = nil
+                self.pendingLoginRequest = nil
+                self.approveError = nil
             } catch {
-                errorMessage = String(
+                // Keep the sheet up so the user can retry without rescanning the QR.
+                self.approveError = String(
                     format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
                     error.localizedDescription
                 )
@@ -86,17 +140,35 @@ final class ConnectionsViewModel: ObservableObject {
     func denyPendingRequest() {
         guard !isApproving else { return }
         pendingRequest = nil
+        pendingLoginRequest = nil
+        approveError = nil
     }
 
-    func disconnect(_ connection: DAppConnection) {
-        Task {
-            await dataSource.disconnect(id: connection.id)
-        }
+    func requestRemoval(_ connection: DAppConnection) {
+        pendingRemoval = connection
+    }
+
+    func cancelPendingRemoval() {
+        pendingRemoval = nil
     }
 
     func removeConnection(_ connection: DAppConnection) {
+        pendingRemoval = nil
         Task {
             await dataSource.remove(id: connection.id)
         }
+    }
+
+    private static func defaultDataSource(featureUnavailable: Bool) -> any DashConnectDataSource {
+        let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        if isPreview || featureUnavailable {
+            return MockDashConnectDataSource()
+        }
+
+        assert(
+            DWEnvironment.sharedInstance().currentChain.chainType.tag == ChainType_TestNet,
+            "DashConnect real data source must only run on testnet."
+        )
+        return PlatformDashConnectDataSource()
     }
 }
