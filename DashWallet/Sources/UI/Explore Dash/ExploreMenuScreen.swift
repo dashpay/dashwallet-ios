@@ -25,12 +25,14 @@ struct ExploreMenuScreen: View {
     private let onShowSendPayment: () -> Void
     private let onShowReceivePayment: () -> Void
     private let onShowGiftCard: (Data) -> Void
+    private let isTestnetProvider: () -> Bool
+    private let receiveAddressProvider: () -> String?
 
     @ObservedObject private var balanceReminder = CrowdNodeBalanceReminder.shared
     @State private var showSyncingAlert = false
 
-    private var isTestnet: Bool {
-        DWEnvironment.sharedInstance().currentChain.isTestnet()
+    var shouldShowGetTestDash: Bool {
+        isTestnetProvider()
     }
 
     private var hasCrowdNodeAccount: Bool {
@@ -42,12 +44,16 @@ struct ExploreMenuScreen: View {
          showBackButton: Bool = true,
          onShowSendPayment: @escaping () -> Void,
          onShowReceivePayment: @escaping () -> Void,
-         onShowGiftCard: @escaping (Data) -> Void) {
+         onShowGiftCard: @escaping (Data) -> Void,
+         isTestnetProvider: @escaping () -> Bool = { WalletEnvironment.isTestnet },
+         receiveAddressProvider: @escaping () -> String? = { SwiftDashSDKReceiveAddressReader.receiveAddress() }) {
         self.vc = vc
         self.showBackButton = showBackButton
         self.onShowSendPayment = onShowSendPayment
         self.onShowReceivePayment = onShowReceivePayment
         self.onShowGiftCard = onShowGiftCard
+        self.isTestnetProvider = isTestnetProvider
+        self.receiveAddressProvider = receiveAddressProvider
     }
 
     var body: some View {
@@ -69,7 +75,7 @@ struct ExploreMenuScreen: View {
 
             // Menu list
             VStack(spacing: 2) {
-                if isTestnet {
+                if shouldShowGetTestDash {
                     MenuItem(
                         title: NSLocalizedString("Get Test Dash", comment: ""),
                         subtitle: NSLocalizedString("Test Dash is free and can be obtained from what is called a faucet.", comment: ""),
@@ -154,13 +160,16 @@ struct ExploreMenuScreen: View {
     }
 
     private func getTestDashAction() {
-        let account = DWEnvironment.sharedInstance().currentAccount
-        if let paymentAddress = account.receiveAddress {
+        if let paymentAddress = currentTestDashReceiveAddress() {
             UIPasteboard.general.string = paymentAddress
         }
         if let url = URL(string: "http://faucet.testnet.networks.dash.org/") {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
+    }
+
+    func currentTestDashReceiveAddress() -> String? {
+        receiveAddressProvider()
     }
 
     private func showWhereToSpend() {

@@ -2,9 +2,9 @@
 //  WalletWipeSerialExecutorTests.swift
 //  DashWalletTests
 //
-//  Regression coverage for the reinstall Delete race: PIN removal is
-//  synchronous, while the SDK wallet wipe is queued in the background. The
-//  transition barrier must never fire before that queued wipe finishes.
+//  Regression coverage for the reinstall Delete race: the SDK wallet wipe and
+//  successful PIN commit are queued together. The transition barrier must
+//  never fire before that queued operation finishes.
 //
 
 import XCTest

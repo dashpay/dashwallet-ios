@@ -43,17 +43,6 @@
     return self;
 }
 
-+ (instancetype)appleWatchTransactionDataFrom:(id<DSWatchTransactionData>)transactionData {
-    BRAppleWatchTransactionData *appleWatchTransactionData = [BRAppleWatchTransactionData new];
-    appleWatchTransactionData.amountText = transactionData.amountText;
-    appleWatchTransactionData.amountTextInLocalCurrency = transactionData.amountTextInLocalCurrency;
-    appleWatchTransactionData.dateText = transactionData.dateText;
-    appleWatchTransactionData.type = transactionData.type;
-
-    return appleWatchTransactionData;
-}
-
-
 - (void)encodeWithCoder:(NSCoder *)encoder {
     if (_amountText)
         [encoder encodeObject:_amountText forKey:AW_TRANSACTION_DATA_AMOUNT_KEY];

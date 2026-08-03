@@ -533,6 +533,14 @@ final class SwiftDashSDKHost {
             stop()
         }
 
+        return try makeRuntime(for: network)
+    }
+
+    /// Build a configured manager/container pair without replacing the
+    /// published app runtime. Full-device wipe uses this for the inactive
+    /// network so each network-scoped SwiftData store is deleted through a
+    /// manager configured for that same network.
+    private func makeRuntime(for network: Network) throws -> RuntimeHandles {
         guard network != .regtest else {
             throw HostError.unsupportedNetwork(network)
         }
@@ -594,6 +602,22 @@ final class SwiftDashSDKHost {
             manager: newManager,
             modelContainer: container,
             network: network)
+    }
+
+    /// Manager bound to `network` for full-device wipe.
+    ///
+    /// The live manager is reused for its network. The other network gets a
+    /// detached manager over the process-cached `ModelContainer`, avoiding a
+    /// second open of the same SQLite store and leaving the published runtime
+    /// unchanged until the wipe commits.
+    func managerForWipe(network: Network) throws -> PlatformWalletManager {
+        if runningNetwork == network, let manager {
+            return manager
+        }
+
+        let handles = try makeRuntime(for: network)
+        _ = try handles.manager.loadFromPersistor()
+        return handles.manager
     }
 
     private func loadPersistedWallet(

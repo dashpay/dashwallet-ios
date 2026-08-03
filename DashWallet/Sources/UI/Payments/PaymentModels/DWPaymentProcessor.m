@@ -22,7 +22,6 @@
 #import "DWPaymentInput.h"
 #import "DWPaymentOutput+Private.h"
 #import "dashwallet-Swift.h"
-#import <DashSync/DSTransactionInput.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

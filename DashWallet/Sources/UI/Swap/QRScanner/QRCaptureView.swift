@@ -123,7 +123,7 @@ struct QRCaptureView: UIViewRepresentable {
                 device.unlockForConfiguration()
             } catch {
                 #if DEBUG
-                DSLogger.log("Maya QR Scanner: Torch toggle failed: \(error.localizedDescription)")
+                DWLogger.log("Maya QR Scanner: Torch toggle failed: \(error.localizedDescription)")
                 #endif
             }
         }

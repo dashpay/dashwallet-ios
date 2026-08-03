@@ -166,7 +166,7 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
         // ASWebAuthenticationSession crashes ("unsupported scheme") if the URL isn't http/https.
         // On mainnet the Uphold OAuth config can be empty in dev builds → empty URL → crash.
         guard let scheme = url.scheme?.lowercased(), scheme == "https" || scheme == "http" else {
-            DSLogger.log("Uphold login: auth URL has unsupported scheme — Uphold not configured for this network")
+            DWLogger.log("Uphold login: auth URL has unsupported scheme — Uphold not configured for this network")
             return
         }
         let callbackURLScheme = "dashwallet"
@@ -197,7 +197,7 @@ class EnterAddressHostingController: UIViewController, NavigationBarDisplayable 
                 try await Coinbase.shared.signIn(with: self)
                 viewModel.onCoinbaseLoginCompleted()
             } catch {
-                DSLogger.log("Maya: Coinbase login failed: \(error)")
+                DWLogger.log("Maya: Coinbase login failed: \(error)")
             }
         }
     }

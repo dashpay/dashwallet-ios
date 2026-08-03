@@ -18,6 +18,7 @@
 
 import AuthenticationServices
 import Combine
+import CoreData
 import Foundation
 
 let kDashAccount = "DASH"
@@ -162,9 +163,15 @@ extension Coinbase {
                                                  verificationCode: String?,
                                                  idem: UUID?) async throws -> CoinbaseTransaction {
         do {
-            let tx = try await accountService.send(from: kDashAccount, amount: amount, verificationCode: verificationCode, idem: idem)
+            let (tx, walletId) = try await accountService.send(
+                from: kDashAccount,
+                amount: amount,
+                verificationCode: verificationCode,
+                idem: idem)
 
-            CoinbaseTransactionMetadataTagger.shared.track(receivedTransfer: tx)
+            CoinbaseTransactionMetadataTagger.shared.track(
+                receivedTransfer: tx,
+                walletId: walletId)
 
             if let address = tx.to?.address {
                 Taxes.shared.mark(address: address, with: .transferIn)
@@ -299,32 +306,149 @@ extension Coinbase {
 
 // MARK: - CoinbaseTransactionMetadataTagger
 
+enum CoinbaseWalletTransactionDirection: Equatable {
+    case received
+    case sent
+    case other
+}
+
+struct CoinbaseWalletTransactionRecord: Equatable {
+    let txHashData: Data
+    let txHashHexString: String
+    let direction: CoinbaseWalletTransactionDirection
+    let timestamp: TimeInterval
+    let outputReceiveAddresses: [String]
+    let dashAmount: UInt64
+
+    init(txHashData: Data,
+         txHashHexString: String,
+         direction: CoinbaseWalletTransactionDirection,
+         timestamp: TimeInterval,
+         outputReceiveAddresses: [String],
+         dashAmount: UInt64) {
+        self.txHashData = txHashData
+        self.txHashHexString = txHashHexString
+        self.direction = direction
+        self.timestamp = timestamp
+        self.outputReceiveAddresses = outputReceiveAddresses
+        self.dashAmount = dashAmount
+    }
+
+    init(transaction: Transaction) {
+        let direction: CoinbaseWalletTransactionDirection
+        switch transaction.direction {
+        case .received:
+            direction = .received
+        case .sent:
+            direction = .sent
+        case .moved, .notAccountFunds:
+            direction = .other
+        }
+
+        self.init(
+            txHashData: transaction.txHashData,
+            txHashHexString: transaction.txHashHexString,
+            direction: direction,
+            timestamp: transaction.date.timeIntervalSince1970,
+            outputReceiveAddresses: transaction.outputReceiveAddresses,
+            dashAmount: transaction.dashAmount)
+    }
+}
+
+struct CoinbaseWalletTransactionSnapshot {
+    let walletId: Data
+    let transactions: [CoinbaseWalletTransactionRecord]
+
+    static func current() -> CoinbaseWalletTransactionSnapshot? {
+        guard let snapshot = SwiftDashSDKWalletSource.fetchCurrentWalletSnapshot() else {
+            return nil
+        }
+
+        return CoinbaseWalletTransactionSnapshot(
+            walletId: snapshot.walletId,
+            transactions: snapshot.transactions.map(CoinbaseWalletTransactionRecord.init(transaction:)))
+    }
+}
+
+struct CoinbasePendingReceiveTransfer: Equatable {
+    let walletId: Data
+    let address: String
+    let amount: UInt64
+    let minimumTimestamp: TimeInterval
+}
+
+struct CoinbaseReceiveMatchResolution: Equatable {
+    let matchedTxHashes: [Data]
+    let unresolved: [CoinbasePendingReceiveTransfer]
+}
+
+enum CoinbaseTransactionMetadataResolver {
+    static func resolve(
+        pendingTransfers: [CoinbasePendingReceiveTransfer],
+        against snapshot: CoinbaseWalletTransactionSnapshot
+    ) -> CoinbaseReceiveMatchResolution {
+        var availableTransactions = snapshot.transactions
+        var matchedTxHashes: [Data] = []
+        var unresolved: [CoinbasePendingReceiveTransfer] = []
+
+        for pending in pendingTransfers {
+            guard pending.walletId == snapshot.walletId,
+                  let match = matchingTransaction(for: pending, in: availableTransactions) else {
+                unresolved.append(pending)
+                continue
+            }
+
+            matchedTxHashes.append(match.txHashData)
+            availableTransactions.removeAll { $0.txHashData == match.txHashData }
+        }
+
+        return CoinbaseReceiveMatchResolution(
+            matchedTxHashes: matchedTxHashes,
+            unresolved: unresolved)
+    }
+
+    static func matchingTransaction(
+        for pending: CoinbasePendingReceiveTransfer,
+        in transactions: [CoinbaseWalletTransactionRecord]
+    ) -> CoinbaseWalletTransactionRecord? {
+        transactions
+            .filter { transaction in
+                transaction.direction == .received
+                    && transaction.timestamp >= pending.minimumTimestamp
+                    && transaction.outputReceiveAddresses.contains(pending.address)
+                    && transaction.dashAmount == pending.amount
+            }
+            .min { lhs, rhs in
+                if lhs.timestamp != rhs.timestamp {
+                    return lhs.timestamp < rhs.timestamp
+                }
+
+                return lhs.txHashHexString < rhs.txHashHexString
+            }
+    }
+}
+
 final class CoinbaseTransactionMetadataTagger {
     static let shared = CoinbaseTransactionMetadataTagger()
-
-    private struct PendingReceiveTransfer: Equatable {
-        let address: String
-        let amount: UInt64
-        let minimumTimestamp: TimeInterval
-    }
 
     private let metadataDao = TransactionMetadataDAOImpl.shared
     private let queue = DispatchQueue(label: "CoinbaseTransactionMetadataTagger.queue", qos: .utility)
     // A wallet receive can land before Coinbase's response completes; if createdAt is missing,
     // look back a bounded window so we do not permanently miss the matching transaction.
     private static let receiveLookbackWindow: TimeInterval = 15 * 60
-    private var pendingReceiveTransfers: [PendingReceiveTransfer] = []
+    private var pendingReceiveTransfers: [CoinbasePendingReceiveTransfer] = []
     private var cancellables = Set<AnyCancellable>()
 
     private init() {
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+        NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.resolvePendingReceiveTransfers()
             }
             .store(in: &cancellables)
 
-        NotificationCenter.default.publisher(for: .DSTransactionManagerTransactionStatusDidChange)
+        NotificationCenter.default.publisher(
+            for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.resolvePendingReceiveTransfers()
@@ -332,28 +456,45 @@ final class CoinbaseTransactionMetadataTagger {
             .store(in: &cancellables)
     }
 
-    func track(receivedTransfer transaction: CoinbaseTransaction) {
-        if let walletTxHash = walletTxHashData(from: transaction.network?.hash) {
+    func track(receivedTransfer transaction: CoinbaseTransaction, walletId: Data) {
+        if let walletTxHash = Self.walletTxHashData(from: transaction.network?.hash) {
             markCoinbaseTransaction(txHash: walletTxHash)
             return
         }
 
+        guard let pendingTransfer = Self.pendingReceiveTransfer(
+            from: transaction,
+            walletId: walletId) else {
+            return
+        }
+
+        queue.async { [weak self] in
+            guard let self else { return }
+            self.pendingReceiveTransfers.append(pendingTransfer)
+            self.resolvePendingReceiveTransfersOnQueue()
+        }
+    }
+
+    static func pendingReceiveTransfer(
+        from transaction: CoinbaseTransaction,
+        walletId: Data,
+        now: Date = Date()
+    ) -> CoinbasePendingReceiveTransfer? {
         guard let address = transaction.to?.address?.trimmingCharacters(in: .whitespacesAndNewlines),
               !address.isEmpty,
               let amount = coinbaseDashAmount(from: transaction.amount),
               amount > 0 else {
-            return
+            return nil
         }
 
         let minimumTimestamp = coinbaseTimestamp(from: transaction.createdAt)
-            ?? (Date().timeIntervalSince1970 - Self.receiveLookbackWindow)
+            ?? (now.timeIntervalSince1970 - Self.receiveLookbackWindow)
 
-        queue.async { [weak self] in
-            self?.pendingReceiveTransfers.append(
-                PendingReceiveTransfer(address: address, amount: amount, minimumTimestamp: minimumTimestamp)
-            )
-            self?.resolvePendingReceiveTransfers()
-        }
+        return CoinbasePendingReceiveTransfer(
+            walletId: walletId,
+            address: address,
+            amount: amount,
+            minimumTimestamp: minimumTimestamp)
     }
 
     // txidWire follows the `Transaction.txHashData` convention (wire-order txid),
@@ -365,51 +506,23 @@ final class CoinbaseTransactionMetadataTagger {
     private func resolvePendingReceiveTransfers() {
         queue.async { [weak self] in
             guard let self else { return }
-
-            var availableTransactions = DWEnvironment.sharedInstance().currentWallet.allTransactions
-            guard !availableTransactions.isEmpty, !self.pendingReceiveTransfers.isEmpty else {
-                return
-            }
-
-            var unresolved: [PendingReceiveTransfer] = []
-
-            for pending in self.pendingReceiveTransfers {
-                guard let match = self.matchingTransaction(
-                    for: pending,
-                    in: availableTransactions
-                ) else {
-                    unresolved.append(pending)
-                    continue
-                }
-
-                self.markCoinbaseTransaction(txHash: match.txHashData)
-                if let index = availableTransactions.firstIndex(where: { $0.txHashData == match.txHashData }) {
-                    availableTransactions.remove(at: index)
-                }
-            }
-
-            self.pendingReceiveTransfers = unresolved
+            self.resolvePendingReceiveTransfersOnQueue()
         }
     }
 
-    private func matchingTransaction(
-        for pending: PendingReceiveTransfer,
-        in transactions: [DSTransaction]
-    ) -> DSTransaction? {
-        let matches = transactions.filter { tx in
-            tx.direction == .received
-                && tx.timestamp >= pending.minimumTimestamp
-                && tx.outputReceiveAddresses.contains(pending.address)
-                && tx.dashAmount == pending.amount
+    private func resolvePendingReceiveTransfersOnQueue() {
+        guard !pendingReceiveTransfers.isEmpty,
+              let snapshot = CoinbaseWalletTransactionSnapshot.current() else {
+            return
         }
 
-        return matches.min(by: { lhs, rhs in
-            if lhs.timestamp != rhs.timestamp {
-                return lhs.timestamp < rhs.timestamp
-            }
-
-            return lhs.txHashHexString < rhs.txHashHexString
-        })
+        let resolution = CoinbaseTransactionMetadataResolver.resolve(
+            pendingTransfers: pendingReceiveTransfers,
+            against: snapshot)
+        for txHash in resolution.matchedTxHashes {
+            markCoinbaseTransaction(txHash: txHash)
+        }
+        pendingReceiveTransfers = resolution.unresolved
     }
 
     private func markCoinbaseTransaction(txHash: Data) {
@@ -418,7 +531,7 @@ final class CoinbaseTransactionMetadataTagger {
         metadataDao.update(dto: metadata)
     }
 
-    private func walletTxHashData(from hash: String?) -> Data? {
+    static func walletTxHashData(from hash: String?) -> Data? {
         guard let hash = hash?.trimmingCharacters(in: .whitespacesAndNewlines),
               !hash.isEmpty,
               let data = Data(hex: hash) else {
@@ -428,7 +541,7 @@ final class CoinbaseTransactionMetadataTagger {
         return Data(data.reversed())
     }
 
-    private func coinbaseDashAmount(from amount: Amount?) -> UInt64? {
+    private static func coinbaseDashAmount(from amount: Amount?) -> UInt64? {
         guard let amountString = amount?.amount,
               let decimal = Decimal(string: amountString, locale: Locale(identifier: "en_US_POSIX")) else {
             return nil
@@ -437,7 +550,7 @@ final class CoinbaseTransactionMetadataTagger {
         return decimal.plainDashAmount
     }
 
-    private func coinbaseTimestamp(from createdAt: String?) -> TimeInterval? {
+    private static func coinbaseTimestamp(from createdAt: String?) -> TimeInterval? {
         guard let createdAt = createdAt?.trimmingCharacters(in: .whitespacesAndNewlines),
               !createdAt.isEmpty else {
             return nil

@@ -134,7 +134,7 @@ extension TransactionMetadata {
     static var customIconId: SQLite.Expression<Data?> { Expression<Data?>("customIconId") }
 }
 
-extension DSTransactionDirection {
+extension TransactionDirection {
     /// Fallback tax category when the user hasn't classified the transaction.
     var defaultTaxCategory: TxMetadataTaxCategory {
         switch self {
@@ -145,8 +145,6 @@ extension DSTransactionDirection {
         case .received:
             return .transferIn
         case .notAccountFunds:
-            return .unknown
-        @unknown default:
             return .unknown
         }
     }

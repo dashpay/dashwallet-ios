@@ -17,9 +17,6 @@
 
 #import "DWRecoverModel.h"
 
-#import "DWAppGroupOptions.h"
-#import "DWEnvironment.h"
-#import "DWGlobalOptions.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -52,10 +49,7 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 // (SDK balance + sync-done gate; normalized-phrase comparison) — C6-D.
 
 - (void)wipeWallet {
-    [DWApp cleanUp]; // Send notificaiton
-    [[DWEnvironment sharedInstance] clearAllWallets];
-    [[DWGlobalOptions sharedInstance] restoreToDefaults];
-    [[DWAppGroupOptions sharedInstance] restoreToDefaults];
+    [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:YES];
 }
 
 - (NSString *)wipeAcceptPhrase {

@@ -132,7 +132,7 @@ final class FullCrowdNodeSignUpTxSet: GroupedTransactions, TransactionWrapper {
                 _amount -= Int64(dashAmount)
             case .received:
                 _amount += Int64(dashAmount)
-            default:
+            case .moved, .notAccountFunds:
                 break
             }
 

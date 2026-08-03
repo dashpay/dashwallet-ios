@@ -65,9 +65,7 @@ final class ConnectionsViewModel: ObservableObject {
         dataSource: (any DashConnectDataSource)? = nil,
         featureUnavailable: Bool? = nil
     ) {
-        let computedFeatureUnavailable = featureUnavailable ?? (
-            DWEnvironment.sharedInstance().currentChain.chainType.tag != ChainType_TestNet
-        )
+        let computedFeatureUnavailable = featureUnavailable ?? !WalletEnvironment.isTestnet
         self.featureUnavailable = computedFeatureUnavailable
         self.dataSource = dataSource ?? Self.defaultDataSource(featureUnavailable: computedFeatureUnavailable)
 
@@ -166,7 +164,7 @@ final class ConnectionsViewModel: ObservableObject {
         }
 
         assert(
-            DWEnvironment.sharedInstance().currentChain.chainType.tag == ChainType_TestNet,
+            WalletEnvironment.isTestnet,
             "DashConnect real data source must only run on testnet."
         )
         return PlatformDashConnectDataSource()

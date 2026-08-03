@@ -250,7 +250,7 @@ class GiftCardDetailsViewModel: ObservableObject {
         }
 
         do {
-            let base58TxId = ((txId as NSData).reverse() as NSData).base58String()
+            let base58TxId = ScriptAddressCodec.base58Encode(Data(txId.reversed()))
             let response: GiftCardResponse
 
             if let orderId = giftCard.note?.trimmingCharacters(in: .whitespacesAndNewlines),

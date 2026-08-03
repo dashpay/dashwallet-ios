@@ -18,6 +18,7 @@
 //
 
 import Foundation
+import SwiftDashSDK
 
 enum DashConnectQr: Equatable {
     case login(DashKeyRequest)
@@ -70,7 +71,7 @@ extension ConnectionRequest {
     /// Declaring an initializer inside the struct body would suppress the memberwise one,
     /// so this convenience lives in an extension.
     init(loginRequest: DashKeyRequest) {
-        let contractId = (loginRequest.contractId as NSData).base58String()
+        let contractId = loginRequest.contractId.toBase58String()
         let branding = DashConnectFallbackAppMetadata.resolve(
             contractId: contractId,
             unauthenticatedLabel: loginRequest.label
@@ -96,7 +97,7 @@ extension ConnectionRequest {
         self.init(
             appLabel: appLabel.trimmingCharacters(in: .whitespacesAndNewlines),
             appUrl: appUrl.trimmingCharacters(in: .whitespacesAndNewlines),
-            appContractId: (loginRequest.contractId as NSData).base58String(),
+            appContractId: loginRequest.contractId.toBase58String(),
             walletUsername: walletUsername,
             walletIdentityId: walletIdentityId,
             existingConnection: existingConnection

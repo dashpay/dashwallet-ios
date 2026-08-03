@@ -17,8 +17,6 @@
 
 #import "DWRootModel.h"
 
-#import "DWAppGroupOptions.h"
-#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWHomeModel.h"
 #import "dashwallet-Swift.h"
@@ -43,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(currentNetworkDidChangeNotification:)
-                                                     name:DWCurrentNetworkDidChangeNotification
+                                                     name:@"DWCurrentNetworkDidChangeNotification"
                                                    object:nil];
     }
     return self;
@@ -100,10 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)wipeWallet {
-    [[DWEnvironment sharedInstance] clearAllWallets];
-
-    [[DWGlobalOptions sharedInstance] restoreToDefaults];
-    [[DWAppGroupOptions sharedInstance] restoreToDefaults];
+    [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:YES];
 }
 
 #pragma mark - Notifications

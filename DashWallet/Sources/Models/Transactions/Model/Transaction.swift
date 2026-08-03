@@ -70,6 +70,11 @@ class Transaction: TransactionDataItem, Identifiable {
         let inputAddresses: [String]
         /// Raw number of inputs (UTXOs consumed) — NOT deduped by address.
         let inputCount: Int
+        /// Wallet-owned input/output totals used only to preserve the legacy
+        /// Apple Watch amount for an internal move. The phone transaction UI
+        /// intentionally keeps its existing net-change presentation.
+        let ownedInputAmount: UInt64
+        let ownedOutputAmount: UInt64
         /// External recipient addresses of a *sent* tx. Persisted rows can't
         /// recover these (persistence stores owned outputs only), so this is
         /// always empty for them; only synthetic snapshots populate it, from
@@ -79,7 +84,7 @@ class Transaction: TransactionDataItem, Identifiable {
         /// Must be called on the thread that owns `p`'s `ModelContext` (the
         /// fetch thread) — reads `p`'s relationships (`outputs`/`inputs`),
         /// which are bound to that context.
-        init(_ p: PersistentTransaction) {
+        init(_ p: PersistentTransaction, walletId: Data? = nil) {
             txid = p.txid
             direction = p.direction
             netAmount = p.netAmount
@@ -90,6 +95,14 @@ class Transaction: TransactionDataItem, Identifiable {
             outputAddresses = Array(Set(p.outputs.map { $0.address }.filter { !$0.isEmpty }))
             inputAddresses = Array(Set(p.inputs.map { $0.address }.filter { !$0.isEmpty }))
             inputCount = p.inputs.count
+            let ownedInputs = walletId.map { id in
+                p.inputs.filter { $0.walletId == id }
+            } ?? p.inputs
+            let ownedOutputs = walletId.map { id in
+                p.outputs.filter { $0.walletId == id }
+            } ?? p.outputs
+            ownedInputAmount = Self.totalAmount(ownedInputs)
+            ownedOutputAmount = Self.totalAmount(ownedOutputs)
             externalSentAddresses = []
         }
 
@@ -111,7 +124,16 @@ class Transaction: TransactionDataItem, Identifiable {
             outputAddresses = []
             inputAddresses = []
             inputCount = 0
+            ownedInputAmount = 0
+            ownedOutputAmount = 0
             self.externalSentAddresses = externalSentAddresses
+        }
+
+        private static func totalAmount(_ txos: [PersistentTxo]) -> UInt64 {
+            txos.reduce(0) { total, txo in
+                let (sum, overflow) = total.addingReportingOverflow(txo.amount)
+                return overflow ? UInt64.max : sum
+            }
         }
     }
 
@@ -183,13 +205,13 @@ class Transaction: TransactionDataItem, Identifiable {
         return name
     }
 
-    var direction: DSTransactionDirection {
+    var direction: TransactionDirection {
         if let payment = dashPayPayment {
             return payment.isOutgoing ? .sent : .received
         }
         return _direction
     }
-    private lazy var _direction: DSTransactionDirection = {
+    private lazy var _direction: TransactionDirection = {
         // FFI direction encoding: 0=incoming, 1=outgoing, 2=internal,
         // 3=coinjoin. Promote outgoing→moved when the wallet's net
         // change equals just the fee (self-send) — mirrors DashSync's
@@ -383,8 +405,6 @@ class Transaction: TransactionDataItem, Identifiable {
             return 0
         case .notAccountFunds:
             return 0
-        @unknown default:
-            return UInt64(abs(snapshot.netAmount))
         }
     }()
 
@@ -407,6 +427,27 @@ class Transaction: TransactionDataItem, Identifiable {
         }
 
         return direction == .sent ? -Int64(dashAmount) : Int64(dashAmount)
+    }
+
+    /// Legacy Watch payload semantics for internal moves: DashSync displayed
+    /// the account-owned amount sent, while the phone's net-change model
+    /// deliberately renders a plain move as zero. Prefer the wallet-scoped
+    /// input total; if the input relationship has not reconciled yet, owned
+    /// outputs plus fee reconstruct the same self-send gross amount.
+    var appleWatchSignedAmount: Int64 {
+        guard direction == .moved, dashAmount == 0 else {
+            return signedDashAmount
+        }
+
+        let movedAmount: UInt64
+        if snapshot.ownedInputAmount > 0 {
+            movedAmount = snapshot.ownedInputAmount
+        } else {
+            let (fallback, overflow) = snapshot.ownedOutputAmount
+                .addingReportingOverflow(snapshot.fee ?? 0)
+            movedAmount = overflow ? UInt64.max : fallback
+        }
+        return Int64(clamping: movedAmount)
     }
 
     var fiatAmount: String {
@@ -550,8 +591,6 @@ class Transaction: TransactionDataItem, Identifiable {
                 return NSLocalizedString("Received", comment: "")
             case .moved:
                 return NSLocalizedString("Internal Transfer", comment:"Transaction within the wallet, transfer of own funds");
-            default:
-                fatalError()
             }
         case .reward:
             return NSLocalizedString("Mining Reward", comment: "Transaction type: coinbase/masternode mining reward")
@@ -566,11 +605,11 @@ class Transaction: TransactionDataItem, Identifiable {
         }
     }
 
-    init(persistentTransaction p: PersistentTransaction) {
+    init(persistentTransaction p: PersistentTransaction, walletId: Data? = nil) {
         // Freeze every UI-read field now, on the thread where `p`'s model
         // context is alive. After this the wrapper never dereferences `p`
         // again, so it stays valid after a ModelContext reset (see SDKSnapshot).
-        self.snapshot = SDKSnapshot(p)
+        self.snapshot = SDKSnapshot(p, walletId: walletId)
         // PersistentTransaction.blockTimestamp is 0 until mined; firstSeen
         // is set when the tx is first observed (mempool entry). Use it as
         // the mempool fallback so the home screen doesn't group these

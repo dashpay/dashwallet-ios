@@ -370,8 +370,6 @@ extension TXDetailViewController {
             }
         case .notAccountFunds:
             break
-        default:
-            break;
         }
 
         currentSnapshot.appendItems([.date(date)], toSection: .info)

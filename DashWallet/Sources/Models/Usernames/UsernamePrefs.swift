@@ -23,6 +23,17 @@ private let kRequestedUsernameId = "requestedUsernameIdKey"
 private let kAlreadyPaid = "alreadyPaidForUsernameKey"
 private let kJoinDashPayDismissed = "joinDashPayDismissed"
 
+/// Keeps the Upgrade-to-DashPay banner dismissal attached to the wallet and
+/// network where the user made that choice. A global flag leaks between
+/// Mainnet and Testnet; an in-memory scalar also serves stale state after a
+/// network round-trip.
+enum JoinDashPayDismissalScope {
+    static func storageKey(networkRawValue: Int, walletIdHex: String?) -> String {
+        let walletScope = walletIdHex.flatMap { $0.isEmpty ? nil : $0 } ?? "unbound"
+        return "\(kJoinDashPayDismissed).v2.\(networkRawValue).\(walletScope)"
+    }
+}
+
 // MARK: - UsernamePrefs
 
 class UsernamePrefs {
@@ -64,12 +75,16 @@ class UsernamePrefs {
         }
     }
     
-    private var _joinDashPayDismissed: Bool? = nil
     var joinDashPayDismissed: Bool {
-        get { _joinDashPayDismissed ?? UserDefaults.standard.bool(forKey: kJoinDashPayDismissed) }
+        get { UserDefaults.standard.bool(forKey: joinDashPayDismissedKey) }
         set(value) {
-            _joinDashPayDismissed = value
-            UserDefaults.standard.set(value, forKey: kJoinDashPayDismissed)
+            UserDefaults.standard.set(value, forKey: joinDashPayDismissedKey)
         }
+    }
+
+    private var joinDashPayDismissedKey: String {
+        JoinDashPayDismissalScope.storageKey(
+            networkRawValue: WalletEnvironment.networkKind.rawValue,
+            walletIdHex: WalletEnvironment.activeWalletIdHex as String?)
     }
 }

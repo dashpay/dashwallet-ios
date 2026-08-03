@@ -34,45 +34,6 @@ extension SendAmountFlowSupporting {
 
         return true
     }
-
-    func checkLeftoverBalance(isCrowdNodeTransfer: Bool = false, completion: @escaping (Bool) -> Void) {
-        if CrowdNodeDefaults.shared.lastKnownBalance <= 0 && !isCrowdNodeTransfer {
-            completion(true)
-            return
-        }
-
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = account.maxOutputAmount
-
-        if sendAmountSupportModel.amount.plainAmount + CrowdNode.minimumLeftoverBalance > allAvailableFunds {
-            let title = NSLocalizedString("Looks like you are emptying your Dash Wallet", comment: "Leftover balance warning")
-            let message = String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "Please note, you will not be able to withdraw your funds from CrowdNode to this wallet until you increase your balance to %@ Dash.",
-                    comment: "Leftover balance warning"
-                ),
-                CrowdNode.minimumLeftoverBalance.formattedDashAmountWithoutCurrencySymbol
-            )
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            alert.addAction(
-                UIAlertAction(
-                    title: NSLocalizedString("Continue", comment: "Leftover balance warning"),
-                    style: .default,
-                    handler: { _ in completion(true) }
-                )
-            )
-            alert.addAction(
-                UIAlertAction(
-                    title: NSLocalizedString("Cancel", comment: "Leftover balance warning"),
-                    style: .cancel,
-                    handler: { _ in completion(false) }
-                )
-            )
-            present(alert, animated: true)
-        } else {
-            completion(true)
-        }
-    }
 }
 
 // MARK: - SendAmountViewController
