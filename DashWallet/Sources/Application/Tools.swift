@@ -23,11 +23,24 @@ private var _cachedFormatters: [String: NumberFormatter] = [:]
 private var _decimalFormatter: NumberFormatter!
 private var _fiatFormatter: NumberFormatter!
 private var _dashFormatter: NumberFormatter = {
-    let maximumFractionDigits = 5
+    // Dash is divisible to 8 decimal places (1 duff = 1e-8 DASH). Anything
+    // narrower silently truncates: a scanned `dash:…?amount=0.23243214`
+    // rendered as "0.23243", dropping 214 duffs. `cryptoFormatter` leaves
+    // `minimumFractionDigits` at 0, so whole amounts still render as "1"
+    // rather than "1.00000000".
+    //
+    // The paste path already clamps Dash input to 8
+    // (`BaseAmountModel.updateFromPasteboard`) and
+    // `DashAmountFormatterTests.testGeneralDashFormatterSupportsEightFractionDigits…`
+    // already asserts 8 here, so 5 was an oversight rather than a display cap.
+    let maximumFractionDigits = 8
 
     var dashFormat = NumberFormatter.cryptoFormatter(currencyCode: kDashCurrency, exponent: maximumFractionDigits)
     dashFormat.locale = Locale.current
-    dashFormat.maximum = (Decimal(kMaxDashSupplyDuffs)/pow(10, maximumFractionDigits)) as NSNumber
+    // Max supply expressed in DASH. Derived from the duffs-per-Dash constant
+    // rather than the display precision above — the two only happened to agree
+    // once the precision reached 8, and at 5 this evaluated to 21,000,000,000.
+    dashFormat.maximum = NSDecimalNumber(value: kMaxDashSupplyDuffs / kOneDash)
 
     return dashFormat
 }()

@@ -780,6 +780,31 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(BIP70URI("dash:X?amount=1e2")?.amount, 10_000_000_000)
     }
 
+    /// BUG-25: a scanned `dash:<address>&amount=…` (no `?`) used to put the whole
+    /// tail into the address, so the request was rejected instead of paying.
+    func testURIAcceptsAmpersandAsQuerySeparator() {
+        let uri = BIP70URI("dash:ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr&amount=0.23243214")
+
+        XCTAssertEqual(uri?.address, "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr")
+        XCTAssertEqual(uri?.amount, 23_243_214)
+    }
+
+    /// The `&` form must still parse every following pair, exactly like `?`.
+    func testURIAmpersandSeparatorParsesRemainingPairs() {
+        let uri = BIP70URI("dash:Xabc&amount=1.5&label=Coffee&sender=ctx")
+
+        XCTAssertEqual(uri?.address, "Xabc")
+        XCTAssertEqual(uri?.amount, 150_000_000)
+        XCTAssertEqual(uri?.label, "Coffee")
+        XCTAssertEqual(uri?.callbackScheme, "ctx")
+    }
+
+    /// BUG-25/BUG-26: a full-precision amount must survive the URI parse. The
+    /// display side is covered by `DashAmountFormatterTests`.
+    func testURIKeepsAllEightDecimals() {
+        XCTAssertEqual(BIP70URI("dash:X?amount=0.23243214")?.amount, 23_243_214)
+    }
+
     // MARK: - L5 URI — paymentString init (bare address / BIP73)
 
     func testPaymentStringBareAddress() {
