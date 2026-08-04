@@ -242,6 +242,8 @@ final class SwiftDashSDKContactsService: ObservableObject {
         Self.logger.info("👥 CONTACTS :: snapshot rebuilt — \(established.count, privacy: .public) established, \(incoming.count, privacy: .public) incoming, \(outgoing.count, privacy: .public) outgoing")
         NotificationCenter.default.post(name: Self.contactsDidChangeNotification, object: nil)
 
+        backfillMissingUsernames(established + incoming + outgoing)
+
         // Keep the payment-history rows flowing without any screen
         // open: the projection is app-pulled (see
         // refreshPaymentsProjection), so ride the snapshot refresh at
@@ -642,10 +644,49 @@ final class SwiftDashSDKContactsService: ObservableObject {
         return result
     }
 
-    /// Reverse DPNS lookup (identity → label) for incoming-request
-    /// senders, where we only learn the identity ID from the synced
-    /// row. On success the label is cached in the hint store, so the
-    /// next `refresh()` renders it without another network hop.
+    /// Contacts whose reverse lookup is already running, so a `refresh()`
+    /// triggered by one completing does not restart the others.
+    private var usernameBackfillInFlight: Set<Data> = []
+
+    /// Resolve the DPNS label for every contact that has none yet.
+    ///
+    /// `username` is otherwise only populated at add time (from the username
+    /// search) or by the list view's `.onAppear` on the incoming and outgoing
+    /// sections. Established contacts had neither: `ContactsScreen`'s "My
+    /// Contacts" section never called `resolveUsernameIfNeeded`, and a restored
+    /// wallet has no add-time hint because the add happened on the previous
+    /// install. `ContactItem.displayTitle` then fell through to its last
+    /// resort and rendered the contact as `89fd6ddb…` permanently (BUG-27).
+    ///
+    /// Doing it here rather than in the view fixes every surface at once — the
+    /// list, the profile sheet opened straight from a payment, and the
+    /// notifications screen — and does not depend on which row happened to
+    /// scroll into view.
+    ///
+    /// Cost is bounded: `resolveUsername` returns the cached hint without a
+    /// network call once resolved, so this is one lookup per contact per
+    /// install, and contacts that already have a name are skipped entirely.
+    private func backfillMissingUsernames(_ items: [ContactItem]) {
+        let targets = items
+            .filter { $0.username == nil }
+            .map(\.contactIdentityId)
+            .filter { !usernameBackfillInFlight.contains($0) }
+        guard !targets.isEmpty else { return }
+
+        usernameBackfillInFlight.formUnion(targets)
+        Task { @MainActor [weak self] in
+            defer { self?.usernameBackfillInFlight.subtract(targets) }
+            for contactId in targets {
+                _ = await self?.resolveUsername(for: contactId)
+            }
+        }
+    }
+
+    /// Reverse DPNS lookup (identity → label) for any contact we know only by
+    /// identity id — incoming-request senders, and established contacts whose
+    /// add-time hint is gone (a restored wallet). On success the label is
+    /// cached in the hint store, so the next `refresh()` renders it without
+    /// another network hop.
     func resolveUsername(for contactId: Data) async -> String? {
         if let cached = usernameHint(for: contactId) {
             return cached
