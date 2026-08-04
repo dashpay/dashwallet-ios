@@ -788,17 +788,32 @@ final class SwapKitSwapProvider: SwapProvider {
         return code
     }
 
-    /// NEAR-preferred routing: NEAR-intents deposits are memo-less, so they keep the simpler
-    /// on-chain shape and today's fee/latency profile. MAYACHAIN is requested only for assets
-    /// NEAR cannot route at all — those deposits carry an OP_RETURN memo.
-    /// Both Maya providers are offered so routing is not narrowed to streaming-only.
+    /// Best-route selection across the two protocols the classification covers: whatever a
+    /// coin is actually routable by is offered, and SwapKit picks. A dual-routable coin is
+    /// therefore quoted against NEAR *and* MAYACHAIN, which is what the picker's "Multiple
+    /// networks" label promises.
+    ///
+    /// The list is always explicit — never `nil` — so routing stays confined to NEAR and
+    /// MAYACHAIN. Passing no filter would also admit THORChain, Chainflip and every other
+    /// SwapKit provider, none of which this classification or the deposit path accounts for.
+    ///
+    /// Both Maya providers are named because MAYACHAIN and MAYACHAIN_STREAMING are distinct
+    /// providers with different token lists.
+    ///
+    /// Consequence to keep in mind: a MAYACHAIN route can now win for a coin that previously
+    /// always deposited memo-less, so the 80-byte memo ceiling and Maya's dust floor apply to
+    /// dual-routable coins too. Both guards already run on the fresh pre-commit quote.
     private func sellQuoteProviders(for toAsset: String) -> [String]? {
         guard classificationUsable else {
             return [SwapKitConstants.providerNear]
         }
 
-        if mayaOnlyAssets.contains(toAsset.uppercased()) {
+        let key = toAsset.uppercased()
+        if mayaOnlyAssets.contains(key) {
             return SwapKitConstants.mayaProviders
+        }
+        if bothAssets.contains(key) {
+            return [SwapKitConstants.providerNear] + SwapKitConstants.mayaProviders
         }
 
         return [SwapKitConstants.providerNear]
