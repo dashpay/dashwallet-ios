@@ -59,17 +59,15 @@ final class NetworkReachability: NSObject {
         hasReceivedFirstPath = false
         lock.unlock()
 
-        // Block until the first path update lands so callers observe real
-        // state the moment this method returns — matches `SCNetworkReachability`'s
-        // synchronous contract that `DSReachabilityManager` relied on.
-        let firstUpdate = DispatchSemaphore(value: 0)
         m.pathUpdateHandler = { [weak self] path in
-            if self?.handlePathUpdate(path) == true {
-                firstUpdate.signal()
-            }
+            self?.handlePathUpdate(path)
         }
         m.start(queue: queue)
-        _ = firstUpdate.wait(timeout: .now() + .milliseconds(200))
+
+        // Callers read `isReachable` the moment this returns, so the state is
+        // seeded from the path the monitor already holds instead of parking the
+        // caller until the utility-QoS queue delivers its first callback.
+        handlePathUpdate(m.currentPath)
     }
 
     @objc func stopMonitoring() {
@@ -80,16 +78,15 @@ final class NetworkReachability: NSObject {
         m?.cancel()
     }
 
-    /// Returns `true` on the first path update after `startMonitoring()`.
-    @discardableResult
-    private func handlePathUpdate(_ path: NWPath) -> Bool {
+    /// Updates the shared reachability snapshot from the latest path and marks
+    /// whether the monitor has observed at least one path since it started.
+    private func handlePathUpdate(_ path: NWPath) {
         let reachable = path.status == .satisfied
         let wifi = reachable && path.usesInterfaceType(.wifi)
 
         lock.lock()
         _isReachable = reachable
         _isReachableViaWiFi = wifi
-        let wasFirst = !hasReceivedFirstPath
         hasReceivedFirstPath = true
         lock.unlock()
 
@@ -99,6 +96,5 @@ final class NetworkReachability: NSObject {
                 object: self
             )
         }
-        return wasFirst
     }
 }
