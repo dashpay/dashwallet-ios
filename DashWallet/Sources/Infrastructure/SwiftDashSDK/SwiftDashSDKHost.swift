@@ -158,6 +158,51 @@ final class SwiftDashSDKHost {
         network == .mainnet ? 200_000 : 0
     }
 
+    // MARK: - Platform protocol version
+
+    /// The `DashSDKConfig.platform_version` to build the SDK with, per network.
+    ///
+    /// **Testnet stays pinned to 13.** Testnet Drive moved past v12 to v13,
+    /// whose validation set changed the shielded identity-create exit
+    /// denominations (v12/V8 `[0.1, 0.3, 0.5, 1.0]` → v13/V9 `[0.03, 0.1,
+    /// 0.25, 0.5, 1.0]`). Staying at v12 made the client build shielded
+    /// transitions against the old set, so a contested (0.25 DASH) shielded
+    /// username create failed client-side ("denomination 25000000000 is not a
+    /// member …") even though the server requires exactly 0.25. Pinning
+    /// explicitly also avoids a race where the shielded build runs before the
+    /// SDK has ratcheted to the network version. Bump this when the agreed
+    /// testnet protocol moves past v13.
+    ///
+    /// **Mainnet uses `0` — auto-detect.** The pin above was chosen for
+    /// testnet but applied to every network, which put the client two versions
+    /// ahead of mainnet. Platform v13 (`DRIVE_VERSION_V8`) switches the
+    /// compacted address-balance proof to the two-proof
+    /// `CompactedAddressBalanceProof` bincode envelope, while "nodes and
+    /// clients on v12 and below keep the legacy single GroveDB proof"
+    /// (rs-platform-version `version/v13.rs`). A v13 client therefore decodes
+    /// mainnet's legacy proof as the envelope, consumes the structure and
+    /// trips on the remainder:
+    ///
+    ///     proof: corrupted error: compacted address balance proof contains trailing bytes
+    ///
+    /// — observed 20× across three nodes on a mainnet device (2026-07-31),
+    /// with testnet clean, and it retries then gives up, so the Platform
+    /// address balance never populates there.
+    ///
+    /// `0` is what the SDK is designed for: it seeds at the per-network
+    /// `min_protocol_version` floor (mainnet 11, testnet 12) with auto-detect
+    /// on, ratcheting up as the network reports newer versions — "so this
+    /// picks the right wire without a Swift-side network→version map"
+    /// (`SDK.init(network:platformVersion:)`). A hard pin also disables
+    /// `refreshProtocolVersion()`, which is documented as a no-op while
+    /// pinned, so the client could never learn the network's real version.
+    ///
+    /// Devnet/regtest follow mainnet's auto-detect: no shielded-denomination
+    /// contract is pinned for them, and `makeRuntime` rejects regtest anyway.
+    static func platformVersion(for network: Network) -> UInt32 {
+        network == .testnet ? 13 : 0
+    }
+
     // MARK: - Wallet presence
 
     /// True when at least one SDK wallet mnemonic is persisted in
@@ -550,25 +595,10 @@ final class SwiftDashSDKHost {
 
         let newSDK: SDK
         do {
-            // Pin Platform protocol version 13. Testnet Drive has moved past
-            // v12 to v13, whose validation set changed the shielded
-            // identity-create exit denominations (v12/V8 `[0.1, 0.3, 0.5,
-            // 1.0]` → v13/V9 `[0.03, 0.1, 0.25, 0.5, 1.0]`). Staying pinned at
-            // v12 made the client build shielded transitions against the old
-            // set, so a contested (0.25 DASH) shielded username create failed
-            // client-side ("denomination 25000000000 is not a member …") even
-            // though the server (v13) requires exactly 0.25. v13 is a superset
-            // of v12's shielded fee logic, so the reason v11→v12 was pinned
-            // (correct `ShieldFromAssetLock` / `Shield` fees) still holds.
-            // Pinning explicitly rather than the auto-detect default
-            // (`platformVersion: 0`, floor + ratchet) avoids a race where the
-            // shielded build runs before the SDK has ratcheted to the network
-            // version. The knob is `DashSDKConfig.platform_version`
-            // (dashpay/platform #3751); bump this when the agreed protocol
-            // moves past v13.
-            let pinnedPlatformVersion: UInt32 = 13
-            newSDK = try SDK(network: network, platformVersion: pinnedPlatformVersion)
-            Self.logger.info("🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public), pinned protocol v\(pinnedPlatformVersion, privacy: .public)")
+            let platformVersion = Self.platformVersion(for: network)
+            newSDK = try SDK(network: network, platformVersion: platformVersion)
+            Self.logger.info(
+                "🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public), protocol \(platformVersion == 0 ? "auto-detect" : "pinned v\(platformVersion)", privacy: .public)")
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
