@@ -183,7 +183,7 @@ extension CrowdNodePortalController {
 
         viewModel.$error
             .receive(on: DispatchQueue.main)
-            .filter { error in error != nil }
+            .compactMap { $0 }
             .sink(receiveValue: { [weak self] error in
                 if error is CrowdNode.Error {
                     self?.viewModel.clearError()
