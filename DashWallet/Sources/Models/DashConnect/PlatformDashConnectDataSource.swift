@@ -556,6 +556,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         persistAndSend(subject.value.filter { $0.id != id })
     }
 
+    func disconnect(id: String) async {
+        let disconnectedAt = now()
+        // Local-only: keep the published `loginKeyResponse` document intact.
+        // Re-approving the same `dash-key:` QR is enough to return to `.active`
+        // once the identity keys are still registered.
+        persistAndSend(subject.value.map { connection in
+            guard connection.id == id else { return connection }
+            return DAppConnection(
+                id: connection.id,
+                name: connection.name,
+                url: connection.url,
+                status: .approved,
+                updatedAt: disconnectedAt
+            )
+        })
+    }
+
     static func buildLoginKeyResponseDraft(
         loginKey: Data,
         appContractId: Data,

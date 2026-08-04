@@ -27,6 +27,7 @@ protocol DashConnectDataSource {
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest
     func approveLogin(_ request: DashKeyRequest) async throws -> DAppConnection
     func completeKeyRegistration(_ request: DashStRequest) async throws
+    func disconnect(id: String) async
     func remove(id: String) async
 }
 
@@ -193,6 +194,20 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     func completeKeyRegistration(_ request: DashStRequest) async throws {
         try await Task.sleep(nanoseconds: 400_000_000)
         throw DashConnectMockError.keyRegistrationNotSupported
+    }
+
+    func disconnect(id: String) async {
+        let disconnectedAt = Date()
+        persistAndSend(subject.value.map { connection in
+            guard connection.id == id else { return connection }
+            return DAppConnection(
+                id: connection.id,
+                name: connection.name,
+                url: connection.url,
+                status: .approved,
+                updatedAt: disconnectedAt
+            )
+        })
     }
 
     func remove(id: String) async {

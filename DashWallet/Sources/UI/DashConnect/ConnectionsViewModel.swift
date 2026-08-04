@@ -51,7 +51,6 @@ final class ConnectionsViewModel: ObservableObject {
     @Published var isApproving = false
     @Published var isProcessingKeyRegistration = false
     @Published var message: ConnectionsScreenMessage?
-    @Published var pendingRemoval: DAppConnection?
     /// Failure of the last approve attempt, rendered **inside** the approve sheet.
     /// A screen-level `.alert` cannot appear over a presented sheet, so routing this
     /// through `message` would leave the user with no feedback at all.
@@ -142,16 +141,13 @@ final class ConnectionsViewModel: ObservableObject {
         approveError = nil
     }
 
-    func requestRemoval(_ connection: DAppConnection) {
-        pendingRemoval = connection
-    }
-
-    func cancelPendingRemoval() {
-        pendingRemoval = nil
+    func disconnect(_ connection: DAppConnection) {
+        Task {
+            await dataSource.disconnect(id: connection.id)
+        }
     }
 
     func removeConnection(_ connection: DAppConnection) {
-        pendingRemoval = nil
         Task {
             await dataSource.remove(id: connection.id)
         }

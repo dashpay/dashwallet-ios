@@ -165,6 +165,27 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(second.connectionsSnapshot, [])
     }
 
+    func testDisconnectPersistsApprovedStatusAcrossFreshMockInstances() async throws {
+        let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
+        let first = MockDashConnectDataSource(
+            initial: [
+                sampleConnection(
+                    id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
+                    status: .active,
+                    updatedAt: Date(timeIntervalSince1970: 10)
+                )
+            ],
+            store: store
+        )
+
+        await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
+
+        let second = MockDashConnectDataSource(store: store)
+        XCTAssertEqual(second.connectionsSnapshot.count, 1)
+        XCTAssertEqual(second.connectionsSnapshot.first?.id, "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
+        XCTAssertEqual(second.connectionsSnapshot.first?.status, .approved)
+    }
+
     private func makeStore(network: DashConnectNetwork, walletIdHex: String?) -> UserDefaultsDashConnectStore {
         UserDefaultsDashConnectStore(
             defaults: defaults,

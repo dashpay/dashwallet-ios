@@ -30,7 +30,7 @@ struct ConnectionRow: View {
     let connection: DAppConnection
     let onPrimaryAction: () -> Void
     let onMockScan: () -> Void
-    let onRemove: () -> Void
+    let onDisconnect: () -> Void
 
     private enum Layout {
         /// `SwitchView` is a fixed 64×28 from the design system and sets that
@@ -45,11 +45,11 @@ struct ConnectionRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 20) {
+            HStack(spacing: 12) {
                 identity
 
                 ConnectionStatusBadge(status: connection.status, updatedAt: connection.updatedAt)
-                    .frame(maxWidth: .infinity, alignment: .topTrailing)
+                    .fixedSize(horizontal: true, vertical: false)
 
                 if connection.status == .active {
                     activeSwitch
@@ -70,31 +70,34 @@ struct ConnectionRow: View {
             Text(connection.name)
                 .dashFont(.subhead)
                 .foregroundStyle(Color.dash.primaryText)
+                .lineLimit(1)
 
             if !connection.url.isEmpty {
                 Text(connection.url)
                     .dashFont(.footnote)
                     .foregroundStyle(Color.dash.tertiaryText)
+                    .lineLimit(1)
             }
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
     /// Always reads as on: the row only shows it for an active connection, and
-    /// only the off direction is reachable from here. Turning it off removes
-    /// this wallet's record of the connection; it does not sign the user out
-    /// of the app, because the wallet has no channel to end that session.
+    /// only the off direction is reachable from here. Turning it off locally
+    /// downgrades the connection back to `.approved`; it does not sign the user
+    /// out of the app, because the wallet has no channel to end that session.
     private var activeSwitch: some View {
-        SwitchView(isOn: Binding(
-            get: { true },
-            set: { isOn in
-                if !isOn {
-                    onRemove()
-                }
-            }
-        ))
-        .scaleEffect(Layout.switchScale)
+        ZStack {
+            SwitchView(isOn: .constant(true))
+                .allowsHitTesting(false)
+                .scaleEffect(Layout.switchScale)
+        }
         .frame(width: Layout.switchWidth, height: Layout.switchHeight)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onDisconnect)
+        .accessibilityElement()
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel(Text(NSLocalizedString("Disconnect", comment: "DashConnect")))
     }
 }
 
@@ -104,14 +107,14 @@ struct ConnectionRow: View {
             ConnectionRow(
                 connection: DAppConnection(
                     id: status.rawValue,
-                    name: "Example App",
+                    name: "A Very Long Application Name Indeed",
                     url: "https://example.org",
                     status: status,
-                    updatedAt: Date()
+                    updatedAt: Date(timeIntervalSince1970: 1_754_232_520)
                 ),
                 onPrimaryAction: {},
                 onMockScan: {},
-                onRemove: {}
+                onDisconnect: {}
             )
         }
     }

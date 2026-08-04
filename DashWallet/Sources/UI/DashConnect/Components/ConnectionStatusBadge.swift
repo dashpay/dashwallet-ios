@@ -43,11 +43,13 @@ struct ConnectionStatusBadge: View {
                 Text(title)
                     .dashFont(.footnote)
                     .foregroundColor(Color.dash.primaryText)
+                    .lineLimit(1)
             }
 
             Text(Self.dateFormatter.string(from: updatedAt))
                 .dashFont(.footnote)
                 .foregroundColor(Color.dash.tertiaryText)
+                .lineLimit(1)
         }
     }
 
@@ -70,7 +72,10 @@ struct ConnectionStatusBadge: View {
 #Preview {
     VStack(alignment: .trailing, spacing: 16) {
         ForEach(ConnectionStatus.allCases, id: \.self) { status in
-            ConnectionStatusBadge(status: status, updatedAt: Date())
+            ConnectionStatusBadge(
+                status: status,
+                updatedAt: Date(timeIntervalSince1970: 1_754_232_520)
+            )
         }
     }
     .padding()

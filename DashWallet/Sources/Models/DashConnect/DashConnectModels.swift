@@ -26,6 +26,13 @@ enum DashConnectQr: Equatable {
 }
 
 /// Lifecycle of an app connection.
+///
+/// `approved` means the wallet knows about the app, but it may not be ready to
+/// sign in yet: either the required login keys are not on the identity yet, or
+/// the user locally turned the connection off from the wallet UI.
+///
+/// `active` means the app's login keys are registered on the identity and the
+/// wallet has already published the matching `loginKeyResponse`.
 enum ConnectionStatus: String, Codable, CaseIterable {
     case approved
     case active

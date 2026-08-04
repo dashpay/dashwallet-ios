@@ -49,9 +49,6 @@ struct ConnectionsScreen: View {
                     .padding(.bottom, 20)
 
                 content
-                    .alert(item: pendingRemovalBinding) { connection in
-                        removalAlert(for: connection)
-                    }
             }
 
             if viewModel.isProcessingKeyRegistration {
@@ -97,7 +94,7 @@ struct ConnectionsScreen: View {
                 connections: viewModel.connections,
                 onScanQR: showScanner,
                 onMockScan: mockScan,
-                onRemove: viewModel.requestRemoval
+                onDisconnect: viewModel.disconnect
             )
             .padding(.horizontal, 20)
         }
@@ -134,13 +131,6 @@ struct ConnectionsScreen: View {
         )
     }
 
-    private var pendingRemovalBinding: Binding<DAppConnection?> {
-        Binding(
-            get: { viewModel.pendingRemoval },
-            set: { viewModel.pendingRemoval = $0 }
-        )
-    }
-
     // MARK: - Actions
 
     private func showScanner() {
@@ -160,32 +150,6 @@ struct ConnectionsScreen: View {
 
     private func mockScan() {
         viewModel.onQRScanned(MockDashConnectDataSource.sampleLoginQRCode)
-    }
-
-    private func removalAlert(for connection: DAppConnection) -> Alert {
-        Alert(
-            title: Text(
-                String(
-                    format: NSLocalizedString("Disconnect %@?", comment: "DashConnect"),
-                    connection.name
-                )
-            ),
-            message: Text(
-                String(
-                    format: NSLocalizedString(
-                        "This removes the connection from this wallet. %@ may stay signed in until you sign out there.",
-                        comment: "DashConnect"
-                    ),
-                    connection.name
-                )
-            ),
-            primaryButton: .destructive(Text(NSLocalizedString("Disconnect", comment: "DashConnect"))) {
-                viewModel.removeConnection(connection)
-            },
-            secondaryButton: .cancel {
-                viewModel.cancelPendingRemoval()
-            }
-        )
     }
 }
 
