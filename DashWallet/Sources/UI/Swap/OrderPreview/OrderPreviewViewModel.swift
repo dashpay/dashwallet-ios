@@ -79,6 +79,17 @@ enum SwapStatus: Equatable {
 
 @MainActor
 final class OrderPreviewViewModel: ObservableObject {
+    /// Deliberately NOT named `MayaConstants`: this type is used unqualified elsewhere in the
+    /// file (`MayaConstants.mayaScanTransactionURL`), and a nested enum of that name shadows
+    /// the global one.
+    private enum MayaDepositRules {
+        /// OP_RETURN standardness limit; a longer memo cannot be encoded on-chain.
+        static let maxMemoBytes = 80
+        /// Maya ignores deposits below its dust threshold.
+        /// https://docs.mayaprotocol.com/mayachain-dev-docs/concepts/sending-transactions
+        static let minimumDepositDuffs: Int64 = 10_000
+    }
+
     private enum Constants {
         static let submitCountdownSeconds = 10
         static let minimumTolerance = Decimal(string: "0.00000001")!
@@ -454,18 +465,31 @@ final class OrderPreviewViewModel: ObservableObject {
             throw swapFieldError(NSLocalizedString("Deposit address is missing. Please refresh and try again.", comment: "Dash DEX"))
         }
 
-        // Safety net: the deposit is a plain send with NO OP_RETURN (SwiftDashSDK can't build
-        // one). A memo-bearing quote (e.g. a MAYACHAIN route) would need that memo encoded
-        // on-chain — sending memo-less would silently orphan the funds at the vault. Refuse it
-        // here, provider-agnostically, so no swap can ever be submitted without its required memo.
-        if let memo = quote.memo, !memo.isEmpty {
-            throw swapFieldError(NSLocalizedString("This coin isn’t available for swapping right now.", comment: "Dash DEX"))
+        let trimmedMemo = quote.memo?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolvedMemo = (trimmedMemo?.isEmpty == false) ? trimmedMemo : nil
+
+        // Fund-loss safety net. A memo-bearing quote (a MAYACHAIN route) must reach the chain
+        // with its memo in an OP_RETURN — a memo-less send would orphan the funds at the vault.
+        // Over the 80-byte standardness limit the memo cannot be encoded at all, so refuse the
+        // swap rather than broadcast one the network would treat as a plain send.
+        if let resolvedMemo, resolvedMemo.utf8.count > MayaDepositRules.maxMemoBytes {
+            throw swapFieldError(SwapKitErrorCopy.mayaMemoTooLongErrorCode)
+        }
+
+        // Maya's dust floor applies to memo-bearing deposits. Keyed on the memo alone: every
+        // MAYACHAIN route carries one, and `executionNetwork` is a display label from
+        // `prettifyProviders` — matching text in it would tie a money rule to UI copy.
+        if resolvedMemo != nil, dashSatoshis < MayaDepositRules.minimumDepositDuffs {
+            let minimum = Decimal(MayaDepositRules.minimumDepositDuffs) / Decimal(kOneDash)
+            let format = NSLocalizedString("The minimum DASH deposit for this swap is %@.", comment: "Dash DEX")
+            throw swapFieldError(String(format: format, minimum.formattedDashAmount))
         }
 
         let resolvedExecutionNetwork = quote.executionNetwork?
             .trimmingCharacters(in: .whitespacesAndNewlines)
         return SwapExecutionData(
             vaultAddress: vaultAddress,
+            memo: resolvedMemo,
             executionNetwork: {
                 if let resolvedExecutionNetwork, !resolvedExecutionNetwork.isEmpty {
                     return resolvedExecutionNetwork
@@ -475,12 +499,17 @@ final class OrderPreviewViewModel: ObservableObject {
         )
     }
 
-    /// Broadcasts the DASH deposit and returns its wire-order txid. DashDEX routes are memo-less
-    /// (NEAR intents), so this is a plain send built by SwiftDashSDK — no OP_RETURN output.
+    /// Broadcasts the DASH deposit and returns its wire-order txid.
+    ///
+    /// `dashSatoshis` is deposited as-is. SwapKit's `sellAmount` **is** the deposit amount and
+    /// its `expectedBuyAmount` is already net of fees, so nothing is added on top. (Android's
+    /// direct-Maya path adds the outbound fee to the vault output because MayaNode's
+    /// `/quote/swap?amount=` means the swap amount, not the deposit — a different contract.)
     private func submitDashTransaction(using execution: SwapExecutionData) async throws -> Data {
         try await sendCoinsService.sendSwapKitSwap(
             depositAddress: execution.vaultAddress,
-            dashAmount: UInt64(dashSatoshis)
+            dashAmount: UInt64(dashSatoshis),
+            memo: execution.memo
         )
     }
 

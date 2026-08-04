@@ -313,6 +313,26 @@ final class WalletSendService: NSObject {
         return preparedSend.txidWire
     }
 
+    /// - Returns: the wire-order txid of the broadcast transaction
+    ///   (`Transaction.txHashData` convention).
+    func sendSwapDeposit(vaultAddress: String, amount: UInt64, memo: String) async throws -> Data {
+        try Self.ensureChainSynced()
+        try Self.ensureOnline()
+        try await sendAuthorizer.authorizeSend(spendAmount: amount)
+
+        do {
+            let preparedSend = try buildPreparedSwapDeposit(
+                vaultAddress: vaultAddress,
+                amount: amount,
+                memo: memo
+            )
+            try preparedSend.broadcast()
+            return preparedSend.txidWire
+        } catch SwiftDashSDKTransactionSender.SendError.invalidSwapMemo(let reason) {
+            throw Self.makeError(code: .invalidSwapMemo, description: reason)
+        }
+    }
+
     /// Sweep the entire CoinJoin-account balance into the user's own BIP44
     /// spendable balance. The shared flow behind both post-migration sweep
     /// surfaces (the Home popup and the Settings row): authorize
@@ -505,6 +525,23 @@ final class WalletSendService: NSObject {
             coreTransaction: tx
         )
     }
+
+    private func buildPreparedSwapDeposit(vaultAddress: String, amount: UInt64, memo: String) throws -> PreparedStandardSend {
+        let (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSignSwapDeposit(
+            vaultAddress: vaultAddress,
+            amountDuffs: amount,
+            memo: memo
+        )
+
+        return PreparedStandardSend(
+            txData: tx.data,
+            txHash: txHash,
+            fee: tx.fee,
+            address: vaultAddress,
+            amount: amount,
+            coreTransaction: tx
+        )
+    }
 }
 
 /// Timeout-guarded wrapper over `DSAuthenticationManager.authenticate(...)`. The bare
@@ -603,6 +640,7 @@ private extension WalletSendService {
         case offline = 8
         case broadcastRejected = 9
         case broadcastUnknown = 10
+        case invalidSwapMemo = 11
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"

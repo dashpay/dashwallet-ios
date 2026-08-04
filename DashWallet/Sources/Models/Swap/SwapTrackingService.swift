@@ -33,9 +33,9 @@ class SwapTrackingServiceObjcWrapper: NSObject {
 /// Mirrors Android's `SwapTrackingService.kt`:
 /// - `start()` at app launch resumes all non-terminal orders.
 /// - Polls `/track` every 30 s for active orders.
-/// - NEAR fallback by `depositAddress` when hash lookup errors.
+/// - Tracks NEAR-routed sells by `depositAddress` and Maya-routed sells by tx hash.
 /// - Material-change-only writes (unconditional writes turn the ticker into a tight loop).
-/// - Ages out an order still unresolved after 24 h → `.failed`.
+/// - Ages out an order still unresolved after 24 h → `.expired`.
 final class SwapTrackingService {
     static let shared = SwapTrackingService()
 

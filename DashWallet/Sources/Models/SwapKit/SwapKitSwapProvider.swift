@@ -32,6 +32,10 @@ import Foundation
 /// etc.) are accessed from a single isolation domain, eliminating concurrent read/write races.
 @MainActor
 final class SwapKitSwapProvider: SwapProvider {
+    private enum Constants {
+        static let maxMemoBytes = 80
+    }
+
     nonisolated var displayName: String { "SwapKit" }
     nonisolated var usesGenericFeeLabel: Bool { true }
     nonisolated var buildsSwapKitDeposit: Bool { true }
@@ -140,16 +144,8 @@ final class SwapKitSwapProvider: SwapProvider {
     /// Sell is always unaffected — all pools are returned regardless of classification state.
     private func filteredPools(_ pools: [SwapPool], for direction: SwapDirection) async throws -> [SwapPool] {
         guard direction == .buy else {
-            // Sell: hide coins that can ONLY route via MAYACHAIN. Those routes require an
-            // OP_RETURN memo on the DASH deposit, which SwiftDashSDK cannot build. Coins also
-            // routable via NEAR (nearOnly or both) stay — the Sell quote forces NEAR intents,
-            // so they deposit memo-less. If classification is unusable (network error)
-            // mayaOnlyAssets is empty and nothing is hidden; a mayaOnly coin tapped in that
-            // state simply returns "no route" from the NEAR-forced quote, so no OP_RETURN swap
-            // can be built.
             if !classificationBuilt { await buildClassification() }
-            guard classificationUsable, !mayaOnlyAssets.isEmpty else { return pools }
-            return pools.filter { !mayaOnlyAssets.contains($0.asset.uppercased()) }
+            return pools
         }
 
         if !classificationUsable {
@@ -417,13 +413,10 @@ final class SwapKitSwapProvider: SwapProvider {
             return errorResult(NSLocalizedString("No vault address returned by SwapKit", comment: "SwapKit"))
         }
 
-        // Defense-in-depth: NEAR-forced routing must never carry a memo. If a memo does come
-        // back, the deposit would need an OP_RETURN output that SwiftDashSDK cannot build, so
-        // fail loudly here instead of silently building an invalid (memo-less) deposit that the
-        // network would treat as a plain send and never credit the swap.
-        if let memo = swapResponse.memo, !memo.isEmpty {
-            DWLogger.log("SwapKit: rejecting memo-bearing route for \(toAsset) — OP_RETURN unsupported")
-            return errorResult(NSLocalizedString("This coin isn’t available for swapping right now.", comment: "SwapKit"))
+        let memo = swapResponse.memo?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let memo, !memo.isEmpty, memo.utf8.count > Constants.maxMemoBytes {
+            DWLogger.log("SwapKit: rejecting over-length memo for \(toAsset) — \(memo.utf8.count) bytes")
+            return errorResult(SwapKitErrorCopy.mayaMemoTooLongErrorCode)
         }
 
         // Step 4: map to neutral result.
@@ -442,8 +435,7 @@ final class SwapKitSwapProvider: SwapProvider {
             expectedAmountOut: expectedOut,
             fees: SwapFeeResult(total: feeBaseUnits, outbound: feeBaseUnits),
             inboundAddress: vaultAddress,
-            // Always nil after the NEAR-forced routing + guard above; the deposit is a plain send.
-            memo: nil,
+            memo: memo?.isEmpty == false ? memo : nil,
             executionNetwork: executionNetwork
         )
     }
@@ -481,11 +473,17 @@ final class SwapKitSwapProvider: SwapProvider {
     private func buildClassification() async {
         classificationBuilt = true
         do {
-            async let mayaRequest = SwapKitAPIService.shared.tokens(provider: SwapKitConstants.providerMaya)
+            // Union both Maya providers: their token lists differ, and an asset routable only
+            // via non-streaming MAYACHAIN would otherwise be classified as un-routable and
+            // quoted against NEAR, which cannot route it either.
+            async let mayaChainRequest = SwapKitAPIService.shared.tokens(provider: SwapKitConstants.providerMayaChain)
+            async let mayaStreamingRequest = SwapKitAPIService.shared.tokens(provider: SwapKitConstants.providerMayaStreaming)
             async let nearRequest = SwapKitAPIService.shared.tokens(provider: SwapKitConstants.providerNear)
-            let (mayaTokens, nearTokens) = (try await mayaRequest, try await nearRequest)
+            let (mayaChainTokens, mayaStreamingTokens, nearTokens) =
+                (try await mayaChainRequest, try await mayaStreamingRequest, try await nearRequest)
 
-            let mayaIds = Set(mayaTokens.map { $0.identifier.uppercased() })
+            let mayaIds = Set(mayaChainTokens.map { $0.identifier.uppercased() })
+                .union(mayaStreamingTokens.map { $0.identifier.uppercased() })
             let nearIds = Set(nearTokens.map { $0.identifier.uppercased() })
 
             let newMayaOnly = mayaIds.subtracting(nearIds)
@@ -511,7 +509,7 @@ final class SwapKitSwapProvider: SwapProvider {
 
             // Build identifier → logoURI lookup. Maya takes priority; NEAR fills gaps.
             var logos: [String: String] = [:]
-            for token in mayaTokens {
+            for token in mayaChainTokens + mayaStreamingTokens {
                 if let uri = token.logoURI { logos[token.identifier.uppercased()] = uri }
             }
             for token in nearTokens {
@@ -551,6 +549,8 @@ final class SwapKitSwapProvider: SwapProvider {
     }
 
     private func fetchQuoteResponse(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapKitQuoteResponse {
+        if !classificationBuilt { await buildClassification() }
+
         let sellAmount = baseUnitsToHuman(dashSatoshis)
         let quoteRequest = SwapKitQuoteRequest(
             sellAsset: SwapKitConstants.dashAsset,
@@ -559,12 +559,7 @@ final class SwapKitSwapProvider: SwapProvider {
             slippage: SwapKitConstants.defaultSlippagePercent,
             sourceAddress: nil,
             destinationAddress: destination,
-            // Force NEAR-intents routing: those routes deposit to a unique address with NO
-            // memo, so the DASH tx is a plain send that SwiftDashSDK can build. MAYACHAIN
-            // routes would return an OP_RETURN memo the SDK cannot express, so we never ask
-            // for them here (mayaOnly coins are hidden from the picker; both-routable coins
-            // stay memoless via NEAR). Mirrors requestBuyRoute, which already forces NEAR.
-            providers: [SwapKitConstants.providerNear],
+            providers: sellQuoteProviders(for: toAsset),
             affiliateFee: nil
         )
 
@@ -597,6 +592,8 @@ final class SwapKitSwapProvider: SwapProvider {
             slippage: SwapKitConstants.defaultSlippagePercent,
             sourceAddress: refundAddress,
             destinationAddress: destination,
+            // Buy deposits are built by the counterparty, so OP_RETURN support in the app does
+            // not change Buy routing; keep the existing NEAR-only request shape.
             providers: [SwapKitConstants.providerNear],
             affiliateFee: nil
         )
@@ -709,6 +706,7 @@ final class SwapKitSwapProvider: SwapProvider {
             slippage: SwapKitConstants.defaultSlippagePercent,
             sourceAddress: nil,
             destinationAddress: nil,
+            // Buy routability is still about counterparty-built deposits, so keep probing NEAR.
             providers: [SwapKitConstants.providerNear],
             affiliateFee: nil
         )
@@ -788,6 +786,22 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         return code
+    }
+
+    /// NEAR-preferred routing: NEAR-intents deposits are memo-less, so they keep the simpler
+    /// on-chain shape and today's fee/latency profile. MAYACHAIN is requested only for assets
+    /// NEAR cannot route at all — those deposits carry an OP_RETURN memo.
+    /// Both Maya providers are offered so routing is not narrowed to streaming-only.
+    private func sellQuoteProviders(for toAsset: String) -> [String]? {
+        guard classificationUsable else {
+            return [SwapKitConstants.providerNear]
+        }
+
+        if mayaOnlyAssets.contains(toAsset.uppercased()) {
+            return SwapKitConstants.mayaProviders
+        }
+
+        return [SwapKitConstants.providerNear]
     }
 
     // MARK: - Private: Amount Conversion
