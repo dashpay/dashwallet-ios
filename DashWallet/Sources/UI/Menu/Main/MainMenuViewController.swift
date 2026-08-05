@@ -423,14 +423,11 @@ struct MainMenuScreen: View {
     }
     
     private func handleJoinButtonAction() {
-        let shouldShowDashPayInfo = !UsernamePrefs.shared.joinDashPayInfoShown
-
-        if shouldShowDashPayInfo {
-            UsernamePrefs.shared.joinDashPayInfoShown = true
-            showDashPayInfo = true
-        } else {
-            joinDashPay()
-        }
+        // Always open the info dialog — same reason as HomeView: it is the
+        // only surface carrying "Have an invitation?", and the one-shot latch
+        // hid the redeem path for good from anyone who had already tapped
+        // Upgrade before their invitation arrived.
+        showDashPayInfo = true
     }
     #endif
     

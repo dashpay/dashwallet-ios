@@ -174,6 +174,7 @@ final class DWAvatarUploadClient: NSObject {
         let task = DWAvatarUploadTask()
 
         guard DWAvatarUploadConfiguration.isConfigured else {
+            DWLogger.log("AvatarUpload: no Imgur CLIENT_ID in this build — upload refused up front")
             finish(
                 task: task,
                 link: nil,
@@ -275,6 +276,12 @@ final class DWAvatarUploadClient: NSObject {
                         guard let json = object as? [String: Any],
                               (json["success"] as? NSNumber)?.boolValue == true
                         else {
+                            // The status code and Imgur's own error string are the
+                            // only way to tell a bad Client-ID from a rate limit or
+                            // a rejected image, and neither reaches the UI.
+                            DWLogger.log(
+                                "AvatarUpload: Imgur rejected the upload — status \(response.statusCode), "
+                                    + "body \(String(data: response.data, encoding: .utf8) ?? "<non-utf8>")")
                             throw Self.error("Imgur rejected the avatar upload")
                         }
                         let data = json["data"] as? [String: Any]
@@ -293,6 +300,7 @@ final class DWAvatarUploadClient: NSObject {
                             completion: completion)
                     }
                 case .failure(let error):
+                    DWLogger.log("AvatarUpload: transport failure — \(error.localizedDescription)")
                     self.finish(
                         task: task,
                         link: nil,
