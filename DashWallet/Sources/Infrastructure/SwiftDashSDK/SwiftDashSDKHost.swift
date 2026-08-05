@@ -743,9 +743,20 @@ final class SwiftDashSDKHost {
             // Bounded: a queue that survives its drains is a failure to report,
             // not something to retry forever.
             var attemptsLeft = 5
+            var drained = false
             for await statuses in manager.$dashPayUnlockStatus.values {
                 if Task.isCancelled || self == nil { return }
                 guard let status = statuses[walletId] else { continue }
+                if status.pendingAccountBuilds == 0, !status.draining {
+                    guard drained else { continue }
+                    // The contact accounts exist now. Sweep immediately rather
+                    // than waiting out the DashPay sync interval — that wait is
+                    // most of why a restored wallet showed an empty contact
+                    // card on first open and its history only on a later one.
+                    DWLogger.log("DashPay unlock: wallet=\(idTag) drain complete; syncing now")
+                    await SwiftDashSDKContactsService.shared.syncNow()
+                    return
+                }
                 guard status.pendingAccountBuilds > 0, !status.draining else { continue }
                 guard attemptsLeft > 0 else {
                     DWLogger.log(
@@ -759,6 +770,7 @@ final class SwiftDashSDKHost {
                     let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
                     DWLogger.log(
                         "DashPay unlock: wallet=\(idTag) draining \(status.pendingAccountBuilds) deferred build(s); unlocked=\(unlocked) tookMs=\(ms)")
+                    drained = true
                 } catch {
                     DWLogger.log(
                         "DashPay unlock: wallet=\(idTag) re-unlock failed: \(String(describing: error))")
