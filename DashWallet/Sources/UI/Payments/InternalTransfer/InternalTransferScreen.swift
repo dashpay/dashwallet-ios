@@ -189,17 +189,11 @@ struct InternalTransferScreen: View {
     private func networkDisplay(_ network: ChainNetwork) -> (icon: String, title: String, balance: String) {
         switch network {
         case .core:
-            return ("d.circle.fill",
-                    NSLocalizedString("Transparent", comment: "Balance breakdown"),
-                    viewModel.coreBalanceFormatted)
+            return ("d.circle.fill", network.balanceName, viewModel.coreBalanceFormatted)
         case .platform:
-            return ("creditcard.fill",
-                    NSLocalizedString("Platform", comment: "Dash Platform chain"),
-                    viewModel.platformCreditsFormatted)
+            return ("creditcard.fill", network.balanceName, viewModel.platformCreditsFormatted)
         case .shielded:
-            return ("shield.fill",
-                    NSLocalizedString("Shielded", comment: ""),
-                    viewModel.shieldedBalanceFormatted)
+            return ("shield.fill", network.balanceName, viewModel.shieldedBalanceFormatted)
         }
     }
 

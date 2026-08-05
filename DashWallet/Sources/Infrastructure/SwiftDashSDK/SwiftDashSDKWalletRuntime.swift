@@ -432,6 +432,14 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             queue: nil
         ) { _ in
             Task { @MainActor in
+                // The home screen's funds are three published mirrors: the core
+                // balance plus BLAST's Platform and Shielded totals. `refresh`
+                // clears all three, but only once the serial lifecycle queue
+                // reaches `fullReset` — behind the seed-migrator wait and the
+                // BLAST/SPV stops. Silence and zero them here so the previously
+                // selected network's balances never render as the new one's.
+                SwiftDashSDKSPVCoordinator.shared.prepareForNetworkSwitch()
+                PlatformAddressSyncCoordinator.shared.prepareForNetworkSwitch()
                 Self.shared.enqueueRefresh(trigger: .networkDidChange)
             }
         }

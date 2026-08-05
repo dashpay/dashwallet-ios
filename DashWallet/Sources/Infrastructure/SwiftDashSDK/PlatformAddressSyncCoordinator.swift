@@ -650,6 +650,39 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
     }
 
+    /// Cancel every subscription/task that writes the published mirrors. Pure
+    /// Swift-side teardown (no FFI call), so it is safe to run ahead of the
+    /// serialized stop — `performStop` and `prepareForNetworkSwitch` share it
+    /// rather than keeping two lists of cancellables in step by hand.
+    private func detachSyncSubscriptions() {
+        syncEventCancellable?.cancel()
+        syncEventCancellable = nil
+        syncStateCancellable?.cancel()
+        syncStateCancellable = nil
+        shieldedEventCancellable?.cancel()
+        shieldedEventCancellable = nil
+        shieldedForegroundCancellable?.cancel()
+        shieldedForegroundCancellable = nil
+        shieldedFreshnessTask?.cancel()
+        shieldedFreshnessTask = nil
+        shieldedRefreshGeneration &+= 1
+        shieldedRefreshTask?.cancel()
+        shieldedRefreshTask = nil
+        lastFullShieldedSyncAt = nil
+    }
+
+    /// Drop the outgoing network's Platform and Shielded balances the moment a
+    /// network switch is requested, ahead of the runtime's serialized stop.
+    ///
+    /// `performStop` only runs once the lifecycle queue reaches it, and BLAST /
+    /// shielded events from the previous network keep repainting the mirrors
+    /// until then — so the home screen would otherwise show the old network's
+    /// funds for the whole transition.
+    public func prepareForNetworkSwitch() {
+        detachSyncSubscriptions()
+        clearDisplay()
+    }
+
     /// Clear the UI counters/display without tearing down the sync loop.
     public func clearDisplay() {
         shieldedReconciliationTask?.cancel()
@@ -847,20 +880,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             deletePersistedWalletIfAny()
         }
 
-        syncEventCancellable?.cancel()
-        syncEventCancellable = nil
-        syncStateCancellable?.cancel()
-        syncStateCancellable = nil
-        shieldedEventCancellable?.cancel()
-        shieldedEventCancellable = nil
-        shieldedForegroundCancellable?.cancel()
-        shieldedForegroundCancellable = nil
-        shieldedFreshnessTask?.cancel()
-        shieldedFreshnessTask = nil
-        shieldedRefreshGeneration &+= 1
-        shieldedRefreshTask?.cancel()
-        shieldedRefreshTask = nil
-        lastFullShieldedSyncAt = nil
+        detachSyncSubscriptions()
 
         if let manager = walletManager {
             do {

@@ -425,7 +425,7 @@ final class SendViewModel: ObservableObject {
 
     private func creditsMinusFeeReserve(_ balanceCredits: UInt64) -> UInt64 {
         guard let fee = feeReserveCredits else { return 0 }
-        return ShieldedSpendAmountPolicy.spendableCredits(
+        return TransferSpendAmountPolicy.spendableCredits(
             balanceCredits: balanceCredits,
             feeReserveCredits: fee)
     }
@@ -484,38 +484,96 @@ final class SendViewModel: ObservableObject {
         if let shieldedMaxNotice { return shieldedMaxNotice }
         guard dashDuffsUnsigned > 0, let route else { return nil }
 
-        switch route {
-        case .coreToShielded:
+        // Route minimum first: below the Type-18 pool fee the SDK refuses the
+        // asset lock however much Core balance backs it.
+        if route == .coreToShielded {
             guard let minimumDuffs = coreToShieldedMinimumAmountDuffs else {
-                return NSLocalizedString(
-                    "There was an error, please try again later",
-                    comment: "External shielded send fee estimate unavailable")
+                return Self.feeEstimateUnavailableMessage
             }
-            guard dashDuffsUnsigned < minimumDuffs else { return nil }
+            if dashDuffsUnsigned < minimumDuffs {
+                let formattedMinimum =
+                    "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "The minimum amount you can send is %@",
+                        comment: "External shielded send minimum amount"),
+                    formattedMinimum)
+            }
+        }
 
-            let formattedMinimum =
-                "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "The minimum amount you can send is %@",
-                    comment: "External shielded send minimum amount"),
-                formattedMinimum)
+        return insufficientBalanceMessage
+    }
+
+    /// "You don't have that much" for the ACTIVE route, named after the balance
+    /// it spends. Mirrors `canContinue`'s envelope route by route so a Continue
+    /// button disabled on affordability is never left unexplained.
+    private var insufficientBalanceMessage: String? {
+        guard let route else { return nil }
+        let balanceName = source.balanceName
+
+        switch route {
+        case .coreToCore, .coreToShielded:
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: balanceName,
+                requestedDuffs: dashDuffsUnsigned,
+                spendableDuffs: coreBalanceDuffs)
+
+        case .platformToPlatform:
+            guard let reserve = feeReserveCredits else {
+                return Self.feeEstimateUnavailableMessage
+            }
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: balanceName,
+                requestedCredits: creditsPreview,
+                balanceCredits: platformCredits,
+                feeReserveCredits: reserve)
 
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
+            // A Max sweep is planned against the real note set rather than the
+            // amount+reserve envelope, so it is affordable by construction.
+            if isFullShieldedSweep { return nil }
             guard let reserve = feeReserveCredits else {
-                return NSLocalizedString(
-                    "There was an error, please try again later",
-                    comment: "External Shielded send fee estimate unavailable")
+                return Self.feeEstimateUnavailableMessage
             }
-            return ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: balanceName,
                 requestedCredits: creditsPreview,
                 balanceCredits: shieldedBalance,
                 feeReserveCredits: reserve)
 
-        default:
-            return nil
+        case .platformToCore:
+            // Stay quiet while the preflight is still resolving: Continue is
+            // disabled, but the amount is not yet known to be unaffordable.
+            guard let preflight = withdrawalPreflight else { return nil }
+            guard preflight.canWithdraw else {
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Your %@ balance is too low to cover the withdrawal fee.",
+                        comment: "Platform withdrawal cannot fund its own fee"),
+                    balanceName)
+            }
+            if isFullPlatformWithdrawal { return nil }
+            guard creditsPreview > partialWithdrawCapCredits else { return nil }
+
+            let formattedCap =
+                "\((partialWithdrawCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH"
+            if let fullDuffs = platformWithdrawableDuffs, dashDuffsUnsigned <= fullDuffs {
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance.",
+                        comment: "Platform partial withdrawal cap"),
+                    formattedCap)
+            }
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: balanceName,
+                requestedDuffs: dashDuffsUnsigned,
+                spendableDuffs: platformWithdrawableDuffs ?? partialWithdrawCapCredits / 1000)
         }
     }
+
+    private static let feeEstimateUnavailableMessage = NSLocalizedString(
+        "There was an error, please try again later",
+        comment: "External send fee estimate unavailable")
 
     /// Gate for advancing from the address step to the amount step: the
     /// entered address decodes to a known destination and — on the balance-row

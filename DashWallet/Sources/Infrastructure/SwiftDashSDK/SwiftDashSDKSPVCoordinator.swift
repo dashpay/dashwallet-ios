@@ -304,14 +304,35 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         return .success(())
     }
 
+    /// Detach every publisher that feeds published state, without touching the
+    /// FFI. Shared by `performStop` and `prepareForNetworkSwitch` so the
+    /// pre-switch silencing can never drift from the real teardown.
     @MainActor
-    private func performStop(lastError: String?, clearBalance: Bool) throws {
+    private func detachManagerSubscriptions() {
         progressCancellable?.cancel()
         progressCancellable = nil
         peersCancellable?.cancel()
         peersCancellable = nil
         balanceRefreshCancellable?.cancel()
         balanceRefreshCancellable = nil
+    }
+
+    /// Drop the outgoing network's balance the moment a network switch is
+    /// requested, ahead of the runtime's serialized stop.
+    ///
+    /// `performStop` only runs once the lifecycle queue reaches it (after the
+    /// seed-migrator wait and the BLAST teardown), and until then the 1 Hz
+    /// progress tick keeps re-publishing the previous network's balance — which
+    /// the home screen renders as the newly selected network's funds.
+    @MainActor
+    func prepareForNetworkSwitch() {
+        detachManagerSubscriptions()
+        SwiftDashSDKWalletState.shared.clearAllState()
+    }
+
+    @MainActor
+    private func performStop(lastError: String?, clearBalance: Bool) throws {
+        detachManagerSubscriptions()
 
         if let manager = SwiftDashSDKHost.shared.manager {
             do {
