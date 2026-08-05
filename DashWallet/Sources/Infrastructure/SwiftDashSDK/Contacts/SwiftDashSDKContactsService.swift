@@ -536,17 +536,43 @@ final class SwiftDashSDKContactsService: ObservableObject {
         let descriptor = FetchDescriptor<PersistentDashpayPayment>(
             predicate: PersistentDashpayPayment.predicate(
                 ownerIdentityId: ownerId,
-                counterpartyIdentityId: contactId),
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
+                counterpartyIdentityId: contactId))
         let rows = (try? modelContainer.mainContext.fetch(descriptor)) ?? []
+
+        // When the payment happened, from the transaction itself.
+        //
+        // `PersistentDashpayPayment.createdAt` is row bookkeeping — its own
+        // model says "not payment dates" — and it only looked like the payment
+        // date because a live send writes the row as it happens. A payment
+        // reconstructed after a restore is written today, so every recovered
+        // row rendered with today's date while the tx-detail screen, which
+        // reads the transaction, showed the real one.
+        var blockTimeByTxid: [Data: UInt32] = [:]
+        if let transactions = try? modelContainer.mainContext.fetch(
+            FetchDescriptor<PersistentTransaction>()) {
+            for tx in transactions where tx.blockTimestamp > 0 {
+                blockTimeByTxid[tx.txid] = tx.blockTimestamp
+            }
+        }
+
         return rows.map { row in
             let dash = Decimal(row.amountDuffs) / Decimal(100_000_000)
+            // `PersistentDashpayPayment.txid` is display-order hex; the
+            // transaction table is keyed by the wire-order bytes.
+            let wireTxid = Data(hex: row.txid).map { Data($0.reversed()) }
+            // Unconfirmed (or not-yet-synced) transactions have no block time;
+            // the row's own timestamp is the best available answer there, and
+            // for a live send it is the right one.
+            let date = wireTxid
+                .flatMap { blockTimeByTxid[$0] }
+                .map { Date(timeIntervalSince1970: TimeInterval($0)) }
+                ?? row.createdAt
             return ContactPayment(
                 txid: row.txid,
                 amountDuffs: row.amountDuffs,
                 direction: row.direction,
                 memo: row.memo,
-                date: row.createdAt,
+                date: date,
                 // Current-rate conversion (parity with the legacy
                 // profile, which showed the live fiat equivalent, not a
                 // historical one). Returns a "Fetching rates…" string
@@ -555,6 +581,10 @@ final class SwiftDashSDKContactsService: ObservableObject {
                     ? CurrencyExchanger.shared.fiatAmountString(for: dash)
                     : nil)
         }
+        // Sort on the payment date, not the row's insert order: reconstructed
+        // rows are all written within the same second, so insert order says
+        // nothing about which payment came first.
+        .sorted { $0.date > $1.date }
     }
 
     /// Write the owner-private contact metadata (alias / note / hidden)
