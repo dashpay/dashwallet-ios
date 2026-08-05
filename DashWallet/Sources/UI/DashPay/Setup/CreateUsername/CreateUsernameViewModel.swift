@@ -382,6 +382,20 @@ class CreateUsernameViewModel: ObservableObject {
         let hasEnoughBalance = recoveryFunded || voucherFunded || hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
 
+        // The cost rule is an OR across four funding sources, so a green rule
+        // on a wallet the user knows is short reads as a bug with no way to
+        // tell WHICH source claimed it can pay. Record the verdicts and the
+        // numbers behind them — this lands in the exported diagnostic log.
+        if hasEnoughBalance {
+            DWLogger.log(
+                "CreateUsername: cost rule satisfied for '\(username)' "
+                    + "(contested=\(isContested), required=\(requiredCost) duffs) — "
+                    + "core=\(hasEnoughCore) [spendable \(coreBalance) duffs], "
+                    + "platform=\(hasEnoughPlatform), "
+                    + "shielded=\(hasReadyShieldedFunding), "
+                    + "recovery=\(recoveryFunded), voucher=\(voucherFunded)")
+        }
+
         uiState = CreateUsernameUIState(
             lengthRule: lengthValid ? .valid : .invalid,
             allowedCharactersRule: hasIllegalCharacters || startsOrEndsWithHyphen ? .invalid : .valid,
