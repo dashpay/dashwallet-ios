@@ -640,6 +640,14 @@ struct CreateUsernameView: View {
         case .valid:
             return NSLocalizedString("Username available", comment: "Usernames")
         case .invalidCritical:
+            // A locked contest is not "taken" — nobody owns the name, and
+            // nobody can. Saying "taken" would send the user off to wait for
+            // it to free up, which never happens.
+            if viewModel.isLockedContestedName {
+                return NSLocalizedString(
+                    "Username locked by masternode vote — it cannot be registered",
+                    comment: "Usernames")
+            }
             return NSLocalizedString("Username taken", comment: "Usernames")
         case .error:
             return NSLocalizedString("Validating username failed", comment: "Usernames")

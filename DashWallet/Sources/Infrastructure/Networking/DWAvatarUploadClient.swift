@@ -19,10 +19,14 @@ import UIKit
 /// request up front instead of letting Imgur reject an invalid Client-ID and
 /// presenting it to the user as a retryable network error.
 enum DWAvatarUploadConfiguration {
+    /// Only the Client-ID is read. Imgur's anonymous upload endpoint
+    /// authenticates with `Authorization: Client-ID <id>`; the client SECRET
+    /// belongs to the OAuth flows we do not use, and must never be put on a
+    /// request from the app.
     static let clientID: String = {
         guard let path = Bundle.main.path(forResource: "Imgur-Info", ofType: "plist"),
               let dict = NSDictionary(contentsOfFile: path) as? [String: AnyObject],
-              let clientID = dict["CLIENT_ID"] as? String
+              let clientID = dict["IMGUR_CLIENT_ID"] as? String
         else { return "" }
         return clientID
     }()
