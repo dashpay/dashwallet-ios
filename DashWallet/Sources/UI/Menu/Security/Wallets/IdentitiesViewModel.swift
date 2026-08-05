@@ -61,6 +61,10 @@ struct IdentityRowModel: Identifiable {
     /// Kept separate from `dpnsNames` so every identities surface can
     /// render it explicitly as voting rather than as a confirmed name.
     let pendingContestedName: String?
+    /// Best-known close time of that contest — the submission-time estimate
+    /// until Platform's `ContestVoteState.endTime` replaces it. nil only when
+    /// there is no pending submission for this identity.
+    let pendingVotingEndTime: Date?
     /// True when this identity is the wallet's resolved MAIN identity —
     /// the one `DWCurrentUserIdentityInfo` reads, i.e. the owner of
     /// DashPay mode (username, avatar, contacts). Resolution = stored
@@ -272,6 +276,9 @@ final class IdentitiesViewModel: ObservableObject {
             publicKeyCount: identity.publicKeys.count,
             dpnsNames: ownedNames,
             pendingContestedName: pendingBelongsToIdentity ? pendingLabel : nil,
+            pendingVotingEndTime: pendingBelongsToIdentity
+                ? DWContestedNameStatusService.shared.pendingVotingEndTime
+                : nil,
             isMainIdentity: mainIdentityId != nil && identity.identityId == mainIdentityId)
     }
 

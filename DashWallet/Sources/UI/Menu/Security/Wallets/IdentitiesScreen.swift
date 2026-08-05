@@ -580,6 +580,17 @@ struct IdentityDetailScreen: View {
                     icon: "clock",
                     color: .orange)
             }
+            // A "Voting" badge with no end time leaves the user with nothing
+            // to act on. The deadline is known from submission onward — an
+            // estimate first, Platform's own `endTime` once it indexes the
+            // contest — so show it here too.
+            if let endTime = row.pendingVotingEndTime {
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString("Voting ends around %@", comment: "Usernames"),
+                    DWDateFormatter.sharedInstance.dateAndTime(from: endTime)))
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
