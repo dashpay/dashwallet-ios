@@ -358,7 +358,12 @@ class CreateUsernameViewModel: ObservableObject {
         // pool) all pass. The picker in `CreateUsernameView` lets the
         // user choose among the viable sources; the form is unblocked
         // as soon as any one is.
-        let coreBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
+        // Fee-aware spendable, NOT the displayed total: the funding transaction
+        // is an ordinary L1 spend, so it can only draw on confirmed UTXOs and
+        // still needs room for the miner fee. Gating on the total let a wallet
+        // whose coins were unconfirmed (or whose whole balance was the exact
+        // cost) reach Continue on a registration the SDK must then reject.
+        let coreBalance = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
         let hasEnoughCore = coreBalance >= requiredCost
         let hasEnoughPlatform = PlatformPaymentIdentityFundingPolicy
             .canFundCurrentWallet(
@@ -498,7 +503,10 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     private func checkBalance() {
-        let balance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
+        // Same envelope `validateUsername` gates on — the Core picker row must
+        // show the amount that can actually fund the registration, not a total
+        // that includes coins the funding transaction cannot spend.
+        let balance = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
         let platformDuffs = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
         let trimmedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
         let requiredDuffs = trimmedUsername.isEmpty

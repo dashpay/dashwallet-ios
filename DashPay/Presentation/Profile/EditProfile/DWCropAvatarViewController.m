@@ -47,7 +47,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 static CGFloat const PADDING = 38.0;
 
-@interface DWCropAvatarViewController () <DWUploadAvatarViewControllerDelegate, DWImgurInfoViewControllerDelegate>
+@interface DWCropAvatarViewController () <DWUploadAvatarViewControllerDelegate,
+                                          DWImgurInfoViewControllerDelegate,
+                                          UIAdaptivePresentationControllerDelegate>
 
 @property (nullable, nonatomic, strong) DWFaceDetector *faceDetector;
 
@@ -179,7 +181,16 @@ NS_ASSUME_NONNULL_END
     DWImgurInfoViewController *controller = [[DWImgurInfoViewController alloc] init];
     controller.croppedImage = croppedImage;
     controller.delegate = self;
+    controller.presentationController.delegate = self;
     [self presentViewController:controller animated:YES completion:nil];
+}
+
+/// Bring the crop chrome back. Hiding it is how the sheets get an unobstructed
+/// backdrop; every path that closes one has to undo it, or the screen is left
+/// showing the cropped photo alone with no way forward or back.
+- (void)restoreCropChrome {
+    self.titleLabel.hidden = NO;
+    self.buttonsStackView.hidden = NO;
 }
 
 - (void)cancelButtonAction:(UIButton *)sender {
@@ -199,13 +210,13 @@ NS_ASSUME_NONNULL_END
 
                                DWUploadAvatarViewController *controller = [[DWUploadAvatarViewController alloc] initWithImage:croppedImage];
                                controller.delegate = self;
+                               controller.presentationController.delegate = self;
                                [self presentViewController:controller animated:YES completion:nil];
                            }];
 }
 
 - (void)imgurInfoViewControllerDidCancel:(DWImgurInfoViewController *)controller {
-    self.titleLabel.hidden = NO;
-    self.buttonsStackView.hidden = NO;
+    [self restoreCropChrome];
 
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
@@ -213,10 +224,25 @@ NS_ASSUME_NONNULL_END
 #pragma mark - DWUploadAvatarViewControllerDelegate
 
 - (void)uploadAvatarViewControllerDidCancel:(DWUploadAvatarViewController *)controller {
-    self.titleLabel.hidden = NO;
-    self.buttonsStackView.hidden = NO;
+    [self restoreCropChrome];
 
     [controller dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+/// A swipe-down on either sheet dismisses it without going through the
+/// delegate methods above, so restore the chrome here too — otherwise the
+/// crop screen stays stripped of its title and buttons with the sheet gone.
+- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController {
+    UIViewController *dismissed = presentationController.presentedViewController;
+    if ([dismissed isKindOfClass:DWUploadAvatarViewController.class]) {
+        // The sheet is already gone; drop the in-flight request so its
+        // completion cannot finish an upload the user walked away from.
+        [(DWUploadAvatarViewController *)dismissed cancelUpload];
+    }
+
+    [self restoreCropChrome];
 }
 
 - (void)uploadAvatarViewController:(DWUploadAvatarViewController *)controller didFinishWithURLString:(NSString *)urlString {

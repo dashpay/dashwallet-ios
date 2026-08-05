@@ -10,8 +10,25 @@ import Foundation
 import Moya
 import UIKit
 
-// TODO(avatar-upload): Replace the legacy placeholder with a configured Imgur client ID.
-private let avatarClientID = "imgurId"
+/// Imgur anonymous-upload credentials.
+///
+/// Read from a bundled `Imgur-Info.plist`, mirroring how `SwapKitConstants` and
+/// `Coinbase+Constants` read theirs: drop the (git-ignored) plist next to the
+/// others and add it to the dashwallet/dashpay targets. Absent credentials mean
+/// avatar upload is unavailable in this build — `DWAvatarUploadClient` fails the
+/// request up front instead of letting Imgur reject an invalid Client-ID and
+/// presenting it to the user as a retryable network error.
+enum DWAvatarUploadConfiguration {
+    static let clientID: String = {
+        guard let path = Bundle.main.path(forResource: "Imgur-Info", ofType: "plist"),
+              let dict = NSDictionary(contentsOfFile: path) as? [String: AnyObject],
+              let clientID = dict["CLIENT_ID"] as? String
+        else { return "" }
+        return clientID
+    }()
+
+    static var isConfigured: Bool { !clientID.isEmpty }
+}
 
 enum DWAvatarEndpoint: TargetType {
     case delete(deleteHash: String)
@@ -55,7 +72,7 @@ enum DWAvatarEndpoint: TargetType {
     }
 
     var headers: [String: String]? {
-        ["Authorization": "Client-ID \(avatarClientID)"]
+        ["Authorization": "Client-ID \(DWAvatarUploadConfiguration.clientID)"]
     }
 }
 
@@ -111,6 +128,12 @@ private final class DWAvatarUploadTask: NSObject, DWAvatarUploadCancelling {
 final class DWAvatarUploadClient: NSObject {
     typealias UploadCompletion = (String?, String?, NSError?) -> Void
 
+    @objc static let errorDomain = "DWAvatarUploadClient"
+    /// This build ships no Imgur credentials, so no amount of retrying can make
+    /// the upload succeed. The UI uses this to offer an exit instead of a
+    /// "Try again" that is guaranteed to fail.
+    @objc static let errorCodeNotConfigured = 2
+
     // Internal test seam used by DWUploadAvatarModel tests. Production callers
     // always get the normal HTTPClient and image queue.
     static var testingHTTPClient: HTTPClient<DWAvatarEndpoint>?
@@ -149,6 +172,21 @@ final class DWAvatarUploadClient: NSObject {
         completion: @escaping UploadCompletion
     ) -> DWAvatarUploadCancelling {
         let task = DWAvatarUploadTask()
+
+        guard DWAvatarUploadConfiguration.isConfigured else {
+            finish(
+                task: task,
+                link: nil,
+                deleteHash: nil,
+                error: Self.error(
+                    NSLocalizedString(
+                        "Picture upload is not available in this build.",
+                        comment: "Avatar upload has no configured credentials"),
+                    code: Self.errorCodeNotConfigured),
+                completion: completion)
+            return task
+        }
+
         let startUpload = { [weak self, weak task] in
             guard let self, let task, !task.isCancelled else { return }
             self.prepareAndUpload(image: image, task: task, completion: completion)
@@ -280,10 +318,10 @@ final class DWAvatarUploadClient: NSObject {
         }
     }
 
-    private static func error(_ description: String) -> NSError {
+    private static func error(_ description: String, code: Int = 1) -> NSError {
         NSError(
-            domain: "DWAvatarUploadClient",
-            code: 1,
+            domain: errorDomain,
+            code: code,
             userInfo: [NSLocalizedDescriptionKey: description])
     }
 }

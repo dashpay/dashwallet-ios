@@ -29,6 +29,8 @@ NSString *const ImageDeleteHash = @"ImgurImageDeleteHash";
 
 @property (nonatomic, assign) BOOL cancelled;
 @property (nullable, nonatomic, copy) NSString *resultURLString;
+@property (nullable, nonatomic, copy) NSString *failureMessage;
+@property (nonatomic, assign) BOOL failureIsRetryable;
 @property (nonatomic, strong) DWAvatarUploadClient *client;
 @property (nullable, nonatomic, strong) id<DWAvatarUploadCancelling> uploadOperation;
 @property (nonatomic, assign) NSUInteger attemptGeneration;
@@ -62,6 +64,8 @@ NS_ASSUME_NONNULL_END
     self.attemptGeneration += 1;
     const NSUInteger generation = self.attemptGeneration;
     self.cancelled = NO;
+    self.failureMessage = nil;
+    self.failureIsRetryable = YES;
     self.state = DWUploadAvatarModelState_Loading;
     NSString *deleteHash = [[NSUserDefaults standardUserDefaults] stringForKey:ImageDeleteHash];
 
@@ -77,6 +81,13 @@ NS_ASSUME_NONNULL_END
 
              NSAssert([NSThread isMainThread], @"Avatar state is UI-observable and must update on main");
              if (error != nil) {
+                 // A build without upload credentials can never succeed, so the
+                 // error UI must not offer a retry that is guaranteed to fail.
+                 const BOOL notConfigured =
+                     [error.domain isEqualToString:DWAvatarUploadClient.errorDomain] &&
+                     error.code == DWAvatarUploadClient.errorCodeNotConfigured;
+                 strongSelf.failureIsRetryable = !notConfigured;
+                 strongSelf.failureMessage = notConfigured ? error.localizedDescription : nil;
                  strongSelf.state = DWUploadAvatarModelState_Error;
                  return;
              }
