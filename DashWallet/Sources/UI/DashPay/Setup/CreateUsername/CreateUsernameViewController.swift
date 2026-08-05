@@ -326,11 +326,7 @@ struct CreateUsernameView: View {
         ) {
             Button(NSLocalizedString("OK", comment: "")) { finish() }
         } message: {
-            Text(String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.",
-                    comment: "Usernames"),
-                viewModel.username))
+            Text(votingSubmittedMessage)
         }
         .alert(
             NSLocalizedString("Contact request failed", comment: "DashPay Invitations"),
@@ -538,6 +534,27 @@ struct CreateUsernameView: View {
                 registrationErrorMessage = message
             }
         }
+    }
+
+    /// Post-submit copy for a contested name. The deadline is a conservative
+    /// submission-time estimate until Platform indexes the contest and
+    /// `checkPendingContestResolution` swaps in `ContestVoteState.endTime`,
+    /// hence "around". Falls back to the date-less wording when no pending
+    /// bookmark exists rather than inventing a deadline.
+    private var votingSubmittedMessage: String {
+        guard let endTime = DWContestedNameStatusService.shared.pendingVotingEndTime else {
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.",
+                    comment: "Usernames"),
+                viewModel.username)
+        }
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result.",
+                comment: "Usernames"),
+            viewModel.username,
+            DWDateFormatter.sharedInstance.dateAndTime(from: endTime))
     }
 
     /// Viable funding sources in privacy-descending priority order.

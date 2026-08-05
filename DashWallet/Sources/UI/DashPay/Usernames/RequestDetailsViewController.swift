@@ -44,10 +44,19 @@ class RequestDetailsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureLayout()
         configureObservers()
         viewModel.fetchUsernameRequestData()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // The deadline starts as a submission-time estimate and is replaced by
+        // Platform's `ContestVoteState.endTime` once `checkPendingContestResolution`
+        // (Home appear / app foreground) indexes the contest, so re-read it on
+        // every appearance instead of only at load.
+        updateResultsDate()
     }
     
     @IBAction
@@ -70,10 +79,8 @@ extension RequestDetailsViewController {
         linkLabel.text = NSLocalizedString("Link", comment: "Usernames")
         identityLabel.text = NSLocalizedString("Identity", comment: "Usernames")
         resultsLabel.text = NSLocalizedString("Results", comment: "Usernames")
-        let endDate = Date(timeIntervalSince1970: VotingConstants.votingEndTime) // TODO replace
-        let endDateStr = DWDateFormatter.sharedInstance.dateOnly(from: endDate)
-        resultsDateText.text = endDateStr
-        
+        updateResultsDate()
+
         var configuration = UIButton.Configuration.configuration(from: .tinted())
         configuration.baseBackgroundColor = .dw_red().withAlphaComponent(0.08)
         configuration.baseForegroundColor = .dw_red()
@@ -84,6 +91,17 @@ extension RequestDetailsViewController {
         continueButton.setAttributedTitle(NSAttributedString(string: NSLocalizedString("Cancel Request", comment: ""), attributes: attributes), for: .normal)
     }
     
+    /// Show the real close time of OUR pending contested submission. Nil means
+    /// there is no submission bookmark for the active network — say so rather
+    /// than print a date we do not have.
+    private func updateResultsDate() {
+        guard let endTime = DWContestedNameStatusService.shared.pendingVotingEndTime else {
+            resultsDateText.text = NSLocalizedString("Not available yet", comment: "Usernames")
+            return
+        }
+        resultsDateText.text = DWDateFormatter.sharedInstance.dateAndTime(from: endTime)
+    }
+
     private func configureObservers() {
         viewModel.$currentUsernameRequest
             .receive(on: DispatchQueue.main)

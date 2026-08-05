@@ -159,7 +159,7 @@ struct JoinDashPayView: View {
             }
         case .voting:
             if let endTime = DWContestedNameStatusService.shared.pendingVotingEndTime {
-                let endDate = DWDateFormatter.sharedInstance.longString(from: endTime)
+                let endDate = DWDateFormatter.sharedInstance.dateAndTime(from: endTime)
                 return String.localizedStringWithFormat(
                     NSLocalizedString(
                         "Username %@ has been submitted for voting. Voting ends around %@.",
