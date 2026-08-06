@@ -36,16 +36,21 @@ enum ClaimInvitationFlow {
         completionHandler: ((Bool) -> Void)? = nil
     ) {
         guard let navigation else { return }
-        let screen = ClaimInvitationScreen(initialLink: initialLink) { [weak navigation] uri in
-            guard let navigation else { return }
-            let controller = CreateUsernameViewController(
-                dashPayModel: dashPayModel,
-                invitationURL: URL(string: uri),
-                definedUsername: definedUsername)
-            controller.hidesBottomBarWhenPushed = true
-            controller.completionHandler = completionHandler
-            navigation.pushViewController(controller, animated: true)
-        }
+        let screen = ClaimInvitationScreen(
+            initialLink: initialLink,
+            onBack: { [weak navigation] in
+                navigation?.popViewController(animated: true)
+            },
+            onContinue: { [weak navigation] uri in
+                guard let navigation else { return }
+                let controller = CreateUsernameViewController(
+                    dashPayModel: dashPayModel,
+                    invitationURL: URL(string: uri),
+                    definedUsername: definedUsername)
+                controller.hidesBottomBarWhenPushed = true
+                controller.completionHandler = completionHandler
+                navigation.pushViewController(controller, animated: true)
+            })
         let hosting = UIHostingController(rootView: screen)
         hosting.view.backgroundColor = UIColor.dw_secondaryBackground()
         hosting.hidesBottomBarWhenPushed = true
@@ -138,12 +143,37 @@ struct ClaimInvitationScreen: View {
 
     /// Prefill from a deep link; nil for the manual paste/scan entry.
     let initialLink: String?
+    /// Dismisses the screen.
+    ///
+    /// A pushed `UIHostingController` carries the app-wide
+    /// `NavigationBarDisplayable` conformance that hides both the bar and its
+    /// back button, so a SwiftUI screen has to draw its own — this one shipped
+    /// without any way back.
+    var onBack: () -> Void
     /// Called with the normalized invitation URI when the user
     /// continues to the username form.
     var onContinue: (String) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Button(action: onBack) {
+                    Image(systemName: "arrow.backward")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.dash.primaryText)
+                        .frame(width: 36, height: 36)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.dash.gray300Alpha30, lineWidth: 1.5)
+                        )
+                }
+                .frame(width: 44, height: 44)
+                .accessibilityLabel(NSLocalizedString("Back", comment: "Accessibility"))
+
+                Spacer()
+            }
+            .padding(.top, 4)
+
             Text(NSLocalizedString("Claim your invitation", comment: "DashPay Invitations"))
                 .foregroundColor(.dash.primaryText)
                 .font(.title1)
