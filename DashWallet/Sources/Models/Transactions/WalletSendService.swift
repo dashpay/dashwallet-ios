@@ -543,7 +543,7 @@ final class WalletSendService: NSObject {
         )
 
         return PreparedStandardSend(
-            txData: tx.data,
+            txData: try tx.serializedData(),
             txHash: txHash,
             fee: tx.fee,
             address: vaultAddress,
