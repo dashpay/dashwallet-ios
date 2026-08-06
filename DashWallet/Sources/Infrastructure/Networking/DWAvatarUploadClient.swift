@@ -224,7 +224,13 @@ final class DWAvatarUploadClient: NSObject {
             switch result {
             case .success:
                 completion()
-            case .failure:
+            case .failure(let error):
+                // Logged separately from the upload: the delete runs first and
+                // retries four times, so without its own tag a stale delete
+                // hash is indistinguishable from a failing upload in the log.
+                DWLogger.log(
+                    "AvatarUpload: DELETE /3/image failed (\(attemptsRemaining) attempt(s) left) — "
+                        + Self.failureDetail(error))
                 if attemptsRemaining > 1 {
                     self.deletePreviousImage(
                         deleteHash: deleteHash,
@@ -304,7 +310,7 @@ final class DWAvatarUploadClient: NSObject {
                             completion: completion)
                     }
                 case .failure(let error):
-                    DWLogger.log("AvatarUpload: transport failure — \(error.localizedDescription)")
+                    DWLogger.log("AvatarUpload: POST /3/upload failed — \(Self.failureDetail(error))")
                     self.finish(
                         task: task,
                         link: nil,
@@ -328,6 +334,20 @@ final class DWAvatarUploadClient: NSObject {
             guard !task.isCancelled else { return }
             completion(link, deleteHash, error)
         }
+    }
+
+    /// Imgur states the reason for a refusal in the response BODY. `HTTPClient`
+    /// maps a non-2xx into `.statusCode(response)`, which carries it — but
+    /// `localizedDescription` renders only "Status Code: 400, Data Length: 78",
+    /// which is exactly enough to know something is wrong and nothing about
+    /// what. Pull the body out whenever it is there.
+    private static func failureDetail(_ error: Error) -> String {
+        if let clientError = error as? HTTPClientError,
+           case .statusCode(let response) = clientError {
+            let body = String(data: response.data, encoding: .utf8) ?? "<non-utf8 body>"
+            return "status \(response.statusCode), body \(body)"
+        }
+        return error.localizedDescription
     }
 
     private static func error(_ description: String, code: Int = 1) -> NSError {
