@@ -104,6 +104,11 @@ enum SwapKitErrorCopy {
                 comment: "Dash DEX / dex_error_price_moved"
             )
         default:
+            // The generic copy is a dead end for diagnosis: the screen says only "something
+            // went wrong" and the raw code is dropped here, so a QA log export contains no
+            // trace of what actually failed. Record it — an unmapped code is either a new
+            // SwapKit error worth adding above, or a real defect.
+            DWLogger.log("SwapKit: unmapped swap error for \(coin.code) — raw: \(rawError ?? "<nil>")")
             return NSLocalizedString(
                 "Something went wrong setting up your swap. Please try again.",
                 comment: "Dash DEX / dex_error_generic"

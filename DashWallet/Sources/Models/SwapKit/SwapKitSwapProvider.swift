@@ -988,7 +988,11 @@ final class SwapKitSwapProvider: SwapProvider {
     // MARK: - Private: Helpers
 
 private func errorResult(_ message: String) -> SwapQuoteResult {
-        SwapQuoteResult(error: message, expectedAmountOut: nil, fees: nil, inboundAddress: nil, memo: nil, executionNetwork: nil)
+        // Every quote/swap failure funnels through here on its way to the UI, which renders a
+        // mapped (often generic) string. Log the raw message at the source so a failure is
+        // diagnosable from an exported log instead of only from a screenshot.
+        DWLogger.log("SwapKit: quote/swap failed — raw: \(message)")
+        return SwapQuoteResult(error: message, expectedAmountOut: nil, fees: nil, inboundAddress: nil, memo: nil, executionNetwork: nil)
     }
 }
 

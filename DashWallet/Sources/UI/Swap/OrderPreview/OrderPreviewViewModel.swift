@@ -516,6 +516,11 @@ final class OrderPreviewViewModel: ObservableObject {
     // MARK: - Private: State Mutation
 
     private func setFailure(_ message: String) {
+        // Log before mapping: `userFacingErrorMessage` collapses anything unrecognised into a
+        // generic "something went wrong", so this is the last point at which the real reason
+        // still exists. Without it a "Conversion failed" screenshot has no counterpart in the
+        // exported logs and cannot be diagnosed.
+        DWLogger.log("Swap: conversion failed for \(coin.code) — raw: \(message)")
         // Keep Maya failures on the status sheet path so SwiftUI does not try to
         // present a native alert and a bottom sheet for the same event.
         swapStatus = .failed(reason: userFacingErrorMessage(for: message))
@@ -527,6 +532,9 @@ final class OrderPreviewViewModel: ObservableObject {
 
     private func setSubmittedSwap(txidWire: Data, depositAddress: String) {
         let txidHex = Transaction.displayHex(txidWire)
+        // The success side needs a trace too: without it a log export can't distinguish
+        // "the deposit never went out" from "it went out and the swap failed later".
+        DWLogger.log("Swap: deposit broadcast for \(coin.code) — txid=\(txidHex) deposit=\(depositAddress)")
         submittedTxidWire = txidWire
         submittedTxId = txidHex
         lastDepositAddress = depositAddress
