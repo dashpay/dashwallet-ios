@@ -85,9 +85,9 @@ struct PreparedSend: Equatable {
     let fee: UInt64
     /// 32-byte txid in **display order** (double-SHA256, byte-reversed). Logging / callback only.
     let txHashDisplay: Data
-    /// Opaque SDK transaction handle (the built `CoreTransaction`), carried so the L6 adapter
-    /// can broadcast the exact built tx. Kept as `AnyObject` so this module stays Foundation-only.
-    /// nil in test fakes. Excluded from equality.
+    /// Opaque SDK transaction handle (the built `FinalizedCoreTransaction`), carried so the
+    /// L6 adapter can broadcast the exact built tx. Kept as `AnyObject` so this module stays
+    /// Foundation-only. nil in test fakes. Excluded from equality.
     let sdkTransaction: AnyObject?
 
     init(txData: Data, fee: UInt64, txHashDisplay: Data, sdkTransaction: AnyObject? = nil) {
