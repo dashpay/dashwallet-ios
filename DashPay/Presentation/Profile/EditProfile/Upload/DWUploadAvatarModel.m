@@ -81,13 +81,16 @@ NS_ASSUME_NONNULL_END
 
              NSAssert([NSThread isMainThread], @"Avatar state is UI-observable and must update on main");
              if (error != nil) {
-                 // A build without upload credentials can never succeed, so the
-                 // error UI must not offer a retry that is guaranteed to fail.
-                 const BOOL notConfigured =
+                 // Missing credentials, or a host that refused the action
+                 // outright: neither can succeed on a retry, so the error UI
+                 // must not offer one. Everything else (rate limits, 5xx,
+                 // transport) stays retryable.
+                 const BOOL permanent =
                      [error.domain isEqualToString:DWAvatarUploadClient.errorDomain] &&
-                     error.code == DWAvatarUploadClient.errorCodeNotConfigured;
-                 strongSelf.failureIsRetryable = !notConfigured;
-                 strongSelf.failureMessage = notConfigured ? error.localizedDescription : nil;
+                     (error.code == DWAvatarUploadClient.errorCodeNotConfigured ||
+                      error.code == DWAvatarUploadClient.errorCodeRefused);
+                 strongSelf.failureIsRetryable = !permanent;
+                 strongSelf.failureMessage = permanent ? error.localizedDescription : nil;
                  strongSelf.state = DWUploadAvatarModelState_Error;
                  return;
              }

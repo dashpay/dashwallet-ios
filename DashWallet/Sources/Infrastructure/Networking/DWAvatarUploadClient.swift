@@ -138,6 +138,13 @@ final class DWAvatarUploadClient: NSObject {
     /// "Try again" that is guaranteed to fail.
     @objc static let errorCodeNotConfigured = 2
 
+    /// Imgur accepted the request and refused the action — a 4xx that is not a
+    /// rate limit, e.g. `{"error":"These actions are forbidden."}` when the
+    /// registered application is not authorised for anonymous uploads. The
+    /// wallet cannot fix this from the device, so the UI must not invite a
+    /// retry; only a rate limit (429) is worth trying again.
+    @objc static let errorCodeRefused = 3
+
     // Internal test seam used by DWUploadAvatarModel tests. Production callers
     // always get the normal HTTPClient and image queue.
     static var testingHTTPClient: HTTPClient<DWAvatarEndpoint>?
@@ -315,7 +322,7 @@ final class DWAvatarUploadClient: NSObject {
                         task: task,
                         link: nil,
                         deleteHash: nil,
-                        error: error as NSError,
+                        error: Self.uploadError(from: error),
                         completion: completion)
                 }
             }
@@ -348,6 +355,25 @@ final class DWAvatarUploadClient: NSObject {
             return "status \(response.statusCode), body \(body)"
         }
         return error.localizedDescription
+    }
+
+    /// Classify a failed upload. A 4xx other than 429 is Imgur declining the
+    /// action itself — the app's API authorisation, not anything the device can
+    /// change — so it is reported as non-retryable. A 429 is a rate limit and a
+    /// 5xx is transient: both stay retryable, as does anything without a status.
+    private static func uploadError(from error: Error) -> NSError {
+        guard let clientError = error as? HTTPClientError,
+              case .statusCode(let response) = clientError,
+              (400..<500).contains(response.statusCode),
+              response.statusCode != 429
+        else {
+            return error as NSError
+        }
+        return self.error(
+            NSLocalizedString(
+                "Imgur refused the upload, so picture upload is unavailable right now.",
+                comment: "Avatar upload rejected by the image host"),
+            code: errorCodeRefused)
     }
 
     private static func error(_ description: String, code: Int = 1) -> NSError {
