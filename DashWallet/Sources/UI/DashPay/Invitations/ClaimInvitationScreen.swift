@@ -155,25 +155,36 @@ struct ClaimInvitationScreen: View {
     var onContinue: (String) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Button(action: onBack) {
-                    Image(systemName: "arrow.backward")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Circle()
-                                .stroke(Color.dash.gray300Alpha30, lineWidth: 1.5)
-                        )
-                }
-                .frame(width: 44, height: 44)
-                .accessibilityLabel(NSLocalizedString("Back", comment: "Accessibility"))
+        VStack(spacing: 0) {
+            NavigationBar(leading: {
+                NavigationBarElement.back.button { onBack() }
+            })
 
-                Spacer()
+            content
+        }
+        .sheet(isPresented: $showScanner) {
+            GenericQRScannerView(
+                onQRCodeScanned: { value in
+                    viewModel.input = value
+                    showScanner = false
+                },
+                onCancel: { showScanner = false })
+        }
+        .onAppear {
+            if let initialLink, viewModel.input.isEmpty {
+                viewModel.input = initialLink
+            } else {
+                isInputFocused = true
             }
-            .padding(.top, 4)
+            viewModel.evaluate()
+        }
+        .onChange(of: viewModel.input) { _ in
+            viewModel.evaluate()
+        }
+    }
 
+    private var content: some View {
+        VStack(alignment: .leading, spacing: 0) {
             Text(NSLocalizedString("Claim your invitation", comment: "DashPay Invitations"))
                 .foregroundColor(.dash.primaryText)
                 .font(.title1)
@@ -224,25 +235,6 @@ struct ClaimInvitationScreen: View {
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .sheet(isPresented: $showScanner) {
-            GenericQRScannerView(
-                onQRCodeScanned: { value in
-                    viewModel.input = value
-                    showScanner = false
-                },
-                onCancel: { showScanner = false })
-        }
-        .onAppear {
-            if let initialLink, viewModel.input.isEmpty {
-                viewModel.input = initialLink
-            } else {
-                isInputFocused = true
-            }
-            viewModel.evaluate()
-        }
-        .onChange(of: viewModel.input) { _ in
-            viewModel.evaluate()
-        }
     }
 
     @ViewBuilder
