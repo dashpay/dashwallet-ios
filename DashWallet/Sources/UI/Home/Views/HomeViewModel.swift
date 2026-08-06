@@ -142,13 +142,6 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    #if DASHPAY
-    var shouldShowDashPayInfo: Bool {
-        get { !UsernamePrefs.shared.joinDashPayInfoShown }
-        set(value) { UsernamePrefs.shared.joinDashPayInfoShown = !value }
-    }
-    #endif
-    
     init(transactionSource: TransactionSource) {
         self.transactionSource = transactionSource
         syncModel.networkStatusDidChange = { status in

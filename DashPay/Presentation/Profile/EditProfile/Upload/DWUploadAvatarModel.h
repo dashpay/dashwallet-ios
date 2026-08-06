@@ -34,6 +34,14 @@ typedef NS_ENUM(NSUInteger, DWUploadAvatarModelState) {
 
 @property (readonly, nullable, nonatomic, copy) NSString *resultURLString;
 
+/// The failed attempt's user-facing reason, or nil when the last failure
+/// carried no specific one (generic transport failure).
+@property (readonly, nullable, nonatomic, copy) NSString *failureMessage;
+
+/// NO when retrying cannot possibly succeed (e.g. the build ships no upload
+/// credentials). The error UI then offers only a way out.
+@property (readonly, nonatomic, assign) BOOL failureIsRetryable;
+
 - (instancetype)initWithImage:(UIImage *)image;
 
 - (void)retry;

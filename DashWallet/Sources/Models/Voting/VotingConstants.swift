@@ -18,6 +18,8 @@
 @objcMembers
 class VotingConstants: NSObject {
     static let maxVotes = 5 // max allowed by Platform for a masternode
-    // TODO: replace
-    static let votingEndTime = TimeInterval(1702695521)
+    // A contest's close time is per-submission, not a constant: read it from
+    // `DWContestedNameStatusService.pendingVotingEndTime`, which holds the
+    // submission-time estimate until Platform's `ContestVoteState.endTime`
+    // replaces it.
 }

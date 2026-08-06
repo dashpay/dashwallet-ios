@@ -864,6 +864,31 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
     }
 
+    /// Whether a previous contest for `label` ended in a masternode LOCK.
+    ///
+    /// A locked label reads as AVAILABLE to `dpnsCheckAvailability` — no
+    /// identity owns the domain document, because the vote decided that nobody
+    /// gets it — but the vote poll rejects every new submission, so the state
+    /// transition fails at broadcast with `vote_poll_status: Locked`. Only a
+    /// contested-eligible label can be in this state.
+    ///
+    /// Returns false when the state cannot be determined: the submit-time
+    /// transition stays the authority, and a failed query must not block a name
+    /// that is very likely fine.
+    func isContestedNameLocked(_ label: String) async -> Bool {
+        guard let sdk = SwiftDashSDKHost.shared.sdk else { return false }
+        do {
+            // `winner` is "LOCKED", a base58 identity id, or absent/null while
+            // the contest is unresolved (rs-sdk-ffi `dpns/queries/contested.rs`).
+            let state = try await sdk.dpnsGetContestedVoteState(name: label)
+            return (state["winner"] as? String) == "LOCKED"
+        } catch {
+            Self.logger.info(
+                "🪪 IDENT-COORD :: contested lock check unavailable for \(label, privacy: .public): \(String(describing: error), privacy: .public)")
+            return false
+        }
+    }
+
     /// Whether the active wallet has already paid for a Core-funded
     /// identity registration that still needs to finish. Used by the
     /// create-username screen to bypass the balance gate and present a

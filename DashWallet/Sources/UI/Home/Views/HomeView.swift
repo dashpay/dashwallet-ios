@@ -331,12 +331,14 @@ struct HomeViewContent<Content: View>: View {
                                     viewModel.checkJoinDashPay()
                                 } else {
                                     // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
-                                    if viewModel.shouldShowDashPayInfo {
-                                        UsernamePrefs.shared.joinDashPayInfoShown = true
-                                        self.shouldShowJoinDashPayInfo = true
-                                    } else {
-                                        delegate?.homeViewRequestUsername()
-                                    }
+                                    // Always open the info dialog. It carries the
+                                    // only "Have an invitation?" entry in the app,
+                                    // so latching it to the first-ever tap left an
+                                    // invited user with no way to reach the redeem
+                                    // path once they had dismissed it — which is
+                                    // every user whose invitation arrived after
+                                    // they first looked at DashPay.
+                                    self.shouldShowJoinDashPayInfo = true
                                 }
                             }, onDismissButton: { _ in
                                 joinDPViewModel.markAsDismissed()

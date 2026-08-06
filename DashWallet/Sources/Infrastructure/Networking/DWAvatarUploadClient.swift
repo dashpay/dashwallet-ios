@@ -10,8 +10,29 @@ import Foundation
 import Moya
 import UIKit
 
-// TODO(avatar-upload): Replace the legacy placeholder with a configured Imgur client ID.
-private let avatarClientID = "imgurId"
+/// Imgur anonymous-upload credentials.
+///
+/// Read from a bundled `Imgur-Info.plist`, mirroring how `SwapKitConstants` and
+/// `Coinbase+Constants` read theirs: drop the (git-ignored) plist next to the
+/// others and add it to the dashwallet/dashpay targets. Absent credentials mean
+/// avatar upload is unavailable in this build — `DWAvatarUploadClient` fails the
+/// request up front instead of letting Imgur reject an invalid Client-ID and
+/// presenting it to the user as a retryable network error.
+enum DWAvatarUploadConfiguration {
+    /// Only the Client-ID is read. Imgur's anonymous upload endpoint
+    /// authenticates with `Authorization: Client-ID <id>`; the client SECRET
+    /// belongs to the OAuth flows we do not use, and must never be put on a
+    /// request from the app.
+    static let clientID: String = {
+        guard let path = Bundle.main.path(forResource: "Imgur-Info", ofType: "plist"),
+              let dict = NSDictionary(contentsOfFile: path) as? [String: AnyObject],
+              let clientID = dict["IMGUR_CLIENT_ID"] as? String
+        else { return "" }
+        return clientID
+    }()
+
+    static var isConfigured: Bool { !clientID.isEmpty }
+}
 
 enum DWAvatarEndpoint: TargetType {
     case delete(deleteHash: String)
@@ -55,7 +76,7 @@ enum DWAvatarEndpoint: TargetType {
     }
 
     var headers: [String: String]? {
-        ["Authorization": "Client-ID \(avatarClientID)"]
+        ["Authorization": "Client-ID \(DWAvatarUploadConfiguration.clientID)"]
     }
 }
 
@@ -111,6 +132,19 @@ private final class DWAvatarUploadTask: NSObject, DWAvatarUploadCancelling {
 final class DWAvatarUploadClient: NSObject {
     typealias UploadCompletion = (String?, String?, NSError?) -> Void
 
+    @objc static let errorDomain = "DWAvatarUploadClient"
+    /// This build ships no Imgur credentials, so no amount of retrying can make
+    /// the upload succeed. The UI uses this to offer an exit instead of a
+    /// "Try again" that is guaranteed to fail.
+    @objc static let errorCodeNotConfigured = 2
+
+    /// Imgur accepted the request and refused the action — a 4xx that is not a
+    /// rate limit, e.g. `{"error":"These actions are forbidden."}` when the
+    /// registered application is not authorised for anonymous uploads. The
+    /// wallet cannot fix this from the device, so the UI must not invite a
+    /// retry; only a rate limit (429) is worth trying again.
+    @objc static let errorCodeRefused = 3
+
     // Internal test seam used by DWUploadAvatarModel tests. Production callers
     // always get the normal HTTPClient and image queue.
     static var testingHTTPClient: HTTPClient<DWAvatarEndpoint>?
@@ -149,6 +183,22 @@ final class DWAvatarUploadClient: NSObject {
         completion: @escaping UploadCompletion
     ) -> DWAvatarUploadCancelling {
         let task = DWAvatarUploadTask()
+
+        guard DWAvatarUploadConfiguration.isConfigured else {
+            DWLogger.log("AvatarUpload: no Imgur CLIENT_ID in this build — upload refused up front")
+            finish(
+                task: task,
+                link: nil,
+                deleteHash: nil,
+                error: Self.error(
+                    NSLocalizedString(
+                        "Picture upload is not available in this build.",
+                        comment: "Avatar upload has no configured credentials"),
+                    code: Self.errorCodeNotConfigured),
+                completion: completion)
+            return task
+        }
+
         let startUpload = { [weak self, weak task] in
             guard let self, let task, !task.isCancelled else { return }
             self.prepareAndUpload(image: image, task: task, completion: completion)
@@ -181,7 +231,13 @@ final class DWAvatarUploadClient: NSObject {
             switch result {
             case .success:
                 completion()
-            case .failure:
+            case .failure(let error):
+                // Logged separately from the upload: the delete runs first and
+                // retries four times, so without its own tag a stale delete
+                // hash is indistinguishable from a failing upload in the log.
+                DWLogger.log(
+                    "AvatarUpload: DELETE /3/image failed (\(attemptsRemaining) attempt(s) left) — "
+                        + Self.failureDetail(error))
                 if attemptsRemaining > 1 {
                     self.deletePreviousImage(
                         deleteHash: deleteHash,
@@ -237,6 +293,12 @@ final class DWAvatarUploadClient: NSObject {
                         guard let json = object as? [String: Any],
                               (json["success"] as? NSNumber)?.boolValue == true
                         else {
+                            // The status code and Imgur's own error string are the
+                            // only way to tell a bad Client-ID from a rate limit or
+                            // a rejected image, and neither reaches the UI.
+                            DWLogger.log(
+                                "AvatarUpload: Imgur rejected the upload — status \(response.statusCode), "
+                                    + "body \(String(data: response.data, encoding: .utf8) ?? "<non-utf8>")")
                             throw Self.error("Imgur rejected the avatar upload")
                         }
                         let data = json["data"] as? [String: Any]
@@ -255,11 +317,12 @@ final class DWAvatarUploadClient: NSObject {
                             completion: completion)
                     }
                 case .failure(let error):
+                    DWLogger.log("AvatarUpload: POST /3/upload failed — \(Self.failureDetail(error))")
                     self.finish(
                         task: task,
                         link: nil,
                         deleteHash: nil,
-                        error: error as NSError,
+                        error: Self.uploadError(from: error),
                         completion: completion)
                 }
             }
@@ -280,10 +343,43 @@ final class DWAvatarUploadClient: NSObject {
         }
     }
 
-    private static func error(_ description: String) -> NSError {
+    /// Imgur states the reason for a refusal in the response BODY. `HTTPClient`
+    /// maps a non-2xx into `.statusCode(response)`, which carries it — but
+    /// `localizedDescription` renders only "Status Code: 400, Data Length: 78",
+    /// which is exactly enough to know something is wrong and nothing about
+    /// what. Pull the body out whenever it is there.
+    private static func failureDetail(_ error: Error) -> String {
+        if let clientError = error as? HTTPClientError,
+           case .statusCode(let response) = clientError {
+            let body = String(data: response.data, encoding: .utf8) ?? "<non-utf8 body>"
+            return "status \(response.statusCode), body \(body)"
+        }
+        return error.localizedDescription
+    }
+
+    /// Classify a failed upload. A 4xx other than 429 is Imgur declining the
+    /// action itself — the app's API authorisation, not anything the device can
+    /// change — so it is reported as non-retryable. A 429 is a rate limit and a
+    /// 5xx is transient: both stay retryable, as does anything without a status.
+    private static func uploadError(from error: Error) -> NSError {
+        guard let clientError = error as? HTTPClientError,
+              case .statusCode(let response) = clientError,
+              (400..<500).contains(response.statusCode),
+              response.statusCode != 429
+        else {
+            return error as NSError
+        }
+        return self.error(
+            NSLocalizedString(
+                "Imgur refused the upload, so picture upload is unavailable right now.",
+                comment: "Avatar upload rejected by the image host"),
+            code: errorCodeRefused)
+    }
+
+    private static func error(_ description: String, code: Int = 1) -> NSError {
         NSError(
-            domain: "DWAvatarUploadClient",
-            code: 1,
+            domain: errorDomain,
+            code: code,
             userInfo: [NSLocalizedDescriptionKey: description])
     }
 }

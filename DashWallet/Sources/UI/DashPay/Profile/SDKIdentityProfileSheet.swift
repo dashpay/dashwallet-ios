@@ -19,6 +19,10 @@ struct SDKIdentityProfileSheet: View {
     @State private var dpnsNames: [String] = []
     @State private var hasIdentity: Bool = false
     @State private var pendingContestedName: String? = nil
+    /// Best-known close time of the pending contest. Starts as the
+    /// submission-time estimate and is replaced by Platform's
+    /// `ContestVoteState.endTime` once the contest is indexed.
+    @State private var pendingVotingEndTime: Date? = nil
     @State private var copyToast: String? = nil
 
     /// Callback invoked when the user taps Edit. Owner (HomeViewController)
@@ -78,6 +82,7 @@ struct SDKIdentityProfileSheet: View {
                 dpnsNames = DWCurrentUserIdentityInfo.shared.usernames
                 hasIdentity = DWCurrentUserIdentityInfo.shared.hasIdentity
                 pendingContestedName = DWContestedNameStatusService.shared.pendingLabel
+                pendingVotingEndTime = DWContestedNameStatusService.shared.pendingVotingEndTime
             }
         }
     }
@@ -120,11 +125,20 @@ struct SDKIdentityProfileSheet: View {
                 .fontWeight(.semibold)
                 .foregroundColor(.dash.primaryText)
             if pendingContestedName != nil {
-                Label(
-                    NSLocalizedString("Voting in progress", comment: "Usernames"),
-                    systemImage: "clock")
-                    .font(.caption)
-                    .foregroundColor(.orange)
+                VStack(spacing: 2) {
+                    Label(
+                        NSLocalizedString("Voting in progress", comment: "Usernames"),
+                        systemImage: "clock")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                    if let pendingVotingEndTime {
+                        Text(String.localizedStringWithFormat(
+                            NSLocalizedString("Ends around %@", comment: "Usernames"),
+                            DWDateFormatter.sharedInstance.dateAndTime(from: pendingVotingEndTime)))
+                            .font(.caption2)
+                            .foregroundColor(.dash.secondaryText)
+                    }
+                }
             }
         }
         .frame(maxWidth: .infinity)

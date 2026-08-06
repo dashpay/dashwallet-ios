@@ -57,6 +57,10 @@ NS_ASSUME_NONNULL_END
     return self.model.image;
 }
 
+- (void)cancelUpload {
+    [self.model cancel];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 

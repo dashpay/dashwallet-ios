@@ -337,32 +337,53 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
 
     func testShieldedSpendableBalanceSubtractsFeeReserve() {
         XCTAssertEqual(
-            ShieldedSpendAmountPolicy.spendableCredits(
+            TransferSpendAmountPolicy.spendableCredits(
                 balanceCredits: 10_000_000_000,
                 feeReserveCredits: 2_000_000_000),
             8_000_000_000)
         XCTAssertEqual(
-            ShieldedSpendAmountPolicy.spendableCredits(
+            TransferSpendAmountPolicy.spendableCredits(
                 balanceCredits: 1_000_000_000,
                 feeReserveCredits: 2_000_000_000),
             0)
     }
 
     func testShieldedInsufficientBalanceMessageUsesSpendableAmount() {
-        let message = ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+        let message = TransferSpendAmountPolicy.insufficientBalanceMessage(
+            balanceName: "Shielded",
             requestedCredits: 8_000_000_001,
             balanceCredits: 10_000_000_000,
             feeReserveCredits: 2_000_000_000)
 
         XCTAssertNotNil(message)
+        XCTAssertTrue(message?.contains("Shielded") == true)
         XCTAssertTrue(
             message?.contains("0.08 DASH") == true
                 || message?.contains("0,08 DASH") == true)
         XCTAssertNil(
-            ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+            TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: "Shielded",
                 requestedCredits: 8_000_000_000,
                 balanceCredits: 10_000_000_000,
                 feeReserveCredits: 2_000_000_000))
+    }
+
+    func testDuffDenominatedInsufficientBalanceMessageNamesTheBalance() {
+        let message = TransferSpendAmountPolicy.insufficientBalanceMessage(
+            balanceName: "Transparent",
+            requestedDuffs: 50_000_000,
+            spendableDuffs: 40_000_000)
+
+        XCTAssertNotNil(message)
+        XCTAssertTrue(message?.contains("Transparent") == true)
+        XCTAssertTrue(
+            message?.contains("0.4 DASH") == true
+                || message?.contains("0,4 DASH") == true)
+        XCTAssertNil(
+            TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: "Transparent",
+                requestedDuffs: 40_000_000,
+                spendableDuffs: 40_000_000))
     }
 
     func testUniqueWithdrawalAddressMatchesDespiteRestoreTimeAndAmountSkew() {

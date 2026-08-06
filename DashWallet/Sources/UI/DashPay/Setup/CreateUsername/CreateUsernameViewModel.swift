@@ -89,6 +89,13 @@ class CreateUsernameViewModel: ObservableObject {
     /// `dash_sdk_dpns_is_contested_username` — no network call.
     @Published private(set) var isContestedCandidate: Bool = false
 
+    /// The typed label lost an earlier contest to a masternode LOCK, so nobody
+    /// can register it. It still reports as available (no owner holds the
+    /// domain document), which is why this needs its own flag: the rule row
+    /// would otherwise say "Username taken", and the user would keep retrying
+    /// a name that can only fail at broadcast.
+    @Published private(set) var isLockedContestedName: Bool = false
+
     /// Per-funding-source eligibility flags. `hasMinimumRequiredBalance`
     /// (above) is kept as the legacy OR-of-both flag for any existing
     /// consumer; the new picker UI reads these to decide whether to
@@ -237,7 +244,8 @@ class CreateUsernameViewModel: ObservableObject {
             } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
                 return .cancelled
             } catch {
-                return .failure(error.localizedDescription)
+                return .failure(
+                    Self.registrationFailureMessage(error, username: submittedUsername))
             }
         }
 
@@ -259,11 +267,38 @@ class CreateUsernameViewModel: ObservableObject {
                     if error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError {
                         continuation.resume(returning: .cancelled)
                     } else {
-                        continuation.resume(returning: .failure(error.localizedDescription))
+                        continuation.resume(
+                            returning: .failure(
+                                Self.registrationFailureMessage(error, username: submittedUsername)))
                     }
                 }
             }
         }
+    }
+
+    /// Human wording for a failed registration. Platform surfaces its refusals
+    /// as a Rust debug dump of the whole state transition — hundreds of
+    /// characters of `ContestedDocumentResourceVotePoll { … }` that fill the
+    /// alert and tell the user nothing. Recognised causes get a sentence; an
+    /// unrecognised one is passed through unchanged rather than swallowed, and
+    /// the raw text always reaches the log.
+    private static func registrationFailureMessage(
+        _ error: Error,
+        username: String
+    ) -> String {
+        let raw = error.localizedDescription
+        DWLogger.log("CreateUsername: registration failed for '\(username)': \(raw)")
+
+        // The vote poll ended in a LOCK: masternodes decided nobody gets the
+        // name. Re-submitting can only fail the same way.
+        if raw.contains("vote_poll_status: Locked") || raw.contains("is currently already locked") {
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.",
+                    comment: "Usernames"),
+                username)
+        }
+        return raw
     }
 
     private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {
@@ -325,6 +360,8 @@ class CreateUsernameViewModel: ObservableObject {
         // an input the user has already changed (including changed-to-empty).
         availabilityCheckTask?.cancel()
 
+        isLockedContestedName = false
+
         guard !username.isEmpty else {
             uiState = CreateUsernameUIState()
             isContestedCandidate = false
@@ -358,7 +395,12 @@ class CreateUsernameViewModel: ObservableObject {
         // pool) all pass. The picker in `CreateUsernameView` lets the
         // user choose among the viable sources; the form is unblocked
         // as soon as any one is.
-        let coreBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
+        // Fee-aware spendable, NOT the displayed total: the funding transaction
+        // is an ordinary L1 spend, so it can only draw on confirmed UTXOs and
+        // still needs room for the miner fee. Gating on the total let a wallet
+        // whose coins were unconfirmed (or whose whole balance was the exact
+        // cost) reach Continue on a registration the SDK must then reject.
+        let coreBalance = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
         let hasEnoughCore = coreBalance >= requiredCost
         let hasEnoughPlatform = PlatformPaymentIdentityFundingPolicy
             .canFundCurrentWallet(
@@ -376,6 +418,20 @@ class CreateUsernameViewModel: ObservableObject {
         let recoveryFunded = hasPendingRegistrationRecovery && !voucherFunded
         let hasEnoughBalance = recoveryFunded || voucherFunded || hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
+
+        // The cost rule is an OR across four funding sources, so a green rule
+        // on a wallet the user knows is short reads as a bug with no way to
+        // tell WHICH source claimed it can pay. Record the verdicts and the
+        // numbers behind them — this lands in the exported diagnostic log.
+        if hasEnoughBalance {
+            DWLogger.log(
+                "CreateUsername: cost rule satisfied for '\(username)' "
+                    + "(contested=\(isContested), required=\(requiredCost) duffs) — "
+                    + "core=\(hasEnoughCore) [spendable \(coreBalance) duffs], "
+                    + "platform=\(hasEnoughPlatform), "
+                    + "shielded=\(hasReadyShieldedFunding), "
+                    + "recovery=\(recoveryFunded), voucher=\(voucherFunded)")
+        }
 
         uiState = CreateUsernameUIState(
             lengthRule: lengthValid ? .valid : .invalid,
@@ -410,10 +466,20 @@ class CreateUsernameViewModel: ObservableObject {
         guard !Task.isCancelled else { return }
 
         let result: UsernameValidationRuleResult
+        var locked = false
         do {
             let available = try await DWIdentityRegistrationCoordinator.shared.dpnsCheckAvailability(username)
             if available {
-                result = .valid
+                // "Available" only means no identity owns the domain document.
+                // A contested label whose vote ended in a LOCK is exactly that
+                // — and unregisterable: the transition is refused at broadcast.
+                // Scope the extra query to contested candidates, the only
+                // labels that can reach a locked poll.
+                if isContestedCandidate {
+                    locked = await DWIdentityRegistrationCoordinator.shared
+                        .isContestedNameLocked(username)
+                }
+                result = locked ? .invalidCritical : .valid
             } else if let pending = DWContestedNameStatusService.shared.pendingLabel,
                       pending.caseInsensitiveCompare(username) == .orderedSame {
                 // Our own contested submission — reads as taken on-chain
@@ -433,6 +499,7 @@ class CreateUsernameViewModel: ObservableObject {
               self.username.trimmingCharacters(in: .whitespacesAndNewlines) == username
         else { return }
 
+        isLockedContestedName = locked
         uiState.usernameBlockedRule = result
         uiState.canContinue = (result == .valid)
     }
@@ -498,7 +565,10 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     private func checkBalance() {
-        let balance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
+        // Same envelope `validateUsername` gates on — the Core picker row must
+        // show the amount that can actually fund the registration, not a total
+        // that includes coins the funding transaction cannot spend.
+        let balance = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
         let platformDuffs = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
         let trimmedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
         let requiredDuffs = trimmedUsername.isEmpty

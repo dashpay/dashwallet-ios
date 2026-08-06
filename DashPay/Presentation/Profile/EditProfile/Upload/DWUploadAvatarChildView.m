@@ -195,17 +195,24 @@ NS_ASSUME_NONNULL_END
                                   [self.animationView startAnimating];
 
                                   break;
-                              case DWUploadAvatarModelState_Error:
+                              case DWUploadAvatarModelState_Error: {
+                                  // Cancel stays available: hiding it left the
+                                  // sheet with nothing but "Try again", trapping
+                                  // the user on a failure they cannot clear.
+                                  const BOOL retryable = self.model.failureIsRetryable;
+                                  NSString *reason = self.model.failureMessage;
                                   self.titleLabel.text = NSLocalizedString(@"Upload Error", nil);
-                                  self.subtitleLabel.text = NSLocalizedString(@"Unable to upload your picture. Please try again.", nil);
-                                  self.retryButton.hidden = NO;
-                                  self.cancelButton.hidden = YES;
+                                  self.subtitleLabel.text = reason
+                                                                ?: NSLocalizedString(@"Unable to upload your picture. Please try again.", nil);
+                                  self.retryButton.hidden = !retryable;
+                                  self.cancelButton.hidden = NO;
                                   self.errorImageView.hidden = NO;
 
                                   [self.animationView stopAnimating];
                                   self.animationView.hidden = YES;
 
                                   break;
+                              }
                               case DWUploadAvatarModelState_Success:
                                   [self.delegate uploadAvatarChildViewDidFinish:self];
                                   break;

@@ -274,7 +274,25 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
         guard status == errSecSuccess, let items = result as? [[String: Any]] else {
+            // Distinguish "the keychain would not talk to us" from "no chain
+            // claims this wallet": both used to surface as the same silent nil,
+            // and the caller's log line ("chain unresolved/unsupported") reads
+            // as the second while an upgrade on a locked device produces the
+            // first. `errSecInteractionNotAllowed` (-25308) is that case — this
+            // query asks for kSecValueData, which the enumeration pass does
+            // not, so it can fail where enumeration just succeeded.
+            logger.error(
+                "🔑 KEYMIG :: chain-wallets keychain query failed, status \(status, privacy: .public)")
             return nil
+        }
+
+        let chainItems = items.filter {
+            ($0[kSecAttrAccount as String] as? String)?
+                .hasPrefix(dashSyncChainWalletsKeyPrefix) == true
+        }
+        if chainItems.isEmpty {
+            logger.error(
+                "🔑 KEYMIG :: no \(dashSyncChainWalletsKeyPrefix, privacy: .public)* items among \(items.count, privacy: .public) keychain item(s) — cannot map any wallet to a chain")
         }
 
         for item in items {
@@ -297,9 +315,20 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 if chainSuffix == mainnetGenesisShortHex { return .mainnet }
                 if chainSuffix == testnetGenesisShortHex { return .testnet }
                 // Unknown chain (devnet/regtest/evonet) — defer in v1.
+                logger.error(
+                    "🔑 KEYMIG :: \(walletID, privacy: .public) belongs to unsupported chain \(chainSuffix, privacy: .public)")
                 return nil
             }
         }
+        // The wallet has a mnemonic but no chain list claims it. Name the
+        // suffixes that were present, so a prefix/format change in the source
+        // keychain is distinguishable from a genuinely orphaned wallet.
+        let suffixes = chainItems
+            .compactMap { ($0[kSecAttrAccount as String] as? String) }
+            .map { String($0.dropFirst(dashSyncChainWalletsKeyPrefix.count)) }
+            .joined(separator: ",")
+        logger.error(
+            "🔑 KEYMIG :: \(walletID, privacy: .public) not listed by any chain; chains present: [\(suffixes, privacy: .public)]")
         return nil
     }
 
