@@ -48,9 +48,9 @@ protocol DWInvitationServicing: AnyObject {
     /// the very end of registration, as a raw SDK
     /// "asset lock … already completely used".
     ///
-    /// `nil` means undetermined — the query failed or the link carries no
-    /// voucher key hash. Callers must treat that as "proceed", never as
-    /// "spent": a network hiccup must not block a good invitation.
+    /// `nil` means undetermined — no wallet, or the lookup failed. Callers
+    /// must treat that as "proceed", never as "spent": a network hiccup must
+    /// not block a good invitation.
     func isVoucherAlreadyClaimed(uri: String) async -> Bool?
 }
 
@@ -94,24 +94,29 @@ final class DWInvitationService: DWInvitationServicing {
         DWCurrentUserIdentityInfo.shared.identityId != nil
     }
 
-    /// See the protocol. An identity claimed from an invitation carries the
-    /// voucher's one-time key, so asking Platform for an identity by that
-    /// key's hash answers the question directly.
+    /// See the protocol. Platform derives a created identity's id from the
+    /// asset-lock outpoint, so the id an invitation *would* produce is knowable
+    /// before the claim — and an identity already existing under it is exactly
+    /// the "this voucher is spent" signal.
+    ///
+    /// Two round trips: the SDK refetches the funding transaction to locate the
+    /// credit output the voucher controls (it need not be output 0), then we
+    /// fetch the identity under the resulting id.
     func isVoucherAlreadyClaimed(uri: String) async -> Bool? {
-        guard let sdk = SwiftDashSDKHost.shared.sdk,
-              let hash = preview(for: uri)?.voucherPublicKeyHash,
-              !hash.allSatisfy({ $0 == 0 })
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let sdk = SwiftDashSDKHost.shared.sdk
         else {
             return nil
         }
-        let hex = hash.map { String(format: "%02x", $0) }.joined()
         do {
-            let identity = try await sdk.identityGetByPublicKeyHash(publicKeyHash: hex)
+            let prospectiveId = try await wallet.invitationProspectiveIdentityId(uri: uri)
+            let identity = try await sdk.identityGet(identityId: prospectiveId.toBase58String())
             return !identity.isEmpty
         } catch {
-            // Undetermined, not "unclaimed": a lookup miss and a transport
-            // failure are indistinguishable here, and the claim itself is the
-            // authority either way.
+            // Undetermined, not "unclaimed". A miss and a transport failure are
+            // indistinguishable at this layer, and an unclaimed invitation is
+            // *expected* to miss — so the only safe reading is "proceed" and
+            // let the claim be the authority.
             Self.logger.info(
                 "🎟️ INVITE :: claimed-check inconclusive: \(String(describing: error), privacy: .public)")
             return nil
