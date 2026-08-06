@@ -66,6 +66,10 @@ final class ClaimInvitationViewModel: ObservableObject {
         /// This wallet already has a DashPay identity — claiming would
         /// register a second one, which dashwallet doesn't support.
         case alreadyRegistered
+        /// The voucher behind the link has already funded an identity.
+        /// Only reachable after the network check on Continue; structural
+        /// parsing cannot see it.
+        case alreadyClaimed
     }
 
     @Published var input: String = ""
@@ -73,6 +77,8 @@ final class ClaimInvitationViewModel: ObservableObject {
     @Published private(set) var normalizedURI: String? = nil
     /// The inviter's DPNS username (`du`) when the link carries one.
     @Published private(set) var inviterUsername: String? = nil
+    /// The Continue-time network check is in flight.
+    @Published private(set) var isChecking = false
 
     private let service: DWInvitationServicing
 
@@ -105,6 +111,23 @@ final class ClaimInvitationViewModel: ObservableObject {
         normalizedURI = uri
         inviterUsername = preview.hasInviter ? preview.inviterUsername : nil
         state = .valid
+    }
+
+    /// Ask Platform whether the voucher is still unspent, then hand the URI on.
+    ///
+    /// Deliberately here rather than in `evaluate()`: this costs a network
+    /// round trip and would otherwise fire on every keystroke of a pasted
+    /// link. An undetermined answer proceeds — the claim itself is the
+    /// authority, and a network hiccup must not block a good invitation.
+    func continueIfUnclaimed(_ proceed: @escaping (String) -> Void) async {
+        guard let uri = normalizedURI, !isChecking else { return }
+        isChecking = true
+        defer { isChecking = false }
+        if await service.isVoucherAlreadyClaimed(uri: uri) == true {
+            state = .alreadyClaimed
+            return
+        }
+        proceed(uri)
     }
 }
 
@@ -162,10 +185,10 @@ struct ClaimInvitationScreen: View {
 
             DashButton(
                 text: NSLocalizedString("Continue", comment: ""),
-                isEnabled: viewModel.state == .valid
+                isEnabled: viewModel.state == .valid && !viewModel.isChecking,
+                isLoading: viewModel.isChecking
             ) {
-                guard let uri = viewModel.normalizedURI else { return }
-                onContinue(uri)
+                Task { await viewModel.continueIfUnclaimed(onContinue) }
             }
         }
         .padding(.horizontal, 20)
@@ -204,6 +227,15 @@ struct ClaimInvitationScreen: View {
                 systemImage: "xmark.octagon")
                 .font(.subheadline)
                 .foregroundColor(.red)
+
+        case .alreadyClaimed:
+            Label(
+                NSLocalizedString(
+                    "This invitation has already been used. Ask the sender for a new one.",
+                    comment: "DashPay Invitations"),
+                systemImage: "envelope.badge.shield.half.filled")
+                .font(.subheadline)
+                .foregroundColor(.orange)
 
         case .alreadyRegistered:
             Label(

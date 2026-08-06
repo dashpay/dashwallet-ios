@@ -35,6 +35,15 @@ struct JoinDashPayReadinessScreen: View {
     let onProceed: () -> Void
     /// Return to the screen that opened this interstitial.
     let onClose: () -> Void
+    /// Open the invitation-redeem flow.
+    ///
+    /// A voucher funds the registration outright, so none of the checklist
+    /// above applies to it. Until this existed the only way in was the
+    /// one-shot `JoinDashPayInfoDialog`, which sets
+    /// `UsernamePrefs.joinDashPayInfoShown` the first time it appears — so
+    /// anyone who had already dismissed it and *then* received an invitation
+    /// had no way to redeem it short of reinstalling.
+    let onClaimInvitation: () -> Void
 
     /// Suggested deposit headroom (0.003 DASH in credits) added to the
     /// shortfall prefill: the Core→Shielded route carves the Platform
@@ -108,6 +117,16 @@ struct JoinDashPayReadinessScreen: View {
                 }
                 .padding(.top, 12)
             }
+
+            // Always offered: an invitation pays for the registration, so it
+            // is a way past this screen regardless of the checklist state.
+            Button(action: onClaimInvitation) {
+                Text(NSLocalizedString("Have an invitation?", comment: "DashPay Invitations"))
+                    .font(.footnote)
+                    .foregroundColor(.dash.blue)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(.top, 12)
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)

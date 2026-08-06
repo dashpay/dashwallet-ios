@@ -25,7 +25,14 @@ final class NetworkReachability: NSObject {
     @objc static let didChangeNotification =
         Notification.Name("org.dash.networking.reachability.change")
 
-    private let queue = DispatchQueue(label: "org.dash.reachability", qos: .utility)
+    /// `.userInitiated`, not `.utility`, because `startMonitoring` blocks its
+    /// caller on the first path update delivered here. That caller is the main
+    /// thread at launch (`SyncingActivityMonitor`), so a lower-QoS queue makes
+    /// a user-interactive thread wait on utility work — the priority inversion
+    /// the Thread Performance Checker flags. Matching the QoS to the highest
+    /// waiter removes it; the ongoing updates this queue also serves are cheap
+    /// enough that the higher class costs nothing.
+    private let queue = DispatchQueue(label: "org.dash.reachability", qos: .userInitiated)
     private var monitor: NWPathMonitor?
     private let lock = NSLock()
 

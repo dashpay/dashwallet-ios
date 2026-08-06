@@ -553,6 +553,14 @@ struct MainMenuScreen: View {
             },
             onClose: {
                 readinessNavigationController?.dismiss(animated: true)
+            },
+            onClaimInvitation: {
+                readinessNavigationController?.dismiss(animated: true) {
+                    guard let menuNavigationController else { return }
+                    ClaimInvitationFlow.pushRedeemScreen(
+                        on: menuNavigationController,
+                        dashPayModel: dashPayModel)
+                }
             })
         let hosting = UIHostingController(rootView: screen)
         hosting.view.backgroundColor = UIColor.dw_background()
