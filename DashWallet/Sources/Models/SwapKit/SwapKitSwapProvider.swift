@@ -32,6 +32,10 @@ import Foundation
 /// etc.) are accessed from a single isolation domain, eliminating concurrent read/write races.
 @MainActor
 final class SwapKitSwapProvider: SwapProvider {
+    private enum Constants {
+        static let maxMemoBytes = 80
+    }
+
     nonisolated var displayName: String { "SwapKit" }
     nonisolated var usesGenericFeeLabel: Bool { true }
     nonisolated var buildsSwapKitDeposit: Bool { true }
@@ -140,16 +144,8 @@ final class SwapKitSwapProvider: SwapProvider {
     /// Sell is always unaffected — all pools are returned regardless of classification state.
     private func filteredPools(_ pools: [SwapPool], for direction: SwapDirection) async throws -> [SwapPool] {
         guard direction == .buy else {
-            // Sell: hide coins that can ONLY route via MAYACHAIN. Those routes require an
-            // OP_RETURN memo on the DASH deposit, which SwiftDashSDK cannot build. Coins also
-            // routable via NEAR (nearOnly or both) stay — the Sell quote forces NEAR intents,
-            // so they deposit memo-less. If classification is unusable (network error)
-            // mayaOnlyAssets is empty and nothing is hidden; a mayaOnly coin tapped in that
-            // state simply returns "no route" from the NEAR-forced quote, so no OP_RETURN swap
-            // can be built.
             if !classificationBuilt { await buildClassification() }
-            guard classificationUsable, !mayaOnlyAssets.isEmpty else { return pools }
-            return pools.filter { !mayaOnlyAssets.contains($0.asset.uppercased()) }
+            return pools
         }
 
         if !classificationUsable {
@@ -262,7 +258,7 @@ final class SwapKitSwapProvider: SwapProvider {
             let response = try await SwapKitAPIService.shared.quote(request)
             return response.error
         } catch {
-            DSLogger.log("SwapKit: address validation request failed: \(error)")
+            DWLogger.log("SwapKit: address validation request failed: \(error)")
             return NSLocalizedString("Address validation unavailable — please check your connection", comment: "SwapKit")
         }
     }
@@ -417,13 +413,10 @@ final class SwapKitSwapProvider: SwapProvider {
             return errorResult(NSLocalizedString("No vault address returned by SwapKit", comment: "SwapKit"))
         }
 
-        // Defense-in-depth: NEAR-forced routing must never carry a memo. If a memo does come
-        // back, the deposit would need an OP_RETURN output that SwiftDashSDK cannot build, so
-        // fail loudly here instead of silently building an invalid (memo-less) deposit that the
-        // network would treat as a plain send and never credit the swap.
-        if let memo = swapResponse.memo, !memo.isEmpty {
-            DSLogger.log("SwapKit: rejecting memo-bearing route for \(toAsset) — OP_RETURN unsupported")
-            return errorResult(NSLocalizedString("This coin isn’t available for swapping right now.", comment: "SwapKit"))
+        let memo = swapResponse.memo?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let memo, !memo.isEmpty, memo.utf8.count > Constants.maxMemoBytes {
+            DWLogger.log("SwapKit: rejecting over-length memo for \(toAsset) — \(memo.utf8.count) bytes")
+            return errorResult(SwapKitErrorCopy.mayaMemoTooLongErrorCode)
         }
 
         // Step 4: map to neutral result.
@@ -442,8 +435,7 @@ final class SwapKitSwapProvider: SwapProvider {
             expectedAmountOut: expectedOut,
             fees: SwapFeeResult(total: feeBaseUnits, outbound: feeBaseUnits),
             inboundAddress: vaultAddress,
-            // Always nil after the NEAR-forced routing + guard above; the deposit is a plain send.
-            memo: nil,
+            memo: memo?.isEmpty == false ? memo : nil,
             executionNetwork: executionNetwork
         )
     }
@@ -460,7 +452,7 @@ final class SwapKitSwapProvider: SwapProvider {
             return mapTrackResponse(response)
         } catch {
             // Non-fatal; return not-yet-observed so polling continues.
-            DSLogger.log("SwapKit: track request failed (deposit=\(depositAddress ?? "nil")): \(error)")
+            DWLogger.log("SwapKit: track request failed (deposit=\(depositAddress ?? "nil")): \(error)")
             return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil)
         }
     }
@@ -481,11 +473,17 @@ final class SwapKitSwapProvider: SwapProvider {
     private func buildClassification() async {
         classificationBuilt = true
         do {
-            async let mayaRequest = SwapKitAPIService.shared.tokens(provider: SwapKitConstants.providerMaya)
+            // Union both Maya providers: their token lists differ, and an asset routable only
+            // via non-streaming MAYACHAIN would otherwise be classified as un-routable and
+            // quoted against NEAR, which cannot route it either.
+            async let mayaChainRequest = SwapKitAPIService.shared.tokens(provider: SwapKitConstants.providerMayaChain)
+            async let mayaStreamingRequest = SwapKitAPIService.shared.tokens(provider: SwapKitConstants.providerMayaStreaming)
             async let nearRequest = SwapKitAPIService.shared.tokens(provider: SwapKitConstants.providerNear)
-            let (mayaTokens, nearTokens) = (try await mayaRequest, try await nearRequest)
+            let (mayaChainTokens, mayaStreamingTokens, nearTokens) =
+                (try await mayaChainRequest, try await mayaStreamingRequest, try await nearRequest)
 
-            let mayaIds = Set(mayaTokens.map { $0.identifier.uppercased() })
+            let mayaIds = Set(mayaChainTokens.map { $0.identifier.uppercased() })
+                .union(mayaStreamingTokens.map { $0.identifier.uppercased() })
             let nearIds = Set(nearTokens.map { $0.identifier.uppercased() })
 
             let newMayaOnly = mayaIds.subtracting(nearIds)
@@ -496,7 +494,7 @@ final class SwapKitSwapProvider: SwapProvider {
             // An empty result (network error, bad decode, empty response) is indistinguishable
             // from "everything is both", which would wrongly pass all coins through Buy filter.
             guard !mayaIds.isEmpty || !nearIds.isEmpty else {
-                DSLogger.log("SwapKit: classification produced empty token lists — marking unusable")
+                DWLogger.log("SwapKit: classification produced empty token lists — marking unusable")
                 classificationUsable = false
                 // Drop any prior (now-stale) classification so networkLabels/haltedAssets,
                 // which skip rebuilding while classificationBuilt is true, can't render stale state.
@@ -511,7 +509,7 @@ final class SwapKitSwapProvider: SwapProvider {
 
             // Build identifier → logoURI lookup. Maya takes priority; NEAR fills gaps.
             var logos: [String: String] = [:]
-            for token in mayaTokens {
+            for token in mayaChainTokens + mayaStreamingTokens {
                 if let uri = token.logoURI { logos[token.identifier.uppercased()] = uri }
             }
             for token in nearTokens {
@@ -520,11 +518,11 @@ final class SwapKitSwapProvider: SwapProvider {
             }
             logoURIByIdentifier = logos
 
-            DSLogger.log("SwapKit: classification built — mayaOnly=\(mayaOnlyAssets.count) nearOnly=\(nearOnlyAssets.count) both=\(bothAssets.count)")
+            DWLogger.log("SwapKit: classification built — mayaOnly=\(mayaOnlyAssets.count) nearOnly=\(nearOnlyAssets.count) both=\(bothAssets.count)")
         } catch {
             classificationUsable = false
             clearClassification()
-            DSLogger.log("SwapKit: classification fetch failed: \(error) — Buy will show error state")
+            DWLogger.log("SwapKit: classification fetch failed: \(error) — Buy will show error state")
         }
     }
 
@@ -551,6 +549,8 @@ final class SwapKitSwapProvider: SwapProvider {
     }
 
     private func fetchQuoteResponse(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapKitQuoteResponse {
+        if !classificationBuilt { await buildClassification() }
+
         let sellAmount = baseUnitsToHuman(dashSatoshis)
         let quoteRequest = SwapKitQuoteRequest(
             sellAsset: SwapKitConstants.dashAsset,
@@ -559,12 +559,7 @@ final class SwapKitSwapProvider: SwapProvider {
             slippage: SwapKitConstants.defaultSlippagePercent,
             sourceAddress: nil,
             destinationAddress: destination,
-            // Force NEAR-intents routing: those routes deposit to a unique address with NO
-            // memo, so the DASH tx is a plain send that SwiftDashSDK can build. MAYACHAIN
-            // routes would return an OP_RETURN memo the SDK cannot express, so we never ask
-            // for them here (mayaOnly coins are hidden from the picker; both-routable coins
-            // stay memoless via NEAR). Mirrors requestBuyRoute, which already forces NEAR.
-            providers: [SwapKitConstants.providerNear],
+            providers: sellQuoteProviders(for: toAsset),
             affiliateFee: nil
         )
 
@@ -597,6 +592,8 @@ final class SwapKitSwapProvider: SwapProvider {
             slippage: SwapKitConstants.defaultSlippagePercent,
             sourceAddress: refundAddress,
             destinationAddress: destination,
+            // Buy deposits are built by the counterparty, so OP_RETURN support in the app does
+            // not change Buy routing; keep the existing NEAR-only request shape.
             providers: [SwapKitConstants.providerNear],
             affiliateFee: nil
         )
@@ -709,6 +706,7 @@ final class SwapKitSwapProvider: SwapProvider {
             slippage: SwapKitConstants.defaultSlippagePercent,
             sourceAddress: nil,
             destinationAddress: nil,
+            // Buy routability is still about counterparty-built deposits, so keep probing NEAR.
             providers: [SwapKitConstants.providerNear],
             affiliateFee: nil
         )
@@ -790,6 +788,37 @@ final class SwapKitSwapProvider: SwapProvider {
         return code
     }
 
+    /// Best-route selection across the two protocols the classification covers: whatever a
+    /// coin is actually routable by is offered, and SwapKit picks. A dual-routable coin is
+    /// therefore quoted against NEAR *and* MAYACHAIN, which is what the picker's "Multiple
+    /// networks" label promises.
+    ///
+    /// The list is always explicit — never `nil` — so routing stays confined to NEAR and
+    /// MAYACHAIN. Passing no filter would also admit THORChain, Chainflip and every other
+    /// SwapKit provider, none of which this classification or the deposit path accounts for.
+    ///
+    /// Both Maya providers are named because MAYACHAIN and MAYACHAIN_STREAMING are distinct
+    /// providers with different token lists.
+    ///
+    /// Consequence to keep in mind: a MAYACHAIN route can now win for a coin that previously
+    /// always deposited memo-less, so the 80-byte memo ceiling and Maya's dust floor apply to
+    /// dual-routable coins too. Both guards already run on the fresh pre-commit quote.
+    private func sellQuoteProviders(for toAsset: String) -> [String]? {
+        guard classificationUsable else {
+            return [SwapKitConstants.providerNear]
+        }
+
+        let key = toAsset.uppercased()
+        if mayaOnlyAssets.contains(key) {
+            return SwapKitConstants.mayaProviders
+        }
+        if bothAssets.contains(key) {
+            return [SwapKitConstants.providerNear] + SwapKitConstants.mayaProviders
+        }
+
+        return [SwapKitConstants.providerNear]
+    }
+
     // MARK: - Private: Amount Conversion
 
     private func baseUnitsToHuman(_ satoshis: Int64) -> String {
@@ -858,7 +887,7 @@ final class SwapKitSwapProvider: SwapProvider {
             } else if chain == "DASH" || (asset?.contains("DASH") ?? false) {
                 total += amount * targetPerDash
             } else {
-                DSLogger.log("SwapKit fee skipped: type=\(fee.type ?? "?") asset=\(fee.asset ?? "?") chain=\(fee.chain ?? "?")")
+                DWLogger.log("SwapKit fee skipped: type=\(fee.type ?? "?") asset=\(fee.asset ?? "?") chain=\(fee.chain ?? "?")")
             }
         }
 
@@ -959,7 +988,11 @@ final class SwapKitSwapProvider: SwapProvider {
     // MARK: - Private: Helpers
 
 private func errorResult(_ message: String) -> SwapQuoteResult {
-        SwapQuoteResult(error: message, expectedAmountOut: nil, fees: nil, inboundAddress: nil, memo: nil, executionNetwork: nil)
+        // Every quote/swap failure funnels through here on its way to the UI, which renders a
+        // mapped (often generic) string. Log the raw message at the source so a failure is
+        // diagnosable from an exported log instead of only from a screenshot.
+        DWLogger.log("SwapKit: quote/swap failed — raw: \(message)")
+        return SwapQuoteResult(error: message, expectedAmountOut: nil, fees: nil, inboundAddress: nil, memo: nil, executionNetwork: nil)
     }
 }
 

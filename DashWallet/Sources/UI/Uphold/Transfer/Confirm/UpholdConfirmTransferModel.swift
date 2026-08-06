@@ -78,10 +78,6 @@ class UpholdConfirmTransferModel: ConfirmPaymentModel {
         }
     }
 
-    func cancel() {
-        DWUpholdClient.sharedInstance().cancelTransaction(transaction, card: card)
-    }
-
     func resetState() {
         state = .none
     }

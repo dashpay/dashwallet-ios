@@ -328,7 +328,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
             // PiggyCards returns a simple address and amount, not a BIP70 URL
             // Convert DASH amount to satoshis (1 DASH = 100,000,000 satoshis)
-            let dashAmountInSatoshis = UInt64(giftCardInfo.amount * 100_000_000)
+            guard giftCardInfo.amount.isFinite,
+                  giftCardInfo.amount >= 0 else {
+                throw DashSpendError.paymentProcessingError("Invalid gift card amount")
+            }
+
+            let satoshis = NSDecimalNumber(decimal: Decimal(giftCardInfo.amount) * Decimal(100_000_000))
+            guard satoshis.compare(NSDecimalNumber.zero) != .orderedAscending,
+                  satoshis.compare(NSDecimalNumber(value: UInt64.max)) != .orderedDescending else {
+                throw DashSpendError.paymentProcessingError("Gift card amount is out of range")
+            }
+            let dashAmountInSatoshis = satoshis.uint64Value
 
             // Use sendCoins directly with address and amount
             // This will properly trigger PIN authorization
@@ -426,7 +436,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private var canShowInsufficientFunds: Bool {
         let dashAmount = (try? CurrencyExchanger.shared.convertToDash(amount: amount, currency: kDefaultCurrencyCode)) ?? 0
 
-        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
+        let allAvailableFunds = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
 
         return dashAmount.plainDashAmount > allAvailableFunds
     }
@@ -596,7 +606,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 }
 
                 await MainActor.run {
-                    DSLogger.log(
+                    DWLogger.log(
                         "DashSpend: PiggyCards mode=\(finalFixed ? "fixed" : "flexible"), " +
                         "range=[\(finalMin), \(finalMax)], fixedCount=\(finalDenominations.count)"
                     )
@@ -627,7 +637,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 self.checkAmountForErrors()
             }
         } catch {
-            DSLogger.log("DashSpend updateMerchantInfo failed for provider \(provider.displayName): \(error.localizedDescription)")
+            DWLogger.log("DashSpend updateMerchantInfo failed for provider \(provider.displayName): \(error.localizedDescription)")
 
             await MainActor.run {
                 self.isLoading = false

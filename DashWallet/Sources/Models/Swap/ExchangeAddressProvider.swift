@@ -191,16 +191,16 @@ class ExchangeAddressProvider {
     /// - Returns: The deposit address string, or `nil` if the currency is not available.
     func fetchUpholdAddress(for coin: SwapCryptoCurrency) async -> String? {
         let context = ExchangeAddressLookupContext(coin: coin)
-        DSLogger.log("Maya Uphold: fetchUpholdAddress for \(context.currencyCode) on \(context.normalizedNetworkKey), authorized=\(isUpholdAuthorized)")
+        DWLogger.log("Maya Uphold: fetchUpholdAddress for \(context.currencyCode) on \(context.normalizedNetworkKey), authorized=\(isUpholdAuthorized)")
         guard isUpholdAuthorized else { return nil }
 
         // Return cached address if available
         if let cached = Self.upholdAddressCache[context.cacheKey] {
-            DSLogger.log("Maya Uphold: Returning cached address for \(context.cacheKey)")
+            DWLogger.log("Maya Uphold: Returning cached address for \(context.cacheKey)")
             return cached
         }
 
-        DSLogger.log("Maya Uphold: No cache for \(context.cacheKey), fetching from API")
+        DWLogger.log("Maya Uphold: No cache for \(context.cacheKey), fetching from API")
         // No cached address — fetch from API and cache
         return await fetchAndCacheUpholdAddress(for: coin)
     }
@@ -220,20 +220,29 @@ class ExchangeAddressProvider {
         // Step 1: Try to find an existing card
         let cards = await fetchUpholdCards()
         let availableCurrencies = cards.map { $0.currency.uppercased() }
-        DSLogger.log("Maya Uphold: Got \(cards.count) cards: \(availableCurrencies), looking for \(context.currencyCode) on \(network)")
+        DWLogger.log("Maya Uphold: Got \(cards.count) cards: \(availableCurrencies), looking for \(context.currencyCode) on \(network)")
 
         if let matchingCard = cards.first(where: { $0.currency.uppercased() == context.currencyCode }) {
             // Look for the real crypto address by network key (e.g., "bitcoin", "ethereum").
             // The card's address dictionary can also contain internal Uphold identifiers
             // (e.g., "UH1D8C10A5") under non-network keys — skip those.
             if let networkAddress = matchingCard.address?[network], !networkAddress.isEmpty {
-                DSLogger.log("Maya Uphold: Found network address for \(context.currencyCode) on network '\(network)': \(networkAddress)")
+                DWLogger.log("Maya Uphold: Found network address for \(context.currencyCode) on network '\(network)': \(networkAddress)")
                 Self.upholdAddressCache[context.cacheKey] = networkAddress
                 return networkAddress
             }
 
-            // No address for this network — create one via POST
-            DSLogger.log("Maya Uphold: No '\(network)' address on card \(matchingCard.id), creating one")
+            // No address for this network. Only ask Uphold to mint one for a network its
+            // address endpoint actually accepts — otherwise this is a guaranteed HTTP 400
+            // ("network: This value is not valid") on every tap.
+            guard Self.upholdAddressableNetworks.contains(network) else {
+                DWLogger.log(
+                    "Maya Uphold: card \(matchingCard.id) has no '\(network)' address and Uphold "
+                        + "cannot create one for that network — treating as unavailable")
+                return nil
+            }
+
+            DWLogger.log("Maya Uphold: No '\(network)' address on card \(matchingCard.id), creating one")
             if let address = await createUpholdAddress(cardId: matchingCard.id, network: network) {
                 Self.upholdAddressCache[context.cacheKey] = address
                 return address
@@ -242,7 +251,14 @@ class ExchangeAddressProvider {
         }
 
         // Step 2: No card exists — create card then address
-        DSLogger.log("Maya Uphold: No card for \(context.currencyCode), creating card and address")
+        guard Self.upholdAddressableNetworks.contains(network) else {
+            DWLogger.log(
+                "Maya Uphold: no card for \(context.currencyCode) and Uphold cannot create a "
+                    + "'\(network)' address — treating as unavailable")
+            return nil
+        }
+
+        DWLogger.log("Maya Uphold: No card for \(context.currencyCode), creating card and address")
         if let cardId = await createUpholdCard(currency: context.currencyCode) {
             if let address = await createUpholdAddress(cardId: cardId, network: network) {
                 Self.upholdAddressCache[context.cacheKey] = address
@@ -252,6 +268,24 @@ class ExchangeAddressProvider {
 
         return nil
     }
+
+    /// Networks Uphold's `POST /me/cards/:id/addresses` endpoint accepts, per its documentation
+    /// (https://github.com/uphold/docs/blob/master/_cards.md).
+    ///
+    /// `upholdNetwork(for:)` maps a Maya chain onto Uphold's naming, but naming a network is not
+    /// the same as Uphold being able to mint an address on it — requesting e.g. `arbitrum` is
+    /// rejected with `{"code":"validation_failed","errors":{"network":[{"code":"invalid"}]}}`.
+    /// An address that already exists on the card is still used regardless of this set; the gate
+    /// only governs whether we ask Uphold to create a new one.
+    private static let upholdAddressableNetworks: Set<String> = [
+        "bitcoin",
+        "bitcoin-cash",
+        "bitcoin-gold",
+        "dash",
+        "ethereum",
+        "litecoin",
+        "xrp-ledger",
+    ]
 
     /// Maps the selected Maya chain to the Uphold network name used during address creation.
     private func upholdNetwork(for context: ExchangeAddressLookupContext) -> String {
@@ -279,9 +313,20 @@ class ExchangeAddressProvider {
     // MARK: - Uphold API Helpers
 
     /// Fetches all cards from the Uphold API, including non-Dash crypto cards.
+    /// Uphold answers 401 once the access token expires, but the token stays in the keychain, so
+    /// `DWUpholdClient.isAuthorized` keeps reporting YES. `EnterAddressViewModel` uses exactly
+    /// that flag to tell "this coin isn't supported" (`.notAvailable`) from "your session ended"
+    /// (`.loggedOut`) — so without this the expired case shows "Not available" and the user is
+    /// never offered the re-login that would actually fix it.
+    private func invalidateSessionIfRejected(_ statusCode: Int) {
+        guard statusCode == 401 else { return }
+        DWLogger.log("Maya Uphold: session rejected (HTTP 401) — clearing the stored token")
+        DWUpholdClient.sharedInstance().invalidateRejectedSession()
+    }
+
     private func fetchUpholdCards() async -> [UpholdCard] {
         guard let token = getUpholdAccessToken() else {
-            DSLogger.log("Maya Uphold: No access token available for fetching cards")
+            DWLogger.log("Maya Uphold: No access token available for fetching cards")
             return []
         }
 
@@ -299,13 +344,14 @@ class ExchangeAddressProvider {
 
             guard (200...299).contains(statusCode) else {
                 let responseBody = String(data: data, encoding: .utf8) ?? "<non-utf8>"
-                DSLogger.log("Maya Uphold: Fetch cards failed (HTTP \(statusCode)): \(responseBody)")
+                DWLogger.log("Maya Uphold: Fetch cards failed (HTTP \(statusCode)): \(responseBody)")
+                invalidateSessionIfRejected(statusCode)
                 return []
             }
 
             return try JSONDecoder().decode([UpholdCard].self, from: data)
         } catch {
-            DSLogger.log("Maya Uphold: Failed to fetch/decode cards: \(error)")
+            DWLogger.log("Maya Uphold: Failed to fetch/decode cards: \(error)")
             return []
         }
     }
@@ -332,14 +378,15 @@ class ExchangeAddressProvider {
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
                 let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
-                DSLogger.log("Maya Uphold: Create card failed with status \(statusCode) for \(currency)")
+                DWLogger.log("Maya Uphold: Create card failed with status \(statusCode) for \(currency)")
+                invalidateSessionIfRejected(statusCode)
                 return nil
             }
             let card = try JSONDecoder().decode(UpholdCard.self, from: data)
-            DSLogger.log("Maya Uphold: Created card for \(currency): \(card.id)")
+            DWLogger.log("Maya Uphold: Created card for \(currency): \(card.id)")
             return card.id
         } catch {
-            DSLogger.log("Maya Uphold: Failed to create card for \(currency): \(error)")
+            DWLogger.log("Maya Uphold: Failed to create card for \(currency): \(error)")
             return nil
         }
     }
@@ -348,7 +395,7 @@ class ExchangeAddressProvider {
     /// - Returns: The address string if successful, or `nil`.
     private func createUpholdAddress(cardId: String, network: String) async -> String? {
         guard let token = getUpholdAccessToken() else {
-            DSLogger.log("Maya Uphold: No access token available for address creation")
+            DWLogger.log("Maya Uphold: No access token available for address creation")
             return nil
         }
 
@@ -370,22 +417,23 @@ class ExchangeAddressProvider {
 
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                let address = json["id"] as? String {
-                DSLogger.log("Maya Uphold: Created address on card \(cardId) (HTTP \(statusCode)): \(address)")
+                DWLogger.log("Maya Uphold: Created address on card \(cardId) (HTTP \(statusCode)): \(address)")
                 return address
             }
 
             // Log the full response for debugging
             let responseBody = String(data: data, encoding: .utf8) ?? "<non-utf8>"
-            DSLogger.log("Maya Uphold: Address creation failed (HTTP \(statusCode)). Response: \(responseBody)")
+            DWLogger.log("Maya Uphold: Address creation failed (HTTP \(statusCode)). Response: \(responseBody)")
+            invalidateSessionIfRejected(statusCode)
             return nil
         } catch {
-            DSLogger.log("Maya Uphold: Failed to create address on card \(cardId): \(error)")
+            DWLogger.log("Maya Uphold: Failed to create address on card \(cardId): \(error)")
             return nil
         }
     }
 
     private func getUpholdAccessToken() -> String? {
-        getKeychainString("DW_UPHOLD_ACCESS_TOKEN", nil)
+        KeychainStore.string(account: "DW_UPHOLD_ACCESS_TOKEN")
     }
 
     // MARK: - Coinbase
@@ -460,22 +508,22 @@ class ExchangeAddressProvider {
     /// - Returns: The deposit address string, or `nil` if the currency is not available.
     func fetchCoinbaseAddress(for coin: SwapCryptoCurrency) async -> String? {
         let context = ExchangeAddressLookupContext(coin: coin)
-        DSLogger.log("Maya Coinbase: fetchCoinbaseAddress for \(context.currencyCode) on \(context.normalizedNetworkKey), authorized=\(isCoinbaseAuthorized)")
+        DWLogger.log("Maya Coinbase: fetchCoinbaseAddress for \(context.currencyCode) on \(context.normalizedNetworkKey), authorized=\(isCoinbaseAuthorized)")
         guard isCoinbaseAuthorized else { return nil }
 
         // Return cached address if available
         if let cached = Self.coinbaseAddressCache[context.cacheKey] {
-            DSLogger.log("Maya Coinbase: Returning cached address for \(context.cacheKey)")
+            DWLogger.log("Maya Coinbase: Returning cached address for \(context.cacheKey)")
             return cached
         }
 
         if let persistedAddress = Self.persistedCoinbaseAddress(for: context.cacheKey) {
-            DSLogger.log("Maya Coinbase: Returning persisted address for \(context.cacheKey)")
+            DWLogger.log("Maya Coinbase: Returning persisted address for \(context.cacheKey)")
             Self.coinbaseAddressCache[context.cacheKey] = persistedAddress
             return persistedAddress
         }
 
-        DSLogger.log("Maya Coinbase: No cache for \(context.cacheKey), creating new address")
+        DWLogger.log("Maya Coinbase: No cache for \(context.cacheKey), creating new address")
         // No cached address — create a new one
         return await createAndCacheCoinbaseAddress(for: coin)
     }
@@ -508,24 +556,24 @@ class ExchangeAddressProvider {
             return address
         }
 
-        DSLogger.log("Maya Coinbase: Currency \(context.currencyCode) on \(context.normalizedNetworkKey) not available on Coinbase")
+        DWLogger.log("Maya Coinbase: Currency \(context.currencyCode) on \(context.normalizedNetworkKey) not available on Coinbase")
         return nil
     }
 
     /// Fetches the account directly via `GET /v2/accounts/{currencyCode}` and creates an address.
     private func fetchCoinbaseAddressViaDirectLookup(context: ExchangeAddressLookupContext) async -> String? {
         do {
-            DSLogger.log("Maya Coinbase: Trying direct account lookup for \(context.currencyCode)")
+            DWLogger.log("Maya Coinbase: Trying direct account lookup for \(context.currencyCode)")
             let account = try await Coinbase.shared.account(byCurrencyCode: context.currencyCode)
-            DSLogger.log("Maya Coinbase: Direct lookup found account for \(context.currencyCode): \(account.info.currency.code)")
+            DWLogger.log("Maya Coinbase: Direct lookup found account for \(context.currencyCode): \(account.info.currency.code)")
             let addressInfo = try await account.retrieveAddressInfo(network: context.coinbaseCreateNetwork)
             guard let address = validatedCoinbaseAddress(addressInfo: addressInfo, context: context, source: "direct lookup") else {
                 return nil
             }
-            DSLogger.log("Maya Coinbase: Created address for \(context.currencyCode) via direct lookup: \(address)")
+            DWLogger.log("Maya Coinbase: Created address for \(context.currencyCode) via direct lookup: \(address)")
             return address
         } catch {
-            DSLogger.log("Maya Coinbase: Direct lookup failed for \(context.currencyCode): \(error)")
+            DWLogger.log("Maya Coinbase: Direct lookup failed for \(context.currencyCode): \(error)")
             return nil
         }
     }
@@ -533,17 +581,17 @@ class ExchangeAddressProvider {
     /// Lists all accounts and searches for the currency, then creates an address.
     private func fetchCoinbaseAddressViaAccountList(context: ExchangeAddressLookupContext) async -> String? {
         do {
-            DSLogger.log("Maya Coinbase: Falling back to account list for \(context.currencyCode) on \(context.normalizedNetworkKey)")
+            DWLogger.log("Maya Coinbase: Falling back to account list for \(context.currencyCode) on \(context.normalizedNetworkKey)")
             let accounts = try await Coinbase.shared.accountsIncludingEmpty()
             let availableCurrencies = accounts.map { $0.info.currency.code.uppercased() }
-            DSLogger.log("Maya Coinbase: Got \(accounts.count) accounts, looking for \(context.currencyCode)")
+            DWLogger.log("Maya Coinbase: Got \(accounts.count) accounts, looking for \(context.currencyCode)")
 
             let candidateAccounts = accounts.filter {
                 $0.info.currency.code.uppercased() == context.currencyCode && $0.info.allowDeposits
             }
 
             guard let account = preferredCoinbaseAccount(from: candidateAccounts, context: context) else {
-                DSLogger.log("Maya Coinbase: \(context.currencyCode) not found in \(accounts.count) depositable accounts")
+                DWLogger.log("Maya Coinbase: \(context.currencyCode) not found in \(accounts.count) depositable accounts")
                 return nil
             }
 
@@ -551,10 +599,10 @@ class ExchangeAddressProvider {
             guard let address = validatedCoinbaseAddress(addressInfo: addressInfo, context: context, source: "account list") else {
                 return nil
             }
-            DSLogger.log("Maya Coinbase: Created address for \(context.currencyCode) via account list: \(address)")
+            DWLogger.log("Maya Coinbase: Created address for \(context.currencyCode) via account list: \(address)")
             return address
         } catch {
-            DSLogger.log("Maya Coinbase: Account list fallback failed for \(context.currencyCode): \(error)")
+            DWLogger.log("Maya Coinbase: Account list fallback failed for \(context.currencyCode): \(error)")
             return nil
         }
     }
@@ -604,7 +652,7 @@ class ExchangeAddressProvider {
             return addressInfo.address
         }
 
-        DSLogger.log(
+        DWLogger.log(
             "Maya Coinbase: Rejecting address due to network mismatch via \(source). " +
             "Requested \(context.currencyCode) on \(context.normalizedNetworkKey), Coinbase reported \(normalizedReported)"
         )

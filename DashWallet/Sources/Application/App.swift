@@ -33,6 +33,15 @@ class AppObjcWrapper: NSObject {
     static let fiatCurrencyDidChangeNotification = Notification.Name.fiatCurrencyDidChange
 
     @objc
+    static let willRequestOSPermissionNotification = Notification.Name.willRequestOSPermission
+
+    @objc
+    static let didRequestOSPermissionNotification = Notification.Name.didRequestOSPermission
+
+    @objc
+    static let applicationTerminationRequestNotification = Notification.Name.applicationTerminationRequest
+
+    @objc
     static var dashFormatter: NumberFormatter {
         NumberFormatter.dashFormatter
     }
@@ -97,6 +106,15 @@ final class App {
     #if DASHPAY
         UsernameRequestsDAOImpl.shared.deleteAll()
     #endif
+
+        _fiatCurrency = nil
+        UserDefaults.standard.removeObject(forKey: kFiatCurrencyCodeKey)
+        NotificationCenter.default.post(name: Notification.Name.fiatCurrencyDidChange, object: nil)
+
+        let upholdClient = DWUpholdClient.sharedInstance()
+        upholdClient.logOut()
+        upholdClient.lastKnownBalance = nil
+
         Coinbase.shared.reset()
     }
 }
@@ -112,4 +130,7 @@ private let kFiatCurrencyDidChange = "FiatCurrencyDidChange"
 
 extension Notification.Name {
     static let fiatCurrencyDidChange = Notification.Name(kFiatCurrencyDidChange)
+    static let willRequestOSPermission = Notification.Name("org.dash.will-request-permission-notification")
+    static let didRequestOSPermission = Notification.Name("org.dash.did-request-permission-notification")
+    static let applicationTerminationRequest = Notification.Name("DWApplicationTerminationRequestNotification")
 }

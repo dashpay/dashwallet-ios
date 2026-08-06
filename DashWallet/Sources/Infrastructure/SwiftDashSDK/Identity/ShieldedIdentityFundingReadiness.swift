@@ -12,7 +12,8 @@
 //
 //  1. Funding — unspent shielded notes must cover the Type-20 exit
 //     denomination. `IdentityCreateFromShieldedPool` spends a fixed
-//     denomination from the consensus set {0.1, 0.3, 0.5, 1.0} DASH
+//     denomination from the current consensus set
+//     {0.03, 0.1, 0.25, 0.5, 1.0} DASH
 //     (`shielded_identity_create_denominations`, rs-platform-version);
 //     the metered fee is taken FROM the denomination and any excess
 //     spent value returns to the pool as change, so the gate is simply
@@ -68,10 +69,11 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
     /// the 0.03 DASH the transparent funding paths provision.
     static let standardDenominationCredits: UInt64 = 10_000_000_000
 
-    /// Exit denomination for contested usernames — 0.3 DASH in credits,
-    /// the smallest consensus denomination covering
-    /// `DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME` (0.25 DASH).
-    static let contestedDenominationCredits: UInt64 = 30_000_000_000
+    /// Exit denomination for contested usernames — 0.25 DASH in credits.
+    /// This is both the exact contested-name requirement and a member of
+    /// the current v9 shielded identity-create denomination set. The prior
+    /// 0.3 DASH denomination was retired and is rejected by Drive.
+    static let contestedDenominationCredits: UInt64 = 25_000_000_000
 
     /// How long shielded notes must rest before funding an identity.
     /// DEBUG builds shorten the window so the maturing → ready flip is
@@ -145,7 +147,7 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
     // MARK: - Evaluation
 
     /// Compute readiness for an arbitrary requirement (contested names
-    /// need the 0.3 DASH denomination). Returns nil while the SDK host
+    /// need the 0.25 DASH denomination). Returns nil while the SDK host
     /// has no hydrated wallet or storage.
     func evaluate(requiredCredits: UInt64, now: Date = Date()) -> Snapshot? {
         wireManagerIfNeeded(rewire: false)

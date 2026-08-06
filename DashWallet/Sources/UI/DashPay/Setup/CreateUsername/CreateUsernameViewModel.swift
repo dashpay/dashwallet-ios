@@ -59,7 +59,7 @@ class CreateUsernameViewModel: ObservableObject {
     private var availabilityCheckTask: Task<Void, Never>?
     /// One-shot revalidation alarm for a `.maturing` shielded snapshot.
     /// The shared readiness service arms its own flip timer only for
-    /// the STANDARD denomination; a contested name's (0.3 DASH) ready
+    /// the STANDARD denomination; a contested name's (0.25 DASH) ready
     /// moment can be later, so the form re-validates itself at the
     /// snapshot's own `readyAt`. Re-armed on every validation.
     private var shieldedMaturityRevalidationTask: Task<Void, Never>?
@@ -100,12 +100,17 @@ class CreateUsernameViewModel: ObservableObject {
     @Published private(set) var platformPaymentBalance: String = ""
 
     /// Shielded-funding readiness for the CURRENT typed name (contested
-    /// names need the 0.3 DASH exit denomination instead of 0.1).
+    /// names need the 0.25 DASH exit denomination instead of 0.1).
     /// Recomputed by `validateUsername` and on every readiness publish.
     /// nil while the SDK host has no hydrated wallet.
     @Published private(set) var shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot? = nil
     /// Formatted unspent shielded balance in DASH, for the picker label.
     @Published private(set) var shieldedBalance: String = ""
+
+    /// A prior Core-funded attempt has already created an identity or
+    /// persisted an unfinished asset lock. The form must not require a
+    /// second balance or offer another funding source in this state.
+    @Published private(set) var hasPendingRegistrationRecovery = false
 
     /// Shielded funding is offerable right now: funded + matured + pool
     /// minimum cleared (or pool count unknown — Drive enforces the real
@@ -132,6 +137,10 @@ class CreateUsernameViewModel: ObservableObject {
     func configureInvitationMode(uri: String) {
         invitationURI = uri
         invitationInviterUsername = DWInvitationService.shared.preview(for: uri)?.inviterUsername
+        validateUsername(username: username)
+    }
+
+    func refreshRegistrationRecoveryState() {
         validateUsername(username: username)
     }
     
@@ -162,6 +171,10 @@ class CreateUsernameViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] text in
                 self?.validateUsername(username: text)
+                // The current label changes the required amount
+                // (0.03 standard / 0.25 contested), so refresh the
+                // source-picker eligibility in the same event.
+                self?.checkBalance()
             }
             .store(in: &cancellableBag)
 
@@ -180,6 +193,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// registration and then show the right native alert.
     enum UsernameRegistrationOutcome {
         case success
+        case submittedForVoting
         case cancelled
         case failure(String)
     }
@@ -219,7 +233,7 @@ class CreateUsernameViewModel: ObservableObject {
                 _ = try await DWIdentityRegistrationCoordinator.shared.startClaimInvitation(
                     username: submittedUsername,
                     invitationURI: invitationURI)
-                return .success
+                return registrationOutcome(for: submittedUsername)
             } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
                 return .cancelled
             } catch {
@@ -235,7 +249,9 @@ class CreateUsernameViewModel: ObservableObject {
                     self?.onRegistrationStarted = nil
 
                     guard let error else {
-                        continuation.resume(returning: .success)
+                        continuation.resume(
+                            returning: self?.registrationOutcome(for: submittedUsername)
+                                ?? .success)
                         return
                     }
                     // PIN / biometric cancel surfaces as the canonical Cocoa
@@ -248,6 +264,14 @@ class CreateUsernameViewModel: ObservableObject {
                 }
             }
         }
+    }
+
+    private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {
+        guard let pending = DWContestedNameStatusService.shared.pendingLabel,
+              DWContestedNameStatusService.labelsMatch(pending, username) else {
+            return .success
+        }
+        return .submittedForVoting
     }
 
     private func handleRegistrationPhase(_ phase: DWIdentityRegistrationController.Phase) {
@@ -290,6 +314,12 @@ class CreateUsernameViewModel: ObservableObject {
     
     private func validateUsername(username: String) {
         let username = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Re-check on every normal form revalidation (typing, Core/PP
+        // balance refresh, shielded readiness). This catches the
+        // cold-launch window where the screen appears just before the
+        // SDK host finishes restoring the persisted asset-lock rows.
+        hasPendingRegistrationRecovery =
+            DWIdentityRegistrationCoordinator.shared.hasPendingRegistrationRecovery()
 
         // Kill any in-flight availability check — its result belongs to
         // an input the user has already changed (including changed-to-empty).
@@ -329,9 +359,10 @@ class CreateUsernameViewModel: ObservableObject {
         // user choose among the viable sources; the form is unblocked
         // as soon as any one is.
         let coreBalance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
-        let platformBalance = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
         let hasEnoughCore = coreBalance >= requiredCost
-        let hasEnoughPlatform = platformBalance >= requiredCost
+        let hasEnoughPlatform = PlatformPaymentIdentityFundingPolicy
+            .canFundCurrentWallet(
+                fundingDuffs: UInt64(requiredCost))
         let shieldedRequired = ShieldedIdentityFundingReadiness.requiredCredits(forContestedName: isContested)
         shieldedReadiness = ShieldedIdentityFundingReadiness.shared.evaluate(requiredCredits: shieldedRequired)
         armShieldedMaturityRevalidation()
@@ -342,13 +373,14 @@ class CreateUsernameViewModel: ObservableObject {
         // surfaces an insufficient-voucher failure through the normal
         // error alert.
         let voucherFunded = isInvitationMode
-        let hasEnoughBalance = voucherFunded || hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
+        let recoveryFunded = hasPendingRegistrationRecovery && !voucherFunded
+        let hasEnoughBalance = recoveryFunded || voucherFunded || hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
 
         uiState = CreateUsernameUIState(
             lengthRule: lengthValid ? .valid : .invalid,
             allowedCharactersRule: hasIllegalCharacters || startsOrEndsWithHyphen ? .invalid : .valid,
-            costRule: voucherFunded ? .hidden : (hasEnoughBalance ? .valid : .invalid),
+            costRule: voucherFunded || recoveryFunded ? .hidden : (hasEnoughBalance ? .valid : .invalid),
             usernameBlockedRule: canContinue ? .loading : .hidden,
             requiredDash: requiredCost,
             canContinue: false
@@ -468,19 +500,32 @@ class CreateUsernameViewModel: ObservableObject {
     private func checkBalance() {
         let balance = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         let platformDuffs = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
+        let trimmedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        let requiredDuffs = trimmedUsername.isEmpty
+            ? DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+            : (DWContestedNameStatusService.isContestedLabel(trimmedUsername)
+                ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
+                : DWDP_MIN_BALANCE_TO_CREATE_USERNAME)
         self.balance = balance.dashAmount.formattedDashAmountWithoutCurrencySymbol
         self.platformPaymentBalance = platformDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
         // Credits → duffs (÷1000) for display; the readiness snapshot
         // keeps the canonical credit-denominated values.
         let shieldedDuffs = (shieldedReadiness?.unspentCredits ?? 0) / 1_000
         self.shieldedBalance = shieldedDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
-        hasMinimumRequiredCoreBalance = balance >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        hasMinimumRequiredPlatformBalance = platformDuffs >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        // These flags drive the actual funding-source picker. They must
+        // follow the current name's cost, otherwise a Core/Platform
+        // balance that covers 0.03 DASH but not a contested name's
+        // 0.25 DASH is still offered and fails only inside the SDK.
+        hasMinimumRequiredCoreBalance = balance >= requiredDuffs
+        hasMinimumRequiredPlatformBalance = PlatformPaymentIdentityFundingPolicy
+            .canFundCurrentWallet(
+                fundingDuffs: UInt64(requiredDuffs))
         // `hasMinimumRequiredBalance` stays as the legacy OR view —
         // any pre-PR-5 consumer (banner gate, etc.) keeps seeing
         // "user has enough to register" without caring about source.
         hasMinimumRequiredBalance = hasMinimumRequiredCoreBalance || hasMinimumRequiredPlatformBalance
         hasRecommendedBalance = balance >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
-            || platformDuffs >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
+            || PlatformPaymentIdentityFundingPolicy.canFundCurrentWallet(
+                fundingDuffs: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME))
     }
 }

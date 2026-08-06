@@ -29,7 +29,6 @@ enum MainMenuNavigationDestination {
     case tools
     case support
     #if DASHPAY
-    case invite
     case voting
     #endif
 }
@@ -70,6 +69,10 @@ class MainMenuViewModel: ObservableObject {
         userProfileModel?.$showJoinDashpay
             .receive(on: DispatchQueue.main)
             .assign(to: &$showJoinDashpay)
+    }
+
+    func refreshJoinDashPayBanner() {
+        userProfileModel?.refreshJoinDashPayBanner()
     }
     #else
     init() {

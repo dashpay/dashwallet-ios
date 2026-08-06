@@ -37,7 +37,7 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
     var iconURL: URL {
         let code = currency.code.lowercased()
         let urlString = "https://raw.githubusercontent.com/jsupa/crypto-icons/main/icons/\(code).png"
-        return URL(string: urlString)!
+        return URL(string: urlString) ?? URL(fileURLWithPath: "/")
     }
 
     var balanceString: String {
@@ -68,7 +68,7 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
         }
 
         let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)
-        return nf.string(from: fiatAmount as NSNumber)!
+        return nf.string(from: fiatAmount as NSNumber) ?? "—"
     }
 
     var plainAmount: UInt64 {
@@ -83,7 +83,8 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
     var plainAmountInDash: UInt64 {
         if currencyCode == kDashCurrency { return plainAmount }
 
-        guard let dashAmount = try? Coinbase.shared.currencyExchanger.convertToDash(amount: balance.amount.decimal()!, currency: currencyCode) else {
+        guard let amount = balance.amount.decimal(),
+              let dashAmount = try? Coinbase.shared.currencyExchanger.convertToDash(amount: amount, currency: currencyCode) else {
             return 0
         }
 

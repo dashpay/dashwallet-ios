@@ -107,6 +107,7 @@ struct CreateUsernameView: View {
     /// Drives the success alert shown when registration reaches the
     /// terminal `.completed` phase. OK dismisses the screen.
     @State private var showSuccess: Bool = false
+    @State private var showVotingSubmitted: Bool = false
     /// Non-nil drives the error alert; holds the coordinator's
     /// human-readable failure message. OK clears it and keeps the
     /// screen up so the user can edit or retry.
@@ -176,6 +177,11 @@ struct CreateUsernameView: View {
                     .padding(.top, 20)
             }
 
+            if viewModel.hasPendingRegistrationRecovery {
+                registrationRecoveryBanner
+                    .padding(.top, 20)
+            }
+
             // Invitation-claim mode: the voucher funds the registration,
             // so the shielded readiness hint and the funding-source
             // picker below don't apply and stay hidden. A short banner
@@ -190,7 +196,8 @@ struct CreateUsernameView: View {
             // pool below the consensus minimum) so the user learns what
             // the wait is for without being blocked — the transparent
             // sources below remain an explicit choice.
-            if !viewModel.isInvitationMode {
+            if !viewModel.isInvitationMode,
+               !viewModel.hasPendingRegistrationRecovery {
                 shieldedReadinessHint
             }
 
@@ -199,7 +206,9 @@ struct CreateUsernameView: View {
             // is viable, the picker stays hidden and `fundingSource` is
             // auto-pinned by `syncFundingSourceToViableSource()` so the
             // Continue handler routes correctly without UI clutter.
-            if !viewModel.isInvitationMode, viableFundingSources.count >= 2 {
+            if !viewModel.isInvitationMode,
+               !viewModel.hasPendingRegistrationRecovery,
+               viableFundingSources.count >= 2 {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(NSLocalizedString("Pay with", comment: "Usernames"))
                         .foregroundColor(.dash.secondaryText)
@@ -219,7 +228,9 @@ struct CreateUsernameView: View {
             Spacer()
 
             DashButton(
-                text: NSLocalizedString("Continue", comment: ""),
+                text: viewModel.hasPendingRegistrationRecovery
+                    ? NSLocalizedString("Finish registration", comment: "DashPay registration recovery")
+                    : NSLocalizedString("Continue", comment: ""),
                 isEnabled: viewModel.uiState.canContinue && !screenLockedAfterAuth,
                 isLoading: inProgress
             ) {
@@ -244,6 +255,7 @@ struct CreateUsernameView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             isTextInputFocused = true
+            viewModel.refreshRegistrationRecoveryState()
             if let invitationURI {
                 viewModel.configureInvitationMode(uri: invitationURI)
             }
@@ -262,6 +274,9 @@ struct CreateUsernameView: View {
             syncFundingSourceToViableSource()
         }
         .onChange(of: viewModel.shieldedReadiness) { _ in
+            syncFundingSourceToViableSource()
+        }
+        .onChange(of: viewModel.hasPendingRegistrationRecovery) { _ in
             syncFundingSourceToViableSource()
         }
         .alert(
@@ -306,6 +321,18 @@ struct CreateUsernameView: View {
             }
         }
         .alert(
+            NSLocalizedString("Username submitted", comment: "Usernames"),
+            isPresented: $showVotingSubmitted
+        ) {
+            Button(NSLocalizedString("OK", comment: "")) { finish() }
+        } message: {
+            Text(String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.",
+                    comment: "Usernames"),
+                viewModel.username))
+        }
+        .alert(
             NSLocalizedString("Contact request failed", comment: "DashPay Invitations"),
             isPresented: Binding(
                 get: { inviterContactErrorMessage != nil },
@@ -338,6 +365,31 @@ struct CreateUsernameView: View {
         } message: {
             Text(registrationErrorMessage ?? "")
         }
+    }
+
+    private var registrationRecoveryBanner: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "arrow.clockwise.circle.fill")
+                .foregroundColor(.dash.blue)
+                .font(.system(size: 20))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(NSLocalizedString(
+                    "Finish your registration",
+                    comment: "DashPay registration recovery"))
+                    .font(.subheadline.bold())
+                    .foregroundColor(.dash.primaryText)
+                Text(NSLocalizedString(
+                    "Your previous payment was found. Continue to finish creating the identity and username without paying again.",
+                    comment: "DashPay registration recovery"))
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.dash.blue.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     /// Blue informational callout shown while the shielded funding
@@ -459,7 +511,8 @@ struct CreateUsernameView: View {
 
     private func performSubmit() {
         if !viewModel.isInvitationMode {
-            DWIdentityRegistrationBridge.shared.preferredFundingSource = fundingSource
+            DWIdentityRegistrationBridge.shared.preferredFundingSource =
+                viewModel.hasPendingRegistrationRecovery ? .core : fundingSource
         }
         Task {
             // `inProgress` keeps the Continue spinner up — and the screen
@@ -476,6 +529,8 @@ struct CreateUsernameView: View {
             switch outcome {
             case .success:
                 showSuccess = true
+            case .submittedForVoting:
+                showVotingSubmitted = true
             case .cancelled:
                 screenLockedAfterAuth = false
                 break // user backed out of the PIN — stay on screen, allow retry

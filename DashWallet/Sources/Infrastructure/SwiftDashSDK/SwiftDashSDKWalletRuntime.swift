@@ -8,8 +8,9 @@
 //
 //  Lifecycle shape: every Obj-C / Swift entrypoint enqueues a single async
 //  operation onto an internal task chain that serializes lifecycle work
-//  end-to-end. The two real operations are `refresh(trigger:)` and
-//  `fullReset(lastError:forWipe:)`, both `@MainActor`, both awaitable —
+//  end-to-end. Full runtime rebuilds use `refresh(trigger:)` /
+//  `fullReset(lastError:forWipe:)`; Core-only controls use the same queue but
+//  call only the SPV coordinator, preserving the host, wallet and BLAST —
 //  no `DispatchGroup`, no `Thread.sleep`, no fire-and-forget Tasks
 //  inside lifecycle work. Stop order is BLAST → SPV → wallet state →
 //  host; start order is host (via SPV) → SPV → BLAST.
@@ -18,6 +19,25 @@
 import Foundation
 import OSLog
 import SwiftDashSDK
+
+/// Small, testable serial task chain used by the wallet runtime. Keeping the
+/// queue independent from the singleton lets lifecycle ordering be regression
+/// tested without constructing the SDK/FFI stack.
+@MainActor
+final class SerialAsyncLifecycleQueue {
+    private var currentTask: Task<Void, Never>?
+
+    @discardableResult
+    func enqueue(_ operation: @escaping @MainActor () async -> Void) -> Task<Void, Never> {
+        let previous = currentTask
+        let task = Task { @MainActor in
+            await previous?.value
+            await operation()
+        }
+        currentTask = task
+        return task
+    }
+}
 
 @objc(DWSwiftDashSDKWalletRuntime)
 @MainActor
@@ -47,7 +67,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         qos: .userInitiated)
 
     private var observerToken: NSObjectProtocol?
-    private var currentLifecycleTask: Task<Void, Never>?
+    private let lifecycleQueue = SerialAsyncLifecycleQueue()
     private var currentNetwork: Network?
 
     private override init() {
@@ -70,6 +90,22 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: false) }
     }
 
+    /// Stop only Core SPV. The host, wallet, published balance and Platform
+    /// sync services stay alive so a later Core restart does not rebuild the
+    /// shared SDK runtime.
+    @objc(stopCoreSPV)
+    nonisolated static func stopCoreSPV() {
+        dispatchOnPipeline { shared.enqueueStopCoreSPV() }
+    }
+
+    /// Redial Core SPV peers on the existing PlatformWalletManager. This is
+    /// deliberately separate from `startIfReady`, whose job is a complete
+    /// runtime refresh after network/wallet material changes.
+    @objc(restartCoreSPV)
+    nonisolated static func restartCoreSPV() {
+        dispatchOnPipeline { shared.enqueueRestartCoreSPV() }
+    }
+
     @objc(startObservingNetworkChanges)
     nonisolated static func startObservingNetworkChanges() {
         dispatchOnPipeline { shared.installNetworkObserver() }
@@ -85,15 +121,26 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         dispatchOnPipeline { shared.enqueueFullReset(lastError: nil, forWipe: true) }
     }
 
-    /// Restart the sync stack to dial a fresh peer set ("sync too slow?
-    /// change peers"). A full stop → start through the serial lifecycle
-    /// pipeline: dash-spv re-discovers peers from the DNS seeds on start,
-    /// and chain data persists on disk so sync resumes where it left off.
+    /// Rebuild the shared runtime through the same serialized lifecycle used
+    /// at launch and after wallet recovery, then return only when Platform
+    /// sync is bound again (or the start has failed). Sync Info uses this to
+    /// turn "Sync Now" into a real in-session recovery action after Stop or a
+    /// recover-time binding race.
+    func rearmPlatformSync() async {
+        let task = enqueueAwaitable { [weak self] in
+            await self?.refresh(trigger: .platformSyncRearm)
+        }
+        await task.value
+    }
+
+    /// Restart Core SPV to dial a fresh peer set ("sync too slow? change
+    /// peers"). Shares the exact Core-only restart operation with the
+    /// diagnostics screen.
     /// Peer selection is seed-random — a redial of a previous peer is
     /// possible (no exclude-list in the SDK yet).
     @objc(rotatePeers)
     nonisolated static func rotatePeers() {
-        dispatchOnPipeline { shared.enqueueRefresh(trigger: .peerRotation) }
+        restartCoreSPV()
     }
 
     // MARK: - Runtime wallet switching
@@ -137,10 +184,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             throw SwitchError.bindFailed
         }
 
-        NotificationCenter.default.post(
-            name: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
-            object: nil)
-        Self.logger.info("🧭 RUNTIME :: switchWallet — bound new active wallet and posted change")
+        publishActiveWalletDidChange(reason: "wallet-switch")
     }
 
     /// Validate that `walletId` is a switchable target on the current network:
@@ -182,7 +226,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// Push one ordered step from any thread into the MainActor lifecycle.
     /// `entryQueue` serializes Task creation; the MainActor then processes
     /// the enqueue calls in the order their Tasks were created. The block
-    /// itself only touches `currentLifecycleTask` (synchronous), so no
+    /// itself only touches the lifecycle queue (synchronous), so no
     /// `await` boundaries open up inside it for reordering.
     nonisolated private static func dispatchOnPipeline(
         _ block: @escaping @Sendable @MainActor () -> Void
@@ -196,10 +240,10 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     /// Append a lifecycle operation to the serial task chain. Every new op
     /// awaits the previous task before running, so two callers in quick
-    /// succession (e.g. `stop()` then `startIfReady()` from the diagnostic
-    /// Restart button) are processed strictly in order.
+    /// succession (for example two peer-rotation requests) are processed
+    /// strictly in order.
     private func enqueue(_ op: @escaping @MainActor () async -> Void) {
-        currentLifecycleTask = enqueueAwaitable(op)
+        lifecycleQueue.enqueue(op)
     }
 
     /// Same serial-chain append as `enqueue`, but returns the appended task so
@@ -209,13 +253,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// lifecycle task before running.
     @discardableResult
     private func enqueueAwaitable(_ op: @escaping @MainActor () async -> Void) -> Task<Void, Never> {
-        let previous = currentLifecycleTask
-        let task = Task { @MainActor in
-            await previous?.value
-            await op()
-        }
-        currentLifecycleTask = task
-        return task
+        lifecycleQueue.enqueue(op)
     }
 
     private func enqueueRefresh(trigger: RefreshTrigger) {
@@ -227,6 +265,22 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     private func enqueueFullReset(lastError: String?, forWipe: Bool) {
         enqueue { [weak self] in
             await self?.fullReset(lastError: lastError, forWipe: forWipe)
+        }
+    }
+
+    private func enqueueStopCoreSPV() {
+        enqueue {
+            await SwiftDashSDKSPVCoordinator.shared.stopCoreAsync()
+        }
+    }
+
+    private func enqueueRestartCoreSPV() {
+        enqueue {
+            do {
+                try await SwiftDashSDKSPVCoordinator.shared.restartAsync()
+            } catch {
+                Self.logger.error("🧭 RUNTIME :: Core SPV restart failed: \(String(describing: error), privacy: .public)")
+            }
         }
     }
 
@@ -265,6 +319,16 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 try await SwiftDashSDKSPVCoordinator.shared.startAsync(for: network)
                 try await PlatformAddressSyncCoordinator.shared.startAsync(for: network)
                 currentNetwork = network
+                if trigger == .walletMaterialChanged {
+                    publishActiveWalletDidChange(reason: "wallet-started")
+                } else if trigger == .networkDidChange {
+                    // The same walletId can exist on both networks, but its
+                    // SwiftData container and identity set are network-scoped.
+                    // Publish only after the destination runtime is fully
+                    // bound so identity/banner consumers re-read destination
+                    // state instead of the cleared transition mirror.
+                    publishActiveWalletDidChange(reason: "network-changed")
+                }
             } catch {
                 Self.logger.error("🧭 RUNTIME :: start failed: \(String(describing: error), privacy: .public)")
                 await fullReset(lastError: error.localizedDescription, forWipe: false)
@@ -287,20 +351,32 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         SwiftDashSDKWalletState.shared.clearAllState()
         SwiftDashSDKHost.shared.stop()
         currentNetwork = nil
+        if forWipe {
+            DWCurrentUserIdentityInfo.shared.resetForWalletRemoval()
+            publishActiveWalletDidChange(reason: "wallet-removed")
+        }
     }
 
     // MARK: - Helpers
 
+    private func publishActiveWalletDidChange(reason: String) {
+        let walletId = SwiftDashSDKHost.shared.wallet?.walletId.hexEncodedString() ?? "none"
+        NotificationCenter.default.post(
+            name: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
+            object: nil)
+        Self.logger.info(
+            "🧭 RUNTIME :: active-wallet change reason=\(reason, privacy: .public) wallet=\(walletId, privacy: .public)")
+    }
+
     private func shouldSkipRefresh(for network: Network, trigger: RefreshTrigger) -> Bool {
         switch trigger {
-        case .walletMaterialChanged, .walletDidChange, .peerRotation:
+        case .walletMaterialChanged, .walletDidChange:
             // A runtime wallet switch always rebuilds — the active-wallet
             // registry was repointed to a different wallet on the SAME
             // network, so `currentNetwork == network` would otherwise wrongly
-            // elide the rebind. Peer rotation exists precisely to force the
-            // stop → start (fresh peer dial), so it never skips either.
+            // elide the rebind.
             return false
-        case .startIfReady, .networkDidChange:
+        case .startIfReady, .networkDidChange, .platformSyncRearm:
             // External callers (PlatformSyncStatusScreen, StorageExplorerUnavailableView,
             // the Platform send path) can mutate BLAST without touching
             // `currentNetwork`, so consult the live coordinator state too — otherwise
@@ -310,6 +386,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             return currentNetwork == network
                 && blast.isRunning
                 && blast.runningNetwork == network
+                && SwiftDashSDKSPVCoordinator.shared.isRunning
         }
     }
 
@@ -367,7 +444,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         case networkDidChange
         case walletMaterialChanged
         case walletDidChange
-        case peerRotation
+        case platformSyncRearm
     }
 
     enum RuntimeError: LocalizedError {

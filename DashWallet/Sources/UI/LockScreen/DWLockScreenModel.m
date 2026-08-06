@@ -17,8 +17,6 @@
 
 #import "DWLockScreenModel.h"
 
-#import <DashSync/DashSync.h> // NSString+Dash (waitTimeFromNow:), DSLocalizedString
-
 #import "DWGlobalOptions.h"
 #import "dashwallet-Swift.h"
 
@@ -85,20 +83,7 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
 }
 
 - (nullable NSString *)lockoutErrorMessage {
-    DWAuthenticationService *authManager = [DWAuthenticationService shared];
-
-    uint64_t failCount = authManager.failCount;
-    NSString *message = nil;
-    if (failCount < authManager.maxFailCount) {
-        NSTimeInterval wait = authManager.lockoutWaitTime;
-        NSString *waitString = [NSString waitTimeFromNow:wait];
-        message = [NSString stringWithFormat:DSLocalizedString(@"Try again in %@", nil), waitString];
-    }
-    else {
-        message = DSLocalizedString(@"No attempts remaining", nil);
-    }
-
-    return message;
+    return [DWAuthenticationService shared].lockoutErrorMessage;
 }
 
 - (BOOL)isAllowedToWipe {

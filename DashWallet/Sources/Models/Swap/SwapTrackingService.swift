@@ -33,9 +33,9 @@ class SwapTrackingServiceObjcWrapper: NSObject {
 /// Mirrors Android's `SwapTrackingService.kt`:
 /// - `start()` at app launch resumes all non-terminal orders.
 /// - Polls `/track` every 30 s for active orders.
-/// - NEAR fallback by `depositAddress` when hash lookup errors.
+/// - Tracks NEAR-routed sells by `depositAddress` and Maya-routed sells by tx hash.
 /// - Material-change-only writes (unconditional writes turn the ticker into a tight loop).
-/// - Ages out an order still unresolved after 24 h → `.failed`.
+/// - Ages out an order still unresolved after 24 h → `.expired`.
 final class SwapTrackingService {
     static let shared = SwapTrackingService()
 
@@ -62,7 +62,7 @@ final class SwapTrackingService {
     func start() {
         trackingTask?.cancel()
         trackingTask = Task { await pollLoop() }
-        DSLogger.log("SwapTrackingService: started")
+        DWLogger.log("SwapTrackingService: started")
     }
 
     // MARK: - Private: Poll loop
@@ -70,7 +70,7 @@ final class SwapTrackingService {
     private func pollLoop() async {
         while !Task.isCancelled {
             let active = await dao.all().filter { $0.status.isActive }
-            DSLogger.log("SwapTrackingService: polling \(active.count) active order(s)")
+            DWLogger.log("SwapTrackingService: polling \(active.count) active order(s)")
 
             await withTaskGroup(of: Void.self) { group in
                 for order in active {
@@ -156,7 +156,7 @@ final class SwapTrackingService {
             }
         } catch {
             // Transient network error — no authoritative status this cycle; may still age out below.
-            DSLogger.log("SwapTrackingService: poll error for \(order.id): \(error)")
+            DWLogger.log("SwapTrackingService: poll error for \(order.id): \(error)")
         }
 
         // Decide the final status: prefer the API result; only fall back to the 24 h age-out when
@@ -166,7 +166,7 @@ final class SwapTrackingService {
         if finalStatus.isActive {
             let orderAgeSeconds = nowSeconds - (order.timestamp / 1000)
             if orderAgeSeconds > Constants.ageOutSeconds {
-                DSLogger.log("SwapTrackingService: order \(order.id) unresolved after 24 h → expired")
+                DWLogger.log("SwapTrackingService: order \(order.id) unresolved after 24 h → expired")
                 finalStatus = .expired
             }
         }
@@ -185,7 +185,7 @@ final class SwapTrackingService {
         updated.lastChecked = nowSeconds
         if finalStatus.isTerminal { updated.finalisedAt = nowSeconds }
 
-        DSLogger.log("SwapTrackingService: order \(order.id) → \(finalStatus.rawValue)")
+        DWLogger.log("SwapTrackingService: order \(order.id) → \(finalStatus.rawValue)")
         await dao.update(dto: updated)
     }
 

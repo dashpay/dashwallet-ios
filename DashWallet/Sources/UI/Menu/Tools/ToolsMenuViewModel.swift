@@ -63,7 +63,7 @@ class ToolsMenuViewModel: ObservableObject {
 
     /// Formatted leftover amount for the confirmation dialog.
     var coinJoinLeftoverFormatted: String {
-        String(format: "%.6f DASH", Double(coinJoinLeftoverDuffs) / Double(DUFFS))
+        String(format: "%.6f DASH", Double(coinJoinLeftoverDuffs) / Double(kOneDash))
     }
 
     init() {
@@ -167,11 +167,11 @@ class ToolsMenuViewModel: ObservableObject {
     /// "Move CoinJoin Funds" row self-removes once the balance drops below the
     /// threshold.
     func performCoinJoinSweep() async {
-        DWLogger.log("CJTEST ToolsMenuViewModel: sweep invoked from Tools menu (\(coinJoinLeftoverFormatted))")
+        DWLogger.log("ToolsMenuViewModel: sweep invoked from Tools menu (\(coinJoinLeftoverFormatted))")
         do {
             _ = try await WalletSendService.shared.sweepCoinJoin()
         } catch {
-            DWLogger.log("CJTEST ToolsMenuViewModel: sweep failed: \(error)")
+            DWLogger.log("ToolsMenuViewModel: sweep failed: \(error)")
             // Auth-cancel is an expected no-op (nil message); a real failure
             // surfaces an alert. The row stays visible so the user can retry.
             coinJoinSweepErrorMessage = WalletSendService.coinJoinSweepUserMessage(for: error)
@@ -188,37 +188,15 @@ class ToolsMenuViewModel: ObservableObject {
         guard !isExportingLogs else { return }
         isExportingLogs = true
 
-        // Context captured on the main actor; the detached task only
-        // does file work.
-        let network = SwiftDashSDKHost.shared.runningNetwork.map { String(describing: $0) } ?? "unknown"
-        let bundle = Bundle.main
-        let short = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
-        let build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "?"
-        let appVersion = "\(short) (\(build))"
-        // Authoritative record of which directory this run is writing
-        // to — timestamp sorting alone can be fooled by a clock
-        // rollback or a stale future-dated directory.
-        let currentSession = LoggingPreferences.currentSessionDirectory
-        let appLogFiles = DWLogger.sharedInstance().logFiles()
-
-        Task.detached(priority: .userInitiated) {
-            let result: Result<URL, Error> = Result {
-                try DiagnosticLogExporter.export(
-                    network: network,
-                    appVersion: appVersion,
-                    currentSession: currentSession,
-                    appLogFiles: appLogFiles
-                )
-            }
-            await MainActor.run { [weak self] in
-                guard let self else { return }
-                self.isExportingLogs = false
-                switch result {
-                case .success(let url):
-                    self.exportedLogsURL = url
-                case .failure(let error):
-                    self.logExportErrorMessage = error.localizedDescription
-                }
+        Task { [weak self] in
+            let result = await DiagnosticLogExporter.exportArchive()
+            guard let self else { return }
+            self.isExportingLogs = false
+            switch result {
+            case .success(let url):
+                self.exportedLogsURL = url
+            case .failure(let error):
+                self.logExportErrorMessage = error.localizedDescription
             }
         }
     }

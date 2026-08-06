@@ -17,7 +17,6 @@
 
 #import "DWGlobalOptions.h"
 #import "dashwallet-Swift.h"
-#import <DashSync/DashSync.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -63,9 +62,7 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 @dynamic dashpayUsername;
 @dynamic dashpayRegistrationCompleted;
 @dynamic mostRecentViewedNotificationDate;
-@dynamic shouldShowInvitationsBadge;
 @dynamic dashPayRegistrationOpenedOnce;
-@dynamic dpInvitationFlowEnabled;
 @dynamic confirmationAcceptContactRequestIsOn;
 #endif
 
@@ -113,31 +110,25 @@ static NSString *const PER_WALLET_HAS_BALANCE_PREFIX = @"DW_WALLET_HAS_BALANCE_"
 #pragma mark - Non-dynamic
 
 - (BOOL)lockScreenDisabled {
-    NSError *error = nil;
-    int64_t result = getKeychainInt(LOCKSCREEN_DISABLED_KEY, &error);
-    if (error != nil) {
-        return NO;
-    }
-
+    int64_t result = [DWKeychainStore int64ForAccount:LOCKSCREEN_DISABLED_KEY];
     return (result == 1);
 }
 
 - (void)setLockScreenDisabled:(BOOL)lockScreenDisabled {
-    setKeychainInt(lockScreenDisabled ? 1 : 0, LOCKSCREEN_DISABLED_KEY, NO);
+    [DWKeychainStore setInt64:lockScreenDisabled ? 1 : 0
+                   forAccount:LOCKSCREEN_DISABLED_KEY
+                authenticated:NO];
 }
 
 - (BOOL)spendingConfirmationDisabled {
-    NSError *error = nil;
-    int64_t result = getKeychainInt(SPENDING_CONFIRMATION_DISABLED_KEY, &error);
-    if (error != nil) {
-        return NO;
-    }
-
+    int64_t result = [DWKeychainStore int64ForAccount:SPENDING_CONFIRMATION_DISABLED_KEY];
     return (result == 1);
 }
 
 - (void)setSpendingConfirmationDisabled:(BOOL)spendingConfirmationDisabled {
-    setKeychainInt(spendingConfirmationDisabled ? 1 : 0, SPENDING_CONFIRMATION_DISABLED_KEY, NO);
+    [DWKeychainStore setInt64:spendingConfirmationDisabled ? 1 : 0
+                   forAccount:SPENDING_CONFIRMATION_DISABLED_KEY
+                authenticated:NO];
 }
 
 #pragma mark - Per-wallet flags (walletNeedsBackup / userHasBalance)

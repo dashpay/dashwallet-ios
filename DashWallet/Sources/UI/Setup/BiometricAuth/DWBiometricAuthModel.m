@@ -17,8 +17,7 @@
 
 #import "DWBiometricAuthModel.h"
 
-#import <DashSync/DashSync.h> // DUFFS
-
+#import "DWAmountConstants.h"
 #import "DWGlobalOptions.h"
 #import "dashwallet-Swift.h"
 
@@ -26,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define SHOULD_SIMULATE_BIOMETRICS 1
 
-static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DUFFS / 2; // 0.5 Dash
+static uint64_t const DEFAULT_BIOMETRIC_SPENDING_LIMIT = DW_DUFFS_PER_DASH / 2; // 0.5 Dash
 
 @implementation DWBiometricAuthModel
 

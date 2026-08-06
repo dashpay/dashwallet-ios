@@ -16,6 +16,7 @@
 //
 
 import Combine
+import CoreData
 import DashUIKit
 import Foundation
 import UIKit
@@ -69,8 +70,9 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
             }
             .store(in: &cancellableBag)
 
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+        NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
             .receive(on: DispatchQueue.main)
+            .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .sink { [weak self] _ in
                 Task {
                     await self?.refreshMetadata()
@@ -78,7 +80,8 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
             }
             .store(in: &cancellableBag)
 
-        NotificationCenter.default.publisher(for: .DSTransactionManagerTransactionStatusDidChange)
+        NotificationCenter.default.publisher(
+            for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 Task {
@@ -90,16 +93,10 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
 
     private func refreshMetadata() async {
         let coinbaseMetadata = metadataDao.all().filter { $0.service == ServiceName.coinbase.rawValue }
-        let walletTransactions = DWEnvironment.sharedInstance().currentWallet.allTransactions
-
-        var current: [Data: TxRowMetadata] = [:]
-        for metadata in coinbaseMetadata {
-            guard let transaction = walletTransactions.first(where: { $0.txHashData == metadata.txHash }) else {
-                continue
-            }
-
-            current[metadata.txHash] = makeMetadata(for: transaction)
-        }
+        let current = Self.resolveMetadata(
+            storedMetadata: coinbaseMetadata,
+            walletSnapshot: CoinbaseWalletTransactionSnapshot.current(),
+            icon: coinbaseIcon())
 
         metadataQueue.async { [weak self] in
             guard let self else { return }
@@ -116,9 +113,31 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
         }
     }
 
-    private func makeMetadata(for transaction: DSTransaction) -> TxRowMetadata {
+    static func resolveMetadata(
+        storedMetadata: [TransactionMetadata],
+        walletSnapshot: CoinbaseWalletTransactionSnapshot?,
+        icon: UIImage? = nil
+    ) -> [Data: TxRowMetadata] {
+        guard let walletSnapshot else { return [:] }
+        let transactionsByHash = Dictionary(
+            uniqueKeysWithValues: walletSnapshot.transactions.map { ($0.txHashData, $0) })
+
+        var resolved: [Data: TxRowMetadata] = [:]
+        for metadata in storedMetadata where metadata.service == ServiceName.coinbase.rawValue {
+            guard let transaction = transactionsByHash[metadata.txHash] else {
+                continue
+            }
+            resolved[metadata.txHash] = makeMetadata(for: transaction, icon: icon)
+        }
+        return resolved
+    }
+
+    static func makeMetadata(
+        for transaction: CoinbaseWalletTransactionRecord,
+        icon: UIImage? = nil
+    ) -> TxRowMetadata {
         TxRowMetadata(
-            icon: coinbaseIcon(),
+            icon: icon,
             iconName: .custom("transaction-coinbase.received", bundle: .dashUIKit),
             secondaryIcon: transaction.direction == .sent
                 ? .custom("additional-info-sent", bundle: .dashUIKit)

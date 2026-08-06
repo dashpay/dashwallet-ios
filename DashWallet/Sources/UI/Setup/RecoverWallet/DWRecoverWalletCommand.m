@@ -17,9 +17,8 @@
 
 #import "DWRecoverWalletCommand.h"
 
-
-#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
+#import "DWSecureAllocator.h"
 #import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -37,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 
     self = [super init];
     if (self) {
-        _phrase = CFBridgingRelease(CFStringCreateCopy(SecureAllocator(), (CFStringRef)phrase));
+        _phrase = CFBridgingRelease(CFStringCreateCopy(DWSecureAllocator(), (CFStringRef)phrase));
     }
     return self;
 }
@@ -49,19 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)recoverWalletWithPhrase:(NSString *)phrase {
-    DSChain *chain = [[DWEnvironment sharedInstance] currentChain];
-    NSParameterAssert(chain);
-    [DSWallet standardWalletWithSeedPhrase:phrase
-                           setCreationDate:BIP39_WALLET_UNKNOWN_CREATION_TIME
-                                  forChain:chain
-                           storeSeedPhrase:YES
-                               isTransient:NO];
-
-    // Also import the wallet into SwiftDashSDK so restored users get a
-    // SwiftDashSDK side from day one — same end state as fresh-install
-    // and upgraded users. The two libraries run independently; DashSync
-    // continues to own its own state.
-    [self importWalletIntoSwiftDashSDK:phrase forChain:chain];
+    [self importWalletIntoSwiftDashSDK:phrase];
 
     [DWGlobalOptions sharedInstance].resyncingWallet = YES;
 
@@ -71,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
     // DashSync's parallel SPV was retired in M6.
 }
 
-- (void)importWalletIntoSwiftDashSDK:(NSString *)phrase forChain:(DSChain *)chain {
+- (void)importWalletIntoSwiftDashSDK:(NSString *)phrase {
     if (phrase.length == 0) {
         return;
     }

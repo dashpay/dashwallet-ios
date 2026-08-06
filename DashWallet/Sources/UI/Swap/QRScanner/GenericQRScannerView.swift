@@ -35,7 +35,7 @@ struct GenericQRScannerView: View {
                     let generator = UINotificationFeedbackGenerator()
                     generator.notificationOccurred(.success)
                     #if DEBUG
-                    DSLogger.log("Maya QR Scanner: Scanned value: \(value)")
+                    DWLogger.log("Maya QR Scanner: Scanned value: \(value)")
                     #endif
                     onQRCodeScanned?(value)
                 },

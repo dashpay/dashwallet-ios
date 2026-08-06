@@ -10,34 +10,21 @@ static const bool _SNAPSHOT = 1;
 static const bool _SNAPSHOT = 0;
 #endif /* SNAPSHOT */
 
-//MARK: DashSync
+//MARK: Infrastructure
 #import "DWLogger.h"
-#import "DSTransaction.h"
-#import "DSCoinbaseTransaction.h"
-#import "DSWallet.h"
-#import "DSCurrencyPriceObject.h"
-#import "DSPriceOperationProvider.h"
-#import "DSOperation.h"
-#import "DSOperationQueue.h"
-#import "DSDerivationPathFactory.h"
-#import "DSKeyManager.h"
-#import "BigIntTypes.h"
-#import "NSString+Dash.h"
-#import "DSChainManager.h"
-#import "DSChain.h"
 
 //MARK: DashWallet
 // Imported via $(SRCROOT)-relative path: these headers are missing from the generated
 // project header map, so a bare quote-import is not found by the bridging-header
 // dependency scanner. $(SRCROOT) is on HEADER_SEARCH_PATHS.
-#import "DashWallet/Sources/Models/Transactions/DSAccount+SpentInputCheck.h"
-#import "DashWallet/Sources/Categories/DSTransaction+DashWallet.h"
-#import "DWEnvironment.h"
+#import "DashWallet/Sources/Application/DWAmountConstants.h"
 #import "DWTitleDetailCellModel.h"
 #import "DWTitleDetailItem.h"
+#import "DWAppGroupOptions.h"
 #import "DWGlobalOptions.h"
 #import "DWUIKit.h"
 #import "DWAboutModel.h"
+#import "DashWallet/Sources/UI/Views/SharedViews/DWWindow.h"
 #import "DWBaseActionButtonViewController.h"
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWInputValidator.h"
@@ -51,7 +38,6 @@ static const bool _SNAPSHOT = 0;
 #import "UIViewController+KeyboardAdditions.h"
 #import "SFSafariViewController+DashWallet.h"
 #import "UIFont+DWFont.h"
-#import "NSData+Dash.h"
 #import "CALayer+DWShadow.h"
 #import "DWAlertController.h"
 #import "DWHomeProtocol.h"
@@ -99,11 +85,6 @@ static const bool _SNAPSHOT = 0;
 //MARK: DashPay
 #import "DWDPAvatarView.h"
 #import "DWDPRegistrationStatus.h"
-#import "DWInvitationActionsView.h"
-#import "DWInvitationPreviewViewController.h"
-#import "DWInvitationLinkBuilder.h"
-#import "DWSuccessInvitationView.h"
-#import "DWInvitationMessageView.h"
 #import "DWScrollingViewController.h"
 #import "UIView+DWEmbedding.h"
 #import "DWBasePressableControl.h"
@@ -126,7 +107,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWGetStarted.h"
 #import "DWGetStartedContentViewController.h"
 #import "DWDPUpdateProfileModel.h"
-#import "DWInvitationHistoryViewController.h"
 #endif
 
 //MARK: CrowdNode
@@ -134,7 +114,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
 #import "UIImage+Utils.h"
-#import "NSData+Dash.h"
 
 //MARK: Tabbar
 #import "DWWipeDelegate.h"
@@ -150,9 +129,7 @@ static const bool _SNAPSHOT = 0;
 //MARK: Settings menu
 #import "UIViewController+DWDisplayError.h"
 #import "DWFormTableViewController.h"
-#import "DWCurrentUserProfileView.h"
 #import "DWSharedUIConstants.h"
-#import "DWUserProfileContainerView.h"
 #import "DWDashPayReadyProtocol.h"
 #import "DWSetPinViewController.h"
 #import "DWAdvancedSecurityViewController.h"
@@ -166,10 +143,3 @@ static const bool _SNAPSHOT = 0;
 #if SNAPSHOT
 #import "DWDemoAdvancedSecurityViewController.h"
 #endif
-
-//MARK: CoinJoin
-#import "DSCoinJoinManager.h"
-
-
-// TODO
-#import "DSInstantSendTransactionLock.h"

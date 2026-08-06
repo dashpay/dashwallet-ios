@@ -36,6 +36,7 @@ enum HomeBalanceViewState: Int {
 struct HomeBalanceView: View {
     @ObservedObject var viewModel: BalanceModel
     @ObservedObject private var platformSync = PlatformAddressSyncCoordinator.shared
+    @ObservedObject private var shieldedSync = ShieldedSyncMonitor.shared
     @State private var opacity: Double = 0.3
     var onLongPress: () -> Void
     var onReceive: (ChainNetwork) -> Void = { _ in }
@@ -44,12 +45,36 @@ struct HomeBalanceView: View {
     /// what-is-this-balance info sheet for that balance.
     var onInfo: (ChainNetwork) -> Void = { _ in }
 
+    // Header nav-bar (SB-11) inputs, threaded in by HomeView from the same
+    // app-owned identity snapshot the UIKit nav-bar avatar reads. A nil
+    // `username` hides the leading row (no registered identity). These are
+    // plain values so the view stays dumb; only the DASHPAY nav bar below
+    // reads them.
+    var username: String? = nil
+    var avatarURL: String? = nil
+    var identitySeed: Data = Data()
+    var hasUnreadNotifications: Bool = false
+    var onProfileTap: () -> Void = {}
+    var onNotificationsTap: () -> Void = {}
+
     private var platformDuffs: UInt64 { platformSync.platformBalance / 1_000 }
     private var shieldedDuffs: UInt64 { platformSync.shieldedBalance / 1_000 }
     private var totalDuffs: UInt64 { viewModel.value + platformDuffs + shieldedDuffs }
 
     var body: some View {
         VStack(spacing: 0) {
+            // Home nav bar (avatar/username · Dash logo · notifications).
+            // DashPay-only: the leading row and the bell are identity
+            // features, so the whole bar is compiled out of the non-DashPay
+            // build.
+            #if DASHPAY
+            DashUIKit.NavigationBar(
+                leading: { navLeading },
+                central: { dashLogo },
+                trailing: { notificationButton }
+            )
+            #endif
+
             if viewModel.isTestnet {
                 testnetBadge
             }
@@ -126,6 +151,54 @@ struct HomeBalanceView: View {
         }
     }
 
+    #if DASHPAY
+    /// Leading slot: the persistent username entry point. Empty (the nav bar
+    /// keeps its layout) until an identity with a username is registered.
+    @ViewBuilder
+    private var navLeading: some View {
+        if let username {
+            HomeUsernameRow(
+                username: username,
+                avatarURL: avatarURL,
+                identitySeed: identitySeed,
+                onTap: onProfileTap)
+        }
+    }
+
+    /// Central slot: the full Dash wordmark. `logo` is the blue-on-transparent
+    /// wordmark asset; rendered as a template so it reads white on the blue
+    /// header, per the design-system nav bar. Height 22 matches the spec.
+    private var dashLogo: some View {
+        Image("logo")
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(height: 22)
+            .foregroundColor(Color.dash.whiteText)
+            .accessibilityLabel(Text(verbatim: "Dash"))
+    }
+
+    /// Trailing slot: bell in a translucent circle (spec: 34pt circle,
+    /// white/alpha-20 fill). Reuses the app's white bell assets;
+    /// `icon_bell_active` carries the unread indicator, so it renders as-is
+    /// while the plain bell is tinted white.
+    private var notificationButton: some View {
+        Button(action: onNotificationsTap) {
+            Image(hasUnreadNotifications ? "icon_bell_active" : "icon_bell")
+                .renderingMode(hasUnreadNotifications ? .original : .template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 15, height: 18)
+                .foregroundColor(Color.dash.whiteText)
+                .frame(width: 34, height: 34)
+                .background(Circle().fill(Color.dash.white.opacity(0.2)))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(NSLocalizedString("Notifications", comment: "Home nav bar")))
+    }
+    #endif
+
     private var breakdownCard: some View {
         VStack(spacing: 0) {
             balanceRow(
@@ -148,6 +221,7 @@ struct HomeBalanceView: View {
                 icon: "shield",
                 title: NSLocalizedString("Shielded", comment: ""),
                 duffs: shieldedDuffs,
+                isSyncing: shieldedSync.isSyncing || platformSync.isShieldedBalanceReconciling,
                 infoAction: { onInfo(.shielded) },
                 inAction: { onReceive(.shielded) },
                 outAction: { onSend(.shielded) })
@@ -179,6 +253,7 @@ struct HomeBalanceView: View {
         icon: String,
         title: String,
         duffs: UInt64,
+        isSyncing: Bool = false,
         infoAction: @escaping () -> Void,
         inAction: @escaping () -> Void,
         outAction: @escaping () -> Void
@@ -192,11 +267,23 @@ struct HomeBalanceView: View {
                     .foregroundColor(Color.dash.whiteText)
                     .frame(width: 20)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(title)
-                        .font(.footnote)
-                        .fontWeight(.medium)
-                        .foregroundColor(Color.dash.whiteText)
-                    Text(viewModel.fiatString(forDuffs: duffs))
+                    HStack(spacing: 5) {
+                        Text(title)
+                            .font(.footnote)
+                            .fontWeight(.medium)
+                            .foregroundColor(Color.dash.whiteText)
+                        if isSyncing {
+                            SwiftUI.ProgressView()
+                                .scaleEffect(0.7)
+                                .tint(Color.dash.whiteText)
+                                .accessibilityHidden(true)
+                        }
+                    }
+                    Text(
+                        isSyncing
+                            ? NSLocalizedString("Syncing", comment: "Shielded balance")
+                            : viewModel.fiatString(forDuffs: duffs)
+                    )
                         .font(.caption2)
                         .foregroundColor(.white.opacity(0.7))
                 }

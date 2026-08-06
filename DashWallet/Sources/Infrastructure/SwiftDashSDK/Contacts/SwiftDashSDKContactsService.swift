@@ -242,6 +242,8 @@ final class SwiftDashSDKContactsService: ObservableObject {
         Self.logger.info("👥 CONTACTS :: snapshot rebuilt — \(established.count, privacy: .public) established, \(incoming.count, privacy: .public) incoming, \(outgoing.count, privacy: .public) outgoing")
         NotificationCenter.default.post(name: Self.contactsDidChangeNotification, object: nil)
 
+        backfillMissingUsernames(established + incoming + outgoing)
+
         // Keep the payment-history rows flowing without any screen
         // open: the projection is app-pulled (see
         // refreshPaymentsProjection), so ride the snapshot refresh at
@@ -370,6 +372,18 @@ final class SwiftDashSDKContactsService: ObservableObject {
     func acceptContactRequest(from senderId: Data) async throws {
         let (wallet, modelContainer, ownerId) = try requireContext()
 
+        // UI actions can arrive from a SwiftUI row that was rendered for an
+        // older relationship snapshot. Treat them as idempotent no-ops once
+        // the request has already moved to established/outgoing.
+        guard incomingRequests.contains(where: {
+            $0.contactIdentityId == senderId
+        }) else {
+            Self.logger.info(
+                "👥 CONTACTS :: ignored stale accept — sender is no longer pending incoming")
+            refresh()
+            return
+        }
+
         // Resolve the live ContactRequest handle from the SDK's
         // in-memory state. That state is PER-SESSION — the SwiftData row
         // the UI acted on may have been persisted by an earlier session's
@@ -429,6 +443,19 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// via `unignoreContactSender`.
     func ignoreSender(_ senderId: Data) async throws {
         let (wallet, _, ownerId) = try requireContext()
+
+        // Never let an obsolete incoming row mute an established contact.
+        // Besides avoiding a misleading action, this preserves the invariant
+        // that ignored senders have no outgoing request from us.
+        guard incomingRequests.contains(where: {
+            $0.contactIdentityId == senderId
+        }) else {
+            Self.logger.info(
+                "👥 CONTACTS :: ignored stale ignore — sender is no longer pending incoming")
+            refresh()
+            return
+        }
+
         do {
             try await wallet.ignoreContactSender(
                 ourIdentityId: ownerId,
@@ -580,21 +607,14 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
     // MARK: - Contact-request eligibility
 
-    /// Check whether identities can participate in DashPay contact
-    /// requests: an enabled ECDSA_SECP256K1 key with purpose
-    /// ENCRYPTION *and* one with purpose DECRYPTION. The ENCRYPTION
-    /// predicate mirrors the SDK send path verbatim
-    /// (`rs-platform-wallet/…/contact_requests.rs`: `purpose ==
-    /// ENCRYPTION && key_type == ECDSA_SECP256K1 &&
-    /// disabled_at.is_none()`, over the identity's plain public keys —
-    /// deliberately NO contract-bounds requirement; a contract-keys
-    /// query false-negatives identities whose DashPay keys aren't
-    /// contract-bound). DECRYPTION is additionally required so the
-    /// recipient can actually open incoming requests. Identities
-    /// registered before DashPay keys existed fail `sendContactRequest`
-    /// with "Identity has no enabled ECDSA_SECP256K1 encryption key" —
-    /// checking up front lets the add-contact UI mark them instead of
-    /// letting the user hit the PIN gate and a network error.
+    /// Check whether identities can receive a DashPay contact request:
+    /// an enabled ECDSA_SECP256K1 DECRYPTION key (preferred by the SDK)
+    /// or ENCRYPTION key (the supported mobile-cohort fallback).
+    /// Deliberately NO contract-bounds requirement; a contract-keys
+    /// query false-negatives identities whose compatible keys aren't
+    /// contract-bound. Identities with neither compatible key fail the
+    /// SDK's recipient-key selector, so checking up front lets the UI
+    /// explain the state before the PIN gate.
     ///
     /// Returns eligibility per requested id; an id whose key query
     /// fails is omitted — callers treat absent as "unknown" and leave
@@ -614,15 +634,9 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 // requested-but-missing key id.
                 let keys = try await sdk.identityGetKeys(identityId: base58)
                 let usable = keys.values.compactMap { $0 as? [String: Any] }
-                func hasEnabledECDSAKey(purpose: Int) -> Bool {
-                    usable.contains { key in
-                        (key["purpose"] as? Int) == purpose
-                            && (key["type"] as? Int) == 0  // ECDSA_SECP256K1
-                            && (key["disabledAt"] == nil || key["disabledAt"] is NSNull)
-                    }
+                if let eligible = DWDashPayIdentityKeys.recipientEligibility(from: usable) {
+                    result[id] = eligible
                 }
-                result[id] = hasEnabledECDSAKey(purpose: 1)  // ENCRYPTION
-                    && hasEnabledECDSAKey(purpose: 2)        // DECRYPTION
             } catch {
                 Self.logger.error("👥 CONTACTS :: key eligibility query failed for \(base58, privacy: .public): \(String(describing: error), privacy: .public)")
             }
@@ -630,10 +644,49 @@ final class SwiftDashSDKContactsService: ObservableObject {
         return result
     }
 
-    /// Reverse DPNS lookup (identity → label) for incoming-request
-    /// senders, where we only learn the identity ID from the synced
-    /// row. On success the label is cached in the hint store, so the
-    /// next `refresh()` renders it without another network hop.
+    /// Contacts whose reverse lookup is already running, so a `refresh()`
+    /// triggered by one completing does not restart the others.
+    private var usernameBackfillInFlight: Set<Data> = []
+
+    /// Resolve the DPNS label for every contact that has none yet.
+    ///
+    /// `username` is otherwise only populated at add time (from the username
+    /// search) or by the list view's `.onAppear` on the incoming and outgoing
+    /// sections. Established contacts had neither: `ContactsScreen`'s "My
+    /// Contacts" section never called `resolveUsernameIfNeeded`, and a restored
+    /// wallet has no add-time hint because the add happened on the previous
+    /// install. `ContactItem.displayTitle` then fell through to its last
+    /// resort and rendered the contact as `89fd6ddb…` permanently (BUG-27).
+    ///
+    /// Doing it here rather than in the view fixes every surface at once — the
+    /// list, the profile sheet opened straight from a payment, and the
+    /// notifications screen — and does not depend on which row happened to
+    /// scroll into view.
+    ///
+    /// Cost is bounded: `resolveUsername` returns the cached hint without a
+    /// network call once resolved, so this is one lookup per contact per
+    /// install, and contacts that already have a name are skipped entirely.
+    private func backfillMissingUsernames(_ items: [ContactItem]) {
+        let targets = items
+            .filter { $0.username == nil }
+            .map(\.contactIdentityId)
+            .filter { !usernameBackfillInFlight.contains($0) }
+        guard !targets.isEmpty else { return }
+
+        usernameBackfillInFlight.formUnion(targets)
+        Task { @MainActor [weak self] in
+            defer { self?.usernameBackfillInFlight.subtract(targets) }
+            for contactId in targets {
+                _ = await self?.resolveUsername(for: contactId)
+            }
+        }
+    }
+
+    /// Reverse DPNS lookup (identity → label) for any contact we know only by
+    /// identity id — incoming-request senders, and established contacts whose
+    /// add-time hint is gone (a restored wallet). On success the label is
+    /// cached in the hint store, so the next `refresh()` renders it without
+    /// another network hop.
     func resolveUsername(for contactId: Data) async -> String? {
         if let cached = usernameHint(for: contactId) {
             return cached
@@ -669,14 +722,14 @@ final class SwiftDashSDKContactsService: ObservableObject {
         return (wallet, modelContainer, ownerId)
     }
 
-    /// Lazily bring the current identity up to the DashPay key set
-    /// before its first contact action: dashwallet's registration
-    /// derives AUTHENTICATION keys only, and both `sendContactRequest`
-    /// and the reciprocal request inside `acceptContactRequest` need
-    /// our own enabled ECDSA ENCRYPTION key for the DIP-15 ECDH.
-    /// No-op once the keys exist; called after the PIN gate so the
-    /// IdentityUpdate broadcast is covered by the same user approval
-    /// as the contact action it unblocks.
+    /// Lazily repair an incomplete identity before a contact action.
+    /// New registrations include the full DashPay key pair, but the
+    /// fallback remains for earlier/development identities because
+    /// both `sendContactRequest` and the reciprocal request inside
+    /// `acceptContactRequest` need our own enabled ECDSA ENCRYPTION
+    /// key for DIP-15 ECDH. No-op once both keys exist; called after
+    /// the PIN gate so any IdentityUpdate is covered by the same user
+    /// approval as the contact action it unblocks.
     private func ensureOwnDashPayKeys(
         wallet: ManagedPlatformWallet,
         ownerId: Data,

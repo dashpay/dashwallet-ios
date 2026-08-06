@@ -17,9 +17,6 @@
 
 #import "DWAppRootViewController.h"
 
-#import <DashSync/DashSync.h>
-#import <DashSync/UIWindow+DSUtils.h>
-
 #import "DWLockScreenViewController.h"
 #import "DWRootModel.h"
 #import "DWSetupViewController.h"
@@ -130,7 +127,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         [alert addAction:okAction];
 
         UIApplication *application = [UIApplication sharedApplication];
-        UIViewController *presentingController = [application.keyWindow ds_presentingViewController];
+        UIViewController *presentingController = [application.keyWindow.rootViewController topController];
         [presentingController presentViewController:alert animated:YES completion:nil];
 
         return;
@@ -339,9 +336,6 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             return;
         }
 
-        // Preserve Debug Reset's legacy cleanup notification before it clears
-        // wallet state (the previous menu-local path called this explicitly).
-        [DWApp cleanUp];
         [strongSelf.model wipeWallet];
         [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
             typeof(self) completedSelf = weakSelf;
@@ -418,8 +412,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     self.lockWindow.hidden = YES;
     self.lockWindow.alpha = 1.0;
 
-    [self.model wipeWallet];
-    [self didWipeWallet];
+    // Use the same HUD + FIFO completion gate as Debug Reset. Navigating to
+    // onboarding before the SDK wipe result would let a failed deletion expose
+    // create/recover controls while the old wallet is still present.
+    [self beginWipeWallet];
 }
 
 #pragma mark - Notifications
@@ -481,7 +477,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         actionWithTitle:NSLocalizedString(@"Close App", nil)
                   style:UIAlertActionStyleDefault
                 handler:^(UIAlertAction *action) {
-                    [[NSNotificationCenter defaultCenter] postNotificationName:DSApplicationTerminationRequestNotification object:nil];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:DWApp.applicationTerminationRequestNotification
+                                                                        object:nil];
                 }];
     [alert addAction:closeButton];
     [self presentViewController:alert animated:NO completion:nil];

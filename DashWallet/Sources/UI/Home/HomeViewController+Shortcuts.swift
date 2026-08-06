@@ -205,19 +205,28 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
 
     #if DASHPAY
     private func showJoinDashPayReadiness() {
+        weak var readinessNavigationController: UINavigationController?
+
         let screen = JoinDashPayReadinessScreen(
-            onAddFunds: { [weak self] suggestedDash in
+            onAddFunds: { suggestedDash in
                 let controller = InternalTransferHostingController(prefillDashAmount: suggestedDash)
-                controller.hidesBottomBarWhenPushed = true
-                self?.navigationController?.pushViewController(controller, animated: true)
+                readinessNavigationController?.pushViewController(controller, animated: true)
             },
             onProceed: { [weak self] in
-                self?.pushCreateUsernameForm()
+                readinessNavigationController?.dismiss(animated: true) {
+                    self?.pushCreateUsernameForm()
+                }
+            },
+            onClose: {
+                readinessNavigationController?.dismiss(animated: true)
             })
         let hosting = UIHostingController(rootView: screen)
         hosting.view.backgroundColor = UIColor.dw_background()
-        hosting.hidesBottomBarWhenPushed = true
-        navigationController?.pushViewController(hosting, animated: true)
+        let modalNavigationController = BaseNavigationController(rootViewController: hosting)
+        modalNavigationController.isNavigationBarHidden = true
+        modalNavigationController.modalPresentationStyle = .fullScreen
+        readinessNavigationController = modalNavigationController
+        present(modalNavigationController, animated: true)
     }
 
     private func pushCreateUsernameForm(invitationURL: URL? = nil, definedUsername: String? = nil) {
@@ -396,7 +405,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         present(safariViewController, animated: true)
     }
     private func dashDEXAction() {
-        DSAuthenticationManager.sharedInstance().authenticate(
+        AuthenticationService.shared.authenticate(
             withPrompt: nil,
             usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
             alertIfLockout: true

@@ -57,11 +57,13 @@ class AccountService {
         return try await account.retrieveAddress()
     }
 
-    public func send(from accountName: String, amount: UInt64, verificationCode: String?, idem: UUID?) async throws -> CoinbaseTransaction {
+    public func send(from accountName: String,
+                     amount: UInt64,
+                     verificationCode: String?,
+                     idem: UUID?) async throws -> (transaction: CoinbaseTransaction, walletId: Data) {
         let account = try await account(by: accountName)
 
-        let tx = try await account.send(amount: amount, verificationCode: verificationCode, idem: idem)
-        return tx
+        return try await account.send(amount: amount, verificationCode: verificationCode, idem: idem)
     }
 
     public func placeBuyOrder(for accountName: String, amount: UInt64) async throws -> CoinbasePlaceBuyOrder {

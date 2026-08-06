@@ -26,7 +26,7 @@ open DashWallet.xcworkspace   # Always open the workspace, not the .xcodeproj
 - Xcode 16+
 - CocoaPods (`gem install cocoapods`)
 - iOS deployment target: **18.0** (raised from 14.0 during the migration — Podfile `platform :ios, '18.0'` + post_install)
-- Rust toolchain (builds the SwiftDashSDK FFI; also legacy DashSync)
+- Rust toolchain (builds the SwiftDashSDK FFI)
 
 ### Optional tools
 - `swiftformat`, `swiftlint`, `clang-format` (Objective-C), `bartycrouch` (localization)
@@ -34,7 +34,6 @@ open DashWallet.xcworkspace   # Always open the workspace, not the .xcodeproj
 ### External repo dependencies (expected as sibling directories)
 ```
 ../platform/        # dashpay/platform monorepo — SwiftDashSDK lives at packages/swift-sdk (local SPM dependency)
-../DashSync/        # Legacy ObjC protocol library — being migrated OFF (see DASHSYNC_MIGRATION.md)
 ../dapi-grpc/       # gRPC API definitions
 ../dashwallet-ios/  # This repository
 ```
@@ -43,38 +42,16 @@ The SwiftDashSDK `DashSDKFFI.xcframework` is **gitignored** — after pulling `.
 ```bash
 cd ../platform/packages/swift-sdk && ./build_ios.sh --target ios --target sim
 ```
-If the app fails with missing SDK symbols (e.g. "no member …"), `../platform` is on the wrong branch — check the branch/commit pins recorded in `DASHSYNC_MIGRATION.md`.
+If the app fails with missing SDK symbols (e.g. "no member …"), verify the
+`../platform` checkout and rebuild both XCFramework slices.
 
-## MCP / Figma Setup
+## Figma
 
-This project uses the Figma Dev Mode MCP server, configured in `.mcp.json` (`http://127.0.0.1:3845/mcp`). To use it:
-
-1. Run Figma Desktop, enable Dev Mode (`Shift+D`), and click "Enable desktop MCP server" in the inspect panel.
-2. Restart Claude Code — MCP servers connect only at startup.
-3. Verify the server responds: `curl -s http://127.0.0.1:3845/mcp`
+Figma Dev Mode MCP setup and cleaning Figma-exported SVG assets for iOS are covered by the `figma-assets` skill (`.claude/skills/figma-assets/SKILL.md`).
 
 ## Architecture
 
-### Languages
-- **Objective-C**: legacy wallet functionality, core models, some view controllers
-- **Swift**: modern UI, SwiftUI, new features. Many view controllers bridge ObjC ↔ Swift.
-
-### Key directories
-- `DashWallet/Sources/Application/` — app lifecycle, constants, configuration
-- `DashWallet/Sources/UI/` — UI components, organized by feature
-- `DashWallet/Sources/Models/` — business logic, data models, services
-- `DashWallet/Sources/Infrastructure/` — core services (networking, database, currency)
 - `DashWallet/Sources/Infrastructure/SwiftDashSDK/` — the SwiftDashSDK adapter layer (host, wallet runtime/state, SPV coordinator, transaction sender, identity coordinators) — the app-side boundary to the Rust SDK
-
-### Targets
-Main app, `TodayExtension` (widget), and `WatchApp`, with shared code in `Shared/`. Each target has its own deployment target and capabilities.
-
-### Patterns
-- **MVVM** — ViewModels for SwiftUI views and modern controllers
-- **Protocol-based dependency injection**
-- **Service layer** — dedicated services for major functionality (e.g. `SendCoinsService`, `CurrencyExchanger`)
-- **Repository / DAO** — data access objects over SQLite
-- **Coordinator** — `DWAppRootViewController` manages navigation flow
 
 ### Notable services & files
 - `WalletSendService.swift` — the send boundary: auth → build+sign (`SwiftDashSDKTransactionSender`) → user confirm → broadcast. `SendCoinsService.swift` is a thin programmatic wrapper over it.
@@ -84,11 +61,13 @@ Main app, `TodayExtension` (widget), and `WatchApp`, with shared code in `Shared
 - `MainTabbarController.swift` — tab-based navigation
 - `UIHostingController+DashWallet.swift` — UIKit ↔ SwiftUI bridge
 
-## DashSync → SwiftDashSDK Migration (endgame)
+## SwiftDashSDK ownership and upgrade compatibility
 
-The broad functional migration is complete; the branch is in pod-unlink teardown. `DASHSYNC_MIGRATION.md` is the current functional ledger, `DASHSYNC_TEARDOWN_PLAN.md` is the remaining unlink sequence, and `DASHSYNC_KEY_MIGRATION.md` owns upgrade-time key contracts. The `dashsync-migration` skill is the endgame playbook. Verify every status against the working tree; old Shadow/Flipped/Solo staging labels are retired.
+The DashSync dependency unlink is complete. The app and SwiftDashSDK own all
+live wallet behavior. `DASHSYNC_KEY_MIGRATION.md` remains the specification for
+the frozen upgrade-time mnemonic import contract.
 
-- **DashSync is frozen post-M6** — nothing starts its sync. `DWEnvironment.currentChain` / `currentAccount` still exist, but their balances, UTXOs, and `allTransactions` read stale/zero. Read wallet state from `SwiftDashSDKWalletState.shared`; DashSync reads are valid only for the not-yet-migrated surfaces tracked in DASHSYNC_MIGRATION.md.
+- **No DashSync runtime**: do not restore the pod, direct imports, `DWEnvironment`, or live `DS*` wallet/transaction/identity objects. Read wallet state through the app-owned SwiftDashSDK boundaries.
 - **Sync gating**: never gate on SPV `state == .synced` — dash-spv's steady state when fully synced is `waitForEvents` at progress ≈ 1.0 (`.synced` is a transient window). Gate on `SyncingActivityMonitor` (`.syncDone`).
 - **Sends**: every spend goes through `WalletSendService` (standard) or `SwiftDashSDKTransactionSender` (selected-input / sweep). Never call `CoreTransactionBuilder` from UI code. `prepare*` never broadcasts; broadcast happens only on explicit confirm.
 - **Mnemonic ownership**: stored as plain keychain bytes via SwiftDashSDK `WalletStorage` (the iOS keychain is the security boundary — there is no PIN-encryption layer). Creation/import/migration route through `SwiftDashSDKHost`; deletion routes through `SwiftDashSDKWalletWiper`. The migrator supports multiple wallets and never deletes DashSync-owned `org.dashfoundation.dash` entries. Don't add ad-hoc `WalletStorage()` readers or choose the first mnemonic — resolve the active wallet through `SwiftDashSDKHost` / `WalletEnvironment.activeWalletId(for:)`.
@@ -115,7 +94,7 @@ Distilled from the 2026-07 branch review (`ARCH_REVIEW_2026-07-03.md`) — each 
 4. **New singletons need a reason.** Don't add another `static let shared` in `Sources/Infrastructure/` without a protocol seam or a written justification in the type doc; prefer injecting. One file = one responsibility — a "coordinator" that accumulates published UI counters, storage wipes, and money movement gets split.
 5. **Never re-emit another system's notification names.** Re-posting `DS*` notification strings from new state poisons every future grep audit. New state gets a new typed publisher/notification; consumers migrate.
 6. **No debug residue in commits:** no session tags in log lines (à la `CJTEST`), no plan-diary comments ("Row #17 stage A", "M5/M6"), no stale line-number cross-references in doc comments. Use `TODO(label)` and link docs instead.
-7. **Migration seams stay bounded and honest.** New staged DashSync/SDK paths are not allowed. The only dual-library seams are the explicit teardown tails in `DASHSYNC_TEARDOWN_PLAN.md`; delete them with their final consumer. A seam method's name must match its behavior (`prepare` must not spend; `broadcast` must broadcast).
+7. **Legacy compatibility stays bounded and honest.** Do not restore staged DashSync/SDK paths. Only the frozen key migrator may read the old `org.dashfoundation.dash` keychain layout. A seam method's name must match its behavior (`prepare` must not spend; `broadcast` must broadcast).
 
 ## Code Style
 
@@ -170,11 +149,3 @@ iOS `*.lproj/Localizable.strings` files are UTF-16 little-endian, so plain `grep
 iconv -f UTF-16LE -t UTF-8 DashWallet/de.lproj/Localizable.strings | grep '"Spend"'
 ```
 Translations sync via Transifex: `tx push -s` (push source) / `tx pull -a` (pull all). Let Xcode and BartyCrouch manage the files; keep them UTF-16LE.
-
-### Figma MCP assets need cleaning for iOS
-Figma MCP serves assets at ephemeral `http://localhost:3845/assets/{hash}.svg` URLs (valid only while Figma Desktop + Dev Mode are running). Download them into the asset catalog (`DashWallet/Resources/AppAssets.xcassets/...`) — never reference localhost URLs in code. Then strip web-only SVG features iOS can't render:
-- `fill="var(--fill-0, #78C4F5)"` → `fill="#78C4F5"` (CSS variables render invisible)
-- `width="100%" height="100%"` → explicit pixel dimensions from the viewBox
-- remove `preserveAspectRatio="none"`, `style="display: block;"`, `overflow="visible"`
-
-If icons appear blank after adding an SVG, check for `var(--fill-0, ...)` or `width="100%"` first.

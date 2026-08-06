@@ -207,12 +207,14 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
     // MARK: Private
 
     private func observeWalletBalance() {
-        NotificationCenter.default
-            .publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+        model.$walletBalance
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.syncCanContinue()
-                self?.refreshSourceItems()
+                guard let self else { return }
+                self.model.rebuildAmounts()
+                self.syncCanContinue()
+                self.syncError()
+                self.refreshSourceItems()
             }
             .store(in: &cancellables)
     }
@@ -302,13 +304,12 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
     }
 
     private func performLeftoverCheck(completion: @escaping (Bool) -> Void) {
-        if CrowdNodeDefaults.shared.lastKnownBalance <= 0 {
-            completion(true)
-            return
-        }
-        let account = DWEnvironment.sharedInstance().currentAccount
-        let allAvailableFunds = account.maxOutputAmount
-        if (model.amount?.plainAmount ?? 0) + CrowdNode.minimumLeftoverBalance > allAvailableFunds {
+        let requiresWarning = Self.requiresLeftoverWarning(
+            crowdNodeBalance: CrowdNodeDefaults.shared.lastKnownBalance,
+            transferAmount: model.amount?.plainAmount ?? 0,
+            minimumLeftover: CrowdNode.minimumLeftoverBalance,
+            maxSendable: SwiftDashSDKWalletState.shared.feeAwareMaxSendable())
+        if requiresWarning {
             if let handler = onNeedsLeftoverWarning {
                 handler(completion)
             } else {
@@ -317,6 +318,17 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
         } else {
             completion(true)
         }
+    }
+
+    static func requiresLeftoverWarning(
+        crowdNodeBalance: UInt64,
+        transferAmount: UInt64,
+        minimumLeftover: UInt64,
+        maxSendable: UInt64
+    ) -> Bool {
+        guard crowdNodeBalance > 0 else { return false }
+        guard maxSendable >= minimumLeftover else { return true }
+        return transferAmount > maxSendable - minimumLeftover
     }
 
     private static func makeSourceItem(from provider: SourceViewDataProvider?, dashBalance: Int64, fiat: String) -> TransferSourceItem {

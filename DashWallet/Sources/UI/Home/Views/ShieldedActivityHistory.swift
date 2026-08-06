@@ -23,14 +23,11 @@
 //  home history interleaves with the Core transaction rows, plus the
 //  detail sheet a tapped row opens.
 //
-//  Kinds whose Core leg is already a history row are NOT projected —
-//  ShieldFromAssetLock (the Core asset-lock spend renders via
-//  `Transaction.isShieldedTransfer`) and Withdrawal (the Core receipt
-//  renders via `Transaction.isShieldedWithdrawalReceipt`). Projecting
-//  them too would show one user action as two rows. There is no txid
-//  on the activity entry to dedupe by, so the exclusion is by kind —
-//  guaranteed-correct for live-recorded entries because those two
-//  kinds have a Core transaction by construction.
+//  Kinds whose Core leg is already a history row are not projected twice:
+//  ShieldFromAssetLock is always omitted because its Core asset-lock spend
+//  renders via `Transaction.isShieldedTransfer`. An internal Withdrawal is
+//  temporarily projected as Pending until its Core receipt appears, then
+//  matched by destination, amount, and time and replaced by that receipt.
 //
 
 import Foundation
@@ -92,9 +89,13 @@ struct ShieldedActivityItem: Identifiable {
     /// True when the destination is NOT one of the active wallet's own
     /// addresses — the operation is money leaving the wallet, not an
     /// internal move. Set at fetch time (the ownership lookup needs the
-    /// store). All projected withdrawals are external by construction;
-    /// unshields can be either.
+    /// store). Withdrawals and unshields can both be internal or external.
     let isExternalDestination: Bool
+    /// True for the temporary Shielded → Transparent row shown after the
+    /// shielded spend is recorded but before its matching Core receipt is
+    /// persisted. The row is replaced by the real Core transaction once it
+    /// arrives, so the history never has a silent post-spend gap.
+    let isAwaitingTransparentReceipt: Bool
 
     var id: String {
         "shielded-" + entryId.map { String(format: "%02x", $0) }.joined() + "-\(accountIndex)"
@@ -102,22 +103,29 @@ struct ShieldedActivityItem: Identifiable {
 
     init(
         row: PersistentShieldedActivity,
+        kindOverride: Kind? = nil,
+        amountCreditsOverride: UInt64? = nil,
         destinationAddress: String? = nil,
-        isExternalDestination: Bool = false
+        isExternalDestination: Bool = false,
+        isAwaitingTransparentReceipt: Bool = false
     ) {
         self.destinationAddress = destinationAddress
         self.isExternalDestination = isExternalDestination
+        self.isAwaitingTransparentReceipt = isAwaitingTransparentReceipt
+        let effectiveKind = kindOverride ?? Kind(rawValue: row.kindTag) ?? .shieldedSpend
         entryId = row.entryId
         accountIndex = row.accountIndex
-        kind = Kind(rawValue: row.kindTag) ?? .shieldedSpend
+        kind = effectiveKind
         direction = Direction(rawValue: row.direction) ?? .selfTransfer
-        status = Status(rawValue: row.status) ?? .confirmed
-        amountDuffs = row.amount / 1000
+        status = isAwaitingTransparentReceipt
+            ? .pending
+            : Status(rawValue: row.status) ?? .confirmed
+        amountDuffs = (amountCreditsOverride ?? row.amount) / 1000
         feeDuffs = row.hasFee ? row.fee / 1000 : nil
         blockHeight = row.hasBlockHeight ? row.blockHeight : nil
         date = Date(timeIntervalSince1970: Double(row.createdAtMs) / 1000.0)
         memoText = Self.decodeTextMemo(row.memo)
-        createdIdentityIdHex = row.kindTag == Kind.identityCreate.rawValue && row.identityId.count == 32
+        createdIdentityIdHex = effectiveKind == .identityCreate && row.identityId.count == 32
             ? row.identityId.map { String(format: "%02x", $0) }.joined()
             : nil
     }
@@ -125,6 +133,9 @@ struct ShieldedActivityItem: Identifiable {
     // MARK: Display
 
     var title: String {
+        if isAwaitingTransparentReceipt {
+            return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
+        }
         switch kind {
         case .shield, .shieldFromAssetLock:
             return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
@@ -161,7 +172,9 @@ struct ShieldedActivityItem: Identifiable {
                 }
                 return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
             }
-            return NSLocalizedString("Shielded → Platform", comment: "Transfer of own funds from the private shielded balance to the Platform balance")
+            return kind == .unshield
+                ? NSLocalizedString("Shielded → Platform", comment: "Transfer of own funds from the private shielded balance to the Platform balance")
+                : NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
         case .received, .sent, .identityCreate, .shieldedSpend:
             return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
         }
@@ -173,7 +186,10 @@ struct ShieldedActivityItem: Identifiable {
         switch kind {
         case .received: return "arrow.down"
         case .sent: return "arrow.up"
-        case .unshield, .withdrawal: return isExternalDestination ? "arrow.up" : nil
+        case .unshield:
+            return isExternalDestination ? "arrow.up" : "creditcard.fill"
+        case .withdrawal:
+            return isExternalDestination ? "arrow.up" : "d.circle.fill"
         case .identityCreate: return "person.crop.circle.fill"
         case .shieldedSpend: return "questionmark"
         case .shield, .shieldFromAssetLock: return nil

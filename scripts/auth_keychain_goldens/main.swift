@@ -60,6 +60,24 @@ check(PinCodec.decodeInt64(data(fromHex: "0807060504030201")) == 0x0102030405060
 // Length guard: only exactly-8-byte payloads decode.
 check(PinCodec.decodeInt64(data(fromHex: "01020304")) == nil, "short int64 payload rejected")
 
+// MARK: Generic app-owned compatibility users
+
+let upholdToken = "uphold-access-token"
+check(hex(KeychainCodec.encode(string: upholdToken)) ==
+      "7570686f6c642d6163636573732d746f6b656e",
+      "Uphold token remains UTF-8 without BOM")
+check(KeychainCodec.decodeString(data(fromHex: "7570686f6c642d6163636573732d746f6b656e")) == upholdToken,
+      "Uphold token decodes from DashSync-compatible bytes")
+
+check(hex(KeychainCodec.encode(int64: 1)) == "0100000000000000",
+      "DWGlobalOptions true flag remains little-endian Int64")
+check(KeychainCodec.decodeInt64(data(fromHex: "0000000000000000")) == 0,
+      "DWGlobalOptions absent/default-compatible false representation")
+
+let coinbaseJSON = data(fromHex: "7b22616363657373546f6b656e223a22616263227d")
+check(Data(coinbaseJSON) == coinbaseJSON,
+      "Coinbase JSON remains raw Data without an additional codec")
+
 // MARK: LockoutPolicy table
 // wait = failHeight + 6^(failCount−3)·60 − secureTime  (DSAuthenticationManager.m:241)
 

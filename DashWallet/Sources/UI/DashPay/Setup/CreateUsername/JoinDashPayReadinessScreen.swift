@@ -23,6 +23,7 @@ import DashUIKit
 
 struct JoinDashPayReadinessScreen: View {
     @ObservedObject private var readiness = ShieldedIdentityFundingReadiness.shared
+    @ObservedObject private var walletState = SwiftDashSDKWalletState.shared
 
     /// Open the Shielded-balance transfer screen pre-filled with the
     /// suggested deposit (in DASH).
@@ -32,13 +33,16 @@ struct JoinDashPayReadinessScreen: View {
     /// transparent escape (the picker pins to the viable transparent
     /// source).
     let onProceed: () -> Void
+    /// Return to the screen that opened this interstitial.
+    let onClose: () -> Void
 
-    /// Suggested deposit headroom (0.001 DASH in credits) added to the
+    /// Suggested deposit headroom (0.003 DASH in credits) added to the
     /// shortfall prefill: the Core→Shielded route carves the Platform
-    /// pool fee from the locked value, so depositing the bare shortfall
-    /// would net slightly under the denomination. Only a suggestion —
-    /// the gates re-evaluate on the notes that actually land.
-    private static let fundingFeeHeadroomCredits: UInt64 = 100_000_000
+    /// pool fee from the locked value. The current Type-18 fee is about
+    /// 0.003 DASH, so depositing less headroom can leave the resulting
+    /// note below the required denomination. Only a suggestion — the
+    /// gates re-evaluate on the notes that actually land.
+    private static let fundingFeeHeadroomCredits: UInt64 = 300_000_000
 
     private var snapshot: ShieldedIdentityFundingReadiness.Snapshot? {
         readiness.standardSnapshot
@@ -46,10 +50,28 @@ struct JoinDashPayReadinessScreen: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Spacer()
+
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.dash.primaryText)
+                        .frame(width: 36, height: 36)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.dash.gray300Alpha30, lineWidth: 1.5)
+                        )
+                }
+                .frame(width: 44, height: 44)
+                .accessibilityLabel(NSLocalizedString("Close", comment: "Accessibility"))
+            }
+            .padding(.top, 4)
+
             Text(NSLocalizedString("Get ready to join DashPay", comment: "Usernames"))
                 .font(.title1)
                 .foregroundColor(.dash.primaryText)
-                .padding(.top, 12)
+                .padding(.top, 4)
 
             Text(NSLocalizedString("Your username is visible to everyone. Funding it from your Shielded balance — after letting the funds rest for a few hours — means no one can link your username to your other Dash.", comment: "Usernames"))
                 .font(.system(size: 14))
@@ -234,10 +256,10 @@ struct JoinDashPayReadinessScreen: View {
     /// complete a registration — otherwise it would land the user on a
     /// form whose Continue is disabled by the cost rule.
     private var transparentSourceViable: Bool {
-        let core = SwiftDashSDKWalletState.shared.balance?.total ?? 0
-        let platform = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
+        let core = walletState.balance?.total ?? 0
         return core >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-            || platform >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+            || PlatformPaymentIdentityFundingPolicy.canFundCurrentWallet(
+                fundingDuffs: UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME))
     }
 
     /// Credits → whole-DASH decimal (1e11 credits per DASH).

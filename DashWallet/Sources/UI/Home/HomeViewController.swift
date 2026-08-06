@@ -92,12 +92,8 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         configureObservers()
 
         #if DASHPAY
-        // Row #17 stage A — seed the nav-bar avatar on launch from
-        // the current model state. Without this, the avatar would
-        // only appear after a `DWDashPayRegistrationStatusUpdated`
-        // notification fires (i.e., during a fresh registration);
-        // re-launching with an already-registered wallet wouldn't
-        // show it until something prompted a refresh.
+        // Seed the navigation avatar for an identity that was already
+        // registered before this controller was created.
         refreshIdentityAvatar()
         #endif
     }
@@ -178,30 +174,18 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     // MARK: - Private
 
     #if DASHPAY
-    /// Row #17 stage A — re-evaluate avatar visibility + notification
-    /// bell from the central model state. Called from the legacy
-    /// `homeView(_:didUpdateProfile:)` delegate (DashSync-side
-    /// updates), from the `DWDashPayRegistrationStatusUpdated`
-    /// observer in `configureObservers()` (SwiftDashSDK-side
-    /// updates), and once from `viewDidLoad` to seed visibility on
-    /// re-launch for an already-registered wallet.
+    /// Re-evaluates avatar visibility and the notification bell from the
+    /// app-owned identity snapshot. Called on launch, after a profile update,
+    /// and whenever registration state changes.
     func refreshIdentityAvatar() {
         let hasIdentity = model.dashPayModel.hasIdentity
         let hasNotifications = model.dashPayModel.unreadNotificationsCount > 0
 #if DEBUG
-        DWLogger.log("Home avatar state: dashSyncIdentity=\(model.dashPayModel.blockchainIdentity != nil), registrationCompleted=\(model.dashPayModel.registrationCompleted), sdkUsername=\(DWCurrentUserIdentityInfo.shared.username ?? "nil"), sdkAvatarURL=\(DWCurrentUserIdentityInfo.shared.avatarURL ?? "nil")")
+        DWLogger.log("Home avatar state: registrationCompleted=\(model.dashPayModel.registrationCompleted), sdkUsername=\(DWCurrentUserIdentityInfo.shared.username ?? "nil"), sdkAvatarURL=\(DWCurrentUserIdentityInfo.shared.avatarURL ?? "nil")")
 #endif
-        updateAvatarContent(identity: model.dashPayModel.blockchainIdentity)
+        avatarView.configureAsCurrentUser()
         avatarView?.isHidden = !hasIdentity
         refreshNotificationBell(hasIdentity: hasIdentity, hasNotifications: hasNotifications)
-    }
-
-    private func updateAvatarContent(identity: DSBlockchainIdentity?) {
-        if let identity {
-            avatarView.blockchainIdentity = identity
-        } else {
-            avatarView.configureAsCurrentUser()
-        }
     }
 
     func refreshNotificationBell(hasIdentity: Bool, hasNotifications: Bool) {
@@ -217,55 +201,23 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     }
 
     @objc func notificationAction() {
-        // Row #18: SwiftUI notifications backed by the SwiftDashSDK
-        // contacts service (replaces DWNotificationsViewController +
-        // the Core Data provider stack).
+        // Notifications are backed by the SwiftDashSDK contacts service.
         let controller = UIHostingController(rootView: NotificationsScreen())
         navigationController?.pushViewController(controller, animated: true)
     }
 
     @objc func profileAction() {
-        // Gate every avatar tap on the strict SDK-side identity
-        // check. The Save path in `DWProfileUpdateBridge` resolves
-        // the identity from the SDK helper, so opening Edit Profile
-        // without `hasIdentity` would just produce a broken screen
-        // (no display name, names list empty, save fails). Belt-
-        // and-suspenders for the avatar that should already be
-        // hidden when this is false.
-        guard DWCurrentUserIdentityInfo.shared.hasIdentity else { return }
-
-        // Row #17 stage A — branch on the underlying DashSync identity
-        // object. DashSync-side identities (Core-funded path
-        // reconstructed by DashSync's on-chain scanner, or a wallet
-        // that already had a DashSync identity before the migration)
-        // open `DWEditProfileViewController` directly. SwiftDashSDK-
-        // only identities (Platform-Payment path, or any future SDK
-        // path with no Core footprint) get the SDK profile sheet,
-        // which now (Row #17 proper) carries an Edit button that
-        // re-enters `RootEditProfileViewController`. The editor reads
-        // from `DWCurrentUserIdentityInfo` and writes via
-        // `DWProfileUpdateBridge`, so it works for both paths.
-        if model.dashPayModel.blockchainIdentity != nil {
+        let sheet = SDKIdentityProfileSheet { [weak self] in
+            // SDKIdentityProfileSheet dismisses before invoking this callback.
+            guard let self else { return }
             let controller = RootEditProfileViewController()
             controller.delegate = self
             let navigation = BaseNavigationController(rootViewController: controller)
             navigation.modalPresentationStyle = .fullScreen
-            present(navigation, animated: true, completion: nil)
-        } else {
-            let sheet = SDKIdentityProfileSheet { [weak self] in
-                // SDKIdentityProfileSheet has already called dismiss()
-                // by the time this fires; chain into the same editor
-                // after the dismissal completes.
-                guard let self else { return }
-                let controller = RootEditProfileViewController()
-                controller.delegate = self
-                let navigation = BaseNavigationController(rootViewController: controller)
-                navigation.modalPresentationStyle = .fullScreen
-                self.present(navigation, animated: true, completion: nil)
-            }
-            let hosting = UIHostingController(rootView: sheet)
-            present(hosting, animated: true, completion: nil)
+            self.present(navigation, animated: true, completion: nil)
         }
+        let hosting = UIHostingController(rootView: sheet)
+        present(hosting, animated: true, completion: nil)
     }
     #endif
 
@@ -293,17 +245,8 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         navigationItem.titleView = contentView
 
         #if DASHPAY
-        // Restored original avatar shape — DWDPAvatarView wrapped in
-        // `UIBarButtonItem(customView:)` with a tap-gesture
-        // recognizer. This is the configuration that was working
-        // for DashSync-registered identities before the migration.
-        // Row #17 stage A keeps it intact and only changes the
-        // visibility gate to also honor SwiftDashSDK-side identity
-        // (via `model.dashPayModel.hasIdentity`), plus a
-        // `DWDashPayRegistrationStatusUpdated` observer in
-        // `configureObservers()` so SDK registrations unhide the
-        // avatar live without needing the legacy DashSync delegate
-        // path.
+        // The app-owned avatar is shown only when the current wallet has an
+        // identity. Registration notifications refresh this visibility live.
         let avatarView = DWDPAvatarView(frame: CGRect(origin: .zero, size: CGSize(width: 30.0, height: 30.0)))
         avatarView.isSmall = true
         avatarView.isHidden = true
@@ -348,17 +291,8 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     
     private func configureObservers() {
         #if DASHPAY
-        // Row #17 stage A — the legacy `homeView(_:didUpdateProfile:)`
-        // delegate callback only fires when DashSync's
-        // `defaultBlockchainIdentity` flips. A SwiftDashSDK-side
-        // registration (Platform-Payment path, or Core path on a
-        // wallet without DashSync identity reconstruction) never
-        // toggles that delegate, so the avatar wouldn't appear until
-        // a screen change forced a redraw. Subscribing to the
-        // canonical `DWDashPayRegistrationStatusUpdatedNotification`
-        // re-evaluates the visibility gate against the central
-        // `hasIdentity` flag as soon as the bridge posts a terminal
-        // phase.
+        // Registration updates refresh the avatar from the canonical
+        // app-owned identity snapshot.
         NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -589,7 +523,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             textBlock1: String(format: NSLocalizedString("You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.", comment: "CoinJoin"), amount),
             positiveButtonText: NSLocalizedString("Move funds", comment: "CoinJoin"),
             positiveButtonAction: {
-                DWLogger.log("CJTEST HomeViewController: sweep invoked from Home popup (\(amount))")
+                DWLogger.log("HomeViewController: sweep invoked from Home popup (\(amount))")
                 self.viewModel.showCoinJoinSweepDialog = false
                 Task { @MainActor in
                     // The post-sync popup (ModalDialog) is mid-dismissal here —
@@ -634,11 +568,8 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
 extension HomeViewController: RootEditProfileViewControllerDelegate {
     func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?, avatarImage: UIImage?) {
-        // Row #17 proper: pass the cropped UIImage through so the
-        // SDK profile-update path can hand the bytes to
-        // `DashPayProfileUpdate.avatarBytes` for hash computation.
-        // The DashSync path inside `DWDPUpdateProfileModel` ignores
-        // the image parameter — it uses the URL only.
+        // Pass the cropped image through so the profile bridge can compute
+        // the avatar hash from the uploaded bytes.
         model.dashPayModel.userProfile.updateModel.update(
             withDisplayName: rawDisplayName,
             aboutMe: rawAboutMe,
@@ -696,19 +627,8 @@ extension HomeViewController: HomeViewDelegate {
     }
     
     #if DASHPAY
-    func homeView(_ homeView: HomeView, didUpdateProfile identity: DSBlockchainIdentity?, unreadNotifications: UInt) {
-        updateAvatarContent(identity: identity)
-        // Row #17 stage A — visibility gate uses
-        // `model.dashPayModel.hasIdentity` (OR of DashSync's
-        // `defaultBlockchainIdentity != nil` and SwiftDashSDK's
-        // `dashpayRegistrationCompleted`) so SDK-registered
-        // identities surface in the avatar even when DashSync has
-        // no `DSBlockchainIdentity` object to populate it with.
-        // The `DSBlockchainIdentity` passed in is still assigned to
-        // `avatarView.blockchainIdentity` so DashSync-side avatar
-        // rendering (letter, branded color, profile image) keeps
-        // working; SDK-only identities use the current-user avatar
-        // data from `DWCurrentUserIdentityInfo`.
+    func homeView(_ homeView: HomeView, didUpdateProfileWithUnreadNotifications unreadNotifications: UInt) {
+        avatarView.configureAsCurrentUser()
         let hasIdentity = model.dashPayModel.hasIdentity
         let hasNotifications = unreadNotifications > 0
         avatarView.isHidden = !hasIdentity
@@ -717,6 +637,10 @@ extension HomeViewController: HomeViewDelegate {
 
     func homeViewEditProfile() {
         profileAction()
+    }
+
+    func homeViewShowNotifications() {
+        notificationAction()
     }
     #endif
 }

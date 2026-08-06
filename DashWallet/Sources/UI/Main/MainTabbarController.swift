@@ -18,7 +18,6 @@
 import SwiftUI
 import UIKit
 import Combine
-import SwiftUI
 
 // MARK: - MainTabbarTabs
 
@@ -143,6 +142,17 @@ class MainTabbarController: UITabBarController {
                 self?.reconfigureDashPayTabsForActiveWalletChange()
             }
             .store(in: &cancellableBag)
+
+        // Remove destination-inappropriate tabs immediately when the selected
+        // network flips. `DWCurrentUserIdentityInfo` deliberately reports no
+        // identity until the destination SDK runtime is bound; the post-ready
+        // active-wallet notification above rebuilds again with final state.
+        NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.reconfigureDashPayTabsForActiveWalletChange()
+            }
+            .store(in: &cancellableBag)
         #endif
     }
 
@@ -246,12 +256,22 @@ extension MainTabbarController {
         nvc.tabBarItem = item
         viewControllers.append(nvc)
 
+        #if !DASHPAY
+        let identityAvailable = false
+        #endif
+        DWLogger.log(
+            "TABBAR wallet-context: \(identityAvailable ? "dashpay" : "core") layout, \(viewControllers.count) items")
         self.viewControllers = viewControllers
     }
 
     #if DASHPAY
     private func reconfigureDashPayTabsIfNeeded() {
         guard hasDashPayIdentity else { return }
+        // The canonical registration notification can be emitted by multiple
+        // reconciliation paths. Once the five-tab DashPay layout is already
+        // installed, rebuilding it again would shift the selected index by
+        // another +2 and can select a non-existent controller.
+        guard viewControllers?.count != MainTabbarTabs.allCases.count else { return }
 
         if containsCreateUsernameController(in: self) {
             pendingDashPayTabReconfiguration = true

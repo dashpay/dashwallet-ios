@@ -19,7 +19,6 @@
 
 #import "DWAllowedCharactersUsernameValidationRule.h"
 #import "DWDashPayConstants.h"
-#import "DWEnvironment.h"
 #import "DWFirstUsernameSymbolValidationRule.h"
 #import "DWLengthUsernameValidationRule.h"
 #import "DWUsernameValidationRule+Protected.h"

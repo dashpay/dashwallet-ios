@@ -94,18 +94,6 @@ class BuySellPortalModel: ObservableObject, NetworkReachabilityHandling {
 
     @Published var items: [ServiceItem] = []
 
-    var services: [Service] {
-        Service.allCases.filter { service in
-            switch service {
-            case .swapKit:
-                return DWEnvironment.sharedInstance().currentChain.isMainnet() && SwapKitConstants.isConfigured
-            case .maya:
-                return DWEnvironment.sharedInstance().currentChain.isMainnet()
-            default:
-                return true
-            }
-        }
-    }
     private var upholdDashCard: DWUpholdCardObject?
 
     private var serviceItemDataProvider: ServiceDataProvider

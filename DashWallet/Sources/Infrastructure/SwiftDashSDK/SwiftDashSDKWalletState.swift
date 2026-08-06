@@ -88,6 +88,18 @@ public final class SwiftDashSDKWalletState: NSObject, ObservableObject {
     /// first `applyBalance(_:)` call arrives. Updated on the main queue.
     @Published public private(set) var balance: WalletBalance? = nil
 
+    /// Fee-aware "Max" / all-funds amount for a core send: spendable minus a
+    /// reserve sized from the account's real UTXO count
+    /// (`SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs`), floored at 0.
+    /// Prefer this over `WalletBalance.maxSendable` (flat 100k reserve) at every
+    /// core-send "Max" call site so the sent amount tracks the real fee instead
+    /// of stranding ~0.001 DASH as change.
+    public func feeAwareMaxSendable() -> UInt64 {
+        let spendable = balance?.spendable ?? 0
+        let reserve = SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs()
+        return spendable > reserve ? spendable - reserve : 0
+    }
+
     /// Total DIP-17 Platform Payment credit balance across every
     /// PlatformPayment account (`accountType == 14`) for the active
     /// wallet. Reported in credits (1e11 credits per DASH). Refreshed

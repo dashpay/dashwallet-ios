@@ -60,24 +60,21 @@ struct InternalTransferScreen: View {
                             .padding(.horizontal, 20)
                     }
 
+                    if let message = viewModel.amountValidationMessage {
+                        TransferAmountValidationNote(message: message)
+                            .padding(.horizontal, 20)
+                    }
+
                     if viewModel.canContinue {
                         transferPreview
                             .padding(.horizontal, 20)
                     }
                 }
-                .padding(.bottom, 8)
+                .padding(.bottom, 12)
             }
             .scrollBounceBehavior(.basedOnSize)
 
-            NumericKeyboardView(
-                value: keypadBinding,
-                showDecimalSeparator: true,
-                actionButtonText: NSLocalizedString("Continue", comment: ""),
-                actionEnabled: viewModel.canContinue,
-                inProgress: false,
-                actionHandler: { showConfirm = true })
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
+            keyboardSection
         }
         .background(Color.dash.primaryBackground)
         .sheet(isPresented: $showConfirm) {
@@ -89,6 +86,7 @@ struct InternalTransferScreen: View {
                 fiatText: viewModel.fiatAmountString,
                 withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
                 isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
+                isFullShieldedSweep: viewModel.isFullShieldedSweep,
                 onCancel: { showConfirm = false },
                 onCompleted: {
                     showConfirm = false
@@ -111,13 +109,38 @@ struct InternalTransferScreen: View {
     // MARK: - Amount row
 
     private var amountRow: some View {
-        TransferAmountRow(
-            unit: $viewModel.unit,
-            amountText: viewModel.amountText,
-            secondaryText: viewModel.secondaryDisplayString,
-            currencySymbol: viewModel.primaryCurrencySymbol,
-            fiatCurrencyCode: viewModel.fiatCurrencyCode,
-            onMax: { viewModel.fillMaxFromWallet() })
+        EnterAmountView(
+            primaryAmount: dashAmountText,
+            secondaryAmount: fiatAmountText,
+            primaryCurrency: .dash,
+            secondaryCurrency: .fiat(viewModel.fiatCurrencyCode),
+            isPrimarySelected: isDashInputSelected,
+            currencyCodes: amountCurrencyCodes,
+            selectedCurrencyCode: selectedAmountCurrencyCode,
+            onMax: { viewModel.fillMaxFromWallet() },
+            onSwap: toggleAmountUnit,
+            onCurrencyTap: toggleAmountUnit,
+            onSelectInputType: selectAmountCurrency
+        )
+    }
+
+    // MARK: - Keyboard
+
+    private var keyboardSection: some View {
+        NumericKeyboardView(
+            value: keypadBinding,
+            showDecimalSeparator: true,
+            actionButtonText: NSLocalizedString("Continue", comment: ""),
+            actionEnabled: viewModel.canContinue,
+            inProgress: false,
+            actionHandler: { showConfirm = true }
+        )
+        .padding(.top, 12)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 12)
+        .background(Color.dash.secondaryBackground)
+        .clipShape(.rect(cornerRadius: 20))
+        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 
     // MARK: - From / To cards
@@ -138,43 +161,27 @@ struct InternalTransferScreen: View {
     /// badge — the source is fixed by the tapped balance row.
     @ViewBuilder
     private func sendCards(source: ChainNetwork) -> some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             pinnedCard(source, caption: NSLocalizedString("From", comment: ""))
-            switch source {
-            case .core:
-                sendTargetRow(.shielded)
-                sendTargetRow(.platform)
-            case .platform:
-                sendTargetRow(.shielded)
-                sendTargetRow(.core)
-            case .shielded:
-                sendTargetRow(.core)
-                sendTargetRow(.platform)
-            }
+            selectionGroup(
+                caption: NSLocalizedString("To", comment: ""),
+                networks: availableTargets(for: source),
+                selected: sanitizedTarget(for: source, proposed: viewModel.sendTarget),
+                onSelect: viewModel.selectSendTarget)
         }
-    }
-
-    /// Selectable To row of the send sheet, bound to `viewModel.sendTarget`.
-    private func sendTargetRow(_ network: ChainNetwork) -> some View {
-        let display = networkDisplay(network)
-        return sourceRow(
-            iconSystemName: display.icon,
-            caption: NSLocalizedString("To", comment: ""),
-            title: display.title,
-            balanceTrailing: dashBalanceTrailing(display.balance),
-            selected: viewModel.sendTarget == network,
-            action: { viewModel.sendTarget = network })
     }
 
     /// Non-tappable pinned endpoint card (the fixed From of the send sheet).
     private func pinnedCard(_ network: ChainNetwork, caption: String) -> some View {
         let display = networkDisplay(network)
-        return directionCard(
+        return sourceRow(
             iconSystemName: display.icon,
-            iconColor: .blue,
             caption: caption,
             title: display.title,
-            balanceTrailing: dashBalanceTrailing(display.balance))
+            balanceTrailing: dashBalanceTrailing(display.balance),
+            selected: false,
+            showsRadio: false,
+            action: {})
     }
 
     /// Icon / title / formatted balance for a balance row, one source of
@@ -197,26 +204,18 @@ struct InternalTransferScreen: View {
     }
 
     private var swappableCards: some View {
-        ZStack {
-            VStack(spacing: 8) {
-                switch viewModel.direction {
-                case .toShielded:
-                    coreSourceCard
-                    platformSourceCard
-                    toCard
-                case .fromShielded:
-                    fromShieldedCard
-                    coreSourceCard
-                    platformSourceCard
-                }
-            }
+        VStack(spacing: 12) {
+            selectionGroup(
+                caption: NSLocalizedString("From", comment: ""),
+                networks: ChainNetwork.allCases,
+                selected: viewModel.source,
+                onSelect: viewModel.selectStandaloneSource)
 
-            // Tappable swap badge — toggles the transfer direction. Sits over
-            // the boundary between the From and To sides. Forward (2 source rows
-            // above the To card) nudges it down (y:32); reverse (1 From card
-            // above 2 destination rows) nudges it up (y:-32).
-            swapBadge
-                .offset(y: viewModel.direction == .toShielded ? 32 : -32)
+            selectionGroup(
+                caption: NSLocalizedString("To", comment: ""),
+                networks: availableTargets(for: viewModel.source),
+                selected: sanitizedTarget(for: viewModel.source, proposed: viewModel.sendTarget),
+                onSelect: viewModel.selectStandaloneTarget)
         }
     }
 
@@ -225,54 +224,15 @@ struct InternalTransferScreen: View {
     /// No swap badge — the destination is fixed by the tapped balance row.
     @ViewBuilder
     private func receiveCards(target: ChainNetwork) -> some View {
-        VStack(spacing: 8) {
-            switch target {
-            case .shielded:
-                coreSourceCard
-                platformSourceCard
-                toCard
-            case .core:
-                receiveSourceRow(.shielded)
-                receiveSourceRow(.platform)
-                toTransparentCard
-            case .platform:
-                receiveSourceRow(.shielded)
-                receiveSourceRow(.core)
-                toPlatformCard
-            }
+        VStack(spacing: 12) {
+            selectionGroup(
+                caption: NSLocalizedString("From", comment: ""),
+                networks: availableSources(for: target),
+                selected: sanitizedSource(into: target, proposed: viewModel.receiveSource),
+                onSelect: viewModel.selectReceiveSource)
+
+            pinnedCard(target, caption: NSLocalizedString("To", comment: ""))
         }
-    }
-
-    /// Selectable From row of the receive sheet, bound to
-    /// `viewModel.receiveSource` (the .shielded target reuses the legacy
-    /// `source`-bound cards instead).
-    private func receiveSourceRow(_ network: ChainNetwork) -> some View {
-        let display = networkDisplay(network)
-        return sourceRow(
-            iconSystemName: display.icon,
-            caption: NSLocalizedString("From", comment: ""),
-            title: display.title,
-            balanceTrailing: dashBalanceTrailing(display.balance),
-            selected: viewModel.receiveSource == network,
-            action: { viewModel.receiveSource = network })
-    }
-
-    private var toTransparentCard: some View {
-        directionCard(
-            iconSystemName: "d.circle.fill",
-            iconColor: .blue,
-            caption: NSLocalizedString("To", comment: ""),
-            title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
-            balanceTrailing: dashBalanceTrailing(viewModel.coreBalanceFormatted))
-    }
-
-    private var toPlatformCard: some View {
-        directionCard(
-            iconSystemName: "creditcard.fill",
-            iconColor: .blue,
-            caption: NSLocalizedString("To", comment: ""),
-            title: NSLocalizedString("Platform", comment: "Dash Platform chain"),
-            balanceTrailing: dashBalanceTrailing(viewModel.platformCreditsFormatted))
     }
 
     /// Trailing balance amount + Dash currency glyph, shared by every card.
@@ -280,61 +240,24 @@ struct InternalTransferScreen: View {
         TransferSourceRow.dashBalanceTrailing(formatted)
     }
 
-    private var coreSourceCard: some View {
-        sourceRow(
-            iconSystemName: "d.circle.fill",
-            caption: sourceCaption,
-            title: NSLocalizedString("Transparent", comment: "Balance breakdown"),
-            balanceTrailing: dashBalanceTrailing(viewModel.coreBalanceFormatted),
-            selected: viewModel.source == .core,
-            action: { viewModel.source = .core })
-    }
-
-    private var platformSourceCard: some View {
-        sourceRow(
-            iconSystemName: "creditcard.fill",
-            caption: sourceCaption,
-            title: NSLocalizedString("Platform", comment: "Dash Platform chain"),
-            balanceTrailing: dashBalanceTrailing(viewModel.platformCreditsFormatted),
-            selected: viewModel.source == .platform,
-            action: { viewModel.source = .platform })
-    }
-
-    private var toCard: some View {
-        directionCard(
-            iconSystemName: "shield.fill",
-            iconColor: .blue,
-            caption: NSLocalizedString("To", comment: ""),
-            title: NSLocalizedString("Shielded", comment: ""),
-            balanceTrailing: AnyView(
-                Text(viewModel.shieldedBalanceFormatted)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.dash.primaryText)))
-    }
-
-    // MARK: - Reverse-direction From card
-
-    /// "From" card in reverse mode — the shielded balance (non-tappable). The
-    /// reverse *destination* is chosen via the reused `coreSourceCard` /
-    /// `platformSourceCard` radio rows rendered below it.
-    private var fromShieldedCard: some View {
-        directionCard(
-            iconSystemName: "shield.fill",
-            iconColor: .blue,
-            caption: NSLocalizedString("From", comment: ""),
-            title: NSLocalizedString("Shielded", comment: ""),
-            balanceTrailing: AnyView(
-                Text(viewModel.shieldedBalanceFormatted)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.dash.primaryText)))
-    }
-
-    /// Caption for the reusable source rows: "From" in the forward direction,
-    /// "To" in reverse (where they act as the destination picker).
-    private var sourceCaption: String {
-        viewModel.direction == .toShielded
-            ? NSLocalizedString("From", comment: "")
-            : NSLocalizedString("To", comment: "")
+    private func selectionGroup(
+        caption: String,
+        networks: [ChainNetwork],
+        selected: ChainNetwork,
+        onSelect: @escaping (ChainNetwork) -> Void
+    ) -> some View {
+        VStack(spacing: 8) {
+            ForEach(networks, id: \.self) { network in
+                let display = networkDisplay(network)
+                sourceRow(
+                    iconSystemName: display.icon,
+                    caption: caption,
+                    title: display.title,
+                    balanceTrailing: dashBalanceTrailing(display.balance),
+                    selected: selected == network,
+                    action: { onSelect(network) })
+            }
+        }
     }
 
     /// Tappable source row with a trailing radio indicator — rendered by the
@@ -345,6 +268,7 @@ struct InternalTransferScreen: View {
         title: String,
         balanceTrailing: AnyView,
         selected: Bool,
+        showsRadio: Bool = true,
         action: @escaping () -> Void
     ) -> some View {
         TransferSourceRow(
@@ -353,58 +277,42 @@ struct InternalTransferScreen: View {
             title: title,
             balanceTrailing: balanceTrailing,
             selected: selected,
+            showsRadio: showsRadio,
             action: action)
     }
 
-    private func directionCard(
-        iconSystemName: String,
-        iconColor: Color,
-        caption: String,
-        title: String,
-        balanceTrailing: AnyView
-    ) -> some View {
-        HStack(spacing: 14) {
-            Image(systemName: iconSystemName)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(iconColor)
-                .frame(width: 36, height: 36)
-                .background(Color.dash.blue.opacity(0.08))
-                .clipShape(Circle())
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(caption)
-                    .font(.system(size: 11))
-                    .foregroundColor(Color.dash.secondaryText)
-                Text(title)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.dash.primaryText)
-            }
-
-            Spacer()
-
-            balanceTrailing
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(Color.dash.secondaryBackground)
-        .cornerRadius(12)
+    private func availableTargets(for source: ChainNetwork) -> [ChainNetwork] {
+        ChainNetwork.allCases.filter { $0 != source }
     }
 
-    private var swapBadge: some View {
-        Button(action: toggleDirection) {
-            Image(systemName: "arrow.up.arrow.down")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(.dash.primaryText)
-                .frame(width: 28, height: 28)
-                .background(Color.dash.primaryBackground)
-                .clipShape(Circle())
-                .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-        }
-        .buttonStyle(.plain)
+    private func availableSources(for target: ChainNetwork) -> [ChainNetwork] {
+        ChainNetwork.allCases.filter { $0 != target }
     }
 
-    private func toggleDirection() {
-        viewModel.direction = viewModel.direction == .toShielded ? .fromShielded : .toShielded
+    private func sanitizedTarget(for source: ChainNetwork, proposed target: ChainNetwork) -> ChainNetwork {
+        source == target ? defaultTarget(for: source) : target
+    }
+
+    private func sanitizedSource(into target: ChainNetwork, proposed source: ChainNetwork) -> ChainNetwork {
+        source == target ? defaultSource(for: target) : source
+    }
+
+    private func defaultTarget(for source: ChainNetwork) -> ChainNetwork {
+        switch source {
+        case .core, .platform:
+            return .shielded
+        case .shielded:
+            return .core
+        }
+    }
+
+    private func defaultSource(for target: ChainNetwork) -> ChainNetwork {
+        switch target {
+        case .shielded:
+            return .core
+        case .core, .platform:
+            return .shielded
+        }
     }
 
     // MARK: - Transfer preview
@@ -429,6 +337,54 @@ struct InternalTransferScreen: View {
 
     // MARK: - Helpers
 
+    private var isDashInputSelected: Bool {
+        viewModel.unit == .dash
+    }
+
+    private var dashAmountText: String {
+        switch viewModel.unit {
+        case .dash:
+            return keypadBinding.wrappedValue
+        case .fiat:
+            guard viewModel.parsedDashAmount > 0 else { return "" }
+            return InternalTransferViewModel.formatTyped(
+                viewModel.parsedDashAmount,
+                fractionDigits: 8)
+        }
+    }
+
+    private var fiatAmountText: String {
+        switch viewModel.unit {
+        case .dash:
+            guard viewModel.parsedDashAmount > 0,
+                  let fiatAmount = try? CurrencyExchanger.shared.convertDash(
+                    amount: viewModel.parsedDashAmount,
+                    to: viewModel.fiatCurrencyCode)
+            else { return "" }
+            return InternalTransferViewModel.formatTyped(
+                fiatAmount,
+                fractionDigits: 2)
+        case .fiat:
+            return keypadBinding.wrappedValue
+        }
+    }
+
+    private var amountCurrencyCodes: [String] {
+        ["DASH", viewModel.fiatCurrencyCode]
+    }
+
+    private var selectedAmountCurrencyCode: String {
+        isDashInputSelected ? "DASH" : viewModel.fiatCurrencyCode
+    }
+
+    private func toggleAmountUnit() {
+        viewModel.unit = isDashInputSelected ? .fiat : .dash
+    }
+
+    private func selectAmountCurrency(_ currencyCode: String) {
+        viewModel.unit = currencyCode.caseInsensitiveCompare("DASH") == .orderedSame ? .dash : .fiat
+    }
+
     private var keypadBinding: Binding<String> {
         Binding(
             get: { viewModel.amountText == "0" ? "" : viewModel.amountText },
@@ -439,6 +395,29 @@ struct InternalTransferScreen: View {
                     viewModel.amountText = newValue
                 }
             })
+    }
+}
+
+// MARK: - TransferAmountValidationNote
+
+/// Inline explanation for a route-specific amount that cannot be submitted.
+/// Keeping this next to the amount/source controls prevents a protective SDK
+/// build-time refusal from becoming the user's first feedback.
+struct TransferAmountValidationNote: View {
+    let message: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 13))
+                .foregroundColor(.orange)
+            Text(message)
+                .font(.system(size: 13))
+                .foregroundColor(.dash.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -523,94 +502,6 @@ struct TransferSourceRow: View {
                     .fill(Color.dash.blue)
                     .frame(width: 10, height: 10)
             }
-        }
-    }
-}
-
-// MARK: - TransferAmountRow
-
-/// The Max-pill / big-number / DASH-fiat unit-pill amount entry row, shared
-/// by the internal transfer screen and the Send screen so the two amount
-/// entries can't drift apart visually.
-struct TransferAmountRow: View {
-    @Binding var unit: InternalTransferUnit
-    let amountText: String
-    /// The small grey line under the big number (the non-input unit).
-    let secondaryText: String
-    /// Fiat currency symbol prefixed to the big number in `.fiat` mode.
-    let currencySymbol: String
-    /// Active fiat code (e.g. "THB") — the second unit pill's label.
-    let fiatCurrencyCode: String
-    var onMax: () -> Void
-
-    var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Button(action: onMax) {
-                Text(NSLocalizedString("Max", comment: ""))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(Color.dash.secondaryText)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.dash.secondaryBackground)
-                    .clipShape(Capsule())
-            }
-
-            VStack(spacing: 4) {
-                primaryAmountDisplay
-
-                Text(secondaryText)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Color.dash.secondaryText)
-            }
-            .frame(maxWidth: .infinity)
-
-            VStack(spacing: 4) {
-                unitPill(label: "DASH", selected: unit == .dash) {
-                    unit = .dash
-                }
-                unitPill(label: fiatCurrencyCode, selected: unit == .fiat) {
-                    unit = .fiat
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var primaryAmountDisplay: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 4) {
-            switch unit {
-            case .dash:
-                Text(amountText)
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundColor(.dash.primaryText)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                Image("icon_dash_currency")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 22, height: 22)
-            case .fiat:
-                Text(currencySymbol)
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.dash.primaryText)
-                Text(amountText)
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundColor(.dash.primaryText)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-            }
-        }
-    }
-
-    private func unitPill(label: String, selected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(label)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(selected ? .dash.primaryText : .secondary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(selected ? Color.dash.secondaryBackground : Color.clear)
-                .clipShape(Capsule())
         }
     }
 }

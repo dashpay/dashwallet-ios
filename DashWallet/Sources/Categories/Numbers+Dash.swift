@@ -20,7 +20,7 @@ import Foundation
 extension UInt64 {
     // TODO: Find a better name, or just replace it with function toDecimal()
     var dashAmount: Decimal {
-        Decimal(self)/Decimal(DUFFS)
+        Decimal(self)/Decimal(kOneDash)
     }
 
     /// Converts `UInt64` to formatted dash string. 123456780 -> "DASH 1"
@@ -48,7 +48,7 @@ extension UInt64 {
 
 extension Int64 {
     var dashAmount: Decimal {
-        Decimal(self)/Decimal(DUFFS)
+        Decimal(self)/Decimal(kOneDash)
     }
 
     var formattedDashAmount: String {
@@ -57,7 +57,7 @@ extension Int64 {
 }
 
 extension Decimal {
-    static var duffs: Decimal { Decimal(DUFFS) }
+    static var duffs: Decimal { Decimal(kOneDash) }
 
     var whole: Decimal {
         rounded(sign == .minus ? .up : .down)
@@ -150,7 +150,7 @@ extension NSDecimalNumber {
     /// - Returns: Plain dash amount in duffs
     ///
     var plainDashAmount: UInt64 {
-        let duffs = NSDecimalNumber(value: DUFFS)
+        let duffs = NSDecimalNumber(value: kOneDash)
         let amount = multiplying(by: duffs)
         return amount.uint64Value
     }

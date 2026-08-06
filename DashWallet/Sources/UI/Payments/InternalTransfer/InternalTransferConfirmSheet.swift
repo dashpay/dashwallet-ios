@@ -37,6 +37,9 @@ struct InternalTransferConfirmSheet: View {
     /// so Confirm runs the AUTO (all-addresses) withdrawal instead of the
     /// single-input partial form.
     var isFullPlatformWithdrawal: Bool = false
+    /// Shielded reverse routes only: execute the note-aware Max plan and
+    /// revalidate it immediately before proving.
+    var isFullShieldedSweep: Bool = false
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
@@ -196,15 +199,6 @@ struct InternalTransferConfirmSheet: View {
 
     // MARK: - Network fee estimate
 
-    /// Asset-lock processing base cost folded into a ShieldFromAssetLock
-    /// (Type 18) pool fee on top of `compute_minimum_shielded_fee`. Mirrors
-    /// the Rust `shield_from_asset_lock_pool_fee`:
-    /// `required_asset_lock_duff_balance_for_processing_start_for_address_funding`
-    /// (50_000 duffs) × 1000 credits/duff. Versioned constant; estimate-only.
-    /// Internal — the Send confirm sheet estimates its Core → Shielded
-    /// route with the same number.
-    static let assetLockBaseCostCredits: UInt64 = 50_000_000
-
     /// Platform credits per DASH (1e11).
     private static let creditsPerDash: Decimal = 100_000_000_000
 
@@ -214,10 +208,7 @@ struct InternalTransferConfirmSheet: View {
     private var networkFeeCredits: UInt64? {
         switch route {
         case .coreToShielded:
-            // ShieldFromAssetLock: base shielded fee + asset-lock base cost.
-            guard let base = try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
-            else { return nil }
-            return base + Self.assetLockBaseCostCredits
+            return CoreToShieldedAmountPolicy.poolFeeCredits
         case .platformToShielded:
             // Shield (Type 15): base shielded fee. Real metered storage is
             // extra and only knowable on-chain, so this is a lower bound.
@@ -231,7 +222,7 @@ struct InternalTransferConfirmSheet: View {
             // (the same 50k-duff base the Rust side reserves for address
             // funding). The funding ST's metered fee is extra and only
             // knowable on-chain, so this is a lower bound.
-            return Self.assetLockBaseCostCredits
+            return CoreToShieldedAmountPolicy.assetLockBaseCostCredits
         case .platformToCore:
             // The exact transition fee the preflight already netted out of
             // the payout amount.
@@ -450,9 +441,13 @@ struct InternalTransferConfirmSheet: View {
             case .platformToShielded:
                 await coordinator.performShield(amountCredits: creditsAmount)
             case .shieldedToCore:
-                await coordinator.performWithdraw(amountCredits: creditsAmount)
+                await coordinator.performWithdraw(
+                    amountCredits: creditsAmount,
+                    sweepAll: isFullShieldedSweep)
             case .shieldedToPlatform:
-                await coordinator.performUnshield(amountCredits: creditsAmount)
+                await coordinator.performUnshield(
+                    amountCredits: creditsAmount,
+                    sweepAll: isFullShieldedSweep)
             case .coreToPlatform:
                 await coordinator.performFundPlatform(amountDuffs: amountDuffsUnsigned)
             case .platformToCore:

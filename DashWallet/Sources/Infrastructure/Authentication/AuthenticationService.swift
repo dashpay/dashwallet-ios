@@ -175,7 +175,7 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         return true
     }
 
-    /// Wipe-path only (`DWEnvironment.clearAllWalletsAndRemovePin`).
+    /// Wipe-path only (`SwiftDashSDKWalletWiper.wipeWallet`).
     @objc func removePin() {
         PinStore.delete(account: .pin)
         PinStore.delete(account: .pinFailCount)
@@ -337,6 +337,19 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
             failCount: failCount,
             failHeight: TimeInterval(PinStore.int64(for: .pinFailHeight) ?? 0),
             secureTime: secureTime)
+    }
+
+    @objc var lockoutErrorMessage: String {
+        if failCount >= LockoutPolicy.maxFailCount {
+            return NSLocalizedString(
+                "Wallet disabled. Recover with your recovery phrase.",
+                comment: "PIN permanent lockout")
+        }
+
+        let formatted = DWDurationFormatter.string(from: lockoutWaitTime)
+        return String(
+            format: NSLocalizedString("Try again in %@", comment: "PIN lockout"),
+            formatted)
     }
 
     // MARK: Biometric policy

@@ -54,7 +54,7 @@ class SettingsMenuViewModel: ObservableObject {
 
     /// Formatted leftover amount for the confirmation dialog.
     var coinJoinLeftoverFormatted: String {
-        String(format: "%.6f DASH", Double(coinJoinLeftoverDuffs) / Double(DUFFS))
+        String(format: "%.6f DASH", Double(coinJoinLeftoverDuffs) / Double(kOneDash))
     }
     
     var networkName: String {
@@ -178,11 +178,11 @@ class SettingsMenuViewModel: ObservableObject {
     /// BIP44 address → sweep → balance refresh). The "Move CoinJoin Funds"
     /// row self-removes once the refreshed balance drops below the threshold.
     func performCoinJoinSweep() async {
-        DWLogger.log("CJTEST SettingsMenuViewModel: sweep invoked from Settings menu (\(coinJoinLeftoverFormatted))")
+        DWLogger.log("SettingsMenuViewModel: sweep invoked from Settings menu (\(coinJoinLeftoverFormatted))")
         do {
             _ = try await WalletSendService.shared.sweepCoinJoin()
         } catch {
-            DWLogger.log("CJTEST SettingsMenuViewModel: sweep failed: \(error)")
+            DWLogger.log("SettingsMenuViewModel: sweep failed: \(error)")
             // Auth-cancel is an expected no-op (nil message); a real failure
             // surfaces an alert. The row stays visible so the user can retry.
             coinJoinSweepErrorMessage = WalletSendService.coinJoinSweepUserMessage(for: error)

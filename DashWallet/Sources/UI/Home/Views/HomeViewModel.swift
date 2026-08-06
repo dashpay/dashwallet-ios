@@ -76,6 +76,20 @@ class HomeViewModel: ObservableObject {
     /// Throttled in `observeWallet()` so the save/balance notification storm
     /// during sync coalesces into at most one full reload per interval.
     private let txReloadRequests = PassthroughSubject<Void, Never>()
+
+    /// Converts the SDK's current-value balance publisher into actual balance
+    /// changes. The initial snapshot is already covered by the eager Home load,
+    /// while `removeDuplicates()` prevents the coordinator's repeated 1 Hz
+    /// snapshots from requesting redundant transaction-list reloads.
+    static func distinctBalanceChanges<P: Publisher>(
+        from publisher: P
+    ) -> AnyPublisher<Void, Never> where P.Output == WalletBalance?, P.Failure == Never {
+        publisher
+            .removeDuplicates()
+            .dropFirst()
+            .map { _ in () }
+            .eraseToAnyPublisher()
+    }
     
     @Published private(set) var txItems: [TransactionGroup] = []
     @Published var shortcutItems: [ShortcutAction] = []
@@ -86,7 +100,7 @@ class HomeViewModel: ObservableObject {
     /// balance is large enough to offer the Shielded destination.
     @Published var showCoinJoinMoveFundsSheet: Bool = false
     @Published private(set) var timeSkew: TimeInterval = 0
-    @Published private(set) var showJoinDashpay: Bool = true
+    @Published private(set) var showJoinDashpay: Bool = false
     /// Selected filter categories (multi-select checkboxes). Defaults to every
     /// category — i.e. "All". Never empty: the dialog blocks unchecking the
     /// last box.
@@ -184,6 +198,12 @@ class HomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.clearCachedData()
+#if DASHPAY
+                // The selected network changes before its SDK runtime is
+                // ready. Keep the banner hidden during that transition; the
+                // post-ready wallet-context notification re-evaluates it.
+                self?.showJoinDashpay = false
+#endif
             }
             .store(in: &cancellableBag)
 
@@ -198,6 +218,16 @@ class HomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.clearCachedData()
+#if DASHPAY
+                // The runtime posts this only after the destination
+                // network's wallet + SwiftData container are bound. Defer
+                // one main-queue turn so DWCurrentUserIdentityInfo's
+                // notification observer invalidates its old-network snapshot
+                // before the banner asks for the destination username.
+                DispatchQueue.main.async { [weak self] in
+                    self?.checkJoinDashPay()
+                }
+#endif
             }
             .store(in: &cancellableBag)
     }
@@ -289,6 +319,16 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        NotificationCenter.default.publisher(for: .swiftDashSDKTransactionProjectionDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    ShieldedTxLookup.shared.refresh()
+                    self?.txReloadRequests.send()
+                }
+            }
+            .store(in: &cancellableBag)
+
         // The platform-address recorder inserts into the app's SQLite —
         // invisible to the SwiftData save trigger above — so it posts its
         // own signal when a received row lands.
@@ -299,10 +339,11 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
-        // Balance changes often indicate new transactions, so reload the full
-        // transaction list, not just shortcuts. This ensures newly received or
-        // sent transactions appear in the UI promptly.
-        NotificationCenter.default.publisher(for: NSNotification.Name.DSWalletBalanceDidChange)
+        // Balance changes can precede or arrive without a SwiftData save (for
+        // example seed/clear transitions), so retain an independent trigger.
+        // Equal snapshots are filtered and the initial current-value emission
+        // is skipped because init already starts an eager full reload.
+        Self.distinctBalanceChanges(from: SwiftDashSDKWalletState.shared.$balance)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.txReloadRequests.send()
@@ -335,7 +376,17 @@ class HomeViewModel: ObservableObject {
             self.isReloading = true
             DWLogger.log("HomeViewModel: Starting full transaction reload")
 
+            // SwiftUI mutates the filter on the main thread. Snapshot it once
+            // before doing the worker-queue computation instead of reading the
+            // published property concurrently during the reload.
+            let selectedFilters = DispatchQueue.main.sync { self.selectedFilters }
+
             let transactions = transactionSource.allTransactions
+            // Reconcile restored Shielded → Core destinations before Core rows
+            // are filtered/classified. The activity projection can recover a
+            // destination tag that was absent from the local withdrawal store.
+            let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity(
+                coreTransactions: transactions)
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets = [:]
             self.coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet()
@@ -355,7 +406,7 @@ class HomeViewModel: ObservableObject {
             var items: [TransactionListDataItem] = transactions.compactMap { wrappedTx -> TransactionListDataItem? in
                 Tx.shared.updateRateIfNeeded(for: wrappedTx)
 
-                if !self.passesFilter(transaction: wrappedTx, selected: self.selectedFilters, hasRewards: hasRewards, hasMasternodes: hasMasternodes, giftCardTxIds: giftCardTxIds) {
+                if !self.passesFilter(transaction: wrappedTx, selected: selectedFilters, hasRewards: hasRewards, hasMasternodes: hasMasternodes, giftCardTxIds: giftCardTxIds) {
                     return nil
                 }
 
@@ -390,11 +441,10 @@ class HomeViewModel: ObservableObject {
             // Platform↔Shielded moves, shielded identity fundings) — the
             // Core rows above only cover operations with an L1 leg. The
             // day-grouping sort below merges the two timelines.
-            let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity()
             for shielded in shieldedItems {
                 guard self.passesShieldedFilter(
                     item: shielded,
-                    selected: self.selectedFilters,
+                    selected: selectedFilters,
                     hasRewards: hasRewards,
                     hasMasternodes: hasMasternodes)
                 else { continue }
@@ -409,7 +459,7 @@ class HomeViewModel: ObservableObject {
             for platform in platformItems {
                 guard self.passesCategoryFilter(
                     categories: [.received],
-                    selected: self.selectedFilters,
+                    selected: selectedFilters,
                     hasRewards: hasRewards,
                     hasMasternodes: hasMasternodes)
                 else { continue }
@@ -489,20 +539,23 @@ class HomeViewModel: ObservableObject {
                 return
             }
 
+            let selectedFilters = DispatchQueue.main.sync { self.selectedFilters }
+            let historyFlags = DispatchQueue.main.sync { (self.hasRewardsHistory, self.hasMasternodeHistory) }
+
             // A coinbase / masternode tx arriving incrementally unlocks its
             // filter row without waiting for the next full reload.
-            if tx.isCoinbaseTransaction && !self.hasRewardsHistory {
+            if tx.isCoinbaseTransaction && !historyFlags.0 {
                 DispatchQueue.main.async {
                     self.hasRewardsHistory = true
                 }
             }
-            if tx.isMasternodeTransaction && !self.hasMasternodeHistory {
+            if tx.isMasternodeTransaction && !historyFlags.1 {
                 DispatchQueue.main.async {
                     self.hasMasternodeHistory = true
                 }
             }
 
-            if !self.passesFilter(transaction: tx, selected: self.selectedFilters, hasRewards: self.hasRewardsHistory, hasMasternodes: self.hasMasternodeHistory) {
+            if !self.passesFilter(transaction: tx, selected: selectedFilters, hasRewards: historyFlags.0, hasMasternodes: historyFlags.1) {
                 return
             }
 
@@ -529,7 +582,8 @@ class HomeViewModel: ObservableObject {
                 var oldItemIndex: Int? = nil
                 var oldDateKey: String? = nil
 
-                for (gIdx, group) in self.txItems.enumerated() {
+                let currentGroups = DispatchQueue.main.sync { self.txItems }
+                for (gIdx, group) in currentGroups.enumerated() {
                     if let iIdx = group.items.firstIndex(where: { $0.id == itemId }) {
                         oldGroupIndex = gIdx
                         oldItemIndex = iIdx
@@ -588,7 +642,7 @@ class HomeViewModel: ObservableObject {
                         DispatchQueue.main.async {
                             guard groupIndex < self.txItems.count,
                                   itemIndex < self.txItems[groupIndex].items.count else { return }
-                            let updatedGroup = self.txItems[groupIndex]
+                            var updatedGroup = self.txItems[groupIndex]
                             var updatedItems = updatedGroup.items
                             updatedItems[itemIndex] = txItem
                             updatedGroup.items = updatedItems
@@ -601,26 +655,22 @@ class HomeViewModel: ObservableObject {
                 self.txByHash[itemId] = txItem
                 let shouldShowReclassify = self.shouldDisplayReclassifyTransaction && tx.date > reclassifyTransactionsActivatedAt
 
-                if let groupIndex = self.txItems.firstIndex(where: { $0.id == newDateKey }) {
-                    // Add to an existing date group
-                    DispatchQueue.main.async {
-                        self.txItems[groupIndex].items.append(txItem)
-                        self.txItems[groupIndex].items.sort { $0.date > $1.date }
-                        self.showReclassifyTransaction = shouldShowReclassify ? tx : nil
-                    }
-                } else {
-                    // Create a new date group
-                    let newGroup = TransactionGroup(id: newDateKey, date: txItem.date, items: [txItem])
-                    let insertIndex = self.txItems.firstIndex(where: { $0.date < txItem.date })
-
-                    DispatchQueue.main.async {
+                // Re-check the current data source inside the main-queue hop;
+                // a full reload may replace all groups between these queues.
+                DispatchQueue.main.async {
+                    if let currentGroupIndex = self.txItems.firstIndex(where: { $0.id == newDateKey }) {
+                        self.txItems[currentGroupIndex].items.append(txItem)
+                        self.txItems[currentGroupIndex].items.sort { $0.date > $1.date }
+                    } else {
+                        let newGroup = TransactionGroup(id: newDateKey, date: txItem.date, items: [txItem])
+                        let insertIndex = self.txItems.firstIndex(where: { $0.date < txItem.date })
                         if let index = insertIndex {
                             self.txItems.insert(newGroup, at: index)
                         } else {
                             self.txItems.append(newGroup)
                         }
-                        self.showReclassifyTransaction = shouldShowReclassify ? tx : nil
                     }
+                    self.showReclassifyTransaction = shouldShowReclassify ? tx : nil
                 }
             }
         }
@@ -700,7 +750,7 @@ extension HomeViewModel {
 
     /// Formatted leftover amount for the popup message.
     var coinJoinSweepAmountFormatted: String {
-        String(format: "%.6f DASH", Double(coinJoinSweepAmountDuffs) / Double(DUFFS))
+        String(format: "%.6f DASH", Double(coinJoinSweepAmountDuffs) / Double(kOneDash))
     }
 
     private func observeCoinJoinSweep() {
@@ -731,14 +781,12 @@ extension HomeViewModel {
             guard let manager = SwiftDashSDKHost.shared.manager,
                   let wallet = SwiftDashSDKHost.shared.wallet,
                   ((try? manager.shieldedDefaultAddress(walletId: wallet.walletId)) ?? nil) != nil,
-                  let shieldedFeeCredits = try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+                  let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits
             else { return false }
-            // Pool fee = base shielded fee + the asset-lock processing base cost
-            // (same estimate the transfer confirm sheets show); credits → duffs
-            // is ÷ 1000. `sendFeeReserveDuffs` (0.001 DASH) allows for the L1
-            // fee of a drain spending hundreds of mixed-coin inputs.
-            let overheadDuffs = (shieldedFeeCredits + InternalTransferConfirmSheet.assetLockBaseCostCredits) / 1000
-                + WalletBalance.sendFeeReserveDuffs
+            // The shared Type 18 pool-fee estimate (credits → duffs is ÷ 1000);
+            // `sendFeeReserveDuffs` (0.001 DASH) allows for the L1 fee of a
+            // drain spending hundreds of mixed-coin inputs.
+            let overheadDuffs = poolFeeCredits / 1000 + WalletBalance.sendFeeReserveDuffs
             return balanceDuffs >= overheadDuffs * 2
         }
     }
@@ -753,7 +801,7 @@ extension HomeViewModel {
     /// sheet (`CoinJoinMoveFundsSheet`) is shown instead of the BIP44-only
     /// dialog.
     func maybeShowCoinJoinSweepDialog() {
-        DWLogger.log("CJTEST HomeViewModel: sweep dialog check — \(coinJoinSweepAmountDuffs) duffs (\(String(format: "%.6f", Double(coinJoinSweepAmountDuffs) / Double(DUFFS))) DASH), threshold \(CoinJoinRecovery.recoveryDustThresholdDuffs), above=\(coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
+        DWLogger.log("HomeViewModel: sweep dialog check — \(coinJoinSweepAmountDuffs) duffs (\(String(format: "%.6f", Double(coinJoinSweepAmountDuffs) / Double(kOneDash))) DASH), threshold \(CoinJoinRecovery.recoveryDustThresholdDuffs), above=\(coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
         guard !coinJoinSweepDialogShown,
               syncModel.state == .syncDone,
               coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs else { return }
@@ -774,7 +822,7 @@ extension HomeViewModel {
             _ = try await WalletSendService.shared.sweepCoinJoin()
             return nil
         } catch {
-            DWLogger.log("CJTEST HomeViewModel: sweep (home popup) failed: \(error)")
+            DWLogger.log("HomeViewModel: sweep (home popup) failed: \(error)")
             // nil when the user cancelled auth; a message on real failures.
             return WalletSendService.coinJoinSweepUserMessage(for: error)
         }
@@ -952,7 +1000,7 @@ extension HomeViewModel {
             if !isShieldedReceipt {
                 categories.insert(.received)
             }
-        default:
+        case .moved, .notAccountFunds:
             break
         }
         return categories
@@ -1099,6 +1147,48 @@ protocol TransactionSource {
     var allTransactions: Array<Transaction> { get }
 }
 
+struct CoreWithdrawalReceiptCandidate: Equatable {
+    let amountDuffs: UInt64
+    let date: Date
+}
+
+struct CoreWithdrawalReceiptMatchPolicy {
+    /// A withdrawal destination is the wallet's next unused Core receive
+    /// address, so one transaction paying it is authoritative even when the
+    /// restored shielded activity timestamp or reconstructed amount differs.
+    /// Address reuse is handled conservatively: require one unambiguous
+    /// amount/time candidate rather than consuming an unrelated receipt.
+    static func selectedIndex(
+        expectedAmountDuffs: UInt64,
+        activityDate: Date,
+        candidates: [CoreWithdrawalReceiptCandidate]
+    ) -> Int? {
+        guard !candidates.isEmpty else { return nil }
+        if candidates.count == 1 { return 0 }
+
+        let inWindow = candidates.indices.filter {
+            isWithinMatchWindow(candidates[$0].date, around: activityDate)
+        }
+        if expectedAmountDuffs > 0 {
+            let exactInWindow = inWindow.filter {
+                candidates[$0].amountDuffs == expectedAmountDuffs
+            }
+            if exactInWindow.count == 1 { return exactInWindow[0] }
+
+            let exact = candidates.indices.filter {
+                candidates[$0].amountDuffs == expectedAmountDuffs
+            }
+            if exact.count == 1 { return exact[0] }
+        }
+        return inWindow.count == 1 ? inWindow[0] : nil
+    }
+
+    private static func isWithinMatchWindow(_ date: Date, around anchor: Date) -> Bool {
+        let delta = date.timeIntervalSince(anchor)
+        return delta >= -3600 && delta <= 86_400
+    }
+}
+
 /// Pure SwiftDashSDK source for the home screen tx list. Queries the
 /// `PersistentTransaction` rows persisted by Rust's SwiftData callbacks
 /// (Core SPV block apply + BLAST events) directly from
@@ -1115,6 +1205,105 @@ protocol TransactionSource {
 /// thread mid-scroll. A private context reads the last SAVED state —
 /// which is exactly what the `NSManagedObjectContextDidSave` reload
 /// trigger guarantees is current.
+struct SwiftDashSDKWalletTransactionSnapshot {
+    let walletId: Data
+    let transactions: [Transaction]
+}
+
+/// Objective-C-facing, value-only projection used by the phone-side Watch
+/// bridge. The archived `BRAppleWatchTransactionData` wire model stays
+/// unchanged; only its source moves from frozen DashSync transactions to the
+/// active SwiftDashSDK wallet snapshot.
+@objcMembers
+final class DWAppleWatchTransactionSnapshot: NSObject {
+    let amountText: String
+    let amountTextInLocalCurrency: String
+    let dateText: String
+    let typeRawValue: Int
+
+    init(amountText: String,
+         amountTextInLocalCurrency: String,
+         dateText: String,
+         typeRawValue: Int) {
+        self.amountText = amountText
+        self.amountTextInLocalCurrency = amountTextInLocalCurrency
+        self.dateText = dateText
+        self.typeRawValue = typeRawValue
+    }
+}
+
+@objc
+final class DWAppleWatchSnapshotProvider: NSObject {
+    private enum WatchTransactionType: Int {
+        case sent
+        case received
+        case moved
+        case invalid
+    }
+
+    @objc
+    static func hasWallet() -> Bool {
+        SwiftDashSDKWalletSource.fetchCurrentWalletSnapshot() != nil
+    }
+
+    /// The legacy bridge sent at most the account's 100 newest Core
+    /// transactions. Keep that limit and ordering so existing watches receive
+    /// the same archive shape and list semantics.
+    @objc
+    static func recentTransactions() -> [DWAppleWatchTransactionSnapshot] {
+        guard let snapshot = SwiftDashSDKWalletSource.fetchCurrentWalletSnapshot() else {
+            return []
+        }
+
+        return snapshot.transactions
+            .sorted { $0.date > $1.date }
+            .prefix(100)
+            .map(makeSnapshot)
+    }
+
+    private static func makeSnapshot(_ transaction: Transaction) -> DWAppleWatchTransactionSnapshot {
+        let type: WatchTransactionType
+        switch transaction.state {
+        case .invalid:
+            type = .invalid
+        default:
+            switch transaction.direction {
+            case .sent:
+                type = .sent
+            case .received, .notAccountFunds:
+                type = .received
+            case .moved:
+                type = .moved
+            }
+        }
+
+        let signedAmount = transaction.appleWatchSignedAmount
+        let localAmount = CurrencyExchanger.shared.fiatAmountString(for: signedAmount.dashAmount)
+
+        return DWAppleWatchTransactionSnapshot(
+            amountText: signedAmount.formattedDashAmount,
+            amountTextInLocalCurrency: "(\(localAmount))",
+            dateText: watchDateText(transaction.date),
+            typeRawValue: type.rawValue)
+    }
+
+    private static func watchDateText(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "Mdja",
+                                                        options: 0,
+                                                        locale: Locale.current)
+        return formatter.string(from: date)
+            .replacingOccurrences(of: "am", with: "a")
+            .replacingOccurrences(of: "pm", with: "p")
+            .replacingOccurrences(of: "AM", with: "a")
+            .replacingOccurrences(of: "PM", with: "p")
+            .replacingOccurrences(of: "a.m.", with: "a")
+            .replacingOccurrences(of: "p.m.", with: "p")
+            .replacingOccurrences(of: "A.M.", with: "a")
+            .replacingOccurrences(of: "P.M.", with: "p")
+    }
+}
+
 class SwiftDashSDKWalletSource: TransactionSource {
     var allTransactions: Array<Transaction> {
         Self.fetchAll().sorted { $0.date > $1.date }
@@ -1124,8 +1313,17 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// Safe from any thread. Shared read for every tx-history consumer that
     /// used to enumerate DashSync's `DSWallet.allTransactions`.
     static func fetchAll() -> [Transaction] {
-        guard let (container, walletId) = hostHandles() else { return [] }
-        return fetchAndWrap(in: ModelContext(container), walletId: walletId)
+        fetchCurrentWalletSnapshot()?.transactions ?? []
+    }
+
+    /// Active wallet id and its persisted transactions, captured from one
+    /// host-handle read. Callers that retain work across wallet switches use
+    /// the id to prevent a pending operation from matching another wallet's
+    /// transaction set.
+    static func fetchCurrentWalletSnapshot() -> SwiftDashSDKWalletTransactionSnapshot? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        let transactions = fetchAndWrap(in: ModelContext(container), walletId: walletId)
+        return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: transactions)
     }
 
     /// Single transaction by txid (wire order — the same `Data` as
@@ -1142,17 +1340,18 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// - ShieldFromAssetLock entries are dropped: their Core asset-lock
     ///   spend always renders as a history row already
     ///   (`Transaction.isShieldedTransfer`).
-    /// - Withdrawal entries are dropped ONLY when the destination script
-    ///   is one of the active wallet's own Core addresses — that's the
-    ///   internal Shielded→Transparent transfer, whose Core receipt
-    ///   renders via `Transaction.isShieldedWithdrawalReceipt`. A
-    ///   withdrawal to an EXTERNAL Core address produces no wallet-side
-    ///   Core transaction at all, so it stays and renders as a Sent row.
+    /// - An internal Withdrawal is projected as Pending until its matching
+    ///   Core receipt appears, then dropped so the receipt becomes the single
+    ///   authoritative history row. A withdrawal to an EXTERNAL Core address
+    ///   produces no wallet-side Core transaction, so it always stays and
+    ///   renders as a Sent row.
     /// - Rows are deduped by `entryId`: an intra-wallet transfer writes
     ///   a Sent row on the sending account and a Received row on the
     ///   receiving account for the same operation; the outgoing
     ///   (initiating) side wins.
-    static func fetchShieldedActivity() -> [ShieldedActivityItem] {
+    static func fetchShieldedActivity(
+        coreTransactions: [Transaction] = []
+    ) -> [ShieldedActivityItem] {
         guard let (container, walletId) = hostHandles() else { return [] }
         let context = ModelContext(container)
         let descriptor = FetchDescriptor<PersistentShieldedActivity>(
@@ -1162,9 +1361,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
         var byEntry: [Data: PersistentShieldedActivity] = [:]
         for row in rows where row.kindTag != ShieldedActivityItem.Kind.shieldFromAssetLock.rawValue {
             if let existing = byEntry[row.entryId] {
-                let existingOutgoing = existing.direction == ShieldedActivityItem.Direction.outgoing.rawValue
-                let rowOutgoing = row.direction == ShieldedActivityItem.Direction.outgoing.rawValue
-                if !existingOutgoing && rowOutgoing {
+                if shouldPreferShieldedProjection(row, over: existing) {
                     byEntry[row.entryId] = row
                 }
             } else {
@@ -1172,14 +1369,40 @@ class SwiftDashSDKWalletSource: TransactionSource {
             }
         }
 
+        let noteValueByCmx = shieldedNoteValueByCmx(in: context, walletId: walletId)
+        let outgoingNoteValueByCmx = outgoingShieldedNoteValueByCmx(in: context, walletId: walletId)
+
         var items: [ShieldedActivityItem] = []
         for row in byEntry.values {
+            let reconstructedAmountCredits = projectedShieldedAmountCredits(
+                for: row,
+                noteValueByCmx: noteValueByCmx,
+                outgoingNoteValueByCmx: outgoingNoteValueByCmx)
+            let reconstructedAmountDuffs = reconstructedAmountCredits / 1000
+
             switch row.kindTag {
             case ShieldedActivityItem.Kind.withdrawal.rawValue:
                 let address = withdrawalDestinationAddress(counterparty: row.counterparty)
                 if let address, isActiveWalletCoreAddress(address, walletId: walletId, in: context) {
-                    // Internal Shielded→Transparent transfer — the Core
-                    // receipt row represents it.
+                    // Live withdrawals record this before the payout arrives,
+                    // but restored activity can rebuild the same durable tag.
+                    ShieldedWithdrawalStore.shared.record(address: address)
+                    let pendingItem = ShieldedActivityItem(
+                        row: row,
+                        amountCreditsOverride: reconstructedAmountCredits,
+                        destinationAddress: address,
+                        isAwaitingTransparentReceipt: true)
+                    // Keep a local Pending row during the gap between the
+                    // shielded spend and the asynchronously persisted L1
+                    // receipt. Once a matching receipt exists, suppress the
+                    // placeholder so the operation never renders twice.
+                    if hasMatchingCoreReceipt(
+                        for: pendingItem,
+                        address: address,
+                        in: coreTransactions) {
+                        continue
+                    }
+                    items.append(pendingItem)
                     continue
                 }
                 // External (or undecodable-script) withdrawal: nothing
@@ -1187,6 +1410,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 // funds silently vanish from the timeline.
                 items.append(ShieldedActivityItem(
                     row: row,
+                    amountCreditsOverride: reconstructedAmountCredits,
                     destinationAddress: address,
                     isExternalDestination: true))
             case ShieldedActivityItem.Kind.unshield.rawValue:
@@ -1203,13 +1427,238 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 } ?? false
                 items.append(ShieldedActivityItem(
                     row: row,
+                    amountCreditsOverride: reconstructedAmountCredits,
                     destinationAddress: address,
                     isExternalDestination: isExternal))
+            case ShieldedActivityItem.Kind.received.rawValue:
+                if matchingCoreInternalTransfer(
+                    for: row,
+                    amountDuffs: reconstructedAmountDuffs,
+                    route: .coreToShielded,
+                    in: coreTransactions) != nil {
+                    // Restored Core → Shielded transfers are already covered by
+                    // the authoritative L1 asset-lock row in the main list.
+                    continue
+                }
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    amountCreditsOverride: reconstructedAmountCredits))
+            case ShieldedActivityItem.Kind.shieldedSpend.rawValue:
+                if let address = unshieldDestinationAddress(counterparty: row.counterparty) {
+                    let isExternal = !isActiveWalletPlatformAddress(address, walletId: walletId, in: context)
+                    items.append(ShieldedActivityItem(
+                        row: row,
+                        kindOverride: .unshield,
+                        amountCreditsOverride: reconstructedAmountCredits,
+                        destinationAddress: address,
+                        isExternalDestination: isExternal))
+                    continue
+                }
+
+                if let address = withdrawalDestinationAddress(counterparty: row.counterparty) {
+                    let isOwnAddress = isActiveWalletCoreAddress(
+                        address,
+                        walletId: walletId,
+                        in: context)
+                    if isOwnAddress {
+                        ShieldedWithdrawalStore.shared.record(address: address)
+                    }
+                    let receipt = matchingCoreReceipt(
+                        amountDuffs: reconstructedAmountDuffs,
+                        address: address,
+                        around: Date(timeIntervalSince1970: Double(row.createdAtMs) / 1000.0),
+                        in: coreTransactions)
+                    let receiptAmountCredits = receipt.map { $0.dashAmount * 1000 }
+                    let effectiveAmount = receiptAmountCredits ?? reconstructedAmountCredits
+
+                    if isOwnAddress {
+                        // Same-seed restore: once the transparent receipt is in
+                        // the wallet's L1 history, that row is authoritative.
+                        if receipt != nil {
+                            continue
+                        }
+                        items.append(ShieldedActivityItem(
+                            row: row,
+                            kindOverride: .withdrawal,
+                            amountCreditsOverride: effectiveAmount,
+                            destinationAddress: address,
+                            isAwaitingTransparentReceipt: true))
+                    } else {
+                        items.append(ShieldedActivityItem(
+                            row: row,
+                            kindOverride: .withdrawal,
+                            amountCreditsOverride: effectiveAmount,
+                            destinationAddress: address,
+                            isExternalDestination: true))
+                    }
+                    continue
+                }
+
+                if row.identityId.count == 32 {
+                    items.append(ShieldedActivityItem(
+                        row: row,
+                        kindOverride: .identityCreate,
+                        amountCreditsOverride: reconstructedAmountCredits))
+                    continue
+                }
+
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    amountCreditsOverride: reconstructedAmountCredits))
             default:
-                items.append(ShieldedActivityItem(row: row))
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    amountCreditsOverride: reconstructedAmountCredits))
             }
         }
         return items
+    }
+
+    private static func shouldPreferShieldedProjection(
+        _ lhs: PersistentShieldedActivity,
+        over rhs: PersistentShieldedActivity
+    ) -> Bool {
+        let lhsScore = shieldedProjectionPreferenceScore(lhs)
+        let rhsScore = shieldedProjectionPreferenceScore(rhs)
+        if lhsScore != rhsScore {
+            return lhsScore > rhsScore
+        }
+        return lhs.createdAtMs > rhs.createdAtMs
+    }
+
+    private static func shieldedProjectionPreferenceScore(_ row: PersistentShieldedActivity) -> Int {
+        var score = 0
+        if row.kindTag != ShieldedActivityItem.Kind.shieldedSpend.rawValue { score += 100 }
+        if row.kindTag != ShieldedActivityItem.Kind.received.rawValue { score += 40 }
+        if row.amount > 0 { score += 30 }
+        if !row.identityId.isEmpty { score += 20 }
+        if !row.counterparty.isEmpty { score += 10 }
+        if row.direction == ShieldedActivityItem.Direction.outgoing.rawValue { score += 5 }
+        if row.hasBlockHeight { score += 3 }
+        score += row.status
+        return score
+    }
+
+    private static func projectedShieldedAmountCredits(
+        for row: PersistentShieldedActivity,
+        noteValueByCmx: [Data: UInt64],
+        outgoingNoteValueByCmx: [Data: UInt64]
+    ) -> UInt64 {
+        if row.amount > 0 { return row.amount }
+
+        let incomingCredits = sumChunked32Values(from: row.noteCmxs, using: noteValueByCmx)
+        if incomingCredits > 0 { return incomingCredits }
+
+        let outgoingCredits = sumChunked32Values(from: row.noteCmxs, using: outgoingNoteValueByCmx)
+        if outgoingCredits > 0 { return outgoingCredits }
+
+        return 0
+    }
+
+    private static func matchingCoreInternalTransfer(
+        for row: PersistentShieldedActivity,
+        amountDuffs: UInt64,
+        route: Transaction.InternalTransferRoute,
+        in transactions: [Transaction]
+    ) -> Transaction? {
+        let rowDate = Date(timeIntervalSince1970: Double(row.createdAtMs) / 1000.0)
+        let candidates = transactions.filter {
+            $0.internalTransferRoute == route
+                && isWithinProjectionMatchWindow($0.date, around: rowDate)
+        }
+
+        if amountDuffs > 0,
+           let exact = candidates.first(where: { $0.dashAmount == amountDuffs }) {
+            return exact
+        }
+
+        return candidates.count == 1 ? candidates.first : nil
+    }
+
+    private static func matchingCoreReceipt(
+        amountDuffs: UInt64,
+        address: String,
+        around date: Date,
+        in transactions: [Transaction]
+    ) -> Transaction? {
+        // Do not require `ShieldedWithdrawalStore` classification here. A
+        // restored activity row may be the source that rehydrates that store,
+        // while the Core transaction is already persisted and mined.
+        let candidates = transactions.filter { transaction in
+            transaction.direction == .received
+                && transaction.outputReceiveAddresses.contains(address)
+        }
+        let summaries = candidates.map {
+            CoreWithdrawalReceiptCandidate(
+                amountDuffs: $0.dashAmount,
+                date: $0.date)
+        }
+        guard let index = CoreWithdrawalReceiptMatchPolicy.selectedIndex(
+            expectedAmountDuffs: amountDuffs,
+            activityDate: date,
+            candidates: summaries)
+        else { return nil }
+        return candidates[index]
+    }
+
+    /// Match the eventual Core receipt without relying on a txid the opaque
+    /// shielded-withdraw call does not return. The fresh destination address is
+    /// the primary key; principal/time only disambiguate unexpected address
+    /// reuse. This tolerates restore-time timestamp skew and amount
+    /// reconstruction differences without leaving a mined receipt unmatched.
+    private static func hasMatchingCoreReceipt(
+        for pending: ShieldedActivityItem,
+        address: String,
+        in transactions: [Transaction]
+    ) -> Bool {
+        matchingCoreReceipt(
+            amountDuffs: pending.amountDuffs,
+            address: address,
+            around: pending.date,
+            in: transactions) != nil
+    }
+
+    private static func isWithinProjectionMatchWindow(_ date: Date, around anchor: Date) -> Bool {
+        let delta = date.timeIntervalSince(anchor)
+        return delta >= -3600 && delta <= 86_400
+    }
+
+    private static func shieldedNoteValueByCmx(
+        in context: ModelContext,
+        walletId: Data
+    ) -> [Data: UInt64] {
+        let descriptor = FetchDescriptor<PersistentShieldedNote>(
+            predicate: #Predicate { $0.walletId == walletId })
+        let rows = (try? context.fetch(descriptor)) ?? []
+        return Dictionary(uniqueKeysWithValues: rows.map { ($0.cmx, $0.value) })
+    }
+
+    private static func outgoingShieldedNoteValueByCmx(
+        in context: ModelContext,
+        walletId: Data
+    ) -> [Data: UInt64] {
+        let descriptor = FetchDescriptor<PersistentShieldedOutgoingNote>(
+            predicate: #Predicate { $0.walletId == walletId })
+        let rows = (try? context.fetch(descriptor)) ?? []
+        return Dictionary(uniqueKeysWithValues: rows.map { ($0.cmx, $0.value) })
+    }
+
+    private static func sumChunked32Values(
+        from data: Data,
+        using map: [Data: UInt64]
+    ) -> UInt64 {
+        guard !data.isEmpty else { return 0 }
+
+        var total: UInt64 = 0
+        var index = data.startIndex
+        while index < data.endIndex {
+            let next = data.index(index, offsetBy: 32, limitedBy: data.endIndex) ?? data.endIndex
+            guard data.distance(from: index, to: next) == 32 else { break }
+            let chunk = Data(data[index..<next])
+            total += map[chunk] ?? 0
+            index = next
+        }
+        return total
     }
 
     /// Decode an unshield entry's counterparty (21-byte serialized
@@ -1311,38 +1760,46 @@ class SwiftDashSDKWalletSource: TransactionSource {
         guard let row = (try? context.fetch(descriptor))?.first else {
             return nil
         }
-        // Membership check: a tx the active wallet doesn't participate in
-        // (no TXO row denorm'd to its walletId, via either the producing
-        // `transaction` or the spending `spendingTransaction`) is not its
-        // transaction and reads as absent.
+        // Membership can arrive through either side of the SDK's documented
+        // union: wallet-scoped TXOs or an account's involved-transactions
+        // relation. Accept both so an out-of-order receipt is not discarded.
         guard row.outputs.contains(where: { $0.walletId == walletId })
-            || row.inputs.contains(where: { $0.walletId == walletId }) else {
+            || row.inputs.contains(where: { $0.walletId == walletId })
+            || row.involvedAccounts.contains(where: { $0.wallet.walletId == walletId }) else {
             return nil
         }
-        let tx = Transaction(persistentTransaction: row)
+        let tx = Transaction(persistentTransaction: row, walletId: walletId)
         tx.sdkCoinJoinMixing = isCoinJoinMixingTx(row)
         return tx
     }
 
-    /// Every txid the active wallet participates in, recovered by the
-    /// TXO join `PersistentTransaction` deliberately can't express itself
-    /// (it has no walletId — one row is shared across wallets; see the
-    /// model doc). A wallet's TXO rows carry its walletId denorm; each row
-    /// names the wallet's transactions on both sides — the producing
-    /// `transaction` (funds in) and the `spendingTransaction` (funds out).
-    /// One walletId-scoped fetch per reload (not per transaction), so the
-    /// timeline stays a single indexed scan on large wallets.
+    /// Every txid the active wallet participates in. Union the canonical TXO
+    /// membership with `PersistentAccount.involvedTransactions`, as required
+    /// by the SDK model: the latter closes out-of-order/payload-only indexing
+    /// gaps where the transaction record is saved before its TXO relationship
+    /// is available to the home timeline.
     private static func activeWalletTxids(
         in context: ModelContext,
         walletId: Data
     ) -> Set<Data> {
-        let descriptor = FetchDescriptor<PersistentTxo>(
+        let txoDescriptor = FetchDescriptor<PersistentTxo>(
             predicate: #Predicate { $0.walletId == walletId })
-        guard let txos = try? context.fetch(descriptor) else { return [] }
+        let txos = (try? context.fetch(txoDescriptor)) ?? []
         var txids = Set<Data>()
         for txo in txos {
             if let producing = txo.transaction { txids.insert(producing.txid) }
             if let spending = txo.spendingTransaction { txids.insert(spending.txid) }
+        }
+
+        var walletDescriptor = FetchDescriptor<PersistentWallet>(
+            predicate: #Predicate { $0.walletId == walletId })
+        walletDescriptor.fetchLimit = 1
+        if let wallet = (try? context.fetch(walletDescriptor))?.first {
+            for account in wallet.accounts {
+                for transaction in account.involvedTransactions {
+                    txids.insert(transaction.txid)
+                }
+            }
         }
         return txids
     }
@@ -1361,7 +1818,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
             return []
         }
         return rows.map { row -> Transaction in
-            let tx = Transaction(persistentTransaction: row)
+            let tx = Transaction(persistentTransaction: row, walletId: walletId)
             tx.sdkCoinJoinMixing = Self.isCoinJoinMixingTx(row)
             return tx
         }
@@ -1407,14 +1864,80 @@ private struct HomeViewModelPreviewTransactionSource: TransactionSource {
 }
 #endif
 
+/// SDK identity data is authoritative for Join DashPay visibility. The
+/// DWGlobalOptions fields are a legacy UI mirror and are deliberately cleared
+/// at the start of every network switch; requiring that mirror before reading
+/// the SDK username creates a short-circuit where the mirror can never
+/// self-heal after returning to a network with an existing identity.
+enum JoinDashPayRegistrationPolicy {
+    static func hasRegisteredUsername(
+        hasIdentity: Bool,
+        sdkUsername: String?,
+        legacyRegistrationCompleted: Bool,
+        legacyUsername: String?
+    ) -> Bool {
+        // The legacy mirror is global, while identities are network-scoped.
+        // It can only be a fallback for an identity that exists in the
+        // currently-bound SDK context.
+        guard hasIdentity else {
+            return false
+        }
+        if sdkUsername?.isEmpty == false {
+            return true
+        }
+        return legacyRegistrationCompleted && legacyUsername?.isEmpty == false
+    }
+}
+
+enum JoinDashPayBannerPolicy {
+    static func shouldShow(
+        contextReady: Bool,
+        syncDone: Bool,
+        dismissed: Bool,
+        hasRegisteredUsername: Bool,
+        hasRegistrationInProgress: Bool
+    ) -> Bool {
+        contextReady &&
+            syncDone &&
+            !dismissed &&
+            !hasRegisteredUsername &&
+            !hasRegistrationInProgress
+    }
+}
+
 // MARK: - DashPay
 
 #if DASHPAY
 extension HomeViewModel {
     func checkJoinDashPay() {
-        self.showJoinDashpay = syncModel.state == .syncDone &&
-            !UsernamePrefs.shared.joinDashPayDismissed &&
-            joinDashPayState != .voting && joinDashPayState != .registered
+        let options = DWGlobalOptions.sharedInstance()
+        // Read the network-scoped SDK truth unconditionally.
+        let identityState = MainActor.assumeIsolated {
+            let identity = DWCurrentUserIdentityInfo.shared
+            return (
+                contextReady: identity.isCurrentNetworkContextReady,
+                hasIdentity: identity.hasIdentity,
+                username: identity.username
+            )
+        }
+        let hasRegisteredUsername = JoinDashPayRegistrationPolicy.hasRegisteredUsername(
+            hasIdentity: identityState.hasIdentity,
+            sdkUsername: identityState.username,
+            legacyRegistrationCompleted: options.dashpayRegistrationCompleted,
+            legacyUsername: options.dashpayUsername)
+        // Dismissal is persisted per active wallet + network. It is valid
+        // before an identity exists and remains valid when readiness is
+        // re-evaluated or the user leaves and returns to this network.
+        let identityScopedRegistrationState =
+            identityState.hasIdentity &&
+            (joinDashPayState == .voting || joinDashPayState == .registered)
+
+        self.showJoinDashpay = JoinDashPayBannerPolicy.shouldShow(
+            contextReady: identityState.contextReady,
+            syncDone: syncModel.state == .syncDone,
+            dismissed: UsernamePrefs.shared.joinDashPayDismissed,
+            hasRegisteredUsername: hasRegisteredUsername,
+            hasRegistrationInProgress: identityScopedRegistrationState)
     }
     
     private func observeDashPay() {

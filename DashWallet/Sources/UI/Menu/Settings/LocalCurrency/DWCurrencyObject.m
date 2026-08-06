@@ -16,7 +16,7 @@
 //
 
 #import "DWCurrencyObject.h"
-#import <DashSync/DSCurrencyPriceObject.h>
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_END
 @synthesize name = _name;
 @synthesize flagName = _flagName;
 
-- (instancetype)initWithPriceObject:(DSCurrencyPriceObject *)object
+- (instancetype)initWithPriceObject:(CurrencyRateObjc *)object
                            flagName:(NSString *)flagName
                            provider:(id<DWCurrencyItemPriceProvider>)provider {
     self = [super init];

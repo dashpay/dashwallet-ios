@@ -37,6 +37,26 @@ enum MnemonicFirstWalletCreationError: Error {
     case walletCreation(Error)
 }
 
+/// Process-lifetime cache used for network-scoped objects that must not be
+/// opened twice over the same backing store. Generic so identity and network
+/// separation can be tested without constructing SwiftData.
+@MainActor
+final class ProcessNetworkValueCache<Value> {
+    private var values: [String: Value] = [:]
+
+    func value(
+        for networkKey: String,
+        create: () throws -> Value
+    ) rethrows -> (value: Value, reused: Bool) {
+        if let existing = values[networkKey] {
+            return (existing, true)
+        }
+        let created = try create()
+        values[networkKey] = created
+        return (created, false)
+    }
+}
+
 /// Enforces the seed-safety ordering for wallet creation: persist and verify
 /// the mnemonic before making the wallet live in a manager. If creation then
 /// fails, only the provisional mnemonic is rolled back.
@@ -90,6 +110,7 @@ final class SwiftDashSDKHost {
     private(set) var wallet: ManagedPlatformWallet?
     private(set) var modelContainer: ModelContainer?
     private(set) var runningNetwork: Network?
+    private let modelContainerCache = ProcessNetworkValueCache<ModelContainer>()
 
     // MARK: - Process-wide SDK init guard
 
@@ -135,6 +156,51 @@ final class SwiftDashSDKHost {
     /// funds. Testnet (and anything else) scans from 0.
     static func importedWalletBirthHeight(for network: Network) -> UInt32 {
         network == .mainnet ? 200_000 : 0
+    }
+
+    // MARK: - Platform protocol version
+
+    /// The `DashSDKConfig.platform_version` to build the SDK with, per network.
+    ///
+    /// **Testnet stays pinned to 13.** Testnet Drive moved past v12 to v13,
+    /// whose validation set changed the shielded identity-create exit
+    /// denominations (v12/V8 `[0.1, 0.3, 0.5, 1.0]` → v13/V9 `[0.03, 0.1,
+    /// 0.25, 0.5, 1.0]`). Staying at v12 made the client build shielded
+    /// transitions against the old set, so a contested (0.25 DASH) shielded
+    /// username create failed client-side ("denomination 25000000000 is not a
+    /// member …") even though the server requires exactly 0.25. Pinning
+    /// explicitly also avoids a race where the shielded build runs before the
+    /// SDK has ratcheted to the network version. Bump this when the agreed
+    /// testnet protocol moves past v13.
+    ///
+    /// **Mainnet uses `0` — auto-detect.** The pin above was chosen for
+    /// testnet but applied to every network, which put the client two versions
+    /// ahead of mainnet. Platform v13 (`DRIVE_VERSION_V8`) switches the
+    /// compacted address-balance proof to the two-proof
+    /// `CompactedAddressBalanceProof` bincode envelope, while "nodes and
+    /// clients on v12 and below keep the legacy single GroveDB proof"
+    /// (rs-platform-version `version/v13.rs`). A v13 client therefore decodes
+    /// mainnet's legacy proof as the envelope, consumes the structure and
+    /// trips on the remainder:
+    ///
+    ///     proof: corrupted error: compacted address balance proof contains trailing bytes
+    ///
+    /// — observed 20× across three nodes on a mainnet device (2026-07-31),
+    /// with testnet clean, and it retries then gives up, so the Platform
+    /// address balance never populates there.
+    ///
+    /// `0` is what the SDK is designed for: it seeds at the per-network
+    /// `min_protocol_version` floor (mainnet 11, testnet 12) with auto-detect
+    /// on, ratcheting up as the network reports newer versions — "so this
+    /// picks the right wire without a Swift-side network→version map"
+    /// (`SDK.init(network:platformVersion:)`). A hard pin also disables
+    /// `refreshProtocolVersion()`, which is documented as a no-op while
+    /// pinned, so the client could never learn the network's real version.
+    ///
+    /// Devnet/regtest follow mainnet's auto-detect: no shielded-denomination
+    /// contract is pinned for them, and `makeRuntime` rejects regtest anyway.
+    static func platformVersion(for network: Network) -> UInt32 {
+        network == .testnet ? 13 : 0
     }
 
     // MARK: - Wallet presence
@@ -262,6 +328,7 @@ final class SwiftDashSDKHost {
 
         let handles = try buildRuntime(for: network)
         let resolvedWallet: ManagedPlatformWallet
+        Self.logger.info("🪺 HOST :: stage 4/4 restoring wallet for \(network.rawValue, privacy: .public)")
         do {
             resolvedWallet = try loadPersistedWallet(manager: handles.manager, network: network)
         } catch HostError.walletNotFound {
@@ -282,6 +349,7 @@ final class SwiftDashSDKHost {
         }
 
         publish(handles: handles, wallet: resolvedWallet)
+        Self.logger.info("🪺 HOST :: stage 4/4 wallet restored for \(network.rawValue, privacy: .public)")
         Self.logger.info("🪺 HOST :: started for \(network.rawValue, privacy: .public)")
         return (handles.manager, resolvedWallet)
     }
@@ -484,8 +552,9 @@ final class SwiftDashSDKHost {
         }
     }
 
-    /// Tear down the host's references. The actual SDK / FFI handles drop
-    /// when their last strong reference goes away.
+    /// Tear down the host's active references. The per-network
+    /// `ModelContainer` remains process-cached so a later runtime rebuild does
+    /// not open a second container over the same SQLite store.
     ///
     /// Persisted-row cleanup on wipe is owned by `PlatformAddressSyncCoordinator`
     /// — it must happen BEFORE BLAST's tokio task winds down so in-flight
@@ -509,26 +578,27 @@ final class SwiftDashSDKHost {
             stop()
         }
 
+        return try makeRuntime(for: network)
+    }
+
+    /// Build a configured manager/container pair without replacing the
+    /// published app runtime. Full-device wipe uses this for the inactive
+    /// network so each network-scoped SwiftData store is deleted through a
+    /// manager configured for that same network.
+    private func makeRuntime(for network: Network) throws -> RuntimeHandles {
         guard network != .regtest else {
             throw HostError.unsupportedNetwork(network)
         }
 
         Self.ensureSDKInitialized()
+        Self.logger.info("🪺 HOST :: stage 1/4 creating SDK for \(network.rawValue, privacy: .public)")
 
         let newSDK: SDK
         do {
-            // Pin Platform protocol version 12. v12 is the current server
-            // version and the floor for shielded transitions —
-            // `ShieldFromAssetLock` / `Shield` fees were introduced in v12,
-            // and pinning v11 made the client compute a stale, too-low
-            // shielded pool fee (testnet rejected the asset lock as
-            // underfunded, "needs … credits to start processing"). Pinning
-            // explicitly rather than relying on the auto-detect default
-            // (`platformVersion: 0`, which floors at mainnet 11 / testnet 12)
-            // keeps the wire format consistent across networks. The knob is
-            // the `DashSDKConfig.platform_version` field (dashpay/platform
-            // #3751); bump this when the agreed protocol moves past v12.
-            newSDK = try SDK(network: network, platformVersion: 12)
+            let platformVersion = Self.platformVersion(for: network)
+            newSDK = try SDK(network: network, platformVersion: platformVersion)
+            Self.logger.info(
+                "🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public), protocol \(platformVersion == 0 ? "auto-detect" : "pinned v\(platformVersion)", privacy: .public)")
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
@@ -536,7 +606,12 @@ final class SwiftDashSDKHost {
 
         let container: ModelContainer
         do {
-            container = try buildModelContainer(for: network)
+            Self.logger.info("🪺 HOST :: stage 2/4 obtaining ModelContainer for \(network.rawValue, privacy: .public)")
+            let cached = try modelContainerCache.value(for: network.networkName) {
+                try buildModelContainer(for: network)
+            }
+            container = cached.value
+            Self.logger.info("🪺 HOST :: stage 2/4 ModelContainer \(cached.reused ? "reused" : "created", privacy: .public) for \(network.rawValue, privacy: .public)")
         } catch {
             Self.logger.error("🪺 HOST :: ModelContainer build failed: \(String(describing: error), privacy: .public)")
             throw HostError.modelContainerFailed(error)
@@ -544,7 +619,9 @@ final class SwiftDashSDKHost {
 
         let newManager = PlatformWalletManager()
         do {
+            Self.logger.info("🪺 HOST :: stage 3/4 configuring manager for \(network.rawValue, privacy: .public)")
             try newManager.configure(sdk: newSDK, modelContainer: container)
+            Self.logger.info("🪺 HOST :: stage 3/4 manager configured for \(network.rawValue, privacy: .public)")
         } catch {
             Self.logger.error("🪺 HOST :: configure failed: \(String(describing: error), privacy: .public)")
             throw HostError.configureFailed(error)
@@ -555,6 +632,22 @@ final class SwiftDashSDKHost {
             manager: newManager,
             modelContainer: container,
             network: network)
+    }
+
+    /// Manager bound to `network` for full-device wipe.
+    ///
+    /// The live manager is reused for its network. The other network gets a
+    /// detached manager over the process-cached `ModelContainer`, avoiding a
+    /// second open of the same SQLite store and leaving the published runtime
+    /// unchanged until the wipe commits.
+    func managerForWipe(network: Network) throws -> PlatformWalletManager {
+        if runningNetwork == network, let manager {
+            return manager
+        }
+
+        let handles = try makeRuntime(for: network)
+        _ = try handles.manager.loadFromPersistor()
+        return handles.manager
     }
 
     private func loadPersistedWallet(

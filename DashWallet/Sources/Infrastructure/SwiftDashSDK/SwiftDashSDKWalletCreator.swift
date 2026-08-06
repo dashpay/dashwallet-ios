@@ -154,6 +154,10 @@ final class SwiftDashSDKWalletCreator: NSObject {
         network: Network,
         isImported: Bool
     ) throws -> Data {
+        guard !Thread.isMainThread else {
+            throw CreateError.hostCreateOnMainThread
+        }
+
         let semaphore = DispatchSemaphore(value: 0)
         var result: Result<Data, Error>?
 
@@ -179,5 +183,6 @@ final class SwiftDashSDKWalletCreator: NSObject {
 
     private enum CreateError: LocalizedError {
         case hostCreateDidNotReturn
+        case hostCreateOnMainThread
     }
 }

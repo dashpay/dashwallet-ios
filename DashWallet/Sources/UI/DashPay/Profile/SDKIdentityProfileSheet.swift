@@ -2,18 +2,9 @@
 //  SDKIdentityProfileSheet.swift
 //  DashWallet
 //
-//  Read-only profile sheet for SwiftDashSDK-registered DashPay
-//  identities (row #17 stage A). Shown by `HomeViewController`'s
-//  avatar tap when the user has an SDK identity but no DashSync
-//  `defaultBlockchainIdentity` — which is the normal case for
-//  Platform-Payment-funded registrations (no Core-chain footprint
-//  for DashSync's scanner to pick up).
-//
-//  The legacy `RootEditProfileViewController` opens for DashSync-
-//  side identities. This sheet is the SDK-side counterpart and
-//  is intentionally minimal — username + identity ID + Platform
-//  credits + a "coming soon" hint for profile editing. Row #17
-//  proper replaces this with a real SDK-aware editor.
+//  Current-user DashPay profile sheet backed by the app-owned identity
+//  snapshot. It displays identity details and routes Edit to the existing
+//  SDK-aware profile editor.
 //
 
 import SwiftData
@@ -27,6 +18,7 @@ struct SDKIdentityProfileSheet: View {
     @State private var identityIdHex: String? = nil
     @State private var dpnsNames: [String] = []
     @State private var hasIdentity: Bool = false
+    @State private var pendingContestedName: String? = nil
     @State private var copyToast: String? = nil
 
     /// Callback invoked when the user taps Edit. Owner (HomeViewController)
@@ -49,7 +41,7 @@ struct SDKIdentityProfileSheet: View {
                     // Save path resolves the identity via the SDK
                     // helper, so without it the button would lead to
                     // a broken screen.
-                    if onEditTapped != nil && hasIdentity {
+                    if onEditTapped != nil && hasIdentity && pendingContestedName == nil {
                         editButton
                     }
                     Spacer(minLength: 24)
@@ -85,6 +77,7 @@ struct SDKIdentityProfileSheet: View {
                 loadIdentityId()
                 dpnsNames = DWCurrentUserIdentityInfo.shared.usernames
                 hasIdentity = DWCurrentUserIdentityInfo.shared.hasIdentity
+                pendingContestedName = DWContestedNameStatusService.shared.pendingLabel
             }
         }
     }
@@ -126,6 +119,13 @@ struct SDKIdentityProfileSheet: View {
                 .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(.dash.primaryText)
+            if pendingContestedName != nil {
+                Label(
+                    NSLocalizedString("Voting in progress", comment: "Usernames"),
+                    systemImage: "clock")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+            }
         }
         .frame(maxWidth: .infinity)
     }
@@ -153,8 +153,8 @@ struct SDKIdentityProfileSheet: View {
 
     /// Lists every DPNS label `getDpnsNames()` returns for the current
     /// identity (with the pending-contested label filtered out by the
-    /// helper). Pending-contested names show in the dedicated
-    /// `ContestedNameStatusView` instead, not here.
+    /// helper). A pending-contested name is shown separately in the header
+    /// with an explicit voting status, never in this owned-names list.
     private var namesSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString("DPNS Names", comment: "SDK identity profile sheet — usernames list"))
@@ -216,7 +216,9 @@ struct SDKIdentityProfileSheet: View {
     // MARK: - Derivations
 
     private var username: String {
-        DWGlobalOptions.sharedInstance().dashpayUsername ?? "—"
+        pendingContestedName
+            ?? DWGlobalOptions.sharedInstance().dashpayUsername
+            ?? "—"
     }
 
     private var initial: String {

@@ -42,6 +42,129 @@ import OSLog
 import SwiftData
 import SwiftDashSDK
 
+/// A note-aware full-balance spend plan. Unlike the amount screens' normal
+/// affordability reserve, a sweep prices the fee from the notes that will
+/// actually enter the Orchard bundle. That keeps a one-note withdrawal from
+/// reserving the 16-action worst-case fee and returning the difference as a
+/// persistent change note.
+struct ShieldedSweepPlan: Equatable {
+    let amountCredits: UInt64
+    let feeCredits: UInt64
+    let inputCredits: UInt64
+    /// Funds that necessarily stay in the pool after this bundle. Normally
+    /// zero; non-zero when more than 16 notes require another sweep.
+    let remainingCredits: UInt64
+}
+
+struct ShieldedSweepCandidate: Equatable {
+    let amountCredits: UInt64
+    let inputCredits: UInt64
+    let feeCredits: UInt64
+    let noteCount: Int
+}
+
+/// Pure counterpart of Rust's largest-first shielded note selector. Keeping
+/// prefix optimization separate from SwiftData makes the dust/action-fee edge
+/// cases deterministic and regression-testable.
+enum ShieldedSweepPlanner {
+    static func bestCandidate(
+        noteValues: [UInt64],
+        maxActions: Int = 16,
+        feeForActions: (Int) -> UInt64?
+    ) -> ShieldedSweepCandidate? {
+        guard maxActions > 0 else { return nil }
+
+        let values = noteValues.sorted(by: >).prefix(maxActions)
+        var prefixInput: UInt64 = 0
+        var best: ShieldedSweepCandidate?
+
+        for (offset, value) in values.enumerated() {
+            let next = prefixInput.addingReportingOverflow(value)
+            guard !next.overflow else { return nil }
+            prefixInput = next.partialValue
+
+            let noteCount = offset + 1
+            guard let fee = feeForActions(max(noteCount, 2)),
+                  prefixInput > fee
+            else { continue }
+
+            let candidate = ShieldedSweepCandidate(
+                amountCredits: prefixInput - fee,
+                inputCredits: prefixInput,
+                feeCredits: fee,
+                noteCount: noteCount)
+
+            // Keep the earlier/smaller prefix on a tie. Rust will stop at that
+            // prefix too, and the payout is identical without an extra action.
+            if let currentBest = best {
+                if candidate.amountCredits > currentBest.amountCredits {
+                    best = candidate
+                }
+            } else {
+                best = candidate
+            }
+        }
+
+        return best
+    }
+
+    /// Re-run Rust's iterative selection for the chosen amount and require an
+    /// exact spend (`inputs == amount + fee`). A best-prefix plan should never
+    /// create change; failing closed here protects against policy drift.
+    static func revalidate(
+        noteValues: [UInt64],
+        amountCredits: UInt64,
+        maxActions: Int = 16,
+        feeForActions: (Int) -> UInt64?
+    ) -> ShieldedSweepCandidate? {
+        let values = noteValues.sorted(by: >)
+        guard let initialFee = feeForActions(2) else { return nil }
+        var feeEstimate = initialFee
+
+        for _ in 0..<6 {
+            let required = amountCredits.addingReportingOverflow(feeEstimate)
+            guard !required.overflow else { return nil }
+
+            var accumulated: UInt64 = 0
+            var count = 0
+            for value in values {
+                let next = accumulated.addingReportingOverflow(value)
+                guard !next.overflow else { return nil }
+                accumulated = next.partialValue
+                count += 1
+                if accumulated >= required.partialValue { break }
+            }
+            guard accumulated >= required.partialValue, count <= maxActions,
+                  let exactFee = feeForActions(max(count, 2))
+            else { return nil }
+
+            let exactRequired = amountCredits.addingReportingOverflow(exactFee)
+            guard !exactRequired.overflow else { return nil }
+            if accumulated >= exactRequired.partialValue {
+                guard accumulated == exactRequired.partialValue else {
+                    return nil
+                }
+                return ShieldedSweepCandidate(
+                    amountCredits: amountCredits,
+                    inputCredits: accumulated,
+                    feeCredits: exactFee,
+                    noteCount: count)
+            }
+            feeEstimate = exactFee
+        }
+
+        return nil
+    }
+}
+
+enum ShieldedSweepAvailability: Equatable {
+    case ready(ShieldedSweepPlan)
+    /// A previous outgoing activity is still pending, so persisted notes can
+    /// temporarily include inputs that Rust has reserved in memory.
+    case waitingForConfirmation(UInt64)
+    case unavailable
+}
+
 @MainActor
 final class ShieldedTransferCoordinator: ObservableObject {
 
@@ -107,6 +230,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case noPlatformAddress
         case authCancelled
         case authFailed
+        case amountBelowCoreToShieldedMinimum(UInt64)
+        case shieldedSweepWaiting(UInt64)
+        case shieldedSweepChanged
         case transferFailed(Error)
 
         var errorDescription: String? {
@@ -129,10 +255,102 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString("Authentication cancelled", comment: "InternalTransfer")
             case .authFailed:
                 return NSLocalizedString("Authentication failed", comment: "InternalTransfer")
+            case .amountBelowCoreToShieldedMinimum(let minimumDuffs):
+                let formattedMinimum = "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "The minimum amount you can send is %@",
+                        comment: "Core to Shielded minimum amount"),
+                    formattedMinimum)
+            case .shieldedSweepWaiting(let credits):
+                let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "%@ DASH is still confirming. Withdraw again once it settles.",
+                        comment: "Shielded sweep pending change"),
+                    formatted)
+            case .shieldedSweepChanged:
+                return NSLocalizedString(
+                    "Your Shielded balance changed. Close this confirmation and tap Max again.",
+                    comment: "Shielded sweep changed before submit")
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
             }
         }
+    }
+
+    // MARK: - Full-balance shielded sweep
+
+    /// Builds the Max plan from the active wallet's persisted unspent notes.
+    /// The Rust selector is largest-first and a transition is capped at 16
+    /// actions, so the first bundle consumes at most the 16 largest notes.
+    /// Any remainder is reported to the amount screen instead of being left
+    /// behind silently.
+    static func sweepAvailability(
+        feeKind: PlatformWalletManager.ShieldedFeeKind
+    ) -> ShieldedSweepAvailability {
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let modelContainer = SwiftDashSDKHost.shared.modelContainer
+        else { return .unavailable }
+
+        let walletId = wallet.walletId
+        let context = modelContainer.mainContext
+
+        let pendingDescriptor = FetchDescriptor<PersistentShieldedActivity>(
+            predicate: #Predicate {
+                $0.walletId == walletId && $0.accountIndex == 0 && $0.status == 0
+            })
+        let hasPendingSpend = ((try? context.fetch(pendingDescriptor)) ?? [])
+            .contains { !$0.spentNullifiers.isEmpty }
+
+        let balanceCoordinator = PlatformAddressSyncCoordinator.shared
+        if hasPendingSpend || balanceCoordinator.isShieldedBalanceReconciling {
+            return .waitingForConfirmation(balanceCoordinator.shieldedBalance)
+        }
+
+        let noteDescriptor = FetchDescriptor<PersistentShieldedNote>(
+            predicate: PersistentShieldedNote.unspentPredicate(walletId: walletId))
+        let noteValues = ((try? context.fetch(noteDescriptor)) ?? [])
+            .filter { $0.accountIndex == 0 }
+            .map(\.value)
+            .sorted(by: >)
+
+        guard !noteValues.isEmpty else { return .unavailable }
+
+        let allCredits = noteValues.reduce(into: UInt64(0)) { partial, value in
+            let (sum, overflow) = partial.addingReportingOverflow(value)
+            partial = overflow ? UInt64.max : sum
+        }
+        guard allCredits != UInt64.max else { return .unavailable }
+
+        let feeForActions: (Int) -> UInt64? = { actionCount in
+            try? PlatformWalletManager.estimateShieldedFee(
+                kind: feeKind,
+                numActions: actionCount)
+        }
+        guard let best = ShieldedSweepPlanner.bestCandidate(
+            noteValues: noteValues,
+            feeForActions: feeForActions),
+              let exact = ShieldedSweepPlanner.revalidate(
+                noteValues: noteValues,
+                amountCredits: best.amountCredits,
+                feeForActions: feeForActions)
+        else { return .unavailable }
+
+        // Persisted notes and the published balance must describe the same
+        // snapshot. A mismatch is the post-spend indexing window; do not build
+        // a Max plan from stale inputs Rust may already have reserved/spent.
+        let publishedBalance = balanceCoordinator.shieldedBalance
+        guard publishedBalance == allCredits else {
+            return .waitingForConfirmation(publishedBalance)
+        }
+
+        return .ready(
+            ShieldedSweepPlan(
+                amountCredits: exact.amountCredits,
+                feeCredits: exact.feeCredits,
+                inputCredits: exact.inputCredits,
+                remainingCredits: allCredits - exact.inputCredits))
     }
 
     // MARK: - Public API
@@ -169,6 +387,23 @@ final class ShieldedTransferCoordinator: ObservableObject {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(String(describing: funding), privacy: .public) external=\(recipientOverride != nil)")
+
+        // Backstop both amount screens at the execution boundary. Besides
+        // protecting programmatic callers, this keeps a stale Confirm sheet
+        // from surfacing the Rust SDK's raw ShieldFromAssetLock build error.
+        // Only the BIP44 exact-amount form carries a caller amount; the
+        // CoinJoin drain's lock value is computed SDK-side, which preflights
+        // it against the pool fee before broadcasting.
+        if case .bip44(let amountDuffs) = funding,
+           let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits {
+            let minimumDuffs = CoreToShieldedAmountPolicy.minimumAmountDuffs(
+                poolFeeCredits: poolFeeCredits)
+            guard amountDuffs >= minimumDuffs else {
+                handleFailure(
+                    CoordinatorError.amountBelowCoreToShieldedMinimum(minimumDuffs))
+                return
+            }
+        }
 
         let env: Environment
         do {
@@ -396,7 +631,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// transfer); an external Send passes the recipient's address. The
     /// withdrawal-store tag (which classifies the incoming L1 tx as
     /// "Shielded received") only applies to the own-wallet payout.
-    func performWithdraw(amountCredits: UInt64, toCoreAddress destinationOverride: String? = nil) async {
+    func performWithdraw(
+        amountCredits: UInt64,
+        sweepAll: Bool = false,
+        toCoreAddress destinationOverride: String? = nil
+    ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
 
@@ -406,6 +645,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
         } catch {
             handleFailure(error)
             return
+        }
+
+        let submittedAmount: UInt64
+        if sweepAll {
+            switch Self.sweepAvailability(feeKind: .withdrawal) {
+            case .ready(let plan) where plan.amountCredits == amountCredits:
+                submittedAmount = plan.amountCredits
+            case .waitingForConfirmation(let credits):
+                handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
+                return
+            case .ready, .unavailable:
+                handleFailure(CoordinatorError.shieldedSweepChanged)
+                return
+            }
+        } else {
+            submittedAmount = amountCredits
         }
 
         // Destination Core (BIP44, Base58Check) address. For the internal
@@ -446,7 +701,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 resolver: MnemonicResolver(),
                 account: 0,
                 toCoreAddress: coreAddress,
-                amount: amountCredits)
+                amount: submittedAmount)
         } catch {
             // shieldedSpendUnconfirmed means the spend may already be on
             // chain (non-retryable), so its payout can still arrive — tag
@@ -481,7 +736,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// `toPlatformAddress` nil = the wallet's own next receive address (the
     /// internal transfer); an external Send passes the recipient's bech32m
     /// Platform address.
-    func performUnshield(amountCredits: UInt64, toPlatformAddress destinationOverride: String? = nil) async {
+    func performUnshield(
+        amountCredits: UInt64,
+        sweepAll: Bool = false,
+        toPlatformAddress destinationOverride: String? = nil
+    ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: unshield route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
 
@@ -493,20 +752,39 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
+        let submittedAmount: UInt64
+        if sweepAll {
+            switch Self.sweepAvailability(feeKind: .unshield) {
+            case .ready(let plan) where plan.amountCredits == amountCredits:
+                submittedAmount = plan.amountCredits
+            case .waitingForConfirmation(let credits):
+                handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
+                return
+            case .ready, .unavailable:
+                handleFailure(CoordinatorError.shieldedSweepChanged)
+                return
+            }
+        } else {
+            submittedAmount = amountCredits
+        }
+
         // Destination Platform Payment (bech32m) address — for the internal
         // transfer, the wallet's own next receive address. Resolve before
         // advancing the phase.
         let platformAddress: String
+        let isOwnPlatformDestination: Bool
         if let destinationOverride, !destinationOverride.isEmpty {
             platformAddress = destinationOverride
+            isOwnPlatformDestination = false
         } else {
-            guard let ownAddress = PlatformAddressSyncCoordinator.shared
-                    .derivedAddresses.nextReceiveAddress?.address,
-                  !ownAddress.isEmpty else {
+            guard let ownDestination = PlatformAddressSyncCoordinator.shared
+                    .derivedAddresses.nextReceiveAddress,
+                  !ownDestination.address.isEmpty else {
                 handleFailure(CoordinatorError.noPlatformAddress)
                 return
             }
-            platformAddress = ownAddress
+            platformAddress = ownDestination.address
+            isOwnPlatformDestination = true
         }
 
         do {
@@ -525,8 +803,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 resolver: MnemonicResolver(),
                 account: 0,
                 toPlatformAddress: platformAddress,
-                amount: amountCredits)
+                amount: submittedAmount)
         } catch {
+            // The transition may already have credited our Platform address.
+            // There is no proof height on this ambiguous path, so never invent
+            // an absolute balance; let the height-aware BLAST sync reconcile it.
+            if isOwnPlatformDestination,
+               case PlatformWalletError.shieldedSpendUnconfirmed = error {
+                schedulePlatformResync()
+            }
             handleSpendError(error, manager: env.manager)
             return
         }
@@ -535,9 +820,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .broadcasting
         phase = .success
         scheduleShieldedResync(manager: env.manager)
-        // Unshield credits the Platform-address balance; the shielded resync
-        // above only refreshes the shielded side, so kick the Platform-address
-        // (BLAST) sync to surface the credit promptly.
+        // Refresh the Platform side after the backend accepts the transition.
+        // BLAST remains the source of truth for the persisted balance.
         schedulePlatformResync()
     }
 
@@ -900,13 +1184,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Captures only `manager` (a long-lived singleton) — no retain on the
     /// coordinator past the sheet's lifetime.
     private func scheduleShieldedResync(manager: PlatformWalletManager) {
-        Task {
-            do {
-                try await manager.syncShieldedNow()
-            } catch {
-                Self.logger.warning("🛡️ SHIELD-TX :: syncShieldedNow failed (ignored): \(String(describing: error), privacy: .public)")
-            }
-        }
+        PlatformAddressSyncCoordinator.shared
+            .refreshShieldedBalanceAfterSpend(using: manager)
     }
 
     /// Kick the Platform-address (BLAST) sync after a transfer that changes the
@@ -919,11 +1198,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// `performPlatformSend` relies on the same kick after a Platform send.
     private func schedulePlatformResync() {
         Task {
-            for delayNanos in [UInt64(0), 4_000_000_000, 12_000_000_000] {
-                if delayNanos > 0 {
-                    try? await Task.sleep(nanoseconds: delayNanos)
+            var previousDelaySeconds: UInt64 = 0
+            for delaySeconds in [UInt64(0), 4, 12] {
+                let intervalSeconds = delaySeconds - previousDelaySeconds
+                if intervalSeconds > 0 {
+                    try? await Task.sleep(nanoseconds: intervalSeconds * 1_000_000_000)
                 }
                 await PlatformAddressSyncCoordinator.shared.syncNow()
+                previousDelaySeconds = delaySeconds
             }
         }
     }

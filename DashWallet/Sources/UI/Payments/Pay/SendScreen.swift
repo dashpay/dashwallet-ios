@@ -390,31 +390,22 @@ struct ExternalSendAmountScreen: View {
 
                     fromSummary
 
-                    TransferAmountRow(
-                        unit: $viewModel.unit,
-                        amountText: viewModel.amountText,
-                        secondaryText: viewModel.secondaryDisplayString,
-                        currencySymbol: viewModel.primaryCurrencySymbol,
-                        fiatCurrencyCode: viewModel.fiatCurrencyCode,
-                        onMax: { viewModel.fillMaxFromWallet() })
+                    amountRow
                         .padding(.horizontal, 20)
                         .padding(.top, 6)
+
+                    if let message = viewModel.amountValidationMessage {
+                        TransferAmountValidationNote(message: message)
+                            .padding(.horizontal, 20)
+                    }
                 }
                 .padding(.bottom, 8)
             }
             .scrollBounceBehavior(.basedOnSize)
 
-            NumericKeyboardView(
-                value: keypadBinding,
-                showDecimalSeparator: true,
-                actionButtonText: NSLocalizedString("Continue", comment: ""),
-                actionEnabled: viewModel.canContinue,
-                inProgress: false,
-                actionHandler: continueAction)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
+            keyboardSection
         }
-        .background(Color.primaryBackground)
+        .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
         .sheet(isPresented: $showConfirm) {
             if let route = viewModel.route, route != .coreToCore {
@@ -427,6 +418,7 @@ struct ExternalSendAmountScreen: View {
                     fiatText: viewModel.fiatAmountString,
                     withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
                     isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
+                    isFullShieldedSweep: viewModel.isFullShieldedSweep,
                     onCancel: { showConfirm = false },
                     onCompleted: {
                         showConfirm = false
@@ -441,6 +433,43 @@ struct ExternalSendAmountScreen: View {
     private var shieldedRecipientRaw43: Data? {
         if case .shielded(let raw43) = viewModel.destination { return raw43 }
         return nil
+    }
+
+    // MARK: - Amount
+
+    private var amountRow: some View {
+        EnterAmountView(
+            primaryAmount: dashAmountText,
+            secondaryAmount: fiatAmountText,
+            primaryCurrency: .dash,
+            secondaryCurrency: .fiat(viewModel.fiatCurrencyCode),
+            isPrimarySelected: isDashInputSelected,
+            currencyCodes: amountCurrencyCodes,
+            selectedCurrencyCode: selectedAmountCurrencyCode,
+            onMax: { viewModel.fillMaxFromWallet() },
+            onSwap: toggleAmountUnit,
+            onCurrencyTap: toggleAmountUnit,
+            onSelectInputType: selectAmountCurrency
+        )
+    }
+
+    // MARK: - Keyboard
+
+    private var keyboardSection: some View {
+        NumericKeyboardView(
+            value: keypadBinding,
+            showDecimalSeparator: true,
+            actionButtonText: NSLocalizedString("Continue", comment: ""),
+            actionEnabled: viewModel.canContinue,
+            inProgress: false,
+            actionHandler: continueAction
+        )
+        .padding(.top, 12)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 12)
+        .background(Color.dash.secondaryBackground)
+        .clipShape(.rect(cornerRadius: 20))
+        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 
     private func continueAction() {
@@ -482,7 +511,58 @@ struct ExternalSendAmountScreen: View {
         .padding(.horizontal, 20)
     }
 
-    // MARK: - Keypad
+    // MARK: - Amount helpers
+
+    private var isDashInputSelected: Bool {
+        viewModel.unit == .dash
+    }
+
+    private var dashAmountText: String {
+        switch viewModel.unit {
+        case .dash:
+            return keypadBinding.wrappedValue
+        case .fiat:
+            guard viewModel.parsedDashAmount > 0 else { return "" }
+            return InternalTransferViewModel.formatTyped(
+                viewModel.parsedDashAmount,
+                fractionDigits: 8)
+        }
+    }
+
+    private var fiatAmountText: String {
+        switch viewModel.unit {
+        case .dash:
+            guard viewModel.parsedDashAmount > 0,
+                  let fiatAmount = try? CurrencyExchanger.shared.convertDash(
+                    amount: viewModel.parsedDashAmount,
+                    to: viewModel.fiatCurrencyCode)
+            else { return "" }
+            return InternalTransferViewModel.formatTyped(
+                fiatAmount,
+                fractionDigits: 2)
+        case .fiat:
+            return keypadBinding.wrappedValue
+        }
+    }
+
+    private var amountCurrencyCodes: [String] {
+        ["DASH", viewModel.fiatCurrencyCode]
+    }
+
+    private var selectedAmountCurrencyCode: String {
+        isDashInputSelected ? "DASH" : viewModel.fiatCurrencyCode
+    }
+
+    private func toggleAmountUnit() {
+        viewModel.unit = isDashInputSelected ? .fiat : .dash
+    }
+
+    private func selectAmountCurrency(_ currencyCode: String) {
+        viewModel.unit =
+            currencyCode.caseInsensitiveCompare("DASH") == .orderedSame
+            ? .dash
+            : .fiat
+    }
 
     private var keypadBinding: Binding<String> {
         Binding(
@@ -638,6 +718,7 @@ struct SendConfirmSheet: View {
     /// Preflighted withdrawal fee — only meaningful for `.platformToCore`.
     var withdrawalFeeCredits: UInt64? = nil
     var isFullPlatformWithdrawal: Bool = false
+    var isFullShieldedSweep: Bool = false
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
@@ -865,11 +946,7 @@ struct SendConfirmSheet: View {
     private var networkFeeCredits: UInt64? {
         switch route {
         case .coreToShielded:
-            // ShieldFromAssetLock: base shielded fee + asset-lock base cost
-            // (same estimate as the internal Core → Shielded transfer).
-            guard let base = try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
-            else { return nil }
-            return base + InternalTransferConfirmSheet.assetLockBaseCostCredits
+            return CoreToShieldedAmountPolicy.poolFeeCredits
         case .platformToPlatform:
             // Credit transfer: the metered transition fee. The executor
             // states ~0.001 DASH as the conservative max.
@@ -1008,10 +1085,12 @@ struct SendConfirmSheet: View {
             case .shieldedToCore:
                 await coordinator.performWithdraw(
                     amountCredits: creditsAmount,
+                    sweepAll: isFullShieldedSweep,
                     toCoreAddress: destinationAddress)
             case .shieldedToPlatform:
                 await coordinator.performUnshield(
                     amountCredits: creditsAmount,
+                    sweepAll: isFullShieldedSweep,
                     toPlatformAddress: destinationAddress)
             case .shieldedToShielded:
                 guard let destinationRaw43 else {

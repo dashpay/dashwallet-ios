@@ -338,6 +338,173 @@ final class PaymentProtocolTests: XCTestCase {
     }
 }
 
+final class PreparedStandardSendBroadcastTests: XCTestCase {
+    private func prepared(
+        hashByte: UInt8,
+        ensureOnline: @escaping () throws -> Void = {},
+        action: @escaping () throws -> CoreTransactionBroadcastOutcome
+    ) -> PreparedStandardSend {
+        PreparedStandardSend(
+            txData: Data([0x01]),
+            txHash: Data(repeating: hashByte, count: 32),
+            fee: 226,
+            address: "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr",
+            amount: 100_000,
+            ensureOnlineAction: ensureOnline,
+            broadcastAction: action
+        )
+    }
+
+    func testAcceptedRecordsRecentSendAndBecomesOneShot() throws {
+        var calls = 0
+        let send = prepared(hashByte: 0xa1) {
+            calls += 1
+            return .accepted(txid: String(repeating: "a1", count: 32))
+        }
+
+        try send.broadcast()
+
+        XCTAssertEqual(calls, 1)
+        XCTAssertNotNil(WalletSendService.shared.recentSends.entry(forTxidWire: send.txidWire))
+        XCTAssertThrowsError(try send.broadcast())
+        XCTAssertEqual(calls, 1)
+    }
+
+    func testRejectedCanBeRetriedAndIsNotRecorded() {
+        var calls = 0
+        let send = prepared(hashByte: 0xb2) {
+            calls += 1
+            return .rejected(
+                txid: String(repeating: "b2", count: 32),
+                reason: "broadcast was not started")
+        }
+
+        for _ in 0..<2 {
+            XCTAssertThrowsError(try send.broadcast()) { error in
+                XCTAssertTrue(WalletSendService.isBroadcastRejectedError(error as NSError))
+            }
+        }
+
+        XCTAssertEqual(calls, 2)
+        XCTAssertNil(WalletSendService.shared.recentSends.entry(forTxidWire: send.txidWire))
+    }
+
+    func testUnknownBlocksSecondBroadcastAndIsNotRecorded() {
+        var calls = 0
+        let send = prepared(hashByte: 0xc3) {
+            calls += 1
+            return .unknown(txid: String(repeating: "c3", count: 32), reason: "timeout")
+        }
+
+        var firstError: NSError?
+        XCTAssertThrowsError(try send.broadcast()) { error in
+            firstError = error as NSError
+            XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error as NSError))
+        }
+        var secondError: NSError?
+        XCTAssertThrowsError(try send.broadcast()) { error in
+            secondError = error as NSError
+            XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error as NSError))
+        }
+
+        XCTAssertEqual(calls, 1)
+        XCTAssertTrue(firstError === secondError)
+        XCTAssertNil(WalletSendService.shared.recentSends.entry(forTxidWire: send.txidWire))
+    }
+
+    func testOfflineFailureReturnsToReady() throws {
+        let offline = NSError(
+            domain: "test.network", code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "offline"])
+        var isOnline = false
+        var calls = 0
+        let send = prepared(
+            hashByte: 0xd4,
+            ensureOnline: {
+                if !isOnline { throw offline }
+            },
+            action: {
+                calls += 1
+                return .accepted(txid: String(repeating: "d4", count: 32))
+            })
+
+        XCTAssertThrowsError(try send.broadcast())
+        XCTAssertEqual(calls, 0)
+
+        isOnline = true
+        try send.broadcast()
+        XCTAssertEqual(calls, 1)
+    }
+
+    func testLocalBroadcastFailureReturnsToReady() throws {
+        let localError = NSError(
+            domain: "test.local", code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "local failure"])
+        var calls = 0
+        let send = prepared(hashByte: 0xe5) {
+            calls += 1
+            if calls == 1 { throw localError }
+            return .accepted(txid: String(repeating: "e5", count: 32))
+        }
+
+        XCTAssertThrowsError(try send.broadcast())
+        try send.broadcast()
+        XCTAssertEqual(calls, 2)
+    }
+
+    func testUnknownRemainsTerminalWhenNetworkStateChanges() {
+        let offline = NSError(
+            domain: "test.network", code: 2,
+            userInfo: [NSLocalizedDescriptionKey: "offline"])
+        var onlineChecks = 0
+        var shouldFailOnlineCheck = false
+        var calls = 0
+        let send = prepared(
+            hashByte: 0xf6,
+            ensureOnline: {
+                onlineChecks += 1
+                if shouldFailOnlineCheck { throw offline }
+            },
+            action: {
+                calls += 1
+                return .unknown(
+                    txid: String(repeating: "f6", count: 32),
+                    reason: "peer echo timed out")
+            })
+
+        XCTAssertThrowsError(try send.broadcast()) { error in
+            XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error as NSError))
+        }
+        shouldFailOnlineCheck = true
+        XCTAssertThrowsError(try send.broadcast()) { error in
+            XCTAssertTrue(WalletSendService.isBroadcastUnknownError(error as NSError))
+        }
+        XCTAssertEqual(onlineChecks, 1)
+        XCTAssertEqual(calls, 1)
+    }
+
+    func testPaymentControllerReenablesSendExceptForUnknown() throws {
+        let rejected = prepared(hashByte: 0x17) {
+            .rejected(txid: String(repeating: "17", count: 32), reason: "not started")
+        }
+        let unknown = prepared(hashByte: 0x28) {
+            .unknown(txid: String(repeating: "28", count: 32), reason: "timeout")
+        }
+
+        var rejectedError: NSError?
+        XCTAssertThrowsError(try rejected.broadcast()) { rejectedError = $0 as NSError }
+        var unknownError: NSError?
+        XCTAssertThrowsError(try unknown.broadcast()) { unknownError = $0 as NSError }
+
+        XCTAssertTrue(PaymentController.shouldReenableSending(
+            after: try XCTUnwrap(rejectedError)))
+        XCTAssertFalse(PaymentController.shouldReenableSending(
+            after: try XCTUnwrap(unknownError)))
+        XCTAssertTrue(PaymentController.shouldReenableSending(
+            after: NSError(domain: "test.local", code: 3)))
+    }
+}
+
 // MARK: - L5 orchestrator (fakes, no network/SDK)
 
 private final class FakeTransport: PaymentProtocolTransporting {
@@ -361,13 +528,16 @@ private final class FakeWallet: WalletSending {
     var calls: [String] = []
     var lastRecipients: [(address: String, amountDuffs: UInt64)] = []
     var buildErrorsRemaining = 0 // throw from build this many times before succeeding (pre-spend failure)
+    var broadcastError: BIP70Error?
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
         calls.append("build")
         if buildErrorsRemaining > 0 { buildErrorsRemaining -= 1; throw BIP70Error.walletNotReady }
         lastRecipients = recipients; return prepared
     }
     func broadcast(_ p: PreparedSend) async throws -> String {
-        calls.append("broadcast"); return p.txHashDisplay.map { String(format: "%02x", $0) }.joined()
+        calls.append("broadcast")
+        if let broadcastError { throw broadcastError }
+        return p.txHashDisplay.map { String(format: "%02x", $0) }.joined()
     }
 }
 
@@ -446,6 +616,20 @@ final class BIP70PaymentServiceTests: XCTestCase {
         await assertThrowsBIP70(try await svc.confirmAndSend(confirmation), .walletNotReady) // build throws → guard reset
         _ = try await svc.confirmAndSend(confirmation) // retry on the SAME confirmation now succeeds
         XCTAssertEqual(w.calls.filter { $0 == "build" }.count, 2)
+        XCTAssertEqual(w.calls.filter { $0 == "broadcast" }.count, 1)
+    }
+
+    func testBroadcastFailureKeepsBIP70ConfirmationOneShot() async throws {
+        let w = FakeWallet()
+        w.broadcastError = .walletNotReady
+        let svc = service(FakeTransport(unsigned(paymentURL: nil)), w)
+        let confirmation = try await svc.prepareForConfirmation(
+            from: url, scheme: "dash", network: .testnet)
+
+        await assertThrowsBIP70(
+            try await svc.confirmAndSend(confirmation), .walletNotReady)
+        await assertThrowsBIP70(
+            try await svc.confirmAndSend(confirmation), .alreadySent)
         XCTAssertEqual(w.calls.filter { $0 == "broadcast" }.count, 1)
     }
 
@@ -594,6 +778,31 @@ final class BIP70PaymentServiceTests: XCTestCase {
 
     func testURIAmountExponent() {
         XCTAssertEqual(BIP70URI("dash:X?amount=1e2")?.amount, 10_000_000_000)
+    }
+
+    /// BUG-25: a scanned `dash:<address>&amount=…` (no `?`) used to put the whole
+    /// tail into the address, so the request was rejected instead of paying.
+    func testURIAcceptsAmpersandAsQuerySeparator() {
+        let uri = BIP70URI("dash:ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr&amount=0.23243214")
+
+        XCTAssertEqual(uri?.address, "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr")
+        XCTAssertEqual(uri?.amount, 23_243_214)
+    }
+
+    /// The `&` form must still parse every following pair, exactly like `?`.
+    func testURIAmpersandSeparatorParsesRemainingPairs() {
+        let uri = BIP70URI("dash:Xabc&amount=1.5&label=Coffee&sender=ctx")
+
+        XCTAssertEqual(uri?.address, "Xabc")
+        XCTAssertEqual(uri?.amount, 150_000_000)
+        XCTAssertEqual(uri?.label, "Coffee")
+        XCTAssertEqual(uri?.callbackScheme, "ctx")
+    }
+
+    /// BUG-25/BUG-26: a full-precision amount must survive the URI parse. The
+    /// display side is covered by `DashAmountFormatterTests`.
+    func testURIKeepsAllEightDecimals() {
+        XCTAssertEqual(BIP70URI("dash:X?amount=0.23243214")?.amount, 23_243_214)
     }
 
     // MARK: - L5 URI — paymentString init (bare address / BIP73)

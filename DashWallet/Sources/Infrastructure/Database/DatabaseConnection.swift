@@ -29,9 +29,10 @@ class DatabaseConnection: NSObject {
     var migrationManager: SQLiteMigrationManager!
 
     override init() {
-        print("SQLite: ", DatabaseConnection.storeURL().absoluteString)
+        let databaseURL = DatabaseConnection.storeURL()
+        print("SQLite: ", databaseURL.path)
         do {
-            db = try Connection(DatabaseConnection.storeURL().absoluteString)
+            db = try Connection(databaseURL.path)
             migrationManager = SQLiteMigrationManager(db: db,
                                                       migrations: DatabaseConnection.migrations(),
                                                       bundle: DatabaseConnection.migrationsBundle())
@@ -44,6 +45,12 @@ class DatabaseConnection: NSObject {
 
     @objc
     func migrateIfNeeded() throws {
+        guard let migrationManager else {
+            throw NSError(domain: "DatabaseConnection", code: 1, userInfo: [
+                NSLocalizedDescriptionKey: "The wallet database could not be opened."
+            ])
+        }
+
         if !migrationManager.hasMigrationsTable() {
             try migrationManager.createMigrationsTable()
         }
@@ -62,11 +69,8 @@ extension DatabaseConnection {
         let dirPaths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
         let docsDir = dirPaths[0] as String
 
-        guard let documentsURL = URL(string: docsDir) else {
-            fatalError("could not get user documents directory URL")
-        }
-
-        return documentsURL.appendingPathComponent(kDatabaseName)
+        return URL(fileURLWithPath: docsDir, isDirectory: true)
+            .appendingPathComponent(kDatabaseName)
     }
 
     static func migrations() -> [Migration] {
@@ -77,7 +81,8 @@ extension DatabaseConnection {
             AddProviderToGiftCardsTable(),
             AddRedeemUrlChallengeToGiftCardsTable(),
             AddSwapOrdersTable(),
-            AddPlatformAddressActivityTables()
+            AddPlatformAddressActivityTables(),
+            NormalizePlatformAddressActivityUnits()
         ]
     }
 

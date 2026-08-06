@@ -17,6 +17,7 @@
 
 #import "DWReceiveModel.h"
 
+#import <CoreData/CoreData.h>
 #import <UIKit/UIPasteboard.h>
 
 #import "DWAppGroupOptions.h"
@@ -46,11 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
         _updateQueue = dispatch_queue_create("org.dash.wallet.DWReceiveModel.queue", DISPATCH_QUEUE_SERIAL);
 
         [self updateReceivingInfo];
-
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(transactionReceivedNotification)
-                                                     name:DSTransactionManagerTransactionReceivedNotification
-                                                   object:nil];
 
         // Re-fetch the receive address as SwiftDashSDK's SPV catches up.
         // Rust's persister writes PersistentTransaction rows on every Core

@@ -13,28 +13,10 @@ enum InternalTransferUnit: String {
     case fiat
 }
 
-/// Source bucket the user is funding the shielded transfer from. Decides
-/// which SDK route the `ShieldedTransferCoordinator` runs (asset-lock vs
-/// transparent shield) and which balance the screen validates against.
-enum InternalTransferSource: String {
-    case core
-    case platform
-}
-
-/// Direction of the transfer, toggled by the swap badge. `.toShielded`
-/// funds the shielded balance from Core/Platform (forward); `.fromShielded`
-/// withdraws from the shielded balance back to the transparent Dash Wallet
-/// (reverse, via `PlatformWalletManager.shieldedWithdraw`).
-enum InternalTransferDirection {
-    case toShielded
-    case fromShielded
-}
-
 /// Every balance-to-balance route the transfer engine can execute. The
 /// canonical read for validation, fees, and execution — derived from the
-/// receive sheet's (source, target) pair when pinned, otherwise from the
-/// standalone screen's legacy (direction, source) pair (which can only
-/// express the four shielded-centric routes).
+/// current explicit (from, to) pair, whether the screen is standalone or
+/// one side is pinned by the send/receive sheet host.
 enum InternalTransferRoute: Equatable {
     /// BIP44 UTXOs → asset lock → Type 18 shield.
     case coreToShielded
@@ -51,53 +33,131 @@ enum InternalTransferRoute: Equatable {
     case platformToCore
 }
 
+/// Shared Type-18 amount boundary for Core → Shielded transfers.
+///
+/// `ShieldFromAssetLock` carves its pool fee from the single-use asset-lock
+/// value, so the lock must contain strictly more credits than that fee. Keep
+/// the estimator here as the one source of truth for amount validation and
+/// both transfer confirmation screens.
+@MainActor
+enum CoreToShieldedAmountPolicy {
+    /// Asset-lock processing base cost folded into a ShieldFromAssetLock
+    /// pool fee on top of `compute_minimum_shielded_fee`. Mirrors Rust
+    /// `required_asset_lock_duff_balance_for_processing_start_for_address_funding`
+    /// (50_000 duffs) × 1000 credits/duff.
+    static let assetLockBaseCostCredits: UInt64 = 50_000_000
+
+    static var poolFeeCredits: UInt64? {
+        guard let shieldedFee = try? PlatformWalletManager.estimateShieldedFee(
+            kind: .transfer,
+            numActions: 2)
+        else { return nil }
+
+        let (total, overflow) = shieldedFee.addingReportingOverflow(assetLockBaseCostCredits)
+        return overflow ? nil : total
+    }
+
+    /// User-entered Core amounts have duff precision (1000 Platform credits).
+    /// The SDK rejects `amountCredits <= poolFeeCredits`, so the smallest valid
+    /// value is the first whole duff strictly above the fee.
+    static func minimumAmountDuffs(poolFeeCredits: UInt64) -> UInt64 {
+        poolFeeCredits / 1000 + 1
+    }
+}
+
+/// Shared affordability boundary for every route that spends Orchard notes.
+///
+/// Shielded spends debit both the requested amount and a route-specific fee.
+/// Keeping the calculation here makes the inline validation, Continue gate,
+/// and Max amount describe the same spendable envelope.
+enum ShieldedSpendAmountPolicy {
+    static func spendableCredits(
+        balanceCredits: UInt64,
+        feeReserveCredits: UInt64
+    ) -> UInt64 {
+        balanceCredits > feeReserveCredits
+            ? balanceCredits - feeReserveCredits
+            : 0
+    }
+
+    static func insufficientBalanceMessage(
+        requestedCredits: UInt64,
+        balanceCredits: UInt64,
+        feeReserveCredits: UInt64
+    ) -> String? {
+        let spendableCredits = spendableCredits(
+            balanceCredits: balanceCredits,
+            feeReserveCredits: feeReserveCredits)
+        guard requestedCredits > spendableCredits else { return nil }
+
+        // The amount input supports duff precision, so report the largest
+        // value the user can actually enter rather than rounding credits up.
+        let spendableDuffs = spendableCredits / 1000
+        let formattedSpendable =
+            "\(spendableDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "Insufficient Shielded balance. Available to spend: %@",
+                comment: "Shielded send amount exceeds spendable balance"),
+            formattedSpendable)
+    }
+}
+
 @MainActor
 final class InternalTransferViewModel: ObservableObject {
 
-    @Published var amountText: String = "0"
+    private var isApplyingShieldedMax = false
+    @Published var amountText: String = "0" {
+        didSet {
+            guard !isApplyingShieldedMax else { return }
+            clearShieldedMaxSelection()
+        }
+    }
+    @Published private(set) var isFullShieldedSweep = false
+    @Published private(set) var shieldedMaxNotice: String?
+    private var shieldedSweepAmountCredits: UInt64?
     @Published var unit: InternalTransferUnit = .dash {
         didSet {
             guard oldValue != unit else { return }
+            let preserveShieldedMax = isFullShieldedSweep
+            isApplyingShieldedMax = preserveShieldedMax
+            defer { isApplyingShieldedMax = false }
             convertAmountText(from: oldValue, to: unit)
         }
     }
 
-    /// Which "From" bucket the user picked on the source rows. Defaults to
-    /// `.core` because most users have BIP44 balance before they have
-    /// Platform Payment credits. Only meaningful while `.toShielded`.
-    @Published var source: InternalTransferSource = .core
-
-    /// Forward (Core/Platform → Shielded) vs reverse (Shielded → Dash Wallet),
-    /// toggled by the swap badge. Reverse has a single fixed destination
-    /// (Dash Wallet), so `source` is ignored while `.fromShielded`.
-    @Published var direction: InternalTransferDirection = .toShielded
+    /// Standalone screen's selected source balance. Defaults to `.core`
+    /// because most users have BIP44 funds before they have Platform or
+    /// Shielded balance.
+    @Published var source: ChainNetwork = .core {
+        didSet { guard oldValue != source else { return }; routeDidChange() }
+    }
 
     /// Fixed destination when this VM drives the receive sheet's embedded
-    /// form: the balance being received into. `nil` = the standalone
-    /// swappable screen (legacy direction/source model).
-    @Published private(set) var receiveTarget: ChainNetwork? = nil
+    /// form: the balance being received into. `nil` = the standalone form.
+    @Published private(set) var receiveTarget: ChainNetwork? = nil {
+        didSet { guard oldValue != receiveTarget else { return }; routeDidChange() }
+    }
 
     /// Fixed source when this VM drives the send sheet's embedded form
     /// (the balance-row out arrows): the balance being sent FROM. The To
     /// rows pick `sendTarget` among the other two balances. Mutually
     /// exclusive with `receiveTarget`; `nil` = not the send sheet.
-    @Published private(set) var sendSource: ChainNetwork? = nil
+    @Published private(set) var sendSource: ChainNetwork? = nil {
+        didSet { guard oldValue != sendSource else { return }; routeDidChange() }
+    }
 
     /// The destination balance picked on the send sheet's To rows. Only
-    /// meaningful while `sendSource` is set. Changing it re-derives `route`
-    /// and kicks the withdrawal preflight when Platform → Core becomes
-    /// active.
+    /// meaningful while `sendSource` is set, but reused by the standalone
+    /// screen as the selected To balance as well.
     @Published var sendTarget: ChainNetwork = .shielded {
-        didSet { routeDidChange() }
+        didSet { guard oldValue != sendTarget else { return }; routeDidChange() }
     }
 
     /// The source balance picked on the receive sheet's From rows. Only
-    /// meaningful for `receiveTarget` .core / .platform (the .shielded
-    /// target reuses the legacy `source` picker). Changing it re-derives
-    /// `route`, and kicks the withdrawal preflight when the full-balance
-    /// Platform → Core route becomes active.
+    /// meaningful while `receiveTarget` is set.
     @Published var receiveSource: ChainNetwork = .shielded {
-        didSet { routeDidChange() }
+        didSet { guard oldValue != receiveSource else { return }; routeDidChange() }
     }
 
     /// Live result of `preflightWithdrawal()` for the Platform → Core route:
@@ -108,24 +168,11 @@ final class InternalTransferViewModel: ObservableObject {
     private var preflightTask: Task<Void, Never>?
 
     /// Pins the route for the receive sheet: a transfer INTO `target`.
-    /// The From rows pick the source among the other two balances —
-    /// `source` for the .shielded target (legacy-expressible routes),
-    /// `receiveSource` for .core/.platform targets.
+    /// The From rows then pick the source among the other two balances.
     func applyReceiveRoute(into target: ChainNetwork) {
+        sendSource = nil
         receiveTarget = target
-        switch target {
-        case .shielded:
-            direction = .toShielded
-            // `source` keeps the user's pick (.core default).
-        case .core:
-            // Valid sources: shielded (withdraw) or platform (full-balance
-            // address withdrawal). Reset an out-of-range carryover.
-            if receiveSource != .platform { receiveSource = .shielded }
-        case .platform:
-            // Valid sources: shielded (unshield) or core (asset-lock fund).
-            if receiveSource != .core { receiveSource = .shielded }
-        }
-        routeDidChange()
+        receiveSource = Self.sanitizedSource(into: target, proposed: receiveSource)
     }
 
     /// Pins the route for the send sheet: a transfer OUT OF `from`. The To
@@ -134,43 +181,83 @@ final class InternalTransferViewModel: ObservableObject {
     /// Platform default to Shielded (privacy-forward); Shielded defaults
     /// to Core.
     func applySendRoute(from source: ChainNetwork) {
+        receiveTarget = nil
         sendSource = source
-        switch source {
-        case .core, .platform:
-            if sendTarget == source { sendTarget = .shielded }
-        case .shielded:
-            if sendTarget == .shielded { sendTarget = .core }
-        }
-        routeDidChange()
+        sendTarget = Self.sanitizedDestination(from: source, proposed: sendTarget)
+    }
+
+    func selectStandaloneSource(_ network: ChainNetwork) {
+        source = network
+        sendTarget = Self.sanitizedDestination(from: network, proposed: sendTarget)
+    }
+
+    func selectStandaloneTarget(_ network: ChainNetwork) {
+        sendTarget = Self.sanitizedDestination(from: source, proposed: network)
+    }
+
+    func selectSendTarget(_ network: ChainNetwork) {
+        let from = sendSource ?? source
+        sendTarget = Self.sanitizedDestination(from: from, proposed: network)
+    }
+
+    func selectReceiveSource(_ network: ChainNetwork) {
+        guard let receiveTarget else { return }
+        receiveSource = Self.sanitizedSource(into: receiveTarget, proposed: network)
     }
 
     /// The canonical route for validation/fees/execution.
     var route: InternalTransferRoute {
         if let source = sendSource {
-            switch (source, sendTarget) {
-            case (.core, .platform): return .coreToPlatform
-            case (.platform, .core): return .platformToCore
-            case (.platform, _): return .platformToShielded
-            case (.shielded, .platform): return .shieldedToPlatform
-            case (.shielded, _): return .shieldedToCore
-            case (.core, _): return .coreToShielded
-            }
+            return Self.route(
+                from: source,
+                to: Self.sanitizedDestination(from: source, proposed: sendTarget))
         }
         if let target = receiveTarget {
-            switch target {
-            case .shielded:
-                return source == .core ? .coreToShielded : .platformToShielded
-            case .core:
-                return receiveSource == .platform ? .platformToCore : .shieldedToCore
-            case .platform:
-                return receiveSource == .core ? .coreToPlatform : .shieldedToPlatform
-            }
+            return Self.route(
+                from: Self.sanitizedSource(into: target, proposed: receiveSource),
+                to: target)
         }
-        switch (direction, source) {
-        case (.toShielded, .core): return .coreToShielded
-        case (.toShielded, .platform): return .platformToShielded
-        case (.fromShielded, .core): return .shieldedToCore
-        case (.fromShielded, .platform): return .shieldedToPlatform
+        return Self.route(
+            from: source,
+            to: Self.sanitizedDestination(from: source, proposed: sendTarget))
+    }
+
+    private static func defaultDestination(for source: ChainNetwork) -> ChainNetwork {
+        switch source {
+        case .core, .platform:
+            return .shielded
+        case .shielded:
+            return .core
+        }
+    }
+
+    private static func defaultSource(for target: ChainNetwork) -> ChainNetwork {
+        switch target {
+        case .shielded:
+            return .core
+        case .core, .platform:
+            return .shielded
+        }
+    }
+
+    private static func sanitizedDestination(from source: ChainNetwork, proposed target: ChainNetwork) -> ChainNetwork {
+        source == target ? defaultDestination(for: source) : target
+    }
+
+    private static func sanitizedSource(into target: ChainNetwork, proposed source: ChainNetwork) -> ChainNetwork {
+        source == target ? defaultSource(for: target) : source
+    }
+
+    private static func route(from source: ChainNetwork, to target: ChainNetwork) -> InternalTransferRoute {
+        switch (source, target) {
+        case (.core, .shielded): return .coreToShielded
+        case (.core, .platform): return .coreToPlatform
+        case (.platform, .shielded): return .platformToShielded
+        case (.platform, .core): return .platformToCore
+        case (.shielded, .core): return .shieldedToCore
+        case (.shielded, .platform): return .shieldedToPlatform
+        case (.core, .core), (.platform, .platform), (.shielded, .shielded):
+            return route(from: source, to: defaultDestination(for: source))
         }
     }
 
@@ -179,6 +266,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// partial withdrawal, and for the net payout a Max (full-balance,
     /// AUTO-path) withdrawal pays out.
     private func routeDidChange() {
+        clearShieldedMaxSelection()
         guard route == .platformToCore else {
             preflightTask?.cancel()
             preflightTask = nil
@@ -232,10 +320,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// drawing transparent credits directly).
     @Published private(set) var platformCredits: UInt64 = 0
 
-    /// Real shielded balance in credits, fed by the SDK's shielded sync
-    /// pass (`PlatformWalletManager.$lastShieldedSyncEvent → result(for:)`).
-    /// Updates whenever the shielded sync loop completes a pass — including
-    /// the manual `syncShieldedNow()` kick after a successful transfer.
+    /// Real shielded balance in credits, fed by the coordinator's reconciled
+    /// balance mirror. Updates whenever a shielded sync pass completes.
     @Published private(set) var shieldedBalance: UInt64 = 0
 
     /// True once the L1 chain sync completed (`SyncingActivityMonitor`
@@ -271,27 +357,13 @@ final class InternalTransferViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        if let manager = SwiftDashSDKHost.shared.manager,
-           let wallet = SwiftDashSDKHost.shared.wallet {
-            let walletId = wallet.walletId
-            // Seed once from whatever the manager already saw — the
-            // publisher only fires on new sync events.
-            shieldedBalance = manager.lastShieldedSyncEvent?
-                .result(for: walletId)?
-                .balance ?? 0
-
-            manager.$lastShieldedSyncEvent
-                .receive(on: RunLoop.main)
-                .sink { [weak self] event in
-                    guard let self else { return }
-                    if let walletResult = event?.result(for: walletId),
-                       walletResult.success,
-                       !walletResult.cooldownSkip {
-                        self.shieldedBalance = walletResult.balance
-                    }
-                }
-                .store(in: &cancellables)
-        }
+        shieldedBalance = PlatformAddressSyncCoordinator.shared.shieldedBalance
+        PlatformAddressSyncCoordinator.shared.$shieldedBalance
+            .receive(on: RunLoop.main)
+            .sink { [weak self] credits in
+                self?.shieldedBalance = credits
+            }
+            .store(in: &cancellables)
     }
 
     /// The raw numeric value the user has typed, with locale comma normalised
@@ -329,6 +401,54 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
+    var coreToShieldedMinimumAmountDuffs: UInt64? {
+        guard route == .coreToShielded,
+              let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits
+        else { return nil }
+        return CoreToShieldedAmountPolicy.minimumAmountDuffs(
+            poolFeeCredits: poolFeeCredits)
+    }
+
+    /// Inline, user-facing explanation for an amount rejected before Confirm.
+    /// Zero stays quiet while the user has not entered an amount; a
+    /// fee-estimation failure fails closed with a generic retry.
+    var amountValidationMessage: String? {
+        if let shieldedMaxNotice { return shieldedMaxNotice }
+        guard dashDuffsUnsigned > 0 else { return nil }
+
+        switch route {
+        case .coreToShielded:
+            guard let minimumDuffs = coreToShieldedMinimumAmountDuffs else {
+                return NSLocalizedString(
+                    "There was an error, please try again later",
+                    comment: "Internal transfer fee estimate unavailable")
+            }
+            guard dashDuffsUnsigned < minimumDuffs else { return nil }
+
+            let formattedMinimum =
+                "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "The minimum amount you can send is %@",
+                    comment: "Internal transfer minimum amount"),
+                formattedMinimum)
+
+        case .shieldedToCore, .shieldedToPlatform:
+            guard let reserve = feeReserveCredits else {
+                return NSLocalizedString(
+                    "There was an error, please try again later",
+                    comment: "Shielded transfer fee estimate unavailable")
+            }
+            return ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+                requestedCredits: creditsPreview,
+                balanceCredits: shieldedBalance,
+                feeReserveCredits: reserve)
+
+        default:
+            return nil
+        }
+    }
+
     var canContinue: Bool {
         // Gate on duffs, not raw DASH: a sub-duff amount (e.g. 1e-9 DASH)
         // renders as 0 in the confirm sheet, so it must not enable Continue —
@@ -336,7 +456,15 @@ final class InternalTransferViewModel: ObservableObject {
         // UI shows 0.
         guard dashDuffsUnsigned > 0, !isBlockedBySync else { return false }
         switch route {
-        case .coreToShielded, .coreToPlatform:
+        case .coreToShielded:
+            // The Type-18 pool fee is carved from the asset-lock value. The
+            // SDK refuses to broadcast a single-use lock at or below that fee;
+            // enforce the same strict boundary before opening Confirm.
+            guard let minimumDuffs = coreToShieldedMinimumAmountDuffs,
+                  dashDuffsUnsigned >= minimumDuffs
+            else { return false }
+            return dashDuffsUnsigned <= coreBalanceDuffs
+        case .coreToPlatform:
             // Asset-lock routes: the pool/processing fee is carved from the
             // locked value (not charged on top of the Core balance) and the
             // Rust side rejects an undersized lock, so no source-balance fee
@@ -350,6 +478,9 @@ final class InternalTransferViewModel: ObservableObject {
             return platformCredits >= reserve
                 && creditsPreview <= platformCredits - reserve
         case .shieldedToCore, .shieldedToPlatform:
+            if isFullShieldedSweep {
+                return shieldedSweepAmountCredits != nil
+            }
             // Unshield/withdraw: the SDK debits amount + fee from the shielded
             // pool (recipient receives the full amount), so the balance must
             // cover amount + fee. Fail closed if the reserve is unavailable.
@@ -409,7 +540,9 @@ final class InternalTransferViewModel: ObservableObject {
     /// amount. Fails closed (returns 0) when the reserve is unavailable.
     private func creditsMinusFeeReserve(_ balanceCredits: UInt64) -> UInt64 {
         guard let fee = feeReserveCredits else { return 0 }
-        return balanceCredits > fee ? balanceCredits - fee : 0
+        return ShieldedSpendAmountPolicy.spendableCredits(
+            balanceCredits: balanceCredits,
+            feeReserveCredits: fee)
     }
 
     /// `parsedDashAmount` expressed as Int64 duffs, for `DashAmount` views.
@@ -453,7 +586,10 @@ final class InternalTransferViewModel: ObservableObject {
     /// nonzero credit amount. Decimal keeps the conversion overflow-safe for
     /// absurd inputs (saturates rather than trapping).
     var creditsPreview: UInt64 {
-        NSDecimalNumber(decimal: Decimal(dashDuffsUnsigned) * 1000).uint64Value
+        if isFullShieldedSweep, let shieldedSweepAmountCredits {
+            return shieldedSweepAmountCredits
+        }
+        return NSDecimalNumber(decimal: Decimal(dashDuffsUnsigned) * 1000).uint64Value
     }
 
     /// The transfer amount as DASH (no currency symbol), for the
@@ -506,27 +642,46 @@ final class InternalTransferViewModel: ObservableObject {
     /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
     /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
+        clearShieldedMaxSelection()
         let sourceDuffs: UInt64
         switch route {
         case .coreToShielded, .coreToPlatform:
             // Fee-aware max: spendable minus the send fee reserve (mirrors
             // DSAccount.maxOutputAmount), never the raw total — the asset-lock
             // spends core UTXOs and still needs room for the L1 fee.
-            sourceDuffs = SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
+            sourceDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
         case .platformToShielded:
             // Reserve the fee the SDK charges on top of the amount so Max
             // stays sendable (credits → duffs: integer divide by 1000).
             sourceDuffs = creditsMinusFeeReserve(platformCredits) / 1000
         case .shieldedToCore, .shieldedToPlatform:
-            // Reverse: upper bound is the shielded balance minus the fee reserve
-            // (debited on top of the amount), so Max stays sendable.
-            sourceDuffs = creditsMinusFeeReserve(shieldedBalance) / 1000
+            let feeKind: PlatformWalletManager.ShieldedFeeKind =
+                route == .shieldedToCore ? .withdrawal : .unshield
+            switch ShieldedTransferCoordinator.sweepAvailability(feeKind: feeKind) {
+            case .ready(let plan):
+                isFullShieldedSweep = true
+                shieldedSweepAmountCredits = plan.amountCredits
+                if plan.remainingCredits > 0 {
+                    shieldedMaxNotice = Self.shieldedRemainderMessage(plan.remainingCredits)
+                }
+                sourceDuffs = plan.amountCredits / 1000
+            case .waitingForConfirmation(let credits):
+                shieldedMaxNotice = Self.shieldedConfirmingMessage(credits)
+                sourceDuffs = 0
+            case .unavailable:
+                shieldedMaxNotice = NSLocalizedString(
+                    "Your Shielded balance is not ready to withdraw. Sync and try Max again.",
+                    comment: "Shielded Max unavailable")
+                sourceDuffs = 0
+            }
         case .platformToCore:
             // Max = the full-balance net payout (executed via the AUTO,
             // all-addresses path); 0 until the preflight resolves.
             sourceDuffs = platformWithdrawableDuffs ?? 0
         }
 
+        isApplyingShieldedMax = true
+        defer { isApplyingShieldedMax = false }
         switch unit {
         case .dash:
             amountText = sourceDuffs.formattedDashAmountWithoutCurrencySymbol
@@ -542,6 +697,30 @@ final class InternalTransferViewModel: ObservableObject {
                 amountText = "0"
             }
         }
+    }
+
+    private func clearShieldedMaxSelection() {
+        isFullShieldedSweep = false
+        shieldedSweepAmountCredits = nil
+        shieldedMaxNotice = nil
+    }
+
+    private static func shieldedConfirmingMessage(_ credits: UInt64) -> String {
+        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "%@ DASH is still confirming. Withdraw again once it settles.",
+                comment: "Shielded Max pending change"),
+            formatted)
+    }
+
+    private static func shieldedRemainderMessage(_ credits: UInt64) -> String {
+        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "%@ DASH requires another Shielded withdrawal. Use Max again after this transfer settles.",
+                comment: "Shielded Max multi-bundle remainder"),
+            formatted)
     }
 
     // MARK: - Conversion on unit toggle

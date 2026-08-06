@@ -36,7 +36,7 @@ extension NumberFormatter {
         var currencySymbol = formattedString.extractCurrencySymbol(using: numberFormatter)
 
         if currencySymbol == nil &&
-            numberFormatter.currencySymbol.range(of: DASH) != nil {
+            numberFormatter.currencySymbol.range(of: kDashCurrency) != nil {
             currencySymbol = numberFormatter.currencySymbol
         }
 
@@ -44,27 +44,25 @@ extension NumberFormatter {
             return formattedString
         }
 
-        var currencySymbolRange: Range<String.Index>! = formattedString.range(of: currencySymbol)
+        var currencySymbolRange = formattedString.range(of: currencySymbol)
 
         if currencySymbolRange == nil && currencySymbol.count != numberFormatter.currencySymbol.count {
-            assertionFailure("Invalid formatted string")
+            return nil
         } else if currencySymbolRange == nil {
             currencySymbolRange = formattedString.range(of: numberFormatter.currencySymbol)
         }
 
         guard let currencySymbolRange else {
-            fatalError("Invalid formatted string")
+            return nil
         }
 
         let isCurrencySymbolAtTheBeginning = currencySymbolRange.lowerBound == formattedString.startIndex
         var currencySymbolNumberSeparator: String
 
         if isCurrencySymbolAtTheBeginning {
-            currencySymbolNumberSeparator =
-                String(formattedString[
-                    currencySymbolRange.upperBound..<formattedString
-                        .index(after: currencySymbolRange.upperBound)
-                ])
+            let separatorStart = currencySymbolRange.upperBound
+            guard separatorStart < formattedString.endIndex else { return nil }
+            currencySymbolNumberSeparator = String(formattedString[separatorStart..<formattedString.index(after: separatorStart)])
         } else {
             currencySymbolNumberSeparator =
                 String(formattedString[
@@ -85,8 +83,9 @@ extension NumberFormatter {
         var formattedSeparatorIndex: String.Index! = formattedStringWithoutCurrency.range(of: decimalSeparator)?.lowerBound
 
         if formattedSeparatorIndex == nil {
-            formattedSeparatorIndex = formattedStringWithoutCurrency.endIndex
             formattedStringWithoutCurrency = formattedStringWithoutCurrency + decimalSeparator
+            formattedSeparatorIndex = formattedStringWithoutCurrency.index(formattedStringWithoutCurrency.endIndex,
+                                                                            offsetBy: -decimalSeparator.count)
         }
 
         let formattedFractionPartRange = formattedSeparatorIndex..<formattedStringWithoutCurrency.endIndex

@@ -30,17 +30,32 @@ final class PreparedStandardSend: NSObject {
     /// points.
     @objc var txidWire: Data { Data(txHash.reversed()) }
 
-    /// The built+signed SDK transaction, held (not broadcast) until the user
-    /// confirms. Swift-only: `CoreTransaction` is not ObjC-representable.
-    private let coreTransaction: CoreTransaction
+    private enum BroadcastState {
+        case ready
+        case broadcasting
+        case accepted
+        case unknown(NSError)
+    }
 
-    /// One-shot guard: set once `broadcast()` succeeds. Defense-in-depth behind
-    /// the confirm sheet's self-disabling button — a duplicate call errors
-    /// instead of re-firing the success flow. A *failed* broadcast releases the
-    /// claim so the same prepared object can be retried (re-broadcasting
-    /// identical bytes is network-idempotent: same txid).
+    /// Production captures the built SDK transaction in this closure; tests
+    /// inject deterministic outcomes without manufacturing an FFI transaction.
+    /// Discarding this prepared object abandons the build and releases its
+    /// reserved inputs (the captured `FinalizedCoreTransaction`'s deinit).
+    private let broadcastAction: () throws -> CoreTransactionBroadcastOutcome
+    private let ensureOnlineAction: () throws -> Void
+
+    /// A rejected or local failure returns to `ready`. An ambiguous network
+    /// outcome is terminal for this prepared transaction: broadcasting it again
+    /// could double-send if the first request actually reached Core.
+    ///
+    /// The captured `FinalizedCoreTransaction` is single-shot: the first
+    /// `broadcastAction` invocation consumes it, so a `ready`-state retry after
+    /// a rejected/failed attempt surfaces the SDK's already-consumed error
+    /// instead of rebroadcasting (safe — no double send; the reservation is
+    /// reconciled Rust-side) and the send must be re-prepared. Only failures
+    /// BEFORE the broadcast (`ensureOnlineAction`) leave a retryable object.
     private let claimLock = NSLock()
-    private var broadcastClaimed = false
+    private var broadcastState = BroadcastState.ready
 
     init(
         txData: Data,
@@ -48,46 +63,106 @@ final class PreparedStandardSend: NSObject {
         fee: UInt64,
         address: String,
         amount: UInt64,
-        coreTransaction: CoreTransaction
+        coreTransaction: FinalizedCoreTransaction
     ) {
         self.txData = txData
         self.txHash = txHash
         self.fee = fee
         self.address = address
         self.amount = amount
-        self.coreTransaction = coreTransaction
+        self.broadcastAction = {
+            try SwiftDashSDKTransactionSender.broadcast(coreTransaction)
+        }
+        self.ensureOnlineAction = {
+            try WalletSendService.ensureOnline()
+        }
+        super.init()
+    }
+
+    /// Test seam for the broadcast state machine. The production initializer
+    /// above remains the only path that holds a real `FinalizedCoreTransaction`.
+    init(
+        txData: Data,
+        txHash: Data,
+        fee: UInt64,
+        address: String,
+        amount: UInt64,
+        ensureOnlineAction: @escaping () throws -> Void = {},
+        broadcastAction: @escaping () throws -> CoreTransactionBroadcastOutcome
+    ) {
+        self.txData = txData
+        self.txHash = txHash
+        self.fee = fee
+        self.address = address
+        self.amount = amount
+        self.ensureOnlineAction = ensureOnlineAction
+        self.broadcastAction = broadcastAction
+        super.init()
     }
 
     @objc(broadcastAndReturnError:)
     func broadcast() throws {
-        // Catches airplane mode toggled on the confirm sheet after the tx was
-        // prepared: without this the offline broadcast is silently accepted.
-        try WalletSendService.ensureOnline()
-
         claimLock.lock()
-        guard !broadcastClaimed else {
+        switch broadcastState {
+        case .ready:
+            broadcastState = .broadcasting
+            claimLock.unlock()
+        case .unknown(let error):
+            claimLock.unlock()
+            throw error
+        case .broadcasting, .accepted:
             claimLock.unlock()
             throw WalletSendService.makeError(
                 code: .alreadyBroadcast,
-                description: "Transaction was already broadcast"
+                description: "Transaction was already broadcast or is being broadcast"
             )
         }
-        broadcastClaimed = true
-        claimLock.unlock()
 
+        let outcome: CoreTransactionBroadcastOutcome
         do {
-            _ = try SwiftDashSDKTransactionSender.broadcast(coreTransaction)
+            // Catches airplane mode toggled on the confirm sheet after the tx
+            // was prepared. Claiming the state first ensures a stored unknown
+            // result is returned without consulting changing network state.
+            try ensureOnlineAction()
+            outcome = try broadcastAction()
         } catch {
             claimLock.lock()
-            broadcastClaimed = false
+            broadcastState = .ready
             claimLock.unlock()
             throw error
         }
 
-        // `txHash` is display order (see `buildAndSign`); the registry keys
-        // by wire order to match `Transaction.txHashData`.
-        WalletSendService.shared.recentSends.record(
-            txidWire: Data(txHash.reversed()), address: address, amount: amount, fee: fee)
+        switch outcome {
+        case .accepted:
+            claimLock.lock()
+            broadcastState = .accepted
+            claimLock.unlock()
+
+            // `txHash` is display order (see `buildAndSign`); the registry keys
+            // by wire order to match `Transaction.txHashData`.
+            WalletSendService.shared.recentSends.record(
+                txidWire: Data(txHash.reversed()), address: address, amount: amount, fee: fee)
+
+        case .rejected(_, let reason):
+            let error = WalletSendService.makeError(
+                code: .broadcastRejected,
+                description: "The transaction wasn't sent. You can try again. \(reason)"
+            )
+            claimLock.lock()
+            broadcastState = .ready
+            claimLock.unlock()
+            throw error
+
+        case .unknown(_, let reason):
+            let error = WalletSendService.makeError(
+                code: .broadcastUnknown,
+                description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
+            )
+            claimLock.lock()
+            broadcastState = .unknown(error)
+            claimLock.unlock()
+            throw error
+        }
     }
 }
 
@@ -228,6 +303,16 @@ final class WalletSendService: NSObject {
                     code: .insufficientSelectedFunds,
                     description: "Not enough funds. Selected: \(selected), Amount: \(amount), Fee: \(fee)"
                 )
+            } catch SwiftDashSDKTransactionSender.SendError.transactionRejected(_, let reason) {
+                throw Self.makeError(
+                    code: .broadcastRejected,
+                    description: "The transaction wasn't sent. You can try again. \(reason)"
+                )
+            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {
+                throw Self.makeError(
+                    code: .broadcastUnknown,
+                    description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
+                )
             }
         }
 
@@ -235,6 +320,26 @@ final class WalletSendService: NSObject {
             address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
         try preparedSend.broadcast()
         return preparedSend.txidWire
+    }
+
+    /// - Returns: the wire-order txid of the broadcast transaction
+    ///   (`Transaction.txHashData` convention).
+    func sendSwapDeposit(vaultAddress: String, amount: UInt64, memo: String) async throws -> Data {
+        try Self.ensureChainSynced()
+        try Self.ensureOnline()
+        try await sendAuthorizer.authorizeSend(spendAmount: amount)
+
+        do {
+            let preparedSend = try buildPreparedSwapDeposit(
+                vaultAddress: vaultAddress,
+                amount: amount,
+                memo: memo
+            )
+            try preparedSend.broadcast()
+            return preparedSend.txidWire
+        } catch SwiftDashSDKTransactionSender.SendError.invalidSwapMemo(let reason) {
+            throw Self.makeError(code: .invalidSwapMemo, description: reason)
+        }
     }
 
     /// Sweep the entire CoinJoin-account balance into the user's own BIP44
@@ -257,7 +362,7 @@ final class WalletSendService: NSObject {
             )
         }
 
-        Self.logger.info("💸 TXSEND :: CJTEST preparing CoinJoin sweep — balance \(amount, privacy: .public) duffs (\(Double(amount) / 1e8, privacy: .public) DASH)")
+        Self.logger.info("💸 TXSEND :: preparing CoinJoin sweep — balance \(amount, privacy: .public) duffs (\(Double(amount) / 1e8, privacy: .public) DASH)")
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
         guard let destination = SwiftDashSDKReceiveAddressReader.receiveAddress() else {
@@ -267,13 +372,13 @@ final class WalletSendService: NSObject {
             )
         }
 
-        Self.logger.info("💸 TXSEND :: CJTEST CoinJoin sweep destination resolved \(destination, privacy: .public)")
+        Self.logger.info("💸 TXSEND :: CoinJoin sweep destination resolved \(destination, privacy: .public)")
         let txids = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
         guard !txids.isEmpty else {
             // A reported-success sweep that produced no transaction is treated
             // as a failure, so the caller surfaces an error (the sweep alert)
             // rather than silently "succeeding" with the balance unchanged.
-            Self.logger.error("💸 TXSEND :: CJTEST CoinJoin sweep returned no transactions for \(amount, privacy: .public) duffs — treating as failure")
+            Self.logger.error("💸 TXSEND :: CoinJoin sweep returned no transactions for \(amount, privacy: .public) duffs — treating as failure")
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
                 description: "CoinJoin sweep produced no transactions"
@@ -290,12 +395,12 @@ final class WalletSendService: NSObject {
         let recordedHexes: [String] = txids.map { (txid: Data) in
             txid.reversed().map { String(format: "%02x", $0) }.joined()
         }
-        Self.logger.info("💸 TXSEND :: CJTEST recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(recordedHexes.joined(separator: ","), privacy: .public)")
+        Self.logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(recordedHexes.joined(separator: ","), privacy: .public)")
 
         await MainActor.run {
             SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
             let post = SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
-            Self.logger.info("💸 TXSEND :: CJTEST post-sweep CoinJoin balance \(post, privacy: .public) duffs (was \(amount, privacy: .public))")
+        Self.logger.info("💸 TXSEND :: post-sweep CoinJoin balance \(post, privacy: .public) duffs (was \(amount, privacy: .public))")
             // The per-network recovery flag is owned solely by the recovery scan-
             // completion path (SwiftDashSDKSPVCoordinator.maybeCompleteCoinJoinRecovery,
             // which marks recovered once the one-time wide scan reaches .synced). A
@@ -383,6 +488,16 @@ final class WalletSendService: NSObject {
         error.domain == errorDomain && error.code == ErrorCode.authenticationCancelled.rawValue
     }
 
+    @objc(isBroadcastRejectedError:)
+    static func isBroadcastRejectedError(_ error: NSError) -> Bool {
+        error.domain == errorDomain && error.code == ErrorCode.broadcastRejected.rawValue
+    }
+
+    @objc(isBroadcastUnknownError:)
+    static func isBroadcastUnknownError(_ error: NSError) -> Bool {
+        error.domain == errorDomain && error.code == ErrorCode.broadcastUnknown.rawValue
+    }
+
     /// ObjC facade over `AuthenticationGate` for completion-based callers
     /// (DWPaymentProcessor's broadcast paths). Reads the user's biometric
     /// preference like every other spend gate, and guarantees the completion
@@ -411,10 +526,27 @@ final class WalletSendService: NSObject {
         let (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
 
         return PreparedStandardSend(
-            txData: tx.data,
+            txData: try tx.serializedData(),
             txHash: txHash,
             fee: tx.fee,
             address: address,
+            amount: amount,
+            coreTransaction: tx
+        )
+    }
+
+    private func buildPreparedSwapDeposit(vaultAddress: String, amount: UInt64, memo: String) throws -> PreparedStandardSend {
+        let (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSignSwapDeposit(
+            vaultAddress: vaultAddress,
+            amountDuffs: amount,
+            memo: memo
+        )
+
+        return PreparedStandardSend(
+            txData: tx.data,
+            txHash: txHash,
+            fee: tx.fee,
+            address: vaultAddress,
             amount: amount,
             coreTransaction: tx
         )
@@ -515,6 +647,9 @@ private extension WalletSendService {
         case dashPayPaymentUnavailable = 6
         case chainNotSynced = 7
         case offline = 8
+        case broadcastRejected = 9
+        case broadcastUnknown = 10
+        case invalidSwapMemo = 11
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"

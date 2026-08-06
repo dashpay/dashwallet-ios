@@ -29,7 +29,6 @@
 #endif
 
 #import "DWAppRootViewController.h"
-#import "DWEnvironment.h"
 #import "DWGlobalOptions.h"
 #import "DWPayModel.h"
 #import "DWReceiveModel.h"
@@ -87,14 +86,6 @@ NS_ASSUME_NONNULL_BEGIN
                                    name:DWSwiftDashSDKWalletState.balanceDidChangeNotification
                                  object:nil];
         [notificationCenter addObserver:self
-                               selector:@selector(chainWalletsDidChangeNotification:)
-                                   name:DSChainWalletsDidChangeNotification
-                                 object:nil];
-        [notificationCenter addObserver:self
-                               selector:@selector(willWipeWalletNotification)
-                                   name:DWWillWipeWalletNotification
-                                 object:nil];
-        [notificationCenter addObserver:self
                                selector:@selector(fiatCurrencyDidChangeNotification)
                                    name:DWApp.fiatCurrencyDidChangeNotification
                                  object:nil];
@@ -149,7 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
         now.timeIntervalSince1970 - balanceChangedDate.timeIntervalSince1970;
 
     // Show wallet backup reminder after 24h since balance has been changed
-    return (secondsSinceBalanceChanged > DAY_TIME_INTERVAL);
+    return (secondsSinceBalanceChanged > 24.0 * 60.0 * 60.0);
 }
 
 - (void)registerForPushNotifications {
@@ -243,21 +234,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)fiatCurrencyDidChangeNotification {
     [self.receiveModel updateReceivingInfo];
     ;
-}
-
-- (void)chainWalletsDidChangeNotification:(NSNotification *)notification {
-    DSChain *chain = [DWEnvironment sharedInstance].currentChain;
-    DSChain *notificationChain = notification.userInfo[DSChainManagerNotificationChainKey];
-    if (notificationChain && notificationChain == chain) {
-        [self.receiveModel updateReceivingInfo];
-    }
-}
-
-- (void)willWipeWalletNotification {
-#if DASHPAY
-    // Row #18: contact syncing is owned by the SDK DashPay sync loop
-    // (PlatformAddressSyncCoordinator); no app-side updater to stop.
-#endif
 }
 
 #pragma mark SyncingActivityMonitorObserver

@@ -203,6 +203,10 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         network: Network,
         isImported: Bool
     ) throws -> Data {
+        guard !Thread.isMainThread else {
+            throw MigrationError.hostCreateOnMainThread
+        }
+
         let semaphore = DispatchSemaphore(value: 0)
         var result: Result<Data, Error>?
 
@@ -228,6 +232,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     private enum MigrationError: LocalizedError {
         case hostCreateDidNotReturn
+        case hostCreateOnMainThread
     }
 
     // MARK: - Helpers

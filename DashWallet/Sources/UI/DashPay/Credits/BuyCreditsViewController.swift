@@ -26,7 +26,7 @@ final class BuyCreditsModel: SendAmountModel {
     }
     
     override func selectAllFundsWithoutAuth() {
-        let allAvailableFunds = SwiftDashSDKWalletState.shared.balance?.maxSendable ?? 0
+        let allAvailableFunds = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
 
         if allAvailableFunds > 0 {
             let maxMultiple = allAvailableFunds / BuyCreditsModel.opCost

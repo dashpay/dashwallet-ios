@@ -18,6 +18,15 @@ import SwiftUI
 import DashUIKit
 import UIKit
 
+struct PlatformSyncStatusPresentationPolicy {
+    static func visibleError(
+        availability: PlatformAccountAvailability,
+        lastError: String?
+    ) -> String? {
+        availability == .unavailable ? nil : lastError
+    }
+}
+
 struct PlatformSyncStatusScreen: View {
     private let vc: UINavigationController
 
@@ -67,7 +76,10 @@ struct PlatformSyncStatusScreen: View {
                         queriesCard
                     }
                     addressesCard
-                    if let lastError = coordinator.lastError {
+                    if let lastError = PlatformSyncStatusPresentationPolicy.visibleError(
+                        availability: coordinator.platformAccountAvailability,
+                        lastError: coordinator.lastError
+                    ) {
                         errorCard(message: lastError)
                     }
                     controlsCard
@@ -98,7 +110,7 @@ struct PlatformSyncStatusScreen: View {
             } else {
                 Image(systemName: "circle.dashed")
                     .foregroundColor(Color.dash.secondaryText)
-                Text(coordinator.isRunning ? "Not synced yet" : "Idle")
+                Text(stateDescription)
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.secondaryText)
             }
@@ -112,6 +124,13 @@ struct PlatformSyncStatusScreen: View {
         .padding(16)
         .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
+    }
+
+    private var stateDescription: String {
+        if coordinator.platformAccountAvailability == .unavailable {
+            return "No Platform wallet on this account"
+        }
+        return coordinator.isRunning ? "Not synced yet" : "Idle"
     }
 
     private var balanceCard: some View {
