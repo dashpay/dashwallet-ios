@@ -51,6 +51,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
     private static let coinJoinTypeTag: UInt8 = 1
     /// Only CoinJoin account 0 is created and swept (matches the balance reader).
     private static let coinJoinAccountIndex: UInt32 = 0
+    /// MAYACHAIN memo standardness limit for OP_RETURN payloads.
+    private static let maxSwapMemoBytes = 80
 
     // MARK: - Selected-input send constants
 
@@ -123,6 +125,62 @@ final class SwiftDashSDKTransactionSender: NSObject {
         let txHash = computeTxHash(from: txData)
         logger.info("💸 TXSEND :: built+signed — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(tx.fee, privacy: .public) duffs size=\(txData.count, privacy: .public) bytes")
         return (tx, txHash)
+    }
+
+    /// Build + sign a MAYACHAIN-style swap deposit: vault payment at VOUT0, a zero-value
+    /// OP_RETURN memo at VOUT1, and change returned to VIN0 when change exists.
+    /// Nothing is broadcast — pass the result to `broadcast(_:)`.
+    static func buildAndSignSwapDeposit(
+        vaultAddress: String,
+        amountDuffs: UInt64,
+        memo: String
+    ) throws -> (tx: CoreTransaction, txHash: Data) {
+        let memoData = Data(memo.utf8)
+        guard memoData.count <= Self.maxSwapMemoBytes else {
+            throw SendError.invalidSwapMemo("Swap memo is too long. Please refresh and try again.")
+        }
+
+        logger.info("💸 TXSEND :: building+signing MAYA swap deposit via PlatformWalletManager.coreWallet")
+
+        let build = { @MainActor () throws -> (tx: CoreTransaction, network: Network) in
+            guard let wallet = SwiftDashSDKHost.shared.wallet,
+                  let network = SwiftDashSDKHost.shared.runningNetwork else {
+                throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
+            }
+
+            let builder = try CoreTransactionBuilder(network: network)
+            try builder.addOutput(address: vaultAddress, amountDuffs: amountDuffs)
+            try builder.addOpReturn(memoData)
+            try builder.preserveOutputOrder()
+            try builder.changeToFirstInput()
+            try builder.setFunding(wallet: wallet, accountType: .bip44, accountIndex: 0)
+            let tx = try builder.buildSigned(wallet: wallet, accountType: .bip44, accountIndex: 0)
+            return (tx, network)
+        }
+
+        let built: (tx: CoreTransaction, network: Network)
+        if Thread.isMainThread {
+            built = try MainActor.assumeIsolated { try build() }
+        } else {
+            var captured: Result<(tx: CoreTransaction, network: Network), Error> =
+                .failure(SendError.walletNotReady("uninitialized result"))
+            DispatchQueue.main.sync {
+                captured = Result { try MainActor.assumeIsolated { try build() } }
+            }
+            built = try captured.get()
+        }
+
+        try assertSwapDepositShape(
+            tx: built.tx,
+            network: built.network,
+            vaultAddress: vaultAddress,
+            amountDuffs: amountDuffs,
+            memoData: memoData
+        )
+
+        let txHash = computeTxHash(from: built.tx.data)
+        logger.info("💸 TXSEND :: built+signed MAYA swap deposit — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(built.tx.fee, privacy: .public) duffs size=\(built.tx.data.count, privacy: .public) bytes")
+        return (built.tx, txHash)
     }
 
     // MARK: - CoinJoin Sweep
@@ -532,10 +590,57 @@ final class SwiftDashSDKTransactionSender: NSObject {
         return Data(hash2.reversed())
     }
 
+    private static func assertSwapDepositShape(
+        tx: CoreTransaction,
+        network: Network,
+        vaultAddress: String,
+        amountDuffs: UInt64,
+        memoData: Data
+    ) throws {
+        let decoded = try TransactionDecoder.decode(tx.data, network: network)
+        guard decoded.outputs.count >= 2, decoded.outputs.count <= 3 else {
+            throw SendError.invalidInput("swap deposit must have 2 or 3 outputs")
+        }
+
+        let vaultOutput = decoded.outputs[0]
+        guard vaultOutput.address == vaultAddress, vaultOutput.valueDuffs == amountDuffs else {
+            throw SendError.invalidInput("swap deposit VOUT0 does not match the requested vault payment")
+        }
+
+        let memoOutput = decoded.outputs[1]
+        guard memoOutput.valueDuffs == 0,
+              memoOutput.scriptPubkey.first == 0x6a,
+              RawTransactionInspector.opReturnData(script: memoOutput.scriptPubkey) == memoData
+        else {
+            throw SendError.invalidInput("swap deposit VOUT1 does not contain the requested OP_RETURN memo")
+        }
+
+        if decoded.outputs.count == 3 {
+            // `DecodedTransaction.Input.address` is recovered from a P2PKH-shaped scriptSig and
+            // is nil for anything else. Every BIP44 account UTXO this builder can spend is
+            // P2PKH, so nil here means the transaction is not the shape we asked for — refuse
+            // rather than skip the check.
+            guard let inputAddress = decoded.inputs.first?.address else {
+                throw SendError.invalidInput("swap deposit VIN0 address could not be recovered")
+            }
+            let paymentNetwork = try PaymentNetworkResolver.current()
+            guard let inputScript = ScriptAddressCodec.scriptPubKey(forAddress: inputAddress, network: paymentNetwork),
+                  decoded.outputs[2].scriptPubkey == inputScript
+            else {
+                throw SendError.invalidInput("swap deposit VOUT2 does not return change to VIN0")
+            }
+        }
+
+        guard tx.fee >= UInt64(tx.data.count) else {
+            throw SendError.invalidInput("swap deposit fee rate fell below the 1 duff/byte relay minimum")
+        }
+    }
+
     // MARK: - Errors
 
     enum SendError: LocalizedError {
         case invalidInput(String)
+        case invalidSwapMemo(String)
         case walletNotReady(String)
         case insufficientSelectedFunds(selected: UInt64, amount: UInt64, fee: UInt64)
         case transactionRejected(txid: String, reason: String)
@@ -545,6 +650,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
             switch self {
             case .invalidInput(let reason):
                 return "Invalid transaction input: \(reason)"
+            case .invalidSwapMemo(let reason):
+                return reason
             case .walletNotReady(let reason):
                 return "Wallet not ready: \(reason)"
             case .insufficientSelectedFunds(let selected, let amount, let fee):

@@ -35,17 +35,13 @@ public final class SendCoinsService: NSObject {
         )
     }
 
-    /// Submits a memo-less DashDEX (SwapKit) deposit: a plain send of `dashAmount` to the
-    /// route's deposit address. DashDEX only exposes NEAR-intents routes, which deposit to a
-    /// unique per-swap address with NO memo — so the DASH transaction is an ordinary send that
-    /// SwiftDashSDK builds, signs, and broadcasts via `WalletSendService`. There is no
-    /// OP_RETURN output (the SDK cannot express one); MAYACHAIN-style memo routes never reach
-    /// here because the provider forces NEAR routing, hides Maya-only coins, and rejects any
-    /// residual memo-bearing quote before submission.
+    /// Submits a DashDEX (SwapKit) deposit. Memo-less routes remain a plain send to the
+    /// route's deposit address; memo-bearing routes build a MAYACHAIN-style deposit with the
+    /// memo encoded in a zero-value OP_RETURN output.
     ///
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
-    func sendSwapKitSwap(depositAddress: String, dashAmount: UInt64) async throws -> Data {
+    func sendSwapKitSwap(depositAddress: String, dashAmount: UInt64, memo: String?) async throws -> Data {
         // Serialise swaps: don't start a new one until the previous swap tx is InstantSend-locked.
         if SwapPendingGate.shared.isAwaitingISLock {
             throw DashSpendError.swapAwaitingInstantLock
@@ -53,7 +49,16 @@ public final class SendCoinsService: NSObject {
 
         let txidWire: Data
         do {
-            txidWire = try await walletSendService.send(address: depositAddress, amount: dashAmount)
+            let trimmedMemo = memo?.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let trimmedMemo, !trimmedMemo.isEmpty {
+                txidWire = try await walletSendService.sendSwapDeposit(
+                    vaultAddress: depositAddress,
+                    amount: dashAmount,
+                    memo: trimmedMemo
+                )
+            } else {
+                txidWire = try await walletSendService.send(address: depositAddress, amount: dashAmount)
+            }
         } catch let error as NSError where WalletSendService.isAuthenticationCancelledError(error) {
             // Preserve the swap flow's existing auth-cancel handling, which keys on
             // `DashSpendError.authenticationCancelled` rather than the send service's NSError.
