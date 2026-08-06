@@ -39,12 +39,21 @@ final class PreparedStandardSend: NSObject {
 
     /// Production captures the built SDK transaction in this closure; tests
     /// inject deterministic outcomes without manufacturing an FFI transaction.
+    /// Discarding this prepared object abandons the build and releases its
+    /// reserved inputs (the captured `FinalizedCoreTransaction`'s deinit).
     private let broadcastAction: () throws -> CoreTransactionBroadcastOutcome
     private let ensureOnlineAction: () throws -> Void
 
     /// A rejected or local failure returns to `ready`. An ambiguous network
     /// outcome is terminal for this prepared transaction: broadcasting it again
     /// could double-send if the first request actually reached Core.
+    ///
+    /// The captured `FinalizedCoreTransaction` is single-shot: the first
+    /// `broadcastAction` invocation consumes it, so a `ready`-state retry after
+    /// a rejected/failed attempt surfaces the SDK's already-consumed error
+    /// instead of rebroadcasting (safe — no double send; the reservation is
+    /// reconciled Rust-side) and the send must be re-prepared. Only failures
+    /// BEFORE the broadcast (`ensureOnlineAction`) leave a retryable object.
     private let claimLock = NSLock()
     private var broadcastState = BroadcastState.ready
 
@@ -54,7 +63,7 @@ final class PreparedStandardSend: NSObject {
         fee: UInt64,
         address: String,
         amount: UInt64,
-        coreTransaction: CoreTransaction
+        coreTransaction: FinalizedCoreTransaction
     ) {
         self.txData = txData
         self.txHash = txHash
@@ -71,7 +80,7 @@ final class PreparedStandardSend: NSObject {
     }
 
     /// Test seam for the broadcast state machine. The production initializer
-    /// above remains the only path that holds a real `CoreTransaction`.
+    /// above remains the only path that holds a real `FinalizedCoreTransaction`.
     init(
         txData: Data,
         txHash: Data,
@@ -497,7 +506,7 @@ final class WalletSendService: NSObject {
         let (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(address: address, amount: amount)
 
         return PreparedStandardSend(
-            txData: tx.data,
+            txData: try tx.serializedData(),
             txHash: txHash,
             fee: tx.fee,
             address: address,
