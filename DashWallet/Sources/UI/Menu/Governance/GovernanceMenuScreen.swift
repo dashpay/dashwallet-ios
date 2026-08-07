@@ -120,9 +120,26 @@ struct GovernanceMenuScreen: View {
 
     #if DASHPAY
     private func showVoting() {
-        let controller = UIHostingController(rootView: UsernameVotingScreen())
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        // Same wrapper as `showMasternodes` above, and for the same reasons.
+        // A bare hosting controller inherits this screen's hidden navigation
+        // bar (`BaseNavigationController.willShow` only restores it for a
+        // `NavigationBarDisplayable`), which left the voting screens with no
+        // back button and no way out — and silently dropped the `.toolbar`
+        // and `.navigationTitle` as well, since neither renders outside a
+        // navigation container.
+        let navController = vc
+        let popRoot: () -> Void = { [weak navController] in
+            _ = navController?.popViewController(animated: true)
+        }
+        let hosting = UIHostingController(
+            rootView: AnyView(
+                NavigationStack {
+                    UsernameVotingScreen(onClose: popRoot)
+                }
+            )
+        )
+        hosting.hidesBottomBarWhenPushed = true
+        vc.pushViewController(hosting, animated: true)
     }
     #endif
 }

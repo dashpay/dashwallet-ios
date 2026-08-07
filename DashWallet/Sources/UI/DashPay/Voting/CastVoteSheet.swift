@@ -34,7 +34,14 @@ struct CastVoteSheet: View {
     @State private var selectedNodeIDs: Set<Data> = []
 
     private var selectedNodes: [VoterNode] {
-        viewModel.votableNodes.filter { selectedNodeIDs.contains($0.proTxHash) }
+        candidateNodes.filter { selectedNodeIDs.contains($0.proTxHash) }
+    }
+
+    /// Only nodes that have not voted on this contest yet. A node with a vote
+    /// on record is not offered again — Platform rejects a repeat of the same
+    /// choice, and re-listing it would invite that error.
+    private var candidateNodes: [VoterNode] {
+        viewModel.nodesYetToVote(on: contest.normalizedLabel)
     }
 
     var body: some View {
@@ -63,7 +70,10 @@ struct CastVoteSheet: View {
         }
         .onAppear {
             if selectedNodeIDs.isEmpty {
-                selectedNodeIDs = Set(viewModel.votableNodes.map(\.proTxHash))
+                // Honour the privacy mode: one node preselected by default,
+                // all of them only when the user asked for that.
+                selectedNodeIDs = Set(
+                    viewModel.nodesForNextVote(on: contest.normalizedLabel).map(\.proTxHash))
             }
         }
     }
@@ -85,12 +95,26 @@ struct CastVoteSheet: View {
                 Section { VotingBanner(text: castError, tone: .error).listRowInsets(EdgeInsets()) }
             }
 
-            Section(NSLocalizedString("Vote with", comment: "Voting")) {
-                ForEach(viewModel.votableNodes) { node in
+            Section {
+                ForEach(candidateNodes) { node in
                     NodeSelectionRow(
                         node: node,
                         isSelected: selectedNodeIDs.contains(node.proTxHash),
                         toggle: { toggle(node) })
+                }
+            } header: {
+                Text(NSLocalizedString("Vote with", comment: "Voting"))
+            } footer: {
+                if alreadyVoted > 0 {
+                    Text(String(
+                        format: NSLocalizedString(
+                            "%d of your nodes already voted here and are not listed.",
+                            comment: "Voting"),
+                        alreadyVoted))
+                } else if !viewModel.voteWithAllNodes && viewModel.votableNodes.count > 1 {
+                    Text(NSLocalizedString(
+                        "Selecting fewer nodes reveals less about which masternodes you run.",
+                        comment: "Voting"))
                 }
             }
 
@@ -121,6 +145,10 @@ struct CastVoteSheet: View {
                 .disabled(selectedNodes.isEmpty || viewModel.isCasting)
             }
         }
+    }
+
+    private var alreadyVoted: Int {
+        viewModel.votableNodes.count - candidateNodes.count
     }
 
     private func toggle(_ node: VoterNode) {

@@ -103,6 +103,10 @@ final class App {
     func cleanUp() {
         TransactionMetadataDAOImpl.shared.deleteAll()
         AddressUserInfoDAOImpl.shared.deleteAll()
+    #if DASHPAY
+        // Which of your masternodes voted on what is wallet-scoped history.
+        VoteHistoryDAOImpl.shared.deleteAll()
+    #endif
 
         _fiatCurrency = nil
         UserDefaults.standard.removeObject(forKey: kFiatCurrencyCodeKey)

@@ -1917,6 +1917,8 @@
 		D19A81C4F6103AC513D737AA /* UsernameRequestStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4CB35186918CCBD2FFC49F /* UsernameRequestStatusScreen.swift */; };
 		63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
 		25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
+		7062FCF792F292D84A0B819B /* VoteHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */; };
+		553696A24F315D361BC86231 /* VoteHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3640,6 +3642,7 @@
 		FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CastVoteSheet.swift; sourceTree = "<group>"; };
 		ED4CB35186918CCBD2FFC49F /* UsernameRequestStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRequestStatusScreen.swift; sourceTree = "<group>"; };
 		C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BulkVoteSheet.swift; sourceTree = "<group>"; };
+		0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoteHistoryDAO.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -4522,6 +4525,7 @@
 		2A44313D22CF632F009BAF7F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				515C73491D3755649EB0709D /* Voting */,
 				AA0002192BA0F58E00A1B309 /* Maya */,
 				AA0010002CA0B10001A0B100 /* SwapKit */,
 				AA0020012FA0000000000001 /* Swap */,
@@ -8589,6 +8593,14 @@
 			path = Voting;
 			sourceTree = "<group>";
 		};
+		515C73491D3755649EB0709D /* Voting */ = {
+			isa = PBXGroup;
+			children = (
+				0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */,
+			);
+			path = Voting;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -9389,6 +9401,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				553696A24F315D361BC86231 /* VoteHistoryDAO.swift in Sources */,
 				25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */,
 				D19A81C4F6103AC513D737AA /* UsernameRequestStatusScreen.swift in Sources */,
 				6181C570B638E07D8B369CDB /* VotingViewModel.swift in Sources */,
@@ -10257,6 +10270,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7062FCF792F292D84A0B819B /* VoteHistoryDAO.swift in Sources */,
 				63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */,
 				E503EDEA94E656CAE70E5A11 /* UsernameRequestStatusScreen.swift in Sources */,
 				1FED991A9D2D236582CE3C99 /* CastVoteSheet.swift in Sources */,

@@ -108,6 +108,14 @@ final class MasternodeVoteCaster {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.voting")
 
+    private static let history: VoteHistoryDAO = VoteHistoryDAOImpl.shared
+
+    /// Vote history is per Platform network — a testnet contest and a mainnet
+    /// one can share a label, and their counts must never merge.
+    static var networkKey: String {
+        WalletEnvironment.network == .mainnet ? "mainnet" : "testnet"
+    }
+
     private let registry: MasternodeVoterRegistry
     private let contests: ContestedNamesService
 
@@ -222,6 +230,15 @@ final class MasternodeVoteCaster {
                     proTxHash: node.proTxHash,
                     votingPrivateKey: votingKey)
                 outcomes.append(VoteOutcome(node: node, failure: nil))
+                // Recorded only on success, so the count the UI shows is
+                // votes Platform accepted — not votes attempted.
+                await Self.history.record(
+                    CastVoteRecord(
+                        proTxHash: node.proTxHash,
+                        normalizedLabel: normalizedLabel,
+                        choice: choice,
+                        castAt: Date()),
+                    network: Self.networkKey)
                 Self.logger.info(
                     "🗳️ VOTING :: cast \(choice.logDescription, privacy: .public) on \(normalizedLabel, privacy: .public) with \(node.displayName, privacy: .public)")
             } catch {
