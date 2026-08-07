@@ -82,6 +82,19 @@ final class VotingViewModel: ObservableObject {
     /// Per-contest results of the most recent bulk run.
     @Published var bulkReports: [VoteCastReport]?
 
+    /// How many of this wallet's nodes have already voted, per contest, from
+    /// local history. Drives the "2 of 5 votes cast" line and picks the next
+    /// node in one-at-a-time mode.
+    @Published private(set) var castCountsByContest: [String: Int] = [:]
+    /// Which of our nodes voted on the contest currently being viewed.
+    @Published private(set) var votedProTxHashesForOpenContest: Set<Data> = []
+
+    /// `false` (default) casts with one node per tap. Persisted, because it is
+    /// a privacy choice the user should not have to re-make each launch.
+    @Published var voteWithAllNodes: Bool = VotingPrefs.shared.voteWithAllNodes {
+        didSet { VotingPrefs.shared.voteWithAllNodes = voteWithAllNodes }
+    }
+
     /// Result banner for the most recent casting run.
     @Published var lastCastReport: VoteCastReport?
     /// Error from a casting run that never got as far as broadcasting.
@@ -93,6 +106,7 @@ final class VotingViewModel: ObservableObject {
     private let contestsService: ContestedNamesService
     private let registry: MasternodeVoterRegistry
     private let caster: MasternodeVoteCaster
+    private let history: VoteHistoryDAO = VoteHistoryDAOImpl.shared
 
     /// Default arguments would have to be evaluated in a nonisolated context,
     /// but both services are `@MainActor`, so the defaults are applied inside
@@ -168,6 +182,9 @@ final class VotingViewModel: ObservableObject {
         votableNodes = resolution.nodes
         nodeListMayBeIncomplete = resolution.mayBeIncomplete
 
+        castCountsByContest = await history.voteCountsByContest(
+            network: MasternodeVoteCaster.networkKey)
+
         do {
             contests = try await contestsService.activeContests()
             loadError = nil
@@ -228,6 +245,41 @@ final class VotingViewModel: ObservableObject {
         closedLabels.contains(normalizedLabel)
     }
 
+    // MARK: Vote history
+
+    /// Votes this wallet has cast on `contest`, and how many it could cast in
+    /// total — the "2 of 5" the row and detail screen show.
+    func castCount(for normalizedLabel: String) -> Int {
+        castCountsByContest[normalizedLabel] ?? 0
+    }
+
+    /// Nodes that have not yet voted on this contest, in registration order.
+    func nodesYetToVote(on normalizedLabel: String) -> [VoterNode] {
+        votableNodes.filter { !votedProTxHashesForOpenContest.contains($0.proTxHash) }
+    }
+
+    /// Load which of our nodes already voted on one contest. Called when its
+    /// detail screen opens, so the vote button knows what is left.
+    func loadVotedNodes(for normalizedLabel: String) async {
+        let records = await history.votes(
+            forContest: normalizedLabel,
+            network: MasternodeVoteCaster.networkKey)
+        votedProTxHashesForOpenContest = Set(records.map(\.proTxHash))
+        castCountsByContest[normalizedLabel] = records.count
+    }
+
+    /// The nodes a single tap should vote with, honouring the privacy mode.
+    ///
+    /// One-at-a-time takes the first node that has not voted on this contest
+    /// yet; all-at-once takes every node still outstanding. Returns empty when
+    /// every node has already voted — the caller disables the control rather
+    /// than re-broadcasting a vote Platform would reject as a duplicate.
+    func nodesForNextVote(on normalizedLabel: String) -> [VoterNode] {
+        let remaining = nodesYetToVote(on: normalizedLabel)
+        guard !remaining.isEmpty else { return [] }
+        return voteWithAllNodes ? remaining : [remaining[0]]
+    }
+
     // MARK: Casting
 
     /// Cast `choice` on `contest` with `nodes`, then refresh that contest.
@@ -242,6 +294,7 @@ final class VotingViewModel: ObservableObject {
                 onNormalizedLabel: contest.normalizedLabel,
                 with: nodes)
             lastCastReport = report
+            await loadVotedNodes(for: contest.normalizedLabel)
             await refreshContest(normalizedLabel: contest.normalizedLabel)
         } catch {
             castError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)

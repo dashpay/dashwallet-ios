@@ -4800,3 +4800,10 @@
 "No open contest matches that search." = "No open contest matches that search.";
 "“%@” could not be read as a Dash username." = "“%@” could not be read as a Dash username.";
 " or " = " or ";
+"Your votes" = "Your votes";
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer.";
+"One node at a time" = "One node at a time";
+"All nodes at once" = "All nodes at once";
+"Every node votes together. Faster, but it publicly links your masternodes to each other." = "Every node votes together. Faster, but it publicly links your masternodes to each other.";
+"Each tap votes with one more node, so you choose how many to link together." = "Each tap votes with one more node, so you choose how many to link together.";
+"Selecting fewer nodes reveals less about which masternodes you run." = "Selecting fewer nodes reveals less about which masternodes you run.";

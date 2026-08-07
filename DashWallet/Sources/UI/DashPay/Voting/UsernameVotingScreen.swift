@@ -28,13 +28,19 @@ import SwiftUI
 /// Browsing needs no masternode. The voting controls are enabled only when the
 /// wallet derives the voting key of at least one active registration.
 struct UsernameVotingScreen: View {
+    /// Pops the UIKit stack. The screen lives inside its own `NavigationStack`
+    /// (see `GovernanceMenuScreen.showVoting`), so the back button has to be
+    /// wired explicitly — SwiftUI cannot see the UIKit stack underneath it.
+    let onClose: () -> Void
+
     @StateObject private var viewModel = VotingViewModel()
 
     var body: some View {
         VStack(spacing: 0) {
             VoterCapacityHeader(
                 nodes: viewModel.votableNodes,
-                totalWeight: viewModel.totalVoteWeight)
+                totalWeight: viewModel.totalVoteWeight,
+                voteWithAllNodes: $viewModel.voteWithAllNodes)
 
             if viewModel.nodeListMayBeIncomplete {
                 VotingBanner(
@@ -57,6 +63,11 @@ struct UsernameVotingScreen: View {
             placement: .navigationBarDrawer(displayMode: .always),
             prompt: NSLocalizedString("Search usernames", comment: "Voting"))
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: onClose) {
+                    Image(systemName: "chevron.left")
+                }
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 if viewModel.isSelecting {
                     Button(NSLocalizedString("Done", comment: "")) { viewModel.endSelecting() }
@@ -151,6 +162,7 @@ struct UsernameVotingScreen: View {
 private struct VoterCapacityHeader: View {
     let nodes: [VoterNode]
     let totalWeight: UInt32
+    @Binding var voteWithAllNodes: Bool
 
     var body: some View {
         HStack(spacing: 10) {
@@ -183,6 +195,33 @@ private struct VoterCapacityHeader: View {
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.dash.secondaryBackground)
+
+        // Only meaningful with more than one node — with one, both modes do
+        // exactly the same thing.
+        if nodes.count > 1 {
+            VStack(alignment: .leading, spacing: 4) {
+                Picker(NSLocalizedString("Vote with", comment: "Voting"),
+                       selection: $voteWithAllNodes) {
+                    Text(NSLocalizedString("One node at a time", comment: "Voting")).tag(false)
+                    Text(NSLocalizedString("All nodes at once", comment: "Voting")).tag(true)
+                }
+                .pickerStyle(.segmented)
+
+                Text(voteWithAllNodes
+                     ? NSLocalizedString(
+                         "Every node votes together. Faster, but it publicly links your masternodes to each other.",
+                         comment: "Voting")
+                     : NSLocalizedString(
+                         "Each tap votes with one more node, so you choose how many to link together.",
+                         comment: "Voting"))
+                    .font(.caption)
+                    .foregroundColor(Color.dash.secondaryText)
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.dash.secondaryBackground)
+        }
     }
 
     private var nodeSummary: String {

@@ -98,6 +98,22 @@
 			<string>%2$d masternodes</string>
 		</dict>
 	</dict>
+	<key>%d of %d nodes voted</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$d of %#@nodes@ voted</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d node</string>
+			<key>other</key>
+			<string>%2$d nodes</string>
+		</dict>
+	</dict>
 	<key>%d of %d usernames voted on</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -112,6 +128,22 @@
 			<string>%2$d username</string>
 			<key>other</key>
 			<string>%2$d usernames</string>
+		</dict>
+	</dict>
+	<key>%d of your nodes already voted here and are not listed.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d of your nodes already voted here and is not listed.</string>
+			<key>other</key>
+			<string>%d of your nodes already voted here and are not listed.</string>
 		</dict>
 	</dict>
 	<key>%d requests</key>
@@ -272,6 +304,22 @@
 			<string>Vote on %d username</string>
 			<key>other</key>
 			<string>Vote on %d usernames</string>
+		</dict>
+	</dict>
+	<key>Vote ×%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Vote ×%d</string>
+			<key>other</key>
+			<string>Vote ×%d</string>
 		</dict>
 	</dict>
 </dict>

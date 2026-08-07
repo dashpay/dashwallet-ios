@@ -41,7 +41,22 @@ struct ContestDetailScreen: View {
         viewModel.isClosed(normalizedLabel: contest.normalizedLabel)
     }
 
-    private var canVote: Bool { viewModel.canVote && !isClosed }
+    private var canVote: Bool { viewModel.canVote && !isClosed && !allNodesVoted }
+
+    /// How many of this wallet's nodes have voted here.
+    private var castCount: Int { viewModel.castCount(for: contest.normalizedLabel) }
+
+    private var allNodesVoted: Bool {
+        viewModel.canVote && viewModel.nodesYetToVote(on: contest.normalizedLabel).isEmpty
+    }
+
+    /// What one tap will do, so the button can say so rather than making the
+    /// user infer it from a setting on the previous screen.
+    private var voteButtonTitle: String {
+        let pending = viewModel.nodesForNextVote(on: contest.normalizedLabel)
+        if pending.count <= 1 { return NSLocalizedString("Vote", comment: "Voting") }
+        return String(format: NSLocalizedString("Vote ×%d", comment: "Voting"), pending.count)
+    }
 
     var body: some View {
         List {
@@ -82,6 +97,21 @@ struct ContestDetailScreen: View {
                         Spacer()
                         ContestDeadlineLabel(endTime: current.endTime)
                     }
+
+                    if viewModel.canVote {
+                        HStack {
+                            Text(NSLocalizedString("Your votes", comment: "Voting"))
+                                .font(.caption)
+                                .foregroundColor(Color.dash.secondaryText)
+                            Spacer()
+                            Text(String(
+                                format: NSLocalizedString("%d of %d nodes voted", comment: "Voting"),
+                                castCount, viewModel.votableNodes.count))
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(allNodesVoted ? .green : Color.dash.secondaryText)
+                        }
+                    }
                 }
                 .padding(.vertical, 4)
             }
@@ -93,6 +123,7 @@ struct ContestDetailScreen: View {
                         isLeading: contender.id == current.leadingContender?.id
                             && current.lockVotes <= contender.voteTally,
                         canVote: canVote,
+                        voteTitle: voteButtonTitle,
                         onVote: { pendingChoice = .towards(identityId: contender.identityId) })
                 }
             }
@@ -104,6 +135,7 @@ struct ContestDetailScreen: View {
                     tally: current.lockVotes,
                     systemImage: "lock",
                     canVote: canVote,
+                    voteTitle: voteButtonTitle,
                     onVote: { pendingChoice = .lock })
                 VoteTallyRow(
                     title: NSLocalizedString("Abstain", comment: "Voting"),
@@ -111,7 +143,18 @@ struct ContestDetailScreen: View {
                     tally: current.abstainVotes,
                     systemImage: "minus.circle",
                     canVote: canVote,
+                    voteTitle: voteButtonTitle,
                     onVote: { pendingChoice = .abstain })
+            }
+
+            if allNodesVoted && !isClosed {
+                Section {
+                    Text(NSLocalizedString(
+                        "All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer.",
+                        comment: "Voting"))
+                        .font(.caption)
+                        .foregroundColor(Color.dash.secondaryText)
+                }
             }
 
             if !viewModel.canVote && !isClosed {
@@ -126,6 +169,7 @@ struct ContestDetailScreen: View {
         }
         .navigationTitle(current.displayTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .task { await viewModel.loadVotedNodes(for: contest.normalizedLabel) }
         .refreshable { await viewModel.refreshContest(normalizedLabel: contest.normalizedLabel) }
         .sheet(item: $pendingChoice) { choice in
             CastVoteSheet(
@@ -142,6 +186,7 @@ private struct ContenderRow: View {
     let contender: DPNSContender
     let isLeading: Bool
     let canVote: Bool
+    let voteTitle: String
     let onVote: () -> Void
 
     var body: some View {
@@ -160,7 +205,7 @@ private struct ContenderRow: View {
             Spacer()
 
             if canVote {
-                Button(NSLocalizedString("Vote", comment: "Voting"), action: onVote)
+                Button(voteTitle, action: onVote)
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }
@@ -177,6 +222,7 @@ private struct VoteTallyRow: View {
     let tally: UInt32
     let systemImage: String
     let canVote: Bool
+    let voteTitle: String
     let onVote: () -> Void
 
     var body: some View {
@@ -200,7 +246,7 @@ private struct VoteTallyRow: View {
                 .foregroundColor(Color.dash.secondaryText)
 
             if canVote {
-                Button(NSLocalizedString("Vote", comment: "Voting"), action: onVote)
+                Button(voteTitle, action: onVote)
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }
