@@ -62,10 +62,6 @@ class HomeViewModel: ObservableObject {
     var isPreviewMode: Bool = false
     #endif
 
-    /// Tracks whether a full reload is currently in progress to prevent race conditions
-    /// with incremental updates (Fix #3)
-    private var isReloading: Bool = false
-
     /// Tracks whether initial data load has completed (Fix #2)
     private var hasCompletedInitialLoad: Bool = false
 
@@ -251,9 +247,8 @@ class HomeViewModel: ObservableObject {
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets.removeAll()
 
-            // Reset load tracking flags so the new network's data loads correctly
+            // Reset load tracking so the new network's data loads correctly
             self.hasCompletedInitialLoad = false
-            self.isReloading = false
 
             // Update UI-bound properties on main thread. The new network's
             // history is loading from scratch, so the feed goes back to its
@@ -441,8 +436,6 @@ class HomeViewModel: ObservableObject {
     }
 
     private func performReload(selectedFilters: Set<TransactionFilterCategory>, startedAt: Date) {
-        // Fix #3: Set reload flag to prevent race conditions with incremental updates
-        self.isReloading = true
         DWLogger.log("HomeViewModel: Starting full transaction reload")
 
         let transactions = transactionSource.allTransactions
@@ -565,9 +558,8 @@ class HomeViewModel: ObservableObject {
             return TransactionGroup(id: key, date: first.date, items: items)
         }.sorted { $0.date > $1.date }
 
-        // Fix #2 & #3: Mark initial load complete and clear reload flag
+        // Fix #2: Mark initial load complete
         self.hasCompletedInitialLoad = true
-        self.isReloading = false
 
         let elapsedMs = Int(Date().timeIntervalSince(startedAt) * 1000)
         DWLogger.log("HomeViewModel: Full reload complete in \(elapsedMs)ms, \(array.count) groups, \(self.txByHash.count) transactions cached")
@@ -587,13 +579,6 @@ class HomeViewModel: ObservableObject {
     private func onTransactionStatusChanged(tx: Transaction) {
         self.queue.async { [weak self] in
             guard let self = self else { return }
-
-            // Fix #3: Skip incremental updates while a full reload is in progress
-            // to prevent race conditions that could cause missing transactions
-            if self.isReloading {
-                DWLogger.log("HomeViewModel: Skipping incremental update during full reload for tx: \(tx.txHashHexString)")
-                return
-            }
 
             // Fix #2: If initial load hasn't completed yet, the cache is empty and
             // incremental updates won't work correctly. Trigger a full reload instead.
