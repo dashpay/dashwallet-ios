@@ -538,7 +538,7 @@ struct PayContactSheet: View {
     /// `amountText` back made any gap between the two — a locale separator, a
     /// stray character, precision the parser drops — render as a truthful-looking
     /// "sent" line for an amount that never left the wallet.
-    @State private var sentAmountDuffs: UInt64? = nil
+    @State private var sentAmountDuffs: UInt64?
     @State private var errorMessage: String? = nil
 
     var body: some View {
