@@ -43,6 +43,15 @@ final class NetworkReachability: NSObject {
         return monitor != nil
     }
 
+    /// True once a real path has been reported. Until then `isReachable`'s
+    /// `false` is a placeholder, not an answer — callers that would show
+    /// offline UI must consult this (or `networkStatus == .offline`) rather
+    /// than treating "not reachable" as "offline".
+    @objc var hasDeterminedReachability: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return hasReceivedFirstPath
+    }
+
     @objc var isReachable: Bool {
         lock.lock(); defer { lock.unlock() }
         return _isReachable
