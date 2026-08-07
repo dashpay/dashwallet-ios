@@ -119,10 +119,33 @@ struct GovernanceMenuScreen: View {
     }
 
     #if DASHPAY
+    /// Same wrapper as `showMasternodes`, for the same reason: the voting
+    /// list drills down into a per-contest detail screen, and both screens
+    /// set `.navigationTitle`. Without a `NavigationStack` there is no bar to
+    /// host that title or the automatic back button, so the detail opened
+    /// with no way out.
     private func showVoting() {
-        let controller = UIHostingController(rootView: UsernameVotingScreen())
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        let navController = vc
+        let popRoot: () -> Void = { [weak navController] in
+            _ = navController?.popViewController(animated: true)
+        }
+
+        let hosting = UIHostingController(
+            rootView: AnyView(
+                NavigationStack {
+                    UsernameVotingScreen()
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button(action: popRoot) {
+                                    Image(systemName: "chevron.left")
+                                }
+                            }
+                        }
+                }
+            )
+        )
+        hosting.hidesBottomBarWhenPushed = true
+        vc.pushViewController(hosting, animated: true)
     }
     #endif
 }
