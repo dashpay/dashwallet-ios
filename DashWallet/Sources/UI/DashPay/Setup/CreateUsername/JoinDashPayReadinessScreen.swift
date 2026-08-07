@@ -120,11 +120,13 @@ struct JoinDashPayReadinessScreen: View {
 
             // Always offered: an invitation pays for the registration, so it
             // is a way past this screen regardless of the checklist state.
-            Button(action: onClaimInvitation) {
-                Text(NSLocalizedString("Have an invitation?", comment: "DashPay Invitations"))
-                    .font(.footnote)
-                    .foregroundColor(.dash.blue)
-                    .frame(maxWidth: .infinity)
+            // Tinted rather than filled — it is a real alternative to
+            // Continue, not a footnote, but Continue stays the primary action.
+            DashButton(
+                text: NSLocalizedString("Have an invitation?", comment: "DashPay Invitations"),
+                style: .tintedBlue
+            ) {
+                onClaimInvitation()
             }
             .padding(.top, 12)
         }
