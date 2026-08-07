@@ -17,6 +17,7 @@
 
 import Foundation
 import Combine
+import CoreData
 import SwiftData
 import SwiftDashSDK
 
@@ -320,6 +321,7 @@ class HomeViewModel: ObservableObject {
         // directly from SwiftData via SwiftDashSDKWalletSource and use this
         // notification as the reload trigger.
         NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
+            .filter { Self.saveTouchesFeedRows($0) }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.txReloadRequests.send()
@@ -364,9 +366,14 @@ class HomeViewModel: ObservableObject {
                 guard let self = self else { return }
                 if state == .syncing {
                     // Reload once per transition into .syncing — replaces the
-                    // legacy sync-will-start notification observer.
+                    // legacy sync-will-start notification observer. Goes
+                    // through the throttled funnel rather than calling
+                    // `reloadTxsAndShortcuts()` directly: this sink also
+                    // schedules the debounced sync-state reload, so a direct
+                    // call raced it into two full passes per transition. The
+                    // funnel's sink reloads shortcuts too, so nothing is lost.
                     DWLogger.log("HomeViewModel: Sync started, reloading transactions")
-                    self.reloadTxsAndShortcuts()
+                    self.txReloadRequests.send()
                 }
                 self.onSyncStateChanged()
                 self.maybeShowCoinJoinSweepDialog()
@@ -374,6 +381,38 @@ class HomeViewModel: ObservableObject {
             .store(in: &cancellableBag)
     }
     
+    /// Entities whose rows the home feed actually renders.
+    private static let feedRowEntityNames: Set<String> = [
+        "PersistentTransaction",
+        "PersistentTxo",
+    ]
+
+    /// Whether a SwiftData save touched anything the feed renders.
+    ///
+    /// The model container is shared with bookkeeping that saves on its own
+    /// cadence — sync state, masternode lists, platform-address sync — and an
+    /// unfiltered save trigger turned every one of those into a full re-read
+    /// of the whole history plus a wholesale `txItems` republish. On a
+    /// 1756-transaction wallet that fired roughly every 15s indefinitely, and
+    /// the republish re-diffs the list under the user's finger mid-scroll.
+    ///
+    /// Fails OPEN: a save whose payload we can't inspect is treated as
+    /// relevant, so an unexpected notification shape costs a redundant reload
+    /// rather than a feed that stops updating.
+    private static func saveTouchesFeedRows(_ notification: Notification) -> Bool {
+        guard let userInfo = notification.userInfo else { return true }
+        var sawInspectableChange = false
+        for key in [NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey, NSRefreshedObjectsKey] {
+            guard let objects = userInfo[key] as? Set<NSManagedObject> else { continue }
+            guard !objects.isEmpty else { continue }
+            sawInspectableChange = true
+            if objects.contains(where: { feedRowEntityNames.contains($0.entity.name ?? "") }) {
+                return true
+            }
+        }
+        return !sawInspectableChange
+    }
+
     // This is expensive and should not be called often
     private func reloadTxDataSource() {
         // Read main-actor state BEFORE handing off, never from inside the
