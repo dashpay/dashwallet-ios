@@ -106,6 +106,9 @@ struct UsernameRequestStatusScreen: View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: 6) {
+                    // `label` here is the submission as the user typed it,
+                    // straight from our own bookmark — already the display
+                    // form, so no decode is involved.
                     Text(viewModel.label)
                         .font(.title2)
                         .fontWeight(.semibold)
@@ -229,10 +232,10 @@ private struct ContestantStatusRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(isMe
                      ? NSLocalizedString("You", comment: "Usernames")
-                     : contender.shortIdentityId)
+                     : contender.displayNameOrIdentity)
                     .font(.subheadline)
                     .fontWeight(isMe ? .semibold : .regular)
-                    .monospaced(!isMe)
+                    .monospaced(!isMe && contender.displayLabel == nil)
                 Text(String(format: NSLocalizedString("%u votes", comment: "Voting"),
                             contender.voteTally))
                     .font(.caption)

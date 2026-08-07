@@ -131,7 +131,14 @@ final class VotingViewModel: ObservableObject {
         guard let needle = contestsService.normalizedLabel(for: trimmed) else {
             return sorted(contests)
         }
-        return sorted(contests.filter { $0.normalizedLabel.contains(needle) })
+        // Match the normalized form *and* the spellings people actually typed,
+        // so searching "pizza" finds the contest whether the row is showing
+        // "pizza" or the normalized "p1zza".
+        let raw = trimmed.lowercased()
+        return sorted(contests.filter { contest in
+            contest.normalizedLabel.contains(needle)
+                || contest.requestedLabels.contains { $0.lowercased().contains(raw) }
+        })
     }
 
     private func sorted(_ input: [DPNSContest]) -> [DPNSContest] {
