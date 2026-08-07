@@ -532,8 +532,14 @@ struct PayContactSheet: View {
     @State private var sentTxid: Data? = nil
     /// Exact network fee (duffs) of the broadcast transaction.
     @State private var sentFeeDuffs: UInt64? = nil
+    /// Duffs actually broadcast, captured at send time.
+    ///
+    /// The confirmation must state what was paid, not what was typed. Echoing
+    /// `amountText` back made any gap between the two — a locale separator, a
+    /// stray character, precision the parser drops — render as a truthful-looking
+    /// "sent" line for an amount that never left the wallet.
+    @State private var sentAmountDuffs: UInt64?
     @State private var errorMessage: String? = nil
-    @FocusState private var amountFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -568,22 +574,27 @@ struct PayContactSheet: View {
                 Text(errorMessage ?? "")
             }
         }
-        .presentationDetents([.medium])
+        // The sheet carries its own keypad now, so it needs the room the
+        // system keyboard used to occupy.
+        .presentationDetents([.large])
     }
 
     @ViewBuilder
     private var form: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            TextField("0", text: $amountText)
-                .keyboardType(.decimalPad)
-                .font(.system(size: 40, weight: .semibold))
-                .multilineTextAlignment(.trailing)
-                .focused($amountFocused)
-                .onAppear { amountFocused = true }
-            Text("DASH")
-                .font(.system(size: 17, weight: .bold))
-                .foregroundColor(.dash.secondaryText)
-        }
+        // The shared amount surface every other send screen uses, over the
+        // app's own keypad. A raw `TextField` + `.decimalPad` accepted whatever
+        // the system keyboard allowed — a bare separator, a locale comma, more
+        // precision than DASH has — and left validation to the parser, so the
+        // typed text and the amount actually sent could disagree.
+        EnterAmountView(
+            primaryAmount: amountText.isEmpty ? "0" : amountText,
+            secondaryAmount: fiatAmountText,
+            primaryCurrency: .dash,
+            secondaryCurrency: .fiat(App.fiatCurrency),
+            isPrimarySelected: true,
+            isCurrencySelectorHidden: true,
+            onMax: { amountText = Self.dashString(duffs: maxSendable) }
+        )
         .padding(.top, 12)
 
         Text(String(
@@ -596,25 +607,23 @@ struct PayContactSheet: View {
             .font(.system(size: 12))
             .foregroundColor(.dash.tertiaryText)
 
-        if isSending {
-            SwiftUI.ProgressView()
-                .padding(.top, 8)
-        } else {
-            Button {
-                pay()
-            } label: {
-                Text(NSLocalizedString("Pay", comment: "DashPay Contacts"))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color.dash.whiteText)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 46)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(parsedDuffs == nil ? Color.dash.gray300 : Color.dash.blue))
-            }
-            .buttonStyle(.plain)
-            .disabled(parsedDuffs == nil)
-        }
+        NumericKeyboardView(
+            value: $amountText,
+            showDecimalSeparator: true,
+            actionButtonText: NSLocalizedString("Pay", comment: "DashPay Contacts"),
+            actionEnabled: parsedDuffs != nil,
+            inProgress: isSending,
+            actionHandler: { pay() }
+        )
+        .padding(.top, 8)
+    }
+
+    /// Fiat equivalent of what is typed, for the secondary line. Empty while
+    /// the amount is unparseable or rates have not arrived.
+    private var fiatAmountText: String {
+        guard let duffs = parsedDuffs else { return "" }
+        let dash = Decimal(duffs) / Decimal(100_000_000)
+        return CurrencyExchanger.shared.fiatAmountString(for: dash)
     }
 
     private func success(txid: Data) -> some View {
@@ -627,7 +636,8 @@ struct PayContactSheet: View {
                 .foregroundColor(.dash.primaryText)
             Text(String(
                 format: NSLocalizedString("%@ DASH sent to %@", comment: "DashPay Contacts"),
-                amountText, contact.displayTitle))
+                sentAmountDuffs.map { Self.dashString(duffs: $0) } ?? amountText,
+                contact.displayTitle))
                 .font(.system(size: 14))
                 .foregroundColor(.dash.secondaryText)
             if let fee = sentFeeDuffs {
@@ -683,6 +693,7 @@ struct PayContactSheet: View {
                     amount: duffs)
                 sentTxid = txid
                 sentFeeDuffs = feeDuffs
+                sentAmountDuffs = duffs
                 // Project the freshly recorded Sent entry to SwiftData
                 // right away — the entry lives only in Rust memory
                 // until a projection runs, and an app kill before one
