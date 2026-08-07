@@ -229,6 +229,15 @@ class CreateUsernameViewModel: ObservableObject {
     /// `DWIdentityRegistrationBridge.shared.preferredFundingSource`,
     /// written by `CreateUsernameView` immediately before this call.
     func submitUsernameRequest(onRegistrationStarted: @escaping @MainActor () -> Void = {}) async -> UsernameRegistrationOutcome {
+        // The cached ceiling tracks the balance publisher, which is enough for
+        // per-keystroke validation. Submission spends real UTXOs, so re-derive
+        // it once here from the live set: one FFI walk on an explicit user
+        // action costs nothing, and it closes the window where the fee reserve
+        // moved with the UTXO count while the balance stayed put. Deliberately
+        // without re-running `validateUsername` — that would restart the DPNS
+        // check and put the spinner back up mid-submission.
+        coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+
         let submittedUsername = username
         submittedRegistrationUsername = submittedUsername
         didNotifyRegistrationStarted = false

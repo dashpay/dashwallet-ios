@@ -86,12 +86,26 @@ final class ClaimInvitationViewModel: ObservableObject {
     @Published private(set) var isChecking = false
 
     private let service: DWInvitationServicing
+    /// Owns the Continue-time round trip so it can be cancelled when the screen
+    /// or its input moves on. Without an owner the task ran to completion and
+    /// acted on a URI the user had already replaced or navigated away from.
+    private var claimCheckTask: Task<Void, Never>?
 
     init(service: DWInvitationServicing = DWInvitationService.shared) {
         self.service = service
     }
 
+    /// Abandon an in-flight claim check — the input changed, the user went
+    /// Back, or the screen disappeared.
+    func cancelClaimCheck() {
+        claimCheckTask?.cancel()
+        claimCheckTask = nil
+        isChecking = false
+    }
+
     func evaluate() {
+        // A new input invalidates any answer still in flight for the old one.
+        cancelClaimCheck()
         guard !service.hasLocalIdentity else {
             state = .alreadyRegistered
             normalizedURI = nil
@@ -124,15 +138,27 @@ final class ClaimInvitationViewModel: ObservableObject {
     /// round trip and would otherwise fire on every keystroke of a pasted
     /// link. An undetermined answer proceeds — the claim itself is the
     /// authority, and a network hiccup must not block a good invitation.
-    func continueIfUnclaimed(_ proceed: @escaping (String) -> Void) async {
+    func continueIfUnclaimed(_ proceed: @escaping (String) -> Void) {
         guard let uri = normalizedURI, !isChecking else { return }
         isChecking = true
-        defer { isChecking = false }
-        if await service.isVoucherAlreadyClaimed(uri: uri) == true {
-            state = .alreadyClaimed
-            return
+        claimCheckTask = Task { [weak self] in
+            guard let self else { return }
+            let claimed = await self.service.isVoucherAlreadyClaimed(uri: uri)
+
+            // The round trip outlives the state it was started from: the user
+            // can edit the field, go Back, or leave the screen while it is in
+            // flight. Acting on a stale answer would mark an unrelated link as
+            // claimed, or push the claim flow for a URI already replaced.
+            guard !Task.isCancelled, self.normalizedURI == uri else { return }
+
+            self.isChecking = false
+            self.claimCheckTask = nil
+            if claimed == true {
+                self.state = .alreadyClaimed
+                return
+            }
+            proceed(uri)
         }
-        proceed(uri)
     }
 }
 
@@ -157,7 +183,10 @@ struct ClaimInvitationScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             NavigationBar(leading: {
-                NavigationBarElement.back.button { onBack() }
+                NavigationBarElement.back.button {
+                    viewModel.cancelClaimCheck()
+                    onBack()
+                }
             })
 
             content
@@ -180,6 +209,9 @@ struct ClaimInvitationScreen: View {
         }
         .onChange(of: viewModel.input) { _ in
             viewModel.evaluate()
+        }
+        .onDisappear {
+            viewModel.cancelClaimCheck()
         }
     }
 
@@ -229,7 +261,7 @@ struct ClaimInvitationScreen: View {
                 isEnabled: viewModel.state == .valid && !viewModel.isChecking,
                 isLoading: viewModel.isChecking
             ) {
-                Task { await viewModel.continueIfUnclaimed(onContinue) }
+                viewModel.continueIfUnclaimed(onContinue)
             }
         }
         .padding(.horizontal, 20)

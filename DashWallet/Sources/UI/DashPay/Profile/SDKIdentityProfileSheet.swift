@@ -18,10 +18,10 @@ struct SDKIdentityProfileSheet: View {
     @State private var identityIdHex: String? = nil
     /// Owner's profile picture, read from the same identity snapshot the rest
     /// of the app renders from. nil → the deterministic initials placeholder.
-    @State private var avatarURL: String? = nil
+    @State private var avatarURL: String?
     /// Raw identity id backing the avatar's placeholder derivation, matching
     /// what the contacts list passes for other users.
-    @State private var identitySeed: Data = Data()
+    @State private var identitySeed = Data()
     @State private var dpnsNames: [String] = []
     @State private var hasIdentity: Bool = false
     @State private var pendingContestedName: String? = nil
