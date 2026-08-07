@@ -40,10 +40,6 @@ final class MasternodesViewModel: ObservableObject {
     private var ownerIndexByAddress: [String: UInt32] = [:]
     private var votingIndexByAddress: [String: UInt32] = [:]
 
-    /// Fallback join window, used only when the live pool's depth can't be
-    /// read. Mirrors `MasternodeKeyUsage.fallbackScanWindow`.
-    private static let fallbackScanWindow: UInt32 = 20
-
     func load() {
         defer { loaded = true }
         guard let manager = SwiftDashSDKHost.shared.manager,
@@ -67,8 +63,8 @@ final class MasternodesViewModel: ObservableObject {
         guard !targets.isEmpty,
               let deriver = MasternodeProviderKeyDeriver(key: family) else { return [:] }
         var map: [String: UInt32] = [:]
-        // Whole live pool, not a fixed window — see `MasternodeKeyUsage`.
-        let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? fallbackScanWindow
+        // Whole pool, not a fixed window — see `MasternodeKeyUsage`.
+        let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? 0
         for index in 0..<upperBound {
             guard let address = deriver.address(at: index),
                   targets.contains(address) else { continue }

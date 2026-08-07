@@ -66,12 +66,6 @@ struct MasternodeKeyUsage {
         let revoked: Bool
     }
 
-    /// Fallback Owner/Voting address-join scan window, used only when the
-    /// live pool's depth can't be read. The join normally walks the whole
-    /// pool (`MasternodeProviderKeyDeriver.highestAddressIndex`), which SPV
-    /// grows past any fixed window as it marks deeper indexes used.
-    private static let fallbackScanWindow: UInt32 = 20
-
     private let used: [MNKey: [UInt32: KeyUse]]
 
     private init(used: [MNKey: [UInt32: KeyUse]]) {
@@ -141,10 +135,11 @@ struct MasternodeKeyUsage {
             }
             guard !useByAddress.isEmpty,
                   let deriver = MasternodeProviderKeyDeriver(key: key) else { continue }
-            // Walk the live pool's full depth: SPV extends it past any fixed
+            // Walk the pool's full depth: SPV extends it past any fixed
             // window as ProRegTx/ProUpRegTx matches mark deeper indexes used,
-            // so a capped scan would silently hide those masternodes.
-            let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? fallbackScanWindow
+            // so a capped scan would silently hide those masternodes. No pool
+            // means no addresses to join against, so the loop is skipped.
+            let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? 0
             for index in 0..<upperBound {
                 guard let address = deriver.address(at: index),
                       let use = useByAddress[address] else { continue }
