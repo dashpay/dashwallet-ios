@@ -447,6 +447,12 @@ struct HomeViewContent<Content: View>: View {
                 pendingShieldedRecovery = nil
             }
         }
+        .sheet(isPresented: $viewModel.showCoinJoinMoveFundsSheet) {
+            CoinJoinMoveFundsSheet(amountDuffs: viewModel.coinJoinSweepAmountDuffs) {
+                viewModel.showCoinJoinMoveFundsSheet = false
+            }
+            .presentationDetents([.medium, .large])
+        }
         .sheet(isPresented: $showFilterDialog) {
             let dialog = TransactionFilterDialog(
                 selectedFilters: $viewModel.selectedFilters,

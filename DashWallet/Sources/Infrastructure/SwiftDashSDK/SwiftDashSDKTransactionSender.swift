@@ -134,7 +134,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
         vaultAddress: String,
         amountDuffs: UInt64,
         memo: String
-    ) throws -> (tx: CoreTransaction, txHash: Data) {
+    ) throws -> (tx: FinalizedCoreTransaction, txHash: Data) {
         let memoData = Data(memo.utf8)
         guard memoData.count <= Self.maxSwapMemoBytes else {
             throw SendError.invalidSwapMemo("Swap memo is too long. Please refresh and try again.")
@@ -142,7 +142,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
         logger.info("💸 TXSEND :: building+signing MAYA swap deposit via PlatformWalletManager.coreWallet")
 
-        let build = { @MainActor () throws -> (tx: CoreTransaction, network: Network) in
+        let build = { @MainActor () throws -> (tx: FinalizedCoreTransaction, network: Network) in
             guard let wallet = SwiftDashSDKHost.shared.wallet,
                   let network = SwiftDashSDKHost.shared.runningNetwork else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
@@ -153,16 +153,15 @@ final class SwiftDashSDKTransactionSender: NSObject {
             try builder.addOpReturn(memoData)
             try builder.preserveOutputOrder()
             try builder.changeToFirstInput()
-            try builder.setFunding(wallet: wallet, accountType: .bip44, accountIndex: 0)
-            let tx = try builder.buildSigned(wallet: wallet, accountType: .bip44, accountIndex: 0)
+            let tx = try builder.finalizeAtomic(wallet: wallet, accountType: .bip44, accountIndex: 0)
             return (tx, network)
         }
 
-        let built: (tx: CoreTransaction, network: Network)
+        let built: (tx: FinalizedCoreTransaction, network: Network)
         if Thread.isMainThread {
             built = try MainActor.assumeIsolated { try build() }
         } else {
-            var captured: Result<(tx: CoreTransaction, network: Network), Error> =
+            var captured: Result<(tx: FinalizedCoreTransaction, network: Network), Error> =
                 .failure(SendError.walletNotReady("uninitialized result"))
             DispatchQueue.main.sync {
                 captured = Result { try MainActor.assumeIsolated { try build() } }
@@ -170,16 +169,18 @@ final class SwiftDashSDKTransactionSender: NSObject {
             built = try captured.get()
         }
 
+        let txData = try built.tx.serializedData()
         try assertSwapDepositShape(
-            tx: built.tx,
+            txData: txData,
+            feeDuffs: built.tx.fee,
             network: built.network,
             vaultAddress: vaultAddress,
             amountDuffs: amountDuffs,
             memoData: memoData
         )
 
-        let txHash = computeTxHash(from: built.tx.data)
-        logger.info("💸 TXSEND :: built+signed MAYA swap deposit — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(built.tx.fee, privacy: .public) duffs size=\(built.tx.data.count, privacy: .public) bytes")
+        let txHash = computeTxHash(from: txData)
+        logger.info("💸 TXSEND :: built+signed MAYA swap deposit — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(built.tx.fee, privacy: .public) duffs size=\(txData.count, privacy: .public) bytes")
         return (built.tx, txHash)
     }
 
@@ -591,13 +592,14 @@ final class SwiftDashSDKTransactionSender: NSObject {
     }
 
     private static func assertSwapDepositShape(
-        tx: CoreTransaction,
+        txData: Data,
+        feeDuffs: UInt64,
         network: Network,
         vaultAddress: String,
         amountDuffs: UInt64,
         memoData: Data
     ) throws {
-        let decoded = try TransactionDecoder.decode(tx.data, network: network)
+        let decoded = try TransactionDecoder.decode(txData, network: network)
         guard decoded.outputs.count >= 2, decoded.outputs.count <= 3 else {
             throw SendError.invalidInput("swap deposit must have 2 or 3 outputs")
         }
@@ -631,7 +633,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
             }
         }
 
-        guard tx.fee >= UInt64(tx.data.count) else {
+        guard feeDuffs >= UInt64(txData.count) else {
             throw SendError.invalidInput("swap deposit fee rate fell below the 1 duff/byte relay minimum")
         }
     }

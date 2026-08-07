@@ -185,7 +185,8 @@ extension CrowdNodePortalController {
             .receive(on: DispatchQueue.main)
             .compactMap { $0 }
             .sink(receiveValue: { [weak self] error in
-                if let error, error is CrowdNode.Error {
+                // `compactMap` already unwrapped the published optional.
+                if error is CrowdNode.Error {
                     self?.viewModel.clearError()
                     self?.navigationController?.toErrorScreen(
                         error: error as? CrowdNode.Error ?? .messageStatus(error: error.localizedDescription))

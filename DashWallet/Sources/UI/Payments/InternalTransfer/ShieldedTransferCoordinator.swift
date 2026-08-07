@@ -360,19 +360,42 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// The intermediate stages are polled from `PersistentAssetLock.statusRaw`;
     /// the SDK returns `Void` only on `Consumed`/success.
     ///
+    /// Which balance funds the asset lock.
+    enum AssetLockFundingSource: Equatable {
+        /// Exact amount, coin-selected from the BIP44 spendable balance —
+        /// the historical route behind the internal transfer and Send.
+        case bip44(amountDuffs: UInt64)
+        /// Whole-balance drain of the CoinJoin account: every mixed-coin
+        /// UTXO funds the lock directly (lock value = Σ inputs − L1 fee,
+        /// computed SDK-side) — the post-migration "move mixed coins to
+        /// Shielded" path. No transparent intermediate hop.
+        case coinJoinDrain
+    }
+
     /// `recipientRaw43` nil = the wallet's own default Orchard address (the
     /// internal transfer); an external Send passes the recipient's raw
     /// 43-byte payload. Type 18's remainder semantics apply either way: the
     /// recipient receives `lock_value − pool_fee`.
     func performAssetLock(amountDuffs: UInt64, recipientRaw43 recipientOverride: Data? = nil) async {
+        await performAssetLock(funding: .bip44(amountDuffs: amountDuffs), recipientRaw43: recipientOverride)
+    }
+
+    /// Funding-parameterized form of `performAssetLock(amountDuffs:)` — same
+    /// stages, polling, and resume semantics for both funding sources (a
+    /// stuck lock resumes by outpoint regardless of what funded it).
+    func performAssetLock(funding: AssetLockFundingSource, recipientRaw43 recipientOverride: Data? = nil) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
-        Self.logger.info("🛡️ SHIELD-TX :: asset-lock route amount=\(amountDuffs) external=\(recipientOverride != nil)")
+        Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(String(describing: funding), privacy: .public) external=\(recipientOverride != nil)")
 
         // Backstop both amount screens at the execution boundary. Besides
         // protecting programmatic callers, this keeps a stale Confirm sheet
         // from surfacing the Rust SDK's raw ShieldFromAssetLock build error.
-        if let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits {
+        // Only the BIP44 exact-amount form carries a caller amount; the
+        // CoinJoin drain's lock value is computed SDK-side, which preflights
+        // it against the pool fee before broadcasting.
+        if case .bip44(let amountDuffs) = funding,
+           let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits {
             let minimumDuffs = CoreToShieldedAmountPolicy.minimumAmountDuffs(
                 poolFeeCredits: poolFeeCredits)
             guard amountDuffs >= minimumDuffs else {
@@ -405,11 +428,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
             let recipient = ShieldedFundFromAssetLockRecipient(
                 recipientRaw43: recipientOverride ?? env.shieldedRecipient,
                 credits: nil)
-            try await env.manager.shieldedFundFromAssetLock(
-                walletId: env.walletId,
-                fundingAccountIndex: 0,
-                amountDuffs: amountDuffs,
-                recipients: [recipient])
+            switch funding {
+            case .bip44(let amountDuffs):
+                try await env.manager.shieldedFundFromAssetLock(
+                    walletId: env.walletId,
+                    fundingAccountIndex: 0,
+                    amountDuffs: amountDuffs,
+                    recipients: [recipient])
+            case .coinJoinDrain:
+                try await env.manager.shieldedFundFromCoinJoinDrain(
+                    walletId: env.walletId,
+                    recipients: [recipient])
+            }
         } catch {
             stopAssetLockPolling()
             // Last-ditch outpoint capture: if the FFI threw before polling

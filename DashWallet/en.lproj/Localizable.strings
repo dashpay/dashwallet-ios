@@ -2163,6 +2163,30 @@
 /* CoinJoin */
 "Move your mixed coins" = "Move your mixed coins";
 
+/* CoinJoin */
+"CoinJoin is no longer supported — choose where to move your mixed coins." = "CoinJoin is no longer supported — choose where to move your mixed coins.";
+
+/* CoinJoin */
+"Dash Wallet balance" = "Dash Wallet balance";
+
+/* CoinJoin */
+"Move to your regular spendable balance." = "Move to your regular spendable balance.";
+
+/* CoinJoin */
+"Keep these coins private. Network and privacy fees apply." = "Keep these coins private. Network and privacy fees apply.";
+
+/* CoinJoin */
+"Moving funds" = "Moving funds";
+
+/* CoinJoin */
+"Funds moved" = "Funds moved";
+
+/* CoinJoin */
+"Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds.";
+
+/* CoinJoin */
+"Your mixed coins were moved to your Dash Wallet balance." = "Your mixed coins were moved to your Dash Wallet balance.";
+
 /* No comment provided by engineer. */
 "Moved from" = "Moved from";
 
