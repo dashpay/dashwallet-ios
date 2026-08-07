@@ -124,6 +124,18 @@ public final class CrowdNode {
     private(set) var isOnlineStateRestored = false
     var showNotificationOnResult = false
 
+    /// Persisted transaction count as of the last `restoreState()` that found
+    /// no CrowdNode account at all.
+    ///
+    /// The restore's own guard is `signUpState > .notStarted`, which a wallet
+    /// that never signed up never reaches — so every caller (launch sync-done,
+    /// each entry into the CrowdNode portal) re-ran the full history scan and
+    /// blocked the main thread for seconds apiece. A signup can still turn up
+    /// later when a restored seed syncs its history in, so this memo is keyed
+    /// to the store's row count rather than latching permanently: new rows
+    /// persisted means the scan gets to run again.
+    private var fruitlessRestoreTxCount: Int?
+
     var masternodeAPY: Double
     var crowdnodeAPY: Double
 
@@ -195,6 +207,18 @@ extension CrowdNode {
             return
         }
 
+        // Read the count ONCE, before the scans, and memoize that same value
+        // below. Reading it again afterwards would record rows the scans never
+        // inspected — a save landing mid-restore would make the next call skip
+        // a scan that still owes work on those rows.
+        let txCountBeforeScans = TransactionObserver.persistedTransactionCount()
+
+        // A previous pass already scanned this exact history and found no
+        // account; without new rows it would reach the same conclusion.
+        if let scanned = fruitlessRestoreTxCount, txCountBeforeScans == scanned {
+            return
+        }
+
         DWLogger.log("restoring CrowdNode state")
         signUpState = SignUpState.notStarted
         validatePrefs()
@@ -232,6 +256,10 @@ extension CrowdNode {
             }
         } else {
             DWLogger.log("CrowdNode: account not found")
+            // Nothing found by either the signup scan or the online-account
+            // lookup, so this whole pass was a no-op — memoize it against the
+            // history the scans actually saw, not the store's count now.
+            fruitlessRestoreTxCount = txCountBeforeScans
         }
     }
 
@@ -331,6 +359,7 @@ extension CrowdNode {
         primaryAddress = nil
         apiError = nil
         balance = 0
+        fruitlessRestoreTxCount = nil
         prefs.resetUserDefaults()
     }
 
@@ -364,6 +393,9 @@ extension CrowdNode {
         apiError = nil
         balance = 0
         isOnlineStateRestored = false
+        // The memo describes the PREVIOUS wallet's scan; the new wallet must
+        // get a real one even though the store's row count is unchanged.
+        fruitlessRestoreTxCount = nil
         restoreState()
     }
     
@@ -1016,7 +1048,13 @@ extension CrowdNode {
     private func getApiAddressConfirmationTx() -> ObservedTransaction? {
         let filter = CoinsToAddressTxFilter(coins: CrowdNode.apiConfirmationDashAmount, address: nil) // account address is unknown at this point
         let forwardedConfirmationFilter = CrowdNodeAPIConfirmationTxForwarded()
-        let observed = TransactionObserver.fetchObserved()
+        // Same floor the signup scan uses: an API-address confirmation is
+        // CrowdNode protocol traffic, so it cannot predate CrowdNode. Without
+        // it this walked and decoded the wallet's entire history on the main
+        // thread during restore — the more expensive of the restore's two
+        // scans, on a wallet that has no CrowdNode account at all.
+        let observed = TransactionObserver.fetchObserved(
+            firstSeenAtOrAfter: FullCrowdNodeSignUpTxSet.januaryFirst2022Epoch)
 
         // There might be several matching transactions. The real one is the
         // one whose destination CrowdNode forwarded from.
