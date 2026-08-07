@@ -16,6 +16,12 @@ struct SDKIdentityProfileSheet: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var walletState = SwiftDashSDKWalletState.shared
     @State private var identityIdHex: String? = nil
+    /// Owner's profile picture, read from the same identity snapshot the rest
+    /// of the app renders from. nil → the deterministic initials placeholder.
+    @State private var avatarURL: String? = nil
+    /// Raw identity id backing the avatar's placeholder derivation, matching
+    /// what the contacts list passes for other users.
+    @State private var identitySeed: Data = Data()
     @State private var dpnsNames: [String] = []
     @State private var hasIdentity: Bool = false
     @State private var pendingContestedName: String? = nil
@@ -83,6 +89,7 @@ struct SDKIdentityProfileSheet: View {
                 hasIdentity = DWCurrentUserIdentityInfo.shared.hasIdentity
                 pendingContestedName = DWContestedNameStatusService.shared.pendingLabel
                 pendingVotingEndTime = DWContestedNameStatusService.shared.pendingVotingEndTime
+                avatarURL = DWCurrentUserIdentityInfo.shared.avatarURL
             }
         }
     }
@@ -112,14 +119,16 @@ struct SDKIdentityProfileSheet: View {
 
     private var header: some View {
         VStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(Color.dash.blue)
-                    .frame(width: 96, height: 96)
-                Text(initial)
-                    .font(.system(size: 40, weight: .semibold))
-                    .foregroundColor(Color.dash.whiteText)
-            }
+            // Was a hardcoded blue circle with an initial — this screen never
+            // rendered the profile picture at all. `ContactAvatarView` is the
+            // app's one avatar path (remote image, else the deterministic
+            // placeholder that matches Android), so the owner's own profile
+            // now looks the same here as it does everywhere they appear.
+            ContactAvatarView(
+                title: username,
+                avatarURL: avatarURL,
+                identitySeed: identitySeed,
+                size: 96)
             Text(username)
                 .font(.title2)
                 .fontWeight(.semibold)
@@ -235,11 +244,6 @@ struct SDKIdentityProfileSheet: View {
             ?? "—"
     }
 
-    private var initial: String {
-        let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "?" : String(trimmed.prefix(1)).uppercased()
-    }
-
     private var platformCreditsFormatted: String {
         let duffs = walletState.platformPaymentCreditsAsDuffs
         if duffs == 0 {
@@ -277,6 +281,7 @@ struct SDKIdentityProfileSheet: View {
         descriptor.fetchLimit = 1
         if let identity = try? context.fetch(descriptor).first {
             identityIdHex = identity.identityId.map { String(format: "%02x", $0) }.joined()
+            identitySeed = identity.identityId
         }
     }
 }
