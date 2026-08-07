@@ -117,12 +117,15 @@ final class ContestedNamesService {
     }
 
     /// Homograph-normalize a user-typed label into the form Platform indexes
-    /// (`Alice` → `a11ce`). Returns the input lowercased if the SDK is not up,
-    /// which is only used for local search filtering.
-    func normalizedLabel(for label: String) -> String {
-        guard let sdk = SwiftDashSDKHost.shared.sdk else {
-            return SDK.locallyNormalizedLabel(label)
-        }
-        return sdk.dpnsNormalizeLabel(label)
+    /// (`Alice` → `a11ce`).
+    ///
+    /// Normalization is protocol behavior owned by Rust, so there is no
+    /// app-side fallback: a second copy of the mapping would drift from the
+    /// canonical one. `nil` means "could not normalize" — the caller decides
+    /// what that means for it, rather than getting a plausible-looking
+    /// substitute.
+    func normalizedLabel(for label: String) -> String? {
+        guard let sdk = SwiftDashSDKHost.shared.sdk else { return nil }
+        return try? sdk.dpnsNormalizeLabel(label)
     }
 }

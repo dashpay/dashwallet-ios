@@ -107,14 +107,16 @@ final class VotingViewModel: ObservableObject {
     /// "a11ce", and a raw substring match would find nothing.
     var visibleContests: [DPNSContest] {
         let trimmed = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
-        let filtered: [DPNSContest]
-        if trimmed.isEmpty {
-            filtered = contests
-        } else {
-            let needle = contestsService.normalizedLabel(for: trimmed)
-            filtered = contests.filter { $0.normalizedLabel.contains(needle) }
+        guard !trimmed.isEmpty else { return sorted(contests) }
+
+        // Normalization needs the SDK, and so does `contests` — a non-empty
+        // list means the handle is up, so this only returns nil when there is
+        // nothing to filter anyway. Leaving the list unfiltered beats
+        // matching against a locally-guessed spelling of the label.
+        guard let needle = contestsService.normalizedLabel(for: trimmed) else {
+            return sorted(contests)
         }
-        return sorted(filtered)
+        return sorted(contests.filter { $0.normalizedLabel.contains(needle) })
     }
 
     private func sorted(_ input: [DPNSContest]) -> [DPNSContest] {
