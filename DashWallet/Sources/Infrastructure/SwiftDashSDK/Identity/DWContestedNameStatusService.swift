@@ -242,14 +242,14 @@ public final class DWContestedNameStatusService: NSObject {
 
     @nonobjc
     func pendingLabel(for network: Network) -> String? {
-        Self.migrateLegacyBookmarkIfNeeded(for: network)
+        Self.discardLegacyBookmark(for: network)
         guard let key = Self.pendingLabelKey(for: network) else { return nil }
         return UserDefaults.standard.string(forKey: key)
     }
 
     @nonobjc
     func pendingVotingEndTime(for network: Network) -> Date? {
-        Self.migrateLegacyBookmarkIfNeeded(for: network)
+        Self.discardLegacyBookmark(for: network)
         guard let key = Self.pendingVotingEndTimeKey(for: network) else { return nil }
         let timestamp = UserDefaults.standard.double(forKey: key)
         return timestamp > 0 ? Date(timeIntervalSince1970: timestamp) : nil
@@ -299,29 +299,26 @@ public final class DWContestedNameStatusService: NSObject {
         "\(pendingVotingEndTimeKeyPrefix).\(networkKey(network))"
     }
 
-    /// Move a legacy (wallet-agnostic) bookmark onto the active wallet's keys,
-    /// once. No-op when there is nothing to migrate or no wallet to migrate to.
-    private nonisolated static func migrateLegacyBookmarkIfNeeded(for network: Network) {
-        guard let labelKey = pendingLabelKey(for: network),
-              let endTimeKey = pendingVotingEndTimeKey(for: network)
-        else { return }
-
+    /// Delete any pre-scoping bookmark, without adopting it.
+    ///
+    /// Adopting looked like the kind thing to do for an install that updates
+    /// mid-vote, but a wallet-agnostic value cannot be attributed to a wallet:
+    /// it handed the previous wallet's vote to whichever wallet read first,
+    /// which is the leak the scoping exists to close — reset the wallet, create
+    /// a new one, and the old contest reappeared on it.
+    ///
+    /// Nothing is lost by dropping it. A wallet that really has a contest in
+    /// flight rebuilds the bookmark from Platform on the next runtime start:
+    /// the same-seed recovery pipeline refreshes contested names for every
+    /// identity it finds and calls `recordSubmission` for the one it owns.
+    private nonisolated static func discardLegacyBookmark(for network: Network) {
         let defaults = UserDefaults.standard
         let legacyLabelKey = legacyPendingLabelKey(for: network)
-        guard defaults.object(forKey: labelKey) == nil,
-              let legacyLabel = defaults.string(forKey: legacyLabelKey)
-        else { return }
-
-        defaults.set(legacyLabel, forKey: labelKey)
-        let legacyEndTimeKey = legacyPendingVotingEndTimeKey(for: network)
-        let legacyEnd = defaults.double(forKey: legacyEndTimeKey)
-        if legacyEnd > 0 {
-            defaults.set(legacyEnd, forKey: endTimeKey)
-        }
+        guard defaults.object(forKey: legacyLabelKey) != nil else { return }
         defaults.removeObject(forKey: legacyLabelKey)
-        defaults.removeObject(forKey: legacyEndTimeKey)
+        defaults.removeObject(forKey: legacyPendingVotingEndTimeKey(for: network))
         logger.info(
-            "🪪 CONTEST-SVC :: adopted legacy bookmark for \(networkKey(network), privacy: .public)")
+            "🪪 CONTEST-SVC :: discarded unattributable legacy bookmark for \(networkKey(network), privacy: .public)")
     }
 
     /// Drop every contested bookmark this device holds — both wallet-scoped and
