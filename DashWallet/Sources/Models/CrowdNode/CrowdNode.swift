@@ -134,7 +134,7 @@ public final class CrowdNode {
     /// later when a restored seed syncs its history in, so this memo is keyed
     /// to the store's row count rather than latching permanently: new rows
     /// persisted means the scan gets to run again.
-    private var fruitlessRestoreTxCount: Int? = nil
+    private var fruitlessRestoreTxCount: Int?
 
     var masternodeAPY: Double
     var crowdnodeAPY: Double
@@ -207,10 +207,15 @@ extension CrowdNode {
             return
         }
 
+        // Read the count ONCE, before the scans, and memoize that same value
+        // below. Reading it again afterwards would record rows the scans never
+        // inspected — a save landing mid-restore would make the next call skip
+        // a scan that still owes work on those rows.
+        let txCountBeforeScans = TransactionObserver.persistedTransactionCount()
+
         // A previous pass already scanned this exact history and found no
         // account; without new rows it would reach the same conclusion.
-        if let scanned = fruitlessRestoreTxCount,
-           TransactionObserver.persistedTransactionCount() == scanned {
+        if let scanned = fruitlessRestoreTxCount, txCountBeforeScans == scanned {
             return
         }
 
@@ -253,8 +258,8 @@ extension CrowdNode {
             DWLogger.log("CrowdNode: account not found")
             // Nothing found by either the signup scan or the online-account
             // lookup, so this whole pass was a no-op — memoize it against the
-            // history it saw.
-            fruitlessRestoreTxCount = TransactionObserver.persistedTransactionCount()
+            // history the scans actually saw, not the store's count now.
+            fruitlessRestoreTxCount = txCountBeforeScans
         }
     }
 

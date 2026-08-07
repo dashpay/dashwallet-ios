@@ -521,8 +521,9 @@ class HomeViewModel: ObservableObject {
             by: { DWDateFormatter.sharedInstance.dateOnly(from: $0.date) }
         )
 
-        let array = groupedItems.map { key, items in
-            TransactionGroup(id: key, date: items.first!.date, items: items)
+        let array = groupedItems.compactMap { key, items -> TransactionGroup? in
+            guard let first = items.first else { return nil }
+            return TransactionGroup(id: key, date: first.date, items: items)
         }.sorted { $0.date > $1.date }
 
         // Fix #2 & #3: Mark initial load complete and clear reload flag

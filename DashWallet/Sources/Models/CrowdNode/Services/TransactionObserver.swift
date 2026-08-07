@@ -93,6 +93,13 @@ public final class TransactionObserver {
     /// Scans slower than this get a log line; see `scan`.
     private static let slowScanLogThresholdMs = 150
 
+    /// The main-actor-owned SDK handles a scan needs, resolved once per call.
+    private struct HostHandles {
+        let container: ModelContainer
+        let walletId: Data
+        let network: Network
+    }
+
     // MARK: Shared row scanner
 
     /// Persisted rows decoded to `ObservedTransaction`, newest-first
@@ -111,7 +118,7 @@ public final class TransactionObserver {
         fetchLimit: Int? = nil,
         firstSeenAtOrAfter: UInt64? = nil
     ) -> [ObservedTransaction] {
-        let handles = { @MainActor () -> (container: ModelContainer, walletId: Data, network: Network)? in
+        let handles = { @MainActor () -> HostHandles? in
             guard let container = SwiftDashSDKHost.shared.modelContainer,
                   let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
                 logger.info("🅾 OBSERVER :: no model container / active wallet yet — empty scan")
@@ -121,10 +128,10 @@ public final class TransactionObserver {
                 logger.error("🅾 OBSERVER :: unsupported network — empty scan")
                 return nil
             }
-            return (container, walletId, network)
+            return HostHandles(container: container, walletId: walletId, network: network)
         }
 
-        let resolved: (container: ModelContainer, walletId: Data, network: Network)?
+        let resolved: HostHandles?
         if Thread.isMainThread {
             resolved = MainActor.assumeIsolated { handles() }
         } else {
