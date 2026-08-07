@@ -536,17 +536,43 @@ final class SwiftDashSDKContactsService: ObservableObject {
         let descriptor = FetchDescriptor<PersistentDashpayPayment>(
             predicate: PersistentDashpayPayment.predicate(
                 ownerIdentityId: ownerId,
-                counterpartyIdentityId: contactId),
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
+                counterpartyIdentityId: contactId))
         let rows = (try? modelContainer.mainContext.fetch(descriptor)) ?? []
+
+        // When the payment happened, from the transaction itself.
+        //
+        // `PersistentDashpayPayment.createdAt` is row bookkeeping — its own
+        // model says "not payment dates" — and it only looked like the payment
+        // date because a live send writes the row as it happens. A payment
+        // reconstructed after a restore is written today, so every recovered
+        // row rendered with today's date while the tx-detail screen, which
+        // reads the transaction, showed the real one.
+        var blockTimeByTxid: [Data: UInt32] = [:]
+        if let transactions = try? modelContainer.mainContext.fetch(
+            FetchDescriptor<PersistentTransaction>()) {
+            for tx in transactions where tx.blockTimestamp > 0 {
+                blockTimeByTxid[tx.txid] = tx.blockTimestamp
+            }
+        }
+
         return rows.map { row in
             let dash = Decimal(row.amountDuffs) / Decimal(100_000_000)
+            // `PersistentDashpayPayment.txid` is display-order hex; the
+            // transaction table is keyed by the wire-order bytes.
+            let wireTxid = Data(hex: row.txid).map { Data($0.reversed()) }
+            // Unconfirmed (or not-yet-synced) transactions have no block time;
+            // the row's own timestamp is the best available answer there, and
+            // for a live send it is the right one.
+            let date = wireTxid
+                .flatMap { blockTimeByTxid[$0] }
+                .map { Date(timeIntervalSince1970: TimeInterval($0)) }
+                ?? row.createdAt
             return ContactPayment(
                 txid: row.txid,
                 amountDuffs: row.amountDuffs,
                 direction: row.direction,
                 memo: row.memo,
-                date: row.createdAt,
+                date: date,
                 // Current-rate conversion (parity with the legacy
                 // profile, which showed the live fiat equivalent, not a
                 // historical one). Returns a "Fetching rates…" string
@@ -555,6 +581,10 @@ final class SwiftDashSDKContactsService: ObservableObject {
                     ? CurrencyExchanger.shared.fiatAmountString(for: dash)
                     : nil)
         }
+        // Sort on the payment date, not the row's insert order: reconstructed
+        // rows are all written within the same second, so insert order says
+        // nothing about which payment came first.
+        .sorted { $0.date > $1.date }
     }
 
     /// Write the owner-private contact metadata (alias / note / hidden)
@@ -776,24 +806,52 @@ final class SwiftDashSDKContactsService: ObservableObject {
     // label is display metadata, not wallet state, so UserDefaults is
     // the honest backing.
 
-    private func hintKey(for contactId: Data) -> String? {
+    /// Key prefix shared by every hint of the current (owner, network) pair.
+    /// Resolved once per batch so a caller reading many contacts does not
+    /// re-read the identity snapshot per contact.
+    private static func hintKeyPrefix() -> String? {
         guard let ownerId = DWCurrentUserIdentityInfo.shared.identityId,
               let network = SwiftDashSDKHost.shared.runningNetwork else {
             return nil
         }
         let ownerHex = ownerId.map { String(format: "%02x", $0) }.joined()
-        let contactHex = contactId.map { String(format: "%02x", $0) }.joined()
-        return "dw.contacts.dpnsHint.\(network.rawValue).\(ownerHex).\(contactHex)"
+        return "dw.contacts.dpnsHint.\(network.rawValue).\(ownerHex)."
+    }
+
+    private static func hintKey(for contactId: Data) -> String? {
+        guard let prefix = hintKeyPrefix() else { return nil }
+        return prefix + contactId.map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// DPNS labels for `contactIds`, keyed by contact identity id.
+    ///
+    /// `static` on purpose. `DashPayPaymentTxLookup` needs the same labels the
+    /// contacts snapshot uses, but it must not reach `SwiftDashSDKContactsService`
+    /// **`.shared`** to get them: `init()` ends in `refresh()`, which calls
+    /// `DashPayPaymentTxLookup.shared.refresh()`, so touching `.shared` from
+    /// there re-enters the singleton's own `swift_once` and traps
+    /// (`EXC_BREAKPOINT` reported on the `static let shared` line). Nothing
+    /// here reads instance state, so there is no reason to route through it.
+    static func usernameHints(for contactIds: some Sequence<Data>) -> [Data: String] {
+        guard let prefix = hintKeyPrefix() else { return [:] }
+        var out: [Data: String] = [:]
+        for contactId in contactIds where out[contactId] == nil {
+            let key = prefix + contactId.map { String(format: "%02x", $0) }.joined()
+            if let value = UserDefaults.standard.string(forKey: key), !value.isEmpty {
+                out[contactId] = value
+            }
+        }
+        return out
     }
 
     private func usernameHint(for contactId: Data) -> String? {
-        guard let key = hintKey(for: contactId) else { return nil }
+        guard let key = Self.hintKey(for: contactId) else { return nil }
         let value = UserDefaults.standard.string(forKey: key)
         return (value?.isEmpty == false) ? value : nil
     }
 
     private func setUsernameHint(_ label: String, for contactId: Data) {
-        guard let key = hintKey(for: contactId) else { return }
+        guard let key = Self.hintKey(for: contactId) else { return }
         UserDefaults.standard.set(label, forKey: key)
     }
 }
@@ -842,10 +900,21 @@ final class DashPayPaymentTxLookup {
         let counterpartyAlias: String?
         /// Counterparty's avatar URL, when their profile carries one.
         let counterpartyAvatarURL: String?
+        /// Counterparty's DPNS label, when one has been resolved. Most
+        /// contacts have no `dashpay.profile.displayName`, so without this
+        /// step the row had no name at all and rendered as "?" — while the
+        /// contacts list, which does consult DPNS, showed the username.
+        let counterpartyUsername: String?
 
         /// Row-title name: alias first (owner's own label for the contact),
-        /// then the profile display name. Matches `ContactItem.displayTitle`.
-        var titleName: String? { counterpartyAlias ?? counterpartyName }
+        /// then the profile display name, then the DPNS label — the first
+        /// three steps of `ContactItem.displayTitle`. It deliberately stops
+        /// there: `displayTitle`'s truncated-identity last resort is right for
+        /// a contact row that must render something, but a transaction row
+        /// falls back to its own generic title, which beats "Sent to 89fd6ddb…".
+        var titleName: String? {
+            counterpartyAlias ?? counterpartyName ?? counterpartyUsername
+        }
     }
 
     private let lock = NSLock()
@@ -890,6 +959,11 @@ final class DashPayPaymentTxLookup {
                     aliasByContactId[request.contactIdentityId] = alias
                 }
             }
+            // DPNS labels, resolved in one batch — see `usernameHints`, which
+            // is static precisely so this cannot touch the contacts service
+            // singleton while that singleton is still initializing.
+            let usernameByContactId = SwiftDashSDKContactsService.usernameHints(
+                for: rows.lazy.filter { $0.amountDuffs > 0 }.map(\.counterpartyIdentityId))
             var map: [String: PaymentInfo] = [:]
             for row in rows where row.amountDuffs > 0 {
                 let profile = profileByContactId[row.counterpartyIdentityId]
@@ -899,7 +973,9 @@ final class DashPayPaymentTxLookup {
                     counterpartyIdentityId: row.counterpartyIdentityId,
                     counterpartyName: profile?.name?.isEmpty == false ? profile?.name : nil,
                     counterpartyAlias: aliasByContactId[row.counterpartyIdentityId],
-                    counterpartyAvatarURL: profile?.avatarURL?.isEmpty == false ? profile?.avatarURL : nil)
+                    counterpartyAvatarURL: profile?.avatarURL?.isEmpty == false ? profile?.avatarURL : nil,
+                    counterpartyUsername: usernameByContactId[row.counterpartyIdentityId]?
+                        .withoutDashSuffix)
             }
             store(map)
         } catch {

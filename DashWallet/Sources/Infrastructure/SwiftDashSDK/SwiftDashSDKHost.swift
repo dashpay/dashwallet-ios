@@ -112,6 +112,12 @@ final class SwiftDashSDKHost {
     private(set) var runningNetwork: Network?
     private let modelContainerCache = ProcessNetworkValueCache<ModelContainer>()
 
+    /// Watches for contact-crypto work that gets deferred *after* the
+    /// load-time unlock. See `unlockDashPayContactCrypto`. Replaced (and the
+    /// previous one cancelled) whenever a wallet is loaded, so only the active
+    /// wallet is watched.
+    private var contactCryptoDrainWatch: Task<Void, Never>?
+
     // MARK: - Process-wide SDK init guard
 
     private static var sdkInitialized = false
@@ -657,10 +663,124 @@ final class SwiftDashSDKHost {
         let restored = try manager.loadFromPersistor()
         if let resolved = resolveActiveWallet(in: manager, network: network) {
             Self.logger.info("🪺 HOST :: reusing persisted wallet; restored=\(restored.count, privacy: .public)")
+            // Off the load path. `PlatformWalletManager` is `@MainActor`, so
+            // the unlock's Keychain read and its two synchronous FFI calls run
+            // on the main thread whenever they run; scheduling them as their
+            // own main-actor turn at least keeps them out of wallet load,
+            // which is on the launch critical path.
+            Task { [weak self] in
+                self?.unlockDashPayContactCrypto(manager: manager, wallet: resolved)
+            }
             return resolved
         }
 
         throw HostError.walletNotFound(network)
+    }
+
+    /// Complete the contact crypto that `loadFromPersistor` had to defer.
+    ///
+    /// A persisted restore rehydrates the wallet external-signable — per-account
+    /// xpubs, no key material. The DashPay contact sweep needs a signer to ECDH
+    /// each contact's encrypted xpub into a `DashpayExternalAccount`, so with no
+    /// signer present it enqueues the build instead ("Deferred DashPay account
+    /// build") and re-enqueues it every sweep. Until something drains that queue
+    /// the wallet has no external accounts, which means no derived contact
+    /// addresses: sent-payment history cannot be reconstructed after a restore,
+    /// and the contact card stays on "No payments with this contact yet".
+    ///
+    /// `send_payment` drains the queue with its own signer, so the gap only
+    /// showed on wallets that had not sent to the contact since restoring.
+    /// This is the signer-backed drain the SDK documents on
+    /// `unlockWalletFromKeychain`; the drain itself re-fetches over the network
+    /// and runs detached, so the call returns immediately.
+    ///
+    /// Best-effort by design — a failure here must not fail wallet load. It
+    /// returns `false` for a genuine watch-only wallet (no stored mnemonic) and
+    /// throws only when the resolved seed does not bind to this wallet, which is
+    /// worth a log line but not a launch failure.
+    ///
+    /// Logged through `DWLogger` rather than `os_log` on purpose: this line has
+    /// to survive into the `app-logs/` group of a diagnostic export, and the
+    /// `os-log.txt` capture is not on this branch. It reports the three states
+    /// that tell apart the ways the drain can fail to happen — no stored
+    /// mnemonic for this wallet id (unlock no-ops), an empty queue (nothing was
+    /// deferred), and a seed that does not bind (throws).
+    private func unlockDashPayContactCrypto(
+        manager: PlatformWalletManager,
+        wallet: ManagedPlatformWallet
+    ) {
+        let walletId = wallet.walletId
+        let idTag = walletId.prefix(4).map { String(format: "%02x", $0) }.joined()
+        // Existence-only probe on the active wallet's own id — the same check
+        // `unlockWalletFromKeychain` makes internally, surfaced so a `false`
+        // return is distinguishable from "never called". No plaintext is read.
+        let hasMnemonic = WalletStorage().hasMnemonic(for: walletId)
+        let pending = (try? manager.pendingAccountBuildCount(for: walletId)).map(String.init) ?? "n/a"
+        do {
+            // Timed because it is main-thread work: the seed-binding verify is
+            // marker-cached, but a cache miss re-derives the BIP44 account-0
+            // xpub through the Keychain resolver. If a UI stall lines up with
+            // this line, that is the cost.
+            let started = CFAbsoluteTimeGetCurrent()
+            let unlocked = try manager.unlockWalletFromKeychain(wallet)
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+            DWLogger.log(
+                "DashPay unlock: wallet=\(idTag) hasMnemonic=\(hasMnemonic) pendingAccountBuilds=\(pending) unlocked=\(unlocked) tookMs=\(ms)")
+        } catch {
+            DWLogger.log(
+                "DashPay unlock FAILED: wallet=\(idTag) hasMnemonic=\(hasMnemonic) pendingAccountBuilds=\(pending) error=\(String(describing: error))")
+        }
+
+        // A single unlock at load time is not enough: it schedules the drain
+        // only when the queue is already non-empty, and at this point it is
+        // empty — the contact sweep that defers the account builds has not run
+        // yet. Measured on a restored wallet: 0 pending at unlock, 4 pending
+        // 45s later, and nothing to drain them. So keep watching and unlock
+        // again once work appears. Re-unlocking is cheap — the seed-binding
+        // verify is marker-cached after the first success.
+        contactCryptoDrainWatch?.cancel()
+        contactCryptoDrainWatch = Task { [weak self] in
+            // Bounded: a queue that survives its drains is a failure to report,
+            // not something to retry forever.
+            var attemptsLeft = 5
+            var drained = false
+            for await statuses in manager.$dashPayUnlockStatus.values {
+                if Task.isCancelled || self == nil { return }
+                guard let status = statuses[walletId] else { continue }
+                if status.pendingAccountBuilds == 0, !status.draining {
+                    guard drained else { continue }
+                    // The contact accounts exist now. Sweep immediately rather
+                    // than waiting out the DashPay sync interval — that wait is
+                    // most of why a restored wallet showed an empty contact
+                    // card on first open and its history only on a later one.
+                    DWLogger.log("DashPay unlock: wallet=\(idTag) drain complete; syncing now")
+                    await SwiftDashSDKContactsService.shared.syncNow()
+                    return
+                }
+                guard status.pendingAccountBuilds > 0, !status.draining else { continue }
+                guard attemptsLeft > 0 else {
+                    DWLogger.log(
+                        "DashPay unlock: wallet=\(idTag) giving up with \(status.pendingAccountBuilds) pending account build(s)")
+                    return
+                }
+                attemptsLeft -= 1
+                do {
+                    let started = CFAbsoluteTimeGetCurrent()
+                    let unlocked = try manager.unlockWalletFromKeychain(wallet)
+                    let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+                    DWLogger.log(
+                        "DashPay unlock: wallet=\(idTag) draining \(status.pendingAccountBuilds) deferred build(s); unlocked=\(unlocked) tookMs=\(ms)")
+                    drained = true
+                } catch {
+                    DWLogger.log(
+                        "DashPay unlock: wallet=\(idTag) re-unlock failed: \(String(describing: error))")
+                    return
+                }
+                // Let `draining` publish before the next element is considered,
+                // so one drain isn't counted as several attempts.
+                try? await Task.sleep(for: .seconds(5))
+            }
+        }
     }
 
     /// `WalletEnvironment.NetworkKind` for the SDK `Network` — the app-side
