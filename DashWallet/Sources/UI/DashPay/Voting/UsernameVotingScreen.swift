@@ -112,7 +112,7 @@ struct UsernameVotingScreen: View {
                         "No usernames are being contested right now. Contests open when two or more people request the same name.",
                         comment: "Voting")
                     : NSLocalizedString(
-                        "No open contest matches that search. Names are stored in a normalized form, so “alice” is listed as “a11ce”.",
+                        "No open contest matches that search.",
                         comment: "Voting"))
             Spacer()
         } else {
@@ -214,9 +214,20 @@ struct ContestRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(contest.normalizedLabel)
-                    .font(.headline)
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(contest.displayTitle)
+                        .font(.headline)
+                    // Platform keys the contest by the homograph-normalized
+                    // form; keep it visible so the name being voted on is
+                    // never ambiguous, but behind the spelling people typed.
+                    if contest.displayTitleDiffersFromNormalized {
+                        Text(contest.normalizedLabel)
+                            .font(.caption2)
+                            .monospaced()
+                            .foregroundColor(Color.dash.tertiaryText)
+                    }
+                }
                 Spacer()
                 ContestDeadlineLabel(endTime: contest.endTime)
             }

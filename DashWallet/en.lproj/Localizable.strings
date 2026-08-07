@@ -4794,3 +4794,9 @@
 "Voting ended with no winner" = "Voting ended with no winner";
 "You" = "You";
 "Leading" = "Leading";
+"Stored as" = "Stored as";
+"Dash stores usernames in a look-alike-safe form, so the stored name can differ from what each person typed." = "Dash stores usernames in a look-alike-safe form, so the stored name can differ from what each person typed.";
+"Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen." = "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen.";
+"No open contest matches that search." = "No open contest matches that search.";
+"“%@” could not be read as a Dash username." = "“%@” could not be read as a Dash username.";
+" or " = " or ";
