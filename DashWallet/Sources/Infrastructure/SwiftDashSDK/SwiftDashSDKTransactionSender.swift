@@ -98,7 +98,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                   let network = SwiftDashSDKHost.shared.runningNetwork else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
-            // Build + sign a standard BIP44 payment via the core
+            // Build + sign a standard payment via the core
             // TransactionBuilder. `finalizeAtomic` selects + reserves the
             // inputs and routes change to the account's next internal address
             // in one native operation (single tx — normal sends don't need
@@ -107,7 +107,14 @@ final class SwiftDashSDKTransactionSender: NSObject {
             for recipient in recipients {
                 try builder.addOutput(address: recipient.address, amountDuffs: recipient.amountDuffs)
             }
-            return try builder.finalizeAtomic(wallet: wallet, accountType: .bip44, accountIndex: 0)
+            // `.allSpendable` pools BIP44 + BIP32 + every DashPay
+            // contact-receiving account — the same set the home balance
+            // already totals, so a send can spend everything the user is
+            // shown. CoinJoin is excluded by construction (spending mixed
+            // outputs beside transparent ones would undo the mixing), as are
+            // a contact's watch-only external coins. Change returns to BIP44,
+            // the first pooled source.
+            return try builder.finalizeAtomic(wallet: wallet, accountType: .allSpendable)
         }
 
         let tx: FinalizedCoreTransaction
@@ -153,7 +160,12 @@ final class SwiftDashSDKTransactionSender: NSObject {
             try builder.addOpReturn(memoData)
             try builder.preserveOutputOrder()
             try builder.changeToFirstInput()
-            let tx = try builder.finalizeAtomic(wallet: wallet, accountType: .bip44, accountIndex: 0)
+            // Same pooled funding as a plain send — see `buildAndSign`.
+            // `changeToFirstInput` stays correct under pooling: it routes to
+            // whichever input BIP-69 puts at VIN0, whatever account it came
+            // from, and the builder sizes the change output for the largest
+            // eligible routing script.
+            let tx = try builder.finalizeAtomic(wallet: wallet, accountType: .allSpendable)
             return (tx, network)
         }
 
@@ -618,10 +630,13 @@ final class SwiftDashSDKTransactionSender: NSObject {
         }
 
         if decoded.outputs.count == 3 {
-            // `DecodedTransaction.Input.address` is recovered from a P2PKH-shaped scriptSig and
-            // is nil for anything else. Every BIP44 account UTXO this builder can spend is
-            // P2PKH, so nil here means the transaction is not the shape we asked for — refuse
-            // rather than skip the check.
+            // `DecodedTransaction.Input.address` is recovered from a P2PKH-shaped scriptSig
+            // and is nil for anything else. Every UTXO the pooled funding set can spend —
+            // BIP44, BIP32, and DashPay contact-receiving — is P2PKH, so nil here means the
+            // transaction is not the shape we asked for: refuse rather than skip the check.
+            // Note VIN0 decides where MAYA sends a refund, so under pooling that can be a
+            // DashPay receiving address rather than a BIP44 one. Still this wallet's own
+            // seed-signable address, and still counted in its balance.
             guard let inputAddress = decoded.inputs.first?.address else {
                 throw SendError.invalidInput("swap deposit VIN0 address could not be recovered")
             }
