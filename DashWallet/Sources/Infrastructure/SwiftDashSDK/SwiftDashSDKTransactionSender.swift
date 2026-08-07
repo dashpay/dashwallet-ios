@@ -60,6 +60,13 @@ final class SwiftDashSDKTransactionSender: NSObject {
     private static let bip44TypeTag: UInt8 = 0
     /// `AccountBalance.standardTag` discriminant for BIP44 within Standard.
     private static let bip44StandardTag: UInt8 = 0
+    /// `StandardAccountTypeTagFFI.Bip32` — the other half of the Standard
+    /// family that `.allSpendable` pools.
+    private static let bip32StandardTag: UInt8 = 1
+    /// `AccountTypeTagFFI.DashpayReceivingFunds`. Its sibling tag 13
+    /// (`DashpayExternalAccount`) is a contact's watch-only coins and is NOT
+    /// pooled — the local seed cannot sign them.
+    private static let dashpayReceivingTypeTag: UInt8 = 12
     /// Signal sends spend from the primary BIP44 account.
     private static let bip44AccountIndex: UInt32 = 0
     /// How long to wait for a just-broadcast funding output to appear in the
@@ -452,7 +459,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
     }
 
     /// Fee reserve for a "Max" / all-funds core send, sized from the BIP44
-    /// account's actual spendable-UTXO count instead of a flat constant.
+    /// pooled accounts' actual spendable-UTXO count instead of a flat constant.
     ///
     /// The flat `WalletBalance.sendFeeReserveDuffs` (100_000 duffs) is a large
     /// worst-case over-estimate — a typical send costs ~1–2k duffs, so Max used
@@ -461,23 +468,39 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// inputs) plus a **+50 % safety margin** so it can never *under*-reserve —
     /// an under-estimate would make the Max send fail to build.
     ///
-    /// Fail-safe: any inability to enumerate the account (no wallet/manager, no
-    /// UTXOs) falls back to the flat reserve, i.e. the previous behaviour — the
-    /// change never makes Max worse than before, only tighter when it can.
+    /// The enumerated set must stay in step with the `.allSpendable` funding
+    /// `finalizeAtomic` uses: BIP44 + BIP32 at the funding index plus every
+    /// DashPay receiving account, and never CoinJoin or a contact's watch-only
+    /// external coins.
+    ///
+    /// Fail-safe: any inability to enumerate the accounts (no wallet/manager,
+    /// no UTXOs) falls back to the flat reserve, i.e. the previous behaviour —
+    /// the change never makes Max worse than before, only tighter when it can.
     static func maxSendFeeReserveDuffs() -> UInt64 {
         let read = { @MainActor () -> UInt64? in
             let host = SwiftDashSDKHost.shared
             guard let manager = host.manager, let wallet = host.wallet else { return nil }
             let walletId = wallet.walletId
-            // `typeTag == 0` is the whole Standard family; account 0 can exist as
-            // both BIP44 (`standardTag == 0`) and BIP32 (`standardTag == 1`), so
-            // require the standard tag too — mirrors `addressUtxos(script:)`.
-            guard let bip44 = manager.accountBalances(for: walletId).first(where: {
-                $0.typeTag == Self.bip44TypeTag
-                    && $0.standardTag == Self.bip44StandardTag
-                    && $0.index == Self.bip44AccountIndex
-            }) else { return nil }
-            let count = manager.accountUtxos(for: walletId, balance: bip44).count
+            // Enumerate exactly what `.allSpendable` spends — BIP44 + BIP32 at
+            // the funding index, plus every DashPay receiving account. Sizing
+            // the reserve off BIP44 alone would under-reserve whenever the
+            // other sources contribute inputs, and Max would then price itself
+            // above what the builder can actually fund.
+            let pooled = manager.accountBalances(for: walletId).filter { balance in
+                if balance.typeTag == Self.bip44TypeTag {
+                    // Standard family: BIP44 and BIP32 both resolve to the
+                    // single account at the funding index.
+                    let isStandardPooled = balance.standardTag == Self.bip44StandardTag
+                        || balance.standardTag == Self.bip32StandardTag
+                    return isStandardPooled && balance.index == Self.bip44AccountIndex
+                }
+                // Every DashPay receiving account, whatever its index.
+                return balance.typeTag == Self.dashpayReceivingTypeTag
+            }
+            guard !pooled.isEmpty else { return nil }
+            let count = pooled.reduce(0) { total, balance in
+                total + manager.accountUtxos(for: walletId, balance: balance).count
+            }
             guard count > 0 else { return nil }
             let base = estimatedSignalFee(inputCount: count)
             return base + base / 2 // +50 % margin — must never under-reserve
