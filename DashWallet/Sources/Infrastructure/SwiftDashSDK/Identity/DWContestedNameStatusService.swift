@@ -122,10 +122,18 @@ public final class DWContestedNameStatusService: NSObject {
         let fallbackEnd = Self.fallbackVotingEndTime(
             submittedAt: submittedAt,
             network: network)
-        UserDefaults.standard.set(label, forKey: Self.pendingLabelKey(for: network))
-        UserDefaults.standard.set(
-            fallbackEnd.timeIntervalSince1970,
-            forKey: Self.pendingVotingEndTimeKey(for: network))
+        guard let labelKey = Self.pendingLabelKey(for: network),
+              let endTimeKey = Self.pendingVotingEndTimeKey(for: network)
+        else {
+            // A submission is always made by an active wallet, so this cannot
+            // happen — but recording it under no wallet would write a bookmark
+            // nothing can ever own or clear.
+            Self.logger.error(
+                "🪪 CONTEST-SVC :: cannot record submission with no active wallet")
+            return
+        }
+        UserDefaults.standard.set(label, forKey: labelKey)
+        UserDefaults.standard.set(fallbackEnd.timeIntervalSince1970, forKey: endTimeKey)
         Self.logger.info(
             "🪪 CONTEST-SVC :: recordSubmission label=\(label, privacy: .public) network=\(network.rawValue, privacy: .public) fallbackEnd=\(fallbackEnd.timeIntervalSince1970, privacy: .public)")
     }
@@ -139,9 +147,8 @@ public final class DWContestedNameStatusService: NSObject {
 
     @nonobjc
     func recordVotingEndTime(_ endTime: Date, network: Network) {
-        UserDefaults.standard.set(
-            endTime.timeIntervalSince1970,
-            forKey: Self.pendingVotingEndTimeKey(for: network))
+        guard let endTimeKey = Self.pendingVotingEndTimeKey(for: network) else { return }
+        UserDefaults.standard.set(endTime.timeIntervalSince1970, forKey: endTimeKey)
         Self.logger.info(
             "🪪 CONTEST-SVC :: authoritative voting end network=\(network.rawValue, privacy: .public) end=\(endTime.timeIntervalSince1970, privacy: .public)")
     }
@@ -156,8 +163,17 @@ public final class DWContestedNameStatusService: NSObject {
 
     @nonobjc
     func clearPending(for network: Network) {
-        UserDefaults.standard.removeObject(forKey: Self.pendingLabelKey(for: network))
-        UserDefaults.standard.removeObject(forKey: Self.pendingVotingEndTimeKey(for: network))
+        let defaults = UserDefaults.standard
+        if let labelKey = Self.pendingLabelKey(for: network) {
+            defaults.removeObject(forKey: labelKey)
+        }
+        if let endTimeKey = Self.pendingVotingEndTimeKey(for: network) {
+            defaults.removeObject(forKey: endTimeKey)
+        }
+        // Also drop any legacy bookmark, so clearing a resolved contest cannot
+        // leave a pre-scoping value behind for the next read to adopt.
+        defaults.removeObject(forKey: Self.legacyPendingLabelKey(for: network))
+        defaults.removeObject(forKey: Self.legacyPendingVotingEndTimeKey(for: network))
         Self.logger.info("🪪 CONTEST-SVC :: clearPending network=\(network.rawValue, privacy: .public)")
     }
 
@@ -226,13 +242,16 @@ public final class DWContestedNameStatusService: NSObject {
 
     @nonobjc
     func pendingLabel(for network: Network) -> String? {
-        UserDefaults.standard.string(forKey: Self.pendingLabelKey(for: network))
+        Self.migrateLegacyBookmarkIfNeeded(for: network)
+        guard let key = Self.pendingLabelKey(for: network) else { return nil }
+        return UserDefaults.standard.string(forKey: key)
     }
 
     @nonobjc
     func pendingVotingEndTime(for network: Network) -> Date? {
-        let timestamp = UserDefaults.standard.double(
-            forKey: Self.pendingVotingEndTimeKey(for: network))
+        Self.migrateLegacyBookmarkIfNeeded(for: network)
+        guard let key = Self.pendingVotingEndTimeKey(for: network) else { return nil }
+        let timestamp = UserDefaults.standard.double(forKey: key)
         return timestamp > 0 ? Date(timeIntervalSince1970: timestamp) : nil
     }
 
@@ -246,12 +265,75 @@ public final class DWContestedNameStatusService: NSObject {
         return submittedAt.addingTimeInterval(duration + fallbackResolutionGrace)
     }
 
-    private nonisolated static func pendingLabelKey(for network: Network) -> String {
+    /// A contested submission belongs to the WALLET that made it, not to the
+    /// device. Scoping only by network let a bookmark outlive the wallet that
+    /// created it: reset the wallet mid-vote, create a new one, and the new
+    /// wallet still reported the old wallet's name as "in voting".
+    ///
+    /// Returns nil while no wallet is active (onboarding, post-wipe) — with no
+    /// wallet there is no submission to report, and answering nil is what keeps
+    /// a wiped device from resurrecting the previous wallet's vote.
+    private nonisolated static func scope() -> String? {
+        guard let hex = WalletEnvironment.activeWalletIdHex as String?, !hex.isEmpty else {
+            return nil
+        }
+        return hex
+    }
+
+    private nonisolated static func pendingLabelKey(for network: Network) -> String? {
+        scope().map { "\(pendingLabelKeyPrefix).\(networkKey(network)).\($0)" }
+    }
+
+    private nonisolated static func pendingVotingEndTimeKey(for network: Network) -> String? {
+        scope().map { "\(pendingVotingEndTimeKeyPrefix).\(networkKey(network)).\($0)" }
+    }
+
+    /// Pre-wallet-scoping key layout, kept only so an install that is mid-vote
+    /// when it updates does not lose its bookmark: the first scoped read for a
+    /// wallet adopts the legacy value and deletes it.
+    private nonisolated static func legacyPendingLabelKey(for network: Network) -> String {
         "\(pendingLabelKeyPrefix).\(networkKey(network))"
     }
 
-    private nonisolated static func pendingVotingEndTimeKey(for network: Network) -> String {
+    private nonisolated static func legacyPendingVotingEndTimeKey(for network: Network) -> String {
         "\(pendingVotingEndTimeKeyPrefix).\(networkKey(network))"
+    }
+
+    /// Move a legacy (wallet-agnostic) bookmark onto the active wallet's keys,
+    /// once. No-op when there is nothing to migrate or no wallet to migrate to.
+    private nonisolated static func migrateLegacyBookmarkIfNeeded(for network: Network) {
+        guard let labelKey = pendingLabelKey(for: network),
+              let endTimeKey = pendingVotingEndTimeKey(for: network)
+        else { return }
+
+        let defaults = UserDefaults.standard
+        let legacyLabelKey = legacyPendingLabelKey(for: network)
+        guard defaults.object(forKey: labelKey) == nil,
+              let legacyLabel = defaults.string(forKey: legacyLabelKey)
+        else { return }
+
+        defaults.set(legacyLabel, forKey: labelKey)
+        let legacyEndTimeKey = legacyPendingVotingEndTimeKey(for: network)
+        let legacyEnd = defaults.double(forKey: legacyEndTimeKey)
+        if legacyEnd > 0 {
+            defaults.set(legacyEnd, forKey: endTimeKey)
+        }
+        defaults.removeObject(forKey: legacyLabelKey)
+        defaults.removeObject(forKey: legacyEndTimeKey)
+        logger.info(
+            "🪪 CONTEST-SVC :: adopted legacy bookmark for \(networkKey(network), privacy: .public)")
+    }
+
+    /// Drop every contested bookmark this device holds — both wallet-scoped and
+    /// legacy, across networks. Called from the wallet wiper alongside the other
+    /// UserDefaults-backed stores.
+    nonisolated static func resetForWipe() {
+        let defaults = UserDefaults.standard
+        for key in defaults.dictionaryRepresentation().keys
+        where key.hasPrefix(pendingLabelKeyPrefix) || key.hasPrefix(pendingVotingEndTimeKeyPrefix) {
+            defaults.removeObject(forKey: key)
+        }
+        logger.info("🪪 CONTEST-SVC :: cleared all contested bookmarks for wipe")
     }
 
     private nonisolated static func networkKey(_ network: Network) -> String {
