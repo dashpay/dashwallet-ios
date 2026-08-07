@@ -29,6 +29,12 @@ class StubTransactionSource: TransactionSource {
         (4_404_800_000, false), // 44.048 received
     ]
 
+    /// The fixture list is four rows, so the window is the whole of it —
+    /// the onboarding demo has no history to page through.
+    func recentTransactions(limit: Int) -> [Transaction] {
+        Array(allTransactions.prefix(limit))
+    }
+
     var allTransactions: Array<Transaction> {
         Self.fixtures.enumerated().map { index, fixture in
             Transaction(

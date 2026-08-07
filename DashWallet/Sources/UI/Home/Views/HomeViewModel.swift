@@ -68,6 +68,11 @@ class HomeViewModel: ObservableObject {
     /// Tracks whether initial data load has completed (Fix #2)
     private var hasCompletedInitialLoad: Bool = false
 
+    /// How many of the newest transactions the first paint renders. A couple
+    /// of screenfuls: enough that the feed looks complete on arrival and while
+    /// the user starts scrolling, small enough that reading them is fast.
+    private static let firstPaintWindow = 60
+
     /// Debounce timer for sync state changes to prevent excessive reloads (Fix #4)
     private var syncStateDebounceWorkItem: DispatchWorkItem?
     private let syncStateDebounceInterval: TimeInterval = 0.5
@@ -375,6 +380,70 @@ class HomeViewModel: ObservableObject {
     }
     
     // This is expensive and should not be called often
+    /// Build and publish a provisional feed from the newest transactions
+    /// only, so the user sees their recent history immediately.
+    ///
+    /// Deliberately partial, and only ever *adds* rows — the full reload
+    /// running behind it replaces this wholesale. Two things are left out
+    /// rather than approximated:
+    ///
+    /// - **Aggregate rows** (CrowdNode, the per-day CoinJoin mixing sets, the
+    ///   CoinJoin withdrawal set). Their membership is only correct once every
+    ///   transaction has been seen, so a windowed view would render groups
+    ///   with the wrong contents. Transactions that belong to one are omitted
+    ///   here instead, and appear with their group in the full result — rows
+    ///   are added, never corrected out from under the user.
+    /// - **Shielded and Platform activity**, which come from separate sources
+    ///   with their own whole-history reads.
+    ///
+    /// Nothing here touches `txByHash` or the grouping sets: those are the
+    /// full reload's state, and corrupting them would break the incremental
+    /// update path that reads them.
+    private func publishFirstPaint(selectedFilters: Set<TransactionFilterCategory>) {
+        let recent = transactionSource.recentTransactions(limit: Self.firstPaintWindow)
+        guard !recent.isEmpty else { return }
+
+        // Scoped to the window, so a filter row can be wrong until the full
+        // pass computes it over the real history. Only used for filtering
+        // here; the published flags are still set by the full reload.
+        let hasRewards = recent.contains { $0.isCoinbaseTransaction }
+        let hasMasternodes = recent.contains { $0.isMasternodeTransaction }
+        let metadataSnapshots = self.metadataProviders.map { $0.availableMetadata }
+        let giftCardTxIds = Set(GiftCardMetadataProvider.shared.availableMetadata.keys)
+
+        let items: [TransactionListDataItem] = recent.compactMap { wrappedTx in
+            Tx.shared.updateRateIfNeeded(for: wrappedTx)
+            guard self.passesFilter(
+                transaction: wrappedTx,
+                selected: selectedFilters,
+                hasRewards: hasRewards,
+                hasMasternodes: hasMasternodes,
+                giftCardTxIds: giftCardTxIds)
+            else { return nil }
+            // Aggregate-bound transactions wait for the full pass — see above.
+            guard !wrappedTx.isCoinJoinMixing, !wrappedTx.isCoinJoinWithdrawal else { return nil }
+            return .tx(wrappedTx, self.resolveMetadata(for: wrappedTx.txHashData, in: metadataSnapshots))
+        }
+        guard !items.isEmpty else { return }
+
+        let grouped = Dictionary(
+            grouping: items.sorted(by: { $0.date > $1.date }),
+            by: { DWDateFormatter.sharedInstance.dateOnly(from: $0.date) })
+        let groups = grouped.map { key, items in
+            TransactionGroup(id: key, date: items.first!.date, items: items)
+        }.sorted { $0.date > $1.date }
+
+        DWLogger.log("HomeViewModel: first paint published \(groups.count) groups from \(items.count) recent transactions")
+
+        DispatchQueue.main.async {
+            // A full reload that finished while this was being built wins:
+            // its result is complete, this one is not.
+            guard !self.hasLoadedInitialTxItems else { return }
+            self.txItems = groups
+            self.hasLoadedInitialTxItems = true
+        }
+    }
+
     private func reloadTxDataSource() {
         self.queue.async { [weak self] in
             guard let self = self else { return }
@@ -387,6 +456,16 @@ class HomeViewModel: ObservableObject {
             // before doing the worker-queue computation instead of reading the
             // published property concurrently during the reload.
             let selectedFilters = DispatchQueue.main.sync { self.selectedFilters }
+
+            // First paint: publish the newest window before materialising the
+            // whole history, so the feed shows content in the time it takes to
+            // read ~one screenful instead of every transaction the wallet has.
+            // Skipped once a load has completed — an incremental refresh
+            // already has rows on screen and must not flash a partial list
+            // over them.
+            if !self.hasCompletedInitialLoad {
+                self.publishFirstPaint(selectedFilters: selectedFilters)
+            }
 
             let transactions = transactionSource.allTransactions
             // Reconcile restored Shielded → Core destinations before Core rows
@@ -1153,6 +1232,15 @@ extension HomeViewModel {
 
 protocol TransactionSource {
     var allTransactions: Array<Transaction> { get }
+
+    /// The `limit` most recent wallet transactions, newest first.
+    ///
+    /// Exists so the home feed can paint before the whole history is
+    /// materialised. `allTransactions` first scans every `PersistentTxo` row
+    /// to build a txid set, faulting two relationships apiece, then fetches
+    /// and wraps every matching transaction — on a wallet with a few thousand
+    /// of each that is seconds of work before a single row can be shown.
+    func recentTransactions(limit: Int) -> [Transaction]
 }
 
 struct CoreWithdrawalReceiptCandidate: Equatable {
@@ -1313,6 +1401,10 @@ final class DWAppleWatchSnapshotProvider: NSObject {
 }
 
 class SwiftDashSDKWalletSource: TransactionSource {
+    func recentTransactions(limit: Int) -> [Transaction] {
+        Self.fetchRecent(limit: limit).sorted { $0.date > $1.date }
+    }
+
     var allTransactions: Array<Transaction> {
         Self.fetchAll().sorted { $0.date > $1.date }
     }
@@ -1812,6 +1904,57 @@ class SwiftDashSDKWalletSource: TransactionSource {
         return txids
     }
 
+    /// The `limit` newest transactions belonging to the active wallet.
+    ///
+    /// Deliberately avoids `activeWalletTxids`: that builds its txid set by
+    /// scanning every `PersistentTxo` row and faulting two relationships each,
+    /// which costs the whole table regardless of how few rows the caller
+    /// wants. Here the store is walked newest-first in pages and membership is
+    /// tested per row — the same union `fetchOne` uses (wallet-scoped TXOs on
+    /// either side, or an involved account).
+    ///
+    /// Pages because the store can hold other wallets' transactions: a page
+    /// may yield fewer than `limit` matches. `maxPages` bounds the walk so a
+    /// store dominated by another wallet degrades to a short prefix rather
+    /// than scanning to the end — the full reload right behind this one is
+    /// what guarantees completeness.
+    static func fetchRecent(limit: Int) -> [Transaction] {
+        guard limit > 0, let (container, walletId) = hostHandles() else { return [] }
+        let context = ModelContext(container)
+        let pageSize = max(limit, 50)
+        let maxPages = 4
+
+        var wrapped: [Transaction] = []
+        var offset = 0
+        for _ in 0..<maxPages {
+            var descriptor = FetchDescriptor<PersistentTransaction>(
+                sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
+            descriptor.fetchLimit = pageSize
+            descriptor.fetchOffset = offset
+            let rows: [PersistentTransaction]
+            do {
+                rows = try context.fetch(descriptor)
+            } catch {
+                DWLogger.log("HomeViewModel: recent PersistentTransaction fetch failed: \(error)")
+                return wrapped
+            }
+            guard !rows.isEmpty else { break }
+            offset += rows.count
+
+            for row in rows {
+                guard row.outputs.contains(where: { $0.walletId == walletId })
+                    || row.inputs.contains(where: { $0.walletId == walletId })
+                    || row.involvedAccounts.contains(where: { $0.wallet.walletId == walletId })
+                else { continue }
+                let tx = Transaction(persistentTransaction: row, walletId: walletId)
+                tx.sdkCoinJoinMixing = Self.isCoinJoinMixingTx(row)
+                wrapped.append(tx)
+                if wrapped.count == limit { return wrapped }
+            }
+        }
+        return wrapped
+    }
+
     private static func fetchAndWrap(in context: ModelContext, walletId: Data) -> [Transaction] {
         let txids = activeWalletTxids(in: context, walletId: walletId)
         guard !txids.isEmpty else { return [] }
@@ -1869,6 +2012,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
 #if DEBUG
 private struct HomeViewModelPreviewTransactionSource: TransactionSource {
     var allTransactions: [Transaction] { [] }
+    func recentTransactions(limit: Int) -> [Transaction] { [] }
 }
 #endif
 
