@@ -58,14 +58,23 @@ struct ContestDetailScreen: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(current.normalizedLabel)
+                    Text(current.displayTitle)
                         .font(.title2)
                         .fontWeight(.semibold)
-                    Text(NSLocalizedString(
-                        "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed.",
-                        comment: "Voting"))
+                    if current.displayTitleDiffersFromNormalized {
+                        LabeledContent(
+                            NSLocalizedString("Stored as", comment: "Voting")
+                        ) {
+                            Text(current.normalizedLabel).monospaced()
+                        }
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
+                        Text(NSLocalizedString(
+                            "Dash stores usernames in a look-alike-safe form, so the stored name can differ from what each person typed.",
+                            comment: "Voting"))
+                            .font(.caption)
+                            .foregroundColor(Color.dash.secondaryText)
+                    }
                     HStack {
                         Text(NSLocalizedString("Voting ends", comment: "Voting"))
                             .font(.caption)
@@ -115,7 +124,7 @@ struct ContestDetailScreen: View {
                 }
             }
         }
-        .navigationTitle(current.normalizedLabel)
+        .navigationTitle(current.displayTitle)
         .navigationBarTitleDisplayMode(.inline)
         .refreshable { await viewModel.refreshContest(normalizedLabel: contest.normalizedLabel) }
         .sheet(item: $pendingChoice) { choice in
@@ -138,9 +147,9 @@ private struct ContenderRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(contender.shortIdentityId)
+                Text(contender.displayNameOrIdentity)
                     .font(.subheadline)
-                    .monospaced()
+                    .monospaced(contender.displayLabel == nil)
                 Text(String(format: NSLocalizedString("%u votes", comment: "Voting"),
                             contender.voteTally))
                     .font(.caption)

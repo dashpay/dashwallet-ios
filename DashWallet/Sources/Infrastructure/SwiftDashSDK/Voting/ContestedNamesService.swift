@@ -155,13 +155,47 @@ final class ContestedNamesService {
 extension DPNSContender {
     /// Truncated base58 identity, e.g. `5rTJhbA…9Xk2Qd`.
     ///
-    /// Contenders are identified by identity id because Platform returns each
-    /// requester's own spelling of the label only inside a serialized document
-    /// the app cannot decode — showing a name here would mean inventing one.
-    /// Shared by the contest detail rows and the request-status rows so the two
-    /// never drift apart.
+    /// The identifying fallback for a contender whose `domain` document could
+    /// not be decoded, so their own spelling of the label is unknown. Shared by
+    /// the contest detail rows and the request-status rows so the two never
+    /// drift apart.
     var shortIdentityId: String {
         guard identityId.count > 16 else { return identityId }
         return String(identityId.prefix(8)) + "…" + String(identityId.suffix(6))
+    }
+}
+
+// MARK: - Contest display
+
+extension DPNSContest {
+    /// What to put in front of the user as the contest's name.
+    ///
+    /// Platform keys contests by the homograph-normalized label (`p1zza`),
+    /// which reads as a typo to the people who typed `pizza`. Contenders carry
+    /// their own spelling, so show that instead — and when they disagree, show
+    /// each one, since the disagreement is the whole point of the contest.
+    ///
+    /// Falls back to the normalized label when no contender document could be
+    /// decoded. Never reverse-engineered from the normalized form: `0`→`o` and
+    /// `1`→`i`/`l` are ambiguous, so guessing would invent a name nobody asked
+    /// for.
+    var displayTitle: String {
+        let labels = requestedLabels
+        guard !labels.isEmpty else { return normalizedLabel }
+        return labels.joined(separator: NSLocalizedString(" or ", comment: "Voting"))
+    }
+
+    /// `true` when ``displayTitle`` differs from ``normalizedLabel``, so the
+    /// UI knows whether the normalized form still needs showing alongside.
+    var displayTitleDiffersFromNormalized: Bool {
+        displayTitle != normalizedLabel
+    }
+}
+
+extension DPNSContender {
+    /// The contender's own spelling, or their truncated identity when the
+    /// document could not be decoded.
+    var displayNameOrIdentity: String {
+        displayLabel ?? shortIdentityId
     }
 }
