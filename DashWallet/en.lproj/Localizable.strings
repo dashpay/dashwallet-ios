@@ -1447,6 +1447,9 @@
 /* CrowdNode */
 "Get Rewards Instantly" = "Get Rewards Instantly";
 
+/* Governance */
+"Governance" = "Governance";
+
 /* No comment provided by engineer. */
 "Get Started" = "Get Started";
 
@@ -3929,6 +3932,9 @@
 
 /* Balance info sheet */
 "Uses one of the most audited and tested zero-knowledge libraries (Orchard)" = "Uses one of the most audited and tested zero-knowledge libraries (Orchard)";
+
+/* Voting */
+"Vote on contested usernames" = "Vote on contested usernames";
 
 /* Raw transaction inspector */
 "Version" = "Version";

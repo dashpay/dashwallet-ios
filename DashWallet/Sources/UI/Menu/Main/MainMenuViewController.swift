@@ -152,6 +152,7 @@ struct MainMenuScreen: View {
     @ObservedObject private var viewModel: MainMenuViewModel
     @State private var openSettings: Bool = false
     @State private var showTools: Bool = false
+    @State private var showGovernance: Bool = false
     @State private var showSyncInfo: Bool = false
     @State private var showWallets: Bool = false
     @State private var showIdentities: Bool = false
@@ -337,6 +338,13 @@ struct MainMenuScreen: View {
             ) {
                 EmptyView()
             }
+
+            NavigationLink(
+                destination: GovernanceMenuScreen(vc: vc),
+                isActive: $showGovernance
+            ) {
+                EmptyView()
+            }
             
             NavigationLink(
                 destination: SyncInfoMenuScreen(vc: vc),
@@ -451,10 +459,8 @@ struct MainMenuScreen: View {
             showTools = true
         case .support:
             onContactSupport()
-        #if DASHPAY
-        case .voting:
-            showVoting()
-        #endif
+        case .governance:
+            showGovernance = true
         case .none:
             return
         }

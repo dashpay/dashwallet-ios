@@ -772,6 +772,10 @@
 		756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756557B42CE84FF70060348D /* FeeInfo.swift */; };
 		7566F4832BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */; };
 		7566F4842BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */; };
+		5AGOV0002F9A0000000000S2 /* GovernanceMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */; };
+		5AGOV0002F9A0000000000S3 /* GovernanceMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */; };
+		5AGOV0002F9A0000000000V2 /* GovernanceMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */; };
+		5AGOV0002F9A0000000000V3 /* GovernanceMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */; };
 		7566F48A2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
 		7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
 		7569D6832DE6DA6800768BFF /* ExploreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7569D6822DE6DA6800768BFF /* ExploreViewController.swift */; };
@@ -2897,6 +2901,8 @@
 		755E6DFD2A99E7A000A42870 /* DWInvitationSetupState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWInvitationSetupState.h; sourceTree = "<group>"; };
 		756557B42CE84FF70060348D /* FeeInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeInfo.swift; sourceTree = "<group>"; };
 		7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuScreen.swift; sourceTree = "<group>"; };
+		5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuScreen.swift; sourceTree = "<group>"; };
+		5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuViewModel.swift; sourceTree = "<group>"; };
 		7566F4892BB6CAF2005238D2 /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
 		7569D6822DE6DA6800768BFF /* ExploreViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreViewController.swift; sourceTree = "<group>"; };
 		7569D6852DE6DB1B00768BFF /* ExploreHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreHeaderView.swift; sourceTree = "<group>"; };
@@ -4722,6 +4728,7 @@
 				2A7A7BD32348CB4F00451078 /* Settings */,
 				51AA00102F970010005A0010 /* SyncInfo */,
 				2A7A7BDA2348DBE700451078 /* Tools */,
+				5AGOV0002F9A0000000000G0 /* Governance */,
 				755049AB2C846576008FA7EB /* MenuItemModel.swift */,
 			);
 			path = Menu;
@@ -4758,6 +4765,15 @@
 				750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */,
 			);
 			path = Settings;
+			sourceTree = "<group>";
+		};
+		5AGOV0002F9A0000000000G0 /* Governance */ = {
+			isa = PBXGroup;
+			children = (
+				5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */,
+				5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */,
+			);
+			path = Governance;
 			sourceTree = "<group>";
 		};
 		2A7A7BDA2348DBE700451078 /* Tools */ = {
@@ -10039,6 +10055,8 @@
 				47CF46A1296540EF0067B6EE /* AccountService.swift in Sources */,
 				47C6E6E7291A90B3003FEDF2 /* ListHandlerView.swift in Sources */,
 				7566F4832BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */,
+				5AGOV0002F9A0000000000S2 /* GovernanceMenuScreen.swift in Sources */,
+				5AGOV0002F9A0000000000V2 /* GovernanceMenuViewModel.swift in Sources */,
 				RC00C0012FA0000000000001 /* CSVExportSheet.swift in Sources */,
 				754D020E2D1558EB005CA466 /* GroupedTransactions.swift in Sources */,
 				11BD738128E7356100A34022 /* CrowdNode.swift in Sources */,
@@ -10664,6 +10682,8 @@
 				C9D2C7AB2A320AA000D15901 /* DWBaseFormTableViewCell.m in Sources */,
 				C9D2C7AC2A320AA000D15901 /* AccountCell.swift in Sources */,
 				7566F4842BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */,
+				5AGOV0002F9A0000000000S3 /* GovernanceMenuScreen.swift in Sources */,
+				5AGOV0002F9A0000000000V3 /* GovernanceMenuViewModel.swift in Sources */,
 				RC00C0022FA0000000000001 /* CSVExportSheet.swift in Sources */,
 				C943B33A2A408CED00AF23C5 /* DWUploadAvatarModel.m in Sources */,
 				C943B3392A408CED00AF23C5 /* DWUploadAvatarViewController.m in Sources */,
