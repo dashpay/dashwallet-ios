@@ -110,15 +110,23 @@ final class DWInvitationService: DWInvitationServicing {
         }
         do {
             let prospectiveId = try await wallet.invitationProspectiveIdentityId(uri: uri)
-            let identity = try await sdk.identityGet(identityId: prospectiveId.toBase58String())
-            return !identity.isEmpty
+            let base58 = prospectiveId.toBase58String()
+            let identity = try await sdk.identityGet(identityId: base58)
+            let claimed = !identity.isEmpty
+            // Logged with the id because the verdict is otherwise unauditable
+            // after the fact: the screen shows only "already used", and a
+            // not-found goes down the catch below, so a silent success left no
+            // trace of WHICH identity Platform matched.
+            Self.logger.info(
+                "🎟️ INVITE :: claimed-check verdict=\(claimed, privacy: .public) prospectiveIdentity=\(base58, privacy: .public)")
+            return claimed
         } catch {
             // Undetermined, not "unclaimed". A miss and a transport failure are
             // indistinguishable at this layer, and an unclaimed invitation is
             // *expected* to miss — so the only safe reading is "proceed" and
             // let the claim be the authority.
             Self.logger.info(
-                "🎟️ INVITE :: claimed-check inconclusive: \(String(describing: error), privacy: .public)")
+                "🎟️ INVITE :: claimed-check inconclusive (proceeding): \(String(describing: error), privacy: .public)")
             return nil
         }
     }
