@@ -402,11 +402,26 @@ struct MainMenuScreen: View {
         switch state {
         case .registered:
             editProfile()
+        case .voting:
+            showUsernameRequestStatus()
         case .none:
             handleJoinButtonAction()
         default:
             break
         }
+    }
+
+    /// The DashPay row is tappable while a contested submission is being voted
+    /// on; this is where it goes. Reached only in the `.voting` state, which
+    /// `JoinDashPayViewModel` derives from
+    /// `DWContestedNameStatusService.pendingLabel`.
+    private func showUsernameRequestStatus() {
+        guard let label = DWContestedNameStatusService.shared.pendingLabel else { return }
+        let screen = UsernameRequestStatusScreen(
+            viewModel: UsernameRequestStatusViewModel(label: label))
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
     }
     
     private func handleJoinDashPayAction(state: JoinDashPayState) {

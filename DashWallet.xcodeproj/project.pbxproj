@@ -1909,6 +1909,10 @@
 		F34816414D829A45E0762757 /* ContestDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */; };
 		AD24D88215A4E51186112B34 /* CastVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */; };
 		6181C570B638E07D8B369CDB /* VotingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */; };
+		E503EDEA94E656CAE70E5A11 /* UsernameRequestStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4CB35186918CCBD2FFC49F /* UsernameRequestStatusScreen.swift */; };
+		D19A81C4F6103AC513D737AA /* UsernameRequestStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4CB35186918CCBD2FFC49F /* UsernameRequestStatusScreen.swift */; };
+		63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
+		25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3628,6 +3632,8 @@
 		33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameVotingScreen.swift; sourceTree = "<group>"; };
 		6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContestDetailScreen.swift; sourceTree = "<group>"; };
 		FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CastVoteSheet.swift; sourceTree = "<group>"; };
+		ED4CB35186918CCBD2FFC49F /* UsernameRequestStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRequestStatusScreen.swift; sourceTree = "<group>"; };
+		C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BulkVoteSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -6695,6 +6701,7 @@
 		7502A4852AE401DA00ACDDD3 /* Voting */ = {
 			isa = PBXGroup;
 			children = (
+				C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */,
 				33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */,
 				6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */,
 				FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */,
@@ -7042,6 +7049,7 @@
 		75D656182B0792AB00D1A902 /* Usernames */ = {
 			isa = PBXGroup;
 			children = (
+				ED4CB35186918CCBD2FFC49F /* UsernameRequestStatusScreen.swift */,
 			);
 			path = Usernames;
 			sourceTree = "<group>";
@@ -9365,6 +9373,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */,
+				D19A81C4F6103AC513D737AA /* UsernameRequestStatusScreen.swift in Sources */,
 				6181C570B638E07D8B369CDB /* VotingViewModel.swift in Sources */,
 				AD24D88215A4E51186112B34 /* CastVoteSheet.swift in Sources */,
 				F34816414D829A45E0762757 /* ContestDetailScreen.swift in Sources */,
@@ -10229,6 +10239,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */,
+				E503EDEA94E656CAE70E5A11 /* UsernameRequestStatusScreen.swift in Sources */,
 				1FED991A9D2D236582CE3C99 /* CastVoteSheet.swift in Sources */,
 				D0C564276BD8B9770F0E0499 /* ContestDetailScreen.swift in Sources */,
 				25C2103A3D2448AB40AB8485 /* UsernameVotingScreen.swift in Sources */,

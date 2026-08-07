@@ -72,6 +72,12 @@ final class VotingViewModel: ObservableObject {
     @Published var searchQuery: String = ""
     @Published var sort: ContestSort = .endingSoonest
 
+    /// Multi-select mode, the replacement for the old "Quick Voting" screen.
+    @Published var isSelecting = false
+    @Published private(set) var selectedLabels: Set<String> = []
+    /// Per-contest results of the most recent bulk run.
+    @Published var bulkReports: [VoteCastReport]?
+
     /// Result banner for the most recent casting run.
     @Published var lastCastReport: VoteCastReport?
     /// Error from a casting run that never got as far as broadcasting.
@@ -232,5 +238,59 @@ final class VotingViewModel: ObservableObject {
     func dismissCastResult() {
         lastCastReport = nil
         castError = nil
+        bulkReports = nil
+    }
+
+    // MARK: Multi-select
+
+    func toggleSelection(_ contest: DPNSContest) {
+        if selectedLabels.contains(contest.normalizedLabel) {
+            selectedLabels.remove(contest.normalizedLabel)
+        } else {
+            selectedLabels.insert(contest.normalizedLabel)
+        }
+    }
+
+    func isSelected(_ contest: DPNSContest) -> Bool {
+        selectedLabels.contains(contest.normalizedLabel)
+    }
+
+    func selectAllVisible() {
+        selectedLabels = Set(visibleContests.map(\.normalizedLabel))
+    }
+
+    func endSelecting() {
+        isSelecting = false
+        selectedLabels = []
+    }
+
+    /// Combined voting weight this run would add, across every selected
+    /// contest — nodes × contests, since each node votes once per contest.
+    func bulkWeight(nodes: [VoterNode]) -> UInt32 {
+        UInt32(selectedLabels.count) &* nodes.totalVoteWeight
+    }
+
+    /// Apply one choice to every selected contest.
+    func castBulk(choice: VoteChoice, with nodes: [VoterNode]) async {
+        isCasting = true
+        castError = nil
+        defer { isCasting = false }
+
+        // Order the run the way the list is ordered so the result list reads
+        // in the same sequence the user selected from.
+        let labels = visibleContests
+            .map(\.normalizedLabel)
+            .filter { selectedLabels.contains($0) }
+
+        do {
+            let reports = try await caster.castBulk(
+                choice: choice, onNormalizedLabels: labels, with: nodes)
+            bulkReports = reports
+            for label in labels {
+                await refreshContest(normalizedLabel: label)
+            }
+        } catch {
+            castError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
+        }
     }
 }

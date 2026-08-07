@@ -109,6 +109,7 @@ final class MasternodeVoteCaster {
         case authenticationCancelled
         case noNodesSelected
         case contestClosed(String)
+        case choiceNotBulkable
         case sdkUnavailable
 
         var errorDescription: String? {
@@ -123,6 +124,10 @@ final class MasternodeVoteCaster {
                 return String(format: NSLocalizedString(
                     "Voting on “%@” has already closed. Refresh to see the result.",
                     comment: "Voting"), label)
+            case .choiceNotBulkable:
+                return NSLocalizedString(
+                    "Approving a specific request can only be done one username at a time.",
+                    comment: "Voting")
             case .sdkUnavailable:
                 return NSLocalizedString(
                     "Dash Platform is not connected yet. Wait for syncing to finish and try again.",
@@ -133,10 +138,8 @@ final class MasternodeVoteCaster {
 
     /// Cast `choice` on `normalizedLabel` with each node in `nodes`.
     ///
-    /// Prompts for PIN/biometric once, then derives one voting key per node.
-    /// Nodes are processed **serially**: the SDK fetches an identity nonce for
-    /// the voter identity on every broadcast, and two concurrent votes from
-    /// the same node would race on it.
+    /// Prompts for PIN/biometric once, then hands off to
+    /// ``castAuthenticated(choice:onNormalizedLabel:with:sdk:)``.
     ///
     /// - Throws: ``CastError`` when the run cannot start at all (auth refused,
     ///   poll already closed). Once broadcasting starts, per-node failures are
@@ -166,6 +169,23 @@ final class MasternodeVoteCaster {
             throw CastError.authenticationFailed
         }
 
+        return await castAuthenticated(
+            choice: choice, onNormalizedLabel: normalizedLabel, with: nodes, sdk: sdk)
+    }
+
+    /// The per-node broadcast loop, after authentication and pre-flight.
+    ///
+    /// Nodes are processed **serially**: the SDK fetches an identity nonce for
+    /// the voter identity on every broadcast, and two concurrent votes from
+    /// the same node would race on it. Never throws — a node that fails is
+    /// recorded and the loop continues, so one failure cannot discard the
+    /// nodes that already succeeded.
+    private func castAuthenticated(
+        choice: VoteChoice,
+        onNormalizedLabel normalizedLabel: String,
+        with nodes: [VoterNode],
+        sdk: SDK
+    ) async -> VoteCastReport {
         let indexValues = DPNSVotePoll.indexValues(normalizedLabel: normalizedLabel)
         var outcomes: [VoteOutcome] = []
         outcomes.reserveCapacity(nodes.count)
@@ -208,5 +228,61 @@ final class MasternodeVoteCaster {
             normalizedLabel: normalizedLabel,
             choice: choice,
             outcomes: outcomes)
+    }
+
+    /// Cast the same choice across several contests with the same nodes —
+    /// the bulk path behind "Vote on N usernames".
+    ///
+    /// Authenticates once for the whole run, then walks the contests in order.
+    /// A contest that cannot be voted on at all (already closed, for instance)
+    /// becomes a report with every node failed rather than aborting the run,
+    /// so one stale row cannot discard the rest of the batch.
+    ///
+    /// - Note: Only ``VoteChoice/abstain`` and ``VoteChoice/lock`` generalize
+    ///   across contests. `towards` names a specific contender, and the
+    ///   legacy "vote for whoever submitted first" rule is not reproducible
+    ///   here: contender submission time lives inside the serialized `domain`
+    ///   document, which the FFI returns as opaque hex.
+    func castBulk(
+        choice: VoteChoice,
+        onNormalizedLabels labels: [String],
+        with nodes: [VoterNode]
+    ) async throws -> [VoteCastReport] {
+        guard !nodes.isEmpty else { throw CastError.noNodesSelected }
+        guard !labels.isEmpty else { return [] }
+        if case .towards = choice {
+            throw CastError.choiceNotBulkable
+        }
+        guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CastError.sdkUnavailable }
+
+        switch await AuthenticationGate.authenticate(
+            biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled) {
+        case .ok:
+            break
+        case .cancelled:
+            throw CastError.authenticationCancelled
+        case .failed, .timedOut:
+            throw CastError.authenticationFailed
+        }
+
+        var reports: [VoteCastReport] = []
+        reports.reserveCapacity(labels.count)
+
+        for label in labels {
+            let isOpen = (try? await contests.contestIsOpen(normalizedLabel: label)) ?? false
+            guard isOpen else {
+                reports.append(VoteCastReport(
+                    normalizedLabel: label,
+                    choice: choice,
+                    outcomes: nodes.map {
+                        VoteOutcome(node: $0, failure: CastError.contestClosed(label).errorDescription)
+                    }))
+                continue
+            }
+            reports.append(await castAuthenticated(
+                choice: choice, onNormalizedLabel: label, with: nodes, sdk: sdk))
+        }
+
+        return reports
     }
 }

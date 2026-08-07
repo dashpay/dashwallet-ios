@@ -50,15 +50,36 @@ struct UsernameVotingScreen: View {
             prompt: NSLocalizedString("Search usernames", comment: "Voting"))
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
-                    Picker(NSLocalizedString("Sort by", comment: "Voting"), selection: $viewModel.sort) {
-                        ForEach(ContestSort.allCases) { option in
-                            Text(option.title).tag(option)
+                if viewModel.isSelecting {
+                    Button(NSLocalizedString("Done", comment: "")) { viewModel.endSelecting() }
+                } else {
+                    Menu {
+                        Picker(NSLocalizedString("Sort by", comment: "Voting"), selection: $viewModel.sort) {
+                            ForEach(ContestSort.allCases) { option in
+                                Text(option.title).tag(option)
+                            }
                         }
+                        // Voting on many contests at once replaces the old
+                        // "Quick Voting" screen. Only offered when this wallet
+                        // can actually vote.
+                        if viewModel.canVote && !viewModel.visibleContests.isEmpty {
+                            Divider()
+                            Button {
+                                viewModel.isSelecting = true
+                            } label: {
+                                Label(NSLocalizedString("Vote on several", comment: "Voting"),
+                                      systemImage: "checklist")
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
                     }
-                } label: {
-                    Image(systemName: "arrow.up.arrow.down")
                 }
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if viewModel.isSelecting {
+                BulkSelectionBar(viewModel: viewModel)
             }
         }
         .task { await viewModel.refresh() }
@@ -88,10 +109,25 @@ struct UsernameVotingScreen: View {
             Spacer()
         } else {
             List(viewModel.visibleContests) { contest in
-                NavigationLink {
-                    ContestDetailScreen(contest: contest, viewModel: viewModel)
-                } label: {
-                    ContestRow(contest: contest)
+                if viewModel.isSelecting {
+                    Button {
+                        viewModel.toggleSelection(contest)
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: viewModel.isSelected(contest)
+                                  ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(viewModel.isSelected(contest)
+                                                 ? .accentColor : Color.dash.tertiaryText)
+                            ContestRow(contest: contest)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    NavigationLink {
+                        ContestDetailScreen(contest: contest, viewModel: viewModel)
+                    } label: {
+                        ContestRow(contest: contest)
+                    }
                 }
             }
             .listStyle(.plain)
