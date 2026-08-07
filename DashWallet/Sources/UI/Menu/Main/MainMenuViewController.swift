@@ -402,8 +402,6 @@ struct MainMenuScreen: View {
         switch state {
         case .registered:
             editProfile()
-        case .voting:
-            showRequestDetails()
         case .none:
             handleJoinButtonAction()
         default:
@@ -490,7 +488,7 @@ struct MainMenuScreen: View {
 
     #if DASHPAY
     private func showVoting() {
-        let controller = UsernameVotingViewController.controller()
+        let controller = UIHostingController(rootView: UsernameVotingScreen())
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
@@ -506,12 +504,6 @@ struct MainMenuScreen: View {
         let navigation = BaseNavigationController(rootViewController: controller)
         navigation.modalPresentationStyle = .fullScreen
         vc.present(navigation, animated: true)
-    }
-    
-    private func showRequestDetails() {
-        let controller = RequestDetailsViewController.controller()
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
     }
     
     #if DASHPAY

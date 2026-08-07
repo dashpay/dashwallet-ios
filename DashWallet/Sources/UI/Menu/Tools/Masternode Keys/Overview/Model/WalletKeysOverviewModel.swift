@@ -133,20 +133,42 @@ struct MasternodeKeyUsage {
                 }
                 useByAddress[address] = use
             }
-            guard !useByAddress.isEmpty,
-                  let deriver = MasternodeProviderKeyDeriver(key: key) else { continue }
-            // Walk the pool's full depth: SPV extends it past any fixed
-            // window as ProRegTx/ProUpRegTx matches mark deeper indexes used,
-            // so a capped scan would silently hide those masternodes. No pool
-            // means no addresses to join against, so the loop is skipped.
-            let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? 0
-            for index in 0..<upperBound {
-                guard let address = deriver.address(at: index),
-                      let use = useByAddress[address] else { continue }
+            for (address, index) in indexByAddress(family: key, targets: Set(useByAddress.keys)) {
+                guard let use = useByAddress[address] else { continue }
                 record(key, index, use)
             }
         }
 
         return MasternodeKeyUsage(used: used)
+    }
+
+    /// Base58 address → derived key index, for the two address-carrying key
+    /// families (owner / voting).
+    ///
+    /// The on-chain aggregation gives a masternode's owner and voting
+    /// *addresses*; turning those into "which of this wallet's derived keys is
+    /// that" means deriving each index and comparing. Shared by this type's
+    /// ownership resolution, the Masternodes screen's ownership labels, and
+    /// `MasternodeVoterRegistry`'s voting-key lookup — the same join must not
+    /// be reimplemented per call site.
+    ///
+    /// Walks the pool's full depth rather than a fixed window: SPV extends the
+    /// pool as ProRegTx/ProUpRegTx matches mark deeper indexes used, so a
+    /// capped scan would silently hide those masternodes. An unreadable pool
+    /// yields an empty range — no pool means no addresses to join against.
+    ///
+    /// Returns an empty map for key families with no on-chain address
+    /// (operator / evonode operator); Rust resolves those instead.
+    static func indexByAddress(family: MNKey, targets: Set<String>) -> [String: UInt32] {
+        guard !targets.isEmpty,
+              let deriver = MasternodeProviderKeyDeriver(key: family) else { return [:] }
+        var map: [String: UInt32] = [:]
+        let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? 0
+        for index in 0..<upperBound {
+            guard let address = deriver.address(at: index),
+                  targets.contains(address) else { continue }
+            map[address] = index
+        }
+        return map
     }
 }

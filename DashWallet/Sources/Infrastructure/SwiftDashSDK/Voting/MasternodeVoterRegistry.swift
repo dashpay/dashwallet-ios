@@ -1,0 +1,167 @@
+//
+//  MasternodeVoterRegistry.swift
+//  DashWallet
+//
+//  Copyright © 2026 Dash Core Group. All rights reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//  https://opensource.org/licenses/MIT
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+
+import Foundation
+import OSLog
+import SwiftDashSDK
+
+// MARK: - VoterNode
+
+/// A masternode or evonode this wallet can vote with: registered on-chain,
+/// still active, and with a voting key that this wallet derives.
+///
+/// Nothing here is user-entered. The set comes from the on-chain masternode
+/// aggregation joined against the wallet's derived voting-key pool, so a node
+/// appears if and only if the wallet actually holds the key Platform will
+/// check the signature against.
+struct VoterNode: Identifiable, Hashable {
+    /// The masternode's pro_tx_hash in raw wire byte order — the orientation
+    /// `SDK.castContestedResourceVote` expects. Reverse it only for display
+    /// (block explorers show the reversed form).
+    let proTxHash: Data
+    let isEvonode: Bool
+    /// 1-based index within this node's type, for "Evonode 2" / "Masternode 5".
+    let typeIndex: UInt32
+    /// `ip:port`, when the registration carried one.
+    let serviceAddress: String?
+    /// Index into the wallet's `ProviderVotingKeys` account that derives this
+    /// node's voting key.
+    let votingKeyIndex: UInt32
+
+    var id: Data { proTxHash }
+
+    /// Voting weight Platform applies to this node's vote. Evonodes count 4×,
+    /// regular masternodes 1× — enforced by drive-abci from the masternode
+    /// list, not by anything the client sends.
+    var voteWeight: UInt32 { isEvonode ? 4 : 1 }
+
+    var displayName: String {
+        let type = isEvonode
+            ? NSLocalizedString("Evonode", comment: "Voting")
+            : NSLocalizedString("Masternode", comment: "Voting")
+        return "\(type) \(typeIndex)"
+    }
+
+    /// Block-explorer (reversed) hex of the pro_tx_hash, truncated for display.
+    var shortProTxHash: String {
+        let hex = proTxHash.reversed().map { String(format: "%02x", $0) }.joined()
+        return String(hex.prefix(8)) + "…" + String(hex.suffix(8))
+    }
+}
+
+// MARK: - MasternodeVoterRegistry
+
+/// Resolves which of the wallet's masternodes can cast contested-username
+/// votes, and derives their voting private keys on demand.
+///
+/// Injected rather than shared: the voting screens own one instance, and tests
+/// (once the unit-test target builds again) can substitute a stub through
+/// `VotingViewModel`'s initializer.
+@MainActor
+final class MasternodeVoterRegistry {
+
+    private static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "swift-sdk-migration.voting")
+
+    init() {}
+
+    /// The wallet's votable nodes, ordered by registration.
+    ///
+    /// A masternode is votable when all of the following hold:
+    ///  - it is not revoked and its DML status is `.active` — Platform rejects
+    ///    a vote from a node that is not in the current masternode list;
+    ///  - it published a voting address;
+    ///  - that address matches a key this wallet derives, so we can sign.
+    ///
+    /// Returns empty (not an error) when the wallet has no masternodes, when
+    /// the SDK is not running, or when the masternode phase has not synced —
+    /// the caller renders the browse-only state.
+    func votableNodes() -> [VoterNode] {
+        guard let manager = SwiftDashSDKHost.shared.manager,
+              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
+            return []
+        }
+
+        let eligible = manager.masternodes(for: walletId)
+            .filter { !$0.revoked && MasternodeStatus(rawValue: $0.status) == .active }
+        guard !eligible.isEmpty else { return [] }
+
+        let indexByAddress = MasternodeKeyUsage.indexByAddress(
+            family: .voting,
+            targets: Set(eligible.compactMap(\.votingAddress)))
+
+        let nodes = eligible
+            .compactMap { masternode -> (PlatformMasternode, UInt32)? in
+                guard let address = masternode.votingAddress,
+                      let index = indexByAddress[address] else { return nil }
+                return (masternode, index)
+            }
+            .sorted { $0.0.orderIndex < $1.0.orderIndex }
+            .map { masternode, index in
+                VoterNode(
+                    proTxHash: masternode.proTxHash,
+                    isEvonode: masternode.isEvonode,
+                    typeIndex: masternode.typeIndex,
+                    serviceAddress: masternode.serviceAddress,
+                    votingKeyIndex: index)
+            }
+
+        Self.logger.info(
+            "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations")
+        return nodes
+    }
+
+    /// The 32-byte voting private key for `node`.
+    ///
+    /// - Important: The caller must have passed `AuthenticationGate` first —
+    ///   this returns spendable-equivalent key material and performs no prompt
+    ///   of its own. The bytes are handed straight to the FFI, which zeroizes
+    ///   its copy; keep the returned value's lifetime as short as possible.
+    /// - Returns: `nil` when the provider-voting account cannot be derived
+    ///   (wallet locked or not loaded) or the WIF fails to parse. Never
+    ///   substitutes a placeholder.
+    func votingPrivateKey(for node: VoterNode) -> Data? {
+        guard let deriver = MasternodeProviderKeyDeriver(key: .voting) else {
+            Self.logger.error("🗳️ VOTING :: no provider-voting deriver available")
+            return nil
+        }
+        guard let wif = deriver.wif(at: node.votingKeyIndex),
+              let key = WIFParser.parseWIF(wif) else {
+            Self.logger.error(
+                "🗳️ VOTING :: failed to derive voting key at index \(node.votingKeyIndex, privacy: .public)")
+            return nil
+        }
+        guard key.count == 32 else {
+            Self.logger.error(
+                "🗳️ VOTING :: derived voting key has \(key.count, privacy: .public) bytes, expected 32")
+            return nil
+        }
+        return key
+    }
+}
+
+// MARK: - Aggregate weight
+
+extension Array where Element == VoterNode {
+    /// Combined Platform voting weight of these nodes.
+    var totalVoteWeight: UInt32 {
+        reduce(UInt32(0)) { $0 &+ $1.voteWeight }
+    }
+}

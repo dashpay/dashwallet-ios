@@ -48,7 +48,6 @@ struct CreateUsernameUIState {
 @MainActor
 class CreateUsernameViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
-    private let dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
     private let prefs = UsernamePrefs.shared
     private let illegalChars = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-").inverted
     private var submittedRegistrationUsername: String?
@@ -75,7 +74,6 @@ class CreateUsernameViewModel: ObservableObject {
     
     @Published var uiState = CreateUsernameUIState()
     @Published var username: String = ""
-    @Published private(set) var currentUsernameRequest: UsernameRequest? = nil
     @Published private(set) var hasMinimumRequiredBalance = false
     @Published private(set) var hasRecommendedBalance = false
     @Published private(set) var balance: String = ""
@@ -324,26 +322,6 @@ class CreateUsernameViewModel: ObservableObject {
             onRegistrationStarted?()
         case .idle, .completed, .failed:
             break
-        }
-    }
-    
-    func fetchUsernameRequestData() {
-        if let id = prefs.requestedUsernameId {
-            Task {
-                currentUsernameRequest = await dao.get(byRequestId: id)
-                username = currentUsernameRequest?.username ?? ""
-            }
-        }
-    }
-    
-    func cancelRequest() {
-        if let requestId = prefs.requestedUsernameId {
-            Task {
-                currentUsernameRequest = nil
-                username = ""
-                await dao.delete(by: requestId)
-                prefs.requestedUsernameId = nil
-            }
         }
     }
     

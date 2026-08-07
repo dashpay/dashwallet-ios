@@ -42,40 +42,13 @@ class JoinDashPayViewModel: ObservableObject {
             self.state = .registered
             self.username = registeredUsername
         } else {
-            Task {
-                // TODO: MOCK_DASHPAY replace with actual state check
-                if let requestId = UsernamePrefs.shared.requestedUsernameId {
-                    let dao = UsernameRequestsDAOImpl.shared
-                    guard let request = await dao.get(byRequestId: requestId) else { return }
-                    self.username = request.username
-                    
-                    if request.isApproved {
-                        self.state = .approved
-                        
-                        if DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted != true {
-                            DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
-                            NotificationCenter.default.post(name: NSNotification.Name.DWDashPayRegistrationStatusUpdated, object: nil)
-                        }
-                    } else if request.blockVotes > 0 {
-                        self.state = .blocked
-                    } else {
-                        self.state = .voting
-                    }
-                } else {
-                    self.state = initialState
-                }
-            }
+            self.state = initialState
         }
     }
-    
+
     @MainActor
     func markAsDismissed() {
         UsernamePrefs.shared.joinDashPayDismissed = true
-        
-        if state != .approved {
-            UsernamePrefs.shared.requestedUsernameId = nil
-        }
-        
         self.checkUsername()
     }
 }
