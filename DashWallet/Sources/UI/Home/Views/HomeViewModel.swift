@@ -376,152 +376,170 @@ class HomeViewModel: ObservableObject {
     
     // This is expensive and should not be called often
     private func reloadTxDataSource() {
-        self.queue.async { [weak self] in
-            guard let self = self else { return }
+        // Read main-actor state BEFORE handing off, never from inside the
+        // worker pass. A `DispatchQueue.main.sync` from the queue is a barrier
+        // whose cost is main-thread *availability*, not work: at launch the
+        // main thread is busy with tab-bar layout, avatar state and CrowdNode
+        // restore, so a reload that hops mid-pass inherits all of it. Hopping
+        // once up front, asynchronously, keeps the pass free-running.
+        let dispatch = { @MainActor [weak self] in
+            guard let self else { return }
+            // Pair each request with the filter selection that was live when
+            // it was made. Reading it inside the pass instead would let a pass
+            // triggered by one change render a selection the user made after
+            // it started.
+            let selectedFilters = self.selectedFilters
+            let startedAt = Date()
+            self.queue.async { [weak self] in
+                self?.performReload(selectedFilters: selectedFilters, startedAt: startedAt)
+            }
+        }
+        if Thread.isMainThread {
+            MainActor.assumeIsolated { dispatch() }
+        } else {
+            DispatchQueue.main.async { MainActor.assumeIsolated { dispatch() } }
+        }
+    }
 
-            // Fix #3: Set reload flag to prevent race conditions with incremental updates
-            self.isReloading = true
-            DWLogger.log("HomeViewModel: Starting full transaction reload")
+    private func performReload(selectedFilters: Set<TransactionFilterCategory>, startedAt: Date) {
+        // Fix #3: Set reload flag to prevent race conditions with incremental updates
+        self.isReloading = true
+        DWLogger.log("HomeViewModel: Starting full transaction reload")
 
-            // SwiftUI mutates the filter on the main thread. Snapshot it once
-            // before doing the worker-queue computation instead of reading the
-            // published property concurrently during the reload.
-            let selectedFilters = DispatchQueue.main.sync { self.selectedFilters }
+        let transactions = transactionSource.allTransactions
+        // Reconcile restored Shielded → Core destinations before Core rows
+        // are filtered/classified. The activity projection can recover a
+        // destination tag that was absent from the local withdrawal store.
+        let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity(
+            coreTransactions: transactions)
+        self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
+        self.coinJoinTxSets = [:]
+        self.coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet()
 
-            let transactions = transactionSource.allTransactions
-            // Reconcile restored Shielded → Core destinations before Core rows
-            // are filtered/classified. The activity projection can recover a
-            // destination tag that was absent from the local withdrawal store.
-            let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity(
-                coreTransactions: transactions)
-            self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
-            self.coinJoinTxSets = [:]
-            self.coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet()
+        // Gate the "Rewards" / "Masternode" filter rows; computed from the
+        // unfiltered history so they don't flap with the current selection.
+        let hasRewards = transactions.contains { $0.isCoinbaseTransaction }
+        let hasMasternodes = transactions.contains { $0.isMasternodeTransaction }
 
-            // Gate the "Rewards" / "Masternode" filter rows; computed from the
-            // unfiltered history so they don't flap with the current selection.
-            let hasRewards = transactions.contains { $0.isCoinbaseTransaction }
-            let hasMasternodes = transactions.contains { $0.isMasternodeTransaction }
+        // Snapshot each provider's metadata once per reload —
+        // `availableMetadata` copies the whole dictionary through the
+        // provider's serial queue, so reading it per-transaction costs
+        // O(n) queue hops + dictionary copies per reload.
+        let metadataSnapshots = self.metadataProviders.map { $0.availableMetadata }
+        let giftCardTxIds = Set(GiftCardMetadataProvider.shared.availableMetadata.keys)
 
-            // Snapshot each provider's metadata once per reload —
-            // `availableMetadata` copies the whole dictionary through the
-            // provider's serial queue, so reading it per-transaction costs
-            // O(n) queue hops + dictionary copies per reload.
-            let metadataSnapshots = self.metadataProviders.map { $0.availableMetadata }
-            let giftCardTxIds = Set(GiftCardMetadataProvider.shared.availableMetadata.keys)
+        var items: [TransactionListDataItem] = transactions.compactMap { wrappedTx -> TransactionListDataItem? in
+            Tx.shared.updateRateIfNeeded(for: wrappedTx)
 
-            var items: [TransactionListDataItem] = transactions.compactMap { wrappedTx -> TransactionListDataItem? in
-                Tx.shared.updateRateIfNeeded(for: wrappedTx)
+            if !self.passesFilter(transaction: wrappedTx, selected: selectedFilters, hasRewards: hasRewards, hasMasternodes: hasMasternodes, giftCardTxIds: giftCardTxIds) {
+                return nil
+            }
 
-                if !self.passesFilter(transaction: wrappedTx, selected: selectedFilters, hasRewards: hasRewards, hasMasternodes: hasMasternodes, giftCardTxIds: giftCardTxIds) {
+            // TODO(crowdnode-home-grouping): the "CrowdNode · Account" group
+            // needs decode-based ObservedTransaction matching (the SDK
+            // snapshot here doesn't carry transactionData); ports separately.
+            // Until then CrowdNode txs render as individual rows — the
+            // current behavior (the old DS-backed grouping branch was dead
+            // long before the .ds source case was deleted).
+            if wrappedTx.isCoinJoinMixing {
+                // CoinJoin mixing tx — group it into the per-day
+                // "Mixing Transactions" set.
+                let date = DWDateFormatter.sharedInstance.dateOnly(from: wrappedTx.date)
+                let coinJoinTxSet = self.coinJoinTxSets[date] ?? CoinJoinMixingTxSet()
+                self.coinJoinTxSets[date] = coinJoinTxSet
+
+                if coinJoinTxSet.tryInclude(wrappedTx) {
                     return nil
                 }
-
-                // TODO(crowdnode-home-grouping): the "CrowdNode · Account" group
-                // needs decode-based ObservedTransaction matching (the SDK
-                // snapshot here doesn't carry transactionData); ports separately.
-                // Until then CrowdNode txs render as individual rows — the
-                // current behavior (the old DS-backed grouping branch was dead
-                // long before the .ds source case was deleted).
-                if wrappedTx.isCoinJoinMixing {
-                    // CoinJoin mixing tx — group it into the per-day
-                    // "Mixing Transactions" set.
-                    let date = DWDateFormatter.sharedInstance.dateOnly(from: wrappedTx.date)
-                    let coinJoinTxSet = self.coinJoinTxSets[date] ?? CoinJoinMixingTxSet()
-                    self.coinJoinTxSets[date] = coinJoinTxSet
-
-                    if coinJoinTxSet.tryInclude(wrappedTx) {
-                        return nil
-                    }
-                } else if wrappedTx.isCoinJoinWithdrawal {
-                    // App-tagged CoinJoin offload (sweep) tx → the single
-                    // combined "CoinJoin Withdrawals" group.
-                    if self.coinJoinWithdrawalSet.tryInclude(wrappedTx) {
-                        return nil
-                    }
+            } else if wrappedTx.isCoinJoinWithdrawal {
+                // App-tagged CoinJoin offload (sweep) tx → the single
+                // combined "CoinJoin Withdrawals" group.
+                if self.coinJoinWithdrawalSet.tryInclude(wrappedTx) {
+                    return nil
                 }
-
-                return .tx(wrappedTx, self.resolveMetadata(for: wrappedTx.txHashData, in: metadataSnapshots))
             }
 
-            // Interleave the shielded operations (private receives/sends,
-            // Platform↔Shielded moves, shielded identity fundings) — the
-            // Core rows above only cover operations with an L1 leg. The
-            // day-grouping sort below merges the two timelines.
-            for shielded in shieldedItems {
-                guard self.passesShieldedFilter(
-                    item: shielded,
-                    selected: selectedFilters,
-                    hasRewards: hasRewards,
-                    hasMasternodes: hasMasternodes)
-                else { continue }
-                items.append(.shieldedActivity(shielded))
-            }
+            return .tx(wrappedTx, self.resolveMetadata(for: wrappedTx.txHashData, in: metadataSnapshots))
+        }
 
-            // Observed incoming Platform-address payments (app-recorded —
-            // the SDK persists no per-payment platform history; see
-            // PlatformAddressActivityStore.swift). Received-only by
-            // construction, so they ride the .received filter category.
-            let platformItems = SwiftDashSDKWalletSource.fetchPlatformActivity()
-            for platform in platformItems {
-                guard self.passesCategoryFilter(
-                    categories: [.received],
-                    selected: selectedFilters,
-                    hasRewards: hasRewards,
-                    hasMasternodes: hasMasternodes)
-                else { continue }
-                items.append(.platformActivity(platform))
-            }
+        // Interleave the shielded operations (private receives/sends,
+        // Platform↔Shielded moves, shielded identity fundings) — the
+        // Core rows above only cover operations with an L1 leg. The
+        // day-grouping sort below merges the two timelines.
+        for shielded in shieldedItems {
+            guard self.passesShieldedFilter(
+                item: shielded,
+                selected: selectedFilters,
+                hasRewards: hasRewards,
+                hasMasternodes: hasMasternodes)
+            else { continue }
+            items.append(.shieldedActivity(shielded))
+        }
 
-            self.txByHash.removeAll()
-            items.forEach { item in
-                self.txByHash[item.id] = item
-            }
+        // Observed incoming Platform-address payments (app-recorded —
+        // the SDK persists no per-payment platform history; see
+        // PlatformAddressActivityStore.swift). Received-only by
+        // construction, so they ride the .received filter category.
+        let platformItems = SwiftDashSDKWalletSource.fetchPlatformActivity()
+        for platform in platformItems {
+            guard self.passesCategoryFilter(
+                categories: [.received],
+                selected: selectedFilters,
+                hasRewards: hasRewards,
+                hasMasternodes: hasMasternodes)
+            else { continue }
+            items.append(.platformActivity(platform))
+        }
 
-            if !crowdNodeTxSet.transactionMap.isEmpty {
-                let item: TransactionListDataItem = .crowdnode(crowdNodeTxSet)
+        self.txByHash.removeAll()
+        items.forEach { item in
+            self.txByHash[item.id] = item
+        }
+
+        if !crowdNodeTxSet.transactionMap.isEmpty {
+            let item: TransactionListDataItem = .crowdnode(crowdNodeTxSet)
+            items.append(item)
+            self.txByHash[FullCrowdNodeSignUpTxSet.id] = item
+        }
+
+        for (_, coinJoinTxSet) in self.coinJoinTxSets {
+            if !coinJoinTxSet.transactionMap.isEmpty {
+                let item: TransactionListDataItem = .coinjoin(coinJoinTxSet)
                 items.append(item)
-                self.txByHash[FullCrowdNodeSignUpTxSet.id] = item
+                self.txByHash[coinJoinTxSet.id] = item
             }
+        }
 
-            for (_, coinJoinTxSet) in self.coinJoinTxSets {
-                if !coinJoinTxSet.transactionMap.isEmpty {
-                    let item: TransactionListDataItem = .coinjoin(coinJoinTxSet)
-                    items.append(item)
-                    self.txByHash[coinJoinTxSet.id] = item
-                }
+        if !self.coinJoinWithdrawalSet.transactionMap.isEmpty {
+            let item: TransactionListDataItem = .coinjoinWithdrawal(self.coinJoinWithdrawalSet)
+            items.append(item)
+            self.txByHash[self.coinJoinWithdrawalSet.id] = item
+        }
+
+        let groupedItems = Dictionary(
+            grouping: items.sorted(by: { $0.date > $1.date }),
+            by: { DWDateFormatter.sharedInstance.dateOnly(from: $0.date) }
+        )
+
+        let array = groupedItems.map { key, items in
+            TransactionGroup(id: key, date: items.first!.date, items: items)
+        }.sorted { $0.date > $1.date }
+
+        // Fix #2 & #3: Mark initial load complete and clear reload flag
+        self.hasCompletedInitialLoad = true
+        self.isReloading = false
+
+        let elapsedMs = Int(Date().timeIntervalSince(startedAt) * 1000)
+        DWLogger.log("HomeViewModel: Full reload complete in \(elapsedMs)ms, \(array.count) groups, \(self.txByHash.count) transactions cached")
+
+        DispatchQueue.main.async {
+            self.txItems = array
+            self.hasLoadedInitialTxItems = true
+            if self.hasRewardsHistory != hasRewards {
+                self.hasRewardsHistory = hasRewards
             }
-
-            if !self.coinJoinWithdrawalSet.transactionMap.isEmpty {
-                let item: TransactionListDataItem = .coinjoinWithdrawal(self.coinJoinWithdrawalSet)
-                items.append(item)
-                self.txByHash[self.coinJoinWithdrawalSet.id] = item
-            }
-
-            let groupedItems = Dictionary(
-                grouping: items.sorted(by: { $0.date > $1.date }),
-                by: { DWDateFormatter.sharedInstance.dateOnly(from: $0.date) }
-            )
-
-            let array = groupedItems.map { key, items in
-                TransactionGroup(id: key, date: items.first!.date, items: items)
-            }.sorted { $0.date > $1.date }
-
-            // Fix #2 & #3: Mark initial load complete and clear reload flag
-            self.hasCompletedInitialLoad = true
-            self.isReloading = false
-
-            DWLogger.log("HomeViewModel: Full reload complete, \(array.count) groups, \(self.txByHash.count) transactions cached")
-
-            DispatchQueue.main.async {
-                self.txItems = array
-                self.hasLoadedInitialTxItems = true
-                if self.hasRewardsHistory != hasRewards {
-                    self.hasRewardsHistory = hasRewards
-                }
-                if self.hasMasternodeHistory != hasMasternodes {
-                    self.hasMasternodeHistory = hasMasternodes
-                }
+            if self.hasMasternodeHistory != hasMasternodes {
+                self.hasMasternodeHistory = hasMasternodes
             }
         }
     }
@@ -730,8 +748,12 @@ extension HomeViewModel {
 
         let workItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
-            DWLogger.log("HomeViewModel: Sync state changed (debounced), reloading")
-            self.reloadTxsAndShortcuts()
+            DWLogger.log("HomeViewModel: Sync state changed (debounced), requesting reload")
+            // Through the shared funnel, not straight to the reload: this
+            // debounce only coalesces sync-state changes among themselves, so
+            // calling directly raced the throttled save/balance triggers and
+            // each fired its own full pass.
+            self.txReloadRequests.send()
             #if DASHPAY
             self.checkJoinDashPay()
             #endif
