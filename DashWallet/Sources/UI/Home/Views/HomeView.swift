@@ -356,10 +356,27 @@ struct HomeViewContent<Content: View>: View {
                     })
                     
                     if viewModel.txItems.isEmpty {
-                        Text(NSLocalizedString("There are no transactions to display", comment: ""))
-                            .font(.caption)
-                            .foregroundColor(Color.primary.opacity(0.5))
+                        // An empty feed means "nothing yet" only once the first
+                        // load has finished; before that it just means the
+                        // reload is still running, so show progress rather than
+                        // telling the user they have no transactions.
+                        if viewModel.hasLoadedInitialTxItems {
+                            Text(NSLocalizedString("There are no transactions to display", comment: ""))
+                                .font(.caption)
+                                .foregroundColor(Color.primary.opacity(0.5))
+                                .padding(.top, 20)
+                        } else {
+                            HStack(spacing: 10) {
+                                SwiftUI.ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle())
+
+                                Text(NSLocalizedString("Loading transactions", comment: "Home"))
+                                    .font(.caption)
+                                    .foregroundColor(Color.primary.opacity(0.5))
+                            }
+                            .frame(maxWidth: .infinity)
                             .padding(.top, 20)
+                        }
                     } else {
                         ForEach(viewModel.txItems) { group in
                             Section(header: SectionHeader(key: group.id, date: group.date)

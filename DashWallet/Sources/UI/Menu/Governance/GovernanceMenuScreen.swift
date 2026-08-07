@@ -120,7 +120,7 @@ struct GovernanceMenuScreen: View {
 
     #if DASHPAY
     private func showVoting() {
-        let controller = UsernameVotingViewController.controller()
+        let controller = UIHostingController(rootView: UsernameVotingScreen())
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }

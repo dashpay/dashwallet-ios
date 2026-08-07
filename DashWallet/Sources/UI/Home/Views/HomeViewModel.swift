@@ -92,6 +92,17 @@ class HomeViewModel: ObservableObject {
     }
     
     @Published private(set) var txItems: [TransactionGroup] = []
+
+    /// Whether the first full transaction load has finished, published on the
+    /// main thread for the home feed.
+    ///
+    /// Distinct from the worker-queue `hasCompletedInitialLoad`, which guards
+    /// reload/incremental-update sequencing off the main thread. This one
+    /// exists so the view can tell "still loading" from "genuinely empty" —
+    /// `txItems` is empty in both cases, and rendering the empty-state copy
+    /// during the initial load tells the user they have no transactions
+    /// before that is known.
+    @Published private(set) var hasLoadedInitialTxItems: Bool = false
     @Published var shortcutItems: [ShortcutAction] = []
     @Published var showTimeSkewAlertDialog: Bool = false
     @Published var showCoinJoinSweepDialog: Bool = false
@@ -243,9 +254,12 @@ class HomeViewModel: ObservableObject {
             self.hasCompletedInitialLoad = false
             self.isReloading = false
 
-            // Update UI-bound property on main thread
+            // Update UI-bound properties on main thread. The new network's
+            // history is loading from scratch, so the feed goes back to its
+            // loading state rather than claiming the wallet is empty.
             DispatchQueue.main.async {
                 self.txItems = []
+                self.hasLoadedInitialTxItems = false
             }
 
             // Reload fresh data from the new network's wallet
@@ -501,6 +515,7 @@ class HomeViewModel: ObservableObject {
 
             DispatchQueue.main.async {
                 self.txItems = array
+                self.hasLoadedInitialTxItems = true
                 if self.hasRewardsHistory != hasRewards {
                     self.hasRewardsHistory = hasRewards
                 }
