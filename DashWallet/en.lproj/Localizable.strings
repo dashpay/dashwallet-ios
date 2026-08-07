@@ -65,7 +65,6 @@
 "%d duffs" = "%d duffs";
 
 /* Masternode keys overview */
-"%d key(s)" = "%d key(s)";
 
 /* Voting - multiple keys warning */
 "%d votes will be cast as you have multiple voting keys stored in the wallet" = "%d votes will be cast as you have multiple voting keys stored in the wallet";
@@ -89,7 +88,6 @@
 "%ld sec" = "%ld sec";
 
 /* Masternode keys overview */
-"%ld used" = "%ld used";
 
 /* 10/20 Characters */
 "%ld/%ld Characters" = "%1$ld/%2$ld Characters";
@@ -4727,3 +4725,69 @@
 
 /* DashPay Invitations */
 "“%@” has been registered. Send a contact request to the person who invited you?" = "“%@” has been registered. Send a contact request to the person who invited you?";
+"Search usernames" = "Search usernames";
+"No open contests" = "No open contests";
+"No matching contests" = "No matching contests";
+"No usernames are being contested right now. Contests open when two or more people request the same name." = "No usernames are being contested right now. Contests open when two or more people request the same name.";
+"No open contest matches that search. Names are stored in a normalized form, so “alice” is listed as “a11ce”." = "No open contest matches that search. Names are stored in a normalized form, so “alice” is listed as “a11ce”.";
+"Browsing only" = "Browsing only";
+"This wallet holds no active masternode voting keys, so it cannot vote. Registered nodes appear under Tools → Masternodes." = "This wallet holds no active masternode voting keys, so it cannot vote. Registered nodes appear under Tools → Masternodes.";
+"Closing" = "Closing";
+"Deadline unknown" = "Deadline unknown";
+"Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed.";
+"Voting ends" = "Voting ends";
+"Requesting this name" = "Requesting this name";
+"Other outcomes" = "Other outcomes";
+"Lock the name" = "Lock the name";
+"Nobody gets it" = "Nobody gets it";
+"Abstain" = "Abstain";
+"Take no side" = "Take no side";
+"Only masternodes and evonodes can vote on usernames. This wallet holds no active masternode voting keys." = "Only masternodes and evonodes can vote on usernames. This wallet holds no active masternode voting keys.";
+"Vote" = "Vote";
+"Cast vote" = "Cast vote";
+"Vote with" = "Vote with";
+"Each masternode has one live vote per contest. You can change it later, but Dash Platform allows only 5 votes in total per masternode per contest." = "Each masternode has one live vote per contest. You can change it later, but Dash Platform allows only 5 votes in total per masternode per contest.";
+"Award “%@” to this contender" = "Award “%@” to this contender";
+"Lock “%@” so nobody gets it" = "Lock “%@” so nobody gets it";
+"Abstain on “%@”" = "Abstain on “%@”";
+"Contender %@" = "Contender %@";
+"This still counts as your masternodes having voted in this contest." = "This still counts as your masternodes having voted in this contest.";
+"Not cast" = "Not cast";
+"Vote cast" = "Vote cast";
+"No votes were cast" = "No votes were cast";
+"Ending soonest" = "Ending soonest";
+"Most votes" = "Most votes";
+"Most lock votes" = "Most lock votes";
+"Approve" = "Approve";
+"Lock" = "Lock";
+"Authentication failed. Your vote was not cast." = "Authentication failed. Your vote was not cast.";
+"Authentication cancelled. Your vote was not cast." = "Authentication cancelled. Your vote was not cast.";
+"Select at least one masternode to vote with." = "Select at least one masternode to vote with.";
+"Voting on “%@” has already closed. Refresh to see the result." = "Voting on “%@” has already closed. Refresh to see the result.";
+"Dash Platform is not connected yet. Wait for syncing to finish and try again." = "Dash Platform is not connected yet. Wait for syncing to finish and try again.";
+"This wallet could not derive the voting key for this node." = "This wallet could not derive the voting key for this node.";
+"Voting on this username has closed. The counts below are the last ones read." = "Voting on this username has closed. The counts below are the last ones read.";
+"Vote on several" = "Vote on several";
+"Select all" = "Select all";
+"This applies one choice to all %d selected usernames." = "This applies one choice to all %d selected usernames.";
+"Choice" = "Choice";
+"Records your masternodes as having voted, without taking a side." = "Records your masternodes as having voted, without taking a side.";
+"Votes that nobody should receive these usernames." = "Votes that nobody should receive these usernames.";
+"Needs attention" = "Needs attention";
+"Approving a specific request can only be done one username at a time." = "Approving a specific request can only be done one username at a time.";
+"Not available yet" = "Not available yet";
+"Who is requesting this name" = "Who is requesting this name";
+"Masternode votes" = "Masternode votes";
+"Dash Platform has not indexed this contest yet. Vote counts appear here once it does." = "Dash Platform has not indexed this contest yet. Vote counts appear here once it does.";
+"Masternodes vote on names more than one person requested. You will be notified when voting ends." = "Masternodes vote on names more than one person requested. You will be notified when voting ends.";
+"Waiting for Dash Platform" = "Waiting for Dash Platform";
+"Checking…" = "Checking…";
+"Voting in progress — lock votes are ahead" = "Voting in progress — lock votes are ahead";
+"Voting in progress — you are ahead" = "Voting in progress — you are ahead";
+"Voting in progress" = "Voting in progress";
+"You won this username" = "You won this username";
+"This username went to someone else" = "This username went to someone else";
+"Locked — nobody receives this username" = "Locked — nobody receives this username";
+"Voting ended with no winner" = "Voting ended with no winner";
+"You" = "You";
+"Leading" = "Leading";

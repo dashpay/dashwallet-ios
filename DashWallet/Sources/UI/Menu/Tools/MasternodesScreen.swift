@@ -66,26 +66,12 @@ final class MasternodesViewModel: ObservableObject {
             .sorted { $0.orderIndex < $1.orderIndex }
         guard !masternodes.isEmpty else { return }
 
-        ownerIndexByAddress = Self.indexByAddress(
+        ownerIndexByAddress = MasternodeKeyUsage.indexByAddress(
             family: .owner,
             targets: Set(masternodes.compactMap(\.ownerAddress)))
-        votingIndexByAddress = Self.indexByAddress(
+        votingIndexByAddress = MasternodeKeyUsage.indexByAddress(
             family: .voting,
             targets: Set(masternodes.compactMap(\.votingAddress)))
-    }
-
-    private static func indexByAddress(family: MNKey, targets: Set<String>) -> [String: UInt32] {
-        guard !targets.isEmpty,
-              let deriver = MasternodeProviderKeyDeriver(key: family) else { return [:] }
-        var map: [String: UInt32] = [:]
-        // Whole pool, not a fixed window — see `MasternodeKeyUsage`.
-        let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? 0
-        for index in 0..<upperBound {
-            guard let address = deriver.address(at: index),
-                  targets.contains(address) else { continue }
-            map[address] = index
-        }
-        return map
     }
 
     /// Ownership subtitle for the owner key ("ProviderOwnerKeys #4" /

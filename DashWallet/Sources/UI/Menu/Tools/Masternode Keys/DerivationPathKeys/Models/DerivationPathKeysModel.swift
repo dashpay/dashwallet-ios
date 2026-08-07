@@ -247,11 +247,22 @@ final class MasternodeProviderKeyDeriver {
         self.wallet = wallet
 
         let live = Self.loadLiveAddresses(for: key)
+        self.poolIsLive = !live.isEmpty
         self.poolAddresses = live.isEmpty
             ? Self.loadDerivationAddresses(
                 key: key, manager: derivationManager, walletId: derivationWalletId)
             : live
     }
+
+    /// `true` when ``poolAddresses`` came from the running wallet's live pool.
+    ///
+    /// `false` means the degraded derivation-wallet fallback, which only ever
+    /// holds `DEFAULT_SPECIAL_GAP_LIMIT` entries. Consumers that merely *look
+    /// up* an index are unaffected, but consumers that **enumerate** the pool
+    /// to decide what exists — the owner/voting address joins — can silently
+    /// under-report, so they must surface the incompleteness rather than
+    /// present a short list as the whole truth.
+    let poolIsLive: Bool
 
     /// Snapshot the running wallet's provider address pool — the one SPV
     /// extends as ProRegTx/ProUpRegTx matches mark indexes used, and the one

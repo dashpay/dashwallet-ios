@@ -103,9 +103,6 @@ final class App {
     func cleanUp() {
         TransactionMetadataDAOImpl.shared.deleteAll()
         AddressUserInfoDAOImpl.shared.deleteAll()
-    #if DASHPAY
-        UsernameRequestsDAOImpl.shared.deleteAll()
-    #endif
 
         _fiatCurrency = nil
         UserDefaults.standard.removeObject(forKey: kFiatCurrencyCodeKey)

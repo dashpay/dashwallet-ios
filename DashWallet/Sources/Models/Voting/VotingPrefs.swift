@@ -18,11 +18,11 @@
 import Foundation
 
 private let kVotingEnabled = "votingEnabledKey"
-private let kIsVotingInfoShown = "votingInfoShownKey"
-private let kVotingPanelClosed = "votingPanelWasClosedKey"
 
 // MARK: - VotingPrefs
 
+/// Whether the Voting entry appears in the More menu (Settings → Enable
+/// Voting). Defaults on for DASHPAY builds.
 class VotingPrefs {
     public static let shared: VotingPrefs = .init()
     
@@ -39,15 +39,6 @@ class VotingPrefs {
         set(value) {
             _votingEnabled = value
             UserDefaults.standard.set(value, forKey: kVotingEnabled)
-        }
-    }
-    
-    private var _votingInfoShown: Bool? = nil
-    var votingInfoShown: Bool {
-        get { _votingInfoShown ?? UserDefaults.standard.bool(forKey: kIsVotingInfoShown) }
-        set(value) {
-            _votingInfoShown = value
-            UserDefaults.standard.set(value, forKey: kIsVotingInfoShown)
         }
     }
 }

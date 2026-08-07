@@ -1,6 +1,8 @@
-//  
-//  Created by Andrei Ashikhmin
-//  Copyright © 2023 Dash Core Group. All rights reserved.
+//
+//  VotingViewModel.swift
+//  DashWallet
+//
+//  Copyright © 2026 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,268 +18,285 @@
 //
 
 import Combine
+import Foundation
+import SwiftDashSDK
+import SwiftUI
 
-enum VoteAction {
-    case none
-    case approved
-    case revoked
-    case blocked
-    case unblocked
+// MARK: - ContestSort
+
+enum ContestSort: String, CaseIterable, Identifiable {
+    case endingSoonest
+    case name
+    case mostVotes
+    case mostLockVotes
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .endingSoonest: return NSLocalizedString("Ending soonest", comment: "Voting")
+        case .name: return NSLocalizedString("Name", comment: "Voting")
+        case .mostVotes: return NSLocalizedString("Most votes", comment: "Voting")
+        case .mostLockVotes: return NSLocalizedString("Most lock votes", comment: "Voting")
+        }
+    }
 }
 
-class VotingViewModel {
-    private let prefs = VotingPrefs.shared
-    private var nameCount = 1
-    private var dao: UsernameRequestsDAO = UsernameRequestsDAOImpl.shared
-    private var cancellableBag = Set<AnyCancellable>()
-    private var groupedRequests: [GroupedUsernames] = []
-    private var validKeys: [String] = [ // TODO: temp
-        "kn2GwaSZkoY8qg6i2dPCpDtDoBCftJWMzZXtHDDJ1w7PjFYfq",
-        "n6YtJ7pdDYPTa57imEHEp8zinq1oNGUdwZQdnGk1MMpCWBHEq",
-        "maEiRZeKXNLZovNqoS3HkmZJGmACbro7s3eC8GenExLF7QMQs"
-    ]
-    
-    private(set) var filters = VotingFilters.defaultFilters
-    @Published private(set) var masternodeKeys: [MasternodeKey] = []
-    @Published private(set) var filteredRequests: [GroupedUsernames] = []
+// MARK: - VotingViewModel
+
+/// Backing model for the username-voting section.
+///
+/// Owns the live contest list, the wallet's votable nodes, and the casting
+/// flow. Everything it publishes comes from Platform or from the wallet's
+/// on-chain masternode registrations — there is no local vote arithmetic and
+/// no seeded data.
+@MainActor
+final class VotingViewModel: ObservableObject {
+
+    // MARK: Published state
+
+    /// The *open* contests. A contest that resolves leaves this list.
+    @Published private(set) var contests: [DPNSContest] = []
+    /// Labels observed to have resolved while the user was looking at them,
+    /// so an already-open detail screen can say so instead of offering a vote
+    /// that can no longer be accepted.
+    @Published private(set) var closedLabels: Set<String> = []
+    @Published private(set) var votableNodes: [VoterNode] = []
+    /// The wallet's voting-key pool could only be read at its shallow
+    /// fallback depth and some active registration went unmatched, so a node
+    /// you can actually vote with may be missing from ``votableNodes``.
+    @Published private(set) var nodeListMayBeIncomplete = false
+    @Published private(set) var isLoading = false
+    /// Set when a refresh fails. The list keeps showing the last good data.
+    @Published private(set) var loadError: String?
+    /// `false` until the first refresh completes, so the empty state is not
+    /// shown while the first fetch is still in flight.
+    @Published private(set) var hasLoadedOnce = false
+
     @Published var searchQuery: String = ""
-    @Published var lastVoteAction: VoteAction = .none
-    var selectedRequest: UsernameRequest? = nil
-    
-    public static let shared: VotingViewModel = .init()
-    
-    var shouldShowFirstTimeInfo: Bool {
-        get { return !prefs.votingInfoShown }
-        set { prefs.votingInfoShown = !newValue }
+    @Published var sort: ContestSort = .endingSoonest
+
+    /// Multi-select mode, the replacement for the old "Quick Voting" screen.
+    @Published var isSelecting = false
+    @Published private(set) var selectedLabels: Set<String> = []
+    /// Per-contest results of the most recent bulk run.
+    @Published var bulkReports: [VoteCastReport]?
+
+    /// Result banner for the most recent casting run.
+    @Published var lastCastReport: VoteCastReport?
+    /// Error from a casting run that never got as far as broadcasting.
+    @Published var castError: String?
+    @Published private(set) var isCasting = false
+
+    // MARK: Dependencies
+
+    private let contestsService: ContestedNamesService
+    private let registry: MasternodeVoterRegistry
+    private let caster: MasternodeVoteCaster
+
+    /// Default arguments would have to be evaluated in a nonisolated context,
+    /// but both services are `@MainActor`, so the defaults are applied inside
+    /// this `@MainActor` body instead.
+    init(
+        contestsService: ContestedNamesService? = nil,
+        registry: MasternodeVoterRegistry? = nil
+    ) {
+        let contestsService = contestsService ?? ContestedNamesService()
+        let registry = registry ?? MasternodeVoterRegistry()
+        self.contestsService = contestsService
+        self.registry = registry
+        self.caster = MasternodeVoteCaster(registry: registry, contests: contestsService)
     }
-    
-    init() {
-        $searchQuery
-            .throttle(for: .milliseconds(500), scheduler: RunLoop.main, latest: true)
-            .removeDuplicates()
-            .sink { [weak self] text in
-                self?.performSearch(text: text)
+
+    // MARK: Derived state
+
+    /// Total Platform voting weight this wallet controls. Evonodes count 4×.
+    var totalVoteWeight: UInt32 { votableNodes.totalVoteWeight }
+
+    var canVote: Bool { !votableNodes.isEmpty }
+
+    /// Contests matching the search box, in the selected order.
+    ///
+    /// The query is homograph-normalized before matching because Platform
+    /// stores normalized labels — someone typing "alice" is looking for
+    /// "a11ce", and a raw substring match would find nothing.
+    var visibleContests: [DPNSContest] {
+        let trimmed = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return sorted(contests) }
+
+        // Normalization needs the SDK, and so does `contests` — a non-empty
+        // list means the handle is up, so this only returns nil when there is
+        // nothing to filter anyway. Leaving the list unfiltered beats
+        // matching against a locally-guessed spelling of the label.
+        guard let needle = contestsService.normalizedLabel(for: trimmed) else {
+            return sorted(contests)
+        }
+        return sorted(contests.filter { $0.normalizedLabel.contains(needle) })
+    }
+
+    private func sorted(_ input: [DPNSContest]) -> [DPNSContest] {
+        switch sort {
+        case .endingSoonest:
+            // Already ordered by the service; keep that order.
+            return input
+        case .name:
+            return input.sorted { $0.normalizedLabel < $1.normalizedLabel }
+        case .mostVotes:
+            return input.sorted { $0.totalVotes > $1.totalVotes }
+        case .mostLockVotes:
+            return input.sorted { $0.lockVotes > $1.lockVotes }
+        }
+    }
+
+    // MARK: Loading
+
+    func refresh() async {
+        isLoading = true
+        defer {
+            isLoading = false
+            hasLoadedOnce = true
+        }
+
+        let resolution = registry.votableNodes()
+        votableNodes = resolution.nodes
+        nodeListMayBeIncomplete = resolution.mayBeIncomplete
+
+        do {
+            contests = try await contestsService.activeContests()
+            loadError = nil
+        } catch {
+            loadError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
+        }
+    }
+
+    /// Re-read one contest's tallies after voting on it, so the row reflects
+    /// the vote without a full refresh.
+    ///
+    /// A contest that has since resolved — or that Platform no longer holds
+    /// contenders for — leaves `contests` and is recorded in ``closedLabels``.
+    /// `contests` is the *open* contest list: leaving a settled contest in it
+    /// would offer a Vote button whose only possible outcome is the caster's
+    /// closed-poll rejection.
+    func refreshContest(normalizedLabel: String) async {
+        let state: DPNSContestVoteState?
+        do {
+            state = try await contestsService.voteState(normalizedLabel: normalizedLabel)
+        } catch {
+            // The query failed, so we learned nothing about this contest.
+            // Leave the cached row exactly as it was rather than treating a
+            // network blip as a resolution.
+            return
+        }
+
+        // A successful query returning no contenders means Platform holds no
+        // poll for the label. For a row that was in the active list moments
+        // ago, that is a contest which resolved and was pruned.
+        guard let state, !state.isResolved else {
+            close(normalizedLabel: normalizedLabel)
+            return
+        }
+
+        guard let index = contests.firstIndex(where: { $0.normalizedLabel == normalizedLabel })
+        else { return }
+
+        let existing = contests[index]
+        contests[index] = DPNSContest(
+            normalizedLabel: existing.normalizedLabel,
+            endTime: existing.endTime,
+            hasWinner: false,
+            abstainVotes: state.abstainVotes,
+            lockVotes: state.lockVotes,
+            contenders: state.contenders)
+    }
+
+    private func close(normalizedLabel: String) {
+        contests.removeAll { $0.normalizedLabel == normalizedLabel }
+        closedLabels.insert(normalizedLabel)
+    }
+
+    /// Whether a contest the user is looking at has closed under them. The
+    /// detail screen reads this to swap its vote controls for a closed notice
+    /// instead of silently showing a stale snapshot with live-looking buttons.
+    func isClosed(normalizedLabel: String) -> Bool {
+        closedLabels.contains(normalizedLabel)
+    }
+
+    // MARK: Casting
+
+    /// Cast `choice` on `contest` with `nodes`, then refresh that contest.
+    func cast(choice: VoteChoice, on contest: DPNSContest, with nodes: [VoterNode]) async {
+        isCasting = true
+        castError = nil
+        defer { isCasting = false }
+
+        do {
+            let report = try await caster.cast(
+                choice: choice,
+                onNormalizedLabel: contest.normalizedLabel,
+                with: nodes)
+            lastCastReport = report
+            await refreshContest(normalizedLabel: contest.normalizedLabel)
+        } catch {
+            castError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
+        }
+    }
+
+    func dismissCastResult() {
+        lastCastReport = nil
+        castError = nil
+        bulkReports = nil
+    }
+
+    // MARK: Multi-select
+
+    func toggleSelection(_ contest: DPNSContest) {
+        if selectedLabels.contains(contest.normalizedLabel) {
+            selectedLabels.remove(contest.normalizedLabel)
+        } else {
+            selectedLabels.insert(contest.normalizedLabel)
+        }
+    }
+
+    func isSelected(_ contest: DPNSContest) -> Bool {
+        selectedLabels.contains(contest.normalizedLabel)
+    }
+
+    func selectAllVisible() {
+        selectedLabels = Set(visibleContests.map(\.normalizedLabel))
+    }
+
+    func endSelecting() {
+        isSelecting = false
+        selectedLabels = []
+    }
+
+    /// Combined voting weight this run would add, across every selected
+    /// contest — nodes × contests, since each node votes once per contest.
+    func bulkWeight(nodes: [VoterNode]) -> UInt32 {
+        UInt32(selectedLabels.count) &* nodes.totalVoteWeight
+    }
+
+    /// Apply one choice to every selected contest.
+    func castBulk(choice: VoteChoice, with nodes: [VoterNode]) async {
+        isCasting = true
+        castError = nil
+        defer { isCasting = false }
+
+        // Order the run the way the list is ordered so the result list reads
+        // in the same sequence the user selected from.
+        let labels = visibleContests
+            .map(\.normalizedLabel)
+            .filter { selectedLabels.contains($0) }
+
+        do {
+            let reports = try await caster.castBulk(
+                choice: choice, onNormalizedLabels: labels, with: nodes)
+            bulkReports = reports
+            for label in labels {
+                await refreshContest(normalizedLabel: label)
             }
-            .store(in: &cancellableBag)
-    }
-    
-    func apply(filters: VotingFilters) {
-        self.filters = filters
-        refresh()
-    }
-    
-    func addMasternodeKey(key: String) -> Bool {
-        if validKeys.contains(key) {
-            masternodeKeys.append(MasternodeKey(key: key, ip: "182.151.12.\(masternodeKeys.count)"))
-            return true
-        }
-        
-        return false
-    }
-    
-    func refresh() {
-        Task {
-            let requests: [UsernameRequest]
-            
-            if filters.onlyDuplicates ?? false {
-                requests = await dao.duplicates(onlyWithLinks: filters.onlyWithLinks ?? false)
-            } else {
-                requests = await dao.all(onlyWithLinks: filters.onlyWithLinks ?? false)
-            }
-            
-            let oldVotes = Dictionary(uniqueKeysWithValues: self.groupedRequests.map { ($0.username, $0.votesForUsername) })
-            self.groupedRequests = Dictionary(grouping: requests, by: { $0.username })
-                .map { username, reqs in
-                    var group = GroupedUsernames(username: username, requests: reqs.sortAndFilter(by: filters))
-                    group.votesForUsername = max(oldVotes[username] ?? 0, 0)
-                    return group
-                }
-                .filter { !$0.requests.isEmpty }
-                .sorted { $0.username < $1.username }
-            self.filteredRequests = self.groupedRequests.filter { $0.username.starts(with: searchQuery) }
-        }
-    }
-}
-
-// MARK: - Search
-
-extension VotingViewModel {
-    private func performSearch(text: String) {
-        self.filteredRequests = self.groupedRequests.filter { $0.username.starts(with: searchQuery) }
-    }
-}
-
-// MARK: - Sorting and filtering
-
-extension [UsernameRequest] {
-    func sortAndFilter(by filters: VotingFilters) -> [UsernameRequest] {
-        let sortByOption = filters.sortBy
-        let sorted: [UsernameRequest]
-        
-        switch sortByOption {
-        case .dateAsc:
-            sorted = self.sorted { $0.createdAt < $1.createdAt }
-        case .datesDesc:
-            sorted = self.sorted { $0.createdAt > $1.createdAt }
-        case .votesAsc:
-            sorted = self.sorted { $0.votes < $1.votes }
-        case .votesDesc:
-            sorted = self.sorted { $0.votes > $1.votes }
-        default:
-            sorted = self
-        }
-        
-        let filterOption = filters.filterBy
-        let result: [UsernameRequest]
-        
-        switch filterOption {
-        case .approved:
-            result = sorted.filter { $0.isApproved }
-        case .notVoted:
-            result = sorted.filter { !$0.isApproved } // TODO: MOCK_DASHPAY recheck logic
-        case .hasBlockVotes:
-            result = sorted.filter { $0.blockVotes > 0 }
-        default:
-            result = sorted
-        }
-        
-        return result
-    }
-}
-
-// MARK: - Voting
-
-extension VotingViewModel {
-    func vote(for requestId: String) {
-        Task {
-            if var copy = await dao.get(byRequestId: requestId) {
-                copy.votes += masternodeKeys.count
-                copy.blockVotes = 0 // TODO: MOCK_DASHPAY
-                copy.isApproved = true
-                await dao.update(dto: copy)
-                lastVoteAction = .approved
-                refresh()
-                
-                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
-                if UsernamePrefs.shared.requestedUsernameId == requestId {
-                    DWGlobalOptions.sharedInstance().dashpayUsername = copy.username
-                }
-                
-                // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
-                if let groupIndex = groupedRequests.firstIndex(where: { group in
-                    group.requests.contains { request in
-                        request.requestId == requestId
-                    }
-                }) {
-                    groupedRequests[groupIndex].votesForUsername += masternodeKeys.count
-                }
-            }
-        }
-    }
-    
-    func revokeVote(of requestId: String) {
-        Task {
-            if var copy = await dao.get(byRequestId: requestId) {
-                copy.votes = max(copy.votes - masternodeKeys.count, 0)
-                copy.isApproved = false
-                await dao.update(dto: copy)
-                lastVoteAction = .revoked
-                refresh()
-                
-                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
-                if UsernamePrefs.shared.requestedUsernameId == requestId {
-                    DWGlobalOptions.sharedInstance().dashpayUsername = nil
-                }
-                
-                // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
-                if let groupIndex = groupedRequests.firstIndex(where: { group in
-                    group.requests.contains { request in
-                        request.requestId == requestId
-                    }
-                }) {
-                    groupedRequests[groupIndex].votesForUsername -= max(copy.votes - masternodeKeys.count, 0)
-                }
-            }
-        }
-    }
-    
-    func votesLeft(for requestId: String) -> Int {
-        // TODO: MOCK_DASHPAY "votes left" check. Replace with actual logic
-        let group = groupedRequests.first(where: { group in
-            group.requests.contains { request in
-                request.requestId == requestId
-            }
-        })
-        return max(VotingConstants.maxVotes - (group?.votesForUsername ?? 0), 0)
-    }
-    
-    func block(request requestId: String) {
-        Task {
-            if var copy = await dao.get(byRequestId: requestId) {
-                copy.blockVotes += masternodeKeys.count
-                await dao.update(dto: copy)
-                lastVoteAction = .blocked
-                refresh()
-                
-                // TODO: MOCK_DASHPAY user own name approval. Remove when not needed
-                if UsernamePrefs.shared.requestedUsernameId == requestId {
-                    DWGlobalOptions.sharedInstance().dashpayUsername = nil
-                }
-            }
-        }
-    }
-    
-    func unblock(request requestId: String) {
-        Task {
-            if var copy = await dao.get(byRequestId: requestId) {
-                copy.blockVotes = max(copy.blockVotes - masternodeKeys.count, 0)
-                await dao.update(dto: copy)
-                lastVoteAction = .unblocked
-                refresh()
-            }
-        }
-    }
-    
-    func voteForAllFirstSubmitted() {
-        Task {
-            let submittedFirst = filteredRequests.compactMap { group in
-                group.requests
-                    .sorted { $0.createdAt < $1.createdAt }
-                    .first?.requestId
-            }
-            await dao.vote(for: submittedFirst, voteIncrement: masternodeKeys.count)
-            lastVoteAction = .approved
-            refresh()
-        }
-    }
-    
-    func onVoteActionHandled() {
-        lastVoteAction = .none
-    }
-}
-
-
-// TODO: MOCK_DASHPAY remove when not needed
-
-extension VotingViewModel {
-    func addMockRequest() {
-        Task {
-            nameCount += 1
-            let now = Date().timeIntervalSince1970
-            let twoWeeksAgo = now - (14 * 24 * 60 * 60)
-            let randomValue = Double.random(in: twoWeeksAgo..<now)
-            let identityData = withUnsafeBytes(of: UUID().uuid) { Data($0) }
-            let names = ["John", "Doe", "Sarah", "Jane", "Jack", "Jill", "Bob"]
-            let identity = ScriptAddressCodec.base58Encode(identityData)
-            let randomName = names[Int.random(in: 0..<min(names.count, nameCount))]
-            let link = nameCount % 2 == 0 ? "https://example.com" : nil
-            let isApproved = false
-            
-            let dto = UsernameRequest(requestId: UUID().uuidString, username: randomName, createdAt: Int64(randomValue), identity: "\(identity)\(identity)\(identity)", link: link, votes: Int.random(in: 0..<15), blockVotes: Int.random(in: 0..<15), isApproved: isApproved)
-            print(dto)
-            await dao.create(dto: dto)
-            
-            refresh()
+        } catch {
+            castError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
         }
     }
 }
