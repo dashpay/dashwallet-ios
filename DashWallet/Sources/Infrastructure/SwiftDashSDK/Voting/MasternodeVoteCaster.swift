@@ -51,6 +51,18 @@ enum VoteChoice: Hashable {
         case .lock: return NSLocalizedString("Lock", comment: "Voting")
         }
     }
+
+    /// Kind only, never the contender id. `String(describing:)` on this enum
+    /// would expand `.towards` to include the base58 identity, and the voting
+    /// log lines are `.public` — that would write a specific voter's choice of
+    /// candidate into the device log in clear text.
+    var logDescription: String {
+        switch self {
+        case .towards: return "towards"
+        case .abstain: return "abstain"
+        case .lock: return "lock"
+        }
+    }
 }
 
 // MARK: - VoteOutcome
@@ -211,7 +223,7 @@ final class MasternodeVoteCaster {
                     votingPrivateKey: votingKey)
                 outcomes.append(VoteOutcome(node: node, failure: nil))
                 Self.logger.info(
-                    "🗳️ VOTING :: cast \(String(describing: choice), privacy: .public) on \(normalizedLabel, privacy: .public) with \(node.displayName, privacy: .public)")
+                    "🗳️ VOTING :: cast \(choice.logDescription, privacy: .public) on \(normalizedLabel, privacy: .public) with \(node.displayName, privacy: .public)")
             } catch {
                 // Platform's message is the useful one here — "already voted",
                 // "too many vote changes", "masternode not found" each tell
@@ -269,7 +281,21 @@ final class MasternodeVoteCaster {
         reports.reserveCapacity(labels.count)
 
         for label in labels {
-            let isOpen = (try? await contests.contestIsOpen(normalizedLabel: label)) ?? false
+            // "The check failed" and "the poll is closed" are different
+            // outcomes: collapsing them would tell the user a live contest had
+            // already resolved whenever the network hiccupped.
+            let isOpen: Bool
+            do {
+                isOpen = try await contests.contestIsOpen(normalizedLabel: label)
+            } catch {
+                let message = (error as? LocalizedError)?.errorDescription
+                    ?? String(describing: error)
+                reports.append(VoteCastReport(
+                    normalizedLabel: label,
+                    choice: choice,
+                    outcomes: nodes.map { VoteOutcome(node: $0, failure: message) }))
+                continue
+            }
             guard isOpen else {
                 reports.append(VoteCastReport(
                     normalizedLabel: label,

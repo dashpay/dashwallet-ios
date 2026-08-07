@@ -138,7 +138,7 @@ private struct ContenderRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(shortIdentity)
+                Text(contender.shortIdentityId)
                     .font(.subheadline)
                     .monospaced()
                 Text(String(format: NSLocalizedString("%u votes", comment: "Voting"),
@@ -157,14 +157,6 @@ private struct ContenderRow: View {
             }
         }
         .padding(.vertical, 2)
-    }
-
-    /// Contenders are identified by identity id: Platform returns each
-    /// requester's own spelling only inside a serialized document the app
-    /// cannot decode, so showing a name here would mean inventing one.
-    private var shortIdentity: String {
-        guard contender.identityId.count > 16 else { return contender.identityId }
-        return String(contender.identityId.prefix(8)) + "…" + String(contender.identityId.suffix(6))
     }
 }
 

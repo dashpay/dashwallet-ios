@@ -50,6 +50,7 @@ final class ContestedNamesService {
 
     enum ServiceError: LocalizedError {
         case sdkUnavailable
+        case labelNotNormalizable(String)
 
         var errorDescription: String? {
             switch self {
@@ -57,6 +58,10 @@ final class ContestedNamesService {
                 return NSLocalizedString(
                     "Dash Platform is not connected yet. Wait for syncing to finish and try again.",
                     comment: "Voting")
+            case .labelNotNormalizable(let label):
+                return String(format: NSLocalizedString(
+                    "“%@” could not be read as a Dash username.",
+                    comment: "Voting"), label)
             }
         }
     }
@@ -125,7 +130,38 @@ final class ContestedNamesService {
     /// what that means for it, rather than getting a plausible-looking
     /// substitute.
     func normalizedLabel(for label: String) -> String? {
-        guard let sdk = SwiftDashSDKHost.shared.sdk else { return nil }
-        return try? sdk.dpnsNormalizeLabel(label)
+        try? requireNormalizedLabel(for: label)
+    }
+
+    /// Throwing variant, for callers that show the reason.
+    ///
+    /// The two failures are genuinely different — Platform not being reachable
+    /// is a wait-and-retry, a label Rust refuses to normalize is not — so they
+    /// are reported separately instead of collapsing into "not connected".
+    func requireNormalizedLabel(for label: String) throws -> String {
+        guard let sdk = SwiftDashSDKHost.shared.sdk else {
+            throw ServiceError.sdkUnavailable
+        }
+        do {
+            return try sdk.dpnsNormalizeLabel(label)
+        } catch {
+            throw ServiceError.labelNotNormalizable(label)
+        }
+    }
+}
+
+// MARK: - Contender display
+
+extension DPNSContender {
+    /// Truncated base58 identity, e.g. `5rTJhbA…9Xk2Qd`.
+    ///
+    /// Contenders are identified by identity id because Platform returns each
+    /// requester's own spelling of the label only inside a serialized document
+    /// the app cannot decode — showing a name here would mean inventing one.
+    /// Shared by the contest detail rows and the request-status rows so the two
+    /// never drift apart.
+    var shortIdentityId: String {
+        guard identityId.count > 16 else { return identityId }
+        return String(identityId.prefix(8)) + "…" + String(identityId.suffix(6))
     }
 }

@@ -65,7 +65,6 @@
 "%d duffs" = "%d duffs";
 
 /* Masternode keys overview */
-"%d key(s)" = "%d key(s)";
 
 /* Voting - multiple keys warning */
 "%d votes will be cast as you have multiple voting keys stored in the wallet" = "%d votes will be cast as you have multiple voting keys stored in the wallet";
@@ -89,7 +88,6 @@
 "%ld sec" = "%ld sec";
 
 /* Masternode keys overview */
-"%ld used" = "%ld used";
 
 /* 10/20 Characters */
 "%ld/%ld Characters" = "%1$ld/%2$ld Characters";
@@ -4728,11 +4726,6 @@
 "No open contest matches that search. Names are stored in a normalized form, so “alice” is listed as “a11ce”." = "No open contest matches that search. Names are stored in a normalized form, so “alice” is listed as “a11ce”.";
 "Browsing only" = "Browsing only";
 "This wallet holds no active masternode voting keys, so it cannot vote. Registered nodes appear under Tools → Masternodes." = "This wallet holds no active masternode voting keys, so it cannot vote. Registered nodes appear under Tools → Masternodes.";
-"%d evonodes" = "%d evonodes";
-"%d masternodes" = "%d masternodes";
-"%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
-"%d requests" = "%d requests";
-"%u votes" = "%u votes";
 "Closing" = "Closing";
 "Deadline unknown" = "Deadline unknown";
 "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed.";
@@ -4753,12 +4746,9 @@
 "Abstain on “%@”" = "Abstain on “%@”";
 "Contender %@" = "Contender %@";
 "This still counts as your masternodes having voted in this contest." = "This still counts as your masternodes having voted in this contest.";
-"Cast %u votes" = "Cast %u votes";
-"%u votes counted for “%@”" = "%u votes counted for “%@”";
 "Not cast" = "Not cast";
 "Vote cast" = "Vote cast";
 "No votes were cast" = "No votes were cast";
-"%d of %d masternodes voted" = "%d of %d masternodes voted";
 "Ending soonest" = "Ending soonest";
 "Most votes" = "Most votes";
 "Most lock votes" = "Most lock votes";
@@ -4772,15 +4762,11 @@
 "This wallet could not derive the voting key for this node." = "This wallet could not derive the voting key for this node.";
 "Voting on this username has closed. The counts below are the last ones read." = "Voting on this username has closed. The counts below are the last ones read.";
 "Vote on several" = "Vote on several";
-"%d selected" = "%d selected";
-"%u votes in total" = "%u votes in total";
 "Select all" = "Select all";
 "This applies one choice to all %d selected usernames." = "This applies one choice to all %d selected usernames.";
 "Choice" = "Choice";
 "Records your masternodes as having voted, without taking a side." = "Records your masternodes as having voted, without taking a side.";
 "Votes that nobody should receive these usernames." = "Votes that nobody should receive these usernames.";
-"Vote on %d usernames" = "Vote on %d usernames";
-"%d of %d usernames voted on" = "%d of %d usernames voted on";
 "Needs attention" = "Needs attention";
 "Approving a specific request can only be done one username at a time." = "Approving a specific request can only be done one username at a time.";
 "Not available yet" = "Not available yet";

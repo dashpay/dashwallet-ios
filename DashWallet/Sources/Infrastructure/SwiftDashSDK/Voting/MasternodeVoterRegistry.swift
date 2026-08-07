@@ -82,6 +82,20 @@ final class MasternodeVoterRegistry {
 
     init() {}
 
+    /// Outcome of a votable-node resolution.
+    ///
+    /// `mayBeIncomplete` says the answer cannot be trusted as exhaustive: the
+    /// voting address pool was read from the degraded fallback (gap-limit
+    /// deep) *and* at least one active registration went unmatched, so a node
+    /// this wallet really can vote with may be missing from `nodes`. The UI
+    /// says so rather than presenting a short list as the full picture.
+    struct Resolution {
+        let nodes: [VoterNode]
+        let mayBeIncomplete: Bool
+
+        static let empty = Resolution(nodes: [], mayBeIncomplete: false)
+    }
+
     /// The wallet's votable nodes, ordered by registration.
     ///
     /// A masternode is votable when all of the following hold:
@@ -93,19 +107,20 @@ final class MasternodeVoterRegistry {
     /// Returns empty (not an error) when the wallet has no masternodes, when
     /// the SDK is not running, or when the masternode phase has not synced —
     /// the caller renders the browse-only state.
-    func votableNodes() -> [VoterNode] {
+    func votableNodes() -> Resolution {
         guard let manager = SwiftDashSDKHost.shared.manager,
               let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
-            return []
+            return .empty
         }
 
         let eligible = manager.masternodes(for: walletId)
             .filter { !$0.revoked && MasternodeStatus(rawValue: $0.status) == .active }
-        guard !eligible.isEmpty else { return [] }
+        guard !eligible.isEmpty else { return .empty }
 
-        let indexByAddress = MasternodeKeyUsage.indexByAddress(
+        let resolution = MasternodeKeyUsage.resolveAddressIndexes(
             family: .voting,
             targets: Set(eligible.compactMap(\.votingAddress)))
+        let indexByAddress = resolution.map
 
         let nodes = eligible
             .compactMap { masternode -> (PlatformMasternode, UInt32)? in
@@ -123,9 +138,12 @@ final class MasternodeVoterRegistry {
                     votingKeyIndex: index)
             }
 
+        // Only a degraded pool read can hide a node we own; if every active
+        // registration matched, depth did not matter.
+        let mayBeIncomplete = !resolution.poolIsLive && nodes.count < eligible.count
         Self.logger.info(
-            "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations")
-        return nodes
+            "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations livePool=\(resolution.poolIsLive, privacy: .public)")
+        return Resolution(nodes: nodes, mayBeIncomplete: mayBeIncomplete)
     }
 
     /// The 32-byte voting private key for `node`.

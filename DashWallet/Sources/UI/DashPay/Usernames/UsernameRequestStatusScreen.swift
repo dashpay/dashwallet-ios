@@ -85,14 +85,8 @@ final class UsernameRequestStatusViewModel: ObservableObject {
             hasLoadedOnce = true
         }
 
-        guard let normalized = contestsService.normalizedLabel(for: label) else {
-            loadError = NSLocalizedString(
-                "Dash Platform is not connected yet. Wait for syncing to finish and try again.",
-                comment: "Usernames")
-            return
-        }
-
         do {
+            let normalized = try contestsService.requireNormalizedLabel(for: label)
             voteState = try await contestsService.voteState(normalizedLabel: normalized)
             loadError = nil
         } catch {
@@ -235,7 +229,7 @@ private struct ContestantStatusRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(isMe
                      ? NSLocalizedString("You", comment: "Usernames")
-                     : shortIdentity)
+                     : contender.shortIdentityId)
                     .font(.subheadline)
                     .fontWeight(isMe ? .semibold : .regular)
                     .monospaced(!isMe)
@@ -254,10 +248,5 @@ private struct ContestantStatusRow: View {
             }
         }
         .padding(.vertical, 2)
-    }
-
-    private var shortIdentity: String {
-        guard contender.identityId.count > 16 else { return contender.identityId }
-        return String(contender.identityId.prefix(8)) + "…" + String(contender.identityId.suffix(6))
     }
 }

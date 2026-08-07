@@ -36,6 +36,14 @@ struct UsernameVotingScreen: View {
                 nodes: viewModel.votableNodes,
                 totalWeight: viewModel.totalVoteWeight)
 
+            if viewModel.nodeListMayBeIncomplete {
+                VotingBanner(
+                    text: NSLocalizedString(
+                        "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen.",
+                        comment: "Voting"),
+                    tone: .warning)
+            }
+
             if let loadError = viewModel.loadError {
                 VotingBanner(text: loadError, tone: .error)
             }
@@ -179,13 +187,13 @@ private struct VoterCapacityHeader: View {
 
     private var nodeSummary: String {
         let evonodes = nodes.filter(\.isEvonode).count
-        let masternodes = nodes.count - evonodes
+        let regularNodes = nodes.count - evonodes
         var parts: [String] = []
         if evonodes > 0 {
             parts.append(String(format: NSLocalizedString("%d evonodes", comment: "Voting"), evonodes))
         }
-        if masternodes > 0 {
-            parts.append(String(format: NSLocalizedString("%d masternodes", comment: "Voting"), masternodes))
+        if regularNodes > 0 {
+            parts.append(String(format: NSLocalizedString("%d masternodes", comment: "Voting"), regularNodes))
         }
         return parts.joined(separator: ", ")
     }
