@@ -29,7 +29,8 @@ struct CastVoteSheet: View {
     let choice: VoteChoice
     @ObservedObject var viewModel: VotingViewModel
 
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.dismiss)
+    private var dismiss
     @State private var selectedNodeIDs: Set<Data> = []
 
     private var selectedNodes: [VoterNode] {

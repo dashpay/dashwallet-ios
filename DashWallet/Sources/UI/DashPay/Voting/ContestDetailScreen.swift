@@ -35,8 +35,27 @@ struct ContestDetailScreen: View {
         viewModel.contests.first { $0.normalizedLabel == contest.normalizedLabel } ?? contest
     }
 
+    /// The contest resolved while this screen was open. The tallies below are
+    /// the last ones read, and no further vote can be accepted.
+    private var isClosed: Bool {
+        viewModel.isClosed(normalizedLabel: contest.normalizedLabel)
+    }
+
+    private var canVote: Bool { viewModel.canVote && !isClosed }
+
     var body: some View {
         List {
+            if isClosed {
+                Section {
+                    VotingBanner(
+                        text: NSLocalizedString(
+                            "Voting on this username has closed. The counts below are the last ones read.",
+                            comment: "Voting"),
+                        tone: .warning)
+                        .listRowInsets(EdgeInsets())
+                }
+            }
+
             Section {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(current.normalizedLabel)
@@ -64,7 +83,7 @@ struct ContestDetailScreen: View {
                         contender: contender,
                         isLeading: contender.id == current.leadingContender?.id
                             && current.lockVotes <= contender.voteTally,
-                        canVote: viewModel.canVote,
+                        canVote: canVote,
                         onVote: { pendingChoice = .towards(identityId: contender.identityId) })
                 }
             }
@@ -75,18 +94,18 @@ struct ContestDetailScreen: View {
                     subtitle: NSLocalizedString("Nobody gets it", comment: "Voting"),
                     tally: current.lockVotes,
                     systemImage: "lock",
-                    canVote: viewModel.canVote,
+                    canVote: canVote,
                     onVote: { pendingChoice = .lock })
                 VoteTallyRow(
                     title: NSLocalizedString("Abstain", comment: "Voting"),
                     subtitle: NSLocalizedString("Take no side", comment: "Voting"),
                     tally: current.abstainVotes,
                     systemImage: "minus.circle",
-                    canVote: viewModel.canVote,
+                    canVote: canVote,
                     onVote: { pendingChoice = .abstain })
             }
 
-            if !viewModel.canVote {
+            if !viewModel.canVote && !isClosed {
                 Section {
                     Text(NSLocalizedString(
                         "Only masternodes and evonodes can vote on usernames. This wallet holds no active masternode voting keys.",

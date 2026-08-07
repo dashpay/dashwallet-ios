@@ -55,7 +55,12 @@ final class VotingViewModel: ObservableObject {
 
     // MARK: Published state
 
+    /// The *open* contests. A contest that resolves leaves this list.
     @Published private(set) var contests: [DPNSContest] = []
+    /// Labels observed to have resolved while the user was looking at them,
+    /// so an already-open detail screen can say so instead of offering a vote
+    /// that can no longer be accepted.
+    @Published private(set) var closedLabels: Set<String> = []
     @Published private(set) var votableNodes: [VoterNode] = []
     @Published private(set) var isLoading = false
     /// Set when a refresh fails. The list keeps showing the last good data.
@@ -154,19 +159,54 @@ final class VotingViewModel: ObservableObject {
 
     /// Re-read one contest's tallies after voting on it, so the row reflects
     /// the vote without a full refresh.
+    ///
+    /// A contest that has since resolved — or that Platform no longer holds
+    /// contenders for — leaves `contests` and is recorded in ``closedLabels``.
+    /// `contests` is the *open* contest list: leaving a settled contest in it
+    /// would offer a Vote button whose only possible outcome is the caster's
+    /// closed-poll rejection.
     func refreshContest(normalizedLabel: String) async {
-        guard let state = try? await contestsService.voteState(normalizedLabel: normalizedLabel),
-              let index = contests.firstIndex(where: { $0.normalizedLabel == normalizedLabel })
+        let state: DPNSContestVoteState?
+        do {
+            state = try await contestsService.voteState(normalizedLabel: normalizedLabel)
+        } catch {
+            // The query failed, so we learned nothing about this contest.
+            // Leave the cached row exactly as it was rather than treating a
+            // network blip as a resolution.
+            return
+        }
+
+        // A successful query returning no contenders means Platform holds no
+        // poll for the label. For a row that was in the active list moments
+        // ago, that is a contest which resolved and was pruned.
+        guard let state, !state.isResolved else {
+            close(normalizedLabel: normalizedLabel)
+            return
+        }
+
+        guard let index = contests.firstIndex(where: { $0.normalizedLabel == normalizedLabel })
         else { return }
 
         let existing = contests[index]
         contests[index] = DPNSContest(
             normalizedLabel: existing.normalizedLabel,
             endTime: existing.endTime,
-            hasWinner: state.isResolved,
+            hasWinner: false,
             abstainVotes: state.abstainVotes,
             lockVotes: state.lockVotes,
             contenders: state.contenders)
+    }
+
+    private func close(normalizedLabel: String) {
+        contests.removeAll { $0.normalizedLabel == normalizedLabel }
+        closedLabels.insert(normalizedLabel)
+    }
+
+    /// Whether a contest the user is looking at has closed under them. The
+    /// detail screen reads this to swap its vote controls for a closed notice
+    /// instead of silently showing a stale snapshot with live-looking buttons.
+    func isClosed(normalizedLabel: String) -> Bool {
+        closedLabels.contains(normalizedLabel)
     }
 
     // MARK: Casting

@@ -1902,6 +1902,13 @@
 		25C2103A3D2448AB40AB8485 /* UsernameVotingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */; };
 		D0C564276BD8B9770F0E0499 /* ContestDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */; };
 		1FED991A9D2D236582CE3C99 /* CastVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */; };
+		8F0D34E5B93E7D2EB9062394 /* ContestedNamesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1426BD13E794C788646055 /* ContestedNamesService.swift */; };
+		F5D223F887ABBFCEB478816F /* MasternodeVoterRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D89828EC913714251D0B58 /* MasternodeVoterRegistry.swift */; };
+		5A5F8C183D2C037FB350ACC9 /* MasternodeVoteCaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AEFB2398EDA01C69E5A8F1 /* MasternodeVoteCaster.swift */; };
+		12118430106B8A5EBB2FBC60 /* UsernameVotingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */; };
+		F34816414D829A45E0762757 /* ContestDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */; };
+		AD24D88215A4E51186112B34 /* CastVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */; };
+		6181C570B638E07D8B369CDB /* VotingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -6024,8 +6031,6 @@
 		479E7922287C00A000D0F7D7 /* Infrastructure */ = {
 			isa = PBXGroup;
 			children = (
-				59B3BC2E57C568600BDD78F5 /* SwiftDashSDK */,
-				64CE06816C51B58845E767AA /* SwiftDashSDK */,
 				47F006002971B1CE0029EB10 /* Currency Exchanger */,
 				47FA3B0029364743008D58DC /* Networking */,
 				4741255F287E77B4004E6BF3 /* Database */,
@@ -7062,6 +7067,7 @@
 		7E31813A79237F4E037063AA /* SwiftDashSDK */ = {
 			isa = PBXGroup;
 			children = (
+				2A85F872C9D04B3BF9C2FFF3 /* Voting */,
 				A11E57A70004C0DE0004B004 /* Invitations */,
 				33FB75FCD21FC8C62840E6FD /* SwiftDashSDKKeyMigrator.swift */,
 				E3CA14DC8416012B813B5E2C /* SwiftDashSDKPhraseRepairer.swift */,
@@ -8549,35 +8555,12 @@
 			path = SwiftUI;
 			sourceTree = "<group>";
 		};
-		64CE06816C51B58845E767AA /* SwiftDashSDK */ = {
-			isa = PBXGroup;
-			children = (
-				2A85F872C9D04B3BF9C2FFF3 /* Voting */,
-			);
-			path = SwiftDashSDK;
-			sourceTree = "<group>";
-		};
 		2A85F872C9D04B3BF9C2FFF3 /* Voting */ = {
 			isa = PBXGroup;
 			children = (
-				15D89828EC913714251D0B58 /* MasternodeVoterRegistry.swift */,
 				FC1426BD13E794C788646055 /* ContestedNamesService.swift */,
-			);
-			path = Voting;
-			sourceTree = "<group>";
-		};
-		59B3BC2E57C568600BDD78F5 /* SwiftDashSDK */ = {
-			isa = PBXGroup;
-			children = (
-				F1884BF21637694C37C972D4 /* Voting */,
-			);
-			path = SwiftDashSDK;
-			sourceTree = "<group>";
-		};
-		F1884BF21637694C37C972D4 /* Voting */ = {
-			isa = PBXGroup;
-			children = (
 				23AEFB2398EDA01C69E5A8F1 /* MasternodeVoteCaster.swift */,
+				15D89828EC913714251D0B58 /* MasternodeVoterRegistry.swift */,
 			);
 			path = Voting;
 			sourceTree = "<group>";
@@ -9382,6 +9365,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6181C570B638E07D8B369CDB /* VotingViewModel.swift in Sources */,
+				AD24D88215A4E51186112B34 /* CastVoteSheet.swift in Sources */,
+				F34816414D829A45E0762757 /* ContestDetailScreen.swift in Sources */,
+				12118430106B8A5EBB2FBC60 /* UsernameVotingScreen.swift in Sources */,
+				5A5F8C183D2C037FB350ACC9 /* MasternodeVoteCaster.swift in Sources */,
+				F5D223F887ABBFCEB478816F /* MasternodeVoterRegistry.swift in Sources */,
+				8F0D34E5B93E7D2EB9062394 /* ContestedNamesService.swift in Sources */,
 				2AB3416223A81E8B004E37A7 /* DWReceiveModelStub.m in Sources */,
 				2AB3417F23A92A2A004E37A7 /* DWBaseAdvancedSecurityModel.m in Sources */,
 				2AD1CE6E22DA357D00C99324 /* DWBaseViewController.m in Sources */,
