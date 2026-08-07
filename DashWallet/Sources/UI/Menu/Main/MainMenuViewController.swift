@@ -508,12 +508,6 @@ struct MainMenuScreen: View {
 
 
     #if DASHPAY
-    private func showVoting() {
-        let controller = UIHostingController(rootView: UsernameVotingScreen())
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
-    }
-    
     private func editProfile() {
         // Gate on the strict SDK-side identity check so the editor
         // never opens against a missing identity — Save would fail
