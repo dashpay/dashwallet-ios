@@ -66,9 +66,11 @@ struct MasternodeKeyUsage {
         let revoked: Bool
     }
 
-    /// Owner/Voting address-join scan window. Matches the SDK's
-    /// pre-derivation count (`PLATFORM_NODE_KEY_PREDERIVE_COUNT`).
-    private static let scanWindow: UInt32 = 20
+    /// Fallback Owner/Voting address-join scan window, used only when the
+    /// live pool's depth can't be read. The join normally walks the whole
+    /// pool (`MasternodeProviderKeyDeriver.highestAddressIndex`), which SPV
+    /// grows past any fixed window as it marks deeper indexes used.
+    private static let fallbackScanWindow: UInt32 = 20
 
     private let used: [MNKey: [UInt32: KeyUse]]
 
@@ -139,7 +141,11 @@ struct MasternodeKeyUsage {
             }
             guard !useByAddress.isEmpty,
                   let deriver = MasternodeProviderKeyDeriver(key: key) else { continue }
-            for index in 0..<scanWindow {
+            // Walk the live pool's full depth: SPV extends it past any fixed
+            // window as ProRegTx/ProUpRegTx matches mark deeper indexes used,
+            // so a capped scan would silently hide those masternodes.
+            let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? fallbackScanWindow
+            for index in 0..<upperBound {
                 guard let address = deriver.address(at: index),
                       let use = useByAddress[address] else { continue }
                 record(key, index, use)

@@ -40,8 +40,9 @@ final class MasternodesViewModel: ObservableObject {
     private var ownerIndexByAddress: [String: UInt32] = [:]
     private var votingIndexByAddress: [String: UInt32] = [:]
 
-    /// Matches `MasternodeKeyUsage.scanWindow` / the SDK pre-derivation count.
-    private static let addressScanWindow: UInt32 = 20
+    /// Fallback join window, used only when the live pool's depth can't be
+    /// read. Mirrors `MasternodeKeyUsage.fallbackScanWindow`.
+    private static let fallbackScanWindow: UInt32 = 20
 
     func load() {
         defer { loaded = true }
@@ -66,7 +67,9 @@ final class MasternodesViewModel: ObservableObject {
         guard !targets.isEmpty,
               let deriver = MasternodeProviderKeyDeriver(key: family) else { return [:] }
         var map: [String: UInt32] = [:]
-        for index in 0..<addressScanWindow {
+        // Whole live pool, not a fixed window — see `MasternodeKeyUsage`.
+        let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? fallbackScanWindow
+        for index in 0..<upperBound {
             guard let address = deriver.address(at: index),
                   targets.contains(address) else { continue }
             map[address] = index
