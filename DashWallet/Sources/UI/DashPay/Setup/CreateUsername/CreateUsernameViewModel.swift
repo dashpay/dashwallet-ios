@@ -117,6 +117,16 @@ class CreateUsernameViewModel: ObservableObject {
     /// second balance or offer another funding source in this state.
     @Published private(set) var hasPendingRegistrationRecovery = false
 
+    /// Fee-aware spendable Core balance (duffs) — the real ceiling for funding
+    /// a registration: an ordinary L1 spend draws on confirmed UTXOs only and
+    /// still needs room for the miner fee, so the displayed total overstates it.
+    ///
+    /// Cached, not recomputed per validation: the underlying reserve estimate
+    /// walks the account's whole UTXO set over the FFI on the main actor, and
+    /// validation runs on every (throttled) keystroke. Refreshed from the
+    /// balance publisher instead, which is when the number can actually change.
+    private var coreSpendableDuffs: UInt64 = 0
+
     /// Shielded funding is offerable right now: funded + matured + pool
     /// minimum cleared (or pool count unknown — Drive enforces the real
     /// rule at submit).
@@ -217,6 +227,15 @@ class CreateUsernameViewModel: ObservableObject {
     /// `DWIdentityRegistrationBridge.shared.preferredFundingSource`,
     /// written by `CreateUsernameView` immediately before this call.
     func submitUsernameRequest(onRegistrationStarted: @escaping @MainActor () -> Void = {}) async -> UsernameRegistrationOutcome {
+        // The cached ceiling tracks the balance publisher, which is enough for
+        // per-keystroke validation. Submission spends real UTXOs, so re-derive
+        // it once here from the live set: one FFI walk on an explicit user
+        // action costs nothing, and it closes the window where the fee reserve
+        // moved with the UTXO count while the balance stayed put. Deliberately
+        // without re-running `validateUsername` — that would restart the DPNS
+        // check and put the spinner back up mid-submission.
+        coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+
         let submittedUsername = username
         submittedRegistrationUsername = submittedUsername
         didNotifyRegistrationStarted = false
@@ -373,12 +392,7 @@ class CreateUsernameViewModel: ObservableObject {
         // pool) all pass. The picker in `CreateUsernameView` lets the
         // user choose among the viable sources; the form is unblocked
         // as soon as any one is.
-        // Fee-aware spendable, NOT the displayed total: the funding transaction
-        // is an ordinary L1 spend, so it can only draw on confirmed UTXOs and
-        // still needs room for the miner fee. Gating on the total let a wallet
-        // whose coins were unconfirmed (or whose whole balance was the exact
-        // cost) reach Continue on a registration the SDK must then reject.
-        let coreBalance = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+        let coreBalance = coreSpendableDuffs
         let hasEnoughCore = coreBalance >= requiredCost
         let hasEnoughPlatform = PlatformPaymentIdentityFundingPolicy
             .canFundCurrentWallet(
@@ -446,17 +460,23 @@ class CreateUsernameViewModel: ObservableObject {
         let result: UsernameValidationRuleResult
         var locked = false
         do {
-            let available = try await DWIdentityRegistrationCoordinator.shared.dpnsCheckAvailability(username)
+            // Two independent questions about the same label, so ask both at
+            // once. Chaining them put a second DAPI round trip behind the
+            // first, and "Validating username…" sat there for the sum of the
+            // two — painful whenever Platform is slow. Scoped to contested
+            // candidates: only they can reach a locked vote poll.
+            async let availability = DWIdentityRegistrationCoordinator.shared
+                .dpnsCheckAvailability(username)
+            async let lockedCheck: Bool = isContestedCandidate
+                ? DWIdentityRegistrationCoordinator.shared.isContestedNameLocked(username)
+                : false
+
+            let available = try await availability
             if available {
                 // "Available" only means no identity owns the domain document.
                 // A contested label whose vote ended in a LOCK is exactly that
                 // — and unregisterable: the transition is refused at broadcast.
-                // Scope the extra query to contested candidates, the only
-                // labels that can reach a locked poll.
-                if isContestedCandidate {
-                    locked = await DWIdentityRegistrationCoordinator.shared
-                        .isContestedNameLocked(username)
-                }
+                locked = await lockedCheck
                 result = locked ? .invalidCritical : .valid
             } else if let pending = DWContestedNameStatusService.shared.pendingLabel,
                       pending.caseInsensitiveCompare(username) == .orderedSame {
@@ -489,6 +509,7 @@ class CreateUsernameViewModel: ObservableObject {
         // credits that landed before the view opened (e.g. a
         // long-standing wallet with PP credits but no recent Core tx).
         SwiftDashSDKWalletState.shared.refreshPlatformPaymentCredits()
+        coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
         checkBalance()
         // Source from SwiftDashSDKWalletState. After M6 retired DashSync's
         // SPV, DSWalletBalanceDidChange no longer fires. Function #5 follow-up.
@@ -496,6 +517,9 @@ class CreateUsernameViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self = self else { return }
+                // The only moment the spendable ceiling can move. Recomputing
+                // it here keeps the FFI UTXO walk off the typing path.
+                self.coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
                 self.validateUsername(username: self.username)
                 self.checkBalance()
             }
@@ -543,10 +567,7 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     private func checkBalance() {
-        // Same envelope `validateUsername` gates on — the Core picker row must
-        // show the amount that can actually fund the registration, not a total
-        // that includes coins the funding transaction cannot spend.
-        let balance = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+        let balance = coreSpendableDuffs
         let platformDuffs = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
         let trimmedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
         let requiredDuffs = trimmedUsername.isEmpty

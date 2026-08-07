@@ -25,6 +25,11 @@ final class NetworkReachability: NSObject {
     @objc static let didChangeNotification =
         Notification.Name("org.dash.networking.reachability.change")
 
+    /// Path updates are background work and stay at `.utility`. Raising the
+    /// QoS here was an attempt to hide a priority inversion, but the inversion
+    /// came from `startMonitoring` blocking the main thread — and
+    /// `.userInitiated` still sits below the main thread's `.userInteractive`,
+    /// so it only narrowed the window. The wait itself is gone instead.
     private let queue = DispatchQueue(label: "org.dash.reachability", qos: .utility)
     private var monitor: NWPathMonitor?
     private let lock = NSLock()
@@ -36,6 +41,15 @@ final class NetworkReachability: NSObject {
     @objc var isMonitoring: Bool {
         lock.lock(); defer { lock.unlock() }
         return monitor != nil
+    }
+
+    /// True once a real path has been reported. Until then `isReachable`'s
+    /// `false` is a placeholder, not an answer — callers that would show
+    /// offline UI must consult this (or `networkStatus == .offline`) rather
+    /// than treating "not reachable" as "offline".
+    @objc var hasDeterminedReachability: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return hasReceivedFirstPath
     }
 
     @objc var isReachable: Bool {
@@ -59,9 +73,6 @@ final class NetworkReachability: NSObject {
         hasReceivedFirstPath = false
         lock.unlock()
 
-        // Block until the first path update lands so callers observe real
-        // state the moment this method returns — matches `SCNetworkReachability`'s
-        // synchronous contract that `DSReachabilityManager` relied on.
         let firstUpdate = DispatchSemaphore(value: 0)
         m.pathUpdateHandler = { [weak self] path in
             if self?.handlePathUpdate(path) == true {
@@ -69,6 +80,18 @@ final class NetworkReachability: NSObject {
             }
         }
         m.start(queue: queue)
+
+        // Off the main thread, keep the synchronous contract the old
+        // `SCNetworkReachability`-based manager offered: wait briefly so the
+        // caller observes real state on return.
+        //
+        // On the main thread, never wait. `NWPathMonitor` delivers on a
+        // background queue, so the wait made a user-interactive thread block on
+        // lower-QoS work for up to 200 ms at launch — the priority inversion
+        // the Thread Performance Checker flags. Every caller already observes
+        // `didChangeNotification`, which carries the first real path a few
+        // milliseconds later.
+        guard !Thread.isMainThread else { return }
         _ = firstUpdate.wait(timeout: .now() + .milliseconds(200))
     }
 

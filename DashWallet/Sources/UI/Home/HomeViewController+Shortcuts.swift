@@ -219,6 +219,11 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             },
             onClose: {
                 readinessNavigationController?.dismiss(animated: true)
+            },
+            onClaimInvitation: { [weak self] in
+                readinessNavigationController?.dismiss(animated: true) {
+                    self?.showClaimInvitation()
+                }
             })
         let hosting = UIHostingController(rootView: screen)
         hosting.view.backgroundColor = UIColor.dw_background()

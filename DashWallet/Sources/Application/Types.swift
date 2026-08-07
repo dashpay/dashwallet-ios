@@ -22,10 +22,21 @@ import Foundation
 public enum NetworkStatus {
     case online
     case offline
+    /// No path has been reported yet, so reachability is genuinely not known.
+    ///
+    /// `NWPathMonitor` answers asynchronously on a background queue, and
+    /// `startMonitoring()` deliberately does not block the main thread waiting
+    /// for it. Reporting `.offline` in that window would be a guess — and one
+    /// that flashes "no network" at users who are perfectly online.
+    ///
+    /// Treat it as "do not decide yet": show offline UI on `.offline` only, and
+    /// keep gating actions on `== .online` so nothing acts on an unknown path.
+    case unknown
 }
 
 extension NetworkReachability {
     var networkStatus: NetworkStatus {
-        isReachable ? .online : .offline
+        guard hasDeterminedReachability else { return .unknown }
+        return isReachable ? .online : .offline
     }
 }
