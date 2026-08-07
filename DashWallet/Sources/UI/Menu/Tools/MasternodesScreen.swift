@@ -33,6 +33,21 @@ final class MasternodesViewModel: ObservableObject {
     @Published private(set) var masternodes: [PlatformMasternode] = []
     @Published private(set) var loaded = false
 
+    /// Registrations still on the network — active, PoSe-banned, or (before
+    /// the list arrives) indeterminate. These stay expanded at the top: an
+    /// inactive node is a problem the user probably wants to see, not
+    /// history.
+    var currentMasternodes: [PlatformMasternode] {
+        masternodes.filter { MasternodeStatus(rawValue: $0.status) != .retired }
+    }
+
+    /// Registrations no longer in the masternode list — collateral spent,
+    /// revoked, or expired. History: shown in a collapsed section at the
+    /// bottom.
+    var retiredMasternodes: [PlatformMasternode] {
+        masternodes.filter { MasternodeStatus(rawValue: $0.status) == .retired }
+    }
+
     /// In-wallet key index by base58 address for the two address-carrying
     /// families. Operator/platform ownership comes pre-resolved on the
     /// aggregation row; owner/voting is joined here against the derived
@@ -166,6 +181,9 @@ private extension PlatformMasternode {
 struct MasternodesScreen: View {
     @StateObject private var viewModel = MasternodesViewModel()
 
+    /// Retired registrations are history — collapsed until asked for.
+    @State private var isRetiredExpanded = false
+
     var body: some View {
         List {
             if viewModel.loaded && viewModel.masternodes.isEmpty {
@@ -187,15 +205,32 @@ struct MasternodesScreen: View {
                     .padding(.vertical, 20)
                 }
             } else {
-                Section {
-                    ForEach(viewModel.masternodes, id: \.proTxHash) { masternode in
-                        NavigationLink {
-                            MasternodeDetailScreen(
-                                masternode: masternode,
-                                ownerOwnership: viewModel.ownerOwnership(for: masternode),
-                                votingOwnership: viewModel.votingOwnership(for: masternode))
+                if !viewModel.currentMasternodes.isEmpty {
+                    Section {
+                        ForEach(viewModel.currentMasternodes, id: \.proTxHash) { masternode in
+                            row(for: masternode)
+                        }
+                    }
+                }
+
+                if !viewModel.retiredMasternodes.isEmpty {
+                    Section {
+                        DisclosureGroup(isExpanded: $isRetiredExpanded) {
+                            ForEach(viewModel.retiredMasternodes, id: \.proTxHash) { masternode in
+                                row(for: masternode)
+                            }
                         } label: {
-                            MasternodeListRow(masternode: masternode)
+                            HStack {
+                                Text(NSLocalizedString("Retired", comment: "Masternodes"))
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+
+                                Spacer()
+
+                                Text("\(viewModel.retiredMasternodes.count)")
+                                    .font(.caption)
+                                    .foregroundColor(Color.dash.secondaryText)
+                            }
                         }
                     }
                 }
@@ -203,6 +238,17 @@ struct MasternodesScreen: View {
         }
         .onAppear {
             viewModel.load()
+        }
+    }
+
+    private func row(for masternode: PlatformMasternode) -> some View {
+        NavigationLink {
+            MasternodeDetailScreen(
+                masternode: masternode,
+                ownerOwnership: viewModel.ownerOwnership(for: masternode),
+                votingOwnership: viewModel.votingOwnership(for: masternode))
+        } label: {
+            MasternodeListRow(masternode: masternode)
         }
     }
 }
