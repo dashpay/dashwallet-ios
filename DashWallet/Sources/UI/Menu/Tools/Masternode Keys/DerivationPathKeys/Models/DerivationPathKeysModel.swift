@@ -186,12 +186,24 @@ extension DerivationPathKeysModel {
 /// its owner/voting address join.
 @MainActor
 final class MasternodeProviderKeyDeriver {
+    /// `AccountTypeTagFFI` discriminants for the two address-carrying provider
+    /// families (`rs-platform-wallet-ffi` `wallet_restore_types.rs`).
+    private static let votingKeysTypeTag: UInt8 = 8
+    private static let ownerKeysTypeTag: UInt8 = 9
+
     private let key: MNKey
-    private let masterPath: String
+    private let accountRootPath: String
     private let accountType: AccountType
     private let wallet: Wallet
-    private let manager: WalletManager
-    private let walletId: Data
+
+    /// Index → base58 address of the provider pool, snapshotted once at init.
+    /// Sourced from the running wallet (`loadLiveAddresses`), falling back to
+    /// the derivation wallet's own pool (`loadDerivationAddresses`) when the
+    /// running wallet has no provider account yet — e.g. a just-imported
+    /// wallet whose registration hasn't completed. Empty only when neither
+    /// source has a pool, in which case there are genuinely no addresses to
+    /// join against.
+    private let poolAddresses: [UInt32: String]
 
     init?(key: MNKey) {
         guard let network = SwiftDashSDKHost.shared.runningNetwork else {
@@ -214,25 +226,103 @@ final class MasternodeProviderKeyDeriver {
             return nil
         }
 
-        guard let (manager, wallet, walletId) = SwiftDashSDKHost.shared.derivationWallet() else {
+        // The derivation stack is a THROWAWAY key-wallet built from the
+        // mnemonic (see `SwiftDashSDKHost.derivationWallet`) — it has never
+        // processed a transaction, so its pools sit at the freshly-created
+        // `DEFAULT_SPECIAL_GAP_LIMIT` depth. It is used ONLY for private-key
+        // derivation, which works at any index; addresses come from the live
+        // pool below.
+        guard let (derivationManager, wallet, derivationWalletId) =
+                SwiftDashSDKHost.shared.derivationWallet() else {
             return nil
         }
 
-        // Ensure the provider account exists so the managed collection can vend
-        // its address pool.
+        // Ensure the provider account exists so private-key derivation — and
+        // the fallback pool read below — can resolve it.
         _ = try? wallet.getAccount(type: type)
 
         self.key = key
-        self.masterPath = path
+        self.accountRootPath = path
         self.accountType = type
-        self.manager = manager
         self.wallet = wallet
-        self.walletId = walletId
+
+        let live = Self.loadLiveAddresses(for: key)
+        self.poolAddresses = live.isEmpty
+            ? Self.loadDerivationAddresses(
+                key: key, manager: derivationManager, walletId: derivationWalletId)
+            : live
     }
+
+    /// Snapshot the running wallet's provider address pool — the one SPV
+    /// extends as ProRegTx/ProUpRegTx matches mark indexes used, and the one
+    /// the Storage Explorer renders. Read once per deriver: the FFI returns
+    /// the whole pool, so per-index lookups are dictionary hits.
+    private static func loadLiveAddresses(for key: MNKey) -> [UInt32: String] {
+        let typeTag: UInt8
+        switch key {
+        case .voting: typeTag = votingKeysTypeTag
+        case .owner: typeTag = ownerKeysTypeTag
+        case .operator, .evonodeOperator: return [:]
+        }
+        guard let manager = SwiftDashSDKHost.shared.manager,
+              let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              let balance = manager.accountBalances(for: walletId)
+                  .first(where: { $0.typeTag == typeTag })
+        else { return [:] }
+
+        var addresses: [UInt32: String] = [:]
+        for pool in manager.accountAddressPools(for: walletId, balance: balance) {
+            for info in pool.addresses where !info.address.isEmpty {
+                addresses[info.addressIndex] = info.address
+            }
+        }
+        return addresses
+    }
+
+    /// Degraded-path pool read from the derivation wallet itself, used when
+    /// the running wallet can't vend the account. This stack never processes
+    /// transactions, so its pool is only ever the freshly-created
+    /// `DEFAULT_SPECIAL_GAP_LIMIT` depth — enough to keep the low indexes
+    /// resolvable rather than showing nothing at all, but it is NOT a
+    /// substitute for the live pool (that shallowness is precisely the bug
+    /// this class's live read exists to fix).
+    private static func loadDerivationAddresses(
+        key: MNKey,
+        manager: WalletManager,
+        walletId: Data
+    ) -> [UInt32: String] {
+        guard let collection = manager.getManagedAccountCollection(walletId: walletId) else {
+            return [:]
+        }
+        let account: ManagedAccount?
+        switch key {
+        case .voting: account = collection.getProviderVotingKeysAccount()
+        case .owner: account = collection.getProviderOwnerKeysAccount()
+        case .operator, .evonodeOperator: account = nil
+        }
+        guard let pool = account?.getAddressPool(type: .single)
+                ?? account?.getExternalAddressPool() else {
+            return [:]
+        }
+
+        // The pool exposes no count, so walk until it stops vending. The cap
+        // is a runaway guard, not a semantic window: this pool is created at
+        // gap-limit depth and never grows here.
+        var addresses: [UInt32: String] = [:]
+        for index in 0..<Self.derivationPoolProbeCap {
+            guard let info = try? pool.getAddress(at: index) else { break }
+            addresses[index] = info.address
+        }
+        return addresses
+    }
+
+    /// Runaway guard for the fallback pool walk — far above any gap-limit
+    /// depth the derivation wallet can hold.
+    private static let derivationPoolProbeCap: UInt32 = 200
 
     func wif(at index: UInt32) -> String? {
         guard let account = try? wallet.getAccount(type: accountType) else { return nil }
-        return try? account.derivePrivateKeyWIF(wallet: wallet, masterPath: masterPath, index: index)
+        return try? account.derivePrivateKeyWIF(wallet: wallet, masterPath: accountRootPath, index: index)
     }
 
     func privateKeyHex(at index: UInt32) -> String? {
@@ -240,26 +330,20 @@ final class MasternodeProviderKeyDeriver {
         return data.map { String(format: "%02x", $0) }.joined()
     }
 
+    /// The pool address at `index`. Backed by the running wallet's live pool
+    /// whenever it's available: reading the throwaway derivation wallet as
+    /// the primary source would cap every consumer at that stack's initial
+    /// 5-entry pool, hiding every masternode whose owner/voting key sits at
+    /// a deeper index.
     func address(at index: UInt32) -> String? {
-        guard let collection = manager.getManagedAccountCollection(walletId: walletId) else {
-            return nil
-        }
+        poolAddresses[index]
+    }
 
-        let account: ManagedAccount?
-        switch key {
-        case .voting:
-            account = collection.getProviderVotingKeysAccount()
-        case .owner:
-            account = collection.getProviderOwnerKeysAccount()
-        case .operator, .evonodeOperator:
-            account = nil
-        }
-
-        guard let pool = account?.getAddressPool(type: .single) ?? account?.getExternalAddressPool(),
-              let info = try? pool.getAddress(at: index) else {
-            return nil
-        }
-        return info.address
+    /// Highest index the snapshotted pool holds, or nil when no pool could be
+    /// read — lets the address joins walk the real pool rather than a fixed
+    /// window, and skip entirely when there is nothing to walk.
+    var highestAddressIndex: UInt32? {
+        poolAddresses.keys.max()
     }
 }
 

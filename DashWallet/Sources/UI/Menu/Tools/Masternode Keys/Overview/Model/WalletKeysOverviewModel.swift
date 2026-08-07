@@ -66,10 +66,6 @@ struct MasternodeKeyUsage {
         let revoked: Bool
     }
 
-    /// Owner/Voting address-join scan window. Matches the SDK's
-    /// pre-derivation count (`PLATFORM_NODE_KEY_PREDERIVE_COUNT`).
-    private static let scanWindow: UInt32 = 20
-
     private let used: [MNKey: [UInt32: KeyUse]]
 
     private init(used: [MNKey: [UInt32: KeyUse]]) {
@@ -139,7 +135,12 @@ struct MasternodeKeyUsage {
             }
             guard !useByAddress.isEmpty,
                   let deriver = MasternodeProviderKeyDeriver(key: key) else { continue }
-            for index in 0..<scanWindow {
+            // Walk the pool's full depth: SPV extends it past any fixed
+            // window as ProRegTx/ProUpRegTx matches mark deeper indexes used,
+            // so a capped scan would silently hide those masternodes. No pool
+            // means no addresses to join against, so the loop is skipped.
+            let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? 0
+            for index in 0..<upperBound {
                 guard let address = deriver.address(at: index),
                       let use = useByAddress[address] else { continue }
                 record(key, index, use)

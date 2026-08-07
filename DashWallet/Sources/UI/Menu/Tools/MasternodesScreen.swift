@@ -40,9 +40,6 @@ final class MasternodesViewModel: ObservableObject {
     private var ownerIndexByAddress: [String: UInt32] = [:]
     private var votingIndexByAddress: [String: UInt32] = [:]
 
-    /// Matches `MasternodeKeyUsage.scanWindow` / the SDK pre-derivation count.
-    private static let addressScanWindow: UInt32 = 20
-
     func load() {
         defer { loaded = true }
         guard let manager = SwiftDashSDKHost.shared.manager,
@@ -66,7 +63,9 @@ final class MasternodesViewModel: ObservableObject {
         guard !targets.isEmpty,
               let deriver = MasternodeProviderKeyDeriver(key: family) else { return [:] }
         var map: [String: UInt32] = [:]
-        for index in 0..<addressScanWindow {
+        // Whole pool, not a fixed window — see `MasternodeKeyUsage`.
+        let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? 0
+        for index in 0..<upperBound {
             guard let address = deriver.address(at: index),
                   targets.contains(address) else { continue }
             map[address] = index
