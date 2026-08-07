@@ -1959,6 +1959,9 @@
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
 
+/* Home */
+"Loading transactions" = "Loading transactions";
+
 /* Explore Dash/Merchants/Filters */
 "Location" = "Location";
 
