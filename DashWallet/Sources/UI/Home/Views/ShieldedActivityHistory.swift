@@ -227,9 +227,10 @@ struct ShieldedActivityItem: Identifiable {
 
     /// From/To wording for the detail sheet. Internal moves name the
     /// user's own balances on both sides (a guarantee — see the fetch
-    /// doc); an external unshield/withdrawal/send names the destination
+    /// doc); an external unshield/withdrawal names the destination
     /// address (or an honest "External address" when the counterparty
-    /// script couldn't be decoded).
+    /// script couldn't be decoded); a Sent entry names its decoded
+    /// recipient and stays route-less when the counterparty didn't decode.
     var internalMoveRoute: (source: String, destination: String)? {
         let platform = NSLocalizedString("Your Platform balance", comment: "Shielded activity: source/destination of an internal move")
         let shielded = NSLocalizedString("Your Shielded balance", comment: "Shielded activity: source/destination of an internal move")

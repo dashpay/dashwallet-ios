@@ -1414,7 +1414,15 @@ class SwiftDashSDKWalletSource: TransactionSource {
         guard let rows = try? context.fetch(descriptor) else { return [] }
 
         var byEntry: [Data: PersistentShieldedActivity] = [:]
+        // Entry ids that also produced a Received projection: an
+        // intra-wallet transfer writes Sent + Received rows for the same
+        // operation (see the dedupe doc above), so a surviving Sent row
+        // whose entry id is in here paid one of the wallet's own accounts.
+        var receivedEntryIds: Set<Data> = []
         for row in rows where row.kindTag != ShieldedActivityItem.Kind.shieldFromAssetLock.rawValue {
+            if row.kindTag == ShieldedActivityItem.Kind.received.rawValue {
+                receivedEntryIds.insert(row.entryId)
+            }
             if let existing = byEntry[row.entryId] {
                 if shouldPreferShieldedProjection(row, over: existing) {
                     byEntry[row.entryId] = row
@@ -1426,6 +1434,16 @@ class SwiftDashSDKWalletSource: TransactionSource {
 
         let noteValueByCmx = shieldedNoteValueByCmx(in: context, walletId: walletId)
         let outgoingNoteValueByCmx = outgoingShieldedNoteValueByCmx(in: context, walletId: walletId)
+
+        // The wallet's own default Orchard address (raw 43 bytes), for the
+        // Sent-destination ownership check. Nil until the shielded
+        // sub-wallet is bound — then the Received-row evidence still covers
+        // live intra-wallet transfers.
+        let ownShieldedRaw43: Data? = onMain {
+            guard let manager = SwiftDashSDKHost.shared.manager,
+                  let wallet = SwiftDashSDKHost.shared.wallet else { return nil }
+            return ((try? manager.shieldedDefaultAddress(walletId: wallet.walletId)) ?? nil)
+        }
 
         var items: [ShieldedActivityItem] = []
         for row in byEntry.values {
@@ -1565,14 +1583,18 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 // 43-byte raw Orchard address (live-recorded, or OVK-recovered
                 // by the restore scan). Surface it so the row and detail sheet
                 // name where the money went instead of a bare "Sent /
-                // Shielded". Sent entries are outgoing to a non-own address by
-                // the recorder's classification, hence external.
+                // Shielded". External only when the destination is provably
+                // not the wallet's own: an intra-wallet transfer leaves a
+                // Received row under the same entry id, and a send to the
+                // wallet's default Orchard address is its own funds either way.
                 let address = shieldedDestinationAddress(counterparty: row.counterparty)
+                let isOwnDestination = receivedEntryIds.contains(row.entryId)
+                    || (ownShieldedRaw43 != nil && row.counterparty == ownShieldedRaw43)
                 items.append(ShieldedActivityItem(
                     row: row,
                     amountCreditsOverride: reconstructedAmountCredits,
                     destinationAddress: address,
-                    isExternalDestination: address != nil))
+                    isExternalDestination: address != nil && !isOwnDestination))
             default:
                 items.append(ShieldedActivityItem(
                     row: row,

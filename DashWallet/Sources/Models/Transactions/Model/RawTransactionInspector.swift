@@ -236,7 +236,7 @@ enum RawTransactionInspector {
         for _ in 0 ..< count {
             guard let value = try? reader.readUInt64(),
                   let scriptLength = try? reader.readVarInt(),
-                  let script = try? reader.readBytes(Int(scriptLength)) else { return nil }
+                  let script = try? reader.readBytes(length: scriptLength) else { return nil }
             outputs.append(AssetLockCreditOutput(valueDuffs: value, script: script))
         }
         return outputs
@@ -347,7 +347,7 @@ struct ParsedRawTransaction {
             let prevTxid = try reader.readBytes(32)
             let prevVout = try reader.readUInt32()
             let scriptLength = try reader.readVarInt()
-            let scriptSig = try reader.readBytes(Int(scriptLength))
+            let scriptSig = try reader.readBytes(length: scriptLength)
             let sequence = try reader.readUInt32()
             return Input(prevTxid: prevTxid, prevVout: prevVout, scriptSig: scriptSig, sequence: sequence)
         }
@@ -357,7 +357,7 @@ struct ParsedRawTransaction {
         outputs = try (0 ..< outputCount).map { _ in
             let value = try reader.readUInt64()
             let scriptLength = try reader.readVarInt()
-            let script = try reader.readBytes(Int(scriptLength))
+            let script = try reader.readBytes(length: scriptLength)
             return Output(valueDuffs: value, scriptPubKey: script)
         }
 
@@ -365,7 +365,7 @@ struct ParsedRawTransaction {
 
         if type > 0, reader.remaining > 0 {
             let payloadLength = try reader.readVarInt()
-            extraPayload = try reader.readBytes(Int(payloadLength))
+            extraPayload = try reader.readBytes(length: payloadLength)
         } else {
             extraPayload = nil
         }
@@ -438,5 +438,13 @@ private struct ByteReader {
         guard count >= 0, offset + count <= bytes.count else { throw ReadError.outOfBounds }
         defer { offset += count }
         return Data(bytes[offset ..< offset + count])
+    }
+
+    /// Consensus lengths arrive as CompactSize `UInt64`s; a plain `Int(_:)`
+    /// conversion traps on values above `Int.max`, which malformed bytes can
+    /// encode. Reject those as out-of-bounds instead of crashing.
+    mutating func readBytes(length: UInt64) throws -> Data {
+        guard let count = Int(exactly: length) else { throw ReadError.outOfBounds }
+        return try readBytes(count)
     }
 }
