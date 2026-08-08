@@ -179,6 +179,9 @@
 /* No comment provided by engineer. */
 "About" = "About";
 
+/* DashPay FAQ title */
+"About DashPay" = "About DashPay";
+
 /* No comment provided by engineer. */
 "About me" = "About me";
 
@@ -635,11 +638,20 @@
 /* Masternodes */
 "Collateral" = "Collateral";
 
+/* DashPay intro: feature title */
+"Coming soon" = "Coming soon";
+
 /* Shielded transfer status */
 "Completed" = "Completed";
 
 /* Balance info sheet section */
 "Cons" = "Cons";
+
+/* DashPay FAQ */
+"Contact requests are end-to-end encrypted with keys only you and your contact hold. The payment addresses you exchange are derived from that encrypted handshake and are never published — each contact pays you at fresh addresses only the two of you can link. Your username and profile are public on Dash Platform." = "Contact requests are end-to-end encrypted with keys only you and your contact hold. The payment addresses you exchange are derived from that encrypted handshake and are never published — each contact pays you at fresh addresses only the two of you can link. Your username and profile are public on Dash Platform.";
+
+/* DashPay intro: feature body */
+"Contact requests are end-to-end encrypted, and fresh payment addresses are shared only between you and your contacts." = "Contact requests are end-to-end encrypted, and fresh payment addresses are shared only between you and your contacts.";
 
 /* Raw transaction inspector */
 "Copy Raw Transaction" = "Copy Raw Transaction";
@@ -982,8 +994,17 @@
 /* Buy Dash */
 "Dash Wallet on this device" = "Dash Wallet on this device";
 
+/* DashPay */
+"DashPay" = "DashPay";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Invitation";
+
+/* DashPay FAQ */
+"DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses." = "DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses.";
+
+/* DashPay intro: pitch paragraph */
+"DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person." = "DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person.";
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "DashPay Upgrade Fee";
@@ -1158,6 +1179,9 @@
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
+
+/* DashPay FAQ */
+"Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees.";
 
 /* Swap */
 "Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work." = "Enter a valid %1$@ address. %2$@ here is on %3$@, so an Ethereum (0x…) address won’t work.";
@@ -1574,6 +1598,9 @@
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "How do I get Test Dash?";
 
+/* DashPay FAQ */
+"How private is DashPay?" = "How private is DashPay?";
+
 /* CrowdNode */
 "How to confirm your API Dash address" = "How to confirm your API Dash address";
 
@@ -1914,6 +1941,9 @@
 /* Maya */
 "Learn more" = "Learn more";
 
+/* DashPay intro: opens the FAQ */
+"Learn More" = "Learn More";
+
 /* Info Screen */
 "Learn More..." = "Learn More...";
 
@@ -2215,6 +2245,15 @@
 /* DashPay: fee source note of the Enable DashPay confirmation */
 "Paid from your identity's credit balance." = "Paid from your identity's credit balance.";
 
+/* DashPay intro: headline */
+"Pay people, not addresses" = "Pay people, not addresses";
+
+/* DashPay intro: feature body */
+"Payments with each contact are grouped in one place, with names and profiles instead of raw transactions." = "Payments with each contact are grouped in one place, with names and profiles instead of raw transactions.";
+
+/* DashPay intro: feature title */
+"Private by design" = "Private by design";
+
 /* Identities: what a public key is used for */
 "Purpose" = "Purpose";
 
@@ -2224,11 +2263,38 @@
 /* Identities: DPP security level of a public key */
 "Security level" = "Security level";
 
+/* DashPay intro: feature body */
+"Send to a username you can actually remember and verify." = "Send to a username you can actually remember and verify.";
+
+/* DashPay intro: coming-soon body */
+"Shielded DashPay and paying people who aren't contacts yet." = "Shielded DashPay and paying people who aren't contacts yet.";
+
+/* DashPay FAQ */
+"Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are both coming soon." = "Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are both coming soon.";
+
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.";
 
-/* DashPay: subtitle of the Enable DashPay banner */
-"Your identity can't send or receive contact requests yet" = "Your identity can't send or receive contact requests yet";
+/* DashPay intro: feature title */
+"Usernames, not addresses" = "Usernames, not addresses";
+
+/* DashPay FAQ */
+"What does it cost?" = "What does it cost?";
+
+/* DashPay FAQ */
+"What is DashPay?" = "What is DashPay?";
+
+/* DashPay FAQ */
+"What's coming next?" = "What's coming next?";
+
+/* DashPay FAQ */
+"Why do I need to enable it?" = "Why do I need to enable it?";
+
+/* DashPay intro: feature title */
+"Your history, organized" = "Your history, organized";
+
+/* DashPay FAQ */
+"Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event.";
 
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds.";
