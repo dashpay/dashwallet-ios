@@ -152,7 +152,7 @@ struct AddContactScreen: View {
                 if let hint = collisionText(state) {
                     Text(hint)
                         .font(.system(size: 12))
-                        .foregroundColor(state == .alreadyRequested ? .dashGolden : .dash.tertiaryText)
+                        .foregroundColor(state == .alreadyRequested ? Color.dash.orange : .dash.tertiaryText)
                 }
             }
             Spacer()
@@ -196,10 +196,10 @@ struct AddContactScreen: View {
                 AcceptPillButton { viewModel.accept(result) }
             case .established:
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.dashGreen)
+                    .foregroundColor(Color.dash.green)
             case .alreadyRequested:
                 Image(systemName: "hourglass")
-                    .foregroundColor(.dashGolden)
+                    .foregroundColor(Color.dash.orange)
             case .isSelf:
                 EmptyView()
             case .missingDashPayKeys:

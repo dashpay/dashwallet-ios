@@ -156,7 +156,7 @@ struct ContactProfileSheet: View {
                                 .frame(width: 120, height: 39)
                                 .background(
                                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                        .fill(Color.dashGreen))
+                                        .fill(Color.dash.green))
                         }
                         .buttonStyle(.plain)
 
@@ -183,7 +183,7 @@ struct ContactProfileSheet: View {
                 Text(NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts"))
                     .font(.system(size: 13, weight: .medium))
             }
-            .foregroundColor(.dashGolden)
+            .foregroundColor(Color.dash.orange)
         case .established:
             VStack(spacing: 20) {
                 // Contact settings unfold from under the header when
@@ -336,7 +336,7 @@ struct ContactProfileSheet: View {
         HStack(spacing: 10) {
             Image(systemName: payment.direction == .sent
                 ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
-                .foregroundColor(payment.direction == .sent ? .dash.blue : .dashGreen)
+            .foregroundColor(payment.direction == .sent ? .dash.blue : Color.dash.green)
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(payment.direction == .sent ? "-" : "+")\(ContactProfileViewModel.dashString(duffs: payment.amountDuffs)) DASH")
                     .font(.system(size: 14, weight: .medium))

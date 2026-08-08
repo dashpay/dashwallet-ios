@@ -104,14 +104,14 @@ struct AddContactPreviewSheet: View {
                 dismiss()
             }
         case .theyAskedUs:
-            primaryButton(NSLocalizedString("Accept", comment: "DashPay Contacts"), color: .dashGreen) {
+            primaryButton(NSLocalizedString("Accept", comment: "DashPay Contacts"), color: Color.dash.green) {
                 onAccept()
                 dismiss()
             }
         case .alreadyRequested:
-            statusLabel(NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts"), systemImage: "hourglass", color: .dashGolden)
+            statusLabel(NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts"), systemImage: "hourglass", color: Color.dash.orange)
         case .established:
-            statusLabel(NSLocalizedString("Already a contact", comment: "DashPay Contacts"), systemImage: "checkmark.circle.fill", color: .dashGreen)
+            statusLabel(NSLocalizedString("Already a contact", comment: "DashPay Contacts"), systemImage: "checkmark.circle.fill", color: Color.dash.green)
         case .isSelf:
             EmptyView()
         case .missingDashPayKeys:

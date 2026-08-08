@@ -39,6 +39,32 @@ final class ContactsViewModel: ObservableObject {
         contacts.isEmpty && incomingRequests.isEmpty && outgoingRequests.isEmpty
     }
 
+    // MARK: - Filtering (local, over the already-materialized snapshots)
+
+    /// The list's search text. Lives here rather than in the view because the
+    /// sections below are derived from it, and `AddContactViewModel` already
+    /// owns its own query the same way.
+    @Published var filterText = ""
+
+    var filteredContacts: [ContactItem] { contacts.filter { !$0.isHidden && matches($0) } }
+    var filteredHidden: [ContactItem] { contacts.filter { $0.isHidden && matches($0) } }
+    var filteredIncoming: [ContactItem] { incomingRequests.filter(matches) }
+    var filteredOutgoing: [ContactItem] { outgoingRequests.filter(matches) }
+
+    func entries(
+        _ items: [ContactItem],
+        section: ContactListEntry.Section
+    ) -> [ContactListEntry] {
+        items.map { ContactListEntry(item: $0, section: section) }
+    }
+
+    private func matches(_ item: ContactItem) -> Bool {
+        let trimmed = filterText.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return true }
+        return item.displayTitle.localizedCaseInsensitiveContains(trimmed)
+            || (item.username?.localizedCaseInsensitiveContains(trimmed) ?? false)
+    }
+
     func refresh() {
         service?.refresh()
     }
@@ -92,12 +118,14 @@ extension ContactsViewModel {
     static func preview(
         contacts: [ContactItem] = [],
         incoming: [ContactItem] = [],
-        outgoing: [ContactItem] = []
+        outgoing: [ContactItem] = [],
+        filterText: String = ""
     ) -> ContactsViewModel {
         let model = ContactsViewModel(service: nil)
         model.contacts = contacts
         model.incomingRequests = incoming
         model.outgoingRequests = outgoing
+        model.filterText = filterText
         return model
     }
 }

@@ -12,7 +12,7 @@ struct ContactAvatarView: View {
     let title: String
     let avatarURL: String?
     let identitySeed: Data
-    var size: CGFloat = 36
+    var size: CGFloat = 30
 
     var body: some View {
         Group {
@@ -50,6 +50,7 @@ struct ContactAvatarView: View {
         guard let scalar = title.uppercased().unicodeScalars.first else {
             return Color(hue: 0, saturation: 0.3, brightness: 0.6)
         }
+
         let v = scalar.value
         let index: Double
         switch v {

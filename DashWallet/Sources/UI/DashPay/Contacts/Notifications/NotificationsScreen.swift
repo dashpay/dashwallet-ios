@@ -127,7 +127,7 @@ struct NotificationsScreen: View {
                         Text(NSLocalizedString("Accepting", comment: "DashPay Contacts"))
                             .font(.system(size: 11, weight: .medium))
                     }
-                    .foregroundColor(.dashGolden)
+                    .foregroundColor(Color.dash.orange)
                 } else {
                     AcceptPillButton { viewModel.accept(event.item) }
                     IgnoreCircleButton { viewModel.ignore(event.item) }
@@ -146,7 +146,7 @@ struct NotificationsScreen: View {
                     Text(NSLocalizedString("Pending", comment: "DashPay Contacts"))
                         .font(.system(size: 11, weight: .medium))
                 }
-                .foregroundColor(.dashGolden)
+                .foregroundColor(Color.dash.orange)
             }
             .onAppear { viewModel.resolveUsernameIfNeeded(event.item) }
         case .theyAccepted:
@@ -158,7 +158,7 @@ struct NotificationsScreen: View {
             ) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 20))
-                    .foregroundColor(.dashGreen)
+                    .foregroundColor(Color.dash.green)
             }
         case .weAccepted:
             notificationRow(
@@ -169,7 +169,7 @@ struct NotificationsScreen: View {
             ) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 20))
-                    .foregroundColor(.dashGreen)
+                    .foregroundColor(Color.dash.green)
             }
         }
     }

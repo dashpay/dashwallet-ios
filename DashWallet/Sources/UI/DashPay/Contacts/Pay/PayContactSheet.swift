@@ -101,7 +101,7 @@ struct PayContactSheet: View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 48))
-                .foregroundColor(.dashGreen)
+                .foregroundColor(Color.dash.green)
             Text(NSLocalizedString("Payment Sent", comment: "DashPay Contacts"))
                 .font(.system(size: 17, weight: .bold))
                 .foregroundColor(.dash.primaryText)
