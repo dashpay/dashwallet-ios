@@ -1461,6 +1461,19 @@ final class ShieldedTxLookup {
     /// 2 = IdentityTopUpNotBound, 3 = IdentityInvitation.
     private static let identityFundingTypes = 0...3
 
+    /// App-side sentinel (never emitted by the SDK's funding-type enum) for a
+    /// lock reconstructed from raw transaction bytes whose destination can't
+    /// be proven: the amount is consensus-parsed truth, but whether it funded
+    /// an identity, a Platform address, or the shielded pool is unknown.
+    static let reconstructedUnknownFundingType = -1
+
+    /// App-side sentinel for `statusRaw` on reconstructed entries: the lock is
+    /// confirmed on-chain but its consumption state is unknown (the SDK's
+    /// `PersistentAssetLock` row didn't survive the wallet restore). Outside
+    /// both the pending window (1…3) and consumed (4), so reconstructed rows
+    /// never render "Pending" and never claim success.
+    static let reconstructedStatus = -1
+
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.shielded-tx-lookup")
@@ -1506,6 +1519,14 @@ final class ShieldedTxLookup {
     /// shielded ones. Thread-safe; touches no SwiftData.
     func platformFundingInfo(forTxidHex txidHex: String) -> ShieldedLockInfo? {
         entry(forTxidHex: txidHex, fundingType: Self.platformFundingType)
+    }
+
+    /// Snapshot entry for an asset lock reconstructed from raw tx bytes after
+    /// a restore — real locked amount, unknown destination and consumption
+    /// (see `reconstructedUnknownFundingType`). Thread-safe; touches no
+    /// SwiftData.
+    func reconstructedLockInfo(forTxidHex txidHex: String) -> ShieldedLockInfo? {
+        entry(forTxidHex: txidHex, fundingType: Self.reconstructedUnknownFundingType)
     }
 
     /// Snapshot entry for an identity funding lock (types 0…3 — registration,
@@ -1563,6 +1584,7 @@ final class ShieldedTxLookup {
                 if let existing = map[txid], existing.statusRaw >= info.statusRaw { continue }
                 map[txid] = info
             }
+            addReconstructedLocks(to: &map, context: container.mainContext)
             store(map)
             Self.logger.info("🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) funding tx(s) (shielded + platform)")
             // Diagnostic: if asset locks exist but none matched the shielded
@@ -1574,6 +1596,69 @@ final class ShieldedTxLookup {
             }
         } catch {
             Self.logger.error("🛡️ SHIELD-TX :: refresh failed: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Restore-time fallback: `PersistentAssetLock` rows are SDK-recorded at
+    /// execution and do NOT survive a wipe & recover, so a restored wallet's
+    /// asset-lock funding txs otherwise render "Internal Transfer — 0 DASH".
+    /// For every persisted AssetLock transaction with no store row, parse the
+    /// credit outputs from the raw bytes (consensus truth) and add:
+    /// - funding type 4 when every credit output pays one of the wallet's own
+    ///   persisted Platform addresses — the full Core → Platform treatment;
+    /// - a `reconstructedUnknownFundingType` entry otherwise — real amount,
+    ///   no destination claim (one-time identity/shield keys are not
+    ///   distinguishable from the L1 tx alone).
+    /// Store-backed entries always win (`map` is checked first).
+    @MainActor
+    private func addReconstructedLocks(to map: inout [String: ShieldedLockInfo], context: ModelContext) {
+        let assetLockKind = TransactionTypeKind.assetLock.rawValue
+        let descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { $0.transactionTypeKind == assetLockKind })
+        guard let rows = try? context.fetch(descriptor), !rows.isEmpty else { return }
+
+        // Own DIP-17 Platform address key hashes, for the provable-route case.
+        let ownPlatformHashes: Set<Data> = {
+            let addresses = (try? context.fetch(FetchDescriptor<PersistentPlatformAddress>())) ?? []
+            return Set(addresses.map { $0.addressHash })
+        }()
+
+        var reconstructed = 0
+        for row in rows {
+            let txid = Transaction.displayHex(row.txid).lowercased()
+            if map[txid] != nil { continue }
+            guard !row.transactionData.isEmpty,
+                  let parsed = try? ParsedRawTransaction(data: row.transactionData),
+                  let payload = parsed.extraPayload,
+                  let creditOutputs = RawTransactionInspector.assetLockCreditOutputs(payload: payload) else {
+                continue
+            }
+            let amount = creditOutputs.reduce(UInt64(0)) { $0 + $1.valueDuffs }
+            guard amount > 0 else { continue }
+            // The lock outpoint's vout is the index of the OP_RETURN output
+            // that carries the locked value on L1. Skip on ambiguity — a
+            // reconstructed entry never feeds a recovery resume, but a wrong
+            // vout shouldn't exist even unused.
+            let opReturnIndexes = parsed.outputs.enumerated()
+                .filter { $0.element.scriptPubKey.first == 0x6a }
+                .map { $0.offset }
+            guard opReturnIndexes.count == 1, let voutIndex = opReturnIndexes.first else { continue }
+
+            let keyHashes = creditOutputs.compactMap { RawTransactionInspector.p2pkhKeyHash(script: $0.script) }
+            let paysOnlyOwnPlatformAddresses = keyHashes.count == creditOutputs.count
+                && keyHashes.allSatisfy { ownPlatformHashes.contains($0) }
+
+            map[txid] = ShieldedLockInfo(
+                amountDuffs: amount,
+                statusRaw: Self.reconstructedStatus,
+                vout: UInt32(voutIndex),
+                fundingTypeRaw: paysOnlyOwnPlatformAddresses
+                    ? Self.platformFundingType
+                    : Self.reconstructedUnknownFundingType)
+            reconstructed += 1
+        }
+        if reconstructed > 0 {
+            Self.logger.info("🛡️ SHIELD-TX :: reconstructed \(reconstructed, privacy: .public) asset lock(s) from raw tx bytes (no store row)")
         }
     }
 

@@ -307,6 +307,15 @@ class Transaction: TransactionDataItem, Identifiable {
 
     private var identityFundingAmountDuffs: UInt64? { identityFundingLockInfo?.amountDuffs }
 
+    /// Locked amount for an asset lock reconstructed from raw tx bytes after
+    /// a restore (`ShieldedTxLookup.reconstructedLockInfo`): the destination
+    /// is unprovable, so the row keeps its generic "Internal Transfer"
+    /// presentation, but the amount is consensus-parsed truth instead of the
+    /// 0 the net-change view derives for a self-directed lock.
+    private var reconstructedLockAmountDuffs: UInt64? {
+        ShieldedTxLookup.shared.reconstructedLockInfo(forTxidHex: shieldedDisplayTxid)?.amountDuffs
+    }
+
     /// True when this is the funding tx of an identity registration/top-up/
     /// invitation.
     var isIdentityFundingTransfer: Bool { identityFundingLockInfo != nil }
@@ -389,7 +398,7 @@ class Transaction: TransactionDataItem, Identifiable {
         // asset lock; surface the real locked amount the SDK recorded
         // instead of the 0 the generic logic below derives for a
         // self-directed move.
-        if let locked = shieldedTransferAmountDuffs ?? platformFundingAmountDuffs ?? identityFundingAmountDuffs { return locked }
+        if let locked = shieldedTransferAmountDuffs ?? platformFundingAmountDuffs ?? identityFundingAmountDuffs ?? reconstructedLockAmountDuffs { return locked }
         let fee = Int64(snapshot.fee ?? 0)
         switch direction {
         case .received:
@@ -419,6 +428,7 @@ class Transaction: TransactionDataItem, Identifiable {
             ?? shieldedTransferAmountDuffs
             ?? platformFundingAmountDuffs
             ?? identityFundingAmountDuffs
+            ?? reconstructedLockAmountDuffs
             ?? _dashAmount
     }
     var signedDashAmount: Int64 {
@@ -454,7 +464,7 @@ class Transaction: TransactionDataItem, Identifiable {
         // The shielded / DashPay-payment amount is read live (see
         // `dashAmount`), so compute its fiat live too; other rows keep the
         // lazily-cached value.
-        if dashPayPayment != nil || shieldedTransferAmountDuffs != nil || platformFundingAmountDuffs != nil || identityFundingAmountDuffs != nil {
+        if dashPayPayment != nil || shieldedTransferAmountDuffs != nil || platformFundingAmountDuffs != nil || identityFundingAmountDuffs != nil || reconstructedLockAmountDuffs != nil {
             return userInfo?.fiatAmountString(from: dashAmount) ?? NSLocalizedString("Not available", comment: "")
         }
         return storedFiatAmount

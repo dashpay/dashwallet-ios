@@ -1560,6 +1560,19 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 items.append(ShieldedActivityItem(
                     row: row,
                     amountCreditsOverride: reconstructedAmountCredits))
+            case ShieldedActivityItem.Kind.sent.rawValue:
+                // A shielded → shielded send's counterparty is the recipient's
+                // 43-byte raw Orchard address (live-recorded, or OVK-recovered
+                // by the restore scan). Surface it so the row and detail sheet
+                // name where the money went instead of a bare "Sent /
+                // Shielded". Sent entries are outgoing to a non-own address by
+                // the recorder's classification, hence external.
+                let address = shieldedDestinationAddress(counterparty: row.counterparty)
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    amountCreditsOverride: reconstructedAmountCredits,
+                    destinationAddress: address,
+                    isExternalDestination: address != nil))
             default:
                 items.append(ShieldedActivityItem(
                     row: row,
@@ -1724,6 +1737,18 @@ class SwiftDashSDKWalletSource: TransactionSource {
             counterparty,
             asBech32m: true,
             isTestnet: WalletEnvironment.isTestnet)
+    }
+
+    /// Decode a shielded send's counterparty (43-byte raw Orchard address) to
+    /// its DIP-0018 display form: HRP `dash`/`tdash`, payload = 0x10 type
+    /// byte + the raw address bytes (same encoding as
+    /// `PaymentsLandingViewModel.reloadShieldedAddress`). Nil for empty /
+    /// non-43-byte counterparties.
+    private static func shieldedDestinationAddress(counterparty: Data) -> String? {
+        guard counterparty.count == 43 else { return nil }
+        return Bech32m.encode(
+            hrp: Bech32m.platformHrp(mainnet: !WalletEnvironment.isTestnet),
+            data: Data([0x10]) + counterparty)
     }
 
     /// True when `address` is one of the ACTIVE wallet's own DIP-17

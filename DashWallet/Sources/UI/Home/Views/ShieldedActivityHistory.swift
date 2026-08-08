@@ -162,7 +162,7 @@ struct ShieldedActivityItem: Identifiable {
         switch kind {
         case .shield, .shieldFromAssetLock:
             return NSLocalizedString("Platform → Shielded", comment: "Transfer of own funds from the Platform balance into the private shielded balance")
-        case .unshield, .withdrawal:
+        case .unshield, .withdrawal, .sent:
             if isExternalDestination {
                 // External destination: show where the money went,
                 // shortened to row-pill size (the detail sheet carries
@@ -172,10 +172,16 @@ struct ShieldedActivityItem: Identifiable {
                 }
                 return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
             }
-            return kind == .unshield
-                ? NSLocalizedString("Shielded → Platform", comment: "Transfer of own funds from the private shielded balance to the Platform balance")
-                : NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
-        case .received, .sent, .identityCreate, .shieldedSpend:
+            switch kind {
+            case .unshield:
+                return NSLocalizedString("Shielded → Platform", comment: "Transfer of own funds from the private shielded balance to the Platform balance")
+            case .withdrawal:
+                return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+            default:
+                // A Sent row whose recipient couldn't be decoded.
+                return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
+            }
+        case .received, .identityCreate, .shieldedSpend:
             return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
         }
     }
@@ -221,7 +227,7 @@ struct ShieldedActivityItem: Identifiable {
 
     /// From/To wording for the detail sheet. Internal moves name the
     /// user's own balances on both sides (a guarantee — see the fetch
-    /// doc); an external unshield/withdrawal names the destination
+    /// doc); an external unshield/withdrawal/send names the destination
     /// address (or an honest "External address" when the counterparty
     /// script couldn't be decoded).
     var internalMoveRoute: (source: String, destination: String)? {
@@ -237,7 +243,13 @@ struct ShieldedActivityItem: Identifiable {
                 return (shielded, destinationAddress ?? fallback)
             }
             return kind == .unshield ? (shielded, platform) : (shielded, transparent)
-        case .received, .sent, .identityCreate, .shieldedSpend: return nil
+        case .sent:
+            // Only when the recipient address decoded — a bare Sent row
+            // (no counterparty recovered) keeps the sheet route-less
+            // rather than claiming a destination we don't know.
+            guard let destinationAddress else { return nil }
+            return (shielded, destinationAddress)
+        case .received, .identityCreate, .shieldedSpend: return nil
         }
     }
 

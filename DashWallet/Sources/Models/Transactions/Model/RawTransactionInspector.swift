@@ -215,6 +215,42 @@ enum RawTransactionInspector {
 
     // MARK: - Special transaction payloads
 
+    /// One credit output of an asset-lock payload: the locked value and the
+    /// destination scriptPubKey it credits on Platform.
+    struct AssetLockCreditOutput {
+        let valueDuffs: UInt64
+        let script: Data
+    }
+
+    /// Consensus-decode the credit outputs of a DIP-2 asset-lock payload
+    /// (u8 version, varint count, TxOuts). Nil when the bytes don't parse as
+    /// that shape — callers must treat the lock as undecodable rather than
+    /// substitute a guess. Shared by the inspector's field list and
+    /// `ShieldedTxLookup`'s restore-time reconstruction.
+    static func assetLockCreditOutputs(payload: Data) -> [AssetLockCreditOutput]? {
+        var reader = ByteReader(payload)
+        guard (try? reader.readUInt8()) != nil,
+              let count = try? reader.readVarInt(),
+              count > 0, count <= 32 else { return nil }
+        var outputs: [AssetLockCreditOutput] = []
+        for _ in 0 ..< count {
+            guard let value = try? reader.readUInt64(),
+                  let scriptLength = try? reader.readVarInt(),
+                  let script = try? reader.readBytes(Int(scriptLength)) else { return nil }
+            outputs.append(AssetLockCreditOutput(valueDuffs: value, script: script))
+        }
+        return outputs
+    }
+
+    /// The 20-byte pubkey hash of a P2PKH script, or nil for any other shape.
+    static func p2pkhKeyHash(script: Data) -> Data? {
+        let b = [UInt8](script)
+        guard b.count == 25, b[0] == 0x76, b[1] == 0xa9, b[2] == 0x14, b[23] == 0x88, b[24] == 0xac else {
+            return nil
+        }
+        return Data(b[3 ..< 23])
+    }
+
     /// DIP-2 special transaction names, keyed by the tx `type` field.
     static func specialTypeName(_ type: UInt16) -> String? {
         switch type {
@@ -253,20 +289,15 @@ enum RawTransactionInspector {
                 }
             }
         case 8: // Asset lock: u8 version, varint count, credit outputs (TxOuts).
-            var reader = ByteReader(payload)
-            if let version = try? reader.readUInt8(),
-               let count = try? reader.readVarInt() {
-                fields.append(.init(label: "Payload version", value: "\(version)"))
-                fields.append(.init(label: "Credit outputs", value: "\(count)"))
-                for i in 0 ..< min(count, 16) {
-                    guard let value = try? reader.readUInt64(),
-                          let scriptLength = try? reader.readVarInt(),
-                          let script = try? reader.readBytes(Int(scriptLength)) else { break }
-                    let destination = ScriptAddressCodec.address(forScript: script, network: network)
-                        ?? script.map { String(format: "%02x", $0) }.joined()
+            if let creditOutputs = assetLockCreditOutputs(payload: payload) {
+                fields.append(.init(label: "Payload version", value: "\(payload[payload.startIndex])"))
+                fields.append(.init(label: "Credit outputs", value: "\(creditOutputs.count)"))
+                for (i, output) in creditOutputs.enumerated() {
+                    let destination = ScriptAddressCodec.address(forScript: output.script, network: network)
+                        ?? output.script.map { String(format: "%02x", $0) }.joined()
                     fields.append(.init(
                         label: String(format: "Credit output %d", i),
-                        value: "\(value.formattedDashAmountWithoutCurrencySymbol) → \(destination)"))
+                        value: "\(output.valueDuffs.formattedDashAmountWithoutCurrencySymbol) → \(destination)"))
                 }
             }
         default:
