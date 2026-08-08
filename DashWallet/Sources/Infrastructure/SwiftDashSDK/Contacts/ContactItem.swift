@@ -106,3 +106,36 @@ struct ContactItem: Identifiable, Equatable {
         return String(contactIdentityId.map { String(format: "%02x", $0) }.joined().prefix(8)) + "…"
     }
 }
+
+#if DEBUG
+
+extension ContactItem {
+    /// Preview/test fixture. The identity id is derived from `title` so
+    /// avatars get stable, distinct colours across rows, and both direction
+    /// timestamps are supplied so the notifications feed can tell who
+    /// reciprocated without reaching for defaults.
+    static func preview(
+        title: String,
+        relationship: ContactRelationship = .established,
+        avatarURL: String? = nil,
+        createdAt: Date = Date(timeIntervalSince1970: 1_685_000_000),
+        incomingCreatedAt: Date? = Date(timeIntervalSince1970: 1_685_000_000),
+        outgoingCreatedAt: Date? = Date(timeIntervalSince1970: 1_684_000_000)
+    ) -> ContactItem {
+        ContactItem(
+            contactIdentityId: Data(title.utf8),
+            relationship: relationship,
+            username: title,
+            profileDisplayName: nil,
+            alias: nil,
+            note: nil,
+            isHidden: false,
+            avatarURL: avatarURL,
+            publicMessage: nil,
+            createdAt: createdAt,
+            incomingCreatedAt: incomingCreatedAt,
+            outgoingCreatedAt: outgoingCreatedAt)
+    }
+}
+
+#endif

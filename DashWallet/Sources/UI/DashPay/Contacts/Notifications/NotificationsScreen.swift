@@ -18,13 +18,17 @@ import SwiftUI
 import DashUIKit
 
 struct NotificationsScreen: View {
-    @StateObject private var viewModel = ContactsViewModel()
+    @StateObject private var viewModel: NotificationsViewModel
     @State private var selectedContact: ContactItem? = nil
 
-    /// Read-state captured once at screen entry so rows don't jump
-    /// between sections while the user is looking at them; the marker
-    /// itself advances on exit (`markNotificationsViewed`).
-    @State private var lastViewedAtEntry: Date = .distantPast
+    /// The default is `nil`, not a freshly built view model: a default
+    /// argument is evaluated in the caller's context, which is not the main
+    /// actor, and `NotificationsViewModel` is `@MainActor`. Constructing it
+    /// inside `StateObject`'s autoclosure defers that to view installation,
+    /// which is on the main actor. Previews pass one in.
+    init(viewModel: NotificationsViewModel? = nil) {
+        _viewModel = StateObject(wrappedValue: viewModel ?? NotificationsViewModel())
+    }
 
     var body: some View {
         ZStack {
@@ -46,64 +50,15 @@ struct NotificationsScreen: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-        .onAppear {
-            lastViewedAtEntry = DWGlobalOptions.sharedInstance().mostRecentViewedNotificationDate ?? .distantPast
-            viewModel.refresh()
-        }
-        .onDisappear {
-            SwiftDashSDKContactsService.shared.markNotificationsViewed()
-        }
+        .onAppear { viewModel.onAppear() }
+        .onDisappear { viewModel.onDisappear() }
     }
-
-    // MARK: Events
-
-    private enum EventKind: Hashable {
-        /// Pending incoming request — actionable.
-        case incomingRequest
-        /// Pending outgoing request we sent — awaiting their acceptance.
-        case sentRequest
-        /// Established because they reciprocated our request.
-        case theyAccepted
-        /// Established because we accepted their request.
-        case weAccepted
-    }
-
-    private struct Event: Identifiable {
-        struct ID: Hashable {
-            let contactIdentityId: Data
-            let kind: EventKind
-        }
-
-        let item: ContactItem
-        let kind: EventKind
-        var id: ID {
-            ID(
-                contactIdentityId: item.contactIdentityId,
-                kind: kind)
-        }
-        var date: Date { item.createdAt }
-    }
-
-    private var events: [Event] {
-        let requests = viewModel.incomingRequests.map { Event(item: $0, kind: .incomingRequest) }
-        let sent = viewModel.outgoingRequests.map { Event(item: $0, kind: .sentRequest) }
-        let established = viewModel.contacts.map { item -> Event in
-            // The newer direction row is the reciprocation.
-            let incoming = item.incomingCreatedAt ?? .distantPast
-            let outgoing = item.outgoingCreatedAt ?? .distantPast
-            return Event(item: item, kind: incoming >= outgoing ? .theyAccepted : .weAccepted)
-        }
-        return (requests + sent + established).sorted { $0.date > $1.date }
-    }
-
-    private var newEvents: [Event] { events.filter { $0.date > lastViewedAtEntry } }
-    private var earlierEvents: [Event] { events.filter { $0.date <= lastViewedAtEntry } }
 
     // MARK: Body
 
     @ViewBuilder
     private var content: some View {
-        if events.isEmpty {
+        if viewModel.isEmpty {
             VStack(spacing: 12) {
                 Image(systemName: "bell")
                     .font(.system(size: 44, weight: .light))
@@ -116,13 +71,13 @@ struct NotificationsScreen: View {
         } else {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
-                    if !newEvents.isEmpty {
+                    if !viewModel.newEvents.isEmpty {
                         sectionHeader(NSLocalizedString("New", comment: "DashPay Notifications"))
-                        rowsCard(newEvents)
+                        rowsCard(viewModel.newEvents)
                     }
-                    if !earlierEvents.isEmpty {
+                    if !viewModel.earlierEvents.isEmpty {
                         sectionHeader(NSLocalizedString("Earlier", comment: "DashPay Notifications"))
-                        rowsCard(earlierEvents)
+                        rowsCard(viewModel.earlierEvents)
                     }
                     Spacer(minLength: 24)
                 }
@@ -141,7 +96,7 @@ struct NotificationsScreen: View {
     }
 
     /// Android puts the rows in one white rounded container per section.
-    private func rowsCard(_ events: [Event]) -> some View {
+    private func rowsCard(_ events: [NotificationsViewModel.Event]) -> some View {
         VStack(spacing: 0) {
             ForEach(events) { event in
                 row(for: event)
@@ -157,7 +112,7 @@ struct NotificationsScreen: View {
     }
 
     @ViewBuilder
-    private func row(for event: Event) -> some View {
+    private func row(for event: NotificationsViewModel.Event) -> some View {
         switch event.kind {
         case .incomingRequest:
             notificationRow(
@@ -222,7 +177,7 @@ struct NotificationsScreen: View {
     /// Android notification_contact_request_received_row: avatar 36,
     /// two-line body (14pt), timestamp line, trailing accessory.
     private func notificationRow<Accessory: View>(
-        _ event: Event,
+        _ event: NotificationsViewModel.Event,
         text: String,
         @ViewBuilder accessory: () -> Accessory
     ) -> some View {
@@ -257,3 +212,32 @@ struct NotificationsScreen: View {
         return formatter
     }()
 }
+
+#if DEBUG
+
+/// Seeded feed, no contacts service behind it — see
+/// `NotificationsViewModel.preview(new:earlier:)`. The screen must not be
+/// given the production view model here: building one wakes
+/// `SwiftDashSDKContactsService.shared`, which does real work in its
+/// initializer.
+#Preview("Feed") {
+    NavigationStack {
+        NotificationsScreen(viewModel: .preview(
+            new: [
+                .init(item: .preview(title: "briantest63a"), kind: .incomingRequest),
+                .init(item: .preview(title: "s22test63b"), kind: .theyAccepted),
+            ],
+            earlier: [
+                .init(item: .preview(title: "Upsilon2"), kind: .sentRequest),
+                .init(item: .preview(title: "Delta"), kind: .weAccepted),
+            ]))
+    }
+}
+
+#Preview("Empty") {
+    NavigationStack {
+        NotificationsScreen(viewModel: .preview())
+    }
+}
+
+#endif

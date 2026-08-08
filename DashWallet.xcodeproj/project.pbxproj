@@ -926,6 +926,7 @@
 		75FFD6C72BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		75FFD6C82BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6C62BF495800032879E /* HomeViewController+Shortcuts.swift */; };
 		762D6663F6F27861C230597B /* NotificationsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A978A9A91750DF5C5BB3F62 /* NotificationsScreen.swift */; };
+		5ANVM0002F9A0000000000S2 /* NotificationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ANVM0002F9A0000000000S1 /* NotificationsViewModel.swift */; };
 		76766A50AFDB7BC138F569DC /* NetworkUnavailableStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487C4C2E6AC61005536FF85E /* NetworkUnavailableStateView.swift */; };
 		79978F2BD80732D1DECA6F50 /* Color+Contacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2DFE98CB5C6C6690796FC4E /* Color+Contacts.swift */; };
 		7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30000130A1000000000001 /* TransactionDirectionTests.swift */; };
@@ -1911,6 +1912,7 @@
 		EF8FE439EB96236940DFBDE7 /* SwiftDashSDKTransactionSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31271807D89A63FB9413C936 /* SwiftDashSDKTransactionSender.swift */; };
 		EFCF9D5D6630AD9BD0A62E29 /* InternalTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */; };
 		F0AB716162822787EBF1CF12 /* NotificationsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A978A9A91750DF5C5BB3F62 /* NotificationsScreen.swift */; };
+		5ANVM0002F9A0000000000S3 /* NotificationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ANVM0002F9A0000000000S1 /* NotificationsViewModel.swift */; };
 		F1A2B3C4D5E6F708192A3B4C /* WatchApp.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = BA913BDE1BD57E4D005A7C0E /* WatchApp.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F1D71BA44ACE918F25F613E5 /* PaymentNetworkResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067B8024942F1481CD9B9CC1 /* PaymentNetworkResolver.swift */; };
 		F1F870569B75C5B1452C5D65 /* ChainNetworkToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D788CCB6B35B655BD713129E /* ChainNetworkToggle.swift */; };
@@ -3054,6 +3056,7 @@
 		9A461F75E1E170FFE3294337 /* DWAvatarUploadClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DWAvatarUploadClient.swift; path = Networking/DWAvatarUploadClient.swift; sourceTree = "<group>"; };
 		9A52F6A39C711B1E955B7E3A /* QRCodeGenerator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QRCodeGenerator.swift; sourceTree = "<group>"; };
 		9A978A9A91750DF5C5BB3F62 /* NotificationsScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationsScreen.swift; sourceTree = "<group>"; };
+		5ANVM0002F9A0000000000S1 /* NotificationsViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationsViewModel.swift; sourceTree = "<group>"; };
 		9AC52AE587802170368F6177 /* PinPromptView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PinPromptView.swift; sourceTree = "<group>"; };
 		9EC1F4DB87C442BEABDF0DB2 /* DerivationPathKeysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPathKeysView.swift; sourceTree = "<group>"; };
 		A1060800F100000000000001 /* ExplorePointOfUse+PreviewMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ExplorePointOfUse+PreviewMock.swift"; sourceTree = "<group>"; };
@@ -4042,6 +4045,7 @@
 			isa = PBXGroup;
 			children = (
 				9A978A9A91750DF5C5BB3F62 /* NotificationsScreen.swift */,
+				5ANVM0002F9A0000000000S1 /* NotificationsViewModel.swift */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -10108,6 +10112,7 @@
 				8A54D7A849B32969AFD26CC9 /* ContactsScreen.swift in Sources */,
 				ECFEBA62B511BCD739566692 /* ContactsViewModel.swift in Sources */,
 				F0AB716162822787EBF1CF12 /* NotificationsScreen.swift in Sources */,
+				5ANVM0002F9A0000000000S3 /* NotificationsViewModel.swift in Sources */,
 				40162D7A051D4EB850C06C8F /* PayContactSheet.swift in Sources */,
 				BFDD7EB7A8B81E08B7C388EE /* ContactProfileSheet.swift in Sources */,
 			);
@@ -11114,6 +11119,7 @@
 				4125ACF938F1FAE70351F07F /* ContactsScreen.swift in Sources */,
 				BA3CD3A178367D86D3910B8C /* ContactsViewModel.swift in Sources */,
 				762D6663F6F27861C230597B /* NotificationsScreen.swift in Sources */,
+				5ANVM0002F9A0000000000S2 /* NotificationsViewModel.swift in Sources */,
 				301AC39DF29047D475777BB4 /* PayContactSheet.swift in Sources */,
 				7C51FA86D1A70145BAF76569 /* ContactProfileSheet.swift in Sources */,
 			);
