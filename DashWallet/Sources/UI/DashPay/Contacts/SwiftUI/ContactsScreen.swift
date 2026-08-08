@@ -427,7 +427,7 @@ private struct DashPayIntroView: View {
                         featureRow(
                             icon: "lock.shield.fill",
                             title: NSLocalizedString("Private payments", comment: "DashPay intro: feature title"),
-                            body: NSLocalizedString("Payment addresses are exchanged encrypted and never published, so payments aren't trivially linkable to your username — though they aren't shielded yet, and contact requests aren't private yet either.", comment: "DashPay intro: feature body"))
+                            body: NSLocalizedString("Private payment addresses are exchanged between you and your contacts. Only you and your contact know the recipient and sender of payments between yourselves.", comment: "DashPay intro: feature body"))
                         featureRow(
                             icon: "clock.arrow.circlepath",
                             title: NSLocalizedString("Your history, organized", comment: "DashPay intro: feature title"),
