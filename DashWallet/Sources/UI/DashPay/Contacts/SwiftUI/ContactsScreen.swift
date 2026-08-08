@@ -426,8 +426,8 @@ private struct DashPayIntroView: View {
                             body: NSLocalizedString("Send to a username you can actually remember and verify.", comment: "DashPay intro: feature body"))
                         featureRow(
                             icon: "lock.shield.fill",
-                            title: NSLocalizedString("Private by design", comment: "DashPay intro: feature title"),
-                            body: NSLocalizedString("Contact requests are end-to-end encrypted, and fresh payment addresses are shared only between you and your contacts.", comment: "DashPay intro: feature body"))
+                            title: NSLocalizedString("Private payments", comment: "DashPay intro: feature title"),
+                            body: NSLocalizedString("Payment addresses are exchanged encrypted and never published — outsiders can't link the payments between you and your contacts. Contact requests themselves aren't private yet.", comment: "DashPay intro: feature body"))
                         featureRow(
                             icon: "clock.arrow.circlepath",
                             title: NSLocalizedString("Your history, organized", comment: "DashPay intro: feature title"),
@@ -435,7 +435,7 @@ private struct DashPayIntroView: View {
                         featureRow(
                             icon: "sparkles",
                             title: NSLocalizedString("Coming soon", comment: "DashPay intro: feature title"),
-                            body: NSLocalizedString("Shielded DashPay and paying people who aren't contacts yet.", comment: "DashPay intro: coming-soon body"))
+                            body: NSLocalizedString("Private contact requests, Shielded DashPay, and paying people who aren't contacts yet.", comment: "DashPay intro: coming-soon body"))
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
@@ -522,7 +522,7 @@ private struct DashPayFAQSheet: View {
             Item(
                 question: NSLocalizedString("How private is DashPay?", comment: "DashPay FAQ"),
                 answer: NSLocalizedString(
-                    "Contact requests are end-to-end encrypted with keys only you and your contact hold. The payment addresses you exchange are derived from that encrypted handshake and are never published — each contact pays you at fresh addresses only the two of you can link. Your username and profile are public on Dash Platform.",
+                    "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — outside observers can't link your payments to your username. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.",
                     comment: "DashPay FAQ")),
             Item(
                 question: NSLocalizedString("What does it cost?", comment: "DashPay FAQ"),
@@ -532,7 +532,7 @@ private struct DashPayFAQSheet: View {
             Item(
                 question: NSLocalizedString("What's coming next?", comment: "DashPay FAQ"),
                 answer: NSLocalizedString(
-                    "Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are both coming soon.",
+                    "Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon.",
                     comment: "DashPay FAQ")),
         ]
     }

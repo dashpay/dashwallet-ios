@@ -648,10 +648,10 @@
 "Cons" = "Cons";
 
 /* DashPay FAQ */
-"Contact requests are end-to-end encrypted with keys only you and your contact hold. The payment addresses you exchange are derived from that encrypted handshake and are never published — each contact pays you at fresh addresses only the two of you can link. Your username and profile are public on Dash Platform." = "Contact requests are end-to-end encrypted with keys only you and your contact hold. The payment addresses you exchange are derived from that encrypted handshake and are never published — each contact pays you at fresh addresses only the two of you can link. Your username and profile are public on Dash Platform.";
+"Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — outside observers can't link your payments to your username. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — outside observers can't link your payments to your username. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.";
 
 /* DashPay intro: feature body */
-"Contact requests are end-to-end encrypted, and fresh payment addresses are shared only between you and your contacts." = "Contact requests are end-to-end encrypted, and fresh payment addresses are shared only between you and your contacts.";
+"Payment addresses are exchanged encrypted and never published — outsiders can't link the payments between you and your contacts. Contact requests themselves aren't private yet." = "Payment addresses are exchanged encrypted and never published — outsiders can't link the payments between you and your contacts. Contact requests themselves aren't private yet.";
 
 /* Raw transaction inspector */
 "Copy Raw Transaction" = "Copy Raw Transaction";
@@ -2252,7 +2252,7 @@
 "Payments with each contact are grouped in one place, with names and profiles instead of raw transactions." = "Payments with each contact are grouped in one place, with names and profiles instead of raw transactions.";
 
 /* DashPay intro: feature title */
-"Private by design" = "Private by design";
+"Private payments" = "Private payments";
 
 /* Identities: what a public key is used for */
 "Purpose" = "Purpose";
@@ -2267,10 +2267,10 @@
 "Send to a username you can actually remember and verify." = "Send to a username you can actually remember and verify.";
 
 /* DashPay intro: coming-soon body */
-"Shielded DashPay and paying people who aren't contacts yet." = "Shielded DashPay and paying people who aren't contacts yet.";
+"Private contact requests, Shielded DashPay, and paying people who aren't contacts yet." = "Private contact requests, Shielded DashPay, and paying people who aren't contacts yet.";
 
 /* DashPay FAQ */
-"Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are both coming soon." = "Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are both coming soon.";
+"Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon." = "Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon.";
 
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.";
