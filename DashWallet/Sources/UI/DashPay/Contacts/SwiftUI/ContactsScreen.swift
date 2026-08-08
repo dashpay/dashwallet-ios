@@ -525,6 +525,21 @@ private struct DashPayFAQSheet: View {
                     "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.",
                     comment: "DashPay FAQ")),
             Item(
+                question: NSLocalizedString("How does this compare to Bitcoin in terms of privacy?", comment: "DashPay FAQ"),
+                answer: NSLocalizedString(
+                    "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves.",
+                    comment: "DashPay FAQ")),
+            Item(
+                question: NSLocalizedString("How does this compare to Ethereum Accounts in terms of privacy?", comment: "DashPay FAQ"),
+                answer: NSLocalizedString(
+                    "An Ethereum account is one reusable address: your entire balance and payment history sit publicly under it, and a name (like an ENS domain) typically points straight at that address for anyone to resolve. DashPay is the opposite shape — the name resolves to an identity, not a payment address, and actual payment addresses stay inside encrypted contact exchanges, fresh for each contact.",
+                    comment: "DashPay FAQ")),
+            Item(
+                question: NSLocalizedString("What about Unstoppable Domains and similar name services?", comment: "DashPay FAQ"),
+                answer: NSLocalizedString(
+                    "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers.",
+                    comment: "DashPay FAQ")),
+            Item(
                 question: NSLocalizedString("What does it cost?", comment: "DashPay FAQ"),
                 answer: NSLocalizedString(
                     "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees.",
