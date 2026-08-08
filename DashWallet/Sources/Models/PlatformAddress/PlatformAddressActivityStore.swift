@@ -64,11 +64,19 @@ struct PlatformAddressActivityUnitPolicy {
         Int64(clamping: credits / creditsPerDuff)
     }
 
-    static func unshieldMatches(
+    /// True when an observed balance increase is explainable by an own
+    /// unshield of `creditedAmountCredits`: the delta equals the credited
+    /// principal, or is SMALLER — an own follow-on spend (e.g. the
+    /// shielded identity top-up claims most of the landed credits before
+    /// the next sync observes the address) shrinks the net delta below
+    /// the principal, but the remainder is still the own operation's
+    /// residue, not an external payment.
+    static func unshieldCoversDelta(
         creditedAmountCredits: UInt64,
         observedDeltaDuffs: Int64
     ) -> Bool {
-        duffs(fromCredits: creditedAmountCredits) == observedDeltaDuffs
+        observedDeltaDuffs > 0
+            && observedDeltaDuffs <= duffs(fromCredits: creditedAmountCredits)
     }
 
     static func isOwnUnshieldCandidate(
@@ -79,14 +87,20 @@ struct PlatformAddressActivityUnitPolicy {
             && kindTag == ShieldedActivityItem.Kind.unshield.rawValue
     }
 
-    static func exactUnshieldMatches(
+    /// Same destination address AND the delta is covered by the credited
+    /// principal (see `unshieldCoversDelta`). Known blind spot, accepted:
+    /// an external payment landing on the SAME fresh address inside the
+    /// own-operation window with a delta ≤ the principal would be
+    /// suppressed too — the previous exact-match rule had the equivalent
+    /// blind spot for payments that exactly equalled the principal.
+    static func unshieldResidueMatches(
         destinationAddress: String,
         observedAddress: String,
         creditedAmountCredits: UInt64,
         observedDeltaDuffs: Int64
     ) -> Bool {
         destinationAddress == observedAddress
-            && unshieldMatches(
+            && unshieldCoversDelta(
                 creditedAmountCredits: creditedAmountCredits,
                 observedDeltaDuffs: observedDeltaDuffs)
     }
@@ -336,10 +350,13 @@ enum PlatformAddressActivityRecorder {
         }
     }
 
-    /// Exact match against an own internal unshield: same destination
-    /// address and credited principal. The unshield builder reserves the fee
-    /// in addition to `amount`; the Platform address receives `amount`
-    /// exactly, while the shielded pool is debited by amount + fee.
+    /// Match against an own internal unshield: same destination address,
+    /// with the observed delta covered by the credited principal (equal, or
+    /// smaller when an own follow-on spend — e.g. a shielded identity
+    /// top-up — consumed part of it before this sync). The unshield builder
+    /// reserves the fee in addition to `amount`; the Platform address
+    /// receives `amount` exactly, while the shielded pool is debited by
+    /// amount + fee.
     private static func matchesOwnUnshield(
         address: String,
         deltaDuffs: Int64,
@@ -363,7 +380,7 @@ enum PlatformAddressActivityRecorder {
                 row.counterparty,
                 asBech32m: true,
                 isTestnet: network != .mainnet)
-            if PlatformAddressActivityUnitPolicy.exactUnshieldMatches(
+            if PlatformAddressActivityUnitPolicy.unshieldResidueMatches(
                 destinationAddress: destination,
                 observedAddress: address,
                 creditedAmountCredits: row.amount,
