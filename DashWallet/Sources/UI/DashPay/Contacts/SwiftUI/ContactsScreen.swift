@@ -64,9 +64,13 @@ final class ContactsViewModel: ObservableObject {
             CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount))
     }
 
+    /// True right after a successful enable — drives the one-off success
+    /// sheet with the "Send your first contact request" CTA.
+    @Published var showEnableSuccess = false
+
     /// PIN-gated IdentityUpdate adding the missing contact-request keys.
-    /// On success the banner clears optimistically (Platform accepted the
-    /// broadcast, or already had the keys).
+    /// On success the intro clears (Platform accepted the broadcast, or
+    /// already had the keys) and the success sheet presents.
     func enableDashPay() {
         guard !isEnablingDashPay else { return }
         isEnablingDashPay = true
@@ -75,6 +79,7 @@ final class ContactsViewModel: ObservableObject {
             do {
                 _ = try await service.enableDashPay()
                 needsDashPayEnable = false
+                showEnableSuccess = true
             } catch SwiftDashSDKContactsService.ServiceError.authCancelled {
                 // User backed out of the PIN prompt — not an error state.
             } catch {
@@ -160,6 +165,9 @@ struct ContactsScreen: View {
     @State private var filterText = ""
     @State private var showingAddContact = false
     @State private var showingEnableDashPay = false
+    /// Set by the success sheet's CTA; consumed on its dismissal to open
+    /// the add-contact sheet.
+    @State private var pendingFirstContactRequest = false
     @State private var selectedContact: ContactItem? = nil
 
     var body: some View {
@@ -189,6 +197,24 @@ struct ContactsScreen: View {
             }
             .sheet(isPresented: $showingAddContact) {
                 AddContactScreen()
+            }
+            .sheet(
+                isPresented: $viewModel.showEnableSuccess,
+                onDismiss: {
+                    // Chain into the add-contact sheet only after this one
+                    // is fully gone — presenting both at once drops the
+                    // second.
+                    if pendingFirstContactRequest {
+                        pendingFirstContactRequest = false
+                        showingAddContact = true
+                    }
+                }
+            ) {
+                EnableDashPaySuccessSheet(onSendFirstRequest: {
+                    pendingFirstContactRequest = true
+                    viewModel.showEnableSuccess = false
+                })
+                .presentationDetents([.height(420)])
             }
             .sheet(item: $selectedContact) { contact in
                 ContactProfileSheet(contact: contact)
@@ -599,6 +625,67 @@ private struct DashPayFAQSheet: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - EnableDashPaySuccessSheet
+
+/// Shown once, right after the enable IdentityUpdate succeeds: confirms
+/// the identity can now exchange contact requests and offers the first
+/// action. The CTA dismisses this sheet and chains into AddContactScreen
+/// via the presenter's onDismiss.
+private struct EnableDashPaySuccessSheet: View {
+    let onSendFirstRequest: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 40))
+                .foregroundColor(.dash.green)
+                .frame(width: 88, height: 88)
+                .background(Circle().fill(Color.dash.green.opacity(0.1)))
+                .padding(.top, 28)
+
+            Text(NSLocalizedString("DashPay enabled", comment: "DashPay: title of the enable success sheet"))
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(.dash.primaryText)
+                .padding(.top, 16)
+
+            Text(NSLocalizedString(
+                "You're all set. Other users can now send you contact requests — and you can send yours.",
+                comment: "DashPay: body of the enable success sheet"))
+                .font(.system(size: 14))
+                .foregroundColor(.dash.secondaryText)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 28)
+                .padding(.top, 8)
+
+            Spacer(minLength: 12)
+
+            Button(action: onSendFirstRequest) {
+                Text(NSLocalizedString("Send your first contact request", comment: "DashPay: CTA of the enable success sheet"))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color.dash.whiteText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.dash.blue)
+                    .cornerRadius(12)
+            }
+            .padding(.horizontal, 20)
+
+            Button(action: { dismiss() }) {
+                Text(NSLocalizedString("Not now", comment: "DashPay: dismiss button of the enable success sheet"))
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.dash.blue)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 10)
+        }
+        .background(Color.dash.primaryBackground)
     }
 }
 

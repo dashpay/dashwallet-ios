@@ -650,6 +650,9 @@
 /* Balance info sheet section */
 "Cons" = "Cons";
 
+/* DashPay: title of the enable success sheet */
+"DashPay enabled" = "DashPay enabled";
+
 /* DashPay FAQ */
 "How does this compare to Bitcoin in terms of privacy?" = "How does this compare to Bitcoin in terms of privacy?";
 
@@ -2290,6 +2293,9 @@
 /* DashPay FAQ */
 "Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon." = "Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon.";
 
+/* DashPay: CTA of the enable success sheet */
+"Send your first contact request" = "Send your first contact request";
+
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.";
 
@@ -2313,6 +2319,9 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Why do I need to enable it?";
+
+/* DashPay: body of the enable success sheet */
+"You're all set. Other users can now send you contact requests — and you can send yours." = "You're all set. Other users can now send you contact requests — and you can send yours.";
 
 /* DashPay intro: feature title */
 "Your history, organized" = "Your history, organized";
