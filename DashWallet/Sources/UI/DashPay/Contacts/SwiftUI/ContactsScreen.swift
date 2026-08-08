@@ -427,7 +427,7 @@ private struct DashPayIntroView: View {
                         featureRow(
                             icon: "lock.shield.fill",
                             title: NSLocalizedString("Private payments", comment: "DashPay intro: feature title"),
-                            body: NSLocalizedString("Payment addresses are exchanged encrypted and never published — outsiders can't link the payments between you and your contacts. Contact requests themselves aren't private yet.", comment: "DashPay intro: feature body"))
+                            body: NSLocalizedString("Payment addresses are exchanged encrypted and never published, so payments aren't trivially linkable to your username — though they aren't shielded yet, and contact requests aren't private yet either.", comment: "DashPay intro: feature body"))
                         featureRow(
                             icon: "clock.arrow.circlepath",
                             title: NSLocalizedString("Your history, organized", comment: "DashPay intro: feature title"),
@@ -522,7 +522,7 @@ private struct DashPayFAQSheet: View {
             Item(
                 question: NSLocalizedString("How private is DashPay?", comment: "DashPay FAQ"),
                 answer: NSLocalizedString(
-                    "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — outside observers can't link your payments to your username. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.",
+                    "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.",
                     comment: "DashPay FAQ")),
             Item(
                 question: NSLocalizedString("What does it cost?", comment: "DashPay FAQ"),
