@@ -233,7 +233,10 @@ struct SDKIdentityProfileSheet: View {
                     onToppedUp: { newBalanceCredits in
                         identityBalanceCredits = newBalanceCredits
                     })
-                    .presentationDetents([.medium, .large])
+                    // Full-height: the source picker + amount chips +
+                    // custom field don't fit a half sheet without
+                    // clipping the confirm button.
+                    .presentationDetents([.large])
             }
         }
     }
@@ -403,10 +406,37 @@ final class IdentityTopUpViewModel: ObservableObject {
 
     private let authorizer = DWIdentityAuthorizer()
 
-    /// Preset top-up amounts (duffs): 0.01 / 0.05 / 0.1 DASH, all well
-    /// above the Rust-side minimum top-up asset lock of 50,500 duffs
-    /// (mirrored from `DWIdentityRegistrationCoordinator.minimumCoreTopUpDuffs`).
-    static let presetsDuffs: [UInt64] = [1_000_000, 5_000_000, 10_000_000]
+    /// Preset top-up amounts (duffs): 0.05 / 0.1 DASH. Small amounts are
+    /// deliberately not offered — the fixed fees (especially the shielded
+    /// route's unshield step) would be a large share of them. A custom
+    /// amount is accepted down to `customMinimumDuffs`.
+    static let presetsDuffs: [UInt64] = [5_000_000, 10_000_000]
+
+    /// Floor for the custom amount: 0.01 DASH — well above the Rust-side
+    /// minimum top-up asset lock of 50,500 duffs (mirrored from
+    /// `DWIdentityRegistrationCoordinator.minimumCoreTopUpDuffs`) and large
+    /// enough that the fees below can't consume it.
+    static let customMinimumDuffs: UInt64 = 1_000_000
+
+    /// Observed IdentityTopUp/from-addresses transition fee — ~0.0004 DASH
+    /// ("required 41500000" credits, the measurement
+    /// `PlatformPaymentIdentityFundingPolicy`'s headroom doc cites). The
+    /// actual fee is metered at execution; this is the display estimate.
+    static let observedTopUpTransitionFeeCredits: UInt64 = 41_500_000
+
+    /// Display fee estimate (credits) for a route: the consensus-pinned
+    /// unshield minimum (shielded route only, via the pure
+    /// `estimateShieldedFee` FFI) plus the observed top-up transition fee.
+    /// The transparent route also pays a small Core miner fee on top.
+    static func estimatedFeeCredits(source: FundingSource) -> UInt64 {
+        let unshieldFee: UInt64
+        if source == .shielded {
+            unshieldFee = (try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)) ?? 0
+        } else {
+            unshieldFee = 0
+        }
+        return unshieldFee + observedTopUpTransitionFeeCredits
+    }
 
     /// nil = cancelled or failed (errorMessage carries the failure).
     func topUp(identityId: Data, amountDuffs: UInt64, source: FundingSource) async -> UInt64? {
@@ -542,7 +572,10 @@ struct IdentityTopUpSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = IdentityTopUpViewModel()
-    @State private var selectedDuffs: UInt64 = IdentityTopUpViewModel.presetsDuffs[0]
+    /// nil = the Custom chip is selected and `customText` carries the amount.
+    @State private var selectedPresetDuffs: UInt64? = IdentityTopUpViewModel.presetsDuffs[0]
+    @State private var customText = ""
+    @FocusState private var customFieldFocused: Bool
     /// Shielded is the privacy default; the transparent-side sources are
     /// an explicit opt-in behind the linkability warning.
     @State private var source: IdentityTopUpViewModel.FundingSource = .shielded
@@ -610,9 +643,10 @@ struct IdentityTopUpSheet: View {
 
                 HStack(spacing: 10) {
                     ForEach(IdentityTopUpViewModel.presetsDuffs, id: \.self) { duffs in
-                        Button {
-                            selectedDuffs = duffs
-                        } label: {
+                        amountChip(isSelected: selectedPresetDuffs == duffs) {
+                            selectedPresetDuffs = duffs
+                            customFieldFocused = false
+                        } content: {
                             VStack(spacing: 2) {
                                 Text("\(duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)")
                                     .font(.system(size: 15, weight: .semibold))
@@ -620,25 +654,65 @@ struct IdentityTopUpSheet: View {
                                     .font(.system(size: 11))
                                     .opacity(0.75)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(selectedDuffs == duffs
-                                        ? Color.dash.blue.opacity(0.12)
-                                        : Color.dash.secondaryBackground))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .stroke(selectedDuffs == duffs ? Color.dash.blue : .clear, lineWidth: 1.5))
-                            .foregroundColor(selectedDuffs == duffs ? .dash.blue : .dash.primaryText)
                         }
-                        .buttonStyle(.plain)
+                    }
+                    amountChip(isSelected: selectedPresetDuffs == nil) {
+                        selectedPresetDuffs = nil
+                        customFieldFocused = true
+                    } content: {
+                        VStack(spacing: 2) {
+                            Text(NSLocalizedString("Custom", comment: "Identity top-up sheet — free amount chip"))
+                                .font(.system(size: 15, weight: .semibold))
+                            Text(verbatim: "···")
+                                .font(.system(size: 11))
+                                .opacity(0.75)
+                        }
                     }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 18)
 
-                Text(NSLocalizedString("Network fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance.", comment: "Identity top-up sheet — fee note"))
+                if selectedPresetDuffs == nil {
+                    VStack(alignment: .leading, spacing: 4) {
+                        TextField(
+                            NSLocalizedString("Amount in DASH", comment: "Identity top-up sheet — custom amount placeholder"),
+                            text: $customText)
+                            .keyboardType(.decimalPad)
+                            .focused($customFieldFocused)
+                            .font(.system(size: 16, weight: .semibold))
+                            .padding(12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(Color.dash.secondaryBackground))
+                        if let duffs = customDuffs {
+                            Text(CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount))
+                                .font(.system(size: 12))
+                                .foregroundColor(.dash.secondaryText)
+                        } else if !customText.isEmpty {
+                            Text(String.localizedStringWithFormat(
+                                NSLocalizedString("Enter at least %@ DASH", comment: "Identity top-up sheet — custom amount below the floor"),
+                                IdentityTopUpViewModel.customMinimumDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol))
+                                .font(.system(size: 12))
+                                .foregroundColor(.orange)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+                }
+
+                HStack {
+                    Text(NSLocalizedString("Estimated fees", comment: "Identity top-up sheet — fee estimate line"))
+                        .font(.system(size: 13))
+                        .foregroundColor(.dash.secondaryText)
+                    Spacer()
+                    Text(estimatedFeeText)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.dash.primaryText)
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 14)
+
+                Text(NSLocalizedString("Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance.", comment: "Identity top-up sheet — fee note"))
                     .font(.system(size: 12))
                     .foregroundColor(.dash.tertiaryText)
                     .multilineTextAlignment(.center)
@@ -670,7 +744,8 @@ struct IdentityTopUpSheet: View {
                             .cornerRadius(12)
                     }
                 }
-                .disabled(viewModel.isProcessing)
+                .disabled(viewModel.isProcessing || effectiveDuffs == nil)
+                .opacity(effectiveDuffs == nil ? 0.55 : 1)
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
 
@@ -702,11 +777,59 @@ struct IdentityTopUpSheet: View {
         }
     }
 
+    /// Shared chip chrome for the preset and Custom amount buttons.
+    private func amountChip<Content: View>(
+        isSelected: Bool,
+        action: @escaping () -> Void,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        Button(action: action) {
+            content()
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(isSelected ? Color.dash.blue.opacity(0.12) : Color.dash.secondaryBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(isSelected ? Color.dash.blue : .clear, lineWidth: 1.5))
+                .foregroundColor(isSelected ? .dash.blue : .dash.primaryText)
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Parsed custom amount in duffs; nil when absent or below the floor.
+    private var customDuffs: UInt64? {
+        let normalized = customText
+            .trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: ",", with: ".")
+        guard let dash = Decimal(string: normalized), dash > 0, dash <= 1000 else { return nil }
+        let duffsDecimal = dash * Decimal(kOneDash)
+        guard let duffs = UInt64(exactly: NSDecimalNumber(decimal: duffsDecimal).int64Value),
+              duffs >= IdentityTopUpViewModel.customMinimumDuffs else { return nil }
+        return duffs
+    }
+
+    /// The amount the Top Up button will submit — preset or valid custom.
+    private var effectiveDuffs: UInt64? {
+        selectedPresetDuffs ?? customDuffs
+    }
+
+    private var estimatedFeeText: String {
+        let credits = IdentityTopUpViewModel.estimatedFeeCredits(source: source)
+        let duffs = credits / 1000
+        return String.localizedStringWithFormat(
+            NSLocalizedString("~%@ DASH (≈ %@)", comment: "DashPay: estimated network fee — DASH amount, then its local-currency equivalent"),
+            duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
+            CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount))
+    }
+
     private func confirm() {
+        guard let amountDuffs = effectiveDuffs else { return }
         Task {
             if let newBalance = await viewModel.topUp(
                 identityId: identityId,
-                amountDuffs: selectedDuffs,
+                amountDuffs: amountDuffs,
                 source: source) {
                 onToppedUp(newBalance)
                 dismiss()

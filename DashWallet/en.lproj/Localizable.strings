@@ -312,6 +312,9 @@
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Amount in Dash";
 
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Amount in DASH";
+
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
 
@@ -659,8 +662,20 @@
 /* Identity top-up sheet — body */
 "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates.";
 
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Custom";
+
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay enabled";
+
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Enter at least %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Estimated fees";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance.";
 
 /* Identity top-up sheet — linkability warning for transparent-side sources */
 "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.";
@@ -679,9 +694,6 @@
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers.";
-
-/* Identity top-up sheet — fee note */
-"Network fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Network fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance.";
 
 /* Identity top-up sheet — missing unshield destination */
 "No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "No Platform receive address is available yet — wait for the Platform sync to finish and try again.";
