@@ -502,6 +502,12 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Identities: this key only signs for one data contract */
+"Bound to contract" = "Bound to contract";
+
+/* Identities: this key only signs one document type of one data contract */
+"Bound to contract, document type “%@”" = "Bound to contract, document type “%@”";
+
 /* No comment provided by engineer. */
 "Broadcasting" = "Broadcasting";
 
@@ -1031,6 +1037,9 @@
 /* CrowdNode */
 "Deposit sent" = "Deposit sent";
 
+/* Identities: BIP-32 style derivation path of this key */
+"Derivation path" = "Derivation path";
+
 /* No comment provided by engineer. */
 "Destination" = "Destination";
 
@@ -1042,6 +1051,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
+
+/* Identities: this identity key was disabled on Platform */
+"Disabled" = "Disabled";
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Disconnect Coinbase Account";
@@ -1859,6 +1871,12 @@
 /* Usernames */
 "Keep your passphrase safe" = "Keep your passphrase safe";
 
+/* Identities: one identity public key, by its DPP key id */
+"Key #%d" = "Key #%d";
+
+/* Identities: the public key bytes */
+"Key data" = "Key data";
+
 /* No comment provided by engineer. */
 /* Masternodes */
 "Key ownership" = "Key ownership";
@@ -2184,6 +2202,15 @@
 
 /* CoinJoin */
 "Funds moved" = "Funds moved";
+
+/* Identities: what a public key is used for */
+"Purpose" = "Purpose";
+
+/* Identities: key visible to the wallet but not usable for signing */
+"Read-only" = "Read-only";
+
+/* Identities: DPP security level of a public key */
+"Security level" = "Security level";
 
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds.";

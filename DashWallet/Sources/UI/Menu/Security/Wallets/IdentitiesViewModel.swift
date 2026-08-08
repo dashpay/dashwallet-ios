@@ -28,6 +28,32 @@ import Foundation
 import SwiftData
 import SwiftDashSDK
 
+/// Immutable projection of one `PersistentPublicKey`, captured at reload
+/// time (same no-live-`@Model` contract as `IdentityRowModel`). Feeds the
+/// identity detail's Public Keys page.
+struct IdentityKeyRowModel: Identifiable {
+    let keyId: Int32
+    /// Human name of the DPP purpose/level/type, or the raw stored value
+    /// when it doesn't map to a known enum case (future variants render
+    /// honestly instead of being hidden).
+    let purposeText: String
+    let securityLevelText: String
+    let keyTypeText: String
+    let readOnly: Bool
+    let isDisabled: Bool
+    /// The key material as stored (33-byte compressed point, 48-byte BLS
+    /// pubkey, or a 20-byte hash for the *Hash160 types).
+    let publicKeyHex: String
+    /// Base58 contract ids this key is bound to; empty when unbounded.
+    let contractBoundIds: [String]
+    /// Document-type name for a `.singleContractDocumentType` bound.
+    let contractBoundDocumentType: String?
+    /// DIP-9 derivation path breadcrumb, when persisted.
+    let derivationPath: String?
+
+    var id: Int32 { keyId }
+}
+
 /// Immutable per-row projection of a `PersistentIdentity`, captured at
 /// reload time so the view never holds live `@Model` references.
 struct IdentityRowModel: Identifiable {
@@ -54,7 +80,9 @@ struct IdentityRowModel: Identifiable {
     /// active wallet, so the detail page needs this to offer it.
     let walletId: Data?
     let identityIndex: UInt32
-    let publicKeyCount: Int
+    /// The identity's public keys, ordered by key id (detail page list;
+    /// its count drives the summary row).
+    let publicKeys: [IdentityKeyRowModel]
     /// Every DPNS label owned by this identity (detail sheet list).
     let dpnsNames: [String]
     /// Contested label submitted by this wallet but not owned yet.
@@ -273,13 +301,32 @@ final class IdentitiesViewModel: ObservableObject {
             walletName: identity.wallet?.label.nonEmptyString,
             walletId: identity.wallet?.walletId,
             identityIndex: identity.identityIndex,
-            publicKeyCount: identity.publicKeys.count,
+            publicKeys: identity.publicKeys
+                .sorted { $0.keyId < $1.keyId }
+                .map(keyRowModel(for:)),
             dpnsNames: ownedNames,
             pendingContestedName: pendingBelongsToIdentity ? pendingLabel : nil,
             pendingVotingEndTime: pendingBelongsToIdentity
                 ? DWContestedNameStatusService.shared.pendingVotingEndTime
                 : nil,
             isMainIdentity: mainIdentityId != nil && identity.identityId == mainIdentityId)
+    }
+
+    /// Project one persisted identity key for display. The stored
+    /// purpose/level/type are raw-value strings; unmapped values (future
+    /// DPP variants) render as the raw value rather than being hidden.
+    private static func keyRowModel(for key: PersistentPublicKey) -> IdentityKeyRowModel {
+        IdentityKeyRowModel(
+            keyId: key.keyId,
+            purposeText: key.purposeEnum?.description ?? key.purpose,
+            securityLevelText: key.securityLevelEnum?.description ?? key.securityLevel,
+            keyTypeText: key.keyTypeEnum?.name ?? key.keyType,
+            readOnly: key.readOnly,
+            isDisabled: key.isDisabled,
+            publicKeyHex: key.publicKeyData.map { String(format: "%02x", $0) }.joined(),
+            contractBoundIds: (key.contractBounds ?? []).map { $0.toBase58String() },
+            contractBoundDocumentType: key.contractBoundsDocumentTypeName,
+            derivationPath: key.identityDerivationPath)
     }
 
     private static func uint64(from value: Any?) -> UInt64? {

@@ -540,12 +540,37 @@ struct IdentityDetailScreen: View {
                 label: NSLocalizedString("Identity index", comment: "Identities"),
                 value: "#\(row.identityIndex)")
             divider
-            detailRow(
-                label: NSLocalizedString("Public keys", comment: "Identities"),
-                value: "\(row.publicKeyCount)")
+            Button(action: showPublicKeys) {
+                HStack {
+                    Text(NSLocalizedString("Public keys", comment: "Identities"))
+                        .font(.system(size: 14))
+                        .foregroundColor(.dash.secondaryText)
+                    Spacer()
+                    Text("\(row.publicKeys.count)")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.dash.primaryText)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.dash.secondaryText)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(row.publicKeys.isEmpty)
         }
         .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
+    }
+
+    /// Push the identity's public-keys page (same push pattern as the
+    /// list → detail navigation).
+    private func showPublicKeys() {
+        let controller = UIHostingController(
+            rootView: IdentityPublicKeysScreen(row: row, vc: vc))
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
     }
 
     private var namesCard: some View {
@@ -633,6 +658,180 @@ struct IdentityDetailScreen: View {
         copied = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             copied = false
+        }
+    }
+}
+
+// MARK: - IdentityPublicKeysScreen
+
+/// The identity's DPP public keys (pushed from the detail's "Public keys"
+/// row): one card per key with its id, purpose, security level, key type,
+/// state badges, and the copyable key material. Read-only — key management
+/// happens on Platform, not here.
+struct IdentityPublicKeysScreen: View {
+    let row: IdentityRowModel
+    let vc: UINavigationController
+
+    /// Key id whose Copy button just fired (transient checkmark).
+    @State private var copiedKeyId: Int32?
+
+    var body: some View {
+        ZStack {
+            Color.dash.primaryBackground.ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 0) {
+                header
+
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach(row.publicKeys) { key in
+                            keyCard(key)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .padding(.bottom, 24)
+                }
+            }
+        }
+        .navigationBarHidden(true)
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Button(action: { vc.popViewController(animated: true) }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(Color.dash.primaryText)
+                        .frame(width: 36, height: 36)
+                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 5)
+            .padding(.top, 10)
+
+            Text(NSLocalizedString("Public keys", comment: "Identities"))
+                .font(.title)
+                .fontWeight(.bold)
+                .foregroundColor(.dash.primaryText)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+
+            Text(row.title)
+                .font(.system(size: 14))
+                .foregroundColor(.dash.secondaryText)
+                .padding(.horizontal, 20)
+                .padding(.top, 2)
+                .padding(.bottom, 12)
+        }
+    }
+
+    private func keyCard(_ key: IdentityKeyRowModel) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString("Key #%d", comment: "Identities: one identity public key, by its DPP key id"),
+                    key.keyId))
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.dash.primaryText)
+                Spacer()
+                if key.isDisabled {
+                    IdentityBadge(
+                        text: NSLocalizedString("Disabled", comment: "Identities: this identity key was disabled on Platform"),
+                        icon: "nosign",
+                        color: .red)
+                } else if key.readOnly {
+                    IdentityBadge(
+                        text: NSLocalizedString("Read-only", comment: "Identities: key visible to the wallet but not usable for signing"),
+                        icon: "eye",
+                        color: .orange)
+                }
+            }
+
+            VStack(spacing: 0) {
+                attributeRow(
+                    label: NSLocalizedString("Purpose", comment: "Identities: what a public key is used for"),
+                    value: key.purposeText)
+                attributeRow(
+                    label: NSLocalizedString("Security level", comment: "Identities: DPP security level of a public key"),
+                    value: key.securityLevelText)
+                attributeRow(
+                    label: NSLocalizedString("Type", comment: "Identities"),
+                    value: key.keyTypeText)
+            }
+
+            Text(NSLocalizedString("Key data", comment: "Identities: the public key bytes"))
+                .font(.caption)
+                .foregroundColor(.dash.secondaryText)
+            Text(key.publicKeyHex)
+                .font(.system(.footnote, design: .monospaced))
+                .foregroundColor(.dash.primaryText)
+                .textSelection(.enabled)
+
+            Button(action: { copy(key) }) {
+                HStack(spacing: 6) {
+                    Image(systemName: copiedKeyId == key.keyId ? "checkmark" : "doc.on.doc")
+                    Text(copiedKeyId == key.keyId
+                        ? NSLocalizedString("Copied", comment: "")
+                        : NSLocalizedString("Copy", comment: ""))
+                }
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.dash.blue)
+            }
+
+            if !key.contractBoundIds.isEmpty {
+                Text(key.contractBoundDocumentType == nil
+                    ? NSLocalizedString("Bound to contract", comment: "Identities: this key only signs for one data contract")
+                    : String.localizedStringWithFormat(
+                        NSLocalizedString("Bound to contract, document type “%@”", comment: "Identities: this key only signs one document type of one data contract"),
+                        key.contractBoundDocumentType ?? ""))
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
+                ForEach(key.contractBoundIds, id: \.self) { contractId in
+                    Text(contractId)
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundColor(.dash.secondaryText)
+                        .textSelection(.enabled)
+                }
+            }
+
+            if let path = key.derivationPath {
+                Text(NSLocalizedString("Derivation path", comment: "Identities: BIP-32 style derivation path of this key"))
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
+                Text(path)
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundColor(.dash.secondaryText)
+                    .textSelection(.enabled)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color.dash.secondaryBackground)
+        .cornerRadius(12)
+    }
+
+    private func attributeRow(label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 14))
+                .foregroundColor(.dash.secondaryText)
+            Spacer()
+            Text(value)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.dash.primaryText)
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(.vertical, 6)
+    }
+
+    private func copy(_ key: IdentityKeyRowModel) {
+        UIPasteboard.general.string = key.publicKeyHex
+        copiedKeyId = key.keyId
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            if copiedKeyId == key.keyId { copiedKeyId = nil }
         }
     }
 }
