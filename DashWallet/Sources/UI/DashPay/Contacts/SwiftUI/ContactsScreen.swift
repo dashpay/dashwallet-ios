@@ -502,9 +502,14 @@ private struct DashPayFAQSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     private struct Item: Identifiable {
-        let id = UUID()
         let question: String
         let answer: String
+
+        /// Identity must be stable across body re-evaluations (a fresh
+        /// `UUID()` per rebuild makes ForEach discard the rows and their
+        /// DisclosureGroups collapse mid-read); the question text is
+        /// unique and constant.
+        var id: String { question }
     }
 
     private var items: [Item] {
