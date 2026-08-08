@@ -938,6 +938,7 @@
 		7B9BBDE902964C57C44F68BD /* PinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132FE91D9C90E736DB1634A5 /* PinStore.swift */; };
 		7BDE6E52D5F0A428E2858824 /* libPods-TodayExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0755F840BCC1E0754D807B04 /* libPods-TodayExtension.a */; };
 		7C51FA86D1A70145BAF76569 /* ContactProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6217C57301CE9FED0D2D2138 /* ContactProfileSheet.swift */; };
+		5ACPV0002F9A0000000000S2 /* ContactProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACPV0002F9A0000000000S1 /* ContactProfileViewModel.swift */; };
 		7C8C17249DC2DD0ECB3F2720 /* SendScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F454341FADB260861FE05EB4 /* SendScreenViewController.swift */; };
 		7C93319817E9E574070A504D /* InternalTransferHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F57DA9DBE5AAF88B3727E148 /* InternalTransferHostingController.swift */; };
 		81BDC70FA6BC4154DE5FAE0F /* PaymentProtocolTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B307E94B354351D4E3D3B /* PaymentProtocolTransport.swift */; };
@@ -1179,6 +1180,7 @@
 		BCBED608CAAABA10839A0ADE /* SwiftDashSDKWalletState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42C22064915D913252F56184 /* SwiftDashSDKWalletState.swift */; };
 		BD509A68B1A0B6E4599F9C7A /* DWProfileUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */; };
 		BFDD7EB7A8B81E08B7C388EE /* ContactProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6217C57301CE9FED0D2D2138 /* ContactProfileSheet.swift */; };
+		5ACPV0002F9A0000000000S3 /* ContactProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACPV0002F9A0000000000S1 /* ContactProfileViewModel.swift */; };
 		C05FA6CE3DDE2D0327D334E5 /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
 		C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */; };
 		C124DF94278D4238FAE0975D /* OrderPreviewFeeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */; };
@@ -2861,6 +2863,7 @@
 		5EE4B9497B1F276EA0BDB20D /* DWRecoverModel+Mnemonic.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DWRecoverModel+Mnemonic.swift"; sourceTree = "<group>"; };
 		60A762BDA473947F1A7EF199 /* StorageModelListViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StorageModelListViews.swift; sourceTree = "<group>"; };
 		6217C57301CE9FED0D2D2138 /* ContactProfileSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactProfileSheet.swift; sourceTree = "<group>"; };
+		5ACPV0002F9A0000000000S1 /* ContactProfileViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactProfileViewModel.swift; sourceTree = "<group>"; };
 		62613C0D937CA301FBBF2356 /* Pods-dashpay.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashpay.debug.xcconfig"; path = "Target Support Files/Pods-dashpay/Pods-dashpay.debug.xcconfig"; sourceTree = "<group>"; };
 		67FCD2ED5EDFD68CDE1FE7CC /* TransferTimingSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransferTimingSheet.swift; sourceTree = "<group>"; };
 		6B4599D810961E89D930D221 /* ContactListEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactListEntry.swift; sourceTree = "<group>"; };
@@ -8448,6 +8451,7 @@
 			isa = PBXGroup;
 			children = (
 				6217C57301CE9FED0D2D2138 /* ContactProfileSheet.swift */,
+				5ACPV0002F9A0000000000S1 /* ContactProfileViewModel.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -10125,6 +10129,7 @@
 				40162D7A051D4EB850C06C8F /* PayContactSheet.swift in Sources */,
 				5APCV0002F9A0000000000S3 /* PayContactViewModel.swift in Sources */,
 				BFDD7EB7A8B81E08B7C388EE /* ContactProfileSheet.swift in Sources */,
+				5ACPV0002F9A0000000000S3 /* ContactProfileViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -11134,6 +11139,7 @@
 				301AC39DF29047D475777BB4 /* PayContactSheet.swift in Sources */,
 				5APCV0002F9A0000000000S2 /* PayContactViewModel.swift in Sources */,
 				7C51FA86D1A70145BAF76569 /* ContactProfileSheet.swift in Sources */,
+				5ACPV0002F9A0000000000S2 /* ContactProfileViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

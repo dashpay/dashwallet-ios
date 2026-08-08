@@ -9,40 +9,20 @@ import SwiftUI
 import DashUIKit
 
 struct ContactProfileSheet: View {
-    @State private var contact: ContactItem
+    @StateObject private var viewModel: ContactProfileViewModel
 
     @Environment(\.dismiss) private var dismiss
-    @State private var isProcessing = false
-    @State private var errorMessage: String? = nil
     @State private var showingPaySheet = false
-
-    // Owner-private contact meta, editable for established contacts.
-    // Seeded from the immutable snapshot in onAppear; saved through
-    // the service (SDK EstablishedContact setters + flushPersist).
-    @State private var aliasText = ""
-    @State private var noteText = ""
-    @State private var isHidden = false
-    @State private var payments: [SwiftDashSDKContactsService.ContactPayment] = []
-    /// Payment txid (display hex) → the resolved wallet `Transaction`,
-    /// for the rows whose on-chain tx exists in this wallet's store.
-    /// A payment absent here (H1 loss, or a received tx not yet synced)
-    /// renders as a non-tappable row instead of a broken tx-detail push.
-    @State private var resolvedByTxid: [String: Transaction] = [:]
-    /// Tapped payment's txid (display hex, Hashable) — drives the
-    /// tx-detail push via the NavigationStack-native
-    /// `navigationDestination(item:)`. The resolved `Transaction` is
-    /// looked up from `resolvedByTxid` in the destination builder
-    /// (`Transaction` itself isn't `Hashable`).
     @State private var selectedPaymentId: String? = nil
-    @State private var metaSavedToast = false
-    /// Contact settings (alias / note) stay collapsed until the user
-    /// taps the contact header; tapping again collapses them.
     @State private var showContactSettings = false
 
-    private let service = SwiftDashSDKContactsService.shared
-
-    init(contact: ContactItem) {
-        _contact = State(initialValue: contact)
+    /// Default `nil` rather than a fresh view model: default arguments are
+    /// evaluated off the main actor and `ContactProfileViewModel` is
+    /// `@MainActor`. `StateObject`'s autoclosure defers construction to view
+    /// installation. Previews pass one in.
+    init(contact: ContactItem, viewModel: ContactProfileViewModel? = nil) {
+        _viewModel = StateObject(
+            wrappedValue: viewModel ?? ContactProfileViewModel(contact: contact))
     }
 
     var body: some View {
@@ -52,7 +32,7 @@ struct ContactProfileSheet: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         header
-                        if let message = contact.publicMessage, !message.isEmpty {
+                        if let message = viewModel.contact.publicMessage, !message.isEmpty {
                             Text(message)
                                 .font(.system(size: 14))
                                 .foregroundColor(.dash.secondaryText)
@@ -71,7 +51,7 @@ struct ContactProfileSheet: View {
                 // NavigationStack supplies the back button (nav bar left
                 // visible), so we don't drive TXDetailVCWrapper's own
                 // programmatic pop.
-                if let tx = resolvedByTxid[paymentId] {
+                if let tx = viewModel.resolvedByTxid[paymentId] {
                     TXDetailVCWrapper(tx: tx, navigateBack: .constant(false))
                         .navigationTitle(NSLocalizedString("Transaction", comment: "DashPay Contacts"))
                         .navigationBarTitleDisplayMode(.inline)
@@ -86,53 +66,22 @@ struct ContactProfileSheet: View {
             .alert(
                 NSLocalizedString("Error", comment: ""),
                 isPresented: Binding(
-                    get: { errorMessage != nil },
-                    set: { if !$0 { errorMessage = nil } })
+                    get: { viewModel.errorMessage != nil },
+                    set: { if !$0 { viewModel.errorMessage = nil } })
             ) {
                 Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
             } message: {
-                Text(errorMessage ?? "")
+                Text(viewModel.errorMessage ?? "")
             }
             .sheet(isPresented: $showingPaySheet) {
-                PayContactSheet(contact: contact)
+                PayContactSheet(contact: viewModel.contact)
             }
-            .onAppear {
-                aliasText = contact.alias ?? ""
-                noteText = contact.note ?? ""
-                isHidden = contact.isHidden
-                if contact.relationship == .established {
-                    // Pull the Rust-side history into SwiftData first —
-                    // the projection is app-driven (no persister push).
-                    service.refreshPaymentsProjection()
-                    loadPayments()
-                }
-            }
-            .onReceive(NotificationCenter.default.publisher(
-                for: SwiftDashSDKContactsService.contactsDidChangeNotification)
-            ) { _ in
-                guard let latestContact = service.contactItem(
-                    for: contact.contactIdentityId)
-                else {
-                    // The request was removed (ignored) or the active wallet
-                    // changed. Do not leave an actionable stale profile open.
-                    dismiss()
-                    return
-                }
-
-                let becameEstablished =
-                    contact.relationship != .established &&
-                    latestContact.relationship == .established
-                contact = latestContact
-
-                if latestContact.relationship == .established {
-                    if becameEstablished {
-                        service.refreshPaymentsProjection()
-                    }
-                    loadPayments()
-                }
+            .onAppear { viewModel.onAppear() }
+            .onChange(of: viewModel.shouldDismiss) { _, close in
+                if close { dismiss() }
             }
             .overlay(alignment: .bottom) {
-                if metaSavedToast {
+                if viewModel.metaSavedToast {
                     Text(NSLocalizedString("Saved", comment: ""))
                         .font(.system(size: 13, weight: .medium))
                         .padding(.horizontal, 16)
@@ -148,21 +97,21 @@ struct ContactProfileSheet: View {
     private var header: some View {
         VStack(spacing: 8) {
             ContactAvatarView(
-                title: contact.displayTitle,
-                avatarURL: contact.avatarURL,
-                identitySeed: contact.contactIdentityId,
+                title: viewModel.contact.displayTitle,
+                avatarURL: viewModel.contact.avatarURL,
+                identitySeed: viewModel.contact.contactIdentityId,
                 size: 88)
-            Text(contact.displayTitle)
+            Text(viewModel.contact.displayTitle)
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.dash.primaryText)
-            if let username = contact.username?.withoutDashSuffix,
+            if let username = viewModel.contact.username?.withoutDashSuffix,
                !username.isEmpty,
-               username != contact.displayTitle {
+               username != viewModel.contact.displayTitle {
                 Text(username)
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
             }
-            if contact.relationship == .established {
+            if viewModel.contact.relationship == .established {
                 // Disclosure hint: tapping the header toggles the
                 // Contact settings card below.
                 Image(systemName: "chevron.down")
@@ -174,7 +123,7 @@ struct ContactProfileSheet: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            guard contact.relationship == .established else { return }
+            guard viewModel.contact.relationship == .established else { return }
             withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
                 showContactSettings.toggle()
             }
@@ -183,23 +132,23 @@ struct ContactProfileSheet: View {
 
     @ViewBuilder
     private var actions: some View {
-        switch contact.relationship {
+        switch viewModel.contact.relationship {
         case .incoming:
             // Android "contact request received" pane: caption title +
             // green Accept / tertiary Ignore pair (120×39, radius 8).
             VStack(spacing: 14) {
                 Text(String(
                     format: NSLocalizedString("%@ has requested to be your contact", comment: "DashPay Contacts"),
-                    contact.displayTitle))
+                    viewModel.contact.displayTitle))
                     .font(.system(size: 13))
                     .foregroundColor(.dash.secondaryText)
                     .multilineTextAlignment(.center)
-                if isProcessing {
+                if viewModel.isProcessing {
                     SwiftUI.ProgressView()
                 } else {
                     HStack(spacing: 10) {
                         Button {
-                            run { try await service.acceptContactRequest(from: contact.contactIdentityId) }
+                            viewModel.accept()
                         } label: {
                             Text(NSLocalizedString("Accept", comment: "DashPay Contacts"))
                                 .font(.system(size: 14, weight: .semibold))
@@ -212,7 +161,7 @@ struct ContactProfileSheet: View {
                         .buttonStyle(.plain)
 
                         Button {
-                            run { try await service.ignoreSender(contact.contactIdentityId) }
+                            viewModel.ignore()
                         } label: {
                             Text(NSLocalizedString("Ignore", comment: "DashPay Contacts"))
                                 .font(.system(size: 14, weight: .semibold))
@@ -269,13 +218,13 @@ struct ContactProfileSheet: View {
                 paymentsSection
 
                 Button {
-                    toggleHidden()
+                    viewModel.toggleHidden()
                 } label: {
                     Label(
-                        isHidden
+                        viewModel.isHidden
                             ? NSLocalizedString("Unhide Contact", comment: "DashPay Contacts")
                             : NSLocalizedString("Hide Contact", comment: "DashPay Contacts"),
-                        systemImage: isHidden ? "eye" : "eye.slash")
+                        systemImage: viewModel.isHidden ? "eye" : "eye.slash")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.dash.primaryText)
                         .frame(maxWidth: .infinity)
@@ -302,17 +251,17 @@ struct ContactProfileSheet: View {
                 .foregroundColor(.dash.tertiaryText)
             TextField(
                 NSLocalizedString("Alias", comment: "DashPay Contacts"),
-                text: $aliasText)
+                text: $viewModel.aliasText)
                 .font(.system(size: 15))
                 .padding(.horizontal, 12)
                 .frame(height: 44)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .fill(Color.dash.primaryBackground))
-                .onSubmit { saveMeta() }
+                .onSubmit { viewModel.saveMeta() }
             TextField(
                 NSLocalizedString("Note", comment: "DashPay Contacts"),
-                text: $noteText,
+                text: $viewModel.noteText,
                 axis: .vertical)
                 .font(.system(size: 15))
                 .lineLimit(1...4)
@@ -321,10 +270,10 @@ struct ContactProfileSheet: View {
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .fill(Color.dash.primaryBackground))
-                .onSubmit { saveMeta() }
-            if metaChanged {
+                .onSubmit { viewModel.saveMeta() }
+            if viewModel.metaChanged {
                 Button {
-                    saveMeta()
+                    viewModel.saveMeta()
                 } label: {
                     Text(NSLocalizedString("Save", comment: ""))
                         .font(.system(size: 13, weight: .semibold))
@@ -346,54 +295,6 @@ struct ContactProfileSheet: View {
         .padding(.horizontal, 15)
     }
 
-    private var metaChanged: Bool {
-        aliasText != (contact.alias ?? "") || noteText != (contact.note ?? "")
-    }
-
-    private func saveMeta() {
-        Task { @MainActor in
-            do {
-                // Combined write — the contactInfo document carries
-                // alias + note + hidden together, so every save sends the
-                // sheet's full current state.
-                try await service.setContactMeta(
-                    alias: aliasText.trimmingCharacters(in: .whitespaces),
-                    note: noteText.trimmingCharacters(in: .whitespaces),
-                    hidden: isHidden,
-                    for: contact.contactIdentityId)
-                withAnimation { metaSavedToast = true }
-                try? await Task.sleep(nanoseconds: 1_200_000_000)
-                withAnimation { metaSavedToast = false }
-            } catch {
-                errorMessage = errorMessageIfNotCancelled(error)
-            }
-        }
-    }
-
-    private func toggleHidden() {
-        Task { @MainActor in
-            do {
-                try await service.setContactMeta(
-                    alias: aliasText.trimmingCharacters(in: .whitespaces),
-                    note: noteText.trimmingCharacters(in: .whitespaces),
-                    hidden: !isHidden,
-                    for: contact.contactIdentityId)
-                isHidden.toggle()
-            } catch {
-                errorMessage = errorMessageIfNotCancelled(error)
-            }
-        }
-    }
-
-    /// A cancelled PIN/biometric prompt is a user action, not an error —
-    /// stay silent instead of popping the error alert.
-    private func errorMessageIfNotCancelled(_ error: Error) -> String? {
-        if case SwiftDashSDKContactsService.ServiceError.authCancelled = error {
-            return nil
-        }
-        return error.localizedDescription
-    }
-
     // MARK: Payments between us — history card
 
     private var paymentsSection: some View {
@@ -407,13 +308,13 @@ struct ContactProfileSheet: View {
             Text(NSLocalizedString("Payments made directly to an address aren't retained here.", comment: "DashPay Contacts"))
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
-            if payments.isEmpty {
-                Text(NSLocalizedString("No payments with this contact yet", comment: "DashPay Contacts"))
+            if viewModel.payments.isEmpty {
+                Text(NSLocalizedString("No viewModel.payments with this contact yet", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                     .padding(.top, 2)
             } else {
-                ForEach(payments) { payment in
+                ForEach(viewModel.payments) { payment in
                     paymentRow(payment)
                 }
             }
@@ -431,13 +332,13 @@ struct ContactProfileSheet: View {
     /// row otherwise (H1-lost sends, or a received tx not yet synced).
     @ViewBuilder
     private func paymentRow(_ payment: SwiftDashSDKContactsService.ContactPayment) -> some View {
-        let resolvedTx = resolvedByTxid[payment.id]
+        let resolvedTx = viewModel.resolvedByTxid[payment.id]
         HStack(spacing: 10) {
             Image(systemName: payment.direction == .sent
                 ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
                 .foregroundColor(payment.direction == .sent ? .dash.blue : .dashGreen)
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(payment.direction == .sent ? "-" : "+")\(Self.dashString(duffs: payment.amountDuffs)) DASH")
+                Text("\(payment.direction == .sent ? "-" : "+")\(ContactProfileViewModel.dashString(duffs: payment.amountDuffs)) DASH")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.dash.primaryText)
                 if let fiat = payment.fiatString {
@@ -471,39 +372,6 @@ struct ContactProfileSheet: View {
 
     /// Fetch the payment history and resolve each row's on-chain tx
     /// (main-thread SwiftData reads; a handful of rows, <10ms each).
-    private func loadPayments() {
-        let rows = service.payments(with: contact.contactIdentityId)
-        var resolved: [String: Transaction] = [:]
-        for payment in rows {
-            if let wire = payment.txidWire,
-               let tx = SwiftDashSDKWalletSource.fetch(txid: wire) {
-                resolved[payment.id] = tx
-            }
-        }
-        payments = rows
-        resolvedByTxid = resolved
-    }
-
-    private static func dashString(duffs: UInt64) -> String {
-        let dash = Decimal(duffs) / Decimal(100_000_000)
-        return "\(dash)"
-    }
-
-    private func run(_ operation: @escaping () async throws -> Void) {
-        guard !isProcessing else { return }
-        isProcessing = true
-        Task {
-            defer { isProcessing = false }
-            do {
-                try await operation()
-                dismiss()
-            } catch SwiftDashSDKContactsService.ServiceError.authCancelled {
-                // User backed out of the PIN prompt.
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-        }
-    }
 }
 
 // MARK: - PayContactSheet
@@ -516,3 +384,23 @@ struct ContactProfileSheet: View {
 /// SDK on top of the entered amount — the cap below uses
 /// `maxSendable` (spendable minus a conservative fee reserve) so the
 /// fee can't push the send over the balance.
+
+#if DEBUG
+
+/// No contacts service behind these, so nothing syncs and the actions are
+/// no-ops. Payment rows are left empty on purpose: a row needs a wallet
+/// `Transaction` to resolve against, which cannot be fabricated app-side.
+#Preview("Established") {
+    ContactProfileSheet(
+        contact: .preview(title: "briantest63a"),
+        viewModel: .preview(contact: .preview(title: "briantest63a")))
+}
+
+#Preview("Incoming request") {
+    ContactProfileSheet(
+        contact: .preview(title: "s22test63b", relationship: .incoming),
+        viewModel: .preview(
+            contact: .preview(title: "s22test63b", relationship: .incoming)))
+}
+
+#endif
