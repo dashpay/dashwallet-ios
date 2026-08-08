@@ -133,7 +133,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d von %#@nodes@ haben abgestimmt</string>
+		<string>Abgestimmt: %1$d von %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -149,7 +149,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d von %#@nodes@ haben abgestimmt</string>
+		<string>Abgestimmt: %1$d von %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>

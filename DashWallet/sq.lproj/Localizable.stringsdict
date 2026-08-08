@@ -85,7 +85,7 @@
 	<key>%u votes counted for “%@”</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@votes@ të numëruara për „%2$@“</string>
+		<string>%#@votes@ për „%2$@“</string>
 		<key>votes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -93,9 +93,9 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>u</string>
 			<key>one</key>
-			<string>%1$u votë</string>
+			<string>%1$u votë e numëruar</string>
 			<key>other</key>
-			<string>%1$u vota</string>
+			<string>%1$u vota të numëruara</string>
 		</dict>
 	</dict>
 	<key>%d of %d usernames voted on</key>
@@ -133,7 +133,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d nga %#@nodes@ votuan</string>
+		<string>Votim: %1$d nga %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -149,7 +149,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d nga %#@nodes@ votuan</string>
+		<string>Votim: %1$d nga %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>

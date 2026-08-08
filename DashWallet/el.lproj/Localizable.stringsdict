@@ -85,7 +85,7 @@
 	<key>%u votes counted for “%@”</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@votes@ καταμετρήθηκαν για «%2$@»</string>
+		<string>%#@votes@ για «%2$@»</string>
 		<key>votes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -93,15 +93,15 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>u</string>
 			<key>one</key>
-			<string>%1$u ψήφος</string>
+			<string>%1$u ψήφος καταμετρήθηκε</string>
 			<key>other</key>
-			<string>%1$u ψήφοι</string>
+			<string>%1$u ψήφοι καταμετρήθηκαν</string>
 		</dict>
 	</dict>
 	<key>%d of %d usernames voted on</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>Ψηφίστηκαν %1$d από %#@names@</string>
+		<string>Ψηφοφορία: %1$d από %#@names@</string>
 		<key>names</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -133,7 +133,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d από %#@nodes@ ψήφισαν</string>
+		<string>Ψηφοφορία: %1$d από %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -149,7 +149,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d από %#@nodes@ ψήφισαν</string>
+		<string>Ψηφοφορία: %1$d από %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>

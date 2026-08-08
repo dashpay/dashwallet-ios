@@ -85,7 +85,7 @@
 	<key>%u votes counted for “%@”</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@votes@ преброени за „%2$@“</string>
+		<string>%#@votes@ за „%2$@“</string>
 		<key>votes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -93,9 +93,9 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>u</string>
 			<key>one</key>
-			<string>%1$u глас</string>
+			<string>%1$u преброен глас</string>
 			<key>other</key>
-			<string>%1$u гласа</string>
+			<string>%1$u преброени гласа</string>
 		</dict>
 	</dict>
 	<key>%d of %d usernames voted on</key>
@@ -133,7 +133,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d от %#@nodes@ гласуваха</string>
+		<string>Гласували: %1$d от %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -149,7 +149,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d от %#@nodes@ гласуваха</string>
+		<string>Гласували: %1$d от %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>

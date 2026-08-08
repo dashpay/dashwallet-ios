@@ -85,7 +85,7 @@
 	<key>%u votes counted for “%@”</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@votes@ laskettu kohteelle ”%2$@”</string>
+		<string>%#@votes@ kohteelle ”%2$@”</string>
 		<key>votes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -93,9 +93,9 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>u</string>
 			<key>one</key>
-			<string>%1$u ääni</string>
+			<string>%1$u laskettu ääni</string>
 			<key>other</key>
-			<string>%1$u ääntä</string>
+			<string>%1$u laskettua ääntä</string>
 		</dict>
 	</dict>
 	<key>%d of %d usernames voted on</key>
@@ -133,7 +133,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d / %#@nodes@ on äänestänyt</string>
+		<string>Äänestäneitä: %1$d / %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -149,7 +149,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d / %#@nodes@ on äänestänyt</string>
+		<string>Äänestäneitä: %1$d / %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>

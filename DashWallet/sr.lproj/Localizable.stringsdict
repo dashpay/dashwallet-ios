@@ -85,7 +85,7 @@
 	<key>%u votes counted for “%@”</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@votes@ izbrojano za „%2$@“</string>
+		<string>%#@votes@ za „%2$@“</string>
 		<key>votes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -93,11 +93,11 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>u</string>
 			<key>one</key>
-			<string>%1$u glas</string>
+			<string>%1$u izbrojan glas</string>
 			<key>few</key>
-			<string>%1$u glasa</string>
+			<string>%1$u izbrojana glasa</string>
 			<key>other</key>
-			<string>%1$u glasova</string>
+			<string>%1$u izbrojanih glasova</string>
 		</dict>
 	</dict>
 	<key>%d of %d usernames voted on</key>
@@ -139,7 +139,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d od %#@nodes@ je glasalo</string>
+		<string>Glasanje: %1$d od %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -157,7 +157,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d od %#@nodes@ je glasalo</string>
+		<string>Glasanje: %1$d od %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>

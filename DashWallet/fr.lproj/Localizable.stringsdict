@@ -95,7 +95,7 @@
 	<key>%u votes counted for “%@”</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@votes@ comptabilisées pour « %2$@ »</string>
+		<string>%#@votes@ pour « %2$@ »</string>
 		<key>votes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -103,15 +103,15 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>u</string>
 			<key>one</key>
-			<string>%1$u voix</string>
+			<string>%1$u voix comptabilisée</string>
 			<key>other</key>
-			<string>%1$u voix</string>
+			<string>%1$u voix comptabilisées</string>
 		</dict>
 	</dict>
 	<key>%d of %d usernames voted on</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d sur %#@names@ votés</string>
+		<string>Voté : %1$d sur %#@names@</string>
 		<key>names</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -143,7 +143,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d sur %#@nodes@ ont voté</string>
+		<string>Voté : %1$d sur %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -159,7 +159,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d sur %#@nodes@ ont voté</string>
+		<string>Voté : %1$d sur %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>

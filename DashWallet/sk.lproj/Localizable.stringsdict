@@ -105,7 +105,7 @@
 	<key>%u votes counted for “%@”</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@votes@ započítaných pre „%2$@“</string>
+		<string>%#@votes@ pre „%2$@“</string>
 		<key>votes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -113,13 +113,13 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>u</string>
 			<key>one</key>
-			<string>%1$u hlas</string>
+			<string>%1$u započítaný hlas</string>
 			<key>few</key>
-			<string>%1$u hlasy</string>
+			<string>%1$u započítané hlasy</string>
 			<key>many</key>
-			<string>%1$u hlasu</string>
+			<string>%1$u započítaného hlasu</string>
 			<key>other</key>
-			<string>%1$u hlasov</string>
+			<string>%1$u započítaných hlasov</string>
 		</dict>
 	</dict>
 	<key>%d of %d usernames voted on</key>
@@ -165,7 +165,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d z %#@nodes@ hlasovalo</string>
+		<string>Hlasovanie: %1$d z %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -185,7 +185,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d z %#@nodes@ hlasovalo</string>
+		<string>Hlasovanie: %1$d z %#@nodes@</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
