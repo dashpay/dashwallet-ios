@@ -532,7 +532,7 @@ private struct DashPayFAQSheet: View {
             Item(
                 question: NSLocalizedString("When will contact requests become private?", comment: "DashPay FAQ"),
                 answer: NSLocalizedString(
-                    "Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, who you connect with will no longer be publicly visible.",
+                    "Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, you will have the choice of having your friendship be public or private.",
                     comment: "DashPay FAQ")),
             Item(
                 question: NSLocalizedString("How does this compare to Bitcoin in terms of privacy?", comment: "DashPay FAQ"),
