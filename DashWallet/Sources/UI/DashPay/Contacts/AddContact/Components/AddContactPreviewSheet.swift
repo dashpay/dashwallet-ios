@@ -11,7 +11,7 @@ import DashUIKit
 
 struct AddContactPreviewSheet: View {
     let result: DpnsSearchResult
-    let collision: AddContactScreen.Collision
+    let collision: AddContactViewModel.Collision
     /// The already-materialized contact row when this identity is known
     /// (established / incoming / outgoing); nil for a true stranger.
     let contact: ContactItem?
