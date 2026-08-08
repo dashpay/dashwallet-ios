@@ -454,8 +454,6 @@ struct MainMenuScreen: View {
     
     private func handleNavigation(_ destination: MainMenuNavigationDestination?) {
         switch destination {
-        case .buySellPortal:
-            showBuySellPortal()
         case .explore:
             showExplore()
         case .syncInfo:
@@ -486,12 +484,6 @@ struct MainMenuScreen: View {
     
     // MARK: - Navigation Methods
     
-    private func showBuySellPortal() {
-        let controller = BuySellPortalViewController.controller()
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
-    }
-
     private func showExplore() {
         let screen = ExploreMenuScreen(
             vc: vc,
