@@ -70,4 +70,17 @@ extension TransactionListDataItem: Identifiable {
             return item.date
         }
     }
+
+    /// False only for restored shielded entries whose original date is
+    /// not recoverable (SDK `createdAtMs == 0`); their `date` is the
+    /// `.distantPast` sort sentinel and must not be rendered or used as
+    /// a day-group key.
+    var hasKnownDate: Bool {
+        switch self {
+        case .shieldedActivity(let item):
+            return item.hasKnownDate
+        default:
+            return true
+        }
+    }
 }
