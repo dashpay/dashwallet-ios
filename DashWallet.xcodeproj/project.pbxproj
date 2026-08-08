@@ -335,6 +335,7 @@
 		2E08EC52344E430F9BC8DEAA /* TransferAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */; };
 		2EFDEC7DCA624B16DBBB482D /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B697D56A525CBF142F4401FE /* SwiftDashSDKWalletCreator.swift */; };
 		301AC39DF29047D475777BB4 /* PayContactSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1C23752E1B6ADC2DD92C91 /* PayContactSheet.swift */; };
+		5APCV0002F9A0000000000S2 /* PayContactViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5APCV0002F9A0000000000S1 /* PayContactViewModel.swift */; };
 		30C7DE2E26E849E0D76319FA /* PlatformAddressSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */; };
 		3116F910F54D310002090CBB /* PinPromptPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D385FC174E5B887CF3398CCD /* PinPromptPresenter.swift */; };
 		35BFE3D1C0B8999FBC8AB180 /* PaymentRequestVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */; };
@@ -346,6 +347,7 @@
 		3B1ECCE5521BAB084D74B5ED /* StorageModelListViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A762BDA473947F1A7EF199 /* StorageModelListViews.swift */; };
 		3B9C0EAAC6DE69DBF8271920 /* BIP70PaymentOutputFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5822AAB9B5EA605FF82B009A /* BIP70PaymentOutputFactory.swift */; };
 		40162D7A051D4EB850C06C8F /* PayContactSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1C23752E1B6ADC2DD92C91 /* PayContactSheet.swift */; };
+		5APCV0002F9A0000000000S3 /* PayContactViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5APCV0002F9A0000000000S1 /* PayContactViewModel.swift */; };
 		40AB5A54235FDE2747ECE3F5 /* SwapConvertCardRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99130732DE8F2E95F635F6B /* SwapConvertCardRow.swift */; };
 		4125ACF938F1FAE70351F07F /* ContactsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00F91B2DD12F569DF7D44CA3 /* ContactsScreen.swift */; };
 		425E236B4DFE2BB4FA96E9D4 /* AddContactScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB263C3407A723006128C65 /* AddContactScreen.swift */; };
@@ -3152,6 +3154,7 @@
 		BA1B0001C0FFEE00B15B0001 /* RawTransactionInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawTransactionInspector.swift; sourceTree = "<group>"; };
 		BA1B0011C0FFEE00B15B0011 /* RawTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawTransactionView.swift; sourceTree = "<group>"; };
 		BA1C23752E1B6ADC2DD92C91 /* PayContactSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PayContactSheet.swift; sourceTree = "<group>"; };
+		5APCV0002F9A0000000000S1 /* PayContactViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PayContactViewModel.swift; sourceTree = "<group>"; };
 		BA4A72661BE11AFA00E39C01 /* BRAWWeakTimerTarget.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAWWeakTimerTarget.swift; sourceTree = "<group>"; };
 		BA4EECDF1B351AE200D443A3 /* DWAppGroupConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAppGroupConstants.h; sourceTree = "<group>"; };
 		BA54D3CD1B2EA74000C9CB28 /* TodayExtensionAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = TodayExtensionAssets.xcassets; sourceTree = "<group>"; };
@@ -3853,6 +3856,7 @@
 			isa = PBXGroup;
 			children = (
 				BA1C23752E1B6ADC2DD92C91 /* PayContactSheet.swift */,
+				5APCV0002F9A0000000000S1 /* PayContactViewModel.swift */,
 			);
 			path = Pay;
 			sourceTree = "<group>";
@@ -10119,6 +10123,7 @@
 				F0AB716162822787EBF1CF12 /* NotificationsScreen.swift in Sources */,
 				5ANVM0002F9A0000000000S3 /* NotificationsViewModel.swift in Sources */,
 				40162D7A051D4EB850C06C8F /* PayContactSheet.swift in Sources */,
+				5APCV0002F9A0000000000S3 /* PayContactViewModel.swift in Sources */,
 				BFDD7EB7A8B81E08B7C388EE /* ContactProfileSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -11127,6 +11132,7 @@
 				762D6663F6F27861C230597B /* NotificationsScreen.swift in Sources */,
 				5ANVM0002F9A0000000000S2 /* NotificationsViewModel.swift in Sources */,
 				301AC39DF29047D475777BB4 /* PayContactSheet.swift in Sources */,
+				5APCV0002F9A0000000000S2 /* PayContactViewModel.swift in Sources */,
 				7C51FA86D1A70145BAF76569 /* ContactProfileSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
