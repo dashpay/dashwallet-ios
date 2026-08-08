@@ -469,7 +469,7 @@
 "Balance" = "Balance";
 
 /* CrowdNode */
-"Balance after" = "Saldo jälkeenpäin";
+"Balance after" = "Saldo maksun jälkeen";
 
 /* CrowdNode */
 "Balance On CrowdNode" = "Balance On CrowdNode";
@@ -1014,7 +1014,7 @@
 
 "Dash Platform has not indexed this contest yet. Vote counts appear here once it does." = "Dash Platform ei ole vielä indeksoinut tätä kiistaa. Äänimäärät näkyvät tässä, kun se on tehty.";
 
-"Dash Platform is not connected yet. Wait for syncing to finish and try again." = "Dash Platformiin ei ole vielä yhdistetty. Odota, että synkronointi valmistuu, ja yritä uudelleen.";
+"Dash Platform is not connected yet. Wait for syncing to finish and try again." = "Yhteyttä Dash Platformiin ei ole vielä muodostettu. Odota, että synkronointi valmistuu, ja yritä uudelleen.";
 
 /* Send confirm sheet */
 "Dash sent to a wrong address can't be recovered. Make sure the address is exactly the one you intend to pay." = "Väärään osoitteeseen lähetettyä Dashia ei voi saada takaisin. Varmista, että osoite on täsmälleen se, jolle aiot maksaa.";
@@ -1106,7 +1106,7 @@
 "Deposit sent" = "Deposit sent";
 
 /* Identities: BIP-32 style derivation path of this key */
-"Derivation path" = "Johtamispolku";
+"Derivation path" = "Johdannaispolku";
 
 /* No comment provided by engineer. */
 "Destination" = "Destination";
@@ -3954,7 +3954,7 @@
 "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device." = "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.";
 
 /* Send sheet source/destination mismatch */
-"This address can't be paid from your %@ balance" = "Tätä osoitetta ei voi maksaa %@-saldostasi";
+"This address can't be paid from your %@ balance" = "Tästä %@-saldosta ei voi maksaa tähän osoitteeseen";
 
 /* Dash DEX / dex_error_sanctioned */
 "This address can't be used for swaps." = "This address can't be used for swaps.";
@@ -4412,7 +4412,7 @@
 "Version" = "Versio";
 
 /* Balance info sheet */
-"Very efficient with low fees" = "Erittäin tehokas ja matalat maksut";
+"Very efficient with low fees" = "Erittäin tehokas, ja maksut ovat matalat";
 
 /* adjective, security level */
 "Very High" = "Very High";

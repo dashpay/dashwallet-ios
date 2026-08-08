@@ -334,7 +334,7 @@
 "An error occurred" = "An error occurred";
 
 /* DashPay FAQ */
-"An Ethereum account is one reusable address: your entire balance and payment history sit publicly under it, and a name (like an ENS domain) typically points straight at that address for anyone to resolve. DashPay is the opposite shape — the name resolves to an identity, not a payment address, and actual payment addresses stay inside encrypted contact exchanges, fresh for each contact." = "Un compte d'Ethereum és una única adreça reutilitzada: tot el teu saldo i el teu historial de pagaments queden públicament sota seu, i un nom (per exemple un domini ENS) sol apuntar directament a aquesta adreça, de manera que qualsevol la pot resoldre. DashPay té la forma contrària: el nom es resol a una identitat, no a una adreça de pagament, i les adreces de pagament reals queden dins d'intercanvis de contacte xifrats, noves per a cada contacte.";
+"An Ethereum account is one reusable address: your entire balance and payment history sit publicly under it, and a name (like an ENS domain) typically points straight at that address for anyone to resolve. DashPay is the opposite shape — the name resolves to an identity, not a payment address, and actual payment addresses stay inside encrypted contact exchanges, fresh for each contact." = "Un compte d'Ethereum és una única adreça reutilitzada: tot el teu saldo i el teu historial de pagaments queden públicament sota seu, i un nom (per exemple un domini ENS) sol apuntar directament a aquesta adreça, de manera que qualsevol pot resoldre el nom. DashPay té la forma contrària: el nom es resol a una identitat, no a una adreça de pagament, i les adreces de pagament reals queden dins d'intercanvis de contacte xifrats, noves per a cada contacte.";
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "An intuitive and familiar experience across all your devices";
@@ -3167,7 +3167,7 @@
 /* Testnet faucet */
 "Requesting tDash…" = "Requesting tDash…";
 
-"Requesting this name" = "Demana aquest nom";
+"Requesting this name" = "Sol·liciten aquest nom";
 
 /* An action */
 "Rescan" = "Rescan";

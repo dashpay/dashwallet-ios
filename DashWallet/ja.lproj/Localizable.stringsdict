@@ -97,7 +97,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>other</key>
-			<string>%2$d ユーザー名</string>
+			<string>%2$d 件のユーザー名</string>
 		</dict>
 	</dict>
 	<key>Cast %u votes</key>
@@ -125,7 +125,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>other</key>
-			<string>%2$d マスターノード</string>
+			<string>%2$d 件のマスターノード</string>
 		</dict>
 	</dict>
 	<key>%d of %d nodes voted</key>
@@ -139,7 +139,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>other</key>
-			<string>%2$d ノード</string>
+			<string>%2$d 件のノード</string>
 		</dict>
 	</dict>
 	<key>%d evonodes</key>

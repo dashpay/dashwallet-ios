@@ -157,9 +157,9 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%2$d κόμβος</string>
+			<string>%2$d κόμβο</string>
 			<key>other</key>
-			<string>%2$d κόμβοι</string>
+			<string>%2$d κόμβους</string>
 		</dict>
 	</dict>
 	<key>%d evonodes</key>

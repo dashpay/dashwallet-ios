@@ -283,7 +283,7 @@
 
 "All nodes at once" = "Svi čvorovi odjednom";
 
-"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Svi vaši masternodeovi glasali su o ovom korisničkom imenu. Da biste promijenili glas, glasajte ponovno od kandidata kojeg sada preferirate.";
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Svi vaši masternodeovi glasali su o ovom korisničkom imenu. Da biste promijenili glas, glasajte ponovno za kandidata kojeg sada preferirate.";
 
 /* No comment provided by engineer. */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
@@ -3069,7 +3069,7 @@
 /* CrowdNode */
 "Receiving rewards" = "Receiving rewards";
 
-"Records your masternodes as having voted, without taking a side." = "Bilježi vaše masternodeove kao da su glasali, bez staja na nečiju stranu.";
+"Records your masternodes as having voted, without taking a side." = "Bilježi vaše masternodeove kao da su glasali, bez zauzimanja strane.";
 
 /* No comment provided by engineer. */
 "Recover" = "Recover";

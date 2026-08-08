@@ -111,7 +111,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%2$d korisničko ime</string>
+			<string>%2$d korisničkog imena</string>
 			<key>few</key>
 			<string>%2$d korisnička imena</string>
 			<key>other</key>
@@ -147,7 +147,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%2$d masternode</string>
+			<string>%2$d masternodea</string>
 			<key>few</key>
 			<string>%2$d masternodea</string>
 			<key>other</key>
@@ -165,7 +165,7 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%2$d čvor</string>
+			<string>%2$d čvora</string>
 			<key>few</key>
 			<string>%2$d čvora</string>
 			<key>other</key>
