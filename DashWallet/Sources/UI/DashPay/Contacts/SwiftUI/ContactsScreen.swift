@@ -259,7 +259,7 @@ struct ContactsScreen: View {
         .buttonStyle(.plain)
         .sheet(isPresented: $showingEnableDashPay) {
             EnableDashPayConfirmSheet(viewModel: viewModel)
-                .presentationDetents([.height(360)])
+                .presentationDetents([.height(470)])
         }
     }
 
@@ -442,24 +442,25 @@ private struct EnableDashPayConfirmSheet: View {
                 .padding(.top, 16)
 
             Text(NSLocalizedString(
-                "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. It happens once, on the Dash Platform network.",
+                "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.",
                 comment: "DashPay: body of the Enable DashPay confirmation"))
                 .font(.system(size: 14))
                 .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 28)
                 .padding(.top, 8)
 
-            HStack {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(NSLocalizedString("Estimated network fee", comment: "DashPay: fee line of the Enable DashPay confirmation"))
-                    .font(.system(size: 14))
+                    .font(.caption)
                     .foregroundColor(.dash.secondaryText)
-                Spacer()
                 Text(viewModel.enableDashPayEstimatedCostText)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
-                    .multilineTextAlignment(.trailing)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)

@@ -2225,7 +2225,7 @@
 "Security level" = "Security level";
 
 /* DashPay: body of the Enable DashPay confirmation */
-"This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. It happens once, on the Dash Platform network." = "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. It happens once, on the Dash Platform network.";
+"This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.";
 
 /* DashPay: subtitle of the Enable DashPay banner */
 "Your identity can't send or receive contact requests yet" = "Your identity can't send or receive contact requests yet";
