@@ -111,7 +111,8 @@ struct CastVoteSheet: View {
                             "%d of your nodes already voted here and are not listed.",
                             comment: "Voting"),
                         alreadyVoted))
-                } else if !viewModel.voteWithAllNodes && viewModel.votableNodes.count > 1 {
+                } else if viewModel.selectedNodeIDs.count < viewModel.votableNodes.count,
+                          viewModel.votableNodes.count > 1 {
                     Text(NSLocalizedString(
                         "Selecting fewer nodes reveals less about which masternodes you run.",
                         comment: "Voting"))

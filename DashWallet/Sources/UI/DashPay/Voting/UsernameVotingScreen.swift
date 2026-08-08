@@ -34,13 +34,15 @@ struct UsernameVotingScreen: View {
     let onClose: () -> Void
 
     @StateObject private var viewModel = VotingViewModel()
+    @State private var showingNodePicker = false
 
     var body: some View {
         VStack(spacing: 0) {
             VoterCapacityHeader(
                 nodes: viewModel.votableNodes,
                 totalWeight: viewModel.totalVoteWeight,
-                voteWithAllNodes: $viewModel.voteWithAllNodes)
+                selectedNodeIDs: $viewModel.selectedNodeIDs,
+                onEditSelection: { showingNodePicker = true })
 
             if viewModel.nodeListMayBeIncomplete {
                 VotingBanner(
@@ -101,7 +103,12 @@ struct UsernameVotingScreen: View {
                 BulkSelectionBar(viewModel: viewModel)
             }
         }
-        .task { await viewModel.refresh() }
+        .sheet(isPresented: $showingNodePicker) {
+            VotingNodeSelectionSheet(
+                nodes: viewModel.votableNodes,
+                selectedNodeIDs: $viewModel.selectedNodeIDs)
+        }
+        .task { await viewModel.refreshIfNeeded() }
         .refreshable { await viewModel.refresh() }
     }
 
@@ -129,18 +136,36 @@ struct UsernameVotingScreen: View {
         } else {
             List(viewModel.visibleContests) { contest in
                 if viewModel.isSelecting {
+                    let eligible = viewModel.isBulkEligible(contest)
                     Button {
                         viewModel.toggleSelection(contest)
                     } label: {
                         HStack(spacing: 10) {
-                            Image(systemName: viewModel.isSelected(contest)
-                                  ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(viewModel.isSelected(contest)
-                                                 ? .accentColor : Color.dash.tertiaryText)
-                            ContestRow(contest: contest)
+                            // Contested names are shown but not selectable:
+                            // hiding them would make the list silently differ
+                            // from the browsing list, so say why instead.
+                            Image(systemName: !eligible
+                                  ? "minus.circle"
+                                  : (viewModel.isSelected(contest)
+                                     ? "checkmark.circle.fill" : "circle"))
+                                .foregroundColor(!eligible
+                                                 ? Color.dash.tertiaryText
+                                                 : (viewModel.isSelected(contest)
+                                                    ? .accentColor : Color.dash.tertiaryText))
+                            VStack(alignment: .leading, spacing: 2) {
+                                ContestRow(contest: contest)
+                                if !eligible {
+                                    Text(NSLocalizedString(
+                                        "Several people requested this name — open it to choose between them.",
+                                        comment: "Voting"))
+                                        .font(.caption2)
+                                        .foregroundColor(Color.dash.tertiaryText)
+                                }
+                            }
                         }
                     }
                     .buttonStyle(.plain)
+                    .disabled(!eligible)
                 } else {
                     NavigationLink {
                         ContestDetailScreen(contest: contest, viewModel: viewModel)
@@ -162,7 +187,10 @@ struct UsernameVotingScreen: View {
 private struct VoterCapacityHeader: View {
     let nodes: [VoterNode]
     let totalWeight: UInt32
-    @Binding var voteWithAllNodes: Bool
+    /// proTxHashes the next vote will use. Tapping the row edits it.
+    @Binding var selectedNodeIDs: Set<Data>
+    /// Opens the node picker.
+    let onEditSelection: () -> Void
 
     var body: some View {
         HStack(spacing: 10) {
@@ -196,32 +224,48 @@ private struct VoterCapacityHeader: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.dash.secondaryBackground)
 
-        // Only meaningful with more than one node — with one, both modes do
-        // exactly the same thing.
+        // With more than one node the user needs to see WHICH nodes a tap
+        // will vote with, because that choice links those masternodes to each
+        // other publicly. With one node there is nothing to choose.
         if nodes.count > 1 {
-            VStack(alignment: .leading, spacing: 4) {
-                Picker(NSLocalizedString("Vote with", comment: "Voting"),
-                       selection: $voteWithAllNodes) {
-                    Text(NSLocalizedString("One node at a time", comment: "Voting")).tag(false)
-                    Text(NSLocalizedString("All nodes at once", comment: "Voting")).tag(true)
+            Button(action: onEditSelection) {
+                HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(NSLocalizedString("Voting with", comment: "Voting"))
+                            .font(.caption)
+                            .foregroundColor(Color.dash.secondaryText)
+                        Text(selectionSummary)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(Color.dash.primaryText)
+                            .multilineTextAlignment(.leading)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(Color.dash.secondaryText)
                 }
-                .pickerStyle(.segmented)
-
-                Text(voteWithAllNodes
-                     ? NSLocalizedString(
-                         "Every node votes together. Faster, but it publicly links your masternodes to each other.",
-                         comment: "Voting")
-                     : NSLocalizedString(
-                         "Each tap votes with one more node, so you choose how many to link together.",
-                         comment: "Voting"))
-                    .font(.caption)
-                    .foregroundColor(Color.dash.secondaryText)
             }
+            .buttonStyle(.plain)
             .padding(.horizontal, 16)
             .padding(.bottom, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.dash.secondaryBackground)
         }
+    }
+
+    /// Names the nodes a vote will use, so the privacy consequence of the
+    /// current selection is legible without opening the picker.
+    private var selectionSummary: String {
+        let chosen = nodes.filter { selectedNodeIDs.contains($0.proTxHash) }
+        guard !chosen.isEmpty else {
+            return NSLocalizedString("Select nodes", comment: "Voting")
+        }
+        if chosen.count == nodes.count {
+            return String(format: NSLocalizedString(
+                "All %d nodes", comment: "Voting"), chosen.count)
+        }
+        return chosen.map(\.displayName).joined(separator: ", ")
     }
 
     private var nodeSummary: String {

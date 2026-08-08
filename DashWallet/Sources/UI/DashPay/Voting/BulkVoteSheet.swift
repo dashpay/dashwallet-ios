@@ -92,7 +92,10 @@ struct BulkVoteSheet: View {
     @Environment(\.dismiss)
     private var dismiss
 
-    @State private var choice: VoteChoice = .abstain
+    @State private var choice: VotingViewModel.BulkChoice = .abstain
+    /// Set when a run would re-vote where this wallet already voted; drives the
+    /// confirmation below.
+    @State private var pendingPlan: VotingViewModel.BulkPlan?
     @State private var selectedNodeIDs: Set<Data> = []
 
     private var selectedNodes: [VoterNode] {
@@ -125,9 +128,121 @@ struct BulkVoteSheet: View {
             }
         }
         .onAppear {
+            // Open with the same nodes the single-contest screen would use, so
+            // the remembered choice means one thing across the feature rather
+            // than silently widening to every node here.
             if selectedNodeIDs.isEmpty {
-                selectedNodeIDs = Set(viewModel.votableNodes.map(\.proTxHash))
+                selectedNodeIDs = viewModel.effectiveSelectedNodeIDs
             }
+        }
+        .alert(
+            NSLocalizedString("Some votes already cast", comment: "Voting"),
+            isPresented: Binding(
+                get: { pendingPlan != nil },
+                set: { if !$0 { pendingPlan = nil } }),
+            presenting: pendingPlan
+        ) { plan in
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                pendingPlan = nil
+            }
+            // Disabled rather than hidden when nothing is left: the user should
+            // see that their selection is already fully voted, not be offered a
+            // button that would do nothing.
+            Button(NSLocalizedString("Continue", comment: "Voting")) {
+                let confirmed = plan
+                pendingPlan = nil
+                Task { await viewModel.castBulk(plan: confirmed) }
+            }
+            .disabled(!plan.hasWork)
+        } message: { plan in
+            Text(overlapMessage(for: plan))
+        }
+        .onChange(of: selectedNodeIDs) { newValue in
+            // Remember what the user actually voted with, wherever they chose it.
+            guard !newValue.isEmpty else { return }
+            viewModel.selectedNodeIDs = newValue
+        }
+    }
+
+    /// Explains what will be cast, what will be replaced, and what is already
+    /// settled.
+    ///
+    /// Changing a vote is legitimate — Platform accepts several votes per
+    /// masternode per contest — so an earlier vote of a DIFFERENT choice is
+    /// reported as a replacement, not as a blocker. Only an identical earlier
+    /// vote is skipped, because re-sending it changes nothing.
+    private func overlapMessage(for plan: VotingViewModel.BulkPlan) -> String {
+        let newName = Self.name(for: choice)
+        var parts: [String] = []
+
+        if plan.changedPairs > 0 {
+            if let replaced = plan.replacedChoice.map(Self.name(for:)) {
+                parts.append(String(
+                    format: NSLocalizedString(
+                        "%1$d of these masternodes already voted “%2$@” on names you selected. Voting “%3$@” replaces those votes.",
+                        comment: "Voting"),
+                    plan.changedPairs, replaced, newName))
+            } else {
+                parts.append(String(
+                    format: NSLocalizedString(
+                        "%1$d of these masternodes already voted differently on names you selected. Voting “%2$@” replaces those votes.",
+                        comment: "Voting"),
+                    plan.changedPairs, newName))
+            }
+        }
+
+        if plan.duplicatePairs > 0 {
+            parts.append(String(
+                format: NSLocalizedString(
+                    "%1$d already voted “%2$@” and will be left as they are.",
+                    comment: "Voting"),
+                plan.duplicatePairs, newName))
+        }
+
+        guard plan.hasWork else {
+            parts.append(NSLocalizedString(
+                "Nothing is left to cast.", comment: "Voting"))
+            return parts.joined(separator: " ")
+        }
+
+        parts.append(String(
+            format: NSLocalizedString(
+                "Continue with %1$d vote(s) across %2$d username(s)?",
+                comment: "Voting"),
+            plan.totalPairs, plan.work.count))
+        return parts.joined(separator: " ")
+    }
+
+    private static func name(for choice: VotingViewModel.BulkChoice) -> String {
+        switch choice {
+        case .soleRequester: return NSLocalizedString("Sole Requester", comment: "Voting")
+        case .abstain: return NSLocalizedString("Abstain", comment: "Voting")
+        case .lock: return NSLocalizedString("Lock", comment: "Voting")
+        }
+    }
+
+    private static func name(for choice: VoteChoice) -> String {
+        switch choice {
+        case .towards: return NSLocalizedString("Sole Requester", comment: "Voting")
+        case .abstain: return NSLocalizedString("Abstain", comment: "Voting")
+        case .lock: return NSLocalizedString("Lock", comment: "Voting")
+        }
+    }
+
+    private var choiceExplanation: String {
+        switch choice {
+        case .soleRequester:
+            return NSLocalizedString(
+                "Awards each username to the only person who requested it. Available because every selected name has a single requester.",
+                comment: "Voting")
+        case .abstain:
+            return NSLocalizedString(
+                "Records your masternodes as having voted, without taking a side.",
+                comment: "Voting")
+        case .lock:
+            return NSLocalizedString(
+                "Votes that nobody should receive these usernames.",
+                comment: "Voting")
         }
     }
 
@@ -149,16 +264,16 @@ struct BulkVoteSheet: View {
 
             Section(NSLocalizedString("Choice", comment: "Voting")) {
                 Picker(NSLocalizedString("Choice", comment: "Voting"), selection: $choice) {
-                    Text(NSLocalizedString("Abstain", comment: "Voting")).tag(VoteChoice.abstain)
-                    Text(NSLocalizedString("Lock", comment: "Voting")).tag(VoteChoice.lock)
+                    Text(NSLocalizedString("Sole Requester", comment: "Voting"))
+                        .tag(VotingViewModel.BulkChoice.soleRequester)
+                    Text(NSLocalizedString("Abstain", comment: "Voting"))
+                        .tag(VotingViewModel.BulkChoice.abstain)
+                    Text(NSLocalizedString("Lock", comment: "Voting"))
+                        .tag(VotingViewModel.BulkChoice.lock)
                 }
                 .pickerStyle(.segmented)
 
-                Text(choice == .abstain
-                     ? NSLocalizedString("Records your masternodes as having voted, without taking a side.",
-                                         comment: "Voting")
-                     : NSLocalizedString("Votes that nobody should receive these usernames.",
-                                         comment: "Voting"))
+                Text(choiceExplanation)
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)
             }
@@ -193,7 +308,18 @@ struct BulkVoteSheet: View {
 
             Section {
                 Button {
-                    Task { await viewModel.castBulk(choice: choice, with: selectedNodes) }
+                    Task {
+                        // Plan first: some of these nodes may already have voted
+                        // on some of these names, and Platform caps votes per
+                        // masternode per contest — re-casting spends that
+                        // allowance for nothing. Ask before skipping silently.
+                        let plan = await viewModel.planBulk(choice: choice, with: selectedNodes)
+                        if plan.needsConfirmation {
+                            pendingPlan = plan
+                        } else {
+                            await viewModel.castBulk(plan: plan)
+                        }
+                    }
                 } label: {
                     HStack {
                         Spacer()

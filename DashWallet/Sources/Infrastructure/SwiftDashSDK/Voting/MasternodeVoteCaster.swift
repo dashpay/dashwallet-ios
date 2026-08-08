@@ -129,7 +129,6 @@ final class MasternodeVoteCaster {
         case authenticationCancelled
         case noNodesSelected
         case contestClosed(String)
-        case choiceNotBulkable
         case sdkUnavailable
 
         var errorDescription: String? {
@@ -144,10 +143,6 @@ final class MasternodeVoteCaster {
                 return String(format: NSLocalizedString(
                     "Voting on “%@” has already closed. Refresh to see the result.",
                     comment: "Voting"), label)
-            case .choiceNotBulkable:
-                return NSLocalizedString(
-                    "Approving a specific request can only be done one username at a time.",
-                    comment: "Voting")
             case .sdkUnavailable:
                 return NSLocalizedString(
                     "Dash Platform is not connected yet. Wait for syncing to finish and try again.",
@@ -267,21 +262,18 @@ final class MasternodeVoteCaster {
     /// becomes a report with every node failed rather than aborting the run,
     /// so one stale row cannot discard the rest of the batch.
     ///
-    /// - Note: Only ``VoteChoice/abstain`` and ``VoteChoice/lock`` generalize
-    ///   across contests. `towards` names a specific contender, and the
-    ///   legacy "vote for whoever submitted first" rule is not reproducible
-    ///   here: contender submission time lives inside the serialized `domain`
-    ///   document, which the FFI returns as opaque hex.
+    /// - Note: Each entry carries its own choice. `abstain` and `lock`
+    ///   generalize across contests, but "award it to the only requester"
+    ///   names a different contender identity per contest, so the caller
+    ///   resolves that and passes the result per label. This function does not
+    ///   decide who a contest's contenders are.
     func castBulk(
-        choice: VoteChoice,
-        onNormalizedLabels labels: [String],
-        with nodes: [VoterNode]
+        _ work: [(label: String, choice: VoteChoice, nodes: [VoterNode])]
     ) async throws -> [VoteCastReport] {
-        guard !nodes.isEmpty else { throw CastError.noNodesSelected }
-        guard !labels.isEmpty else { return [] }
-        if case .towards = choice {
-            throw CastError.choiceNotBulkable
+        guard work.contains(where: { !$0.nodes.isEmpty }) else {
+            throw CastError.noNodesSelected
         }
+        guard !work.isEmpty else { return [] }
         guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CastError.sdkUnavailable }
 
         switch await AuthenticationGate.authenticate(
@@ -295,9 +287,9 @@ final class MasternodeVoteCaster {
         }
 
         var reports: [VoteCastReport] = []
-        reports.reserveCapacity(labels.count)
+        reports.reserveCapacity(work.count)
 
-        for label in labels {
+        for (label, choice, nodes) in work {
             // "The check failed" and "the poll is closed" are different
             // outcomes: collapsing them would tell the user a live contest had
             // already resolved whenever the network hiccupped.
