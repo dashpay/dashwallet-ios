@@ -662,6 +662,9 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "How does this compare to Ethereum Accounts in terms of privacy?";
 
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "My identity";
+
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers.";
 
@@ -2304,6 +2307,9 @@
 
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Usernames, not addresses";
+
+/* DashPay: banner identity row subtitle */
+"View profile" = "View profile";
 
 /* DashPay FAQ */
 "What about Unstoppable Domains and similar name services?" = "What about Unstoppable Domains and similar name services?";
