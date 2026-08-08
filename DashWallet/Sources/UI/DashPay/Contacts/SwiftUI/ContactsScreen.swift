@@ -13,6 +13,7 @@
 //  outgoing rows.
 //
 
+import SwiftDashSDK
 import SwiftUI
 import DashUIKit
 
@@ -39,6 +40,59 @@ final class ContactsViewModel: ObservableObject {
     /// `needsDashPayEnable`); sizes the fee estimate.
     private var missingDashPayKeyCount = 0
 
+    /// Own-identity snapshot for the banner (display name, @username,
+    /// avatar, and the id that seeds the initials placeholder), refreshed
+    /// with the rest of the tab from `DWCurrentUserIdentityInfo`.
+    @Published var ownDisplayName: String?
+    @Published var ownUsername: String?
+    @Published var ownAvatarURL: String?
+    @Published var ownIdentitySeed = Data()
+
+    /// Banner headline: display name → username → honest placeholder.
+    var ownDisplayTitle: String {
+        if let displayName = ownDisplayName, !displayName.isEmpty {
+            return displayName
+        }
+        return ownUsername
+            ?? NSLocalizedString("My identity", comment: "DashPay: banner fallback when the identity has no name yet")
+    }
+
+    /// Network (DPNS) matches for the tab's search text — the discovery
+    /// teaser under the local sections. Excludes the user's own identity
+    /// and everyone already in the local snapshots (they're in the
+    /// filtered sections above).
+    @Published var networkSearchResults: [DpnsSearchResult] = []
+    @Published var isSearchingNetwork = false
+    private var networkSearchTask: Task<Void, Never>?
+
+    /// Debounced DPNS prefix search driving `networkSearchResults`.
+    /// Mirrors AddContactScreen's 2-character minimum and debounce.
+    func updateNetworkSearch(query: String) {
+        networkSearchTask?.cancel()
+        let trimmed = query.trimmingCharacters(in: .whitespaces)
+        guard trimmed.count >= 2 else {
+            networkSearchResults = []
+            isSearchingNetwork = false
+            return
+        }
+        // Clear immediately so a previous query's matches can't sit under
+        // the new text through the debounce + request.
+        networkSearchResults = []
+        isSearchingNetwork = true
+        networkSearchTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            guard let self, !Task.isCancelled else { return }
+            let results = (try? await service.searchUsernames(prefix: trimmed, limit: 12)) ?? []
+            guard !Task.isCancelled else { return }
+            let known = Set((contacts + incomingRequests + outgoingRequests).map(\.contactIdentityId))
+            let ownId = DWCurrentUserIdentityInfo.shared.identityId
+            networkSearchResults = results.filter {
+                !known.contains($0.identityId) && $0.identityId != ownId
+            }
+            isSearchingNetwork = false
+        }
+    }
+
     private let service = SwiftDashSDKContactsService.shared
 
     init() {
@@ -57,6 +111,11 @@ final class ContactsViewModel: ObservableObject {
         service.refresh()
         missingDashPayKeyCount = service.missingDashPayKeyCount()
         needsDashPayEnable = missingDashPayKeyCount > 0
+        let info = DWCurrentUserIdentityInfo.shared
+        ownDisplayName = info.displayName
+        ownUsername = info.username?.withoutDashSuffix
+        ownAvatarURL = info.avatarURL
+        ownIdentitySeed = info.identityId ?? Data()
     }
 
     /// Estimated IdentityUpdate fee for the confirm sheet, sized to the
@@ -177,6 +236,11 @@ struct ContactsScreen: View {
     /// the add-contact sheet.
     @State private var pendingFirstContactRequest = false
     @State private var selectedContact: ContactItem? = nil
+    /// Banner identity row → read-only profile sheet.
+    @State private var showingOwnProfile = false
+    /// Prefill for AddContactScreen when opened from a network search
+    /// row / "Show more" (empty for the plain add button).
+    @State private var addContactInitialQuery = ""
 
     var body: some View {
         NavigationStack {
@@ -184,27 +248,20 @@ struct ContactsScreen: View {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 content
             }
-            .navigationTitle(viewModel.needsDashPayEnable
-                ? NSLocalizedString("DashPay", comment: "DashPay")
-                : NSLocalizedString("Contacts", comment: "DashPay Contacts"))
-            .toolbar {
-                // Adding a contact needs the DIP-15 key pair on our own
-                // side too (the outgoing request's ECDH) — hide the
-                // affordance until the identity is DashPay-enabled.
-                if !viewModel.needsDashPayEnable {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            showingAddContact = true
-                        } label: {
-                            Image(systemName: "person.badge.plus")
-                                .foregroundColor(.dash.blue)
-                        }
-                        .accessibilityLabel(NSLocalizedString("Add a New Contact", comment: "DashPay Contacts"))
-                    }
-                }
-            }
+            .navigationTitle(NSLocalizedString("DashPay", comment: "DashPay"))
+            // The enabled state draws its own Dash-blue identity banner
+            // (title, add-contact, and profile entry live inside it);
+            // the system bar only fronts the pre-enable intro.
+            .toolbar(viewModel.needsDashPayEnable ? .visible : .hidden, for: .navigationBar)
             .sheet(isPresented: $showingAddContact) {
-                AddContactScreen()
+                AddContactScreen(initialQuery: addContactInitialQuery)
+            }
+            .sheet(isPresented: $showingOwnProfile) {
+                // Read-only profile view. Editing stays on the Home
+                // avatar's flow (it owns the RootEditProfileViewController
+                // delegate wiring); TODO(dashpay-banner-edit): present the
+                // editor from here once that wiring has a shared owner.
+                SDKIdentityProfileSheet()
             }
             .sheet(
                 isPresented: $viewModel.showEnableSuccess,
@@ -259,11 +316,92 @@ struct ContactsScreen: View {
                         // sheet content scrolls and .large stays reachable.
                         .presentationDetents([.medium, .large])
                 }
-        } else if viewModel.isEmpty {
-            emptyState
         } else {
-            list
+            VStack(spacing: 0) {
+                dashPayBanner
+                if viewModel.isEmpty {
+                    emptyState
+                } else {
+                    list
+                }
+            }
         }
+    }
+
+    /// Dash-blue identity banner (design option C): the tab opens with
+    /// WHO you are on DashPay — ringed avatar, display name, @username —
+    /// before who you know. The whole identity row opens the profile
+    /// sheet; add-contact lives on the title line. The gradient runs
+    /// under the status bar, and the search field below overlaps the
+    /// seam via the banner's negative bottom padding.
+    private var dashPayBanner: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(NSLocalizedString("Contacts", comment: "DashPay Contacts"))
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.white)
+                Spacer()
+                Button {
+                    openAddContact(query: "")
+                } label: {
+                    Image(systemName: "person.badge.plus")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(width: 34, height: 34)
+                        .background(Circle().fill(Color.white.opacity(0.18)))
+                }
+                .accessibilityLabel(NSLocalizedString("Add a New Contact", comment: "DashPay Contacts"))
+            }
+            .padding(.bottom, 8)
+
+            Button {
+                showingOwnProfile = true
+            } label: {
+                HStack(spacing: 12) {
+                    ContactAvatarView(
+                        title: viewModel.ownDisplayTitle,
+                        avatarURL: viewModel.ownAvatarURL,
+                        identitySeed: viewModel.ownIdentitySeed,
+                        size: 52)
+                        .overlay(Circle().stroke(Color.white.opacity(0.85), lineWidth: 2.5))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(viewModel.ownDisplayTitle)
+                            .font(.system(size: 17, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                        if let username = viewModel.ownUsername {
+                            Text("@\(username) · " + NSLocalizedString("View profile", comment: "DashPay: banner identity row subtitle"))
+                                .font(.system(size: 12.5))
+                                .foregroundColor(.white.opacity(0.82))
+                                .lineLimit(1)
+                        }
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.7))
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 6)
+        .padding(.bottom, 40)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 0 / 255, green: 155 / 255, blue: 241 / 255),
+                    Color(red: 0 / 255, green: 116 / 255, blue: 207 / 255),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing)
+                .ignoresSafeArea(edges: .top))
+        // Pull the content below up over the banner's seam so the search
+        // field (or empty state) overlaps it, mockup-style — later
+        // siblings draw on top of the banner's bottom edge.
+        .padding(.bottom, -28)
     }
 
     private var list: some View {
@@ -330,10 +468,76 @@ struct ContactsScreen: View {
                     }
                 }
 
+                networkResultsSection
+
                 Spacer(minLength: 24)
             }
         }
         .refreshable { await viewModel.syncNow() }
+        .onChange(of: filterText) { _, newValue in
+            viewModel.updateNetworkSearch(query: newValue)
+        }
+    }
+
+    /// Discovery teaser under the local sections while the user types:
+    /// up to three DPNS matches from the network (people NOT yet in the
+    /// lists above), with the full add-contact search one tap away. Rows
+    /// and "Show more" both open AddContactScreen prefilled — the send /
+    /// accept / eligibility machinery lives there, unduplicated.
+    @ViewBuilder
+    private var networkResultsSection: some View {
+        if trimmedFilter.count >= 2 {
+            sectionHeader(NSLocalizedString("On the Dash network", comment: "DashPay Contacts: search results from DPNS, not the local contact list"), size: 15)
+            if viewModel.isSearchingNetwork && viewModel.networkSearchResults.isEmpty {
+                SwiftUI.ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+            } else if viewModel.networkSearchResults.isEmpty {
+                Text(NSLocalizedString("No usernames found", comment: "DashPay Contacts"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.dash.secondaryText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+            } else {
+                ForEach(viewModel.networkSearchResults.prefix(3)) { result in
+                    cardRow {
+                        HStack(spacing: 10) {
+                            ContactAvatarView(
+                                title: result.fullName.withoutDashSuffix,
+                                avatarURL: nil,
+                                identitySeed: result.identityId)
+                                .padding(.leading, 17)
+                            Text(result.fullName.withoutDashSuffix)
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(.dash.primaryText)
+                                .lineLimit(1)
+                            Spacer()
+                            Image(systemName: "person.badge.plus")
+                                .foregroundColor(.dash.blue)
+                                .padding(.trailing, 14)
+                        }
+                        .frame(height: 58)
+                    }
+                    .onTapGesture { openAddContact(query: result.fullName.withoutDashSuffix) }
+                }
+                if viewModel.networkSearchResults.count > 3 {
+                    Button {
+                        openAddContact(query: trimmedFilter)
+                    } label: {
+                        Text(NSLocalizedString("Show more results", comment: "DashPay Contacts: expands the network search into the full add-contact flow"))
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.dash.blue)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                    }
+                }
+            }
+        }
+    }
+
+    private func openAddContact(query: String) {
+        addContactInitialQuery = query
+        showingAddContact = true
     }
 
     private func sectionHeader(_ text: String, size: CGFloat) -> some View {
@@ -399,8 +603,10 @@ struct ContactsScreen: View {
 
     // MARK: Filtering (local, over the already-materialized snapshots)
 
+    private var trimmedFilter: String { filterText.trimmingCharacters(in: .whitespaces) }
+
     private func matches(_ item: ContactItem) -> Bool {
-        let trimmed = filterText.trimmingCharacters(in: .whitespaces)
+        let trimmed = trimmedFilter
         guard !trimmed.isEmpty else { return true }
         return item.displayTitle.localizedCaseInsensitiveContains(trimmed)
             || (item.username?.localizedCaseInsensitiveContains(trimmed) ?? false)

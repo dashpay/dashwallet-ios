@@ -19,7 +19,14 @@ import DashUIKit
 struct AddContactScreen: View {
     @Environment(\.dismiss) private var dismiss
 
-    @State private var query = ""
+    @State private var query: String
+
+    /// `initialQuery` prefills the search (the Contacts tab's network
+    /// teaser hands its text over); the search fires on appear so the
+    /// results are already loading when the sheet lands.
+    init(initialQuery: String = "") {
+        _query = State(initialValue: initialQuery)
+    }
     @State private var results: [DpnsSearchResult] = []
     @State private var isSearching = false
     @State private var searchTask: Task<Void, Never>? = nil
@@ -66,6 +73,11 @@ struct AddContactScreen: View {
             }
             .onChange(of: query) { _, _ in
                 scheduleSearch()
+            }
+            .onAppear {
+                if !trimmedQuery.isEmpty {
+                    scheduleSearch()
+                }
             }
             .alert(
                 NSLocalizedString("Error", comment: ""),

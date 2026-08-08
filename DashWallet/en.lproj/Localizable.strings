@@ -185,6 +185,9 @@
 /* No comment provided by engineer. */
 "About me" = "About me";
 
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "About the identity account balance";
+
 /* No comment provided by engineer. */
 "Accept" = "Accept";
 
@@ -308,6 +311,9 @@
 
 /* Coinbase/Buy Dash */
 "Amount in Dash" = "Amount in Dash";
+
+/* Identity top-up sheet — custom amount placeholder */
+"Amount in DASH" = "Amount in DASH";
 
 /* No comment provided by engineer. */
 "Amount received" = "Amount received";
@@ -653,8 +659,26 @@
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Contact request sent to %@";
 
+/* Identity top-up sheet — body */
+"Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates.";
+
+/* Identity top-up sheet — free amount chip */
+"Custom" = "Custom";
+
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay enabled";
+
+/* Identity top-up sheet — custom amount below the floor */
+"Enter at least %@ DASH" = "Enter at least %@ DASH";
+
+/* Identity top-up sheet — fee estimate line */
+"Estimated fees" = "Estimated fees";
+
+/* Identity top-up sheet — fee note */
+"Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance.";
+
+/* Identity top-up sheet — linkability warning for transparent-side sources */
+"Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.";
 
 /* DashPay FAQ */
 "How does this compare to Bitcoin in terms of privacy?" = "How does this compare to Bitcoin in terms of privacy?";
@@ -662,11 +686,29 @@
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "How does this compare to Ethereum Accounts in terms of privacy?";
 
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Identity Account Balance";
+
+/* DashPay: banner fallback when the identity has no name yet */
+"My identity" = "My identity";
+
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers.";
 
+/* Identity top-up sheet — missing unshield destination */
+"No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "No Platform receive address is available yet — wait for the Platform sync to finish and try again.";
+
+/* Identity top-up sheet — insufficient funding source */
+"Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Not enough funds in this balance: %@ DASH needed, %@ DASH available.";
+
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves.";
+
+/* DashPay Contacts: search results from DPNS, not the local contact list */
+"On the Dash network" = "On the Dash network";
+
+/* Identity top-up sheet — funding source picker label */
+"Pay from" = "Pay from";
 
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.";
@@ -2287,6 +2329,9 @@
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Read-only";
 
+/* Identity top-up sheet — shielded source note */
+"Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins.";
+
 /* Identities: DPP security level of a public key */
 "Security level" = "Security level";
 
@@ -2302,11 +2347,32 @@
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Send your first contact request";
 
+/* DashPay Contacts: expands the network search into the full add-contact flow */
+"Show more results" = "Show more results";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 1 of 2 — moving Dash out of your Shielded balance…" = "Step 1 of 2 — moving Dash out of your Shielded balance…";
+
+/* Identity top-up sheet — shielded route progress */
+"Step 2 of 2 — topping up your identity…" = "Step 2 of 2 — topping up your identity…";
+
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.";
 
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Top Up";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Top Up Identity Balance";
+
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Usernames, not addresses";
+
+/* DashPay: banner identity row subtitle */
+"View profile" = "View profile";
 
 /* DashPay FAQ */
 "What about Unstoppable Domains and similar name services?" = "What about Unstoppable Domains and similar name services?";
