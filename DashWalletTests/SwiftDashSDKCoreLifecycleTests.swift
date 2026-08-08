@@ -249,6 +249,13 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertTrue(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
             creditedAmountCredits: creditedAmount,
             observedDeltaDuffs: 10_000_000))
+        // Non-positive deltas are never own-operation residue.
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
+            creditedAmountCredits: creditedAmount,
+            observedDeltaDuffs: 0))
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
+            creditedAmountCredits: creditedAmount,
+            observedDeltaDuffs: -1))
         // A credits-vs-duffs unit mixup must never pass as a match.
         XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
             creditedAmountCredits: creditedAmount,

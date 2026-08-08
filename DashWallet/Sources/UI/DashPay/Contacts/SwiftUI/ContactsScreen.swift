@@ -50,9 +50,11 @@ final class ContactsViewModel: ObservableObject {
 
     /// Banner headline: display name → username → honest placeholder.
     var ownDisplayTitle: String {
-        ownDisplayName?.isEmpty == false
-            ? ownDisplayName!
-            : (ownUsername ?? NSLocalizedString("My identity", comment: "DashPay: banner fallback when the identity has no name yet"))
+        if let displayName = ownDisplayName, !displayName.isEmpty {
+            return displayName
+        }
+        return ownUsername
+            ?? NSLocalizedString("My identity", comment: "DashPay: banner fallback when the identity has no name yet")
     }
 
     /// Network (DPNS) matches for the tab's search text — the discovery
@@ -73,6 +75,9 @@ final class ContactsViewModel: ObservableObject {
             isSearchingNetwork = false
             return
         }
+        // Clear immediately so a previous query's matches can't sit under
+        // the new text through the debounce + request.
+        networkSearchResults = []
         isSearchingNetwork = true
         networkSearchTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 350_000_000)

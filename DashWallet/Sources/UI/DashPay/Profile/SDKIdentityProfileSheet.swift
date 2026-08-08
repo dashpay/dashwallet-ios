@@ -177,8 +177,8 @@ struct SDKIdentityProfileSheet: View {
     /// address balance — the row this replaces read
     /// `platformPaymentCreditsAsDuffs` under a "Platform Credits" label,
     /// which showed the DIP-17 wallet balance on an identity sheet).
-    /// The ⓘ explains the difference; Top Up funds it from the
-    /// Transparent balance via a Core asset lock.
+    /// The ⓘ explains the difference; Top Up funds it from a
+    /// user-selected balance, Shielded by default.
     private var identityBalanceRow: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 5) {
@@ -222,7 +222,7 @@ struct SDKIdentityProfileSheet: View {
             Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
         } message: {
             Text(NSLocalizedString(
-                "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from your Transparent balance into identity credits.",
+                "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits.",
                 comment: "SDK identity profile sheet — explains the identity credit balance"))
         }
         .sheet(isPresented: $showingTopUp) {
@@ -406,6 +406,17 @@ final class IdentityTopUpViewModel: ObservableObject {
 
     private let authorizer = DWIdentityAuthorizer()
 
+    enum TopUpError: LocalizedError {
+        case noPlatformReceiveAddress
+
+        var errorDescription: String? {
+            switch self {
+            case .noPlatformReceiveAddress:
+                return NSLocalizedString("No Platform receive address is available yet — wait for the Platform sync to finish and try again.", comment: "Identity top-up sheet — missing unshield destination")
+            }
+        }
+    }
+
     /// Preset top-up amounts (duffs): 0.05 / 0.1 DASH. Small amounts are
     /// deliberately not offered — the fixed fees (especially the shielded
     /// route's unshield step) would be a large share of them. A custom
@@ -518,8 +529,9 @@ final class IdentityTopUpViewModel: ObservableObject {
             !destination.isEmpty,
             let storageBytes = AddressTransformer.parseBech32mAddress(destination),
             storageBytes.count == 21 else {
-            errorMessage = NSLocalizedString("No Platform receive address is available yet — wait for the Platform sync to finish and try again.", comment: "Identity top-up sheet — missing unshield destination")
-            throw SwiftDashSDKContactsService.ServiceError.noWallet
+            // Typed so the generic catch surfaces THIS message instead of
+            // overwriting it with an unrelated one.
+            throw TopUpError.noPlatformReceiveAddress
         }
         let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
 
@@ -562,9 +574,9 @@ final class IdentityTopUpViewModel: ObservableObject {
 
 // MARK: - IdentityTopUpSheet
 
-/// Amount picker + confirm for topping up the identity's credit balance
-/// from the Transparent balance. Nothing is signed or broadcast until
-/// Confirm passes the PIN gate.
+/// Amount + funding-source picker and confirm for topping up the
+/// identity's credit balance (Shielded by default). Nothing is signed or
+/// broadcast until Confirm passes the PIN gate.
 struct IdentityTopUpSheet: View {
     let identityId: Data
     let currentBalanceCredits: UInt64
