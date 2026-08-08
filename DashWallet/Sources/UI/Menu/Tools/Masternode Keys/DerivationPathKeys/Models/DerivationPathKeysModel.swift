@@ -178,9 +178,11 @@ extension DerivationPathKeysModel {
 /// Derives masternode provider Owner/Voting keys (ECDSA) from SwiftDashSDK,
 /// replacing DashSync's `DSAuthenticationKeysDerivationPath`.
 ///
-/// Paths match DashSync's `DSAuthenticationKeysDerivationPath` exactly:
-/// voting `m/9'/<coin>'/3'/1'`, owner `m/9'/<coin>'/3'/2'` (ECDSA, fully
-/// hardened account path, soft key index; coin = 5' mainnet / 1' testnet).
+/// The DIP-3 paths — voting `m/9'/<coin>'/3'/1'`, owner `m/9'/<coin>'/3'/2'`
+/// (ECDSA, fully hardened account path, soft key index; coin = 5' mainnet /
+/// 1' testnet) — are resolved Rust-side by `providerKeyAtIndex`. They are NOT
+/// rebuilt here: composing them app-side is what let the account path be
+/// applied twice and produced keys off the intended branch.
 ///
 /// Internal (not private): `MasternodeKeyUsage` reuses `address(at:)` for
 /// its owner/voting address join.
@@ -192,9 +194,16 @@ final class MasternodeProviderKeyDeriver {
     private static let ownerKeysTypeTag: UInt8 = 9
 
     private let key: MNKey
-    private let accountRootPath: String
-    private let accountType: AccountType
     private let wallet: Wallet
+
+    /// Which provider family the SDK derives for this screen. Owner/voting
+    /// derivation moved Rust-side (platform#4338) and the key-wallet path
+    /// surface it used to go through was withdrawn (platform#4339), so the
+    /// private keys below come from the same resolver the operator/platform
+    /// families already use.
+    private let providerKind: ManagedPlatformWallet.ProviderKeyKind
+    private let managedWallet: ManagedPlatformWallet
+    private var derivedKeyCache: [UInt32: ManagedPlatformWallet.ProviderDerivedKey] = [:]
 
     /// Index → base58 address of the provider pool, snapshotted once at init.
     /// Sourced from the running wallet (`loadLiveAddresses`), falling back to
@@ -210,41 +219,43 @@ final class MasternodeProviderKeyDeriver {
             return nil
         }
 
-        let coinType = (network == .mainnet) ? "5'" : "1'"
-        let path: String
         let type: AccountType
+        let kind: ManagedPlatformWallet.ProviderKeyKind
         switch key {
         case .voting:
-            path = "m/9'/\(coinType)/3'/1'"
             type = .providerVotingKeys
+            kind = .votingECDSA
         case .owner:
-            path = "m/9'/\(coinType)/3'/2'"
             type = .providerOwnerKeys
+            kind = .ownerECDSA
         case .operator, .evonodeOperator:
             // BLS / Ed25519 families derive through `ProviderKeyDeriver`
-            // (the platform-wallet FFI), not the key-wallet path surface.
+            // (the platform-wallet FFI), not this one.
             return nil
         }
 
         // The derivation stack is a THROWAWAY key-wallet built from the
         // mnemonic (see `SwiftDashSDKHost.derivationWallet`) — it has never
         // processed a transaction, so its pools sit at the freshly-created
-        // `DEFAULT_SPECIAL_GAP_LIMIT` depth. It is used ONLY for private-key
-        // derivation, which works at any index; addresses come from the live
-        // pool below.
+        // `DEFAULT_SPECIAL_GAP_LIMIT` depth. It backs ONLY the fallback
+        // address pool below; private keys come from `managedWallet`.
         guard let (derivationManager, wallet, derivationWalletId) =
                 SwiftDashSDKHost.shared.derivationWallet() else {
             return nil
         }
 
-        // Ensure the provider account exists so private-key derivation — and
-        // the fallback pool read below — can resolve it.
+        // Ensure the provider account exists so the fallback pool read below
+        // can resolve it.
         _ = try? wallet.getAccount(type: type)
 
+        guard let managedWallet = SwiftDashSDKHost.shared.wallet else {
+            return nil
+        }
+
         self.key = key
-        self.accountRootPath = path
-        self.accountType = type
         self.wallet = wallet
+        self.providerKind = kind
+        self.managedWallet = managedWallet
 
         let live = Self.loadLiveAddresses(for: key)
         self.poolIsLive = !live.isEmpty
@@ -331,14 +342,38 @@ final class MasternodeProviderKeyDeriver {
     /// depth the derivation wallet can hold.
     private static let derivationPoolProbeCap: UInt32 = 200
 
+    /// The provider key at `index`, resolved Rust-side and memoised.
+    ///
+    /// The previous route — `Account.derivePrivateKeyWIF(wallet:masterPath:index:)`
+    /// — asked the caller for the account root path while the FFI applied the
+    /// account's own path on top of it, so every key came from a doubly-applied
+    /// branch. The keys were well-formed, which is why the screen looked right;
+    /// they were simply not the masternode's keys. The SDK withdrew that call
+    /// (platform#4339) in favour of this resolver, which owns the DIP-3 path and
+    /// cross-checks the derived key against the account xpub.
+    private func derivedKey(at index: UInt32) -> ManagedPlatformWallet.ProviderDerivedKey? {
+        if let cached = derivedKeyCache[index] {
+            return cached
+        }
+        // This screen is auth-gated and renders a private-key row per index, so
+        // the private scalar is wanted up front rather than on a second call.
+        guard let derived = try? managedWallet.providerKeyAtIndex(
+            kind: providerKind,
+            index: index,
+            includePrivate: true
+        ) else {
+            return nil
+        }
+        derivedKeyCache[index] = derived
+        return derived
+    }
+
     func wif(at index: UInt32) -> String? {
-        guard let account = try? wallet.getAccount(type: accountType) else { return nil }
-        return try? account.derivePrivateKeyWIF(wallet: wallet, masterPath: accountRootPath, index: index)
+        derivedKey(at: index)?.privateKeyWIF
     }
 
     func privateKeyHex(at index: UInt32) -> String? {
-        guard let wif = wif(at: index), let data = WIFParser.parseWIF(wif) else { return nil }
-        return data.map { String(format: "%02x", $0) }.joined()
+        derivedKey(at: index)?.privateKeyHex
     }
 
     /// The pool address at `index`. Backed by the running wallet's live pool
