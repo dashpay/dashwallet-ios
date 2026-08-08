@@ -13,6 +13,7 @@
 //  outgoing rows.
 //
 
+import SwiftDashSDK
 import SwiftUI
 import DashUIKit
 
@@ -52,6 +53,39 @@ final class ContactsViewModel: ObservableObject {
         ownDisplayName?.isEmpty == false
             ? ownDisplayName!
             : (ownUsername ?? NSLocalizedString("My identity", comment: "DashPay: banner fallback when the identity has no name yet"))
+    }
+
+    /// Network (DPNS) matches for the tab's search text — the discovery
+    /// teaser under the local sections. Excludes the user's own identity
+    /// and everyone already in the local snapshots (they're in the
+    /// filtered sections above).
+    @Published var networkSearchResults: [DpnsSearchResult] = []
+    @Published var isSearchingNetwork = false
+    private var networkSearchTask: Task<Void, Never>?
+
+    /// Debounced DPNS prefix search driving `networkSearchResults`.
+    /// Mirrors AddContactScreen's 2-character minimum and debounce.
+    func updateNetworkSearch(query: String) {
+        networkSearchTask?.cancel()
+        let trimmed = query.trimmingCharacters(in: .whitespaces)
+        guard trimmed.count >= 2 else {
+            networkSearchResults = []
+            isSearchingNetwork = false
+            return
+        }
+        isSearchingNetwork = true
+        networkSearchTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            guard let self, !Task.isCancelled else { return }
+            let results = (try? await service.searchUsernames(prefix: trimmed, limit: 12)) ?? []
+            guard !Task.isCancelled else { return }
+            let known = Set((contacts + incomingRequests + outgoingRequests).map(\.contactIdentityId))
+            let ownId = DWCurrentUserIdentityInfo.shared.identityId
+            networkSearchResults = results.filter {
+                !known.contains($0.identityId) && $0.identityId != ownId
+            }
+            isSearchingNetwork = false
+        }
     }
 
     private let service = SwiftDashSDKContactsService.shared
@@ -199,6 +233,9 @@ struct ContactsScreen: View {
     @State private var selectedContact: ContactItem? = nil
     /// Banner identity row → read-only profile sheet.
     @State private var showingOwnProfile = false
+    /// Prefill for AddContactScreen when opened from a network search
+    /// row / "Show more" (empty for the plain add button).
+    @State private var addContactInitialQuery = ""
 
     var body: some View {
         NavigationStack {
@@ -212,7 +249,7 @@ struct ContactsScreen: View {
             // the system bar only fronts the pre-enable intro.
             .toolbar(viewModel.needsDashPayEnable ? .visible : .hidden, for: .navigationBar)
             .sheet(isPresented: $showingAddContact) {
-                AddContactScreen()
+                AddContactScreen(initialQuery: addContactInitialQuery)
             }
             .sheet(isPresented: $showingOwnProfile) {
                 // Read-only profile view. Editing stays on the Home
@@ -300,7 +337,7 @@ struct ContactsScreen: View {
                     .foregroundColor(.white)
                 Spacer()
                 Button {
-                    showingAddContact = true
+                    openAddContact(query: "")
                 } label: {
                     Image(systemName: "person.badge.plus")
                         .font(.system(size: 16, weight: .semibold))
@@ -426,10 +463,76 @@ struct ContactsScreen: View {
                     }
                 }
 
+                networkResultsSection
+
                 Spacer(minLength: 24)
             }
         }
         .refreshable { await viewModel.syncNow() }
+        .onChange(of: filterText) { _, newValue in
+            viewModel.updateNetworkSearch(query: newValue)
+        }
+    }
+
+    /// Discovery teaser under the local sections while the user types:
+    /// up to three DPNS matches from the network (people NOT yet in the
+    /// lists above), with the full add-contact search one tap away. Rows
+    /// and "Show more" both open AddContactScreen prefilled — the send /
+    /// accept / eligibility machinery lives there, unduplicated.
+    @ViewBuilder
+    private var networkResultsSection: some View {
+        if trimmedFilter.count >= 2 {
+            sectionHeader(NSLocalizedString("On the Dash network", comment: "DashPay Contacts: search results from DPNS, not the local contact list"), size: 15)
+            if viewModel.isSearchingNetwork && viewModel.networkSearchResults.isEmpty {
+                SwiftUI.ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+            } else if viewModel.networkSearchResults.isEmpty {
+                Text(NSLocalizedString("No usernames found", comment: "DashPay Contacts"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.dash.secondaryText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+            } else {
+                ForEach(viewModel.networkSearchResults.prefix(3)) { result in
+                    cardRow {
+                        HStack(spacing: 10) {
+                            ContactAvatarView(
+                                title: result.fullName.withoutDashSuffix,
+                                avatarURL: nil,
+                                identitySeed: result.identityId)
+                                .padding(.leading, 17)
+                            Text(result.fullName.withoutDashSuffix)
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(.dash.primaryText)
+                                .lineLimit(1)
+                            Spacer()
+                            Image(systemName: "person.badge.plus")
+                                .foregroundColor(.dash.blue)
+                                .padding(.trailing, 14)
+                        }
+                        .frame(height: 58)
+                    }
+                    .onTapGesture { openAddContact(query: result.fullName.withoutDashSuffix) }
+                }
+                if viewModel.networkSearchResults.count > 3 {
+                    Button {
+                        openAddContact(query: trimmedFilter)
+                    } label: {
+                        Text(NSLocalizedString("Show more results", comment: "DashPay Contacts: expands the network search into the full add-contact flow"))
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(.dash.blue)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                    }
+                }
+            }
+        }
+    }
+
+    private func openAddContact(query: String) {
+        addContactInitialQuery = query
+        showingAddContact = true
     }
 
     private func sectionHeader(_ text: String, size: CGFloat) -> some View {
@@ -495,8 +598,10 @@ struct ContactsScreen: View {
 
     // MARK: Filtering (local, over the already-materialized snapshots)
 
+    private var trimmedFilter: String { filterText.trimmingCharacters(in: .whitespaces) }
+
     private func matches(_ item: ContactItem) -> Bool {
-        let trimmed = filterText.trimmingCharacters(in: .whitespaces)
+        let trimmed = trimmedFilter
         guard !trimmed.isEmpty else { return true }
         return item.displayTitle.localizedCaseInsensitiveContains(trimmed)
             || (item.username?.localizedCaseInsensitiveContains(trimmed) ?? false)
