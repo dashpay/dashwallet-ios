@@ -90,12 +90,6 @@ struct MainMenuScreen: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
-                TopIntro(title: NSLocalizedString("More", comment: ""))
-                    .padding(.leading, 20)
-                    .padding(.trailing, 60)
-                    .padding(.top, 10)
-                    .padding(.bottom, 20)
-
                 #if DASHPAY
                 if viewModel.showJoinDashpay {
                     JoinDashPayView(
@@ -547,4 +541,16 @@ extension MainMenuScreen {
         #endif
     }
 
+}
+
+// MARK: - Preview
+
+/// Renders the menu structure only. Every delegate is left nil and the
+/// navigation controller is a throwaway: the rows that would reach a
+/// singleton (`DWContestedNameStatusService`, `DWCurrentUserIdentityInfo`,
+/// `ShieldedIdentityFundingReadiness`) do so from tap handlers, not from
+/// `body`, so nothing here touches the SDK. The DashPay banner stays in its
+/// `.none` state because no `userProfileModel` is supplied.
+#Preview {
+    MainMenuScreen(vc: UINavigationController(), onContactSupport: {})
 }
