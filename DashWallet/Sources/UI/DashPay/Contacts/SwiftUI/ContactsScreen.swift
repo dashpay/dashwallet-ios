@@ -31,9 +31,13 @@ final class ContactsViewModel: ObservableObject {
 
     /// True while the main identity's persisted key set lacks the DIP-15
     /// ENCRYPTION/DECRYPTION pair — without it nobody can send this
-    /// identity a contact request. Drives the "Enable DashPay" banner.
+    /// identity a contact request. Drives the "Enable DashPay" intro.
     @Published var needsDashPayEnable = false
     @Published var isEnablingDashPay = false
+
+    /// How many of the pair are missing (1 or 2 while
+    /// `needsDashPayEnable`); sizes the fee estimate.
+    private var missingDashPayKeyCount = 0
 
     private let service = SwiftDashSDKContactsService.shared
 
@@ -51,13 +55,16 @@ final class ContactsViewModel: ObservableObject {
 
     func refresh() {
         service.refresh()
-        needsDashPayEnable = service.mainIdentityNeedsDashPayKeys()
+        missingDashPayKeyCount = service.missingDashPayKeyCount()
+        needsDashPayEnable = missingDashPayKeyCount > 0
     }
 
-    /// Estimated IdentityUpdate fee for the confirm sheet:
-    /// "~0.0000131 DASH (≈ THB 0.01)" in the user's local currency.
+    /// Estimated IdentityUpdate fee for the confirm sheet, sized to the
+    /// keys actually missing: "~0.000131 DASH (≈ THB 0.13)" in the user's
+    /// local currency.
     var enableDashPayEstimatedCostText: String {
-        let duffs = SwiftDashSDKContactsService.enableDashPayEstimatedFeeDuffs
+        let duffs = SwiftDashSDKContactsService.enableDashPayEstimatedFeeDuffs(
+            missingKeyCount: missingDashPayKeyCount)
         return String.localizedStringWithFormat(
             NSLocalizedString("~%@ DASH (≈ %@)", comment: "DashPay: estimated network fee — DASH amount, then its local-currency equivalent"),
             duffs.formattedDashAmountWithoutCurrencySymbol,
@@ -78,6 +85,7 @@ final class ContactsViewModel: ObservableObject {
             defer { isEnablingDashPay = false }
             do {
                 _ = try await service.enableDashPay()
+                missingDashPayKeyCount = 0
                 needsDashPayEnable = false
                 showEnableSuccess = true
             } catch SwiftDashSDKContactsService.ServiceError.authCancelled {
@@ -214,7 +222,9 @@ struct ContactsScreen: View {
                     pendingFirstContactRequest = true
                     viewModel.showEnableSuccess = false
                 })
-                .presentationDetents([.height(420)])
+                // .medium can clip at large Dynamic Type sizes; the sheet
+                // content scrolls and .large stays reachable.
+                .presentationDetents([.medium, .large])
             }
             .sheet(item: $selectedContact) { contact in
                 ContactProfileSheet(contact: contact)
@@ -245,7 +255,9 @@ struct ContactsScreen: View {
                 showingEnableDashPay: $showingEnableDashPay)
                 .sheet(isPresented: $showingEnableDashPay) {
                     EnableDashPayConfirmSheet(viewModel: viewModel)
-                        .presentationDetents([.height(470)])
+                        // .medium can clip at large Dynamic Type sizes; the
+                        // sheet content scrolls and .large stays reachable.
+                        .presentationDetents([.medium, .large])
                 }
         } else if viewModel.isEmpty {
             emptyState
@@ -466,7 +478,9 @@ private struct DashPayIntroView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
 
-                    Button(action: { showingFAQ = true }) {
+                    Button {
+                        showingFAQ = true
+                    } label: {
                         Text(NSLocalizedString("Learn More", comment: "DashPay intro: opens the FAQ"))
                             .font(.system(size: 15, weight: .medium))
                             .foregroundColor(.dash.blue)
@@ -476,7 +490,9 @@ private struct DashPayIntroView: View {
                 }
             }
 
-            Button(action: { showingEnableDashPay = true }) {
+            Button {
+                showingEnableDashPay = true
+            } label: {
                 Text(NSLocalizedString("Enable DashPay", comment: "DashPay: add the identity keys other users need to send contact requests"))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color.dash.whiteText)
@@ -548,7 +564,7 @@ private struct DashPayFAQSheet: View {
             Item(
                 question: NSLocalizedString("Why do I need to enable it?", comment: "DashPay FAQ"),
                 answer: NSLocalizedString(
-                    "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event.",
+                    "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event.",
                     comment: "DashPay FAQ")),
             Item(
                 question: NSLocalizedString("How private is DashPay?", comment: "DashPay FAQ"),
@@ -639,6 +655,15 @@ private struct EnableDashPaySuccessSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
+        // Scrollable so every action stays reachable at large Dynamic
+        // Type sizes.
+        ScrollView {
+            successContent
+        }
+        .background(Color.dash.primaryBackground)
+    }
+
+    private var successContent: some View {
         VStack(spacing: 0) {
             Image(systemName: "checkmark.seal.fill")
                 .font(.system(size: 40))
@@ -662,8 +687,6 @@ private struct EnableDashPaySuccessSheet: View {
                 .padding(.horizontal, 28)
                 .padding(.top, 8)
 
-            Spacer(minLength: 12)
-
             Button(action: onSendFirstRequest) {
                 Text(NSLocalizedString("Send your first contact request", comment: "DashPay: CTA of the enable success sheet"))
                     .font(.system(size: 16, weight: .semibold))
@@ -674,8 +697,11 @@ private struct EnableDashPaySuccessSheet: View {
                     .cornerRadius(12)
             }
             .padding(.horizontal, 20)
+            .padding(.top, 20)
 
-            Button(action: { dismiss() }) {
+            Button {
+                dismiss()
+            } label: {
                 Text(NSLocalizedString("Not now", comment: "DashPay: dismiss button of the enable success sheet"))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.dash.blue)
@@ -685,7 +711,6 @@ private struct EnableDashPaySuccessSheet: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 10)
         }
-        .background(Color.dash.primaryBackground)
     }
 }
 
@@ -701,6 +726,15 @@ private struct EnableDashPayConfirmSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
+        // Scrollable so every action stays reachable at large Dynamic
+        // Type sizes.
+        ScrollView {
+            confirmContent
+        }
+        .background(Color.dash.primaryBackground)
+    }
+
+    private var confirmContent: some View {
         VStack(spacing: 0) {
             Image(systemName: "person.2.badge.key.fill")
                 .font(.system(size: 34))
@@ -715,7 +749,7 @@ private struct EnableDashPayConfirmSheet: View {
                 .padding(.top, 16)
 
             Text(NSLocalizedString(
-                "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.",
+                "This adds the missing keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.",
                 comment: "DashPay: body of the Enable DashPay confirmation"))
                 .font(.system(size: 14))
                 .foregroundColor(.dash.secondaryText)
@@ -746,12 +780,10 @@ private struct EnableDashPayConfirmSheet: View {
                 .foregroundColor(.dash.tertiaryText)
                 .padding(.top, 6)
 
-            Spacer(minLength: 12)
-
-            Button(action: {
+            Button {
                 dismiss()
                 viewModel.enableDashPay()
-            }) {
+            } label: {
                 Text(NSLocalizedString("Enable", comment: "DashPay: confirm button of the Enable DashPay sheet"))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color.dash.whiteText)
@@ -762,8 +794,11 @@ private struct EnableDashPayConfirmSheet: View {
             }
             .disabled(viewModel.isEnablingDashPay)
             .padding(.horizontal, 20)
+            .padding(.top, 20)
 
-            Button(action: { dismiss() }) {
+            Button {
+                dismiss()
+            } label: {
                 Text(NSLocalizedString("Cancel", comment: ""))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.dash.blue)
@@ -773,7 +808,6 @@ private struct EnableDashPayConfirmSheet: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 10)
         }
-        .background(Color.dash.primaryBackground)
     }
 }
 

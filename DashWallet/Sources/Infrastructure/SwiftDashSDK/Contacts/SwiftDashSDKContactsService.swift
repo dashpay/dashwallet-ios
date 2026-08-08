@@ -739,23 +739,24 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
     // MARK: - Internals
 
-    /// True when the wallet's main identity exists but its persisted key
-    /// set lacks an enabled ECDSA ENCRYPTION or DECRYPTION key — the pair
-    /// DIP-15 contact-request ECDH requires on BOTH sides (without it,
-    /// other users' clients find no recipient key and can't send requests
-    /// to this identity). Drives the Contacts tab's "Enable DashPay"
-    /// affordance. Local-store read only — `enableDashPay()` re-checks
-    /// Platform's authoritative key set before broadcasting anything.
-    func mainIdentityNeedsDashPayKeys() -> Bool {
+    /// How many of the DIP-15 contact-request keys (an enabled ECDSA
+    /// ENCRYPTION and DECRYPTION key — required on BOTH sides of the ECDH;
+    /// without them, other users' clients find no recipient key and can't
+    /// send requests to this identity) the wallet's main identity is
+    /// missing: 0 (fully enabled), 1, or 2. Drives the Contacts tab's
+    /// "Enable DashPay" affordance and its fee estimate. Local-store read
+    /// only — `enableDashPay()` re-checks Platform's authoritative key set
+    /// before broadcasting anything.
+    func missingDashPayKeyCount() -> Int {
         guard let modelContainer = SwiftDashSDKHost.shared.modelContainer,
               let ownerId = DWCurrentUserIdentityInfo.shared.identityId else {
-            return false
+            return 0
         }
         var descriptor = FetchDescriptor<PersistentIdentity>(
             predicate: #Predicate { $0.identityId == ownerId })
         descriptor.fetchLimit = 1
         guard let identity = (try? modelContainer.mainContext.fetch(descriptor))?.first else {
-            return false
+            return 0
         }
         func hasEnabledECDSAKey(purposeRaw: String) -> Bool {
             identity.publicKeys.contains { key in
@@ -764,20 +765,22 @@ final class SwiftDashSDKContactsService: ObservableObject {
                     && !key.isDisabled
             }
         }
-        let encryption = String(KeyPurpose.encryption.rawValue)
-        let decryption = String(KeyPurpose.decryption.rawValue)
-        return !hasEnabledECDSAKey(purposeRaw: encryption) || !hasEnabledECDSAKey(purposeRaw: decryption)
+        var missing = 0
+        if !hasEnabledECDSAKey(purposeRaw: String(KeyPurpose.encryption.rawValue)) { missing += 1 }
+        if !hasEnabledECDSAKey(purposeRaw: String(KeyPurpose.decryption.rawValue)) { missing += 1 }
+        return missing
     }
 
     /// Estimated network fee for the enable-DashPay IdentityUpdate, in
     /// duffs (1 duff = 1000 credits): the platform fee schedule's
     /// `identity_update` minimum (100,000 credits) plus
-    /// `identity_key_in_creation_cost` (6,500,000 credits) for each of the
-    /// two added keys — rs-platform-version `state_transition_min_fees`
-    /// v1. The actual fee is computed at execution and deducted from the
-    /// identity's credit balance; the confirm sheet labels this as an
-    /// estimate.
-    static let enableDashPayEstimatedFeeDuffs: UInt64 = (100_000 + 2 * 6_500_000) / 1000
+    /// `identity_key_in_creation_cost` (6,500,000 credits) per added key —
+    /// rs-platform-version `state_transition_min_fees` v1. The actual fee
+    /// is computed at execution and deducted from the identity's credit
+    /// balance; the confirm sheet labels this as an estimate.
+    static func enableDashPayEstimatedFeeDuffs(missingKeyCount: Int) -> UInt64 {
+        (100_000 + UInt64(max(missingKeyCount, 1)) * 6_500_000) / 1000
+    }
 
     /// PIN-gated "Enable DashPay": one IdentityUpdate adding whichever of
     /// the ENCRYPTION/DECRYPTION pair the identity is missing on Platform

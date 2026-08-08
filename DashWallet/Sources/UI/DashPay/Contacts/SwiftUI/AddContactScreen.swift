@@ -38,7 +38,7 @@ struct AddContactScreen: View {
     @State private var errorMessage: String? = nil
     /// Username of the recipient of a just-sent request — drives the
     /// centered success card (nil = hidden).
-    @State private var sentToUsername: String? = nil
+    @State private var sentToUsername: String?
 
     @ObservedObject private var service = SwiftDashSDKContactsService.shared
 
@@ -334,9 +334,16 @@ struct AddContactScreen: View {
                 try await service.sendContactRequest(
                     to: target.identityId,
                     usernameHint: target.fullName)
-                withAnimation { sentToUsername = target.fullName.withoutDashSuffix }
+                let username = target.fullName.withoutDashSuffix
+                withAnimation { sentToUsername = username }
                 try? await Task.sleep(nanoseconds: 2_500_000_000)
-                withAnimation { sentToUsername = nil }
+                // Another send may have replaced the card in the
+                // meantime — only this recipient's own timer clears it.
+                withAnimation {
+                    if sentToUsername == username {
+                        sentToUsername = nil
+                    }
+                }
             } catch SwiftDashSDKContactsService.ServiceError.authCancelled {
                 // User backed out of the PIN prompt.
             } catch {

@@ -700,7 +700,9 @@ struct IdentityPublicKeysScreen: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Button(action: { vc.popViewController(animated: true) }) {
+                Button {
+                    vc.popViewController(animated: true)
+                } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(Color.dash.primaryText)
@@ -770,7 +772,9 @@ struct IdentityPublicKeysScreen: View {
                 .foregroundColor(.dash.primaryText)
                 .textSelection(.enabled)
 
-            Button(action: { copy(key) }) {
+            Button {
+                copy(key)
+            } label: {
                 HStack(spacing: 6) {
                     Image(systemName: copiedKeyId == key.keyId ? "checkmark" : "doc.on.doc")
                     Text(copiedKeyId == key.keyId
