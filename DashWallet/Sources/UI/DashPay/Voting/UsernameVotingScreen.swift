@@ -41,6 +41,7 @@ struct UsernameVotingScreen: View {
             VoterCapacityHeader(
                 nodes: viewModel.votableNodes,
                 totalWeight: viewModel.totalVoteWeight,
+                effectiveSelection: viewModel.effectiveSelectedNodeIDs,
                 selectedNodeIDs: $viewModel.selectedNodeIDs,
                 onEditSelection: { showingNodePicker = true })
 
@@ -188,6 +189,11 @@ private struct VoterCapacityHeader: View {
     let nodes: [VoterNode]
     let totalWeight: UInt32
     /// proTxHashes the next vote will use. Tapping the row edits it.
+    /// The selection a vote will ACTUALLY use — the effective set, not the raw
+    /// persisted one. They differ when the stored set is empty or stale, and
+    /// describing the raw set would show "Select nodes" while a tap votes with
+    /// the fallback node.
+    let effectiveSelection: Set<Data>
     @Binding var selectedNodeIDs: Set<Data>
     /// Opens the node picker.
     let onEditSelection: () -> Void
@@ -257,7 +263,7 @@ private struct VoterCapacityHeader: View {
     /// Names the nodes a vote will use, so the privacy consequence of the
     /// current selection is legible without opening the picker.
     private var selectionSummary: String {
-        let chosen = nodes.filter { selectedNodeIDs.contains($0.proTxHash) }
+        let chosen = nodes.filter { effectiveSelection.contains($0.proTxHash) }
         guard !chosen.isEmpty else {
             return NSLocalizedString("Select nodes", comment: "Voting")
         }

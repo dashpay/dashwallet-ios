@@ -270,10 +270,14 @@ final class MasternodeVoteCaster {
     func castBulk(
         _ work: [(label: String, choice: VoteChoice, nodes: [VoterNode])]
     ) async throws -> [VoteCastReport] {
+        // Nothing to do is not the same as nothing selected. An empty batch
+        // means every selected contest was already fully voted or dropped, and
+        // reporting "select a masternode" for that sends the user to fix a
+        // selection that is fine.
+        guard !work.isEmpty else { return [] }
         guard work.contains(where: { !$0.nodes.isEmpty }) else {
             throw CastError.noNodesSelected
         }
-        guard !work.isEmpty else { return [] }
         guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CastError.sdkUnavailable }
 
         switch await AuthenticationGate.authenticate(

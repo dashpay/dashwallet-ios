@@ -90,8 +90,11 @@ final class VotingViewModel: ObservableObject {
     /// local history. Drives the "2 of 5 votes cast" line and excludes nodes
     /// that already voted from the next cast.
     @Published private(set) var castCountsByContest: [String: Int] = [:]
-    /// Which of our nodes voted on the contest currently being viewed.
-    @Published private(set) var votedProTxHashesForOpenContest: Set<Data> = []
+    /// Which of our nodes voted, per contest. Keyed by contest so a screen can
+    /// never be answered with another contest's history — and so an ABSENT
+    /// entry is distinguishable from "none voted here", which is what makes
+    /// gating on load possible.
+    @Published private(set) var votedProTxHashesByContest: [String: Set<Data>] = [:]
 
     /// proTxHashes of the nodes the next vote will use, shared by the single
     /// contest screen and the bulk sheet and persisted so the next contest
@@ -201,12 +204,18 @@ final class VotingViewModel: ObservableObject {
 
         // Settle the remembered selection against the nodes that actually
         // exist now, so the picker and the "voting with" row agree with what a
-        // tap would really do. Writing it back also migrates a wallet that
-        // never had a selection (or whose nodes changed) onto a concrete one
-        // instead of leaving the fallback implicit.
-        let settled = effectiveSelectedNodeIDs
-        if settled != selectedNodeIDs {
-            selectedNodeIDs = settled
+        // tap would really do.
+        //
+        // Only when the node list actually resolved. `votableNodes()` returns
+        // empty while the SDK is starting or the masternode phase has not
+        // synced, and settling against that would compute an empty selection
+        // and PERSIST it — destroying a multi-node choice the user made, with
+        // the next vote silently falling back to one node.
+        if !votableNodes.isEmpty {
+            let settled = effectiveSelectedNodeIDs
+            if settled != selectedNodeIDs {
+                selectedNodeIDs = settled
+            }
         }
 
         castCountsByContest = await history.voteCountsByContest(
@@ -299,8 +308,20 @@ final class VotingViewModel: ObservableObject {
     }
 
     /// Nodes that have not yet voted on this contest, in registration order.
+    ///
+    /// Empty until this contest's history has loaded. The screen evaluates this
+    /// before its `.task` completes, and treating "not loaded" as "nobody
+    /// voted" would offer nodes that already voted — a duplicate Platform
+    /// rejects, spending one of the masternode's per-contest votes.
     func nodesYetToVote(on normalizedLabel: String) -> [VoterNode] {
-        votableNodes.filter { !votedProTxHashesForOpenContest.contains($0.proTxHash) }
+        guard let voted = votedProTxHashesByContest[normalizedLabel] else { return [] }
+        return votableNodes.filter { !voted.contains($0.proTxHash) }
+    }
+
+    /// Whether this contest's vote history is known yet. Callers disable the
+    /// vote control until it is, rather than acting on an unknown.
+    func hasLoadedVoteHistory(for normalizedLabel: String) -> Bool {
+        votedProTxHashesByContest[normalizedLabel] != nil
     }
 
     /// Load which of our nodes already voted on one contest. Called when its
@@ -309,7 +330,7 @@ final class VotingViewModel: ObservableObject {
         let records = await history.votes(
             forContest: normalizedLabel,
             network: MasternodeVoteCaster.networkKey)
-        votedProTxHashesForOpenContest = Set(records.map(\.proTxHash))
+        votedProTxHashesByContest[normalizedLabel] = Set(records.map(\.proTxHash))
         castCountsByContest[normalizedLabel] = records.count
     }
 
@@ -512,6 +533,17 @@ final class VotingViewModel: ObservableObject {
             duplicatePairs: duplicatePairs,
             changedPairs: changedPairs,
             replacedChoice: replacedChoices.count == 1 ? replacedChoices.first : nil)
+    }
+
+    /// Surface that a planned run had nothing left to do.
+    ///
+    /// Distinct from a failure: the selection was valid, but planning dropped
+    /// every contest in it. Reported here so the sheet does not call the caster
+    /// with an empty batch and get "select at least one masternode" back.
+    func reportNothingToCast() {
+        castError = NSLocalizedString(
+            "None of the selected usernames can take this vote any more — reopen them to see their current requests.",
+            comment: "Voting")
     }
 
     /// Cast a plan produced by ``planBulk(choice:with:)``.

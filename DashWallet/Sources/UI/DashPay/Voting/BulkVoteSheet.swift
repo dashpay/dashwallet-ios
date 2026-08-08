@@ -142,18 +142,26 @@ struct BulkVoteSheet: View {
                 set: { if !$0 { pendingPlan = nil } }),
             presenting: pendingPlan
         ) { plan in
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+            Button(
+                plan.hasWork
+                    ? NSLocalizedString("Cancel", comment: "")
+                    : NSLocalizedString("OK", comment: ""),
+                role: .cancel
+            ) {
                 pendingPlan = nil
             }
-            // Disabled rather than hidden when nothing is left: the user should
-            // see that their selection is already fully voted, not be offered a
-            // button that would do nothing.
-            Button(NSLocalizedString("Continue", comment: "Voting")) {
-                let confirmed = plan
-                pendingPlan = nil
-                Task { await viewModel.castBulk(plan: confirmed) }
+            // Offered only when there is something to cast. `.disabled` inside
+            // an alert is unreliable on iOS 17 — it can omit the button
+            // entirely or fail to reflect state — so the decision is made here,
+            // and the action guards again rather than trusting the modifier.
+            if plan.hasWork {
+                Button(NSLocalizedString("Continue", comment: "Voting")) {
+                    let confirmed = plan
+                    pendingPlan = nil
+                    guard confirmed.hasWork else { return }
+                    Task { await viewModel.castBulk(plan: confirmed) }
+                }
             }
-            .disabled(!plan.hasWork)
         } message: { plan in
             Text(overlapMessage(for: plan))
         }
@@ -316,8 +324,16 @@ struct BulkVoteSheet: View {
                         let plan = await viewModel.planBulk(choice: choice, with: selectedNodes)
                         if plan.needsConfirmation {
                             pendingPlan = plan
-                        } else {
+                        } else if plan.hasWork {
                             await viewModel.castBulk(plan: plan)
+                        } else {
+                            // Nothing survived planning — every selected contest
+                            // was dropped (e.g. it gained a contender since it
+                            // was picked, so "Sole Requester" no longer applies).
+                            // Say so instead of casting an empty batch, which
+                            // would surface as "select a masternode" and send the
+                            // user to fix a selection that is fine.
+                            viewModel.reportNothingToCast()
                         }
                     }
                 } label: {
