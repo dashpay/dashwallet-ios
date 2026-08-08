@@ -170,14 +170,19 @@ struct ContactsScreen: View {
             }
             .navigationTitle(NSLocalizedString("Contacts", comment: "DashPay Contacts"))
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showingAddContact = true
-                    } label: {
-                        Image(systemName: "person.badge.plus")
-                            .foregroundColor(.dash.blue)
+                // Adding a contact needs the DIP-15 key pair on our own
+                // side too (the outgoing request's ECDH) — hide the
+                // affordance until the identity is DashPay-enabled.
+                if !viewModel.needsDashPayEnable {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showingAddContact = true
+                        } label: {
+                            Image(systemName: "person.badge.plus")
+                                .foregroundColor(.dash.blue)
+                        }
+                        .accessibilityLabel(NSLocalizedString("Add a New Contact", comment: "DashPay Contacts"))
                     }
-                    .accessibilityLabel(NSLocalizedString("Add a New Contact", comment: "DashPay Contacts"))
                 }
             }
             .sheet(isPresented: $showingAddContact) {
@@ -207,7 +212,14 @@ struct ContactsScreen: View {
                 enableDashPayBanner
             }
             if viewModel.isEmpty {
-                emptyState
+                // The add-contact empty state only once the identity can
+                // actually exchange requests; until then the banner IS the
+                // call to action.
+                if viewModel.needsDashPayEnable {
+                    Spacer()
+                } else {
+                    emptyState
+                }
             } else {
                 list
             }
@@ -227,7 +239,7 @@ struct ContactsScreen: View {
                     Text(NSLocalizedString("Enable DashPay", comment: "DashPay: add the identity keys other users need to send contact requests"))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.dash.primaryText)
-                    Text(NSLocalizedString("Your identity can't receive contact requests yet", comment: "DashPay: subtitle of the Enable DashPay banner"))
+                    Text(NSLocalizedString("Your identity can't send or receive contact requests yet", comment: "DashPay: subtitle of the Enable DashPay banner"))
                         .font(.system(size: 13))
                         .foregroundColor(.dash.secondaryText)
                 }

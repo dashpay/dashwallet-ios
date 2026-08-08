@@ -2228,7 +2228,7 @@
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. It happens once, on the Dash Platform network." = "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. It happens once, on the Dash Platform network.";
 
 /* DashPay: subtitle of the Enable DashPay banner */
-"Your identity can't receive contact requests yet" = "Your identity can't receive contact requests yet";
+"Your identity can't send or receive contact requests yet" = "Your identity can't send or receive contact requests yet";
 
 /* CoinJoin */
 "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds.";
