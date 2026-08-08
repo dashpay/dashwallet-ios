@@ -3136,6 +3136,8 @@
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
 
+"Restored — completion unknown" = "Restored — completion unknown";
+
 /* Location Service Status */
 
 "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data.";
