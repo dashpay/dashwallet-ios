@@ -185,6 +185,9 @@
 /* No comment provided by engineer. */
 "About me" = "About me";
 
+/* SDK identity profile sheet — info button */
+"About the identity account balance" = "About the identity account balance";
+
 /* No comment provided by engineer. */
 "Accept" = "Accept";
 
@@ -653,6 +656,9 @@
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Contact request sent to %@";
 
+/* Identity top-up sheet — body */
+"Convert Dash from your Transparent balance into identity credits to pay for Platform actions like contact requests and profile updates." = "Convert Dash from your Transparent balance into identity credits to pay for Platform actions like contact requests and profile updates.";
+
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay enabled";
 
@@ -661,6 +667,9 @@
 
 /* DashPay FAQ */
 "How does this compare to Ethereum Accounts in terms of privacy?" = "How does this compare to Ethereum Accounts in terms of privacy?";
+
+/* SDK identity profile sheet — the identity's credit balance */
+"Identity Account Balance" = "Identity Account Balance";
 
 /* DashPay: banner fallback when the identity has no name yet */
 "My identity" = "My identity";
@@ -673,6 +682,9 @@
 
 /* DashPay Contacts: search results from DPNS, not the local contact list */
 "On the Dash network" = "On the Dash network";
+
+/* Identity top-up sheet — funding source note */
+"Paid from your Transparent balance, plus the network fee." = "Paid from your Transparent balance, plus the network fee.";
 
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.";
@@ -2310,6 +2322,15 @@
 
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.";
+
+/* SDK identity profile sheet — explains the identity credit balance */
+"This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from your Transparent balance into identity credits." = "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from your Transparent balance into identity credits.";
+
+/* SDK identity profile sheet — add credits to the identity */
+"Top Up" = "Top Up";
+
+/* Identity top-up sheet — title */
+"Top Up Identity Balance" = "Top Up Identity Balance";
 
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Usernames, not addresses";
