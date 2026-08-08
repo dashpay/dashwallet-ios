@@ -1042,6 +1042,9 @@
 /* No comment provided by engineer. */
 "Date" = "Date";
 
+/* History group header for restored shielded operations whose original date is not recoverable */
+"Date unknown" = "Date unknown";
+
 /* Voting */
 "Date: New to old" = "Date: New to old";
 

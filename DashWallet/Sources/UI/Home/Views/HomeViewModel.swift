@@ -548,9 +548,20 @@ class HomeViewModel: ObservableObject {
             self.txByHash[self.coinJoinWithdrawalSet.id] = item
         }
 
+        // Restored shielded entries with no recoverable date (`hasKnownDate
+        // == false`, date == .distantPast) collect under one dedicated
+        // trailing group instead of a spurious epoch-day header; the
+        // distantPast sentinel makes both sorts place them last.
+        let unknownDateKey = NSLocalizedString(
+            "Date unknown",
+            comment: "History group header for restored shielded operations whose original date is not recoverable")
         let groupedItems = Dictionary(
             grouping: items.sorted(by: { $0.date > $1.date }),
-            by: { DWDateFormatter.sharedInstance.dateOnly(from: $0.date) }
+            by: {
+                $0.hasKnownDate
+                    ? DWDateFormatter.sharedInstance.dateOnly(from: $0.date)
+                    : unknownDateKey
+            }
         )
 
         let array = groupedItems.compactMap { key, items -> TransactionGroup? in
