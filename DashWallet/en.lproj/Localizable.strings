@@ -7,6 +7,9 @@
 /* CrowdNode */
 " Terms of Use " = " Terms of Use ";
 
+/* Username marketplace: listing success — name, then price */
+"%1$@ listed for %2$@ DASH" = "%1$@ listed for %2$@ DASH";
+
 /* DashPay Notifications */
 "%@ accepted your contact request" = "%@ accepted your contact request";
 
@@ -40,6 +43,9 @@
 /* Username has sent you a contact request */
 "%@ has sent you a contact request" = "%@ has sent you a contact request";
 
+/* Username marketplace: delist success */
+"%@ is no longer for sale" = "%@ is no longer for sale";
+
 /* No comment provided by engineer. */
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ is not allowed to access Face ID. Allow Face ID access in Settings";
 
@@ -49,8 +55,17 @@
 /* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings";
 
+/* Username marketplace: purchase success */
+"%@ is now yours" = "%@ is now yours";
+
+/* Username marketplace: registration success */
+"%@ registered" = "%@ registered";
+
 /* Testnet faucet */
 "%@ tDash requested — it will arrive shortly" = "%@ tDash requested — it will arrive shortly";
+
+/* Username marketplace: transfer success */
+"%@ transferred" = "%@ transferred";
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
@@ -351,6 +366,9 @@
 /* Balance info sheet */
 "Anyone who knows an address can view its history" = "Anyone who knows an address can view its history";
 
+/* Username marketplace: set price sheet body */
+"Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance." = "Anyone will be able to buy the name for this exact price. The proceeds arrive as credits on your identity balance.";
+
 /* AboutDash */
 "App version" = "App version";
 
@@ -424,6 +442,9 @@
 
 /* SPV diagnostics */
 "Available only while SPV is running with a wallet bound." = "Available only while SPV is running with a wallet bound.";
+
+/* Username marketplace: unregistered name row */
+"Available — register it on your identity" = "Available — register it on your identity";
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
@@ -560,6 +581,9 @@
 /* Swap */
 "Buy flow is not supported by this swap backend" = "Buy flow is not supported by this swap backend";
 
+/* Username marketplace: purchase button */
+"Buy for %@ DASH" = "Buy for %@ DASH";
+
 /* DashSpend */
 "Buy gift card" = "Buy gift card";
 
@@ -568,6 +592,12 @@
 
 /* No comment provided by engineer. */
 "Buy gift cards with your Dash for the exact amount of your purchase." = "Buy gift cards with your Dash for the exact amount of your purchase.";
+
+/* Username marketplace: purchase confirmation title */
+"Buy “%@”?" = "Buy “%@”?";
+
+/* Username marketplace: Explore row subtitle */
+"Buy, sell and transfer DashPay usernames" = "Buy, sell and transfer DashPay usernames";
 
 /* Buy/Sell */
 "Buy/Sell" = "Buy/Sell";
@@ -616,6 +646,9 @@
 
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
+
+/* Username marketplace */
+"Change Price" = "Change Price";
 
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
@@ -677,6 +710,12 @@
 /* Identity top-up sheet — fee note */
 "Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance." = "Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance.";
 
+/* Username marketplace: search segment */
+"Find Names" = "Find Names";
+
+/* Username marketplace: listed badge */
+"For sale" = "For sale";
+
 /* Identity top-up sheet — linkability warning for transparent-side sources */
 "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.";
 
@@ -689,17 +728,44 @@
 /* SDK identity profile sheet — the identity's credit balance */
 "Identity Account Balance" = "Identity Account Balance";
 
+/* Username marketplace: latest ownership change */
+"Last transferred" = "Last transferred";
+
+/* Username marketplace: confirm listing button */
+"List For Sale" = "List For Sale";
+
+/* Username marketplace: set price fee note */
+"Listing is a network transaction with a small fee, paid from your identity balance." = "Listing is a network transaction with a small fee, paid from your identity balance.";
+
 /* DashPay: banner fallback when the identity has no name yet */
 "My identity" = "My identity";
+
+/* Username marketplace: owned names segment */
+"My Names" = "My Names";
 
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers.";
 
+/* Username marketplace: unresolvable transfer recipient */
+"No identity owns that username." = "No identity owns that username.";
+
 /* Identity top-up sheet — missing unshield destination */
 "No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "No Platform receive address is available yet — wait for the Platform sync to finish and try again.";
 
+/* Username marketplace: empty owned list */
+"No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "No usernames on this identity yet. Find one to buy or register on the Find Names tab.";
+
 /* Identity top-up sheet — insufficient funding source */
 "Not enough funds in this balance: %@ DASH needed, %@ DASH available." = "Not enough funds in this balance: %@ DASH needed, %@ DASH available.";
+
+/* Username marketplace: insufficient balance hint */
+"Not enough identity credits for this purchase — top up from My Profile first." = "Not enough identity credits for this purchase — top up from My Profile first.";
+
+/* Username marketplace: someone else's unlisted name */
+"Not for sale" = "Not for sale";
+
+/* Username marketplace: own unlisted name */
+"Not listed for sale" = "Not listed for sale";
 
 /* DashPay FAQ */
 "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves.";
@@ -707,11 +773,17 @@
 /* DashPay Contacts: search results from DPNS, not the local contact list */
 "On the Dash network" = "On the Dash network";
 
+/* Username marketplace */
+"Owned by you" = "Owned by you";
+
 /* Identity top-up sheet — funding source picker label */
 "Pay from" = "Pay from";
 
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.";
+
+/* Username marketplace: price placeholder */
+"Price in DASH" = "Price in DASH";
 
 /* DashPay FAQ */
 "Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, you will have the choice of having your friendship be public or private." = "Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, you will have the choice of having your friendship be public or private.";
@@ -2326,14 +2398,41 @@
 /* Identities: what a public key is used for */
 "Purpose" = "Purpose";
 
+/* Username marketplace */
+"Put Up For Sale" = "Put Up For Sale";
+
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Read-only";
+
+/* Username marketplace: transfer recipient placeholder */
+"Recipient username or identity ID" = "Recipient username or identity ID";
 
 /* Identity top-up sheet — shielded source note */
 "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins.";
 
+/* Username marketplace: register sheet title */
+"Register “%@”" = "Register “%@”";
+
+/* Username marketplace: registration date */
+"Registered" = "Registered";
+
+/* Username marketplace */
+"Remove From Sale" = "Remove From Sale";
+
+/* Username marketplace: delist confirmation title */
+"Remove “%@” from sale?" = "Remove “%@” from sale?";
+
+/* Username marketplace: delist confirmation body */
+"Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name.";
+
+/* Username marketplace: screen subtitle */
+"Search usernames, buy ones that are for sale, and sell or transfer your own." = "Search usernames, buy ones that are for sale, and sell or transfer your own.";
+
 /* Identities: DPP security level of a public key */
 "Security level" = "Security level";
+
+/* Username marketplace: transfer sheet body */
+"Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back.";
 
 /* DashPay intro: feature body */
 "Send to a username you can actually remember and verify." = "Send to a username you can actually remember and verify.";
@@ -2347,6 +2446,9 @@
 /* DashPay: CTA of the enable success sheet */
 "Send your first contact request" = "Send your first contact request";
 
+/* Username marketplace: set price sheet title */
+"Set a price for “%@”" = "Set a price for “%@”";
+
 /* DashPay Contacts: expands the network search into the full add-contact flow */
 "Show more results" = "Show more results";
 
@@ -2356,17 +2458,47 @@
 /* Identity top-up sheet — shielded route progress */
 "Step 2 of 2 — topping up your identity…" = "Step 2 of 2 — topping up your identity…";
 
+/* Username marketplace: register sheet body */
+"The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "The name is registered directly on your identity. Registration is a network transaction paid from your identity balance.";
+
+/* Username marketplace: purchase confirmation body */
+"The price plus a small network fee is paid from your identity balance. The name moves to your identity immediately." = "The price plus a small network fee is paid from your identity balance. The name moves to your identity immediately.";
+
+/* Username marketplace */
+"The recipient identity couldn't be resolved." = "The recipient identity couldn't be resolved.";
+
+/* Username marketplace */
+"The seller changed the price before your purchase was accepted. Review the new price and try again." = "The seller changed the price before your purchase was accepted. Review the new price and try again.";
+
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.";
 
 /* SDK identity profile sheet — explains the identity credit balance */
 "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits.";
 
+/* Username marketplace */
+"This name is short enough to be contested and must be requested through the username flow, where it goes to a network vote." = "This name is short enough to be contested and must be requested through the username flow, where it goes to a network vote.";
+
+/* Username marketplace */
+"This username is not for sale." = "This username is not for sale.";
+
+/* Username marketplace */
+"This username's record couldn't be read from the network." = "This username's record couldn't be read from the network.";
+
 /* SDK identity profile sheet — add credits to the identity */
 "Top Up" = "Top Up";
 
 /* Identity top-up sheet — title */
 "Top Up Identity Balance" = "Top Up Identity Balance";
+
+/* Username marketplace */
+"Transfer to Another Identity" = "Transfer to Another Identity";
+
+/* Username marketplace: transfer sheet title */
+"Transfer “%@”" = "Transfer “%@”";
+
+/* Username marketplace */
+"Username Marketplace" = "Username Marketplace";
 
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Usernames, not addresses";
@@ -2397,6 +2529,9 @@
 
 /* DashPay intro: feature title */
 "Your history, organized" = "Your history, organized";
+
+/* Username marketplace */
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again.";
 
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event.";

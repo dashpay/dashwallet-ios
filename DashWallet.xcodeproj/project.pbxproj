@@ -1897,6 +1897,10 @@
 		RC00A0012FA0000000000001 /* TopIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00A0032FA0000000000001 /* TopIntro.swift */; };
 		RC00A0022FA0000000000001 /* TopIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00A0032FA0000000000001 /* TopIntro.swift */; };
 		RC00A0042FA0000000000001 /* ExploreMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00A0062FA0000000000001 /* ExploreMenuScreen.swift */; };
+		UM00A0012FA0000000000001 /* UsernameMarketplaceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = UM00A0032FA0000000000001 /* UsernameMarketplaceScreen.swift */; };
+		UM00A0022FA0000000000001 /* UsernameMarketplaceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = UM00A0032FA0000000000001 /* UsernameMarketplaceScreen.swift */; };
+		UM00B0012FA0000000000001 /* UsernameMarketplaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = UM00B0032FA0000000000001 /* UsernameMarketplaceService.swift */; };
+		UM00B0022FA0000000000001 /* UsernameMarketplaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = UM00B0032FA0000000000001 /* UsernameMarketplaceService.swift */; };
 		RC00A0052FA0000000000001 /* ExploreMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00A0062FA0000000000001 /* ExploreMenuScreen.swift */; };
 		RC00C0012FA0000000000001 /* CSVExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00C0032FA0000000000001 /* CSVExportSheet.swift */; };
 		RC00C0022FA0000000000001 /* CSVExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00C0032FA0000000000001 /* CSVExportSheet.swift */; };
@@ -3635,6 +3639,8 @@
 		GG0000032DUMMYID001234567 /* GeoRestrictionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoRestrictionService.swift; sourceTree = "<group>"; };
 		RC00A0032FA0000000000001 /* TopIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopIntro.swift; sourceTree = "<group>"; };
 		RC00A0062FA0000000000001 /* ExploreMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMenuScreen.swift; sourceTree = "<group>"; };
+		UM00A0032FA0000000000001 /* UsernameMarketplaceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameMarketplaceScreen.swift; sourceTree = "<group>"; };
+		UM00B0032FA0000000000001 /* UsernameMarketplaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameMarketplaceService.swift; sourceTree = "<group>"; };
 		RC00C0032FA0000000000001 /* CSVExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVExportSheet.swift; sourceTree = "<group>"; };
 		FC1426BD13E794C788646055 /* ContestedNamesService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContestedNamesService.swift; sourceTree = "<group>"; };
 		15D89828EC913714251D0B58 /* MasternodeVoterRegistry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodeVoterRegistry.swift; sourceTree = "<group>"; };
@@ -6256,6 +6262,7 @@
 				47AE8BDF28C1305E00490F5E /* Views */,
 				7569D6822DE6DA6800768BFF /* ExploreViewController.swift */,
 				RC00A0062FA0000000000001 /* ExploreMenuScreen.swift */,
+				UM00A0032FA0000000000001 /* UsernameMarketplaceScreen.swift */,
 			);
 			path = "Explore Dash";
 			sourceTree = "<group>";
@@ -7109,6 +7116,7 @@
 				E181EB71C8803101EA789AA4 /* SwiftDashSDKHost.swift */,
 				35F37C177039C76661FA2DB2 /* SwiftDashSDKSPVCoordinator.swift */,
 				E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */,
+				UM00B0032FA0000000000001 /* UsernameMarketplaceService.swift */,
 				51AA000D2F97000D005A000D /* ShieldedSyncMonitor.swift */,
 				43C830DD6D63115525925F75 /* PlatformCreditsFormatter.swift */,
 				44DCDC3A2B92601BB1E61FD9 /* PlatformSendExecutor.swift */,
@@ -9820,6 +9828,8 @@
 				75EBAA0F2BB99036004488E3 /* TextIntro.swift in Sources */,
 				RC00A0012FA0000000000001 /* TopIntro.swift in Sources */,
 				RC00A0042FA0000000000001 /* ExploreMenuScreen.swift in Sources */,
+				UM00A0012FA0000000000001 /* UsernameMarketplaceScreen.swift in Sources */,
+				UM00B0012FA0000000000001 /* UsernameMarketplaceService.swift in Sources */,
 				0F71317728F436920072F454 /* ServiceOverviewTableCell.swift in Sources */,
 				47838B87290670630003E8AB /* IntegrationViewController.swift in Sources */,
 				758A8F172C4D35A80012FA41 /* NSLayoutConstraint+DashWallet.swift in Sources */,
@@ -10535,6 +10545,8 @@
 				75EBAA102BB99036004488E3 /* TextIntro.swift in Sources */,
 				RC00A0022FA0000000000001 /* TopIntro.swift in Sources */,
 				RC00A0052FA0000000000001 /* ExploreMenuScreen.swift in Sources */,
+				UM00A0022FA0000000000001 /* UsernameMarketplaceScreen.swift in Sources */,
+				UM00B0022FA0000000000001 /* UsernameMarketplaceService.swift in Sources */,
 				757514E52B1735370026AD8E /* JoinDashPayView.swift in Sources */,
 				C9D2C73C2A320AA000D15901 /* DWDecimalInputValidator.m in Sources */,
 				C9D2C73D2A320AA000D15901 /* PaymentMethods.swift in Sources */,
