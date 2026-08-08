@@ -29,6 +29,12 @@ final class ContactsViewModel: ObservableObject {
     @Published var processingIds: Set<Data> = []
     @Published var errorMessage: String? = nil
 
+    /// True while the main identity's persisted key set lacks the DIP-15
+    /// ENCRYPTION/DECRYPTION pair — without it nobody can send this
+    /// identity a contact request. Drives the "Enable DashPay" banner.
+    @Published var needsDashPayEnable = false
+    @Published var isEnablingDashPay = false
+
     private let service = SwiftDashSDKContactsService.shared
 
     init() {
@@ -45,6 +51,36 @@ final class ContactsViewModel: ObservableObject {
 
     func refresh() {
         service.refresh()
+        needsDashPayEnable = service.mainIdentityNeedsDashPayKeys()
+    }
+
+    /// Estimated IdentityUpdate fee for the confirm sheet:
+    /// "~0.0000131 DASH (≈ THB 0.01)" in the user's local currency.
+    var enableDashPayEstimatedCostText: String {
+        let duffs = SwiftDashSDKContactsService.enableDashPayEstimatedFeeDuffs
+        return String.localizedStringWithFormat(
+            NSLocalizedString("~%@ DASH (≈ %@)", comment: "DashPay: estimated network fee — DASH amount, then its local-currency equivalent"),
+            duffs.formattedDashAmountWithoutCurrencySymbol,
+            CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount))
+    }
+
+    /// PIN-gated IdentityUpdate adding the missing contact-request keys.
+    /// On success the banner clears optimistically (Platform accepted the
+    /// broadcast, or already had the keys).
+    func enableDashPay() {
+        guard !isEnablingDashPay else { return }
+        isEnablingDashPay = true
+        Task {
+            defer { isEnablingDashPay = false }
+            do {
+                _ = try await service.enableDashPay()
+                needsDashPayEnable = false
+            } catch SwiftDashSDKContactsService.ServiceError.authCancelled {
+                // User backed out of the PIN prompt — not an error state.
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
     }
 
     func syncNow() async {
@@ -123,6 +159,7 @@ struct ContactsScreen: View {
     @StateObject private var viewModel = ContactsViewModel()
     @State private var filterText = ""
     @State private var showingAddContact = false
+    @State private var showingEnableDashPay = false
     @State private var selectedContact: ContactItem? = nil
 
     var body: some View {
@@ -165,10 +202,52 @@ struct ContactsScreen: View {
 
     @ViewBuilder
     private var content: some View {
-        if viewModel.isEmpty {
-            emptyState
-        } else {
-            list
+        VStack(spacing: 0) {
+            if viewModel.needsDashPayEnable {
+                enableDashPayBanner
+            }
+            if viewModel.isEmpty {
+                emptyState
+            } else {
+                list
+            }
+        }
+    }
+
+    /// Shown while the main identity lacks the DIP-15 contact-request key
+    /// pair: without it, other users can't send this identity a contact
+    /// request. Tapping opens the fee-confirm sheet.
+    private var enableDashPayBanner: some View {
+        Button(action: { showingEnableDashPay = true }) {
+            HStack(spacing: 12) {
+                Image(systemName: "person.crop.circle.badge.exclamationmark")
+                    .font(.system(size: 22))
+                    .foregroundColor(.dash.blue)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(NSLocalizedString("Enable DashPay", comment: "DashPay: add the identity keys other users need to send contact requests"))
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.dash.primaryText)
+                    Text(NSLocalizedString("Your identity can't receive contact requests yet", comment: "DashPay: subtitle of the Enable DashPay banner"))
+                        .font(.system(size: 13))
+                        .foregroundColor(.dash.secondaryText)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.dash.secondaryText)
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color.dash.secondaryBackground))
+            .padding(.horizontal, 15)
+            .padding(.top, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: $showingEnableDashPay) {
+            EnableDashPayConfirmSheet(viewModel: viewModel)
+                .presentationDetents([.height(360)])
         }
     }
 
@@ -322,6 +401,93 @@ struct ContactsScreen: View {
         section: ContactListEntry.Section
     ) -> [ContactListEntry] {
         items.map { ContactListEntry(item: $0, section: section) }
+    }
+}
+
+// MARK: - EnableDashPayConfirmSheet
+
+/// Fee-confirm sheet for the "Enable DashPay" banner: explains that
+/// confirming adds the contact-request key pair to the identity via one
+/// IdentityUpdate, shows the schedule-derived fee estimate in DASH and
+/// local currency, and hands off to the PIN gate on confirm. The
+/// transition is paid from the identity's credit balance.
+private struct EnableDashPayConfirmSheet: View {
+    @ObservedObject var viewModel: ContactsViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Image(systemName: "person.2.badge.key.fill")
+                .font(.system(size: 34))
+                .foregroundColor(.dash.blue)
+                .frame(width: 72, height: 72)
+                .background(Circle().fill(Color.dash.blue.opacity(0.08)))
+                .padding(.top, 28)
+
+            Text(NSLocalizedString("Enable DashPay", comment: "DashPay: add the identity keys other users need to send contact requests"))
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(.dash.primaryText)
+                .padding(.top, 16)
+
+            Text(NSLocalizedString(
+                "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. It happens once, on the Dash Platform network.",
+                comment: "DashPay: body of the Enable DashPay confirmation"))
+                .font(.system(size: 14))
+                .foregroundColor(.dash.secondaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 28)
+                .padding(.top, 8)
+
+            HStack {
+                Text(NSLocalizedString("Estimated network fee", comment: "DashPay: fee line of the Enable DashPay confirmation"))
+                    .font(.system(size: 14))
+                    .foregroundColor(.dash.secondaryText)
+                Spacer()
+                Text(viewModel.enableDashPayEstimatedCostText)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.dash.primaryText)
+                    .multilineTextAlignment(.trailing)
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color.dash.secondaryBackground))
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+
+            Text(NSLocalizedString("Paid from your identity's credit balance.", comment: "DashPay: fee source note of the Enable DashPay confirmation"))
+                .font(.system(size: 12))
+                .foregroundColor(.dash.tertiaryText)
+                .padding(.top, 6)
+
+            Spacer(minLength: 12)
+
+            Button(action: {
+                dismiss()
+                viewModel.enableDashPay()
+            }) {
+                Text(NSLocalizedString("Enable", comment: "DashPay: confirm button of the Enable DashPay sheet"))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color.dash.whiteText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.dash.blue)
+                    .cornerRadius(12)
+            }
+            .disabled(viewModel.isEnablingDashPay)
+            .padding(.horizontal, 20)
+
+            Button(action: { dismiss() }) {
+                Text(NSLocalizedString("Cancel", comment: ""))
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.dash.blue)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 10)
+        }
+        .background(Color.dash.primaryBackground)
     }
 }
 
