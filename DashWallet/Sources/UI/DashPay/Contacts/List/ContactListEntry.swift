@@ -7,6 +7,10 @@
 
 import SwiftUI
 
+/// SwiftUI otherwise reuses a contact row by `ContactItem.id` when the same
+/// identity moves between incoming / established / outgoing sections. That
+/// can preserve the old row type and its action closures (for example an
+/// Accept button rendered inside the Pending section).
 struct ContactListEntry: Identifiable {
     enum Section: Hashable {
         case incoming

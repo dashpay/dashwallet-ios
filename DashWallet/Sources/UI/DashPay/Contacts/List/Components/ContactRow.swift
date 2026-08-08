@@ -51,3 +51,19 @@ struct ContactRow: View {
         return username
     }
 }
+
+#if DEBUG
+
+#Preview {
+    ContactsCard {
+        VStack(spacing: 0) {
+            ContactRow(item: .preview(title: "briantest63a"))
+            Divider().padding(.leading, 61)
+            ContactRow(item: .preview(title: "s22test63b"), showPendingBadge: true)
+        }
+    }
+    .padding()
+    .background(Color.dash.primaryBackground)
+}
+
+#endif

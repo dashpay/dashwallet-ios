@@ -21,9 +21,13 @@ final class ContactsViewModel: ObservableObject {
     @Published var processingIds: Set<Data> = []
     @Published var errorMessage: String? = nil
 
-    private let service = SwiftDashSDKContactsService.shared
+    /// `nil` only in previews. The contacts service does real work in its
+    /// initializer, so a canvas must not construct one.
+    private let service: SwiftDashSDKContactsService?
 
-    init() {
+    init(service: SwiftDashSDKContactsService? = .shared) {
+        self.service = service
+        guard let service else { return }
         // Republish the service snapshots. Direct assign is safe:
         // both objects are main-actor and the service publishes on main.
         service.$contacts.assign(to: &$contacts)
@@ -36,11 +40,11 @@ final class ContactsViewModel: ObservableObject {
     }
 
     func refresh() {
-        service.refresh()
+        service?.refresh()
     }
 
     func syncNow() async {
-        await service.syncNow()
+        await service?.syncNow()
     }
 
     func accept(_ item: ContactItem) {
@@ -59,14 +63,14 @@ final class ContactsViewModel: ObservableObject {
     /// identity id (incoming requests from strangers).
     func resolveUsernameIfNeeded(_ item: ContactItem) {
         guard item.username == nil else { return }
-        Task { _ = await service.resolveUsername(for: item.contactIdentityId) }
+        Task { _ = await service?.resolveUsername(for: item.contactIdentityId) }
     }
 
     private func runAction(
         on item: ContactItem,
         _ operation: @escaping (SwiftDashSDKContactsService) async throws -> Void
     ) {
-        guard !processingIds.contains(item.contactIdentityId) else { return }
+        guard let service, !processingIds.contains(item.contactIdentityId) else { return }
         processingIds.insert(item.contactIdentityId)
         Task {
             defer { processingIds.remove(item.contactIdentityId) }
@@ -81,9 +85,21 @@ final class ContactsViewModel: ObservableObject {
     }
 }
 
-// MARK: - ContactsScreen
+#if DEBUG
 
-/// SwiftUI otherwise reuses a contact row by `ContactItem.id` when the same
-/// identity moves between incoming / established / outgoing sections. That
-/// can preserve the old row type and its action closures (for example an
-/// Accept button rendered inside the Pending section).
+extension ContactsViewModel {
+    /// Preview seed: fixed rows, no contacts service behind them.
+    static func preview(
+        contacts: [ContactItem] = [],
+        incoming: [ContactItem] = [],
+        outgoing: [ContactItem] = []
+    ) -> ContactsViewModel {
+        let model = ContactsViewModel(service: nil)
+        model.contacts = contacts
+        model.incomingRequests = incoming
+        model.outgoingRequests = outgoing
+        return model
+    }
+}
+
+#endif

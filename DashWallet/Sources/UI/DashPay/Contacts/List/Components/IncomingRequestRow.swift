@@ -53,3 +53,27 @@ struct IncomingRequestRow: View {
         .frame(height: 70)
     }
 }
+
+#if DEBUG
+
+/// Both states, because the in-flight one swaps the accept/ignore pair for
+/// a progress label and is otherwise only reachable mid-network-call.
+#Preview {
+    ContactsCard {
+        VStack(spacing: 0) {
+            IncomingRequestRow(
+                item: .preview(title: "briantest63a", relationship: .incoming),
+                isProcessing: false,
+                onAccept: {}, onIgnore: {})
+            Divider().padding(.leading, 61)
+            IncomingRequestRow(
+                item: .preview(title: "s22test63b", relationship: .incoming),
+                isProcessing: true,
+                onAccept: {}, onIgnore: {})
+        }
+    }
+    .padding()
+    .background(Color.dash.primaryBackground)
+}
+
+#endif

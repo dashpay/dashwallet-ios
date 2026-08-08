@@ -9,10 +9,18 @@ import SwiftUI
 import DashUIKit
 
 struct ContactsScreen: View {
-    @StateObject private var viewModel = ContactsViewModel()
+    @StateObject private var viewModel: ContactsViewModel
     @State private var filterText = ""
     @State private var showingAddContact = false
     @State private var selectedContact: ContactItem? = nil
+
+    /// Default `nil` rather than a fresh view model: default arguments are
+    /// evaluated off the main actor and `ContactsViewModel` is `@MainActor`.
+    /// `StateObject`'s autoclosure defers construction to view installation.
+    /// Previews pass one in.
+    init(viewModel: ContactsViewModel? = nil) {
+        _viewModel = StateObject(wrappedValue: viewModel ?? ContactsViewModel())
+    }
 
     var body: some View {
         NavigationStack {
@@ -215,3 +223,24 @@ struct ContactsScreen: View {
 }
 
 // MARK: - Rows (Android dashpay_contact_row: 70pt, avatar 36, name 17sb)
+
+#if DEBUG
+
+/// Seeded rows, no contacts service behind them — see
+/// `ContactsViewModel.preview(contacts:incoming:outgoing:)`.
+#Preview("With contacts") {
+    ContactsScreen(viewModel: .preview(
+        contacts: [
+            .preview(title: "briantest63a"),
+            .preview(title: "s22test63b"),
+            .preview(title: "Upsilon2"),
+        ],
+        incoming: [.preview(title: "Delta", relationship: .incoming)],
+        outgoing: [.preview(title: "Epsilon2", relationship: .outgoing)]))
+}
+
+#Preview("Empty") {
+    ContactsScreen(viewModel: .preview())
+}
+
+#endif
