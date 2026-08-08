@@ -650,6 +650,9 @@
 /* Balance info sheet section */
 "Cons" = "Cons";
 
+/* DashPay Contacts: success card after sending a request */
+"Contact request sent to %@" = "Contact request sent to %@";
+
 /* DashPay: title of the enable success sheet */
 "DashPay enabled" = "DashPay enabled";
 

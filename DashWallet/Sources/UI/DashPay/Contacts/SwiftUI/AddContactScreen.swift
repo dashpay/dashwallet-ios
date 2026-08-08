@@ -36,7 +36,9 @@ struct AddContactScreen: View {
     /// send/accept confirmation surface).
     @State private var previewTarget: DpnsSearchResult? = nil
     @State private var errorMessage: String? = nil
-    @State private var sentToast = false
+    /// Username of the recipient of a just-sent request — drives the
+    /// centered success card (nil = hidden).
+    @State private var sentToUsername: String? = nil
 
     @ObservedObject private var service = SwiftDashSDKContactsService.shared
 
@@ -83,15 +85,26 @@ struct AddContactScreen: View {
                     onSend: { send(to: target) },
                     onAccept: { accept(target) })
             }
-            .overlay(alignment: .bottom) {
-                if sentToast {
-                    Text(NSLocalizedString("Contact request sent", comment: "DashPay Contacts"))
-                        .font(.system(size: 13, weight: .medium))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(.thinMaterial, in: Capsule())
-                        .padding(.bottom, 24)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+            .overlay {
+                if let username = sentToUsername {
+                    VStack(spacing: 12) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 44))
+                            .foregroundColor(.dashGreen)
+                        Text(String(
+                            format: NSLocalizedString("Contact request sent to %@", comment: "DashPay Contacts: success card after sending a request"),
+                            username))
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.dash.primaryText)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(28)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.dash.secondaryBackground)
+                            .shadow(color: Color.dash.shadow, radius: 24, x: 0, y: 8))
+                    .padding(.horizontal, 40)
+                    .transition(.scale(scale: 0.9).combined(with: .opacity))
                 }
             }
         }
@@ -321,9 +334,9 @@ struct AddContactScreen: View {
                 try await service.sendContactRequest(
                     to: target.identityId,
                     usernameHint: target.fullName)
-                withAnimation { sentToast = true }
-                try? await Task.sleep(nanoseconds: 1_500_000_000)
-                withAnimation { sentToast = false }
+                withAnimation { sentToUsername = target.fullName.withoutDashSuffix }
+                try? await Task.sleep(nanoseconds: 2_500_000_000)
+                withAnimation { sentToUsername = nil }
             } catch SwiftDashSDKContactsService.ServiceError.authCancelled {
                 // User backed out of the PIN prompt.
             } catch {
