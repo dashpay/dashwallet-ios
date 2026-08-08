@@ -739,6 +739,64 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
     // MARK: - Internals
 
+    /// How many of the DIP-15 contact-request keys (an enabled ECDSA
+    /// ENCRYPTION and DECRYPTION key — required on BOTH sides of the ECDH;
+    /// without them, other users' clients find no recipient key and can't
+    /// send requests to this identity) the wallet's main identity is
+    /// missing: 0 (fully enabled), 1, or 2. Drives the Contacts tab's
+    /// "Enable DashPay" affordance and its fee estimate. Local-store read
+    /// only — `enableDashPay()` re-checks Platform's authoritative key set
+    /// before broadcasting anything.
+    func missingDashPayKeyCount() -> Int {
+        guard let modelContainer = SwiftDashSDKHost.shared.modelContainer,
+              let ownerId = DWCurrentUserIdentityInfo.shared.identityId else {
+            return 0
+        }
+        var descriptor = FetchDescriptor<PersistentIdentity>(
+            predicate: #Predicate { $0.identityId == ownerId })
+        descriptor.fetchLimit = 1
+        guard let identity = (try? modelContainer.mainContext.fetch(descriptor))?.first else {
+            return 0
+        }
+        func hasEnabledECDSAKey(purposeRaw: String) -> Bool {
+            identity.publicKeys.contains { key in
+                key.purpose == purposeRaw
+                    && key.keyTypeEnum == .ecdsaSecp256k1
+                    && !key.isDisabled
+            }
+        }
+        var missing = 0
+        if !hasEnabledECDSAKey(purposeRaw: String(KeyPurpose.encryption.rawValue)) { missing += 1 }
+        if !hasEnabledECDSAKey(purposeRaw: String(KeyPurpose.decryption.rawValue)) { missing += 1 }
+        return missing
+    }
+
+    /// Estimated network fee for the enable-DashPay IdentityUpdate, in
+    /// duffs (1 duff = 1000 credits): the platform fee schedule's
+    /// `identity_update` minimum (100,000 credits) plus
+    /// `identity_key_in_creation_cost` (6,500,000 credits) per added key —
+    /// rs-platform-version `state_transition_min_fees` v1. The actual fee
+    /// is computed at execution and deducted from the identity's credit
+    /// balance; the confirm sheet labels this as an estimate.
+    static func enableDashPayEstimatedFeeDuffs(missingKeyCount: Int) -> UInt64 {
+        (100_000 + UInt64(max(missingKeyCount, 1)) * 6_500_000) / 1000
+    }
+
+    /// PIN-gated "Enable DashPay": one IdentityUpdate adding whichever of
+    /// the ENCRYPTION/DECRYPTION pair the identity is missing on Platform
+    /// (`DWIdentityKeyUpgrader` — the same lazy repair the contact actions
+    /// run). No-op returning false when Platform already has both keys.
+    func enableDashPay() async throws -> Bool {
+        let (wallet, modelContainer, ownerId) = try requireContext()
+        try await authorize()
+        let upgraded = try await ensureOwnDashPayKeys(
+            wallet: wallet,
+            ownerId: ownerId,
+            modelContainer: modelContainer)
+        Self.logger.info("👥 CONTACTS :: enable DashPay finished (broadcast=\(upgraded, privacy: .public))")
+        return upgraded
+    }
+
     private func requireContext() throws -> (ManagedPlatformWallet, ModelContainer, Data) {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             throw ServiceError.noWallet
@@ -759,12 +817,15 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// `acceptContactRequest` need our own enabled ECDSA ENCRYPTION
     /// key for DIP-15 ECDH. No-op once both keys exist; called after
     /// the PIN gate so any IdentityUpdate is covered by the same user
-    /// approval as the contact action it unblocks.
+    /// approval as the contact action it unblocks. Returns true when
+    /// an IdentityUpdate was broadcast (the explicit Enable DashPay
+    /// flow surfaces this; the contact actions ignore it).
+    @discardableResult
     private func ensureOwnDashPayKeys(
         wallet: ManagedPlatformWallet,
         ownerId: Data,
         modelContainer: ModelContainer
-    ) async throws {
+    ) async throws -> Bool {
         guard let sdk = SwiftDashSDKHost.shared.sdk,
               let network = SwiftDashSDKHost.shared.runningNetwork else {
             throw ServiceError.noWallet
@@ -779,6 +840,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
             if upgraded {
                 Self.logger.info("👥 CONTACTS :: identity upgraded with DashPay keys before contact action")
             }
+            return upgraded
         } catch {
             Self.logger.error("👥 CONTACTS :: DashPay key upgrade failed: \(String(describing: error), privacy: .public)")
             throw ServiceError.sdk(error)
