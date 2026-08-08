@@ -665,6 +665,9 @@
 /* DashPay FAQ */
 "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.";
 
+/* DashPay FAQ */
+"Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, who you connect with will no longer be publicly visible." = "Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, who you connect with will no longer be publicly visible.";
+
 /* DashPay intro: feature body */
 "Private payment addresses are exchanged between you and your contacts. Only you and your contact know the recipient and sender of payments between yourselves." = "Private payment addresses are exchanged between you and your contacts. Only you and your contact know the recipient and sender of payments between yourselves.";
 
@@ -2304,6 +2307,9 @@
 
 /* DashPay FAQ */
 "What's coming next?" = "What's coming next?";
+
+/* DashPay FAQ */
+"When will contact requests become private?" = "When will contact requests become private?";
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Why do I need to enable it?";
