@@ -1603,25 +1603,26 @@ final class ShieldedTxLookup {
     /// execution and do NOT survive a wipe & recover, so a restored wallet's
     /// asset-lock funding txs otherwise render "Internal Transfer — 0 DASH".
     /// For every persisted AssetLock transaction with no store row, parse the
-    /// credit outputs from the raw bytes (consensus truth) and add:
-    /// - funding type 4 when every credit output pays one of the wallet's own
-    ///   persisted Platform addresses — the full Core → Platform treatment;
-    /// - a `reconstructedUnknownFundingType` entry otherwise — real amount,
-    ///   no destination claim (one-time identity/shield keys are not
-    ///   distinguishable from the L1 tx alone).
-    /// Store-backed entries always win (`map` is checked first).
+    /// credit outputs from the raw bytes (consensus truth) and classify the
+    /// destination through the wallet's persisted funding-account address
+    /// pools: each credit output pays a one-time address the wallet derived
+    /// from a purpose-specific account (identity registration/top-up/
+    /// invitation, Platform address top-up, shielded top-up — accountType
+    /// 2…7), and those pools DO survive a restore as `PersistentCoreAddress`
+    /// rows. A match yields the exact funding type and the full existing
+    /// route treatment; no match yields a `reconstructedUnknownFundingType`
+    /// entry — real amount, no destination claim. Store-backed entries
+    /// always win (`map` is checked first).
     @MainActor
     private func addReconstructedLocks(to map: inout [String: ShieldedLockInfo], context: ModelContext) {
         let assetLockKind = TransactionTypeKind.assetLock.rawValue
         let descriptor = FetchDescriptor<PersistentTransaction>(
             predicate: #Predicate { $0.transactionTypeKind == assetLockKind })
         guard let rows = try? context.fetch(descriptor), !rows.isEmpty else { return }
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return }
 
-        // Own DIP-17 Platform address key hashes, for the provable-route case.
-        let ownPlatformHashes: Set<Data> = {
-            let addresses = (try? context.fetch(FetchDescriptor<PersistentPlatformAddress>())) ?? []
-            return Set(addresses.map { $0.addressHash })
-        }()
+        let fundingTypeByAddress = Self.fundingAccountTypeByAddress(walletId: walletId, in: context)
+        let network: PaymentNetwork = WalletEnvironment.isTestnet ? .testnet : .mainnet
 
         var reconstructed = 0
         for row in rows {
@@ -1644,22 +1645,59 @@ final class ShieldedTxLookup {
                 .map { $0.offset }
             guard opReturnIndexes.count == 1, let voutIndex = opReturnIndexes.first else { continue }
 
-            let keyHashes = creditOutputs.compactMap { RawTransactionInspector.p2pkhKeyHash(script: $0.script) }
-            let paysOnlyOwnPlatformAddresses = keyHashes.count == creditOutputs.count
-                && keyHashes.allSatisfy { ownPlatformHashes.contains($0) }
+            // Funding type: every credit output must resolve to the SAME
+            // funding account — mixed or unmatched destinations stay unknown.
+            let matchedTypes = Set(creditOutputs.map { output -> Int in
+                guard let address = ScriptAddressCodec.address(forScript: output.script, network: network),
+                      let fundingType = fundingTypeByAddress[address] else {
+                    return Self.reconstructedUnknownFundingType
+                }
+                return fundingType
+            })
+            let fundingType = matchedTypes.count == 1
+                ? matchedTypes.first ?? Self.reconstructedUnknownFundingType
+                : Self.reconstructedUnknownFundingType
 
             map[txid] = ShieldedLockInfo(
                 amountDuffs: amount,
                 statusRaw: Self.reconstructedStatus,
                 vout: UInt32(voutIndex),
-                fundingTypeRaw: paysOnlyOwnPlatformAddresses
-                    ? Self.platformFundingType
-                    : Self.reconstructedUnknownFundingType)
+                fundingTypeRaw: fundingType)
             reconstructed += 1
         }
         if reconstructed > 0 {
             Self.logger.info("🛡️ SHIELD-TX :: reconstructed \(reconstructed, privacy: .public) asset lock(s) from raw tx bytes (no store row)")
         }
+    }
+
+    /// Credit-output address → `ManagedAssetLockManager.FundingType` raw
+    /// value, from the active wallet's persisted funding-account pools.
+    /// Account type tags (see `accountTypeName`): 2 Identity Registration,
+    /// 3 Identity Top-Up, 4 Identity Top-Up (Unbound), 5 Identity
+    /// Invitation, 6 Asset Lock Address Top-Up, 7 Asset Lock Shielded
+    /// Address Top-Up — mapped to funding types 0…5 in the same order.
+    @MainActor
+    private static func fundingAccountTypeByAddress(walletId: Data, in context: ModelContext) -> [String: Int] {
+        // Accounts are a tiny table; fetch all and filter in Swift rather
+        // than fighting `#Predicate` relationship-traversal rules.
+        let accounts = (try? context.fetch(FetchDescriptor<PersistentAccount>())) ?? []
+        var byAddress: [String: Int] = [:]
+        for account in accounts where account.wallet.walletId == walletId {
+            let fundingType: Int
+            switch account.accountType {
+            case 2: fundingType = 0 // IdentityRegistration
+            case 3: fundingType = 1 // IdentityTopUp
+            case 4: fundingType = 2 // IdentityTopUpNotBound
+            case 5: fundingType = 3 // IdentityInvitation
+            case 6: fundingType = 4 // AssetLockAddressTopUp
+            case 7: fundingType = 5 // AssetLockShieldedAddressTopUp
+            default: continue
+            }
+            for address in account.coreAddresses {
+                byAddress[address.address] = fundingType
+            }
+        }
+        return byAddress
     }
 
     private func store(_ map: [String: ShieldedLockInfo]) {
