@@ -361,15 +361,45 @@ struct SDKIdentityProfileSheet: View {
 
 // MARK: - IdentityTopUpViewModel
 
-/// Business side of the profile sheet's Top Up: PIN/biometric gate, then
-/// one Core asset lock + IdentityTopUp transition via the SDK
-/// (`topUpIdentityWithFunding` — funded from the wallet's Transparent
-/// balance, account 0). Returns the identity's post-transition credit
-/// balance for the sheet to display.
+/// Business side of the profile sheet's Top Up: one PIN/biometric gate,
+/// then the funding route the user picked.
+///
+/// - `.shielded` (default — keeps the identity unlinked from transparent
+///   coins): two steps. Step 1 unshields the amount from the Orchard pool
+///   to the wallet's own next Platform receive address
+///   (`shieldedUnshield`, proven execution). Step 2 claims the landed
+///   credits minus the policy fee headroom from that address into an
+///   IdentityTopUp (`topUpFromAddresses` — its fee comes out of the
+///   supplied credits, so the identity receives "most" of the amount and
+///   the unclaimed headroom stays in the Platform balance).
+/// - `.platform`: one `topUpFromAddresses` over inputs selected by
+///   `PlatformPaymentIdentityFundingPolicy` (same policy the registration
+///   coordinator uses).
+/// - `.transparent`: one Core asset lock + IdentityTopUp
+///   (`topUpIdentityWithFunding`, account 0).
+///
+/// Returns the identity's post-transition credit balance.
 @MainActor
 final class IdentityTopUpViewModel: ObservableObject {
+
+    enum FundingSource: CaseIterable {
+        case shielded
+        case platform
+        case transparent
+
+        var title: String {
+            switch self {
+            case .shielded: return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
+            case .platform: return NSLocalizedString("Platform", comment: "Identity top-up sheet — the DIP-17 Platform address balance")
+            case .transparent: return NSLocalizedString("Transparent", comment: "Identity top-up sheet — the Core wallet balance")
+            }
+        }
+    }
+
     @Published var isProcessing = false
     @Published var errorMessage: String?
+    /// User-visible progress for the shielded route's two steps.
+    @Published var stepLabel: String?
 
     private let authorizer = DWIdentityAuthorizer()
 
@@ -379,14 +409,18 @@ final class IdentityTopUpViewModel: ObservableObject {
     static let presetsDuffs: [UInt64] = [1_000_000, 5_000_000, 10_000_000]
 
     /// nil = cancelled or failed (errorMessage carries the failure).
-    func topUp(identityId: Data, amountDuffs: UInt64) async -> UInt64? {
+    func topUp(identityId: Data, amountDuffs: UInt64, source: FundingSource) async -> UInt64? {
         guard !isProcessing else { return nil }
-        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
             errorMessage = NSLocalizedString("Wallet is not ready", comment: "DashPay")
             return nil
         }
         isProcessing = true
-        defer { isProcessing = false }
+        defer {
+            isProcessing = false
+            stepLabel = nil
+        }
         do {
             try await authorizer.authorize()
         } catch {
@@ -394,14 +428,105 @@ final class IdentityTopUpViewModel: ObservableObject {
             return nil
         }
         do {
-            return try await wallet.topUpIdentityWithFunding(
-                identityId: identityId,
-                amountDuffs: amountDuffs,
-                accountIndex: 0)
+            switch source {
+            case .transparent:
+                return try await wallet.topUpIdentityWithFunding(
+                    identityId: identityId,
+                    amountDuffs: amountDuffs,
+                    accountIndex: 0)
+
+            case .platform:
+                let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+                let candidates = try PlatformPaymentIdentityFundingPolicy.candidates(
+                    walletId: wallet.walletId,
+                    modelContainer: modelContainer)
+                let inputs = try PlatformPaymentIdentityFundingPolicy.makeInputs(
+                    candidates: candidates,
+                    targetCredits: credits)
+                let signer = KeychainSigner(modelContainer: modelContainer)
+                return try await wallet.topUpFromAddresses(
+                    identityId: identityId,
+                    inputs: inputs,
+                    addressSigner: signer)
+
+            case .shielded:
+                return try await topUpFromShielded(
+                    identityId: identityId,
+                    amountDuffs: amountDuffs,
+                    wallet: wallet,
+                    modelContainer: modelContainer)
+            }
+        } catch let error as PlatformPaymentIdentityFundingPolicy.PlanningError {
+            if case .insufficient(let required, let available) = error {
+                errorMessage = String.localizedStringWithFormat(
+                    NSLocalizedString("Not enough funds in this balance: %@ DASH needed, %@ DASH available.", comment: "Identity top-up sheet — insufficient funding source"),
+                    (required / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol,
+                    (available / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
+            } else {
+                errorMessage = error.localizedDescription
+            }
+            return nil
         } catch {
             errorMessage = error.localizedDescription
             return nil
         }
+    }
+
+    /// The privacy-default two-step: Shielded → own Platform address →
+    /// identity credits.
+    private func topUpFromShielded(
+        identityId: Data,
+        amountDuffs: UInt64,
+        wallet: ManagedPlatformWallet,
+        modelContainer: ModelContainer
+    ) async throws -> UInt64 {
+        guard let manager = SwiftDashSDKHost.shared.manager else {
+            throw SwiftDashSDKContactsService.ServiceError.noWallet
+        }
+        guard let destination = PlatformAddressSyncCoordinator.shared
+            .derivedAddresses.nextReceiveAddress?.address,
+            !destination.isEmpty,
+            let storageBytes = AddressTransformer.parseBech32mAddress(destination),
+            storageBytes.count == 21 else {
+            errorMessage = NSLocalizedString("No Platform receive address is available yet — wait for the Platform sync to finish and try again.", comment: "Identity top-up sheet — missing unshield destination")
+            throw SwiftDashSDKContactsService.ServiceError.noWallet
+        }
+        let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+
+        // Step 1: Orchard notes → own Platform address. `shieldedUnshield`
+        // waits for proven execution, so the credits are on-chain at the
+        // destination when it returns; the unshield's own fee comes from
+        // the shielded side on top of `credits`.
+        stepLabel = NSLocalizedString("Step 1 of 2 — moving Dash out of your Shielded balance…", comment: "Identity top-up sheet — shielded route progress")
+        try await manager.shieldedUnshield(
+            walletId: wallet.walletId,
+            resolver: MnemonicResolver(),
+            account: 0,
+            toPlatformAddress: destination,
+            amount: credits)
+        // Same post-spend refreshes the transfer coordinator schedules —
+        // BLAST stays the source of truth for the persisted balances.
+        PlatformAddressSyncCoordinator.shared.refreshShieldedBalanceAfterSpend(using: manager)
+
+        // Step 2: claim the landed credits minus the policy's fee headroom
+        // into the identity. The transition's fee is deducted from the
+        // supplied credits; the unclaimed headroom stays at the address
+        // (it is the wallet's own Platform balance, not lost).
+        stepLabel = NSLocalizedString("Step 2 of 2 — topping up your identity…", comment: "Identity top-up sheet — shielded route progress")
+        let claim = credits > PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits
+            ? credits - PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits
+            : credits
+        let input = ManagedPlatformWallet.IdentityAddressInput(
+            addressType: storageBytes[storageBytes.startIndex],
+            hash: Data(storageBytes.dropFirst()),
+            credits: claim)
+        let signer = KeychainSigner(modelContainer: modelContainer)
+        let newBalance = try await wallet.topUpFromAddresses(
+            identityId: identityId,
+            inputs: [input],
+            addressSigner: signer)
+        Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
+        return newBalance
     }
 }
 
@@ -418,6 +543,9 @@ struct IdentityTopUpSheet: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = IdentityTopUpViewModel()
     @State private var selectedDuffs: UInt64 = IdentityTopUpViewModel.presetsDuffs[0]
+    /// Shielded is the privacy default; the transparent-side sources are
+    /// an explicit opt-in behind the linkability warning.
+    @State private var source: IdentityTopUpViewModel.FundingSource = .shielded
 
     var body: some View {
         // Scrollable so every action stays reachable at large Dynamic
@@ -437,7 +565,7 @@ struct IdentityTopUpSheet: View {
                     .padding(.top, 16)
 
                 Text(NSLocalizedString(
-                    "Convert Dash from your Transparent balance into identity credits to pay for Platform actions like contact requests and profile updates.",
+                    "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates.",
                     comment: "Identity top-up sheet — body"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
@@ -445,6 +573,40 @@ struct IdentityTopUpSheet: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 28)
                     .padding(.top, 8)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(NSLocalizedString("Pay from", comment: "Identity top-up sheet — funding source picker label"))
+                        .font(.caption)
+                        .foregroundColor(.dash.secondaryText)
+                    Picker(NSLocalizedString("Pay from", comment: "Identity top-up sheet — funding source picker label"), selection: $source) {
+                        ForEach(IdentityTopUpViewModel.FundingSource.allCases, id: \.self) { candidate in
+                            Text(candidate.title).tag(candidate)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    if source == .shielded {
+                        Text(NSLocalizedString(
+                            "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins.",
+                            comment: "Identity top-up sheet — shielded source note"))
+                            .font(.system(size: 12))
+                            .foregroundColor(.dash.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        Label {
+                            Text(NSLocalizedString(
+                                "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.",
+                                comment: "Identity top-up sheet — linkability warning for transparent-side sources"))
+                                .font(.system(size: 12))
+                                .fixedSize(horizontal: false, vertical: true)
+                        } icon: {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: 12))
+                        }
+                        .foregroundColor(.orange)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 18)
 
                 HStack(spacing: 10) {
                     ForEach(IdentityTopUpViewModel.presetsDuffs, id: \.self) { duffs in
@@ -476,18 +638,28 @@ struct IdentityTopUpSheet: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 18)
 
-                Text(NSLocalizedString("Paid from your Transparent balance, plus the network fee.", comment: "Identity top-up sheet — funding source note"))
+                Text(NSLocalizedString("Network fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance.", comment: "Identity top-up sheet — fee note"))
                     .font(.system(size: 12))
                     .foregroundColor(.dash.tertiaryText)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 24)
                     .padding(.top, 8)
 
                 Button {
                     confirm()
                 } label: {
                     if viewModel.isProcessing {
-                        SwiftUI.ProgressView()
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
+                        VStack(spacing: 6) {
+                            SwiftUI.ProgressView()
+                            if let step = viewModel.stepLabel {
+                                Text(step)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.dash.secondaryText)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
                     } else {
                         Text(NSLocalizedString("Top Up", comment: "SDK identity profile sheet — add credits to the identity"))
                             .font(.system(size: 16, weight: .semibold))
@@ -534,7 +706,8 @@ struct IdentityTopUpSheet: View {
         Task {
             if let newBalance = await viewModel.topUp(
                 identityId: identityId,
-                amountDuffs: selectedDuffs) {
+                amountDuffs: selectedDuffs,
+                source: source) {
                 onToppedUp(newBalance)
                 dismiss()
             }
