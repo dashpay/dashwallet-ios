@@ -1436,13 +1436,14 @@ class SwiftDashSDKWalletSource: TransactionSource {
         let outgoingNoteValueByCmx = outgoingShieldedNoteValueByCmx(in: context, walletId: walletId)
 
         // The wallet's own default Orchard address (raw 43 bytes), for the
-        // Sent-destination ownership check. Nil until the shielded
-        // sub-wallet is bound — then the Received-row evidence still covers
-        // live intra-wallet transfers.
+        // Sent-destination ownership check. Keyed by the SAME walletId the
+        // rows were fetched with (not a re-read of the host's active wallet,
+        // which could have switched between the two main hops). Nil until
+        // the shielded sub-wallet is bound — then the Received-row evidence
+        // still covers live intra-wallet transfers.
         let ownShieldedRaw43: Data? = onMain {
-            guard let manager = SwiftDashSDKHost.shared.manager,
-                  let wallet = SwiftDashSDKHost.shared.wallet else { return nil }
-            return ((try? manager.shieldedDefaultAddress(walletId: wallet.walletId)) ?? nil)
+            guard let manager = SwiftDashSDKHost.shared.manager else { return nil }
+            return ((try? manager.shieldedDefaultAddress(walletId: walletId)) ?? nil)
         }
 
         var items: [ShieldedActivityItem] = []
