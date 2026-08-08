@@ -21,30 +21,26 @@ struct ContactsCard<Content: View>: View {
 
 #if DEBUG
 
-// No `avatarURL` here — the placeholder path is the deterministic,
-// offline-renderable one; the letter and its HSV color both derive from
-// `title`, so each initial gets its own hue.
-#Preview("Placeholder initials") {
-    HStack(spacing: 12) {
-        ForEach(["Epsilon2", "Delta", "b-user", "Zoe", "7", "мій"], id: \.self) { title in
-            ContactAvatarView(title: title, avatarURL: nil, identitySeed: Data())
+// MARK: - Preview
+
+/// Shown on the gray screen background, which is the only place the card's
+/// white fill and rounding read correctly.
+#Preview {
+    ContactsCard {
+        VStack(spacing: 0) {
+            ForEach(["Alice", "s22test63b", "Upsilon2"], id: \.self) { name in
+                HStack(spacing: 12) {
+                    ContactAvatarView(title: name, avatarURL: nil, identitySeed: Data(name.utf8))
+                    Text(name)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .frame(height: 56)
+            }
         }
     }
     .padding()
-}
-
-#Preview("Sizes") {
-    HStack(alignment: .center, spacing: 12) {
-        ForEach([24.0, 36.0, 48.0, 64.0], id: \.self) { size in
-            ContactAvatarView(title: "Epsilon2", avatarURL: nil, identitySeed: Data(), size: size)
-        }
-    }
-    .padding()
-}
-
-#Preview("Empty title (fallback)") {
-    ContactAvatarView(title: "", avatarURL: nil, identitySeed: Data(), size: 48)
-        .padding()
+    .background(Color.dash.primaryBackground)
 }
 
 #endif

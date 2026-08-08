@@ -28,3 +28,14 @@ struct AcceptPillButton: View {
 
 /// Android `Button.Primary.Small.Round` with `ic_ignore_x`: a plain
 /// 30pt round ✕.
+
+#if DEBUG
+
+// MARK: - Preview
+
+#Preview {
+    AcceptPillButton(action: {})
+        .padding()
+}
+
+#endif

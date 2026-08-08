@@ -26,3 +26,14 @@ struct IgnoreCircleButton: View {
 
 /// Android `round_corners_white_bg` search field: white, 8pt radius,
 /// magnifier leading, 45pt tall (list variant).
+
+#if DEBUG
+
+// MARK: - Preview
+
+#Preview {
+    IgnoreCircleButton(action: {})
+        .padding()
+}
+
+#endif

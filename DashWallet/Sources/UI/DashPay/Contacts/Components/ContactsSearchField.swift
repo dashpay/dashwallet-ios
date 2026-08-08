@@ -41,3 +41,18 @@ struct ContactsSearchField: View {
 }
 
 /// Android white card container (8pt radius) used for row groups.
+
+#if DEBUG
+
+// MARK: - Preview
+
+#Preview {
+    VStack(spacing: 12) {
+        ContactsSearchField(placeholder: "Search Contacts", text: .constant(""))
+        ContactsSearchField(placeholder: "Search Contacts", text: .constant("briantest"))
+    }
+    .padding()
+    .background(Color.dash.primaryBackground)
+}
+
+#endif
