@@ -11,6 +11,11 @@
 //  subtitle, elevated rounded white search field, white card result
 //  rows on the gray background.
 //
+//  QR entry points ("My QR" / "Scan QR" buttons under the search
+//  field): scan another user's `dashpay://user` code — verified
+//  against Platform before the send-confirmation sheet opens — and
+//  show your own (`MyDashPayUserQRSheet`).
+//
 
 import SwiftDashSDK
 import SwiftUI
@@ -46,6 +51,11 @@ struct AddContactScreen: View {
     /// Username of the recipient of a just-sent request — drives the
     /// centered success card (nil = hidden).
     @State private var sentToUsername: String?
+    @State private var showScanner = false
+    @State private var showMyQR = false
+    /// A scanned user QR is being verified against Platform (DPNS
+    /// lookup + identity id match) — drives the blocking spinner.
+    @State private var isVerifyingScan = false
 
     @ObservedObject private var service = SwiftDashSDKContactsService.shared
 
@@ -61,6 +71,9 @@ struct AddContactScreen: View {
                         height: 52)
                         .padding(.horizontal, 24)
                         .padding(.top, 22)
+                    qrButtonsRow
+                        .padding(.horizontal, 24)
+                        .padding(.top, 12)
                     resultsList
                 }
             }
@@ -69,6 +82,18 @@ struct AddContactScreen: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(NSLocalizedString("Cancel", comment: "")) { dismiss() }
                         .foregroundColor(.dash.blue)
+                }
+            }
+            .fullScreenCover(isPresented: $showScanner) {
+                GenericQRScannerView(
+                    onQRCodeScanned: { handleScannedCode($0) },
+                    onCancel: { showScanner = false })
+            }
+            .sheet(isPresented: $showMyQR) {
+                if let link = myUserLink {
+                    MyDashPayUserQRSheet(
+                        link: link,
+                        displayName: DWCurrentUserIdentityInfo.shared.displayName)
                 }
             }
             .onChange(of: query) { _, _ in
@@ -98,7 +123,19 @@ struct AddContactScreen: View {
                     onAccept: { accept(target) })
             }
             .overlay {
-                if let username = sentToUsername {
+                if isVerifyingScan {
+                    VStack(spacing: 12) {
+                        SwiftUI.ProgressView()
+                        Text(NSLocalizedString("Verifying user…", comment: "DashPay Contacts: spinner after scanning a user QR code"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.dash.secondaryText)
+                    }
+                    .padding(24)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.dash.secondaryBackground)
+                            .shadow(color: Color.dash.shadow, radius: 24, x: 0, y: 8))
+                } else if let username = sentToUsername {
                     VStack(spacing: 12) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 44))
@@ -120,6 +157,44 @@ struct AddContactScreen: View {
                 }
             }
         }
+    }
+
+    /// "My QR" + "Scan QR" side by side under the search field. "My
+    /// QR" needs an identity with a DPNS name (the QR encodes both),
+    /// so before that "Scan QR" spans the full width alone.
+    private var qrButtonsRow: some View {
+        HStack(spacing: 10) {
+            if myUserLink != nil {
+                qrActionButton(
+                    NSLocalizedString("My QR", comment: "DashPay Contacts: shows the user's own contact QR code"),
+                    systemImage: "qrcode") {
+                    showMyQR = true
+                }
+            }
+            qrActionButton(
+                NSLocalizedString("Scan QR", comment: ""),
+                systemImage: "qrcode.viewfinder") {
+                showScanner = true
+            }
+        }
+    }
+
+    private func qrActionButton(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 17, weight: .medium))
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+            }
+            .foregroundColor(.dash.blue)
+            .frame(maxWidth: .infinity)
+            .frame(height: 46)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color.dash.blue.opacity(0.1)))
+        }
+        .buttonStyle(.plain)
     }
 
     /// Android search screen header: icon, headline, subtitle.
@@ -277,6 +352,54 @@ struct AddContactScreen: View {
             case .missingDashPayKeys:
                 Image(systemName: "lock.slash")
                     .foregroundColor(.dash.tertiaryText)
+            }
+        }
+    }
+
+    // MARK: My QR / scanning
+
+    /// The current user's scannable identity payload — nil until the
+    /// identity is registered AND owns a DPNS name (the QR encodes
+    /// both, so there is nothing honest to show before that).
+    private var myUserLink: DashPayUserLink? {
+        guard let identityId = DWCurrentUserIdentityInfo.shared.identityId,
+              let username = DWCurrentUserIdentityInfo.shared.username
+        else { return nil }
+        return DashPayUserLink(identityId: identityId, username: username.withoutDashSuffix)
+    }
+
+    /// Scanned QR → parse → verify against Platform → the same
+    /// send-confirmation sheet a search result tap opens. Verification
+    /// is an exact-username DPNS search whose result must carry the
+    /// scanned identity id — the sheet then renders a Platform-backed
+    /// `DpnsSearchResult`, never the QR's own unproven claim.
+    private func handleScannedCode(_ value: String) {
+        showScanner = false
+        guard let link = DashPayUserLink.parse(value) else {
+            errorMessage = NSLocalizedString("This isn't a DashPay user QR code.", comment: "DashPay Contacts: scanned QR is a payment/invitation/foreign code")
+            return
+        }
+        // Mirror the scanned name into the search field so the results
+        // list behind the confirmation sheet shows the same user.
+        query = link.username
+        isVerifyingScan = true
+        Task {
+            defer { isVerifyingScan = false }
+            do {
+                let matches = try await service.searchUsernames(prefix: link.username)
+                guard let match = matches.first(where: {
+                    $0.identityId == link.identityId
+                        && $0.fullName.withoutDashSuffix.lowercased() == link.username.lowercased()
+                }) else {
+                    errorMessage = String(
+                        format: NSLocalizedString("%@ couldn't be verified on the Dash network. The QR code may be outdated.", comment: "DashPay Contacts: scanned username doesn't resolve to the scanned identity"),
+                        link.username)
+                    return
+                }
+                checkEligibilityIfNeeded(match)
+                previewTarget = match
+            } catch {
+                errorMessage = error.localizedDescription
             }
         }
     }
@@ -524,5 +647,78 @@ struct AddContactPreviewSheet: View {
         .foregroundColor(color)
         .frame(maxWidth: .infinity)
         .frame(height: 48)
+    }
+}
+
+// MARK: - MyDashPayUserQRSheet
+
+/// "My QR" — the counterpart of the scan button: renders the current
+/// user's `DashPayUserLink` (identity id + preferred username) as a
+/// Dash-branded QR code (`QRCodeGenerator.dashStyledImage`) another
+/// Dash Wallet can scan to open the send-request confirmation for
+/// this user.
+struct MyDashPayUserQRSheet: View {
+    let link: DashPayUserLink
+    let displayName: String?
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var qrImage: UIImage?
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.dash.primaryBackground.ignoresSafeArea()
+                VStack(spacing: 6) {
+                    Text(displayName ?? link.username)
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundColor(.dash.primaryText)
+                        .padding(.top, 20)
+                    if displayName != nil {
+                        Text(link.username)
+                            .font(.system(size: 14))
+                            .foregroundColor(.dash.secondaryText)
+                    }
+                    Group {
+                        if let qrImage {
+                            Image(uiImage: qrImage)
+                                .resizable()
+                                .scaledToFit()
+                        } else {
+                            SwiftUI.ProgressView()
+                        }
+                    }
+                    .frame(width: 240, height: 240)
+                    .padding(20)
+                    // The branded QR draws Dash-blue modules on a
+                    // transparent background — keep the card white in
+                    // dark mode so camera scanners keep their contrast.
+                    .background(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(Color.white)
+                            .shadow(color: Color.dash.shadow, radius: 16, x: 0, y: 4))
+                    .padding(.top, 14)
+                    Text(NSLocalizedString("Let another Dash Wallet user scan this code to add you as a contact.", comment: "DashPay Contacts: caption under the user's own QR code"))
+                        .font(.system(size: 14))
+                        .foregroundColor(.dash.tertiaryText)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 32)
+                        .padding(.top, 14)
+                    Spacer()
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(NSLocalizedString("Close", comment: "")) { dismiss() }
+                        .foregroundColor(.dash.blue)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .onAppear {
+            if qrImage == nil {
+                qrImage = QRCodeGenerator.dashStyledImage(for: link.uriString, size: 240)
+            }
+        }
     }
 }
