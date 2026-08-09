@@ -2,7 +2,7 @@
 //  SendStepChrome.swift
 //  DashWallet
 //
-//  Header and address summary shared by the send steps.
+//  The card the address field collapses into once a destination decodes.
 //
 
 import SwiftUI
@@ -13,30 +13,6 @@ import UIKit
 // MARK: - Shared step chrome
 
 /// Back-chevron + "Send" title, shared by the source and amount steps.
-struct SendStepHeader: View {
-    var onBack: () -> Void
-
-    var body: some View {
-        HStack {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
-            }
-            Spacer()
-            Text(NSLocalizedString("Send", comment: ""))
-                .font(.headline)
-                .foregroundColor(.primaryText)
-            Spacer()
-            Color.clear.frame(width: 36, height: 36)
-        }
-    }
-}
-
-/// The chosen destination address, read-only. Tapping (`onEdit`) pops back to
-/// the address step. Shared by the source and amount steps.
 struct SendAddressSummary: View {
     @ObservedObject var viewModel: SendViewModel
     var onEdit: () -> Void
@@ -75,12 +51,6 @@ struct SendAddressSummary: View {
 }
 
 #if DEBUG
-
-#Preview("Step header") {
-    SendStepHeader(onBack: {})
-        .padding(.vertical)
-        .background(Color.dash.primaryBackground)
-}
 
 /// The card the address field collapses into once a destination decodes —
 /// one preview per destination kind, since the badge is what differs.

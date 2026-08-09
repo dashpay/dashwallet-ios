@@ -27,9 +27,16 @@ struct SendSourceScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SendStepHeader(onBack: onBack)
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
+            // DashUIKit's bar carries its own height and horizontal
+            // insets, so the manual padding the hand-rolled header needed
+            // goes with it.
+            DashUIKit.NavigationBar(leading: {
+                NavigationBarElement.back.button { onBack() }
+            }, central: {
+                Text(NSLocalizedString("Send", comment: ""))
+                    .dashFont(.subheadMedium)
+                    .foregroundColor(.dash.primaryText)
+            })
 
             ScrollView {
                 VStack(spacing: 14) {

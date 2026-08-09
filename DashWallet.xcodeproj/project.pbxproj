@@ -103,7 +103,7 @@
 		15F9C3B621487500E2919619 /* SendViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */; };
 		5ASB06100000000000000000 /* SyncGateNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF06100000000000000000 /* SyncGateNote.swift */; };
 		5ASB05100000000000000000 /* SendChainStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF05100000000000000000 /* SendChainStyle.swift */; };
-		5ASB04100000000000000000 /* SendStepChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF04100000000000000000 /* SendStepChrome.swift */; };
+		5ASB04100000000000000000 /* SendAddressSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF04100000000000000000 /* SendAddressSummary.swift */; };
 		5ASB03100000000000000000 /* SendConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF03100000000000000000 /* SendConfirmSheet.swift */; };
 		5ASB02100000000000000000 /* ExternalSendAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF02100000000000000000 /* ExternalSendAmountScreen.swift */; };
 		5ASB01100000000000000000 /* SendSourceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF01100000000000000000 /* SendSourceScreen.swift */; };
@@ -1016,7 +1016,7 @@
 		A5C8B5B00075FB8E84009327 /* SendViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */; };
 		5ASB06200000000000000000 /* SyncGateNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF06100000000000000000 /* SyncGateNote.swift */; };
 		5ASB05200000000000000000 /* SendChainStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF05100000000000000000 /* SendChainStyle.swift */; };
-		5ASB04200000000000000000 /* SendStepChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF04100000000000000000 /* SendStepChrome.swift */; };
+		5ASB04200000000000000000 /* SendAddressSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF04100000000000000000 /* SendAddressSummary.swift */; };
 		5ASB03200000000000000000 /* SendConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF03100000000000000000 /* SendConfirmSheet.swift */; };
 		5ASB02200000000000000000 /* ExternalSendAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF02100000000000000000 /* ExternalSendAmountScreen.swift */; };
 		5ASB01200000000000000000 /* SendSourceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF01100000000000000000 /* SendSourceScreen.swift */; };
@@ -3109,7 +3109,7 @@
 		8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendViewModel.swift; sourceTree = "<group>"; };
 		5ASF06100000000000000000 /* SyncGateNote.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncGateNote.swift; sourceTree = "<group>"; };
 		5ASF05100000000000000000 /* SendChainStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendChainStyle.swift; sourceTree = "<group>"; };
-		5ASF04100000000000000000 /* SendStepChrome.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendStepChrome.swift; sourceTree = "<group>"; };
+		5ASF04100000000000000000 /* SendAddressSummary.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendAddressSummary.swift; sourceTree = "<group>"; };
 		5ASF03100000000000000000 /* SendConfirmSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendConfirmSheet.swift; sourceTree = "<group>"; };
 		5ASF02100000000000000000 /* ExternalSendAmountScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExternalSendAmountScreen.swift; sourceTree = "<group>"; };
 		5ASF01100000000000000000 /* SendSourceScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendSourceScreen.swift; sourceTree = "<group>"; };
@@ -4989,7 +4989,7 @@
 		5ASGRPC10000000000000000 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				5ASF04100000000000000000 /* SendStepChrome.swift */,
+				5ASF04100000000000000000 /* SendAddressSummary.swift */,
 				5ASF05100000000000000000 /* SendChainStyle.swift */,
 				5ASF06100000000000000000 /* SyncGateNote.swift */,
 			);
@@ -10166,7 +10166,7 @@
 				15F9C3B621487500E2919619 /* SendViewModel.swift in Sources */,
 				5ASB06100000000000000000 /* SyncGateNote.swift in Sources */,
 				5ASB05100000000000000000 /* SendChainStyle.swift in Sources */,
-				5ASB04100000000000000000 /* SendStepChrome.swift in Sources */,
+				5ASB04100000000000000000 /* SendAddressSummary.swift in Sources */,
 				5ASB03100000000000000000 /* SendConfirmSheet.swift in Sources */,
 				5ASB02100000000000000000 /* ExternalSendAmountScreen.swift in Sources */,
 				5ASB01100000000000000000 /* SendSourceScreen.swift in Sources */,
@@ -11197,7 +11197,7 @@
 				A5C8B5B00075FB8E84009327 /* SendViewModel.swift in Sources */,
 				5ASB06200000000000000000 /* SyncGateNote.swift in Sources */,
 				5ASB05200000000000000000 /* SendChainStyle.swift in Sources */,
-				5ASB04200000000000000000 /* SendStepChrome.swift in Sources */,
+				5ASB04200000000000000000 /* SendAddressSummary.swift in Sources */,
 				5ASB03200000000000000000 /* SendConfirmSheet.swift in Sources */,
 				5ASB02200000000000000000 /* ExternalSendAmountScreen.swift in Sources */,
 				5ASB01200000000000000000 /* SendSourceScreen.swift in Sources */,
