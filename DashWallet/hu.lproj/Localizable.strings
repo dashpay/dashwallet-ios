@@ -283,7 +283,7 @@
 
 "All nodes at once" = "Az összes csomópont egyszerre";
 
-"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Az összes masternode-od szavazott erről a felhasználónévről. A szavazat módosításához szavazz újra attól a pályázótól, akit most előnyben részesítesz.";
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Az összes masternode-od szavazott erről a felhasználónévről. A szavazat módosításához szavazz újra arra a pályázóra, akit most előnyben részesítesz.";
 
 /* No comment provided by engineer. */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";

@@ -283,7 +283,7 @@
 
 "All nodes at once" = "모든 노드를 한 번에";
 
-"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "모든 마스터노드가 이 사용자 이름에 투표했습니다. 투표를 바꾸려면 지금 선호하는 후보에서 다시 투표하세요.";
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "모든 마스터노드가 이 사용자 이름에 투표했습니다. 투표를 바꾸려면 지금 선호하는 후보에게 다시 투표하세요.";
 
 /* CSV Export */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";

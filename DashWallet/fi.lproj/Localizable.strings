@@ -283,7 +283,7 @@
 
 "All nodes at once" = "Kaikki solmut kerralla";
 
-"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Kaikki masternodesi ovat äänestäneet tästä käyttäjätunnuksesta. Muuttaaksesi ääntä äänestä uudelleen siltä hakijalta, jota nyt suosit.";
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Kaikki masternodesi ovat äänestäneet tästä käyttäjätunnuksesta. Muuttaaksesi ääntä äänestä uudelleen sitä hakijaa, jota nyt suosit.";
 
 /* No comment provided by engineer. */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";

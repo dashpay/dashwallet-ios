@@ -283,7 +283,7 @@
 
 "All nodes at once" = "Alle Nodes auf einmal";
 
-"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Alle deine Masternodes haben über diesen Benutzernamen abgestimmt. Um eine Stimme zu ändern, stimme erneut über den Bewerber ab, den du jetzt bevorzugst.";
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Alle deine Masternodes haben über diesen Benutzernamen abgestimmt. Um eine Stimme zu ändern, stimme erneut für den Bewerber, den du jetzt bevorzugst.";
 
 /* CSV Export */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";

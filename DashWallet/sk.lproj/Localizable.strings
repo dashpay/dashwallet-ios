@@ -283,7 +283,7 @@
 
 "All nodes at once" = "Všetky uzly naraz";
 
-"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Všetky vaše masternódy o tomto používateľskom mene hlasovali. Ak chcete hlas zmeniť, zahlasujte znova od uchádzača, ktorého teraz uprednostňujete.";
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Všetky vaše masternódy o tomto používateľskom mene hlasovali. Ak chcete hlas zmeniť, zahlasujte znova za uchádzača, ktorého teraz uprednostňujete.";
 
 /* CSV Export */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";

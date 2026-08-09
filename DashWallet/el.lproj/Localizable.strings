@@ -283,7 +283,7 @@
 
 "All nodes at once" = "Όλοι οι κόμβοι μαζί";
 
-"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Όλα τα masternodes σας έχουν ψηφίσει για αυτό το όνομα χρήστη. Για να αλλάξετε ψήφο, ψηφίστε ξανά από τον διεκδικητή που προτιμάτε τώρα.";
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Όλα τα masternodes σας έχουν ψηφίσει για αυτό το όνομα χρήστη. Για να αλλάξετε ψήφο, ψηφίστε ξανά υπέρ του διεκδικητή που προτιμάτε τώρα.";
 
 /* CSV Export */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";

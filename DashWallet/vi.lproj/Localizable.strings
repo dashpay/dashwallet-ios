@@ -283,7 +283,7 @@
 
 "All nodes at once" = "Tất cả các nút cùng lúc";
 
-"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Tất cả masternode của bạn đã bỏ phiếu cho tên người dùng này. Để đổi phiếu, hãy bỏ phiếu lại từ người xin mà bạn ủng hộ bây giờ.";
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "Tất cả masternode của bạn đã bỏ phiếu cho tên người dùng này. Để đổi phiếu, hãy bỏ phiếu lại cho người xin mà bạn ủng hộ bây giờ.";
 
 /* No comment provided by engineer. */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";

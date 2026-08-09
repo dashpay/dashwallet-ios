@@ -283,7 +283,7 @@
 
 "All nodes at once" = "所有节点一次性投票";
 
-"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "您的所有主节点都已为此用户名投票。若要更改选票，请从您现在支持的申请者处再次投票。";
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "您的所有主节点都已为此用户名投票。若要更改选票，请再次为您现在支持的申请者投票。";
 
 /* No comment provided by engineer. */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
