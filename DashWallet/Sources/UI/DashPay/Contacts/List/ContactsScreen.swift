@@ -34,7 +34,7 @@ struct ContactsScreen: View {
                 AddContactScreen()
             }
             .sheet(item: $selectedContact) { contact in
-                ContactProfileSheet(contact: contact)
+                ContactSheetPresenter(contact: contact, viewModel: viewModel)
             }
             .sheet(item: $previewTarget) { target in
                 ContactSheet(
@@ -190,6 +190,28 @@ struct ContactsScreen: View {
             .foregroundColor(Color.dash.gray500)
             .padding(10)
             .frame(maxWidth: .infinity, minHeight: 100)
+    }
+}
+
+/// Hosts ``ContactSheet`` for one of our own contacts. The pay sheet is raised
+/// from here rather than from `ContactsScreen`: a sheet presented by a view
+/// that is itself covered by a sheet never appears.
+private struct ContactSheetPresenter: View {
+    let contact: ContactItem
+    @ObservedObject var viewModel: ContactsViewModel
+    @State private var showingPay = false
+
+    var body: some View {
+        ContactSheet(
+            contact: contact,
+            isSending: viewModel.processingIds.contains(contact.contactIdentityId),
+            onPay: { showingPay = true },
+            onAccept: { viewModel.accept(contact) },
+            onIgnore: { viewModel.ignore(contact) }
+        )
+        .sheet(isPresented: $showingPay) {
+            PayContactSheet(contact: contact)
+        }
     }
 }
 

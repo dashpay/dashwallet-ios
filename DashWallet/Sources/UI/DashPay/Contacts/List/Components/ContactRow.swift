@@ -67,6 +67,7 @@ struct ContactRow: View {
             trailing
         }
         .padding(10)
+        .contentShape(.rect)
     }
 
     @ViewBuilder

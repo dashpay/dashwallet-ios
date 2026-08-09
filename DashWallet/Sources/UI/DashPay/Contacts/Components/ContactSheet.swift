@@ -95,7 +95,9 @@ struct ContactSheet: View {
                 username: identity.username,
                 avatarURL: identity.avatarURL,
                 identitySeed: identity.identitySeed,
-                publicMessage: identity.publicMessage)
+                publicMessage: identity.publicMessage
+            )
+            .frame(maxWidth: .infinity, alignment: .topLeading)
 
             // Paying needs a mutual contact — DashPay derives the payment
             // address from the contact's xpub, which only an accepted request
@@ -103,21 +105,28 @@ struct ContactSheet: View {
             if relationship == .established, let onPay {
                 DashUIKit.DashButton(
                     text: NSLocalizedString("Send", comment: "DashPay Contacts"),
-                    leadingIcon: .custom("icon_dash_currency"),
+//                    leadingIcon: .custom("icon_dash_currency"),
+                    leadingIcon: .custom("menu-dash-logo-square", bundle: .dashUIKit),
                     fillsWidth: true,
                     size: .large,
                     style: .filledBlue,
                     action: onPay)
             }
 
-            if relationship == .stranger, let onSendRequest {
+            // Kept on screen after it is spent: the button turning into a
+            // disabled "Request sent" is what tells the user the request is
+            // already out — removing it would read as "nothing happened".
+            if relationship == .stranger || relationship == .requestSent {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Send request", comment: "DashPay Contacts"),
+                    text: relationship == .requestSent
+                        ? NSLocalizedString("Request sent", comment: "DashPay Contacts")
+                        : NSLocalizedString("Send request", comment: "DashPay Contacts"),
+                    isEnabled: relationship == .stranger,
                     isLoading: isSending,
                     fillsWidth: true,
                     size: .large,
                     style: .filledBlue,
-                    action: onSendRequest)
+                    action: { onSendRequest?() })
             }
 
             if let note = statusNote {
@@ -142,7 +151,7 @@ struct ContactSheet: View {
                 identity.username)
         case .requestSent:
             String(
-                format: NSLocalizedString("Waiting for %@ to accept your contact request.", comment: "DashPay Contacts"),
+                format: NSLocalizedString("Once %@ accepts your request you can pay directly to the username", comment: "DashPay Contacts"),
                 identity.username)
         case .cannotReceiveRequests:
             NSLocalizedString("This user hasn't set up the keys needed to receive contact requests yet.", comment: "DashPay Contacts")
