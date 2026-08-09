@@ -143,9 +143,22 @@ post_install do |installer|
 end
 ```
 
-### Localization files are UTF-16LE
-iOS `*.lproj/Localizable.strings` files are UTF-16 little-endian, so plain `grep` fails ("Binary file matches"). Convert before searching:
+### Localization file encoding differs by target — check before converting
+Encoding is **not** uniform across the repo, so never assume:
+
+- **`DashWallet/*.lproj/Localizable.strings` and `Localizable.stringsdict` (main app) — UTF-8, no BOM.** All 43 locales, both file types. Plain `grep` works. Do **not** run `iconv` on these and do **not** "restore" them to UTF-16 — that would break the plain-text tooling (bartycrouch, `plutil`, review diffs) the repo relies on.
+  ```bash
+  grep '"Spend"' DashWallet/de.lproj/Localizable.strings
+  ```
+- **`WatchApp/*.lproj/Interface.strings` — UTF-16LE with BOM** for 40 of 43 locales (`en`, `zh-Hans`, `zh-Hant-TW` are UTF-8). These are the files where `grep` reports "Binary file matches". They are storyboard-derived, so the keys are ObjectIDs rather than English text:
+  ```bash
+  iconv -f UTF-16LE -t UTF-8 WatchApp/de.lproj/Interface.strings | grep '.title'
+  ```
+
+Check first rather than trusting this list — and note `file` reports pure-ASCII UTF-8 as `us-ascii`, which is still UTF-8:
 ```bash
-iconv -f UTF-16LE -t UTF-8 DashWallet/de.lproj/Localizable.strings | grep '"Spend"'
+head -c 4 DashWallet/de.lproj/Localizable.strings | xxd   # 2f2a 204e -> "/* N" = UTF-8
+head -c 4 WatchApp/de.lproj/Interface.strings     | xxd   # fffe ...  = UTF-16LE BOM
 ```
-Translations sync via Transifex: `tx push -s` (push source) / `tx pull -a` (pull all). Let Xcode and BartyCrouch manage the files; keep them UTF-16LE.
+
+Translations sync via Transifex: `tx push -s` (push source) / `tx pull -a` (pull all). Let Xcode and BartyCrouch manage the files, and keep each file in whatever encoding it already has.
