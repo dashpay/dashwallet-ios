@@ -37,13 +37,14 @@ struct ContactsScreen: View {
                 ContactProfileSheet(contact: contact)
             }
             .sheet(item: $previewTarget) { target in
-                AddContactPreviewSheet(
+                ContactSheet(
                     result: target,
                     collision: viewModel.search.collision(for: target),
                     contact: viewModel.search.contactItem(for: target.identityId),
                     isSending: viewModel.search.sendingIds.contains(target.identityId),
-                    onSend: { viewModel.search.send(to: target) },
-                    onAccept: { viewModel.search.accept(target) })
+                    onSendRequest: { viewModel.search.send(to: target) },
+                    onAccept: { viewModel.search.accept(target) },
+                    onIgnore: { viewModel.search.ignore(target) })
             }
             .alert(
                 NSLocalizedString("Error", comment: ""),
@@ -151,12 +152,17 @@ struct ContactsScreen: View {
             } else {
                 LazyVStack(spacing: 2) {
                     ForEach(search.results) { result in
+                        // The button acts; the row opens the profile. Two
+                        // targets in one row, so the tap gesture is on the
+                        // row and the button swallows its own hit.
                         ContactRow(
                             result: result,
                             state: search.collision(for: result),
                             isSending: search.sendingIds.contains(result.identityId),
-                            onRequest: { previewTarget = result },
+                            onRequest: { search.send(to: result) },
                             onAccept: { search.accept(result) })
+                            .contentShape(Rectangle())
+                            .onTapGesture { previewTarget = result }
                             .onAppear { search.checkEligibilityIfNeeded(result) }
                     }
 

@@ -62,13 +62,14 @@ struct AddContactScreen: View {
                 Text(viewModel.errorMessage ?? "")
             }
             .sheet(item: $previewTarget) { target in
-                AddContactPreviewSheet(
+                ContactSheet(
                     result: target,
                     collision: viewModel.collision(for: target),
                     contact: viewModel.contactItem(for: target.identityId),
                     isSending: viewModel.sendingIds.contains(target.identityId),
-                    onSend: { viewModel.send(to: target) },
-                    onAccept: { viewModel.accept(target) })
+                    onSendRequest: { viewModel.send(to: target) },
+                    onAccept: { viewModel.accept(target) },
+                    onIgnore: { viewModel.ignore(target) })
             }
             .overlay(alignment: .bottom) {
                 if viewModel.sentToast {
@@ -136,34 +137,18 @@ struct AddContactScreen: View {
 
     // MARK: Rows
 
-    /// Non-private so `AddContactPreviewSheet` can render the
+    /// The button sends straight away; the surrounding tap opens
+    /// ``ContactSheet`` so the profile can be read before deciding.
     @ViewBuilder
     private func resultRow(_ result: DpnsSearchResult) -> some View {
         ContactRow(
             result: result,
             state: viewModel.collision(for: result),
             isSending: viewModel.sendingIds.contains(result.identityId),
-            onRequest: { previewTarget = result },
+            onRequest: { viewModel.send(to: result) },
             onAccept: { viewModel.accept(result) })
     }
-
-    // MARK: Search
 }
-
-// MARK: - AddContactPreviewSheet
-
-/// Preview shown when a search result is tapped — the SDK-side stand-in
-/// for the legacy `DWUserProfileViewController` a user reached before
-/// sending a request. It confirms who you're adding (avatar, name,
-/// username, and — when we already hold it — the contact's profile
-/// message) and carries the single send/accept CTA.
-///
-/// Honest limitation: the SDK exposes no on-chain profile fetch for an
-/// arbitrary identity (`getDashPayProfile`/`getContactProfile` read the
-/// local cache only), so for a true stranger this shows the DPNS
-/// username + placeholder avatar, not a fetched bio. Real profile
-/// fields appear once the identity is one of our contacts/requesters
-/// (`contact` non-nil). Nothing is fabricated when the data is absent.
 
 #if DEBUG
 

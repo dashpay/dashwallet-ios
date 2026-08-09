@@ -168,6 +168,16 @@ final class AddContactViewModel: ObservableObject {
         }
     }
 
+    /// Decline a request this identity sent us. Reachable from the sheet a
+    /// search hit opens, which shows the incoming-request card for
+    /// ``Collision/theyAskedUs``.
+    func ignore(_ target: DpnsSearchResult) {
+        guard let service else { return }
+        run(on: target.identityId) {
+            try await service.ignoreSender(target.identityId)
+        }
+    }
+
     private func run(on identityId: Data, _ operation: @escaping () async throws -> Void) {
         guard !sendingIds.contains(identityId) else { return }
         sendingIds.insert(identityId)
