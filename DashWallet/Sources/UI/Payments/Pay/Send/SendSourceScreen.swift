@@ -12,12 +12,9 @@ import UIKit
 
 // MARK: - Step 2: amount
 
-/// The amount step for the split external-send flow. The address is already
-/// chosen (locked, read-only) — this screen carries the From picker, the
-/// sync gate, and the amount keypad, plus the balance/affordability
-/// validations. Continue routes exactly as the old single-screen form did:
-/// Core → Core into the L1 payment processor, everything else into
-/// `SendConfirmSheet`.
+/// The source step: which balance funds the send. The address is settled by
+/// now and shown read-only above the cards; this screen adds the sync gate.
+/// Continue always advances to the amount step — no route skips it.
 struct SendSourceScreen: View {
     @ObservedObject var viewModel: SendViewModel
     /// Pop back to the address step.
@@ -52,7 +49,7 @@ struct SendSourceScreen: View {
                     isEnabled: viewModel.route != nil && !viewModel.isBlockedBySync,
                     action: onContinue
                 )
-                .padding(.horizontal, 60)
+                .padding(.horizontal, 40)
             }
             .padding(.top, 10)
             .padding(.bottom, 20)

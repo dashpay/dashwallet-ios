@@ -26,23 +26,10 @@ struct SendScreen: View {
     @FocusState private var addressFieldFocused: Bool
 
     var body: some View {
-        VStack(spacing: 0) {
-//            if showsHeader {
-//                header
-//                    .padding(.horizontal, 20)
-//                    .padding(.top, 10)
-//            }
+        VStack(spacing: 20) {
+            addressField
 
-            ScrollView {
-                VStack(spacing: 14) {
-                    addressField
-                        .padding(.top, 12)
-
-                }
-                .padding(.bottom, 8)
-            }
-            .scrollBounceBehavior(.basedOnSize)
-            .scrollDismissesKeyboard(.interactively)
+            Spacer()
 
             DashButton(
                 text: NSLocalizedString("Continue", comment: ""),
@@ -52,10 +39,13 @@ struct SendScreen: View {
                 action: {
                     addressFieldFocused = false
                     onContinue()
-                })
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
+                }
+            )
+            .padding(.horizontal, 40)
         }
+        .padding(.top, 10)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 20)
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
     }
@@ -99,7 +89,6 @@ struct SendScreen: View {
             }
         }
         .focused($addressFieldFocused)
-        .padding(.horizontal, 20)
         .onChange(of: viewModel.destination) { _, destination in
             // The address just became valid (a paste, or the final typed
             // character) → drop the keyboard so Continue is reachable without

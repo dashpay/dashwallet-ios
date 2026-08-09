@@ -17,6 +17,15 @@ import DashUIKit
 /// already does. So it reads as a heading, the way the merchant header does
 /// on the gift-card screens.
 struct SendAddressSummary: View {
+
+    /// Mirrors `MerchantCellRow`'s card metrics — this is the same idea in a
+    /// different flow, so it should not be a second set of numbers.
+    private enum Layout {
+        static let textSpacing: CGFloat = 4
+        static let contentPadding: CGFloat = 20
+        static let cornerRadius: CGFloat = 16
+    }
+
     @ObservedObject var viewModel: SendViewModel
     /// Show which balance funds the send, and how much is in it. Off on the
     /// source step, where the cards below already say both and the choice is
@@ -30,7 +39,7 @@ struct SendAddressSummary: View {
     @State private var isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Layout.textSpacing) {
             Text(NSLocalizedString("Send", comment: "Send screen"))
                 .dashFont(.title1)
                 .foregroundStyle(Color.dash.primaryText)
@@ -48,37 +57,36 @@ struct SendAddressSummary: View {
             }
 
             if showsSource {
-                Text(String(
-                    format: NSLocalizedString("from %@", comment: "Send screen — the balance being spent"),
-                    sourceTitle(viewModel.source)))
-                    .dashFont(.subhead)
-                    .foregroundStyle(Color.dash.primaryText)
+                HStack(spacing: 0) {
+                    Text(String(
+                        format: NSLocalizedString("from %@ ", comment: "Send screen — the balance being spent"),
+                        sourceTitle(viewModel.source)))
 
-                sourceBalanceLine
+
+                    sourceBalanceLine
+                }
+                .dashFont(.subhead)
+                .foregroundStyle(Color.dash.primaryText)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var sourceBalanceLine: some View {
         HStack(spacing: 6) {
-            Text(NSLocalizedString("Balance:", comment: "Send screen"))
-                .dashFont(.footnote)
-                .foregroundStyle(Color.dash.secondaryText)
 
             if isBalanceHidden {
-                // Same masking the home balance uses — the width is fixed, so
-                // the row doesn't change size when it is revealed.
                 Text("••••••••")
-                    .dashFont(.footnote)
-                    .foregroundStyle(Color.dash.secondaryText)
+                    .dashFont(.subhead)
+                    .foregroundStyle(Color.dash.primaryText)
             } else {
-                // Qualified: the app has a `DashAmount` of its own with a
-                // different initializer, and an unqualified name picks it.
                 DashUIKit.DashAmount(
                     amount: Int64(clamping: viewModel.selectedSourceBalanceDuffs),
-                    fontSize: 13,
-                    sign: DashAmountSign.none)
-                    .foregroundStyle(Color.dash.secondaryText)
+                    fontSize: 15,
+                    sign: DashAmountSign.none
+                )
+                .dashFont(.subhead)
+                .foregroundStyle(Color.dash.primaryText)
             }
 
             Button {

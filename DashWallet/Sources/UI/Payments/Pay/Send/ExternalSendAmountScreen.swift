@@ -12,11 +12,13 @@ import UIKit
 
 // MARK: - Step 3: amount
 
-/// The final step of the split external-send flow: the address and source are
-/// already chosen (both shown read-only), leaving only the amount keypad and
-/// the balance/affordability validation. Continue routes exactly as the old
-/// single-screen form did — Core → Core into the L1 payment processor,
-/// everything else into `SendConfirmSheet`.
+/// The final step: the address and source are settled and shown read-only,
+/// leaving the amount keypad and the balance/affordability validation.
+///
+/// Where Send goes depends on the route, not on how the user got here:
+/// Transparent → Transparent hands the amount to the L1 payment processor,
+/// which owns the real fee math and its own confirmation; every other route
+/// confirms in `SendConfirmSheet`.
 struct ExternalSendAmountScreen: View {
     @ObservedObject var viewModel: SendViewModel
     /// Pop back to the source step.
@@ -38,22 +40,20 @@ struct ExternalSendAmountScreen: View {
                 NavigationBarElement.back.button { onBack() }
             })
 
-            VStack(spacing: 14) {
+            VStack(spacing: 20) {
                 SendAddressSummary(viewModel: viewModel, showsSource: true)
-                    .padding(.top, 12)
-
-                fromSummary
 
                 amountRow
-                    .padding(.horizontal, 20)
-                    .padding(.top, 6)
 
                 if let message = viewModel.amountValidationMessage {
                     TransferAmountValidationNote(message: message)
                         .padding(.horizontal, 20)
                 }
             }
-            .padding(.bottom, 8)
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+
+            Spacer()
 
             keyboardSection
         }

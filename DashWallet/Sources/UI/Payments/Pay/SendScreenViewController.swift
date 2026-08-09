@@ -110,7 +110,7 @@ extension DWBasePayViewController {
 
     /// Push the external-send SOURCE step (From picker) onto the current
     /// navigation stack, sharing the address step's view model. Continue there
-    /// pushes the amount step. Shared by the Send screen and the balance-row
+    /// pushes the amount step, whatever the route. Shared by the Send screen and the balance-row
     /// send sheet (both `DWBasePayViewController` hosts inside a nav
     /// controller).
     func pushExternalSendSource(viewModel: SendViewModel,
@@ -120,16 +120,13 @@ extension DWBasePayViewController {
             onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
             onContinue: { [weak self] in
                 guard let self else { return }
-                if viewModel.route == .coreToCore {
-                    // Transparent → Transparent: skip our amount step and use
-                    // the classic L1 amount screen (real fee math + its own
-                    // confirm) reached through the payment processor.
-                    self.continueCore(address: viewModel.trimmedAddress, amountDuffs: 0)
-                } else {
-                    // Legs the L1 amount screen can't fund (asset-lock shield,
-                    // platform/shielded sources): our amount step + confirm.
-                    self.pushExternalSendAmount(viewModel: viewModel, onSendCompleted: onSendCompleted)
-                }
+                // Every route takes the same amount step, Transparent →
+                // Transparent included: it used to jump straight to the
+                // classic L1 amount screen from here, so the one route most
+                // people use was the one that looked different. That step
+                // still finishes through the payment processor — it just
+                // hands it an amount now instead of zero.
+                self.pushExternalSendAmount(viewModel: viewModel, onSendCompleted: onSendCompleted)
             })
         // Every UIHostingController already conforms to NavigationBarDisplayable
         // (nav bar + back button hidden); the screen draws its own back + title.
