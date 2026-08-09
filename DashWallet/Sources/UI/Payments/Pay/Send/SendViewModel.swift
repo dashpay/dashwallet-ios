@@ -406,6 +406,17 @@ final class SendViewModel: ObservableObject {
         InternalTransferViewModel.cardBalanceString(duffs: shieldedBalance / 1000)
     }
 
+    /// What a Core-funded send can actually spend: confirmed, mature funds
+    /// with the send fee already set aside — the exact number Max fills in.
+    ///
+    /// `coreBalanceDuffs` is the wallet TOTAL, so it counts unconfirmed and
+    /// immature coins and leaves nothing for the fee. Gating on it let the
+    /// user type an amount Max would never offer, arm the button, and only
+    /// find out at the payment processor's error.
+    var coreSpendableAfterFeeDuffs: UInt64 {
+        SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+    }
+
     /// The selected source's balance, in duffs — what the amount step shows
     /// under "from", so the user can see what they are spending out of
     /// without going back a step.
@@ -520,6 +531,16 @@ final class SendViewModel: ObservableObject {
         if let shieldedMaxNotice { return shieldedMaxNotice }
         guard dashDuffsUnsigned > 0, let route else { return nil }
 
+        // Below the dust threshold the network drops the output, whatever the
+        // balance is — say so rather than leave Continue dead.
+        if route == .coreToCore, dashDuffsUnsigned < CoreTxConstants.minOutputAmount {
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "The minimum amount you can send is %@",
+                    comment: "External send — dust threshold"),
+                "\(CoreTxConstants.minOutputAmount.formattedDashAmountWithoutCurrencySymbol) DASH")
+        }
+
         // Route minimum first: below the Type-18 pool fee the SDK refuses the
         // asset lock however much Core balance backs it.
         if route == .coreToShielded {
@@ -549,10 +570,13 @@ final class SendViewModel: ObservableObject {
 
         switch route {
         case .coreToCore, .coreToShielded:
+            // The same envelope `canContinue` gates on — quoting the wallet
+            // total here would report an amount as affordable while the
+            // button stayed dead.
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreBalanceDuffs)
+                spendableDuffs: coreSpendableAfterFeeDuffs)
 
         case .platformToPlatform:
             guard let reserve = feeReserveCredits else {
@@ -624,9 +648,11 @@ final class SendViewModel: ObservableObject {
         guard dashDuffsUnsigned > 0, let route, !isBlockedBySync else { return false }
         switch route {
         case .coreToCore:
-            // The L1 fee rides on top; the payment processor rejects an
-            // unfundable send with its own error, so gate on the balance only.
-            return dashDuffsUnsigned <= coreBalanceDuffs
+            // Below the dust threshold the network won't relay the output at
+            // all — the same floor `BaseAmountModel` enforces on the classic
+            // amount screen, which this step now replaces for this route.
+            guard dashDuffsUnsigned >= CoreTxConstants.minOutputAmount else { return false }
+            return dashDuffsUnsigned <= coreSpendableAfterFeeDuffs
         case .coreToShielded:
             // Asset-lock route: the pool fee is carved from the locked value
             // and the Rust side rejects an undersized lock. Enforce the same
@@ -635,7 +661,7 @@ final class SendViewModel: ObservableObject {
             guard let minimumDuffs = coreToShieldedMinimumAmountDuffs,
                   dashDuffsUnsigned >= minimumDuffs
             else { return false }
-            return dashDuffsUnsigned <= coreBalanceDuffs
+            return dashDuffsUnsigned <= coreSpendableAfterFeeDuffs
         case .platformToPlatform:
             guard let reserve = feeReserveCredits else { return false }
             return platformCredits >= reserve
