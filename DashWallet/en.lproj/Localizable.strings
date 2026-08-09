@@ -535,6 +535,9 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Username marketplace: history — purchase with buyer, seller, price */
+"Bought by %1$@ from %2$@ for %3$@ DASH" = "Bought by %1$@ from %2$@ for %3$@ DASH";
+
 /* Identities: this key only signs for one data contract */
 "Bound to contract" = "Bound to contract";
 
@@ -716,6 +719,9 @@
 /* Username marketplace: listed badge */
 "For sale" = "For sale";
 
+/* Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app */
+"For sale by an independent user" = "For sale by an independent user";
+
 /* Identity top-up sheet — linkability warning for transparent-side sources */
 "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.";
 
@@ -734,6 +740,12 @@
 /* Username marketplace: confirm listing button */
 "List For Sale" = "List For Sale";
 
+/* Username marketplace: own listed name */
+"Listed by you" = "Listed by you";
+
+/* Username marketplace: history — price set */
+"Listed for %@ DASH" = "Listed for %@ DASH";
+
 /* Username marketplace: set price fee note */
 "Listing is a network transaction with a small fee, paid from your identity balance." = "Listing is a network transaction with a small fee, paid from your identity balance.";
 
@@ -748,6 +760,9 @@
 
 /* Username marketplace: unresolvable transfer recipient */
 "No identity owns that username." = "No identity owns that username.";
+
+/* Username marketplace: names that were sold or transferred away */
+"No longer yours" = "No longer yours";
 
 /* Identity top-up sheet — missing unshield destination */
 "No Platform receive address is available yet — wait for the Platform sync to finish and try again." = "No Platform receive address is available yet — wait for the Platform sync to finish and try again.";
@@ -2422,6 +2437,9 @@
 /* Username marketplace: delist confirmation title */
 "Remove “%@” from sale?" = "Remove “%@” from sale?";
 
+/* Username marketplace: history — delist (transfer to self) */
+"Removed from sale" = "Removed from sale";
+
 /* Username marketplace: delist confirmation body */
 "Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name.";
 
@@ -2452,6 +2470,9 @@
 /* DashPay Contacts: expands the network search into the full add-contact flow */
 "Show more results" = "Show more results";
 
+/* Username marketplace: departed-name line — buyer identity */
+"Sold to %@" = "Sold to %@";
+
 /* Identity top-up sheet — shielded route progress */
 "Step 1 of 2 — moving Dash out of your Shielded balance…" = "Step 1 of 2 — moving Dash out of your Shielded balance…";
 
@@ -2460,9 +2481,6 @@
 
 /* Username marketplace: register sheet body */
 "The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "The name is registered directly on your identity. Registration is a network transaction paid from your identity balance.";
-
-/* Username marketplace: purchase confirmation body */
-"The price plus a small network fee is paid from your identity balance. The name moves to your identity immediately." = "The price plus a small network fee is paid from your identity balance. The name moves to your identity immediately.";
 
 /* Username marketplace */
 "The recipient identity couldn't be resolved." = "The recipient identity couldn't be resolved.";
@@ -2475,6 +2493,15 @@
 
 /* SDK identity profile sheet — explains the identity credit balance */
 "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits.";
+
+/* Username marketplace */
+"This name is in an active network vote and can't be traded until the contest ends." = "This name is in an active network vote and can't be traded until the contest ends.";
+
+/* Username marketplace: detail for an unregistered name */
+"This name is not registered." = "This name is not registered.";
+
+/* Username marketplace: seller-clarity callout on the detail sheet */
+"This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price.";
 
 /* Username marketplace */
 "This name is short enough to be contested and must be requested through the username flow, where it goes to a network vote." = "This name is short enough to be contested and must be requested through the username flow, where it goes to a network vote.";
@@ -2491,11 +2518,20 @@
 /* Identity top-up sheet — title */
 "Top Up Identity Balance" = "Top Up Identity Balance";
 
+/* Username marketplace: timeline card title */
+"Trade history" = "Trade history";
+
 /* Username marketplace */
 "Transfer to Another Identity" = "Transfer to Another Identity";
 
 /* Username marketplace: transfer sheet title */
 "Transfer “%@”" = "Transfer “%@”";
+
+/* Username marketplace: history — transfer with both identities */
+"Transferred from %1$@ to %2$@" = "Transferred from %1$@ to %2$@";
+
+/* Username marketplace: departed-name line — recipient identity */
+"Transferred to %@" = "Transferred to %@";
 
 /* Username marketplace */
 "Username Marketplace" = "Username Marketplace";
@@ -2523,6 +2559,12 @@
 
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Why do I need to enable it?";
+
+/* Username marketplace: history participant is the current user */
+"you" = "you";
+
+/* Username marketplace: purchase confirmation body with seller clarity */
+"You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately.";
 
 /* DashPay: body of the enable success sheet */
 "You're all set. Other users can now send you contact requests — and you can send yours." = "You're all set. Other users can now send you contact requests — and you can send yours.";

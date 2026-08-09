@@ -2,15 +2,21 @@
 //  UsernameMarketplaceScreen.swift
 //  DashWallet
 //
-//  DPNS username marketplace (Explore tab): search any name and see its
-//  live sale state, browse the names on your identity, list/delist/
-//  re-price yours, buy listed ones, gift-transfer, and register
-//  unclaimed non-contested labels. All reads and trade actions go
-//  through `UsernameMarketplaceService`; every mutation is PIN-gated
-//  there and nothing broadcasts before the user confirms a concrete
-//  price. Search-driven by design: the DPNS contract has no `$price`
-//  index yet, so a global "everything for sale" browse isn't queryable
-//  (tracked in the platform marketplace task).
+//  DPNS username marketplace (Explore tab) over the wallet-level SDK
+//  surface (platform #4348): search any name with live sale state, see
+//  the names on your identity — including ones that were sold or
+//  transferred away — list/re-price/delist yours, buy listed ones with
+//  the price pinned at confirmation, gift-transfer, register unclaimed
+//  non-contested labels, and read each name's full trade timeline.
+//
+//  Names offered by other identities are explicitly labeled as sold by
+//  an independent user: prices are set by sellers, not by Dash or this
+//  app, and the UI says so on the row, in the detail sheet, and in the
+//  purchase confirmation.
+//
+//  Search-driven by design: `$price` is not an indexable system
+//  property on Dash Platform, so a global "everything for sale" browse
+//  is not buildable at any layer today.
 //
 //  dashpay target only.
 //
@@ -39,26 +45,34 @@ final class UsernameMarketplaceViewModel: ObservableObject {
 
     @Published var segment: Segment = .find
     @Published var query = ""
-    @Published var searchResults: [MarketplaceName] = []
-    @Published var myNames: [MarketplaceName] = []
+    @Published var searchResults: [DpnsMarketplaceName] = []
+    @Published var myNames: [DpnsNameStateRow] = []
     @Published var isSearching = false
     @Published var isLoadingMine = false
     @Published var isPerformingAction = false
     @Published var errorMessage: String?
     /// Transient success line ("hilawe listed for 0.05 DASH").
     @Published var successMessage: String?
-
-    let service = UsernameMarketplaceService()
-    private var searchTask: Task<Void, Never>?
-
-    var ownIdentityId: Data? { DWCurrentUserIdentityInfo.shared.identityId }
-    var ownIdentityIdBase58: String? { ownIdentityId?.toBase58String() }
-
     /// The typed query as a registrable label: valid DPNS label shape
     /// AND no document exists for its normalized form. Set by
     /// `updateSearch` using the SDK's own normalizer (DPNS folds
     /// look-alike characters, so a plain lowercase compare would lie).
     @Published var registrableQueryLabel: String?
+
+    let service = UsernameMarketplaceService()
+    private var searchTask: Task<Void, Never>?
+
+    var ownIdentityId: Data? { DWCurrentUserIdentityInfo.shared.identityId }
+
+    var ownedNames: [DpnsNameStateRow] {
+        myNames.filter { if case .owned = $0.status { return true }; return false }
+    }
+
+    /// Retained rows for names that left this identity — sold or
+    /// transferred away — kept by the SDK so the departure is visible.
+    var departedNames: [DpnsNameStateRow] {
+        myNames.filter { if case .owned = $0.status { return false }; return true }
+    }
 
     /// DPNS label shape: 3–63 characters, letters/digits/hyphen, no
     /// leading or trailing hyphen.
@@ -98,24 +112,35 @@ final class UsernameMarketplaceViewModel: ObservableObject {
                 }
             } catch {
                 guard !Task.isCancelled else { return }
-                errorMessage = error.localizedDescription
+                errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
             }
             isSearching = false
         }
     }
 
+    /// Local read — the wallet's own tracked rows, no network.
     func loadMyNames() {
-        guard let ownBase58 = ownIdentityIdBase58 else { return }
         isLoadingMine = true
         Task { [weak self] in
             guard let self else { return }
             do {
-                myNames = try await service.names(ownedBy: ownBase58)
+                myNames = try await service.myNames()
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
             }
             isLoadingMine = false
         }
+    }
+
+    /// Pull-to-refresh: run one marketplace sync pass, then re-read the
+    /// local rows.
+    func refreshFromNetwork() async {
+        do {
+            _ = try await service.syncNow()
+        } catch {
+            errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
+        }
+        loadMyNames()
     }
 
     /// Run one PIN-gated trade action with shared progress/error/success
@@ -141,7 +166,7 @@ final class UsernameMarketplaceViewModel: ObservableObject {
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 // Backing out of the PIN prompt is not an error state.
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
             }
         }
     }
@@ -153,7 +178,7 @@ struct UsernameMarketplaceScreen: View {
     private let vc: UINavigationController
 
     @StateObject private var viewModel = UsernameMarketplaceViewModel()
-    @State private var selectedName: MarketplaceName?
+    @State private var selectedLabel: SelectedMarketplaceLabel?
     @State private var registerCandidate: RegisterCandidate?
 
     init(vc: UINavigationController) {
@@ -195,8 +220,8 @@ struct UsernameMarketplaceScreen: View {
         }
         .background(Color.dash.primaryBackground.ignoresSafeArea())
         .onAppear { viewModel.loadMyNames() }
-        .sheet(item: $selectedName) { name in
-            MarketplaceNameDetailSheet(name: name, viewModel: viewModel)
+        .sheet(item: $selectedLabel) { selected in
+            MarketplaceNameDetailSheet(label: selected.label, viewModel: viewModel)
                 .presentationDetents([.medium, .large])
         }
         .sheet(item: $registerCandidate) { candidate in
@@ -246,7 +271,7 @@ struct UsernameMarketplaceScreen: View {
                         emptyHint(NSLocalizedString("Type at least 2 characters to search usernames", comment: "DashPay Contacts"))
                     } else {
                         ForEach(viewModel.searchResults) { name in
-                            nameRow(name)
+                            searchRow(name)
                         }
                         if let candidate = viewModel.registrableQueryLabel, !viewModel.isSearching {
                             registerRow(candidate)
@@ -274,8 +299,14 @@ struct UsernameMarketplaceScreen: View {
                 } else if viewModel.myNames.isEmpty {
                     emptyHint(NSLocalizedString("No usernames on this identity yet. Find one to buy or register on the Find Names tab.", comment: "Username marketplace: empty owned list"))
                 } else {
-                    ForEach(viewModel.myNames) { name in
-                        nameRow(name)
+                    ForEach(viewModel.ownedNames) { row in
+                        stateRow(row)
+                    }
+                    if !viewModel.departedNames.isEmpty {
+                        sectionHeader(NSLocalizedString("No longer yours", comment: "Username marketplace: names that were sold or transferred away"))
+                        ForEach(viewModel.departedNames) { row in
+                            stateRow(row)
+                        }
                     }
                 }
             }
@@ -283,31 +314,32 @@ struct UsernameMarketplaceScreen: View {
             .padding(.top, 12)
             .padding(.bottom, 24)
         }
-        .refreshable { viewModel.loadMyNames() }
+        .refreshable { await viewModel.refreshFromNetwork() }
     }
 
     // MARK: Rows
 
-    private func nameRow(_ name: MarketplaceName) -> some View {
+    private func searchRow(_ name: DpnsMarketplaceName) -> some View {
         let isMine = name.isOwned(by: viewModel.ownIdentityId)
         return Button {
-            selectedName = name
+            selectedLabel = SelectedMarketplaceLabel(label: name.label)
         } label: {
             HStack(spacing: 10) {
                 ContactAvatarView(
                     title: name.label,
                     avatarURL: nil,
-                    identitySeed: Data.identifier(fromBase58: name.ownerIdBase58) ?? Data())
+                    identitySeed: name.ownerId)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(name.label)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.dash.primaryText)
                         .lineLimit(1)
-                    Text(isMine
-                        ? NSLocalizedString("Owned by you", comment: "Username marketplace")
-                        : String(name.ownerIdBase58.prefix(8)) + "…" + String(name.ownerIdBase58.suffix(4)))
+                    // The seller-clarity line: a listed name that isn't
+                    // ours is being sold by an independent user — not by
+                    // Dash, not by this app.
+                    Text(subtitle(for: name, isMine: isMine))
                         .font(.system(size: 11))
-                        .foregroundColor(.dash.tertiaryText)
+                        .foregroundColor(name.isForSale && !isMine ? .dashGolden : .dash.tertiaryText)
                         .lineLimit(1)
                 }
                 Spacer()
@@ -332,6 +364,83 @@ struct UsernameMarketplaceScreen: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    private func subtitle(for name: DpnsMarketplaceName, isMine: Bool) -> String {
+        if isMine {
+            return NSLocalizedString("Owned by you", comment: "Username marketplace")
+        }
+        if name.isForSale {
+            return NSLocalizedString("For sale by an independent user", comment: "Username marketplace: seller-clarity row line — the seller is another user, not Dash or the app")
+        }
+        let owner = name.ownerId.toBase58String()
+        return String(owner.prefix(8)) + "…" + String(owner.suffix(4))
+    }
+
+    private func stateRow(_ row: DpnsNameStateRow) -> some View {
+        Button {
+            selectedLabel = SelectedMarketplaceLabel(label: row.label)
+        } label: {
+            HStack(spacing: 10) {
+                ContactAvatarView(
+                    title: row.label,
+                    avatarURL: nil,
+                    identitySeed: row.walletIdentityId)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(row.label)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                    Text(stateLine(for: row))
+                        .font(.system(size: 11))
+                        .foregroundColor(.dash.tertiaryText)
+                        .lineLimit(1)
+                }
+                Spacer()
+                if row.isForSale, let priceDuffs = row.priceDuffs {
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text(NSLocalizedString("For sale", comment: "Username marketplace: listed badge"))
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.dashGolden)
+                        Text("\(priceDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.dash.primaryText)
+                    }
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.dash.secondaryText)
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color.dash.secondaryBackground))
+            .contentShape(Rectangle())
+            .opacity({ if case .owned = row.status { return 1 } else { return 0.65 } }())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func stateLine(for row: DpnsNameStateRow) -> String {
+        switch row.status {
+        case .owned:
+            return row.isForSale
+                ? NSLocalizedString("Listed by you", comment: "Username marketplace: own listed name")
+                : NSLocalizedString("Owned by you", comment: "Username marketplace")
+        case .sold(let buyer):
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Sold to %@", comment: "Username marketplace: departed-name line — buyer identity"),
+                shortId(buyer))
+        case .transferred(let recipient):
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Transferred to %@", comment: "Username marketplace: departed-name line — recipient identity"),
+                shortId(recipient))
+        }
+    }
+
+    private func shortId(_ id: Data) -> String {
+        let base58 = id.toBase58String()
+        return String(base58.prefix(8)) + "…" + String(base58.suffix(4))
     }
 
     private func registerRow(_ label: String) -> some View {
@@ -364,6 +473,18 @@ struct UsernameMarketplaceScreen: View {
         .buttonStyle(.plain)
     }
 
+    private func sectionHeader(_ text: String) -> some View {
+        HStack {
+            Text(text)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.dash.secondaryText)
+            Spacer()
+        }
+        .padding(.horizontal, 4)
+        .padding(.top, 14)
+        .padding(.bottom, 2)
+    }
+
     private func emptyHint(_ text: String) -> some View {
         Text(text)
             .font(.system(size: 13))
@@ -375,8 +496,12 @@ struct UsernameMarketplaceScreen: View {
     }
 }
 
-/// Identifiable wrapper so `.sheet(item:)` can present a register
-/// candidate without a retroactive String conformance.
+/// Identifiable wrappers for `.sheet(item:)`.
+struct SelectedMarketplaceLabel: Identifiable {
+    let label: String
+    var id: String { label }
+}
+
 struct RegisterCandidate: Identifiable {
     let label: String
     var id: String { label }
@@ -384,85 +509,146 @@ struct RegisterCandidate: Identifiable {
 
 // MARK: - MarketplaceNameDetailSheet
 
-/// State-driven detail: what the name is, who owns it, its sale state,
-/// and exactly the actions that state allows.
+/// Authoritative detail for one name: loads the live document state and
+/// the full trade timeline on appear, then offers exactly the actions
+/// the state allows. Works for departed names too (the history query
+/// covers names that already left the wallet).
 private struct MarketplaceNameDetailSheet: View {
-    let name: MarketplaceName
+    let label: String
     @ObservedObject var viewModel: UsernameMarketplaceViewModel
     @Environment(\.dismiss) private var dismiss
 
+    @State private var liveName: DpnsMarketplaceName?
+    @State private var history: [DpnsNameHistoryEvent] = []
+    @State private var isLoading = true
     @State private var showingSetPrice = false
     @State private var showingTransfer = false
     @State private var confirmBuy = false
     @State private var confirmDelist = false
 
-    private var isMine: Bool { name.isOwned(by: viewModel.ownIdentityId) }
+    private var isMine: Bool { liveName?.isOwned(by: viewModel.ownIdentityId) ?? false }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
                 ContactAvatarView(
-                    title: name.label,
+                    title: label,
                     avatarURL: nil,
-                    identitySeed: Data.identifier(fromBase58: name.ownerIdBase58) ?? Data(),
+                    identitySeed: liveName?.ownerId ?? Data(),
                     size: 72)
                     .padding(.top, 28)
 
-                Text(name.label)
+                Text(label)
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.dash.primaryText)
                     .padding(.top, 10)
 
-                if let priceDuffs = name.priceDuffs {
-                    VStack(spacing: 2) {
-                        Text(NSLocalizedString("For sale", comment: "Username marketplace: listed badge"))
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.dashGolden)
-                        Text("\(priceDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.dash.primaryText)
-                        Text(CurrencyExchanger.shared.fiatAmountString(for: priceDuffs.dashAmount))
-                            .font(.system(size: 12))
-                            .foregroundColor(.dash.secondaryText)
+                if isLoading {
+                    SwiftUI.ProgressView().padding(.top, 20)
+                } else if let name = liveName {
+                    saleState(name)
+                    if name.isForSale && !isMine {
+                        independentSellerCallout
+                            .padding(.horizontal, 20)
+                            .padding(.top, 12)
                     }
-                    .padding(.top, 8)
+                    infoCard(name)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 14)
+                    if !history.isEmpty {
+                        historyCard
+                            .padding(.horizontal, 20)
+                            .padding(.top, 12)
+                    }
+                    actions(name)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 18)
+                        .padding(.bottom, 16)
                 } else {
-                    Text(isMine
-                        ? NSLocalizedString("Not listed for sale", comment: "Username marketplace: own unlisted name")
-                        : NSLocalizedString("Not for sale", comment: "Username marketplace: someone else's unlisted name"))
-                        .font(.system(size: 13, weight: .medium))
+                    Text(NSLocalizedString("This name is not registered.", comment: "Username marketplace: detail for an unregistered name"))
+                        .font(.system(size: 13))
                         .foregroundColor(.dash.secondaryText)
-                        .padding(.top, 8)
+                        .padding(.top, 16)
+                        .padding(.bottom, 24)
                 }
-
-                infoCard
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-
-                actions
-                    .padding(.horizontal, 20)
-                    .padding(.top, 18)
-                    .padding(.bottom, 16)
             }
         }
         .background(Color.dash.primaryBackground)
+        .task { await load() }
         .sheet(isPresented: $showingSetPrice) {
-            SetNamePriceSheet(name: name, viewModel: viewModel, onDone: { dismiss() })
+            SetNamePriceSheet(label: label, viewModel: viewModel, onDone: { dismiss() })
                 .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showingTransfer) {
-            TransferNameSheet(name: name, viewModel: viewModel, onDone: { dismiss() })
+            TransferNameSheet(label: label, viewModel: viewModel, onDone: { dismiss() })
                 .presentationDetents([.medium, .large])
         }
     }
 
-    private var infoCard: some View {
+    private func load() async {
+        isLoading = true
+        // Live state and timeline are independent reads; a history
+        // failure must not blank the sale state (and vice versa).
+        do {
+            liveName = try await viewModel.service.nameState(label)
+        } catch {
+            viewModel.errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
+        }
+        history = (try? await viewModel.service.history(label)) ?? []
+        isLoading = false
+    }
+
+    @ViewBuilder
+    private func saleState(_ name: DpnsMarketplaceName) -> some View {
+        if let priceDuffs = name.priceDuffs {
+            VStack(spacing: 2) {
+                Text(NSLocalizedString("For sale", comment: "Username marketplace: listed badge"))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.dashGolden)
+                Text("\(priceDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.dash.primaryText)
+                Text(CurrencyExchanger.shared.fiatAmountString(for: priceDuffs.dashAmount))
+                    .font(.system(size: 12))
+                    .foregroundColor(.dash.secondaryText)
+            }
+            .padding(.top, 8)
+        } else {
+            Text(isMine
+                ? NSLocalizedString("Not listed for sale", comment: "Username marketplace: own unlisted name")
+                : NSLocalizedString("Not for sale", comment: "Username marketplace: someone else's unlisted name"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.dash.secondaryText)
+                .padding(.top, 8)
+        }
+    }
+
+    /// The seller-clarity callout: this offer comes from an independent
+    /// user, not from Dash or the app.
+    private var independentSellerCallout: some View {
+        Label {
+            Text(NSLocalizedString("This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price.", comment: "Username marketplace: seller-clarity callout on the detail sheet"))
+                .font(.system(size: 12))
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: "person.crop.circle.badge.questionmark")
+                .font(.system(size: 13))
+        }
+        .foregroundColor(.dash.secondaryText)
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.dashGolden.opacity(0.1)))
+    }
+
+    private func infoCard(_ name: DpnsMarketplaceName) -> some View {
         VStack(spacing: 0) {
             detailRow(
                 NSLocalizedString("Owner", comment: "Username marketplace"),
                 isMine
                     ? NSLocalizedString("You", comment: "Username marketplace: owner is the current user")
-                    : String(name.ownerIdBase58.prefix(10)) + "…" + String(name.ownerIdBase58.suffix(6)))
+                    : shortId(name.ownerId))
             if let createdAtMs = name.createdAtMs {
                 detailRow(
                     NSLocalizedString("Registered", comment: "Username marketplace: registration date"),
@@ -475,9 +661,6 @@ private struct MarketplaceNameDetailSheet: View {
                     DWDateFormatter.sharedInstance.shortStringFromDate(
                         Date(timeIntervalSince1970: Double(transferredAtMs) / 1000)))
             }
-            // Full pricing/transfer/purchase timeline requires the SDK's
-            // document-revision history query (in progress); until then
-            // this sheet shows only the facts the current document carries.
         }
         .padding(.vertical, 4)
         .background(
@@ -485,8 +668,97 @@ private struct MarketplaceNameDetailSheet: View {
                 .fill(Color.dash.secondaryBackground))
     }
 
+    // MARK: Trade history
+
+    private var historyCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(NSLocalizedString("Trade history", comment: "Username marketplace: timeline card title"))
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.dash.secondaryText)
+                .padding(.horizontal, 14)
+                .padding(.top, 12)
+                .padding(.bottom, 4)
+            ForEach(Array(history.enumerated().reversed()), id: \.offset) { _, event in
+                historyRow(event)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.dash.secondaryBackground))
+    }
+
+    private func historyRow(_ event: DpnsNameHistoryEvent) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: historyIcon(event))
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.dash.blue)
+                .frame(width: 18)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(historyText(event))
+                    .font(.system(size: 13))
+                    .foregroundColor(.dash.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(DWDateFormatter.sharedInstance.shortStringFromDate(
+                    Date(timeIntervalSince1970: Double(event.atMs) / 1000)))
+                    .font(.system(size: 11))
+                    .foregroundColor(.dash.tertiaryText)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 7)
+    }
+
+    private func historyIcon(_ event: DpnsNameHistoryEvent) -> String {
+        switch event {
+        case .registered: return "plus.circle"
+        case .priceSet: return "tag"
+        case .purchased: return "cart"
+        case .transferred(let from, let to, _, _):
+            return from == to ? "tag.slash" : "arrow.right.circle"
+        }
+    }
+
+    private func historyText(_ event: DpnsNameHistoryEvent) -> String {
+        switch event {
+        case .registered:
+            return NSLocalizedString("Registered", comment: "Username marketplace: registration date")
+        case .priceSet(let price, _, _):
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Listed for %@ DASH", comment: "Username marketplace: history — price set"),
+                (price / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
+        case .purchased(let price, let seller, let buyer, _, _):
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Bought by %1$@ from %2$@ for %3$@ DASH", comment: "Username marketplace: history — purchase with buyer, seller, price"),
+                participant(buyer), participant(seller),
+                (price / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
+        case .transferred(let from, let to, _, _):
+            if from == to {
+                return NSLocalizedString("Removed from sale", comment: "Username marketplace: history — delist (transfer to self)")
+            }
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Transferred from %1$@ to %2$@", comment: "Username marketplace: history — transfer with both identities"),
+                participant(from), participant(to))
+        }
+    }
+
+    private func participant(_ id: Data) -> String {
+        id == viewModel.ownIdentityId
+            ? NSLocalizedString("you", comment: "Username marketplace: history participant is the current user")
+            : shortId(id)
+    }
+
+    private func shortId(_ id: Data) -> String {
+        let base58 = id.toBase58String()
+        return String(base58.prefix(8)) + "…" + String(base58.suffix(4))
+    }
+
+    // MARK: Actions
+
     @ViewBuilder
-    private var actions: some View {
+    private func actions(_ name: DpnsMarketplaceName) -> some View {
         VStack(spacing: 10) {
             if isMine {
                 if name.isForSale {
@@ -505,7 +777,7 @@ private struct MarketplaceNameDetailSheet: View {
                     showingTransfer = true
                 }
             } else if name.isForSale, let priceDuffs = name.priceDuffs {
-                identityBalanceLine
+                identityBalanceLine(name)
                 primaryButton(String.localizedStringWithFormat(
                     NSLocalizedString("Buy for %@ DASH", comment: "Username marketplace: purchase button"),
                     priceDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)) {
@@ -517,7 +789,7 @@ private struct MarketplaceNameDetailSheet: View {
         .confirmationDialog(
             String.localizedStringWithFormat(
                 NSLocalizedString("Buy “%@”?", comment: "Username marketplace: purchase confirmation title"),
-                name.label),
+                label),
             isPresented: $confirmBuy,
             titleVisibility: .visible
         ) {
@@ -525,27 +797,27 @@ private struct MarketplaceNameDetailSheet: View {
                 let expected = name.priceCredits ?? 0
                 viewModel.perform(successText: String.localizedStringWithFormat(
                     NSLocalizedString("%@ is now yours", comment: "Username marketplace: purchase success"),
-                    name.label)) {
-                    try await viewModel.service.purchase(name: name, expectedPriceCredits: expected)
+                    label)) {
+                    try await viewModel.service.purchase(name: label, expectedPriceCredits: expected)
                 }
                 dismiss()
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
         } message: {
-            Text(NSLocalizedString("The price plus a small network fee is paid from your identity balance. The name moves to your identity immediately.", comment: "Username marketplace: purchase confirmation body"))
+            Text(NSLocalizedString("You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately.", comment: "Username marketplace: purchase confirmation body with seller clarity"))
         }
         .confirmationDialog(
             String.localizedStringWithFormat(
                 NSLocalizedString("Remove “%@” from sale?", comment: "Username marketplace: delist confirmation title"),
-                name.label),
+                label),
             isPresented: $confirmDelist,
             titleVisibility: .visible
         ) {
             Button(NSLocalizedString("Remove From Sale", comment: "Username marketplace"), role: .destructive) {
                 viewModel.perform(successText: String.localizedStringWithFormat(
                     NSLocalizedString("%@ is no longer for sale", comment: "Username marketplace: delist success"),
-                    name.label)) {
-                    try await viewModel.service.removeFromSale(name: name)
+                    label)) {
+                    try await viewModel.service.removeFromSale(name: label)
                 }
                 dismiss()
             }
@@ -556,14 +828,15 @@ private struct MarketplaceNameDetailSheet: View {
     }
 
     /// Buyer-side affordability line, from the same persisted identity
-    /// balance the profile sheet shows.
+    /// balance the profile sheet shows. The SDK re-checks
+    /// authoritatively at purchase time.
     @ViewBuilder
-    private var identityBalanceLine: some View {
+    private func identityBalanceLine(_ name: DpnsMarketplaceName) -> some View {
         if let identityId = viewModel.ownIdentityId,
            let container = SwiftDashSDKHost.shared.modelContainer {
             let available = UsernameMarketplaceService.identityBalanceCredits(
                 identityId: identityId, container: container)
-            let needed = (name.priceCredits ?? 0) + UsernameMarketplaceService.purchaseFeeReserveCredits
+            let needed = name.priceCredits ?? 0
             HStack {
                 Text(NSLocalizedString("Identity Account Balance", comment: "SDK identity profile sheet — the identity's credit balance"))
                     .font(.system(size: 12))
@@ -571,9 +844,9 @@ private struct MarketplaceNameDetailSheet: View {
                 Spacer()
                 Text("\((available / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(available >= needed ? .dash.primaryText : .orange)
+                    .foregroundColor(available > needed ? .dash.primaryText : .orange)
             }
-            if available < needed {
+            if available <= needed {
                 Text(NSLocalizedString("Not enough identity credits for this purchase — top up from My Profile first.", comment: "Username marketplace: insufficient balance hint"))
                     .font(.system(size: 11))
                     .foregroundColor(.orange)
@@ -628,7 +901,7 @@ private struct MarketplaceNameDetailSheet: View {
 // MARK: - SetNamePriceSheet
 
 private struct SetNamePriceSheet: View {
-    let name: MarketplaceName
+    let label: String
     @ObservedObject var viewModel: UsernameMarketplaceViewModel
     let onDone: () -> Void
 
@@ -650,7 +923,7 @@ private struct SetNamePriceSheet: View {
             VStack(spacing: 0) {
                 Text(String.localizedStringWithFormat(
                     NSLocalizedString("Set a price for “%@”", comment: "Username marketplace: set price sheet title"),
-                    name.label))
+                    label))
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.dash.primaryText)
                     .multilineTextAlignment(.center)
@@ -696,9 +969,9 @@ private struct SetNamePriceSheet: View {
                     guard let duffs = priceDuffs else { return }
                     viewModel.perform(successText: String.localizedStringWithFormat(
                         NSLocalizedString("%1$@ listed for %2$@ DASH", comment: "Username marketplace: listing success — name, then price"),
-                        name.label,
+                        label,
                         duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)) {
-                        try await viewModel.service.setPrice(name: name, priceDuffs: duffs)
+                        try await viewModel.service.setPrice(name: label, priceDuffs: duffs)
                     }
                     dismiss()
                     onDone()
@@ -739,7 +1012,7 @@ private struct SetNamePriceSheet: View {
 // MARK: - TransferNameSheet
 
 private struct TransferNameSheet: View {
-    let name: MarketplaceName
+    let label: String
     @ObservedObject var viewModel: UsernameMarketplaceViewModel
     let onDone: () -> Void
 
@@ -753,7 +1026,7 @@ private struct TransferNameSheet: View {
             VStack(spacing: 0) {
                 Text(String.localizedStringWithFormat(
                     NSLocalizedString("Transfer “%@”", comment: "Username marketplace: transfer sheet title"),
-                    name.label))
+                    label))
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.dash.primaryText)
                     .padding(.top, 28)
@@ -847,7 +1120,7 @@ private struct TransferNameSheet: View {
                 }
                 run(recipientBase58: identityId.toBase58String())
             } catch {
-                resolveError = error.localizedDescription
+                resolveError = UsernameMarketplaceService.userFacingMessage(for: error)
             }
         }
     }
@@ -855,8 +1128,8 @@ private struct TransferNameSheet: View {
     private func run(recipientBase58: String) {
         viewModel.perform(successText: String.localizedStringWithFormat(
             NSLocalizedString("%@ transferred", comment: "Username marketplace: transfer success"),
-            name.label)) {
-            try await viewModel.service.transfer(name: name, toIdentityBase58: recipientBase58)
+            label)) {
+            try await viewModel.service.transfer(name: label, toIdentityBase58: recipientBase58)
         }
         dismiss()
         onDone()
