@@ -60,6 +60,11 @@ struct ContactSheet: View {
     /// Opens one of the activity list's payments. Nil leaves those rows
     /// inert — the host decides whether it can show a transaction from here.
     var onSelectTransaction: ((Transaction) -> Void)? = nil
+    /// The contact record, when this person is one. `Identity` is deliberately
+    /// neutral so a search hit and a contact can share this sheet, but the
+    /// owner-private settings are written against a real contact — so that
+    /// card needs the record itself, not the flattened view of it.
+    var contact: ContactItem? = nil
 
     @Environment(\.dismiss) private var dismiss
 
@@ -91,6 +96,13 @@ struct ContactSheet: View {
                         ContactActivityCard(
                             contactIdentityId: identity.identitySeed,
                             onSelect: onSelectTransaction)
+                    }
+
+                    // Alias, note and hiding are written as a `contactInfo`
+                    // document against an established pair, so they have no
+                    // meaning until the request has been accepted.
+                    if relationship == .established, let contact {
+                        ContactSettingsCard(contact: contact)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -356,6 +368,7 @@ extension ContactSheet {
         self.onAccept = onAccept
         self.onIgnore = onIgnore
         self.onSelectTransaction = onSelectTransaction
+        self.contact = contact
     }
 }
 
@@ -396,6 +409,7 @@ extension ContactSheet {
         self.onAccept = onAccept
         self.onIgnore = onIgnore
         self.onSelectTransaction = onSelectTransaction
+        self.contact = contact
     }
 }
 

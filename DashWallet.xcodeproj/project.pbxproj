@@ -629,7 +629,6 @@
 		51F0D10530BF98BA00B27E11 /* ArrowDownIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51F0D10330BF98BA00B27E11 /* ArrowDownIcon.swift */; };
 		51F44F5933DD07DC51CACE4E /* SwiftDashSDKPhraseRepairer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3CA14DC8416012B813B5E2C /* SwiftDashSDKPhraseRepairer.swift */; };
 		553696A24F315D361BC86231 /* VoteHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */; };
-		55E11E4C7CEA1036C6138295 /* ContactsSearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 051D230A341C4CC9DBDD8AE0 /* ContactsSearchField.swift */; };
 		56281FFBD382B4B0C597F3B6 /* PaymentNetworkResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067B8024942F1481CD9B9CC1 /* PaymentNetworkResolver.swift */; };
 		56F5C9FD51AE5508BB5E579B /* ChainNetworkToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D788CCB6B35B655BD713129E /* ChainNetworkToggle.swift */; };
 		57632D5A61F78ED6E896B1AF /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
@@ -646,8 +645,6 @@
 		5A5F8C183D2C037FB350ACC9 /* MasternodeVoteCaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AEFB2398EDA01C69E5A8F1 /* MasternodeVoteCaster.swift */; };
 		5AACV0002F9A0000000000S2 /* AddContactViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AACV0002F9A0000000000S1 /* AddContactViewModel.swift */; };
 		5AACV0002F9A0000000000S3 /* AddContactViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AACV0002F9A0000000000S1 /* AddContactViewModel.swift */; };
-		5ACPV0002F9A0000000000S2 /* ContactProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACPV0002F9A0000000000S1 /* ContactProfileViewModel.swift */; };
-		5ACPV0002F9A0000000000S3 /* ContactProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACPV0002F9A0000000000S1 /* ContactProfileViewModel.swift */; };
 		5AGOV0002F9A0000000000S2 /* GovernanceMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */; };
 		5AGOV0002F9A0000000000S3 /* GovernanceMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */; };
 		5AGOV0002F9A0000000000V2 /* GovernanceMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */; };
@@ -668,6 +665,8 @@
 		61E0BCA4B860A2578137B28F /* WalletSendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4FDA5A52AB80D7F349A7AF /* WalletSendService.swift */; };
 		62FDC661BC3BDD5C2EA676BA /* ContactAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE98321C13F41C2B381FD01 /* ContactAvatarView.swift */; };
 		5ACSH0002F9A0000000000S2 /* ContactSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACSH0002F9A0000000000S1 /* ContactSheet.swift */; };
+		5ACTCSTV020000000000SV02 /* ContactSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCSTV010000000000SV01 /* ContactSettingsViewModel.swift */; };
+		5ACTCSTC020000000000SC02 /* ContactSettingsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCSTC010000000000SC01 /* ContactSettingsCard.swift */; };
 		5ACTCSPR020000000000SP02 /* ContactSheetPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCSPR010000000000SP01 /* ContactSheetPresenter.swift */; };
 		5ACTCARD0200000000000000 /* ContactActivityCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCARD0100000000000000 /* ContactActivityCard.swift */; };
 		5ACTCAVM0200000000000000 /* ContactActivityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCAVM0100000000000000 /* ContactActivityViewModel.swift */; };
@@ -948,7 +947,6 @@
 		7B4F28EE00BA451DA8675B06 /* SwapCoinIconLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F0351CAD174EEB8E64012A /* SwapCoinIconLoader.swift */; };
 		7B9BBDE902964C57C44F68BD /* PinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 132FE91D9C90E736DB1634A5 /* PinStore.swift */; };
 		7BDE6E52D5F0A428E2858824 /* libPods-TodayExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0755F840BCC1E0754D807B04 /* libPods-TodayExtension.a */; };
-		7C51FA86D1A70145BAF76569 /* ContactProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6217C57301CE9FED0D2D2138 /* ContactProfileSheet.swift */; };
 		7C8C17249DC2DD0ECB3F2720 /* SendScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F454341FADB260861FE05EB4 /* SendScreenViewController.swift */; };
 		7C93319817E9E574070A504D /* InternalTransferHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F57DA9DBE5AAF88B3727E148 /* InternalTransferHostingController.swift */; };
 		81BDC70FA6BC4154DE5FAE0F /* PaymentProtocolTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B307E94B354351D4E3D3B /* PaymentProtocolTransport.swift */; };
@@ -1002,7 +1000,6 @@
 		A15ED0B9E7AAF29C694E4E16 /* DWIdentityAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FBA94DA84A9EE303FF48B4 /* DWIdentityAuthorizer.swift */; };
 		A15ED0B9E7AAF29C694E4E17 /* DWIdentityAuthorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FBA94DA84A9EE303FF48B4 /* DWIdentityAuthorizer.swift */; };
 		A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */; };
-		A197237FB3C8F401906769E6 /* ContactsSearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 051D230A341C4CC9DBDD8AE0 /* ContactsSearchField.swift */; };
 		A22906F4DFABDDE03929141C /* AcceptPillButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC166485A7B75F489382900A /* AcceptPillButton.swift */; };
 		A2BBDCD2F99F98CF729EB4B3 /* ContactsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA7FBAB805983E9BDA442D6 /* ContactsCard.swift */; };
 		A361573C34CF9107E6B8A221 /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B697D56A525CBF142F4401FE /* SwiftDashSDKWalletCreator.swift */; };
@@ -1185,7 +1182,6 @@
 		BCB10EF569912077058577E4 /* ContestedNamesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1426BD13E794C788646055 /* ContestedNamesService.swift */; };
 		BCBED608CAAABA10839A0ADE /* SwiftDashSDKWalletState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42C22064915D913252F56184 /* SwiftDashSDKWalletState.swift */; };
 		BD509A68B1A0B6E4599F9C7A /* DWProfileUpdateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */; };
-		BFDD7EB7A8B81E08B7C388EE /* ContactProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6217C57301CE9FED0D2D2138 /* ContactProfileSheet.swift */; };
 		C05FA6CE3DDE2D0327D334E5 /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
 		C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */; };
 		C124DF94278D4238FAE0975D /* OrderPreviewFeeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */; };
@@ -1918,6 +1914,8 @@
 		EE0000062DUMMYID001234567 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000052DUMMYID001234567 /* PercentageFormatter.swift */; };
 		EE4D60EF9BDBB7CC4F7924C7 /* ContactAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE98321C13F41C2B381FD01 /* ContactAvatarView.swift */; };
 		5ACSH0002F9A0000000000S3 /* ContactSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACSH0002F9A0000000000S1 /* ContactSheet.swift */; };
+		5ACTCSTV030000000000SV03 /* ContactSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCSTV010000000000SV01 /* ContactSettingsViewModel.swift */; };
+		5ACTCSTC030000000000SC03 /* ContactSettingsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCSTC010000000000SC01 /* ContactSettingsCard.swift */; };
 		5ACTCSPR030000000000SP03 /* ContactSheetPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCSPR010000000000SP01 /* ContactSheetPresenter.swift */; };
 		5ACTCARD0300000000000000 /* ContactActivityCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCARD0100000000000000 /* ContactActivityCard.swift */; };
 		5ACTCAVM0300000000000000 /* ContactActivityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCAVM0100000000000000 /* ContactActivityViewModel.swift */; };
@@ -2047,7 +2045,6 @@
 		02357928871603392E797C9A /* SwiftDashSDKContactsService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKContactsService.swift; sourceTree = "<group>"; };
 		0286D4D1CADBBD51F09BE8E8 /* SwapMenuStyles.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwapMenuStyles.swift; sourceTree = "<group>"; };
 		0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporter.swift; sourceTree = "<group>"; };
-		051D230A341C4CC9DBDD8AE0 /* ContactsSearchField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactsSearchField.swift; sourceTree = "<group>"; };
 		05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferConfirmSheet.swift; sourceTree = "<group>"; };
 		5ACPHD0002F9A0000000000S1 /* ContactPreviewHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactPreviewHeader.swift; sourceTree = "<group>"; };
 		067B8024942F1481CD9B9CC1 /* PaymentNetworkResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentNetworkResolver.swift; sourceTree = "<group>"; };
@@ -2808,6 +2805,8 @@
 		4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
 		4FE98321C13F41C2B381FD01 /* ContactAvatarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactAvatarView.swift; sourceTree = "<group>"; };
 		5ACSH0002F9A0000000000S1 /* ContactSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactSheet.swift; sourceTree = "<group>"; };
+		5ACTCSTV010000000000SV01 /* ContactSettingsViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactSettingsViewModel.swift; sourceTree = "<group>"; };
+		5ACTCSTC010000000000SC01 /* ContactSettingsCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactSettingsCard.swift; sourceTree = "<group>"; };
 		5ACTCSPR010000000000SP01 /* ContactSheetPresenter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactSheetPresenter.swift; sourceTree = "<group>"; };
 		5ACTCARD0100000000000000 /* ContactActivityCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactActivityCard.swift; sourceTree = "<group>"; };
 		5ACTCAVM0100000000000000 /* ContactActivityViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactActivityViewModel.swift; sourceTree = "<group>"; };
@@ -2865,7 +2864,6 @@
 		5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveFundsSheet.swift; sourceTree = "<group>"; };
 		5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlatformSyncStatusScreen.swift; sourceTree = "<group>"; };
 		5AACV0002F9A0000000000S1 /* AddContactViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddContactViewModel.swift; sourceTree = "<group>"; };
-		5ACPV0002F9A0000000000S1 /* ContactProfileViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactProfileViewModel.swift; sourceTree = "<group>"; };
 		5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuScreen.swift; sourceTree = "<group>"; };
 		5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuViewModel.swift; sourceTree = "<group>"; };
 		5AMMS0002F9A0000000000S1 /* MainMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuScreen.swift; sourceTree = "<group>"; };
@@ -2880,7 +2878,6 @@
 		5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashAmountFormatterTests.swift; sourceTree = "<group>"; };
 		5EE4B9497B1F276EA0BDB20D /* DWRecoverModel+Mnemonic.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DWRecoverModel+Mnemonic.swift"; sourceTree = "<group>"; };
 		60A762BDA473947F1A7EF199 /* StorageModelListViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StorageModelListViews.swift; sourceTree = "<group>"; };
-		6217C57301CE9FED0D2D2138 /* ContactProfileSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactProfileSheet.swift; sourceTree = "<group>"; };
 		62613C0D937CA301FBBF2356 /* Pods-dashpay.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashpay.debug.xcconfig"; path = "Target Support Files/Pods-dashpay/Pods-dashpay.debug.xcconfig"; sourceTree = "<group>"; };
 		67FCD2ED5EDFD68CDE1FE7CC /* TransferTimingSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransferTimingSheet.swift; sourceTree = "<group>"; };
 		6B4599D810961E89D930D221 /* ContactListEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactListEntry.swift; sourceTree = "<group>"; };
@@ -7416,7 +7413,6 @@
 				5ACSH0002F9A0000000000S1 /* ContactSheet.swift */,
 				5ACTCSPR010000000000SP01 /* ContactSheetPresenter.swift */,
 				4BA7FBAB805983E9BDA442D6 /* ContactsCard.swift */,
-				051D230A341C4CC9DBDD8AE0 /* ContactsSearchField.swift */,
 				D02C410108BA271F60F4A261 /* IgnoreCircleButton.swift */,
 			);
 			path = Components;
@@ -7788,6 +7784,15 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		5ACTGSET010000000000GS01 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				5ACTCSTC010000000000SC01 /* ContactSettingsCard.swift */,
+				5ACTCSTV010000000000SV01 /* ContactSettingsViewModel.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
 		C943B3502A40A54500AF23C5 /* Contacts */ = {
 			isa = PBXGroup;
 			children = (
@@ -7797,6 +7802,7 @@
 				0356C2FBA0DA74E060F66403 /* List */,
 				299D723AA1789F1127766D74 /* Notifications */,
 				0F79484A89C63908A43301F6 /* Pay */,
+				5ACTGSET010000000000GS01 /* Settings */,
 				DE4C0B5DF64A41E057448CCB /* Profile */,
 			);
 			path = Contacts;
@@ -8487,8 +8493,6 @@
 		DE4C0B5DF64A41E057448CCB /* Profile */ = {
 			isa = PBXGroup;
 			children = (
-				6217C57301CE9FED0D2D2138 /* ContactProfileSheet.swift */,
-				5ACPV0002F9A0000000000S1 /* ContactProfileViewModel.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -10152,6 +10156,8 @@
 				AB166AF81F14B8C5540D69CE /* AcceptPillButton.swift in Sources */,
 				62FDC661BC3BDD5C2EA676BA /* ContactAvatarView.swift in Sources */,
 				5ACSH0002F9A0000000000S2 /* ContactSheet.swift in Sources */,
+				5ACTCSTV020000000000SV02 /* ContactSettingsViewModel.swift in Sources */,
+				5ACTCSTC020000000000SC02 /* ContactSettingsCard.swift in Sources */,
 				5ACTCSPR020000000000SP02 /* ContactSheetPresenter.swift in Sources */,
 				5ACTCARD0200000000000000 /* ContactActivityCard.swift in Sources */,
 				5ACTCAVM0200000000000000 /* ContactActivityViewModel.swift in Sources */,
@@ -10159,7 +10165,6 @@
 				5ACTCROW0200000000000000 /* ContactActivityRow.swift in Sources */,
 				5ACTCEVR020000000000EV02 /* ContactActivityEventRow.swift in Sources */,
 				BA31D975DBA5D3646D1645B8 /* ContactsCard.swift in Sources */,
-				55E11E4C7CEA1036C6138295 /* ContactsSearchField.swift in Sources */,
 				04690468B81514B30006634C /* IgnoreCircleButton.swift in Sources */,
 				1096BB972033A93F50334F8C /* ContactRow.swift in Sources */,
 				E54311CC8FF1DF0DFEFE647D /* ContactListEntry.swift in Sources */,
@@ -10169,8 +10174,6 @@
 				5ANVM0002F9A0000000000S3 /* NotificationsViewModel.swift in Sources */,
 				40162D7A051D4EB850C06C8F /* PayContactSheet.swift in Sources */,
 				5APCV0002F9A0000000000S3 /* PayContactViewModel.swift in Sources */,
-				BFDD7EB7A8B81E08B7C388EE /* ContactProfileSheet.swift in Sources */,
-				5ACPV0002F9A0000000000S3 /* ContactProfileViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -11167,6 +11170,8 @@
 				A22906F4DFABDDE03929141C /* AcceptPillButton.swift in Sources */,
 				EE4D60EF9BDBB7CC4F7924C7 /* ContactAvatarView.swift in Sources */,
 				5ACSH0002F9A0000000000S3 /* ContactSheet.swift in Sources */,
+				5ACTCSTV030000000000SV03 /* ContactSettingsViewModel.swift in Sources */,
+				5ACTCSTC030000000000SC03 /* ContactSettingsCard.swift in Sources */,
 				5ACTCSPR030000000000SP03 /* ContactSheetPresenter.swift in Sources */,
 				5ACTCARD0300000000000000 /* ContactActivityCard.swift in Sources */,
 				5ACTCAVM0300000000000000 /* ContactActivityViewModel.swift in Sources */,
@@ -11174,7 +11179,6 @@
 				5ACTCROW0300000000000000 /* ContactActivityRow.swift in Sources */,
 				5ACTCEVR030000000000EV03 /* ContactActivityEventRow.swift in Sources */,
 				A2BBDCD2F99F98CF729EB4B3 /* ContactsCard.swift in Sources */,
-				A197237FB3C8F401906769E6 /* ContactsSearchField.swift in Sources */,
 				ADE2A3BE10175C1FD7745DCA /* IgnoreCircleButton.swift in Sources */,
 				DB77D77A6D99261ABDEB74B9 /* ContactRow.swift in Sources */,
 				662560016EFE81497DD23831 /* ContactListEntry.swift in Sources */,
@@ -11184,8 +11188,6 @@
 				5ANVM0002F9A0000000000S2 /* NotificationsViewModel.swift in Sources */,
 				301AC39DF29047D475777BB4 /* PayContactSheet.swift in Sources */,
 				5APCV0002F9A0000000000S2 /* PayContactViewModel.swift in Sources */,
-				7C51FA86D1A70145BAF76569 /* ContactProfileSheet.swift in Sources */,
-				5ACPV0002F9A0000000000S2 /* ContactProfileViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
