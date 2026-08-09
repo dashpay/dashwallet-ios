@@ -1,6 +1,8 @@
 /* No comment provided by engineer. */
 " " = " ";
 
+" or " = " 或 ";
+
 /* CrowdNode */
 " Privacy Policy " = "隱私政策";
 
@@ -16,11 +18,20 @@
 /* Dash DEX / dex_error_blacklisted */
 "%@ can't be swapped at the moment." = "%@ can't be swapped at the moment.";
 
+/* DashPay Invitations */
+"%@ couldn't be found on the Dash network to send them a contact request." = "無法在 Dash 網絡上找到 %@，因此無法向其發送聯繫請求。";
+
+/* Usernames */
+"%@ Dash available" = "%@ Dash 可用";
+
 /* DashPay Contacts */
 "%@ DASH sent to %@" = "%1$@ DASH sent to %2$@";
 
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
+
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "%@ 已接受您的聯繫請求";
 
 /* Dash DEX */
 "%@ has received your transaction and is processing the swap." = "%@ has received your transaction and is processing the swap.";
@@ -49,6 +60,12 @@
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu 聯絡人/ %3$lu 個人資料更新";
 
+/* Raw transaction inspector */
+"%d bytes" = "%d 位元組";
+
+/* Network fee in duffs (1 DASH = 100,000,000 duffs) */
+"%d duffs" = "%d duffs";
+
 /* Voting - multiple keys warning */
 "%d votes will be cast as you have multiple voting keys stored in the wallet" = "%d 由於您的錢包中儲存了多個投票密鑰，因此將進行投票";
 
@@ -60,6 +77,9 @@
 
 /* Voting */
 "%ld duplicates" = "%ld 重複項目";
+
+/* Usernames */
+"%ld of %ld deposits" = "%ld / %ld 筆存入";
 
 /* Voting */
 "%ld requests" = "%ld 請求";
@@ -136,6 +156,9 @@
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" 不是有效的恢復短單詞。 您想嘗試用另一個的正確單詞代替其位置嗎?";
 
+/* Balance info sheet */
+"A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames." = "Dash Platform 上的積分餘額，用於 Platform 位址之間的即時支付以及用戶名稱等功能。";
+
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "需要一個裝置密碼來保護你的錢包。請到設置並打開密碼才能繼續。";
 
@@ -154,8 +177,15 @@
 /* No comment provided by engineer. */
 "About" = "關於";
 
+/* DashPay FAQ title */
+"About DashPay" = "關於 DashPay";
+
 /* No comment provided by engineer. */
 "About me" = "關於我";
+
+"Abstain" = "棄權";
+
+"Abstain on “%@”" = "在「%@」上棄權";
 
 /* No comment provided by engineer. */
 "Accept" = "接受";
@@ -178,17 +208,41 @@
 /* CrowdNode */
 "Account Recovery" = "恢復帳戶";
 
+/* Masternode status */
+"Active" = "已啟用";
+
+/* No comment provided by engineer. */
+"Activity" = "活動";
+
+/* Balance info sheet */
+"Activity is public but not easy to trace" = "活動是公開的，但不易追蹤";
+
 /* No comment provided by engineer. */
 "Add" = "新增";
 
+/* DashPay Invitations */
+"Add %@ as a contact" = "將 %@ 加入聯絡人";
+
 /* DashPay Contacts */
 "Add %@ as a contact to pay them directly by username and keep a shared history of your payments." = "Add %@ as a contact to pay them directly by username and keep a shared history of your payments.";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "將 %@ 加入聯絡人，即可直接向用戶名稱付款並保留雙方的交易紀錄";
+
+/* Usernames */
+"Add %@ Dash to your Shielded balance and let it rest a few hours to register without linking your username to your other funds." = "向您的遮蔽餘額加入 %@ Dash，並讓它靜置數小時後再註冊，這樣您的用戶名稱就不會與您的其他資金關聯。";
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "新增聯絡人";
 
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
+
+/* Usernames */
+"Add at least %@ Dash to your Shielded balance" = "向您的遮蔽餘額至少加入 %@ Dash";
+
+/* Usernames */
+"Add to your Shielded balance now and register your username privately a few hours later" = "現在向遮蔽餘額加入資金，數小時後再私密地註冊用戶名稱";
 
 /* Wallets */
 "Add Wallet" = "Add Wallet";
@@ -227,6 +281,10 @@
 /* No comment provided by engineer. */
 "All" = "所有";
 
+"All nodes at once" = "所有節點一次投票";
+
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "您的所有主節點都已為此用戶名稱投票。若要變更選票，請再次為您現在支持的申請者投票。";
+
 /* CSV Export */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
 
@@ -244,6 +302,9 @@
 
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "允許將所有交易從達世幣錢包發送到 Zenledger 嗎？";
+
+/* Balance info sheet */
+"Almost instantaneous to sync balances" = "餘額同步幾乎即時完成";
 
 /* DashPay Contacts */
 "Already a contact" = "Already a contact";
@@ -266,8 +327,14 @@
 /* Maya */
 "Amount too small to cover fees" = "Amount too small to cover fees";
 
+/* Balance info sheet */
+"Amounts and addresses are public on the blockchain" = "金額和位址在區塊鏈上是公開的";
+
 /* No comment provided by engineer. */
 "An error occurred" = "發生錯誤";
+
+/* DashPay FAQ */
+"An Ethereum account is one reusable address: your entire balance and payment history sit publicly under it, and a name (like an ENS domain) typically points straight at that address for anyone to resolve. DashPay is the opposite shape — the name resolves to an identity, not a payment address, and actual payment addresses stay inside encrypted contact exchanges, fresh for each contact." = "以太坊帳戶是一個可重複使用的位址：您的全部餘額和支付紀錄都公開地歸於它之下，而一個名稱（例如 ENS 網域）通常直接指向該位址，任何人都能解析。DashPay 的結構恰好相反——名稱解析到的是身分，而不是支付位址，真正的支付位址保留在加密的聯絡人交換中，且對每位聯絡人都是全新的。";
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "跨所有設備的直觀熟悉的體驗";
@@ -280,6 +347,9 @@
 
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "任何超20個字符或包含2-9個數字，或含有連字符的用戶名稱，將會自動批准";
+
+/* Balance info sheet */
+"Anyone who knows an address can view its history" = "任何知道位址的人都可以查看它的歷史紀錄";
 
 /* AboutDash */
 "App version" = "App version";
@@ -296,6 +366,10 @@
 /* No comment provided by engineer. */
 "Apply" = "應用";
 
+"Approve" = "核准";
+
+"Approving a specific request can only be done one username at a time." = "核准特定申請一次只能針對一個用戶名稱。";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "您確定要取消此訂單嗎?";
 
@@ -310,6 +384,9 @@
 
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
+
+/* Raw transaction inspector */
+"As text" = "以文字顯示";
 
 /* DashSpend */
 "at" = "在";
@@ -329,10 +406,14 @@
 /* DashSpend/Maya */
 "Authentication cancelled" = "Authentication cancelled";
 
+"Authentication cancelled. Your vote was not cast." = "已取消驗證。您的選票未被投出。";
+
 /* DashPay
    DashPay identity registration
    InternalTransfer */
 "Authentication failed" = "Authentication failed";
+
+"Authentication failed. Your vote was not cast." = "驗證失敗。您的選票未被投出。";
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "身份驗證不可用";
@@ -354,6 +435,8 @@
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
+
+"Award “%@” to this contender" = "將「%@」授予此申請者";
 
 /* Dash DEX */
 "Back home" = "Back home";
@@ -386,10 +469,16 @@
 "Balance" = "餘額";
 
 /* CrowdNode */
+"Balance after" = "之後餘額";
+
+/* CrowdNode */
 "Balance On CrowdNode" = "CrowdNode 上的餘額";
 
 /* CrowdNode */
 "Balance: " = "結餘: ";
+
+/* Balance info sheet */
+"Balances and transfers are not publicly visible" = "餘額和轉帳不會公開可見";
 
 /* Coinbase/Payment Methods */
 "Bank Account" = "銀行賬戶";
@@ -418,6 +507,9 @@
 /* No comment provided by engineer. */
 "Biometrics Access Required" = "需要生物識別訪問權限";
 
+/* SPV diagnostics */
+"Birth height saved — the raised scan floor applies from the next launch." = "已儲存起始區塊高度——提高後的掃描下限將從下次啟動開始生效。";
+
 /* Voting */
 "Block" = "區塊";
 
@@ -433,11 +525,22 @@
 /* Voting */
 "Blocked '%@' username" = "阻止了 '%@' 用戶名";
 
+/* Identities: this key only signs for one data contract */
+"Bound to contract" = "綁定至合約";
+
+/* Identities: this key only signs one document type of one data contract */
+"Bound to contract, document type “%@”" = "綁定至合約，文件類型「%@」";
+
 /* No comment provided by engineer. */
 "Broadcasting" = "Broadcasting";
 
+"Browsing only" = "僅供瀏覽";
+
 /* InternalTransfer recovery */
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
+
+/* Log export */
+"Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files" = "將最近的診斷紀錄打包為 zip，以便透過 AirDrop、郵件發送或儲存到「檔案」";
 
 /* Buy
    buy */
@@ -518,8 +621,13 @@
 /* DashSpend */
 "Cashier instructions" = "Cashier instructions";
 
+"Cast vote" = "投出選票";
+
 /* DashSpend */
 "Challenge" = "Challenge";
+
+/* SPV sync */
+"Change peers" = "更換節點";
 
 /* No comment provided by engineer. */
 "Change PIN" = "更改密碼";
@@ -536,14 +644,30 @@
 /* Dash DEX */
 "Checking amount…" = "Checking amount…";
 
+"Checking…" = "正在檢查…";
+
+"Choice" = "選擇";
+
 /* Choose your Dash username */
 "Choose your" = "選擇你的";
 
 /* No comment provided by engineer. */
 "Choose Your Username" = "選擇你的用戶名";
 
+/* DashPay Invitations */
+"Claim your invitation" = "領取您的邀請";
+
+/* No comment provided by engineer. */
+"Claimable balance" = "可領取餘額";
+
 /* No comment provided by engineer. */
 "Claimed" = "已被認領";
+
+/* SPV diagnostics */
+"Clear & resync" = "清除並重新同步";
+
+/* SPV diagnostics */
+"Clear chain data and resync?" = "要清除鏈資料並重新同步嗎？";
 
 /* Maya */
 "Clipboard" = "Clipboard";
@@ -560,8 +684,13 @@
 /* No comment provided by engineer. */
 "Close App" = "關閉程序";
 
+"Closing" = "即將結束";
+
 /* Dash Portal */
 "Coinbase" = "Coinbase";
+
+/* Raw transaction inspector */
+"Coinbase (new coins)" = "Coinbase（新幣）";
 
 /* Coinbase Two Factor Auth */
 "Coinbase 2FA code" = "Coinbase 兩步認證代碼";
@@ -573,7 +702,19 @@
 "CoinJoin is no longer supported" = "CoinJoin is no longer supported";
 
 /* CoinJoin */
+"CoinJoin is no longer supported — choose where to move your mixed coins." = "CoinJoin 已不再支援——請選擇將已混合資金轉移到何處。";
+
+/* CoinJoin */
 "CoinJoin Withdrawals" = "CoinJoin Withdrawals";
+
+/* Masternodes */
+"Collateral" = "抵押";
+
+/* DashPay intro: feature title */
+"Coming soon" = "即將推出";
+
+/* Shielded transfer status */
+"Completed" = "已完成";
 
 /* No comment provided by engineer. */
 "Confirm" = "確認:";
@@ -587,6 +728,11 @@
 /* No comment provided by engineer. */
 "Confirm Platform Send" = "Confirm Platform Send";
 
+/* SPV diagnostics */
+"Confirmed" = "已確認";
+
+"Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "確認後將儲存起始區塊高度 %u，並在下次啟動應用程式時清除該網絡的鏈資料，重新下載並從該高度重新掃描過濾器。目前的工作階段仍沿用舊的掃描下限——結束並重新開啟應用程式即可開始。";
+
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "將您的加密錢包連接到 ZenLedger 平台。了解更多並開始使用您的達世幣錢包交易。";
 
@@ -597,6 +743,9 @@
 /* CrowdNode */
 "Connected Dash address" = "連接的達世幣位址";
 
+/* SPV sync */
+"Connected peers" = "已連線節點";
+
 /* About screen tech info: SPV state */
 "connecting" = "connecting";
 
@@ -605,6 +754,9 @@
 
 /* DashSpend */
 "Connection Error" = "Connection Error";
+
+/* Balance info sheet section */
+"Cons" = "缺點";
 
 /* DashSpend */
 "Contact %@ Support" = "Contact %@ Support";
@@ -616,6 +768,9 @@
 /* Maya */
 "Contact Maya Support" = "Contact Maya Support";
 
+/* DashPay Invitations */
+"Contact request failed" = "聯繫請求失敗";
+
 /* DashPay */
 "Contact request not found" = "Contact request not found";
 
@@ -624,6 +779,12 @@
 
 /* DashPay Contacts */
 "Contact request sent" = "Contact request sent";
+
+/* DashPay Contacts: success card after sending a request */
+"Contact request sent to %@" = "已向 %@ 發送聯繫請求";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "聯繫請求";
 
 /* DashPay Contacts */
 "Contact Requests (%d)" = "Contact Requests (%d)";
@@ -637,11 +798,16 @@
 /* No comment provided by engineer. */
 "Contacts" = "通訊錄";
 
+"Contender %@" = "申請者 %@";
+
 /* Usernames */
 "Contested name" = "Contested name";
 
 /* No comment provided by engineer. */
 "Continue" = "繼續";
+
+/* DashPay Invitations */
+"Continue to pick your username. The invitation pays the registration fee." = "繼續以選擇您的用戶名稱。邀請將支付註冊費用。";
 
 /* Maya */
 "Conversion failed" = "Conversion failed";
@@ -670,6 +836,9 @@
 /* No comment provided by engineer. */
 "Copy Invitation Link" = "複製邀請鏈接";
 
+/* Raw transaction inspector */
+"Copy Raw Transaction" = "複製原始交易";
+
 /* No comment provided by engineer. */
 "Copy text" = "複製文字";
 
@@ -682,6 +851,9 @@
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "無法自動恢復遺漏或不正確的單詞";
 
+/* Log export */
+"Could not create the log archive: %@" = "無法建立紀錄封存檔：%@";
+
 /* No comment provided by engineer. */
 "Could not find exchange rate." = "無法找到匯率";
 
@@ -691,6 +863,9 @@
 /* SwapKit */
 "Could not load Buy Dash options — please check your connection and try again" = "Could not load Buy Dash options — please check your connection and try again";
 
+/* Identities */
+"Could not refresh %d identities" = "無法重新整理 %d 個身分";
+
 /* Wallets */
 "Could not rename this wallet." = "Could not rename this wallet.";
 
@@ -699,6 +874,9 @@
 
 /* InternalTransfer */
 "Could not resolve a destination wallet address" = "Could not resolve a destination wallet address";
+
+/* Masternodes */
+"Couldn't fetch the balance (network error). Try Refresh." = "無法取得餘額（網絡錯誤）。請嘗試重新整理。";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "無法進行支付";
@@ -749,8 +927,14 @@
 /* Usernames */
 "Create your username" = "建立您的用戶名";
 
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "建立您的用戶名稱，透過用戶名稱找到親友並將他們加入聯絡人";
+
 /* Coinbase/Payment Methods */
 "Credit Card" = "信用卡";
+
+/* Masternodes */
+"Credits" = "積分";
 
 /* Translate it as short as possible! (24 symbols max) */
 "CrowdNode" = "CrowdNode";
@@ -828,11 +1012,23 @@
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "達世幣付款不能低於 %@";
 
+"Dash Platform has not indexed this contest yet. Vote counts appear here once it does." = "Dash Platform 尚未索引此次爭奪。索引完成後，票數將顯示在這裡。";
+
+"Dash Platform is not connected yet. Wait for syncing to finish and try again." = "Dash Platform 尚未連線。請等待同步完成後重試。";
+
+/* Send confirm sheet */
+"Dash sent to a wrong address can't be recovered. Make sure the address is exactly the one you intend to pay." = "發送到錯誤位址的 Dash 無法找回。請確認位址與您要支付的位址完全一致。";
+
+"Dash stores usernames in a look-alike-safe form, so the stored name can differ from what each person typed." = "Dash 以防形似的形式儲存用戶名稱，因此儲存的名稱可能與每個人輸入的內容不同。";
+
 /* No comment provided by engineer. */
 "Dash username" = "達世幣用戶名";
 
 /* DashSpend confirmation */
 "Dash Wallet" = "達世幣錢包";
+
+/* CoinJoin */
+"Dash Wallet balance" = "Dash 錢包餘額";
 
 /* AboutDash */
 "Dash Wallet is an open sourced app forked from Bitcoin Wallet" = "Dash Wallet is an open sourced app forked from Bitcoin Wallet";
@@ -840,8 +1036,20 @@
 /* Buy Dash */
 "Dash Wallet on this device" = "此設備上的達世幣錢包";
 
+/* DashPay */
+"DashPay" = "DashPay";
+
+/* DashPay: title of the enable success sheet */
+"DashPay enabled" = "DashPay 已啟用";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay 邀請函";
+
+/* DashPay FAQ */
+"DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses." = "DashPay 是建構在 Dash Platform 上的 Dash 社交支付體驗。您可以註冊用戶名稱、將其他用戶加入聯絡人，並按名稱向他們付款——不必再複製位址。";
+
+/* DashPay intro: pitch paragraph */
+"DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person." = "DashPay 用用戶名稱取代冗長難懂的位址。將好友加入聯絡人，向一個名稱匯款，並按人整理每一筆支付。";
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "DashPay 升級費";
@@ -860,6 +1068,8 @@
 
 /* Voting */
 "Date: Old to new" = "日期：從舊到新";
+
+"Deadline unknown" = "截止時間不明";
 
 /* DashSpend */
 "Decrease quantity" = "Decrease quantity";
@@ -895,6 +1105,9 @@
 /* CrowdNode */
 "Deposit sent" = "存款已發送";
 
+/* Identities: BIP-32 style derivation path of this key */
+"Derivation path" = "衍生路徑";
+
 /* No comment provided by engineer. */
 "Destination" = "Destination";
 
@@ -906,6 +1119,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "設備的安全性已經受到損害\n任何'越獄'的應用程序可以訪問任何其他應用程序的數據鑰匙扣 (和竊取你的達世幣的)。立即清除這個錢包並在安全的裝置上恢復數據。";
+
+/* Identities: this identity key was disabled on Platform */
+"Disabled" = "已停用";
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "斷開 Coinbase 帳戶的連接";
@@ -938,11 +1154,17 @@
 /* No comment provided by engineer. */
 "Done" = "完成";
 
+/* Usernames */
+"Done — your balance has rested long enough" = "完成——您的餘額已靜置足夠長的時間";
+
 /* DashSpend */
 "Double tap to change quantity" = "Double tap to change quantity";
 
 /* SegmentedControl */
 "Double tap to select" = "Double tap to select";
+
+/* Send confirm sheet */
+"Double-check the address" = "請再次核對位址";
 
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
@@ -966,6 +1188,10 @@
 /* No comment provided by engineer. */
 "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "每個邀請都將獲得該金額的資助，以便接收者可以在達世幣網絡上快速創建他們的用戶名";
 
+"Each masternode has one live vote per contest. You can change it later, but Dash Platform allows only 5 votes in total per masternode per contest." = "每個主節點在每次爭奪中擁有一張有效選票。您之後可以變更，但 Dash Platform 在每次爭奪中每個主節點總共只允許 5 次投票。";
+
+"Each tap votes with one more node, so you choose how many to link together." = "每點一下就多一個節點參與投票，因此您可以決定關聯多少個節點。";
+
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "之前";
 
@@ -974,6 +1200,9 @@
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "只需點擊幾下，即可輕鬆質押達世幣並賺取被動收入。";
+
+/* SPV diagnostics */
+"Edit birth height" = "編輯起始區塊高度";
 
 /* No comment provided by engineer. */
 "Edit Profile" = "編輯個人資料";
@@ -990,11 +1219,22 @@
 /* CrowdNode */
 "Email" = "電子郵件";
 
+/* DashPay: confirm button of the Enable DashPay sheet */
+"Enable" = "啟用";
+
+/* DashPay: add the identity keys other users need to send contact requests */
+"Enable DashPay" = "啟用 DashPay";
+
 /* No comment provided by engineer. */
 "Enable Face ID" = "啟用 Face ID";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "啟用Touch ID";
+
+/* DashPay FAQ */
+"Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "啟用 DashPay 需要一筆小額的一次性網絡費用，從您身分的積分餘額中支付。確認前會顯示確切的預估金額。發送聯繫請求和支付則收取通常的網絡費用。";
+
+"Ending soonest" = "最早結束";
 
 /* Swap */
 "Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work." = "Enter a valid %1$@ address. %2$@ here is on %3$@, so an Ethereum (0x…) address won’t work.";
@@ -1056,6 +1296,17 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "更新您的個人資料時出錯";
 
+/* DashPay: fee line of the Enable DashPay confirmation */
+"Estimated network fee" = "預估網絡費用";
+
+"Every node votes together. Faster, but it publicly links your masternodes to each other." = "所有節點一起投票。速度更快，但會公開地將您的各個主節點關聯起來。";
+
+/* SPV sync peer type */
+"Evonode" = "Evonode";
+
+/* Masternode keys */
+"Evonode Operator keys" = "Evonode 操作者鑰匙";
+
 /* Maya */
 "Exchange rate not available" = "Exchange rate not available";
 
@@ -1074,11 +1325,20 @@
 /* No comment provided by engineer. */
 "Export CSV" = "匯出 CSV";
 
+/* Log export */
+"Export Logs" = "匯出紀錄";
+
 /* Extended public key (BIP44) */
 "Extended public key (BIP44)" = "擴展公鑰（BIP44）";
 
 /* No comment provided by engineer. */
+"External address" = "外部位址";
+
+/* No comment provided by engineer. */
 "Face ID limit" = "Face ID 解鎖的限制";
+
+/* No comment provided by engineer. */
+"Failed" = "失敗";
 
 /* No comment provided by engineer. */
 "Failed to load barcode" = "無法加載條形碼";
@@ -1113,11 +1373,17 @@
 /* Balance */
 "Fetching rates…" = "正在獲取滙率...";
 
+/* Masternodes */
+"Fetching…" = "取得中…";
+
 /* Coinbase/Payment Methods */
 "Fiat Account" = "法幣賬戶";
 
 /* No comment provided by engineer. */
 "Filter" = "篩選";
+
+/* SPV sync phase */
+"Filter headers" = "過濾器區塊標頭";
 
 /* No comment provided by engineer. */
 "Filter transactions" = "過濾交易";
@@ -1137,11 +1403,17 @@
 /* DashPay Contacts */
 "Find a user and add them to your contacts." = "Find a user and add them to your contacts.";
 
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "在 Dash 網絡上尋找用戶";
+
 /* Explore Dash */
 "Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "找到可以買賣達世幣的自動櫃員機。";
+
+/* Identities */
+"Find identities" = "尋找身分";
 
 /* Explore Dash */
 "Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
@@ -1191,6 +1463,12 @@
 /* No comment provided by engineer. */
 "Forgot PIN?" = "忘記密碼了嗎?";
 
+/* Identities */
+"Found %d new identities" = "找到 %d 個新身分";
+
+/* Identities */
+"Found 1 new identity" = "找到 1 個新身分";
+
 /* No comment provided by engineer. */
 "Found missing word:\n%@" = "找到遺漏的單詞:\n%@";
 
@@ -1239,6 +1517,18 @@
 /* SPV diagnostics */
 "Full rescan (from 0) — slow" = "Full rescan (from 0) — slow";
 
+/* Usernames */
+"Fund your username from your Shielded balance. Add funds a few hours ahead — the short rest keeps your username unlinkable to your other Dash." = "用您的遮蔽餘額為用戶名稱提供資金。請提前幾個小時加入資金——短暫的靜置可讓您的用戶名稱無法與您的其他 Dash 關聯。";
+
+/* Usernames */
+"Funded from your Shielded balance — your username can't be linked to your other Dash." = "已由您的遮蔽餘額提供資金——您的用戶名稱無法與您的其他 Dash 關聯。";
+
+/* Shielded transfer status */
+"Funds locked — finishing transfer" = "資金已鎖定——正在完成轉帳";
+
+/* CoinJoin */
+"Funds moved" = "資金已轉移";
+
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "只需 0.5 Dash，即可從達世幣主節點中的存款中獲得獎勵。";
 
@@ -1253,6 +1543,9 @@
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "獲得報價";
+
+/* Usernames */
+"Get ready to join DashPay" = "準備加入 DashPay";
 
 /* CrowdNode */
 "Get Rewards Instantly" = "立即獲得獎勵";
@@ -1303,16 +1596,35 @@
 "Google Pay" = "Google Pay";
 
 /* No comment provided by engineer. */
+"Got it" = "知道了";
+
+/* Governance */
+"Governance" = "治理";
+
+/* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "授予 GPS 權限，以便我們向您顯示您附近的位置。";
 
 /* Voting */
 "Has blocked votes" = "已阻止了投票";
+
+/* Username has requested to be your friend */
+"has requested to be your friend" = "請求成為您的好友";
+
+/* DashPay Invitations */
+"Have an invitation?" = "有邀請嗎？";
 
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "能夠讓您完全控制並根據您的個人需要自定義錢包";
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "標頭 #%1$d of %2$d";
+
+/* SPV sync phase */
+"Headers" = "區塊標頭";
+
+/* DashPay Contacts */
+/* Masternodes */
+"Height %u" = "高度 %u";
 
 /* CrowdNode */
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "這是在此設備上的達世幣錢包中為您的 CrowdNode 帳戶指定的達世幣位址。";
@@ -1332,6 +1644,9 @@
 /* Voting */
 "High to low" = "從高到低";
 
+/* Balance info sheet */
+"Higher fees around 7 cents (still lower than other blockchains offering similar privacy)" = "費用較高，約 7 美分（仍低於提供類似隱私保護的其他區塊鏈）";
+
 /* No comment provided by engineer. */
 "History" = "歷史";
 
@@ -1343,6 +1658,15 @@
 
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "如何才能索取測試的達世幣?";
+
+/* DashPay FAQ */
+"How does this compare to Bitcoin in terms of privacy?" = "在隱私方面，這與比特幣相比如何？";
+
+/* DashPay FAQ */
+"How does this compare to Ethereum Accounts in terms of privacy?" = "在隱私方面，這與以太坊帳戶相比如何？";
+
+/* DashPay FAQ */
+"How private is DashPay?" = "DashPay 的隱私性如何？";
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "如何確認您的 API 達世幣位址";
@@ -1380,14 +1704,29 @@
 /* No comment provided by engineer. */
 "I wrote it down" = "我寫下來";
 
+/* Identities */
+"Identities" = "身分";
+
 /* Voting */
 "Identity" = "身分";
+
+/* Destination of an identity funding asset lock */
+"Identity credits" = "身分積分";
 
 /* SDK identity profile sheet */
 "Identity ID" = "Identity ID";
 
+/* Identities */
+"Identity index" = "身分索引";
+
+/* Asset lock funding a DashPay identity registration */
+"Identity registration" = "身分註冊";
+
 /* DashPay */
 "Identity registration already in progress" = "Identity registration already in progress";
+
+/* Asset lock topping up a DashPay identity's credits */
+"Identity top-up" = "身分儲值";
 
 /* About screen tech info: SPV state */
 "idle" = "idle";
@@ -1462,6 +1801,10 @@
 "In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "在結帳的付款部分中，選擇“禮品卡”，然後輸入您的卡號和密碼。";
 
 /* No comment provided by engineer. */
+/* Masternode status */
+"Inactive" = "未啟用";
+
+/* No comment provided by engineer. */
 "Income" = "收入";
 
 /* DashSpend */
@@ -1472,6 +1815,15 @@
 
 /* Buy Sell Portal */
 "Initializing" = "正在初始化";
+
+/* Raw transaction inspector */
+"Input %d" = "輸入 %d";
+
+/* Raw transaction inspector */
+"Input %d — outpoint" = "輸入 %d — 輸出點";
+
+/* Raw transaction inspector */
+"Inputs (%d)" = "輸入 (%d)";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "餘額不足";
@@ -1548,6 +1900,9 @@
 /* No comment provided by engineer. */
 "Invitation Fee" = "邀請費";
 
+/* DashPay Invitations */
+"Invitation from %@" = "來自 %@ 的邀請";
+
 /* No comment provided by engineer. */
 "Invitation used by" = "邀請己被使用";
 
@@ -1556,6 +1911,9 @@
 
 /* No comment provided by engineer. */
 "Invite" = "邀請";
+
+/* No comment provided by engineer. */
+"Invite Someone to join the Dash Network" = "邀請他人加入 Dash 網絡";
 
 /* No comment provided by engineer. */
 "Invite your family, find your friends by searching their usernames" = "邀請您的家人，通過搜索用戶名來找到您的朋友";
@@ -1568,6 +1926,9 @@
 
 /* No comment provided by engineer. */
 "Invite your friends and family to join the Dash Network." = "邀請您的朋友和家人加入達世幣網絡。";
+
+/* No comment provided by engineer. */
+"Invite your friends and family to the Dash Network" = "邀請您的親友加入 Dash 網絡";
 
 /* No comment provided by engineer. */
 "iOS Dash Wallet: %@ Reported issue" = "iOS 達世幣錢包: %@ 已報告的問題";
@@ -1608,14 +1969,30 @@
 /* CrowdNode */
 "Joining the pool" = "加入資金池";
 
+/* CoinJoin */
+"Keep these coins private. Network and privacy fees apply." = "讓這些幣保持私密。將收取網絡與隱私費用。";
+
 /* No comment provided by engineer. */
 "Keep Wallet" = "Keep Wallet";
 
 /* Usernames */
 "Keep your passphrase safe" = "確保您的密語安全";
 
+/* Identities: one identity public key, by its DPP key id */
+"Key #%d" = "鑰匙 #%d";
+
+/* Identities: the public key bytes */
+"Key data" = "鑰匙資料";
+
+/* No comment provided by engineer. */
+/* Masternodes */
+"Key ownership" = "鑰匙歸屬";
+
 /* No comment provided by engineer. */
 "Keypair" = "密鑰對";
+
+/* Masternodes */
+"Keys" = "鑰匙";
 
 /* Explore Dash */
 "Last device sync" = "上一次設備同步";
@@ -1633,8 +2010,13 @@
 /* CoinJoin */
 "Later" = "Later";
 
+"Leading" = "領先";
+
 /* Maya */
 "Learn more" = "Learn more";
+
+/* DashPay intro: opens the FAQ */
+"Learn More" = "了解更多";
 
 /* Info Screen */
 "Learn More..." = "了解更多...";
@@ -1693,6 +2075,9 @@
 /* Dash DEX */
 "Loading rates…" = "Loading rates…";
 
+/* Home */
+"Loading transactions" = "正在載入交易";
+
 /* Maya */
 "Loading..." = "Loading...";
 
@@ -1702,17 +2087,31 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "本地貨幣";
 
+/* Identities */
+"Local Only" = "僅限本機";
+
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "本地請求金額: %@";
 
 /* Explore Dash/Merchants/Filters */
 "Location" = "位置";
 
+"Lock" = "鎖定";
+
+"Lock the name" = "鎖定該名稱";
+
+"Lock “%@” so nobody gets it" = "鎖定「%@」，使任何人都無法取得";
+
 /* No comment provided by engineer. */
 "Locked" = "己鎖定";
 
+"Locked — nobody receives this username" = "已鎖定——任何人都無法取得此用戶名稱";
+
 /* No comment provided by engineer. */
 "Locking funds" = "Locking funds";
+
+/* Raw transaction inspector */
+"Locktime" = "鎖定時間";
 
 /* Log in */
 "Log in" = "登入";
@@ -1762,8 +2161,14 @@
 /* adjective, security level */
 "Low" = "低";
 
+/* Balance info sheet */
+"Low fees for everyday spending" = "日常消費費用低廉";
+
 /* Voting */
 "Low to high" = "從低到高";
+
+/* Identities — the wallet's main identity */
+"Main" = "主要";
 
 /* No comment provided by engineer. */
 "Mainnet" = "主網";
@@ -1784,7 +2189,14 @@
 "Masternode IP address" = "主節點IP位址";
 
 /* Masternode keys */
+/* Tools menu */
+"Masternode Keychain" = "主節點鑰匙圈";
+
+/* Masternode keys */
 "Masternode keys" = "主節點鑰匙";
+
+/* SPV sync phase */
+"Masternode list" = "主節點清單";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "%2$d 中 #%1$d 的主節點列表 ";
@@ -1807,8 +2219,21 @@
 /* No comment provided by engineer. */
 "Masternode Update" = "主節點更新";
 
+"Masternode votes" = "主節點票數";
+
 /* Voting */
 "Masternode Voting Key" = "主節點投票金鑰";
+
+/* Tools menu */
+"Masternodes" = "主節點";
+
+/* Masternodes */
+"Masternodes and evonodes registered with this wallet's keys will appear here after the wallet syncs." = "使用此錢包鑰匙註冊的主節點和 Evonode 將在錢包同步後顯示在這裡。";
+
+/* Masternodes */
+"Masternodes and evonodes using this wallet's keys" = "使用此錢包鑰匙的主節點和 Evonode";
+
+"Masternodes vote on names more than one person requested. You will be notified when voting ends." = "主節點會為多人申請的名稱投票。投票結束時我們會通知您。";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "最大值";
@@ -1847,6 +2272,9 @@
 /* DashSpend */
 "Min: %@" = "最少: %@";
 
+/* Usernames */
+"Minimum met" = "已達最低要求";
+
 /* Transaction type: coinbase/masternode mining reward */
 "Mining Reward" = "Mining Reward";
 
@@ -1866,6 +2294,13 @@
 "More Control" = "更多控制選項";
 
 /* No comment provided by engineer. */
+"More Suggestions" = "更多建議";
+
+"Most lock votes" = "鎖定票最多";
+
+"Most votes" = "得票最多";
+
+/* No comment provided by engineer. */
 "Move and Zoom your photo to find the perfect fit" = "移動和縮放您的照片以找到最適當的效果";
 
 /* CoinJoin */
@@ -1873,6 +2308,9 @@
 
 /* CoinJoin */
 "Move funds" = "Move funds";
+
+/* CoinJoin */
+"Move to your regular spendable balance." = "轉入您的一般可用餘額。";
 
 /* CoinJoin */
 "Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported." = "Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported.";
@@ -1885,6 +2323,9 @@
 
 /* No comment provided by engineer. */
 "Moved to Address" = "移至位址";
+
+/* CoinJoin */
+"Moving funds" = "正在轉移資金";
 
 /* DashSpend */
 "Multiple" = "Multiple";
@@ -1904,6 +2345,9 @@
 /* No comment provided by engineer. */
 "Name" = "名稱";
 
+/* DashPay FAQ */
+"Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Unstoppable Domains 之類的網域服務，會把一個便於閱讀的名稱對應到鏈上一個固定的公開位址。任何人都可以解析該名稱並查看曾向它支付的每一筆款項。DashPay 用戶名稱絕不會公開解析到支付位址——位址僅在與每位聯絡人的加密交換中揭露，因此您的名稱和資金在外部觀察者看來始終是不關聯的。";
+
 /* Swap route provider
    Swap route provider short */
 "NEAR" = "NEAR";
@@ -1913,6 +2357,8 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "需要幫忙嗎? ";
+
+"Needs attention" = "需要處理";
 
 /* No comment provided by engineer. */
 "Network" = "網絡";
@@ -1972,8 +2418,14 @@
 /* SwapKit */
 "No deposit address returned by SwapKit" = "No deposit address returned by SwapKit";
 
+/* Log export */
+"No diagnostic logs were found on this device. Logs are written from the next launch onward." = "此裝置上未找到診斷紀錄。紀錄將從下次啟動開始記錄。";
+
 /* No comment provided by engineer. */
 "No funded Platform address has enough balance to cover this amount plus fees." = "No funded Platform address has enough balance to cover this amount plus fees.";
+
+/* Identities */
+"No Identities" = "無身分";
 
 /* No connection */
 "No internet connection" = "No internet connection";
@@ -1982,7 +2434,22 @@
 "No locations found." = "No locations found.";
 
 /* local currency empty state */
+/* Masternodes */
+"No masternodes yet" = "尚無主節點";
+
+/* local currency empty state */
 "No matches for \"%@\"" = "No matches for \"%@\"";
+
+"No matching contests" = "沒有相符的爭奪";
+
+/* Identities */
+"No new identities were found for this wallet" = "未為此錢包找到新身分";
+
+"No open contest matches that search." = "沒有進行中的爭奪與該搜尋相符。";
+
+"No open contest matches that search. Names are stored in a normalized form, so “alice” is listed as “a11ce”." = "沒有進行中的爭奪與該搜尋相符。名稱以正規化形式儲存，因此「alice」會顯示為「a11ce」。";
+
+"No open contests" = "沒有進行中的爭奪";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "沒有付款方式";
@@ -1993,11 +2460,19 @@
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
 
+/* SPV diagnostics */
+"No persisted wallet row found for the bound wallet." = "未找到所綁定錢包的已儲存紀錄。";
+
+/* DashPay */
+"No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing." = "尚無可用於遮蔽註冊備援的 Platform 位址。請在錢包完成同步後重試。";
+
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "未找到結果";
 
 /* SwapKit */
 "No route available" = "No route available";
+
+"No usernames are being contested right now. Contests open when two or more people request the same name." = "目前沒有用戶名稱處於爭奪狀態。當兩人或更多人申請同一個名稱時，就會開啟爭奪。";
 
 /* DashPay Contacts */
 "No usernames found" = "No usernames found";
@@ -2007,6 +2482,16 @@
 
 /* Voting */
 "No votes left" = "沒有剩餘選票";
+
+"No votes were cast" = "未投出任何選票";
+
+"Nobody gets it" = "無人取得";
+
+/* SPV sync peer type */
+"Node" = "節點";
+
+/* Raw transaction inspector */
+"Non-standard" = "非標準";
 
 /* adjective, security level */
 "None" = "沒有";
@@ -2026,11 +2511,36 @@
 /* Fiat amount */
 "Not available" = "無法使用";
 
+"Not available yet" = "尚無法使用";
+
+"Not cast" = "未投出";
+
+/* Masternodes */
+"Not checked yet" = "尚未檢查";
+
 /* Location Service Status */
 "Not Determined" = "尚未決定";
 
 /* DashPay */
 "Not enough Platform credits to register an identity" = "Not enough Platform credits to register an identity";
+
+/* DashPay */
+"Not enough shielded balance to register an identity" = "遮蔽餘額不足，無法註冊身分";
+
+/* No comment provided by engineer. */
+/* Masternodes */
+"Not in wallet history" = "不在錢包紀錄中";
+
+"Not now" = "暫不";
+
+/* Balance info sheet */
+"Not widely accepted by merchants" = "商家接受度不高";
+
+/* Balance info sheet */
+"Not widely accepted by merchants yet" = "商家接受度尚不高";
+
+/* Masternode keys */
+"Not yet used" = "尚未使用";
 
 /* DashPay Contacts */
 "Note" = "Note";
@@ -2050,8 +2560,19 @@
 /* Voting */
 "Old to new" = "從舊到新";
 
+/* DashPay FAQ */
+"On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "比特幣沒有名稱層，所以人們公開地共享和重複使用位址——一旦某個位址為人所知，它曾收到的一切都可以與其擁有者關聯起來。在 DashPay 中，您的用戶名稱是公開的，但它絕不會指向支付位址：位址按聯絡人私下交換並會輪換，因此按名稱付款不會公開您的資金去向。兩者都是透明鏈，因此鏈上分析仍然適用於幣本身。";
+
+/* Identities */
+"On Network" = "在網絡上";
+
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "當 %@ 接受您的請求後，您就可以直接向用戶名稱付款";
+
 /* Dash DEX / dex_receive_description */
 "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet" = "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet";
+
+"One node at a time" = "每次一個節點";
 
 /* Voting */
 "One vote left" = "還剩一票";
@@ -2071,6 +2592,8 @@
 /* Voting */
 "Only duplicates" = "僅重複的項目";
 
+"Only masternodes and evonodes can vote on usernames. This wallet holds no active masternode voting keys." = "只有主節點和 Evonode 才能為用戶名稱投票。此錢包不含有效的主節點投票鑰匙。";
+
 /* No comment provided by engineer. */
 "Only requests with links" = "僅限帶有連結的請求";
 
@@ -2079,6 +2602,18 @@
 
 /* Voting */
 "Only with links" = "僅包含連結";
+
+/* Masternodes */
+"Operator" = "操作者";
+
+/* Masternode keys */
+"Operator keys" = "操作者鑰匙";
+
+/* Masternodes */
+"Operator public key (BLS)" = "操作者公鑰 (BLS)";
+
+/* No comment provided by engineer. */
+"or" = "或";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "訂單預覽";
@@ -2089,14 +2624,37 @@
 /* DashSpend */
 "Original Price" = "Original Price";
 
+"Other outcomes" = "其他結果";
+
+/* Masternodes */
+"Outpoint" = "輸出點";
+
+/* Raw transaction inspector */
+"Output %d" = "輸出 %d";
+
+/* Raw transaction inspector */
+"Outputs (%d)" = "輸出 (%d)";
+
+/* Masternodes */
+"Owner" = "擁有者";
+
 /* No comment provided by engineer. */
 "Owner Address" = "所有者位址";
+
+/* Masternodes */
+"Owner address" = "擁有者位址";
+
+/* Masternodes */
+"Owner key hash" = "擁有者鑰匙雜湊";
 
 /* Owner keys */
 "Owner keys" = "所有者鑰匙";
 
 /* No comment provided by engineer. */
 "P2SH platform addresses aren't supported yet. Use a P2PKH recipient." = "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.";
+
+/* DashPay: fee source note of the Enable DashPay confirmation */
+"Paid from your identity's credit balance." = "從您身分的積分餘額中支付。";
 
 /* DashSpend */
 "Password" = "密碼";
@@ -2106,6 +2664,9 @@
 
 /* Usernames */
 "Paste link here" = "粘貼鏈接在這裡";
+
+/* DashPay Invitations */
+"Paste the invitation link you received, or scan its QR code. It funds your username registration." = "貼上您收到的邀請連結，或掃描其 QR 碼。它將支付您的用戶名稱註冊費用。";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "貼上您的圖片網址";
@@ -2118,6 +2679,12 @@
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "易於使用的付款流程，可立即付款並能即時確認付款";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "直接向用戶名稱付款";
+
+/* DashPay intro: headline */
+"Pay people, not addresses" = "向人付款，而非向位址付款";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "以用戶名來支付。不再需要使用字母數字位址";
@@ -2146,6 +2713,9 @@
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "付款中...";
 
+/* Raw transaction inspector */
+"Payload hex" = "酬載十六進位";
+
 /* Coinbase/Buy Dash */
 "Payment method" = "付款方式";
 
@@ -2158,8 +2728,24 @@
 /* DashPay Contacts */
 "Payments" = "Payments";
 
+/* DashPay FAQ */
+"Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "支付是私密的：您與聯絡人交換的位址包含在只有你們兩人能讀取的加密酬載中，且從不公開——因此您的支付無法被輕易關聯到您的用戶名稱。不過它們仍是透明鏈上的普通支付：進階鏈上分析仍可能洩漏資訊。Shielded DashPay（即將推出）將彌補這一缺口。聯繫請求本身目前並不私密：任何人都能看到兩個身分之間存在關聯。私密聯繫請求是即將推出的功能。您的用戶名稱和個人資料在 Dash Platform 上同樣是公開的。";
+
+/* Balance info sheet */
+"Payments confirm in seconds with InstantSend" = "使用 InstantSend，支付幾秒內即可確認";
+
+/* No comment provided by engineer. */
+"Payments made directly to addresses won’t be retained in activity." = "直接向位址進行的支付不會保留在活動中。";
+
 /* DashPay Contacts */
 "Payments made directly to an address aren't retained here." = "Payments made directly to an address aren't retained here.";
+
+/* DashPay intro: feature body */
+"Payments with each contact are grouped in one place, with names and profiles instead of raw transactions." = "與每位聯絡人的支付都彙集在一處，顯示姓名和個人資料，而不是原始交易。";
+
+/* CrowdNode */
+/* Masternodes */
+"Payout address" = "收款位址";
 
 /* CrowdNode */
 "Payout Options" = "支付選項";
@@ -2206,11 +2792,31 @@
 /* Dash Platform chain */
 "Platform" = "Platform";
 
+/* Send screen destination type */
+"Platform address" = "Platform 位址";
+
+/* The Dash Platform credits balance */
+"Platform balance" = "Platform 餘額";
+
 /* SDK identity profile sheet */
 "Platform Credits" = "Platform Credits";
 
+/* Masternodes */
+"Platform node" = "Platform 節點";
+
+/* Masternode keys */
+"Platform Node ID" = "Platform 節點 ID";
+
 /* No comment provided by engineer. */
 "Platform Payment" = "Platform Payment";
+
+/* Masternodes */
+"Platform payments don't identify the sender. This payment was recorded when the wallet noticed the balance change — it may have arrived earlier." = "Platform 支付不會標明付款方。此筆支付是在錢包發現餘額變動時記錄的——實際入帳時間可能更早。";
+
+"Platform SDK not ready" = "Platform SDK 尚未就緒";
+
+/* No comment provided by engineer. */
+"Platform sync is not running. Open Sync Info → Platform Sync Status to start it." = "Platform 同步未在執行。請開啟「同步資訊 → Platform 同步狀態」以啟動它。";
 
 /* No comment provided by engineer. */
 "Platform sync is not running. Open Tools → Platform Sync Status to start it." = "Platform sync is not running. Open Tools → Platform Sync Status to start it.";
@@ -2220,6 +2826,9 @@
 
 /* InternalTransfer */
 "Platform wallet manager unavailable" = "Platform wallet manager unavailable";
+
+/* Coinbase/Buy Dash */
+"Platform → Shielded" = "Platform → 遮蔽";
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "請在 Coinbase 上添加一種付款方式";
@@ -2299,6 +2908,9 @@
 /* No comment provided by engineer. */
 "Preview Invitation" = "預覽邀請";
 
+/* Masternode keys */
+"Previously used at: " = "上次使用於：";
+
 /* Stale rates */
 "Prices are at least 30 minutes old. Fiat values may be incorrect." = "價格至少有 30 分鐘延遲，所以相關的法幣的價值可能不正確。";
 
@@ -2314,11 +2926,38 @@
 /* No comment provided by engineer. */
 "Privacy tip" = "Privacy tip";
 
+/* Usernames */
+"Private by design" = "隱私源於設計";
+
+/* DashPay FAQ */
+"Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon." = "私密聯繫請求（讓您與誰建立聯繫保持私密）、Shielded DashPay——從您的私密遮蔽餘額向聯絡人付款——以及向尚未在您聯絡人中的用戶付款，均即將推出。";
+
+/* DashPay FAQ */
+"Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, you will have the choice of having your friendship be public or private." = "私密聯繫請求正在開發中，預計在 2026 年 9 月至 10 月左右推出。目前請求本身是公開的——即使其中的支付資訊已加密，任何人仍能看到兩個身分之間存在關聯。私密聯繫請求推出後，您可以選擇讓這段好友關係公開或保持私密。";
+
+/* DashPay intro: coming-soon body */
+"Private contact requests, Shielded DashPay, and paying people who aren't contacts yet." = "私密聯繫請求、Shielded DashPay，以及向尚未成為聯絡人的用戶付款。";
+
 /* No comment provided by engineer. */
 "Private key" = "私鑰";
 
 /* No comment provided by engineer. */
 "Private key could not be decoded: %@" = "Private key could not be decoded: %@";
+
+/* DashPay intro: feature body */
+"Private payment addresses are exchanged between you and your contacts. Only you and your contact know the recipient and sender of payments between yourselves." = "私密支付位址在您與聯絡人之間交換。只有您和您的聯絡人知道你們之間支付的收款方和付款方。";
+
+/* DashPay intro: feature title */
+"Private payments" = "私密支付";
+
+/* Usernames */
+"Private registration" = "私密註冊";
+
+/* Platform → Transparent withdrawal */
+"Processing time" = "處理時間";
+
+/* Balance info sheet section */
+"Pros" = "優點";
 
 /* CrowdNode Portal */
 "Protect your savings" = "保護您的存款";
@@ -2329,6 +2968,18 @@
 /* No comment provided by engineer. */
 "Provider Address" = "提供者位址";
 
+/* Masternodes */
+"Provider transactions" = "提供者交易";
+
+/* Masternode keys */
+"Public key" = "公鑰";
+
+/* Masternode keys */
+"Public key (legacy)" = "公鑰（舊版）";
+
+/* Identities */
+"Public keys" = "公鑰";
+
 /* No comment provided by engineer. */
 "Public URL" = "公共網址";
 
@@ -2337,6 +2988,9 @@
 
 /* Alert title */
 "Purchase Failed" = "購買失敗";
+
+/* Identities: what a public key is used for */
+"Purpose" = "用途";
 
 /* DashSpend */
 "Quantity" = "Quantity";
@@ -2356,11 +3010,30 @@
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "比率: %1$@ = %2$@";
 
+/* Raw transaction inspector */
+"Raw transaction" = "原始交易";
+
+/* Raw transaction inspector */
+"Raw transaction unavailable" = "原始交易無法使用";
+
+/* SPV diagnostics */
+"Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead." = "從所選高度開始，重新檢查精簡區塊過濾器中屬於此錢包的交易，重新下載並重新比對。重新掃描的下限為錢包的建立高度以及本機儲存的鏈資料——若要復原更早的紀錄，請改為降低錢包起始區塊高度。";
+
 /* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet.";
 
 /* CrowdNode */
 "Read Withdrawal Policy" = "閱讀提款政策";
+
+/* Identities: key visible to the wallet but not usable for signing */
+"Read-only" = "唯讀";
+
+/* Usernames */
+"Ready around %@" = "約在 %@ 就緒";
+
+/* No comment provided by engineer. */
+/* Masternodes */
+"Reason" = "原因";
 
 /* No comment provided by engineer. */
 "Receive" = "接收";
@@ -2389,8 +3062,13 @@
 /* No comment provided by engineer. */
 "Received from" = "從......收到";
 
+/* DashPay payment row — sender's display name */
+"Received from %@" = "收自 %@";
+
 /* CrowdNode */
 "Receiving rewards" = "領取獎勵";
+
+"Records your masternodes as having voted, without taking a side." = "記錄您的主節點已投票，但不偏向任何一方。";
 
 /* No comment provided by engineer. */
 "Recover" = "恢復";
@@ -2411,6 +3089,10 @@
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "恢復詞組必須包含 12, 15, 18, 21 或24 個字";
 
 /* Maya */
+/* Masternodes */
+"Refresh" = "重新整理";
+
+/* Maya */
 "Refresh quote" = "Refresh quote";
 
 /* Dash DEX / dex_refund_address_field_label */
@@ -2423,10 +3105,21 @@
 "Register?" = "要注冊嗎?";
 
 /* No comment provided by engineer. */
+/* Masternodes */
+"Registered at" = "註冊於";
+
+/* No comment provided by engineer. */
 "Registered from" = "從......註冊";
 
 /* No comment provided by engineer. */
 "Registered Masternode" = "已註冊的主節點";
+
+/* Usernames */
+"Registering privately takes at least %@ Dash in your Shielded balance plus a few hours of rest time — the next screens walk you through it." = "私密註冊需要遮蔽餘額中至少有 %@ Dash，並靜置數小時——接下來的畫面會引導您完成。";
+
+/* Usernames */
+/* Masternodes */
+"Registration" = "註冊";
 
 /* Usernames */
 "Registration failed" = "Registration failed";
@@ -2473,6 +3166,8 @@
 /* Testnet faucet */
 "Requesting tDash…" = "Requesting tDash…";
 
+"Requesting this name" = "正在申請此名稱";
+
 /* An action */
 "Rescan" = "重新掃瞄";
 
@@ -2501,10 +3196,23 @@
 "Restore an existing wallet" = "Restore an existing wallet";
 
 /* Location Service Status */
+"Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "已復原的錢包並不總能還原操作類型。此項目是根據鏈上備註資料重建的。";
+
+/* Location Service Status */
 "Restricted" = "受限制的";
 
 /* Usernames */
 "Results" = "結果";
+
+/* SPV diagnostics */
+"Resync armed from height %u — quit and reopen the app to start." = "已準備從高度 %u 重新同步——結束並重新開啟應用程式即可開始。";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "保留雙方的交易紀錄";
+
+/* No comment provided by engineer. */
+/* Masternode status */
+"Retired" = "已退役";
 
 /* No comment provided by engineer. */
 "Retry" = "重試";
@@ -2514,6 +3222,9 @@
 
 /* Voting */
 "Review the posting below to verify the ownership of this username" = "請參閱下面的內容以驗證該用戶名的所有權";
+
+/* Masternodes */
+"Revocation" = "撤銷";
 
 /* Transaction filter */
 "Rewards" = "Rewards";
@@ -2551,6 +3262,15 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "屏幕截圖可以被其他程序或者設備獲得。請生成一個新的恢復詞組並妥善保管。";
 
+/* Raw transaction inspector */
+"Script" = "指令碼";
+
+/* Raw transaction inspector */
+"Script signature" = "指令碼簽章";
+
+/* Raw transaction inspector */
+"Script type" = "指令碼類型";
+
 /* DashPay */
 "SDK is not initialized" = "SDK is not initialized";
 
@@ -2563,11 +3283,31 @@
 /* DashPay Contacts */
 "Search Contacts" = "Search Contacts";
 
+/* No comment provided by engineer. */
+"Search for a contact" = "搜尋聯絡人";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "搜尋聯繫請求";
+
 /* DashPay Contacts */
 "Search for a User" = "Search for a User";
 
 /* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "在 Dash 網絡上搜尋用戶";
+
+/* No comment provided by engineer. */
+"Search for a username" = "搜尋用戶名稱";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "搜尋結果：\"";
+
+/* No comment provided by engineer. */
 "Search territories" = "搜索地區";
+
+"Search usernames" = "搜尋用戶名稱";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "正在 Dash 網絡上搜尋用戶名稱 %@";
 
 /* No comment provided by engineer. */
 "Secure Your Wallet" = "保護您的錢包";
@@ -2577,6 +3317,9 @@
 
 /* No comment provided by engineer. */
 "Security Level" = "安全等級";
+
+/* Identities: DPP security level of a public key */
+"Security level" = "安全等級";
 
 /* DashSpend */
 "See card details" = "See card details";
@@ -2596,8 +3339,12 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "請選擇購買、出售、轉換和轉移達世幣的服務";
 
+"Select all" = "全選";
+
 /* DashSpend denomination selection */
 "Select amount" = "選擇金額";
+
+"Select at least one masternode to vote with." = "請至少選擇一個用於投票的主節點。";
 
 /* Block explorer picker
    Block explorer selection title */
@@ -2620,6 +3367,8 @@
 
 /* Coinbase */
 "Select the coin" = "選擇幣種";
+
+"Selecting fewer nodes reveals less about which masternodes you run." = "選擇的節點越少，越不容易暴露您執行的是哪些主節點。";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "自助結帳";
@@ -2661,6 +3410,12 @@
 /* No comment provided by engineer. */
 "Send to" = "發給";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "發送給聯絡人";
+
+/* DashPay intro: feature body */
+"Send to a username you can actually remember and verify." = "向一個您真正能記住並核實的用戶名稱發送。";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "發送到位址";
 
@@ -2685,8 +3440,17 @@
 /* Dash DEX */
 "Send your %@ before the timer runs out. If you send after the address expires, your funds will be refunded — not converted." = "Send your %@ before the timer runs out. If you send after the address expires, your funds will be refunded — not converted.";
 
+/* DashPay: CTA of the enable success sheet */
+"Send your first contact request" = "發送您的第一個聯繫請求";
+
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "發送中";
+
+/* No comment provided by engineer. */
+"Sending Contact Request" = "正在發送聯繫請求";
+
+/* No comment provided by engineer. */
+"Sending to" = "發送至";
 
 /* CrowdNode */
 "Sending to CrowdNode account" = "發送到 CrowdNode 帳戶";
@@ -2715,11 +3479,26 @@
 /* No comment provided by engineer. */
 "Sent to" = "發給";
 
+/* DashPay payment row — recipient's display name */
+"Sent to %@" = "已發送給 %@";
+
 /* DashPay Contacts */
 "Sent you a request" = "Sent you a request";
 
+/* Raw transaction inspector */
+"Sequence" = "序號";
+
 /* DashSpend */
 "Server error occurred. Please try again later." = "服務器錯誤發生。請稍後再試。";
+
+/* Masternodes */
+"Service" = "服務";
+
+/* Identities */
+"Set as Main" = "設為主要";
+
+/* Identities */
+"Set as Main Identity" = "設為主要身分";
 
 /* No comment provided by engineer. */
 "Set PIN" = "設置密碼";
@@ -2742,8 +3521,14 @@
 /* Share key */
 "Share key" = "共享金鑰";
 
+/* Usernames */
+"Shared privacy pool at minimum size" = "共享隱私池已達最小規模";
+
 /* No comment provided by engineer. */
 "Shielded" = "Shielded";
+
+/* Send screen destination type */
+"Shielded address" = "遮蔽位址";
 
 /* InternalTransfer */
 "Shielded address is not bound for this wallet" = "Shielded address is not bound for this wallet";
@@ -2757,11 +3542,20 @@
 /* Transaction filter */
 "Shielded sent" = "Shielded sent";
 
+"Shielded Spend" = "遮蔽支出";
+
 /* Transfer of own funds into the private shielded balance */
 "Shielded transfer" = "Shielded transfer";
 
 /* A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet */
 "Shielded transfer (pending)" = "Shielded transfer (pending)";
+
+"Shielded wallet starting…" = "正在啟動遮蔽錢包…";
+
+/* Transfer of own funds from the private shielded balance back to the transparent wallet */
+"Shielded → Platform" = "遮蔽 → Platform";
+
+"Shielded → Transparent" = "遮蔽 → 透明";
 
 /* Explore Dash */
 "Show all locations" = "顯示所有地點";
@@ -2796,11 +3590,16 @@
 /* DashSpend */
 "Single" = "Single";
 
+/* Raw transaction inspector */
+"Size" = "大小";
+
 /* No comment provided by engineer. */
 "Skip" = "略過";
 
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
+
+"Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen." = "此清單中可能缺少您的部分主節點——錢包無法讀取您完整的投票鑰匙集合。請完成同步後重新開啟此畫面。";
 
 /* Usernames */
 "Some usernames can be blocked" = "某些使用者名稱可能會被阻止";
@@ -2814,6 +3613,9 @@
 /* No comment provided by engineer. */
 "Sort by" = "排序方式";
 
+/* No comment provided by engineer. */
+"Sort Contacts" = "排序聯絡人";
+
 /* Explore Dash/Filters */
 "Sorted by discount" = "按折扣排序";
 
@@ -2822,6 +3624,9 @@
 
 /* Explore Dash/Filters */
 "Sorted by name" = "按名稱排序";
+
+/* Raw transaction inspector */
+"Special payload" = "特殊酬載";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "指定金額";
@@ -2844,12 +3649,20 @@
 /* No comment provided by engineer. */
 "Staking" = "質押";
 
+/* Usernames */
+"Starts after you add funds" = "在您加入資金後開始";
+
+/* Transaction details */
+"Status" = "狀態";
+
 /* Step 1 */
 "Step %ld" = "步驟 %ld";
 
 /* DashPay
    InternalTransfer */
 "Storage is not configured" = "Storage is not configured";
+
+"Stored as" = "儲存為";
 
 /* Voting */
 "Submit" = "提交";
@@ -2926,6 +3739,12 @@
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "同步中...  結果可能不完整。";
 
+/* No comment provided by engineer. */
+"Sync Info" = "同步資訊";
+
+/* SPV sync */
+"Sync too slow?" = "同步太慢？";
+
 /* About screen tech info: SPV state */
 "synced" = "synced";
 
@@ -2956,8 +3775,13 @@
 /* No comment provided by engineer. */
 "Take a Photo from Camera" = "從相機拍照";
 
+"Take no side" = "不偏向任何一方";
+
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "點擊剪貼板中的地址進行粘貼";
+
+/* Raw transaction inspector */
+"Tap to copy" = "點一下以複製";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "點按即可隱藏餘額";
@@ -2974,6 +3798,9 @@
 /* DashSpend */
 "Temporarily unavailable" = "暫時不可用";
 
+/* Masternode keys - dashmate Ed25519 node key format */
+"Tenderdash node key (base64)" = "Tenderdash 節點鑰匙 (base64)";
+
 /* Terms & conditions */
 "Terms & conditions" = "條款和條件";
 
@@ -2985,6 +3812,9 @@
 
 /* No comment provided by engineer. */
 "Testnet" = "測試網";
+
+/* Badge on the home balance while the wallet runs on testnet */
+"TESTNET" = "TESTNET";
 
 /* Wallets */
 "That is not this wallet's recovery phrase." = "That is not this wallet's recovery phrase.";
@@ -3000,6 +3830,15 @@
 
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "代碼不正確。請檢查並重試!";
+
+/* Send confirm sheet */
+"The Dash arrives at the recipient's address after the network processes the withdrawal — this can take up to 10 minutes." = "網絡處理提領後，Dash 將到達收款人的位址——這最多可能需要 10 分鐘。";
+
+/* Send confirm sheet */
+"The Dash arrives at the recipient's address once the network processes the withdrawal." = "網絡處理提領後，Dash 即會到達收款人的位址。";
+
+/* No comment provided by engineer. */
+"The Dash arrives in your Transparent balance once the network processes the withdrawal." = "網絡處理提領後，Dash 即會到達您的透明餘額。";
 
 /* Usernames */
 "The Dash network has to vote to approve some usernames before they are created" = "某些用戶名稱在建立之前，必須經過達世幣網絡投票批准方能使用。";
@@ -3034,11 +3873,20 @@
 /* Usernames */
 "The link you send will be visible only to the network owners" = "您發送的連結僅對網路所有者可見";
 
+/* Identities */
+"The main identity can only be chosen from the active wallet" = "只能從目前的錢包中選擇主要身分";
+
 /* Dash DEX */
 "The maximum transaction amount is %@" = "The maximum transaction amount is %@";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "您可以發送的最小金額是 %@";
+
+/* Balance info sheet */
+"The most private place to hold your Dash" = "存放您的 Dash 最私密的地方";
+
+/* SPV diagnostics */
+"The persisted wallet row has no network — cannot arm a resync." = "已儲存的錢包紀錄沒有網絡——無法準備重新同步。";
 
 /* Dash DEX / dex_error_price_moved */
 "The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
@@ -3049,6 +3897,15 @@
 /* Dash DEX */
 "The refund address is required" = "The refund address is required";
 
+/* DashPay */
+"The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately." = "註冊已送出，但無法確認其結果。請等待一分鐘讓錢包完成同步，然後重試——不要立即重新送出。";
+
+/* Usernames */
+"The shared privacy pool is still growing (%ld of %ld deposits). Private registration unlocks once it reaches the minimum." = "共享隱私池仍在成長（%1$ld / %2$ld 筆存入）。達到最低規模後即可解鎖私密註冊。";
+
+/* DashPay */
+"The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum." = "共享隱私池仍在成長（%1$ld / %2$ld 筆存入）。請在其達到最低規模後重試。";
+
 /* No comment provided by engineer. */
 "The transfer could take up to 10 minutes" = "The transfer could take up to 10 minutes";
 
@@ -3058,8 +3915,23 @@
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "用戶名稱 '%@' 被達世幣網絡封鎖。請通過請求另一個用戶名來重試。";
 
+/* SPV diagnostics */
+"The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Saving a height at or below the current one clears this network's chain data at the next launch and rescans from it." = "錢包的建立高度——過濾器掃描和「自錢包建立起」重新掃描的下限。請將其設定為不高於錢包首次收到資金的高度；匯入時主網預設為 200000，測試網預設為 0。儲存一個不高於目前值的高度，將在下次啟動時清除該網絡的鏈資料並從該高度重新掃描。";
+
+/* No comment provided by engineer. */
+"them (Fetching Info)" = "他（正在取得資訊）";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "沒有新通知";
+
 /* No comment provided by engineer. */
 "There are no transactions to display" = "沒有交易能夠顯示";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@" = "沒有與名稱 %@ 相符的用戶";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@ in your contacts" = "您的聯絡人中沒有與名稱 %@ 相符的用戶";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "將交易歷史記錄匯出到 ZenLedger 時發生錯誤";
@@ -3071,10 +3943,16 @@
 "There was an error, please try again later" = "出現錯誤，請稍後重試";
 
 /* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "這些資金將轉入您的 Platform 餘額，轉帳完成後即可使用。";
+
+/* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 
 /* CrowdNode */
 "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device." = "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.";
+
+/* Send sheet source/destination mismatch */
+"This address can't be paid from your %@ balance" = "無法從您的 %@ 餘額向此位址付款";
 
 /* Dash DEX / dex_error_sanctioned */
 "This address can't be used for swaps." = "This address can't be used for swaps.";
@@ -3082,11 +3960,16 @@
 /* Dash DEX */
 "This address expires in 10 minutes" = "This address expires in 10 minutes";
 
+/* DashPay: body of the Enable DashPay confirmation */
+"This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "這會為您的身分加入兩把鑰匙，讓其他用戶能夠向您發送聯繫請求，也讓您能夠接受他們的請求。此操作只需進行一次。";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
 /* Dash DEX / dex_enter_amount_invalid */
 "This amount can't be swapped right now. Try a different amount, or try again shortly." = "This amount can't be swapped right now. Try a different amount, or try again shortly.";
+
+"This applies one choice to all %d selected usernames." = "這會將同一個選擇套用於全部 %d 個所選用戶名稱。";
 
 /* DashSpend */
 "This card works only in the United States." = "This card works only in the United States.";
@@ -3094,11 +3977,26 @@
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "這個額外的步驟用來證明真的是你在嘗試進行交易。";
 
+/* DashPay Invitations */
+"This invitation link is not valid." = "此邀請連結無效。";
+
+/* Send screen */
+"This is not a valid Dash address for this network" = "這不是此網絡的有效 Dash 位址";
+
+/* DashPay Invitations */
+"This is not a valid invitation link" = "這不是有效的邀請連結";
+
 /* DashPay Contacts */
 "This is you" = "This is you";
 
+/* Identities */
+"This is your main identity" = "這是您的主要身分";
+
 /* DashPay Contacts */
 "This is your own identity." = "This is your own identity.";
+
+/* Masternodes */
+"This masternode has no Platform identity yet." = "此主節點尚無 Platform 身分。";
 
 /* CTXSpend error */
 "This merchant is currently unavailable." = "該商戶目前不可用。";
@@ -3133,14 +4031,25 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "這代表完整主節點的當前年度百分比收益率減去 15% 的 CrowdNode 費用。這不是保證回報率，可能會根據 CrowdNode 資金池的大小和達世幣價格而上升或下降。";
 
+"This still counts as your masternodes having voted in this contest." = "這仍會計為您的主節點已在此次爭奪中投票。";
+
 /* Dash DEX / dex_error_allowance */
 "This token needs approval before it can be swapped." = "This token needs approval before it can be swapped.";
+
+/* Raw transaction inspector */
+"This transaction's raw bytes are not stored on this device." = "此交易的原始位元組未儲存在此裝置上。";
 
 /* InternalTransfer recovery */
 "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it." = "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.";
 
 /* DashPay Contacts */
 "This user hasn't set up the keys needed to receive contact requests yet." = "This user hasn't set up the keys needed to receive contact requests yet.";
+
+"This username went to someone else" = "此用戶名稱歸他人所有";
+
+"This wallet could not derive the voting key for this node." = "此錢包無法為該節點衍生投票鑰匙。";
+
+"This wallet holds no active masternode voting keys, so it cannot vote. Registered nodes appear under Tools → Masternodes." = "此錢包不含有效的主節點投票鑰匙，因此無法投票。已註冊的節點會顯示在「工具 → 主節點」中。";
 
 /* Wallets */
 "This wallet is already on this device." = "This wallet is already on this device.";
@@ -3150,6 +4059,12 @@
 
 /* No comment provided by engineer. */
 "This will erase this wallet from this device. You can only restore it with your recovery phrase." = "This will erase this wallet from this device. You can only restore it with your recovery phrase.";
+
+/* Send confirm sheet */
+"This withdraws your entire Platform balance in one transfer. The Dash arrives at the recipient's address once the network processes the withdrawal." = "這會一次性提領您的全部 Platform 餘額。網絡處理提領後，Dash 即會到達收款人的位址。";
+
+/* No comment provided by engineer. */
+"This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal." = "這會一次性提領您的全部 Platform 餘額。網絡處理提領後，Dash 即會到達您的透明餘額。";
 
 /* Send Screen: to address */
 "to" = "至";
@@ -3190,8 +4105,14 @@
 /* CrowdNode */
 "Transaction History" = "交易記錄";
 
+/* Balance info sheet */
+"Transaction history isn't available" = "交易紀錄無法使用";
+
 /* No comment provided by engineer. */
 "Transaction id" = "交易ID";
+
+/* Raw transaction inspector */
+"Transaction ID" = "交易 ID";
 
 /* A verb, button title. */
 "Transfer" = "轉帳";
@@ -3219,8 +4140,14 @@
 /* No comment provided by engineer. */
 "Transfer In" = "轉入";
 
+/* Balance breakdown */
+"Transfer in" = "轉入";
+
 /* No comment provided by engineer. */
 "Transfer Out" = "轉出";
+
+/* Balance breakdown */
+"Transfer out" = "轉出";
 
 /* No comment provided by engineer. */
 "Transfer submitted" = "Transfer submitted";
@@ -3230,6 +4157,30 @@
 
 /* No comment provided by engineer. */
 "Transfers take different times" = "Transfers take different times";
+
+/* Balance info sheet */
+"Transfers take longer — privacy proofs take time to build" = "轉帳耗時較長——產生隱私證明需要時間";
+
+/* Balance info sheet */
+"Transfers to other platform addresses and shielded addresses are instant and final" = "向其他 Platform 位址和遮蔽位址的轉帳是即時且最終的";
+
+/* Balance breakdown */
+"Transparent" = "透明";
+
+/* Send screen destination type */
+"Transparent address" = "透明位址";
+
+/* The transparent (Core) balance of the Dash Wallet */
+"Transparent balance" = "透明餘額";
+
+/* Usernames */
+"Transparent funding publicly links your username to these funds." = "透明資金會將您的用戶名稱與這些資金公開關聯起來。";
+
+/* Transfer of own funds into the Platform balance */
+"Transparent → Platform" = "透明 → Platform";
+
+/* Transfer of own funds into the private shielded balance */
+"Transparent → Shielded" = "透明 → 遮蔽";
 
 /* An action */
 "Try again" = "再試一次";
@@ -3279,6 +4230,9 @@
 /* Dash DEX */
 "Unable to load rate data" = "Unable to load rate data";
 
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "無法提供建議";
+
 /* Swap */
 "Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
 
@@ -3312,6 +4266,12 @@
 /* Coinbase */
 "Unknown Balance" = "未知餘額";
 
+/* Raw transaction inspector */
+"Unknown special type %d" = "未知的特殊類型 %d";
+
+/* No comment provided by engineer. */
+"Unshielded" = "未遮蔽";
+
 /* No comment provided by engineer. */
 "Unsupported URL" = "不支援的URL";
 
@@ -3334,6 +4294,9 @@
 "Upgrade to DashPay" = "升級到Dashpay";
 
 /* No comment provided by engineer. */
+"Upgrade to Evolution" = "升級至 Evolution";
+
+/* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* Uphold */
@@ -3353,6 +4316,18 @@
 
 /* Dash DEX */
 "URI" = "URI";
+
+/* Usernames */
+"Use transparent balance instead" = "改用透明餘額";
+
+/* Masternode keys */
+"Used" = "已使用";
+
+/* Masternode keys */
+"Used at: " = "使用於：";
+
+/* No comment provided by engineer. */
+"User (Fetching Info)" = "用戶（正在取得資訊）";
 
 /* Voting */
 "Username" = "用戶名稱";
@@ -3384,6 +4359,23 @@
 /* Usernames */
 "Username was successfully requested" = "使用者名稱申请成功";
 
+/* Identities */
+"Usernames" = "用戶名稱";
+
+"Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "用戶名稱以正規化形式儲存，以防止出現形似名稱，因此這可能與每個人輸入的內容不同。";
+
+/* DashPay intro: feature title */
+"Usernames, not addresses" = "用戶名稱，而非位址";
+
+/* No comment provided by engineer. */
+"Users that matches %@ who are currently not in your contacts" = "與 %@ 相符且目前不在您聯絡人中的用戶";
+
+/* Balance info sheet */
+"Uses one of the most audited and tested zero-knowledge libraries (Orchard)" = "使用經過最充分稽核和測試的零知識程式庫之一 (Orchard)";
+
+/* DashPay Invitations */
+"Valid invitation" = "有效邀請";
+
 /* CrowdNode Portal */
 "Validating address…" = "正在核實位址...";
 
@@ -3399,6 +4391,9 @@
 /* CrowdNode Portal */
 "Verification Required" = "需要驗證";
 
+/* Usernames */
+"Verified during registration" = "已在註冊時驗證";
+
 /* No comment provided by engineer. */
 "Verified Successfully" = "已成功驗證";
 
@@ -3411,11 +4406,20 @@
 /* Usernames */
 "Verify your identity" = "驗證您的身份";
 
+/* Raw transaction inspector */
+"Version" = "版本";
+
+/* Balance info sheet */
+"Very efficient with low fees" = "非常有效率且費用低廉";
+
 /* adjective, security level */
 "Very High" = "非常高";
 
 /* CrowdNode */
 "Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "將會向 CrowdNode 發送非常少量的達世幣，以驗證您是該錢包位址的所有者。";
+
+/* No comment provided by engineer. */
+"View All" = "檢視全部";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "在瀏覽器中查看";
@@ -3429,17 +4433,33 @@
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "查看恢復詞組";
 
+/* Raw transaction inspector */
+"View Transaction" = "檢視交易";
+
 /* No comment provided by engineer. */
 "View transaction details" = "查看交易的詳細信息";
 
 /* Maya */
 "View transaction on MayaScan" = "View transaction on MayaScan";
 
+"Vote" = "投票";
+
+"Vote cast" = "已投票";
+
 /* Voting */
 "Vote for All" = "給所有人投票";
 
 /* Voting */
+"Vote on contested usernames" = "為有爭議的用戶名稱投票";
+
+"Vote on several" = "為多個投票";
+
+/* Voting */
 "Vote to Approve" = "投票通過";
+
+"Vote with" = "使用以下節點投票";
+
+"Votes that nobody should receive these usernames." = "投票支持任何人都不應取得這些用戶名稱。";
 
 /* Voting */
 "Votes: High to low" = "得票數：從高到低";
@@ -3453,14 +4473,35 @@
 /* No comment provided by engineer. */
 "Voting Address" = "投票位址";
 
+/* Voting keys */
+/* Masternodes */
+"Voting address" = "投票位址";
+
+"Voting ended with no winner" = "投票結束，無人勝出";
+
+"Voting ends" = "投票結束";
+
 /* Voting */
 "Voting ends in %dd" = "投票將於 %d天後結束";
+
+"Voting in progress" = "投票進行中";
+
+"Voting in progress — lock votes are ahead" = "投票進行中——鎖定票領先";
+
+"Voting in progress — you are ahead" = "投票進行中——您領先";
 
 /* Usernames */
 "Voting is only required in some cases" = "僅在某些情況下才需要投票";
 
+/* Masternodes */
+"Voting key hash" = "投票鑰匙雜湊";
+
 /* Voting keys */
 "Voting keys" = "投票鑰匙";
+
+"Voting on this username has closed. The counts below are the last ones read." = "對此用戶名稱的投票已結束。以下計數為最後一次讀取的結果。";
+
+"Voting on “%@” has already closed. Refresh to see the result." = "對「%@」的投票已經結束。請重新整理以查看結果。";
 
 /* CrowdNode */
 "Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
@@ -3474,11 +4515,16 @@
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "等到錢包同步後完成交易";
 
+"Waiting for Dash Platform" = "正在等待 Dash Platform";
+
 /* Wallets — placeholder name with short id */
 "Wallet %@…" = "Wallet %@…";
 
 /* Enter Address Screen */
 "Wallet Address" = "錢包位址";
+
+/* SPV diagnostics */
+"Wallet birth height" = "錢包起始區塊高度";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "錢包被禁用";
@@ -3552,14 +4598,34 @@
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "歡迎來到 DashPay";
 
+/* DashPay FAQ */
+"What about Unstoppable Domains and similar name services?" = "Unstoppable Domains 及類似網域服務如何？";
+
+/* DashPay FAQ */
+"What does it cost?" = "費用是多少？";
+
+/* DashPay FAQ */
+"What is DashPay?" = "什麼是 DashPay？";
+
 /* Usernames */
 "What is username voting?" = "什麼是用戶名投票？";
+
+/* DashPay FAQ */
+"What's coming next?" = "接下來會有什麼？";
+
+/* DashPay FAQ */
+"When will contact requests become private?" = "聯繫請求何時會變為私密？";
 
 /* No comment provided by engineer. */
 "Where to Spend" = "在哪裡消費";
 
 /* No comment provided by engineer. */
 "Where to Spend?" = "在哪裡消費?";
+
+"Who is requesting this name" = "誰在申請此名稱";
+
+/* DashPay FAQ */
+"Why do I need to enable it?" = "為什麼我需要啟用它？";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "為什麼我會看到所有這些交易？";
@@ -3598,6 +4664,12 @@
 /* CrowdNode */
 "Withdrawal requested" = "提款請求";
 
+/* Full-balance Platform → Transparent withdrawal */
+"Withdraws the entire balance" = "提領全部餘額";
+
+/* Balance info sheet */
+"Works with every Dash wallet, exchange, and merchant" = "適用於所有 Dash 錢包、交易所和商家";
+
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "你願意接受這個邀請嗎?";
 
@@ -3621,6 +4693,11 @@
 
 /* No comment provided by engineer. */
 "Yesterday" = "昨天";
+
+"You" = "您";
+
+/* No comment provided by engineer. */
+"You accepted the contact request from %@" = "您已接受來自 %@ 的聯繫請求";
 
 /* DashPay Notifications */
 "You added %@ as a contact" = "You added %@ as a contact";
@@ -3670,6 +4747,9 @@
 /* Usernames */
 "You chose “%@” as your username." = "您選擇 “%@” 作為您的用戶名稱。";
 
+/* No comment provided by engineer. */
+"You do not have any contacts at the moment" = "您目前沒有任何聯絡人";
+
 /* DashSpend */
 "You do not have sufficient funds to complete this transaction" = "您沒有足夠的資金來完成此交易";
 
@@ -3678,6 +4758,9 @@
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "你超出了 Coinbase 的授權限制。";
+
+/* Usernames */
+"You have %@ Dash so far" = "您目前有 %@ Dash";
 
 /* Usernames */
 "You have %@ Dash.\nSome usernames cost up to %@ Dash." = "您有 %1$@ Dash.\n一些用戶名稱的成本高達 %2$@ Dash.";
@@ -3748,6 +4831,9 @@
 /* DashPay Notifications */
 "You sent a contact request to %@" = "You sent a contact request to %@";
 
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "您已向 %@ 發送聯繫請求";
+
 /* CrowdNode */
 "You should have a positive balance on Dash Wallet" = "你的達世幣錢包上的餘額應該是一個正數";
 
@@ -3774,6 +4860,11 @@
 
 /* No comment provided by engineer. */
 "You will transfer" = "You will transfer";
+
+"You won this username" = "您贏得了此用戶名稱";
+
+/* DashPay: body of the enable success sheet */
+"You're all set. Other users can now send you contact requests — and you can send yours." = "一切就緒。其他用戶現在可以向您發送聯繫請求——您也可以發送自己的請求。";
 
 /* DashPay Contacts */
 "You're already connected — you can pay each other directly by username." = "You're already connected — you can pay each other directly by username.";
@@ -3805,6 +4896,9 @@
 /* InternalTransfer recovery */
 "Your Dash is safe" = "Your Dash is safe";
 
+/* Identities */
+"Your Dash Platform identity appears here once you register a username." = "註冊用戶名稱後，您的 Dash Platform 身分會顯示在這裡。";
+
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
@@ -3835,11 +4929,20 @@
 /* Email is only used for OTP */
 "Your email is only used to send a one-time password." = "您的電子郵件僅用於發送一次性密碼。";
 
+/* DashPay intro: feature title */
+"Your history, organized" = "井然有序的紀錄";
+
+/* DashPay FAQ */
+"Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "您的身分需要兩把額外的鑰匙，才能在您與其他用戶之間加密聯繫請求。啟用時會透過一筆網絡交易加入它們。此操作只需進行一次。";
+
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "您來自 %@ 的邀請已被認領";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ is not valid" = "您來自 %@ 的邀請無效";
+
+/* DashPay Invitations */
+"Your invitation pays the registration fee for this username." = "您的邀請將支付此用戶名稱的註冊費用。";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "您的位置用於顯示您在地圖上的位置、所選範圍內中的 ATM 並改進搜索結果。";
@@ -3847,8 +4950,20 @@
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "您的位置用於顯示您在地圖上的位置、所選區域中的商家以及改進搜索結果。";
 
+/* Balance info sheet */
+"Your main Dash balance on the Core blockchain — what you send and receive with other wallets, exchanges, and merchants." = "您在 Core 區塊鏈上的主要 Dash 餘額——用於與其他錢包、交易所和商家收付資金。";
+
+/* CoinJoin */
+"Your mixed coins were moved to your Dash Wallet balance." = "您的已混合資金已轉入 Dash 錢包餘額。";
+
+/* CoinJoin */
+"Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "您的已混合資金已轉入遮蔽餘額。為獲得最佳隱私效果，請至少等待 2 小時後再使用這些資金。";
+
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
+
+/* Maya/SwapKit */
+"Your Platform balance" = "您的 Platform 餘額";
 
 /* Maya/SwapKit */
 "Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
@@ -3856,11 +4971,28 @@
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "您當前用於 CrowdNode 帳戶的主要達世幣位址";
 
+/* Balance info sheet */
+"Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "您的私密餘額。金額和位址在鏈上均已加密，因此您的持有量和紀錄都保持機密。";
+
 /* Usernames */
 "Your request was cancelled" = "您的申请已取消";
 
 /* DashSpend */
 "Your session expired" = "您的工作階段已經過期";
+
+/* Usernames */
+"Your Shielded balance" = "您的遮蔽餘額";
+
+"Your Shielded balance is almost ready — you can register privately around %@." = "您的遮蔽餘額即將就緒——您大約可在 %@ 私密註冊。";
+
+/* Usernames */
+"Your Shielded balance is ready — register your username privately now" = "您的遮蔽餘額已就緒——立即私密註冊您的用戶名稱";
+
+/* Usernames */
+"Your Shielded balance is resting — you can register privately around %@" = "您的遮蔽餘額正在靜置——您大約可在 %@ 私密註冊";
+
+/* DashPay */
+"Your shielded balance is still maturing. It will be ready around %@." = "您的遮蔽餘額仍在成熟中。大約將在 %@ 就緒。";
 
 /* Dash DEX */
 "Your swap can NOT be processed without a refund address" = "Your swap can NOT be processed without a refund address";
@@ -3878,6 +5010,9 @@
 "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it." = "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.";
 
 /* No comment provided by engineer. */
+"Your Transparent balance" = "您的透明餘額";
+
+/* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "您的用戶名 %@ 已在達世幣網絡上成功創建";
 
 /* No comment provided by engineer. */
@@ -3886,14 +5021,31 @@
 /* Usernames */
 "Your username has been successfully created" = "您的用戶名已成功創建";
 
+/* Usernames */
+"Your username is visible to everyone. Funding it from your Shielded balance — after letting the funds rest for a few hours — means no one can link your username to your other Dash." = "您的用戶名稱對所有人可見。讓資金靜置數小時後再用遮蔽餘額為其提供資金，任何人都無法將您的用戶名稱與您的其他 Dash 關聯起來。";
+
+/* Identities */
+"Your username, profile, and contacts follow this identity." = "您的用戶名稱、個人資料和聯絡人都歸屬於此身分。";
+
+/* Identities */
+"Your username, profile, and contacts will follow this identity." = "您的用戶名稱、個人資料和聯絡人都將歸屬於此身分。";
+
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "您的投票已被取消";
 
 /* Voting */
 "Your vote was submitted" = "您的投票已提交";
 
+"Your votes" = "您的選票";
+
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "您的錢包現在已經安全了。 您可以隨時使用恢復詞組在另一台設備上恢復帳戶。";
+
+/* Core send blocked until chain sync completes */
+"Your wallet is still syncing with the Dash network. Sending will be available once syncing completes." = "您的錢包仍在與 Dash 網絡同步。同步完成後即可發送。";
+
+/* Core send blocked until chain sync completes */
+"Your wallet is still syncing. Sending from your Transparent balance will be available once syncing completes." = "您的錢包仍在同步。同步完成後即可從透明餘額發送。";
 
 /* No comment provided by engineer. */
 "ZenLedger" = "ZenLedger";
@@ -3901,5 +5053,13 @@
 /* Savings percentage */
 "~%.0f%%" = "~%.0f%%";
 
+/* DashPay: estimated network fee — DASH amount, then its local-currency equivalent */
+"~%@ DASH (≈ %@)" = "~%@ DASH (≈ %@)";
+
+"“%@” could not be read as a Dash username." = "無法將「%@」識別為 Dash 用戶名稱。";
+
 /* Usernames */
 "“%@” has been registered." = "“%@” has been registered.";
+
+/* DashPay Invitations */
+"“%@” has been registered. Send a contact request to the person who invited you?" = "「%@」已註冊。要向邀請您的人發送聯繫請求嗎？";
