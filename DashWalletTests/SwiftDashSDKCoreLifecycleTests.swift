@@ -246,10 +246,18 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(
             PlatformAddressActivityUnitPolicy.duffs(fromCredits: creditedAmount),
             10_000_000)
-        XCTAssertTrue(PlatformAddressActivityUnitPolicy.unshieldMatches(
+        XCTAssertTrue(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
             creditedAmountCredits: creditedAmount,
             observedDeltaDuffs: 10_000_000))
-        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldMatches(
+        // Non-positive deltas are never own-operation residue.
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
+            creditedAmountCredits: creditedAmount,
+            observedDeltaDuffs: 0))
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
+            creditedAmountCredits: creditedAmount,
+            observedDeltaDuffs: -1))
+        // A credits-vs-duffs unit mixup must never pass as a match.
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
             creditedAmountCredits: creditedAmount,
             observedDeltaDuffs: Int64(creditedAmount)))
     }
@@ -270,16 +278,36 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     }
 
     func testOwnUnshieldSuppressionDoesNotMatchAnExternalReceive() {
-        XCTAssertFalse(PlatformAddressActivityUnitPolicy.exactUnshieldMatches(
+        // Different address: never suppressed, whatever the amount.
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldResidueMatches(
             destinationAddress: "tdash1own",
             observedAddress: "tdash1external",
             creditedAmountCredits: 10_000_000_000,
             observedDeltaDuffs: 10_000_000))
-        XCTAssertFalse(PlatformAddressActivityUnitPolicy.exactUnshieldMatches(
+        // Same address, delta LARGER than the credited principal: more
+        // money arrived than the own unshield explains — not residue.
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldResidueMatches(
             destinationAddress: "tdash1own",
             observedAddress: "tdash1own",
             creditedAmountCredits: 10_000_000_000,
-            observedDeltaDuffs: 9_999_999))
+            observedDeltaDuffs: 10_000_001))
+    }
+
+    func testOwnUnshieldSuppressionCoversTopUpResidue() {
+        // Shielded identity top-up: unshield lands 0.05, the top-up claims
+        // most of it before the next sync, so the observed delta is the
+        // small remainder — still the own operation's residue.
+        XCTAssertTrue(PlatformAddressActivityUnitPolicy.unshieldResidueMatches(
+            destinationAddress: "tdash1own",
+            observedAddress: "tdash1own",
+            creditedAmountCredits: 5_000_000_000,
+            observedDeltaDuffs: 198_000))
+        // The full principal (no follow-on spend) still matches.
+        XCTAssertTrue(PlatformAddressActivityUnitPolicy.unshieldResidueMatches(
+            destinationAddress: "tdash1own",
+            observedAddress: "tdash1own",
+            creditedAmountCredits: 5_000_000_000,
+            observedDeltaDuffs: 5_000_000))
     }
 
     func testPlatformActivityUnitMigrationKeepsPrereleaseVersion() {
