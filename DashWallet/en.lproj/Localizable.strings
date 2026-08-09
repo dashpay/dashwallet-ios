@@ -653,6 +653,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Coming soon";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Complete Transfer";
+
 /* Shielded transfer status */
 "Completed" = "Completed";
 
@@ -664,6 +667,9 @@
 
 /* Identity top-up sheet — body */
 "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Couldn't complete the transfer";
 
 /* Identity top-up sheet — free amount chip */
 "Custom" = "Custom";
@@ -2335,8 +2341,14 @@
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Read-only";
 
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Rebroadcast";
+
 /* Identity top-up sheet — shielded source note */
 "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins.";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Retrying transfer…";
 
 /* Identities: DPP security level of a public key */
 "Security level" = "Security level";
@@ -2371,11 +2383,17 @@
 /* SDK identity profile sheet — explains the identity credit balance */
 "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits.";
 
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "This transfer can't be retried from here.";
+
 /* SDK identity profile sheet — add credits to the identity */
 "Top Up" = "Top Up";
 
 /* Identity top-up sheet — title */
 "Top Up Identity Balance" = "Top Up Identity Balance";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Transfer completed";
 
 /* DashPay intro: feature title */
 "Usernames, not addresses" = "Usernames, not addresses";

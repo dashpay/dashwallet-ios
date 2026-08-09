@@ -107,11 +107,14 @@ class TXDetailViewController: BaseTxDetailsViewController {
 
     var dataSource: UITableViewDiffableDataSource<Section, Item>! = nil
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
+    /// Single-flight guard for the stuck-lock retry action.
+    private var isRetryingAssetLock = false
 
     enum Section: CaseIterable {
         case header
         case info
         case taxCategory
+        case recovery
         case rawTransaction
         case explorer
         case swapExplorer
@@ -128,6 +131,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case date(DWTitleDetailItem)
         case taxCategory(DWTitleDetailItem)
         case shieldedInfo(DWTitleDetailItem)
+        case rebroadcast(String)
         case viewTransaction
         case copyRawTransaction
         case explorer
@@ -150,6 +154,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
             case .date(let item): return ["Date"] + Self.identity(of: [item])
             case .taxCategory(let item): return ["TaxCategory"] + Self.identity(of: [item])
             case .shieldedInfo(let item): return ["ShieldedInfo"] + Self.identity(of: [item])
+            case .rebroadcast(let title): return ["Rebroadcast", title]
             case .viewTransaction: return ["ViewTransaction"]
             case .copyRawTransaction: return ["CopyRawTransaction"]
             case .explorer: return ["Explorer"]
@@ -252,6 +257,48 @@ extension TXDetailViewController {
         present(hostingController, animated: true)
     }
 
+    /// Retry the stuck asset-lock transfer on its EXISTING outpoint —
+    /// `AssetLockRecoveryService` drives the SDK resume path
+    /// (rebroadcast if needed, IS/CL wait, Platform submit). The await
+    /// spans the whole recovery, so the HUD honestly covers a
+    /// several-minute worst case rather than claiming early success.
+    private func retryStuckAssetLock() {
+        guard !isRetryingAssetLock, let retry = model.stuckAssetLockRetry else { return }
+        isRetryingAssetLock = true
+        let txidWire = model.transaction.txHashData
+        view.dw_showProgressHUD(withMessage: NSLocalizedString("Retrying transfer…", comment: "Asset-lock retry in progress"))
+        Task { [weak self] in
+            defer {
+                self?.isRetryingAssetLock = false
+                self?.view.dw_hideProgressHUD()
+            }
+            do {
+                try await AssetLockRecoveryService().retry(
+                    fundingTypeRaw: retry.fundingTypeRaw,
+                    txidWire: txidWire,
+                    vout: retry.vout)
+                self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"))
+            } catch DWIdentityAuthorizer.AuthError.cancelled {
+                // Backing out of the PIN prompt is not an error state.
+            } catch {
+                self?.presentRetryFailure(error)
+            }
+            // Re-derive the rows either way — even a failed retry can
+            // have advanced the lock (e.g. broadcast landed, Platform
+            // submit didn't), and the status row should say so.
+            self?.reloadDataSource()
+        }
+    }
+
+    private func presentRetryFailure(_ error: Error) {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Couldn't complete the transfer", comment: "Asset-lock retry failed"),
+            message: error.localizedDescription,
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+        present(alert, animated: true)
+    }
+
     /// Copies the serialized transaction hex. A missing row (bytes not
     /// stored on this device) reports itself rather than copying nothing.
     private func copyRawTransaction() {
@@ -296,6 +343,14 @@ extension TXDetailViewController {
                     let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailTaxCategoryCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailTaxCategoryCell
                     cell.update(with: item)
+                    return cell
+
+                case .recovery:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.reuseIdentifier,
+                                                             for: indexPath) as! TxDetailActionCell
+                    if case .rebroadcast(let title) = item {
+                        cell.titleLabel.text = title
+                    }
                     return cell
 
                 case .rawTransaction:
@@ -374,6 +429,13 @@ extension TXDetailViewController {
 
         currentSnapshot.appendItems([.date(date)], toSection: .info)
         currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
+        // A funding asset lock parked mid-transfer gets a retry action.
+        // The section is inserted (not pre-appended) so the empty state
+        // adds no phantom section spacing.
+        if let retry = model.stuckAssetLockRetry {
+            currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
+            currentSnapshot.appendItems([.rebroadcast(retry.actionTitle)], toSection: .recovery)
+        }
         currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
         if let swapLink = model.swapExplorerLink {
@@ -398,6 +460,8 @@ extension TXDetailViewController {
             model.toggleTaxCategoryOnCurrentTransaction()
             reloadDataSource()
             break
+        case .recovery:
+            retryStuckAssetLock()
         case .rawTransaction:
             if let item = dataSource.itemIdentifier(for: indexPath) {
                 switch item {
