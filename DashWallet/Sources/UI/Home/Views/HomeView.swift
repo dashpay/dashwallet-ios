@@ -607,11 +607,16 @@ struct HomeViewContent<Content: View>: View {
                     .padding(.leading, 15)
                 
                 Spacer()
-                
-                Text(DWDateFormatter.sharedInstance.dayOfWeek(from: date))
-                    .font(.footnote)
-                    .foregroundStyle(Color.dash.tertiaryText)
-                    .padding(.trailing, 15)
+
+                // The unknown-date group (restored shielded history with no
+                // recoverable date) carries the `.distantPast` sentinel — a
+                // weekday for it would be fabricated.
+                if date != .distantPast {
+                    Text(DWDateFormatter.sharedInstance.dayOfWeek(from: date))
+                        .font(.footnote)
+                        .foregroundStyle(Color.dash.tertiaryText)
+                        .padding(.trailing, 15)
+                }
             }
             .padding(.bottom, 6)
         }

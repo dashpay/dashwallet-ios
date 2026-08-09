@@ -76,7 +76,15 @@ struct ShieldedActivityItem: Identifiable {
     /// Exact fee in duffs, when the entry recorded one.
     let feeDuffs: UInt64?
     let blockHeight: UInt64?
+    /// Sort/grouping key. `Date.distantPast` when `hasKnownDate == false`
+    /// so unknown-age entries sink to the oldest end of the history —
+    /// only ever rendered through the `hasKnownDate` gate.
     let date: Date
+    /// False for SDK rows with `createdAtMs == 0` — the sentinel the
+    /// scan-derived (restored) entries carry because chain data holds no
+    /// per-note block time and the scan clock must not masquerade as
+    /// one. Render the date as unknown, never as the epoch.
+    let hasKnownDate: Bool
     /// Decoded UTF-8 text memo, when the 36-byte Dash memo is kind-1 text.
     let memoText: String?
     /// Created identity id (hex) for `identityCreate` entries.
@@ -123,7 +131,10 @@ struct ShieldedActivityItem: Identifiable {
         amountDuffs = (amountCreditsOverride ?? row.amount) / 1000
         feeDuffs = row.hasFee ? row.fee / 1000 : nil
         blockHeight = row.hasBlockHeight ? row.blockHeight : nil
-        date = Date(timeIntervalSince1970: Double(row.createdAtMs) / 1000.0)
+        hasKnownDate = row.createdAtMs > 0
+        date = hasKnownDate
+            ? Date(timeIntervalSince1970: Double(row.createdAtMs) / 1000.0)
+            : .distantPast
         memoText = Self.decodeTextMemo(row.memo)
         createdIdentityIdHex = effectiveKind == .identityCreate && row.identityId.count == 32
             ? row.identityId.map { String(format: "%02x", $0) }.joined()
@@ -275,7 +286,8 @@ struct ShieldedActivityItem: Identifiable {
     }
 
     var shortTimeString: String {
-        DWDateFormatter.sharedInstance.timeOnly(from: date)
+        guard hasKnownDate else { return "" }
+        return DWDateFormatter.sharedInstance.timeOnly(from: date)
     }
 
     /// Decode the 36-byte Dash memo when it is kind-1 UTF-8 text:
@@ -378,7 +390,9 @@ struct ShieldedActivityDetailsView: View {
                 }
                 infoRow(
                     NSLocalizedString("Date", comment: ""),
-                    DWDateFormatter.sharedInstance.longString(from: item.date))
+                    item.hasKnownDate
+                        ? DWDateFormatter.sharedInstance.longString(from: item.date)
+                        : NSLocalizedString("Unknown", comment: "Restored shielded operation whose original date is not recoverable"))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 6)
