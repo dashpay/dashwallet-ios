@@ -13,6 +13,7 @@ struct ContactsScreen: View {
     @StateObject private var viewModel: ContactsViewModel
     /// The person whose sheet is up, from whichever list they were tapped in.
     @State private var sheetTarget: ContactTarget? = nil
+    @State private var showScanner = false
 
     /// Default `nil` rather than a fresh view model: default arguments are
     /// evaluated off the main actor and `ContactsViewModel` is `@MainActor`.
@@ -30,6 +31,31 @@ struct ContactsScreen: View {
             }
             .sheet(item: $sheetTarget) { target in
                 ContactSheetPresenter(target: target, viewModel: viewModel)
+            }
+            .sheet(isPresented: $showScanner) {
+                GenericQRScannerView(
+                    onQRCodeScanned: { value in
+                        showScanner = false
+                        // Verified against Platform before it is shown as
+                        // anyone — the code itself proves nothing.
+                        viewModel.search.verifyScannedCode(value) { user in
+                            sheetTarget = .scanned(user)
+                        }
+                    },
+                    onCancel: { showScanner = false })
+            }
+            .overlay {
+                if viewModel.search.isVerifyingScan {
+                    VStack(spacing: 12) {
+                        SwiftUI.ProgressView()
+                        Text(NSLocalizedString("Verifying user…", comment: "DashPay Contacts"))
+                            .dashFont(.footnote)
+                            .foregroundStyle(Color.dash.secondaryText)
+                    }
+                    .padding(24)
+                    .background(Color.dash.secondaryBackground)
+                    .clipShape(.rect(cornerRadius: 16))
+                }
             }
             .alert(
                 NSLocalizedString("Error", comment: ""),
@@ -55,6 +81,18 @@ struct ContactsScreen: View {
                 Text(NSLocalizedString("Contacts", comment: "DashPay Contacts"))
                     .dashFont(.subheadMedium)
                     .foregroundColor(.dash.primaryText)
+            }, trailing: {
+                // Their code lives on their profile; the scanner lives where
+                // contacts are added. An SF Symbol rather than a
+                // `NavigationBarElement`, which has no QR icon.
+                Button { showScanner = true } label: {
+                    Image(systemName: "qrcode.viewfinder")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Color.dash.primaryText)
+                        .frame(width: 36, height: 36)
+                        .contentShape(.rect)
+                }
+                .accessibilityLabel(NSLocalizedString("Scan a contact's QR code", comment: "DashPay Contacts"))
             })
 
             VStack(alignment: .leading, spacing: 20) {

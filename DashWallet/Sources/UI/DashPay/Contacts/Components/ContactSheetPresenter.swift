@@ -14,11 +14,16 @@ import SwiftUI
 enum ContactTarget: Identifiable {
     case contact(ContactItem)
     case searchHit(DpnsSearchResult)
+    /// A verified QR scan. Its own case because a scan yields an identity id
+    /// and a username, never a `DpnsSearchResult` — that type's memberwise
+    /// initializer is internal to SwiftDashSDK, so the app cannot build one.
+    case scanned(AddContactViewModel.ScannedUser)
 
     var id: Data {
         switch self {
         case let .contact(contact): contact.contactIdentityId
         case let .searchHit(result): result.identityId
+        case let .scanned(user): user.identityId
         }
     }
 }
@@ -83,6 +88,27 @@ struct ContactSheetPresenter: View {
                 onAccept: { viewModel.search.accept(result) },
                 onIgnore: { viewModel.search.ignore(result) },
                 onSelectTransaction: showDetails)
+
+        case let .scanned(user):
+            let collision = viewModel.search.collision(forIdentityId: user.identityId)
+            let contact = viewModel.search.contactItem(for: user.identityId)
+            ContactSheet(
+                identity: .init(
+                    title: contact?.displayTitle ?? user.username,
+                    username: user.username,
+                    avatarURL: contact?.avatarURL,
+                    identitySeed: user.identityId,
+                    publicMessage: contact?.publicMessage),
+                relationship: collision.relationship,
+                isSending: viewModel.search.sendingIds.contains(user.identityId),
+                onPay: payee == nil ? nil : { showingPay = true },
+                onSendRequest: {
+                    viewModel.search.send(toIdentityId: user.identityId, usernameHint: user.username)
+                },
+                onAccept: { viewModel.search.accept(identityId: user.identityId) },
+                onIgnore: { viewModel.search.ignore(identityId: user.identityId) },
+                onSelectTransaction: showDetails,
+                contact: contact)
         }
     }
 
@@ -92,6 +118,7 @@ struct ContactSheetPresenter: View {
         switch target {
         case let .contact(contact): contact
         case let .searchHit(result): viewModel.search.contactItem(for: result.identityId)
+        case let .scanned(user): viewModel.search.contactItem(for: user.identityId)
         }
     }
 }

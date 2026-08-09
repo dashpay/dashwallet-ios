@@ -370,16 +370,7 @@ extension ContactSheet {
             avatarURL: contact?.avatarURL,
             identitySeed: result.identityId,
             publicMessage: contact?.publicMessage)
-        self.relationship = switch collision {
-        case .none: .stranger
-        case .alreadyRequested: .requestSent
-        // Muting hid their request from us; it is still live on Platform,
-        // so the sheet offers the same answer it would for a fresh one.
-        case .theyAskedUs, .ignoredSender: .requestReceived
-        case .established: .established
-        case .isSelf: .isSelf
-        case .missingDashPayKeys: .cannotReceiveRequests
-        }
+        self.relationship = collision.relationship
         self.isSending = isSending
         self.onPay = onPay
         self.onSendRequest = onSendRequest
@@ -451,3 +442,22 @@ private struct ContactSheetHost: View {
 }
 
 #endif
+
+// MARK: - Collision → Relationship
+
+extension AddContactViewModel.Collision {
+    /// The sheet state this collision renders as. Shared so a search hit and
+    /// a scanned code cannot disagree about the same identity.
+    var relationship: ContactSheet.Relationship {
+        switch self {
+        case .none: .stranger
+        case .alreadyRequested: .requestSent
+        // Muting hid their request from us; it is still live on Platform, so
+        // the sheet offers the same answer it would for a fresh one.
+        case .theyAskedUs, .ignoredSender: .requestReceived
+        case .established: .established
+        case .isSelf: .isSelf
+        case .missingDashPayKeys: .cannotReceiveRequests
+        }
+    }
+}
