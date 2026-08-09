@@ -457,7 +457,8 @@ extension TxDetailModel {
     /// User-facing name of the funding asset lock's live status
     /// (`PersistentAssetLock.statusRaw` via `ShieldedTxLookup`): 0/1 =
     /// built/broadcast, 2/3 = IS/CL-locked awaiting the shield transition,
-    /// 4 = consumed (transfer complete). Nil when the lookup has no entry.
+    /// 4 = consumed (transfer complete), 5 = recovered from chain after a
+    /// restore. Nil when the lookup has no entry.
     private var shieldedStatusText: String? {
         guard let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: transactionId)?.statusRaw else {
             return nil
@@ -475,6 +476,11 @@ extension TxDetailModel {
             return NSLocalizedString("Funds locked — finishing transfer", comment: "Shielded transfer status")
         case 4:
             return NSLocalizedString("Completed", comment: "Shielded transfer status")
+        case 5:
+            // RecoveredFromChain: the lock is final on Core, but whether it
+            // completed on Platform is unknown after a restore — claiming
+            // neither "Pending" nor "Completed" is deliberate.
+            return NSLocalizedString("Restored — completion unknown", comment: "Status of an asset lock recovered from on-chain data after a wallet restore; whether the transfer finished cannot be determined")
         default:
             return nil
         }

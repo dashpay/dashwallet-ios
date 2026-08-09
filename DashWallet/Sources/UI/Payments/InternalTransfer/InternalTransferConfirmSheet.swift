@@ -707,7 +707,9 @@ struct ShieldedRecoverySheet: View {
                 alreadyComplete = true
                 return
             }
-            // statusRaw 1...3 (still pending), or nil/0 (status unavailable, e.g. a
+            // statusRaw 1...3 (still pending), 5 (restored from chain — consumption
+            // unknown; a resume either completes it or Platform rejects the spent
+            // outpoint with a typed error), or nil/0 (status unavailable, e.g. a
             // failed refresh): attempt the resume. A genuinely gone/consumed lock
             // surfaces a real SDK error rather than a false "complete".
             await coordinator.resumeAssetLock(outPointTxidWire: op.txidWire, outPointVout: op.vout)

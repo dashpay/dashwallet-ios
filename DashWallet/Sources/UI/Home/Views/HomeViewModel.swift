@@ -564,7 +564,14 @@ class HomeViewModel: ObservableObject {
             "Date unknown",
             comment: "History group header for restored shielded operations whose original date is not recoverable")
         let groupedItems = Dictionary(
-            grouping: items.sorted(by: { $0.date > $1.date }),
+            grouping: items.sorted(by: { lhs, rhs in
+                guard lhs.date == rhs.date else { return lhs.date > rhs.date }
+                // Equal dates are, in practice, the shared `.distantPast`
+                // sentinel of the "Date unknown" band; order it by exact
+                // on-chain sequence, newest (highest note position) first.
+                // Nil keys (no chain-order information) sink to its end.
+                return (lhs.chainOrderKey ?? 0) > (rhs.chainOrderKey ?? 0)
+            }),
             by: {
                 $0.hasKnownDate
                     ? DWDateFormatter.sharedInstance.dateOnly(from: $0.date)
