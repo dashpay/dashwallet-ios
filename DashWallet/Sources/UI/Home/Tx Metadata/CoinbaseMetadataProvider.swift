@@ -70,7 +70,16 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
             }
             .store(in: &cancellableBag)
 
+        // `refreshMetadata()` re-fetches and re-wraps the WHOLE wallet
+        // transaction history (`CoinbaseWalletTransactionSnapshot.current()`
+        // → `SwiftDashSDKWalletSource.fetchCurrentWalletSnapshot()`), the
+        // same cost as `HomeViewModel`'s own full reload. The model
+        // container is shared with bookkeeping that saves on its own cadence
+        // (sync state, masternode lists, platform-address sync), so without
+        // filtering this ran that full re-fetch on every one of those too —
+        // reusing `HomeViewModel`'s entity filter instead of pasting a copy.
         NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
+            .filter { HomeViewModel.saveTouchesFeedRows($0) }
             .receive(on: DispatchQueue.main)
             .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .sink { [weak self] _ in

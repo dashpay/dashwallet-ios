@@ -635,7 +635,12 @@ struct HomeViewContent<Content: View>: View {
             return (iconName, metadata?.secondaryIcon)
         }
 
-        if GiftCardMetadataProvider.shared.availableMetadata[txItem.txHashData] != nil {
+        // A resolved `metadata` that reaches here (no `.icon`, no `.iconName`)
+        // can only have come from `GiftCardMetadataProvider` — it's the only
+        // provider whose entries carry neither field. Reusing the already-
+        // resolved `metadata` instead of hitting the provider's dictionary
+        // again avoids a `metadataQueue.sync` round trip per row per render.
+        if metadata != nil {
             return (.custom("image.explore.dash.wts.payment.gift-card"), nil)
         }
 

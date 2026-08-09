@@ -376,8 +376,10 @@ class HomeViewModel: ObservableObject {
             .store(in: &cancellableBag)
     }
     
-    /// Entities whose rows the home feed actually renders.
-    private static let feedRowEntityNames: Set<String> = [
+    /// Entities whose rows the home feed actually renders. Internal (not
+    /// `private`): `CoinbaseMetadataProvider` reuses `saveTouchesFeedRows`
+    /// below for the same filtering, rather than pasting a copy.
+    static let feedRowEntityNames: Set<String> = [
         "PersistentTransaction",
         "PersistentTxo",
     ]
@@ -394,7 +396,13 @@ class HomeViewModel: ObservableObject {
     /// Fails OPEN: a save whose payload we can't inspect is treated as
     /// relevant, so an unexpected notification shape costs a redundant reload
     /// rather than a feed that stops updating.
-    private static func saveTouchesFeedRows(_ notification: Notification) -> Bool {
+    ///
+    /// Internal (not `private`): `CoinbaseMetadataProvider`'s own
+    /// `NSManagedObjectContextDidSave` subscription had the identical
+    /// unfiltered-refresh cost (a full wallet transaction re-fetch+wrap on
+    /// every save, not just feed-relevant ones) and reuses this rather than
+    /// duplicating the entity-name check.
+    static func saveTouchesFeedRows(_ notification: Notification) -> Bool {
         guard let userInfo = notification.userInfo else { return true }
         var sawInspectableChange = false
         for key in [NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey, NSRefreshedObjectsKey] {
