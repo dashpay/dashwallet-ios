@@ -104,7 +104,7 @@ final class AddContactViewModel: ObservableObject {
     func scheduleSearch() {
         searchTask?.cancel()
         let prefix = trimmedQuery
-        guard prefix.count >= 2, let service else {
+        guard prefix.count >= 1, let service else {
             results = []
             isSearching = false
             return

@@ -34,9 +34,10 @@ struct AddContactScreen: View {
                     ContactsSearchField(
                         placeholder: NSLocalizedString("Search by username", comment: "DashPay Contacts"),
                         text: $viewModel.query,
-                        height: 52)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 22)
+                        height: 52
+                    )
+                    .padding(.horizontal, 24)
+                    .padding(.top, 22)
                     resultsList
                 }
             }
@@ -65,6 +66,7 @@ struct AddContactScreen: View {
                     result: target,
                     collision: viewModel.collision(for: target),
                     contact: viewModel.contactItem(for: target.identityId),
+                    isSending: viewModel.sendingIds.contains(target.identityId),
                     onSend: { viewModel.send(to: target) },
                     onAccept: { viewModel.accept(target) })
             }
@@ -137,76 +139,12 @@ struct AddContactScreen: View {
     /// Non-private so `AddContactPreviewSheet` can render the
     @ViewBuilder
     private func resultRow(_ result: DpnsSearchResult) -> some View {
-        let state = viewModel.collision(for: result)
-        HStack(spacing: 10) {
-            ContactAvatarView(
-                title: result.fullName,
-                avatarURL: nil,
-                identitySeed: result.identityId)
-                .padding(.leading, 15)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(result.fullName.withoutDashSuffix)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(.dash.primaryText)
-                    .lineLimit(1)
-                if let hint = collisionText(state) {
-                    Text(hint)
-                        .font(.system(size: 12))
-                        .foregroundColor(state == .alreadyRequested ? Color.dash.orange : .dash.tertiaryText)
-                }
-            }
-            Spacer()
-            trailingControl(result, state: state)
-                .padding(.trailing, 12)
-        }
-        .frame(height: 70)
-    }
-
-    private func collisionText(_ state: AddContactViewModel.Collision) -> String? {
-        switch state {
-        case .none: return nil
-        case .established: return NSLocalizedString("Already a contact", comment: "DashPay Contacts")
-        case .alreadyRequested: return NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts")
-        case .theyAskedUs: return NSLocalizedString("Sent you a request", comment: "DashPay Contacts")
-        case .isSelf: return NSLocalizedString("This is you", comment: "DashPay Contacts")
-        case .missingDashPayKeys: return NSLocalizedString("Can't receive contact requests", comment: "DashPay Contacts")
-        }
-    }
-
-    @ViewBuilder
-    private func trailingControl(_ result: DpnsSearchResult, state: AddContactViewModel.Collision) -> some View {
-        if viewModel.sendingIds.contains(result.identityId) {
-            SwiftUI.ProgressView()
-        } else {
-            switch state {
-            case .none:
-                Button {
-                    previewTarget = result
-                } label: {
-                    Image(systemName: "person.badge.plus")
-                        .foregroundColor(.dash.blue)
-                        .frame(width: 30, height: 30)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.dash.blue.opacity(0.1)))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts"))
-            case .theyAskedUs:
-                AcceptPillButton { viewModel.accept(result) }
-            case .established:
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(Color.dash.green)
-            case .alreadyRequested:
-                Image(systemName: "hourglass")
-                    .foregroundColor(Color.dash.orange)
-            case .isSelf:
-                EmptyView()
-            case .missingDashPayKeys:
-                Image(systemName: "lock.slash")
-                    .foregroundColor(.dash.tertiaryText)
-            }
-        }
+        ContactRow(
+            result: result,
+            state: viewModel.collision(for: result),
+            isSending: viewModel.sendingIds.contains(result.identityId),
+            onRequest: { previewTarget = result },
+            onAccept: { viewModel.accept(result) })
     }
 
     // MARK: Search

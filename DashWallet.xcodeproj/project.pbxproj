@@ -120,6 +120,7 @@
 		22B03841025A55A573432CC9 /* WalletAccountsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285B961142AB3AFF2442F4EB /* WalletAccountsScreen.swift */; };
 		22E89B6C00B546D294D7F331 /* SelfSizingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96CB7E093E994D2391D36DEC /* SelfSizingSheet.swift */; };
 		23C61D3A0CB0CE22FDD9EF4C /* AddContactPreviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05E6D4C9A46986157F383593 /* AddContactPreviewSheet.swift */; };
+		5ACPHD0002F9A0000000000S2 /* ContactPreviewHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACPHD0002F9A0000000000S1 /* ContactPreviewHeader.swift */; };
 		2556F3C5C72D70A771C6C61A /* PaymentProtocolWireFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = E66B030D4B574621DA2C5816 /* PaymentProtocolWireFormat.swift */; };
 		25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
 		25C2103A3D2448AB40AB8485 /* UsernameVotingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */; };
@@ -358,6 +359,7 @@
 		45EAD8E50593EE5158E92E9B /* WalletAccountsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285B961142AB3AFF2442F4EB /* WalletAccountsScreen.swift */; };
 		4636DCF2B17C1DC56E9CDD84 /* PaymentURIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8E3F6CC617DA824F467AADC /* PaymentURIBuilder.swift */; };
 		4675D8D5230447E681FF58D0 /* AddContactPreviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05E6D4C9A46986157F383593 /* AddContactPreviewSheet.swift */; };
+		5ACPHD0002F9A0000000000S3 /* ContactPreviewHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACPHD0002F9A0000000000S1 /* ContactPreviewHeader.swift */; };
 		470617D6299A671900DCC667 /* CrowdNodeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470617D5299A671900DCC667 /* CrowdNodeCell.swift */; };
 		47081197298CF20C003FCA3D /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47081196298CF20B003FCA3D /* Transaction.swift */; };
 		4708119F2990F56F003FCA3D /* TransactionDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4708119E2990F56F003FCA3D /* TransactionDataItem.swift */; };
@@ -2036,6 +2038,7 @@
 		051D230A341C4CC9DBDD8AE0 /* ContactsSearchField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactsSearchField.swift; sourceTree = "<group>"; };
 		05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferConfirmSheet.swift; sourceTree = "<group>"; };
 		05E6D4C9A46986157F383593 /* AddContactPreviewSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddContactPreviewSheet.swift; sourceTree = "<group>"; };
+		5ACPHD0002F9A0000000000S1 /* ContactPreviewHeader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactPreviewHeader.swift; sourceTree = "<group>"; };
 		067B8024942F1481CD9B9CC1 /* PaymentNetworkResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentNetworkResolver.swift; sourceTree = "<group>"; };
 		0755F840BCC1E0754D807B04 /* libPods-TodayExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TodayExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		080B9ECCDC82A7B7FF4039C6 /* ScriptAddressCodec.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ScriptAddressCodec.swift; sourceTree = "<group>"; };
@@ -3730,6 +3733,7 @@
 			isa = PBXGroup;
 			children = (
 				05E6D4C9A46986157F383593 /* AddContactPreviewSheet.swift */,
+				5ACPHD0002F9A0000000000S1 /* ContactPreviewHeader.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -10105,6 +10109,7 @@
 				AEB882AD142F42C3B864BCF0 /* AddContactScreen.swift in Sources */,
 				5AACV0002F9A0000000000S3 /* AddContactViewModel.swift in Sources */,
 				23C61D3A0CB0CE22FDD9EF4C /* AddContactPreviewSheet.swift in Sources */,
+				5ACPHD0002F9A0000000000S2 /* ContactPreviewHeader.swift in Sources */,
 				AB166AF81F14B8C5540D69CE /* AcceptPillButton.swift in Sources */,
 				62FDC661BC3BDD5C2EA676BA /* ContactAvatarView.swift in Sources */,
 				BA31D975DBA5D3646D1645B8 /* ContactsCard.swift in Sources */,
@@ -11113,6 +11118,7 @@
 				425E236B4DFE2BB4FA96E9D4 /* AddContactScreen.swift in Sources */,
 				5AACV0002F9A0000000000S2 /* AddContactViewModel.swift in Sources */,
 				4675D8D5230447E681FF58D0 /* AddContactPreviewSheet.swift in Sources */,
+				5ACPHD0002F9A0000000000S3 /* ContactPreviewHeader.swift in Sources */,
 				A22906F4DFABDDE03929141C /* AcceptPillButton.swift in Sources */,
 				EE4D60EF9BDBB7CC4F7924C7 /* ContactAvatarView.swift in Sources */,
 				A2BBDCD2F99F98CF729EB4B3 /* ContactsCard.swift in Sources */,

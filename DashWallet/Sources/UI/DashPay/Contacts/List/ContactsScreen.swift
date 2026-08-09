@@ -5,6 +5,7 @@
 //  The contacts list: search, established contacts, incoming requests.
 //
 
+import SwiftDashSDK
 import SwiftUI
 import DashUIKit
 
@@ -12,6 +13,8 @@ struct ContactsScreen: View {
     @StateObject private var viewModel: ContactsViewModel
         @State private var showingAddContact = false
     @State private var selectedContact: ContactItem? = nil
+    /// A network hit tapped for the send confirmation.
+    @State private var previewTarget: DpnsSearchResult? = nil
 
     /// Default `nil` rather than a fresh view model: default arguments are
     /// evaluated off the main actor and `ContactsViewModel` is `@MainActor`.
@@ -32,6 +35,15 @@ struct ContactsScreen: View {
             }
             .sheet(item: $selectedContact) { contact in
                 ContactProfileSheet(contact: contact)
+            }
+            .sheet(item: $previewTarget) { target in
+                AddContactPreviewSheet(
+                    result: target,
+                    collision: viewModel.search.collision(for: target),
+                    contact: viewModel.search.contactItem(for: target.identityId),
+                    isSending: viewModel.search.sendingIds.contains(target.identityId),
+                    onSend: { viewModel.search.send(to: target) },
+                    onAccept: { viewModel.search.accept(target) })
             }
             .alert(
                 NSLocalizedString("Error", comment: ""),
@@ -67,21 +79,28 @@ struct ContactsScreen: View {
                 )
                 .padding(.horizontal, 20)
 
-                Group {
-                    if viewModel.isEmpty {
-                        emptyState
-                    } else {
-                        list
-                    }
-                }
-                .padding(.horizontal, 20)
+                list
+                    .padding(.horizontal, 20)
             }
         }
     }
 
     private var list: some View {
         ScrollView {
-            LazyVStack(spacing: 0) {
+            myContacts
+
+            if viewModel.showsNetworkResults {
+                networkResults
+            }
+        }
+        .refreshable { await viewModel.syncNow() }
+    }
+
+    /// Mutual contacts and the requests waiting on us — everything that is
+    /// already "mine".
+    private var myContacts: some View {
+        LazyVStack(spacing: 2) {
+            if viewModel.hasVisibleContacts {
                 ForEach(viewModel.entries(viewModel.filteredIncoming, section: .incoming)) { entry in
                     let item = entry.item
 
@@ -101,42 +120,70 @@ struct ContactsScreen: View {
                     ContactRow(item: item)
                         .onTapGesture { selectedContact = item }
                 }
-
-                ForEach(viewModel.entries(viewModel.filteredOutgoing, section: .outgoing)) { entry in
-                    let item = entry.item
-
-                    ContactRow(item: item)
-                        .onTapGesture { selectedContact = item }
-                        .onAppear { viewModel.resolveUsernameIfNeeded(item) }
-                }
-
-                ForEach(viewModel.entries(viewModel.filteredHidden, section: .hidden)) { entry in
-                    let item = entry.item
-
-                    ContactRow(item: item)
-                        .opacity(0.55)
-                        .onTapGesture { selectedContact = item }
-                }
+            } else {
+                emptyStateView(NSLocalizedString("No contacts found.", comment: "DashPay Contacts"))
             }
-            .modifier(DashUIKit.MenuViewModifier())
         }
-        .refreshable { await viewModel.syncNow() }
+        .modifier(DashUIKit.MenuViewModifier())
     }
 
-    /// Android contacts_empty_state_layout: centered add-contact icon,
-    /// "Add a New Contact" headline, "Find a User" body, blue CTA.
-    private var emptyState: some View {
+    /// Everyone else: the network search, and the contacts we have hidden —
+    /// both are "not in my list", so they share a card. Shown only while the
+    /// field has text; an empty search means "just my contacts".
+    @ViewBuilder
+    private var networkResults: some View {
+        let search = viewModel.search
 
-        VStack(alignment: .center, spacing: 0) {
-            Spacer()
-
-            Text(NSLocalizedString("Search for users on the Dash Network", comment: "DashPay Contacts"))
-                .dashFont(.subhead)
+        VStack(alignment: .leading, spacing: 2) {
+            Text(NSLocalizedString("Users on the Dash network", comment: "DashPay Contacts"))
+                .dashFont(.footnoteMedium)
                 .foregroundStyle(Color.dash.tertiaryText)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 6)
+                .padding(.horizontal, 10)
 
-            Spacer()
+            if search.isSearching {
+                SwiftUI.ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
+            } else if search.results.isEmpty && viewModel.filteredHidden.isEmpty {
+                emptyStateView(NSLocalizedString("No users found", comment: "DashPay Contacts"))
+            } else {
+                LazyVStack(spacing: 2) {
+                    ForEach(search.results) { result in
+                        ContactRow(
+                            result: result,
+                            state: search.collision(for: result),
+                            isSending: search.sendingIds.contains(result.identityId),
+                            onRequest: { previewTarget = result },
+                            onAccept: { search.accept(result) })
+                            .onAppear { search.checkEligibilityIfNeeded(result) }
+                    }
+
+                    // Hidden contacts sit at the end: still ours, but taken
+                    // out of the list on purpose.
+                    ForEach(viewModel.entries(viewModel.filteredHidden, section: .hidden)) { entry in
+                        let item = entry.item
+
+                        ContactRow(item: item)
+                            .opacity(0.55)
+                            .onTapGesture { selectedContact = item }
+                    }
+                }
+            }
         }
+        .modifier(DashUIKit.MenuViewModifier())
+    }
+
+    /// Placeholder for a card that has no rows. Deliberately carries no
+    /// `MenuViewModifier` of its own — it is placed *inside* the card the
+    /// rows would have filled, so the caller owns the background.
+    private func emptyStateView(_ message: String) -> some View {
+        Text(message)
+            .dashFont(.footnote)
+            .foregroundColor(Color.dash.gray500)
+            .padding(10)
+            .frame(maxWidth: .infinity, minHeight: 100)
     }
 }
 

@@ -2,40 +2,60 @@
 //  ContactRow.swift
 //  DashWallet
 //
-//  A single established-contact row.
+//  One row for both contact lists — the ones already mine and the ones
+//  found on the network.
 //
 
+import SwiftDashSDK
 import SwiftUI
 import DashUIKit
 
-/// One contact row for every section of the list. What trails the name is
-/// decided by `item.relationship`, not by the caller: an incoming request
-/// gets the accept/ignore pair, an outgoing one the pending badge, and an
-/// established contact nothing. Passing that in was how the old split into
-/// two row types started.
+/// A person, however we know them. The layout is fixed; only the trailing
+/// control differs, and it is passed in as ``Accessory`` rather than derived
+/// from a model — that is what let the row split in two before, once for
+/// `ContactItem` and once for a search hit.
 struct ContactRow: View {
-    let item: ContactItem
-    /// True while this row's accept or ignore is in flight.
-    var isProcessing: Bool = false
-    /// Only called for an incoming request; nil elsewhere.
-    var onAccept: (() -> Void)? = nil
-    var onIgnore: (() -> Void)? = nil
+    enum Accessory {
+        /// A request waiting on us: accept, or dismiss it.
+        case acceptIgnore(isProcessing: Bool, onAccept: () -> Void, onIgnore: () -> Void)
+        /// Someone we could ask.
+        case request(onTap: () -> Void)
+        /// Already asked — the same button, spent.
+        case requested
+        /// They asked us, seen from the network list.
+        case accept(onTap: () -> Void)
+        /// A send or accept is in flight.
+        case sending
+        /// Already mutual.
+        case established
+        /// Pre-DashPay identity: cannot receive contact requests.
+        case unavailable
+        case none
+    }
+
+    let title: String
+    /// Second line: the username when the title is a display name or alias,
+    /// or the reason this row cannot be actioned.
+    let secondary: String?
+    let avatarURL: String?
+    let identitySeed: Data
+    let accessory: Accessory
 
     var body: some View {
         HStack(spacing: 10) {
             ContactAvatarView(
-                title: item.displayTitle,
-                avatarURL: item.avatarURL,
-                identitySeed: item.contactIdentityId
+                title: title,
+                avatarURL: avatarURL,
+                identitySeed: identitySeed
             )
 
             VStack(alignment: .leading, spacing: 1) {
-                Text(item.displayTitle)
+                Text(title)
                     .dashFont(.subheadMedium)
                     .foregroundStyle(Color.dash.primaryText)
 
-                if let helpText = secondaryLine {
-                    Text(helpText)
+                if let secondary {
+                    Text(secondary)
                         .dashFont(.footnote)
                         .foregroundColor(Color.dash.secondaryText)
                 }
@@ -51,64 +71,147 @@ struct ContactRow: View {
 
     @ViewBuilder
     private var trailing: some View {
-        switch item.relationship {
-        case .incoming:
+        switch accessory {
+        case let .acceptIgnore(isProcessing, onAccept, onIgnore):
             DashUIKit.DashButton(
                 text: NSLocalizedString("Accept", comment: "DashPay Contacts"),
                 isLoading: isProcessing,
                 size: .extraSmall,
-                style: .filledBlue
-            ) {
-                onAccept?()
-            }
+                style: .filledBlue,
+                action: onAccept)
 
             if !isProcessing {
-                Button(action: { onIgnore?() }) {
+                Button(action: onIgnore) {
                     XmarkIcon(size: 9, color: Color.dash.primaryText)
                         .frame(width: 24, height: 24)
                         .contentShape(Rectangle())
                 }
                 .accessibilityLabel(NSLocalizedString("Close", comment: "DashPay Contacts"))
             }
-        case .outgoing:
-            Text(NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts"))
-                .dashFont(.caption1Medium)
-                .foregroundStyle(Color.dash.orange)
+        case let .request(onTap):
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Request", comment: "DashPay Contacts"),
+                isEnabled: true,
+                size: .extraSmall,
+                style: .filledBlue,
+                action: onTap)
+        case .requested:
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Requested", comment: "DashPay Contacts"),
+                isEnabled: false,
+                size: .extraSmall,
+                style: .strokeGray)
+        case let .accept(onTap):
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Accept", comment: "DashPay Contacts"),
+                size: .extraSmall,
+                style: .filledBlue,
+                action: onTap)
+        case .sending:
+            SwiftUI.ProgressView()
         case .established:
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundColor(Color.dash.green)
+        case .unavailable:
+            Image(systemName: "lock.slash")
+                .foregroundColor(.dash.tertiaryText)
+        case .none:
             EmptyView()
         }
     }
+}
 
-    /// Show the username as the second line when the first line is the
-    /// profile display name or alias (both known and different).
-    private var secondaryLine: String? {
-        guard let username = item.username?.withoutDashSuffix,
-              !username.isEmpty,
-              username != item.displayTitle else { return nil }
-        return username
+// MARK: - From a contact we already have
+
+extension ContactRow {
+    init(
+        item: ContactItem,
+        isProcessing: Bool = false,
+        onAccept: (() -> Void)? = nil,
+        onIgnore: (() -> Void)? = nil
+    ) {
+        self.title = item.displayTitle
+        // The username is worth a second line only when the first one is
+        // something else — a profile display name or the owner's alias.
+        self.secondary = {
+            guard let username = item.username?.withoutDashSuffix,
+                  !username.isEmpty,
+                  username != item.displayTitle else { return nil }
+            return username
+        }()
+        self.avatarURL = item.avatarURL
+        self.identitySeed = item.contactIdentityId
+        self.accessory = switch item.relationship {
+        case .incoming:
+            .acceptIgnore(
+                isProcessing: isProcessing,
+                onAccept: { onAccept?() },
+                onIgnore: { onIgnore?() })
+        case .outgoing: .requested
+        case .established: .none
+        }
+    }
+}
+
+// MARK: - From a network search hit
+
+extension ContactRow {
+    init(
+        result: DpnsSearchResult,
+        state: AddContactViewModel.Collision,
+        isSending: Bool,
+        onRequest: @escaping () -> Void,
+        onAccept: @escaping () -> Void
+    ) {
+        self.title = result.fullName.withoutDashSuffix
+        self.secondary = state.hintText
+        self.avatarURL = nil
+        self.identitySeed = result.identityId
+        if isSending {
+            self.accessory = .sending
+        } else {
+            self.accessory = switch state {
+            case .none: .request(onTap: onRequest)
+            case .alreadyRequested: .requested
+            case .theyAskedUs: .accept(onTap: onAccept)
+            case .established: .established
+            case .missingDashPayKeys: .unavailable
+            case .isSelf: .none
+            }
+        }
+    }
+}
+
+extension AddContactViewModel.Collision {
+    /// The second line explaining why this hit is not a plain "add".
+    var hintText: String? {
+        switch self {
+        case .none: nil
+        case .established: NSLocalizedString("Already a contact", comment: "DashPay Contacts")
+        case .alreadyRequested: NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts")
+        case .theyAskedUs: NSLocalizedString("Sent you a request", comment: "DashPay Contacts")
+        case .isSelf: NSLocalizedString("This is you", comment: "DashPay Contacts")
+        case .missingDashPayKeys: NSLocalizedString("Can't receive contact requests", comment: "DashPay Contacts")
+        }
     }
 }
 
 #if DEBUG
 
-/// Every section the list renders, in one place — the trailing accessory is
-/// the only thing that differs between them.
+/// Every state both lists can render, in one place — the trailing control is
+/// the only thing that differs.
 #Preview {
-    ContactsCard {
-        VStack(spacing: 0) {
-            ContactRow(item: .preview(title: "briantest63a"))
-            Divider().padding(.leading, 61)
-            ContactRow(
-                item: .preview(title: "s22test63b", relationship: .incoming),
-                onAccept: {}, onIgnore: {})
-            Divider().padding(.leading, 61)
-            ContactRow(
-                item: .preview(title: "Upsilon2", relationship: .incoming),
-                isProcessing: true)
-            Divider().padding(.leading, 61)
-            ContactRow(item: .preview(title: "Delta", relationship: .outgoing))
-        }
+    VStack(spacing: 2) {
+        ContactRow(item: .preview(title: "briantest63a"))
+        ContactRow(
+            item: .preview(title: "s22test63b", relationship: .incoming),
+            onAccept: {}, onIgnore: {})
+        ContactRow(
+            item: .preview(title: "Upsilon2", relationship: .incoming),
+            isProcessing: true)
+        ContactRow(item: .preview(title: "Delta", relationship: .outgoing))
     }
+    .modifier(DashUIKit.MenuViewModifier())
     .padding()
     .background(Color.dash.primaryBackground)
 }
