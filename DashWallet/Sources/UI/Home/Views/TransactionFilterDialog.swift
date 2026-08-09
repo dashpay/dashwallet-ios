@@ -12,11 +12,26 @@ struct TransactionFilterDialog: View {
     @Binding var selectedFilters: Set<TransactionFilterCategory>
     let showRewards: Bool
     let showMasternode: Bool
+    /// Gift-card and shielded rows. A caller whose list can never hold those
+    /// — the DashPay contact activity card, where every row is a contact
+    /// payment — hides them rather than offering a filter that does nothing.
+    var showGiftCard: Bool = true
+    var showShielded: Bool = true
 
     /// Sheet detent height for the current row count (options + the All row),
     /// matching the BottomSheet's title + row + padding metrics.
-    static func height(showRewards: Bool, showMasternode: Bool) -> CGFloat {
-        let rows = 6 + (showRewards ? 1 : 0) + (showMasternode ? 1 : 0)
+    static func height(
+        showRewards: Bool,
+        showMasternode: Bool,
+        showGiftCard: Bool = true,
+        showShielded: Bool = true
+    ) -> CGFloat {
+        // Sent + Received + the All row are always present.
+        let rows = 3
+            + (showRewards ? 1 : 0)
+            + (showMasternode ? 1 : 0)
+            + (showGiftCard ? 1 : 0)
+            + (showShielded ? 2 : 0)
         return CGFloat(134 + rows * 54)
     }
 
@@ -31,11 +46,15 @@ struct TransactionFilterDialog: View {
         if showMasternode {
             options.append(FilterOption(category: .masternode, title: NSLocalizedString("Masternode", comment: "Transaction filter"), icon: .system("server.rack")))
         }
-        options.append(contentsOf: [
-            FilterOption(category: .giftCard, title: NSLocalizedString("Gift card", comment: ""), icon: .custom("image.dashspend.giftcard")),
-            FilterOption(category: .shieldedSent, title: NSLocalizedString("Shielded sent", comment: "Transaction filter"), icon: .system("shield.fill")),
-            FilterOption(category: .shieldedReceived, title: NSLocalizedString("Shielded received", comment: "Transaction filter"), icon: .system("shield"))
-        ])
+        if showGiftCard {
+            options.append(FilterOption(category: .giftCard, title: NSLocalizedString("Gift card", comment: ""), icon: .custom("image.dashspend.giftcard")))
+        }
+        if showShielded {
+            options.append(contentsOf: [
+                FilterOption(category: .shieldedSent, title: NSLocalizedString("Shielded sent", comment: "Transaction filter"), icon: .system("shield.fill")),
+                FilterOption(category: .shieldedReceived, title: NSLocalizedString("Shielded received", comment: "Transaction filter"), icon: .system("shield"))
+            ])
+        }
         return options
     }
 

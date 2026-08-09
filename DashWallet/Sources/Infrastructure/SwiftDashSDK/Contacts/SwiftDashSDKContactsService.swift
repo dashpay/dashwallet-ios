@@ -475,9 +475,8 @@ final class SwiftDashSDKContactsService: ObservableObject {
     ///
     /// `limit == 0` (the default) defers to the SDK's own cap — 100
     /// rows, the same page size the legacy `DWUserSearchModel` fetched.
-    /// Eligibility is checked lazily per visible row (see
-    /// `contactRequestEligibility`), so a large result set doesn't fan
-    /// out a key query for every hit up front.
+    /// The caller resolves eligibility for the whole page in one batched
+    /// `contactRequestEligibility` call, which bounds its own fan-out.
     func searchUsernames(prefix: String, limit: UInt32 = 0) async throws -> [DpnsSearchResult] {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             throw ServiceError.noWallet

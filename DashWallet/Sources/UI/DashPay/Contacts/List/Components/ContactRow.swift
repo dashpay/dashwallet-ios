@@ -98,7 +98,7 @@ struct ContactRow: View {
                 text: NSLocalizedString("Request", comment: "DashPay Contacts"),
                 isEnabled: true,
                 size: .extraSmall,
-                style: .filledBlue,
+                style: .strokeGray,
                 action: onTap)
         case .requested:
             DashUIKit.DashButton(

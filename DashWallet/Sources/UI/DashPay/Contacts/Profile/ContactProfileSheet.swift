@@ -309,7 +309,7 @@ struct ContactProfileSheet: View {
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
             if viewModel.payments.isEmpty {
-                Text(NSLocalizedString("No viewModel.payments with this contact yet", comment: "DashPay Contacts"))
+                Text(NSLocalizedString("No payments with this contact yet", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                     .padding(.top, 2)

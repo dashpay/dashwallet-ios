@@ -49,14 +49,7 @@ struct SyncingHeaderView: View {
                 }
             }
             
-            DashButton(
-                text: NSLocalizedString("Filter", comment: ""),
-                trailingIcon: .custom("icon_filter_button"),
-                style: .plain,
-                size: .small,
-                stretch: false,
-                action: onFilterTap
-            ).overrideForegroundColor(.dash.blue)
+            TransactionFilterButton(action: onFilterTap)
         }
         .padding(.leading, 16)
         .padding(.trailing, 10)

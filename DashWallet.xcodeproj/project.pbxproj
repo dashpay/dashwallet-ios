@@ -668,6 +668,9 @@
 		61E0BCA4B860A2578137B28F /* WalletSendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4FDA5A52AB80D7F349A7AF /* WalletSendService.swift */; };
 		62FDC661BC3BDD5C2EA676BA /* ContactAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE98321C13F41C2B381FD01 /* ContactAvatarView.swift */; };
 		5ACSH0002F9A0000000000S2 /* ContactSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACSH0002F9A0000000000S1 /* ContactSheet.swift */; };
+		5ACTCARD0200000000000000 /* ContactActivityCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCARD0100000000000000 /* ContactActivityCard.swift */; };
+		5ACTCAVM0200000000000000 /* ContactActivityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCAVM0100000000000000 /* ContactActivityViewModel.swift */; };
+		5ACTCROW0200000000000000 /* ContactActivityRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCROW0100000000000000 /* ContactActivityRow.swift */; };
 		630227C0414D5C74BA95BB8F /* BIP70Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94606903417F75BE99D4B31C /* BIP70Error.swift */; };
 		63869E343191C55BDBBEED72 /* SwiftDashSDKInsightClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7BE8E4519203200CDFB460 /* SwiftDashSDKInsightClient.swift */; };
 		63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
@@ -879,7 +882,9 @@
 		75D5D5342CC928630049ED7B /* UIHostingController+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D5D5322CC9285B0049ED7B /* UIHostingController+DashWallet.swift */; };
 		75D5F3CE191EC270004AB296 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; };
 		75D657672DF579F300ACE570 /* TransactionFilterDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D657662DF579F300ACE570 /* TransactionFilterDialog.swift */; };
+		5ACTTFB0020000000000FB02 /* TransactionFilterButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTTFB0010000000000FB01 /* TransactionFilterButton.swift */; };
 		75D657682DF579F300ACE570 /* TransactionFilterDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D657662DF579F300ACE570 /* TransactionFilterDialog.swift */; };
+		5ACTTFB0030000000000FB03 /* TransactionFilterButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTTFB0010000000000FB01 /* TransactionFilterButton.swift */; };
 		75D6D8E42D96A6DB00E40A6D /* StubTransactionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D6D8E32D96A6D500E40A6D /* StubTransactionSource.swift */; };
 		75D6D8E52D96A6DB00E40A6D /* StubTransactionSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D6D8E32D96A6D500E40A6D /* StubTransactionSource.swift */; };
 		75D9EBB82DE5CC3A009416A2 /* AddGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D9EBB72DE5CC3A009416A2 /* AddGiftCardsTable.swift */; };
@@ -1910,6 +1915,9 @@
 		EE0000062DUMMYID001234567 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000052DUMMYID001234567 /* PercentageFormatter.swift */; };
 		EE4D60EF9BDBB7CC4F7924C7 /* ContactAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE98321C13F41C2B381FD01 /* ContactAvatarView.swift */; };
 		5ACSH0002F9A0000000000S3 /* ContactSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACSH0002F9A0000000000S1 /* ContactSheet.swift */; };
+		5ACTCARD0300000000000000 /* ContactActivityCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCARD0100000000000000 /* ContactActivityCard.swift */; };
+		5ACTCAVM0300000000000000 /* ContactActivityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCAVM0100000000000000 /* ContactActivityViewModel.swift */; };
+		5ACTCROW0300000000000000 /* ContactActivityRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCROW0100000000000000 /* ContactActivityRow.swift */; };
 		EE5F3D5C458E92B69D14BFD8 /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD6615F1246B5935365B05BD /* NavigationBar.swift */; };
 		EF053C0D81A007CC015EB3EE /* InternalTransferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7249AC40404B20F2AEE590F1 /* InternalTransferViewModel.swift */; };
 		EF8FE439EB96236940DFBDE7 /* SwiftDashSDKTransactionSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31271807D89A63FB9413C936 /* SwiftDashSDKTransactionSender.swift */; };
@@ -2794,6 +2802,9 @@
 		4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
 		4FE98321C13F41C2B381FD01 /* ContactAvatarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactAvatarView.swift; sourceTree = "<group>"; };
 		5ACSH0002F9A0000000000S1 /* ContactSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactSheet.swift; sourceTree = "<group>"; };
+		5ACTCARD0100000000000000 /* ContactActivityCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactActivityCard.swift; sourceTree = "<group>"; };
+		5ACTCAVM0100000000000000 /* ContactActivityViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactActivityViewModel.swift; sourceTree = "<group>"; };
+		5ACTCROW0100000000000000 /* ContactActivityRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactActivityRow.swift; sourceTree = "<group>"; };
 		514AEA122FB324FA00F9B54C /* SwapConvertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertView.swift; sourceTree = "<group>"; };
 		514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertHostingController.swift; sourceTree = "<group>"; };
 		514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewView.swift; sourceTree = "<group>"; };
@@ -3001,6 +3012,7 @@
 		75D5F3CF191EC270004AB296 /* DashWallet-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DashWallet-Prefix.pch"; sourceTree = "<group>"; };
 		75D5F3E5191EC270004AB296 /* DashWalletTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DashWalletTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		75D657662DF579F300ACE570 /* TransactionFilterDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionFilterDialog.swift; sourceTree = "<group>"; };
+		5ACTTFB0010000000000FB01 /* TransactionFilterButton.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionFilterButton.swift; sourceTree = "<group>"; };
 		75D6D8E32D96A6D500E40A6D /* StubTransactionSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StubTransactionSource.swift; sourceTree = "<group>"; };
 		75D9EBB72DE5CC3A009416A2 /* AddGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGiftCardsTable.swift; sourceTree = "<group>"; };
 		75D9EBBB2DE5CD8B009416A2 /* GiftCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCard.swift; sourceTree = "<group>"; };
@@ -4336,6 +4348,7 @@
 				5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */,
 				5A1EC0FE2E29A20000000014 /* PlatformAddressHistory.swift */,
 				75D657662DF579F300ACE570 /* TransactionFilterDialog.swift */,
+				5ACTTFB0010000000000FB01 /* TransactionFilterButton.swift */,
 				4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */,
 			);
 			path = Views;
@@ -7745,9 +7758,28 @@
 			path = DashPay;
 			sourceTree = "<group>";
 		};
+		5ACTGRPA0100000000000000 /* Activity */ = {
+			isa = PBXGroup;
+			children = (
+				5ACTGRPA0200000000000000 /* Components */,
+				5ACTCARD0100000000000000 /* ContactActivityCard.swift */,
+				5ACTCAVM0100000000000000 /* ContactActivityViewModel.swift */,
+			);
+			path = Activity;
+			sourceTree = "<group>";
+		};
+		5ACTGRPA0200000000000000 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				5ACTCROW0100000000000000 /* ContactActivityRow.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		C943B3502A40A54500AF23C5 /* Contacts */ = {
 			isa = PBXGroup;
 			children = (
+				5ACTGRPA0100000000000000 /* Activity */,
 				EA8D628F875FF9E4B8530521 /* AddContact */,
 				AC871A87894A09B16E05D042 /* Components */,
 				0356C2FBA0DA74E060F66403 /* List */,
@@ -9925,6 +9957,7 @@
 				2A0C69CA23142E11001B8C90 /* DWModalBaseAnimation.m in Sources */,
 				C956AF262A5CACE6002FAB75 /* TitleValueCell.swift in Sources */,
 				75D657682DF579F300ACE570 /* TransactionFilterDialog.swift in Sources */,
+				5ACTTFB0020000000000FB02 /* TransactionFilterButton.swift in Sources */,
 				75EBAA0C2BB9792F004488E3 /* FeatureTopText.swift in Sources */,
 				11ED906B29681773003784F9 /* StakingInfoDialogController.swift in Sources */,
 				0F36937E2919A5DB007F4E91 /* TwoFactorAuthViewController.swift in Sources */,
@@ -10107,6 +10140,9 @@
 				AB166AF81F14B8C5540D69CE /* AcceptPillButton.swift in Sources */,
 				62FDC661BC3BDD5C2EA676BA /* ContactAvatarView.swift in Sources */,
 				5ACSH0002F9A0000000000S2 /* ContactSheet.swift in Sources */,
+				5ACTCARD0200000000000000 /* ContactActivityCard.swift in Sources */,
+				5ACTCAVM0200000000000000 /* ContactActivityViewModel.swift in Sources */,
+				5ACTCROW0200000000000000 /* ContactActivityRow.swift in Sources */,
 				BA31D975DBA5D3646D1645B8 /* ContactsCard.swift in Sources */,
 				55E11E4C7CEA1036C6138295 /* ContactsSearchField.swift in Sources */,
 				04690468B81514B30006634C /* IgnoreCircleButton.swift in Sources */,
@@ -10446,6 +10482,7 @@
 				C9D2C73C2A320AA000D15901 /* DWDecimalInputValidator.m in Sources */,
 				C9D2C73D2A320AA000D15901 /* PaymentMethods.swift in Sources */,
 				75D657672DF579F300ACE570 /* TransactionFilterDialog.swift in Sources */,
+				5ACTTFB0030000000000FB03 /* TransactionFilterButton.swift in Sources */,
 				C9D2C73E2A320AA000D15901 /* DWTitleDetailCellModel.m in Sources */,
 				C943B4E22A40A54600AF23C5 /* DWPassthroughView.m in Sources */,
 				C9D2C73F2A320AA000D15901 /* BuyDashModel.swift in Sources */,
@@ -11115,6 +11152,9 @@
 				A22906F4DFABDDE03929141C /* AcceptPillButton.swift in Sources */,
 				EE4D60EF9BDBB7CC4F7924C7 /* ContactAvatarView.swift in Sources */,
 				5ACSH0002F9A0000000000S3 /* ContactSheet.swift in Sources */,
+				5ACTCARD0300000000000000 /* ContactActivityCard.swift in Sources */,
+				5ACTCAVM0300000000000000 /* ContactActivityViewModel.swift in Sources */,
+				5ACTCROW0300000000000000 /* ContactActivityRow.swift in Sources */,
 				A2BBDCD2F99F98CF729EB4B3 /* ContactsCard.swift in Sources */,
 				A197237FB3C8F401906769E6 /* ContactsSearchField.swift in Sources */,
 				ADE2A3BE10175C1FD7745DCA /* IgnoreCircleButton.swift in Sources */,

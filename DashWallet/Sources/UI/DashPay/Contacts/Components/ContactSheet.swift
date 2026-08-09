@@ -57,6 +57,9 @@ struct ContactSheet: View {
     var onSendRequest: (() -> Void)? = nil
     var onAccept: (() -> Void)? = nil
     var onIgnore: (() -> Void)? = nil
+    /// Opens one of the activity list's payments. Nil leaves those rows
+    /// inert — the host decides whether it can show a transaction from here.
+    var onSelectTransaction: ((Transaction) -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
 
@@ -73,6 +76,14 @@ struct ContactSheet: View {
 
                 if relationship == .requestReceived {
                     incomingRequestCard
+                }
+
+                // Only a mutual contact has payment history: the channel it
+                // is read from is created by the accepted request.
+                if relationship == .established {
+                    ContactActivityCard(
+                        contactIdentityId: identity.identitySeed,
+                        onSelect: onSelectTransaction)
                 }
             }
             .padding(.horizontal, 20)
