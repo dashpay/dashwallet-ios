@@ -46,6 +46,23 @@ final class DashPayUserLinkTests: XCTestCase {
         XCTAssertNil(DashPayUserLink.parse("dashpay://user?id=\(base58)&username=.dash"))
     }
 
+    func testParseRejectsNonCanonicalURIShapes() {
+        let base58 = identityId.toBase58String()
+        let canonicalQuery = "id=\(base58)&username=alice"
+        // Userinfo, port, path, and fragment are not part of the wire
+        // contract.
+        XCTAssertNil(DashPayUserLink.parse("dashpay://someone@user?\(canonicalQuery)"))
+        XCTAssertNil(DashPayUserLink.parse("dashpay://someone:secret@user?\(canonicalQuery)"))
+        XCTAssertNil(DashPayUserLink.parse("dashpay://user:1234?\(canonicalQuery)"))
+        XCTAssertNil(DashPayUserLink.parse("dashpay://user/profile?\(canonicalQuery)"))
+        XCTAssertNil(DashPayUserLink.parse("dashpay://user?\(canonicalQuery)#fragment"))
+        // Each parameter exactly once, and nothing but id + username.
+        XCTAssertNil(DashPayUserLink.parse("dashpay://user?\(canonicalQuery)&id=\(base58)"))
+        XCTAssertNil(DashPayUserLink.parse("dashpay://user?\(canonicalQuery)&username=bob"))
+        XCTAssertNil(DashPayUserLink.parse("dashpay://user?id=invalid&ID=\(base58)&username=alice"))
+        XCTAssertNil(DashPayUserLink.parse("dashpay://user?\(canonicalQuery)&amount=1"))
+    }
+
     func testParseRejectsInvalidIdentityIds() {
         // Base58 alphabet excludes 0, O, I, l.
         XCTAssertNil(DashPayUserLink.parse("dashpay://user?id=0OIl&username=alice"))

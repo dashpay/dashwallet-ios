@@ -36,25 +36,37 @@ struct DashPayUserLink: Equatable {
         return components.string ?? "dashpay://user"
     }
 
-    /// Parse a scanned string. Accepts only the canonical
-    /// `dashpay://user` shape carrying a valid 32-byte base58 `id` and
-    /// a non-empty `username` (a trailing ".dash" is tolerated and
-    /// stripped). Anything else — payment URIs, invitation links, bare
-    /// usernames — returns nil.
+    /// Parse a scanned string, enforcing the canonical `dashpay://user`
+    /// shape strictly so the cross-platform wire contract stays
+    /// unambiguous: scheme/host/parameter names are matched
+    /// case-insensitively, but userinfo, port, path, fragment,
+    /// duplicate parameters, and unsupported parameters are all
+    /// rejected. `id` must decode to a 32-byte base58 identifier and
+    /// `username` must be non-empty (a trailing ".dash" is tolerated
+    /// and stripped). Anything else — payment URIs, invitation links,
+    /// bare usernames — returns nil.
     static func parse(_ string: String) -> DashPayUserLink? {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let components = URLComponents(string: trimmed),
               components.scheme?.lowercased() == "dashpay",
-              components.host?.lowercased() == "user"
+              components.host?.lowercased() == "user",
+              components.user == nil,
+              components.password == nil,
+              components.port == nil,
+              components.path.isEmpty,
+              components.fragment == nil
         else { return nil }
 
         var identityId: Data?
         var username: String?
+        var seenNames: Set<String> = []
         for item in components.queryItems ?? [] {
-            switch item.name.lowercased() {
+            let name = item.name.lowercased()
+            guard seenNames.insert(name).inserted else { return nil }
+            switch name {
             case "id": identityId = item.value.flatMap { Data.identifier(fromBase58: $0) }
             case "username": username = item.value
-            default: break
+            default: return nil
             }
         }
 

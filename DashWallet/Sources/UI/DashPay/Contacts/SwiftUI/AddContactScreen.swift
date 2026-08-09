@@ -56,6 +56,10 @@ struct AddContactScreen: View {
     /// A scanned user QR is being verified against Platform (DPNS
     /// lookup + identity id match) — drives the blocking spinner.
     @State private var isVerifyingScan = false
+    /// The in-flight verification. Canceled by the next scan and on
+    /// screen dismissal so a stale lookup can never overwrite the
+    /// newer one's `previewTarget`/`errorMessage`/spinner state.
+    @State private var scanVerifyTask: Task<Void, Never>? = nil
 
     @ObservedObject private var service = SwiftDashSDKContactsService.shared
 
@@ -103,6 +107,11 @@ struct AddContactScreen: View {
                 if !trimmedQuery.isEmpty {
                     scheduleSearch()
                 }
+            }
+            .onDisappear {
+                scanVerifyTask?.cancel()
+                scanVerifyTask = nil
+                isVerifyingScan = false
             }
             .alert(
                 NSLocalizedString("Error", comment: ""),
@@ -373,6 +382,11 @@ struct AddContactScreen: View {
     /// is an exact-username DPNS search whose result must carry the
     /// scanned identity id — the sheet then renders a Platform-backed
     /// `DpnsSearchResult`, never the QR's own unproven claim.
+    ///
+    /// Every UI-state write happens on the main actor after a
+    /// cancellation check, and a new scan cancels the previous task
+    /// first, so a slow stale lookup can neither clear the newer
+    /// scan's spinner nor overwrite its result.
     private func handleScannedCode(_ value: String) {
         showScanner = false
         guard let link = DashPayUserLink.parse(value) else {
@@ -382,11 +396,18 @@ struct AddContactScreen: View {
         // Mirror the scanned name into the search field so the results
         // list behind the confirmation sheet shows the same user.
         query = link.username
+        scanVerifyTask?.cancel()
         isVerifyingScan = true
-        Task {
-            defer { isVerifyingScan = false }
+        scanVerifyTask = Task {
+            defer {
+                // A canceled task's replacement owns the spinner now.
+                if !Task.isCancelled {
+                    isVerifyingScan = false
+                }
+            }
             do {
                 let matches = try await service.searchUsernames(prefix: link.username)
+                guard !Task.isCancelled else { return }
                 guard let match = matches.first(where: {
                     $0.identityId == link.identityId
                         && $0.fullName.withoutDashSuffix.lowercased() == link.username.lowercased()
@@ -399,6 +420,7 @@ struct AddContactScreen: View {
                 checkEligibilityIfNeeded(match)
                 previewTarget = match
             } catch {
+                guard !Task.isCancelled else { return }
                 errorMessage = error.localizedDescription
             }
         }
