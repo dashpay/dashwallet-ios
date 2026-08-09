@@ -408,11 +408,18 @@ struct AddContactScreen: View {
     /// scan's spinner nor overwrite its result.
     private func handleScannedCode(_ value: String) {
         showScanner = false
+        // A new scan replaces the previous one wholesale — cancel its
+        // verification before even parsing, so an invalid code can't
+        // leave a stale lookup spinning behind the error alert and
+        // popping the prior QR's preview later.
+        scanVerifyTask?.cancel()
+        scanVerifyTask = nil
+        isVerifyingScan = false
+
         guard let link = DashPayUserLink.parse(value) else {
             errorMessage = NSLocalizedString("This isn't a DashPay user QR code.", comment: "DashPay Contacts: scanned QR is a payment/invitation/foreign code")
             return
         }
-        scanVerifyTask?.cancel()
         isVerifyingScan = true
         scanVerifyTask = Task {
             defer {
