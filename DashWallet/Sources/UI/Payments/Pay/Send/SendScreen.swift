@@ -24,14 +24,6 @@ struct SendScreen: View {
     var showsHeader: Bool = true
 
     @FocusState private var addressFieldFocused: Bool
-    @State private var isEditingAddress = false
-
-    /// The address is "locked" (shown as a truncated card) once a valid
-    /// destination is decoded and focus has left the field; tapping it reopens
-    /// the editable field.
-    private var isAddressLocked: Bool {
-        viewModel.destination != nil && !isEditingAddress && !addressFieldFocused
-    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -95,66 +87,33 @@ struct SendScreen: View {
 
     // MARK: - Address
 
-    @ViewBuilder
     private var addressField: some View {
-        if isAddressLocked {
-            // Collapsed: a decoded address takes one line and gives the rest
-            // of the screen back. `AddressFieldView` has no such state, so
-            // the card stays here, with the label row it needs.
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text(NSLocalizedString("Address", comment: ""))
-                        .dashFont(.footnote)
-                        .foregroundStyle(Color.dash.gray500)
-                    Spacer()
-                    if let destination = viewModel.destination {
-                        destinationBadge(destination)
-                    }
-                }
-                lockedAddressCard
+        DashUIKit.AddressFieldView(
+            text: $viewModel.addressText,
+            label: NSLocalizedString("Address", comment: ""),
+            placeholder: NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
+            hasError: addressErrorText != nil,
+            errorText: addressErrorText,
+            onScanQR: onScanQR,
+            // No `onPaste`: the clipboard chip below already offers this, and
+            // it shows WHICH address it would paste and what kind it is — a
+            // bare Paste button would be the same action twice, told less
+            // well.
+        ) {
+            if let destination = viewModel.destination {
+                destinationBadge(destination)
             }
-            .padding(.horizontal, 20)
-        } else {
-            DashUIKit.AddressFieldView(
-                text: $viewModel.addressText,
-                label: NSLocalizedString("Address", comment: ""),
-                placeholder: NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
-                hasError: addressErrorText != nil,
-                errorText: addressErrorText,
-                onScanQR: onScanQR,
-                // No `onPaste`: the clipboard chip below already offers this,
-                // and it shows WHICH address it would paste and what kind it
-                // is — a bare Paste button would be the same action twice,
-                // told less well.
-            ) {
-                if let destination = viewModel.destination {
-                    destinationBadge(destination)
-                }
-            }
-            .focused($addressFieldFocused)
-            .padding(.horizontal, 20)
-            .onAppear {
-                // Rendered after tapping the locked card → put the cursor
-                // straight back into the field.
-                if isEditingAddress {
-                    addressFieldFocused = true
-                }
-            }
-            .onChange(of: addressFieldFocused) { _, focused in
-                // Focus left the field → re-lock (when valid).
-                if !focused {
-                    isEditingAddress = false
-                }
-            }
-            .onChange(of: viewModel.destination) { _, destination in
-                // The address just became valid (a paste, or the final typed
-                // character) → lock in right away. Software-keyboard-less
-                // setups (simulator with a hardware keyboard) never drop
-                // focus on their own, so don't wait for that.
-                if destination != nil {
-                    addressFieldFocused = false
-                    isEditingAddress = false
-                }
+        }
+        .focused($addressFieldFocused)
+        .padding(.horizontal, 20)
+        .onChange(of: viewModel.destination) { _, destination in
+            // The address just became valid (a paste, or the final typed
+            // character) → drop the keyboard so Continue is reachable without
+            // a second tap. Software-keyboard-less setups (a simulator with a
+            // hardware keyboard) never lose focus on their own, so don't wait
+            // for that.
+            if destination != nil {
+                addressFieldFocused = false
             }
         }
     }
@@ -170,28 +129,6 @@ struct SendScreen: View {
                 viewModel.pinnedSourceTitle)
         }
         return nil
-    }
-
-    /// The locked-in address: middle-truncated single line + pencil.
-    /// Tapping reopens the editable field with the cursor in place.
-    private var lockedAddressCard: some View {
-        Button(action: { isEditingAddress = true }) {
-            HStack(spacing: 8) {
-                Text(truncateMiddle(viewModel.trimmedAddress, visible: 10))
-                    .font(.system(.footnote, design: .monospaced))
-                    .foregroundColor(.dash.primaryText)
-                    .lineLimit(1)
-                Spacer()
-                Image(systemName: "pencil")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(Color.dash.secondaryText)
-            }
-            .padding(12)
-            .frame(maxWidth: .infinity)
-            .background(Color.dash.secondaryBackground)
-            .cornerRadius(10)
-        }
-        .buttonStyle(.plain)
     }
 
     private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {
