@@ -1388,6 +1388,27 @@ class SwiftDashSDKWalletSource: TransactionSource {
         return fetchOne(txid: txid, in: ModelContext(container), walletId: walletId)
     }
 
+    /// Batch form of `fetch(txid:)` for callers resolving many txids at
+    /// once (e.g. the contact activity card mapping every payment row to
+    /// its transaction) — one `ModelContext` and one fetch instead of one
+    /// per txid. Safe from any thread. A queried txid absent from the
+    /// result is "not found," same as a `nil` from `fetch(txid:)`.
+    static func fetch(txids: some Sequence<Data>) -> [Data: Transaction] {
+        let ids = Set(txids)
+        guard !ids.isEmpty, let (container, walletId) = hostHandles() else { return [:] }
+        let context = ModelContext(container)
+        let descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { ids.contains($0.txid) })
+        guard let rows = try? context.fetch(descriptor) else { return [:] }
+        var result: [Data: Transaction] = [:]
+        for row in rows where isOwnedByWallet(row, walletId: walletId) {
+            let tx = Transaction(persistentTransaction: row, walletId: walletId)
+            tx.sdkCoinJoinMixing = isCoinJoinMixingTx(row)
+            result[row.txid] = tx
+        }
+        return result
+    }
+
     /// The active wallet's shielded operations as history items, for
     /// interleaving with the Core rows. Safe from any thread.
     ///
@@ -1812,20 +1833,24 @@ class SwiftDashSDKWalletSource: TransactionSource {
         var descriptor = FetchDescriptor<PersistentTransaction>(
             predicate: #Predicate { $0.txid == txid })
         descriptor.fetchLimit = 1
-        guard let row = (try? context.fetch(descriptor))?.first else {
-            return nil
-        }
-        // Membership can arrive through either side of the SDK's documented
-        // union: wallet-scoped TXOs or an account's involved-transactions
-        // relation. Accept both so an out-of-order receipt is not discarded.
-        guard row.outputs.contains(where: { $0.walletId == walletId })
-            || row.inputs.contains(where: { $0.walletId == walletId })
-            || row.involvedAccounts.contains(where: { $0.wallet.walletId == walletId }) else {
+        guard let row = (try? context.fetch(descriptor))?.first,
+              isOwnedByWallet(row, walletId: walletId) else {
             return nil
         }
         let tx = Transaction(persistentTransaction: row, walletId: walletId)
         tx.sdkCoinJoinMixing = isCoinJoinMixingTx(row)
         return tx
+    }
+
+    /// Membership can arrive through either side of the SDK's documented
+    /// union: wallet-scoped TXOs or an account's involved-transactions
+    /// relation. Accept both so an out-of-order receipt is not discarded.
+    /// Shared by `fetchOne` and `fetch(txids:)` so the two lookups can't
+    /// drift on what "belongs to this wallet" means.
+    private static func isOwnedByWallet(_ row: PersistentTransaction, walletId: Data) -> Bool {
+        row.outputs.contains(where: { $0.walletId == walletId })
+            || row.inputs.contains(where: { $0.walletId == walletId })
+            || row.involvedAccounts.contains(where: { $0.wallet.walletId == walletId })
     }
 
     /// Every txid the active wallet participates in. Union the canonical TXO

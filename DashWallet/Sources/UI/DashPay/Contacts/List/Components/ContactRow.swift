@@ -97,14 +97,14 @@ struct ContactRow: View {
             DashUIKit.DashButton(
                 text: NSLocalizedString("Request", comment: "DashPay Contacts"),
                 isEnabled: true,
-                size: .extraSmall,
+                size: .small,
                 style: .strokeGray,
                 action: onTap)
         case .requested:
             DashUIKit.DashButton(
                 text: NSLocalizedString("Requested", comment: "DashPay Contacts"),
                 isEnabled: false,
-                size: .extraSmall,
+                size: .small,
                 style: .strokeGray)
         case let .accept(onTap):
             DashUIKit.DashButton(

@@ -41,7 +41,7 @@ struct ContactActivityCard: View {
             // Keyed on "has any payments", not on the filtered groups: a
             // filter that matches nothing must leave the card — and with it
             // the control that would undo the filter — on screen.
-            if viewModel.hasAnyPayments {
+            if viewModel.hasAnyActivity {
                 VStack(alignment: .leading, spacing: 20) {
                     HStack(spacing: 0) {
                         Text(NSLocalizedString("Activity", comment: "DashPay Contacts"))
@@ -61,15 +61,21 @@ struct ContactActivityCard: View {
                                 VStack(spacing: 4) {
                                     dayHeader(group)
 
-                                    ForEach(group.payments) { payment in
-                                        ContactActivityRow(
-                                            payment: payment,
-                                            // Only a payment whose transaction is in this
-                                            // wallet can be opened — a send whose H1 was lost,
-                                            // or a receive not yet synced, has nothing behind
-                                            // the tap.
-                                            onTap: transactionTap(for: payment)
-                                        )
+                                    ForEach(group.elements) { entry in
+                                        switch entry {
+                                        case let .payment(payment):
+                                            ContactActivityRow(
+                                                payment: payment,
+                                                // Only a payment whose transaction is in this
+                                                // wallet can be opened — a send whose H1 was lost,
+                                                // or a receive not yet synced, has nothing behind
+                                                // the tap.
+                                                onTap: transactionTap(for: payment)
+                                            )
+
+                                        case let .event(event):
+                                            ContactActivityEventRow(event: event)
+                                        }
                                     }
                                 }
                                 .modifier(DashUIKit.MenuViewModifier())
@@ -159,20 +165,34 @@ private struct ContactActivityCardHost: View {
     }
 }
 
-/// Several days, one of them holding more than a single payment — the case
-/// the day headings exist for.
-#Preview("With payments") {
-    ContactActivityCardHost(viewModel: .preview(payments: [
-        .preview(memo: "Lunch"),
-        .preview(txid: "a0", amountDuffs: 12_500_000, direction: .received),
-        .preview(txid: "a1", amountDuffs: 4_000_000, direction: .received, daysAgo: 1),
-        .preview(txid: "b2", amountDuffs: 250_000_000, daysAgo: 12),
+/// The full history: the request that started it at the bottom, payments
+/// since, several days — the case the day headings exist for.
+#Preview("Payments and requests") {
+    ContactActivityCardHost(viewModel: .preview(
+        payments: [
+            .preview(memo: "Lunch"),
+            .preview(txid: "a0", amountDuffs: 12_500_000, direction: .received),
+            .preview(txid: "a1", amountDuffs: 4_000_000, direction: .received, daysAgo: 1),
+            .preview(txid: "b2", amountDuffs: 250_000_000, daysAgo: 12),
+        ],
+        events: [
+            .preview(kind: .requestSent, daysAgo: 30),
+            .preview(kind: .theyAccepted, daysAgo: 29),
+        ]))
+}
+
+/// A brand-new contact: the request is the whole history, which is why the
+/// card exists before any money has moved.
+#Preview("Requests only") {
+    ContactActivityCardHost(viewModel: .preview(events: [
+        .preview(kind: .requestReceived, daysAgo: 2),
+        .preview(kind: .weAccepted, daysAgo: 1),
     ]))
 }
 
-/// The state an established contact starts in: the card renders nothing at
-/// all, so the sheet ends at the profile.
-#Preview("No payments yet") {
+/// Nothing known at all — the card renders nothing, so the sheet ends at the
+/// profile.
+#Preview("No activity") {
     ContactActivityCardHost(viewModel: .preview())
 }
 

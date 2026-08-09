@@ -546,11 +546,26 @@ final class SwiftDashSDKContactsService: ObservableObject {
         // reconstructed after a restore is written today, so every recovered
         // row rendered with today's date while the tx-detail screen, which
         // reads the transaction, showed the real one.
+        // Only the transactions these payment rows actually reference — not
+        // the whole wallet. `PersistentTransaction` is keyed by wire-order
+        // bytes; `row.txid` is display-order hex (see `ContactPayment.txidWire`
+        // below for the same reversal on the mapped-out type).
+        let wireTxids = Set(rows.compactMap { Data(hex: $0.txid).map { Data($0.reversed()) } })
         var blockTimeByTxid: [Data: UInt32] = [:]
-        if let transactions = try? modelContainer.mainContext.fetch(
-            FetchDescriptor<PersistentTransaction>()) {
-            for tx in transactions where tx.blockTimestamp > 0 {
-                blockTimeByTxid[tx.txid] = tx.blockTimestamp
+        if !wireTxids.isEmpty {
+            do {
+                let transactions = try modelContainer.mainContext.fetch(
+                    FetchDescriptor<PersistentTransaction>(
+                        predicate: #Predicate { wireTxids.contains($0.txid) }))
+                for tx in transactions where tx.blockTimestamp > 0 {
+                    blockTimeByTxid[tx.txid] = tx.blockTimestamp
+                }
+            } catch {
+                // Logged rather than swallowed: with no block times every row
+                // silently falls back to `createdAt`, which is exactly the
+                // wrong-date bug described above. A predicate this fetch can't
+                // translate would otherwise look like a display glitch.
+                Self.logger.error("👥 CONTACTS :: payment block-time fetch failed: \(String(describing: error), privacy: .public)")
             }
         }
 

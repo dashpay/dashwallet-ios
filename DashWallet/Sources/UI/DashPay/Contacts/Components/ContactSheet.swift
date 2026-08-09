@@ -71,24 +71,32 @@ struct ContactSheet: View {
             showBackButton: .constant(false),
             background: .dash.primaryBackground
         ) {
-            VStack(alignment: .leading, spacing: 20) {
-                profileCard
+            // See `SelfSizingScrollLimiter` below for why this can't just be
+            // `ScrollView { VStack { ... } }`.
+            SelfSizingScrollLimiter {
+                VStack(alignment: .leading, spacing: 20) {
+                    profileCard
 
-                if relationship == .requestReceived {
-                    incomingRequestCard
-                }
+                    if relationship == .requestReceived {
+                        incomingRequestCard
+                    }
 
-                // Only a mutual contact has payment history: the channel it
-                // is read from is created by the accepted request.
-                if relationship == .established {
-                    ContactActivityCard(
-                        contactIdentityId: identity.identitySeed,
-                        onSelect: onSelectTransaction)
+                    // Anyone we have a request with, either way: payments need a
+                    // mutual contact, but the request itself is already history
+                    // worth showing while it is still pending. A stranger, our
+                    // own identity and a keyless identity have no record at all.
+                    if relationship == .established
+                        || relationship == .requestSent
+                        || relationship == .requestReceived {
+                        ContactActivityCard(
+                            contactIdentityId: identity.identitySeed,
+                            onSelect: onSelectTransaction)
+                    }
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+                .padding(.bottom, 20)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 10)
-            .padding(.bottom, 20)
         }
         // Close once the request the user submitted has landed. Dismissing on
         // tap instead would hide the progress the button is there to show.
@@ -215,6 +223,112 @@ struct ContactSheet: View {
     }
 }
 
+// MARK: - Self-sizing overflow
+
+/// Works around a real conflict between `BottomSheet.selfSizing`'s
+/// measurement scheme and an unbounded content list — without touching
+/// DashUIKit (a pinned local SPM dependency on a branch awaiting review).
+///
+/// `selfSizingSheet` measures `BottomSheet`'s content with
+/// `.fixedSize(horizontal: false, vertical: true)`, and that modifier stays
+/// on the *rendered* tree, not just a throwaway measurement pass — so the
+/// content always lays out at its full natural height, and the sheet's own
+/// system-provided viewport (capped at `maxHeightFraction` of the window)
+/// simply clips whatever doesn't fit. Its own doc comment says the fix is
+/// "wrap it in a ScrollView," but that doesn't survive contact with this
+/// measurement scheme: a `ScrollView` under a `fixedSize` proposal does not
+/// report a useful ideal height back up — DashUIKit's own PR notes call
+/// this out as "mis-sizes or collapses."
+///
+/// The way out: never let a `ScrollView` sit inside the `fixedSize` pass
+/// with an *unresolved* size. Measure the content once, unwrapped — the
+/// exact path used today, so short content self-sizes identically to
+/// before, and a `ScrollView` never enters the tree for it at all. Only once
+/// that measurement exceeds this content's height budget does it get
+/// rebuilt inside a `ScrollView` pinned to an *exact* `.frame(height:)`
+/// (not `maxHeight:` — an exact height reports a fixed, correct ideal size
+/// through the outer `fixedSize` pass regardless of the proposal it
+/// receives; a `maxHeight` on a `ScrollView` is exactly the
+/// "doesn't report a useful size" case above).
+///
+/// Two honest trade-offs, not hidden ones:
+///  - Switching from the plain branch to the scrolling branch is a SwiftUI
+///    branch change, so on that one transition any `@StateObject` inside
+///    `content` (`ContactActivityCard`'s view model) is torn down and
+///    rebuilt once — one extra, now-cheap reload (see the batch-fetch and
+///    bounded-query fixes elsewhere in this change), not a recurring cost,
+///    and it never happens for content that fits, which is the common case.
+///  - The budget below assumes `BottomSheet`'s current fixed chrome (the
+///    18pt grabber + `NavigationBar`'s 64pt `minHeight`, both hardcoded in
+///    DashUIKit) plus this content's own top/bottom padding. If a future
+///    DashUIKit revision changes either constant, this reserve drifts out
+///    of sync with it — there's no way to read those values from here
+///    without modifying DashUIKit itself.
+private struct SelfSizingScrollLimiter<Content: View>: View {
+    /// Mirrors `BottomSheet.selfSizingSheet`'s own default `maxHeightFraction`
+    /// (`ContactSheet` doesn't override it), so this content's budget targets
+    /// the same ceiling the outer sheet is already capping itself at.
+    private static var maxHeightFraction: CGFloat { 0.95 }
+    /// Grabber (18) + `NavigationBar` `minHeight` (64) — both outside
+    /// `content()`, so the outer `fixedSize` pass counts them on top of
+    /// whatever this view reports — plus this content's own 20pt top +
+    /// 20pt bottom padding (`ContactSheet.body`), plus an 8pt rounding
+    /// buffer. Reserving it here keeps (chrome + this content) comfortably
+    /// under DashUIKit's own `maxHeightFraction` budget, so its outer clip
+    /// never has anything left to trim.
+    private static var chromeReserve: CGFloat { 18 + 64 + 20 + 20 + 8 }
+
+    @ViewBuilder let content: () -> Content
+    @State private var naturalHeight: CGFloat?
+
+    var body: some View {
+        Group {
+            if let naturalHeight, naturalHeight > budget {
+                ScrollView {
+                    measuredContent
+                }
+                .frame(height: budget)
+            } else {
+                measuredContent
+            }
+        }
+    }
+
+    /// The actual content, instrumented to report its own natural height —
+    /// used in both branches so a shrinking list (the user narrows the
+    /// activity filter down to almost nothing) can drop back out of the
+    /// scrolling branch, not just grow into it. `ScrollView` always proposes
+    /// an unbounded height to its child along the scroll axis, so this
+    /// reports the content's true intrinsic height even from inside it.
+    private var measuredContent: some View {
+        content()
+            .background(
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: SelfSizingScrollLimiterHeightKey.self,
+                        value: proxy.size.height)
+                }
+            )
+            .onPreferenceChange(SelfSizingScrollLimiterHeightKey.self) { naturalHeight = $0 }
+    }
+
+    private var budget: CGFloat {
+        let windowHeight = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive }?
+            .keyWindow?.bounds.height
+            ?? UIScreen.main.bounds.height
+        return windowHeight * Self.maxHeightFraction - Self.chromeReserve
+    }
+}
+
+private struct SelfSizingScrollLimiterHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 // MARK: - From a contact we already have
 
 extension ContactSheet {
@@ -223,7 +337,8 @@ extension ContactSheet {
         isSending: Bool = false,
         onPay: (() -> Void)? = nil,
         onAccept: (() -> Void)? = nil,
-        onIgnore: (() -> Void)? = nil
+        onIgnore: (() -> Void)? = nil,
+        onSelectTransaction: ((Transaction) -> Void)? = nil
     ) {
         self.identity = Identity(
             title: contact.displayTitle,
@@ -240,6 +355,7 @@ extension ContactSheet {
         self.onPay = onPay
         self.onAccept = onAccept
         self.onIgnore = onIgnore
+        self.onSelectTransaction = onSelectTransaction
     }
 }
 
@@ -256,7 +372,8 @@ extension ContactSheet {
         onPay: (() -> Void)? = nil,
         onSendRequest: (() -> Void)? = nil,
         onAccept: (() -> Void)? = nil,
-        onIgnore: (() -> Void)? = nil
+        onIgnore: (() -> Void)? = nil,
+        onSelectTransaction: ((Transaction) -> Void)? = nil
     ) {
         let username = result.fullName.withoutDashSuffix
         self.identity = Identity(
@@ -278,6 +395,7 @@ extension ContactSheet {
         self.onSendRequest = onSendRequest
         self.onAccept = onAccept
         self.onIgnore = onIgnore
+        self.onSelectTransaction = onSelectTransaction
     }
 }
 

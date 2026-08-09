@@ -668,9 +668,12 @@
 		61E0BCA4B860A2578137B28F /* WalletSendService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C4FDA5A52AB80D7F349A7AF /* WalletSendService.swift */; };
 		62FDC661BC3BDD5C2EA676BA /* ContactAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE98321C13F41C2B381FD01 /* ContactAvatarView.swift */; };
 		5ACSH0002F9A0000000000S2 /* ContactSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACSH0002F9A0000000000S1 /* ContactSheet.swift */; };
+		5ACTCSPR020000000000SP02 /* ContactSheetPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCSPR010000000000SP01 /* ContactSheetPresenter.swift */; };
 		5ACTCARD0200000000000000 /* ContactActivityCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCARD0100000000000000 /* ContactActivityCard.swift */; };
 		5ACTCAVM0200000000000000 /* ContactActivityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCAVM0100000000000000 /* ContactActivityViewModel.swift */; };
+		5ACTDAYG020000000000DG02 /* DayGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTDAYG010000000000DG01 /* DayGrouping.swift */; };
 		5ACTCROW0200000000000000 /* ContactActivityRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCROW0100000000000000 /* ContactActivityRow.swift */; };
+		5ACTCEVR020000000000EV02 /* ContactActivityEventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCEVR010000000000EV01 /* ContactActivityEventRow.swift */; };
 		630227C0414D5C74BA95BB8F /* BIP70Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94606903417F75BE99D4B31C /* BIP70Error.swift */; };
 		63869E343191C55BDBBEED72 /* SwiftDashSDKInsightClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7BE8E4519203200CDFB460 /* SwiftDashSDKInsightClient.swift */; };
 		63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
@@ -1915,9 +1918,12 @@
 		EE0000062DUMMYID001234567 /* PercentageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE0000052DUMMYID001234567 /* PercentageFormatter.swift */; };
 		EE4D60EF9BDBB7CC4F7924C7 /* ContactAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE98321C13F41C2B381FD01 /* ContactAvatarView.swift */; };
 		5ACSH0002F9A0000000000S3 /* ContactSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACSH0002F9A0000000000S1 /* ContactSheet.swift */; };
+		5ACTCSPR030000000000SP03 /* ContactSheetPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCSPR010000000000SP01 /* ContactSheetPresenter.swift */; };
 		5ACTCARD0300000000000000 /* ContactActivityCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCARD0100000000000000 /* ContactActivityCard.swift */; };
 		5ACTCAVM0300000000000000 /* ContactActivityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCAVM0100000000000000 /* ContactActivityViewModel.swift */; };
+		5ACTDAYG030000000000DG03 /* DayGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTDAYG010000000000DG01 /* DayGrouping.swift */; };
 		5ACTCROW0300000000000000 /* ContactActivityRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCROW0100000000000000 /* ContactActivityRow.swift */; };
+		5ACTCEVR030000000000EV03 /* ContactActivityEventRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTCEVR010000000000EV01 /* ContactActivityEventRow.swift */; };
 		EE5F3D5C458E92B69D14BFD8 /* NavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD6615F1246B5935365B05BD /* NavigationBar.swift */; };
 		EF053C0D81A007CC015EB3EE /* InternalTransferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7249AC40404B20F2AEE590F1 /* InternalTransferViewModel.swift */; };
 		EF8FE439EB96236940DFBDE7 /* SwiftDashSDKTransactionSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31271807D89A63FB9413C936 /* SwiftDashSDKTransactionSender.swift */; };
@@ -2802,9 +2808,12 @@
 		4E9C4B39B015CD9D8AD4741D /* SwiftDashSDKWalletRuntime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKWalletRuntime.swift; sourceTree = "<group>"; };
 		4FE98321C13F41C2B381FD01 /* ContactAvatarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactAvatarView.swift; sourceTree = "<group>"; };
 		5ACSH0002F9A0000000000S1 /* ContactSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactSheet.swift; sourceTree = "<group>"; };
+		5ACTCSPR010000000000SP01 /* ContactSheetPresenter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactSheetPresenter.swift; sourceTree = "<group>"; };
 		5ACTCARD0100000000000000 /* ContactActivityCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactActivityCard.swift; sourceTree = "<group>"; };
 		5ACTCAVM0100000000000000 /* ContactActivityViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactActivityViewModel.swift; sourceTree = "<group>"; };
+		5ACTDAYG010000000000DG01 /* DayGrouping.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DayGrouping.swift; sourceTree = "<group>"; };
 		5ACTCROW0100000000000000 /* ContactActivityRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactActivityRow.swift; sourceTree = "<group>"; };
+		5ACTCEVR010000000000EV01 /* ContactActivityEventRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContactActivityEventRow.swift; sourceTree = "<group>"; };
 		514AEA122FB324FA00F9B54C /* SwapConvertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertView.swift; sourceTree = "<group>"; };
 		514AEA4A2FB33B4300F9B54C /* SwapConvertHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapConvertHostingController.swift; sourceTree = "<group>"; };
 		514AEAD42FB34F8600F9B54C /* OrderPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderPreviewView.swift; sourceTree = "<group>"; };
@@ -7405,6 +7414,7 @@
 				AC166485A7B75F489382900A /* AcceptPillButton.swift */,
 				4FE98321C13F41C2B381FD01 /* ContactAvatarView.swift */,
 				5ACSH0002F9A0000000000S1 /* ContactSheet.swift */,
+				5ACTCSPR010000000000SP01 /* ContactSheetPresenter.swift */,
 				4BA7FBAB805983E9BDA442D6 /* ContactsCard.swift */,
 				051D230A341C4CC9DBDD8AE0 /* ContactsSearchField.swift */,
 				D02C410108BA271F60F4A261 /* IgnoreCircleButton.swift */,
@@ -7764,6 +7774,7 @@
 				5ACTGRPA0200000000000000 /* Components */,
 				5ACTCARD0100000000000000 /* ContactActivityCard.swift */,
 				5ACTCAVM0100000000000000 /* ContactActivityViewModel.swift */,
+				5ACTDAYG010000000000DG01 /* DayGrouping.swift */,
 			);
 			path = Activity;
 			sourceTree = "<group>";
@@ -7772,6 +7783,7 @@
 			isa = PBXGroup;
 			children = (
 				5ACTCROW0100000000000000 /* ContactActivityRow.swift */,
+				5ACTCEVR010000000000EV01 /* ContactActivityEventRow.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -10140,9 +10152,12 @@
 				AB166AF81F14B8C5540D69CE /* AcceptPillButton.swift in Sources */,
 				62FDC661BC3BDD5C2EA676BA /* ContactAvatarView.swift in Sources */,
 				5ACSH0002F9A0000000000S2 /* ContactSheet.swift in Sources */,
+				5ACTCSPR020000000000SP02 /* ContactSheetPresenter.swift in Sources */,
 				5ACTCARD0200000000000000 /* ContactActivityCard.swift in Sources */,
 				5ACTCAVM0200000000000000 /* ContactActivityViewModel.swift in Sources */,
+				5ACTDAYG020000000000DG02 /* DayGrouping.swift in Sources */,
 				5ACTCROW0200000000000000 /* ContactActivityRow.swift in Sources */,
+				5ACTCEVR020000000000EV02 /* ContactActivityEventRow.swift in Sources */,
 				BA31D975DBA5D3646D1645B8 /* ContactsCard.swift in Sources */,
 				55E11E4C7CEA1036C6138295 /* ContactsSearchField.swift in Sources */,
 				04690468B81514B30006634C /* IgnoreCircleButton.swift in Sources */,
@@ -11152,9 +11167,12 @@
 				A22906F4DFABDDE03929141C /* AcceptPillButton.swift in Sources */,
 				EE4D60EF9BDBB7CC4F7924C7 /* ContactAvatarView.swift in Sources */,
 				5ACSH0002F9A0000000000S3 /* ContactSheet.swift in Sources */,
+				5ACTCSPR030000000000SP03 /* ContactSheetPresenter.swift in Sources */,
 				5ACTCARD0300000000000000 /* ContactActivityCard.swift in Sources */,
 				5ACTCAVM0300000000000000 /* ContactActivityViewModel.swift in Sources */,
+				5ACTDAYG030000000000DG03 /* DayGrouping.swift in Sources */,
 				5ACTCROW0300000000000000 /* ContactActivityRow.swift in Sources */,
+				5ACTCEVR030000000000EV03 /* ContactActivityEventRow.swift in Sources */,
 				A2BBDCD2F99F98CF729EB4B3 /* ContactsCard.swift in Sources */,
 				A197237FB3C8F401906769E6 /* ContactsSearchField.swift in Sources */,
 				ADE2A3BE10175C1FD7745DCA /* IgnoreCircleButton.swift in Sources */,
