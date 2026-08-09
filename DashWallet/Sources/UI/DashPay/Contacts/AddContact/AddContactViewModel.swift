@@ -25,6 +25,11 @@ final class AddContactViewModel: ObservableObject {
         /// Identity lacks the DashPay-contract encryption/decryption
         /// keys a contact request needs (pre-DashPay identities).
         case missingDashPayKeys
+        /// They asked us and we muted them. Their incoming row is gone, so
+        /// this is the only thing standing between "someone whose request is
+        /// still live on Platform" and "a stranger" — and the two need
+        /// opposite actions: answer the existing request, not send a new one.
+        case ignoredSender
     }
 
     // MARK: - Published state
@@ -59,6 +64,7 @@ final class AddContactViewModel: ObservableObject {
     private var contacts: [ContactItem] = []
     private var incomingRequests: [ContactItem] = []
     private var outgoingRequests: [ContactItem] = []
+    private var ignoredSenderIds: Set<Data> = []
 
     /// identityIds with an in-flight eligibility query, so a row that
     /// re-appears doesn't fire a second one.
@@ -73,6 +79,8 @@ final class AddContactViewModel: ObservableObject {
         service.$incomingRequests.sink { [weak self] in self?.incomingRequests = $0; self?.objectWillChange.send() }
             .store(in: &cancellables)
         service.$outgoingRequests.sink { [weak self] in self?.outgoingRequests = $0; self?.objectWillChange.send() }
+            .store(in: &cancellables)
+        service.$ignoredSenderIds.sink { [weak self] in self?.ignoredSenderIds = $0; self?.objectWillChange.send() }
             .store(in: &cancellables)
     }
 
@@ -97,6 +105,11 @@ final class AddContactViewModel: ObservableObject {
         }
         if incomingRequests.contains(where: { $0.contactIdentityId == result.identityId }) {
             return .theyAskedUs
+        }
+        // Checked before eligibility: a muted sender's own keys are beside
+        // the point, and this must not fall through to `.none`.
+        if ignoredSenderIds.contains(result.identityId) {
+            return .ignoredSender
         }
         if eligibilityById[result.identityId] == false {
             return .missingDashPayKeys
@@ -182,8 +195,13 @@ final class AddContactViewModel: ObservableObject {
 
     func accept(_ target: DpnsSearchResult) {
         guard let service else { return }
+        let wasIgnored = ignoredSenderIds.contains(target.identityId)
         run(on: target.identityId) {
-            try await service.acceptContactRequest(from: target.identityId)
+            if wasIgnored {
+                try await service.acceptFromIgnoredSender(target.identityId)
+            } else {
+                try await service.acceptContactRequest(from: target.identityId)
+            }
         }
     }
 

@@ -186,7 +186,9 @@ extension ContactRow {
             self.accessory = switch state {
             case .none: .request(onTap: onRequest)
             case .alreadyRequested: .requested
-            case .theyAskedUs: .accept(onTap: onAccept)
+            // Same control as a live incoming request: the request IS live,
+            // muting it only hid it from us.
+            case .theyAskedUs, .ignoredSender: .accept(onTap: onAccept)
             case .established: .established
             case .missingDashPayKeys: .unavailable
             case .isSelf: .none
@@ -203,6 +205,7 @@ extension AddContactViewModel.Collision {
         case .established: NSLocalizedString("Already a contact", comment: "DashPay Contacts")
         case .alreadyRequested: NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts")
         case .theyAskedUs: NSLocalizedString("Sent you a request", comment: "DashPay Contacts")
+        case .ignoredSender: NSLocalizedString("You ignored their request", comment: "DashPay Contacts")
         case .isSelf: NSLocalizedString("This is you", comment: "DashPay Contacts")
         case .missingDashPayKeys: NSLocalizedString("Can't receive contact requests", comment: "DashPay Contacts")
         }

@@ -373,7 +373,9 @@ extension ContactSheet {
         self.relationship = switch collision {
         case .none: .stranger
         case .alreadyRequested: .requestSent
-        case .theyAskedUs: .requestReceived
+        // Muting hid their request from us; it is still live on Platform,
+        // so the sheet offers the same answer it would for a fresh one.
+        case .theyAskedUs, .ignoredSender: .requestReceived
         case .established: .established
         case .isSelf: .isSelf
         case .missingDashPayKeys: .cannotReceiveRequests

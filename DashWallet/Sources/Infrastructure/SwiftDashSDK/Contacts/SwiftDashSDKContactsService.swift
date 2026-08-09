@@ -71,6 +71,13 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// Pending outgoing requests (we asked them), newest first.
     @Published private(set) var outgoingRequests: [ContactItem] = []
 
+    /// Senders whose requests we muted. Their incoming rows are gone, so
+    /// without this the UI cannot tell them from a stranger and would offer
+    /// to *send* a request — creating a second document instead of answering
+    /// the one they already sent. Read from the same store the SDK writes
+    /// the mute to, so it can't drift from the Rust-side set.
+    @Published private(set) var ignoredSenderIds: Set<Data> = []
+
     // MARK: - Errors
 
     enum ServiceError: LocalizedError {
@@ -239,7 +246,12 @@ final class SwiftDashSDKContactsService: ObservableObject {
         incomingRequests = incoming.sorted { $0.createdAt > $1.createdAt }
         outgoingRequests = outgoing.sorted { $0.createdAt > $1.createdAt }
 
-        Self.logger.info("👥 CONTACTS :: snapshot rebuilt — \(established.count, privacy: .public) established, \(incoming.count, privacy: .public) incoming, \(outgoing.count, privacy: .public) outgoing")
+        ignoredSenderIds = Set(
+            ((try? context.fetch(FetchDescriptor<PersistentDashpayIgnoredSender>(
+                predicate: #Predicate { $0.ownerIdentityId == ownerId }))) ?? [])
+                .map(\.ignoredSenderId))
+
+        Self.logger.info("👥 CONTACTS :: snapshot rebuilt — \(established.count, privacy: .public) established, \(incoming.count, privacy: .public) incoming, \(outgoing.count, privacy: .public) outgoing, \(self.ignoredSenderIds.count, privacy: .public) ignored")
         NotificationCenter.default.post(name: Self.contactsDidChangeNotification, object: nil)
 
         backfillMissingUsernames(established + incoming + outgoing)
@@ -467,6 +479,29 @@ final class SwiftDashSDKContactsService: ObservableObject {
         Self.logger.info("👥 CONTACTS :: ignored sender \(senderId.prefix(4).map { String(format: "%02x", $0) }.joined(), privacy: .public)…")
 
         Task { await self.syncNow() }
+    }
+
+    /// Accept a request from a sender we previously muted.
+    ///
+    /// Un-mute first: `ignoreSender` deleted the incoming row, and
+    /// `acceptContactRequest` needs it back — both for its own guard and for
+    /// the live request handle it answers. `unignoreContactSender` also
+    /// rewinds the received sync cursor, so the sweep after it re-fetches the
+    /// sender's on-chain requests; without that sweep there is nothing to
+    /// accept.
+    func acceptFromIgnoredSender(_ senderId: Data) async throws {
+        let (wallet, _, ownerId) = try requireContext()
+        do {
+            try await wallet.unignoreContactSender(
+                ourIdentityId: ownerId,
+                contactIdentityId: senderId)
+        } catch {
+            Self.logger.error("👥 CONTACTS :: unignoreContactSender failed: \(String(describing: error), privacy: .public)")
+            throw ServiceError.sdk(error)
+        }
+        await syncNow()
+        refresh()
+        try await acceptContactRequest(from: senderId)
     }
 
     /// DPNS prefix search for the add-contact flow. Thin passthrough;
