@@ -488,6 +488,22 @@ final class SwiftDashSDKContactsService: ObservableObject {
         }
     }
 
+    /// Exact DPNS resolution on Platform: the identity id currently
+    /// owning `username` ("alice" or "alice.dash"), or nil when the
+    /// name is unregistered. Unlike `searchUsernames` this is not a
+    /// capped prefix page, so it's the right primitive for verifying a
+    /// scanned QR's username↔identity claim.
+    func resolveUsername(_ username: String) async throws -> Data? {
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            throw ServiceError.noWallet
+        }
+        do {
+            return try await wallet.resolveDpnsName(username)
+        } catch {
+            throw ServiceError.sdk(error)
+        }
+    }
+
     /// Look up an already-materialized `ContactItem` for `identityId`
     /// across the established / incoming / outgoing snapshots. Used by
     /// the add-contact preview to show a contact's real profile fields
