@@ -162,3 +162,5 @@ head -c 4 WatchApp/de.lproj/Interface.strings     | xxd   # fffe ...  = UTF-16LE
 ```
 
 Translations sync via Transifex: `tx push -s` (push source) / `tx pull -a` (pull all). Let Xcode and BartyCrouch manage the files, and keep each file in whatever encoding it already has.
+
+A Transifex pull can hand back UTF-16 or BOM-prefixed catalogs. `./scripts/convert_strings_to_utf8.sh` normalises them back — it is scoped to `DashWallet/*.lproj` on purpose and is idempotent, so it leaves already-correct files byte-identical. Keep that scope: a bare `find . -name '*.strings'` would also rewrite the UTF-16LE WatchApp catalogs and anything under `Pods/`.
