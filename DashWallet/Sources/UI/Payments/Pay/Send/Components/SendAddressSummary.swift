@@ -1,82 +1,65 @@
 //
-//  SendStepChrome.swift
+//  SendAddressSummary.swift
 //  DashWallet
 //
-//  The card the address field collapses into once a destination decodes.
+//  Where the money is going, as read-only context on the steps after the
+//  address has been decided.
 //
 
 import SwiftUI
 import DashUIKit
-import SwiftDashSDK
-import UIKit
 
-// MARK: - Shared step chrome
-
-/// Back-chevron + "Send" title, shared by the source and amount steps.
+/// Destination context for the source and amount steps.
+///
+/// Not a field: by this point the address is settled, and the boxed control
+/// with a pencil this replaced offered an edit the step could not make —
+/// tapping it only went back, which the navigation bar's own back button
+/// already does. So it reads as a heading, the way the merchant header does
+/// on the gift-card screens.
 struct SendAddressSummary: View {
     @ObservedObject var viewModel: SendViewModel
-    var onEdit: () -> Void
 
     var body: some View {
-        Button(action: onEdit) {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text(NSLocalizedString("Address", comment: ""))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    if let destination = viewModel.destination {
-                        destinationBadge(destination)
-                    }
-                }
-                HStack(spacing: 8) {
-                    Text(truncateMiddle(viewModel.trimmedAddress, visible: 10))
-                        .font(.system(.footnote, design: .monospaced))
-                        .foregroundColor(.primaryText)
-                        .lineLimit(1)
-                    Spacer()
-                    Image(systemName: "pencil")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
-                .padding(12)
-                .frame(maxWidth: .infinity)
-                .background(Color.secondaryBackground)
-                .cornerRadius(10)
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            // Middle-truncated, not tail: the last characters are what
+            // distinguishes two addresses of the same form, so a plain
+            // ellipsis at the end hides exactly what is worth checking.
+            Text(String(
+                format: NSLocalizedString("to %@", comment: "Send screen — the destination address"),
+                truncateMiddle(viewModel.trimmedAddress, visible: 10)))
+                .font(.system(.subheadline, design: .monospaced))
+                .foregroundStyle(Color.dash.primaryText)
+                .lineLimit(1)
+
+            Spacer(minLength: 8)
+
+            if let destination = viewModel.destination {
+                destinationBadge(destination)
             }
         }
-        .buttonStyle(.plain)
         .padding(.horizontal, 20)
     }
 }
 
 #if DEBUG
 
-/// The card the address field collapses into once a destination decodes —
-/// one preview per destination kind, since the badge is what differs.
-#Preview("Address summary") {
-    VStack(spacing: 12) {
-        SendAddressSummary(
-            viewModel: .preview(
-                address: "yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY",
-                destination: .core),
-            onEdit: {})
+/// One per destination kind — the badge is what differs.
+#Preview("Destination context") {
+    VStack(alignment: .leading, spacing: 16) {
+        SendAddressSummary(viewModel: .preview(
+            address: "yQzt83pPGeXQpVn4rL8mKdWvBcTfGhJkMnPaPuNstuWJK",
+            destination: .core))
 
-        SendAddressSummary(
-            viewModel: .preview(
-                address: "dash:8xKq2mVn4pLrTyWvBcDfGhJkMnPqRsTuVwXyZ",
-                destination: .platform),
-            onEdit: {})
+        SendAddressSummary(viewModel: .preview(
+            address: "8xKq2mVn4pLrTyWvBcDfGhJkMnPqRsTuVwXyZaBcDeFg",
+            destination: .platform))
 
-        SendAddressSummary(
-            viewModel: .preview(
-                address: "dashs1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-                destination: .shielded(raw43: Data(repeating: 0x2a, count: 43))),
-            onEdit: {})
+        SendAddressSummary(viewModel: .preview(
+            address: "dashs1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+            destination: .shielded(raw43: Data(repeating: 0x2a, count: 43))))
     }
-    .padding()
+    .padding(.vertical)
     .background(Color.dash.primaryBackground)
 }
 
 #endif
-

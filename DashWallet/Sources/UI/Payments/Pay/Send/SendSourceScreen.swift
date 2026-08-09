@@ -40,7 +40,7 @@ struct SendSourceScreen: View {
 
             ScrollView {
                 VStack(spacing: 14) {
-                    SendAddressSummary(viewModel: viewModel, onEdit: onBack)
+                    SendAddressSummary(viewModel: viewModel)
                         .padding(.top, 12)
 
                     sourceCards
