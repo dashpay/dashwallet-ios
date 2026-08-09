@@ -348,7 +348,6 @@
 		40162D7A051D4EB850C06C8F /* PayContactSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1C23752E1B6ADC2DD92C91 /* PayContactSheet.swift */; };
 		40AB5A54235FDE2747ECE3F5 /* SwapConvertCardRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99130732DE8F2E95F635F6B /* SwapConvertCardRow.swift */; };
 		4125ACF938F1FAE70351F07F /* ContactsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00F91B2DD12F569DF7D44CA3 /* ContactsScreen.swift */; };
-		425E236B4DFE2BB4FA96E9D4 /* AddContactScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB263C3407A723006128C65 /* AddContactScreen.swift */; };
 		428C56F90F533CF0DD6774F1 /* InternalTransferHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F57DA9DBE5AAF88B3727E148 /* InternalTransferHostingController.swift */; };
 		43001E4B0F1FD846676FCE1F /* NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5C4E3EBE8D8A77EBFAA1E86 /* NetworkReachability.swift */; };
 		431DC6C9218C3DFAF6DE23C0 /* DWCurrentUserIdentityInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B30DA60B985C3CC3ED05B64 /* DWCurrentUserIdentityInfo.swift */; };
@@ -1107,7 +1106,6 @@
 		AD24D88215A4E51186112B34 /* CastVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */; };
 		ADE2A3BE10175C1FD7745DCA /* IgnoreCircleButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02C410108BA271F60F4A261 /* IgnoreCircleButton.swift */; };
 		AEAE60406265A73AFD573FD1 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
-		AEB882AD142F42C3B864BCF0 /* AddContactScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DB263C3407A723006128C65 /* AddContactScreen.swift */; };
 		B059B6E200A57A699E6EED84 /* libPods-DashWalletTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1940CA64E8FD6DDD0CFC14A2 /* libPods-DashWalletTests.a */; };
 		B1100000B1100000B1100010 /* BuyEnterAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1100000B1100000B1100002 /* BuyEnterAmountView.swift */; };
 		B1100000B1100000B1100011 /* BuyEnterAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1100000B1100000B1100003 /* BuyEnterAmountViewModel.swift */; };
@@ -2046,7 +2044,6 @@
 		0C1D2D397047E72188C90FAE /* DWAboutModel+MasternodeSync.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DWAboutModel+MasternodeSync.swift"; sourceTree = "<group>"; };
 		0CE6B29178211061196A0936 /* Pods-WatchApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.debug.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.debug.xcconfig"; sourceTree = "<group>"; };
 		0D2C8F8102C5C603DB63569F /* ShieldedTransferCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedTransferCoordinator.swift; sourceTree = "<group>"; };
-		0DB263C3407A723006128C65 /* AddContactScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddContactScreen.swift; sourceTree = "<group>"; };
 		0EE3302C1C5DF898D1A0F915 /* AuthenticationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
 		0F36937D2919A5DB007F4E91 /* TwoFactorAuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoFactorAuthViewController.swift; sourceTree = "<group>"; };
 		0F3693802919A70B007F4E91 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Coinbase.storyboard; sourceTree = "<group>"; };
@@ -8467,7 +8464,6 @@
 		EA8D628F875FF9E4B8530521 /* AddContact */ = {
 			isa = PBXGroup;
 			children = (
-				0DB263C3407A723006128C65 /* AddContactScreen.swift */,
 				5AACV0002F9A0000000000S1 /* AddContactViewModel.swift */,
 				06BDFF9F49B3A305E7D7E2D4 /* Components */,
 			);
@@ -10106,7 +10102,6 @@
 				F498EAE11BC0B3684DBABCC7 /* DiagnosticLogExporter.swift in Sources */,
 				197F19679BBAABA2E99503B8 /* DWAvatarUploadClient.swift in Sources */,
 				47B81672DEBF6B7B565F0AC8 /* HomeUsernameRow.swift in Sources */,
-				AEB882AD142F42C3B864BCF0 /* AddContactScreen.swift in Sources */,
 				5AACV0002F9A0000000000S3 /* AddContactViewModel.swift in Sources */,
 				5ACPHD0002F9A0000000000S2 /* ContactPreviewHeader.swift in Sources */,
 				AB166AF81F14B8C5540D69CE /* AcceptPillButton.swift in Sources */,
@@ -11115,7 +11110,6 @@
 				4720E26BFE56A4559C602ED5 /* ShieldedIdentityFundingReadiness.swift in Sources */,
 				D15607B6987D27ACDC844F9E /* DWAvatarUploadClient.swift in Sources */,
 				A365C2F95472285830E6CDEB /* HomeUsernameRow.swift in Sources */,
-				425E236B4DFE2BB4FA96E9D4 /* AddContactScreen.swift in Sources */,
 				5AACV0002F9A0000000000S2 /* AddContactViewModel.swift in Sources */,
 				5ACPHD0002F9A0000000000S3 /* ContactPreviewHeader.swift in Sources */,
 				A22906F4DFABDDE03929141C /* AcceptPillButton.swift in Sources */,

@@ -11,10 +11,8 @@ import DashUIKit
 
 struct ContactsScreen: View {
     @StateObject private var viewModel: ContactsViewModel
-        @State private var showingAddContact = false
-    @State private var selectedContact: ContactItem? = nil
-    /// A network hit tapped for the send confirmation.
-    @State private var previewTarget: DpnsSearchResult? = nil
+    /// The person whose sheet is up, from whichever list they were tapped in.
+    @State private var sheetTarget: ContactTarget? = nil
 
     /// Default `nil` rather than a fresh view model: default arguments are
     /// evaluated off the main actor and `ContactsViewModel` is `@MainActor`.
@@ -30,21 +28,8 @@ struct ContactsScreen: View {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 content
             }
-            .sheet(isPresented: $showingAddContact) {
-                AddContactScreen()
-            }
-            .sheet(item: $selectedContact) { contact in
-                ContactSheetPresenter(contact: contact, viewModel: viewModel)
-            }
-            .sheet(item: $previewTarget) { target in
-                ContactSheet(
-                    result: target,
-                    collision: viewModel.search.collision(for: target),
-                    contact: viewModel.search.contactItem(for: target.identityId),
-                    isSending: viewModel.search.sendingIds.contains(target.identityId),
-                    onSendRequest: { viewModel.search.send(to: target) },
-                    onAccept: { viewModel.search.accept(target) },
-                    onIgnore: { viewModel.search.ignore(target) })
+            .sheet(item: $sheetTarget) { target in
+                ContactSheetPresenter(target: target, viewModel: viewModel)
             }
             .alert(
                 NSLocalizedString("Error", comment: ""),
@@ -63,15 +48,14 @@ struct ContactsScreen: View {
     @ViewBuilder
     private var content: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // `central:` spelled out: the bare trailing closure is ambiguous
+            // between NavigationBar's leading-, central- and trailing-only
+            // initializers, which are all single-closure.
             DashUIKit.NavigationBar(central: {
                 Text(NSLocalizedString("Contacts", comment: "DashPay Contacts"))
                     .dashFont(.subheadMedium)
                     .foregroundColor(.dash.primaryText)
-            }) {
-                NavigationBarElement.plus.button {
-                    showingAddContact = true
-                }
-            }
+            })
 
             VStack(alignment: .leading, spacing: 20) {
                 DashUIKit.SearchBar(
@@ -98,10 +82,13 @@ struct ContactsScreen: View {
     }
 
     /// Mutual contacts and the requests waiting on us — everything that is
-    /// already "mine".
+    /// already "mine". Absent entirely when there are none: the card carries
+    /// no message of its own, so an empty one would just be a blank block
+    /// above the network results.
+    @ViewBuilder
     private var myContacts: some View {
-        LazyVStack(spacing: 2) {
-            if viewModel.hasVisibleContacts {
+        if viewModel.hasVisibleContacts {
+            LazyVStack(spacing: 2) {
                 ForEach(viewModel.entries(viewModel.filteredIncoming, section: .incoming)) { entry in
                     let item = entry.item
 
@@ -111,7 +98,7 @@ struct ContactsScreen: View {
                         onAccept: { viewModel.accept(item) },
                         onIgnore: { viewModel.ignore(item) }
                     )
-                    .onTapGesture { selectedContact = item }
+                    .onTapGesture { sheetTarget = .contact(item) }
                     .onAppear { viewModel.resolveUsernameIfNeeded(item) }
                 }
 
@@ -119,13 +106,11 @@ struct ContactsScreen: View {
                     let item = entry.item
 
                     ContactRow(item: item)
-                        .onTapGesture { selectedContact = item }
+                        .onTapGesture { sheetTarget = .contact(item) }
                 }
-            } else {
-                emptyStateView(NSLocalizedString("No contacts found.", comment: "DashPay Contacts"))
             }
+            .modifier(DashUIKit.MenuViewModifier())
         }
-        .modifier(DashUIKit.MenuViewModifier())
     }
 
     /// Everyone else: the network search, and the contacts we have hidden —
@@ -159,11 +144,11 @@ struct ContactsScreen: View {
                             result: result,
                             state: search.collision(for: result),
                             isSending: search.sendingIds.contains(result.identityId),
+                            isCheckingEligibility: search.eligibilityPending.contains(result.identityId),
                             onRequest: { search.send(to: result) },
                             onAccept: { search.accept(result) })
                             .contentShape(Rectangle())
-                            .onTapGesture { previewTarget = result }
-                            .onAppear { search.checkEligibilityIfNeeded(result) }
+                            .onTapGesture { sheetTarget = .searchHit(result) }
                     }
 
                     // Hidden contacts sit at the end: still ours, but taken
@@ -173,7 +158,7 @@ struct ContactsScreen: View {
 
                         ContactRow(item: item)
                             .opacity(0.55)
-                            .onTapGesture { selectedContact = item }
+                            .onTapGesture { sheetTarget = .contact(item) }
                     }
                 }
             }
@@ -193,24 +178,70 @@ struct ContactsScreen: View {
     }
 }
 
-/// Hosts ``ContactSheet`` for one of our own contacts. The pay sheet is raised
-/// from here rather than from `ContactsScreen`: a sheet presented by a view
-/// that is itself covered by a sheet never appears.
+/// Who the sheet was opened for. The two lists hand over different models —
+/// a contact we hold, or a name found on the network — and this is the only
+/// place that difference survives; one sheet is presented either way.
+private enum ContactTarget: Identifiable {
+    case contact(ContactItem)
+    case searchHit(DpnsSearchResult)
+
+    var id: Data {
+        switch self {
+        case let .contact(contact): contact.contactIdentityId
+        case let .searchHit(result): result.identityId
+        }
+    }
+}
+
+/// Hosts ``ContactSheet`` and feeds it from whichever model the target
+/// carries. The pay sheet is raised from here rather than from
+/// `ContactsScreen`: a sheet presented by a view that is itself covered by a
+/// sheet never appears.
 private struct ContactSheetPresenter: View {
-    let contact: ContactItem
+    let target: ContactTarget
     @ObservedObject var viewModel: ContactsViewModel
     @State private var showingPay = false
 
     var body: some View {
-        ContactSheet(
-            contact: contact,
-            isSending: viewModel.processingIds.contains(contact.contactIdentityId),
-            onPay: { showingPay = true },
-            onAccept: { viewModel.accept(contact) },
-            onIgnore: { viewModel.ignore(contact) }
-        )
-        .sheet(isPresented: $showingPay) {
-            PayContactSheet(contact: contact)
+        sheet.sheet(isPresented: $showingPay) {
+            if let contact = payee {
+                PayContactSheet(contact: contact)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var sheet: some View {
+        switch target {
+        case let .contact(contact):
+            ContactSheet(
+                contact: contact,
+                isSending: viewModel.processingIds.contains(contact.contactIdentityId),
+                onPay: { showingPay = true },
+                onAccept: { viewModel.accept(contact) },
+                onIgnore: { viewModel.ignore(contact) })
+
+        case let .searchHit(result):
+            ContactSheet(
+                result: result,
+                collision: viewModel.search.collision(for: result),
+                contact: viewModel.search.contactItem(for: result.identityId),
+                isSending: viewModel.search.sendingIds.contains(result.identityId),
+                // A hit we already hold can be paid like any contact; a
+                // stranger has no xpub to pay to, so the button is omitted.
+                onPay: payee == nil ? nil : { showingPay = true },
+                onSendRequest: { viewModel.search.send(to: result) },
+                onAccept: { viewModel.search.accept(result) },
+                onIgnore: { viewModel.search.ignore(result) })
+        }
+    }
+
+    /// The contact record behind this target, which paying needs and a search
+    /// hit only has once the request has been accepted.
+    private var payee: ContactItem? {
+        switch target {
+        case let .contact(contact): contact
+        case let .searchHit(result): viewModel.search.contactItem(for: result.identityId)
         }
     }
 }

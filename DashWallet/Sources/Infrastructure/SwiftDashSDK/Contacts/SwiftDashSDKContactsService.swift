@@ -652,26 +652,55 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// error if the identity turns out ineligible).
     func contactRequestEligibility(for identityIds: [Data]) async -> [Data: Bool] {
         guard let sdk = SwiftDashSDKHost.shared.sdk else { return [:] }
-        var result: [Data: Bool] = [:]
         // Dedupe: DPNS search returns one row per LABEL, so an identity
         // owning several matching names appears multiple times.
-        for id in Set(identityIds) {
-            let base58 = id.toBase58String()
-            do {
-                // keyId → IdentityPublicKey JSON (dpp serde: camelCase,
-                // `purpose`/`type` as serde_repr numbers, `disabledAt`
-                // absent when the key is enabled), or null for a
-                // requested-but-missing key id.
-                let keys = try await sdk.identityGetKeys(identityId: base58)
-                let usable = keys.values.compactMap { $0 as? [String: Any] }
-                if let eligible = DWDashPayIdentityKeys.recipientEligibility(from: usable) {
-                    result[id] = eligible
+        let ids = Array(Set(identityIds))
+        let logger = Self.logger
+
+        // One round trip per identity, run concurrently. Awaiting them in
+        // sequence cost the sum of every query, which a search of five names
+        // showed as a stall between the results appearing and their buttons
+        // settling. Capped so a 100-hit result set does not fan out 100
+        // simultaneous queries at the DAPI node.
+        let maxConcurrent = 8
+
+        return await withTaskGroup(of: (Data, Bool?).self) { group in
+            func addQuery(for id: Data) {
+                group.addTask {
+                    let base58 = id.toBase58String()
+                    do {
+                        // keyId → IdentityPublicKey JSON (dpp serde: camelCase,
+                        // `purpose`/`type` as serde_repr numbers, `disabledAt`
+                        // absent when the key is enabled), or null for a
+                        // requested-but-missing key id.
+                        let keys = try await sdk.identityGetKeys(identityId: base58)
+                        let usable = keys.values.compactMap { $0 as? [String: Any] }
+                        return (id, DWDashPayIdentityKeys.recipientEligibility(from: usable))
+                    } catch {
+                        logger.error("👥 CONTACTS :: key eligibility query failed for \(base58, privacy: .public): \(String(describing: error), privacy: .public)")
+                        return (id, nil)
+                    }
                 }
-            } catch {
-                Self.logger.error("👥 CONTACTS :: key eligibility query failed for \(base58, privacy: .public): \(String(describing: error), privacy: .public)")
             }
+
+            var next = 0
+            while next < min(maxConcurrent, ids.count) {
+                addQuery(for: ids[next])
+                next += 1
+            }
+
+            var result: [Data: Bool] = [:]
+            for await (id, eligible) in group {
+                // An id whose query failed stays absent, so the caller still
+                // reads it as unknown and leaves the row actionable.
+                if let eligible { result[id] = eligible }
+                if next < ids.count {
+                    addQuery(for: ids[next])
+                    next += 1
+                }
+            }
+            return result
         }
-        return result
     }
 
     /// Contacts whose reverse lookup is already running, so a `refresh()`

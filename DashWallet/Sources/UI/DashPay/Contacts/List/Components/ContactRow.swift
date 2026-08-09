@@ -26,6 +26,10 @@ struct ContactRow: View {
         case accept(onTap: () -> Void)
         /// A send or accept is in flight.
         case sending
+        /// We don't yet know whether this identity can be asked. Blank rather
+        /// than a guess: the button would otherwise have to change meaning
+        /// once the answer arrives.
+        case checkingEligibility
         /// Already mutual.
         case established
         /// Pre-DashPay identity: cannot receive contact requests.
@@ -110,6 +114,8 @@ struct ContactRow: View {
                 action: onTap)
         case .sending:
             SwiftUI.ProgressView()
+        case .checkingEligibility:
+            EmptyView()
         case .established:
             Image(systemName: "checkmark.circle.fill")
                 .foregroundColor(Color.dash.green)
@@ -161,6 +167,8 @@ extension ContactRow {
         result: DpnsSearchResult,
         state: AddContactViewModel.Collision,
         isSending: Bool,
+        /// The eligibility query for this identity hasn't answered yet.
+        isCheckingEligibility: Bool = false,
         onRequest: @escaping () -> Void,
         onAccept: @escaping () -> Void
     ) {
@@ -170,6 +178,10 @@ extension ContactRow {
         self.identitySeed = result.identityId
         if isSending {
             self.accessory = .sending
+        } else if isCheckingEligibility, state == .none {
+            // Only the plain case waits: an existing relationship already
+            // decides the row, whatever the key query goes on to say.
+            self.accessory = .checkingEligibility
         } else {
             self.accessory = switch state {
             case .none: .request(onTap: onRequest)

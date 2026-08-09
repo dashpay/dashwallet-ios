@@ -39,6 +39,11 @@ final class AddContactViewModel: ObservableObject {
     /// unavailable) — the row stays actionable and the send path surfaces
     /// the real error.
     @Published private(set) var eligibilityById: [Data: Bool] = [:]
+    /// Identity ids whose eligibility query is still running. A row in this
+    /// set renders no action at all: showing "Request" first and replacing it
+    /// with "Can't receive contact requests" a moment later told the user the
+    /// opposite of the truth in between.
+    @Published private(set) var eligibilityPending: Set<Data> = []
     @Published var errorMessage: String? = nil
     @Published private(set) var sentToast = false
 
@@ -123,6 +128,7 @@ final class AddContactViewModel: ObservableObject {
                 let found = try await service.searchUsernames(prefix: prefix)
                 guard !Task.isCancelled else { return }
                 results = found
+                resolveEligibility(for: found)
             } catch {
                 guard !Task.isCancelled else { return }
                 results = []
@@ -131,18 +137,31 @@ final class AddContactViewModel: ObservableObject {
         }
     }
 
-    /// Resolve whether one result can receive a contact request (DIP-15 needs
-    /// the recipient's DashPay encryption + decryption keys), the first time
-    /// its row scrolls into view. Marks pre-DashPay identities so the user
-    /// sees "Can't receive contact requests" instead of hitting the PIN gate
-    /// and a network error.
-    func checkEligibilityIfNeeded(_ result: DpnsSearchResult) {
-        let id = result.identityId
-        guard let service, eligibilityById[id] == nil, !eligibilityInFlight.contains(id) else { return }
-        eligibilityInFlight.insert(id)
+    /// Resolve which results can receive a contact request (DIP-15 needs the
+    /// recipient's DashPay encryption + decryption keys), so the user sees
+    /// "Can't receive contact requests" instead of hitting the PIN gate and a
+    /// network error.
+    ///
+    /// Asked for the whole page in one call as soon as the search lands, not
+    /// per row on `.onAppear`: a row-by-row trigger issued one query per hit,
+    /// each answering at its own time, so the list kept rearranging itself
+    /// under the user after it had already been drawn.
+    private func resolveEligibility(for results: [DpnsSearchResult]) {
+        let ids = results
+            .map(\.identityId)
+            .filter { eligibilityById[$0] == nil && !eligibilityInFlight.contains($0) }
+        guard let service, !ids.isEmpty else { return }
+
+        eligibilityInFlight.formUnion(ids)
+        eligibilityPending.formUnion(ids)
         Task {
-            defer { eligibilityInFlight.remove(id) }
-            let checked = await service.contactRequestEligibility(for: [id])
+            defer {
+                eligibilityInFlight.subtract(ids)
+                // Only this batch's ids: a newer search may already have
+                // marked others pending.
+                eligibilityPending.subtract(ids)
+            }
+            let checked = await service.contactRequestEligibility(for: ids)
             eligibilityById.merge(checked) { _, new in new }
         }
     }
