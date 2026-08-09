@@ -86,5 +86,305 @@
 			<string>%d keys</string>
 		</dict>
 	</dict>
+	<key>%u votes counted for “%@”</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@votes@ pro „%2$@“</string>
+		<key>votes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%1$u započítaný hlas</string>
+			<key>few</key>
+			<string>%1$u započítané hlasy</string>
+			<key>many</key>
+			<string>%1$u započítaného hlasu</string>
+			<key>other</key>
+			<string>%1$u započítaných hlasů</string>
+		</dict>
+	</dict>
+	<key>%d of %d usernames voted on</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Hlasováno o %1$d z %#@names@</string>
+		<key>names</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d uživatelského jména</string>
+			<key>few</key>
+			<string>%2$d uživatelských jmen</string>
+			<key>many</key>
+			<string>%2$d uživatelského jména</string>
+			<key>other</key>
+			<string>%2$d uživatelských jmen</string>
+		</dict>
+	</dict>
+	<key>Cast %u votes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>Odevzdat %u hlas</string>
+			<key>few</key>
+			<string>Odevzdat %u hlasy</string>
+			<key>many</key>
+			<string>Odevzdat %u hlasu</string>
+			<key>other</key>
+			<string>Odevzdat %u hlasů</string>
+		</dict>
+	</dict>
+	<key>%d of %d masternodes voted</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Hlasování: %1$d z %#@nodes@</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d masternode</string>
+			<key>few</key>
+			<string>%2$d masternode</string>
+			<key>many</key>
+			<string>%2$d masternode</string>
+			<key>other</key>
+			<string>%2$d masternode</string>
+		</dict>
+	</dict>
+	<key>%d of %d nodes voted</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Hlasování: %1$d z %#@nodes@</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d uzlu</string>
+			<key>few</key>
+			<string>%2$d uzly</string>
+			<key>many</key>
+			<string>%2$d uzlu</string>
+			<key>other</key>
+			<string>%2$d uzlů</string>
+		</dict>
+	</dict>
+	<key>%d evonodes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d evonode</string>
+			<key>few</key>
+			<string>%d evonode</string>
+			<key>many</key>
+			<string>%d evonode</string>
+			<key>other</key>
+			<string>%d evonode</string>
+		</dict>
+	</dict>
+	<key>%u votes in total</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>celkem %u hlas</string>
+			<key>few</key>
+			<string>celkem %u hlasy</string>
+			<key>many</key>
+			<string>celkem %u hlasu</string>
+			<key>other</key>
+			<string>celkem %u hlasů</string>
+		</dict>
+	</dict>
+	<key>%d masternodes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d masternode</string>
+			<key>few</key>
+			<string>%d masternode</string>
+			<key>many</key>
+			<string>%d masternode</string>
+			<key>other</key>
+			<string>%d masternode</string>
+		</dict>
+	</dict>
+	<key>%d selected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d vybrán</string>
+			<key>few</key>
+			<string>%d vybrány</string>
+			<key>many</key>
+			<string>%d vybráno</string>
+			<key>other</key>
+			<string>%d vybráno</string>
+		</dict>
+	</dict>
+	<key>%d of your nodes already voted here and are not listed.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d váš uzel zde již hlasoval a není uveden.</string>
+			<key>few</key>
+			<string>%d vaše uzly zde již hlasovaly a nejsou uvedeny.</string>
+			<key>many</key>
+			<string>%d vašeho uzlu zde již hlasovalo a není uvedeno.</string>
+			<key>other</key>
+			<string>%d vašich uzlů zde již hlasovalo a nejsou uvedeny.</string>
+		</dict>
+	</dict>
+	<key>%u votes per contest — evonodes count as 4, masternodes as 1</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%u hlas na spor — evonode se počítají jako 4, masternode jako 1</string>
+			<key>few</key>
+			<string>%u hlasy na spor — evonode se počítají jako 4, masternode jako 1</string>
+			<key>many</key>
+			<string>%u hlasu na spor — evonode se počítají jako 4, masternode jako 1</string>
+			<key>other</key>
+			<string>%u hlasů na spor — evonode se počítají jako 4, masternode jako 1</string>
+		</dict>
+	</dict>
+	<key>Vote on %d usernames</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Hlasovat o %d uživatelském jménu</string>
+			<key>few</key>
+			<string>Hlasovat o %d uživatelských jménech</string>
+			<key>many</key>
+			<string>Hlasovat o %d uživatelských jménech</string>
+			<key>other</key>
+			<string>Hlasovat o %d uživatelských jménech</string>
+		</dict>
+	</dict>
+	<key>%u votes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%u hlas</string>
+			<key>few</key>
+			<string>%u hlasy</string>
+			<key>many</key>
+			<string>%u hlasu</string>
+			<key>other</key>
+			<string>%u hlasů</string>
+		</dict>
+	</dict>
+	<key>Vote ×%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Hlasovat ×%d</string>
+			<key>few</key>
+			<string>Hlasovat ×%d</string>
+			<key>many</key>
+			<string>Hlasovat ×%d</string>
+			<key>other</key>
+			<string>Hlasovat ×%d</string>
+		</dict>
+	</dict>
+	<key>%d requests</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d žádost</string>
+			<key>few</key>
+			<string>%d žádosti</string>
+			<key>many</key>
+			<string>%d žádosti</string>
+			<key>other</key>
+			<string>%d žádostí</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

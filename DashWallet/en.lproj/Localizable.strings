@@ -22,6 +22,9 @@
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "%@ couldn't be found on the Dash network to send them a contact request.";
 
+/* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
+"%@ couldn't be verified on the Dash network. The QR code may be outdated." = "%@ couldn't be verified on the Dash network. The QR code may be outdated.";
+
 /* Username marketplace: contested request cost value — the vote-resolution fund amount */
 "%@ DASH + network fee" = "%@ DASH + network fee";
 
@@ -2124,6 +2127,9 @@
 /* CrowdNode */
 "Leaving the pool" = "Leaving the pool";
 
+/* DashPay Contacts: caption under the user's own QR code */
+"Let another Dash Wallet user scan this code to add you as a contact." = "Let another Dash Wallet user scan this code to add you as a contact.";
+
 /* No comment provided by engineer. */
 "Let me know when it’s done" = "Let me know when it’s done";
 
@@ -2533,6 +2539,9 @@
 /* DashPay: body of the Enable DashPay confirmation */
 "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.";
 
+/* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
+"This isn't a DashPay user QR code." = "This isn't a DashPay user QR code.";
+
 /* SDK identity profile sheet — explains the identity credit balance */
 "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits.";
 
@@ -2649,6 +2658,9 @@
 
 /* SDK identity profile sheet — title */
 "My Profile" = "My Profile";
+
+/* DashPay Contacts: shows the user's own contact QR code */
+"My QR" = "My QR";
 
 /* No comment provided by engineer. */
 "Name" = "Name";
@@ -3423,6 +3435,8 @@
 
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
+
+"Restored — completion unknown" = "Restored — completion unknown";
 
 /* Location Service Status */
 
@@ -4589,6 +4603,9 @@
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "Verified Successfully";
+
+/* DashPay Contacts: spinner after scanning a user QR code */
+"Verifying user…" = "Verifying user…";
 
 /* No comment provided by engineer. */
 "Verify" = "Verify";

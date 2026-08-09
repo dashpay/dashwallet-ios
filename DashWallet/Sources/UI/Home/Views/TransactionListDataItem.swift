@@ -83,4 +83,17 @@ extension TransactionListDataItem: Identifiable {
             return true
         }
     }
+
+    /// On-chain sequence key for items whose `date` is the shared
+    /// `.distantPast` sentinel: the restored shielded entries' smallest
+    /// note commitment-tree position (exact append-only chain order).
+    /// Nil everywhere else — dated items order by `date` alone.
+    var chainOrderKey: UInt64? {
+        switch self {
+        case .shieldedActivity(let item):
+            return item.minNotePosition
+        default:
+            return nil
+        }
+    }
 }

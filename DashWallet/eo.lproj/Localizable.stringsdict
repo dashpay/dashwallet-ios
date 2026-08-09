@@ -82,5 +82,245 @@
 			<string>%d keys</string>
 		</dict>
 	</dict>
+	<key>%u votes counted for “%@”</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@votes@ por „%2$@“</string>
+		<key>votes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%1$u voĉo kalkulita</string>
+			<key>other</key>
+			<string>%1$u voĉoj kalkulitaj</string>
+		</dict>
+	</dict>
+	<key>%d of %d usernames voted on</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Voĉdonite pri %1$d el %#@names@</string>
+		<key>names</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d uzantnomo</string>
+			<key>other</key>
+			<string>%2$d uzantnomoj</string>
+		</dict>
+	</dict>
+	<key>Cast %u votes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>Doni %u voĉon</string>
+			<key>other</key>
+			<string>Doni %u voĉojn</string>
+		</dict>
+	</dict>
+	<key>%d of %d masternodes voted</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$d el %#@nodes@ voĉdonis</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d masternodo</string>
+			<key>other</key>
+			<string>%2$d masternodoj</string>
+		</dict>
+	</dict>
+	<key>%d of %d nodes voted</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$d el %#@nodes@ voĉdonis</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d nodo</string>
+			<key>other</key>
+			<string>%2$d nodoj</string>
+		</dict>
+	</dict>
+	<key>%d evonodes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d evonodo</string>
+			<key>other</key>
+			<string>%d evonodoj</string>
+		</dict>
+	</dict>
+	<key>%u votes in total</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%u voĉo entute</string>
+			<key>other</key>
+			<string>%u voĉoj entute</string>
+		</dict>
+	</dict>
+	<key>%d masternodes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d masternodo</string>
+			<key>other</key>
+			<string>%d masternodoj</string>
+		</dict>
+	</dict>
+	<key>%d selected</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d elektita</string>
+			<key>other</key>
+			<string>%d elektitaj</string>
+		</dict>
+	</dict>
+	<key>%d of your nodes already voted here and are not listed.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d el viaj nodoj jam voĉdonis ĉi tie kaj ne estas listigita.</string>
+			<key>other</key>
+			<string>%d el viaj nodoj jam voĉdonis ĉi tie kaj ne estas listigitaj.</string>
+		</dict>
+	</dict>
+	<key>%u votes per contest — evonodes count as 4, masternodes as 1</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%u voĉo por disputo — evonodoj kalkuliĝas kiel 4, masternodoj kiel 1</string>
+			<key>other</key>
+			<string>%u voĉoj por disputo — evonodoj kalkuliĝas kiel 4, masternodoj kiel 1</string>
+		</dict>
+	</dict>
+	<key>Vote on %d usernames</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Voĉdoni pri %d uzantnomo</string>
+			<key>other</key>
+			<string>Voĉdoni pri %d uzantnomoj</string>
+		</dict>
+	</dict>
+	<key>%u votes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%u voĉo</string>
+			<key>other</key>
+			<string>%u voĉoj</string>
+		</dict>
+	</dict>
+	<key>Vote ×%d</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Voĉdoni ×%d</string>
+			<key>other</key>
+			<string>Voĉdoni ×%d</string>
+		</dict>
+	</dict>
+	<key>%d requests</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d peto</string>
+			<key>other</key>
+			<string>%d petoj</string>
+		</dict>
+	</dict>
 </dict>
 </plist>
