@@ -301,9 +301,20 @@ final class SendViewModel: ObservableObject {
         clipboardSuggestion = Self.detect(in: raw)
     }
 
+    /// Apply the DETECTED address — used by the "Send to Address" shortcut,
+    /// which only opens the screen prefilled when the clipboard holds one.
     func useClipboardSuggestion() {
         guard let suggestion = clipboardSuggestion else { return }
         addressText = suggestion.address
+    }
+
+    /// Paste whatever is on the clipboard, valid or not. The field's own
+    /// validation says what is wrong with it — a Paste button that silently
+    /// does nothing because the content didn't parse is worse than one that
+    /// pastes and lets the error explain.
+    func pasteFromClipboard() {
+        guard let raw = UIPasteboard.general.string else { return }
+        addressText = raw.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private static func detect(in raw: String) -> ClipboardSuggestion? {

@@ -38,11 +38,6 @@ struct SendScreen: View {
                     addressField
                         .padding(.top, 12)
 
-                    if let suggestion = viewModel.clipboardSuggestion,
-                       suggestion.address != viewModel.trimmedAddress {
-                        clipboardChip(for: suggestion)
-                    }
-
                 }
                 .padding(.bottom, 8)
             }
@@ -95,10 +90,9 @@ struct SendScreen: View {
             hasError: addressErrorText != nil,
             errorText: addressErrorText,
             onScanQR: onScanQR,
-            // No `onPaste`: the clipboard chip below already offers this, and
-            // it shows WHICH address it would paste and what kind it is — a
-            // bare Paste button would be the same action twice, told less
-            // well.
+            // Shown by the component only while the field is empty, which is
+            // exactly when it is useful.
+            onPaste: { viewModel.pasteFromClipboard() }
         ) {
             if let destination = viewModel.destination {
                 destinationBadge(destination)
@@ -159,37 +153,6 @@ struct SendScreen: View {
         case .platform: return NSLocalizedString("Platform address", comment: "Send screen destination type")
         case .shielded: return NSLocalizedString("Shielded address", comment: "Send screen destination type")
         }
-    }
-
-    private func clipboardChip(for suggestion: SendViewModel.ClipboardSuggestion) -> some View {
-        Button(action: { viewModel.useClipboardSuggestion() }) {
-            HStack(spacing: 10) {
-                Image(systemName: "doc.on.doc.fill")
-                    .foregroundColor(.blue)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("Send to copied address", comment: ""))
-                        .font(.caption)
-                        .foregroundColor(Color.dash.secondaryText)
-                    Text(truncateMiddle(suggestion.address))
-                        .font(.system(.footnote, design: .monospaced))
-                        .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                }
-                Spacer()
-                Text(destinationTitle(suggestion.kind))
-                    .font(.caption2)
-                    .foregroundColor(Color.dash.secondaryText)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(Color.dash.gray300.opacity(0.3))
-                    .cornerRadius(8)
-            }
-            .padding(12)
-            .background(Color.dash.blue.opacity(0.08))
-            .cornerRadius(10)
-        }
-        .padding(.horizontal, 20)
     }
 
 }
