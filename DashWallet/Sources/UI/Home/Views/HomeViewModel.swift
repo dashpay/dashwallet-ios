@@ -1443,7 +1443,15 @@ class SwiftDashSDKWalletSource: TransactionSource {
         guard let rows = try? context.fetch(descriptor) else { return [] }
 
         var byEntry: [Data: PersistentShieldedActivity] = [:]
+        // Entry ids that also produced a Received projection: an
+        // intra-wallet transfer writes Sent + Received rows for the same
+        // operation (see the dedupe doc above), so a surviving Sent row
+        // whose entry id is in here paid one of the wallet's own accounts.
+        var receivedEntryIds: Set<Data> = []
         for row in rows where row.kindTag != ShieldedActivityItem.Kind.shieldFromAssetLock.rawValue {
+            if row.kindTag == ShieldedActivityItem.Kind.received.rawValue {
+                receivedEntryIds.insert(row.entryId)
+            }
             if let existing = byEntry[row.entryId] {
                 if shouldPreferShieldedProjection(row, over: existing) {
                     byEntry[row.entryId] = row
@@ -1455,6 +1463,17 @@ class SwiftDashSDKWalletSource: TransactionSource {
 
         let noteValueByCmx = shieldedNoteValueByCmx(in: context, walletId: walletId)
         let outgoingNoteValueByCmx = outgoingShieldedNoteValueByCmx(in: context, walletId: walletId)
+
+        // The wallet's own default Orchard address (raw 43 bytes), for the
+        // Sent-destination ownership check. Keyed by the SAME walletId the
+        // rows were fetched with (not a re-read of the host's active wallet,
+        // which could have switched between the two main hops). Nil until
+        // the shielded sub-wallet is bound — then the Received-row evidence
+        // still covers live intra-wallet transfers.
+        let ownShieldedRaw43: Data? = onMain {
+            guard let manager = SwiftDashSDKHost.shared.manager else { return nil }
+            return ((try? manager.shieldedDefaultAddress(walletId: walletId)) ?? nil)
+        }
 
         var items: [ShieldedActivityItem] = []
         for row in byEntry.values {
@@ -1589,6 +1608,23 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 items.append(ShieldedActivityItem(
                     row: row,
                     amountCreditsOverride: reconstructedAmountCredits))
+            case ShieldedActivityItem.Kind.sent.rawValue:
+                // A shielded → shielded send's counterparty is the recipient's
+                // 43-byte raw Orchard address (live-recorded, or OVK-recovered
+                // by the restore scan). Surface it so the row and detail sheet
+                // name where the money went instead of a bare "Sent /
+                // Shielded". External only when the destination is provably
+                // not the wallet's own: an intra-wallet transfer leaves a
+                // Received row under the same entry id, and a send to the
+                // wallet's default Orchard address is its own funds either way.
+                let address = shieldedDestinationAddress(counterparty: row.counterparty)
+                let isOwnDestination = receivedEntryIds.contains(row.entryId)
+                    || (ownShieldedRaw43 != nil && row.counterparty == ownShieldedRaw43)
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    amountCreditsOverride: reconstructedAmountCredits,
+                    destinationAddress: address,
+                    isExternalDestination: address != nil && !isOwnDestination))
             default:
                 items.append(ShieldedActivityItem(
                     row: row,
@@ -1753,6 +1789,18 @@ class SwiftDashSDKWalletSource: TransactionSource {
             counterparty,
             asBech32m: true,
             isTestnet: WalletEnvironment.isTestnet)
+    }
+
+    /// Decode a shielded send's counterparty (43-byte raw Orchard address) to
+    /// its DIP-0018 display form: HRP `dash`/`tdash`, payload = 0x10 type
+    /// byte + the raw address bytes (same encoding as
+    /// `PaymentsLandingViewModel.reloadShieldedAddress`). Nil for empty /
+    /// non-43-byte counterparties.
+    private static func shieldedDestinationAddress(counterparty: Data) -> String? {
+        guard counterparty.count == 43 else { return nil }
+        return Bech32m.encode(
+            hrp: Bech32m.platformHrp(mainnet: !WalletEnvironment.isTestnet),
+            data: Data([0x10]) + counterparty)
     }
 
     /// True when `address` is one of the ACTIVE wallet's own DIP-17

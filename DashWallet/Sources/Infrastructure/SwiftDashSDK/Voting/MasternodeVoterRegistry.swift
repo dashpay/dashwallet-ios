@@ -124,8 +124,18 @@ final class MasternodeVoterRegistry {
 
         let nodes = eligible
             .compactMap { masternode -> (PlatformMasternode, UInt32)? in
-                guard let address = masternode.votingAddress,
-                      let index = indexByAddress[address] else { return nil }
+                guard let address = masternode.votingAddress else {
+                    Self.logger.info(
+                        "🗳️ VOTING :: skipping a node with no published voting address")
+                    return nil
+                }
+                guard let index = indexByAddress[address] else {
+                    Self.logger.info(
+                        "🗳️ VOTING :: a registered voting address is not in this wallet's pool — not votable: \(address, privacy: .private)")
+                    return nil
+                }
+                Self.logger.info(
+                    "🗳️ VOTING :: matched a registered voting address at pool index \(index, privacy: .public): \(address, privacy: .private)")
                 return (masternode, index)
             }
             .sorted { $0.0.orderIndex < $1.0.orderIndex }
@@ -160,8 +170,19 @@ final class MasternodeVoterRegistry {
             Self.logger.error("🗳️ VOTING :: no provider-voting deriver available")
             return nil
         }
-        guard let wif = deriver.wif(at: node.votingKeyIndex),
-              let key = WIFParser.parseWIF(wif) else {
+
+        // The index came from joining the node's registered address against
+        // the live pool; the key is resolved Rust-side from the running wallet
+        // (platform#4338), which cross-checks it against the account xpub
+        // before returning. So a key that does not match this node's registered
+        // voting address cannot reach the signer — Platform would only be able
+        // to report that as "no voter identity exists", which is
+        // indistinguishable from a node that was never registered.
+        Self.logger.info(
+            "🗳️ VOTING :: signing with the key at pool index \(node.votingKeyIndex, privacy: .public) for \(deriver.address(at: node.votingKeyIndex) ?? "unknown address", privacy: .private)")
+
+        guard let hex = deriver.privateKeyHex(at: node.votingKeyIndex),
+              let key = Data(hex: hex) else {
             Self.logger.error(
                 "🗳️ VOTING :: failed to derive voting key at index \(node.votingKeyIndex, privacy: .public)")
             return nil

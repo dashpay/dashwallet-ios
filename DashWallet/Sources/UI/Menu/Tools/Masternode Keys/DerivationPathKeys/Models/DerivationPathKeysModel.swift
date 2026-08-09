@@ -94,8 +94,12 @@ final class DerivationPathKeysModel {
     var visibleIndexes: Int
 
     private let usage: MasternodeKeyUsage
+    /// Owner/voting only — it carries the address pool the ECDSA rows join
+    /// against. Its keys come from the same resolver as `providerResolver`.
     private let ecdsaDeriver: MasternodeProviderKeyDeriver?
-    private let providerDeriver: ProviderKeyDeriver?
+    /// Operator/evonode-operator only — these families have no address rows,
+    /// so they talk to the resolver directly.
+    private let providerResolver: ProviderKeyResolver?
 
     init(key: MNKey) {
         self.key = key
@@ -105,10 +109,13 @@ final class DerivationPathKeysModel {
         switch key {
         case .owner, .voting:
             ecdsaDeriver = MasternodeProviderKeyDeriver(key: key)
-            providerDeriver = nil
-        case .operator, .evonodeOperator:
+            providerResolver = nil
+        case .operator:
             ecdsaDeriver = nil
-            providerDeriver = ProviderKeyDeriver(key: key)
+            providerResolver = ProviderKeyResolver(kind: .operatorBLS)
+        case .evonodeOperator:
+            ecdsaDeriver = nil
+            providerResolver = ProviderKeyResolver(kind: .platformNodeEdDSA)
         }
     }
 
@@ -156,18 +163,18 @@ extension DerivationPathKeysModel {
             case .owner, .voting:
                 value = ecdsaDeriver?.privateKeyHex(at: index)
             case .operator, .evonodeOperator:
-                value = providerDeriver?.key(at: index)?.privateKeyHex
+                value = providerResolver?.key(at: index)?.privateKeyHex
             }
         case .wifPrivateKey:
             value = ecdsaDeriver?.wif(at: index)
         case .publicKey:
-            value = providerDeriver?.key(at: index)?.publicKeyHex
+            value = providerResolver?.key(at: index)?.publicKeyHex
         case .publicKeyLegacy:
-            value = providerDeriver?.key(at: index)?.legacyPublicKeyHex
+            value = providerResolver?.key(at: index)?.legacyPublicKeyHex
         case .platformNodeId:
-            value = providerDeriver?.key(at: index)?.nodeIdHex
+            value = providerResolver?.key(at: index)?.nodeIdHex
         case .tenderdashNodeKey:
-            value = providerDeriver?.tenderdashNodeKeyBase64(at: index)
+            value = providerResolver?.tenderdashNodeKeyBase64(at: index)
         }
         return DerivationPathKeysItem(info: info, value: value ?? unavailable)
     }
@@ -193,17 +200,11 @@ final class MasternodeProviderKeyDeriver {
     private static let votingKeysTypeTag: UInt8 = 8
     private static let ownerKeysTypeTag: UInt8 = 9
 
-    private let key: MNKey
-    private let wallet: Wallet
-
-    /// Which provider family the SDK derives for this screen. Owner/voting
-    /// derivation moved Rust-side (platform#4338) and the key-wallet path
-    /// surface it used to go through was withdrawn (platform#4339), so the
-    /// private keys below come from the same resolver the operator/platform
-    /// families already use.
-    private let providerKind: ManagedPlatformWallet.ProviderKeyKind
-    private let managedWallet: ManagedPlatformWallet
-    private var derivedKeyCache: [UInt32: ManagedPlatformWallet.ProviderDerivedKey] = [:]
+    /// Owner/voting derivation moved Rust-side (platform#4338) and the
+    /// key-wallet path surface it used to go through was withdrawn
+    /// (platform#4339), so the private keys below come from exactly the same
+    /// resolver the operator/platform families use — not a second copy of it.
+    private let keyResolver: ProviderKeyResolver
 
     /// Index → base58 address of the provider pool, snapshotted once at init.
     /// Sourced from the running wallet (`loadLiveAddresses`), falling back to
@@ -215,7 +216,11 @@ final class MasternodeProviderKeyDeriver {
     private let poolAddresses: [UInt32: String]
 
     init?(key: MNKey) {
-        guard let network = SwiftDashSDKHost.shared.runningNetwork else {
+        // The network itself is no longer read here — it selected the coin
+        // type when this class composed the DIP-3 path app-side. The resolver
+        // owns that now; the check remains because a host with no running
+        // network has no wallet to derive from either.
+        guard SwiftDashSDKHost.shared.runningNetwork != nil else {
             return nil
         }
 
@@ -229,8 +234,12 @@ final class MasternodeProviderKeyDeriver {
             type = .providerOwnerKeys
             kind = .ownerECDSA
         case .operator, .evonodeOperator:
-            // BLS / Ed25519 families derive through `ProviderKeyDeriver`
-            // (the platform-wallet FFI), not this one.
+            // BLS / Ed25519 families have no address rows, so they use
+            // `ProviderKeyResolver` directly rather than this wrapper.
+            return nil
+        }
+
+        guard let keyResolver = ProviderKeyResolver(kind: kind) else {
             return nil
         }
 
@@ -238,7 +247,10 @@ final class MasternodeProviderKeyDeriver {
         // mnemonic (see `SwiftDashSDKHost.derivationWallet`) — it has never
         // processed a transaction, so its pools sit at the freshly-created
         // `DEFAULT_SPECIAL_GAP_LIMIT` depth. It backs ONLY the fallback
-        // address pool below; private keys come from `managedWallet`.
+        // address pool below; private keys come from `keyResolver`. Nothing
+        // outlives this initializer: the wallet is owned by `derivationManager`,
+        // which is released on return, so holding either past the pool read
+        // would leave a reference into a freed graph.
         guard let (derivationManager, wallet, derivationWalletId) =
                 SwiftDashSDKHost.shared.derivationWallet() else {
             return nil
@@ -248,14 +260,7 @@ final class MasternodeProviderKeyDeriver {
         // can resolve it.
         _ = try? wallet.getAccount(type: type)
 
-        guard let managedWallet = SwiftDashSDKHost.shared.wallet else {
-            return nil
-        }
-
-        self.key = key
-        self.wallet = wallet
-        self.providerKind = kind
-        self.managedWallet = managedWallet
+        self.keyResolver = keyResolver
 
         let live = Self.loadLiveAddresses(for: key)
         self.poolIsLive = !live.isEmpty
@@ -342,38 +347,12 @@ final class MasternodeProviderKeyDeriver {
     /// depth the derivation wallet can hold.
     private static let derivationPoolProbeCap: UInt32 = 200
 
-    /// The provider key at `index`, resolved Rust-side and memoised.
-    ///
-    /// The previous route — `Account.derivePrivateKeyWIF(wallet:masterPath:index:)`
-    /// — asked the caller for the account root path while the FFI applied the
-    /// account's own path on top of it, so every key came from a doubly-applied
-    /// branch. The keys were well-formed, which is why the screen looked right;
-    /// they were simply not the masternode's keys. The SDK withdrew that call
-    /// (platform#4339) in favour of this resolver, which owns the DIP-3 path and
-    /// cross-checks the derived key against the account xpub.
-    private func derivedKey(at index: UInt32) -> ManagedPlatformWallet.ProviderDerivedKey? {
-        if let cached = derivedKeyCache[index] {
-            return cached
-        }
-        // This screen is auth-gated and renders a private-key row per index, so
-        // the private scalar is wanted up front rather than on a second call.
-        guard let derived = try? managedWallet.providerKeyAtIndex(
-            kind: providerKind,
-            index: index,
-            includePrivate: true
-        ) else {
-            return nil
-        }
-        derivedKeyCache[index] = derived
-        return derived
-    }
-
     func wif(at index: UInt32) -> String? {
-        derivedKey(at: index)?.privateKeyWIF
+        keyResolver.key(at: index)?.privateKeyWIF
     }
 
     func privateKeyHex(at index: UInt32) -> String? {
-        derivedKey(at: index)?.privateKeyHex
+        keyResolver.key(at: index)?.privateKeyHex
     }
 
     /// The pool address at `index`. Backed by the running wallet's live pool
@@ -393,33 +372,36 @@ final class MasternodeProviderKeyDeriver {
     }
 }
 
-// MARK: - ProviderKeyDeriver
+// MARK: - ProviderKeyResolver
 
-/// Derives masternode Operator (BLS) and Evonode Operator (Ed25519
-/// platform-node) keys through the platform-wallet FFI
-/// (`ManagedPlatformWallet.providerKeyAtIndex`). All derivation and
-/// serialization (modern + legacy BLS encodings, the platform node id)
-/// happens on the Rust side; results are memoized per index because the
-/// Ed25519 family pulls the wallet seed through the mnemonic resolver on
-/// every call.
+/// Memoised access to one masternode provider family's keys through
+/// `ManagedPlatformWallet.providerKeyAtIndex`.
+///
+/// All derivation and serialization happens Rust-side — the DIP-3 path, the
+/// modern + legacy BLS encodings, the platform node id — and the resolver
+/// cross-checks the derived key against the account xpub. Composing the path
+/// app-side is what previously let the account path be applied twice
+/// (`Account.derivePrivateKeyWIF`, withdrawn in platform#4339): the keys were
+/// well-formed, which is why the screen looked right, but they came off the
+/// wrong branch.
+///
+/// This is the single entry point for all four families. Both the ECDSA
+/// owner/voting deriver and the BLS/Ed25519 rows previously carried their own
+/// copy of this call and its cache.
+///
+/// Memoised because the Ed25519 family pulls the wallet seed through the
+/// mnemonic resolver on every call.
 @MainActor
-private final class ProviderKeyDeriver {
+private final class ProviderKeyResolver {
     private let kind: ManagedPlatformWallet.ProviderKeyKind
     private let wallet: ManagedPlatformWallet
     private var cache: [UInt32: ManagedPlatformWallet.ProviderDerivedKey] = [:]
 
-    init?(key: MNKey) {
-        switch key {
-        case .operator:
-            kind = .operatorBLS
-        case .evonodeOperator:
-            kind = .platformNodeEdDSA
-        case .owner, .voting:
-            return nil
-        }
+    init?(kind: ManagedPlatformWallet.ProviderKeyKind) {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             return nil
         }
+        self.kind = kind
         self.wallet = wallet
     }
 
