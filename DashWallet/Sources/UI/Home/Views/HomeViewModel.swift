@@ -2063,6 +2063,22 @@ extension HomeViewModel {
                 // sync loop (PlatformAddressSyncCoordinator).
             }
             .store(in: &cancellableBag)
+
+        // The reload above fires when the identity is adopted, which is before
+        // the DashPay sync loop has had a pass to fetch anything — so it runs
+        // against an empty payment lookup and was the only DashPay-aware
+        // trigger the feed had. The payments themselves land later, written by
+        // an app-pulled projection into entities `saveTouchesFeedRows` filters
+        // out, and are read through a computed property on rows that were
+        // already rendered. Without this the feed kept dash-spv's misread
+        // direction and a nameless contact for the rest of the session. The
+        // lookup posts only on a real change, so this is not a periodic reload.
+        NotificationCenter.default.publisher(for: DashPayPaymentTxLookup.didChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.txReloadRequests.send()
+            }
+            .store(in: &cancellableBag)
     }
 }
 #endif

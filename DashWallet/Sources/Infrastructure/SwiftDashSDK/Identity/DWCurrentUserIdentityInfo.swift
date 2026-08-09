@@ -614,9 +614,9 @@ enum SameSeedIdentityRecoveryPipeline {
 }
 
 /// Best-effort startup recovery for an identity created by the same seed on a
-/// different device/install. One successful attempt is enough per
-/// network-scoped wallet and process; failures remain retryable on the next
-/// runtime start.
+/// different device/install. Finding an identity is the only outcome that ends
+/// the search: an empty or failed scan is retried on a backoff inside this
+/// session, and again on the next runtime start.
 @MainActor
 final class DWSameSeedIdentityRecoveryCoordinator {
     static let shared = DWSameSeedIdentityRecoveryCoordinator()
@@ -625,8 +625,21 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.identity-recovery")
 
+    /// In-session retry schedule.
+    ///
+    /// The scan runs during runtime start, right after a restore — the worst
+    /// moment to need the network. Every probe verifies its proof against
+    /// quorum keys the SDK pulls from one HTTPS endpoint whose cache is cold
+    /// on each launch, so a scan that starts before that endpoint answers
+    /// fails whole rather than per-node, and no amount of DAPI-level retrying
+    /// helps. Retrying the scan itself does, which is why the first retry is
+    /// soon; the later ones spread out so a genuinely identity-less wallet
+    /// costs three cheap lookups, not a poll.
+    private static let retryDelays: [Duration] = [.seconds(20), .seconds(60), .seconds(180)]
+
     private var completedContexts: Set<String> = []
     private var activeContexts: Set<String> = []
+    private var retryTasks: [String: Task<Void, Never>] = [:]
 
     private init() {}
 
@@ -645,13 +658,56 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             return
         }
 
+        // A fresh runtime start supersedes any backoff still pending from the
+        // previous one — it re-runs the same first attempt below.
+        retryTasks.removeValue(forKey: contextKey)?.cancel()
+
+        let found = await attempt(
+            wallet: wallet,
+            modelContainer: modelContainer,
+            network: network,
+            contextKey: contextKey)
+
+        if !found {
+            scheduleRetries(
+                walletId: walletId,
+                modelContainer: modelContainer,
+                network: network,
+                contextKey: contextKey)
+        }
+    }
+
+    /// One recovery pass. Returns `true` only when the wallet now has an
+    /// identity — the sole outcome that stops the search.
+    ///
+    /// A scan that completes without finding one is NOT success. It used to be
+    /// recorded as final for the process, so a restore whose scan came back
+    /// empty for network reasons left the wallet identity-less (no DashPay
+    /// tabs, no contacts, no contact payment history) until the next launch.
+    /// Platform now reports an unanswered scan as an error rather than an
+    /// empty result, but a genuinely empty result stays retryable here too:
+    /// the identity may simply not be registered yet at scan time.
+    private func attempt(
+        wallet: ManagedPlatformWallet,
+        modelContainer: ModelContainer,
+        network: Network,
+        contextKey: String
+    ) async -> Bool {
+        guard !completedContexts.contains(contextKey),
+              !activeContexts.contains(contextKey)
+        else {
+            return completedContexts.contains(contextKey)
+        }
+
         activeContexts.insert(contextKey)
         defer { activeContexts.remove(contextKey) }
 
         do {
             let outcome = try await SameSeedIdentityRecoveryPipeline.run(
                 localIdentityIds: {
-                    Self.localIdentityIds(walletId: walletId, modelContainer: modelContainer)
+                    Self.localIdentityIds(
+                        walletId: wallet.walletId,
+                        modelContainer: modelContainer)
                 },
                 discover: {
                     Self.logger.info(
@@ -695,6 +751,15 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                     DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
                 })
 
+            guard outcome.identityCount > 0 else {
+                Self.logger.info(
+                    """
+                    🪪 IDENT-RECOVERY :: scan found no identity; will retry \
+                    discovered=\(outcome.discoveredCount, privacy: .public)
+                    """)
+                return false
+            }
+
             completedContexts.insert(contextKey)
             Self.logger.info(
                 """
@@ -703,12 +768,52 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                 identities=\(outcome.identityCount, privacy: .public) \
                 adopted=\(outcome.adopted, privacy: .public)
                 """)
+            return true
         } catch {
             Self.logger.warning(
                 """
-                🪪 IDENT-RECOVERY :: failed; will retry after next runtime start: \
+                🪪 IDENT-RECOVERY :: failed; will retry: \
                 \(String(describing: error), privacy: .public)
                 """)
+            return false
+        }
+    }
+
+    /// Walk the backoff until a pass finds an identity or the schedule runs
+    /// out. Runs outside the runtime-start pipeline, so each pass re-resolves
+    /// the live wallet instead of holding the handle it was started with: a
+    /// wipe, a wallet switch, or a network switch between retries must end the
+    /// search rather than scan against a torn-down runtime.
+    private func scheduleRetries(
+        walletId: Data,
+        modelContainer: ModelContainer,
+        network: Network,
+        contextKey: String
+    ) {
+        retryTasks[contextKey] = Task { [weak self] in
+            for delay in Self.retryDelays {
+                try? await Task.sleep(for: delay)
+                guard !Task.isCancelled, let self else { return }
+                guard !self.completedContexts.contains(contextKey) else { return }
+
+                guard let wallet = SwiftDashSDKHost.shared.wallet,
+                      wallet.walletId == walletId,
+                      PlatformAddressSyncCoordinator.shared.runningNetwork == network
+                else {
+                    Self.logger.info(
+                        "🪪 IDENT-RECOVERY :: retry abandoned — runtime moved on")
+                    return
+                }
+
+                if await self.attempt(
+                    wallet: wallet,
+                    modelContainer: modelContainer,
+                    network: network,
+                    contextKey: contextKey) {
+                    break
+                }
+            }
+            self?.retryTasks.removeValue(forKey: contextKey)
         }
     }
 
