@@ -1,6 +1,8 @@
 /* No comment provided by engineer. */
 " " = " ";
 
+" or " = " หรือ ";
+
 /* CrowdNode */
 " Privacy Policy " = "นโยบายความเป็นส่วนตัว";
 
@@ -16,11 +18,20 @@
 /* Dash DEX / dex_error_blacklisted */
 "%@ can't be swapped at the moment." = "%@ can't be swapped at the moment.";
 
+/* DashPay Invitations */
+"%@ couldn't be found on the Dash network to send them a contact request." = "ไม่พบ %@ บนเครือข่าย Dash จึงส่งคำขอการติดต่อไม่ได้";
+
+/* Usernames */
+"%@ Dash available" = "%@ Dash พร้อมใช้งาน";
+
 /* DashPay Contacts */
 "%@ DASH sent to %@" = "%1$@ DASH sent to %2$@";
 
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
+
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "%@ ยอมรับคำขอการติดต่อของคุณแล้ว";
 
 /* Dash DEX */
 "%@ has received your transaction and is processing the swap." = "%@ has received your transaction and is processing the swap.";
@@ -49,6 +60,12 @@
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
 
+/* Raw transaction inspector */
+"%d bytes" = "%d ไบต์";
+
+/* Network fee in duffs (1 DASH = 100,000,000 duffs) */
+"%d duffs" = "%d duffs";
+
 /* Voting - multiple keys warning */
 "%d votes will be cast as you have multiple voting keys stored in the wallet" = "%d votes will be cast as you have multiple voting keys stored in the wallet";
 
@@ -60,6 +77,9 @@
 
 /* Voting */
 "%ld duplicates" = "%ld ซ้ำ";
+
+/* Usernames */
+"%ld of %ld deposits" = "%ld จาก %ld รายการฝาก";
 
 /* Voting */
 "%ld requests" = "%ld คำขอ";
@@ -136,6 +156,9 @@
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" ไม่ใช่คำวลีการกู้คืน คุณต้องการที่จะพยายามกู้คืนคำที่ถูกต้องที่ควรเป็นที่ของมันหรือไม่";
 
+/* Balance info sheet */
+"A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames." = "ยอดเครดิตบน Dash Platform ใช้สำหรับการชำระเงินทันทีระหว่างที่อยู่ Platform และสำหรับฟีเจอร์ต่าง ๆ เช่น ชื่อผู้ใช้";
+
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "รหัสผ่านอุปกรณ์นั้นจำเป็นในการปกป้องกระเป๋าสตางค์ของคุณ ไปที่การตั้งค่าและเปิดรหัสผ่านเพื่อดำเนินการต่อ";
 
@@ -154,8 +177,15 @@
 /* No comment provided by engineer. */
 "About" = "เกี่ยวกับ";
 
+/* DashPay FAQ title */
+"About DashPay" = "เกี่ยวกับ DashPay";
+
 /* No comment provided by engineer. */
 "About me" = "เกี่ยวกับฉัน";
+
+"Abstain" = "งดออกเสียง";
+
+"Abstain on “%@”" = "งดออกเสียงเรื่อง “%@”";
 
 /* No comment provided by engineer. */
 "Accept" = "ยอมรับ";
@@ -178,17 +208,41 @@
 /* CrowdNode */
 "Account Recovery" = "การกู้คืนบัญชี";
 
+/* Masternode status */
+"Active" = "ใช้งานอยู่";
+
+/* No comment provided by engineer. */
+"Activity" = "กิจกรรม";
+
+/* Balance info sheet */
+"Activity is public but not easy to trace" = "กิจกรรมเป็นสาธารณะแต่ติดตามได้ไม่ง่าย";
+
 /* No comment provided by engineer. */
 "Add" = "เพิ่ม";
 
+/* DashPay Invitations */
+"Add %@ as a contact" = "เพิ่ม %@ เป็นผู้ติดต่อ";
+
 /* DashPay Contacts */
 "Add %@ as a contact to pay them directly by username and keep a shared history of your payments." = "Add %@ as a contact to pay them directly by username and keep a shared history of your payments.";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "เพิ่ม %@ เป็นผู้ติดต่อเพื่อจ่ายตรงไปยังชื่อผู้ใช้และเก็บประวัติธุรกรรมร่วมกันไว้";
+
+/* Usernames */
+"Add %@ Dash to your Shielded balance and let it rest a few hours to register without linking your username to your other funds." = "เพิ่ม %@ Dash เข้าไปในยอดคงเหลือแบบปกปิดของคุณ แล้วปล่อยพักไว้สองสามชั่วโมงเพื่อลงทะเบียนโดยไม่เชื่อมโยงชื่อผู้ใช้กับเงินส่วนอื่นของคุณ";
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "เพิ่มรายชื่อใหม่";
 
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
+
+/* Usernames */
+"Add at least %@ Dash to your Shielded balance" = "เพิ่มอย่างน้อย %@ Dash เข้าไปในยอดคงเหลือแบบปกปิดของคุณ";
+
+/* Usernames */
+"Add to your Shielded balance now and register your username privately a few hours later" = "เพิ่มเงินเข้ายอดคงเหลือแบบปกปิดตอนนี้ แล้วลงทะเบียนชื่อผู้ใช้แบบส่วนตัวในอีกสองสามชั่วโมง";
 
 /* Wallets */
 "Add Wallet" = "Add Wallet";
@@ -227,6 +281,10 @@
 /* No comment provided by engineer. */
 "All" = "ทั้งหมด";
 
+"All nodes at once" = "ทุกโหนดพร้อมกัน";
+
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "มาสเตอร์โหนดทั้งหมดของคุณได้โหวตชื่อผู้ใช้นี้แล้ว หากต้องการเปลี่ยนคะแนน ให้โหวตให้ผู้ขอที่คุณต้องการตอนนี้อีกครั้ง";
+
 /* CSV Export */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
 
@@ -244,6 +302,9 @@
 
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "Allow sending all transactions from Dash Wallet to Zenledger?";
+
+/* Balance info sheet */
+"Almost instantaneous to sync balances" = "ซิงค์ยอดคงเหลือได้เกือบจะทันที";
 
 /* DashPay Contacts */
 "Already a contact" = "Already a contact";
@@ -266,8 +327,14 @@
 /* Maya */
 "Amount too small to cover fees" = "Amount too small to cover fees";
 
+/* Balance info sheet */
+"Amounts and addresses are public on the blockchain" = "จำนวนเงินและที่อยู่เป็นสาธารณะบนบล็อกเชน";
+
 /* No comment provided by engineer. */
 "An error occurred" = "An error occurred";
+
+/* DashPay FAQ */
+"An Ethereum account is one reusable address: your entire balance and payment history sit publicly under it, and a name (like an ENS domain) typically points straight at that address for anyone to resolve. DashPay is the opposite shape — the name resolves to an identity, not a payment address, and actual payment addresses stay inside encrypted contact exchanges, fresh for each contact." = "บัญชี Ethereum คือที่อยู่เดียวที่ใช้ซ้ำได้ ยอดคงเหลือทั้งหมดและประวัติการชำระเงินของคุณอยู่ใต้ที่อยู่นั้นอย่างเปิดเผย และชื่อ (เช่นโดเมน ENS) มักชี้ตรงไปยังที่อยู่นั้นให้ใครก็ตามค้นหาได้ DashPay เป็นตรงกันข้าม — ชื่อจะชี้ไปยังตัวตน ไม่ใช่ที่อยู่ชำระเงิน และที่อยู่ชำระเงินจริงจะอยู่ภายในการแลกเปลี่ยนผู้ติดต่อที่เข้ารหัส ใหม่สำหรับผู้ติดต่อแต่ละราย";
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "ประสบการณ์ที่ใช้งานง่ายและคุ้นเคย";
@@ -280,6 +347,9 @@
 
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
+
+/* Balance info sheet */
+"Anyone who knows an address can view its history" = "ใครก็ตามที่รู้ที่อยู่ย่อมดูประวัติของที่อยู่นั้นได้";
 
 /* AboutDash */
 "App version" = "App version";
@@ -296,6 +366,10 @@
 /* No comment provided by engineer. */
 "Apply" = "นำมาใช้";
 
+"Approve" = "อนุมัติ";
+
+"Approving a specific request can only be done one username at a time." = "การอนุมัติคำขอเฉพาะรายทำได้ครั้งละหนึ่งชื่อผู้ใช้เท่านั้น";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "แน่ใจหรือว่าต้องการยกเลิกคำสั่งซื้อนี้?";
 
@@ -310,6 +384,9 @@
 
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
+
+/* Raw transaction inspector */
+"As text" = "เป็นข้อความ";
 
 /* DashSpend */
 "at" = "at";
@@ -329,10 +406,14 @@
 /* DashSpend/Maya */
 "Authentication cancelled" = "Authentication cancelled";
 
+"Authentication cancelled. Your vote was not cast." = "ยกเลิกการยืนยันตัวตน คะแนนของคุณไม่ได้ถูกลง";
+
 /* DashPay
    DashPay identity registration
    InternalTransfer */
 "Authentication failed" = "Authentication failed";
+
+"Authentication failed. Your vote was not cast." = "ยืนยันตัวตนไม่สำเร็จ คะแนนของคุณไม่ได้ถูกลง";
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "ไม่สามารตรวจสอบสิทธิ์ได้";
@@ -354,6 +435,8 @@
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
+
+"Award “%@” to this contender" = "มอบ “%@” ให้ผู้ขอรายนี้";
 
 /* Dash DEX */
 "Back home" = "Back home";
@@ -386,10 +469,16 @@
 "Balance" = "ยอดคงเหลือ";
 
 /* CrowdNode */
+"Balance after" = "ยอดคงเหลือหลังจากนี้";
+
+/* CrowdNode */
 "Balance On CrowdNode" = "ยอดคงเหลือบน CrowdNode";
 
 /* CrowdNode */
 "Balance: " = "ยอดคงเหลือ: ";
+
+/* Balance info sheet */
+"Balances and transfers are not publicly visible" = "ยอดคงเหลือและการโอนไม่ปรากฏต่อสาธารณะ";
 
 /* Coinbase/Payment Methods */
 "Bank Account" = "บัญชีธนาคาร";
@@ -418,6 +507,9 @@
 /* No comment provided by engineer. */
 "Biometrics Access Required" = "Biometrics Access Required";
 
+/* SPV diagnostics */
+"Birth height saved — the raised scan floor applies from the next launch." = "บันทึกความสูงเริ่มต้นแล้ว — ขอบล่างการสแกนที่ยกขึ้นจะมีผลตั้งแต่การเปิดแอปครั้งถัดไป";
+
 /* Voting */
 "Block" = "บล็อก";
 
@@ -433,11 +525,22 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Identities: this key only signs for one data contract */
+"Bound to contract" = "ผูกกับสัญญา";
+
+/* Identities: this key only signs one document type of one data contract */
+"Bound to contract, document type “%@”" = "ผูกกับสัญญา ประเภทเอกสาร “%@”";
+
 /* No comment provided by engineer. */
 "Broadcasting" = "Broadcasting";
 
+"Browsing only" = "ดูอย่างเดียว";
+
 /* InternalTransfer recovery */
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
+
+/* Log export */
+"Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files" = "รวมบันทึกการวินิจฉัยล่าสุดเป็นไฟล์ zip เพื่อส่งผ่าน AirDrop อีเมล หรือบันทึกลงไฟล์";
 
 /* Buy
    buy */
@@ -518,8 +621,13 @@
 /* DashSpend */
 "Cashier instructions" = "Cashier instructions";
 
+"Cast vote" = "ลงคะแนน";
+
 /* DashSpend */
 "Challenge" = "Challenge";
+
+/* SPV sync */
+"Change peers" = "เปลี่ยนพีร์";
 
 /* No comment provided by engineer. */
 "Change PIN" = "เปลี่ยนแปลง PIN";
@@ -536,14 +644,30 @@
 /* Dash DEX */
 "Checking amount…" = "Checking amount…";
 
+"Checking…" = "กำลังตรวจสอบ…";
+
+"Choice" = "ตัวเลือก";
+
 /* Choose your Dash username */
 "Choose your" = "เลือกของคุณ";
 
 /* No comment provided by engineer. */
 "Choose Your Username" = "เลือกชื่อผู้ใช้ของคุณ";
 
+/* DashPay Invitations */
+"Claim your invitation" = "รับคำเชิญของคุณ";
+
+/* No comment provided by engineer. */
+"Claimable balance" = "ยอดคงเหลือที่ขอรับได้";
+
 /* No comment provided by engineer. */
 "Claimed" = "เคลม";
+
+/* SPV diagnostics */
+"Clear & resync" = "ล้างและซิงค์ใหม่";
+
+/* SPV diagnostics */
+"Clear chain data and resync?" = "ล้างข้อมูลเชนและซิงค์ใหม่หรือไม่";
 
 /* Maya */
 "Clipboard" = "Clipboard";
@@ -560,8 +684,13 @@
 /* No comment provided by engineer. */
 "Close App" = "ปิดแอพพลิเคชั่น";
 
+"Closing" = "กำลังจะปิด";
+
 /* Dash Portal */
 "Coinbase" = "Coinbase";
+
+/* Raw transaction inspector */
+"Coinbase (new coins)" = "Coinbase (เหรียญใหม่)";
 
 /* Coinbase Two Factor Auth */
 "Coinbase 2FA code" = "รหัส 2FA ของ Coinbase ";
@@ -573,7 +702,19 @@
 "CoinJoin is no longer supported" = "CoinJoin is no longer supported";
 
 /* CoinJoin */
+"CoinJoin is no longer supported — choose where to move your mixed coins." = "CoinJoin ไม่รองรับอีกต่อไป — เลือกว่าจะย้ายเหรียญที่ผสมแล้วของคุณไปที่ใด";
+
+/* CoinJoin */
 "CoinJoin Withdrawals" = "CoinJoin Withdrawals";
+
+/* Masternodes */
+"Collateral" = "หลักประกัน";
+
+/* DashPay intro: feature title */
+"Coming soon" = "เร็ว ๆ นี้";
+
+/* Shielded transfer status */
+"Completed" = "เสร็จสมบูรณ์";
 
 /* No comment provided by engineer. */
 "Confirm" = "ยืนยัน";
@@ -587,6 +728,11 @@
 /* No comment provided by engineer. */
 "Confirm Platform Send" = "Confirm Platform Send";
 
+/* SPV diagnostics */
+"Confirmed" = "ยืนยันแล้ว";
+
+"Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "การยืนยันจะบันทึกความสูงเริ่มต้น %u และล้างข้อมูลเชนของเครือข่ายนี้เมื่อเปิดแอปครั้งถัดไป แล้วดาวน์โหลดใหม่และสแกนตัวกรองใหม่จากความสูงนั้น เซสชันที่กำลังทำงานอยู่จะยังใช้ขอบล่างการสแกนเดิม — ปิดแล้วเปิดแอปใหม่เพื่อเริ่ม";
+
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.";
 
@@ -597,6 +743,9 @@
 /* CrowdNode */
 "Connected Dash address" = "ที่อยู่ Dash ที่เชื่อมต่อ";
 
+/* SPV sync */
+"Connected peers" = "พีร์ที่เชื่อมต่ออยู่";
+
 /* About screen tech info: SPV state */
 "connecting" = "connecting";
 
@@ -605,6 +754,9 @@
 
 /* DashSpend */
 "Connection Error" = "Connection Error";
+
+/* Balance info sheet section */
+"Cons" = "ข้อเสีย";
 
 /* DashSpend */
 "Contact %@ Support" = "Contact %@ Support";
@@ -616,6 +768,9 @@
 /* Maya */
 "Contact Maya Support" = "Contact Maya Support";
 
+/* DashPay Invitations */
+"Contact request failed" = "คำขอการติดต่อล้มเหลว";
+
 /* DashPay */
 "Contact request not found" = "Contact request not found";
 
@@ -624,6 +779,12 @@
 
 /* DashPay Contacts */
 "Contact request sent" = "Contact request sent";
+
+/* DashPay Contacts: success card after sending a request */
+"Contact request sent to %@" = "ส่งคำขอการติดต่อไปยัง %@ แล้ว";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "คำขอการติดต่อ";
 
 /* DashPay Contacts */
 "Contact Requests (%d)" = "Contact Requests (%d)";
@@ -637,11 +798,16 @@
 /* No comment provided by engineer. */
 "Contacts" = "ติดต่อ";
 
+"Contender %@" = "ผู้ขอ %@";
+
 /* Usernames */
 "Contested name" = "Contested name";
 
 /* No comment provided by engineer. */
 "Continue" = "ดำเนินการต่อ";
+
+/* DashPay Invitations */
+"Continue to pick your username. The invitation pays the registration fee." = "ดำเนินการต่อเพื่อเลือกชื่อผู้ใช้ของคุณ คำเชิญจะจ่ายค่าธรรมเนียมการลงทะเบียนให้";
 
 /* Maya */
 "Conversion failed" = "Conversion failed";
@@ -670,6 +836,9 @@
 /* No comment provided by engineer. */
 "Copy Invitation Link" = "คัดลอกลิงค์คำเชิญ";
 
+/* Raw transaction inspector */
+"Copy Raw Transaction" = "คัดลอกธุรกรรมดิบ";
+
 /* No comment provided by engineer. */
 "Copy text" = "Copy text";
 
@@ -682,6 +851,9 @@
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "ไม่สามารถกู้คืนคำที่หายไปหรือไม่ถูกต้อง";
 
+/* Log export */
+"Could not create the log archive: %@" = "สร้างไฟล์บันทึกไม่สำเร็จ: %@";
+
 /* No comment provided by engineer. */
 "Could not find exchange rate." = "ไม่พบอัตราแลกเปลี่ยน";
 
@@ -691,6 +863,9 @@
 /* SwapKit */
 "Could not load Buy Dash options — please check your connection and try again" = "Could not load Buy Dash options — please check your connection and try again";
 
+/* Identities */
+"Could not refresh %d identities" = "รีเฟรช %d ตัวตนไม่สำเร็จ";
+
 /* Wallets */
 "Could not rename this wallet." = "Could not rename this wallet.";
 
@@ -699,6 +874,9 @@
 
 /* InternalTransfer */
 "Could not resolve a destination wallet address" = "Could not resolve a destination wallet address";
+
+/* Masternodes */
+"Couldn't fetch the balance (network error). Try Refresh." = "ดึงยอดคงเหลือไม่สำเร็จ (ข้อผิดพลาดเครือข่าย) ลองรีเฟรชดู";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "ไม่สามารถชำระเงินได้";
@@ -749,8 +927,14 @@
 /* Usernames */
 "Create your username" = "Create your username";
 
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "สร้างชื่อผู้ใช้ของคุณ ค้นหาเพื่อนและครอบครัวด้วยชื่อผู้ใช้ของพวกเขา แล้วเพิ่มเข้าในผู้ติดต่อ";
+
 /* Coinbase/Payment Methods */
 "Credit Card" = "บัตรเครดิต";
+
+/* Masternodes */
+"Credits" = "เครดิต";
 
 /* Translate it as short as possible! (24 symbols max) */
 "CrowdNode" = "CrowdNode";
@@ -828,11 +1012,23 @@
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "การชำระเงิน Dash ไม่สามารถจะน้อยกว่า %@";
 
+"Dash Platform has not indexed this contest yet. Vote counts appear here once it does." = "Dash Platform ยังไม่ได้จัดทำดัชนีการชิงชื่อครั้งนี้ จำนวนคะแนนจะปรากฏที่นี่เมื่อจัดทำแล้ว";
+
+"Dash Platform is not connected yet. Wait for syncing to finish and try again." = "ยังไม่ได้เชื่อมต่อ Dash Platform รอให้ซิงค์เสร็จแล้วลองอีกครั้ง";
+
+/* Send confirm sheet */
+"Dash sent to a wrong address can't be recovered. Make sure the address is exactly the one you intend to pay." = "Dash ที่ส่งไปยังที่อยู่ผิดจะเรียกคืนไม่ได้ ตรวจสอบให้แน่ใจว่าที่อยู่ตรงกับที่คุณตั้งใจจะจ่ายทุกประการ";
+
+"Dash stores usernames in a look-alike-safe form, so the stored name can differ from what each person typed." = "Dash เก็บชื่อผู้ใช้ในรูปแบบที่ป้องกันชื่อดูคล้ายกัน ชื่อที่เก็บไว้จึงอาจต่างจากที่แต่ละคนพิมพ์";
+
 /* No comment provided by engineer. */
 "Dash username" = "ชื่อผู้ใช้ Dash";
 
 /* DashSpend confirmation */
 "Dash Wallet" = "กระเป๋าเงิน Dash ";
+
+/* CoinJoin */
+"Dash Wallet balance" = "ยอดคงเหลือกระเป๋าเงิน Dash";
 
 /* AboutDash */
 "Dash Wallet is an open sourced app forked from Bitcoin Wallet" = "Dash Wallet is an open sourced app forked from Bitcoin Wallet";
@@ -840,8 +1036,20 @@
 /* Buy Dash */
 "Dash Wallet on this device" = "กระเป๋าเงิน Dash บนอุปกรณ์นี้";
 
+/* DashPay */
+"DashPay" = "DashPay";
+
+/* DashPay: title of the enable success sheet */
+"DashPay enabled" = "เปิดใช้ DashPay แล้ว";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "คำเชิญ DashPay ";
+
+/* DashPay FAQ */
+"DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses." = "DashPay คือประสบการณ์การชำระเงินเชิงสังคมของ Dash สร้างอยู่บน Dash Platform คุณลงทะเบียนชื่อผู้ใช้ เพิ่มผู้ใช้คนอื่นเป็นผู้ติดต่อ และจ่ายเงินให้พวกเขาด้วยชื่อ — ไม่ต้องคัดลอกที่อยู่อีกต่อไป";
+
+/* DashPay intro: pitch paragraph */
+"DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person." = "DashPay แทนที่ที่อยู่ยาว ๆ ที่อ่านไม่รู้เรื่องด้วยชื่อผู้ใช้ เพิ่มเพื่อนเป็นผู้ติดต่อ ส่งเงินไปยังชื่อ และจัดระเบียบทุกการชำระเงินตามรายบุคคล";
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "DashPay อัพเกรดค่าบริการ";
@@ -860,6 +1068,8 @@
 
 /* Voting */
 "Date: Old to new" = "วันที่: เก่าไปใหม่";
+
+"Deadline unknown" = "ไม่ทราบกำหนดเวลา";
 
 /* DashSpend */
 "Decrease quantity" = "Decrease quantity";
@@ -895,6 +1105,9 @@
 /* CrowdNode */
 "Deposit sent" = "ส่งเงินฝากแล้ว";
 
+/* Identities: BIP-32 style derivation path of this key */
+"Derivation path" = "เส้นทางการอนุพันธ์";
+
 /* No comment provided by engineer. */
 "Destination" = "Destination";
 
@@ -906,6 +1119,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "อุปกรณ์รักษาความปลอดภัยที่ถูกบุกรุก\n'jailbreak' แอพพลิเคชั่นต่าง ๆ สามารถเข้าถึงข้อมูลของแอพพลิเคชั่นอื่นได้ (และสามารถขโมย dash ของคุณได้) กำจัดกระเป๋าสตางค์นี้โดยทันที และกู้คืนบนอุปกรณ์ที่ปลอดภัย";
+
+/* Identities: this identity key was disabled on Platform */
+"Disabled" = "ปิดใช้งาน";
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "ตัดการเชื่อมต่อบัญชี Coinbase";
@@ -938,11 +1154,17 @@
 /* No comment provided by engineer. */
 "Done" = "เสร็จแล้ว";
 
+/* Usernames */
+"Done — your balance has rested long enough" = "เสร็จแล้ว — ยอดคงเหลือของคุณพักไว้นานพอแล้ว";
+
 /* DashSpend */
 "Double tap to change quantity" = "Double tap to change quantity";
 
 /* SegmentedControl */
 "Double tap to select" = "Double tap to select";
+
+/* Send confirm sheet */
+"Double-check the address" = "ตรวจสอบที่อยู่อีกครั้ง";
 
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
@@ -966,6 +1188,10 @@
 /* No comment provided by engineer. */
 "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "คำเชิญแต่ละครั้งจะได้รับเงินทุนด้วยจำนวนเงินนี้เพื่อให้ผู้รับสามารถสร้างชื่อผู้ใช้ของพวกเขาได้อย่างรวดเร็วบนเครือข่าย Dash";
 
+"Each masternode has one live vote per contest. You can change it later, but Dash Platform allows only 5 votes in total per masternode per contest." = "มาสเตอร์โหนดแต่ละตัวมีคะแนนที่ใช้ได้หนึ่งเสียงต่อการชิงชื่อหนึ่งครั้ง คุณเปลี่ยนได้ภายหลัง แต่ Dash Platform อนุญาตรวมเพียง 5 เสียงต่อมาสเตอร์โหนดต่อการชิงชื่อหนึ่งครั้ง";
+
+"Each tap votes with one more node, so you choose how many to link together." = "การแตะแต่ละครั้งจะเพิ่มโหนดอีกหนึ่งตัวเข้ามาโหวต คุณจึงเลือกได้ว่าจะเชื่อมโยงกี่ตัว";
+
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "ก่อน";
 
@@ -974,6 +1200,9 @@
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = " Stake Dash ได้อย่างง่ายดายและได้รับรายได้แบบ passive income ด้วยการคลิกง่ายๆ";
+
+/* SPV diagnostics */
+"Edit birth height" = "แก้ไขความสูงเริ่มต้น";
 
 /* No comment provided by engineer. */
 "Edit Profile" = "แก้ไขโปรไฟล์";
@@ -990,11 +1219,22 @@
 /* CrowdNode */
 "Email" = "อีเมล";
 
+/* DashPay: confirm button of the Enable DashPay sheet */
+"Enable" = "เปิดใช้";
+
+/* DashPay: add the identity keys other users need to send contact requests */
+"Enable DashPay" = "เปิดใช้ DashPay";
+
 /* No comment provided by engineer. */
 "Enable Face ID" = "เชื่อมต่อ Face ID";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "เชื่อมต่อ touch ID";
+
+/* DashPay FAQ */
+"Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "การเปิดใช้ DashPay มีค่าธรรมเนียมเครือข่ายเล็กน้อยครั้งเดียว หักจากยอดเครดิตของตัวตนคุณ ค่าประมาณที่แน่นอนจะแสดงก่อนที่คุณยืนยัน ส่วนการส่งคำขอการติดต่อและการชำระเงินจะเสียค่าธรรมเนียมเครือข่ายตามปกติ";
+
+"Ending soonest" = "สิ้นสุดเร็วที่สุด";
 
 /* Swap */
 "Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work." = "Enter a valid %1$@ address. %2$@ here is on %3$@, so an Ethereum (0x…) address won’t work.";
@@ -1056,6 +1296,17 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "ข้อผิดพลาดในการอัปเดตโปรไฟล์ของคุณ";
 
+/* DashPay: fee line of the Enable DashPay confirmation */
+"Estimated network fee" = "ค่าธรรมเนียมเครือข่ายโดยประมาณ";
+
+"Every node votes together. Faster, but it publicly links your masternodes to each other." = "ทุกโหนดโหวตพร้อมกัน เร็วกว่า แต่จะเชื่อมโยงมาสเตอร์โหนดของคุณเข้าด้วยกันอย่างเปิดเผย";
+
+/* SPV sync peer type */
+"Evonode" = "Evonode";
+
+/* Masternode keys */
+"Evonode Operator keys" = "คีย์ผู้ดำเนินการ Evonode";
+
 /* Maya */
 "Exchange rate not available" = "Exchange rate not available";
 
@@ -1074,11 +1325,20 @@
 /* No comment provided by engineer. */
 "Export CSV" = "Export CSV";
 
+/* Log export */
+"Export Logs" = "ส่งออกบันทึก";
+
 /* Extended public key (BIP44) */
 "Extended public key (BIP44)" = "Extended public key (BIP44)";
 
 /* No comment provided by engineer. */
+"External address" = "ที่อยู่ภายนอก";
+
+/* No comment provided by engineer. */
 "Face ID limit" = "ขีดจำกัด Face ID";
+
+/* No comment provided by engineer. */
+"Failed" = "ล้มเหลว";
 
 /* No comment provided by engineer. */
 "Failed to load barcode" = "Failed to load barcode";
@@ -1113,11 +1373,17 @@
 /* Balance */
 "Fetching rates…" = "Fetching rates…";
 
+/* Masternodes */
+"Fetching…" = "กำลังดึงข้อมูล…";
+
 /* Coinbase/Payment Methods */
 "Fiat Account" = "บัญชีเงินสด";
 
 /* No comment provided by engineer. */
 "Filter" = "กรอง";
+
+/* SPV sync phase */
+"Filter headers" = "ส่วนหัวตัวกรอง";
 
 /* No comment provided by engineer. */
 "Filter transactions" = "Filter transactions";
@@ -1137,11 +1403,17 @@
 /* DashPay Contacts */
 "Find a user and add them to your contacts." = "Find a user and add them to your contacts.";
 
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "ค้นหาผู้ใช้บนเครือข่าย Dash";
+
 /* Explore Dash */
 "Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* Identities */
+"Find identities" = "ค้นหาตัวตน";
 
 /* Explore Dash */
 "Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
@@ -1191,6 +1463,12 @@
 /* No comment provided by engineer. */
 "Forgot PIN?" = "ลืม PIN ใช่หรือไม่";
 
+/* Identities */
+"Found %d new identities" = "พบตัวตนใหม่ %d รายการ";
+
+/* Identities */
+"Found 1 new identity" = "พบตัวตนใหม่ 1 รายการ";
+
 /* No comment provided by engineer. */
 "Found missing word:\n%@" = "พบคำที่หายไป:\n%@";
 
@@ -1239,6 +1517,18 @@
 /* SPV diagnostics */
 "Full rescan (from 0) — slow" = "Full rescan (from 0) — slow";
 
+/* Usernames */
+"Fund your username from your Shielded balance. Add funds a few hours ahead — the short rest keeps your username unlinkable to your other Dash." = "จ่ายค่าชื่อผู้ใช้จากยอดคงเหลือแบบปกปิดของคุณ เติมเงินล่วงหน้าสองสามชั่วโมง — การพักสั้น ๆ นี้ทำให้ชื่อผู้ใช้ของคุณเชื่อมโยงกับ Dash ส่วนอื่นไม่ได้";
+
+/* Usernames */
+"Funded from your Shielded balance — your username can't be linked to your other Dash." = "จ่ายจากยอดคงเหลือแบบปกปิดของคุณ — ชื่อผู้ใช้ของคุณเชื่อมโยงกับ Dash ส่วนอื่นไม่ได้";
+
+/* Shielded transfer status */
+"Funds locked — finishing transfer" = "เงินถูกล็อก — กำลังทำการโอนให้เสร็จ";
+
+/* CoinJoin */
+"Funds moved" = "ย้ายเงินแล้ว";
+
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "รับรางวัลจากเงินฝากใน Dash มาสเตอร์โหนดที่มีเพียง 0.5 Dash";
 
@@ -1253,6 +1543,9 @@
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "รับใบเสนอราคา";
+
+/* Usernames */
+"Get ready to join DashPay" = "เตรียมพร้อมเข้าร่วม DashPay";
 
 /* CrowdNode */
 "Get Rewards Instantly" = "รับรางวัลทันที";
@@ -1303,16 +1596,35 @@
 "Google Pay" = "Google Pay";
 
 /* No comment provided by engineer. */
+"Got it" = "เข้าใจแล้ว";
+
+/* Governance */
+"Governance" = "ธรรมาภิบาล";
+
+/* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "ให้สิทธิ์ GPS เพื่อให้เราสามารถแสดงสถานที่ใกล้คุณ";
 
 /* Voting */
 "Has blocked votes" = "Has blocked votes";
+
+/* Username has requested to be your friend */
+"has requested to be your friend" = "ได้ขอเป็นเพื่อนกับคุณ";
+
+/* DashPay Invitations */
+"Have an invitation?" = "มีคำเชิญไหม";
 
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "มีการควบคุมที่สมบูรณ์และปรับแต่งกระเป๋าสตางค์ของคุณขึ้นอยู่กับความต้องการของคุณ";
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "หัวข้อ #%1$d of %2$d";
+
+/* SPV sync phase */
+"Headers" = "ส่วนหัว";
+
+/* DashPay Contacts */
+/* Masternodes */
+"Height %u" = "ความสูง %u";
 
 /* CrowdNode */
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "นี่คือที่อยู่ Dash ที่กำหนดไว้สำหรับบัญชี CrowdNode ของคุณในกระเป๋าเงิน Dash บนอุปกรณ์นี้";
@@ -1332,6 +1644,9 @@
 /* Voting */
 "High to low" = "สูงไปต่ำ";
 
+/* Balance info sheet */
+"Higher fees around 7 cents (still lower than other blockchains offering similar privacy)" = "ค่าธรรมเนียมสูงกว่าราว 7 เซนต์ (ยังต่ำกว่าบล็อกเชนอื่นที่ให้ความเป็นส่วนตัวใกล้เคียงกัน)";
+
 /* No comment provided by engineer. */
 "History" = "ประวัติ";
 
@@ -1343,6 +1658,15 @@
 
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "ฉันจะรับ Test Dash ได้อย่างไร?";
+
+/* DashPay FAQ */
+"How does this compare to Bitcoin in terms of privacy?" = "เมื่อเทียบกับ Bitcoin ในแง่ความเป็นส่วนตัวเป็นอย่างไร";
+
+/* DashPay FAQ */
+"How does this compare to Ethereum Accounts in terms of privacy?" = "เมื่อเทียบกับบัญชี Ethereum ในแง่ความเป็นส่วนตัวเป็นอย่างไร";
+
+/* DashPay FAQ */
+"How private is DashPay?" = "DashPay เป็นส่วนตัวแค่ไหน";
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "วิธียืนยันที่อยู่ API Dash ของคุณ";
@@ -1380,14 +1704,29 @@
 /* No comment provided by engineer. */
 "I wrote it down" = "ฉันได้เขียนลงไปแล้ว";
 
+/* Identities */
+"Identities" = "ตัวตน";
+
 /* Voting */
 "Identity" = "ตัวตน";
+
+/* Destination of an identity funding asset lock */
+"Identity credits" = "เครดิตของตัวตน";
 
 /* SDK identity profile sheet */
 "Identity ID" = "Identity ID";
 
+/* Identities */
+"Identity index" = "ดัชนีตัวตน";
+
+/* Asset lock funding a DashPay identity registration */
+"Identity registration" = "การลงทะเบียนตัวตน";
+
 /* DashPay */
 "Identity registration already in progress" = "Identity registration already in progress";
+
+/* Asset lock topping up a DashPay identity's credits */
+"Identity top-up" = "การเติมเครดิตตัวตน";
 
 /* About screen tech info: SPV state */
 "idle" = "idle";
@@ -1462,6 +1801,10 @@
 "In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.";
 
 /* No comment provided by engineer. */
+/* Masternode status */
+"Inactive" = "ไม่ได้ใช้งาน";
+
+/* No comment provided by engineer. */
 "Income" = "รายได้";
 
 /* DashSpend */
@@ -1472,6 +1815,15 @@
 
 /* Buy Sell Portal */
 "Initializing" = "Initializing";
+
+/* Raw transaction inspector */
+"Input %d" = "อินพุต %d";
+
+/* Raw transaction inspector */
+"Input %d — outpoint" = "อินพุต %d — outpoint";
+
+/* Raw transaction inspector */
+"Inputs (%d)" = "อินพุต (%d)";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "ยอดเงินไม่เพียงพอ";
@@ -1548,6 +1900,9 @@
 /* No comment provided by engineer. */
 "Invitation Fee" = "ค่าธรรมเนียมการเชิญ";
 
+/* DashPay Invitations */
+"Invitation from %@" = "คำเชิญจาก %@";
+
 /* No comment provided by engineer. */
 "Invitation used by" = "คำเชิญใช้โดย";
 
@@ -1556,6 +1911,9 @@
 
 /* No comment provided by engineer. */
 "Invite" = "การเชิญ";
+
+/* No comment provided by engineer. */
+"Invite Someone to join the Dash Network" = "เชิญใครสักคนให้เข้าร่วมเครือข่าย Dash";
 
 /* No comment provided by engineer. */
 "Invite your family, find your friends by searching their usernames" = "เชิญครอบครัวของคุณค้นหาเพื่อนของคุณโดยค้นหาชื่อผู้ใช้ของพวกเขา";
@@ -1568,6 +1926,9 @@
 
 /* No comment provided by engineer. */
 "Invite your friends and family to join the Dash Network." = "เชิญเพื่อนและครอบครัวของคุณเข้าร่วมเครือข่าย Dash";
+
+/* No comment provided by engineer. */
+"Invite your friends and family to the Dash Network" = "เชิญเพื่อนและครอบครัวของคุณเข้าสู่เครือข่าย Dash";
 
 /* No comment provided by engineer. */
 "iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Reported issue";
@@ -1608,14 +1969,30 @@
 /* CrowdNode */
 "Joining the pool" = "เข้าร่วม pool";
 
+/* CoinJoin */
+"Keep these coins private. Network and privacy fees apply." = "เก็บเหรียญเหล่านี้ไว้เป็นส่วนตัว มีค่าธรรมเนียมเครือข่ายและค่าธรรมเนียมความเป็นส่วนตัว";
+
 /* No comment provided by engineer. */
 "Keep Wallet" = "Keep Wallet";
 
 /* Usernames */
 "Keep your passphrase safe" = "รักษาข้อความรหัสผ่านของคุณให้ปลอดภัย";
 
+/* Identities: one identity public key, by its DPP key id */
+"Key #%d" = "คีย์ #%d";
+
+/* Identities: the public key bytes */
+"Key data" = "ข้อมูลคีย์";
+
+/* No comment provided by engineer. */
+/* Masternodes */
+"Key ownership" = "ความเป็นเจ้าของคีย์";
+
 /* No comment provided by engineer. */
 "Keypair" = "Keypair";
+
+/* Masternodes */
+"Keys" = "คีย์";
 
 /* Explore Dash */
 "Last device sync" = "การซิงค์อุปกรณ์ล่าสุด";
@@ -1633,8 +2010,13 @@
 /* CoinJoin */
 "Later" = "Later";
 
+"Leading" = "นำอยู่";
+
 /* Maya */
 "Learn more" = "Learn more";
+
+/* DashPay intro: opens the FAQ */
+"Learn More" = "เรียนรู้เพิ่มเติม";
 
 /* Info Screen */
 "Learn More..." = "เรียนรู้เพิ่มเติม...";
@@ -1693,6 +2075,9 @@
 /* Dash DEX */
 "Loading rates…" = "Loading rates…";
 
+/* Home */
+"Loading transactions" = "กำลังโหลดธุรกรรม";
+
 /* Maya */
 "Loading..." = "Loading...";
 
@@ -1702,17 +2087,31 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "สกุลเงินท้องถิ่น";
 
+/* Identities */
+"Local Only" = "เฉพาะในเครื่อง";
+
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "จำนวนเงินที่ต้องการท้องถิ่น: %@";
 
 /* Explore Dash/Merchants/Filters */
 "Location" = "ตำแหน่ง";
 
+"Lock" = "ล็อก";
+
+"Lock the name" = "ล็อกชื่อนี้";
+
+"Lock “%@” so nobody gets it" = "ล็อก “%@” ไม่ให้ใครได้ไป";
+
 /* No comment provided by engineer. */
 "Locked" = "ล็อค";
 
+"Locked — nobody receives this username" = "ล็อกแล้ว — ไม่มีใครได้ชื่อผู้ใช้นี้";
+
 /* No comment provided by engineer. */
 "Locking funds" = "Locking funds";
+
+/* Raw transaction inspector */
+"Locktime" = "Locktime";
 
 /* Log in */
 "Log in" = "Log in";
@@ -1762,8 +2161,14 @@
 /* adjective, security level */
 "Low" = "ต่ำ";
 
+/* Balance info sheet */
+"Low fees for everyday spending" = "ค่าธรรมเนียมต่ำสำหรับการใช้จ่ายประจำวัน";
+
 /* Voting */
 "Low to high" = "ต่ำไปสูง";
+
+/* Identities — the wallet's main identity */
+"Main" = "หลัก";
 
 /* No comment provided by engineer. */
 "Mainnet" = "Mainnet";
@@ -1784,7 +2189,14 @@
 "Masternode IP address" = "ที่อยู่ IP มาสเตอร์โหนด";
 
 /* Masternode keys */
+/* Tools menu */
+"Masternode Keychain" = "พวงกุญแจมาสเตอร์โหนด";
+
+/* Masternode keys */
 "Masternode keys" = "Masternode keys";
+
+/* SPV sync phase */
+"Masternode list" = "รายการมาสเตอร์โหนด";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "รายการมาสเตอร์โหนด #%1$d of %2$d";
@@ -1807,8 +2219,21 @@
 /* No comment provided by engineer. */
 "Masternode Update" = "อัพเดตมาสเตอร์โหนด";
 
+"Masternode votes" = "คะแนนจากมาสเตอร์โหนด";
+
 /* Voting */
 "Masternode Voting Key" = "รหัสการลงคะแนน Masternode";
+
+/* Tools menu */
+"Masternodes" = "มาสเตอร์โหนด";
+
+/* Masternodes */
+"Masternodes and evonodes registered with this wallet's keys will appear here after the wallet syncs." = "มาสเตอร์โหนดและ Evonode ที่ลงทะเบียนด้วยคีย์ของกระเป๋าเงินนี้จะปรากฏที่นี่หลังจากกระเป๋าเงินซิงค์เสร็จ";
+
+/* Masternodes */
+"Masternodes and evonodes using this wallet's keys" = "มาสเตอร์โหนดและ Evonode ที่ใช้คีย์ของกระเป๋าเงินนี้";
+
+"Masternodes vote on names more than one person requested. You will be notified when voting ends." = "มาสเตอร์โหนดจะโหวตชื่อที่มีคนขอมากกว่าหนึ่งคน เราจะแจ้งคุณเมื่อการโหวตสิ้นสุด";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "สูงสุด";
@@ -1847,6 +2272,9 @@
 /* DashSpend */
 "Min: %@" = "Min: %@";
 
+/* Usernames */
+"Minimum met" = "ถึงขั้นต่ำแล้ว";
+
 /* Transaction type: coinbase/masternode mining reward */
 "Mining Reward" = "Mining Reward";
 
@@ -1866,6 +2294,13 @@
 "More Control" = "ควบคุมมากขึ้น";
 
 /* No comment provided by engineer. */
+"More Suggestions" = "คำแนะนำเพิ่มเติม";
+
+"Most lock votes" = "คะแนนล็อกมากที่สุด";
+
+"Most votes" = "คะแนนมากที่สุด";
+
+/* No comment provided by engineer. */
 "Move and Zoom your photo to find the perfect fit" = "ย้ายและซูมรูปภาพของคุณเพื่อค้นหาความพอดีที่สมบูรณ์แบบ";
 
 /* CoinJoin */
@@ -1873,6 +2308,9 @@
 
 /* CoinJoin */
 "Move funds" = "Move funds";
+
+/* CoinJoin */
+"Move to your regular spendable balance." = "ย้ายไปยังยอดคงเหลือที่ใช้จ่ายได้ตามปกติ";
 
 /* CoinJoin */
 "Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported." = "Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported.";
@@ -1885,6 +2323,9 @@
 
 /* No comment provided by engineer. */
 "Moved to Address" = "ย้ายไปยังที่อยู่";
+
+/* CoinJoin */
+"Moving funds" = "กำลังย้ายเงิน";
 
 /* DashSpend */
 "Multiple" = "Multiple";
@@ -1904,6 +2345,9 @@
 /* No comment provided by engineer. */
 "Name" = "ชื่อ";
 
+/* DashPay FAQ */
+"Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "บริการชื่ออย่าง Unstoppable Domains จับคู่ชื่อที่อ่านออกกับที่อยู่สาธารณะแบบตายตัวบนเชน ใครก็ตามสามารถค้นหาชื่อนั้นและเห็นทุกการชำระเงินที่เคยส่งไป ส่วนชื่อผู้ใช้ DashPay จะไม่ชี้ไปยังที่อยู่ชำระเงินอย่างเปิดเผยเลย — ที่อยู่จะถูกเปิดเผยเฉพาะภายในการแลกเปลี่ยนที่เข้ารหัสกับผู้ติดต่อแต่ละราย ชื่อและเงินของคุณจึงไม่ถูกเชื่อมโยงในสายตาผู้สังเกตภายนอก";
+
 /* Swap route provider
    Swap route provider short */
 "NEAR" = "NEAR";
@@ -1913,6 +2357,8 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "ต้องการความช่วยเหลือ?";
+
+"Needs attention" = "ต้องดำเนินการ";
 
 /* No comment provided by engineer. */
 "Network" = "เครือข่าย";
@@ -1972,8 +2418,14 @@
 /* SwapKit */
 "No deposit address returned by SwapKit" = "No deposit address returned by SwapKit";
 
+/* Log export */
+"No diagnostic logs were found on this device. Logs are written from the next launch onward." = "ไม่พบบันทึกการวินิจฉัยบนอุปกรณ์นี้ บันทึกจะถูกเขียนตั้งแต่การเปิดแอปครั้งถัดไปเป็นต้นไป";
+
 /* No comment provided by engineer. */
 "No funded Platform address has enough balance to cover this amount plus fees." = "No funded Platform address has enough balance to cover this amount plus fees.";
+
+/* Identities */
+"No Identities" = "ไม่มีตัวตน";
 
 /* No connection */
 "No internet connection" = "No internet connection";
@@ -1982,7 +2434,22 @@
 "No locations found." = "No locations found.";
 
 /* local currency empty state */
+/* Masternodes */
+"No masternodes yet" = "ยังไม่มีมาสเตอร์โหนด";
+
+/* local currency empty state */
 "No matches for \"%@\"" = "No matches for \"%@\"";
+
+"No matching contests" = "ไม่มีการชิงชื่อที่ตรงกัน";
+
+/* Identities */
+"No new identities were found for this wallet" = "ไม่พบตัวตนใหม่สำหรับกระเป๋าเงินนี้";
+
+"No open contest matches that search." = "ไม่มีการชิงชื่อที่เปิดอยู่ตรงกับการค้นหานั้น";
+
+"No open contest matches that search. Names are stored in a normalized form, so “alice” is listed as “a11ce”." = "ไม่มีการชิงชื่อที่เปิดอยู่ตรงกับการค้นหานั้น ชื่อจะถูกเก็บในรูปแบบมาตรฐาน ดังนั้น “alice” จึงแสดงเป็น “a11ce”";
+
+"No open contests" = "ไม่มีการชิงชื่อที่เปิดอยู่";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "ไม่มีวิธีการชำระเงิน";
@@ -1993,11 +2460,19 @@
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
 
+/* SPV diagnostics */
+"No persisted wallet row found for the bound wallet." = "ไม่พบระเบียนกระเป๋าเงินที่บันทึกไว้สำหรับกระเป๋าเงินที่ผูกอยู่";
+
+/* DashPay */
+"No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing." = "ยังไม่มีที่อยู่ Platform สำหรับการลงทะเบียนแบบปกปิดสำรอง ลองอีกครั้งหลังกระเป๋าเงินซิงค์เสร็จ";
+
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "ไม่พบผลลัพธ์";
 
 /* SwapKit */
 "No route available" = "No route available";
+
+"No usernames are being contested right now. Contests open when two or more people request the same name." = "ขณะนี้ไม่มีชื่อผู้ใช้ที่ถูกชิง การชิงชื่อจะเริ่มเมื่อมีคนสองคนขึ้นไปขอชื่อเดียวกัน";
 
 /* DashPay Contacts */
 "No usernames found" = "No usernames found";
@@ -2007,6 +2482,16 @@
 
 /* Voting */
 "No votes left" = "No votes left";
+
+"No votes were cast" = "ไม่มีการลงคะแนน";
+
+"Nobody gets it" = "ไม่มีใครได้ไป";
+
+/* SPV sync peer type */
+"Node" = "โหนด";
+
+/* Raw transaction inspector */
+"Non-standard" = "ไม่มาตรฐาน";
 
 /* adjective, security level */
 "None" = "ไม่มี";
@@ -2026,11 +2511,36 @@
 /* Fiat amount */
 "Not available" = "ไม่สามารถใช้ได้";
 
+"Not available yet" = "ยังใช้งานไม่ได้";
+
+"Not cast" = "ยังไม่ได้ลงคะแนน";
+
+/* Masternodes */
+"Not checked yet" = "ยังไม่ได้ตรวจสอบ";
+
 /* Location Service Status */
 "Not Determined" = "ไม่ได้กำหนด";
 
 /* DashPay */
 "Not enough Platform credits to register an identity" = "Not enough Platform credits to register an identity";
+
+/* DashPay */
+"Not enough shielded balance to register an identity" = "ยอดคงเหลือแบบปกปิดไม่พอสำหรับลงทะเบียนตัวตน";
+
+/* No comment provided by engineer. */
+/* Masternodes */
+"Not in wallet history" = "ไม่อยู่ในประวัติกระเป๋าเงิน";
+
+"Not now" = "ไว้ทีหลัง";
+
+/* Balance info sheet */
+"Not widely accepted by merchants" = "ร้านค้ายังรับไม่แพร่หลาย";
+
+/* Balance info sheet */
+"Not widely accepted by merchants yet" = "ร้านค้ายังรับไม่แพร่หลาย";
+
+/* Masternode keys */
+"Not yet used" = "ยังไม่ได้ใช้";
 
 /* DashPay Contacts */
 "Note" = "Note";
@@ -2050,8 +2560,19 @@
 /* Voting */
 "Old to new" = "เก่าไปใหม่";
 
+/* DashPay FAQ */
+"On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "บน Bitcoin ไม่มีชั้นของชื่อ ผู้คนจึงแบ่งปันและใช้ที่อยู่ซ้ำอย่างเปิดเผย เมื่อรู้ที่อยู่หนึ่งแล้ว ทุกอย่างที่ที่อยู่นั้นเคยได้รับก็เชื่อมโยงกับเจ้าของได้ ส่วน DashPay ชื่อผู้ใช้ของคุณเป็นสาธารณะ แต่ไม่เคยชี้ไปยังที่อยู่ชำระเงิน ที่อยู่จะถูกแลกเปลี่ยนเป็นการส่วนตัวกับผู้ติดต่อแต่ละรายและหมุนเวียนไป การจ่ายด้วยชื่อจึงไม่เปิดเผยว่าเงินของคุณไปที่ใด ทั้งสองเป็นเชนแบบโปร่งใส การวิเคราะห์เชนจึงยังใช้กับตัวเหรียญได้อยู่";
+
+/* Identities */
+"On Network" = "บนเครือข่าย";
+
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "เมื่อ %@ ยอมรับคำขอของคุณแล้ว คุณจะจ่ายตรงไปยังชื่อผู้ใช้ได้";
+
 /* Dash DEX / dex_receive_description */
 "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet" = "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet";
+
+"One node at a time" = "ทีละโหนด";
 
 /* Voting */
 "One vote left" = "One vote left";
@@ -2071,6 +2592,8 @@
 /* Voting */
 "Only duplicates" = "ซ้ำกันเท่านั้น";
 
+"Only masternodes and evonodes can vote on usernames. This wallet holds no active masternode voting keys." = "มีเพียงมาสเตอร์โหนดและ Evonode เท่านั้นที่โหวตชื่อผู้ใช้ได้ กระเป๋าเงินนี้ไม่มีคีย์โหวตมาสเตอร์โหนดที่ใช้งานอยู่";
+
 /* No comment provided by engineer. */
 "Only requests with links" = "คำขอที่มีลิงก์เท่านั้น";
 
@@ -2079,6 +2602,18 @@
 
 /* Voting */
 "Only with links" = "แค่ลิงก์เท่านั้น";
+
+/* Masternodes */
+"Operator" = "ผู้ดำเนินการ";
+
+/* Masternode keys */
+"Operator keys" = "คีย์ผู้ดำเนินการ";
+
+/* Masternodes */
+"Operator public key (BLS)" = "คีย์สาธารณะของผู้ดำเนินการ (BLS)";
+
+/* No comment provided by engineer. */
+"or" = "หรือ";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "คำสั่งซื้อตัวอย่าง";
@@ -2089,14 +2624,37 @@
 /* DashSpend */
 "Original Price" = "Original Price";
 
+"Other outcomes" = "ผลลัพธ์อื่น";
+
+/* Masternodes */
+"Outpoint" = "Outpoint";
+
+/* Raw transaction inspector */
+"Output %d" = "เอาต์พุต %d";
+
+/* Raw transaction inspector */
+"Outputs (%d)" = "เอาต์พุต (%d)";
+
+/* Masternodes */
+"Owner" = "เจ้าของ";
+
 /* No comment provided by engineer. */
 "Owner Address" = "ที่อยู่เจ้าของ";
+
+/* Masternodes */
+"Owner address" = "ที่อยู่เจ้าของ";
+
+/* Masternodes */
+"Owner key hash" = "แฮชคีย์เจ้าของ";
 
 /* Owner keys */
 "Owner keys" = "Owner keys";
 
 /* No comment provided by engineer. */
 "P2SH platform addresses aren't supported yet. Use a P2PKH recipient." = "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.";
+
+/* DashPay: fee source note of the Enable DashPay confirmation */
+"Paid from your identity's credit balance." = "หักจากยอดเครดิตของตัวตนคุณ";
 
 /* DashSpend */
 "Password" = "รหัสผ่าน";
@@ -2106,6 +2664,9 @@
 
 /* Usernames */
 "Paste link here" = "Paste link here";
+
+/* DashPay Invitations */
+"Paste the invitation link you received, or scan its QR code. It funds your username registration." = "วางลิงก์คำเชิญที่คุณได้รับ หรือสแกนคิวอาร์โค้ดของลิงก์นั้น ลิงก์จะจ่ายค่าลงทะเบียนชื่อผู้ใช้ของคุณ";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "วาง URL ภาพของคุณ";
@@ -2118,6 +2679,12 @@
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "ชำระเงินและรับเงินทันทีด้วยกระบวนการชำระเงินที่ใช้งานง่าย";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "จ่ายตรงไปยังชื่อผู้ใช้";
+
+/* DashPay intro: headline */
+"Pay people, not addresses" = "จ่ายให้คน ไม่ใช่จ่ายให้ที่อยู่";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "จ่ายให้กับชื่อผู้ใช้  ไม่มีที่อยู่ตัวอักษรและตัวเลขอีกต่อไป";
@@ -2146,6 +2713,9 @@
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "กำลังชำระเงิน";
 
+/* Raw transaction inspector */
+"Payload hex" = "เพย์โหลด hex";
+
 /* Coinbase/Buy Dash */
 "Payment method" = "วิธีการชำระเงิน";
 
@@ -2158,8 +2728,24 @@
 /* DashPay Contacts */
 "Payments" = "Payments";
 
+/* DashPay FAQ */
+"Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "การชำระเงินเป็นส่วนตัว: ที่อยู่ที่คุณแลกเปลี่ยนกับผู้ติดต่อจะเดินทางอยู่ในข้อมูลที่เข้ารหัสซึ่งมีเพียงคุณสองคนอ่านได้ และไม่เคยถูกเผยแพร่ การชำระเงินของคุณจึงไม่ถูกเชื่อมโยงกับชื่อผู้ใช้ได้ง่าย ๆ อย่างไรก็ตาม สิ่งเหล่านี้ยังเป็นการชำระเงินปกติบนเชนแบบโปร่งใส การวิเคราะห์เชนขั้นสูงอาจทำให้ข้อมูลรั่วไหลได้ Shielded DashPay (เร็ว ๆ นี้) จะปิดช่องว่างนั้น ส่วนคำขอการติดต่อเองในตอนนี้ยังไม่เป็นส่วนตัว ใครก็ตามเห็นได้ว่าสองตัวตนเชื่อมโยงกันอยู่ คำขอการติดต่อแบบส่วนตัวเป็นฟีเจอร์ที่จะมาเร็ว ๆ นี้ ชื่อผู้ใช้และโปรไฟล์ของคุณก็เป็นสาธารณะบน Dash Platform เช่นกัน";
+
+/* Balance info sheet */
+"Payments confirm in seconds with InstantSend" = "การชำระเงินยืนยันได้ในไม่กี่วินาทีด้วย InstantSend";
+
+/* No comment provided by engineer. */
+"Payments made directly to addresses won’t be retained in activity." = "การชำระเงินที่ทำตรงไปยังที่อยู่จะไม่ถูกเก็บไว้ในกิจกรรม";
+
 /* DashPay Contacts */
 "Payments made directly to an address aren't retained here." = "Payments made directly to an address aren't retained here.";
+
+/* DashPay intro: feature body */
+"Payments with each contact are grouped in one place, with names and profiles instead of raw transactions." = "การชำระเงินกับผู้ติดต่อแต่ละรายจะถูกจัดรวมไว้ที่เดียว พร้อมชื่อและโปรไฟล์แทนธุรกรรมดิบ";
+
+/* CrowdNode */
+/* Masternodes */
+"Payout address" = "ที่อยู่รับเงิน";
 
 /* CrowdNode */
 "Payout Options" = "ตัวเลือกการจ่ายเงิน";
@@ -2206,11 +2792,31 @@
 /* Dash Platform chain */
 "Platform" = "Platform";
 
+/* Send screen destination type */
+"Platform address" = "ที่อยู่ Platform";
+
+/* The Dash Platform credits balance */
+"Platform balance" = "ยอดคงเหลือ Platform";
+
 /* SDK identity profile sheet */
 "Platform Credits" = "Platform Credits";
 
+/* Masternodes */
+"Platform node" = "โหนด Platform";
+
+/* Masternode keys */
+"Platform Node ID" = "รหัสโหนด Platform";
+
 /* No comment provided by engineer. */
 "Platform Payment" = "Platform Payment";
+
+/* Masternodes */
+"Platform payments don't identify the sender. This payment was recorded when the wallet noticed the balance change — it may have arrived earlier." = "การชำระเงินบน Platform ไม่ระบุตัวผู้ส่ง รายการนี้ถูกบันทึกเมื่อกระเป๋าเงินสังเกตเห็นยอดคงเหลือเปลี่ยนไป — อาจมาถึงก่อนหน้านั้นแล้วก็ได้";
+
+"Platform SDK not ready" = "Platform SDK ยังไม่พร้อม";
+
+/* No comment provided by engineer. */
+"Platform sync is not running. Open Sync Info → Platform Sync Status to start it." = "การซิงค์ Platform ไม่ได้ทำงานอยู่ เปิดข้อมูลการซิงค์ → สถานะการซิงค์ Platform เพื่อเริ่ม";
 
 /* No comment provided by engineer. */
 "Platform sync is not running. Open Tools → Platform Sync Status to start it." = "Platform sync is not running. Open Tools → Platform Sync Status to start it.";
@@ -2220,6 +2826,9 @@
 
 /* InternalTransfer */
 "Platform wallet manager unavailable" = "Platform wallet manager unavailable";
+
+/* Coinbase/Buy Dash */
+"Platform → Shielded" = "Platform → ปกปิด";
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "โปรดเพิ่มวิธีการชำระเงินบน Coinbase";
@@ -2299,6 +2908,9 @@
 /* No comment provided by engineer. */
 "Preview Invitation" = "คำเชิญดูตัวอย่าง";
 
+/* Masternode keys */
+"Previously used at: " = "ใช้ครั้งก่อนเมื่อ: ";
+
 /* Stale rates */
 "Prices are at least 30 minutes old. Fiat values may be incorrect." = "Prices are at least 30 minutes old. Fiat values may be incorrect.";
 
@@ -2314,11 +2926,38 @@
 /* No comment provided by engineer. */
 "Privacy tip" = "Privacy tip";
 
+/* Usernames */
+"Private by design" = "เป็นส่วนตัวโดยการออกแบบ";
+
+/* DashPay FAQ */
+"Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon." = "คำขอการติดต่อแบบส่วนตัว (เพื่อให้การเชื่อมโยงกับใครยังคงเป็นส่วนตัว) Shielded DashPay — การชำระเงินให้ผู้ติดต่อจากยอดคงเหลือแบบปกปิดส่วนตัวของคุณ — และการจ่ายเงินให้ผู้ใช้ที่ยังไม่อยู่ในผู้ติดต่อของคุณ ทั้งหมดกำลังจะมาเร็ว ๆ นี้";
+
+/* DashPay FAQ */
+"Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, you will have the choice of having your friendship be public or private." = "คำขอการติดต่อแบบส่วนตัวอยู่ระหว่างการพัฒนา คาดว่าราวเดือนกันยายน–ตุลาคม 2026 ปัจจุบันตัวคำขอเองเป็นสาธารณะ — ใครก็ตามเห็นได้ว่าสองตัวตนเชื่อมโยงกันอยู่ แม้รายละเอียดการชำระเงินภายในจะถูกเข้ารหัสก็ตาม เมื่อคำขอการติดต่อแบบส่วนตัวพร้อมใช้งาน คุณจะเลือกได้ว่าจะให้มิตรภาพของคุณเป็นสาธารณะหรือส่วนตัว";
+
+/* DashPay intro: coming-soon body */
+"Private contact requests, Shielded DashPay, and paying people who aren't contacts yet." = "คำขอการติดต่อแบบส่วนตัว Shielded DashPay และการจ่ายเงินให้คนที่ยังไม่ได้เป็นผู้ติดต่อ";
+
 /* No comment provided by engineer. */
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
 "Private key could not be decoded: %@" = "Private key could not be decoded: %@";
+
+/* DashPay intro: feature body */
+"Private payment addresses are exchanged between you and your contacts. Only you and your contact know the recipient and sender of payments between yourselves." = "ที่อยู่ชำระเงินแบบส่วนตัวจะถูกแลกเปลี่ยนระหว่างคุณกับผู้ติดต่อของคุณ มีเพียงคุณกับผู้ติดต่อเท่านั้นที่รู้ว่าใครเป็นผู้รับและผู้ส่งของการชำระเงินระหว่างกัน";
+
+/* DashPay intro: feature title */
+"Private payments" = "การชำระเงินแบบส่วนตัว";
+
+/* Usernames */
+"Private registration" = "การลงทะเบียนแบบส่วนตัว";
+
+/* Platform → Transparent withdrawal */
+"Processing time" = "เวลาดำเนินการ";
+
+/* Balance info sheet section */
+"Pros" = "ข้อดี";
 
 /* CrowdNode Portal */
 "Protect your savings" = "ปกป้องเงินทุนของคุณ";
@@ -2329,6 +2968,18 @@
 /* No comment provided by engineer. */
 "Provider Address" = "ที่อยู่ผู้จัดหา";
 
+/* Masternodes */
+"Provider transactions" = "ธุรกรรมของผู้ให้บริการ";
+
+/* Masternode keys */
+"Public key" = "คีย์สาธารณะ";
+
+/* Masternode keys */
+"Public key (legacy)" = "คีย์สาธารณะ (รุ่นเก่า)";
+
+/* Identities */
+"Public keys" = "คีย์สาธารณะ";
+
 /* No comment provided by engineer. */
 "Public URL" = "URL สาธารณะ";
 
@@ -2337,6 +2988,9 @@
 
 /* Alert title */
 "Purchase Failed" = "การซื้อไม่สำเร็จ";
+
+/* Identities: what a public key is used for */
+"Purpose" = "วัตถุประสงค์";
 
 /* DashSpend */
 "Quantity" = "Quantity";
@@ -2356,11 +3010,30 @@
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "ราคา: %1$@ = %2$@";
 
+/* Raw transaction inspector */
+"Raw transaction" = "ธุรกรรมดิบ";
+
+/* Raw transaction inspector */
+"Raw transaction unavailable" = "ไม่มีธุรกรรมดิบให้ใช้งาน";
+
+/* SPV diagnostics */
+"Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead." = "ตรวจสอบตัวกรองบล็อกแบบกะทัดรัดอีกครั้งตั้งแต่ความสูงที่เลือก เพื่อหาธุรกรรมของกระเป๋าเงินนี้ โดยดาวน์โหลดและจับคู่ใหม่ การสแกนใหม่มีขอบล่างอยู่ที่ความสูงตอนสร้างกระเป๋าเงินและข้อมูลเชนที่เก็บไว้ในเครื่อง — หากต้องการกู้ประวัติที่ต่ำกว่านั้น ให้ลดความสูงเริ่มต้นของกระเป๋าเงินแทน";
+
 /* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet.";
 
 /* CrowdNode */
 "Read Withdrawal Policy" = "โปรดอ่านนโยบายการถอนเงิน";
+
+/* Identities: key visible to the wallet but not usable for signing */
+"Read-only" = "อ่านอย่างเดียว";
+
+/* Usernames */
+"Ready around %@" = "พร้อมราว %@";
+
+/* No comment provided by engineer. */
+/* Masternodes */
+"Reason" = "เหตุผล";
 
 /* No comment provided by engineer. */
 "Receive" = "ได้รับ";
@@ -2389,8 +3062,13 @@
 /* No comment provided by engineer. */
 "Received from" = "ได้รับจาก";
 
+/* DashPay payment row — sender's display name */
+"Received from %@" = "ได้รับจาก %@";
+
 /* CrowdNode */
 "Receiving rewards" = "การรับรีวอร์ด";
+
+"Records your masternodes as having voted, without taking a side." = "บันทึกว่ามาสเตอร์โหนดของคุณได้โหวตแล้ว โดยไม่เข้าข้างฝ่ายใด";
 
 /* No comment provided by engineer. */
 "Recover" = "กู้คืน";
@@ -2411,6 +3089,10 @@
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "วลีการกู้คืนต้องมี 12, 15, 18, 21 หรือ 24 ค";
 
 /* Maya */
+/* Masternodes */
+"Refresh" = "รีเฟรช";
+
+/* Maya */
 "Refresh quote" = "Refresh quote";
 
 /* Dash DEX / dex_refund_address_field_label */
@@ -2423,10 +3105,21 @@
 "Register?" = "ลงทะเบียนหรือไม่";
 
 /* No comment provided by engineer. */
+/* Masternodes */
+"Registered at" = "ลงทะเบียนเมื่อ";
+
+/* No comment provided by engineer. */
 "Registered from" = "ลงทะเบียนจาก";
 
 /* No comment provided by engineer. */
 "Registered Masternode" = "Masternodes ที่ลงทะเบียน";
+
+/* Usernames */
+"Registering privately takes at least %@ Dash in your Shielded balance plus a few hours of rest time — the next screens walk you through it." = "การลงทะเบียนแบบส่วนตัวต้องมีอย่างน้อย %@ Dash ในยอดคงเหลือแบบปกปิด บวกกับเวลาพักอีกสองสามชั่วโมง — หน้าจอถัดไปจะพาคุณทำทีละขั้น";
+
+/* Usernames */
+/* Masternodes */
+"Registration" = "การลงทะเบียน";
 
 /* Usernames */
 "Registration failed" = "Registration failed";
@@ -2473,6 +3166,8 @@
 /* Testnet faucet */
 "Requesting tDash…" = "Requesting tDash…";
 
+"Requesting this name" = "กำลังขอชื่อนี้";
+
 /* An action */
 "Rescan" = "สแกนอีกครั้ง";
 
@@ -2501,10 +3196,23 @@
 "Restore an existing wallet" = "Restore an existing wallet";
 
 /* Location Service Status */
+"Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "กระเป๋าเงินที่กู้คืนมาอาจกู้ประเภทการดำเนินการไม่ได้เสมอไป รายการนี้ถูกสร้างขึ้นใหม่จากข้อมูลบันทึกบนเชน";
+
+/* Location Service Status */
 "Restricted" = "ถูกจำกัด";
 
 /* Usernames */
 "Results" = "Results";
+
+/* SPV diagnostics */
+"Resync armed from height %u — quit and reopen the app to start." = "เตรียมซิงค์ใหม่จากความสูง %u แล้ว — ปิดแล้วเปิดแอปใหม่เพื่อเริ่ม";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "เก็บประวัติธุรกรรมร่วมกันไว้";
+
+/* No comment provided by engineer. */
+/* Masternode status */
+"Retired" = "ปลดระวางแล้ว";
 
 /* No comment provided by engineer. */
 "Retry" = "ลองอีกครั้ง";
@@ -2514,6 +3222,9 @@
 
 /* Voting */
 "Review the posting below to verify the ownership of this username" = "ตรวจสอบการโพสต์ด้านล่างเพื่อยืนยันความเป็นเจ้าของชื่อผู้ใช้นี้";
+
+/* Masternodes */
+"Revocation" = "การเพิกถอน";
 
 /* Transaction filter */
 "Rewards" = "Rewards";
@@ -2551,6 +3262,15 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "การบันทึกภาพจะปรากฏแก่แอพพลิเคชันและอุปกรณ์อื่น ๆ สร้างวลีกู้คืนใหม่และเก็บไว้เป็นความลับ";
 
+/* Raw transaction inspector */
+"Script" = "สคริปต์";
+
+/* Raw transaction inspector */
+"Script signature" = "ลายเซ็นสคริปต์";
+
+/* Raw transaction inspector */
+"Script type" = "ประเภทสคริปต์";
+
 /* DashPay */
 "SDK is not initialized" = "SDK is not initialized";
 
@@ -2563,11 +3283,31 @@
 /* DashPay Contacts */
 "Search Contacts" = "Search Contacts";
 
+/* No comment provided by engineer. */
+"Search for a contact" = "ค้นหาผู้ติดต่อ";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "ค้นหาคำขอการติดต่อ";
+
 /* DashPay Contacts */
 "Search for a User" = "Search for a User";
 
 /* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "ค้นหาผู้ใช้บนเครือข่าย Dash";
+
+/* No comment provided by engineer. */
+"Search for a username" = "ค้นหาชื่อผู้ใช้";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "ผลการค้นหาสำหรับ \"";
+
+/* No comment provided by engineer. */
 "Search territories" = "Search territories";
+
+"Search usernames" = "ค้นหาชื่อผู้ใช้";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "กำลังค้นหาชื่อผู้ใช้ %@ บนเครือข่าย Dash";
 
 /* No comment provided by engineer. */
 "Secure Your Wallet" = "รักษาความปลอดภัยให้กระเป๋าเงินของคุณ";
@@ -2577,6 +3317,9 @@
 
 /* No comment provided by engineer. */
 "Security Level" = "เลเวลความปลอดภัย";
+
+/* Identities: DPP security level of a public key */
+"Security level" = "ระดับความปลอดภัย";
 
 /* DashSpend */
 "See card details" = "See card details";
@@ -2596,8 +3339,12 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "เลือกบริการที่จะซื้อ ขาย แปลงและโอน Dash";
 
+"Select all" = "เลือกทั้งหมด";
+
 /* DashSpend denomination selection */
 "Select amount" = "Select amount";
+
+"Select at least one masternode to vote with." = "เลือกมาสเตอร์โหนดอย่างน้อยหนึ่งตัวเพื่อใช้โหวต";
 
 /* Block explorer picker
    Block explorer selection title */
@@ -2620,6 +3367,8 @@
 
 /* Coinbase */
 "Select the coin" = "เลือกเหรียญ";
+
+"Selecting fewer nodes reveals less about which masternodes you run." = "การเลือกโหนดน้อยลงจะเปิดเผยน้อยลงว่าคุณดูแลมาสเตอร์โหนดใดบ้าง";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -2661,6 +3410,12 @@
 /* No comment provided by engineer. */
 "Send to" = "ส่งไปยัง";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "ส่งให้ผู้ติดต่อ";
+
+/* DashPay intro: feature body */
+"Send to a username you can actually remember and verify." = "ส่งไปยังชื่อผู้ใช้ที่คุณจดจำและตรวจสอบได้จริง";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "ส่งไปยังที่อยู่";
 
@@ -2685,8 +3440,17 @@
 /* Dash DEX */
 "Send your %@ before the timer runs out. If you send after the address expires, your funds will be refunded — not converted." = "Send your %@ before the timer runs out. If you send after the address expires, your funds will be refunded — not converted.";
 
+/* DashPay: CTA of the enable success sheet */
+"Send your first contact request" = "ส่งคำขอการติดต่อครั้งแรกของคุณ";
+
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "กำลังส่ง";
+
+/* No comment provided by engineer. */
+"Sending Contact Request" = "กำลังส่งคำขอการติดต่อ";
+
+/* No comment provided by engineer. */
+"Sending to" = "กำลังส่งไปยัง";
 
 /* CrowdNode */
 "Sending to CrowdNode account" = "ส่งไปยังบัญชี CrowdNode";
@@ -2715,11 +3479,26 @@
 /* No comment provided by engineer. */
 "Sent to" = "ส่งไปยัง";
 
+/* DashPay payment row — recipient's display name */
+"Sent to %@" = "ส่งให้ %@ แล้ว";
+
 /* DashPay Contacts */
 "Sent you a request" = "Sent you a request";
 
+/* Raw transaction inspector */
+"Sequence" = "Sequence";
+
 /* DashSpend */
 "Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
+
+/* Masternodes */
+"Service" = "บริการ";
+
+/* Identities */
+"Set as Main" = "ตั้งเป็นหลัก";
+
+/* Identities */
+"Set as Main Identity" = "ตั้งเป็นตัวตนหลัก";
 
 /* No comment provided by engineer. */
 "Set PIN" = "ตั้งค่า PIN";
@@ -2742,8 +3521,14 @@
 /* Share key */
 "Share key" = "Share key";
 
+/* Usernames */
+"Shared privacy pool at minimum size" = "กลุ่มความเป็นส่วนตัวร่วมอยู่ที่ขนาดขั้นต่ำ";
+
 /* No comment provided by engineer. */
 "Shielded" = "Shielded";
+
+/* Send screen destination type */
+"Shielded address" = "ที่อยู่แบบปกปิด";
 
 /* InternalTransfer */
 "Shielded address is not bound for this wallet" = "Shielded address is not bound for this wallet";
@@ -2757,11 +3542,20 @@
 /* Transaction filter */
 "Shielded sent" = "Shielded sent";
 
+"Shielded Spend" = "การใช้จ่ายแบบปกปิด";
+
 /* Transfer of own funds into the private shielded balance */
 "Shielded transfer" = "Shielded transfer";
 
 /* A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet */
 "Shielded transfer (pending)" = "Shielded transfer (pending)";
+
+"Shielded wallet starting…" = "กำลังเริ่มกระเป๋าเงินแบบปกปิด…";
+
+/* Transfer of own funds from the private shielded balance back to the transparent wallet */
+"Shielded → Platform" = "ปกปิด → Platform";
+
+"Shielded → Transparent" = "ปกปิด → โปร่งใส";
 
 /* Explore Dash */
 "Show all locations" = "Show all locations";
@@ -2796,11 +3590,16 @@
 /* DashSpend */
 "Single" = "Single";
 
+/* Raw transaction inspector */
+"Size" = "ขนาด";
+
 /* No comment provided by engineer. */
 "Skip" = "ข้าม";
 
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
+
+"Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen." = "มาสเตอร์โหนดบางตัวของคุณอาจไม่อยู่ในรายการนี้ — กระเป๋าเงินอ่านชุดคีย์โหวตของคุณไม่ครบ ซิงค์ให้เสร็จแล้วเปิดหน้านี้ใหม่";
 
 /* Usernames */
 "Some usernames can be blocked" = "Some usernames can be blocked";
@@ -2814,6 +3613,9 @@
 /* No comment provided by engineer. */
 "Sort by" = "เรียงลำดับตาม";
 
+/* No comment provided by engineer. */
+"Sort Contacts" = "เรียงลำดับผู้ติดต่อ";
+
 /* Explore Dash/Filters */
 "Sorted by discount" = "Sorted by discount";
 
@@ -2822,6 +3624,9 @@
 
 /* Explore Dash/Filters */
 "Sorted by name" = "จัดเรียงตามชื่อ";
+
+/* Raw transaction inspector */
+"Special payload" = "เพย์โหลดพิเศษ";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "ระบุจำนวน";
@@ -2844,12 +3649,20 @@
 /* No comment provided by engineer. */
 "Staking" = "Staking";
 
+/* Usernames */
+"Starts after you add funds" = "เริ่มหลังจากคุณเติมเงิน";
+
+/* Transaction details */
+"Status" = "สถานะ";
+
 /* Step 1 */
 "Step %ld" = "ขั้นตอน %ld";
 
 /* DashPay
    InternalTransfer */
 "Storage is not configured" = "Storage is not configured";
+
+"Stored as" = "เก็บไว้เป็น";
 
 /* Voting */
 "Submit" = "Submit";
@@ -2926,6 +3739,12 @@
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "กำลังซิงค์... ผลลัพธ์อาจไม่สมบูรณ์";
 
+/* No comment provided by engineer. */
+"Sync Info" = "ข้อมูลการซิงค์";
+
+/* SPV sync */
+"Sync too slow?" = "ซิงค์ช้าเกินไปไหม";
+
 /* About screen tech info: SPV state */
 "synced" = "synced";
 
@@ -2956,8 +3775,13 @@
 /* No comment provided by engineer. */
 "Take a Photo from Camera" = "ถ่ายภาพจากกล้อง";
 
+"Take no side" = "ไม่เข้าข้างฝ่ายใด";
+
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "แตะที่อยู่จากคลิปบอร์ดเพื่อวาง";
+
+/* Raw transaction inspector */
+"Tap to copy" = "แตะเพื่อคัดลอก";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "กดเพื่อซ่อนยอดคงเหลือ";
@@ -2974,6 +3798,9 @@
 /* DashSpend */
 "Temporarily unavailable" = "Temporarily unavailable";
 
+/* Masternode keys - dashmate Ed25519 node key format */
+"Tenderdash node key (base64)" = "คีย์โหนด Tenderdash (base64)";
+
 /* Terms & conditions */
 "Terms & conditions" = "Terms & conditions";
 
@@ -2985,6 +3812,9 @@
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
+
+/* Badge on the home balance while the wallet runs on testnet */
+"TESTNET" = "TESTNET";
 
 /* Wallets */
 "That is not this wallet's recovery phrase." = "That is not this wallet's recovery phrase.";
@@ -3000,6 +3830,15 @@
 
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "รหัสไม่ถูกต้อง กรุณาตรวจสอบและลองอีกครั้ง!";
+
+/* Send confirm sheet */
+"The Dash arrives at the recipient's address after the network processes the withdrawal — this can take up to 10 minutes." = "Dash จะไปถึงที่อยู่ของผู้รับหลังจากเครือข่ายประมวลผลการถอนแล้ว — อาจใช้เวลาถึง 10 นาที";
+
+/* Send confirm sheet */
+"The Dash arrives at the recipient's address once the network processes the withdrawal." = "Dash จะไปถึงที่อยู่ของผู้รับทันทีที่เครือข่ายประมวลผลการถอน";
+
+/* No comment provided by engineer. */
+"The Dash arrives in your Transparent balance once the network processes the withdrawal." = "Dash จะไปถึงยอดคงเหลือแบบโปร่งใสของคุณทันทีที่เครือข่ายประมวลผลการถอน";
 
 /* Usernames */
 "The Dash network has to vote to approve some usernames before they are created" = "The Dash network has to vote to approve some usernames before they are created";
@@ -3034,11 +3873,20 @@
 /* Usernames */
 "The link you send will be visible only to the network owners" = "The link you send will be visible only to the network owners";
 
+/* Identities */
+"The main identity can only be chosen from the active wallet" = "เลือกตัวตนหลักได้จากกระเป๋าเงินที่ใช้งานอยู่เท่านั้น";
+
 /* Dash DEX */
 "The maximum transaction amount is %@" = "The maximum transaction amount is %@";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "จำนวนเงินขั้นต่ำที่คุณสามารถส่งได้คือ %@";
+
+/* Balance info sheet */
+"The most private place to hold your Dash" = "ที่ที่เป็นส่วนตัวที่สุดสำหรับเก็บ Dash ของคุณ";
+
+/* SPV diagnostics */
+"The persisted wallet row has no network — cannot arm a resync." = "ระเบียนกระเป๋าเงินที่บันทึกไว้ไม่มีเครือข่าย — เตรียมการซิงค์ใหม่ไม่ได้";
 
 /* Dash DEX / dex_error_price_moved */
 "The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
@@ -3049,6 +3897,15 @@
 /* Dash DEX */
 "The refund address is required" = "The refund address is required";
 
+/* DashPay */
+"The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately." = "ส่งการลงทะเบียนแล้วแต่ยืนยันผลลัพธ์ไม่ได้ รอสักหนึ่งนาทีให้กระเป๋าเงินซิงค์ แล้วลองอีกครั้ง — อย่าส่งซ้ำทันที";
+
+/* Usernames */
+"The shared privacy pool is still growing (%ld of %ld deposits). Private registration unlocks once it reaches the minimum." = "กลุ่มความเป็นส่วนตัวร่วมยังเติบโตอยู่ (%1$ld จาก %2$ld รายการฝาก) การลงทะเบียนแบบส่วนตัวจะปลดล็อกเมื่อถึงขั้นต่ำ";
+
+/* DashPay */
+"The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum." = "กลุ่มความเป็นส่วนตัวร่วมยังเติบโตอยู่ (%1$ld จาก %2$ld รายการฝาก) ลองอีกครั้งเมื่อถึงขั้นต่ำ";
+
 /* No comment provided by engineer. */
 "The transfer could take up to 10 minutes" = "The transfer could take up to 10 minutes";
 
@@ -3058,8 +3915,23 @@
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
 
+/* SPV diagnostics */
+"The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Saving a height at or below the current one clears this network's chain data at the next launch and rescans from it." = "ความสูงตอนสร้างกระเป๋าเงิน — ขอบล่างสำหรับการสแกนตัวกรองและการสแกนใหม่แบบ “จากตอนสร้างกระเป๋าเงิน” ตั้งค่าให้เท่ากับหรือต่ำกว่าการเติมเงินครั้งแรกของกระเป๋าเงิน การนำเข้าจะใช้ค่าเริ่มต้น 200000 บน mainnet และ 0 บน testnet การบันทึกความสูงที่เท่ากับหรือต่ำกว่าค่าปัจจุบันจะล้างข้อมูลเชนของเครือข่ายนี้ในการเปิดแอปครั้งถัดไปและสแกนใหม่จากความสูงนั้น";
+
+/* No comment provided by engineer. */
+"them (Fetching Info)" = "เขา (กำลังดึงข้อมูล)";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "ไม่มีการแจ้งเตือนใหม่";
+
 /* No comment provided by engineer. */
 "There are no transactions to display" = "ไม่มีธุรกรรมเพื่อแสดง";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@" = "ไม่มีผู้ใช้ที่ตรงกับชื่อ %@";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@ in your contacts" = "ไม่มีผู้ใช้ที่ตรงกับชื่อ %@ ในผู้ติดต่อของคุณ";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
@@ -3071,10 +3943,16 @@
 "There was an error, please try again later" = "มีข้อผิดพลาดโปรดลองอีกครั้งในภายหลัง";
 
 /* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "เงินนี้จะย้ายไปยังยอดคงเหลือ Platform ของคุณ และพร้อมใช้จ่ายทันทีที่การโอนเสร็จสมบูรณ์";
+
+/* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 
 /* CrowdNode */
 "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device." = "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.";
+
+/* Send sheet source/destination mismatch */
+"This address can't be paid from your %@ balance" = "จ่ายไปยังที่อยู่นี้จากยอดคงเหลือ %@ ของคุณไม่ได้";
 
 /* Dash DEX / dex_error_sanctioned */
 "This address can't be used for swaps." = "This address can't be used for swaps.";
@@ -3082,11 +3960,16 @@
 /* Dash DEX */
 "This address expires in 10 minutes" = "This address expires in 10 minutes";
 
+/* DashPay: body of the Enable DashPay confirmation */
+"This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "การทำเช่นนี้จะเพิ่มคีย์สองตัวให้กับตัวตนของคุณ เพื่อให้ผู้ใช้คนอื่นส่งคำขอการติดต่อมาหาคุณได้ และคุณก็ยอมรับคำขอของพวกเขาได้ เกิดขึ้นเพียงครั้งเดียว";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
 /* Dash DEX / dex_enter_amount_invalid */
 "This amount can't be swapped right now. Try a different amount, or try again shortly." = "This amount can't be swapped right now. Try a different amount, or try again shortly.";
+
+"This applies one choice to all %d selected usernames." = "การทำเช่นนี้จะใช้ตัวเลือกเดียวกับชื่อผู้ใช้ที่เลือกไว้ทั้ง %d รายการ";
 
 /* DashSpend */
 "This card works only in the United States." = "This card works only in the United States.";
@@ -3094,11 +3977,26 @@
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "ขั้นตอนพิเศษนี้แสดงให้เห็นว่าคุณพยายามทำธุรกรรม";
 
+/* DashPay Invitations */
+"This invitation link is not valid." = "ลิงก์คำเชิญนี้ไม่ถูกต้อง";
+
+/* Send screen */
+"This is not a valid Dash address for this network" = "นี่ไม่ใช่ที่อยู่ Dash ที่ถูกต้องสำหรับเครือข่ายนี้";
+
+/* DashPay Invitations */
+"This is not a valid invitation link" = "นี่ไม่ใช่ลิงก์คำเชิญที่ถูกต้อง";
+
 /* DashPay Contacts */
 "This is you" = "This is you";
 
+/* Identities */
+"This is your main identity" = "นี่คือตัวตนหลักของคุณ";
+
 /* DashPay Contacts */
 "This is your own identity." = "This is your own identity.";
+
+/* Masternodes */
+"This masternode has no Platform identity yet." = "มาสเตอร์โหนดนี้ยังไม่มีตัวตนบน Platform";
 
 /* CTXSpend error */
 "This merchant is currently unavailable." = "This merchant is currently unavailable.";
@@ -3133,14 +4031,25 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "สิ่งนี้แสดงถึงอัตราผลตอบแทนร้อยละต่อปีปัจจุบันของมาสเตอรืโหนด เต็มน้อยกว่าค่าธรรมเนียม CrowdNode 15% แต่มันไม่ได้เป็นอัตราผลตอบแทนที่รับประกันได้และอาจเพิ่มขึ้นหรือลงตามขนาดของกลุ่ม CrowdNode และราคา Dash";
 
+"This still counts as your masternodes having voted in this contest." = "กรณีนี้ยังนับว่ามาสเตอร์โหนดของคุณได้โหวตในการชิงชื่อครั้งนี้แล้ว";
+
 /* Dash DEX / dex_error_allowance */
 "This token needs approval before it can be swapped." = "This token needs approval before it can be swapped.";
+
+/* Raw transaction inspector */
+"This transaction's raw bytes are not stored on this device." = "ไบต์ดิบของธุรกรรมนี้ไม่ได้เก็บไว้บนอุปกรณ์นี้";
 
 /* InternalTransfer recovery */
 "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it." = "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.";
 
 /* DashPay Contacts */
 "This user hasn't set up the keys needed to receive contact requests yet." = "This user hasn't set up the keys needed to receive contact requests yet.";
+
+"This username went to someone else" = "ชื่อผู้ใช้นี้ตกเป็นของคนอื่น";
+
+"This wallet could not derive the voting key for this node." = "กระเป๋าเงินนี้สร้างคีย์โหวตสำหรับโหนดนี้ไม่ได้";
+
+"This wallet holds no active masternode voting keys, so it cannot vote. Registered nodes appear under Tools → Masternodes." = "กระเป๋าเงินนี้ไม่มีคีย์โหวตมาสเตอร์โหนดที่ใช้งานอยู่ จึงโหวตไม่ได้ โหนดที่ลงทะเบียนไว้จะแสดงใน เครื่องมือ → มาสเตอร์โหนด";
 
 /* Wallets */
 "This wallet is already on this device." = "This wallet is already on this device.";
@@ -3150,6 +4059,12 @@
 
 /* No comment provided by engineer. */
 "This will erase this wallet from this device. You can only restore it with your recovery phrase." = "This will erase this wallet from this device. You can only restore it with your recovery phrase.";
+
+/* Send confirm sheet */
+"This withdraws your entire Platform balance in one transfer. The Dash arrives at the recipient's address once the network processes the withdrawal." = "การทำเช่นนี้จะถอนยอดคงเหลือ Platform ทั้งหมดของคุณในการโอนครั้งเดียว Dash จะไปถึงที่อยู่ของผู้รับทันทีที่เครือข่ายประมวลผลการถอน";
+
+/* No comment provided by engineer. */
+"This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal." = "การทำเช่นนี้จะถอนยอดคงเหลือ Platform ทั้งหมดของคุณในการโอนครั้งเดียว Dash จะไปถึงยอดคงเหลือแบบโปร่งใสของคุณทันทีที่เครือข่ายประมวลผลการถอน";
 
 /* Send Screen: to address */
 "to" = "ถึง";
@@ -3190,8 +4105,14 @@
 /* CrowdNode */
 "Transaction History" = "ประวัติการทำรายการ";
 
+/* Balance info sheet */
+"Transaction history isn't available" = "ไม่มีประวัติธุรกรรมให้ใช้งาน";
+
 /* No comment provided by engineer. */
 "Transaction id" = "id ธุรกรรม";
+
+/* Raw transaction inspector */
+"Transaction ID" = "รหัสธุรกรรม";
 
 /* A verb, button title. */
 "Transfer" = "โอน";
@@ -3219,8 +4140,14 @@
 /* No comment provided by engineer. */
 "Transfer In" = "โอนเข้า";
 
+/* Balance breakdown */
+"Transfer in" = "โอนเข้า";
+
 /* No comment provided by engineer. */
 "Transfer Out" = "โอนออก";
+
+/* Balance breakdown */
+"Transfer out" = "โอนออก";
 
 /* No comment provided by engineer. */
 "Transfer submitted" = "Transfer submitted";
@@ -3230,6 +4157,30 @@
 
 /* No comment provided by engineer. */
 "Transfers take different times" = "Transfers take different times";
+
+/* Balance info sheet */
+"Transfers take longer — privacy proofs take time to build" = "การโอนใช้เวลานานกว่า — การสร้างหลักฐานความเป็นส่วนตัวต้องใช้เวลา";
+
+/* Balance info sheet */
+"Transfers to other platform addresses and shielded addresses are instant and final" = "การโอนไปยังที่อยู่ Platform อื่นและที่อยู่แบบปกปิดเกิดขึ้นทันทีและสิ้นสุด";
+
+/* Balance breakdown */
+"Transparent" = "โปร่งใส";
+
+/* Send screen destination type */
+"Transparent address" = "ที่อยู่แบบโปร่งใส";
+
+/* The transparent (Core) balance of the Dash Wallet */
+"Transparent balance" = "ยอดคงเหลือแบบโปร่งใส";
+
+/* Usernames */
+"Transparent funding publicly links your username to these funds." = "การใช้เงินแบบโปร่งใสจะเชื่อมโยงชื่อผู้ใช้ของคุณกับเงินนั้นอย่างเปิดเผย";
+
+/* Transfer of own funds into the Platform balance */
+"Transparent → Platform" = "โปร่งใส → Platform";
+
+/* Transfer of own funds into the private shielded balance */
+"Transparent → Shielded" = "โปร่งใส → ปกปิด";
 
 /* An action */
 "Try again" = "ลองอีกครั้ง";
@@ -3279,6 +4230,9 @@
 /* Dash DEX */
 "Unable to load rate data" = "Unable to load rate data";
 
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "ให้คำแนะนำไม่ได้";
+
 /* Swap */
 "Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
 
@@ -3312,6 +4266,12 @@
 /* Coinbase */
 "Unknown Balance" = "ไม่ทราบยอดคงเหลือ";
 
+/* Raw transaction inspector */
+"Unknown special type %d" = "ประเภทพิเศษที่ไม่รู้จัก %d";
+
+/* No comment provided by engineer. */
+"Unshielded" = "ไม่ปกปิด";
+
 /* No comment provided by engineer. */
 "Unsupported URL" = "ไม่รับรองแหล่งที่มาของทรัพยากร URL";
 
@@ -3334,6 +4294,9 @@
 "Upgrade to DashPay" = "Upgrade to DashPay";
 
 /* No comment provided by engineer. */
+"Upgrade to Evolution" = "อัปเกรดเป็น Evolution";
+
+/* No comment provided by engineer. */
 "Uphold" = "Uphold";
 
 /* Uphold */
@@ -3353,6 +4316,18 @@
 
 /* Dash DEX */
 "URI" = "URI";
+
+/* Usernames */
+"Use transparent balance instead" = "ใช้ยอดคงเหลือแบบโปร่งใสแทน";
+
+/* Masternode keys */
+"Used" = "ใช้แล้ว";
+
+/* Masternode keys */
+"Used at: " = "ใช้เมื่อ: ";
+
+/* No comment provided by engineer. */
+"User (Fetching Info)" = "ผู้ใช้ (กำลังดึงข้อมูล)";
 
 /* Voting */
 "Username" = "ชื่อผู้ใช้";
@@ -3384,6 +4359,23 @@
 /* Usernames */
 "Username was successfully requested" = "Username was successfully requested";
 
+/* Identities */
+"Usernames" = "ชื่อผู้ใช้";
+
+"Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "ชื่อผู้ใช้ถูกเก็บในรูปแบบมาตรฐานเพื่อป้องกันชื่อที่ดูคล้ายกัน จึงอาจต่างจากที่แต่ละคนพิมพ์ไว้";
+
+/* DashPay intro: feature title */
+"Usernames, not addresses" = "ชื่อผู้ใช้ ไม่ใช่ที่อยู่";
+
+/* No comment provided by engineer. */
+"Users that matches %@ who are currently not in your contacts" = "ผู้ใช้ที่ตรงกับ %@ ซึ่งขณะนี้ยังไม่อยู่ในผู้ติดต่อของคุณ";
+
+/* Balance info sheet */
+"Uses one of the most audited and tested zero-knowledge libraries (Orchard)" = "ใช้หนึ่งในไลบรารีความรู้เป็นศูนย์ที่ผ่านการตรวจสอบและทดสอบมากที่สุด (Orchard)";
+
+/* DashPay Invitations */
+"Valid invitation" = "คำเชิญถูกต้อง";
+
 /* CrowdNode Portal */
 "Validating address…" = "ตรวจสอบที่อยู่...";
 
@@ -3399,6 +4391,9 @@
 /* CrowdNode Portal */
 "Verification Required" = "จำเป็นต้องมีการตรวจสอบ";
 
+/* Usernames */
+"Verified during registration" = "ยืนยันแล้วระหว่างการลงทะเบียน";
+
 /* No comment provided by engineer. */
 "Verified Successfully" = "ตรวจสอบสำเร็จ";
 
@@ -3411,11 +4406,20 @@
 /* Usernames */
 "Verify your identity" = "Verify your identity";
 
+/* Raw transaction inspector */
+"Version" = "เวอร์ชัน";
+
+/* Balance info sheet */
+"Very efficient with low fees" = "มีประสิทธิภาพสูงมากและค่าธรรมเนียมต่ำ";
+
 /* adjective, security level */
 "Very High" = "สูงมาก";
 
 /* CrowdNode */
 "Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "Dash จำนวนน้อยมากจะถูกส่งไปและกลับจาก CrowdNode เพื่อตรวจสอบว่าคุณเป็นเจ้าของที่อยู่กระเป๋าเงินนี้";
+
+/* No comment provided by engineer. */
+"View All" = "ดูทั้งหมด";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "ดูใน Explorer";
@@ -3429,17 +4433,33 @@
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "ดูวลีกู้คืน";
 
+/* Raw transaction inspector */
+"View Transaction" = "ดูธุรกรรม";
+
 /* No comment provided by engineer. */
 "View transaction details" = "View transaction details";
 
 /* Maya */
 "View transaction on MayaScan" = "View transaction on MayaScan";
 
+"Vote" = "โหวต";
+
+"Vote cast" = "ลงคะแนนแล้ว";
+
 /* Voting */
 "Vote for All" = "โหวตให้ทุกคน";
 
 /* Voting */
+"Vote on contested usernames" = "โหวตชื่อผู้ใช้ที่มีการแข่งขัน";
+
+"Vote on several" = "โหวตหลายรายการ";
+
+/* Voting */
 "Vote to Approve" = "ลงคะแนนเพื่ออนุมัติ";
+
+"Vote with" = "โหวตด้วย";
+
+"Votes that nobody should receive these usernames." = "โหวตว่าไม่ควรมีใครได้ชื่อผู้ใช้เหล่านี้";
 
 /* Voting */
 "Votes: High to low" = "โหวต: สูงไปต่ำ";
@@ -3453,14 +4473,35 @@
 /* No comment provided by engineer. */
 "Voting Address" = "ที่อยู่ซึ่งใช้ในการออกเสียงลงคะแนน";
 
+/* Voting keys */
+/* Masternodes */
+"Voting address" = "ที่อยู่ซึ่งใช้ในการออกเสียงลงคะแนน";
+
+"Voting ended with no winner" = "การโหวตสิ้นสุดโดยไม่มีผู้ชนะ";
+
+"Voting ends" = "การโหวตสิ้นสุด";
+
 /* Voting */
 "Voting ends in %dd" = "Voting ends in %dd";
+
+"Voting in progress" = "การโหวตดำเนินอยู่";
+
+"Voting in progress — lock votes are ahead" = "การโหวตดำเนินอยู่ — คะแนนล็อกนำอยู่";
+
+"Voting in progress — you are ahead" = "การโหวตดำเนินอยู่ — คุณนำอยู่";
 
 /* Usernames */
 "Voting is only required in some cases" = "Voting is only required in some cases";
 
+/* Masternodes */
+"Voting key hash" = "แฮชคีย์การโหวต";
+
 /* Voting keys */
 "Voting keys" = "Voting keys";
+
+"Voting on this username has closed. The counts below are the last ones read." = "การโหวตชื่อผู้ใช้นี้ปิดแล้ว จำนวนด้านล่างคือค่าที่อ่านได้ล่าสุด";
+
+"Voting on “%@” has already closed. Refresh to see the result." = "การโหวต “%@” ปิดไปแล้ว รีเฟรชเพื่อดูผล";
 
 /* CrowdNode */
 "Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
@@ -3474,11 +4515,16 @@
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "รอจนกว่ากระเป๋าเงินจะถูกซิงค์เพื่อทำธุรกรรมให้เสร็จสมบูรณ์";
 
+"Waiting for Dash Platform" = "กำลังรอ Dash Platform";
+
 /* Wallets — placeholder name with short id */
 "Wallet %@…" = "Wallet %@…";
 
 /* Enter Address Screen */
 "Wallet Address" = "ที่อยู่กระเป๋าเงิน";
+
+/* SPV diagnostics */
+"Wallet birth height" = "ความสูงเริ่มต้นของกระเป๋าเงิน";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "wallet ถูกปิดการใช้งาน";
@@ -3552,14 +4598,34 @@
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "ยินดีต้อนรับสู่ DashPay";
 
+/* DashPay FAQ */
+"What about Unstoppable Domains and similar name services?" = "แล้ว Unstoppable Domains และบริการชื่อที่คล้ายกันล่ะ";
+
+/* DashPay FAQ */
+"What does it cost?" = "มีค่าใช้จ่ายเท่าไร";
+
+/* DashPay FAQ */
+"What is DashPay?" = "DashPay คืออะไร";
+
 /* Usernames */
 "What is username voting?" = "การโหวตชื่อผู้ใช้คืออะไร?";
+
+/* DashPay FAQ */
+"What's coming next?" = "อะไรจะมาต่อไป";
+
+/* DashPay FAQ */
+"When will contact requests become private?" = "คำขอการติดต่อจะเป็นส่วนตัวเมื่อใด";
 
 /* No comment provided by engineer. */
 "Where to Spend" = "จะใช้จ่ายที่ไหน";
 
 /* No comment provided by engineer. */
 "Where to Spend?" = "จะใช้จ่ายที่ไหน?";
+
+"Who is requesting this name" = "ใครกำลังขอชื่อนี้";
+
+/* DashPay FAQ */
+"Why do I need to enable it?" = "ทำไมฉันต้องเปิดใช้";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "ทำไมฉันถึงเห็นธุรกรรมเหล่านี้ทั้งหมด?";
@@ -3598,6 +4664,12 @@
 /* CrowdNode */
 "Withdrawal requested" = "ขอถอนเงิน";
 
+/* Full-balance Platform → Transparent withdrawal */
+"Withdraws the entire balance" = "ถอนยอดคงเหลือทั้งหมด";
+
+/* Balance info sheet */
+"Works with every Dash wallet, exchange, and merchant" = "ใช้ได้กับกระเป๋าเงิน Dash ทุกใบ ทุกกระดานเทรด และทุกร้านค้า";
+
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "คุณต้องการยอมรับคำเชิญหรือไม่?";
 
@@ -3621,6 +4693,11 @@
 
 /* No comment provided by engineer. */
 "Yesterday" = "เมื่อวาน";
+
+"You" = "คุณ";
+
+/* No comment provided by engineer. */
+"You accepted the contact request from %@" = "คุณยอมรับคำขอการติดต่อจาก %@ แล้ว";
 
 /* DashPay Notifications */
 "You added %@ as a contact" = "You added %@ as a contact";
@@ -3670,6 +4747,9 @@
 /* Usernames */
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
+/* No comment provided by engineer. */
+"You do not have any contacts at the moment" = "ขณะนี้คุณยังไม่มีผู้ติดต่อ";
+
 /* DashSpend */
 "You do not have sufficient funds to complete this transaction" = "คุณมีเงินทุนไม่เพียงพอที่จะดำเนินการทางธุรกรรมได้สำเร็จ";
 
@@ -3678,6 +4758,9 @@
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "คุณทำรายการเกินขีดจำกัดการอนุญาตของ Coinbase";
+
+/* Usernames */
+"You have %@ Dash so far" = "ตอนนี้คุณมี %@ Dash";
 
 /* Usernames */
 "You have %@ Dash.\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash.\nSome usernames cost up to %2$@ Dash.";
@@ -3748,6 +4831,9 @@
 /* DashPay Notifications */
 "You sent a contact request to %@" = "You sent a contact request to %@";
 
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "คุณส่งคำขอการติดต่อไปยัง %@ แล้ว";
+
 /* CrowdNode */
 "You should have a positive balance on Dash Wallet" = "คุณควรมียอดเงินคงเหลือบนกระเป๋าเงิน Dash มากกว่านี้";
 
@@ -3774,6 +4860,11 @@
 
 /* No comment provided by engineer. */
 "You will transfer" = "You will transfer";
+
+"You won this username" = "คุณได้ชื่อผู้ใช้นี้";
+
+/* DashPay: body of the enable success sheet */
+"You're all set. Other users can now send you contact requests — and you can send yours." = "พร้อมแล้ว ผู้ใช้คนอื่นส่งคำขอการติดต่อมาหาคุณได้แล้ว — และคุณก็ส่งของคุณได้เช่นกัน";
 
 /* DashPay Contacts */
 "You're already connected — you can pay each other directly by username." = "You're already connected — you can pay each other directly by username.";
@@ -3805,6 +4896,9 @@
 /* InternalTransfer recovery */
 "Your Dash is safe" = "Your Dash is safe";
 
+/* Identities */
+"Your Dash Platform identity appears here once you register a username." = "ตัวตน Dash Platform ของคุณจะปรากฏที่นี่เมื่อคุณลงทะเบียนชื่อผู้ใช้";
+
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
@@ -3835,11 +4929,20 @@
 /* Email is only used for OTP */
 "Your email is only used to send a one-time password." = "Your email is only used to send a one-time password.";
 
+/* DashPay intro: feature title */
+"Your history, organized" = "ประวัติของคุณ จัดระเบียบไว้แล้ว";
+
+/* DashPay FAQ */
+"Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "ตัวตนของคุณต้องมีคีย์เพิ่มอีกสองตัวเพื่อให้คำขอการติดต่อเข้ารหัสระหว่างคุณกับผู้ใช้คนอื่นได้ การเปิดใช้จะเพิ่มคีย์เหล่านั้นด้วยธุรกรรมเครือข่ายเพียงรายการเดียว เกิดขึ้นเพียงครั้งเดียว";
+
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "คำเชิญของคุณจาก %@ ได้รับการเคลมแล้ว ";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ is not valid" = "คำเชิญของคุณจาก %@ ไม่ถูกต้อง";
+
+/* DashPay Invitations */
+"Your invitation pays the registration fee for this username." = "คำเชิญของคุณจะจ่ายค่าธรรมเนียมการลงทะเบียนสำหรับชื่อผู้ใช้นี้";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "ตำแหน่งของคุณใช้เพื่อแสดงตำแหน่งของคุณบนแผนที่ตู้เอทีเอ็มในขอบเขตที่เลือกและปรับปรุงผลการค้นหา";
@@ -3847,8 +4950,20 @@
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "ตำแหน่งของคุณใช้เพื่อแสดงตำแหน่งของคุณบนแผนที่ร้านค้าใน redius ที่เลือกและปรับปรุงผลการค้นหา";
 
+/* Balance info sheet */
+"Your main Dash balance on the Core blockchain — what you send and receive with other wallets, exchanges, and merchants." = "ยอดคงเหลือ Dash หลักของคุณบนบล็อกเชน Core — ยอดที่คุณส่งและรับกับกระเป๋าเงิน กระดานเทรด และร้านค้าอื่น ๆ";
+
+/* CoinJoin */
+"Your mixed coins were moved to your Dash Wallet balance." = "เหรียญที่ผสมแล้วของคุณถูกย้ายไปยังยอดคงเหลือกระเป๋าเงิน Dash";
+
+/* CoinJoin */
+"Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "เหรียญที่ผสมแล้วของคุณถูกย้ายไปยังยอดคงเหลือแบบปกปิด เพื่อความเป็นส่วนตัวสูงสุด โปรดรออย่างน้อย 2 ชั่วโมงก่อนใช้เงินนี้";
+
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
+
+/* Maya/SwapKit */
+"Your Platform balance" = "ยอดคงเหลือ Platform ของคุณ";
 
 /* Maya/SwapKit */
 "Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
@@ -3856,11 +4971,28 @@
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "ที่อยู่หลัก Dash ของคุณที่คุณใช้สำหรับบัญชี CrowdNode ของคุณในปัจจุบัน";
 
+/* Balance info sheet */
+"Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "ยอดคงเหลือส่วนตัวของคุณ จำนวนเงินและที่อยู่ถูกเข้ารหัสบนเชน สินทรัพย์และประวัติของคุณจึงเป็นความลับ";
+
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";
 
 /* DashSpend */
 "Your session expired" = "Your session expired";
+
+/* Usernames */
+"Your Shielded balance" = "ยอดคงเหลือแบบปกปิดของคุณ";
+
+"Your Shielded balance is almost ready — you can register privately around %@." = "ยอดคงเหลือแบบปกปิดของคุณเกือบพร้อมแล้ว — คุณจะลงทะเบียนแบบส่วนตัวได้ราว %@";
+
+/* Usernames */
+"Your Shielded balance is ready — register your username privately now" = "ยอดคงเหลือแบบปกปิดของคุณพร้อมแล้ว — ลงทะเบียนชื่อผู้ใช้แบบส่วนตัวได้เลย";
+
+/* Usernames */
+"Your Shielded balance is resting — you can register privately around %@" = "ยอดคงเหลือแบบปกปิดของคุณกำลังพักอยู่ — คุณจะลงทะเบียนแบบส่วนตัวได้ราว %@";
+
+/* DashPay */
+"Your shielded balance is still maturing. It will be ready around %@." = "ยอดคงเหลือแบบปกปิดของคุณยังบ่มอยู่ จะพร้อมราว %@";
 
 /* Dash DEX */
 "Your swap can NOT be processed without a refund address" = "Your swap can NOT be processed without a refund address";
@@ -3878,6 +5010,9 @@
 "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it." = "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.";
 
 /* No comment provided by engineer. */
+"Your Transparent balance" = "ยอดคงเหลือแบบโปร่งใสของคุณ";
+
+/* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "ชื่อผู้ใช้ของคุณ %@ ได้รับการสร้างที่ประสบความสำเร็จบนเครือข่าย Dash";
 
 /* No comment provided by engineer. */
@@ -3886,14 +5021,31 @@
 /* Usernames */
 "Your username has been successfully created" = "Your username has been successfully created";
 
+/* Usernames */
+"Your username is visible to everyone. Funding it from your Shielded balance — after letting the funds rest for a few hours — means no one can link your username to your other Dash." = "ชื่อผู้ใช้ของคุณทุกคนมองเห็นได้ การจ่ายค่าชื่อจากยอดคงเหลือแบบปกปิด — หลังปล่อยเงินพักไว้สองสามชั่วโมง — หมายความว่าไม่มีใครเชื่อมโยงชื่อผู้ใช้ของคุณกับ Dash ส่วนอื่นได้";
+
+/* Identities */
+"Your username, profile, and contacts follow this identity." = "ชื่อผู้ใช้ โปรไฟล์ และผู้ติดต่อของคุณผูกอยู่กับตัวตนนี้";
+
+/* Identities */
+"Your username, profile, and contacts will follow this identity." = "ชื่อผู้ใช้ โปรไฟล์ และผู้ติดต่อของคุณจะผูกอยู่กับตัวตนนี้";
+
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "การลงคะแนนของคุณถูกยกเลิก";
 
 /* Voting */
 "Your vote was submitted" = "การลงคะแนนของคุณถูกยกเลิก";
 
+"Your votes" = "คะแนนของคุณ";
+
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "กระเป๋าเงินของคุณปลอดภัยแล้ว คุณสามารถใช้วลีกู้คืนได้ทุกเวลาเพื่อกู้คืนบัญชีของคุณบนอุปกรณ์อื่น";
+
+/* Core send blocked until chain sync completes */
+"Your wallet is still syncing with the Dash network. Sending will be available once syncing completes." = "กระเป๋าเงินของคุณยังซิงค์กับเครือข่าย Dash อยู่ จะส่งได้เมื่อซิงค์เสร็จ";
+
+/* Core send blocked until chain sync completes */
+"Your wallet is still syncing. Sending from your Transparent balance will be available once syncing completes." = "กระเป๋าเงินของคุณยังซิงค์อยู่ จะส่งจากยอดคงเหลือแบบโปร่งใสได้เมื่อซิงค์เสร็จ";
 
 /* No comment provided by engineer. */
 "ZenLedger" = "ZenLedger";
@@ -3901,5 +5053,13 @@
 /* Savings percentage */
 "~%.0f%%" = "~%.0f%%";
 
+/* DashPay: estimated network fee — DASH amount, then its local-currency equivalent */
+"~%@ DASH (≈ %@)" = "~%@ DASH (≈ %@)";
+
+"“%@” could not be read as a Dash username." = "อ่าน “%@” เป็นชื่อผู้ใช้ Dash ไม่ได้";
+
 /* Usernames */
 "“%@” has been registered." = "“%@” has been registered.";
+
+/* DashPay Invitations */
+"“%@” has been registered. Send a contact request to the person who invited you?" = "ลงทะเบียน “%@” แล้ว ต้องการส่งคำขอการติดต่อไปยังคนที่เชิญคุณไหม";
