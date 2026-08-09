@@ -21,6 +21,18 @@ import SwiftDashSDK
 import SwiftUI
 import DashUIKit
 
+/// Identity + DPNS full name pair driving the send-confirmation sheet
+/// — built from a tapped search row, or from a scan verified via exact
+/// DPNS resolution (the SDK's `DpnsSearchResult` is not constructible
+/// app-side, and a capped prefix page must not gate a verified scan).
+struct ContactCandidate: Identifiable, Equatable {
+    let identityId: Data
+    let fullName: String
+    /// Unique per (name, identity) pair — a contested name shares
+    /// `fullName` across contenders.
+    var id: String { fullName + "|" + identityId.map { String(format: "%02x", $0) }.joined() }
+}
+
 struct AddContactScreen: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -46,7 +58,7 @@ struct AddContactScreen: View {
     @State private var eligibilityInFlight: Set<Data> = []
     /// Tapped result shown in the preview sheet (the single
     /// send/accept confirmation surface).
-    @State private var previewTarget: DpnsSearchResult? = nil
+    @State private var previewTarget: ContactCandidate? = nil
     @State private var errorMessage: String? = nil
     /// Username of the recipient of a just-sent request — drives the
     /// centered success card (nil = hidden).
@@ -126,7 +138,7 @@ struct AddContactScreen: View {
             .sheet(item: $previewTarget) { target in
                 AddContactPreviewSheet(
                     result: target,
-                    collision: collision(for: target),
+                    collision: collision(identityId: target.identityId),
                     contact: service.contactItem(for: target.identityId),
                     onSend: { send(to: target) },
                     onAccept: { accept(target) })
@@ -247,8 +259,8 @@ struct AddContactScreen: View {
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
                                 .fill(Color.dash.secondaryBackground))
                         .contentShape(Rectangle())
-                        .onTapGesture { previewTarget = result }
-                        .onAppear { checkEligibilityIfNeeded(result) }
+                        .onTapGesture { previewTarget = candidate(result) }
+                        .onAppear { checkEligibilityIfNeeded(id: result.identityId) }
                 }
             }
             .padding(.horizontal, 15)
@@ -271,29 +283,34 @@ struct AddContactScreen: View {
         case missingDashPayKeys
     }
 
-    private func collision(for result: DpnsSearchResult) -> Collision {
+    private func collision(identityId: Data) -> Collision {
         if let ownId = DWCurrentUserIdentityInfo.shared.identityId,
-           ownId == result.identityId {
+           ownId == identityId {
             return .isSelf
         }
-        if service.contacts.contains(where: { $0.contactIdentityId == result.identityId }) {
+        if service.contacts.contains(where: { $0.contactIdentityId == identityId }) {
             return .established
         }
-        if service.outgoingRequests.contains(where: { $0.contactIdentityId == result.identityId }) {
+        if service.outgoingRequests.contains(where: { $0.contactIdentityId == identityId }) {
             return .alreadyRequested
         }
-        if service.incomingRequests.contains(where: { $0.contactIdentityId == result.identityId }) {
+        if service.incomingRequests.contains(where: { $0.contactIdentityId == identityId }) {
             return .theyAskedUs
         }
-        if eligibilityById[result.identityId] == false {
+        if eligibilityById[identityId] == false {
             return .missingDashPayKeys
         }
         return .none
     }
 
+    /// The sheet-driving candidate for a tapped search row.
+    private func candidate(_ result: DpnsSearchResult) -> ContactCandidate {
+        ContactCandidate(identityId: result.identityId, fullName: result.fullName)
+    }
+
     @ViewBuilder
     private func resultRow(_ result: DpnsSearchResult) -> some View {
-        let state = collision(for: result)
+        let state = collision(identityId: result.identityId)
         HStack(spacing: 10) {
             ContactAvatarView(
                 title: result.fullName,
@@ -337,7 +354,7 @@ struct AddContactScreen: View {
             switch state {
             case .none:
                 Button {
-                    previewTarget = result
+                    previewTarget = candidate(result)
                 } label: {
                     Image(systemName: "person.badge.plus")
                         .foregroundColor(.dash.blue)
@@ -349,7 +366,7 @@ struct AddContactScreen: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts"))
             case .theyAskedUs:
-                AcceptPillButton { accept(result) }
+                AcceptPillButton { accept(candidate(result)) }
             case .established:
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.dashGreen)
@@ -379,9 +396,11 @@ struct AddContactScreen: View {
 
     /// Scanned QR → parse → verify against Platform → the same
     /// send-confirmation sheet a search result tap opens. Verification
-    /// is an exact-username DPNS search whose result must carry the
-    /// scanned identity id — the sheet then renders a Platform-backed
-    /// `DpnsSearchResult`, never the QR's own unproven claim.
+    /// is an exact DPNS resolution (`resolveUsername`) that must return
+    /// the scanned identity id — not a capped prefix page that could
+    /// miss the identity, and never the QR's own unproven claim. The
+    /// search field is left untouched so no second (debounced) lookup
+    /// races this one.
     ///
     /// Every UI-state write happens on the main actor after a
     /// cancellation check, and a new scan cancels the previous task
@@ -393,9 +412,6 @@ struct AddContactScreen: View {
             errorMessage = NSLocalizedString("This isn't a DashPay user QR code.", comment: "DashPay Contacts: scanned QR is a payment/invitation/foreign code")
             return
         }
-        // Mirror the scanned name into the search field so the results
-        // list behind the confirmation sheet shows the same user.
-        query = link.username
         scanVerifyTask?.cancel()
         isVerifyingScan = true
         scanVerifyTask = Task {
@@ -406,19 +422,20 @@ struct AddContactScreen: View {
                 }
             }
             do {
-                let matches = try await service.searchUsernames(prefix: link.username)
+                let ownerId = try await service.resolveUsername(link.username)
                 guard !Task.isCancelled else { return }
-                guard let match = matches.first(where: {
-                    $0.identityId == link.identityId
-                        && $0.fullName.withoutDashSuffix.lowercased() == link.username.lowercased()
-                }) else {
+                guard ownerId == link.identityId else {
                     errorMessage = String(
                         format: NSLocalizedString("%@ couldn't be verified on the Dash network. The QR code may be outdated.", comment: "DashPay Contacts: scanned username doesn't resolve to the scanned identity"),
                         link.username)
                     return
                 }
-                checkEligibilityIfNeeded(match)
-                previewTarget = match
+                checkEligibilityIfNeeded(id: link.identityId)
+                previewTarget = ContactCandidate(
+                    identityId: link.identityId,
+                    // Search rows carry the ".dash"-suffixed full name;
+                    // keep the scan-sourced candidate consistent.
+                    fullName: link.username + ".dash")
             } catch {
                 guard !Task.isCancelled else { return }
                 errorMessage = error.localizedDescription
@@ -462,14 +479,14 @@ struct AddContactScreen: View {
         }
     }
 
-    /// Resolve whether one result can receive a contact request (DIP-15
-    /// needs the recipient's DashPay encryption + decryption keys), the
-    /// first time its row scrolls into view. Marks pre-DashPay
-    /// identities so the user sees "Can't receive contact requests"
-    /// instead of hitting the PIN gate and a network error. One query
-    /// per identity, deduped via `eligibilityInFlight`.
-    private func checkEligibilityIfNeeded(_ result: DpnsSearchResult) {
-        let id = result.identityId
+    /// Resolve whether one identity can receive a contact request
+    /// (DIP-15 needs the recipient's DashPay encryption + decryption
+    /// keys), the first time its row scrolls into view or its scan is
+    /// verified. Marks pre-DashPay identities so the user sees "Can't
+    /// receive contact requests" instead of hitting the PIN gate and a
+    /// network error. One query per identity, deduped via
+    /// `eligibilityInFlight`.
+    private func checkEligibilityIfNeeded(id: Data) {
         guard eligibilityById[id] == nil, !eligibilityInFlight.contains(id) else { return }
         eligibilityInFlight.insert(id)
         Task {
@@ -481,7 +498,7 @@ struct AddContactScreen: View {
 
     // MARK: Actions
 
-    private func send(to target: DpnsSearchResult) {
+    private func send(to target: ContactCandidate) {
         guard eligibilityById[target.identityId] != false else { return }
         guard !sendingIds.contains(target.identityId) else { return }
         sendingIds.insert(target.identityId)
@@ -509,7 +526,7 @@ struct AddContactScreen: View {
         }
     }
 
-    private func accept(_ target: DpnsSearchResult) {
+    private func accept(_ target: ContactCandidate) {
         guard !sendingIds.contains(target.identityId) else { return }
         sendingIds.insert(target.identityId)
         Task {
@@ -540,7 +557,7 @@ struct AddContactScreen: View {
 /// fields appear once the identity is one of our contacts/requesters
 /// (`contact` non-nil). Nothing is fabricated when the data is absent.
 struct AddContactPreviewSheet: View {
-    let result: DpnsSearchResult
+    let result: ContactCandidate
     let collision: AddContactScreen.Collision
     /// The already-materialized contact row when this identity is known
     /// (established / incoming / outgoing); nil for a true stranger.
