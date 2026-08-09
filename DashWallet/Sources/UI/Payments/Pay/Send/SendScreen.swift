@@ -35,11 +35,11 @@ struct SendScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if showsHeader {
-                header
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
-            }
+//            if showsHeader {
+//                header
+//                    .padding(.horizontal, 20)
+//                    .padding(.top, 10)
+//            }
 
             ScrollView {
                 VStack(spacing: 14) {
@@ -51,7 +51,6 @@ struct SendScreen: View {
                         clipboardChip(for: suggestion)
                     }
 
-                    scanRow
                 }
                 .padding(.bottom, 8)
             }
@@ -74,95 +73,103 @@ struct SendScreen: View {
         .navigationBarHidden(true)
     }
 
-    // MARK: - Header
-
-    private var header: some View {
-        HStack {
-            Button(action: onClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color.dash.primaryText)
-                    .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-            }
-            Spacer()
-            Text(NSLocalizedString("Send", comment: ""))
-                .font(.headline)
-                .foregroundColor(.dash.primaryText)
-            Spacer()
-            Color.clear.frame(width: 36, height: 36)
-        }
-    }
+//    // MARK: - Header
+//
+//    private var header: some View {
+//        HStack {
+//            Button(action: onClose) {
+//                Image(systemName: "xmark")
+//                    .font(.system(size: 16, weight: .medium))
+//                    .foregroundColor(Color.dash.primaryText)
+//                    .frame(width: 36, height: 36)
+//                    .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
+//            }
+//            Spacer()
+//            Text(NSLocalizedString("Send", comment: ""))
+//                .font(.headline)
+//                .foregroundColor(.dash.primaryText)
+//            Spacer()
+//            Color.clear.frame(width: 36, height: 36)
+//        }
+//    }
 
     // MARK: - Address
 
+    @ViewBuilder
     private var addressField: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(NSLocalizedString("Address", comment: ""))
-                    .font(.caption)
-                    .foregroundColor(Color.dash.secondaryText)
-                Spacer()
+        if isAddressLocked {
+            // Collapsed: a decoded address takes one line and gives the rest
+            // of the screen back. `AddressFieldView` has no such state, so
+            // the card stays here, with the label row it needs.
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(NSLocalizedString("Address", comment: ""))
+                        .dashFont(.footnote)
+                        .foregroundStyle(Color.dash.gray500)
+                    Spacer()
+                    if let destination = viewModel.destination {
+                        destinationBadge(destination)
+                    }
+                }
+                lockedAddressCard
+            }
+            .padding(.horizontal, 20)
+        } else {
+            DashUIKit.AddressFieldView(
+                text: $viewModel.addressText,
+                label: NSLocalizedString("Address", comment: ""),
+                placeholder: NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
+                hasError: addressErrorText != nil,
+                errorText: addressErrorText,
+                onScanQR: onScanQR,
+                // No `onPaste`: the clipboard chip below already offers this,
+                // and it shows WHICH address it would paste and what kind it
+                // is — a bare Paste button would be the same action twice,
+                // told less well.
+            ) {
                 if let destination = viewModel.destination {
                     destinationBadge(destination)
                 }
             }
-            if isAddressLocked {
-                lockedAddressCard
-            } else {
-                TextField(
-                    NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
-                    text: $viewModel.addressText,
-                    axis: .vertical)
-                    .font(.system(.footnote, design: .monospaced))
-                    .foregroundColor(.dash.primaryText)
-                    .padding(12)
-                    .background(Color.dash.secondaryBackground)
-                    .cornerRadius(10)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.asciiCapable)
-                    .lineLimit(2...4)
-                    .focused($addressFieldFocused)
-                    .onAppear {
-                        // Rendered after tapping the locked card → put the
-                        // cursor straight back into the field.
-                        if isEditingAddress {
-                            addressFieldFocused = true
-                        }
-                    }
-                    .onChange(of: addressFieldFocused) { _, focused in
-                        // Focus left the field → re-lock (when valid).
-                        if !focused {
-                            isEditingAddress = false
-                        }
-                    }
-                    .onChange(of: viewModel.destination) { _, destination in
-                        // The address just became valid (a paste, or the
-                        // final typed character) → lock in right away.
-                        // Software-keyboard-less setups (simulator with a
-                        // hardware keyboard) never drop focus on their own,
-                        // so don't wait for that.
-                        if destination != nil {
-                            addressFieldFocused = false
-                            isEditingAddress = false
-                        }
-                    }
+            .focused($addressFieldFocused)
+            .padding(.horizontal, 20)
+            .onAppear {
+                // Rendered after tapping the locked card → put the cursor
+                // straight back into the field.
+                if isEditingAddress {
+                    addressFieldFocused = true
+                }
             }
-
-            if viewModel.showsInvalidAddress {
-                Text(NSLocalizedString("This is not a valid Dash address for this network", comment: "Send screen"))
-                    .font(.caption)
-                    .foregroundColor(.red)
-            } else if viewModel.pinnedSourceMismatch {
-                Text(String(
-                    format: NSLocalizedString("This address can't be paid from your %@ balance", comment: "Send sheet source/destination mismatch"),
-                    viewModel.pinnedSourceTitle))
-                    .font(.caption)
-                    .foregroundColor(.red)
+            .onChange(of: addressFieldFocused) { _, focused in
+                // Focus left the field → re-lock (when valid).
+                if !focused {
+                    isEditingAddress = false
+                }
+            }
+            .onChange(of: viewModel.destination) { _, destination in
+                // The address just became valid (a paste, or the final typed
+                // character) → lock in right away. Software-keyboard-less
+                // setups (simulator with a hardware keyboard) never drop
+                // focus on their own, so don't wait for that.
+                if destination != nil {
+                    addressFieldFocused = false
+                    isEditingAddress = false
+                }
             }
         }
-        .padding(.horizontal, 20)
+    }
+
+    /// Whichever refusal applies, in the one slot the field has for it.
+    private var addressErrorText: String? {
+        if viewModel.showsInvalidAddress {
+            return NSLocalizedString("This is not a valid Dash address for this network", comment: "Send screen")
+        }
+        if viewModel.pinnedSourceMismatch {
+            return String(
+                format: NSLocalizedString("This address can't be paid from your %@ balance", comment: "Send sheet source/destination mismatch"),
+                viewModel.pinnedSourceTitle)
+        }
+        return nil
     }
 
     /// The locked-in address: middle-truncated single line + pencil.
@@ -248,21 +255,6 @@ struct SendScreen: View {
         .padding(.horizontal, 20)
     }
 
-    private var scanRow: some View {
-        Button(action: onScanQR) {
-            HStack(spacing: 6) {
-                Image(systemName: "qrcode.viewfinder")
-                Text(NSLocalizedString("Scan QR", comment: ""))
-            }
-            .font(.system(size: 14, weight: .medium))
-            .foregroundColor(.blue)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.dash.blue.opacity(0.12))
-            .cornerRadius(10)
-        }
-        .padding(.horizontal, 20)
-    }
 }
 
 #if DEBUG
