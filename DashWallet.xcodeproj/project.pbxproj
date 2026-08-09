@@ -101,6 +101,13 @@
 		12BD10DCCEFF4142EA3BA0CA /* SwiftDashSDKWalletSending.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BAA92B00D4109567DF870F /* SwiftDashSDKWalletSending.swift */; };
 		12DE15416F9F7A0B8749CAF1 /* PaymentsLandingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64C10DA9C338D408982EBE /* PaymentsLandingViewModel.swift */; };
 		15F9C3B621487500E2919619 /* SendViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */; };
+		5ASB06100000000000000000 /* SyncGateNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF06100000000000000000 /* SyncGateNote.swift */; };
+		5ASB05100000000000000000 /* SendChainStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF05100000000000000000 /* SendChainStyle.swift */; };
+		5ASB04100000000000000000 /* SendStepChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF04100000000000000000 /* SendStepChrome.swift */; };
+		5ASB03100000000000000000 /* SendConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF03100000000000000000 /* SendConfirmSheet.swift */; };
+		5ASB02100000000000000000 /* ExternalSendAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF02100000000000000000 /* ExternalSendAmountScreen.swift */; };
+		5ASB01100000000000000000 /* SendSourceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF01100000000000000000 /* SendSourceScreen.swift */; };
+		5ASB00100000000000000000 /* SendScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF00100000000000000000 /* SendScreen.swift */; };
 		16AA1B384A9758C1DA97676A /* SwiftDashSDKHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = E181EB71C8803101EA789AA4 /* SwiftDashSDKHost.swift */; };
 		17ED79A8B56522CD03A8CD5E /* ShieldedTransferCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D2C8F8102C5C603DB63569F /* ShieldedTransferCoordinator.swift */; };
 		197F19679BBAABA2E99503B8 /* DWAvatarUploadClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A461F75E1E170FFE3294337 /* DWAvatarUploadClient.swift */; };
@@ -125,7 +132,6 @@
 		2556F3C5C72D70A771C6C61A /* PaymentProtocolWireFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = E66B030D4B574621DA2C5816 /* PaymentProtocolWireFormat.swift */; };
 		25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
 		25C2103A3D2448AB40AB8485 /* UsernameVotingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */; };
-		25C88271468A4CD23F34A6E9 /* SendScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1F21A7592E99814A800518 /* SendScreen.swift */; };
 		279C16F9AF0575C540E312E5 /* SwapConvertCardRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99130732DE8F2E95F635F6B /* SwapConvertCardRow.swift */; };
 		2991DE4863B0BF4FA8628C3C /* DWProfileUpdateBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAA91E4239626E28125CC0E2 /* DWProfileUpdateBridge.swift */; };
 		2A0C699C23104588001B8C90 /* DWPaymentInput.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C699B23104588001B8C90 /* DWPaymentInput.m */; };
@@ -1008,6 +1014,13 @@
 		A365C2F95472285830E6CDEB /* HomeUsernameRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */; };
 		A3ED42ED80F32AA5CA530A40 /* DamerauLevenshtein.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4CE60A95629A2883710A75C /* DamerauLevenshtein.swift */; };
 		A5C8B5B00075FB8E84009327 /* SendViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */; };
+		5ASB06200000000000000000 /* SyncGateNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF06100000000000000000 /* SyncGateNote.swift */; };
+		5ASB05200000000000000000 /* SendChainStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF05100000000000000000 /* SendChainStyle.swift */; };
+		5ASB04200000000000000000 /* SendStepChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF04100000000000000000 /* SendStepChrome.swift */; };
+		5ASB03200000000000000000 /* SendConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF03100000000000000000 /* SendConfirmSheet.swift */; };
+		5ASB02200000000000000000 /* ExternalSendAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF02100000000000000000 /* ExternalSendAmountScreen.swift */; };
+		5ASB01200000000000000000 /* SendSourceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF01100000000000000000 /* SendSourceScreen.swift */; };
+		5ASB00200000000000000000 /* SendScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ASF00100000000000000000 /* SendScreen.swift */; };
 		A6AAB271A1ADA69C272DA1D4 /* PinPromptPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D385FC174E5B887CF3398CCD /* PinPromptPresenter.swift */; };
 		A6DB8889C5594B1988BDE0CE /* SwapCoinIconLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F0351CAD174EEB8E64012A /* SwapCoinIconLoader.swift */; };
 		A72BF1D1A1F3F067215CE04C /* QRCodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A52F6A39C711B1E955B7E3A /* QRCodeGenerator.swift */; };
@@ -1195,7 +1208,6 @@
 		C3DAD268246AA6F10001624F /* DWScreenshotWarningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD267246AA6F10001624F /* DWScreenshotWarningViewController.m */; };
 		C3DAD2CF247585C10001624F /* NSPredicate+DWFullTextSearch.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD2CE247585C10001624F /* NSPredicate+DWFullTextSearch.m */; };
 		C5745FA476F615D2C1E378F3 /* SwiftDashSDKReceiveAddressReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A876A874736D422F781F797F /* SwiftDashSDKReceiveAddressReader.swift */; };
-		C5906424C3D379AF0CB83370 /* SendScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1F21A7592E99814A800518 /* SendScreen.swift */; };
 		C6138156317BAF449AA76861 /* PaymentsLandingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64C10DA9C338D408982EBE /* PaymentsLandingViewModel.swift */; };
 		C6344885F1E0A6C04D3D8437 /* InternalTransferConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */; };
 		C8D0B892715B6C46126FBE3A /* SendScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F454341FADB260861FE05EB4 /* SendScreenViewController.swift */; };
@@ -2896,7 +2908,6 @@
 		5B30DA60B985C3CC3ED05B64 /* DWCurrentUserIdentityInfo.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWCurrentUserIdentityInfo.swift; sourceTree = "<group>"; };
 		5C3839568283FDC3A6933824 /* DWRegistrationPhaseAdapter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapter.swift; sourceTree = "<group>"; };
 		5CBC0F417B9E8DE631F9DE2A /* Pods-DashWalletTests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletTests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletTests/Pods-DashWalletTests.testnet.xcconfig"; sourceTree = "<group>"; };
-		5D1F21A7592E99814A800518 /* SendScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendScreen.swift; sourceTree = "<group>"; };
 		5E1461688D08658B938A1066 /* MasternodeAPYCalculator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodeAPYCalculator.swift; sourceTree = "<group>"; };
 		5EAD111130A0000000A1B201 /* MayaAmountFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaAmountFormatter.swift; sourceTree = "<group>"; };
 		5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashAmountFormatterTests.swift; sourceTree = "<group>"; };
@@ -3096,6 +3107,13 @@
 		8C25F44380CDB841AF55D3FF /* DarkCoinMessageFraming.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DarkCoinMessageFraming.swift; sourceTree = "<group>"; };
 		8C7313C7337036FEC54729E4 /* BIP70URI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BIP70URI.swift; sourceTree = "<group>"; };
 		8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendViewModel.swift; sourceTree = "<group>"; };
+		5ASF06100000000000000000 /* SyncGateNote.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SyncGateNote.swift; sourceTree = "<group>"; };
+		5ASF05100000000000000000 /* SendChainStyle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendChainStyle.swift; sourceTree = "<group>"; };
+		5ASF04100000000000000000 /* SendStepChrome.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendStepChrome.swift; sourceTree = "<group>"; };
+		5ASF03100000000000000000 /* SendConfirmSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendConfirmSheet.swift; sourceTree = "<group>"; };
+		5ASF02100000000000000000 /* ExternalSendAmountScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExternalSendAmountScreen.swift; sourceTree = "<group>"; };
+		5ASF01100000000000000000 /* SendSourceScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendSourceScreen.swift; sourceTree = "<group>"; };
+		5ASF00100000000000000000 /* SendScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SendScreen.swift; sourceTree = "<group>"; };
 		91F0B8B82F3FAB7C00E713AE /* KeysOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysOverviewView.swift; sourceTree = "<group>"; };
 		94606903417F75BE99D4B31C /* BIP70Error.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BIP70Error.swift; sourceTree = "<group>"; };
 		96CB7E093E994D2391D36DEC /* SelfSizingSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfSizingSheet.swift; sourceTree = "<group>"; };
@@ -4955,6 +4973,29 @@
 			path = ControllerCollection;
 			sourceTree = "<group>";
 		};
+		5ASGRPS10000000000000000 /* Send */ = {
+			isa = PBXGroup;
+			children = (
+				5ASGRPC10000000000000000 /* Components */,
+				5ASF00100000000000000000 /* SendScreen.swift */,
+				5ASF01100000000000000000 /* SendSourceScreen.swift */,
+				5ASF02100000000000000000 /* ExternalSendAmountScreen.swift */,
+				5ASF03100000000000000000 /* SendConfirmSheet.swift */,
+				8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */,
+			);
+			path = Send;
+			sourceTree = "<group>";
+		};
+		5ASGRPC10000000000000000 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				5ASF04100000000000000000 /* SendStepChrome.swift */,
+				5ASF05100000000000000000 /* SendChainStyle.swift */,
+				5ASF06100000000000000000 /* SyncGateNote.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		2A8B9E5722FF6F2900FF8653 /* Pay */ = {
 			isa = PBXGroup;
 			children = (
@@ -4968,9 +5009,8 @@
 				C9F42F9E29DA82E5001BC549 /* PayableViewController.swift */,
 				D788CCB6B35B655BD713129E /* ChainNetworkToggle.swift */,
 				9A52F6A39C711B1E955B7E3A /* QRCodeGenerator.swift */,
-				5D1F21A7592E99814A800518 /* SendScreen.swift */,
+				5ASGRPS10000000000000000 /* Send */,
 				F454341FADB260861FE05EB4 /* SendScreenViewController.swift */,
-				8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */,
 			);
 			path = Pay;
 			sourceTree = "<group>";
@@ -10124,6 +10164,13 @@
 				25C88271468A4CD23F34A6E9 /* SendScreen.swift in Sources */,
 				C8D0B892715B6C46126FBE3A /* SendScreenViewController.swift in Sources */,
 				15F9C3B621487500E2919619 /* SendViewModel.swift in Sources */,
+				5ASB06100000000000000000 /* SyncGateNote.swift in Sources */,
+				5ASB05100000000000000000 /* SendChainStyle.swift in Sources */,
+				5ASB04100000000000000000 /* SendStepChrome.swift in Sources */,
+				5ASB03100000000000000000 /* SendConfirmSheet.swift in Sources */,
+				5ASB02100000000000000000 /* ExternalSendAmountScreen.swift in Sources */,
+				5ASB01100000000000000000 /* SendSourceScreen.swift in Sources */,
+				5ASB00100000000000000000 /* SendScreen.swift in Sources */,
 				8B8898971DC24152E171DABC /* PaymentsLandingScreen.swift in Sources */,
 				12DE15416F9F7A0B8749CAF1 /* PaymentsLandingViewModel.swift in Sources */,
 				908AB7EFCC69D3828BBD70A8 /* PaymentsLandingHostingController.swift in Sources */,
@@ -11148,6 +11195,13 @@
 				C5906424C3D379AF0CB83370 /* SendScreen.swift in Sources */,
 				7C8C17249DC2DD0ECB3F2720 /* SendScreenViewController.swift in Sources */,
 				A5C8B5B00075FB8E84009327 /* SendViewModel.swift in Sources */,
+				5ASB06200000000000000000 /* SyncGateNote.swift in Sources */,
+				5ASB05200000000000000000 /* SendChainStyle.swift in Sources */,
+				5ASB04200000000000000000 /* SendStepChrome.swift in Sources */,
+				5ASB03200000000000000000 /* SendConfirmSheet.swift in Sources */,
+				5ASB02200000000000000000 /* ExternalSendAmountScreen.swift in Sources */,
+				5ASB01200000000000000000 /* SendSourceScreen.swift in Sources */,
+				5ASB00200000000000000000 /* SendScreen.swift in Sources */,
 				6D5D6EFD5F40D11B2FB6E8A1 /* PaymentsLandingScreen.swift in Sources */,
 				C6138156317BAF449AA76861 /* PaymentsLandingViewModel.swift in Sources */,
 				72F0556F329AE232966A8B4A /* PaymentsLandingHostingController.swift in Sources */,

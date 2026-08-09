@@ -1,0 +1,266 @@
+//
+//  SendScreen.swift
+//  DashWallet
+//
+//  Step one of the external send: the recipient address, whose form decides the destination type.
+//
+
+import SwiftUI
+import DashUIKit
+import SwiftDashSDK
+import UIKit
+
+// MARK: - Step 1: address
+
+struct SendScreen: View {
+    @ObservedObject var viewModel: SendViewModel
+    var onClose: () -> Void
+    var onScanQR: () -> Void
+    /// The entered address is valid → advance to the amount step. The host
+    /// pushes `ExternalSendAmountScreen` onto the same navigation stack.
+    var onContinue: () -> Void
+    /// False when embedded under a host that renders its own chrome
+    /// (the balance-row send sheet) — hides the X + title header.
+    var showsHeader: Bool = true
+
+    @FocusState private var addressFieldFocused: Bool
+    @State private var isEditingAddress = false
+
+    /// The address is "locked" (shown as a truncated card) once a valid
+    /// destination is decoded and focus has left the field; tapping it reopens
+    /// the editable field.
+    private var isAddressLocked: Bool {
+        viewModel.destination != nil && !isEditingAddress && !addressFieldFocused
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if showsHeader {
+                header
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+            }
+
+            ScrollView {
+                VStack(spacing: 14) {
+                    addressField
+                        .padding(.top, 12)
+
+                    if let suggestion = viewModel.clipboardSuggestion,
+                       suggestion.address != viewModel.trimmedAddress {
+                        clipboardChip(for: suggestion)
+                    }
+
+                    scanRow
+                }
+                .padding(.bottom, 8)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollDismissesKeyboard(.interactively)
+
+            DashButton(
+                text: NSLocalizedString("Continue", comment: ""),
+                style: .filled,
+                stretch: true,
+                isEnabled: viewModel.canAdvanceToAmount,
+                action: {
+                    addressFieldFocused = false
+                    onContinue()
+                })
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+        }
+        .background(Color.dash.primaryBackground)
+        .navigationBarHidden(true)
+    }
+
+    // MARK: - Header
+
+    private var header: some View {
+        HStack {
+            Button(action: onClose) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color.dash.primaryText)
+                    .frame(width: 36, height: 36)
+                    .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
+            }
+            Spacer()
+            Text(NSLocalizedString("Send", comment: ""))
+                .font(.headline)
+                .foregroundColor(.dash.primaryText)
+            Spacer()
+            Color.clear.frame(width: 36, height: 36)
+        }
+    }
+
+    // MARK: - Address
+
+    private var addressField: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(NSLocalizedString("Address", comment: ""))
+                    .font(.caption)
+                    .foregroundColor(Color.dash.secondaryText)
+                Spacer()
+                if let destination = viewModel.destination {
+                    destinationBadge(destination)
+                }
+            }
+            if isAddressLocked {
+                lockedAddressCard
+            } else {
+                TextField(
+                    NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
+                    text: $viewModel.addressText,
+                    axis: .vertical)
+                    .font(.system(.footnote, design: .monospaced))
+                    .foregroundColor(.dash.primaryText)
+                    .padding(12)
+                    .background(Color.dash.secondaryBackground)
+                    .cornerRadius(10)
+                    .autocorrectionDisabled()
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.asciiCapable)
+                    .lineLimit(2...4)
+                    .focused($addressFieldFocused)
+                    .onAppear {
+                        // Rendered after tapping the locked card → put the
+                        // cursor straight back into the field.
+                        if isEditingAddress {
+                            addressFieldFocused = true
+                        }
+                    }
+                    .onChange(of: addressFieldFocused) { _, focused in
+                        // Focus left the field → re-lock (when valid).
+                        if !focused {
+                            isEditingAddress = false
+                        }
+                    }
+                    .onChange(of: viewModel.destination) { _, destination in
+                        // The address just became valid (a paste, or the
+                        // final typed character) → lock in right away.
+                        // Software-keyboard-less setups (simulator with a
+                        // hardware keyboard) never drop focus on their own,
+                        // so don't wait for that.
+                        if destination != nil {
+                            addressFieldFocused = false
+                            isEditingAddress = false
+                        }
+                    }
+            }
+
+            if viewModel.showsInvalidAddress {
+                Text(NSLocalizedString("This is not a valid Dash address for this network", comment: "Send screen"))
+                    .font(.caption)
+                    .foregroundColor(.red)
+            } else if viewModel.pinnedSourceMismatch {
+                Text(String(
+                    format: NSLocalizedString("This address can't be paid from your %@ balance", comment: "Send sheet source/destination mismatch"),
+                    viewModel.pinnedSourceTitle))
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+        }
+        .padding(.horizontal, 20)
+    }
+
+    /// The locked-in address: middle-truncated single line + pencil.
+    /// Tapping reopens the editable field with the cursor in place.
+    private var lockedAddressCard: some View {
+        Button(action: { isEditingAddress = true }) {
+            HStack(spacing: 8) {
+                Text(truncateMiddle(viewModel.trimmedAddress, visible: 10))
+                    .font(.system(.footnote, design: .monospaced))
+                    .foregroundColor(.dash.primaryText)
+                    .lineLimit(1)
+                Spacer()
+                Image(systemName: "pencil")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Color.dash.secondaryText)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity)
+            .background(Color.dash.secondaryBackground)
+            .cornerRadius(10)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: destinationIconName(destination))
+                .font(.system(size: 10, weight: .semibold))
+            Text(destinationTitle(destination))
+                .font(.caption2.weight(.semibold))
+        }
+        .foregroundColor(.dash.blue)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(Color.dash.blue.opacity(0.1))
+        .clipShape(Capsule())
+    }
+
+    private func destinationIconName(_ destination: SendViewModel.DestinationKind) -> String {
+        switch destination {
+        case .core: return "d.circle.fill"
+        case .platform: return "creditcard.fill"
+        case .shielded: return "shield.fill"
+        }
+    }
+
+    private func destinationTitle(_ destination: SendViewModel.DestinationKind) -> String {
+        switch destination {
+        case .core: return NSLocalizedString("Transparent address", comment: "Send screen destination type")
+        case .platform: return NSLocalizedString("Platform address", comment: "Send screen destination type")
+        case .shielded: return NSLocalizedString("Shielded address", comment: "Send screen destination type")
+        }
+    }
+
+    private func clipboardChip(for suggestion: SendViewModel.ClipboardSuggestion) -> some View {
+        Button(action: { viewModel.useClipboardSuggestion() }) {
+            HStack(spacing: 10) {
+                Image(systemName: "doc.on.doc.fill")
+                    .foregroundColor(.blue)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(NSLocalizedString("Send to copied address", comment: ""))
+                        .font(.caption)
+                        .foregroundColor(Color.dash.secondaryText)
+                    Text(truncateMiddle(suggestion.address))
+                        .font(.system(.footnote, design: .monospaced))
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+                Spacer()
+                Text(destinationTitle(suggestion.kind))
+                    .font(.caption2)
+                    .foregroundColor(Color.dash.secondaryText)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.dash.gray300.opacity(0.3))
+                    .cornerRadius(8)
+            }
+            .padding(12)
+            .background(Color.dash.blue.opacity(0.08))
+            .cornerRadius(10)
+        }
+        .padding(.horizontal, 20)
+    }
+
+    private var scanRow: some View {
+        Button(action: onScanQR) {
+            HStack(spacing: 6) {
+                Image(systemName: "qrcode.viewfinder")
+                Text(NSLocalizedString("Scan QR", comment: ""))
+            }
+            .font(.system(size: 14, weight: .medium))
+            .foregroundColor(.blue)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color.dash.blue.opacity(0.12))
+            .cornerRadius(10)
+        }
+        .padding(.horizontal, 20)
+    }
+}
