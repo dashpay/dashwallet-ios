@@ -90,7 +90,10 @@ final class SendViewModel: ObservableObject {
     /// `.syncDone`). Core-funded routes can't Continue before that — the
     /// UTXO set may be stale (see `WalletSendService.ensureChainSynced`,
     /// the boundary backstop behind this UI gate).
-    @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
+    /// Seeded in `init` rather than here: a property initialiser runs whatever
+    /// the `wired` flag says, and this one would wake the monitor from a
+    /// preview canvas.
+    @Published private(set) var isChainSynced = false
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -100,17 +103,32 @@ final class SendViewModel: ObservableObject {
     /// rather than silently re-picking the source.
     let pinnedSource: ChainNetwork?
 
+    /// False for the preview seam below, which never registered anywhere.
+    private let isWired: Bool
+
     deinit {
         // The monitor holds observers strongly — without this the VM (and
-        // its Combine pipelines) outlive the screen.
-        SyncingActivityMonitor.shared.remove(observer: self)
+        // its Combine pipelines) outlive the screen. Skipped when the model
+        // was never wired: removing an observer that never registered would
+        // reach the live singleton from a canvas.
+        if isWired {
+            SyncingActivityMonitor.shared.remove(observer: self)
+        }
     }
 
-    init(pinnedSource: ChainNetwork? = nil) {
+    /// `wired: false` builds an inert model for previews: no observer on
+    /// `SyncingActivityMonitor`, no balance subscriptions, no clipboard read.
+    /// Every one of those reaches a live singleton that does real work, which
+    /// a canvas must not start — and the screens only read published state,
+    /// so an unwired model renders them exactly as a wired one would.
+    init(pinnedSource: ChainNetwork? = nil, wired: Bool = true) {
         self.pinnedSource = pinnedSource
+        self.isWired = wired
         if let pinnedSource {
             source = pinnedSource
         }
+        guard wired else { return }
+        isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
         refreshClipboardSuggestion()
         SyncingActivityMonitor.shared.add(observer: self)
 
@@ -737,3 +755,28 @@ extension SendViewModel: SyncingActivityMonitorObserver {
         }
     }
 }
+
+#if DEBUG
+
+extension SendViewModel {
+    /// Preview seed. Nothing is wired, so no singleton is touched; the state
+    /// the screens render is set directly.
+    static func preview(
+        address: String = "",
+        destination: DestinationKind? = nil,
+        source: ChainNetwork = .core,
+        pinnedSource: ChainNetwork? = nil,
+        coreBalanceDuffs: UInt64 = 96_999_737,
+        isChainSynced: Bool = true
+    ) -> SendViewModel {
+        let model = SendViewModel(pinnedSource: pinnedSource, wired: false)
+        model.addressText = address
+        model.destination = destination
+        model.source = source
+        model.coreBalanceDuffs = coreBalanceDuffs
+        model.isChainSynced = isChainSynced
+        return model
+    }
+}
+
+#endif

@@ -228,3 +228,26 @@ struct ExternalSendAmountScreen: View {
             })
     }
 }
+
+#if DEBUG
+
+#Preview("Amount") {
+    ExternalSendAmountScreen(
+        viewModel: .preview(address: "yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY", destination: .core),
+        onBack: {}, onContinueCore: { _, _ in }, onSendCompleted: {})
+        .background(Color.dash.primaryBackground)
+}
+
+/// Shielded source: the route leaves the classic payment processor, so the
+/// screen confirms in `SendConfirmSheet` instead of continuing to it.
+#Preview("From Shielded") {
+    ExternalSendAmountScreen(
+        viewModel: .preview(
+            address: "yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY",
+            destination: .core,
+            source: .shielded),
+        onBack: {}, onContinueCore: { _, _ in }, onSendCompleted: {})
+        .background(Color.dash.primaryBackground)
+}
+
+#endif

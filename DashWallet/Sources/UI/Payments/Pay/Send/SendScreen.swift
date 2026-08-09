@@ -264,3 +264,40 @@ struct SendScreen: View {
         .padding(.horizontal, 20)
     }
 }
+
+#if DEBUG
+
+/// Seeded model, nothing wired — see `SendViewModel.preview`. The production
+/// initializer subscribes to the sync monitor and two balance publishers, all
+/// live singletons a canvas must not start.
+#Preview("Empty") {
+    SendScreen(viewModel: .preview(), onClose: {}, onScanQR: {}, onContinue: {})
+        .background(Color.dash.primaryBackground)
+}
+
+/// A decoded address collapses the field into the summary card.
+#Preview("Transparent address") {
+    SendScreen(
+        viewModel: .preview(
+            address: "yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY",
+            destination: .core),
+        onClose: {}, onScanQR: {}, onContinue: {})
+        .background(Color.dash.primaryBackground)
+}
+
+#Preview("Still syncing") {
+    SendScreen(
+        viewModel: .preview(isChainSynced: false),
+        onClose: {}, onScanQR: {}, onContinue: {})
+        .background(Color.dash.primaryBackground)
+}
+
+/// Embedded under a host that draws its own chrome — the balance-row sheet.
+#Preview("No header") {
+    SendScreen(
+        viewModel: .preview(), onClose: {}, onScanQR: {}, onContinue: {},
+        showsHeader: false)
+        .background(Color.dash.primaryBackground)
+}
+
+#endif

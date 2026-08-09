@@ -33,3 +33,13 @@ struct SyncGateNote: View {
         .cornerRadius(10)
     }
 }
+
+#if DEBUG
+
+#Preview {
+    SyncGateNote()
+        .padding()
+        .background(Color.dash.primaryBackground)
+}
+
+#endif

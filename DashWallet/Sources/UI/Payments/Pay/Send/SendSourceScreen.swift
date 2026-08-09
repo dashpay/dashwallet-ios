@@ -96,3 +96,27 @@ struct SendSourceScreen: View {
             action: { viewModel.source = network })
     }
 }
+
+#if DEBUG
+
+#Preview("Pick a source") {
+    SendSourceScreen(
+        viewModel: .preview(address: "yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY", destination: .core),
+        onBack: {}, onContinue: {})
+        .background(Color.dash.primaryBackground)
+}
+
+/// Pinned by the caller (the balance row's own send button) — the picker
+/// shows the choice already made rather than re-offering it.
+#Preview("Pinned to Shielded") {
+    SendSourceScreen(
+        viewModel: .preview(
+            address: "yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY",
+            destination: .core,
+            source: .shielded,
+            pinnedSource: .shielded),
+        onBack: {}, onContinue: {})
+        .background(Color.dash.primaryBackground)
+}
+
+#endif
