@@ -36,31 +36,24 @@ struct ExternalSendAmountScreen: View {
             // goes with it.
             DashUIKit.NavigationBar(leading: {
                 NavigationBarElement.back.button { onBack() }
-            }, central: {
-                Text(NSLocalizedString("Send", comment: ""))
-                    .dashFont(.subheadMedium)
-                    .foregroundColor(.dash.primaryText)
             })
 
-            ScrollView {
-                VStack(spacing: 14) {
-                    SendAddressSummary(viewModel: viewModel)
-                        .padding(.top, 12)
+            VStack(spacing: 14) {
+                SendAddressSummary(viewModel: viewModel, showsSource: true)
+                    .padding(.top, 12)
 
-                    fromSummary
+                fromSummary
 
-                    amountRow
+                amountRow
+                    .padding(.horizontal, 20)
+                    .padding(.top, 6)
+
+                if let message = viewModel.amountValidationMessage {
+                    TransferAmountValidationNote(message: message)
                         .padding(.horizontal, 20)
-                        .padding(.top, 6)
-
-                    if let message = viewModel.amountValidationMessage {
-                        TransferAmountValidationNote(message: message)
-                            .padding(.horizontal, 20)
-                    }
                 }
-                .padding(.bottom, 8)
             }
-            .scrollBounceBehavior(.basedOnSize)
+            .padding(.bottom, 8)
 
             keyboardSection
         }

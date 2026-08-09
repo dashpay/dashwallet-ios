@@ -18,47 +18,124 @@ import DashUIKit
 /// on the gift-card screens.
 struct SendAddressSummary: View {
     @ObservedObject var viewModel: SendViewModel
+    /// Show which balance funds the send, and how much is in it. Off on the
+    /// source step, where the cards below already say both and the choice is
+    /// still open; on for the amount step, where the source is settled and
+    /// the number is what the amount is being measured against.
+    var showsSource: Bool = false
+
+    /// Mirrors the app-wide flag the home balance uses, so hiding in one
+    /// place hides everywhere. `@State` seeded from it, since a plain read
+    /// would not re-render on toggle.
+    @State private var isBalanceHidden = DWGlobalOptions.sharedInstance().balanceHidden
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            // Middle-truncated, not tail: the last characters are what
-            // distinguishes two addresses of the same form, so a plain
-            // ellipsis at the end hides exactly what is worth checking.
-            Text(String(
-                format: NSLocalizedString("to %@", comment: "Send screen — the destination address"),
-                truncateMiddle(viewModel.trimmedAddress, visible: 10)))
-                .font(.system(.subheadline, design: .monospaced))
+        VStack(alignment: .leading, spacing: 4) {
+            Text(NSLocalizedString("Send", comment: "Send screen"))
+                .dashFont(.title1)
+                .foregroundStyle(Color.dash.primaryText)
+
+            Text(String(format: NSLocalizedString("to %@", comment: "Send screen"), viewModel.trimmedAddress))
+                .dashFont(.subhead)
                 .foregroundStyle(Color.dash.primaryText)
                 .lineLimit(1)
-
-            Spacer(minLength: 8)
+                .truncationMode(.middle)
 
             if let destination = viewModel.destination {
-                destinationBadge(destination)
+                Text(String(format: NSLocalizedString("to %@", comment: "Send screen"), destinationTitle(destination)))
+                    .dashFont(.subhead)
+                    .foregroundStyle(Color.dash.primaryText)
+            }
+
+            if showsSource {
+                Text(String(
+                    format: NSLocalizedString("from %@", comment: "Send screen — the balance being spent"),
+                    sourceTitle(viewModel.source)))
+                    .dashFont(.subhead)
+                    .foregroundStyle(Color.dash.primaryText)
+
+                sourceBalanceLine
             }
         }
-        .padding(.horizontal, 20)
+    }
+
+    private var sourceBalanceLine: some View {
+        HStack(spacing: 6) {
+            Text(NSLocalizedString("Balance:", comment: "Send screen"))
+                .dashFont(.footnote)
+                .foregroundStyle(Color.dash.secondaryText)
+
+            if isBalanceHidden {
+                // Same masking the home balance uses — the width is fixed, so
+                // the row doesn't change size when it is revealed.
+                Text("••••••••")
+                    .dashFont(.footnote)
+                    .foregroundStyle(Color.dash.secondaryText)
+            } else {
+                // Qualified: the app has a `DashAmount` of its own with a
+                // different initializer, and an unqualified name picks it.
+                DashUIKit.DashAmount(
+                    amount: Int64(clamping: viewModel.selectedSourceBalanceDuffs),
+                    fontSize: 13,
+                    sign: DashAmountSign.none)
+                    .foregroundStyle(Color.dash.secondaryText)
+            }
+
+            Button {
+                isBalanceHidden.toggle()
+                DWGlobalOptions.sharedInstance().balanceHidden = isBalanceHidden
+            } label: {
+                Image(systemName: isBalanceHidden ? "eye.slash.fill" : "eye.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.dash.secondaryText)
+                    .frame(width: 28, height: 28)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isBalanceHidden
+                ? NSLocalizedString("Show balance", comment: "Send screen")
+                : NSLocalizedString("Hide balance", comment: "Send screen"))
+        }
     }
 }
 
 #if DEBUG
 
-/// One per destination kind — the badge is what differs.
-#Preview("Destination context") {
+/// The source step: destination only — the From cards below carry the choice.
+#Preview("Destination only") {
     VStack(alignment: .leading, spacing: 16) {
         SendAddressSummary(viewModel: .preview(
             address: "yQzt83pPGeXQpVn4rL8mKdWvBcTfGhJkMnPaPuNstuWJK",
             destination: .core))
 
         SendAddressSummary(viewModel: .preview(
-            address: "8xKq2mVn4pLrTyWvBcDfGhJkMnPqRsTuVwXyZaBcDeFg",
-            destination: .platform))
-
-        SendAddressSummary(viewModel: .preview(
             address: "dashs1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
             destination: .shielded(raw43: Data(repeating: 0x2a, count: 43))))
     }
-    .padding(.vertical)
+    .padding()
+    .background(Color.dash.primaryBackground)
+}
+
+/// The amount step: the source is settled, so it says which balance is being
+/// spent and how much is in it. Whether the number is masked follows the
+/// app-wide flag, so this preview shows it as the device last left it.
+#Preview("With source") {
+    VStack(alignment: .leading, spacing: 16) {
+        SendAddressSummary(
+            viewModel: .preview(
+                address: "yQzt83pPGeXQpVn4rL8mKdWvBcTfGhJkMnPaPuNstuWJK",
+                destination: .core,
+                coreBalanceDuffs: 158_998_000),
+            showsSource: true)
+
+        SendAddressSummary(
+            viewModel: .preview(
+                address: "yQzt83pPGeXQpVn4rL8mKdWvBcTfGhJkMnPaPuNstuWJK",
+                destination: .core,
+                source: .shielded),
+            showsSource: true)
+    }
+    .padding()
     .background(Color.dash.primaryBackground)
 }
 

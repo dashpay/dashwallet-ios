@@ -27,41 +27,36 @@ struct SendSourceScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // DashUIKit's bar carries its own height and horizontal
-            // insets, so the manual padding the hand-rolled header needed
-            // goes with it.
             DashUIKit.NavigationBar(leading: {
                 NavigationBarElement.back.button { onBack() }
-            }, central: {
-                Text(NSLocalizedString("Send", comment: ""))
-                    .dashFont(.subheadMedium)
-                    .foregroundColor(.dash.primaryText)
             })
 
-            ScrollView {
-                VStack(spacing: 14) {
-                    SendAddressSummary(viewModel: viewModel)
-                        .padding(.top, 12)
+            // Content
 
-                    sourceCards
+            VStack(alignment: .leading, spacing: 20) {
+                SendAddressSummary(viewModel: viewModel)
 
-                    if viewModel.isBlockedBySync {
-                        SyncGateNote()
-                            .padding(.horizontal, 20)
-                    }
+                sourceCards
+
+                if viewModel.isBlockedBySync {
+                    SyncGateNote()
+                        .padding(.horizontal, 20)
                 }
-                .padding(.bottom, 8)
-            }
-            .scrollBounceBehavior(.basedOnSize)
 
-            DashButton(
-                text: NSLocalizedString("Continue", comment: ""),
-                style: .filled,
-                stretch: true,
-                isEnabled: viewModel.route != nil && !viewModel.isBlockedBySync,
-                action: onContinue)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
+                Spacer()
+
+                DashButton(
+                    text: NSLocalizedString("Continue", comment: ""),
+                    style: .filled,
+                    stretch: true,
+                    isEnabled: viewModel.route != nil && !viewModel.isBlockedBySync,
+                    action: onContinue
+                )
+                .padding(.horizontal, 60)
+            }
+            .padding(.top, 10)
+            .padding(.bottom, 20)
+            .padding(.horizontal, 20)
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
@@ -72,17 +67,13 @@ struct SendSourceScreen: View {
     @ViewBuilder
     private var sourceCards: some View {
         if let pinned = viewModel.pinnedSource {
-            // Balance-row send sheet: the source is the tapped balance,
-            // rendered as a fixed card (no radio, not tappable).
             sourceRow(pinned, showsRadio: false)
-                .padding(.horizontal, 20)
         } else {
             VStack(spacing: 8) {
                 ForEach(viewModel.validSources, id: \.self) { network in
                     sourceRow(network)
                 }
             }
-            .padding(.horizontal, 20)
         }
     }
 
@@ -93,6 +84,7 @@ struct SendSourceScreen: View {
         case .platform: balance = viewModel.platformCreditsFormatted
         case .shielded: balance = viewModel.shieldedBalanceFormatted
         }
+
         return TransferSourceRow(
             iconSystemName: sourceIconName(network),
             caption: NSLocalizedString("From", comment: ""),
@@ -100,7 +92,10 @@ struct SendSourceScreen: View {
             balanceTrailing: TransferSourceRow.dashBalanceTrailing(balance),
             selected: viewModel.source == network,
             showsRadio: showsRadio,
-            action: { viewModel.source = network })
+            action: {
+                viewModel.source = network
+            }
+        )
     }
 }
 

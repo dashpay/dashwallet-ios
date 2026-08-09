@@ -406,6 +406,13 @@ final class SendViewModel: ObservableObject {
         InternalTransferViewModel.cardBalanceString(duffs: shieldedBalance / 1000)
     }
 
+    /// The selected source's balance, in duffs — what the amount step shows
+    /// under "from", so the user can see what they are spending out of
+    /// without going back a step.
+    var selectedSourceBalanceDuffs: UInt64 {
+        balanceDuffs(of: source)
+    }
+
     /// A source's balance normalised to duffs, for the "first source with
     /// funds" auto-pick.
     private func balanceDuffs(of network: ChainNetwork) -> UInt64 {
