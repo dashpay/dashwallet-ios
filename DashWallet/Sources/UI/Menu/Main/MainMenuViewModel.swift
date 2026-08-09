@@ -19,7 +19,6 @@ import SwiftUI
 import Combine
 
 enum MainMenuNavigationDestination {
-    case buySellPortal
     case explore
     case syncInfo
     case wallets
@@ -82,15 +81,6 @@ class MainMenuViewModel: ObservableObject {
     
     func buildMenuSections() {
         var allItems: [MenuItemModel] = []
-        
-        // Buy & Sell Dash
-        allItems.append(MenuItemModel(
-            title: NSLocalizedString("Buy & Sell Dash", comment: ""),
-            icon: .custom("image.buy.and.sell", maxHeight: 30),
-            action: { [weak self] in
-                self?.handleBuySellDash()
-            }
-        ))
         
         // Explore
         allItems.append(MenuItemModel(
@@ -180,18 +170,6 @@ class MainMenuViewModel: ObservableObject {
     
     // MARK: - Actions
 
-    private func handleBuySellDash() {
-        AuthenticationService.shared.authenticate(
-            withPrompt: nil,
-            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-            alertIfLockout: true
-        ) { [weak self] authenticated, usedBiometrics, cancelled in
-            if authenticated {
-                self?.navigationDestination = .buySellPortal
-            }
-        }
-    }
-    
     func resetNavigation() {
         navigationDestination = nil
     }
