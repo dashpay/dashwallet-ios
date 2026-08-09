@@ -73,3 +73,40 @@ struct SendAddressSummary: View {
         .padding(.horizontal, 20)
     }
 }
+
+#if DEBUG
+
+#Preview("Step header") {
+    SendStepHeader(onBack: {})
+        .padding(.vertical)
+        .background(Color.dash.primaryBackground)
+}
+
+/// The card the address field collapses into once a destination decodes —
+/// one preview per destination kind, since the badge is what differs.
+#Preview("Address summary") {
+    VStack(spacing: 12) {
+        SendAddressSummary(
+            viewModel: .preview(
+                address: "yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY",
+                destination: .core),
+            onEdit: {})
+
+        SendAddressSummary(
+            viewModel: .preview(
+                address: "dash:8xKq2mVn4pLrTyWvBcDfGhJkMnPqRsTuVwXyZ",
+                destination: .platform),
+            onEdit: {})
+
+        SendAddressSummary(
+            viewModel: .preview(
+                address: "dashs1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+                destination: .shielded(raw43: Data(repeating: 0x2a, count: 43))),
+            onEdit: {})
+    }
+    .padding()
+    .background(Color.dash.primaryBackground)
+}
+
+#endif
+

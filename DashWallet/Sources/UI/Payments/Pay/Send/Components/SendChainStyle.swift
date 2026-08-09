@@ -66,3 +66,42 @@ func truncateMiddle(_ s: String, visible: Int = 8) -> String {
     let tail = s.suffix(visible)
     return "\(head)…\(tail)"
 }
+
+#if DEBUG
+
+/// Every chain and destination the send flow can label, side by side — this
+/// file exists so the two lists cannot drift apart.
+#Preview("Chain and destination styling") {
+    VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Sources").font(.caption).foregroundColor(.dash.tertiaryText)
+            ForEach([ChainNetwork.core, .platform, .shielded], id: \.self) { network in
+                HStack(spacing: 8) {
+                    Image(systemName: sourceIconName(network))
+                        .foregroundColor(.dashBlue)
+                    Text(sourceTitle(network))
+                }
+            }
+        }
+
+        Divider()
+
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Destinations").font(.caption).foregroundColor(.dash.tertiaryText)
+            destinationBadge(.core)
+            destinationBadge(.platform)
+            destinationBadge(.shielded(raw43: Data(repeating: 0x2a, count: 43)))
+        }
+
+        Divider()
+
+        Text(truncateMiddle("yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY"))
+            .font(.system(.footnote, design: .monospaced))
+            .foregroundColor(.dash.secondaryText)
+    }
+    .padding()
+    .background(Color.dash.primaryBackground)
+}
+
+#endif
+
