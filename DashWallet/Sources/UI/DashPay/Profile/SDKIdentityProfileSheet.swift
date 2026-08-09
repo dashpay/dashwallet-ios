@@ -22,6 +22,7 @@ struct SDKIdentityProfileSheet: View {
     /// what the contacts list passes for other users.
     @State private var identitySeed = Data()
     @State private var dpnsNames: [String] = []
+    @State private var showMyQR = false
     @State private var hasIdentity: Bool = false
     @State private var pendingContestedName: String? = nil
     /// Best-known close time of the pending contest. Starts as the
@@ -53,6 +54,11 @@ struct SDKIdentityProfileSheet: View {
                     infoSection
                     if !dpnsNames.isEmpty {
                         namesSection
+                    }
+                    // Only with a DPNS name: the code encodes identity id AND
+                    // username, so before that there is nothing honest to show.
+                    if myUserLink != nil {
+                        myQRButton
                     }
                     // Edit Profile gated on hasIdentity: the editor's
                     // Save path resolves the identity via the SDK
@@ -96,6 +102,41 @@ struct SDKIdentityProfileSheet: View {
                 pendingContestedName = DWContestedNameStatusService.shared.pendingLabel
                 pendingVotingEndTime = DWContestedNameStatusService.shared.pendingVotingEndTime
                 avatarURL = DWCurrentUserIdentityInfo.shared.avatarURL
+            }
+        }
+    }
+
+    // MARK: - My QR code
+
+    /// The owner's scannable payload — nil until the identity is registered
+    /// and owns a DPNS name, since the code carries both.
+    private var myUserLink: DashPayUserLink? {
+        guard let identityId = DWCurrentUserIdentityInfo.shared.identityId,
+              let username = DWCurrentUserIdentityInfo.shared.username
+        else { return nil }
+        return DashPayUserLink(identityId: identityId, username: username.withoutDashSuffix)
+    }
+
+    private var myQRButton: some View {
+        Button {
+            showMyQR = true
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "qrcode")
+                Text(NSLocalizedString("My QR Code", comment: "SDK identity profile sheet — show the owner's contact QR"))
+            }
+            .font(.body)
+            .fontWeight(.semibold)
+            .foregroundColor(Color.dash.blue)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(Color.dash.blue.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+        .sheet(isPresented: $showMyQR) {
+            if let link = myUserLink {
+                MyDashPayUserQRSheet(link: link, displayName: nil)
             }
         }
     }

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		00B3E9708BF84A08409B431B /* BIP70PaymentOutputFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5822AAB9B5EA605FF82B009A /* BIP70PaymentOutputFactory.swift */; };
 		026B0383557D0181E034B64E /* SDKIdentityProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E62262597A8B22870184A36 /* SDKIdentityProfileSheet.swift */; };
+		5ACTMYQR020000000000QR02 /* MyDashPayUserQRSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ACTMYQR010000000000QR01 /* MyDashPayUserQRSheet.swift */; };
 		02EDCC7635BCD84768554D9C /* StorageModelListViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A762BDA473947F1A7EF199 /* StorageModelListViews.swift */; };
 		02EED2FC7EAC55B96ECEAAD6 /* DWLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 59C18FCF827D815007BAEF29 /* DWLogger.m */; };
 		0308E777B29CC6DE1DB30FDD /* PlatformSyncStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A58BF094C42E410DD1A71B6 /* PlatformSyncStatusScreen.swift */; };
@@ -3088,6 +3089,7 @@
 		7B56B94951BA51EAC9E0A6E1 /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalScreen.swift; sourceTree = "<group>"; };
 		7E62262597A8B22870184A36 /* SDKIdentityProfileSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SDKIdentityProfileSheet.swift; sourceTree = "<group>"; };
+		5ACTMYQR010000000000QR01 /* MyDashPayUserQRSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyDashPayUserQRSheet.swift; sourceTree = "<group>"; };
 		7FA744C4A6023E26A3B5B860 /* DWLogger.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = DWLogger.h; sourceTree = "<group>"; };
 		82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWProfileUpdateCoordinator.swift; sourceTree = "<group>"; };
 		8571065059CF5168F45C86E4 /* Pods-dashpay.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashpay.testflight.xcconfig"; path = "Target Support Files/Pods-dashpay/Pods-dashpay.testflight.xcconfig"; sourceTree = "<group>"; };
@@ -7900,6 +7902,7 @@
 				C943B3F42A40A54600AF23C5 /* DWUserProfileViewController.m */,
 				C943B3F52A40A54600AF23C5 /* DWModalUserProfileViewController.m */,
 				7E62262597A8B22870184A36 /* SDKIdentityProfileSheet.swift */,
+				5ACTMYQR010000000000QR01 /* MyDashPayUserQRSheet.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -11124,6 +11127,7 @@
 				A11E57A70008C0DE0008B008 /* ClaimInvitationScreen.swift in Sources */,
 				D2616FE9FE5ED53F26506A73 /* DWIdentityRegistrationBridge.swift in Sources */,
 				026B0383557D0181E034B64E /* SDKIdentityProfileSheet.swift in Sources */,
+				5ACTMYQR020000000000QR02 /* MyDashPayUserQRSheet.swift in Sources */,
 				431DC6C9218C3DFAF6DE23C0 /* DWCurrentUserIdentityInfo.swift in Sources */,
 				BD509A68B1A0B6E4599F9C7A /* DWProfileUpdateCoordinator.swift in Sources */,
 				2991DE4863B0BF4FA8628C3C /* DWProfileUpdateBridge.swift in Sources */,
