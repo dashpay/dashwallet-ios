@@ -85,6 +85,13 @@ struct ShieldedActivityItem: Identifiable {
     /// per-note block time and the scan clock must not masquerade as
     /// one. Render the date as unknown, never as the epoch.
     let hasKnownDate: Bool
+    /// Chain-order key: the smallest commitment-tree position among the
+    /// entry's own received notes. Tree positions are exact append-only
+    /// chain order, so this sequences the unknown-date restored entries
+    /// (whose `date` is all `.distantPast`) identically on every device.
+    /// Nil on live-recorded entries (which order by their real date) and
+    /// on rows persisted before the SDK carried the field.
+    let minNotePosition: UInt64?
     /// Decoded UTF-8 text memo, when the 36-byte Dash memo is kind-1 text.
     let memoText: String?
     /// Created identity id (hex) for `identityCreate` entries.
@@ -135,6 +142,7 @@ struct ShieldedActivityItem: Identifiable {
         date = hasKnownDate
             ? Date(timeIntervalSince1970: Double(row.createdAtMs) / 1000.0)
             : .distantPast
+        minNotePosition = row.hasMinNotePosition ? row.minNotePosition : nil
         memoText = Self.decodeTextMemo(row.memo)
         createdIdentityIdHex = effectiveKind == .identityCreate && row.identityId.count == 32
             ? row.identityId.map { String(format: "%02x", $0) }.joined()

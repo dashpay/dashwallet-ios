@@ -1251,8 +1251,19 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     && row.fundingTypeRaw == 0
             },
             sortBy: [SortDescriptor(\.createdAt, order: .forward)])
+        // Unfinished = anything but the Consumed (4) tombstone. That
+        // includes 5 (RecoveredFromChain): a registration lock at 5 with
+        // no identity is a genuinely incomplete registration — a stranded
+        // broadcast whose block chain-locked after an app kill, or a
+        // restored wallet whose registration never finished — and the SDK
+        // resume path explicitly supports consuming it (Platform rejects
+        // an already-spent outpoint with a typed error). Restored wallets
+        // whose registration DID complete never resume from this lock:
+        // `hasPendingRegistrationRecovery` checks the identity row first,
+        // and the start flow probes the local row and then the Platform
+        // slot (reconciling this lock to Consumed) before any resume.
         guard let rows = try? context.fetch(descriptor),
-              let row = rows.first(where: { (0...3).contains($0.statusRaw) })
+              let row = rows.first(where: { $0.statusRaw != 4 })
         else {
             return nil
         }
