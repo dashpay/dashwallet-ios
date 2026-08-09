@@ -71,7 +71,7 @@ struct UsernameMarketplaceService {
             case .noIdentity:
                 return NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
             case .contestedName:
-                return NSLocalizedString("This name is short enough to be contested and must be requested through the username flow, where it goes to a network vote.", comment: "Username marketplace")
+                return NSLocalizedString("Short names are decided by a network vote — use Request Username instead.", comment: "Username marketplace")
             case .invalidRecipient:
                 return NSLocalizedString("The recipient identity couldn't be resolved.", comment: "Username marketplace")
             }
@@ -176,17 +176,14 @@ struct UsernameMarketplaceService {
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
     }
 
-    /// Register a name nobody owns. Contested-eligible labels must go
-    /// through the voting flow instead — this path refuses them rather
-    /// than silently starting a vote.
+    /// Register a name nobody owns, claimed instantly. Contested-eligible
+    /// labels go through `requestContestedName` instead — this path
+    /// refuses them rather than silently starting a vote.
     func register(label: String) async throws {
-        let (wallet, container, identityId) = try requireOwnContext()
-        if let sdk = SwiftDashSDKHost.shared.sdk {
-            let normalized = (try? sdk.dpnsNormalizeLabel(label)) ?? label.lowercased()
-            if Self.isContestedEligible(normalizedLabel: normalized) {
-                throw ServiceError.contestedName
-            }
+        guard !Self.isContested(label) else {
+            throw ServiceError.contestedName
         }
+        let (wallet, container, identityId) = try requireOwnContext()
         try await authorizer.authorize()
         _ = try await wallet.registerDpnsName(
             identityId: identityId,
@@ -196,17 +193,125 @@ struct UsernameMarketplaceService {
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
     }
 
+    /// Request a contested-eligible name. Same `registerDpnsName`
+    /// transition, but the on-chain effect differs: the label enters a
+    /// masternode vote (~2 weeks mainnet) instead of being claimed, and
+    /// the transition locks the protocol's vote-resolution fund
+    /// (`contestedFundCredits`) from the identity balance.
+    ///
+    /// Mirrors step 3.5 of `DWIdentityRegistrationCoordinator`: the
+    /// submission is bookmarked in `DWContestedNameStatusService` so the
+    /// not-yet-owned label stays out of every username surface
+    /// (`DWCurrentUserIdentityInfo`'s pending filter) and the Home-appear
+    /// reconciliation resolves the eventual win/loss. The bookmark is
+    /// single-slot — a newer contested submission replaces an older one
+    /// there, but the SDK's contested-names cache tracks all of them.
+    ///
+    /// Returns the authoritative voting end time when Platform has
+    /// already indexed the contest, nil while indexing lags.
+    @discardableResult
+    func requestContestedName(label: String) async throws -> Date? {
+        let (wallet, container, identityId) = try requireOwnContext()
+        try await authorizer.authorize()
+        _ = try await wallet.registerDpnsName(
+            identityId: identityId,
+            name: label,
+            signer: KeychainSigner(modelContainer: container))
+        Self.logger.info("🏷️ MARKET :: contested request submitted for \(label, privacy: .public)")
+        // Bookmark BEFORE the vote-state read — Platform can legitimately
+        // return nil until the contest is indexed, and the conservative
+        // fallback deadline written here is what reconciliation leans on.
+        DWContestedNameStatusService.shared.recordSubmission(label: label)
+        do {
+            _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
+        } catch {
+            Self.logger.warning("🏷️ MARKET :: syncContestedDpnsNames failed: \(String(describing: error), privacy: .public)")
+        }
+        var endTime: Date?
+        if let network = WalletEnvironment.network,
+           let state = try? await wallet.fetchContestVoteState(identityId: identityId, label: label) {
+            endTime = state.endTime
+            DWContestedNameStatusService.shared.recordVotingEndTime(state.endTime, network: network)
+        }
+        return endTime
+    }
+
+    // MARK: Contest reads
+
+    /// Labels this identity is actively contending for, from the SDK's
+    /// local cache (resolved contests drop out wholesale on sync).
+    func myContestedNames(syncFirst: Bool = false) async -> [String] {
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let identityId = DWCurrentUserIdentityInfo.shared.identityId else { return [] }
+        if syncFirst {
+            _ = try? await wallet.syncContestedDpnsNames(identityId: identityId)
+        }
+        return (try? wallet.managedIdentity(identityId: identityId).getContestedDpnsNames()) ?? []
+    }
+
+    /// Live vote state for a contest this identity is part of. nil while
+    /// Platform hasn't indexed the contest, or once it resolved.
+    func contestState(label: String) async -> ContestVoteState? {
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let identityId = DWCurrentUserIdentityInfo.shared.identityId else { return nil }
+        return try? await wallet.fetchContestVoteState(identityId: identityId, label: label)
+    }
+
+    /// What an unregistered contested-eligible label looks like on the
+    /// network BEFORE we submit. Best-effort: an unavailable query
+    /// reports `.unknown` (never a fabricated all-clear) and the
+    /// submit-time transition stays the authority.
+    enum ContestPrecheck: Equatable {
+        /// No contest exists — a request starts a fresh vote.
+        case fresh
+        /// An active vote already holds this label; a request joins it
+        /// as another contender.
+        case activeContest(contenders: Int)
+        /// A past vote locked the label — nobody can register it.
+        case locked
+        /// The query failed; state can't be determined.
+        case unknown
+    }
+
+    func contestPrecheck(label: String) async -> ContestPrecheck {
+        guard let sdk = SwiftDashSDKHost.shared.sdk else { return .unknown }
+        do {
+            let state = try await sdk.dpnsGetContestedVoteState(name: label)
+            if let winner = state["winner"] as? String {
+                // "LOCKED" or a winning identity's base58 id. A won label
+                // has a domain document, so the search path already shows
+                // it as taken; treat it as locked-for-registration too.
+                return winner == "LOCKED" ? .locked : .activeContest(contenders: 0)
+            }
+            let contenders = (state["contenders"] as? [[String: Any]]) ?? []
+            return contenders.isEmpty ? .fresh : .activeContest(contenders: contenders.count)
+        } catch {
+            // rs-sdk reports "no contest" as an error rather than an
+            // empty result; a missing contest is the normal fresh case.
+            let text = String(describing: error).lowercased()
+            if text.contains("not found") || text.contains("no contest") {
+                return .fresh
+            }
+            Self.logger.info("🏷️ MARKET :: contest precheck unavailable for \(label, privacy: .public): \(String(describing: error), privacy: .public)")
+            return .unknown
+        }
+    }
+
     // MARK: Helpers
 
-    /// DPNS contested-name eligibility per the platform rules the
-    /// username flow enforces: normalized labels of 3–19 characters
-    /// consisting only of letters and digits (no hyphen) go to a vote.
-    static func isContestedEligible(normalizedLabel: String) -> Bool {
-        let length = normalizedLabel.count
-        guard (3...19).contains(length) else { return false }
-        return normalizedLabel.allSatisfy { $0.isLetter || $0.isNumber }
-            && !normalizedLabel.allSatisfy { $0.isNumber }
+    /// Contested-name eligibility — delegates to the SDK's own
+    /// `dash_sdk_dpns_is_contested_username` predicate so the client
+    /// can't drift from the network rule.
+    static func isContested(_ label: String) -> Bool {
+        DWContestedNameStatusService.isContestedLabel(label)
     }
+
+    /// The protocol's contested-document vote-resolution fund: what a
+    /// contested request locks from the identity balance on top of the
+    /// normal registration fee. Mirrors
+    /// `vote_resolution_fund_fees::v1` in rs-platform-version
+    /// (20_000_000_000 credits = 0.2 DASH).
+    static let contestedFundCredits: UInt64 = 20_000_000_000
 
     /// Buyer identity's credit balance from the persisted row — for the
     /// affordability hint; the SDK re-checks authoritatively at purchase.

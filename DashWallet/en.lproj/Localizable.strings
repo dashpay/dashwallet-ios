@@ -22,6 +22,9 @@
 /* DashPay Invitations */
 "%@ couldn't be found on the Dash network to send them a contact request." = "%@ couldn't be found on the Dash network to send them a contact request.";
 
+/* Username marketplace: contested request cost value — the vote-resolution fund amount */
+"%@ DASH + network fee" = "%@ DASH + network fee";
+
 /* Usernames */
 "%@ Dash available" = "%@ Dash available";
 
@@ -446,6 +449,9 @@
 /* Username marketplace: unregistered name row */
 "Available — register it on your identity" = "Available — register it on your identity";
 
+/* Username marketplace: unregistered contested-eligible name row */
+"Available — short names are decided by a network vote" = "Available — short names are decided by a network vote";
+
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
 
@@ -734,6 +740,9 @@
 /* SDK identity profile sheet — the identity's credit balance */
 "Identity Account Balance" = "Identity Account Balance";
 
+/* Username marketplace: section of contested-name requests awaiting the masternode vote */
+"In network vote" = "In network vote";
+
 /* Username marketplace: latest ownership change */
 "Last transferred" = "Last transferred";
 
@@ -758,6 +767,9 @@
 /* DashPay FAQ */
 "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers.";
 
+/* Username marketplace: contested request line — voting deadline */
+"Network vote ends %@" = "Network vote ends %@";
+
 /* Username marketplace: unresolvable transfer recipient */
 "No identity owns that username." = "No identity owns that username.";
 
@@ -775,6 +787,9 @@
 
 /* Username marketplace: insufficient balance hint */
 "Not enough identity credits for this purchase — top up from My Profile first." = "Not enough identity credits for this purchase — top up from My Profile first.";
+
+/* Username marketplace: insufficient balance hint for a contested request */
+"Not enough identity credits for this request — top up from My Profile first." = "Not enough identity credits for this request — top up from My Profile first.";
 
 /* Username marketplace: someone else's unlisted name */
 "Not for sale" = "Not for sale";
@@ -2443,6 +2458,21 @@
 /* Username marketplace: delist confirmation body */
 "Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name.";
 
+/* Username marketplace: contested request cost row */
+"Request cost" = "Request cost";
+
+/* Username marketplace: contested request success */
+"Request for %@ submitted — masternodes now vote on it" = "Request for %@ submitted — masternodes now vote on it";
+
+/* Username marketplace: confirm contested request button */
+"Request Username" = "Request Username";
+
+/* Username marketplace: contested register sheet title */
+"Request “%@”" = "Request “%@”";
+
+/* Username marketplace: contested request not yet indexed by Platform */
+"Requested — waiting for the network vote" = "Requested — waiting for the network vote";
+
 /* Username marketplace: screen subtitle */
 "Search usernames, buy ones that are for sale, and sell or transfer your own." = "Search usernames, buy ones that are for sale, and sell or transfer your own.";
 
@@ -2467,6 +2497,12 @@
 /* Username marketplace: set price sheet title */
 "Set a price for “%@”" = "Set a price for “%@”";
 
+/* Username marketplace */
+"Short names are decided by a network vote — use Request Username instead." = "Short names are decided by a network vote — use Request Username instead.";
+
+/* Username marketplace: contested request explainer, paragraph 1 */
+"Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them." = "Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them.";
+
 /* DashPay Contacts: expands the network search into the full add-contact flow */
 "Show more results" = "Show more results";
 
@@ -2479,8 +2515,14 @@
 /* Identity top-up sheet — shielded route progress */
 "Step 2 of 2 — topping up your identity…" = "Step 2 of 2 — topping up your identity…";
 
+/* Username marketplace: contested request cost footnote */
+"The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins." = "The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins.";
+
 /* Username marketplace: register sheet body */
 "The name is registered directly on your identity. Registration is a network transaction paid from your identity balance." = "The name is registered directly on your identity. Registration is a network transaction paid from your identity balance.";
+
+/* Username marketplace: contested label locked by a past vote */
+"The network voted to lock this name, so nobody can register it. Choose a different name." = "The network voted to lock this name, so nobody can register it. Choose a different name.";
 
 /* Username marketplace */
 "The recipient identity couldn't be resolved." = "The recipient identity couldn't be resolved.";
@@ -2494,6 +2536,9 @@
 /* SDK identity profile sheet — explains the identity credit balance */
 "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits.";
 
+/* Username marketplace: contested label already has an active vote */
+"This name is already in an active network vote. Your request joins it as another contender." = "This name is already in an active network vote. Your request joins it as another contender.";
+
 /* Username marketplace */
 "This name is in an active network vote and can't be traded until the contest ends." = "This name is in an active network vote and can't be traded until the contest ends.";
 
@@ -2502,9 +2547,6 @@
 
 /* Username marketplace: seller-clarity callout on the detail sheet */
 "This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price.";
-
-/* Username marketplace */
-"This name is short enough to be contested and must be requested through the username flow, where it goes to a network vote." = "This name is short enough to be contested and must be requested through the username flow, where it goes to a network vote.";
 
 /* Username marketplace */
 "This username is not for sale." = "This username is not for sale.";
@@ -2562,6 +2604,9 @@
 
 /* Username marketplace: history participant is the current user */
 "you" = "you";
+
+/* Username marketplace: contested request already submitted by this identity */
+"You already requested this name — the network vote is in progress. You'll find it under My Names." = "You already requested this name — the network vote is in progress. You'll find it under My Names.";
 
 /* Username marketplace: purchase confirmation body with seller clarity */
 "You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately.";
@@ -5039,6 +5084,9 @@
 
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential.";
+
+/* Username marketplace: contested request explainer, paragraph 2 */
+"Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it.";
 
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";

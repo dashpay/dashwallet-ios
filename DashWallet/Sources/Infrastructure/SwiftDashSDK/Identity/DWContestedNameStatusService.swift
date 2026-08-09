@@ -213,8 +213,15 @@ public final class DWContestedNameStatusService: NSObject {
 
     @nonobjc
     func finalizeWon(username: String, network: Network) {
-        DWGlobalOptions.sharedInstance().dashpayUsername = username
-        DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
+        // Backfill the global username mirror only when it's empty (the
+        // setup-flow first-username case). A contested win on a SECOND
+        // name — requested from the username marketplace — must not
+        // displace the username the user already shows everywhere.
+        let options = DWGlobalOptions.sharedInstance()
+        if options.dashpayUsername?.isEmpty != false {
+            options.dashpayUsername = username
+        }
+        options.dashpayRegistrationCompleted = true
         clearPending(for: network)
         Self.logger.info("🪪 CONTEST-SVC :: finalizeWon label=\(username, privacy: .public)")
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()

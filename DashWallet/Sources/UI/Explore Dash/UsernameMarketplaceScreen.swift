@@ -47,6 +47,11 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     @Published var query = ""
     @Published var searchResults: [DpnsMarketplaceName] = []
     @Published var myNames: [DpnsNameStateRow] = []
+    /// Labels this identity is contending for in active network votes.
+    @Published var contestedNames: [String] = []
+    /// Live vote state per contested label, filled best-effort — a label
+    /// with no entry is a contest Platform hasn't indexed yet.
+    @Published var contestStates: [String: ContestVoteState] = [:]
     @Published var isSearching = false
     @Published var isLoadingMine = false
     @Published var isPerformingAction = false
@@ -118,7 +123,9 @@ final class UsernameMarketplaceViewModel: ObservableObject {
         }
     }
 
-    /// Local read — the wallet's own tracked rows, no network.
+    /// Local read — the wallet's own tracked rows plus the contested
+    /// labels cache, no network. Vote states for contested labels are
+    /// filled in best-effort afterward (those are live queries).
     func loadMyNames() {
         isLoadingMine = true
         Task { [weak self] in
@@ -128,18 +135,26 @@ final class UsernameMarketplaceViewModel: ObservableObject {
             } catch {
                 errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
             }
+            contestedNames = await service.myContestedNames()
             isLoadingMine = false
+            for label in contestedNames where contestStates[label] == nil {
+                if let state = await service.contestState(label: label) {
+                    contestStates[label] = state
+                }
+            }
         }
     }
 
-    /// Pull-to-refresh: run one marketplace sync pass, then re-read the
-    /// local rows.
+    /// Pull-to-refresh: run one marketplace sync pass and refresh the
+    /// contested cache, then re-read the local rows.
     func refreshFromNetwork() async {
         do {
             _ = try await service.syncNow()
         } catch {
             errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
         }
+        contestStates = [:]
+        _ = await service.myContestedNames(syncFirst: true)
         loadMyNames()
     }
 
@@ -294,13 +309,19 @@ struct UsernameMarketplaceScreen: View {
     private var mySection: some View {
         ScrollView {
             LazyVStack(spacing: 6) {
-                if viewModel.isLoadingMine && viewModel.myNames.isEmpty {
+                if viewModel.isLoadingMine && viewModel.myNames.isEmpty && viewModel.contestedNames.isEmpty {
                     SwiftUI.ProgressView().padding(.top, 28)
-                } else if viewModel.myNames.isEmpty {
+                } else if viewModel.myNames.isEmpty && viewModel.contestedNames.isEmpty {
                     emptyHint(NSLocalizedString("No usernames on this identity yet. Find one to buy or register on the Find Names tab.", comment: "Username marketplace: empty owned list"))
                 } else {
                     ForEach(viewModel.ownedNames) { row in
                         stateRow(row)
+                    }
+                    if !viewModel.contestedNames.isEmpty {
+                        sectionHeader(NSLocalizedString("In network vote", comment: "Username marketplace: section of contested-name requests awaiting the masternode vote"))
+                        ForEach(viewModel.contestedNames, id: \.self) { label in
+                            contestedRow(label)
+                        }
                     }
                     if !viewModel.departedNames.isEmpty {
                         sectionHeader(NSLocalizedString("No longer yours", comment: "Username marketplace: names that were sold or transferred away"))
@@ -443,8 +464,45 @@ struct UsernameMarketplaceScreen: View {
         return String(base58.prefix(8)) + "…" + String(base58.suffix(4))
     }
 
+    /// A contested request awaiting the masternode vote. Not tappable —
+    /// there is no document to act on until the vote resolves.
+    private func contestedRow(_ label: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "hourglass")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(.dashGolden)
+                .frame(width: 36, height: 36)
+                .background(Circle().fill(Color.dashGolden.opacity(0.12)))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.dash.primaryText)
+                    .lineLimit(1)
+                Text(contestedLine(for: label))
+                    .font(.system(size: 11))
+                    .foregroundColor(.dash.tertiaryText)
+                    .lineLimit(1)
+            }
+            Spacer()
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.dash.secondaryBackground))
+    }
+
+    private func contestedLine(for label: String) -> String {
+        guard let state = viewModel.contestStates[label] else {
+            return NSLocalizedString("Requested — waiting for the network vote", comment: "Username marketplace: contested request not yet indexed by Platform")
+        }
+        return String.localizedStringWithFormat(
+            NSLocalizedString("Network vote ends %@", comment: "Username marketplace: contested request line — voting deadline"),
+            DWDateFormatter.sharedInstance.shortStringFromDate(state.endTime))
+    }
+
     private func registerRow(_ label: String) -> some View {
-        Button {
+        let contested = UsernameMarketplaceService.isContested(label)
+        return Button {
             registerCandidate = RegisterCandidate(label: label)
         } label: {
             HStack(spacing: 10) {
@@ -455,9 +513,11 @@ struct UsernameMarketplaceScreen: View {
                     Text(label)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.dash.primaryText)
-                    Text(NSLocalizedString("Available — register it on your identity", comment: "Username marketplace: unregistered name row"))
+                    Text(contested
+                        ? NSLocalizedString("Available — short names are decided by a network vote", comment: "Username marketplace: unregistered contested-eligible name row")
+                        : NSLocalizedString("Available — register it on your identity", comment: "Username marketplace: unregistered name row"))
                         .font(.system(size: 11))
-                        .foregroundColor(.dashGreen)
+                        .foregroundColor(contested ? .dashGolden : .dashGreen)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
@@ -1143,35 +1203,42 @@ private struct RegisterNameSheet: View {
     @ObservedObject var viewModel: UsernameMarketplaceViewModel
     @Environment(\.dismiss) private var dismiss
 
+    /// Pre-submit network state for contested labels; nil while loading.
+    @State private var precheck: UsernameMarketplaceService.ContestPrecheck?
+
     private var isContested: Bool {
-        UsernameMarketplaceService.isContestedEligible(normalizedLabel: label.lowercased())
+        UsernameMarketplaceService.isContested(label)
+    }
+
+    /// This identity already has a request in for this label — the vote
+    /// is in progress and a second submission would just fail.
+    private var alreadyRequested: Bool {
+        viewModel.contestedNames.contains {
+            DWContestedNameStatusService.labelsMatch($0, label)
+        }
     }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                Image(systemName: "plus.circle.fill")
+                Image(systemName: isContested ? "checkmark.seal" : "plus.circle.fill")
                     .font(.system(size: 36))
-                    .foregroundColor(.dashGreen)
+                    .foregroundColor(isContested ? .dashGolden : .dashGreen)
                     .frame(width: 76, height: 76)
-                    .background(Circle().fill(Color.dashGreen.opacity(0.1)))
+                    .background(Circle().fill((isContested ? Color.dashGolden : Color.dashGreen).opacity(0.1)))
                     .padding(.top, 28)
 
                 Text(String.localizedStringWithFormat(
-                    NSLocalizedString("Register “%@”", comment: "Username marketplace: register sheet title"),
+                    isContested
+                        ? NSLocalizedString("Request “%@”", comment: "Username marketplace: contested register sheet title")
+                        : NSLocalizedString("Register “%@”", comment: "Username marketplace: register sheet title"),
                     label))
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.dash.primaryText)
                     .padding(.top, 14)
 
                 if isContested {
-                    Text(NSLocalizedString("This name is short enough to be contested and must be requested through the username flow, where it goes to a network vote.", comment: "Username marketplace"))
-                        .font(.system(size: 14))
-                        .foregroundColor(.orange)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.horizontal, 28)
-                        .padding(.top, 8)
+                    contestedContent
                 } else {
                     Text(NSLocalizedString("The name is registered directly on your identity. Registration is a network transaction paid from your identity balance.", comment: "Username marketplace: register sheet body"))
                         .font(.system(size: 14))
@@ -1181,26 +1248,14 @@ private struct RegisterNameSheet: View {
                         .padding(.horizontal, 28)
                         .padding(.top, 8)
 
-                    Button {
+                    confirmButton(NSLocalizedString("Register", comment: "Username marketplace: confirm register button")) {
                         viewModel.perform(successText: String.localizedStringWithFormat(
                             NSLocalizedString("%@ registered", comment: "Username marketplace: registration success"),
                             label)) {
                             try await viewModel.service.register(label: label)
                         }
                         dismiss()
-                    } label: {
-                        Text(NSLocalizedString("Register", comment: "Username marketplace: confirm register button"))
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(Color.dash.whiteText)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(Color.dash.blue)
-                            .cornerRadius(12)
                     }
-                    .buttonStyle(.plain)
-                    .disabled(viewModel.isPerformingAction)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
                 }
 
                 Button {
@@ -1214,10 +1269,161 @@ private struct RegisterNameSheet: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 20)
-                .padding(.top, isContested ? 20 : 0)
+                .padding(.top, 8)
                 .padding(.bottom, 10)
             }
         }
         .background(Color.dash.primaryBackground)
+        .task {
+            guard isContested, precheck == nil else { return }
+            precheck = await viewModel.service.contestPrecheck(label: label)
+        }
+    }
+
+    // MARK: Contested request
+
+    @ViewBuilder
+    private var contestedContent: some View {
+        Text(NSLocalizedString("Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them.", comment: "Username marketplace: contested request explainer, paragraph 1"))
+            .font(.system(size: 14))
+            .foregroundColor(.dash.secondaryText)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 28)
+            .padding(.top, 8)
+
+        if alreadyRequested {
+            statusCallout(
+                icon: "hourglass",
+                text: NSLocalizedString("You already requested this name — the network vote is in progress. You'll find it under My Names.", comment: "Username marketplace: contested request already submitted by this identity"))
+        } else if precheck == nil {
+            SwiftUI.ProgressView()
+                .padding(.top, 20)
+                .padding(.bottom, 8)
+        } else if precheck == .locked {
+            statusCallout(
+                icon: "lock",
+                text: NSLocalizedString("The network voted to lock this name, so nobody can register it. Choose a different name.", comment: "Username marketplace: contested label locked by a past vote"))
+        } else {
+            Text(NSLocalizedString("Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it.", comment: "Username marketplace: contested request explainer, paragraph 2"))
+                .font(.system(size: 14))
+                .foregroundColor(.dash.secondaryText)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 28)
+                .padding(.top, 10)
+
+            if case .activeContest = precheck {
+                statusCallout(
+                    icon: "person.2",
+                    text: NSLocalizedString("This name is already in an active network vote. Your request joins it as another contender.", comment: "Username marketplace: contested label already has an active vote"))
+            }
+
+            requestCostCard
+                .padding(.horizontal, 20)
+                .padding(.top, 14)
+
+            confirmButton(NSLocalizedString("Request Username", comment: "Username marketplace: confirm contested request button")) {
+                viewModel.perform(successText: String.localizedStringWithFormat(
+                    NSLocalizedString("Request for %@ submitted — masternodes now vote on it", comment: "Username marketplace: contested request success"),
+                    label)) {
+                    try await viewModel.service.requestContestedName(label: label)
+                }
+                dismiss()
+            }
+        }
+    }
+
+    /// The vote-resolution fund the request locks from the identity
+    /// balance (a protocol constant), next to what's available.
+    @ViewBuilder
+    private var requestCostCard: some View {
+        let fund = UsernameMarketplaceService.contestedFundCredits
+        let available: UInt64 = {
+            guard let identityId = viewModel.ownIdentityId,
+                  let container = SwiftDashSDKHost.shared.modelContainer else { return 0 }
+            return UsernameMarketplaceService.identityBalanceCredits(
+                identityId: identityId, container: container)
+        }()
+        VStack(spacing: 0) {
+            HStack {
+                Text(NSLocalizedString("Request cost", comment: "Username marketplace: contested request cost row"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.dash.secondaryText)
+                Spacer()
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString("%@ DASH + network fee", comment: "Username marketplace: contested request cost value — the vote-resolution fund amount"),
+                    (fund / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.dash.primaryText)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            HStack {
+                Text(NSLocalizedString("Identity Account Balance", comment: "SDK identity profile sheet — the identity's credit balance"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.dash.secondaryText)
+                Spacer()
+                Text("\((available / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(available > fund ? .dash.primaryText : .orange)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            Text(NSLocalizedString("The cost is paid from your identity balance. It funds the network vote and isn't returned if another contender wins.", comment: "Username marketplace: contested request cost footnote"))
+                .font(.system(size: 11))
+                .foregroundColor(.dash.tertiaryText)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 14)
+                .padding(.bottom, 10)
+            if available <= fund {
+                Text(NSLocalizedString("Not enough identity credits for this request — top up from My Profile first.", comment: "Username marketplace: insufficient balance hint for a contested request"))
+                    .font(.system(size: 11))
+                    .foregroundColor(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 10)
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.dash.secondaryBackground))
+    }
+
+    private func statusCallout(icon: String, text: String) -> some View {
+        Label {
+            Text(text)
+                .font(.system(size: 12))
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: icon)
+                .font(.system(size: 13))
+        }
+        .foregroundColor(.dash.secondaryText)
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.dashGolden.opacity(0.1)))
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+    }
+
+    private func confirmButton(_ title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(Color.dash.whiteText)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Color.dash.blue)
+                .cornerRadius(12)
+        }
+        .buttonStyle(.plain)
+        .disabled(viewModel.isPerformingAction)
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
     }
 }
