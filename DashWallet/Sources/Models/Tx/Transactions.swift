@@ -38,8 +38,13 @@ final class Tx: NSObject {
         let rate = (decimalRate*pow(10, maximumFractionDigits) as NSDecimalNumber).intValue
 
         guard let userInfo = txUserInfos.get(by: transaction.txHashData) else {
+            // Stamp the rate only — the tax category stays .unknown
+            // (unclassified) so readers keep deriving the live default.
+            // Persisting the default here would freeze it before
+            // internal-transfer detection settles (restore-scan asset-lock
+            // reconstruction lags first observation).
             set(rate: rate, currency: App.fiatCurrency, maximumFractionDigits: maximumFractionDigits,
-                for: TransactionMetadata(txHash: transaction.txHashData, taxCategory: transaction.direction.defaultTaxCategory))
+                for: TransactionMetadata(txHash: transaction.txHashData))
             return
         }
 

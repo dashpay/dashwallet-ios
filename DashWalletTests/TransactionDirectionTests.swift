@@ -66,6 +66,22 @@ final class TransactionDirectionTests: XCTestCase {
             taxCategory: .unknown)
     }
 
+    func testInternalTransferDefaultTaxCategory() {
+        // A plain self-send (`.moved` ⇒ coreToCore route) defaults to the
+        // dedicated Internal Transfer category instead of the direction's
+        // Expense fallback.
+        let selfSend = makeTransaction(directionRaw: 2, netAmount: 0)
+        XCTAssertEqual(selfSend.internalTransferRoute, .coreToCore)
+        XCTAssertEqual(selfSend.defaultTaxCategory, .internalTransfer)
+
+        // External sends/receives carry no internal route and keep the
+        // direction defaults.
+        let sent = makeTransaction(directionRaw: 1, netAmount: -110, fee: 10)
+        XCTAssertNil(sent.internalTransferRoute)
+        XCTAssertEqual(sent.defaultTaxCategory, .transferOut)
+        XCTAssertEqual(makeTransaction(directionRaw: 0, netAmount: 100).defaultTaxCategory, .transferIn)
+    }
+
     func testCrowdNodeTopUpStillRequiresMovedDirection() {
         let address = "Xcrowdnode"
         let output = ObservedTransaction.Output(

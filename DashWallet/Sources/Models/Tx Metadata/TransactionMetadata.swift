@@ -32,6 +32,8 @@ extension TxMetadataTaxCategory {
             return NSLocalizedString("Expense", comment: "")
         case .income:
             return NSLocalizedString("Income", comment: "")
+        case .internalTransfer:
+            return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
     }
 
@@ -48,6 +50,11 @@ extension TxMetadataTaxCategory {
             return .transferOut
         case .transferOut:
             return .expense
+        case .internalTransfer:
+            // Direction-blind fallback; the detail sheet cycles internal
+            // transfers with direction context instead
+            // (TxDetailModel.nextTaxCategory(after:)).
+            return .transferOut
         }
     }
 }
@@ -151,8 +158,16 @@ extension TransactionDirection {
 }
 
 extension Transaction {
+    /// Fallback tax category when the user hasn't classified the
+    /// transaction. A transfer between the wallet's own balances is
+    /// `.internalTransfer` regardless of direction; everything else keeps
+    /// the direction default.
+    var defaultTaxCategory: TxMetadataTaxCategory {
+        internalTransferRoute != nil ? .internalTransfer : direction.defaultTaxCategory
+    }
+
     func defaultTaxCategoryString() -> String {
-        direction.defaultTaxCategory.stringValue
+        defaultTaxCategory.stringValue
     }
 }
 

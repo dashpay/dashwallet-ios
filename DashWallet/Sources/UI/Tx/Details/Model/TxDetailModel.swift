@@ -101,10 +101,10 @@ class TxDetailModel: NSObject {
 
     func toggleTaxCategoryOnCurrentTransaction() {
         if txTaxCategory == .unknown {
-            txTaxCategory = transaction.direction.defaultTaxCategory
+            txTaxCategory = transaction.defaultTaxCategory
         }
 
-        txTaxCategory = txTaxCategory.nextTaxCategory
+        txTaxCategory = nextTaxCategory(after: txTaxCategory)
         let txHash = transaction.txHashData
 
         var txUserInfo = transaction.userInfo ?? TransactionMetadata(txHash: txHash, taxCategory: txTaxCategory)
@@ -112,6 +112,30 @@ class TxDetailModel: NSObject {
 
         // TODO: Move it to Domain layer
         TransactionMetadataDAOImpl.shared.update(dto: txUserInfo)
+    }
+
+    /// The category a tap on the Tax Category row moves to. Regular
+    /// transactions keep the two-state direction pair (Income ↔ Transfer In,
+    /// Expense ↔ Transfer Out); an internal transfer cycles through its
+    /// direction pair plus the Internal Transfer default, so a reclassified
+    /// transfer can be put back.
+    private func nextTaxCategory(after category: TxMetadataTaxCategory) -> TxMetadataTaxCategory {
+        guard transaction.internalTransferRoute != nil else {
+            // A stored Internal Transfer on a transaction no longer detected
+            // as one steps back to its direction default.
+            return category == .internalTransfer
+                ? transaction.direction.defaultTaxCategory
+                : category.nextTaxCategory
+        }
+        // Only the Shielded → Core payout leg is `.received`; every other
+        // route is an outgoing/moved leg.
+        let cycle: [TxMetadataTaxCategory] = transaction.direction == .received
+            ? [.internalTransfer, .transferIn, .income]
+            : [.internalTransfer, .transferOut, .expense]
+        guard let index = cycle.firstIndex(of: category) else {
+            return .internalTransfer
+        }
+        return cycle[(index + 1) % cycle.count]
     }
 
     func copyTransactionIdToPasteboard() -> Bool {
