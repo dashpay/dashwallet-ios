@@ -53,23 +53,29 @@ final class SendViewModel: ObservableObject {
     @Published var source: ChainNetwork = .core {
         didSet { sourceDidChange() }
     }
-    private var isApplyingShieldedMax = false
+    private var isApplyingMax = false
     @Published var amountText: String = "0" {
         didSet {
-            guard !isApplyingShieldedMax else { return }
+            guard !isApplyingMax else { return }
             clearShieldedMaxSelection()
         }
     }
     @Published private(set) var isFullShieldedSweep = false
     @Published private(set) var shieldedMaxNotice: String?
+    /// Exact duff amount selected by Max. The two-decimal fiat value is only
+    /// its display representation and must not be converted back for sending.
+    private var maxAmountDuffs: UInt64?
     private var shieldedSweepAmountCredits: UInt64?
     @Published var unit: InternalTransferUnit = .dash {
         didSet {
             guard oldValue != unit else { return }
-            let preserveShieldedMax = isFullShieldedSweep
-            isApplyingShieldedMax = preserveShieldedMax
-            defer { isApplyingShieldedMax = false }
-            convertAmountText(from: oldValue, to: unit)
+            if let maxAmountDuffs {
+                isApplyingMax = true
+                defer { isApplyingMax = false }
+                applyMaxAmountText(maxAmountDuffs)
+            } else {
+                convertAmountText(from: oldValue, to: unit)
+            }
         }
     }
     @Published private(set) var clipboardSuggestion: ClipboardSuggestion? = nil
@@ -328,6 +334,9 @@ final class SendViewModel: ObservableObject {
     }
 
     var parsedDashAmount: Decimal {
+        if let maxAmountDuffs {
+            return maxAmountDuffs.dashAmount
+        }
         let raw = rawTypedDecimal
         switch unit {
         case .dash:
@@ -658,26 +667,37 @@ final class SendViewModel: ObservableObject {
             sourceDuffs = creditsMinusFeeReserve(shieldedBalance) / 1000
         }
 
-        isApplyingShieldedMax = true
-        defer { isApplyingShieldedMax = false }
+        isApplyingMax = true
+        defer { isApplyingMax = false }
+        applyMaxAmountText(sourceDuffs)
+    }
+
+    /// Keep the selected Max amount exact in duffs while rendering either
+    /// DASH or an approximate two-decimal fiat value.
+    private func applyMaxAmountText(_ duffs: UInt64) {
+        guard duffs > 0 else {
+            maxAmountDuffs = nil
+            amountText = "0"
+            return
+        }
+
+        maxAmountDuffs = duffs
         switch unit {
         case .dash:
-            amountText = sourceDuffs.formattedDashAmountWithoutCurrencySymbol
+            amountText = duffs.formattedDashAmountWithoutCurrencySymbol
         case .fiat:
-            let dashDecimal = sourceDuffs.dashAmount
-            guard dashDecimal > 0 else {
-                amountText = "0"
-                return
-            }
+            let dashDecimal = duffs.dashAmount
             if let fiat = try? CurrencyExchanger.shared.convertDash(amount: dashDecimal, to: App.fiatCurrency) {
                 amountText = InternalTransferViewModel.formatTyped(fiat, fractionDigits: 2)
             } else {
+                maxAmountDuffs = nil
                 amountText = "0"
             }
         }
     }
 
     private func clearShieldedMaxSelection() {
+        maxAmountDuffs = nil
         isFullShieldedSweep = false
         shieldedSweepAmountCredits = nil
         shieldedMaxNotice = nil
