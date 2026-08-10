@@ -546,9 +546,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         scheduleShieldedResync(manager: env.manager)
     }
 
-    /// An already-consumed report suppresses a potentially destructive retry,
-    /// but is not authenticated proof of completion. Every other error remains
-    /// a normal failure.
+    /// Both a local `Consumed` tombstone and a remote already-consumed report
+    /// arrive through this typed error. Neither proves that this particular
+    /// shield completed, so both suppress retry without claiming success.
     static func alreadyConsumedAssetLockResumePhase(for error: Error) -> Phase? {
         if case PlatformWalletError.assetLockAlreadyConsumed = error {
             return .submittedUnconfirmed
