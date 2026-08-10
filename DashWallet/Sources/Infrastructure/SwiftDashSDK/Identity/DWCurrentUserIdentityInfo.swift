@@ -520,7 +520,10 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             }) {
                 usernames.insert(usernames.remove(at: index), at: 0)
             } else if persisted.dpnsNames.contains(where: {
-                DWContestedNameStatusService.labelsMatch($0.label, mainName)
+                // `isOwned == false` rows are sold/transferred-away labels
+                // retained for trade history — without this check a stale
+                // pick of a SOLD name resurfaces through the label cache.
+                $0.isOwned && DWContestedNameStatusService.labelsMatch($0.label, mainName)
             }) {
                 usernames.insert(mainName, at: 0)
             }

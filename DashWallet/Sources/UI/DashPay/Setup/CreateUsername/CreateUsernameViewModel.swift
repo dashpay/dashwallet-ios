@@ -126,11 +126,40 @@ class CreateUsernameViewModel: ObservableObject {
     /// passes — instead of an unverifiable "in progress" claim.
     @Published private(set) var activeContestEndsAt: Date?
 
-    /// Sale price (duffs) when the typed name is TAKEN but its owner has
-    /// listed it in the Username Marketplace. Turns the dead-end
-    /// "Username taken" into a pointer to the listing. nil when the name
-    /// is not for sale or the best-effort lookup failed.
-    @Published private(set) var takenNameSalePriceDuffs: UInt64?
+    /// Sale price (CREDITS, exactly as listed — the purchase call must
+    /// echo the listed price verbatim or the SDK refuses it as changed)
+    /// when the typed name is TAKEN but its owner has listed it in the
+    /// Username Marketplace. Turns the dead-end "Username taken" into a
+    /// pointer to the listing — or a direct buy, below. nil when the
+    /// name is not for sale or the best-effort lookup failed.
+    @Published private(set) var takenNameSalePriceCredits: UInt64?
+
+    /// App policy ceiling for buying a listed name straight from this
+    /// form: at 10 DASH or more the purchase belongs in the Username
+    /// Marketplace, where the full listing context (trade history,
+    /// owner, fiat price) is visible before committing that much.
+    static let directPurchaseMaxDuffs: UInt64 = 10 * 100_000_000
+
+    /// The typed name's listing can be bought right here: priced under
+    /// the direct-purchase ceiling, with a wallet balance that covers
+    /// the price plus the identity fee headroom. Not offered in
+    /// invitation mode (the voucher funds a registration, not a trade)
+    /// or while a registration recovery is pending.
+    var canPurchaseListedNameDirectly: Bool {
+        guard let credits = takenNameSalePriceCredits,
+              !isInvitationMode,
+              !hasPendingRegistrationRecovery else { return false }
+        let priceDuffs = credits / 1_000
+        guard priceDuffs < Self.directPurchaseMaxDuffs else { return false }
+        return coreSpendableDuffs >= priceDuffs + DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+    }
+
+    /// Listed at or above the direct-purchase ceiling — the form points
+    /// at the marketplace instead of offering the buy.
+    var listedNameExceedsDirectPurchaseLimit: Bool {
+        guard let credits = takenNameSalePriceCredits else { return false }
+        return credits / 1_000 >= Self.directPurchaseMaxDuffs
+    }
 
     /// The active vote's deadline has passed — the poll is being
     /// finalized on-chain. "Join as a contender" would be a stale claim
@@ -368,6 +397,35 @@ class CreateUsernameViewModel: ObservableObject {
         }
     }
 
+    /// Buy `name` (the taken, listed label captured by the caller at
+    /// confirmation time — the text field stays editable during the
+    /// flow) at the exact price captured by the availability check.
+    /// Routes through
+    /// `DWIdentityRegistrationCoordinator.startPurchaseUsername`, which
+    /// creates or tops up this wallet's identity from the Core balance
+    /// and buys at exactly the captured credits — a seller-side price
+    /// change is refused by consensus and surfaces as a typed failure,
+    /// as does a price/name mismatch from a mid-flight edit.
+    func purchaseListedUsername(name: String) async -> UsernameRegistrationOutcome {
+        guard let credits = takenNameSalePriceCredits else {
+            // The gate (`canPurchaseListedNameDirectly`) shouldn't let a
+            // priceless state reach here; answer with the marketplace's
+            // canonical wording rather than crashing.
+            return .failure(NSLocalizedString("This username is not for sale.", comment: "Username marketplace"))
+        }
+        do {
+            _ = try await DWIdentityRegistrationCoordinator.shared.startPurchaseUsername(
+                name: name,
+                priceCredits: credits)
+            return .success
+        } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
+            return .cancelled
+        } catch {
+            DWLogger.log("CreateUsername: purchase failed for '\(name)': \(error.localizedDescription)")
+            return .failure(error.localizedDescription)
+        }
+    }
+
     /// Human wording for a failed registration. Platform surfaces its refusals
     /// as a Rust debug dump of the whole state transition — hundreds of
     /// characters of `ContestedDocumentResourceVotePoll { … }` that fill the
@@ -444,7 +502,7 @@ class CreateUsernameViewModel: ObservableObject {
             isLockedContestedName = false
             activeContestContenders = nil
             activeContestEndsAt = nil
-            takenNameSalePriceDuffs = nil
+            takenNameSalePriceCredits = nil
         }
 
         guard !username.isEmpty else {
@@ -550,7 +608,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// `.invalidCritical`; our OWN pending contested submission →
     /// `.warning` ("in voting"); RPC failure → `.error` (re-runs on the
     /// next keystroke or balance publish). A taken name additionally gets
-    /// a best-effort marketplace lookup — `takenNameSalePriceDuffs` when
+    /// a best-effort marketplace lookup — `takenNameSalePriceCredits` when
     /// its owner listed it for sale. `canContinue` is true only for
     /// `.valid` — the submit-time `registerDpnsName` failure remains the
     /// second line of defense.
@@ -564,7 +622,7 @@ class CreateUsernameViewModel: ObservableObject {
         var locked = false
         var activeContenders: Int?
         var activeContestEnd: Date?
-        var salePriceDuffs: UInt64?
+        var salePriceCredits: UInt64?
         do {
             // Two independent questions about the same label, so ask both at
             // once. Chaining them put a second DAPI round trip behind the
@@ -642,7 +700,7 @@ class CreateUsernameViewModel: ObservableObject {
                 // plain "taken" wording.
                 if let sale = try? await marketplaceService.nameState(username),
                    sale.isForSale {
-                    salePriceDuffs = sale.priceDuffs
+                    salePriceCredits = sale.priceCredits
                 }
                 result = .invalidCritical
             }
@@ -660,7 +718,7 @@ class CreateUsernameViewModel: ObservableObject {
         isLockedContestedName = locked
         activeContestContenders = activeContenders
         activeContestEndsAt = activeContestEnd
-        takenNameSalePriceDuffs = salePriceDuffs
+        takenNameSalePriceCredits = salePriceCredits
         uiState.usernameBlockedRule = result
         uiState.canContinue = (result == .valid)
         armContestBoundaryRevalidation()
