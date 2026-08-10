@@ -35,6 +35,7 @@ struct AssetLockRecoveryService {
 
     enum RecoveryError: LocalizedError {
         case notReady
+        case noIdentity
         case unsupportedRoute
         case failed(String)
 
@@ -42,6 +43,8 @@ struct AssetLockRecoveryService {
             switch self {
             case .notReady:
                 return NSLocalizedString("Wallet is not ready", comment: "DashPay")
+            case .noIdentity:
+                return NSLocalizedString("This wallet has no identity to top up.", comment: "Asset-lock retry: identity top-up with no identity")
             case .unsupportedRoute:
                 return NSLocalizedString("This transfer can't be retried from here.", comment: "Asset-lock retry: unsupported funding route")
             case .failed(let message):
@@ -68,13 +71,17 @@ struct AssetLockRecoveryService {
         switch fundingTypeRaw {
         case 1, 2:
             try await retryIdentityTopUp(txidWire: txidWire, vout: vout)
-        case 4:
+        case 4, 5:
+            // Both coordinator routes report their outcome through the
+            // terminal phase rather than throwing, so the resume call and
+            // the phase check stay one pair — a future route added here
+            // can't forget the check.
             let coordinator = ShieldedTransferCoordinator()
-            await coordinator.resumeFundPlatform(outPointTxidWire: txidWire, outPointVout: vout)
-            try Self.checkTerminalPhase(coordinator)
-        case 5:
-            let coordinator = ShieldedTransferCoordinator()
-            await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout)
+            if fundingTypeRaw == 4 {
+                await coordinator.resumeFundPlatform(outPointTxidWire: txidWire, outPointVout: vout)
+            } else {
+                await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout)
+            }
             try Self.checkTerminalPhase(coordinator)
         default:
             throw RecoveryError.unsupportedRoute
@@ -89,9 +96,13 @@ struct AssetLockRecoveryService {
     /// must never silently consume an invitation lock (the SDK resolver
     /// refuses them).
     private func retryIdentityTopUp(txidWire: Data, vout: UInt32) async throws {
-        guard let wallet = SwiftDashSDKHost.shared.wallet,
-              let identityId = DWCurrentUserIdentityInfo.shared.identityId else {
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            Self.logger.error("🔁 LOCK-RETRY :: top-up aborted — no active wallet")
             throw RecoveryError.notReady
+        }
+        guard let identityId = DWCurrentUserIdentityInfo.shared.identityId else {
+            Self.logger.error("🔁 LOCK-RETRY :: top-up aborted — wallet has no identity")
+            throw RecoveryError.noIdentity
         }
         try await DWIdentityAuthorizer().authorize()
         _ = try await wallet.resumeTopUpWithAssetLock(
@@ -101,12 +112,15 @@ struct AssetLockRecoveryService {
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
     }
 
-    /// Map the transfer coordinator's terminal phase to thrown errors,
-    /// converting its stringified PIN-cancel back into the typed
-    /// `AuthError.cancelled` so callers keep one cancel contract.
+    /// Map the transfer coordinator's terminal phase to thrown errors.
+    /// `Phase.failed` carries only the display text, so the PIN-cancel is
+    /// recognized from the coordinator's typed `lastFailure` — never from
+    /// its localized description — and rethrown as `AuthError.cancelled`
+    /// so callers keep one cancel contract.
     private static func checkTerminalPhase(_ coordinator: ShieldedTransferCoordinator) throws {
         guard case .failed(let message) = coordinator.phase else { return }
-        if message == DWIdentityAuthorizer.AuthError.cancelled.errorDescription {
+        if let failure = coordinator.lastFailure as? ShieldedTransferCoordinator.CoordinatorError,
+           case .authCancelled = failure {
             throw DWIdentityAuthorizer.AuthError.cancelled
         }
         throw RecoveryError.failed(message)

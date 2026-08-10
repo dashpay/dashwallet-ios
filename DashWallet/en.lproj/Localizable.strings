@@ -2386,6 +2386,9 @@
 /* Asset-lock retry: unsupported funding route */
 "This transfer can't be retried from here." = "This transfer can't be retried from here.";
 
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "This wallet has no identity to top up.";
+
 /* SDK identity profile sheet — add credits to the identity */
 "Top Up" = "Top Up";
 
