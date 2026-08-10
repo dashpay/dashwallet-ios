@@ -38,10 +38,12 @@ struct PaymentsLandingScreen: View {
 
     var body: some View {
         // Tighter chrome when a tab embeds a full form (transfer or send) —
-        // its amount + cards + keypad need most of the sheet.
+        // its amount + cards + keypad need most of the sheet. It shortens the
+        // gap BELOW the selector only: sizing the whole stack by it moved the
+        // header and the pills too, so switching tabs jumped them 8pt.
         let isEmbeddedForm = (viewModel.activeTab == .internalTransfer && embeddedTransferViewModel != nil)
             || viewModel.activeTab == .send
-        VStack(alignment: .center, spacing: isEmbeddedForm ? 12 : 20) {
+        VStack(alignment: .center, spacing: 0) {
             if showsHeader {
                 header
             }
@@ -53,8 +55,10 @@ struct PaymentsLandingScreen: View {
                 // The pills carry no container of their own, so they need the
                 // gap the boxed control used to get from its own padding and
                 // edge — under the header most of all, where the close button
-                // sits right above them.
-                .padding(.top, showsHeader ? 8 : 12)
+                // sits right above them. Fixed, so it reads the same on every
+                // tab.
+                .padding(.top, showsHeader ? 20 : 12)
+                .padding(.bottom, isEmbeddedForm ? 12 : 20)
 
             switch viewModel.activeTab {
             case .receive:
