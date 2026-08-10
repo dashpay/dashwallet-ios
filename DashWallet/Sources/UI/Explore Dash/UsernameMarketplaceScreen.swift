@@ -154,6 +154,25 @@ final class UsernameMarketplaceViewModel: ObservableObject {
             || DWContestedNameStatusService.shared.isPendingLabel(label)
     }
 
+    /// The variant the user actually typed for a contested label the
+    /// network reports in NORMALIZED form — DPNS folds look-alike
+    /// characters (i/l → 1, o → 0), so requesting "quiet" registers
+    /// "qu1et". Recovered from the submission bookmarks by normalizing
+    /// each through the SDK; nil when no bookmark differs from the
+    /// normalized form (nothing worth showing twice).
+    func requestedVariant(forNormalized label: String) -> String? {
+        guard let sdk = SwiftDashSDKHost.shared.sdk else { return nil }
+        let target = label.lowercased()
+        for pending in DWContestedNameStatusService.shared.pendingLabels {
+            guard pending.lowercased() != target else { continue }
+            let normalized = (try? sdk.dpnsNormalizeLabel(pending)) ?? pending.lowercased()
+            if normalized == target {
+                return pending
+            }
+        }
+        return nil
+    }
+
     /// Local read — the wallet's own tracked rows plus the contested
     /// labels cache, no network. Vote states for contested labels are
     /// filled in best-effort afterward (those are live queries).
@@ -536,19 +555,31 @@ struct UsernameMarketplaceScreen: View {
     }
 
     /// A contested request awaiting the masternode vote. Not tappable —
-    /// there is no document to act on until the vote resolves.
+    /// there is no document to act on until the vote resolves. When the
+    /// requested variant normalizes differently ("quiet" → "qu1et"),
+    /// both are shown: the variant is what the user asked for, the
+    /// normalized form is what the network actually registers.
     private func contestedRow(_ label: String) -> some View {
-        HStack(spacing: 10) {
+        let variant = viewModel.requestedVariant(forNormalized: label)
+        return HStack(spacing: 10) {
             Image(systemName: "hourglass")
                 .font(.system(size: 20, weight: .medium))
                 .foregroundColor(.dashGolden)
                 .frame(width: 36, height: 36)
                 .background(Circle().fill(Color.dashGolden.opacity(0.12)))
             VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.dash.primaryText)
-                    .lineLimit(1)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(variant ?? label)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                    if variant != nil {
+                        Text(label)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.dash.tertiaryText)
+                            .lineLimit(1)
+                    }
+                }
                 Text(contestedLine(for: label))
                     .font(.system(size: 11))
                     .foregroundColor(.dash.tertiaryText)
