@@ -361,10 +361,16 @@ struct HomeViewContent<Content: View>: View {
                         // reload is still running, so show progress rather than
                         // telling the user they have no transactions.
                         if viewModel.hasLoadedInitialTxItems {
-                            Text(NSLocalizedString("There are no transactions to display", comment: ""))
-                                .font(.caption)
-                                .foregroundColor(Color.primary.opacity(0.5))
-                                .padding(.top, 20)
+                            // With unloaded history remaining, an empty window
+                            // (e.g. a filter matching nothing loaded yet) is
+                            // not "no transactions" — the tail sentinel below
+                            // renders and keeps paging instead.
+                            if !viewModel.canLoadMoreHistory {
+                                Text(NSLocalizedString("There are no transactions to display", comment: ""))
+                                    .font(.caption)
+                                    .foregroundColor(Color.primary.opacity(0.5))
+                                    .padding(.top, 20)
+                            }
                         } else {
                             HStack(spacing: 10) {
                                 SwiftUI.ProgressView()
@@ -394,6 +400,30 @@ struct HomeViewContent<Content: View>: View {
                                 .padding(15)
                                 .shadow(color: .shadow, radius: 10, x: 0, y: 5)
                             }
+                        }
+                    }
+
+                    // Tail sentinel: reaching it pages the next day-completed
+                    // slice of history in. Its identity is keyed on the page
+                    // stamp so `onAppear` re-fires while it stays visible
+                    // (auto-continues when a page adds no visible rows under
+                    // the active filter). Outside the empty/non-empty branch
+                    // on purpose: a filter can hide every loaded row, and the
+                    // empty state must still be able to page deeper.
+                    if viewModel.canLoadMoreHistory {
+                        HStack(spacing: 10) {
+                            SwiftUI.ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+
+                            Text(NSLocalizedString("Loading more transactions", comment: "Home"))
+                                .font(.caption)
+                                .foregroundColor(Color.primary.opacity(0.5))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .id(viewModel.historyPageStamp)
+                        .onAppear {
+                            viewModel.loadMoreHistory()
                         }
                     }
                 }
