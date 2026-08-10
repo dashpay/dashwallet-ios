@@ -507,6 +507,26 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             }
         }
 
+        // The user's picked display label (Identities → detail →
+        // Usernames card, stored as `PersistentIdentity.mainDpnsName`).
+        // Promote it to the front so `username` / `usernames.first` —
+        // and every mirror written from them — render the pick instead
+        // of DPNS-cache order. Only an owned label qualifies: it must
+        // appear in the managed cache or the SwiftData label cache, so
+        // a stale pick (name transferred away) can't resurface.
+        if let mainName = Self.nilIfEmpty(persisted.mainDpnsName), !isPending(mainName) {
+            if let index = usernames.firstIndex(where: {
+                DWContestedNameStatusService.labelsMatch($0, mainName)
+            }) {
+                usernames.insert(usernames.remove(at: index), at: 0)
+            } else if persisted.dpnsNames.contains(where: {
+                DWContestedNameStatusService.labelsMatch($0.label, mainName)
+            }) {
+                usernames.insert(mainName, at: 0)
+            }
+            username = usernames.first ?? username
+        }
+
         // Post-register fallback: SwiftDashSDK's DPNS cache is empty
         // immediately after `registerDpnsName` returns until the next
         // `syncDpnsNames` round, but the coordinator writes

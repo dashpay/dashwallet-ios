@@ -85,6 +85,12 @@ struct IdentityRowModel: Identifiable {
     let publicKeys: [IdentityKeyRowModel]
     /// Every DPNS label owned by this identity (detail sheet list).
     let dpnsNames: [String]
+    /// The label the identity currently displays: the stored
+    /// `mainDpnsName` pick when set, else the same fallback the title
+    /// uses (`dpnsName` → first owned label). Drives the selection
+    /// indicator on the detail page's Usernames card. Nil when the
+    /// identity owns no names.
+    let displayedDpnsName: String?
     /// Contested label submitted by this wallet but not owned yet.
     /// Kept separate from `dpnsNames` so every identities surface can
     /// render it explicitly as voting rather than as a confirmed name.
@@ -154,6 +160,32 @@ final class IdentitiesViewModel: ObservableObject {
 
         DWCurrentUserIdentityInfo.setMainIdentityId(row.identityId, walletId: activeWalletId)
         _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
+        reload()
+    }
+
+    /// Persist `name` as the identity's main DPNS name — the label every
+    /// display surface prefers (`alias → mainDpnsName → dpnsName → first
+    /// owned label`). When the identity is the wallet's main identity,
+    /// drive the same reconcile cascade `setMainIdentity` uses so the
+    /// app-wide username mirror and live DashPay surfaces re-render with
+    /// the new pick immediately.
+    func setMainName(_ name: String, for row: IdentityRowModel) {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            errorMessage = NSLocalizedString("Wallet is not ready", comment: "Identities")
+            return
+        }
+        // Only an owned (non-pending) label can be displayed.
+        guard row.dpnsNames.contains(where: { DWContestedNameStatusService.labelsMatch($0, name) }) else {
+            return
+        }
+        PersistentIdentity.updateMainDpnsName(
+            in: container.mainContext,
+            identityId: row.identityId,
+            mainDpnsName: name)
+        try? container.mainContext.save()
+        if row.isMainIdentity {
+            _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
+        }
         reload()
     }
 
@@ -278,10 +310,9 @@ final class IdentitiesViewModel: ObservableObject {
         let preferredName = isPending(identity.dpnsName)
             ? nil
             : identity.dpnsName?.nonEmptyString
+        let displayedName = mainName ?? preferredName ?? ownedNames.first
         let title = alias
-            ?? mainName
-            ?? preferredName
-            ?? ownedNames.first
+            ?? displayedName
             ?? (pendingBelongsToIdentity ? pendingLabel : nil)
             ?? (String(identity.identityIdString.prefix(12)) + "...")
         let hasName = alias != nil || mainName != nil || preferredName != nil || !ownedNames.isEmpty
@@ -305,6 +336,7 @@ final class IdentitiesViewModel: ObservableObject {
                 .sorted { $0.keyId < $1.keyId }
                 .map(keyRowModel(for:)),
             dpnsNames: ownedNames,
+            displayedDpnsName: displayedName,
             pendingContestedName: pendingBelongsToIdentity ? pendingLabel : nil,
             pendingVotingEndTime: pendingBelongsToIdentity
                 ? DWContestedNameStatusService.shared.pendingVotingEndTime

@@ -350,6 +350,13 @@ struct IdentityDetailScreen: View {
             && row.walletId == SwiftDashSDKHost.shared.wallet?.walletId
     }
 
+    /// Live projection of this identity from the shared view model —
+    /// `row` is the push-time capture, so name-pick changes (which
+    /// reload the view model) re-render through this instead.
+    private var currentRow: IdentityRowModel {
+        viewModel.rows.first(where: { $0.identityId == row.identityId }) ?? row
+    }
+
     var body: some View {
         ZStack {
             Color.dash.primaryBackground.ignoresSafeArea()
@@ -364,7 +371,7 @@ struct IdentityDetailScreen: View {
                         if row.pendingContestedName != nil {
                             pendingNameCard
                         }
-                        if !row.dpnsNames.isEmpty {
+                        if !currentRow.dpnsNames.isEmpty {
                             namesCard
                         }
                         mainIdentityCard
@@ -418,7 +425,7 @@ struct IdentityDetailScreen: View {
             .padding(.top, 10)
 
             HStack(spacing: 6) {
-                Text(row.title)
+                Text(currentRow.title)
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
@@ -573,15 +580,41 @@ struct IdentityDetailScreen: View {
         vc.pushViewController(controller, animated: true)
     }
 
+    /// Owned DPNS names as a radio-style picker: the checked row is the
+    /// name the identity displays everywhere (`mainDpnsName` pick, with
+    /// the same fallback the row title uses); tapping another row
+    /// persists it via `IdentitiesViewModel.setMainName`.
     private var namesCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString("Usernames", comment: "Identities"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
-            ForEach(row.dpnsNames, id: \.self) { name in
-                Text(name)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.dash.primaryText)
+            ForEach(currentRow.dpnsNames, id: \.self) { name in
+                let isDisplayed = currentRow.displayedDpnsName.map {
+                    DWContestedNameStatusService.labelsMatch(name, $0)
+                } ?? false
+                Button(action: { viewModel.setMainName(name, for: currentRow) }) {
+                    HStack {
+                        Text(name)
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.dash.primaryText)
+                        Spacer()
+                        Image(systemName: isDisplayed ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 18))
+                            .foregroundColor(isDisplayed ? .dash.blue : Color.dash.gray300.opacity(0.6))
+                    }
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(isDisplayed ? [.isSelected] : [])
+            }
+            if currentRow.dpnsNames.count > 1 {
+                Text(NSLocalizedString(
+                    "Select the username to display for this identity.",
+                    comment: "Identities"))
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
