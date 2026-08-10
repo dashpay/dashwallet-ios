@@ -151,37 +151,56 @@ final class UsernameMarketplaceViewModel: ObservableObject {
             guard let self else { return }
             defer { self.isBrowseLoading = false }
             do {
-                let cursor = feed == .priceChanges ? priceChangesCursorMs : purchasesCursorMs
-                let events = feed == .priceChanges
-                    ? try await service.recentPriceChanges(beforeMs: cursor, limit: Self.browseEventsPerPage)
-                    : try await service.recentPurchases(beforeMs: cursor, limit: Self.browseEventsPerPage)
-                // One batched $id lookup covers every name this page
-                // mentions that we haven't resolved yet.
-                let unknownIds = Array(Set(events.map(\.dpnsDocumentIdBase58)
-                    .filter { browseNameCache[$0] == nil }))
-                if !unknownIds.isEmpty {
-                    for (id, live) in try await service.liveDomainNames(forDocumentIds: unknownIds) {
-                        browseNameCache[id] = live
+                // Price changes is a FOR-SALE feed: rows whose name was
+                // since delisted or sold are dropped, and each name
+                // renders once (its newest event — whose price, by
+                // consensus, IS the live price of a still-listed name).
+                // Dropped rows can leave a page thin, so keep paging
+                // within a bounded pass until something showed.
+                var pagesLeft = feed == .priceChanges ? 4 : 1
+                while pagesLeft > 0 {
+                    pagesLeft -= 1
+                    let cursor = feed == .priceChanges ? priceChangesCursorMs : purchasesCursorMs
+                    let events = feed == .priceChanges
+                        ? try await service.recentPriceChanges(beforeMs: cursor, limit: Self.browseEventsPerPage)
+                        : try await service.recentPurchases(beforeMs: cursor, limit: Self.browseEventsPerPage)
+                    // One batched $id lookup covers every name this page
+                    // mentions that we haven't resolved yet.
+                    let unknownIds = Array(Set(events.map(\.dpnsDocumentIdBase58)
+                        .filter { browseNameCache[$0] == nil }))
+                    if !unknownIds.isEmpty {
+                        for (id, live) in try await service.liveDomainNames(forDocumentIds: unknownIds) {
+                            browseNameCache[id] = live
+                        }
                     }
-                }
-                var rows: [BrowseEventRow] = []
-                for event in events {
-                    // Absent from the batch = the document is gone.
-                    guard let live = browseNameCache[event.dpnsDocumentIdBase58] else { continue }
-                    rows.append(BrowseEventRow(
-                        id: "\(event.dpnsDocumentIdBase58)-\(event.createdAtMs)",
-                        label: live.label,
-                        event: event,
-                        live: live))
-                }
-                if feed == .priceChanges {
-                    browsePriceChanges.append(contentsOf: rows)
-                    priceChangesCursorMs = events.last?.createdAtMs
-                    if events.count < Int(Self.browseEventsPerPage) { browsePriceChangesExhausted = true }
-                } else {
-                    browsePurchases.append(contentsOf: rows)
-                    purchasesCursorMs = events.last?.createdAtMs
-                    if events.count < Int(Self.browseEventsPerPage) { browsePurchasesExhausted = true }
+                    var rows: [BrowseEventRow] = []
+                    for event in events {
+                        // Absent from the batch = the document is gone.
+                        guard let live = browseNameCache[event.dpnsDocumentIdBase58] else { continue }
+                        let row = BrowseEventRow(
+                            id: "\(event.dpnsDocumentIdBase58)-\(event.createdAtMs)",
+                            label: live.label,
+                            event: event,
+                            live: live)
+                        if feed == .priceChanges {
+                            guard live.isForSale,
+                                  !browsePriceChanges.contains(where: { $0.event.dpnsDocumentIdBase58 == event.dpnsDocumentIdBase58 }),
+                                  !rows.contains(where: { $0.event.dpnsDocumentIdBase58 == event.dpnsDocumentIdBase58 })
+                            else { continue }
+                        }
+                        rows.append(row)
+                    }
+                    let exhausted = events.count < Int(Self.browseEventsPerPage)
+                    if feed == .priceChanges {
+                        browsePriceChanges.append(contentsOf: rows)
+                        priceChangesCursorMs = events.last?.createdAtMs
+                        if exhausted { browsePriceChangesExhausted = true }
+                    } else {
+                        browsePurchases.append(contentsOf: rows)
+                        purchasesCursorMs = events.last?.createdAtMs
+                        if exhausted { browsePurchasesExhausted = true }
+                    }
+                    if exhausted || !rows.isEmpty { break }
                 }
             } catch {
                 errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
@@ -542,7 +561,7 @@ struct UsernameMarketplaceScreen: View {
                     }
                     if viewModel.browseRows.isEmpty && !viewModel.isBrowseLoading {
                         emptyHint(viewModel.browseFeed == .priceChanges
-                            ? NSLocalizedString("No price changes on the network yet.", comment: "Username marketplace: empty price-changes feed")
+                            ? NSLocalizedString("No names are for sale in the recent listing activity. Show more reaches further back.", comment: "Username marketplace: price-changes feed found no live listings yet")
                             : NSLocalizedString("No purchases on the network yet.", comment: "Username marketplace: empty purchases feed"))
                     }
                     if viewModel.isBrowseLoading {

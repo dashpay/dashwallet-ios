@@ -821,8 +821,8 @@
 /* Username marketplace: browse row whose name is no longer listed */
 "Not for sale now" = "Not for sale now";
 
-/* Username marketplace: empty price-changes feed */
-"No price changes on the network yet." = "No price changes on the network yet.";
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "No names are for sale in the recent listing activity. Show more reaches further back.";
 
 /* Username marketplace: empty purchases feed */
 "No purchases on the network yet." = "No purchases on the network yet.";
