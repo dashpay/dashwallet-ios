@@ -785,6 +785,33 @@
 /* Username marketplace: contested request line — voting deadline */
 "Network vote ends %@" = "Network vote ends %@";
 
+/* Username marketplace: contest tallies card title */
+"Network vote so far" = "Network vote so far";
+
+/* Username marketplace: contest with zero masternode votes so far */
+"No votes cast yet" = "No votes cast yet";
+
+/* Username marketplace: masternode abstain votes */
+"Abstain" = "Abstain";
+
+/* Username marketplace: masternode votes to lock the name so nobody wins */
+"Lock the name" = "Lock the name";
+
+/* Username marketplace: contest voting deadline row */
+"Vote ends" = "Vote ends";
+
+/* Username marketplace: until when other identities can join the contest */
+"New contenders" = "New contenders";
+
+/* Username marketplace: join deadline still open — value of the New contenders row */
+"can join until %@" = "can join until %@";
+
+/* Username marketplace: the contest's join window has passed — value of the New contenders row */
+"joining closed" = "joining closed";
+
+/* Username marketplace: masternode vote tally for one contest row */
+"%d votes" = "%d votes";
+
 /* Username marketplace: unresolvable transfer recipient */
 "No identity owns that username." = "No identity owns that username.";
 

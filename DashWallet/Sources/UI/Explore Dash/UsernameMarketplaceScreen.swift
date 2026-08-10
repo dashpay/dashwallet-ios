@@ -1273,6 +1273,9 @@ private struct RegisterNameSheet: View {
 
     /// Pre-submit network state for contested labels; nil while loading.
     @State private var precheck: UsernameMarketplaceService.ContestPrecheck?
+    /// Live vote tallies for an active contest on this label (yours or
+    /// anyone's); nil while loading, unavailable, or no contest exists.
+    @State private var voteState: ContestVoteState?
 
     private var isContested: Bool {
         UsernameMarketplaceService.isContested(label)
@@ -1362,8 +1365,13 @@ private struct RegisterNameSheet: View {
         }
         .background(Color.dash.primaryBackground)
         .task {
-            guard isContested, precheck == nil else { return }
-            precheck = await viewModel.service.contestPrecheck(label: label)
+            guard isContested else { return }
+            if precheck == nil {
+                precheck = await viewModel.service.contestPrecheck(label: label)
+            }
+            if voteState == nil {
+                voteState = await viewModel.service.contestState(label: label)
+            }
         }
     }
 
@@ -1382,6 +1390,7 @@ private struct RegisterNameSheet: View {
             statusCallout(
                 icon: "hourglass",
                 text: NSLocalizedString("You already requested this name — the network vote is in progress. You'll find it under My Names.", comment: "Username marketplace: contested request already submitted by this identity"))
+            contestVotesCard
         } else if let pending = pendingOtherContestLabel {
             statusCallout(
                 icon: "hourglass",
@@ -1409,6 +1418,7 @@ private struct RegisterNameSheet: View {
                 statusCallout(
                     icon: "person.2",
                     text: NSLocalizedString("This name is already in an active network vote. Your request joins it as another contender.", comment: "Username marketplace: contested label already has an active vote"))
+                contestVotesCard
             }
 
             requestCostCard
@@ -1483,6 +1493,102 @@ private struct RegisterNameSheet: View {
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(Color.dash.secondaryBackground))
+    }
+
+    /// Live state of the vote: every contender with their tally (own
+    /// identity labeled), abstain and lock counts, the voting deadline,
+    /// and until when new contenders can still join. Renders nothing
+    /// while the state is loading or Platform hasn't indexed the
+    /// contest — never a fabricated zero-tally.
+    @ViewBuilder private var contestVotesCard: some View {
+        if let state = voteState, case .none = state.winner {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(NSLocalizedString("Network vote so far", comment: "Username marketplace: contest tallies card title"))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.dash.secondaryText)
+                    .padding(.horizontal, 14)
+                    .padding(.top, 12)
+                    .padding(.bottom, 4)
+                if state.totalVotes == 0 {
+                    Text(NSLocalizedString("No votes cast yet", comment: "Username marketplace: contest with zero masternode votes so far"))
+                        .font(.system(size: 12))
+                        .foregroundColor(.dash.tertiaryText)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                }
+                ForEach(state.contenders.sorted { $0.voteTally > $1.voteTally }) { contender in
+                    voteRow(
+                        contender.identityId == viewModel.ownIdentityId
+                            ? NSLocalizedString("You", comment: "Username marketplace: owner is the current user")
+                            : shortId(contender.identityId),
+                        tally: contender.voteTally,
+                        emphasized: contender.identityId == viewModel.ownIdentityId)
+                }
+                voteRow(NSLocalizedString("Abstain", comment: "Username marketplace: masternode abstain votes"), tally: state.abstainVotes, emphasized: false)
+                voteRow(NSLocalizedString("Lock the name", comment: "Username marketplace: masternode votes to lock the name so nobody wins"), tally: state.lockVotes, emphasized: false)
+                Divider().padding(.horizontal, 14).padding(.vertical, 4)
+                deadlineRow(
+                    NSLocalizedString("Vote ends", comment: "Username marketplace: contest voting deadline row"),
+                    value: Self.deadlineText(state.endTime))
+                let joinDeadline = UsernameMarketplaceService.contenderJoinDeadline(voteEnd: state.endTime)
+                deadlineRow(
+                    NSLocalizedString("New contenders", comment: "Username marketplace: until when other identities can join the contest"),
+                    value: joinDeadline > Date()
+                        ? String.localizedStringWithFormat(
+                            NSLocalizedString("can join until %@", comment: "Username marketplace: join deadline still open — value of the New contenders row"),
+                            Self.deadlineText(joinDeadline))
+                        : NSLocalizedString("joining closed", comment: "Username marketplace: the contest's join window has passed — value of the New contenders row"))
+                    .padding(.bottom, 8)
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.dash.secondaryBackground))
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+        }
+    }
+
+    private func voteRow(_ title: String, tally: UInt32, emphasized: Bool) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 13, weight: emphasized ? .semibold : .regular))
+                .foregroundColor(.dash.primaryText)
+            Spacer()
+            Text(String.localizedStringWithFormat(
+                NSLocalizedString("%d votes", comment: "Username marketplace: masternode vote tally for one contest row"),
+                Int(tally)))
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.dash.primaryText)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
+    }
+
+    private func deadlineRow(_ title: String, value: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 13))
+                .foregroundColor(.dash.secondaryText)
+            Spacer()
+            Text(value)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.dash.primaryText)
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
+    }
+
+    /// Date + time — contest windows on testnet are minutes long, so a
+    /// date alone ("Today") wouldn't say anything actionable.
+    private static func deadlineText(_ date: Date) -> String {
+        let formatter = DWDateFormatter.sharedInstance
+        return "\(formatter.shortStringFromDate(date)) \(formatter.timeOnly(from: date))"
+    }
+
+    private func shortId(_ id: Data) -> String {
+        let base58 = id.toBase58String()
+        return String(base58.prefix(8)) + "…" + String(base58.suffix(4))
     }
 
     private func statusCallout(icon: String, text: String) -> some View {
