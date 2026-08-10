@@ -514,20 +514,6 @@ struct UsernameMarketplaceService {
     /// (20_000_000_000 credits = 0.2 DASH).
     static let contestedFundCredits: UInt64 = 20_000_000_000
 
-    /// Until when NEW contenders may join a contest, derived from its
-    /// authoritative voting end time. Mirrors rs-platform-version
-    /// `VotingValidationVersions` (v3): contenders may join for
-    /// `allow_other_contenders_time` after the FIRST request — mainnet
-    /// 1 week of the 2-week poll, testing environments 45 minutes of the
-    /// 90-minute poll. In both, joining closes (poll − join window)
-    /// before the end: 1 week on mainnet, 45 minutes on testnet.
-    static func contenderJoinDeadline(voteEnd: Date) -> Date {
-        let closedBeforeEnd: TimeInterval = WalletEnvironment.isMainnet
-            ? 7 * 24 * 60 * 60
-            : 45 * 60
-        return voteEnd.addingTimeInterval(-closedBeforeEnd)
-    }
-
     /// Buyer identity's credit balance from the persisted row — for the
     /// affordability hint; the SDK re-checks authoritatively at purchase.
     static func identityBalanceCredits(identityId: Data, container: ModelContainer) -> UInt64 {
