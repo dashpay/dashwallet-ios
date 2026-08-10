@@ -82,27 +82,34 @@ final class UsernameMarketplaceViewModel: ObservableObject {
 
     // MARK: Browse (for-sale) state
     //
-    // `$price` is not an indexable property on Dash Platform, so there is
-    // no server-side "everything for sale, ordered by price" query at any
-    // layer. Browse is an honest client-side pass instead: page through
-    // ALL names alphabetically (empty-prefix search with a documentId
-    // cursor), keep the listed ones, and sort locally. The coverage label
-    // says how much of the network the sort currently reflects.
+    // `$price` is not indexable on Dash Platform, so the DPNS contract
+    // has no server-side "everything for sale, ordered by price" query.
+    // What DOES exist is the document-history system contract: every
+    // listing writes a `priceUpdate` event queryable newest-first by
+    // [dataContractId, $createdAt]. Browse walks that trail — every
+    // listed name necessarily has such an event, so exhausting the trail
+    // yields the COMPLETE current listing set at a cost proportional to
+    // listing activity, not namespace size — then verifies each
+    // candidate's LIVE document (events say nothing about later
+    // re-prices, delists, or purchases) and sorts locally.
 
-    /// For-sale names accumulated by the alphabetical scan.
+    /// Live for-sale names, verified against the current documents.
     @Published var browseForSale: [DpnsMarketplaceName] = []
-    /// Total names scanned so far (listed or not) — the coverage label.
+    /// Listing events checked so far — the coverage label.
     @Published var browseScannedCount = 0
     /// True while a scan pass is fetching pages.
     @Published var isBrowseScanning = false
-    /// True once the alphabetical scan has walked every name.
+    /// True once the whole listing-event trail was walked.
     @Published var browseExhausted = false
     @Published var browseSort: BrowseSort = .priceHighFirst
 
-    /// Cursor: last page's final documentId; nil = scan from the start.
-    private var browseCursor: Data?
-    /// Pages per scan pass — bounds one tap's network cost (100 names each).
-    private static let browsePagesPerPass = 5
+    /// Pagination cursor: the oldest event's $createdAt seen so far.
+    private var browseCursorMs: UInt64?
+    /// Domain documents already resolved this scan — a re-listed name has
+    /// many events; one live check answers them all.
+    private var browseSeenDocumentIds: Set<String> = []
+    /// Event pages per scan pass (100 events each) — bounds one tap's cost.
+    private static let browsePagesPerPass = 3
 
     var sortedBrowseForSale: [DpnsMarketplaceName] {
         browseForSale.sorted {
@@ -112,14 +119,15 @@ final class UsernameMarketplaceViewModel: ObservableObject {
         }
     }
 
-    /// Scan another batch of pages. `reset` restarts from the top
-    /// (pull-to-refresh) so re-listed/delisted names re-read fresh.
+    /// Walk another batch of listing events. `reset` restarts from the
+    /// newest (pull-to-refresh) so prices and delists re-read fresh.
     func scanBrowsePages(reset: Bool = false) {
         guard !isBrowseScanning else { return }
         if reset {
-            browseCursor = nil
+            browseCursorMs = nil
             browseForSale = []
             browseScannedCount = 0
+            browseSeenDocumentIds = []
             browseExhausted = false
         }
         guard !browseExhausted else { return }
@@ -130,11 +138,18 @@ final class UsernameMarketplaceViewModel: ObservableObject {
             let pageSize: UInt32 = 100
             for _ in 0..<Self.browsePagesPerPass {
                 do {
-                    let page = try await service.browsePage(startAfter: browseCursor, limit: pageSize)
-                    browseScannedCount += page.count
-                    browseForSale.append(contentsOf: page.filter(\.isForSale))
-                    browseCursor = page.last?.documentId
-                    if page.count < Int(pageSize) {
+                    let events = try await service.listingEventsPage(beforeMs: browseCursorMs, limit: pageSize)
+                    browseScannedCount += events.count
+                    browseCursorMs = events.last?.createdAtMs
+                    for event in events where !browseSeenDocumentIds.contains(event.dpnsDocumentIdBase58) {
+                        browseSeenDocumentIds.insert(event.dpnsDocumentIdBase58)
+                        if let live = try await service.liveName(forDomainDocumentId: event.dpnsDocumentIdBase58),
+                           live.isForSale,
+                           !browseForSale.contains(where: { $0.documentId == live.documentId }) {
+                            browseForSale.append(live)
+                        }
+                    }
+                    if events.count < Int(pageSize) {
                         browseExhausted = true
                         break
                     }
@@ -479,10 +494,10 @@ struct UsernameMarketplaceScreen: View {
             HStack {
                 Text(viewModel.browseExhausted
                     ? String.localizedStringWithFormat(
-                        NSLocalizedString("All %1$d names scanned · %2$d for sale", comment: "Username marketplace: browse coverage line once the whole network was scanned"),
+                        NSLocalizedString("All %1$d listings checked · %2$d for sale now", comment: "Username marketplace: browse coverage line once the whole listing trail was walked"),
                         viewModel.browseScannedCount, viewModel.browseForSale.count)
                     : String.localizedStringWithFormat(
-                        NSLocalizedString("%1$d names scanned · %2$d for sale", comment: "Username marketplace: browse coverage line while the scan is partial"),
+                        NSLocalizedString("%1$d listings checked · %2$d for sale now", comment: "Username marketplace: browse coverage line while the scan is partial"),
                         viewModel.browseScannedCount, viewModel.browseForSale.count))
                     .font(.system(size: 12))
                     .foregroundColor(.dash.secondaryText)
@@ -521,13 +536,13 @@ struct UsernameMarketplaceScreen: View {
                     }
                     if viewModel.browseForSale.isEmpty && !viewModel.isBrowseScanning {
                         emptyHint(viewModel.browseExhausted
-                            ? NSLocalizedString("No names are for sale right now.", comment: "Username marketplace: browse scanned everything, nothing listed")
-                            : NSLocalizedString("No names for sale found yet — scan more of the network below.", comment: "Username marketplace: browse partial scan found nothing listed"))
+                            ? NSLocalizedString("No names are for sale right now.", comment: "Username marketplace: browse walked every listing event, nothing currently listed")
+                            : NSLocalizedString("No live listings found yet — check more of the listing history below.", comment: "Username marketplace: browse partial scan found nothing currently listed"))
                     }
                     if viewModel.isBrowseScanning {
                         HStack(spacing: 8) {
                             SwiftUI.ProgressView()
-                            Text(NSLocalizedString("Scanning names…", comment: "Username marketplace: browse scan in progress"))
+                            Text(NSLocalizedString("Checking listings…", comment: "Username marketplace: browse scan in progress"))
                                 .font(.system(size: 12))
                                 .foregroundColor(.dash.secondaryText)
                         }
@@ -537,7 +552,7 @@ struct UsernameMarketplaceScreen: View {
                         Button {
                             viewModel.scanBrowsePages()
                         } label: {
-                            Text(NSLocalizedString("Scan more names", comment: "Username marketplace: continue the browse scan"))
+                            Text(NSLocalizedString("Check more listings", comment: "Username marketplace: continue the browse scan"))
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.dash.blue)
                                 .frame(maxWidth: .infinity)

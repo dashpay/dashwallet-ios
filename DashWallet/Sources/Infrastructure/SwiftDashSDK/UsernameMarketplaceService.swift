@@ -97,14 +97,75 @@ struct UsernameMarketplaceService {
         return try await wallet.searchDpnsMarketplace(prefix: prefix, limit: limit)
     }
 
-    /// One alphabetical page of ALL names (the SDK's empty-prefix browse),
-    /// each with live sale state. `startAfter` is the cursor: the previous
-    /// page's last documentId. Powers the Browse tab's scan — there is no
-    /// server-side price filter or ordering to lean on ($price is not
-    /// indexable), so callers filter and sort what the scan returns.
-    func browsePage(startAfter: Data?, limit: UInt32 = 100) async throws -> [DpnsMarketplaceName] {
-        guard let wallet = SwiftDashSDKHost.shared.wallet else { return [] }
-        return try await wallet.searchDpnsMarketplace(prefix: "", limit: limit, startAfter: startAfter)
+    /// The document-history system contract (platform #4348,
+    /// `document_history_contract::ID_BYTES`). Every `setDocumentPrice`
+    /// also writes a `priceUpdate` row here, indexed by
+    /// `[dataContractId, $createdAt]` — the queryable listing trail the
+    /// DPNS contract itself lacks ($price is not indexable). Browse
+    /// walks it newest-first, so its cost scales with LISTING EVENTS,
+    /// not with the size of the namespace.
+    private static let documentHistoryContractId = "6voHRaoiPcfmMhbqCA9dixH98xcgPQ9UEcuaXjpVu3LD"
+
+    /// One DPNS `priceUpdate` history row: which domain document was
+    /// (re)listed and when. The recorded price is deliberately NOT
+    /// carried — the live document is the only honest price source
+    /// (later re-prices, delists, and purchases all invalidate it).
+    struct ListingEvent {
+        let dpnsDocumentIdBase58: String
+        let createdAtMs: UInt64
+    }
+
+    /// One page of DPNS listing events, newest first. `beforeMs` is the
+    /// pagination cursor: pass the previous page's last `createdAtMs`.
+    func listingEventsPage(beforeMs: UInt64?, limit: UInt32 = 100) async throws -> [ListingEvent] {
+        guard let sdk = SwiftDashSDKHost.shared.sdk else { return [] }
+        var conditions = "[[\"dataContractId\",\"==\",\"\(DPNSVotePoll.contractId)\"]"
+        if let beforeMs {
+            conditions += ",[\"$createdAt\",\"<\",\(beforeMs)]"
+        }
+        conditions += "]"
+        let result = try await sdk.documentList(
+            dataContractId: Self.documentHistoryContractId,
+            documentType: "priceUpdate",
+            whereClause: conditions,
+            orderByClause: "[[\"$createdAt\",\"desc\"]]",
+            limit: limit)
+        let docs: [[String: Any]]
+        if let array = result["documents"] as? [[String: Any]] {
+            docs = array
+        } else if let array = result["items"] as? [[String: Any]] {
+            docs = array
+        } else {
+            docs = result.values.compactMap { $0 as? [String: Any] }
+        }
+        return docs.compactMap { doc in
+            guard let documentId = doc["documentId"] as? String,
+                  let createdAt = (doc["$createdAt"] as? NSNumber)?.uint64Value else { return nil }
+            return ListingEvent(dpnsDocumentIdBase58: documentId, createdAtMs: createdAt)
+        }
+    }
+
+    /// Live marketplace state of the domain document behind a listing
+    /// event — nil when the document no longer exists. The caller checks
+    /// `isForSale`; an old event for a since-delisted or sold name
+    /// resolves to a live row without a price.
+    func liveName(forDomainDocumentId documentIdBase58: String) async throws -> DpnsMarketplaceName? {
+        guard let sdk = SwiftDashSDKHost.shared.sdk,
+              let wallet = SwiftDashSDKHost.shared.wallet else { return nil }
+        let doc: [String: Any]
+        do {
+            doc = try await sdk.documentGet(
+                dataContractId: DPNSVotePoll.contractId,
+                documentType: DPNSVotePoll.documentTypeName,
+                documentId: documentIdBase58)
+        } catch {
+            // Gone documents are an expected outcome for old events.
+            return nil
+        }
+        guard let label = (doc["label"] as? String) ?? (doc["normalizedLabel"] as? String) else {
+            return nil
+        }
+        return try await wallet.dpnsMarketplaceNameState(name: label)
     }
 
     /// The main identity's tracked names from the wallet's local rows —
