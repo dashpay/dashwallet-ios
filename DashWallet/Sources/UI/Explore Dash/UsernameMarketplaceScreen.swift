@@ -63,6 +63,11 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     /// `updateSearch` using the SDK's own normalizer (DPNS folds
     /// look-alike characters, so a plain lowercase compare would lie).
     @Published var registrableQueryLabel: String?
+    /// Network contest state of a contested-eligible `registrableQueryLabel`,
+    /// filled best-effort after the search results land. A label with no
+    /// DPNS document can still be mid-vote — without this the row would
+    /// claim "Available" for a name already being contested.
+    @Published var queryContest: UsernameMarketplaceService.ContestPrecheck?
 
     let service = UsernameMarketplaceService()
     private var searchTask: Task<Void, Never>?
@@ -94,11 +99,13 @@ final class UsernameMarketplaceViewModel: ObservableObject {
         guard trimmed.count >= 2 else {
             searchResults = []
             registrableQueryLabel = nil
+            queryContest = nil
             isSearching = false
             return
         }
         searchResults = []
         registrableQueryLabel = nil
+        queryContest = nil
         isSearching = true
         searchTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 350_000_000)
@@ -121,7 +128,26 @@ final class UsernameMarketplaceViewModel: ObservableObject {
                 errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
             }
             isSearching = false
+            // A contested-eligible unregistered label can already be
+            // mid-vote (no document exists until the vote resolves) —
+            // check after the row is showing and refine its subtitle.
+            // Skipped for own requests: those are answered locally.
+            if let candidate = registrableQueryLabel,
+               UsernameMarketplaceService.isContested(candidate),
+               !hasRequestedContest(for: candidate) {
+                let state = await service.contestPrecheck(label: candidate)
+                guard !Task.isCancelled, registrableQueryLabel == candidate else { return }
+                queryContest = state
+            }
         }
+    }
+
+    /// This identity already has a contested request in for `label` — from
+    /// the SDK's contested-names cache, or the app's submission bookmark
+    /// when that cache hasn't synced yet.
+    func hasRequestedContest(for label: String) -> Bool {
+        contestedNames.contains { DWContestedNameStatusService.labelsMatch($0, label) }
+            || DWContestedNameStatusService.shared.isPendingLabel(label)
     }
 
     /// Local read — the wallet's own tracked rows plus the contested
@@ -510,22 +536,48 @@ struct UsernameMarketplaceScreen: View {
 
     private func registerRow(_ label: String) -> some View {
         let contested = UsernameMarketplaceService.isContested(label)
+        // What the row claims must match the contest reality, not just
+        // document existence: a label mid-vote has no document yet but is
+        // NOT plainly available. Own requests answer locally; foreign
+        // contest state comes from the view model's best-effort precheck.
+        let icon: String
+        let tint: Color
+        let subtitle: String
+        if contested, viewModel.hasRequestedContest(for: label) {
+            icon = "hourglass"
+            tint = .dashGolden
+            subtitle = NSLocalizedString("Requested by you — the network vote is in progress", comment: "Username marketplace: search row for a contested label this identity already requested")
+        } else if contested, case .activeContest = viewModel.queryContest {
+            icon = "person.2.fill"
+            tint = .dashGolden
+            subtitle = NSLocalizedString("In a network vote — you can join as a contender", comment: "Username marketplace: search row for a contested label with an active vote by others")
+        } else if contested, viewModel.queryContest == .locked {
+            icon = "lock.fill"
+            tint = Color.dash.secondaryText
+            subtitle = NSLocalizedString("Locked by a network vote — nobody can register it", comment: "Username marketplace: search row for a label a past vote locked")
+        } else if contested {
+            icon = "plus.circle.fill"
+            tint = .dashGolden
+            subtitle = NSLocalizedString("Available — short names are decided by a network vote", comment: "Username marketplace: unregistered contested-eligible name row")
+        } else {
+            icon = "plus.circle.fill"
+            tint = .dashGreen
+            subtitle = NSLocalizedString("Available — register it on your identity", comment: "Username marketplace: unregistered name row")
+        }
         return Button {
             registerCandidate = RegisterCandidate(label: label)
         } label: {
             HStack(spacing: 10) {
-                Image(systemName: "plus.circle.fill")
+                Image(systemName: icon)
                     .font(.system(size: 26))
-                    .foregroundColor(.dashGreen)
+                    .foregroundColor(icon == "plus.circle.fill" ? .dashGreen : tint)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(label)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.dash.primaryText)
-                    Text(contested
-                        ? NSLocalizedString("Available — short names are decided by a network vote", comment: "Username marketplace: unregistered contested-eligible name row")
-                        : NSLocalizedString("Available — register it on your identity", comment: "Username marketplace: unregistered name row"))
+                    Text(subtitle)
                         .font(.system(size: 11))
-                        .foregroundColor(contested ? .dashGolden : .dashGreen)
+                        .foregroundColor(tint)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
@@ -1227,12 +1279,9 @@ private struct RegisterNameSheet: View {
     }
 
     /// This identity already has a request in for this label — the vote
-    /// is in progress and a second submission would just fail. Checks
-    /// the app bookmark too, in case the SDK cache hasn't synced yet.
+    /// is in progress and a second submission would just fail.
     private var alreadyRequested: Bool {
-        viewModel.contestedNames.contains {
-            DWContestedNameStatusService.labelsMatch($0, label)
-        } || DWContestedNameStatusService.shared.isPendingLabel(label)
+        viewModel.hasRequestedContest(for: label)
     }
 
     /// A DIFFERENT label's contested request is still in the network
