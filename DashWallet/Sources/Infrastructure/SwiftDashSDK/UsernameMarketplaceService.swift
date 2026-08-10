@@ -128,7 +128,9 @@ struct UsernameMarketplaceService {
             dataContractId: Self.documentHistoryContractId,
             documentType: "priceUpdate",
             whereClause: conditions,
-            orderByClause: "[[\"$createdAt\",\"desc\"]]",
+            // Order-by tuples here are [field, ascending-bool] — the FFI
+            // rejects "asc"/"desc" strings. false = newest first.
+            orderByClause: "[[\"$createdAt\",false]]",
             limit: limit)
         let docs: [[String: Any]]
         if let array = result["documents"] as? [[String: Any]] {
