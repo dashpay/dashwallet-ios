@@ -97,6 +97,16 @@ struct UsernameMarketplaceService {
         return try await wallet.searchDpnsMarketplace(prefix: prefix, limit: limit)
     }
 
+    /// One alphabetical page of ALL names (the SDK's empty-prefix browse),
+    /// each with live sale state. `startAfter` is the cursor: the previous
+    /// page's last documentId. Powers the Browse tab's scan — there is no
+    /// server-side price filter or ordering to lean on ($price is not
+    /// indexable), so callers filter and sort what the scan returns.
+    func browsePage(startAfter: Data?, limit: UInt32 = 100) async throws -> [DpnsMarketplaceName] {
+        guard let wallet = SwiftDashSDKHost.shared.wallet else { return [] }
+        return try await wallet.searchDpnsMarketplace(prefix: "", limit: limit, startAfter: startAfter)
+    }
+
     /// The main identity's tracked names from the wallet's local rows —
     /// no network round-trip. Includes retained `.sold` / `.transferred`
     /// departures so the UI can show what left and to whom.

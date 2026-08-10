@@ -34,13 +34,20 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     enum Segment: Int, CaseIterable {
         case find
         case mine
+        case browse
 
         var title: String {
             switch self {
             case .find: return NSLocalizedString("Find Names", comment: "Username marketplace: search segment")
             case .mine: return NSLocalizedString("My Names", comment: "Username marketplace: owned names segment")
+            case .browse: return NSLocalizedString("Browse", comment: "Username marketplace: browse-for-sale segment")
             }
         }
+    }
+
+    enum BrowseSort {
+        case priceHighFirst
+        case priceLowFirst
     }
 
     @Published var segment: Segment = .find
@@ -72,6 +79,72 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     /// DPNS document can still be mid-vote — without this the row would
     /// claim "Available" for a name already being contested.
     @Published var queryContest: UsernameMarketplaceService.ContestPrecheck?
+
+    // MARK: Browse (for-sale) state
+    //
+    // `$price` is not an indexable property on Dash Platform, so there is
+    // no server-side "everything for sale, ordered by price" query at any
+    // layer. Browse is an honest client-side pass instead: page through
+    // ALL names alphabetically (empty-prefix search with a documentId
+    // cursor), keep the listed ones, and sort locally. The coverage label
+    // says how much of the network the sort currently reflects.
+
+    /// For-sale names accumulated by the alphabetical scan.
+    @Published var browseForSale: [DpnsMarketplaceName] = []
+    /// Total names scanned so far (listed or not) — the coverage label.
+    @Published var browseScannedCount = 0
+    /// True while a scan pass is fetching pages.
+    @Published var isBrowseScanning = false
+    /// True once the alphabetical scan has walked every name.
+    @Published var browseExhausted = false
+    @Published var browseSort: BrowseSort = .priceHighFirst
+
+    /// Cursor: last page's final documentId; nil = scan from the start.
+    private var browseCursor: Data?
+    /// Pages per scan pass — bounds one tap's network cost (100 names each).
+    private static let browsePagesPerPass = 5
+
+    var sortedBrowseForSale: [DpnsMarketplaceName] {
+        browseForSale.sorted {
+            let l = $0.priceCredits ?? 0
+            let r = $1.priceCredits ?? 0
+            return browseSort == .priceHighFirst ? l > r : l < r
+        }
+    }
+
+    /// Scan another batch of pages. `reset` restarts from the top
+    /// (pull-to-refresh) so re-listed/delisted names re-read fresh.
+    func scanBrowsePages(reset: Bool = false) {
+        guard !isBrowseScanning else { return }
+        if reset {
+            browseCursor = nil
+            browseForSale = []
+            browseScannedCount = 0
+            browseExhausted = false
+        }
+        guard !browseExhausted else { return }
+        isBrowseScanning = true
+        Task { [weak self] in
+            guard let self else { return }
+            defer { self.isBrowseScanning = false }
+            let pageSize: UInt32 = 100
+            for _ in 0..<Self.browsePagesPerPass {
+                do {
+                    let page = try await service.browsePage(startAfter: browseCursor, limit: pageSize)
+                    browseScannedCount += page.count
+                    browseForSale.append(contentsOf: page.filter(\.isForSale))
+                    browseCursor = page.last?.documentId
+                    if page.count < Int(pageSize) {
+                        browseExhausted = true
+                        break
+                    }
+                } catch {
+                    errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
+                    break
+                }
+            }
+        }
+    }
 
     let service = UsernameMarketplaceService()
     private var searchTask: Task<Void, Never>?
@@ -293,6 +366,8 @@ struct UsernameMarketplaceScreen: View {
                 findSection
             case .mine:
                 mySection
+            case .browse:
+                browseSection
             }
 
             Spacer(minLength: 0)
@@ -390,6 +465,98 @@ struct UsernameMarketplaceScreen: View {
                 .padding(.horizontal, 15)
                 .padding(.top, 12)
                 .padding(.bottom, 24)
+            }
+        }
+    }
+
+    // MARK: Browse segment
+
+    /// Names for sale across the network, sorted by price client-side.
+    /// The coverage line keeps the sort honest: Platform cannot order by
+    /// $price, so "most expensive" means "among the names scanned so far".
+    private var browseSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text(viewModel.browseExhausted
+                    ? String.localizedStringWithFormat(
+                        NSLocalizedString("All %1$d names scanned · %2$d for sale", comment: "Username marketplace: browse coverage line once the whole network was scanned"),
+                        viewModel.browseScannedCount, viewModel.browseForSale.count)
+                    : String.localizedStringWithFormat(
+                        NSLocalizedString("%1$d names scanned · %2$d for sale", comment: "Username marketplace: browse coverage line while the scan is partial"),
+                        viewModel.browseScannedCount, viewModel.browseForSale.count))
+                    .font(.system(size: 12))
+                    .foregroundColor(.dash.secondaryText)
+                Spacer()
+                Menu {
+                    Button {
+                        viewModel.browseSort = .priceHighFirst
+                    } label: {
+                        Label(NSLocalizedString("Highest price first", comment: "Username marketplace: browse sort option"),
+                              systemImage: viewModel.browseSort == .priceHighFirst ? "checkmark" : "arrow.down")
+                    }
+                    Button {
+                        viewModel.browseSort = .priceLowFirst
+                    } label: {
+                        Label(NSLocalizedString("Lowest price first", comment: "Username marketplace: browse sort option"),
+                              systemImage: viewModel.browseSort == .priceLowFirst ? "checkmark" : "arrow.up")
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.up.arrow.down")
+                        Text(viewModel.browseSort == .priceHighFirst
+                            ? NSLocalizedString("Highest price", comment: "Username marketplace: current browse sort label")
+                            : NSLocalizedString("Lowest price", comment: "Username marketplace: current browse sort label"))
+                    }
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.dash.blue)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 8)
+
+            ScrollView {
+                LazyVStack(spacing: 6) {
+                    ForEach(viewModel.sortedBrowseForSale) { name in
+                        searchRow(name)
+                    }
+                    if viewModel.browseForSale.isEmpty && !viewModel.isBrowseScanning {
+                        emptyHint(viewModel.browseExhausted
+                            ? NSLocalizedString("No names are for sale right now.", comment: "Username marketplace: browse scanned everything, nothing listed")
+                            : NSLocalizedString("No names for sale found yet — scan more of the network below.", comment: "Username marketplace: browse partial scan found nothing listed"))
+                    }
+                    if viewModel.isBrowseScanning {
+                        HStack(spacing: 8) {
+                            SwiftUI.ProgressView()
+                            Text(NSLocalizedString("Scanning names…", comment: "Username marketplace: browse scan in progress"))
+                                .font(.system(size: 12))
+                                .foregroundColor(.dash.secondaryText)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                    } else if !viewModel.browseExhausted {
+                        Button {
+                            viewModel.scanBrowsePages()
+                        } label: {
+                            Text(NSLocalizedString("Scan more names", comment: "Username marketplace: continue the browse scan"))
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.dash.blue)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 15)
+                .padding(.top, 4)
+                .padding(.bottom, 24)
+            }
+            .refreshable {
+                viewModel.scanBrowsePages(reset: true)
+            }
+        }
+        .onAppear {
+            if viewModel.browseScannedCount == 0 {
+                viewModel.scanBrowsePages()
             }
         }
     }

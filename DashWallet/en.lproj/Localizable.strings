@@ -803,6 +803,39 @@
 /* Username marketplace: activity overlay while the contested request transition runs */
 "Submitting your username request…" = "Submitting your username request…";
 
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Browse";
+
+/* Username marketplace: browse coverage line while the scan is partial */
+"%1$d names scanned · %2$d for sale" = "%1$d names scanned · %2$d for sale";
+
+/* Username marketplace: browse coverage line once the whole network was scanned */
+"All %1$d names scanned · %2$d for sale" = "All %1$d names scanned · %2$d for sale";
+
+/* Username marketplace: browse sort option */
+"Highest price first" = "Highest price first";
+
+/* Username marketplace: browse sort option */
+"Lowest price first" = "Lowest price first";
+
+/* Username marketplace: current browse sort label */
+"Highest price" = "Highest price";
+
+/* Username marketplace: current browse sort label */
+"Lowest price" = "Lowest price";
+
+/* Username marketplace: browse scanned everything, nothing listed */
+"No names are for sale right now." = "No names are for sale right now.";
+
+/* Username marketplace: browse partial scan found nothing listed */
+"No names for sale found yet — scan more of the network below." = "No names for sale found yet — scan more of the network below.";
+
+/* Username marketplace: browse scan in progress */
+"Scanning names…" = "Scanning names…";
+
+/* Username marketplace: continue the browse scan */
+"Scan more names" = "Scan more names";
+
 /* Username marketplace: contest tallies card title */
 "Network vote so far" = "Network vote so far";
 
