@@ -51,6 +51,14 @@ class DatabaseConnection: NSObject {
             ])
         }
 
+        // `schema_migrations.version` is UNIQUE: if two migrations share a version, the second
+        // one's bookkeeping insert throws mid-chain and every later migration is skipped.
+        // (Shipped once: a no-op `SeedDB` duplicating 20250418145536 left fresh installs
+        // without any table added after that version, e.g. `swap_orders`.)
+        let versions = migrationManager.migrations.map(\.version)
+        assert(Set(versions).count == versions.count,
+               "Duplicate migration versions: \(versions.sorted())")
+
         if !migrationManager.hasMigrationsTable() {
             try migrationManager.createMigrationsTable()
         }
@@ -75,7 +83,6 @@ extension DatabaseConnection {
 
     static func migrations() -> [Migration] {
         return [
-            SeedDB(),
             AddGiftCardsTable(),
             AddIconBitmapsTable(),
             AddProviderToGiftCardsTable(),
