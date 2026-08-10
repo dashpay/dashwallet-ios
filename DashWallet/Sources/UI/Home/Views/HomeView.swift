@@ -721,7 +721,8 @@ struct HomeViewContent<Content: View>: View {
                 title: NSLocalizedString("Mixing Transactions", comment: "CoinJoin"),
                 subtitle: firstTx?.shortTimeString ?? "",
                 dashAmount: set.amount,
-                amountSign: .none
+                amountSign: .none,
+                amountAccessorySystemImage: "arrow.triangle.2.circlepath"
             )
             .onTapGesture { self.selectedTxDataItem = txDataItem }
             .frame(height: 80)
@@ -744,6 +745,9 @@ struct HomeViewContent<Content: View>: View {
             // Service/merchant metadata wins over the route pair — such rows
             // are external payments, not transfers of own funds.
             let routeSymbols = metadata == nil ? transferRouteSymbols(txItem: txItem) : nil
+            // Same precedence for the amount treatment: only a metadata-less
+            // internal move drops the +/- sign for the circulating-arrows glyph.
+            let isInternalAmount = metadata == nil && txItem.internalTransferRoute != nil
             // A DashPay contact payment shows the counterparty's avatar
             // (profile image, or the deterministic initial placeholder the
             // contacts screens use).
@@ -780,7 +784,10 @@ struct HomeViewContent<Content: View>: View {
                             // counterparty's actual name underneath.
                             : transferRouteDetails(txItem: txItem) ?? txItem.dashPayPaymentDetailsName),
                 dashAmount: txItem.signedDashAmount,
-                amountSign: .always,
+                // Internal moves carry no direction: no +/- sign, a
+                // circulating-arrows glyph qualifies the amount instead.
+                amountSign: isInternalAmount ? .none : .always,
+                amountAccessorySystemImage: isInternalAmount ? "arrow.triangle.2.circlepath" : nil,
                 fiat: txItem.fiatAmount,
                 trailingStatusText: txItem.state == .locked ? NSLocalizedString("Locked", comment: "Transaction state: coinbase reward locked until 100 confirmations") : nil
             ) {
@@ -812,6 +819,7 @@ struct HomeViewContent<Content: View>: View {
                 details: item.detailsText,
                 dashAmount: item.signedDashAmount,
                 amountSign: item.showsDirectionSign ? .always : .none,
+                amountAccessorySystemImage: item.showsDirectionSign ? nil : "arrow.triangle.2.circlepath",
                 fiat: item.fiatAmount,
                 trailingStatusText: item.trailingStatusText
             ) {
