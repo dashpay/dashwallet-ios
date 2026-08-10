@@ -13303,7 +13303,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/dashpay/DashUIKit";
 			requirement = {
-				branch = "feat/amount-accessory-icon";
+				branch = master;
 				kind = branch;
 			};
 		};
