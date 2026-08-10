@@ -107,9 +107,14 @@ struct UsernameMarketplaceService {
     }
 
     /// Authoritative live state of one exact name; nil = unregistered.
+    /// The lookup keys on the NORMALIZED label, so the typed form is
+    /// normalized here first (idempotent for already-normalized input —
+    /// same trap as `contestPrecheck`, where "Greg" missed "greg").
     func nameState(_ name: String) async throws -> DpnsMarketplaceName? {
         guard let wallet = SwiftDashSDKHost.shared.wallet else { return nil }
-        return try await wallet.dpnsMarketplaceNameState(name: name)
+        let normalized = (try? SwiftDashSDKHost.shared.sdk?.dpnsNormalizeLabel(name))
+            .flatMap { $0 } ?? name.lowercased()
+        return try await wallet.dpnsMarketplaceNameState(name: normalized)
     }
 
     /// Full trade timeline (registration, listings, purchases with
@@ -284,8 +289,9 @@ struct UsernameMarketplaceService {
         /// No contest exists — a request starts a fresh vote.
         case fresh
         /// An active vote already holds this label; a request joins it
-        /// as another contender.
-        case activeContest(contenders: Int)
+        /// as another contender. `endsAt` is the poll deadline when the
+        /// current-contests listing reports one, nil when it doesn't.
+        case activeContest(contenders: Int, endsAt: Date?)
         /// A past vote locked the label — nobody can register it.
         case locked
         /// The query failed; state can't be determined.
@@ -294,8 +300,13 @@ struct UsernameMarketplaceService {
 
     func contestPrecheck(label: String) async -> ContestPrecheck {
         guard let sdk = SwiftDashSDKHost.shared.sdk else { return .unknown }
+        // The vote-poll index is keyed by the NORMALIZED label (lowercase +
+        // homograph folding). rs-sdk builds the query key from this argument
+        // verbatim, so the typed form must be normalized here or "Greg"
+        // reports fresh while "greg" is mid-vote.
+        let normalized = (try? sdk.dpnsNormalizeLabel(label)) ?? label.lowercased()
         do {
-            let state = try await sdk.dpnsGetContestedVoteState(name: label)
+            let state = try await sdk.dpnsGetContestedVoteState(name: normalized)
             if state["winner"] is String {
                 // "LOCKED" or a winning identity's base58 id. Either way
                 // the vote is over and nobody can register the label, so
@@ -303,7 +314,14 @@ struct UsernameMarketplaceService {
                 return .locked
             }
             let contenders = (state["contenders"] as? [[String: Any]]) ?? []
-            return contenders.isEmpty ? .fresh : .activeContest(contenders: contenders.count)
+            if contenders.isEmpty { return .fresh }
+            // The vote-state payload carries no deadline, so ask the
+            // current-contests listing (normalized name → TimestampMillis)
+            // for it. Best-effort: a failed or incomplete listing just
+            // leaves the deadline unknown.
+            let endsAt = (try? await sdk.dpnsGetCurrentContests())?[normalized]
+                .map { Date(timeIntervalSince1970: Double($0) / 1000) }
+            return .activeContest(contenders: contenders.count, endsAt: endsAt)
         } catch {
             // rs-sdk reports "no contest" as an error rather than an
             // empty result; a missing contest is the normal fresh case.
@@ -323,6 +341,20 @@ struct UsernameMarketplaceService {
     /// can't drift from the network rule.
     static func isContested(_ label: String) -> Bool {
         DWContestedNameStatusService.isContestedLabel(label)
+    }
+
+    /// Until when NEW contenders may join a contest, derived from its
+    /// authoritative voting end time. Mirrors rs-platform-version
+    /// `VotingValidationVersions` (v3): contenders may join for
+    /// `allow_other_contenders_time` after the FIRST request — mainnet
+    /// 1 week of the 2-week poll, testing environments 45 minutes of the
+    /// 90-minute poll. In both, joining closes (poll − join window)
+    /// before the end: 1 week on mainnet, 45 minutes on testnet.
+    static func contenderJoinDeadline(voteEnd: Date) -> Date {
+        let closedBeforeEnd: TimeInterval = WalletEnvironment.isMainnet
+            ? 7 * 24 * 60 * 60
+            : 45 * 60
+        return voteEnd.addingTimeInterval(-closedBeforeEnd)
     }
 
     /// The protocol's contested-document vote-resolution fund: what a

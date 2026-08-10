@@ -4327,6 +4327,33 @@
 /* Usernames */
 "This name requires voting. Your Dash will be locked until voting completes." = "This name requires voting. Your Dash will be locked until voting completes.";
 
+/* Usernames */
+"Vote in progress" = "Vote in progress";
+
+/* Usernames */
+"Vote ended" = "Vote ended";
+
+/* Usernames */
+"A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender." = "A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender.";
+
+/* Usernames */
+"A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender." = "A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender.";
+
+/* Usernames */
+"A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote." = "A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote.";
+
+/* Usernames */
+"Username is in a network vote — new contenders can no longer join" = "Username is in a network vote — new contenders can no longer join";
+
+/* Usernames */
+"The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead.";
+
+/* Usernames */
+"The masternode vote for this name has ended and the result is being finalized. Check back soon." = "The masternode vote for this name has ended and the result is being finalized. Check back soon.";
+
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes." = "A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes.";
+
 /* No comment provided by engineer. */
 "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone." = "This permanently removes the wallet, private keys, and recovery phrase from this device. This cannot be undone.";
 

@@ -214,7 +214,10 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             },
             onProceed: { [weak self] in
                 readinessNavigationController?.dismiss(animated: true) {
-                    self?.pushCreateUsernameForm()
+                    // Coming from the readiness interstitial: the shielded
+                    // question was answered there (checklist or the explicit
+                    // transparent escape), so the form skips the teaser.
+                    self?.pushCreateUsernameForm(suppressShieldedHint: true)
                 }
             },
             onClose: {
@@ -234,8 +237,9 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         present(modalNavigationController, animated: true)
     }
 
-    private func pushCreateUsernameForm(invitationURL: URL? = nil, definedUsername: String? = nil) {
+    private func pushCreateUsernameForm(invitationURL: URL? = nil, definedUsername: String? = nil, suppressShieldedHint: Bool = false) {
         let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, invitationURL: invitationURL, definedUsername: definedUsername)
+        controller.suppressShieldedHint = suppressShieldedHint
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { result in
             if (result) {
