@@ -129,9 +129,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// failure only once would let the first successful pass erase it, leaving
     /// the status screen reporting a healthy sync over address surfaces that
     /// cannot work. Kept here and re-published wherever `lastError` is cleared
-    /// on success; cleared only by teardown or a start that resolves the
-    /// wallet.
-    private var addressWalletStartupError: String? = nil
+    /// on success. Cleared by `clearDisplay()`, which runs on teardown, wipe
+    /// and network-switch preparation — every path that invalidates the wallet
+    /// this error was recorded against — and overwritten by the next start.
+    private var addressWalletStartupError: String?
     @Published private(set) var platformAccountAvailability: PlatformAccountAvailability = .unknown
 
     @Published public private(set) var platformBalance: UInt64 = 0
