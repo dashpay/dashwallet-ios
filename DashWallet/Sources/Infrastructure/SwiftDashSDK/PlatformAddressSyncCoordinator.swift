@@ -406,6 +406,26 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     // MARK: - Core ↔ Platform balance movement
 
+    /// SDK-owned affordability preflight for Platform Payment → Shielded.
+    ///
+    /// The Platform balance shown by this coordinator is the sum of every
+    /// derived address, but the shield transition can only spend the suffix
+    /// selected by the Rust wallet. Keep that selection rule in the SDK and
+    /// expose its exact result to the internal-transfer UI instead of
+    /// reimplementing it from `derivedAddresses` here.
+    public func preflightShield(
+        paymentAccount: UInt32 = 0
+    ) async throws -> PlatformWalletManager.ShieldedShieldPreflight {
+        guard isRunning,
+              let manager = walletManager,
+              let walletId = wallet?.walletId
+        else { throw SendError.coordinatorNotReady }
+
+        return try await manager.shieldedShieldPreflight(
+            walletId: walletId,
+            paymentAccount: paymentAccount)
+    }
+
     /// Preflight of the full-balance Platform → Core withdrawal for the
     /// account holding the highest Platform address balance (the same
     /// account `transfer` spends from). See `withdrawAllToCore` for why

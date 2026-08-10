@@ -40,10 +40,15 @@ struct InternalTransferConfirmSheet: View {
     /// Shielded reverse routes only: execute the note-aware Max plan and
     /// revalidate it immediately before proving.
     var isFullShieldedSweep: Bool = false
+    /// Frozen with the submitted amount so a capacity refresh can update only
+    /// a value the user explicitly derived via Platform Shield Max.
+    var platformShieldAmountWasMax: Bool = false
     var onCancel: () -> Void
     var onCompleted: () -> Void
+    var onPlatformShieldCapacityChanged: (UInt64?, Bool) -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
+    @State private var handledPlatformShieldCapacityChange = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -67,6 +72,9 @@ struct InternalTransferConfirmSheet: View {
         }
         .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(isInFlight)
+        .onChange(of: coordinator.phase) { phase in
+            handlePlatformShieldCapacityChange(phase)
+        }
     }
 
     private var isInFlight: Bool {
@@ -482,6 +490,21 @@ struct InternalTransferConfirmSheet: View {
         }
         coordinator.reset()
         confirm()
+    }
+
+    private func handlePlatformShieldCapacityChange(
+        _ phase: ShieldedTransferCoordinator.Phase
+    ) {
+        guard !handledPlatformShieldCapacityChange,
+              case .failed = phase,
+              let error = coordinator.lastFailure as? ShieldedTransferCoordinator.CoordinatorError,
+              case .platformShieldCapacityChanged(let maxShieldableCredits) = error
+        else { return }
+
+        handledPlatformShieldCapacityChange = true
+        onPlatformShieldCapacityChanged(
+            maxShieldableCredits,
+            platformShieldAmountWasMax)
     }
 }
 
