@@ -3714,6 +3714,9 @@
 /* Coinbase */
 "Select the coin" = "Select the coin";
 
+/* Identities */
+"Select the username to display for this identity." = "Select the username to display for this identity.";
+
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
 
