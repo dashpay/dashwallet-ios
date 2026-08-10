@@ -318,6 +318,17 @@ class Transaction: TransactionDataItem, Identifiable {
         return (1...3).contains(status)
     }
 
+    /// The subset of pending identity fundings whose recovery lives in the
+    /// Join DashPay registration flow (types 0 registration / 3 invitation —
+    /// the ones `AssetLockRecoveryService` deliberately does NOT handle).
+    /// Only these get the home row's "tap to finish" routing into that flow;
+    /// a pending top-up (1/2) recovers from the tx detail sheet instead.
+    var isPendingIdentityRegistration: Bool {
+        guard isPendingIdentityFunding,
+              let type = identityFundingLockInfo?.fundingTypeRaw else { return false }
+        return type == 0 || type == 3
+    }
+
     /// True when this incoming tx is the L1 payout of a Shielded → Core
     /// withdrawal the app performed — matched by destination address via
     /// `ShieldedWithdrawalStore` (the SDK's opaque withdraw call returns no

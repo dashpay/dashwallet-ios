@@ -2449,6 +2449,15 @@
 /* Retry a stuck balance transfer whose transaction never confirmed */
 "Rebroadcast" = "Rebroadcast";
 
+/* Delete a never-accepted transaction from local wallet state */
+"Remove if not on Blockchain" = "Remove if not on Blockchain";
+
+/* Remove never-accepted transaction: confirmation title */
+"Remove this transaction?" = "Remove this transaction?";
+
+/* Remove never-accepted transaction: destructive confirm button */
+"Remove Transaction" = "Remove Transaction";
+
 /* Username marketplace: transfer recipient placeholder */
 "Recipient username or identity ID" = "Recipient username or identity ID";
 
@@ -2464,6 +2473,9 @@
 /* Username marketplace */
 "Remove From Sale" = "Remove From Sale";
 
+/* Remove never-accepted transaction: progress */
+"Removing transaction…" = "Removing transaction…";
+
 /* Username marketplace: delist confirmation title */
 "Remove “%@” from sale?" = "Remove “%@” from sale?";
 
@@ -2472,6 +2484,30 @@
 
 /* Username marketplace: delist confirmation body */
 "Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name.";
+
+/* Remove never-accepted transaction: refused because the explorer found it */
+"Transaction is on the blockchain" = "Transaction is on the blockchain";
+
+/* Remove never-accepted transaction: refusal body */
+"A block explorer reports this transaction on the Dash network, so it wasn't removed. The wallet will catch up with its confirmation on its own." = "A block explorer reports this transaction on the Dash network, so it wasn't removed. The wallet will catch up with its confirmation on its own.";
+
+/* Remove never-accepted transaction: success */
+"Transaction removed" = "Transaction removed";
+
+/* Remove never-accepted transaction: confirmation body */
+"The wallet first checks a block explorer — a transaction that is on the blockchain is never removed. If it isn't found, the transaction is deleted from this wallet on this device and the coins it was trying to spend become available again. The wallet then rescans recent blocks, so if the transaction does turn out to be on the blockchain, it comes back on its own. Nothing is sent to the network." = "The wallet first checks a block explorer — a transaction that is on the blockchain is never removed. If it isn't found, the transaction is deleted from this wallet on this device and the coins it was trying to spend become available again. The wallet then rescans recent blocks, so if the transaction does turn out to be on the blockchain, it comes back on its own. Nothing is sent to the network.";
+
+/* Remove never-accepted transaction: failure title */
+"Couldn't remove the transaction" = "Couldn't remove the transaction";
+
+/* Remove never-accepted transaction: no local row */
+"This transaction is not in the local wallet." = "This transaction is not in the local wallet.";
+
+/* Remove never-accepted transaction: local state says it's on-chain */
+"This transaction is confirmed and can't be removed." = "This transaction is confirmed and can't be removed.";
+
+/* Remove never-accepted transaction: explorer unreachable */
+"Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again." = "Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again.";
 
 /* Username marketplace: contested request cost row */
 "Request cost" = "Request cost";

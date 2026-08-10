@@ -132,6 +132,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case taxCategory(DWTitleDetailItem)
         case shieldedInfo(DWTitleDetailItem)
         case rebroadcast(String)
+        case removeUnconfirmed
         case viewTransaction
         case copyRawTransaction
         case explorer
@@ -155,6 +156,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
             case .taxCategory(let item): return ["TaxCategory"] + Self.identity(of: [item])
             case .shieldedInfo(let item): return ["ShieldedInfo"] + Self.identity(of: [item])
             case .rebroadcast(let title): return ["Rebroadcast", title]
+            case .removeUnconfirmed: return ["RemoveUnconfirmed"]
             case .viewTransaction: return ["ViewTransaction"]
             case .copyRawTransaction: return ["CopyRawTransaction"]
             case .explorer: return ["Explorer"]
@@ -299,6 +301,64 @@ extension TXDetailViewController {
         present(alert, animated: true)
     }
 
+    /// Spell out exactly what removal does before anything is touched:
+    /// a block-explorer check first, local-only deletion, and the
+    /// rescan safety net that restores the transaction if the explorer
+    /// was wrong.
+    private func confirmRemoveUnconfirmed() {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Remove this transaction?", comment: "Remove never-accepted transaction: confirmation title"),
+            message: NSLocalizedString("The wallet first checks a block explorer — a transaction that is on the blockchain is never removed. If it isn't found, the transaction is deleted from this wallet on this device and the coins it was trying to spend become available again. The wallet then rescans recent blocks, so if the transaction does turn out to be on the blockchain, it comes back on its own. Nothing is sent to the network.", comment: "Remove never-accepted transaction: confirmation body"),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(
+            title: NSLocalizedString("Remove Transaction", comment: "Remove never-accepted transaction: destructive confirm button"),
+            style: .destructive) { [weak self] _ in
+                self?.performRemoveUnconfirmed()
+            })
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func performRemoveUnconfirmed() {
+        guard !isRetryingAssetLock else { return }
+        isRetryingAssetLock = true
+        let txidWire = model.transaction.txHashData
+        view.dw_showProgressHUD(withMessage: NSLocalizedString("Removing transaction…", comment: "Remove never-accepted transaction: progress"))
+        Task { [weak self] in
+            defer {
+                self?.isRetryingAssetLock = false
+                self?.view.dw_hideProgressHUD()
+            }
+            do {
+                try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
+                self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success"))
+                // The row this sheet describes no longer exists.
+                self?.closeAction()
+            } catch UnconfirmedTransactionRemover.RemovalError.transactionOnChain {
+                self?.presentRemovalRefused()
+            } catch {
+                let alert = UIAlertController(
+                    title: NSLocalizedString("Couldn't remove the transaction", comment: "Remove never-accepted transaction: failure title"),
+                    message: error.localizedDescription,
+                    preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+                self?.present(alert, animated: true)
+            }
+        }
+    }
+
+    /// The explorer says the transaction IS on the blockchain — removal
+    /// is refused and the wallet just needs to catch up.
+    private func presentRemovalRefused() {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Transaction is on the blockchain", comment: "Remove never-accepted transaction: refused because the explorer found it"),
+            message: NSLocalizedString("A block explorer reports this transaction on the Dash network, so it wasn't removed. The wallet will catch up with its confirmation on its own.", comment: "Remove never-accepted transaction: refusal body"),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+        present(alert, animated: true)
+        reloadDataSource()
+    }
+
     /// Copies the serialized transaction hex. A missing row (bytes not
     /// stored on this device) reports itself rather than copying nothing.
     private func copyRawTransaction() {
@@ -350,6 +410,10 @@ extension TXDetailViewController {
                                                              for: indexPath) as! TxDetailActionCell
                     if case .rebroadcast(let title) = item {
                         cell.titleLabel.text = title
+                        cell.titleLabel.textColor = .dw_label()
+                    } else if item == .removeUnconfirmed {
+                        cell.titleLabel.text = NSLocalizedString("Remove if not on Blockchain", comment: "Delete a never-accepted transaction from local wallet state")
+                        cell.titleLabel.textColor = .systemRed
                     }
                     return cell
 
@@ -435,6 +499,9 @@ extension TXDetailViewController {
         if let retry = model.stuckAssetLockRetry {
             currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
             currentSnapshot.appendItems([.rebroadcast(retry.actionTitle)], toSection: .recovery)
+            if retry.supportsRemoval {
+                currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
+            }
         }
         currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
@@ -461,7 +528,11 @@ extension TXDetailViewController {
             reloadDataSource()
             break
         case .recovery:
-            retryStuckAssetLock()
+            if dataSource.itemIdentifier(for: indexPath) == .removeUnconfirmed {
+                confirmRemoveUnconfirmed()
+            } else {
+                retryStuckAssetLock()
+            }
         case .rawTransaction:
             if let item = dataSource.itemIdentifier(for: indexPath) {
                 switch item {
