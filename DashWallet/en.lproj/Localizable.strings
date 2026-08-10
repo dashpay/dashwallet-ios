@@ -785,6 +785,24 @@
 /* Username marketplace: contested request line — voting deadline */
 "Network vote ends %@" = "Network vote ends %@";
 
+/* Username marketplace: activity overlay while the purchase transition runs */
+"Completing your purchase…" = "Completing your purchase…";
+
+/* Username marketplace: activity overlay while the delist transition runs */
+"Removing the listing…" = "Removing the listing…";
+
+/* Username marketplace: activity overlay while the set-price transition runs */
+"Listing for sale…" = "Listing for sale…";
+
+/* Username marketplace: activity overlay while the transfer transition runs */
+"Transferring the username…" = "Transferring the username…";
+
+/* Username marketplace: activity overlay while the registration transition runs */
+"Registering the username…" = "Registering the username…";
+
+/* Username marketplace: activity overlay while the contested request transition runs */
+"Submitting your username request…" = "Submitting your username request…";
+
 /* Username marketplace: contest tallies card title */
 "Network vote so far" = "Network vote so far";
 
