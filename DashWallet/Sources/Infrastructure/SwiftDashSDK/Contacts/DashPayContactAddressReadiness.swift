@@ -85,6 +85,15 @@ enum DashPayContactAddressReadiness {
                 account build(s) still queued after \(seconds, privacy: .public)s; \
                 starting SPV, the DIP-15 rescan will backfill
                 """)
+        case .discoveryFailed:
+            // A local wallet/persistence fault, not the network. Logged at
+            // error because unlike every other outcome here, nothing in this
+            // session or the next will clear it on its own.
+            logger.error(
+                """
+                👥 DP-READY :: identity discovery failed locally after \
+                \(seconds, privacy: .public)s; starting SPV without DashPay state
+                """)
         }
     }
 }
