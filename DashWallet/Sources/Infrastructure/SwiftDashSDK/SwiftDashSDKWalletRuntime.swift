@@ -349,13 +349,6 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }
         await SwiftDashSDKSPVCoordinator.shared.stopAsync(lastError: lastError)
         SwiftDashSDKWalletState.shared.clearAllState()
-#if DASHPAY
-        // Identity-recovery retries run on their own backoff, outside this
-        // pipeline's serialization, so they are the one wallet-backed workload
-        // that can still be mid-FFI here. Settle them before the host drops the
-        // wallet handle.
-        await DWSameSeedIdentityRecoveryCoordinator.shared.cancelPendingWork()
-#endif
         SwiftDashSDKHost.shared.stop()
         currentNetwork = nil
         if forWipe {
