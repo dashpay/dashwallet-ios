@@ -239,6 +239,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case authCancelled
         case authFailed
         case amountBelowCoreToShieldedMinimum(UInt64)
+        case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
         case transferFailed(Error)
@@ -270,6 +271,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
                         "The minimum amount you can send is %@",
                         comment: "Core to Shielded minimum amount"),
                     formattedMinimum)
+            case .platformShieldCapacityChanged(let maxShieldableCredits):
+                guard let maxShieldableCredits else {
+                    return NSLocalizedString(
+                        "Your available Platform balance changed, but the new maximum could not be checked. Return to the amount and try again.",
+                        comment: "Platform Shield capacity changed but refresh failed")
+                }
+                let maximum = (maxShieldableCredits / 1000)
+                    .formattedDashAmountWithoutCurrencySymbol
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Your available Platform balance changed. The new maximum is %@ DASH. Review and confirm the transfer again.",
+                        comment: "Platform Shield capacity changed before authorization"),
+                    maximum)
             case .shieldedSweepWaiting(let credits):
                 let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
                 return String.localizedStringWithFormat(
@@ -594,6 +608,26 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
+        // Revalidate the frozen confirmation amount against the same Rust
+        // selector immediately before asking for authentication or building a
+        // proof. The form's cached preflight can become stale while Confirm is
+        // open, but the confirmed amount must never be reduced silently.
+        do {
+            let preflight = try await PlatformAddressSyncCoordinator.shared.preflightShield()
+            let capacity = PlatformShieldCapacity(preflight)
+            guard PlatformShieldAmountPolicy.canSubmit(
+                requestedCredits: amountCredits,
+                capacity: capacity)
+            else {
+                handleFailure(CoordinatorError.platformShieldCapacityChanged(
+                    maxShieldableCredits: capacity.maxShieldableCredits))
+                return
+            }
+        } catch {
+            handleFailure(CoordinatorError.transferFailed(error))
+            return
+        }
+
         do {
             try await authorize()
         } catch {
@@ -615,6 +649,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 amount: amountCredits,
                 addressSigner: signer)
         } catch {
+            if case PlatformWalletError.shieldedInsufficientBalance = error {
+                handleFailure(CoordinatorError.platformShieldCapacityChanged(
+                    maxShieldableCredits: nil))
+                // The rejection came from live Platform state while the
+                // preflight reads cache, so another immediate preflight would
+                // only repeat the stale maximum. Refresh the address cache and
+                // let its published balance re-arm the form preflight.
+                schedulePlatformResync()
+                return
+            }
             handleSpendError(error, manager: env.manager)
             return
         }

@@ -6,6 +6,22 @@
 import SwiftUI
 import DashUIKit
 
+/// Immutable values the user saw when tapping Continue. Async balance/preflight
+/// refreshes may keep updating the form underneath the sheet, but they must not
+/// rewrite the amount already presented for confirmation.
+private struct InternalTransferConfirmation: Identifiable {
+    let id = UUID()
+    let route: InternalTransferRoute
+    let dashDuffs: Int64
+    let amountDuffsUnsigned: UInt64
+    let creditsAmount: UInt64
+    let fiatText: String
+    let withdrawalFeeCredits: UInt64?
+    let isFullPlatformWithdrawal: Bool
+    let isFullShieldedSweep: Bool
+    let platformShieldAmountWasMax: Bool
+}
+
 struct InternalTransferScreen: View {
     @ObservedObject var viewModel: InternalTransferViewModel
 
@@ -30,7 +46,7 @@ struct InternalTransferScreen: View {
     /// precedence over `receiveInto`.
     var sendFrom: ChainNetwork? = nil
 
-    @State private var showConfirm: Bool = false
+    @State private var confirmation: InternalTransferConfirmation?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -77,20 +93,27 @@ struct InternalTransferScreen: View {
             keyboardSection
         }
         .background(Color.dash.primaryBackground)
-        .sheet(isPresented: $showConfirm) {
+        .sheet(item: $confirmation) { submission in
             InternalTransferConfirmSheet(
-                route: viewModel.route,
-                dashDuffs: viewModel.dashDuffs,
-                amountDuffsUnsigned: viewModel.dashDuffsUnsigned,
-                creditsAmount: viewModel.creditsPreview,
-                fiatText: viewModel.fiatAmountString,
-                withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
-                isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
-                isFullShieldedSweep: viewModel.isFullShieldedSweep,
-                onCancel: { showConfirm = false },
+                route: submission.route,
+                dashDuffs: submission.dashDuffs,
+                amountDuffsUnsigned: submission.amountDuffsUnsigned,
+                creditsAmount: submission.creditsAmount,
+                fiatText: submission.fiatText,
+                withdrawalFeeCredits: submission.withdrawalFeeCredits,
+                isFullPlatformWithdrawal: submission.isFullPlatformWithdrawal,
+                isFullShieldedSweep: submission.isFullShieldedSweep,
+                platformShieldAmountWasMax: submission.platformShieldAmountWasMax,
+                onCancel: { confirmation = nil },
                 onCompleted: {
-                    showConfirm = false
+                    confirmation = nil
                     onCompleted()
+                },
+                onPlatformShieldCapacityChanged: { maxCredits, amountWasMax in
+                    confirmation = nil
+                    viewModel.handlePlatformShieldCapacityChanged(
+                        maxShieldableCredits: maxCredits,
+                        submittedAmountWasMax: amountWasMax)
                 })
                 .presentationDetents([.large])
                 .presentationDragIndicator(.hidden)
@@ -133,7 +156,7 @@ struct InternalTransferScreen: View {
             actionButtonText: NSLocalizedString("Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
             inProgress: false,
-            actionHandler: { showConfirm = true }
+            actionHandler: presentConfirmation
         )
         .padding(.top, 12)
         .padding(.horizontal, 16)
@@ -141,6 +164,20 @@ struct InternalTransferScreen: View {
         .background(Color.dash.secondaryBackground)
         .clipShape(.rect(cornerRadius: 20))
         .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
+    }
+
+    private func presentConfirmation() {
+        guard viewModel.canContinue else { return }
+        confirmation = InternalTransferConfirmation(
+            route: viewModel.route,
+            dashDuffs: viewModel.dashDuffs,
+            amountDuffsUnsigned: viewModel.dashDuffsUnsigned,
+            creditsAmount: viewModel.creditsPreview,
+            fiatText: viewModel.fiatAmountString,
+            withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
+            isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
+            isFullShieldedSweep: viewModel.isFullShieldedSweep,
+            platformShieldAmountWasMax: viewModel.platformShieldAmountWasMax)
     }
 
     // MARK: - From / To cards
