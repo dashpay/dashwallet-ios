@@ -912,7 +912,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     identityId: existingId,
                     container: modelContainer)
                 if heldCredits < requiredCredits {
-                    let shortfallDuffs = (requiredCredits - heldCredits + 999) / 1_000
+                    // Same floor as `topUpResumedIdentityIfNeeded`: Rust
+                    // rejects Core top-ups below `minimumCoreTopUpDuffs`,
+                    // and a near-covered identity can shortfall under it.
+                    let shortfallDuffs = max(
+                        (requiredCredits - heldCredits + 999) / 1_000,
+                        Self.minimumCoreTopUpDuffs)
                     Self.logger.info("🪪 IDENT-COORD :: purchase top-up shortfallDuffs=\(shortfallDuffs, privacy: .public)")
                     _ = try await wallet.topUpIdentityWithFunding(
                         identityId: existingId,
@@ -992,6 +997,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             Self.logger.warning("🪪 IDENT-COORD :: post-purchase syncDpnsNames failed: \(String(describing: error), privacy: .public)")
         }
         _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
+        // The reconcile adopted the CANONICAL SDK label into the mirrors.
+        // Align `currentUsername` with it before the `.completed`
+        // transition, whose mirror write would otherwise overwrite the
+        // adopted label with the buyer's raw typed form (any casing that
+        // normalizes equal can buy the name).
+        if let adopted = DWGlobalOptions.sharedInstance().dashpayUsername, !adopted.isEmpty {
+            currentUsername = adopted
+        }
         newController.enterCompleted(identityId: identityId)
         Self.logger.info("🪪 IDENT-COORD :: purchase complete")
         return identityId

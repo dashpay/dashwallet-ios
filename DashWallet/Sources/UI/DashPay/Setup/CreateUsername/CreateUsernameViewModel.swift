@@ -397,20 +397,22 @@ class CreateUsernameViewModel: ObservableObject {
         }
     }
 
-    /// Buy the typed (taken, listed) name at the exact price captured by
-    /// the availability check. Routes through
+    /// Buy `name` (the taken, listed label captured by the caller at
+    /// confirmation time — the text field stays editable during the
+    /// flow) at the exact price captured by the availability check.
+    /// Routes through
     /// `DWIdentityRegistrationCoordinator.startPurchaseUsername`, which
     /// creates or tops up this wallet's identity from the Core balance
     /// and buys at exactly the captured credits — a seller-side price
-    /// change is refused by consensus and surfaces as a typed failure.
-    func purchaseListedUsername() async -> UsernameRegistrationOutcome {
+    /// change is refused by consensus and surfaces as a typed failure,
+    /// as does a price/name mismatch from a mid-flight edit.
+    func purchaseListedUsername(name: String) async -> UsernameRegistrationOutcome {
         guard let credits = takenNameSalePriceCredits else {
             // The gate (`canPurchaseListedNameDirectly`) shouldn't let a
             // priceless state reach here; answer with the marketplace's
             // canonical wording rather than crashing.
             return .failure(NSLocalizedString("This username is not for sale.", comment: "Username marketplace"))
         }
-        let name = username.trimmingCharacters(in: .whitespacesAndNewlines)
         do {
             _ = try await DWIdentityRegistrationCoordinator.shared.startPurchaseUsername(
                 name: name,

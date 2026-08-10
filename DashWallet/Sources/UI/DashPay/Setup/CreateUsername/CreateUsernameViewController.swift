@@ -117,6 +117,10 @@ struct CreateUsernameView: View {
     /// Terminal success alert of a direct listing purchase; OK finishes
     /// the flow like a completed registration.
     @State private var showPurchaseSuccess: Bool = false
+    /// The name captured when the purchase started — the text field stays
+    /// editable across the PIN gate + funding + purchase, so the success
+    /// alert must not read the live field.
+    @State private var purchasedUsername: String = ""
     /// Drives the success alert shown when registration reaches the
     /// terminal `.completed` phase. OK dismisses the screen.
     @State private var showSuccess: Bool = false
@@ -370,7 +374,7 @@ struct CreateUsernameView: View {
         } message: {
             Text(String.localizedStringWithFormat(
                 NSLocalizedString("“%@” is now your username.", comment: "Usernames"),
-                viewModel.username))
+                purchasedUsername))
         }
         .alert(
             NSLocalizedString("Username registered", comment: "Usernames"),
@@ -692,10 +696,11 @@ struct CreateUsernameView: View {
     /// screen alive across the PIN gate, funding, and the purchase
     /// itself; the outcome drives the purchase-success / error alert.
     private func performPurchase() {
+        purchasedUsername = viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines)
         Task {
             inProgress = true
             screenLockedAfterAuth = false
-            let outcome = await viewModel.purchaseListedUsername()
+            let outcome = await viewModel.purchaseListedUsername(name: purchasedUsername)
             inProgress = false
             switch outcome {
             case .success:
