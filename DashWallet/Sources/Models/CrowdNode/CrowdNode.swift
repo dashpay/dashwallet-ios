@@ -223,7 +223,17 @@ extension CrowdNode {
         signUpState = SignUpState.notStarted
         validatePrefs()
 
-        if tryRestoreSignUp() {
+        // One snapshot serves the whole restore. The signup reconstruction and
+        // the linked-account confirmation lookup consume the same window —
+        // floored at 2022 because CrowdNode protocol traffic cannot predate
+        // CrowdNode — and each running the identical fetch is what doubled the
+        // multi-second scan on large wallets. No fetchLimit: a signup can sit
+        // anywhere in the post-2022 history, so a newest-first cap would drop
+        // real accounts.
+        let observed = TransactionObserver
+            .fetchObserved(firstSeenAtOrAfter: FullCrowdNodeSignUpTxSet.januaryFirst2022Epoch)
+
+        if tryRestoreSignUp(observed) {
             refreshWithdrawalLimits()
             refreshFees()
             restoreCreatedOnlineAccount(accountAddress)
@@ -232,7 +242,7 @@ extension CrowdNode {
 
         var onlineState = prefs.savedOnlineAccountState
 
-        if let address = getOnlineAccountAddress(state: onlineState) {
+        if let address = getOnlineAccountAddress(state: onlineState, observed: observed) {
             prefs.accountAddress = address
 
             if onlineState == .none {
@@ -263,11 +273,9 @@ extension CrowdNode {
         }
     }
 
-    private func tryRestoreSignUp() -> Bool {
+    private func tryRestoreSignUp(_ observed: [ObservedTransaction]) -> Bool {
         let fullSet = FullCrowdNodeSignUpTxSet()
-        TransactionObserver
-            .fetchObserved(firstSeenAtOrAfter: FullCrowdNodeSignUpTxSet.januaryFirst2022Epoch)
-            .forEach { fullSet.tryInclude($0) }
+        observed.forEach { fullSet.tryInclude($0) }
 
         if let welcomeResponse = fullSet.welcomeToApiResponse {
             precondition(welcomeResponse.toAddress != nil)
@@ -1028,12 +1036,12 @@ extension CrowdNode {
         return TransactionObserver.fetchObserved().contains { filter.matches($0) }
     }
 
-    private func getOnlineAccountAddress(state: OnlineAccountState) -> String? {
+    private func getOnlineAccountAddress(state: OnlineAccountState, observed: [ObservedTransaction]) -> String? {
         let savedAddress = prefs.accountAddress
 
         if savedAddress != nil && state != .none {
             return savedAddress
-        } else if let confirmationTx = getApiAddressConfirmationTx(),
+        } else if let confirmationTx = getApiAddressConfirmationTx(in: observed),
                   let apiAddress = confirmationTx.ownOutputAddresses.first {
             prefs.accountAddress = apiAddress
             signUpState = .linkedOnline
@@ -1045,16 +1053,11 @@ extension CrowdNode {
         return nil
     }
 
-    private func getApiAddressConfirmationTx() -> ObservedTransaction? {
+    /// `observed` is `restoreState()`'s shared snapshot of the post-2022
+    /// history — this lookup runs against it rather than fetching its own.
+    private func getApiAddressConfirmationTx(in observed: [ObservedTransaction]) -> ObservedTransaction? {
         let filter = CoinsToAddressTxFilter(coins: CrowdNode.apiConfirmationDashAmount, address: nil) // account address is unknown at this point
         let forwardedConfirmationFilter = CrowdNodeAPIConfirmationTxForwarded()
-        // Same floor the signup scan uses: an API-address confirmation is
-        // CrowdNode protocol traffic, so it cannot predate CrowdNode. Without
-        // it this walked and decoded the wallet's entire history on the main
-        // thread during restore — the more expensive of the restore's two
-        // scans, on a wallet that has no CrowdNode account at all.
-        let observed = TransactionObserver.fetchObserved(
-            firstSeenAtOrAfter: FullCrowdNodeSignUpTxSet.januaryFirst2022Epoch)
 
         // There might be several matching transactions. The real one is the
         // one whose destination CrowdNode forwarded from.
