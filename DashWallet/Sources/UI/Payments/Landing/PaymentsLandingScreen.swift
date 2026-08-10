@@ -9,7 +9,6 @@ import UIKit
 
 struct PaymentsLandingScreen: View {
     @ObservedObject var viewModel: PaymentsLandingViewModel
-    @Environment(\.colorScheme) private var colorScheme
 
     var onClose: () -> Void
     var onCopyAddress: () -> Void
@@ -47,7 +46,9 @@ struct PaymentsLandingScreen: View {
                 header
             }
 
-            tabSelector
+            PaymentsLandingTabSelector(
+                tabs: viewModel.visibleTabs,
+                selection: $viewModel.activeTab)
                 .padding(.horizontal, 20)
                 .padding(.top, showsHeader ? 0 : 12)
 
@@ -127,40 +128,6 @@ struct PaymentsLandingScreen: View {
     }
 
     // MARK: - Tab selector
-
-    private var tabSelector: some View {
-        HStack(spacing: 4) {
-            ForEach(viewModel.visibleTabs) { tab in
-                Button(action: { viewModel.activeTab = tab }) {
-                    VStack(spacing: 4) {
-                        Image(systemName: tab.iconSystemName)
-                            .font(.system(size: 16, weight: .semibold))
-                        Text(tab.title)
-                            .font(.system(size: 13, weight: .medium))
-                    }
-                    .foregroundColor(viewModel.activeTab == tab ? Color.dash.primaryText : Color.dash.secondaryText)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            // Selected pill: a solid white raised card in light mode; a
-                            // translucent light fill in dark so the primaryText label stays
-                            // legible (pure white would be invisible on the dark selector).
-                            // Mirrors the app's SegmentedControl selected-fill treatment.
-                            .fill(viewModel.activeTab == tab
-                                ? (colorScheme == .dark ? Color.dash.whiteAlpha20 : Color.dash.white)
-                                : Color.clear)
-                            .shadow(
-                                color: viewModel.activeTab == tab
-                                    ? Color.dash.shadow : .clear,
-                                radius: 2, x: 0, y: 1))
-                }
-            }
-        }
-        .padding(4)
-        .background(Color.dash.secondaryBackground)
-        .cornerRadius(10)
-    }
 
     // MARK: - Receive
 
