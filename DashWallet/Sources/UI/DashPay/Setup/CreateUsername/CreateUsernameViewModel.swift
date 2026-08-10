@@ -118,19 +118,52 @@ class CreateUsernameViewModel: ObservableObject {
     /// a fresh one — the warning callout and the Continue confirmation switch
     /// their copy on this. nil when no such contest is known (fresh name, our
     /// own request, or the best-effort query failed).
-    @Published private(set) var activeContestContenders: Int? = nil
+    @Published private(set) var activeContestContenders: Int?
 
     /// Deadline of that active vote, when the current-contests listing
     /// reports one. Lets the warning callout say WHEN the vote ends —
     /// and switch to "has ended, finalizing" wording once the deadline
     /// passes — instead of an unverifiable "in progress" claim.
-    @Published private(set) var activeContestEndsAt: Date? = nil
+    @Published private(set) var activeContestEndsAt: Date?
 
     /// Sale price (duffs) when the typed name is TAKEN but its owner has
     /// listed it in the Username Marketplace. Turns the dead-end
     /// "Username taken" into a pointer to the listing. nil when the name
     /// is not for sale or the best-effort lookup failed.
-    @Published private(set) var takenNameSalePriceDuffs: UInt64? = nil
+    @Published private(set) var takenNameSalePriceDuffs: UInt64?
+
+    /// The active vote's deadline has passed — the poll is being
+    /// finalized on-chain. "Join as a contender" would be a stale claim
+    /// at that point, so the callout switches to "ended" wording.
+    var activeContestHasEnded: Bool {
+        guard let endsAt = activeContestEndsAt else { return false }
+        return endsAt <= Date()
+    }
+
+    /// The vote is still running but its contender-join window
+    /// (`contenderJoinDeadline` — poll end − 45 min testnet / − 1 week
+    /// mainnet) has closed: the name can no longer be requested until
+    /// the vote resolves. Always true once the vote itself has ended.
+    /// Consulted at render time AND as the last-moment gate behind the
+    /// contested confirmation's "Submit anyway".
+    var activeContestJoinClosed: Bool {
+        guard let endsAt = activeContestEndsAt else { return false }
+        return UsernameMarketplaceService.contenderJoinDeadline(voteEnd: endsAt) <= Date()
+    }
+
+    /// Whether the orange contested callout applies to the current
+    /// answer. A plainly TAKEN name (someone owns its document) will
+    /// never go to a vote — "requires a masternode vote" next to
+    /// "Username taken" (or a for-sale listing) would contradict it.
+    /// Locked and mid-vote answers keep the callout: it carries their
+    /// detail.
+    var showContestedWarning: Bool {
+        guard isContestedCandidate else { return false }
+        if uiState.usernameBlockedRule == .invalidCritical {
+            return isLockedContestedName || activeContestContenders != nil
+        }
+        return true
+    }
 
     /// Per-funding-source eligibility flags. `hasMinimumRequiredBalance`
     /// (above) is kept as the legacy OR-of-both flag for any existing
@@ -529,9 +562,9 @@ class CreateUsernameViewModel: ObservableObject {
 
         let result: UsernameValidationRuleResult
         var locked = false
-        var activeContenders: Int? = nil
-        var activeContestEnd: Date? = nil
-        var salePriceDuffs: UInt64? = nil
+        var activeContenders: Int?
+        var activeContestEnd: Date?
+        var salePriceDuffs: UInt64?
         do {
             // Two independent questions about the same label, so ask both at
             // once. Chaining them put a second DAPI round trip behind the
@@ -556,7 +589,7 @@ class CreateUsernameViewModel: ObservableObject {
                 case .locked:
                     locked = true
                     result = .invalidCritical
-                case .activeContest(let contenders, let endsAt):
+                case let .activeContest(contenders, endsAt):
                     DWLogger.log(
                         "CreateUsername: '\(username)' is in an active vote "
                             + "(\(contenders) contenders, ends \(endsAt.map { "\($0)" } ?? "unknown"))")

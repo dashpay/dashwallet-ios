@@ -179,12 +179,15 @@ struct CreateUsernameView: View {
 
             // Contested-name warning. Shown when the typed label is
             // ≤19 chars + only [a-zA-Z0-9-] AND otherwise passes the
-            // local validators. Submitting a contested name triggers
-            // masternode voting (~45 min testnet, ~2 weeks mainnet)
-            // before the name is actually claimed — the user gets a
-            // separate confirmation alert on Continue. Mirrors the
-            // example app's `RegisterNameView.swift:277-293` styling.
-            if showContestedWarning {
+            // local validators — EXCEPT when the name is plainly taken:
+            // an owned name will never go to a vote, so the warning
+            // would contradict the "taken" row (`showContestedWarning`).
+            // Submitting a contested name triggers masternode voting
+            // (~45 min testnet, ~2 weeks mainnet) before the name is
+            // actually claimed — the user gets a separate confirmation
+            // alert on Continue. Mirrors the example app's
+            // `RegisterNameView.swift:277-293` styling.
+            if viewModel.showContestedWarning {
                 contestedNameWarning
                     .padding(.top, 20)
             }
@@ -307,6 +310,16 @@ struct CreateUsernameView: View {
             isPresented: $showContestedConfirmation
         ) {
             Button(NSLocalizedString("Submit anyway", comment: "Usernames"), role: .destructive) {
+                // The alert can sit open across the join-window boundary.
+                // Re-check at the moment of confirmation: a submission the
+                // network would refuse is replaced by a fresh availability
+                // answer (which shows the join-closed state) instead of a
+                // broadcast failure.
+                if viewModel.activeContestContenders != nil, viewModel.activeContestJoinClosed {
+                    showContestedConfirmation = false
+                    viewModel.refreshRegistrationRecoveryState()
+                    return
+                }
                 performSubmit()
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
@@ -314,7 +327,7 @@ struct CreateUsernameView: View {
             // The join-the-vote wording only holds while the join window is
             // still open; past it (or with no known contest) the generic
             // contested message is the honest one.
-            Text(viewModel.activeContestContenders != nil && !activeContestJoinClosed
+            Text(viewModel.activeContestContenders != nil && !viewModel.activeContestJoinClosed
                 ? NSLocalizedString(
                     "A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes.",
                     comment: "Usernames")
@@ -469,37 +482,6 @@ struct CreateUsernameView: View {
         }
     }
 
-    /// Whether the orange contested callout applies to the current
-    /// answer. A plainly TAKEN name (someone owns its document) will
-    /// never go to a vote — "requires a masternode vote" next to
-    /// "Username taken" (or a for-sale listing) would contradict it.
-    /// Locked and mid-vote answers keep the callout: it carries their
-    /// detail.
-    private var showContestedWarning: Bool {
-        guard viewModel.isContestedCandidate else { return false }
-        if viewModel.uiState.usernameBlockedRule == .invalidCritical {
-            return viewModel.isLockedContestedName || viewModel.activeContestContenders != nil
-        }
-        return true
-    }
-
-    /// The active vote's deadline has already passed (the poll is being
-    /// finalized on-chain). Distinct wording — "join as a contender"
-    /// would be a stale claim at that point.
-    private var activeContestHasEnded: Bool {
-        guard let endsAt = viewModel.activeContestEndsAt else { return false }
-        return endsAt <= Date()
-    }
-
-    /// The vote is still running but its contender-join window
-    /// (`contenderJoinDeadline` — poll end − 45 min testnet / − 1 week
-    /// mainnet) has closed: the name can no longer be requested until
-    /// the vote resolves. Always true once the vote itself has ended.
-    private var activeContestJoinClosed: Bool {
-        guard let endsAt = viewModel.activeContestEndsAt else { return false }
-        return UsernameMarketplaceService.contenderJoinDeadline(voteEnd: endsAt) <= Date()
-    }
-
     /// Deadline as "Today 20:33"-style text (DWDateFormatter's relative
     /// short date + time). Testnet contest windows are minutes long, so
     /// the time matters; a locale-formatted full date alone would bury it.
@@ -520,12 +502,12 @@ struct CreateUsernameView: View {
         let voteInProgress = viewModel.activeContestContenders != nil
         let title: String
         let body: String
-        if voteInProgress, activeContestHasEnded {
+        if voteInProgress, viewModel.activeContestHasEnded {
             title = NSLocalizedString("Vote ended", comment: "Usernames")
             body = NSLocalizedString(
                 "The masternode vote for this name has ended and the result is being finalized. Check back soon.",
                 comment: "Usernames")
-        } else if voteInProgress, let endsAt = viewModel.activeContestEndsAt, activeContestJoinClosed {
+        } else if voteInProgress, let endsAt = viewModel.activeContestEndsAt, viewModel.activeContestJoinClosed {
             title = NSLocalizedString("Vote in progress", comment: "Usernames")
             body = String.localizedStringWithFormat(
                 NSLocalizedString(
