@@ -813,6 +813,21 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         } catch {
             Self.logger.error("👥 DASHPAY-SYNC :: startDashPaySync failed: \(String(describing: error), privacy: .public)")
         }
+
+        // Start the recurring DPNS username-marketplace sync (tracks the
+        // wallet identities' names with sale state, detects sold/
+        // transferred departures, refreshes seller balances). Same
+        // best-effort contract as the blocks above; the marketplace
+        // screen's pull-to-refresh (`syncDpnsMarketplace`) still works
+        // without the loop.
+        do {
+            if try !manager.isDpnsSyncRunning() {
+                try manager.startDpnsSync()
+            }
+            Self.logger.info("🏷️ DPNS-SYNC :: started for \(network.rawValue, privacy: .public)")
+        } catch {
+            Self.logger.error("🏷️ DPNS-SYNC :: startDpnsSync failed: \(String(describing: error), privacy: .public)")
+        }
 #endif
 
         self.sdk = SwiftDashSDKHost.shared.sdk
