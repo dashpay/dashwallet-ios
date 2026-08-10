@@ -184,35 +184,52 @@ struct UsernameMarketplaceService {
         return nil
     }
 
-    /// The name behind an event's domain document: its label plus its
-    /// live marketplace state. nil when the document is gone entirely;
-    /// `live` nil when the name currently resolves to no queryable
-    /// state. Only `live` may claim anything about the PRESENT — the
-    /// event's own price/time are already history.
-    struct EventName {
+    /// Live DPNS state for a BATCH of domain document ids — one
+    /// `documentList` on the primary `$id` index (`in` clause) instead of
+    /// two round trips per name. The domain document itself carries the
+    /// entire live state a feed row claims about the present: label,
+    /// owner, and current `$price` (nil = not for sale). Ids absent from
+    /// the result no longer exist.
+    struct LiveDomainName {
+        let documentIdBase58: String
         let label: String
-        let live: DpnsMarketplaceName?
+        let ownerId: Data
+        let priceCredits: UInt64?
+
+        var isForSale: Bool { priceCredits != nil }
+        var priceDuffs: UInt64? { priceCredits.map { $0 / 1_000 } }
     }
 
-    func eventName(forDomainDocumentId documentIdBase58: String) async throws -> EventName? {
-        guard let sdk = SwiftDashSDKHost.shared.sdk,
-              let wallet = SwiftDashSDKHost.shared.wallet else { return nil }
-        let doc: [String: Any]
-        do {
-            doc = try await sdk.documentGet(
-                dataContractId: DPNSVotePoll.contractId,
-                documentType: DPNSVotePoll.documentTypeName,
-                documentId: documentIdBase58)
-        } catch {
-            // Gone documents are an expected outcome for old events.
-            return nil
+    func liveDomainNames(forDocumentIds ids: [String]) async throws -> [String: LiveDomainName] {
+        guard let sdk = SwiftDashSDKHost.shared.sdk, !ids.isEmpty else { return [:] }
+        let idList = ids.map { "\"\($0)\"" }.joined(separator: ",")
+        let result = try await sdk.documentList(
+            dataContractId: DPNSVotePoll.contractId,
+            documentType: DPNSVotePoll.documentTypeName,
+            whereClause: "[[\"$id\",\"in\",[\(idList)]]]",
+            orderByClause: "[[\"$id\",true]]",
+            limit: UInt32(ids.count))
+        let docs: [[String: Any]]
+        if let array = result["documents"] as? [[String: Any]] {
+            docs = array
+        } else if let array = result["items"] as? [[String: Any]] {
+            docs = array
+        } else {
+            docs = result.values.compactMap { $0 as? [String: Any] }
         }
-        guard let label = (doc["label"] as? String) ?? (doc["normalizedLabel"] as? String) else {
-            return nil
+        var out: [String: LiveDomainName] = [:]
+        for doc in docs {
+            guard let id = doc["$id"] as? String,
+                  let ownerBase58 = doc["$ownerId"] as? String,
+                  let ownerId = Data.identifier(fromBase58: ownerBase58),
+                  let label = (doc["label"] as? String) ?? (doc["normalizedLabel"] as? String) else { continue }
+            out[id] = LiveDomainName(
+                documentIdBase58: id,
+                label: label,
+                ownerId: ownerId,
+                priceCredits: (doc["$price"] as? NSNumber)?.uint64Value)
         }
-        return EventName(
-            label: label,
-            live: try await wallet.dpnsMarketplaceNameState(name: label))
+        return out
     }
 
     /// The main identity's tracked names from the wallet's local rows —

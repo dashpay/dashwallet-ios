@@ -58,12 +58,12 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     }
 
     /// One rendered browse-feed row: the historical event plus the
-    /// name's label and (best-effort) live state.
+    /// name's label and live state (from the batched domain read).
     struct BrowseEventRow: Identifiable {
         let id: String
         let label: String
         let event: UsernameMarketplaceService.MarketplaceEvent
-        let live: DpnsMarketplaceName?
+        let live: UsernameMarketplaceService.LiveDomainName?
     }
 
     @Published var segment: Segment = .find
@@ -116,10 +116,10 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     /// Per-feed pagination cursors: oldest $createdAt fetched so far.
     private var priceChangesCursorMs: UInt64?
     private var purchasesCursorMs: UInt64?
-    /// documentId → resolved name, shared across both feeds — a name
-    /// with many events costs one resolution per refresh.
-    private var browseNameCache: [String: UsernameMarketplaceService.EventName] = [:]
-    /// Events per fetch — each new name costs up to 2 extra round trips.
+    /// documentId → live domain state, shared across both feeds and
+    /// filled by ONE batched read per page — a page costs exactly two
+    /// platform queries (events + batched $id lookup) regardless of size.
+    private var browseNameCache: [String: UsernameMarketplaceService.LiveDomainName] = [:]
     private static let browseEventsPerPage: UInt32 = 25
 
     var browseRows: [BrowseEventRow] {
@@ -155,21 +155,24 @@ final class UsernameMarketplaceViewModel: ObservableObject {
                 let events = feed == .priceChanges
                     ? try await service.recentPriceChanges(beforeMs: cursor, limit: Self.browseEventsPerPage)
                     : try await service.recentPurchases(beforeMs: cursor, limit: Self.browseEventsPerPage)
+                // One batched $id lookup covers every name this page
+                // mentions that we haven't resolved yet.
+                let unknownIds = Array(Set(events.map(\.dpnsDocumentIdBase58)
+                    .filter { browseNameCache[$0] == nil }))
+                if !unknownIds.isEmpty {
+                    for (id, live) in try await service.liveDomainNames(forDocumentIds: unknownIds) {
+                        browseNameCache[id] = live
+                    }
+                }
                 var rows: [BrowseEventRow] = []
                 for event in events {
-                    let name: UsernameMarketplaceService.EventName?
-                    if let cached = browseNameCache[event.dpnsDocumentIdBase58] {
-                        name = cached
-                    } else {
-                        name = try await service.eventName(forDomainDocumentId: event.dpnsDocumentIdBase58)
-                        if let name { browseNameCache[event.dpnsDocumentIdBase58] = name }
-                    }
-                    guard let name else { continue } // document gone — nothing to show
+                    // Absent from the batch = the document is gone.
+                    guard let live = browseNameCache[event.dpnsDocumentIdBase58] else { continue }
                     rows.append(BrowseEventRow(
                         id: "\(event.dpnsDocumentIdBase58)-\(event.createdAtMs)",
-                        label: name.label,
+                        label: live.label,
                         event: event,
-                        live: name.live))
+                        live: live))
                 }
                 if feed == .priceChanges {
                     browsePriceChanges.append(contentsOf: rows)
