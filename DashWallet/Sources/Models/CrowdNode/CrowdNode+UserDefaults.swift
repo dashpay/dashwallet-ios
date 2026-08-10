@@ -43,6 +43,11 @@ private let kOnlineInfoShown = "crowdNodeOnlineInfoShownKey"
 private let kSignedEmailMessageId = "crowdNodeSignedEmailMessageId"
 private let kShouldShowConfirmedNotification = "shouldShowConfirmedNotification"
 private let kLastWithdrawalBlock = "lastWithdrawalBlockKey"
+// Unlike the keys above this one is NOT legacy — it was introduced after the
+// per-wallet scoping, so no pre-multi-wallet install ever wrote the bare key.
+// It still routes through `perWalletKey(_:)` like the rest: the bare name is
+// only the no-active-wallet fallback.
+private let kFruitlessRestoreTxCount = "crowdNodeFruitlessRestoreTxCountKey"
 
 /// The set of legacy keys that are scoped per wallet. Enumerated by `resetForWipe`
 /// (which must clear the per-wallet variant for EVERY wallet) and used by
@@ -58,6 +63,7 @@ private let kPerWalletKeys = [
     kSignedEmailMessageId,
     kShouldShowConfirmedNotification,
     kLastWithdrawalBlock,
+    kFruitlessRestoreTxCount,
 ]
 
 // MARK: - CrowdNodeDefaults
@@ -124,6 +130,7 @@ class CrowdNodeDefaults {
         _shouldShowConfirmedNotification = nil
         _signedEmailMessageId = nil
         _lastWithdrawalBlock = nil
+        _fruitlessRestoreTxCount = nil
     }
 
     private var _accountAddress: String? = nil
@@ -261,6 +268,31 @@ class CrowdNodeDefaults {
         }
     }
 
+    private var _fruitlessRestoreTxCount: Int? = nil
+    /// Persisted-row count as of the last `restoreState()` pass that scanned
+    /// this wallet's full post-2022 history and found no CrowdNode account at
+    /// all, or nil when no such pass is on record. Lets a later launch skip
+    /// the full history scan when nothing was persisted since — the memo is
+    /// keyed to the row count rather than latching permanently precisely so a
+    /// restored seed whose history syncs in later (count changes) rescans.
+    /// Written ONLY by the account-not-found branch; setting nil clears it.
+    ///
+    /// Resolution deliberately bypasses `resolvedKey`'s seed-from-legacy step:
+    /// the bare key can only hold a memo written while no wallet was active,
+    /// i.e. from a pass whose wallet-scoped scan was vacuous — seeding it into
+    /// a wallet's key would let that wallet skip a scan it never ran.
+    var fruitlessRestoreTxCount: Int? {
+        get {
+            let key = perWalletKey(kFruitlessRestoreTxCount) ?? kFruitlessRestoreTxCount
+            return _fruitlessRestoreTxCount ?? UserDefaults.standard.value(forKey: key) as? Int
+        }
+        set(value) {
+            _fruitlessRestoreTxCount = value
+            let key = perWalletKey(kFruitlessRestoreTxCount) ?? kFruitlessRestoreTxCount
+            UserDefaults.standard.set(value, forKey: key)
+        }
+    }
+
 
     /// Reset the ACTIVE wallet's CrowdNode state (plus the two global education
     /// flags). Writes through the per-wallet-scoped properties, so it clears the
@@ -278,6 +310,7 @@ class CrowdNodeDefaults {
         onlineInfoShown = false
         signedEmailMessageId = -1
         lastWithdrawalBlock = 0
+        fruitlessRestoreTxCount = nil
     }
 
     /// Clear a SINGLE wallet's per-wallet CrowdNode keys (the removed wallet may
