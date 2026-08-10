@@ -5,22 +5,22 @@
 //  Copyright © 2026 Dash Core Group. All rights reserved.
 //
 
+@testable import dashwallet
 import Combine
 import SwiftDashSDK
 import XCTest
-@testable import dashwallet
 
 @MainActor
 final class PassiveWalletStateUITailTests: XCTestCase {
 
-    func testAlreadyConsumedAssetLockMapsToSuccessfulResume() {
+    func testAlreadyConsumedAssetLockMapsToUnconfirmedResume() {
         let error = PlatformWalletError.assetLockAlreadyConsumed("test outpoint")
 
         XCTAssertEqual(
-            ShieldedTransferCoordinator.idempotentAssetLockResumePhase(for: error),
-            .success)
+            ShieldedTransferCoordinator.alreadyConsumedAssetLockResumePhase(for: error),
+            .submittedUnconfirmed)
         XCTAssertNil(
-            ShieldedTransferCoordinator.idempotentAssetLockResumePhase(
+            ShieldedTransferCoordinator.alreadyConsumedAssetLockResumePhase(
                 for: PlatformWalletError.invalidParameter("unrelated")))
     }
 

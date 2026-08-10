@@ -505,6 +505,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // no asset-lock polling: there's no new lock to track).
         phase = .proving
 
+        let terminalPhase: Phase
         do {
             let recipient = ShieldedFundFromAssetLockRecipient(
                 recipientRaw43: recipientOverride ?? env.shieldedRecipient,
@@ -514,16 +515,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 outPointTxid: outPointTxidWire,
                 outPointVout: outPointVout,
                 recipients: [recipient])
+            terminalPhase = .success
         } catch {
-            guard Self.idempotentAssetLockResumePhase(for: error) == .success else {
+            guard let mappedPhase = Self.alreadyConsumedAssetLockResumePhase(for: error) else {
                 handleSpendError(error, manager: env.manager)
                 return
             }
-            // Platform confirmed this exact outpoint was already consumed by
-            // an earlier attempt. Rust reconciled its tracked lock to the
-            // terminal Consumed status before returning the typed error, so
-            // recovery is complete rather than retryable.
-            Self.logger.info("🛡️ SHIELD-TX :: resume found asset lock already consumed — treating as complete")
+            // A DAPI endpoint reported this exact outpoint as consumed, but
+            // rejection responses are not quorum-authenticated. Rust retains
+            // the ChainLock proof and records nonterminal consumption-unknown
+            // state, so suppress retries without claiming verified success.
+            terminalPhase = mappedPhase
+            Self.logger.info("🛡️ SHIELD-TX :: resume found asset lock reported consumed — completion remains unconfirmed")
         }
 
         Self.logger.info("🛡️ SHIELD-TX :: resume completed")
@@ -531,7 +534,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // .broadcasting so the step checklist completes naturally (mirrors
         // `performShield`). No intermediate signal exists for this opaque call.
         phase = .broadcasting
-        phase = .success
+        phase = terminalPhase
         ShieldedTxLookup.shared.refresh()
         NotificationCenter.default.post(
             name: .swiftDashSDKTransactionProjectionDidChange,
@@ -539,12 +542,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
         scheduleShieldedResync(manager: env.manager)
     }
 
-    /// An exact-outpoint resume is idempotently complete when Platform says
-    /// that lock was already consumed. The SDK persists status 4 before
-    /// returning this typed error; every other error remains a real failure.
-    static func idempotentAssetLockResumePhase(for error: Error) -> Phase? {
+    /// An already-consumed report suppresses a potentially destructive retry,
+    /// but is not authenticated proof of completion. Every other error remains
+    /// a normal failure.
+    static func alreadyConsumedAssetLockResumePhase(for error: Error) -> Phase? {
         if case PlatformWalletError.assetLockAlreadyConsumed = error {
-            return .success
+            return .submittedUnconfirmed
         }
         return nil
     }
