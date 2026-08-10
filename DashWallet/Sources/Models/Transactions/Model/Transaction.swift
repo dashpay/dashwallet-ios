@@ -430,7 +430,30 @@ class Transaction: TransactionDataItem, Identifiable {
             ?? shieldedTransferAmountDuffs
             ?? platformFundingAmountDuffs
             ?? identityFundingAmountDuffs
+            ?? movedAmountDuffs
             ?? _dashAmount
+    }
+
+    /// The amount a plain Core→Core self-send actually moved — the
+    /// net-change model deliberately derives 0 for a move (every input
+    /// and output is the wallet's own), which read as "0 DASH" on the
+    /// history row and detail sheet. Same reconstruction the Watch
+    /// payload has always used, but fee-EXCLUSIVE to match how `.sent`
+    /// rows display: for a self-send every output is owned, so the
+    /// owned-output total IS the moved amount; owned inputs minus fee
+    /// are the fallback while the TXO join hasn't reconciled. CoinJoin
+    /// mixing rows keep their deliberate net semantics, and an
+    /// unreconstructable amount stays 0 rather than guessing.
+    private var movedAmountDuffs: UInt64? {
+        guard direction == .moved, !isCoinJoinMixing, _dashAmount == 0 else { return nil }
+        if snapshot.ownedOutputAmount > 0 {
+            return snapshot.ownedOutputAmount
+        }
+        let fee = snapshot.fee ?? 0
+        if snapshot.ownedInputAmount > fee {
+            return snapshot.ownedInputAmount - fee
+        }
+        return nil
     }
     var signedDashAmount: Int64 {
         if dashAmount == UInt64.max {
