@@ -65,6 +65,16 @@ class HomeViewModel: ObservableObject {
     /// Tracks whether initial data load has completed (Fix #2)
     private var hasCompletedInitialLoad: Bool = false
 
+    /// A full reload is running on `queue`. Main-thread-owned: every read and
+    /// write happens inside `reloadTxDataSource`'s main-actor hop or the
+    /// completion hop at the end of `performReload`.
+    private var reloadInFlight = false
+
+    /// A reload was requested while one was already running, so the running
+    /// pass's snapshot is already stale. Exactly one trailing pass is owed —
+    /// see `reloadTxDataSource`.
+    private var reloadRequestedWhileInFlight = false
+
     /// Debounce timer for sync state changes to prevent excessive reloads (Fix #4)
     private var syncStateDebounceWorkItem: DispatchWorkItem?
     private let syncStateDebounceInterval: TimeInterval = 0.5
@@ -418,6 +428,21 @@ class HomeViewModel: ObservableObject {
         // once up front, asynchronously, keeps the pass free-running.
         let dispatch = { @MainActor [weak self] in
             guard let self else { return }
+            // Coalesce, never queue. A pass costs seconds once the wallet has
+            // a few thousand transactions, while the trigger throttle upstream
+            // is one second — so enqueueing per trigger let `queue` accumulate
+            // a backlog that grew for as long as the sync wrote rows, each
+            // queued pass rebuilding a snapshot the next one already
+            // superseded. (A restore of a large wallet reached ~3.5 minutes of
+            // queue latency: the list rendered history that old.) At most one
+            // pass runs and at most one trailing pass is owed; the trailing
+            // pass reads the store fresh, so dropping the requests in between
+            // loses nothing.
+            guard !self.reloadInFlight else {
+                self.reloadRequestedWhileInFlight = true
+                return
+            }
+            self.reloadInFlight = true
             // Pair each request with the filter selection that was live when
             // it was made. Reading it inside the pass instead would let a pass
             // triggered by one change render a selection the user made after
@@ -590,6 +615,16 @@ class HomeViewModel: ObservableObject {
             }
             if self.hasMasternodeHistory != hasMasternodes {
                 self.hasMasternodeHistory = hasMasternodes
+            }
+
+            // Release the coalescing gate only after this pass's results are
+            // on screen, then settle whatever changed while it ran. Ordering
+            // matters: clearing the request flag before re-entering keeps a
+            // trigger that lands during the trailing pass from being swallowed.
+            self.reloadInFlight = false
+            if self.reloadRequestedWhileInFlight {
+                self.reloadRequestedWhileInFlight = false
+                self.reloadTxDataSource()
             }
         }
     }
