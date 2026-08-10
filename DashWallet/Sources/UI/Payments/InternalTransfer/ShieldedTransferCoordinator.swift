@@ -515,8 +515,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 outPointVout: outPointVout,
                 recipients: [recipient])
         } catch {
-            handleSpendError(error, manager: env.manager)
-            return
+            guard Self.idempotentAssetLockResumePhase(for: error) == .success else {
+                handleSpendError(error, manager: env.manager)
+                return
+            }
+            // Platform confirmed this exact outpoint was already consumed by
+            // an earlier attempt. Rust reconciled its tracked lock to the
+            // terminal Consumed status before returning the typed error, so
+            // recovery is complete rather than retryable.
+            Self.logger.info("🛡️ SHIELD-TX :: resume found asset lock already consumed — treating as complete")
         }
 
         Self.logger.info("🛡️ SHIELD-TX :: resume completed")
@@ -525,7 +532,21 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // `performShield`). No intermediate signal exists for this opaque call.
         phase = .broadcasting
         phase = .success
+        ShieldedTxLookup.shared.refresh()
+        NotificationCenter.default.post(
+            name: .swiftDashSDKTransactionProjectionDidChange,
+            object: nil)
         scheduleShieldedResync(manager: env.manager)
+    }
+
+    /// An exact-outpoint resume is idempotently complete when Platform says
+    /// that lock was already consumed. The SDK persists status 4 before
+    /// returning this typed error; every other error remains a real failure.
+    static func idempotentAssetLockResumePhase(for error: Error) -> Phase? {
+        if case PlatformWalletError.assetLockAlreadyConsumed = error {
+            return .success
+        }
+        return nil
     }
 
     /// Parse a `PersistentAssetLock.outPointHex` ("<txid display hex>:<vout>")

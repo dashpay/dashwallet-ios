@@ -6,11 +6,23 @@
 //
 
 import Combine
+import SwiftDashSDK
 import XCTest
 @testable import dashwallet
 
 @MainActor
 final class PassiveWalletStateUITailTests: XCTestCase {
+
+    func testAlreadyConsumedAssetLockMapsToSuccessfulResume() {
+        let error = PlatformWalletError.assetLockAlreadyConsumed("test outpoint")
+
+        XCTAssertEqual(
+            ShieldedTransferCoordinator.idempotentAssetLockResumePhase(for: error),
+            .success)
+        XCTAssertNil(
+            ShieldedTransferCoordinator.idempotentAssetLockResumePhase(
+                for: PlatformWalletError.invalidParameter("unrelated")))
+    }
 
     func testHomeBalanceChangesSkipInitialAndDuplicateSnapshots() {
         let balances = CurrentValueSubject<WalletBalance?, Never>(nil)
