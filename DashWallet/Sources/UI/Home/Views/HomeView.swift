@@ -774,9 +774,11 @@ struct HomeViewContent<Content: View>: View {
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
-                    : txItem.isPendingIdentityFunding
+                    : txItem.isPendingIdentityRegistration
                         ? NSLocalizedString("Pending — tap to finish", comment: "DashPay registration recovery")
-                    : txItem.isPendingPlatformFunding
+                    // A pending top-up has nothing to "finish" in another
+                    // flow — it recovers from the tx detail sheet.
+                    : txItem.isPendingIdentityFunding || txItem.isPendingPlatformFunding
                         ? NSLocalizedString("Pending", comment: "")
                         : (metadata?.details?.isEmpty == false
                             ? metadata?.details
@@ -795,7 +797,7 @@ struct HomeViewContent<Content: View>: View {
                 // instead of the read-only detail/gift-card sheets.
                 if txItem.isPendingShieldedTransfer {
                     self.pendingShieldedRecovery = txItem
-                } else if txItem.isPendingIdentityFunding {
+                } else if txItem.isPendingIdentityRegistration {
                     #if DASHPAY
                     delegate?.homeViewRequestUsername()
                     #else
