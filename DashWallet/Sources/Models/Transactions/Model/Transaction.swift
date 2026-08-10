@@ -434,26 +434,29 @@ class Transaction: TransactionDataItem, Identifiable {
             ?? _dashAmount
     }
 
-    /// The amount a plain Core→Core self-send actually moved — the
-    /// net-change model deliberately derives 0 for a move (every input
-    /// and output is the wallet's own), which read as "0 DASH" on the
-    /// history row and detail sheet. Same reconstruction the Watch
-    /// payload has always used, but fee-EXCLUSIVE to match how `.sent`
-    /// rows display: for a self-send every output is owned, so the
-    /// owned-output total IS the moved amount; owned inputs minus fee
-    /// are the fallback while the TXO join hasn't reconciled. CoinJoin
-    /// mixing rows keep their deliberate net semantics, and an
-    /// unreconstructable amount stays 0 rather than guessing.
+    /// The amount an UNTRACKED asset lock moved out of the transparent
+    /// UTXO set — the net-change model derives 0 for it (the credit
+    /// outputs live in the lock payload, not in the wallet's TXOs, so
+    /// everything visible is self change), which read as "0 DASH" on
+    /// the history row. The locked amount is exactly what left the
+    /// regular outputs: Σ(owned inputs) − Σ(owned outputs) − fee.
+    /// (Tracked funding locks — shielded / platform / identity — were
+    /// already overridden with their recorded amounts above.)
+    ///
+    /// Deliberately NOT applied to plain `.moved` self-sends: their
+    /// destination-vs-change split is not derivable from the owned
+    /// totals (change is owned too — reconstructing from owned outputs
+    /// showed a 1.2 DASH lock as its ~825 DASH change), so they keep
+    /// the honest net-change 0. CoinJoin mixing rows likewise keep
+    /// their net semantics.
     private var movedAmountDuffs: UInt64? {
-        guard direction == .moved, !isCoinJoinMixing, _dashAmount == 0 else { return nil }
-        if snapshot.ownedOutputAmount > 0 {
-            return snapshot.ownedOutputAmount
-        }
-        let fee = snapshot.fee ?? 0
-        if snapshot.ownedInputAmount > fee {
-            return snapshot.ownedInputAmount - fee
-        }
-        return nil
+        guard direction == .moved, !isCoinJoinMixing, _dashAmount == 0,
+              TransactionTypeKind(rawValue: snapshot.typeKind) == .assetLock,
+              snapshot.ownedInputAmount > 0 else { return nil }
+        let (nonLock, overflow) = snapshot.ownedOutputAmount
+            .addingReportingOverflow(snapshot.fee ?? 0)
+        guard !overflow, snapshot.ownedInputAmount > nonLock else { return nil }
+        return snapshot.ownedInputAmount - nonLock
     }
     var signedDashAmount: Int64 {
         if dashAmount == UInt64.max {
