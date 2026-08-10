@@ -328,6 +328,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case identityRegistration(Error)
         case dpnsRegistration(Error)
         case availabilityCheck(Error)
+        case purchase(Error)
         case insufficientPlatformCredits(required: UInt64, available: UInt64)
         case insufficientShieldedBalance(requiredCredits: UInt64, availableCredits: UInt64)
         case shieldedBalanceImmature(readyAt: Date)
@@ -357,6 +358,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 return underlying.localizedDescription
             case .dpnsRegistration(let underlying):
                 return underlying.localizedDescription
+            case .purchase(let underlying):
+                // Marketplace-typed failures (price changed, delisted,
+                // insufficient credits) get their friendly wording.
+                return UsernameMarketplaceService.userFacingMessage(for: underlying)
             case .availabilityCheck(let underlying):
                 return underlying.localizedDescription
             case .insufficientPlatformCredits(let required, let available):
@@ -821,6 +826,175 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             username,
             fundingSource: .invitation,
             invitationURI: invitationURI)
+    }
+
+    /// Direct purchase of a marketplace-listed name from the
+    /// create-username flow: ensure this wallet's identity exists and
+    /// holds enough credits — creating it Core-funded, or topping it up
+    /// from the wallet balance — then buy at exactly `priceCredits`.
+    ///
+    /// Core funding only: the form offers this purchase against the
+    /// wallet balance, and the marketplace's own buy sheet remains the
+    /// path for already-funded identities
+    /// (`UsernameMarketplaceService.purchase`). Same PIN gate /
+    /// single-flight / phase reporting as `startCreateUsername`; the
+    /// `.completed` transition performs the DWGlobalOptions mirror
+    /// writes (a purchase never writes a contested bookmark, so the
+    /// deferral branch in `handlePhaseChange` cannot trigger).
+    @discardableResult
+    func startPurchaseUsername(name: String, priceCredits: UInt64) async throws -> Identifier {
+        Self.logger.info("🪪 IDENT-COORD :: startPurchaseUsername name=\(name, privacy: .public) priceCredits=\(priceCredits, privacy: .public)")
+
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            throw CoordinatorError.noWallet
+        }
+        guard let network = SwiftDashSDKHost.shared.runningNetwork else {
+            throw CoordinatorError.noNetwork
+        }
+        guard let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
+            throw CoordinatorError.noModelContainer
+        }
+
+        // Single-flight — same rationale as `startCreateUsername`: the
+        // funding FFI calls race to their terminal even if we stop
+        // observing, and two funding attempts must never overlap.
+        let currentPhase = phase
+        switch currentPhase {
+        case .preparingKeys, .inFlight:
+            Self.logger.warning("🪪 IDENT-COORD :: rejecting concurrent purchase; phase=\(String(describing: currentPhase), privacy: .public)")
+            throw CoordinatorError.alreadyInFlight
+        case .idle, .completed, .failed:
+            break
+        }
+        resetState()
+        currentUsername = name
+        currentFundingSource = .core
+
+        let newController = DWIdentityRegistrationController()
+        controller = newController
+        wireController(newController)
+        // Both funding branches below (IdentityCreate, top-up) move value
+        // through a Core asset lock, so the polling applies as in the
+        // Core-funded registration path.
+        startAssetLockPolling(walletId: wallet.walletId, modelContainer: modelContainer)
+
+        do {
+            try await authorizer.authorize()
+        } catch DWIdentityAuthorizer.AuthError.cancelled {
+            resetState()
+            throw CoordinatorError.authCancelled
+        } catch {
+            lastErrorMessage = CoordinatorError.authFailed.localizedDescription
+            newController.enterFailed(lastErrorMessage ?? "")
+            throw CoordinatorError.authFailed
+        }
+
+        // Credits the buyer identity must hold: the sale price plus the
+        // same 0.03-DASH headroom a fresh registration funds itself with,
+        // covering the purchase transition fee (and Core-side asset-lock
+        // conversion losses).
+        let headroomDuffs = DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        let requiredCredits = priceCredits + headroomDuffs * 1_000
+        let signer = KeychainSigner(modelContainer: modelContainer)
+
+        let identityId: Identifier
+        do {
+            if let existingId = lookupExistingIdentityId(
+                walletId: wallet.walletId,
+                modelContainer: modelContainer)
+            {
+                identityId = existingId
+                newController.enterInFlight()
+                // Top up only the shortfall. The persisted balance can lag
+                // the chain; the headroom absorbs small drift, and the SDK
+                // still pre-flights the real balance inside the purchase.
+                let heldCredits = UsernameMarketplaceService.identityBalanceCredits(
+                    identityId: existingId,
+                    container: modelContainer)
+                if heldCredits < requiredCredits {
+                    let shortfallDuffs = (requiredCredits - heldCredits + 999) / 1_000
+                    Self.logger.info("🪪 IDENT-COORD :: purchase top-up shortfallDuffs=\(shortfallDuffs, privacy: .public)")
+                    _ = try await wallet.topUpIdentityWithFunding(
+                        identityId: existingId,
+                        amountDuffs: shortfallDuffs,
+                        accountIndex: Self.defaultAccountIndex)
+                }
+            } else {
+                // Fresh identity, funded with the full purchase amount.
+                // Key prep is identical to the registration path.
+                newController.enterPreparingKeys()
+                var pubkeys = try wallet.prePersistIdentityKeysForRegistration(
+                    identityIndex: Self.pinnedIdentityIndex,
+                    keyCount: Self.defaultKeyCount,
+                    network: network)
+                pubkeys.append(contentsOf: try DWDashPayIdentityKeys.deriveAndPersist(
+                    wallet: wallet,
+                    identityIdString: "",
+                    identityIndex: Self.pinnedIdentityIndex,
+                    specifications: DWDashPayIdentityKeys.registrationSpecifications(
+                        firstKeyId: Self.defaultKeyCount),
+                    network: network))
+                newController.enterInFlight()
+                let fundingDuffs = (requiredCredits + 999) / 1_000
+                let result = try await wallet.registerIdentityWithFunding(
+                    amountDuffs: fundingDuffs,
+                    accountIndex: Self.defaultAccountIndex,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    signer: signer)
+                identityId = result.0
+            }
+        } catch {
+            Self.logger.error("🪪 IDENT-COORD :: purchase funding failed: \(String(describing: error), privacy: .public)")
+            failedAtPhase = assetLockStatus < 2 ? .processingPayment : .creatingID
+            lastErrorMessage = error.localizedDescription
+            newController.enterFailed(error.localizedDescription)
+            throw CoordinatorError.identityRegistration(error)
+        }
+
+        // The purchase itself — exact-price: the SDK pre-flights the
+        // listing and the buyer's balance, and consensus rejects any
+        // seller-side price change (typed `.priceChanged`). The trade
+        // index keys on the normalized label.
+        do {
+            let normalized = (try? SwiftDashSDKHost.shared.sdk?.dpnsNormalizeLabel(name))
+                .flatMap { $0 } ?? name.lowercased()
+            _ = try await wallet.purchaseDpnsName(
+                purchaserIdentityId: identityId,
+                name: normalized,
+                expectedPriceCredits: priceCredits,
+                signer: signer)
+            Self.logger.info("🪪 IDENT-COORD :: purchased \(name, privacy: .public) for \(priceCredits, privacy: .public) credits")
+        } catch {
+            Self.logger.error("🪪 IDENT-COORD :: purchase failed: \(String(describing: error), privacy: .public)")
+            failedAtPhase = .registrationUsername
+            let coordError = CoordinatorError.purchase(error)
+            lastErrorMessage = coordError.localizedDescription
+            newController.enterFailed(lastErrorMessage ?? "")
+            throw coordError
+        }
+
+        // The name now points at this identity — but a purchase writes
+        // marketplace rows, not the `dpns_names` cache every username
+        // surface reads. Pull the name into that cache, then adopt the
+        // identity through the same reconciliation the seed-recovery path
+        // uses: main-identity bookmark, DWGlobalOptions mirrors from SDK
+        // truth, contacts refresh, and the canonical registration
+        // notification that installs the DashPay tabs. (The bare
+        // phase-completion below is NOT enough for an identity that
+        // arrived outside the bridge — DWDashPayModel deliberately
+        // ignores bridge events without a registration username.)
+        do {
+            _ = try await wallet.syncDpnsNames(identityId: identityId)
+        } catch {
+            // The reconcile falls back to persisted rows; the Home-appear
+            // syncFromNetwork retries the cache pull.
+            Self.logger.warning("🪪 IDENT-COORD :: post-purchase syncDpnsNames failed: \(String(describing: error), privacy: .public)")
+        }
+        _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
+        newController.enterCompleted(identityId: identityId)
+        Self.logger.info("🪪 IDENT-COORD :: purchase complete")
+        return identityId
     }
 
     /// Restart the flow after a `.failed` terminal phase. Identical

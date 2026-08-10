@@ -4385,6 +4385,27 @@
 "The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead.";
 
 /* Usernames */
+"The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance." = "The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance.";
+
+/* Usernames */
+"The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later.";
+
+/* Usernames */
+"Buy for %@ Dash" = "Buy for %@ Dash";
+
+/* Usernames */
+"Buy username" = "Buy username";
+
+/* Usernames */
+"“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance.";
+
+/* Usernames */
+"Username purchased" = "Username purchased";
+
+/* Usernames */
+"“%@” is now your username." = "“%@” is now your username.";
+
+/* Usernames */
 "The masternode vote for this name has ended and the result is being finalized. Check back soon." = "The masternode vote for this name has ended and the result is being finalized. Check back soon.";
 
 /* Usernames */

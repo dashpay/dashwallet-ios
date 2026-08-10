@@ -111,6 +111,12 @@ struct CreateUsernameView: View {
     /// through this alert (instead of submitting directly) when the
     /// typed name is contested-eligible — `viewModel.isContestedCandidate`.
     @State private var showContestedConfirmation: Bool = false
+    /// Tracks the buy-listed-name confirmation alert; the button routes
+    /// here when `viewModel.canPurchaseListedNameDirectly`.
+    @State private var showPurchaseConfirmation: Bool = false
+    /// Terminal success alert of a direct listing purchase; OK finishes
+    /// the flow like a completed registration.
+    @State private var showPurchaseSuccess: Bool = false
     /// Drives the success alert shown when registration reaches the
     /// terminal `.completed` phase. OK dismisses the screen.
     @State private var showSuccess: Bool = false
@@ -194,9 +200,10 @@ struct CreateUsernameView: View {
 
             // Taken-but-listed pointer: the owner has put the name up for
             // sale in the Username Marketplace, so "taken" isn't the end
-            // of the road.
-            if let salePriceDuffs = viewModel.takenNameSalePriceDuffs {
-                forSaleHint(priceDuffs: salePriceDuffs)
+            // of the road — affordable listings under the direct-purchase
+            // ceiling are buyable right here via the Buy button below.
+            if let salePriceCredits = viewModel.takenNameSalePriceCredits {
+                forSaleHint(priceCredits: salePriceCredits)
                     .padding(.top, 20)
             }
 
@@ -254,22 +261,26 @@ struct CreateUsernameView: View {
             Spacer()
 
             DashButton(
-                text: viewModel.hasPendingRegistrationRecovery
-                    ? NSLocalizedString("Finish registration", comment: "DashPay registration recovery")
-                    : NSLocalizedString("Continue", comment: ""),
-                isEnabled: viewModel.uiState.canContinue && !screenLockedAfterAuth,
+                text: primaryButtonText,
+                isEnabled: (viewModel.uiState.canContinue || viewModel.canPurchaseListedNameDirectly)
+                    && !screenLockedAfterAuth,
                 isLoading: inProgress
             ) {
                 // `viewModel.uiState.canContinue` is only true after
                 // `checkIfBlocked` flips `usernameBlockedRule` to
-                // `.valid`, so the button is gated on the same condition
-                // — no `if .valid` check needed here.
+                // `.valid`, so the registration branches are gated on the
+                // same condition. A taken-but-listed name never reaches
+                // `.valid`; its buyable state enables the button through
+                // `canPurchaseListedNameDirectly` and routes to the
+                // purchase confirmation instead.
                 //
                 // Contested-name submissions go through a confirmation
                 // alert first so the user explicitly acknowledges the
                 // ~45 min testnet / ~2 weeks mainnet voting wait and
                 // the locked Dash. Non-contested names submit directly.
-                if viewModel.isContestedCandidate {
+                if viewModel.canPurchaseListedNameDirectly {
+                    showPurchaseConfirmation = true
+                } else if viewModel.isContestedCandidate {
                     showContestedConfirmation = true
                 } else {
                     performSubmit()
@@ -334,6 +345,32 @@ struct CreateUsernameView: View {
                 : NSLocalizedString(
                     "This name requires voting. Your Dash will be locked until voting completes.",
                     comment: "Usernames"))
+        }
+        .alert(
+            NSLocalizedString("Buy username", comment: "Usernames"),
+            isPresented: $showPurchaseConfirmation
+        ) {
+            Button(NSLocalizedString("Buy", comment: "")) {
+                performPurchase()
+            }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+        } message: {
+            Text(String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance.",
+                    comment: "Usernames"),
+                viewModel.username,
+                ((viewModel.takenNameSalePriceCredits ?? 0) / 1_000).dashAmount.formattedDashAmountWithoutCurrencySymbol))
+        }
+        .alert(
+            NSLocalizedString("Username purchased", comment: "Usernames"),
+            isPresented: $showPurchaseSuccess
+        ) {
+            Button(NSLocalizedString("OK", comment: "")) { finish() }
+        } message: {
+            Text(String.localizedStringWithFormat(
+                NSLocalizedString("“%@” is now your username.", comment: "Usernames"),
+                viewModel.username))
         }
         .alert(
             NSLocalizedString("Username registered", comment: "Usernames"),
@@ -482,6 +519,21 @@ struct CreateUsernameView: View {
         }
     }
 
+    /// Primary button label: registration recovery > direct listing
+    /// purchase (priced) > plain Continue.
+    private var primaryButtonText: String {
+        if viewModel.hasPendingRegistrationRecovery {
+            return NSLocalizedString("Finish registration", comment: "DashPay registration recovery")
+        }
+        if viewModel.canPurchaseListedNameDirectly,
+           let credits = viewModel.takenNameSalePriceCredits {
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Buy for %@ Dash", comment: "Usernames"),
+                (credits / 1_000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
+        }
+        return NSLocalizedString("Continue", comment: "")
+    }
+
     /// Deadline as "Today 20:33"-style text (DWDateFormatter's relative
     /// short date + time). Testnet contest windows are minutes long, so
     /// the time matters; a locale-formatted full date alone would bury it.
@@ -553,10 +605,35 @@ struct CreateUsernameView: View {
     }
 
     /// Blue informational callout when the typed name is taken but its
-    /// owner has listed it in the Username Marketplace: buying it there
-    /// is the actual way to get this name.
-    private func forSaleHint(priceDuffs: UInt64) -> some View {
-        HStack(alignment: .top, spacing: 12) {
+    /// owner has listed it in the Username Marketplace. Three variants:
+    /// buyable right here (under the ceiling, wallet covers it), listed
+    /// at or above the direct-purchase ceiling (pointed at the
+    /// marketplace, with the suggestion to pick another name for now),
+    /// or listed but not currently affordable (plain pointer).
+    private func forSaleHint(priceCredits: UInt64) -> some View {
+        let priceText = (priceCredits / 1_000).dashAmount.formattedDashAmountWithoutCurrencySymbol
+        let body: String
+        if viewModel.canPurchaseListedNameDirectly {
+            body = String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "The owner of this username has listed it for %@ Dash. You can buy it right now — the price is paid from your wallet balance.",
+                    comment: "Usernames"),
+                priceText)
+        } else if viewModel.listedNameExceedsDirectPurchaseLimit {
+            body = String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later.",
+                    comment: "Usernames"),
+                priceText,
+                CreateUsernameViewModel.directPurchaseMaxDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+        } else {
+            body = String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead.",
+                    comment: "Usernames"),
+                priceText)
+        }
+        return HStack(alignment: .top, spacing: 12) {
             Image(systemName: "tag.fill")
                 .foregroundColor(.dash.blue)
                 .font(.system(size: 20))
@@ -564,11 +641,7 @@ struct CreateUsernameView: View {
                 Text(NSLocalizedString("For sale", comment: "Usernames"))
                     .font(.subheadline.bold())
                     .foregroundColor(.dash.blue)
-                Text(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead.",
-                        comment: "Usernames"),
-                    priceDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol))
+                Text(body)
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -610,6 +683,31 @@ struct CreateUsernameView: View {
                 finish()
             } catch {
                 inviterContactErrorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    /// Buy the listed name at its captured price. Mirrors
+    /// `performSubmit`'s spinner discipline: `inProgress` keeps the
+    /// screen alive across the PIN gate, funding, and the purchase
+    /// itself; the outcome drives the purchase-success / error alert.
+    private func performPurchase() {
+        Task {
+            inProgress = true
+            screenLockedAfterAuth = false
+            let outcome = await viewModel.purchaseListedUsername()
+            inProgress = false
+            switch outcome {
+            case .success:
+                showPurchaseSuccess = true
+            case .cancelled:
+                break
+            case .failure(let message):
+                registrationErrorMessage = message
+            case .submittedForVoting:
+                // A purchase never enters a vote; the outcome enum is
+                // shared with registration, this arm is unreachable.
+                break
             }
         }
     }

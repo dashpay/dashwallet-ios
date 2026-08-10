@@ -526,7 +526,10 @@ struct UsernameMarketplaceService {
 
     /// Friendlier wording for the typed SDK failures a user acts on;
     /// everything else keeps the SDK's own description.
-    static func userFacingMessage(for error: Error) -> String {
+    /// Pure error→wording mapping — `nonisolated` so nonisolated
+    /// LocalizedError conformances (e.g. the registration coordinator's
+    /// `.purchase` case) can call it.
+    nonisolated static func userFacingMessage(for error: Error) -> String {
         if let walletError = error as? PlatformWalletError {
             switch walletError {
             case .notForSale:
