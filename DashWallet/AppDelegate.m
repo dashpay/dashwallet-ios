@@ -115,7 +115,6 @@ NS_ASSUME_NONNULL_BEGIN
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
     [CoinbaseObjcWrapper start];
     [CrowdNodeObjcWrapper start];
-    [SwapTrackingServiceObjcWrapper start];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationTerminationRequestNotification:)
@@ -136,7 +135,14 @@ NS_ASSUME_NONNULL_BEGIN
     // continuously via HTTPClient).
     [[DWSecureTimeService shared] ratchetToWallClock];
 
-    [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
+    NSError *databaseMigrationError = nil;
+    if (![[DatabaseConnection shared] migrateIfNeededAndReturnError:&databaseMigrationError]) {
+        DWLog(@"Database migration failed: %@", databaseMigrationError);
+    }
+
+    // After migrateIfNeeded: the tracking service reads `swap_orders` as soon as it starts,
+    // so on a fresh install it must not race the migration that creates the table.
+    [SwapTrackingServiceObjcWrapper start];
 
     // Kick off the SwiftDashSDK key migration and app-owned runtime early.
     // The runtime wallet is restored from app-owned Keychain state,
