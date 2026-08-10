@@ -806,35 +806,32 @@
 /* Username marketplace: browse-for-sale segment */
 "Browse" = "Browse";
 
-/* Username marketplace: browse coverage line while the scan is partial */
-"%1$d listings checked · %2$d for sale now" = "%1$d listings checked · %2$d for sale now";
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Price changes";
 
-/* Username marketplace: browse coverage line once the whole listing trail was walked */
-"All %1$d listings checked · %2$d for sale now" = "All %1$d listings checked · %2$d for sale now";
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Purchases";
 
-/* Username marketplace: browse sort option */
-"Highest price first" = "Highest price first";
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Listed for %1$@ DASH · %2$@";
 
-/* Username marketplace: browse sort option */
-"Lowest price first" = "Lowest price first";
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Sold for %1$@ DASH · %2$@";
 
-/* Username marketplace: current browse sort label */
-"Highest price" = "Highest price";
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Not for sale now";
 
-/* Username marketplace: current browse sort label */
-"Lowest price" = "Lowest price";
+/* Username marketplace: empty price-changes feed */
+"No price changes on the network yet." = "No price changes on the network yet.";
 
-/* Username marketplace: browse walked every listing event, nothing currently listed */
-"No names are for sale right now." = "No names are for sale right now.";
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "No purchases on the network yet.";
 
-/* Username marketplace: browse partial scan found nothing currently listed */
-"No live listings found yet — check more of the listing history below." = "No live listings found yet — check more of the listing history below.";
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Loading activity…";
 
-/* Username marketplace: browse scan in progress */
-"Checking listings…" = "Checking listings…";
-
-/* Username marketplace: continue the browse scan */
-"Check more listings" = "Check more listings";
+/* Username marketplace: load older browse activity */
+"Show more" = "Show more";
 
 /* Username marketplace: contest tallies card title */
 "Network vote so far" = "Network vote so far";

@@ -45,9 +45,25 @@ final class UsernameMarketplaceViewModel: ObservableObject {
         }
     }
 
-    enum BrowseSort {
-        case priceHighFirst
-        case priceLowFirst
+    enum BrowseFeed: Int, CaseIterable {
+        case priceChanges
+        case purchases
+
+        var title: String {
+            switch self {
+            case .priceChanges: return NSLocalizedString("Price changes", comment: "Username marketplace: browse feed of recent listings and re-prices")
+            case .purchases: return NSLocalizedString("Purchases", comment: "Username marketplace: browse feed of recent sales")
+            }
+        }
+    }
+
+    /// One rendered browse-feed row: the historical event plus the
+    /// name's label and (best-effort) live state.
+    struct BrowseEventRow: Identifiable {
+        let id: String
+        let label: String
+        let event: UsernameMarketplaceService.MarketplaceEvent
+        let live: DpnsMarketplaceName?
     }
 
     @Published var segment: Segment = .find
@@ -80,83 +96,92 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     /// claim "Available" for a name already being contested.
     @Published var queryContest: UsernameMarketplaceService.ContestPrecheck?
 
-    // MARK: Browse (for-sale) state
+    // MARK: Browse (recent activity) state
     //
-    // `$price` is not indexable on Dash Platform, so the DPNS contract
-    // has no server-side "everything for sale, ordered by price" query.
-    // What DOES exist is the document-history system contract: every
-    // listing writes a `priceUpdate` event queryable newest-first by
-    // [dataContractId, $createdAt]. Browse walks that trail — every
-    // listed name necessarily has such an event, so exhausting the trail
-    // yields the COMPLETE current listing set at a cost proportional to
-    // listing activity, not namespace size — then verifies each
-    // candidate's LIVE document (events say nothing about later
-    // re-prices, delists, or purchases) and sorts locally.
+    // `$price` is not indexable on Dash Platform, so no query at any
+    // layer can order names by price. What the document-history system
+    // contract DOES index is RECENCY ([dataContractId, $createdAt]) —
+    // so Browse is an honest activity feed: recent price changes
+    // (listings / re-prices) and recent purchases, newest first. Each
+    // event's price and time are historical facts shown as such; each
+    // row also resolves the name's LIVE state for what's true now.
 
-    /// Live for-sale names, verified against the current documents.
-    @Published var browseForSale: [DpnsMarketplaceName] = []
-    /// Listing events checked so far — the coverage label.
-    @Published var browseScannedCount = 0
-    /// True while a scan pass is fetching pages.
-    @Published var isBrowseScanning = false
-    /// True once the whole listing-event trail was walked.
-    @Published var browseExhausted = false
-    @Published var browseSort: BrowseSort = .priceHighFirst
+    @Published var browseFeed: BrowseFeed = .priceChanges
+    @Published var browsePriceChanges: [BrowseEventRow] = []
+    @Published var browsePurchases: [BrowseEventRow] = []
+    @Published var isBrowseLoading = false
+    @Published var browsePriceChangesExhausted = false
+    @Published var browsePurchasesExhausted = false
 
-    /// Pagination cursor: the oldest event's $createdAt seen so far.
-    private var browseCursorMs: UInt64?
-    /// Domain documents already resolved this scan — a re-listed name has
-    /// many events; one live check answers them all.
-    private var browseSeenDocumentIds: Set<String> = []
-    /// Event pages per scan pass (100 events each) — bounds one tap's cost.
-    private static let browsePagesPerPass = 3
+    /// Per-feed pagination cursors: oldest $createdAt fetched so far.
+    private var priceChangesCursorMs: UInt64?
+    private var purchasesCursorMs: UInt64?
+    /// documentId → resolved name, shared across both feeds — a name
+    /// with many events costs one resolution per refresh.
+    private var browseNameCache: [String: UsernameMarketplaceService.EventName] = [:]
+    /// Events per fetch — each new name costs up to 2 extra round trips.
+    private static let browseEventsPerPage: UInt32 = 25
 
-    var sortedBrowseForSale: [DpnsMarketplaceName] {
-        browseForSale.sorted {
-            let l = $0.priceCredits ?? 0
-            let r = $1.priceCredits ?? 0
-            return browseSort == .priceHighFirst ? l > r : l < r
-        }
+    var browseRows: [BrowseEventRow] {
+        browseFeed == .priceChanges ? browsePriceChanges : browsePurchases
     }
 
-    /// Walk another batch of listing events. `reset` restarts from the
-    /// newest (pull-to-refresh) so prices and delists re-read fresh.
-    func scanBrowsePages(reset: Bool = false) {
-        guard !isBrowseScanning else { return }
+    var browseFeedExhausted: Bool {
+        browseFeed == .priceChanges ? browsePriceChangesExhausted : browsePurchasesExhausted
+    }
+
+    /// Load the next page of the CURRENT feed. `reset` restarts both
+    /// feeds from the newest event (pull-to-refresh) so live states and
+    /// prices re-read fresh.
+    func loadBrowse(reset: Bool = false) {
+        guard !isBrowseLoading else { return }
         if reset {
-            browseCursorMs = nil
-            browseForSale = []
-            browseScannedCount = 0
-            browseSeenDocumentIds = []
-            browseExhausted = false
+            browsePriceChanges = []
+            browsePurchases = []
+            priceChangesCursorMs = nil
+            purchasesCursorMs = nil
+            browsePriceChangesExhausted = false
+            browsePurchasesExhausted = false
+            browseNameCache = [:]
         }
-        guard !browseExhausted else { return }
-        isBrowseScanning = true
+        let feed = browseFeed
+        guard !browseFeedExhausted else { return }
+        isBrowseLoading = true
         Task { [weak self] in
             guard let self else { return }
-            defer { self.isBrowseScanning = false }
-            let pageSize: UInt32 = 100
-            for _ in 0..<Self.browsePagesPerPass {
-                do {
-                    let events = try await service.listingEventsPage(beforeMs: browseCursorMs, limit: pageSize)
-                    browseScannedCount += events.count
-                    browseCursorMs = events.last?.createdAtMs
-                    for event in events where !browseSeenDocumentIds.contains(event.dpnsDocumentIdBase58) {
-                        browseSeenDocumentIds.insert(event.dpnsDocumentIdBase58)
-                        if let live = try await service.liveName(forDomainDocumentId: event.dpnsDocumentIdBase58),
-                           live.isForSale,
-                           !browseForSale.contains(where: { $0.documentId == live.documentId }) {
-                            browseForSale.append(live)
-                        }
+            defer { self.isBrowseLoading = false }
+            do {
+                let cursor = feed == .priceChanges ? priceChangesCursorMs : purchasesCursorMs
+                let events = feed == .priceChanges
+                    ? try await service.recentPriceChanges(beforeMs: cursor, limit: Self.browseEventsPerPage)
+                    : try await service.recentPurchases(beforeMs: cursor, limit: Self.browseEventsPerPage)
+                var rows: [BrowseEventRow] = []
+                for event in events {
+                    let name: UsernameMarketplaceService.EventName?
+                    if let cached = browseNameCache[event.dpnsDocumentIdBase58] {
+                        name = cached
+                    } else {
+                        name = try await service.eventName(forDomainDocumentId: event.dpnsDocumentIdBase58)
+                        if let name { browseNameCache[event.dpnsDocumentIdBase58] = name }
                     }
-                    if events.count < Int(pageSize) {
-                        browseExhausted = true
-                        break
-                    }
-                } catch {
-                    errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
-                    break
+                    guard let name else { continue } // document gone — nothing to show
+                    rows.append(BrowseEventRow(
+                        id: "\(event.dpnsDocumentIdBase58)-\(event.createdAtMs)",
+                        label: name.label,
+                        event: event,
+                        live: name.live))
                 }
+                if feed == .priceChanges {
+                    browsePriceChanges.append(contentsOf: rows)
+                    priceChangesCursorMs = events.last?.createdAtMs
+                    if events.count < Int(Self.browseEventsPerPage) { browsePriceChangesExhausted = true }
+                } else {
+                    browsePurchases.append(contentsOf: rows)
+                    purchasesCursorMs = events.last?.createdAtMs
+                    if events.count < Int(Self.browseEventsPerPage) { browsePurchasesExhausted = true }
+                }
+            } catch {
+                errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
             }
         }
     }
@@ -486,73 +511,51 @@ struct UsernameMarketplaceScreen: View {
 
     // MARK: Browse segment
 
-    /// Names for sale across the network, sorted by price client-side.
-    /// The coverage line keeps the sort honest: Platform cannot order by
-    /// $price, so "most expensive" means "among the names scanned so far".
+    /// Recent marketplace activity, newest first: price changes
+    /// (listings / re-prices) and purchases, straight off the
+    /// document-history trail's [dataContractId, $createdAt] index.
+    /// Event price and time are historical facts; the trailing badge is
+    /// the name's LIVE state, so a stale listing can't read as an offer.
     private var browseSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text(viewModel.browseExhausted
-                    ? String.localizedStringWithFormat(
-                        NSLocalizedString("All %1$d listings checked · %2$d for sale now", comment: "Username marketplace: browse coverage line once the whole listing trail was walked"),
-                        viewModel.browseScannedCount, viewModel.browseForSale.count)
-                    : String.localizedStringWithFormat(
-                        NSLocalizedString("%1$d listings checked · %2$d for sale now", comment: "Username marketplace: browse coverage line while the scan is partial"),
-                        viewModel.browseScannedCount, viewModel.browseForSale.count))
-                    .font(.system(size: 12))
-                    .foregroundColor(.dash.secondaryText)
-                Spacer()
-                Menu {
-                    Button {
-                        viewModel.browseSort = .priceHighFirst
-                    } label: {
-                        Label(NSLocalizedString("Highest price first", comment: "Username marketplace: browse sort option"),
-                              systemImage: viewModel.browseSort == .priceHighFirst ? "checkmark" : "arrow.down")
-                    }
-                    Button {
-                        viewModel.browseSort = .priceLowFirst
-                    } label: {
-                        Label(NSLocalizedString("Lowest price first", comment: "Username marketplace: browse sort option"),
-                              systemImage: viewModel.browseSort == .priceLowFirst ? "checkmark" : "arrow.up")
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.up.arrow.down")
-                        Text(viewModel.browseSort == .priceHighFirst
-                            ? NSLocalizedString("Highest price", comment: "Username marketplace: current browse sort label")
-                            : NSLocalizedString("Lowest price", comment: "Username marketplace: current browse sort label"))
-                    }
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.dash.blue)
+            Picker("", selection: $viewModel.browseFeed) {
+                ForEach(UsernameMarketplaceViewModel.BrowseFeed.allCases, id: \.self) { feed in
+                    Text(feed.title).tag(feed)
                 }
             }
+            .pickerStyle(.segmented)
             .padding(.horizontal, 20)
             .padding(.bottom, 8)
+            .onChange(of: viewModel.browseFeed) { _, _ in
+                if viewModel.browseRows.isEmpty {
+                    viewModel.loadBrowse()
+                }
+            }
 
             ScrollView {
                 LazyVStack(spacing: 6) {
-                    ForEach(viewModel.sortedBrowseForSale) { name in
-                        searchRow(name)
+                    ForEach(viewModel.browseRows) { row in
+                        browseEventRow(row)
                     }
-                    if viewModel.browseForSale.isEmpty && !viewModel.isBrowseScanning {
-                        emptyHint(viewModel.browseExhausted
-                            ? NSLocalizedString("No names are for sale right now.", comment: "Username marketplace: browse walked every listing event, nothing currently listed")
-                            : NSLocalizedString("No live listings found yet — check more of the listing history below.", comment: "Username marketplace: browse partial scan found nothing currently listed"))
+                    if viewModel.browseRows.isEmpty && !viewModel.isBrowseLoading {
+                        emptyHint(viewModel.browseFeed == .priceChanges
+                            ? NSLocalizedString("No price changes on the network yet.", comment: "Username marketplace: empty price-changes feed")
+                            : NSLocalizedString("No purchases on the network yet.", comment: "Username marketplace: empty purchases feed"))
                     }
-                    if viewModel.isBrowseScanning {
+                    if viewModel.isBrowseLoading {
                         HStack(spacing: 8) {
                             SwiftUI.ProgressView()
-                            Text(NSLocalizedString("Checking listings…", comment: "Username marketplace: browse scan in progress"))
+                            Text(NSLocalizedString("Loading activity…", comment: "Username marketplace: browse feed loading"))
                                 .font(.system(size: 12))
                                 .foregroundColor(.dash.secondaryText)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                    } else if !viewModel.browseExhausted {
+                    } else if !viewModel.browseFeedExhausted && !viewModel.browseRows.isEmpty {
                         Button {
-                            viewModel.scanBrowsePages()
+                            viewModel.loadBrowse()
                         } label: {
-                            Text(NSLocalizedString("Check more listings", comment: "Username marketplace: continue the browse scan"))
+                            Text(NSLocalizedString("Show more", comment: "Username marketplace: load older browse activity"))
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.dash.blue)
                                 .frame(maxWidth: .infinity)
@@ -566,14 +569,71 @@ struct UsernameMarketplaceScreen: View {
                 .padding(.bottom, 24)
             }
             .refreshable {
-                viewModel.scanBrowsePages(reset: true)
+                viewModel.loadBrowse(reset: true)
             }
         }
         .onAppear {
-            if viewModel.browseScannedCount == 0 {
-                viewModel.scanBrowsePages()
+            if viewModel.browseRows.isEmpty {
+                viewModel.loadBrowse()
             }
         }
+    }
+
+    private func browseEventRow(_ row: UsernameMarketplaceViewModel.BrowseEventRow) -> some View {
+        let eventDash = (row.event.priceCredits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol
+        let eventDate = DWDateFormatter.sharedInstance.shortStringFromDate(
+            Date(timeIntervalSince1970: Double(row.event.createdAtMs) / 1000))
+        let subtitle = viewModel.browseFeed == .priceChanges
+            ? String.localizedStringWithFormat(
+                NSLocalizedString("Listed for %1$@ DASH · %2$@", comment: "Username marketplace: price-change feed row — event price, then date"),
+                eventDash, eventDate)
+            : String.localizedStringWithFormat(
+                NSLocalizedString("Sold for %1$@ DASH · %2$@", comment: "Username marketplace: purchases feed row — price paid, then date"),
+                eventDash, eventDate)
+        return Button {
+            selectedLabel = SelectedMarketplaceLabel(label: row.label)
+        } label: {
+            HStack(spacing: 10) {
+                ContactAvatarView(
+                    title: row.label,
+                    avatarURL: nil,
+                    identitySeed: row.live?.ownerId ?? Data())
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(row.label)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                    Text(subtitle)
+                        .font(.system(size: 11))
+                        .foregroundColor(.dash.tertiaryText)
+                        .lineLimit(1)
+                }
+                Spacer()
+                if let live = row.live, live.isForSale, let priceDuffs = live.priceDuffs {
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text(NSLocalizedString("For sale", comment: "Username marketplace: listed badge"))
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.dashGolden)
+                        Text("\(priceDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.dash.primaryText)
+                    }
+                } else {
+                    Text(NSLocalizedString("Not for sale now", comment: "Username marketplace: browse row whose name is no longer listed"))
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.dash.tertiaryText)
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.dash.secondaryText)
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color.dash.secondaryBackground))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: My Names segment

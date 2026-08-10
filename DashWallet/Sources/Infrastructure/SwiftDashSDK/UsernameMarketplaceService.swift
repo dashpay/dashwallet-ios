@@ -106,18 +106,32 @@ struct UsernameMarketplaceService {
     /// not with the size of the namespace.
     private static let documentHistoryContractId = "6voHRaoiPcfmMhbqCA9dixH98xcgPQ9UEcuaXjpVu3LD"
 
-    /// One DPNS `priceUpdate` history row: which domain document was
-    /// (re)listed and when. The recorded price is deliberately NOT
-    /// carried — the live document is the only honest price source
-    /// (later re-prices, delists, and purchases all invalidate it).
-    struct ListingEvent {
+    /// One DPNS trade event from the history trail — a `priceUpdate`
+    /// (listing / re-price) or a `purchase`. The event's own price and
+    /// time are historical FACTS and safe to show as such; only claims
+    /// about the PRESENT ("for sale now") require the live document.
+    struct MarketplaceEvent {
         let dpnsDocumentIdBase58: String
+        let priceCredits: UInt64
         let createdAtMs: UInt64
+        /// Purchase events only: buyer (`$ownerId`) and seller, base58.
+        let buyerIdBase58: String?
+        let sellerIdBase58: String?
     }
 
-    /// One page of DPNS listing events, newest first. `beforeMs` is the
-    /// pagination cursor: pass the previous page's last `createdAtMs`.
-    func listingEventsPage(beforeMs: UInt64?, limit: UInt32 = 100) async throws -> [ListingEvent] {
+    /// Newest-first page of DPNS listing / re-price events. `beforeMs`
+    /// is the pagination cursor (previous page's last `createdAtMs`).
+    func recentPriceChanges(beforeMs: UInt64?, limit: UInt32 = 25) async throws -> [MarketplaceEvent] {
+        try await eventsPage(documentType: "priceUpdate", beforeMs: beforeMs, limit: limit)
+    }
+
+    /// Newest-first page of DPNS purchase events, with price paid and
+    /// both counterparties.
+    func recentPurchases(beforeMs: UInt64?, limit: UInt32 = 25) async throws -> [MarketplaceEvent] {
+        try await eventsPage(documentType: "purchase", beforeMs: beforeMs, limit: limit)
+    }
+
+    private func eventsPage(documentType: String, beforeMs: UInt64?, limit: UInt32) async throws -> [MarketplaceEvent] {
         guard let sdk = SwiftDashSDKHost.shared.sdk else { return [] }
         var conditions = "[[\"dataContractId\",\"==\",\"\(DPNSVotePoll.contractId)\"]"
         if let beforeMs {
@@ -126,7 +140,7 @@ struct UsernameMarketplaceService {
         conditions += "]"
         let result = try await sdk.documentList(
             dataContractId: Self.documentHistoryContractId,
-            documentType: "priceUpdate",
+            documentType: documentType,
             whereClause: conditions,
             // Order-by tuples here are [field, ascending-bool] — the FFI
             // rejects "asc"/"desc" strings. false = newest first.
@@ -141,17 +155,46 @@ struct UsernameMarketplaceService {
             docs = result.values.compactMap { $0 as? [String: Any] }
         }
         return docs.compactMap { doc in
-            guard let documentId = doc["documentId"] as? String,
+            guard let raw = doc["documentId"] as? String,
+                  let documentId = Self.identifier32(raw),
+                  let price = (doc["price"] as? NSNumber)?.uint64Value,
                   let createdAt = (doc["$createdAt"] as? NSNumber)?.uint64Value else { return nil }
-            return ListingEvent(dpnsDocumentIdBase58: documentId, createdAtMs: createdAt)
+            let buyer = (doc["$ownerId"] as? String).flatMap(Self.identifier32)
+            let seller = (doc["sellerId"] as? String).flatMap(Self.identifier32)
+            return MarketplaceEvent(
+                dpnsDocumentIdBase58: documentId.toBase58String(),
+                priceCredits: price,
+                createdAtMs: createdAt,
+                buyerIdBase58: documentType == "purchase" ? buyer?.toBase58String() : nil,
+                sellerIdBase58: documentType == "purchase" ? seller?.toBase58String() : nil)
         }
     }
 
-    /// Live marketplace state of the domain document behind a listing
-    /// event — nil when the document no longer exists. The caller checks
-    /// `isForSale`; an old event for a since-delisted or sold name
-    /// resolves to a live row without a price.
-    func liveName(forDomainDocumentId documentIdBase58: String) async throws -> DpnsMarketplaceName? {
+    /// Identifier-typed CUSTOM properties serialize as base64 in this
+    /// query path's JSON, while SYSTEM fields ($id, $ownerId) are base58.
+    /// Accept either, but only an exact 32-byte identifier — anything
+    /// else is nil, never a guess.
+    private static func identifier32(_ string: String) -> Data? {
+        if let data = Data(base64Encoded: string), data.count == 32 {
+            return data
+        }
+        if let data = Data.identifier(fromBase58: string), data.count == 32 {
+            return data
+        }
+        return nil
+    }
+
+    /// The name behind an event's domain document: its label plus its
+    /// live marketplace state. nil when the document is gone entirely;
+    /// `live` nil when the name currently resolves to no queryable
+    /// state. Only `live` may claim anything about the PRESENT — the
+    /// event's own price/time are already history.
+    struct EventName {
+        let label: String
+        let live: DpnsMarketplaceName?
+    }
+
+    func eventName(forDomainDocumentId documentIdBase58: String) async throws -> EventName? {
         guard let sdk = SwiftDashSDKHost.shared.sdk,
               let wallet = SwiftDashSDKHost.shared.wallet else { return nil }
         let doc: [String: Any]
@@ -167,7 +210,9 @@ struct UsernameMarketplaceService {
         guard let label = (doc["label"] as? String) ?? (doc["normalizedLabel"] as? String) else {
             return nil
         }
-        return try await wallet.dpnsMarketplaceNameState(name: label)
+        return EventName(
+            label: label,
+            live: try await wallet.dpnsMarketplaceNameState(name: label))
     }
 
     /// The main identity's tracked names from the wallet's local rows —
