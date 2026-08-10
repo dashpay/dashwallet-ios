@@ -614,9 +614,10 @@ enum SameSeedIdentityRecoveryPipeline {
 }
 
 /// Best-effort startup recovery for an identity created by the same seed on a
-/// different device/install. Finding an identity is the only outcome that ends
-/// the search: an empty or failed scan is retried on a backoff inside this
-/// session, and again on the next runtime start.
+/// different device/install. A definitive answer from Platform ends the search
+/// — whether that answer is an identity or a proof that this seed owns none.
+/// Only a scan that could not reach Platform is retried, on a backoff inside
+/// this session and again on the next runtime start.
 @MainActor
 final class DWSameSeedIdentityRecoveryCoordinator {
     static let shared = DWSameSeedIdentityRecoveryCoordinator()
@@ -633,8 +634,9 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     /// on each launch, so a scan that starts before that endpoint answers
     /// fails whole rather than per-node, and no amount of DAPI-level retrying
     /// helps. Retrying the scan itself does, which is why the first retry is
-    /// soon; the later ones spread out so a genuinely identity-less wallet
-    /// costs three cheap lookups, not a poll.
+    /// soon; the later ones spread out. A wallet that genuinely owns no
+    /// identity never reaches this schedule at all — Platform's proof of
+    /// absence is an answer, and the search stops on the first pass.
     private static let retryDelays: [Duration] = [.seconds(20), .seconds(60), .seconds(180)]
 
     private var completedContexts: Set<String> = []
@@ -665,13 +667,15 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             return
         }
 
-        let found = await attempt(
+        let answered = await attempt(
             wallet: wallet,
             modelContainer: modelContainer,
             network: network,
             contextKey: contextKey)
 
-        if !found {
+        // Only an unreachable Platform earns a backoff; a definitive "no
+        // identity" is an answer, not a failure.
+        if !answered {
             scheduleRetries(
                 walletId: walletId,
                 modelContainer: modelContainer,
@@ -680,16 +684,17 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         }
     }
 
-    /// One recovery pass. Returns `true` only when the wallet now has an
-    /// identity — the sole outcome that stops the search.
+    /// One recovery pass. Returns whether Platform gave a definitive answer —
+    /// an identity, or a proof that this seed owns none. Only `false`, meaning
+    /// the scan never reached Platform, is worth repeating.
     ///
-    /// A scan that completes without finding one is NOT success. It used to be
-    /// recorded as final for the process, so a restore whose scan came back
-    /// empty for network reasons left the wallet identity-less (no DashPay
-    /// tabs, no contacts, no contact payment history) until the next launch.
-    /// Platform now reports an unanswered scan as an error rather than an
-    /// empty result, but a genuinely empty result stays retryable here too:
-    /// the identity may simply not be registered yet at scan time.
+    /// The distinction is the whole fix. Both outcomes used to arrive as an
+    /// empty success and were recorded as final for the process, so a restore
+    /// whose scan failed for network reasons left the wallet identity-less —
+    /// no DashPay tabs, no contacts, no contact payment history — until the
+    /// next launch. Since platform#4352 an unanswered scan raises
+    /// `IdentityDiscoveryIncomplete` instead, which is what lets this treat a
+    /// returned empty result as trustworthy and stop.
     private func attempt(
         wallet: ManagedPlatformWallet,
         modelContainer: ModelContainer,
@@ -754,16 +759,24 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                     DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
                 })
 
+            // A scan that returns without throwing has an answer from
+            // Platform, and an empty answer is a proof of absence — this seed
+            // owns no identity at the scanned indices. Rescanning cannot
+            // change that, so it counts as done. Only a scan that could not
+            // reach Platform is worth repeating, and since platform#4352 that
+            // arrives as `IdentityDiscoveryIncomplete` rather than an empty
+            // success, which is what makes this distinction safe to draw.
+            completedContexts.insert(contextKey)
+
             guard outcome.identityCount > 0 else {
                 Self.logger.info(
                     """
-                    🪪 IDENT-RECOVERY :: scan found no identity; will retry \
+                    🪪 IDENT-RECOVERY :: Platform reports no identity for this seed \
                     discovered=\(outcome.discoveredCount, privacy: .public)
                     """)
-                return false
+                return true
             }
 
-            completedContexts.insert(contextKey)
             Self.logger.info(
                 """
                 🪪 IDENT-RECOVERY :: complete \
