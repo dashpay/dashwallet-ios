@@ -34,12 +34,14 @@
 //      triggered from Home appear/foreground. (The upstream
 //      `GetDataContractsRequest.version = None` bug that once blocked
 //      `syncDpnsNames`/`fetchContestVoteState` was fixed in the v11
-//      pin, 2026-05-27.) A user-facing contest-status VIEW remains
-//      future work.
-//    - One UserDefaults bookmark per Platform network — v1 pins to
-//      one in-flight contested submission per identity and network.
-//      NOT read by any carveout viewmodel (`JoinDashPayViewModel`,
-//      `HomeViewModel`).
+//      pin, 2026-05-27.)
+//    - MANY submissions can be in flight at once (each label is its own
+//      network vote poll; the marketplace lets the user request several).
+//      The store is one UserDefaults dictionary per (network, wallet):
+//      canonical label → {submittedAt, votingEnd}. The single-value
+//      `pendingLabel` / `pendingVotingEndTime` remain as OLDEST-entry
+//      conveniences for the setup-flow surfaces, which only ever deal
+//      with the first username.
 //
 
 import Foundation
@@ -57,12 +59,19 @@ public final class DWContestedNameStatusService: NSObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.contested-name")
 
-    /// UserDefaults key prefixes for the pending-submission bookmark.
-    /// A suffix is added for the active Platform network: contested
-    /// submissions and their deadlines must never leak across a
-    /// Testnet/Mainnet round-trip.
+    /// UserDefaults key prefixes. A suffix is added for the active
+    /// Platform network: contested submissions and their deadlines must
+    /// never leak across a Testnet/Mainnet round-trip.
+    /// `entriesKeyPrefix` is the multi-label store (canonical label →
+    /// {submitted, end}); the label/endTime prefixes are the two retired
+    /// single-slot layouts, kept only for one-time migration.
+    private static let entriesKeyPrefix = "DWPendingContestedDPNSEntries"
     private static let pendingLabelKeyPrefix = "DWPendingContestedDPNSLabel"
     private static let pendingVotingEndTimeKeyPrefix = "DWPendingContestedDPNSVotingEndTime"
+
+    /// Dictionary-value field names in the entries store.
+    private static let submittedField = "submitted"
+    private static let endField = "end"
 
     /// Protocol vote-poll durations in the Platform v2 settings. The fallback
     /// starts at OUR submission time, which is at or after the first contender's
@@ -79,21 +88,30 @@ public final class DWContestedNameStatusService: NSObject {
 
     // MARK: - Public API
 
-    /// Persisted label of the most-recent contested submission, or
-    /// `nil` if no submission is in flight. Single-writer (this
-    /// service); single-reader (`DWCurrentUserIdentityInfo`
-    /// snapshot filter).
+    /// OLDEST in-flight contested label, or `nil` when none. The setup
+    /// flow's compatibility view of the store: those surfaces only deal
+    /// with the user's FIRST username, which is by construction the
+    /// oldest entry. Multi-label consumers use `pendingLabels`.
     public var pendingLabel: String? {
         guard let network = WalletEnvironment.network else { return nil }
-        return pendingLabel(for: network)
+        return pendingLabels(for: network).first
     }
 
-    /// Best-known voting deadline for the active network. Submission writes a
-    /// conservative fallback immediately; `ContestVoteState.endTime` replaces
-    /// it once Platform indexes the contest.
+    /// Every in-flight contested label for the active network, oldest
+    /// submission first.
+    public var pendingLabels: [String] {
+        guard let network = WalletEnvironment.network else { return [] }
+        return pendingLabels(for: network)
+    }
+
+    /// Best-known voting deadline of the OLDEST entry (see `pendingLabel`).
+    /// Submission writes a conservative fallback immediately;
+    /// `ContestVoteState.endTime` replaces it once Platform indexes the
+    /// contest.
     public var pendingVotingEndTime: Date? {
-        guard let network = WalletEnvironment.network else { return nil }
-        return pendingVotingEndTime(for: network)
+        guard let network = WalletEnvironment.network,
+              let label = pendingLabels(for: network).first else { return nil }
+        return pendingVotingEndTime(label: label, for: network)
     }
 
     /// Coordinator calls this immediately after `registerDpnsName`
@@ -113,18 +131,15 @@ public final class DWContestedNameStatusService: NSObject {
     /// Network-explicit variant used by the registration coordinator. It
     /// captures the runtime network before any async FFI work, avoiding a
     /// late completion being written into the newly-selected network.
+    /// Upserts — an existing entry for the label keeps its original
+    /// submission time (re-recording from recovery must not reorder).
     @nonobjc
     func recordSubmission(
         label: String,
         network: Network,
         submittedAt: Date = Date()
     ) {
-        let fallbackEnd = Self.fallbackVotingEndTime(
-            submittedAt: submittedAt,
-            network: network)
-        guard let labelKey = Self.pendingLabelKey(for: network),
-              let endTimeKey = Self.pendingVotingEndTimeKey(for: network)
-        else {
+        guard let key = Self.entriesKey(for: network) else {
             // A submission is always made by an active wallet, so this cannot
             // happen — but recording it under no wallet would write a bookmark
             // nothing can ever own or clear.
@@ -132,30 +147,60 @@ public final class DWContestedNameStatusService: NSObject {
                 "🪪 CONTEST-SVC :: cannot record submission with no active wallet")
             return
         }
-        UserDefaults.standard.set(label, forKey: labelKey)
-        UserDefaults.standard.set(fallbackEnd.timeIntervalSince1970, forKey: endTimeKey)
+        let fallbackEnd = Self.fallbackVotingEndTime(
+            submittedAt: submittedAt,
+            network: network)
+        var entries = Self.entries(for: network)
+        let canonical = Self.canonicalLabel(label)
+        if var existing = entries[canonical] {
+            existing[Self.endField] = existing[Self.endField] ?? fallbackEnd.timeIntervalSince1970
+            entries[canonical] = existing
+        } else {
+            entries[canonical] = [
+                Self.submittedField: submittedAt.timeIntervalSince1970,
+                Self.endField: fallbackEnd.timeIntervalSince1970,
+            ]
+        }
+        UserDefaults.standard.set(entries, forKey: key)
         Self.logger.info(
-            "🪪 CONTEST-SVC :: recordSubmission label=\(label, privacy: .public) network=\(network.rawValue, privacy: .public) fallbackEnd=\(fallbackEnd.timeIntervalSince1970, privacy: .public)")
+            "🪪 CONTEST-SVC :: recordSubmission label=\(canonical, privacy: .public) network=\(network.rawValue, privacy: .public) inFlight=\(entries.count, privacy: .public)")
     }
 
-    /// Cache the real contest deadline once Platform exposes its vote state.
-    /// It replaces the conservative submission-time estimate.
-    public func recordVotingEndTime(_ endTime: Date) {
-        guard let network = WalletEnvironment.network else { return }
-        recordVotingEndTime(endTime, network: network)
-    }
-
+    /// Cache the real contest deadline for one label once Platform exposes
+    /// its vote state. It replaces the conservative submission-time
+    /// estimate. No-op for a label with no bookmark.
     @nonobjc
-    func recordVotingEndTime(_ endTime: Date, network: Network) {
-        guard let endTimeKey = Self.pendingVotingEndTimeKey(for: network) else { return }
-        UserDefaults.standard.set(endTime.timeIntervalSince1970, forKey: endTimeKey)
+    func recordVotingEndTime(_ endTime: Date, label: String, network: Network) {
+        guard let key = Self.entriesKey(for: network) else { return }
+        var entries = Self.entries(for: network)
+        let canonical = Self.canonicalLabel(label)
+        guard var entry = entries[canonical] else { return }
+        entry[Self.endField] = endTime.timeIntervalSince1970
+        entries[canonical] = entry
+        UserDefaults.standard.set(entries, forKey: key)
         Self.logger.info(
-            "🪪 CONTEST-SVC :: authoritative voting end network=\(network.rawValue, privacy: .public) end=\(endTime.timeIntervalSince1970, privacy: .public)")
+            "🪪 CONTEST-SVC :: authoritative voting end label=\(canonical, privacy: .public) network=\(network.rawValue, privacy: .public) end=\(endTime.timeIntervalSince1970, privacy: .public)")
     }
 
-    /// Clear the pending bookmark. Called by the LOST/pruned branches of
+    /// Clear ONE label's bookmark — the LOST/pruned branches of
     /// `DWIdentityRegistrationCoordinator.checkPendingContestResolution()`
-    /// (and by `finalizeWon` on the WON branch).
+    /// (and `finalizeWon` on the WON branch). Other in-flight contests
+    /// keep their bookmarks.
+    @nonobjc
+    func clearPending(label: String, for network: Network) {
+        guard let key = Self.entriesKey(for: network) else { return }
+        var entries = Self.entries(for: network)
+        entries.removeValue(forKey: Self.canonicalLabel(label))
+        if entries.isEmpty {
+            UserDefaults.standard.removeObject(forKey: key)
+        } else {
+            UserDefaults.standard.set(entries, forKey: key)
+        }
+        Self.logger.info("🪪 CONTEST-SVC :: clearPending label=\(Self.canonicalLabel(label), privacy: .public) network=\(network.rawValue, privacy: .public) remaining=\(entries.count, privacy: .public)")
+    }
+
+    /// Drop EVERY bookmark for the network (all in-flight labels, plus any
+    /// retired-layout leftovers).
     public func clearPending() {
         guard let network = WalletEnvironment.network else { return }
         clearPending(for: network)
@@ -164,6 +209,9 @@ public final class DWContestedNameStatusService: NSObject {
     @nonobjc
     func clearPending(for network: Network) {
         let defaults = UserDefaults.standard
+        if let key = Self.entriesKey(for: network) {
+            defaults.removeObject(forKey: key)
+        }
         if let labelKey = Self.pendingLabelKey(for: network) {
             defaults.removeObject(forKey: labelKey)
         }
@@ -174,7 +222,7 @@ public final class DWContestedNameStatusService: NSObject {
         // leave a pre-scoping value behind for the next read to adopt.
         defaults.removeObject(forKey: Self.legacyPendingLabelKey(for: network))
         defaults.removeObject(forKey: Self.legacyPendingVotingEndTimeKey(for: network))
-        Self.logger.info("🪪 CONTEST-SVC :: clearPending network=\(network.rawValue, privacy: .public)")
+        Self.logger.info("🪪 CONTEST-SVC :: clearPending ALL network=\(network.rawValue, privacy: .public)")
     }
 
     /// Compare DPNS labels in their canonical form. The registration form
@@ -185,9 +233,9 @@ public final class DWContestedNameStatusService: NSObject {
     }
 
     /// Objective-C-friendly check used by the legacy DashPay state bridge.
+    /// True when ANY in-flight contested submission matches `label`.
     public func isPendingLabel(_ label: String) -> Bool {
-        guard let pendingLabel else { return false }
-        return Self.labelsMatch(label, pendingLabel)
+        pendingLabels.contains { Self.labelsMatch(label, $0) }
     }
 
     private nonisolated static func canonicalLabel(_ label: String) -> String {
@@ -222,7 +270,8 @@ public final class DWContestedNameStatusService: NSObject {
             options.dashpayUsername = username
         }
         options.dashpayRegistrationCompleted = true
-        clearPending(for: network)
+        // Only the WON label's bookmark clears — other contests stay in flight.
+        clearPending(label: username, for: network)
         Self.logger.info("🪪 CONTEST-SVC :: finalizeWon label=\(username, privacy: .public)")
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
         NotificationCenter.default.post(
@@ -247,19 +296,77 @@ public final class DWContestedNameStatusService: NSObject {
 
     // MARK: - Network-scoped storage
 
+    /// All in-flight labels for `network`, oldest submission first.
     @nonobjc
-    func pendingLabel(for network: Network) -> String? {
-        Self.discardLegacyBookmark(for: network)
-        guard let key = Self.pendingLabelKey(for: network) else { return nil }
-        return UserDefaults.standard.string(forKey: key)
+    func pendingLabels(for network: Network) -> [String] {
+        Self.entries(for: network)
+            .sorted {
+                ($0.value[Self.submittedField] ?? 0) < ($1.value[Self.submittedField] ?? 0)
+            }
+            .map(\.key)
     }
 
+    /// Compatibility single-label read: the OLDEST in-flight label.
+    @nonobjc
+    func pendingLabel(for network: Network) -> String? {
+        pendingLabels(for: network).first
+    }
+
+    /// Best-known voting deadline for one label's contest, or nil when the
+    /// label has no bookmark.
+    @nonobjc
+    func pendingVotingEndTime(label: String, for network: Network) -> Date? {
+        guard let timestamp = Self.entries(for: network)[Self.canonicalLabel(label)]?[Self.endField],
+              timestamp > 0 else { return nil }
+        return Date(timeIntervalSince1970: timestamp)
+    }
+
+    /// Compatibility read: the OLDEST entry's deadline (see `pendingLabel`).
     @nonobjc
     func pendingVotingEndTime(for network: Network) -> Date? {
-        Self.discardLegacyBookmark(for: network)
-        guard let key = Self.pendingVotingEndTimeKey(for: network) else { return nil }
-        let timestamp = UserDefaults.standard.double(forKey: key)
-        return timestamp > 0 ? Date(timeIntervalSince1970: timestamp) : nil
+        guard let label = pendingLabels(for: network).first else { return nil }
+        return pendingVotingEndTime(label: label, for: network)
+    }
+
+    /// The entries dictionary, after migrating any retired single-slot
+    /// bookmark into it (one-time: the old keys are deleted on adoption).
+    private nonisolated static func entries(for network: Network) -> [String: [String: Double]] {
+        discardLegacyBookmark(for: network)
+        guard let key = entriesKey(for: network) else { return [:] }
+        let defaults = UserDefaults.standard
+        var entries = (defaults.dictionary(forKey: key) as? [String: [String: Double]]) ?? [:]
+        // Adopt the retired wallet-scoped single-slot layout: same wallet
+        // scope, so attribution is unambiguous (unlike the legacy unscoped
+        // bookmark, which is discarded).
+        if let labelKey = pendingLabelKey(for: network),
+           let oldLabel = defaults.string(forKey: labelKey) {
+            let canonical = canonicalLabel(oldLabel)
+            if entries[canonical] == nil {
+                let oldEnd = pendingVotingEndTimeKey(for: network)
+                    .map { defaults.double(forKey: $0) } ?? 0
+                let end = oldEnd > 0
+                    ? oldEnd
+                    : fallbackVotingEndTime(submittedAt: Date(), network: network).timeIntervalSince1970
+                // Approximate the original submission time from the deadline
+                // so ordering against newer entries stays sane.
+                let duration = network == .mainnet ? mainnetFallbackDuration : testnetFallbackDuration
+                entries[canonical] = [
+                    submittedField: end - duration - fallbackResolutionGrace,
+                    endField: end,
+                ]
+                defaults.set(entries, forKey: key)
+                logger.info("🪪 CONTEST-SVC :: migrated single-slot bookmark label=\(canonical, privacy: .public)")
+            }
+            defaults.removeObject(forKey: labelKey)
+            if let endKey = pendingVotingEndTimeKey(for: network) {
+                defaults.removeObject(forKey: endKey)
+            }
+        }
+        return entries
+    }
+
+    private nonisolated static func entriesKey(for network: Network) -> String? {
+        scope().map { "\(entriesKeyPrefix).\(networkKey(network)).\($0)" }
     }
 
     nonisolated static func fallbackVotingEndTime(
@@ -334,7 +441,9 @@ public final class DWContestedNameStatusService: NSObject {
     nonisolated static func resetForWipe() {
         let defaults = UserDefaults.standard
         for key in defaults.dictionaryRepresentation().keys
-        where key.hasPrefix(pendingLabelKeyPrefix) || key.hasPrefix(pendingVotingEndTimeKeyPrefix) {
+        where key.hasPrefix(entriesKeyPrefix)
+            || key.hasPrefix(pendingLabelKeyPrefix)
+            || key.hasPrefix(pendingVotingEndTimeKeyPrefix) {
             defaults.removeObject(forKey: key)
         }
         logger.info("🪪 CONTEST-SVC :: cleared all contested bookmarks for wipe")

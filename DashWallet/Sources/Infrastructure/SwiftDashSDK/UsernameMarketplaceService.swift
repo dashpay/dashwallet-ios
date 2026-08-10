@@ -68,7 +68,6 @@ struct UsernameMarketplaceService {
         case invalidPrice
         case authCancelled
         case authFailed
-        case contestInProgress(pendingLabel: String)
 
         var errorDescription: String? {
             switch self {
@@ -78,10 +77,6 @@ struct UsernameMarketplaceService {
                 return NSLocalizedString("Short names are decided by a network vote — use Request Username instead.", comment: "Username marketplace")
             case .invalidRecipient:
                 return NSLocalizedString("The recipient identity couldn't be resolved.", comment: "Username marketplace")
-            case let .contestInProgress(pendingLabel):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("Your request for “%@” is still in the network vote. Wait for that vote to finish before requesting another name.", comment: "Username marketplace: a second contested request is refused while one is pending"),
-                    pendingLabel)
             case .invalidPrice:
                 return NSLocalizedString("This price is too high to list.", comment: "Username marketplace: listing price exceeds the representable maximum")
             case .authCancelled:
@@ -220,15 +215,10 @@ struct UsernameMarketplaceService {
     /// submission is bookmarked in `DWContestedNameStatusService` so the
     /// not-yet-owned label stays out of every username surface
     /// (`DWCurrentUserIdentityInfo`'s pending filter) and the Home-appear
-    /// reconciliation resolves the eventual win/loss. The bookmark is
-    /// single-slot, so only ONE contested request may be in flight at a
-    /// time — a second submission would overwrite the first's bookmark,
-    /// leaking the still-voting label into username surfaces and
-    /// orphaning its reconciliation. This method refuses (typed
-    /// `contestInProgress`) while any bookmark is pending.
-    /// TODO(contest-multi): lift the one-at-a-time limit by making the
-    /// bookmark store, `DWCurrentUserIdentityInfo`'s filter, and
-    /// `checkPendingContestResolution` multi-label.
+    /// reconciliation resolves the eventual win/loss. The bookmark store
+    /// tracks every in-flight label independently, so any number of
+    /// contested requests can run at once — each is its own vote poll
+    /// with its own vote-resolution fund.
     ///
     /// Returns the authoritative voting end time when Platform has
     /// already indexed the contest, nil while indexing lags.
@@ -241,9 +231,6 @@ struct UsernameMarketplaceService {
         // for exactly this).
         guard let network = WalletEnvironment.network else {
             throw ServiceError.noIdentity
-        }
-        if let pending = DWContestedNameStatusService.shared.pendingLabel(for: network) {
-            throw ServiceError.contestInProgress(pendingLabel: pending)
         }
         try await authorize()
         _ = try await wallet.registerDpnsName(
@@ -263,7 +250,7 @@ struct UsernameMarketplaceService {
         var endTime: Date?
         if let state = try? await wallet.fetchContestVoteState(identityId: identityId, label: label) {
             endTime = state.endTime
-            DWContestedNameStatusService.shared.recordVotingEndTime(state.endTime, network: network)
+            DWContestedNameStatusService.shared.recordVotingEndTime(state.endTime, label: label, network: network)
         }
         return endTime
     }

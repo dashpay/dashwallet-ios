@@ -5201,9 +5201,6 @@
 /* Username marketplace: contested request explainer, paragraph 2 */
 "Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it." = "Your request enters a public vote by masternodes for about two weeks. Others can request the same name; when the vote ends, the name goes to the winner — or to nobody, if the network votes to lock it.";
 
-/* Username marketplace: a second contested request is refused while one is pending */
-"Your request for “%@” is still in the network vote. Wait for that vote to finish before requesting another name." = "Your request for “%@” is still in the network vote. Wait for that vote to finish before requesting another name.";
-
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";
 
