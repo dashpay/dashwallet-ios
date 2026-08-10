@@ -138,12 +138,76 @@ public final class TransactionObserver {
             resolved = DispatchQueue.main.sync { MainActor.assumeIsolated { handles() } }
         }
         guard let resolved else { return [] }
-        return scan(
+        let key = SharedScanKey(
+            walletId: resolved.walletId,
+            network: resolved.network,
+            fetchLimit: fetchLimit,
+            firstSeenAtOrAfter: firstSeenAtOrAfter)
+        if let shared = sharedScanResult(for: key) { return shared }
+        let rows = scan(
             container: resolved.container,
             walletId: resolved.walletId,
             network: resolved.network,
             fetchLimit: fetchLimit,
             firstSeenAtOrAfter: firstSeenAtOrAfter)
+        rememberSharedScan(rows, for: key)
+        return rows
+    }
+
+    // MARK: Per-pass scan sharing
+
+    /// Identity of one scan's result: the wallet and network it was read for,
+    /// plus the arguments that shaped the fetch.
+    private struct SharedScanKey: Hashable {
+        let walletId: Data
+        let network: Network
+        let fetchLimit: Int?
+        let firstSeenAtOrAfter: UInt64?
+    }
+
+    private static let sharedScanLock = NSLock()
+    private static var sharedScanDepth = 0
+    private static var sharedScanResults: [SharedScanKey: [ObservedTransaction]] = [:]
+
+    /// Serves identical `fetchObserved` calls made inside `body` from a single
+    /// fetch + decode.
+    ///
+    /// A CrowdNode restore asks the same question twice — `tryRestoreSignUp`
+    /// and `getApiAddressConfirmationTx` scan with identical arguments — and
+    /// on a wallet with thousands of transactions each pass cost ~12s of fetch
+    /// and decode, paid inline by the caller's thread.
+    ///
+    /// Scoped to the call rather than cached across passes on purpose: a row's
+    /// `context` / `blockHeight` change as it confirms without the row count
+    /// moving, so a longer-lived memo would answer `isChainAccepted` from
+    /// stale data.
+    static func withSharedScan<T>(_ body: () throws -> T) rethrows -> T {
+        sharedScanLock.lock()
+        sharedScanDepth += 1
+        sharedScanLock.unlock()
+        defer {
+            sharedScanLock.lock()
+            sharedScanDepth -= 1
+            if sharedScanDepth == 0 {
+                sharedScanResults.removeAll()
+            }
+            sharedScanLock.unlock()
+        }
+        return try body()
+    }
+
+    private static func sharedScanResult(for key: SharedScanKey) -> [ObservedTransaction]? {
+        sharedScanLock.lock()
+        defer { sharedScanLock.unlock() }
+        guard sharedScanDepth > 0 else { return nil }
+        return sharedScanResults[key]
+    }
+
+    private static func rememberSharedScan(_ rows: [ObservedTransaction], for key: SharedScanKey) {
+        sharedScanLock.lock()
+        defer { sharedScanLock.unlock() }
+        guard sharedScanDepth > 0 else { return }
+        sharedScanResults[key] = rows
     }
 
     /// Total persisted transaction count, or nil when the SDK host has no

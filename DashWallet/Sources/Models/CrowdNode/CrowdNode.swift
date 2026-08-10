@@ -200,8 +200,16 @@ public final class CrowdNode {
 // MARK: Restoring state
 extension CrowdNode {
     func restoreState() {
+        // The pass scans the persisted history twice with identical arguments
+        // (`tryRestoreSignUp`, then `getApiAddressConfirmationTx`). On a wallet
+        // with thousands of transactions that is two full fetch+decode walks
+        // of the same rows, ~12s each on the calling thread — share one.
+        TransactionObserver.withSharedScan { performRestoreState() }
+    }
+
+    private func performRestoreState() {
         checkAPY()
-        
+
         if signUpState > SignUpState.notStarted {
             // Already started/restored
             return
@@ -1049,10 +1057,15 @@ extension CrowdNode {
         let filter = CoinsToAddressTxFilter(coins: CrowdNode.apiConfirmationDashAmount, address: nil) // account address is unknown at this point
         let forwardedConfirmationFilter = CrowdNodeAPIConfirmationTxForwarded()
         // Same floor the signup scan uses: an API-address confirmation is
-        // CrowdNode protocol traffic, so it cannot predate CrowdNode. Without
-        // it this walked and decoded the wallet's entire history on the main
-        // thread during restore — the more expensive of the restore's two
-        // scans, on a wallet that has no CrowdNode account at all.
+        // CrowdNode protocol traffic, so it cannot predate CrowdNode.
+        //
+        // TODO(crowdnode-restore-floor): the floor bounds `firstSeen`, which
+        // the SDK stamps from the device clock when it first observes a row —
+        // so on a restored wallet every row is "first seen" now and the floor
+        // admits the entire history regardless of its chain date. Bounding on
+        // `blockTimestamp` (falling back to `firstSeen` while unconfirmed)
+        // would restore the intent; it needs a SwiftData predicate change that
+        // has to be verified against the store rather than reasoned about.
         let observed = TransactionObserver.fetchObserved(
             firstSeenAtOrAfter: FullCrowdNodeSignUpTxSet.januaryFirst2022Epoch)
 
