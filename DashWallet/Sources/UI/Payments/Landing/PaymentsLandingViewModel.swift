@@ -6,6 +6,8 @@
 import Combine
 import Foundation
 import SwiftDashSDK
+import SwiftUI
+import DashUIKit
 import UIKit
 
 enum PaymentsLandingTab: String, CaseIterable, Identifiable {
@@ -18,16 +20,27 @@ enum PaymentsLandingTab: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .receive: return NSLocalizedString("Receive", comment: "")
-        case .internalTransfer: return NSLocalizedString("Internal", comment: "")
+        case .internalTransfer: return NSLocalizedString("Internal transfer", comment: "")
         case .send: return NSLocalizedString("Send", comment: "")
         }
     }
 
-    var iconSystemName: String {
+    /// Asset name and the size the glyph is drawn at — the three differ, and
+    /// one shared size would distort them.
+    var icon: (name: String, width: CGFloat, height: CGFloat) {
         switch self {
-        case .receive: return "arrow.down"
-        case .internalTransfer: return "arrow.up.arrow.down"
-        case .send: return "arrow.up"
+        case .receive: return ("payments-option-arrow-down", 8.881, 14)
+        case .internalTransfer: return ("payments-option-transfer", 15.297, 16)
+        case .send: return ("payments-option-arrow-up", 7.771, 14)
+        }
+    }
+
+    /// Fill of the pill while this tab is the active one.
+    var accent: Color {
+        switch self {
+        case .receive: return Color.dash.green
+        case .internalTransfer: return Color.dash.lightBlue
+        case .send: return Color.dash.blue
         }
     }
 }

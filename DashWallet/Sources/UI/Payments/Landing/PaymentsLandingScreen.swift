@@ -119,13 +119,9 @@ struct PaymentsLandingScreen: View {
         .padding(.top, 10)
     }
 
-    private var headerTitle: String {
-        switch viewModel.activeTab {
-        case .receive: return NSLocalizedString("Receive", comment: "")
-        case .internalTransfer: return NSLocalizedString("Internal transfer", comment: "")
-        case .send: return NSLocalizedString("Send", comment: "")
-        }
-    }
+    /// The tab's own label — the selector shows the same words on the active
+    /// pill, and two copies would be free to drift.
+    private var headerTitle: String { viewModel.activeTab.title }
 
     // MARK: - Tab selector
 
