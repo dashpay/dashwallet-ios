@@ -27,6 +27,12 @@ struct ExternalSendAmountScreen: View {
     var onSendCompleted: () -> Void
 
     @State private var showConfirm = false
+    /// Core route: built and signed here, before the sheet is presented. The
+    /// auth gate inside it puts up the PIN, and UIKit refuses to present that
+    /// over a sheet that is still animating in — doing it from the sheet's own
+    /// `.task` failed the send on the first attempt every time.
+    @StateObject private var coreSend = CoreSendConfirmController()
+    @State private var isPreparingCoreSend = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -42,7 +48,13 @@ struct ExternalSendAmountScreen: View {
 
                 amountRow
 
-                if let message = viewModel.amountValidationMessage {
+                // A signature that could not be produced (offline, chain not
+                // synced) keeps the user here — say why, or Continue would
+                // just look broken.
+                if let message = coreSend.failureMessage {
+                    TransferAmountValidationNote(message: message)
+                        .padding(.horizontal, 20)
+                } else if let message = viewModel.amountValidationMessage {
                     TransferAmountValidationNote(message: message)
                         .padding(.horizontal, 20)
                 }
@@ -68,6 +80,7 @@ struct ExternalSendAmountScreen: View {
                     withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
                     isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
                     isFullShieldedSweep: viewModel.isFullShieldedSweep,
+                    coreSend: coreSend,
                     onCancel: { showConfirm = false },
                     onCompleted: {
                         showConfirm = false
@@ -110,7 +123,7 @@ struct ExternalSendAmountScreen: View {
             showDecimalSeparator: true,
             actionButtonText: NSLocalizedString("Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
-            inProgress: false,
+            inProgress: isPreparingCoreSend,
             actionHandler: continueAction
         )
         .padding(.top, 12)
@@ -122,8 +135,26 @@ struct ExternalSendAmountScreen: View {
     }
 
     private func continueAction() {
-        guard viewModel.route != nil else { return }
-        showConfirm = true
+        guard let route = viewModel.route else { return }
+        guard route == .coreToCore else {
+            showConfirm = true
+            return
+        }
+        // Sign first, then present: the sheet opens already knowing the real
+        // fee, and the PIN goes up over this screen rather than over a sheet
+        // in mid-presentation. Same order the legacy payment processor uses.
+        Task {
+            isPreparingCoreSend = true
+            defer { isPreparingCoreSend = false }
+            await coreSend.prepare(
+                address: viewModel.trimmedAddress,
+                amountDuffs: viewModel.dashDuffsUnsigned)
+            // A refused or cancelled signature keeps the user here with the
+            // reason, rather than opening a confirm sheet that has nothing to
+            // confirm.
+            guard coreSend.isReady else { return }
+            showConfirm = true
+        }
     }
 
     /// The source picked on the previous step, read-only. Tapping goes back.

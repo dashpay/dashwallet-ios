@@ -27,6 +27,10 @@ import UIKit
 final class CoreSendConfirmController: ObservableObject {
 
     enum Phase: Equatable {
+        /// Nothing attempted yet, or the user backed out of the PIN — the
+        /// same resting state, because a cancelled prompt is a decision and
+        /// has nothing to report.
+        case idle
         /// Auth gate + build/sign in flight (`prepareStandardSendForConfirmation`).
         case signing
         /// Prepared: `feeDuffs` holds the real fee off the signed transaction.
@@ -41,16 +45,27 @@ final class CoreSendConfirmController: ObservableObject {
         case failed(String)
     }
 
-    @Published private(set) var phase: Phase = .signing
+    @Published private(set) var phase: Phase = .idle
     /// The exact fee (duffs) off the signed transaction. `nil` until
     /// `.ready` — the summary row shows "—" rather than a guess until then.
     @Published private(set) var feeDuffs: UInt64?
 
+    /// Signed and waiting for the user's confirmation.
+    var isReady: Bool { phase == .ready }
+
+    /// Why the signature could not be produced, for the step that asked.
+    var failureMessage: String? {
+        if case let .failed(message) = phase { return message }
+        return nil
+    }
+
     private var prepared: PreparedStandardSend?
 
-    /// Build + sign, without broadcasting. Called once when the sheet
-    /// appears; safe to call again from `retry` after a prepare-time
-    /// failure (auth cancelled, offline, chain not synced, ...).
+    /// Build + sign, without broadcasting. Run by the amount step before it
+    /// presents the confirm sheet — the PIN this puts up cannot be presented
+    /// over a sheet that is still appearing. Safe to call again from `retry`
+    /// after a prepare-time failure (auth cancelled, offline, chain not
+    /// synced, ...).
     func prepare(address: String, amountDuffs: UInt64) async {
         phase = .signing
         prepared = nil
@@ -62,7 +77,9 @@ final class CoreSendConfirmController: ObservableObject {
             feeDuffs = result.fee
             phase = .ready
         } catch {
-            phase = .failed(Self.message(for: error))
+            phase = WalletSendService.isAuthenticationCancelledError(error as NSError)
+                ? .idle
+                : .failed(Self.message(for: error))
         }
     }
 
@@ -130,12 +147,18 @@ struct SendConfirmSheet: View {
     var withdrawalFeeCredits: UInt64? = nil
     var isFullPlatformWithdrawal: Bool = false
     var isFullShieldedSweep: Bool = false
+    /// Core route only: prepared by the amount step BEFORE this sheet is
+    /// presented. Preparing from here raced the sheet's own presentation —
+    /// `PinPromptPresenter` cannot put the PIN over a sheet that is still
+    /// animating in, UIKit rejects it silently, and its watchdog resolved the
+    /// send as an authentication failure.
+    @ObservedObject var coreSend: CoreSendConfirmController
+
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
     /// Core → Core only — see `CoreSendConfirmController`.
-    @StateObject private var coreSend = CoreSendConfirmController()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -170,13 +193,7 @@ struct SendConfirmSheet: View {
         }
         .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(isInFlight)
-        .task {
-            // Prepare (auth gate + build/sign, no broadcast) as soon as the
-            // sheet appears, so the summary can show the real fee off the
-            // signed transaction rather than an estimate.
-            guard route == .coreToCore else { return }
-            await coreSend.prepare(address: destinationAddress, amountDuffs: UInt64(dashDuffs))
-        }
+
     }
 
     private var isInFlight: Bool {
@@ -276,6 +293,11 @@ struct SendConfirmSheet: View {
                     .padding(.bottom, 24)
 
             case .success, .submittedUnconfirmed:
+                EmptyView()
+
+            // Unreachable: the amount step only presents this sheet once the
+            // transaction is signed, and a cancelled PIN keeps it there.
+            case .idle:
                 EmptyView()
             }
         } else {
