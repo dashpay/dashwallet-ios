@@ -410,6 +410,33 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             capacity: capacity))
     }
 
+    func testPlatformShieldRejectsZeroAndUnshieldableCapacity() {
+        let unshieldable = PlatformShieldCapacity(
+            canShield: false,
+            accountBalanceCredits: 3_921_114_000,
+            usableBalanceCredits: 0,
+            feeReserveCredits: 1_000_000_000,
+            maxShieldableCredits: 0,
+            reason: "insufficient headroom")
+
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.maximumDuffs(capacity: unshieldable),
+            0)
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 1_000,
+            capacity: unshieldable))
+
+        let shieldable = PlatformShieldCapacity(
+            canShield: true,
+            accountBalanceCredits: 3_921_114_000,
+            usableBalanceCredits: 3_623_849_220,
+            feeReserveCredits: 1_000_000_000,
+            maxShieldableCredits: 2_623_849_220)
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 0,
+            capacity: shieldable))
+    }
+
     func testPlatformShieldMaxFloorsSubDuffCredits() {
         let capacity = PlatformShieldCapacity(
             canShield: true,
@@ -441,6 +468,21 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             1_297_265_000)
     }
 
+    func testPlatformShieldHeldBackIsZeroForOverflowAndFullySubmittedBalance() {
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.heldBackCredits(
+                displayedPlatformCredits: 4_500_000_000,
+                accountBalanceCredits: 3_921_114_000,
+                submittedDuffs: UInt64.max),
+            0)
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.heldBackCredits(
+                displayedPlatformCredits: 2_623_849_000,
+                accountBalanceCredits: 2_623_849_000,
+                submittedDuffs: 2_623_849),
+            0)
+    }
+
     func testPlatformShieldFailsClosedWithoutResolvedPreflight() {
         XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
             requestedCredits: 1_000,
@@ -463,6 +505,15 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertFalse(PlatformShieldAmountPolicy.awaitingPlatformResync(
             current: true,
             after: .balancePublished))
+        XCTAssertTrue(PlatformShieldAmountPolicy.shouldStartManualResync(
+            awaitingPlatformResync: true,
+            retryInFlight: false))
+        XCTAssertFalse(PlatformShieldAmountPolicy.shouldStartManualResync(
+            awaitingPlatformResync: true,
+            retryInFlight: true))
+        XCTAssertFalse(PlatformShieldAmountPolicy.shouldStartManualResync(
+            awaitingPlatformResync: false,
+            retryInFlight: false))
     }
 
     func testPlatformShieldCapacityChangeUpdatesOnlyMaxDerivedAmount() {

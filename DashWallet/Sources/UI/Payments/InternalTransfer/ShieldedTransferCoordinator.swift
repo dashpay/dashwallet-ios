@@ -649,8 +649,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 amount: amountCredits,
                 addressSigner: signer)
         } catch {
-            if let walletError = error as? PlatformWalletError,
-               case .shieldedInsufficientBalance(_) = walletError {
+            if case PlatformWalletError.shieldedInsufficientBalance = error {
                 handleFailure(CoordinatorError.platformShieldCapacityChanged(
                     maxShieldableCredits: nil))
                 // The rejection came from live Platform state while the

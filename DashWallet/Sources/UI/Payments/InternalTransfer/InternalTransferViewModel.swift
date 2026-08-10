@@ -202,6 +202,16 @@ enum PlatformShieldAmountPolicy {
         return current
     }
 
+    /// Max is the explicit escape hatch while a live rejection waits for a
+    /// fresh Platform publication. At most one retry task may own `syncNow`;
+    /// when it finishes without a publication, another tap may retry.
+    static func shouldStartManualResync(
+        awaitingPlatformResync: Bool,
+        retryInFlight: Bool
+    ) -> Bool {
+        awaitingPlatformResync && !retryInFlight
+    }
+
     /// Amount input and confirmation are duff-denominated, so never round an
     /// SDK credit ceiling up to an amount the transition cannot select.
     static func maximumDuffs(capacity: PlatformShieldCapacity) -> UInt64 {
@@ -337,6 +347,7 @@ final class InternalTransferViewModel: ObservableObject {
     private var platformShieldPreflightTask: Task<Void, Never>?
     private var platformShieldPreflightGeneration: UInt64 = 0
     private var awaitingPlatformShieldResync = false
+    private var platformShieldManualResyncTask: Task<Void, Never>?
 
     /// Captured by Confirm so a capacity-change response knows whether it may
     /// replace the amount with the newly preflighted Max.
@@ -980,7 +991,8 @@ final class InternalTransferViewModel: ObservableObject {
     private func fillPlatformShieldMax() {
         if awaitingPlatformShieldResync {
             isPlatformShieldMaxQueued = true
-            maxNotice = Self.platformShieldCapacityRefreshRequiredMessage
+            maxNotice = Self.platformShieldResyncInProgressMessage
+            startManualPlatformShieldResyncIfNeeded()
             return
         }
         guard !isPlatformShieldPreflightLoading,
@@ -1078,6 +1090,26 @@ final class InternalTransferViewModel: ObservableObject {
               platformShieldPreflightTask == nil
         else { return }
         refreshPlatformShieldPreflight()
+    }
+
+    /// User-driven escape for an offline/failed scheduled resync. It retries
+    /// Platform sync, never the cache-only preflight. The stale-cache barrier
+    /// remains until `$platformBalance` publishes; completion merely re-arms
+    /// the button so a later tap can try one more time.
+    private func startManualPlatformShieldResyncIfNeeded() {
+        guard PlatformShieldAmountPolicy.shouldStartManualResync(
+            awaitingPlatformResync: awaitingPlatformShieldResync,
+            retryInFlight: platformShieldManualResyncTask != nil)
+        else { return }
+
+        platformShieldManualResyncTask = Task { [weak self] in
+            await PlatformAddressSyncCoordinator.shared.syncNow()
+            guard let self, !Task.isCancelled else { return }
+            self.platformShieldManualResyncTask = nil
+            if self.awaitingPlatformShieldResync {
+                self.maxNotice = Self.platformShieldCapacityRefreshRequiredMessage
+            }
+        }
     }
 
     /// Replaces any in-flight result and advances a generation token. The SDK
@@ -1204,7 +1236,7 @@ final class InternalTransferViewModel: ObservableObject {
             platformShieldPreflightTask?.cancel()
             platformShieldPreflightTask = nil
             platformShieldCapacity = nil
-            isPlatformShieldPreflightLoading = true
+            isPlatformShieldPreflightLoading = false
             awaitingPlatformShieldResync = true
         }
     }
@@ -1249,6 +1281,10 @@ final class InternalTransferViewModel: ObservableObject {
     private static let platformShieldCapacityRefreshRequiredMessage = NSLocalizedString(
         "Your available Platform balance changed, but the new maximum could not be checked. The amount was not changed. Sync and try again.",
         comment: "Platform Shield capacity changed but refresh failed")
+
+    private static let platformShieldResyncInProgressMessage = NSLocalizedString(
+        "Refreshing your Platform balance before checking the new maximum…",
+        comment: "Platform Shield manual resync in progress")
 
     private static let platformShieldHeadroomUnavailableMessage = NSLocalizedString(
         "Your Platform balance cannot currently cover the Shield transfer selection headroom.",
