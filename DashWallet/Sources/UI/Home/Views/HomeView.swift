@@ -395,6 +395,28 @@ struct HomeViewContent<Content: View>: View {
                                 .shadow(color: .shadow, radius: 10, x: 0, y: 5)
                             }
                         }
+
+                        // Tail sentinel: reaching it pages the next
+                        // day-completed slice of history in. Its identity is
+                        // keyed on the page stamp so `onAppear` re-fires
+                        // while it stays visible (auto-continues when a page
+                        // adds no visible rows under the active filter).
+                        if viewModel.canLoadMoreHistory {
+                            HStack(spacing: 10) {
+                                SwiftUI.ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle())
+
+                                Text(NSLocalizedString("Loading more transactions", comment: "Home"))
+                                    .font(.caption)
+                                    .foregroundColor(Color.primary.opacity(0.5))
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .id(viewModel.historyPageStamp)
+                            .onAppear {
+                                viewModel.loadMoreHistory()
+                            }
+                        }
                     }
                 }
                 .padding(EdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0))
