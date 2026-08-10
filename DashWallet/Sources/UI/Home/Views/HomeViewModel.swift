@@ -554,12 +554,14 @@ class HomeViewModel: ObservableObject {
             hasCompletedInitialLoad = true
             DWLogger.log("HomeViewModel: Timeline first page loaded — \(windowTxs.count) rows, older history: \(hasOlderHistory)")
         } else if pendingWindowRefetch {
-            pendingWindowRefetch = false
             // Deletions / currency changes invalidate the cached wrappers —
             // re-read and re-wrap the whole loaded window (window-sized, not
-            // wallet-sized).
+            // wallet-sized). The flag clears only once the re-read actually
+            // happened: a nil delta (host momentarily unbound) keeps the
+            // request pending for the next pass instead of dropping it.
             if let delta = transactionSource.timelineDelta(
                 updatedAfter: .distantPast, notBefore: windowOldestDayStart) {
+                pendingWindowRefetch = false
                 replaceWindow(with: delta)
             }
         } else if let delta = transactionSource.timelineDelta(
@@ -617,23 +619,23 @@ class HomeViewModel: ObservableObject {
     /// Recovery-sync growth cap. While the window still covers the whole
     /// (small) history, every restored batch enters through the delta path
     /// and the window grows with the wallet. Past the threshold, re-tighten
-    /// to about one day-completed page — unless the user has explicitly
-    /// paged deeper, in which case the rows they loaded stay put.
+    /// by refetching the first page — unless the user has explicitly paged
+    /// deeper, in which case the rows they loaded stay put.
+    ///
+    /// A store refetch rather than an in-memory trim: the store computes the
+    /// boundary in `firstSeen` space — the same key paging and deltas filter
+    /// by — while the cached wrappers only expose the display date, which
+    /// can differ for legacy rows (`firstSeen` predating block-timestamp
+    /// adoption) and would let a date-keyed trim drop rows that paging then
+    /// never re-fetches.
     private func trimWindowIfNeeded() {
         guard userRequestedPages == 0,
               !hasOlderHistory,
               windowTxs.count > Self.timelineTrimThreshold else { return }
-        let sorted = windowTxs.values.sorted { $0.date > $1.date }
-        let anchor = sorted[Self.timelinePageSize - 1]
-        let dayStart = Calendar.current.startOfDay(for: anchor.date)
-        let kept = sorted.filter { $0.date >= dayStart }
-        guard kept.count < sorted.count else { return }
-        windowTxs = Dictionary(
-            kept.map { ($0.txHashData, $0) },
-            uniquingKeysWith: { first, _ in first })
-        windowOldestDayStart = UInt64(max(0, dayStart.timeIntervalSince1970))
-        hasOlderHistory = true
-        DWLogger.log("HomeViewModel: Timeline window trimmed to \(windowTxs.count) rows (recovery growth cap)")
+        guard let window = transactionSource.timelineWindow(targetRowCount: Self.timelinePageSize),
+              window.hasOlderHistory else { return }
+        applyTimelineWindow(window)
+        DWLogger.log("HomeViewModel: Timeline window re-tightened to \(windowTxs.count) rows (recovery growth cap)")
     }
 
     /// Whether an interleaved (shielded / platform / cross-day group) item's
@@ -680,6 +682,28 @@ class HomeViewModel: ObservableObject {
         }
     }
 
+    /// The rebuild's input rows: the window cache plus point-lookup backfill
+    /// of tagged CoinJoin sweeps (the combined "CoinJoin Withdrawals" group
+    /// totals every sweep even when its row sits below the loaded window —
+    /// cost scales with the number of recorded sweeps), in deterministic
+    /// timeline order: date desc with the txid hex as tie-breaker, so
+    /// equal-timestamp rows (same-block mixing bursts) keep a stable order
+    /// across rebuilds instead of reshuffling.
+    private func timelineInputTransactions() -> [Transaction] {
+        var inputByTxid = windowTxs
+        let missingSweepTxids = CoinJoinWithdrawalStore.shared.allTxids()
+            .filter { inputByTxid[$0] == nil }
+        if !missingSweepTxids.isEmpty {
+            for tx in transactionSource.wrappedTransactions(txids: missingSweepTxids) {
+                inputByTxid[tx.txHashData] = tx
+            }
+        }
+        return inputByTxid.values.sorted { lhs, rhs in
+            guard lhs.date == rhs.date else { return lhs.date > rhs.date }
+            return lhs.txHashHexString > rhs.txHashHexString
+        }
+    }
+
     /// Rebuild `txItems` from the loaded window. Pure in-memory over the
     /// cached wrappers except for three intentionally small reads: the
     /// shielded/platform activity fetches and the sweep-txid point lookups.
@@ -689,31 +713,15 @@ class HomeViewModel: ObservableObject {
         startedAt: Date,
         pageCompleted: Bool
     ) {
-        // The combined "CoinJoin Withdrawals" group totals every tagged
-        // sweep tx even when its row sits below the loaded window — point
-        // lookups, cost scales with the number of recorded sweeps.
-        var inputByTxid = windowTxs
-        let missingSweepTxids = CoinJoinWithdrawalStore.shared.allTxids()
-            .filter { inputByTxid[$0] == nil }
-        if !missingSweepTxids.isEmpty {
-            for tx in transactionSource.wrappedTransactions(txids: missingSweepTxids) {
-                inputByTxid[tx.txHashData] = tx
-            }
-        }
-        // Deterministic timeline order: date desc with the txid hex as the
-        // tie-breaker, so equal-timestamp rows (same-block mixing bursts)
-        // keep a stable order across rebuilds instead of reshuffling.
-        let transactions = inputByTxid.values.sorted { lhs, rhs in
-            guard lhs.date == rhs.date else { return lhs.date > rhs.date }
-            return lhs.txHashHexString > rhs.txHashHexString
-        }
+        let transactions = timelineInputTransactions()
 
         // Reconcile restored Shielded → Core destinations before Core rows
         // are filtered/classified. The activity projection can recover a
         // destination tag that was absent from the local withdrawal store.
         // Receipt matching sees the loaded window, not the whole history.
         // Rendered shielded items sit inside the window (the `windowCovers`
-        // gate below), and the match tolerance is -1h…+24h around the item,
+        // gate in `appendInterleavedActivity`), and the match tolerance is
+        // -1h…+24h around the item,
         // so the only candidate a rendered item can miss is a receipt up to
         // an hour before it across the window's bottom midnight — a pending
         // row that resolves once that day is paged in.
@@ -770,36 +778,12 @@ class HomeViewModel: ObservableObject {
             return .tx(wrappedTx, self.resolveMetadata(for: wrappedTx.txHashData, in: metadataSnapshots))
         }
 
-        // Interleave the shielded operations (private receives/sends,
-        // Platform↔Shielded moves, shielded identity fundings) — the
-        // Core rows above only cover operations with an L1 leg. The
-        // day-grouping sort below merges the two timelines.
-        for shielded in shieldedItems {
-            guard windowCovers(date: shielded.date, hasKnownDate: shielded.hasKnownDate) else { continue }
-            guard self.passesShieldedFilter(
-                item: shielded,
-                selected: selectedFilters,
-                hasRewards: hasRewards,
-                hasMasternodes: hasMasternodes)
-            else { continue }
-            items.append(.shieldedActivity(shielded))
-        }
-
-        // Observed incoming Platform-address payments (app-recorded —
-        // the SDK persists no per-payment platform history; see
-        // PlatformAddressActivityStore.swift). Received-only by
-        // construction, so they ride the .received filter category.
-        let platformItems = SwiftDashSDKWalletSource.fetchPlatformActivity()
-        for platform in platformItems {
-            guard windowCovers(date: platform.date) else { continue }
-            guard self.passesCategoryFilter(
-                categories: [.received],
-                selected: selectedFilters,
-                hasRewards: hasRewards,
-                hasMasternodes: hasMasternodes)
-            else { continue }
-            items.append(.platformActivity(platform))
-        }
+        appendInterleavedActivity(
+            to: &items,
+            shieldedItems: shieldedItems,
+            selectedFilters: selectedFilters,
+            hasRewards: hasRewards,
+            hasMasternodes: hasMasternodes)
 
         self.txByHash.removeAll()
         items.forEach { item in
@@ -865,6 +849,60 @@ class HomeViewModel: ObservableObject {
         let elapsedMs = Int(Date().timeIntervalSince(startedAt) * 1000)
         DWLogger.log("HomeViewModel: Timeline rebuild complete in \(elapsedMs)ms, \(array.count) groups, \(self.txByHash.count) items cached, window \(windowTxs.count) rows")
 
+        publishTimeline(
+            array,
+            hasRewards: hasRewards,
+            hasMasternodes: hasMasternodes,
+            pageCompleted: pageCompleted)
+    }
+
+    /// Interleave the shielded operations (private receives/sends,
+    /// Platform↔Shielded moves, shielded identity fundings) and the observed
+    /// incoming Platform-address payments (app-recorded — the SDK persists
+    /// no per-payment platform history; see PlatformAddressActivityStore) —
+    /// the Core rows only cover operations with an L1 leg; the day-grouping
+    /// sort merges the timelines. Platform items are received-only by
+    /// construction, so they ride the `.received` filter category. Both are
+    /// clamped to the loaded day range via `windowCovers`.
+    private func appendInterleavedActivity(
+        to items: inout [TransactionListDataItem],
+        shieldedItems: [ShieldedActivityItem],
+        selectedFilters: Set<TransactionFilterCategory>,
+        hasRewards: Bool,
+        hasMasternodes: Bool
+    ) {
+        for shielded in shieldedItems {
+            guard windowCovers(date: shielded.date, hasKnownDate: shielded.hasKnownDate) else { continue }
+            guard self.passesShieldedFilter(
+                item: shielded,
+                selected: selectedFilters,
+                hasRewards: hasRewards,
+                hasMasternodes: hasMasternodes)
+            else { continue }
+            items.append(.shieldedActivity(shielded))
+        }
+
+        let platformItems = SwiftDashSDKWalletSource.fetchPlatformActivity()
+        for platform in platformItems {
+            guard windowCovers(date: platform.date) else { continue }
+            guard self.passesCategoryFilter(
+                categories: [.received],
+                selected: selectedFilters,
+                hasRewards: hasRewards,
+                hasMasternodes: hasMasternodes)
+            else { continue }
+            items.append(.platformActivity(platform))
+        }
+    }
+
+    /// Publish a rebuilt group array and the paging/gate state to the main
+    /// thread in one hop.
+    private func publishTimeline(
+        _ array: [TransactionGroup],
+        hasRewards: Bool,
+        hasMasternodes: Bool,
+        pageCompleted: Bool
+    ) {
         let canLoadMore = hasOlderHistory
         DispatchQueue.main.async {
             self.txItems = array
