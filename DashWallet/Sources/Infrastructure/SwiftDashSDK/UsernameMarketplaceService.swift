@@ -281,7 +281,23 @@ struct UsernameMarketplaceService {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             throw ServiceError.noIdentity
         }
-        return try await wallet.syncDpnsMarketplace()
+        let summary = try await wallet.syncDpnsMarketplace()
+        // The sync can move names between identities (a sale or transfer
+        // prunes the seller's dpns_names cache) — bump the identity-info
+        // snapshot so every username surface re-reads instead of serving
+        // the pre-sale list until the next unrelated invalidation.
+        DWCurrentUserIdentityInfo.shared.refreshFromSDK()
+        // If the departed name was the one the app displays everywhere
+        // (the DWGlobalOptions mirror), re-adopt from SDK truth — the
+        // same reconciliation the recovery path uses, which rewrites the
+        // mirror and posts the canonical registration notification.
+        if let mirror = DWGlobalOptions.sharedInstance().dashpayUsername, !mirror.isEmpty,
+           !DWCurrentUserIdentityInfo.shared.usernames.contains(where: {
+               DWContestedNameStatusService.labelsMatch($0, mirror)
+           }) {
+            _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
+        }
+        return summary
     }
 
     // MARK: Trade actions (all PIN-gated; SDK errors are typed)

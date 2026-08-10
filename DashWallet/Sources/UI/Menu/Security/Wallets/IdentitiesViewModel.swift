@@ -296,7 +296,16 @@ final class IdentitiesViewModel: ObservableObject {
             guard let candidate, let pendingLabel else { return false }
             return DWContestedNameStatusService.labelsMatch(candidate, pendingLabel)
         }
-        let allNames = identity.dpnsNames.map(\.label)
+        // Sold / transferred-away labels stay in the cache as rows with
+        // `isOwned == false` (their trade history remains browsable) —
+        // they are no longer this identity's names and must not appear
+        // in the picker or count toward "has a name".
+        let allNames = identity.dpnsNames.filter(\.isOwned).map(\.label)
+        let departedLabels = identity.dpnsNames.filter { !$0.isOwned }.map(\.label)
+        let isSoldAway: (String?) -> Bool = { candidate in
+            guard let candidate else { return false }
+            return departedLabels.contains { DWContestedNameStatusService.labelsMatch($0, candidate) }
+        }
         let pendingBelongsToIdentity = pendingLabel != nil && (
             isPending(identity.mainDpnsName)
                 || isPending(identity.dpnsName)
@@ -304,10 +313,14 @@ final class IdentitiesViewModel: ObservableObject {
         )
         let ownedNames = allNames.filter { !isPending($0) }
         let alias = identity.alias?.nonEmptyString
-        let mainName = isPending(identity.mainDpnsName)
+        // The display-pick scalars can outlive a sale of the picked name;
+        // a KNOWN-departed label falls through to the next candidate.
+        // (Scalars are still trusted while the label cache is empty —
+        // they double as the hydration fallback.)
+        let mainName = isPending(identity.mainDpnsName) || isSoldAway(identity.mainDpnsName)
             ? nil
             : identity.mainDpnsName?.nonEmptyString
-        let preferredName = isPending(identity.dpnsName)
+        let preferredName = isPending(identity.dpnsName) || isSoldAway(identity.dpnsName)
             ? nil
             : identity.dpnsName?.nonEmptyString
         let displayedName = mainName ?? preferredName ?? ownedNames.first
