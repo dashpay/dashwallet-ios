@@ -173,7 +173,14 @@ extension HTTPClient {
             switch result {
             case .success(let response):
                 #if DEBUG
-                print(try? JSONSerialization.jsonObject(with: response.data, options: .allowFragments))
+                // Body left unprinted on purpose: the CTX rates response alone
+                // is ~3000 lines of pretty-printed pairs, and dumping it
+                // synchronously here stalls the UI for about a second and
+                // buries every other line in a diagnostic log. Print the size
+                // instead; uncomment the body when debugging a specific
+                // endpoint's payload.
+                print("HTTP \(response.statusCode) \(target.path) — \(response.data.count) bytes")
+                // print(try? JSONSerialization.jsonObject(with: response.data, options: .allowFragments))
                 #endif
 
                 // Feed the auth stack's monotone clock from the TLS-protected
