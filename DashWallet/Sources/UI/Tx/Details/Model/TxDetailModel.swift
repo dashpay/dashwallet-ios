@@ -486,6 +486,43 @@ extension TxDetailModel {
         }
     }
 
+    // MARK: Stuck asset-lock retry
+
+    struct StuckAssetLockRetry {
+        let fundingTypeRaw: Int
+        let statusRaw: Int
+        let vout: UInt32
+
+        /// Button title matching what actually remains: an unlocked
+        /// transaction is re-broadcast; a locked one only needs the
+        /// Platform side finished.
+        var actionTitle: String {
+            statusRaw <= 1
+                ? NSLocalizedString("Rebroadcast", comment: "Retry a stuck balance transfer whose transaction never confirmed")
+                : NSLocalizedString("Complete Transfer", comment: "Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished")
+        }
+    }
+
+    /// Non-nil when this transaction is a funding asset lock parked in a
+    /// non-terminal state (built/broadcast/IS-locked/CL-locked but never
+    /// consumed) on a route `AssetLockRecoveryService` can retry. Status
+    /// 4 (consumed) and 5 (restored, completion unknown) never qualify:
+    /// 4 is done, and a restored lock has no tracked local state to
+    /// resume from.
+    var stuckAssetLockRetry: StuckAssetLockRetry? {
+        let info = transaction.identityFundingLockInfo
+            ?? transaction.platformFundingLockInfo
+            ?? ShieldedTxLookup.shared.info(forTxidHex: transactionId)
+        guard let info,
+              (0...3).contains(info.statusRaw),
+              AssetLockRecoveryService.supportsRetry(fundingTypeRaw: info.fundingTypeRaw)
+        else { return nil }
+        return StuckAssetLockRetry(
+            fundingTypeRaw: info.fundingTypeRaw,
+            statusRaw: info.statusRaw,
+            vout: info.vout)
+    }
+
     /// Below this (0.0001 DASH) a fee renders as plain duffs — the
     /// DASH-formatted form reads as zero at a glance.
     private static let duffsDisplayThreshold: UInt64 = 10_000
