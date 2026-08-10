@@ -464,6 +464,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
         phase = .success
+        ShieldedTxLookup.shared.refresh()
+        NotificationCenter.default.post(
+            name: .swiftDashSDKTransactionProjectionDidChange,
+            object: nil)
         scheduleShieldedResync(manager: env.manager)
     }
 
