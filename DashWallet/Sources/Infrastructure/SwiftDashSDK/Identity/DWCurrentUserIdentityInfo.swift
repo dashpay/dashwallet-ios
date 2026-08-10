@@ -652,15 +652,18 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         let walletHex = walletId.map { String(format: "%02x", $0) }.joined()
         let contextKey = "\(network.rawValue):\(walletHex)"
 
+        // A fresh runtime start supersedes any backoff still pending from the
+        // previous one — it re-runs the same first attempt below. Done BEFORE
+        // the guards: an attempt already in flight keeps `activeContexts` set,
+        // and returning early there would leave the superseded backoff
+        // scheduled behind it.
+        retryTasks.removeValue(forKey: contextKey)?.cancel()
+
         guard !completedContexts.contains(contextKey),
               !activeContexts.contains(contextKey)
         else {
             return
         }
-
-        // A fresh runtime start supersedes any backoff still pending from the
-        // previous one — it re-runs the same first attempt below.
-        retryTasks.removeValue(forKey: contextKey)?.cancel()
 
         let found = await attempt(
             wallet: wallet,
@@ -779,6 +782,28 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         }
     }
 
+    /// Cancel every pending backoff and wait for any in-flight pass to return.
+    ///
+    /// Runtime teardown must call this before releasing the wallet. The first
+    /// attempt runs inside the serialized runtime start, which is what kept the
+    /// wallet handle alive across its FFI scan; the retries deliberately run
+    /// outside that serialization, so without this a retry could be suspended
+    /// inside `discoverIdentities` while `SwiftDashSDKHost.stop()` drops the
+    /// handle underneath it. Cancelling alone would not be enough — a task
+    /// suspended in a synchronous FFI call does not observe cancellation — so
+    /// this awaits each task rather than only signalling it.
+    func cancelPendingWork() async {
+        guard !retryTasks.isEmpty else { return }
+        let pending = retryTasks
+        retryTasks.removeAll()
+        Self.logger.info(
+            "🪪 IDENT-RECOVERY :: cancelling \(pending.count, privacy: .public) pending retry task(s) for teardown")
+        for task in pending.values {
+            task.cancel()
+            await task.value
+        }
+    }
+
     /// Walk the backoff until a pass finds an identity or the schedule runs
     /// out. Runs outside the runtime-start pipeline, so each pass re-resolves
     /// the live wallet instead of holding the handle it was started with: a
@@ -812,8 +837,17 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                     contextKey: contextKey) {
                     break
                 }
+
+                // A teardown that started while the pass above was inside the
+                // FFI is waiting on this task; don't spend another round.
+                if Task.isCancelled { return }
             }
-            self?.retryTasks.removeValue(forKey: contextKey)
+            // Deliberately does NOT remove itself from `retryTasks`. Ownership
+            // of that dictionary belongs to `recoverIfNeeded` and
+            // `cancelPendingWork`, and a finished task self-removing could
+            // delete the entry a newer start had already put in its place —
+            // dropping that one out of teardown's reach. Awaiting a finished
+            // task returns immediately, so leaving it there costs nothing.
         }
     }
 
