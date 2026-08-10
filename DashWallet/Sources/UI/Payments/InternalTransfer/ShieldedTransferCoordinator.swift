@@ -190,6 +190,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     @Published private(set) var phase: Phase = .idle
 
+    /// The typed error behind the current `.failed(_)` phase. `Phase`
+    /// carries only display text (that's what the confirm sheets render), so
+    /// programmatic callers that must branch on the *kind* of failure —
+    /// `AssetLockRecoveryService` telling a PIN cancel from a real error —
+    /// read the error itself here rather than matching localized strings.
+    /// Cleared when a transfer starts and on `reset()`.
+    private(set) var lastFailure: Error?
+
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.shielded-transfer")
@@ -1064,6 +1072,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     func reset() {
         stopAssetLockPolling()
         lastAssetLockOutPoint = nil
+        lastFailure = nil
         phase = .idle
     }
 
@@ -1134,6 +1143,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// first caller wins atomically and the second sees `.signing` + bails.
     private func beginTransfer() -> Bool {
         guard phase == .idle else { return false }
+        lastFailure = nil
         phase = .signing
         return true
     }
@@ -1153,6 +1163,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     private func handleFailure(_ error: Error) {
         Self.logger.error("🛡️ SHIELD-TX :: failure \(String(describing: error), privacy: .public)")
+        lastFailure = error
         let message: String
         if let local = error as? LocalizedError, let description = local.errorDescription {
             message = description

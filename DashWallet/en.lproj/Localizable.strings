@@ -695,6 +695,9 @@
 /* DashPay intro: feature title */
 "Coming soon" = "Coming soon";
 
+/* Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished */
+"Complete Transfer" = "Complete Transfer";
+
 /* Shielded transfer status */
 "Completed" = "Completed";
 
@@ -706,6 +709,9 @@
 
 /* Identity top-up sheet — body */
 "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates.";
+
+/* Asset-lock retry failed */
+"Couldn't complete the transfer" = "Couldn't complete the transfer";
 
 /* Identity top-up sheet — free amount chip */
 "Custom" = "Custom";
@@ -2440,6 +2446,9 @@
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Read-only";
 
+/* Retry a stuck balance transfer whose transaction never confirmed */
+"Rebroadcast" = "Rebroadcast";
+
 /* Username marketplace: transfer recipient placeholder */
 "Recipient username or identity ID" = "Recipient username or identity ID";
 
@@ -2478,6 +2487,9 @@
 
 /* Username marketplace: contested request not yet indexed by Platform */
 "Requested — waiting for the network vote" = "Requested — waiting for the network vote";
+
+/* Asset-lock retry in progress */
+"Retrying transfer…" = "Retrying transfer…";
 
 /* Username marketplace: screen subtitle */
 "Search usernames, buy ones that are for sale, and sell or transfer your own." = "Search usernames, buy ones that are for sale, and sell or transfer your own.";
@@ -2557,11 +2569,17 @@
 /* Username marketplace: seller-clarity callout on the detail sheet */
 "This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price.";
 
+/* Asset-lock retry: unsupported funding route */
+"This transfer can't be retried from here." = "This transfer can't be retried from here.";
+
 /* Username marketplace */
 "This username is not for sale." = "This username is not for sale.";
 
 /* Username marketplace */
 "This username's record couldn't be read from the network." = "This username's record couldn't be read from the network.";
+
+/* Asset-lock retry: identity top-up with no identity */
+"This wallet has no identity to top up." = "This wallet has no identity to top up.";
 
 /* SDK identity profile sheet — add credits to the identity */
 "Top Up" = "Top Up";
@@ -2571,6 +2589,9 @@
 
 /* Username marketplace: timeline card title */
 "Trade history" = "Trade history";
+
+/* Asset-lock retry finished */
+"Transfer completed" = "Transfer completed";
 
 /* Username marketplace */
 "Transfer to Another Identity" = "Transfer to Another Identity";
