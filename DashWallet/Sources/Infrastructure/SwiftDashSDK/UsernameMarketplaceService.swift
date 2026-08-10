@@ -111,6 +111,9 @@ struct UsernameMarketplaceService {
     /// time are historical FACTS and safe to show as such; only claims
     /// about the PRESENT ("for sale now") require the live document.
     struct MarketplaceEvent {
+        /// The history row's own `$id` — the dedupe key that makes the
+        /// overlap-tolerant pagination cursor safe (see `eventsPage`).
+        let eventIdBase58: String
         let dpnsDocumentIdBase58: String
         let priceCredits: UInt64
         let createdAtMs: UInt64
@@ -135,7 +138,12 @@ struct UsernameMarketplaceService {
         guard let sdk = SwiftDashSDKHost.shared.sdk else { return [] }
         var conditions = "[[\"dataContractId\",\"==\",\"\(DPNSVotePoll.contractId)\"]"
         if let beforeMs {
-            conditions += ",[\"$createdAt\",\"<\",\(beforeMs)]"
+            // "<=", not "<": several events can share one block's
+            // $createdAt, and a strict cursor at a page boundary would
+            // silently drop the rest of that timestamp group. The
+            // deliberate overlap re-fetches the boundary rows; callers
+            // dedupe on `eventIdBase58`.
+            conditions += ",[\"$createdAt\",\"<=\",\(beforeMs)]"
         }
         conditions += "]"
         let result = try await sdk.documentList(
@@ -155,13 +163,16 @@ struct UsernameMarketplaceService {
             docs = result.values.compactMap { $0 as? [String: Any] }
         }
         return docs.compactMap { doc in
-            guard let raw = doc["documentId"] as? String,
+            guard let rawEventId = doc["$id"] as? String,
+                  let eventId = Self.identifier32(rawEventId),
+                  let raw = doc["documentId"] as? String,
                   let documentId = Self.identifier32(raw),
                   let price = (doc["price"] as? NSNumber)?.uint64Value,
                   let createdAt = (doc["$createdAt"] as? NSNumber)?.uint64Value else { return nil }
             let buyer = (doc["$ownerId"] as? String).flatMap(Self.identifier32)
             let seller = (doc["sellerId"] as? String).flatMap(Self.identifier32)
             return MarketplaceEvent(
+                eventIdBase58: eventId.toBase58String(),
                 dpnsDocumentIdBase58: documentId.toBase58String(),
                 priceCredits: price,
                 createdAtMs: createdAt,
@@ -219,12 +230,16 @@ struct UsernameMarketplaceService {
         }
         var out: [String: LiveDomainName] = [:]
         for doc in docs {
-            guard let id = doc["$id"] as? String,
-                  let ownerBase58 = doc["$ownerId"] as? String,
-                  let ownerId = Data.identifier(fromBase58: ownerBase58),
+            guard let rawId = doc["$id"] as? String,
+                  let id = Self.identifier32(rawId),
+                  let rawOwnerId = doc["$ownerId"] as? String,
+                  let ownerId = Self.identifier32(rawOwnerId),
                   let label = (doc["label"] as? String) ?? (doc["normalizedLabel"] as? String) else { continue }
-            out[id] = LiveDomainName(
-                documentIdBase58: id,
+            // Canonical base58 key — must byte-match the event side's
+            // dpnsDocumentIdBase58, which is produced the same way.
+            let documentIdBase58 = id.toBase58String()
+            out[documentIdBase58] = LiveDomainName(
+                documentIdBase58: documentIdBase58,
                 label: label,
                 ownerId: ownerId,
                 priceCredits: (doc["$price"] as? NSNumber)?.uint64Value)

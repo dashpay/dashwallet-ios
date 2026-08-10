@@ -818,6 +818,9 @@
 /* Username marketplace: purchases feed row — price paid, then date */
 "Sold for %1$@ DASH · %2$@" = "Sold for %1$@ DASH · %2$@";
 
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Sold for %1$@ DASH · %2$@ · %3$@ → %4$@";
+
 /* Username marketplace: browse row whose name is no longer listed */
 "Not for sale now" = "Not for sale now";
 
