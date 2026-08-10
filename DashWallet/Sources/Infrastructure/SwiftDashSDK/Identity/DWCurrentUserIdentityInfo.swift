@@ -308,12 +308,10 @@ public final class DWCurrentUserIdentityInfo: NSObject {
                let persistedIdentity = persistedWallet.identities.first(where: {
                    $0.identityId == recoveredIdentityId
                }) {
-                let pending = DWContestedNameStatusService.shared.pendingLabel
                 recoveredUsername = [persistedIdentity.mainDpnsName, persistedIdentity.dpnsName]
                     .compactMap { Self.nilIfEmpty($0) }
                     .first(where: { candidate in
-                        guard let pending else { return true }
-                        return candidate != pending && candidate != "\(pending).dash"
+                        !DWContestedNameStatusService.shared.isPendingLabel(candidate)
                     })
             }
         }
@@ -490,10 +488,11 @@ public final class DWCurrentUserIdentityInfo: NSObject {
         // invitation links, and the payment-side username memo. The
         // service-side bookmark in `DWContestedNameStatusService`
         // is single-writer/single-reader and cleared on resolution.
-        let pendingContested = DWContestedNameStatusService.shared.pendingLabel
+        // EVERY in-flight contested label filters out — the marketplace
+        // allows several simultaneous requests, each its own vote poll.
+        let pendingContested = DWContestedNameStatusService.shared.pendingLabels
         let isPending: (String) -> Bool = { name in
-            guard let pending = pendingContested else { return false }
-            return DWContestedNameStatusService.labelsMatch(name, pending)
+            pendingContested.contains { DWContestedNameStatusService.labelsMatch(name, $0) }
         }
 
         if let managed = try? wallet.managedIdentity(identityId: identityId) {
@@ -671,14 +670,12 @@ final class DWSameSeedIdentityRecoveryCoordinator {
                             let contested = try wallet
                                 .managedIdentity(identityId: identityId)
                                 .getContestedDpnsNames()
-                            let pending = DWContestedNameStatusService.shared.pendingLabel
-                            if let recoveredPending = contested.min(),
-                               pending != recoveredPending,
-                               pending != "\(recoveredPending).dash" {
-                                // A second install has no local submission
-                                // bookmark. Reconstruct it from Platform so
-                                // the pre-vote DPNS document cannot be
-                                // mistaken for ownership.
+                            // A second install has no local submission
+                            // bookmarks. Reconstruct one per still-voting
+                            // label from Platform so the pre-vote DPNS
+                            // documents cannot be mistaken for ownership.
+                            for recoveredPending in contested
+                            where !DWContestedNameStatusService.shared.isPendingLabel(recoveredPending) {
                                 DWContestedNameStatusService.shared.recordSubmission(
                                     label: recoveredPending)
                             }

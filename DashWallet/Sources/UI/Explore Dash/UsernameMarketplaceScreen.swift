@@ -55,6 +55,10 @@ final class UsernameMarketplaceViewModel: ObservableObject {
     @Published var isSearching = false
     @Published var isLoadingMine = false
     @Published var isPerformingAction = false
+    /// Non-nil while a trade action runs: what the wallet is doing right
+    /// now ("Submitting your username request…"). Drives the blocking
+    /// spinner overlay.
+    @Published var activityMessage: String?
     @Published var errorMessage: String?
     /// Transient success line ("hilawe listed for 0.05 DASH").
     @Published var successMessage: String?
@@ -187,14 +191,21 @@ final class UsernameMarketplaceViewModel: ObservableObject {
 
     /// Run one PIN-gated trade action with shared progress/error/success
     /// handling, then refresh both lists so the new sale state renders.
+    /// `progressText` drives the blocking activity overlay on the
+    /// marketplace screen — the sheets dismiss themselves as the action
+    /// starts, and a Platform transition takes seconds; without it the
+    /// screen sat silent until the success banner.
     func perform(
+        progressText: String,
         successText: String,
         _ operation: @escaping () async throws -> Void
     ) {
         guard !isPerformingAction else { return }
         isPerformingAction = true
+        withAnimation { activityMessage = progressText }
         Task { [weak self] in
             guard let self else { return }
+            defer { withAnimation { self.activityMessage = nil } }
             do {
                 try await operation()
                 isPerformingAction = false
@@ -276,6 +287,32 @@ struct UsernameMarketplaceScreen: View {
         .sheet(item: $registerCandidate) { candidate in
             RegisterNameSheet(label: candidate.label, viewModel: viewModel)
                 .presentationDetents([.medium, .large])
+        }
+        .overlay {
+            // Blocking activity overlay while a trade transition is in
+            // flight — the action sheets dismiss themselves as the action
+            // starts, so this is the only feedback until success/error.
+            // (The PIN prompt is a UIKit modal and presents above it.)
+            if let activity = viewModel.activityMessage {
+                ZStack {
+                    Color.black.opacity(0.3).ignoresSafeArea()
+                    VStack(spacing: 14) {
+                        SwiftUI.ProgressView()
+                            .scaleEffect(1.3)
+                        Text(activity)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.dash.primaryText)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 24)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color.dash.secondaryBackground)
+                            .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 6))
+                }
+                .transition(.opacity)
+            }
         }
         .overlay(alignment: .bottom) {
             if let success = viewModel.successMessage {
@@ -920,7 +957,9 @@ private struct MarketplaceNameDetailSheet: View {
                     viewModel.errorMessage = NSLocalizedString("This username is not for sale.", comment: "Username marketplace")
                     return
                 }
-                viewModel.perform(successText: String.localizedStringWithFormat(
+                viewModel.perform(
+                    progressText: NSLocalizedString("Completing your purchase…", comment: "Username marketplace: activity overlay while the purchase transition runs"),
+                    successText: String.localizedStringWithFormat(
                     NSLocalizedString("%@ is now yours", comment: "Username marketplace: purchase success"),
                     label)) {
                     try await viewModel.service.purchase(name: label, expectedPriceCredits: expected)
@@ -939,7 +978,9 @@ private struct MarketplaceNameDetailSheet: View {
             titleVisibility: .visible
         ) {
             Button(NSLocalizedString("Remove From Sale", comment: "Username marketplace"), role: .destructive) {
-                viewModel.perform(successText: String.localizedStringWithFormat(
+                viewModel.perform(
+                    progressText: NSLocalizedString("Removing the listing…", comment: "Username marketplace: activity overlay while the delist transition runs"),
+                    successText: String.localizedStringWithFormat(
                     NSLocalizedString("%@ is no longer for sale", comment: "Username marketplace: delist success"),
                     label)) {
                     try await viewModel.service.removeFromSale(name: label)
@@ -1092,7 +1133,9 @@ private struct SetNamePriceSheet: View {
 
                 Button {
                     guard let duffs = priceDuffs else { return }
-                    viewModel.perform(successText: String.localizedStringWithFormat(
+                    viewModel.perform(
+                        progressText: NSLocalizedString("Listing for sale…", comment: "Username marketplace: activity overlay while the set-price transition runs"),
+                        successText: String.localizedStringWithFormat(
                         NSLocalizedString("%1$@ listed for %2$@ DASH", comment: "Username marketplace: listing success — name, then price"),
                         label,
                         duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)) {
@@ -1254,7 +1297,9 @@ private struct TransferNameSheet: View {
     }
 
     private func run(recipientBase58: String) {
-        viewModel.perform(successText: String.localizedStringWithFormat(
+        viewModel.perform(
+            progressText: NSLocalizedString("Transferring the username…", comment: "Username marketplace: activity overlay while the transfer transition runs"),
+            successText: String.localizedStringWithFormat(
             NSLocalizedString("%@ transferred", comment: "Username marketplace: transfer success"),
             label)) {
             try await viewModel.service.transfer(name: label, toIdentityBase58: recipientBase58)
@@ -1285,16 +1330,6 @@ private struct RegisterNameSheet: View {
     /// is in progress and a second submission would just fail.
     private var alreadyRequested: Bool {
         viewModel.hasRequestedContest(for: label)
-    }
-
-    /// A DIFFERENT label's contested request is still in the network
-    /// vote. The reconciliation bookmark is single-slot, so a second
-    /// request is refused rather than silently orphaning the first
-    /// (the service enforces the same rule).
-    private var pendingOtherContestLabel: String? {
-        guard let pending = DWContestedNameStatusService.shared.pendingLabel,
-              !DWContestedNameStatusService.labelsMatch(pending, label) else { return nil }
-        return pending
     }
 
     /// Whether the identity balance covers the vote-resolution fund —
@@ -1339,7 +1374,9 @@ private struct RegisterNameSheet: View {
                         .padding(.top, 8)
 
                     confirmButton(NSLocalizedString("Register", comment: "Username marketplace: confirm register button")) {
-                        viewModel.perform(successText: String.localizedStringWithFormat(
+                        viewModel.perform(
+                            progressText: NSLocalizedString("Registering the username…", comment: "Username marketplace: activity overlay while the registration transition runs"),
+                            successText: String.localizedStringWithFormat(
                             NSLocalizedString("%@ registered", comment: "Username marketplace: registration success"),
                             label)) {
                             try await viewModel.service.register(label: label)
@@ -1391,12 +1428,6 @@ private struct RegisterNameSheet: View {
                 icon: "hourglass",
                 text: NSLocalizedString("You already requested this name — the network vote is in progress. You'll find it under My Names.", comment: "Username marketplace: contested request already submitted by this identity"))
             contestVotesCard
-        } else if let pending = pendingOtherContestLabel {
-            statusCallout(
-                icon: "hourglass",
-                text: String.localizedStringWithFormat(
-                    NSLocalizedString("Your request for “%@” is still in the network vote. Wait for that vote to finish before requesting another name.", comment: "Username marketplace: a second contested request is refused while one is pending"),
-                    pending))
         } else if precheck == nil {
             SwiftUI.ProgressView()
                 .padding(.top, 20)
@@ -1426,7 +1457,9 @@ private struct RegisterNameSheet: View {
                 .padding(.top, 14)
 
             confirmButton(NSLocalizedString("Request Username", comment: "Username marketplace: confirm contested request button")) {
-                viewModel.perform(successText: String.localizedStringWithFormat(
+                viewModel.perform(
+                    progressText: NSLocalizedString("Submitting your username request…", comment: "Username marketplace: activity overlay while the contested request transition runs"),
+                    successText: String.localizedStringWithFormat(
                     NSLocalizedString("Request for %@ submitted — masternodes now vote on it", comment: "Username marketplace: contested request success"),
                     label)) {
                     try await viewModel.service.requestContestedName(label: label)

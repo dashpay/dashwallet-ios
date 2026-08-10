@@ -783,7 +783,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     identityId: identityId,
                     label: username) {
                     DWContestedNameStatusService.shared
-                        .recordVotingEndTime(voteState.endTime, network: network)
+                        .recordVotingEndTime(voteState.endTime, label: username, network: network)
                 }
             } catch {
                 Self.logger.warning("🪪 IDENT-COORD :: initial contest vote-state fetch failed: \(String(describing: error), privacy: .public)")
@@ -929,7 +929,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// Deliberate omission: no in-session timer — appear/foreground covers
     /// the testnet (~90 min) and mainnet (~2 week) voting windows.
     func checkPendingContestResolution() {
-        guard DWContestedNameStatusService.shared.pendingLabel != nil else { return }
+        guard !DWContestedNameStatusService.shared.pendingLabels.isEmpty else { return }
         guard contestResolutionTask == nil else { return } // single-flight
         switch phase {
         case .preparingKeys, .inFlight:
@@ -946,9 +946,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     private enum ContestOutcome { case won, lost }
 
     private func runPendingContestResolution() async {
-        guard let expectedNetwork = WalletEnvironment.network,
-              let label = DWContestedNameStatusService.shared
-                  .pendingLabel(for: expectedNetwork) else { return }
+        guard let expectedNetwork = WalletEnvironment.network else { return }
+        let labels = DWContestedNameStatusService.shared.pendingLabels(for: expectedNetwork)
+        guard !labels.isEmpty else { return }
 
         // Bounded wait for host hydration — the Home-appear trigger can
         // fire before SwiftDashSDKWalletRuntime finishes starting. Give up
@@ -976,11 +976,28 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             return
         }
 
+        // Every in-flight contest resolves independently — a per-label
+        // failure only skips that label for this pass.
+        for label in labels {
+            await resolvePendingContest(
+                label: label,
+                wallet: wallet,
+                identityId: identityId,
+                expectedNetwork: expectedNetwork)
+        }
+    }
+
+    private func resolvePendingContest(
+        label: String,
+        wallet: ManagedPlatformWallet,
+        identityId: Data,
+        expectedNetwork: Network
+    ) async {
         let outcome: ContestOutcome
         do {
             if let state = try await wallet.fetchContestVoteState(identityId: identityId, label: label) {
                 DWContestedNameStatusService.shared
-                    .recordVotingEndTime(state.endTime, network: expectedNetwork)
+                    .recordVotingEndTime(state.endTime, label: label, network: expectedNetwork)
                 switch state.winner {
                 case .none:
                     return // still voting
@@ -1008,7 +1025,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 // not consulted: preregistration puts the label there before
                 // voting and therefore cannot prove ownership.
                 guard let votingEnd = DWContestedNameStatusService.shared
-                    .pendingVotingEndTime(for: expectedNetwork),
+                    .pendingVotingEndTime(label: label, for: expectedNetwork),
                       Date() >= votingEnd else {
                     return
                 }
@@ -1016,18 +1033,20 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 outcome = (resolvedOwner == identityId) ? .won : .lost
             }
         } catch {
-            Self.logger.warning("🪪 IDENT-COORD :: contest check failed (retry on next trigger): \(String(describing: error), privacy: .public)")
+            Self.logger.warning("🪪 IDENT-COORD :: contest check for \(label, privacy: .public) failed (retry on next trigger): \(String(describing: error), privacy: .public)")
             return
         }
 
-        // Freshness guard: a new submission may have replaced the bookmark
-        // while our awaits were in flight. Same MainActor stretch as the
-        // mutation below, so it's atomic against recordSubmission.
+        // Freshness guard: the bookmark may have been cleared or the
+        // network switched while our awaits were in flight. Same MainActor
+        // stretch as the mutation below, so it's atomic against
+        // recordSubmission.
         guard WalletEnvironment.network == expectedNetwork,
               SwiftDashSDKHost.shared.runningNetwork == expectedNetwork,
-              DWContestedNameStatusService.shared.pendingLabel(for: expectedNetwork) == label
+              DWContestedNameStatusService.shared.pendingLabels(for: expectedNetwork)
+                  .contains(where: { DWContestedNameStatusService.labelsMatch($0, label) })
         else {
-            Self.logger.info("🪪 IDENT-COORD :: contest check became stale after network/submission change")
+            Self.logger.info("🪪 IDENT-COORD :: contest check for \(label, privacy: .public) became stale after network/submission change")
             return
         }
         switch outcome {
@@ -1037,8 +1056,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 username: label,
                 network: expectedNetwork)
         case .lost:
-            Self.logger.info("🪪 IDENT-COORD :: contest lost/locked for \(label, privacy: .public) — clearing bookmark; a new registration attempt is viable")
-            DWContestedNameStatusService.shared.clearPending(for: expectedNetwork)
+            Self.logger.info("🪪 IDENT-COORD :: contest lost/locked for \(label, privacy: .public) — clearing its bookmark; a new registration attempt is viable")
+            DWContestedNameStatusService.shared.clearPending(label: label, for: expectedNetwork)
         }
     }
 
@@ -1069,7 +1088,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // calls `DWContestedNameStatusService.finalizeWon(username:)`
         // to perform them when the vote resolves in our favor.
         if case .completed = newPhase, let username = currentUsername {
-            let isContestedSubmission = DWContestedNameStatusService.shared.pendingLabel == username
+            let isContestedSubmission = DWContestedNameStatusService.shared.isPendingLabel(username)
             if isContestedSubmission {
                 Self.logger.info("🪪 IDENT-COORD :: completed (contested) — deferring DWGlobalOptions mirror writes")
             } else {
