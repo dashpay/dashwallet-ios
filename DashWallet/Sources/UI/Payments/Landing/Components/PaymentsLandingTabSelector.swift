@@ -44,6 +44,11 @@ struct PaymentsLandingTabSelector: View {
                 .buttonStyle(.plain)
             }
         }
+        // Scoped to the pills rather than wrapping the binding write in
+        // `withAnimation`: that would animate whatever else observes the
+        // selection — the whole tab's content — which is the host's call to
+        // make, not this view's.
+        .animation(.snappy(duration: 0.25), value: selection)
     }
 
     @ViewBuilder
@@ -59,6 +64,10 @@ struct PaymentsLandingTabSelector: View {
                     .foregroundStyle(Color.dash.whiteText)
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: false)
+                    // Fades rather than appearing at full width: the pill is
+                    // still growing underneath it, and a hard cut reads as a
+                    // second, competing change.
+                    .transition(.opacity)
             }
         }
         .padding(.horizontal, Layout.horizontalPadding)

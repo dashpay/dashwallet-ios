@@ -60,6 +60,19 @@ struct PaymentsLandingScreen: View {
                 .padding(.top, showsHeader ? 20 : 12)
                 .padding(.bottom, isEmbeddedForm ? 12 : 20)
 
+            tabContent
+        }
+        .background(Color.dash.primaryBackground)
+        .navigationBarHidden(true)
+    }
+
+    /// Cross-faded rather than swapped outright — the pills animate their own
+    /// morph, and an instant content change beside that reads as a glitch.
+    /// Deliberately short: two of these tabs carry a keypad and a scroll view,
+    /// and a long fade on those looks slow rather than smooth.
+    @ViewBuilder
+    private var tabContent: some View {
+        Group {
             switch viewModel.activeTab {
             case .receive:
                 receiveContent
@@ -101,8 +114,7 @@ struct PaymentsLandingScreen: View {
                     showsHeader: false)
             }
         }
-        .background(Color.dash.primaryBackground)
-        .navigationBarHidden(true)
+        .animation(.easeInOut(duration: 0.18), value: viewModel.activeTab)
     }
 
     // MARK: - Header
