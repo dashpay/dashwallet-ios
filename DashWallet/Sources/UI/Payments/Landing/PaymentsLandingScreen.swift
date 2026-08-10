@@ -50,7 +50,11 @@ struct PaymentsLandingScreen: View {
                 tabs: viewModel.visibleTabs,
                 selection: $viewModel.activeTab)
                 .padding(.horizontal, 20)
-                .padding(.top, showsHeader ? 0 : 12)
+                // The pills carry no container of their own, so they need the
+                // gap the boxed control used to get from its own padding and
+                // edge — under the header most of all, where the close button
+                // sits right above them.
+                .padding(.top, showsHeader ? 8 : 12)
 
             switch viewModel.activeTab {
             case .receive:
