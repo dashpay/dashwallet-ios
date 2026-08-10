@@ -1227,11 +1227,22 @@ private struct RegisterNameSheet: View {
     }
 
     /// This identity already has a request in for this label — the vote
-    /// is in progress and a second submission would just fail.
+    /// is in progress and a second submission would just fail. Checks
+    /// the app bookmark too, in case the SDK cache hasn't synced yet.
     private var alreadyRequested: Bool {
         viewModel.contestedNames.contains {
             DWContestedNameStatusService.labelsMatch($0, label)
-        }
+        } || DWContestedNameStatusService.shared.isPendingLabel(label)
+    }
+
+    /// A DIFFERENT label's contested request is still in the network
+    /// vote. The reconciliation bookmark is single-slot, so a second
+    /// request is refused rather than silently orphaning the first
+    /// (the service enforces the same rule).
+    private var pendingOtherContestLabel: String? {
+        guard let pending = DWContestedNameStatusService.shared.pendingLabel,
+              !DWContestedNameStatusService.labelsMatch(pending, label) else { return nil }
+        return pending
     }
 
     /// Whether the identity balance covers the vote-resolution fund —
@@ -1322,6 +1333,12 @@ private struct RegisterNameSheet: View {
             statusCallout(
                 icon: "hourglass",
                 text: NSLocalizedString("You already requested this name — the network vote is in progress. You'll find it under My Names.", comment: "Username marketplace: contested request already submitted by this identity"))
+        } else if let pending = pendingOtherContestLabel {
+            statusCallout(
+                icon: "hourglass",
+                text: String.localizedStringWithFormat(
+                    NSLocalizedString("Your request for “%@” is still in the network vote. Wait for that vote to finish before requesting another name.", comment: "Username marketplace: a second contested request is refused while one is pending"),
+                    pending))
         } else if precheck == nil {
             SwiftUI.ProgressView()
                 .padding(.top, 20)
