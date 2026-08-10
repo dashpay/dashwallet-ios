@@ -545,9 +545,13 @@ struct MainMenuScreen: View {
             onProceed: {
                 readinessNavigationController?.dismiss(animated: true) {
                     guard let menuNavigationController else { return }
+                    // Coming from the readiness interstitial: the shielded
+                    // question was answered there (checklist or the explicit
+                    // transparent escape), so the form skips the teaser.
                     Self.pushCreateUsernameForm(
                         on: menuNavigationController,
-                        dashPayModel: dashPayModel)
+                        dashPayModel: dashPayModel,
+                        suppressShieldedHint: true)
                 }
             },
             onClose: {
@@ -576,13 +580,15 @@ struct MainMenuScreen: View {
 
     private static func pushCreateUsernameForm(
         on navigationController: UINavigationController,
-        dashPayModel: DWDashPayProtocol
+        dashPayModel: DWDashPayProtocol,
+        suppressShieldedHint: Bool = false
     ) {
         let controller = CreateUsernameViewController(
             dashPayModel: dashPayModel,
             invitationURL: nil,
             definedUsername: nil
         )
+        controller.suppressShieldedHint = suppressShieldedHint
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak navigationController] result in
             let message = result 

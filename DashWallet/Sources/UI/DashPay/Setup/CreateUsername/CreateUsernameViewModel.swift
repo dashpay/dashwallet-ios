@@ -49,19 +49,36 @@ struct CreateUsernameUIState {
 class CreateUsernameViewModel: ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
     private let prefs = UsernamePrefs.shared
+    /// Stateless facade, instantiated per view model by design (see its
+    /// type doc). Used here for `contestPrecheck` — the one vote-state
+    /// query that distinguishes a locked name from one mid-vote.
+    private let marketplaceService = UsernameMarketplaceService()
     private let illegalChars = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-").inverted
     private var submittedRegistrationUsername: String?
     private var didNotifyRegistrationStarted = false
     private var onRegistrationStarted: (@MainActor () -> Void)?
-    /// In-flight DPNS availability check. Cancelled and replaced on
-    /// every revalidation so only the newest input hits the network.
+    /// In-flight DPNS availability check. Cancelled and replaced when
+    /// the typed label changes, so only the newest input hits the network.
     private var availabilityCheckTask: Task<Void, Never>?
+    /// The trimmed label the current availability-check state belongs to,
+    /// whether still in flight or already answered. Revalidations for the
+    /// SAME label — balance and readiness publishes fire constantly while
+    /// syncing — reuse the existing answer instead of hitting DAPI again.
+    /// Cleared on screen appear (`refreshRegistrationRecoveryState`) so
+    /// every visit re-verifies once.
+    private var availabilityCheckLabel: String?
     /// One-shot revalidation alarm for a `.maturing` shielded snapshot.
     /// The shared readiness service arms its own flip timer only for
     /// the STANDARD denomination; a contested name's (0.25 DASH) ready
     /// moment can be later, so the form re-validates itself at the
     /// snapshot's own `readyAt`. Re-armed on every validation.
     private var shieldedMaturityRevalidationTask: Task<Void, Never>?
+    /// One-shot re-check at the active contest's next boundary — the
+    /// join-window close, then the vote end. The per-label answer cache
+    /// deliberately keeps the verdict stable while the user sits on the
+    /// screen; these two moments are exactly when it goes stale, so the
+    /// form re-queries then instead of letting a submit fail at broadcast.
+    private var contestBoundaryRevalidationTask: Task<Void, Never>?
     /// Mirrors the legacy `VALIDATION_DEBOUNCE_DELAY`
     /// (DWCheckExistenceUsernameValidationRule.m).
     private static let availabilityDebounceNanos: UInt64 = 400_000_000
@@ -93,6 +110,27 @@ class CreateUsernameViewModel: ObservableObject {
     /// would otherwise say "Username taken", and the user would keep retrying
     /// a name that can only fail at broadcast.
     @Published private(set) var isLockedContestedName: Bool = false
+
+    /// Contender count when the typed name is already in an ACTIVE masternode
+    /// vote started by someone else. Like a LOCK, a mid-vote label still reads
+    /// as available (no domain document exists until the vote resolves), but
+    /// submitting it joins the running vote as a contender instead of starting
+    /// a fresh one — the warning callout and the Continue confirmation switch
+    /// their copy on this. nil when no such contest is known (fresh name, our
+    /// own request, or the best-effort query failed).
+    @Published private(set) var activeContestContenders: Int? = nil
+
+    /// Deadline of that active vote, when the current-contests listing
+    /// reports one. Lets the warning callout say WHEN the vote ends —
+    /// and switch to "has ended, finalizing" wording once the deadline
+    /// passes — instead of an unverifiable "in progress" claim.
+    @Published private(set) var activeContestEndsAt: Date? = nil
+
+    /// Sale price (duffs) when the typed name is TAKEN but its owner has
+    /// listed it in the Username Marketplace. Turns the dead-end
+    /// "Username taken" into a pointer to the listing. nil when the name
+    /// is not for sale or the best-effort lookup failed.
+    @Published private(set) var takenNameSalePriceDuffs: UInt64? = nil
 
     /// Per-funding-source eligibility flags. `hasMinimumRequiredBalance`
     /// (above) is kept as the legacy OR-of-both flag for any existing
@@ -156,6 +194,10 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     func refreshRegistrationRecoveryState() {
+        // Screen (re)appear — drop the cached DPNS answer so a stale
+        // verdict from an earlier visit (name taken meanwhile, a vote
+        // started or resolved) can't carry over into this one.
+        availabilityCheckLabel = nil
         validateUsername(username: username)
     }
     
@@ -353,11 +395,24 @@ class CreateUsernameViewModel: ObservableObject {
         hasPendingRegistrationRecovery =
             DWIdentityRegistrationCoordinator.shared.hasPendingRegistrationRecovery()
 
-        // Kill any in-flight availability check — its result belongs to
-        // an input the user has already changed (including changed-to-empty).
-        availabilityCheckTask?.cancel()
-
-        isLockedContestedName = false
+        // Balance/readiness publishes re-run this method constantly while
+        // syncing, but they only move the cost rules — the DPNS answer for
+        // an unchanged label stays good for the whole screen visit. Only a
+        // label change invalidates the check state; same-label runs reuse
+        // it below.
+        let labelChanged = username != availabilityCheckLabel
+        if labelChanged {
+            // Kill any in-flight availability check — its result belongs to
+            // an input the user has already changed (including changed-to-empty).
+            availabilityCheckTask?.cancel()
+            contestBoundaryRevalidationTask?.cancel()
+            contestBoundaryRevalidationTask = nil
+            availabilityCheckLabel = nil
+            isLockedContestedName = false
+            activeContestContenders = nil
+            activeContestEndsAt = nil
+            takenNameSalePriceDuffs = nil
+        }
 
         guard !username.isEmpty else {
             uiState = CreateUsernameUIState()
@@ -425,16 +480,27 @@ class CreateUsernameViewModel: ObservableObject {
                     + "recovery=\(recoveryFunded), voucher=\(voucherFunded)")
         }
 
+        // Same label as the existing check state → carry its rule forward
+        // (a settled verdict stays settled; an in-flight `.loading` keeps
+        // its task) instead of resetting to `.loading` and re-querying.
+        // `.error` is deliberately NOT reused — it retries on the next
+        // revalidation, as before. `.hidden` means the check never ran for
+        // this label (cost rule was failing), so it must run now.
+        let priorRule = uiState.usernameBlockedRule
+        let reusePriorCheck = canContinue && !labelChanged
+            && priorRule != .error && priorRule != .hidden
+
         uiState = CreateUsernameUIState(
             lengthRule: lengthValid ? .valid : .invalid,
             allowedCharactersRule: hasIllegalCharacters || startsOrEndsWithHyphen ? .invalid : .valid,
             costRule: voucherFunded || recoveryFunded ? .hidden : (hasEnoughBalance ? .valid : .invalid),
-            usernameBlockedRule: canContinue ? .loading : .hidden,
+            usernameBlockedRule: canContinue ? (reusePriorCheck ? priorRule : .loading) : .hidden,
             requiredDash: requiredCost,
-            canContinue: false
+            canContinue: reusePriorCheck && priorRule == .valid
         )
 
-        if canContinue {
+        if canContinue && !reusePriorCheck {
+            availabilityCheckLabel = username
             availabilityCheckTask = Task {
                 await checkIfBlocked(username: username)
             }
@@ -442,13 +508,17 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     /// Debounced real DPNS availability check (same coordinator call the
-    /// legacy `DWCheckExistenceUsernameValidationRule` path uses). Maps:
-    /// available → `.valid`; taken → `.invalidCritical` — including names
-    /// in an ACTIVE contest, because `registerDpnsName` creates the domain
-    /// document immediately and voting only decides who keeps it (matches
-    /// the legacy rule's behavior); our OWN pending contested submission →
+    /// legacy `DWCheckExistenceUsernameValidationRule` path uses), plus a
+    /// vote-state precheck for contested candidates. Maps: available with
+    /// no known contest → `.valid`; available but mid-vote by others →
+    /// `.valid` while the join window is open (submitting joins the vote
+    /// as a contender), `.invalidCritical` once it closed; available but
+    /// locked by a past vote → `.invalidCritical`; taken →
+    /// `.invalidCritical`; our OWN pending contested submission →
     /// `.warning` ("in voting"); RPC failure → `.error` (re-runs on the
-    /// next keystroke or balance publish). `canContinue` is true only for
+    /// next keystroke or balance publish). A taken name additionally gets
+    /// a best-effort marketplace lookup — `takenNameSalePriceDuffs` when
+    /// its owner listed it for sale. `canContinue` is true only for
     /// `.valid` — the submit-time `registerDpnsName` failure remains the
     /// second line of defense.
     private func checkIfBlocked(username: String) async {
@@ -459,31 +529,88 @@ class CreateUsernameViewModel: ObservableObject {
 
         let result: UsernameValidationRuleResult
         var locked = false
+        var activeContenders: Int? = nil
+        var activeContestEnd: Date? = nil
+        var salePriceDuffs: UInt64? = nil
         do {
             // Two independent questions about the same label, so ask both at
             // once. Chaining them put a second DAPI round trip behind the
             // first, and "Validating username…" sat there for the sum of the
-            // two — painful whenever Platform is slow. Scoped to contested
-            // candidates: only they can reach a locked vote poll.
+            // two — painful whenever Platform is slow. The vote-state
+            // precheck is scoped to contested candidates: only they can sit
+            // in a vote poll (resolved to a LOCK, or still being voted on).
             async let availability = DWIdentityRegistrationCoordinator.shared
                 .dpnsCheckAvailability(username)
-            async let lockedCheck: Bool = isContestedCandidate
-                ? DWIdentityRegistrationCoordinator.shared.isContestedNameLocked(username)
-                : false
+            async let precheck: UsernameMarketplaceService.ContestPrecheck = isContestedCandidate
+                ? marketplaceService.contestPrecheck(label: username)
+                : .fresh
 
             let available = try await availability
             if available {
                 // "Available" only means no identity owns the domain document.
-                // A contested label whose vote ended in a LOCK is exactly that
-                // — and unregisterable: the transition is refused at broadcast.
-                locked = await lockedCheck
-                result = locked ? .invalidCritical : .valid
+                // A contested label can still be spoken for: a vote that ended
+                // in a LOCK refuses every new submission at broadcast, and a
+                // still-running vote means a request joins it as a contender
+                // rather than claiming a free name.
+                switch await precheck {
+                case .locked:
+                    locked = true
+                    result = .invalidCritical
+                case .activeContest(let contenders, let endsAt):
+                    DWLogger.log(
+                        "CreateUsername: '\(username)' is in an active vote "
+                            + "(\(contenders) contenders, ends \(endsAt.map { "\($0)" } ?? "unknown"))")
+                    // Our own running vote shows as "in voting", not as a
+                    // joinable contest. The submission bookmark answers first;
+                    // the SDK's local contested-names cache backs it up when
+                    // the bookmark is gone (same two sources as the
+                    // marketplace row's `hasRequestedContest`).
+                    var isOwnRequest = false
+                    if let pending = DWContestedNameStatusService.shared.pendingLabel,
+                       DWContestedNameStatusService.labelsMatch(pending, username) {
+                        isOwnRequest = true
+                    } else {
+                        isOwnRequest = await marketplaceService.myContestedNames()
+                            .contains { DWContestedNameStatusService.labelsMatch($0, username) }
+                    }
+                    if isOwnRequest {
+                        result = .warning
+                    } else {
+                        activeContenders = contenders
+                        activeContestEnd = endsAt
+                        // Contenders may only join for the first part of the
+                        // poll (`contenderJoinDeadline`); past that a
+                        // submission can only fail at broadcast, so Continue
+                        // is blocked instead of promising a join the network
+                        // will refuse. An unknown deadline stays submittable —
+                        // the submit-time transition remains the authority.
+                        if let endsAt,
+                           UsernameMarketplaceService.contenderJoinDeadline(voteEnd: endsAt) <= Date() {
+                            result = .invalidCritical
+                        } else {
+                            result = .valid
+                        }
+                    }
+                case .fresh, .unknown:
+                    // .unknown = the precheck query failed. It must not block
+                    // a name that is very likely fine — the submit-time
+                    // transition stays the authority (mirrors the old
+                    // locked-check's failed-query behavior).
+                    result = .valid
+                }
             } else if let pending = DWContestedNameStatusService.shared.pendingLabel,
                       pending.caseInsensitiveCompare(username) == .orderedSame {
                 // Our own contested submission — reads as taken on-chain
                 // while masternode voting is still deciding the owner.
                 result = .warning
             } else {
+                // Taken — but the owner may have listed it in the Username
+                // Marketplace. Best-effort: a failed lookup just leaves the
+                // plain "taken" wording.
+                if let sale = try? await marketplaceService.nameState(username),
+                   sale.isForSale {
+                    salePriceDuffs = sale.priceDuffs
+                }
                 result = .invalidCritical
             }
         } catch {
@@ -498,8 +625,34 @@ class CreateUsernameViewModel: ObservableObject {
         else { return }
 
         isLockedContestedName = locked
+        activeContestContenders = activeContenders
+        activeContestEndsAt = activeContestEnd
+        takenNameSalePriceDuffs = salePriceDuffs
         uiState.usernameBlockedRule = result
         uiState.canContinue = (result == .valid)
+        armContestBoundaryRevalidation()
+    }
+
+    /// Schedule the one-shot re-check at the active contest's next
+    /// boundary: the join-window close while joining is still open,
+    /// otherwise the vote end. No-op when the current answer has no
+    /// active contest or its deadline is unknown.
+    private func armContestBoundaryRevalidation() {
+        contestBoundaryRevalidationTask?.cancel()
+        contestBoundaryRevalidationTask = nil
+        guard activeContestContenders != nil, let endsAt = activeContestEndsAt else { return }
+        let joinDeadline = UsernameMarketplaceService.contenderJoinDeadline(voteEnd: endsAt)
+        let boundary = joinDeadline > Date() ? joinDeadline : endsAt
+        let delay = boundary.timeIntervalSinceNow
+        guard delay > 0 else { return }
+        contestBoundaryRevalidationTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64((delay + 1) * 1_000_000_000))
+            guard !Task.isCancelled, let self else { return }
+            // Drop the per-label cache first — the boundary is exactly
+            // what invalidates it.
+            self.availabilityCheckLabel = nil
+            self.validateUsername(username: self.username)
+        }
     }
     
     private func observeBalance() {

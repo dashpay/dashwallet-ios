@@ -22,6 +22,12 @@ import DashUIKit
 class CreateUsernameViewController: UIViewController {
     @objc var completionHandler: ((Bool) -> ())?
 
+    /// Set before presentation by the readiness-interstitial `onProceed`
+    /// paths: the user has already been through the shielded checklist
+    /// (or its explicit transparent escape), so the form skips the
+    /// Private registration teaser. Read once in `viewDidLoad`.
+    @objc var suppressShieldedHint: Bool = false
+
     /// Normalized invitation URI (see `DWInvitationLinkNormalizer`)
     /// when this form is claiming a DIP-13 invitation; nil for the
     /// regular self-funded registration.
@@ -50,7 +56,8 @@ class CreateUsernameViewController: UIViewController {
 
         let content = CreateUsernameView(
             invitationURI: invitationURI,
-            definedUsername: definedUsername
+            definedUsername: definedUsername,
+            suppressShieldedHint: suppressShieldedHint
         ) {
             let navigationController = self.navigationController
             #if DASHPAY
@@ -121,6 +128,11 @@ struct CreateUsernameView: View {
     var invitationURI: String? = nil
     /// Username prefill carried by the deep link (`definedUsername`).
     var definedUsername: String? = nil
+    /// True when the user arrived through the readiness interstitial —
+    /// they either chose the explicit "Use transparent balance instead"
+    /// escape or already worked through the shielded checklist there,
+    /// so the form must not re-tease private registration.
+    var suppressShieldedHint: Bool = false
     var finish: () -> Void
 
     var body: some View {
@@ -172,8 +184,16 @@ struct CreateUsernameView: View {
             // before the name is actually claimed — the user gets a
             // separate confirmation alert on Continue. Mirrors the
             // example app's `RegisterNameView.swift:277-293` styling.
-            if viewModel.isContestedCandidate {
+            if showContestedWarning {
                 contestedNameWarning
+                    .padding(.top, 20)
+            }
+
+            // Taken-but-listed pointer: the owner has put the name up for
+            // sale in the Username Marketplace, so "taken" isn't the end
+            // of the road.
+            if let salePriceDuffs = viewModel.takenNameSalePriceDuffs {
+                forSaleHint(priceDuffs: salePriceDuffs)
                     .padding(.top, 20)
             }
 
@@ -195,9 +215,12 @@ struct CreateUsernameView: View {
             // funding path is NOT yet available (needs funds / maturing /
             // pool below the consensus minimum) so the user learns what
             // the wait is for without being blocked — the transparent
-            // sources below remain an explicit choice.
+            // sources below remain an explicit choice. Suppressed when the
+            // user already answered this question on the readiness
+            // interstitial (`suppressShieldedHint`).
             if !viewModel.isInvitationMode,
-               !viewModel.hasPendingRegistrationRecovery {
+               !viewModel.hasPendingRegistrationRecovery,
+               !suppressShieldedHint {
                 shieldedReadinessHint
             }
 
@@ -288,9 +311,16 @@ struct CreateUsernameView: View {
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
         } message: {
-            Text(NSLocalizedString(
-                "This name requires voting. Your Dash will be locked until voting completes.",
-                comment: "Usernames"))
+            // The join-the-vote wording only holds while the join window is
+            // still open; past it (or with no known contest) the generic
+            // contested message is the honest one.
+            Text(viewModel.activeContestContenders != nil && !activeContestJoinClosed
+                ? NSLocalizedString(
+                    "A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes.",
+                    comment: "Usernames")
+                : NSLocalizedString(
+                    "This name requires voting. Your Dash will be locked until voting completes.",
+                    comment: "Usernames"))
         }
         .alert(
             NSLocalizedString("Username registered", comment: "Usernames"),
@@ -439,23 +469,99 @@ struct CreateUsernameView: View {
         }
     }
 
+    /// Whether the orange contested callout applies to the current
+    /// answer. A plainly TAKEN name (someone owns its document) will
+    /// never go to a vote — "requires a masternode vote" next to
+    /// "Username taken" (or a for-sale listing) would contradict it.
+    /// Locked and mid-vote answers keep the callout: it carries their
+    /// detail.
+    private var showContestedWarning: Bool {
+        guard viewModel.isContestedCandidate else { return false }
+        if viewModel.uiState.usernameBlockedRule == .invalidCritical {
+            return viewModel.isLockedContestedName || viewModel.activeContestContenders != nil
+        }
+        return true
+    }
+
+    /// The active vote's deadline has already passed (the poll is being
+    /// finalized on-chain). Distinct wording — "join as a contender"
+    /// would be a stale claim at that point.
+    private var activeContestHasEnded: Bool {
+        guard let endsAt = viewModel.activeContestEndsAt else { return false }
+        return endsAt <= Date()
+    }
+
+    /// The vote is still running but its contender-join window
+    /// (`contenderJoinDeadline` — poll end − 45 min testnet / − 1 week
+    /// mainnet) has closed: the name can no longer be requested until
+    /// the vote resolves. Always true once the vote itself has ended.
+    private var activeContestJoinClosed: Bool {
+        guard let endsAt = viewModel.activeContestEndsAt else { return false }
+        return UsernameMarketplaceService.contenderJoinDeadline(voteEnd: endsAt) <= Date()
+    }
+
+    /// Deadline as "Today 20:33"-style text (DWDateFormatter's relative
+    /// short date + time). Testnet contest windows are minutes long, so
+    /// the time matters; a locale-formatted full date alone would bury it.
+    private static func contestDeadlineText(_ date: Date) -> String {
+        let formatter = DWDateFormatter.sharedInstance
+        return "\(formatter.shortStringFromDate(date)) \(formatter.timeOnly(from: date))"
+    }
+
     /// Orange warning callout shown above the Continue button when
     /// the typed name is contested-eligible. Styled to match the
-    /// example app's `RegisterNameView.swift:277-293`.
+    /// example app's `RegisterNameView.swift:277-293`. When the view
+    /// model reports a vote already running for this name
+    /// (`activeContestContenders`), the copy switches from "requires
+    /// a vote" to "a vote is in progress — a request joins it", with
+    /// the deadline when the network reports one; past the deadline
+    /// it reports the vote as ended and finalizing instead.
     private var contestedNameWarning: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
+        let voteInProgress = viewModel.activeContestContenders != nil
+        let title: String
+        let body: String
+        if voteInProgress, activeContestHasEnded {
+            title = NSLocalizedString("Vote ended", comment: "Usernames")
+            body = NSLocalizedString(
+                "The masternode vote for this name has ended and the result is being finalized. Check back soon.",
+                comment: "Usernames")
+        } else if voteInProgress, let endsAt = viewModel.activeContestEndsAt, activeContestJoinClosed {
+            title = NSLocalizedString("Vote in progress", comment: "Usernames")
+            body = String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "A masternode vote for this name is in progress — voting ends around %@. New contenders can no longer join this vote.",
+                    comment: "Usernames"),
+                Self.contestDeadlineText(endsAt))
+        } else if voteInProgress, let endsAt = viewModel.activeContestEndsAt {
+            title = NSLocalizedString("Vote in progress", comment: "Usernames")
+            body = String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "A masternode vote for this name is already in progress — voting ends around %@. Submitting a request joins the vote as a contender.",
+                    comment: "Usernames"),
+                Self.contestDeadlineText(endsAt))
+        } else if voteInProgress {
+            title = NSLocalizedString("Vote in progress", comment: "Usernames")
+            body = NSLocalizedString(
+                "A masternode vote for this name is already in progress. Submitting a request joins the vote as a contender.",
+                comment: "Usernames")
+        } else {
+            title = NSLocalizedString("Contested name", comment: "Usernames")
+            body = NSLocalizedString(
+                "This name requires a masternode vote.",
+                comment: "Usernames")
+        }
+        return HStack(alignment: .top, spacing: 12) {
+            Image(systemName: voteInProgress ? "person.2.fill" : "exclamationmark.triangle.fill")
                 .foregroundColor(.orange)
                 .font(.system(size: 20))
             VStack(alignment: .leading, spacing: 4) {
-                Text(NSLocalizedString("Contested name", comment: "Usernames"))
+                Text(title)
                     .font(.subheadline.bold())
                     .foregroundColor(.orange)
-                Text(NSLocalizedString(
-                    "This name requires a masternode vote.",
-                    comment: "Usernames"))
+                Text(body)
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(12)
@@ -464,13 +570,34 @@ struct CreateUsernameView: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    /// Encapsulates the submit-to-bridge dance so both the direct
-    /// Continue path and the contested-name alert's "Submit anyway"
-    /// button can share the code. Writes the funding-source pick
-    /// into the bridge right before submit. The bridge resets to
-    /// `.core` on every terminal phase, so a stale picker value
-    /// can't leak into a future attempt; this single write is the
-    /// only synchronization needed.
+    /// Blue informational callout when the typed name is taken but its
+    /// owner has listed it in the Username Marketplace: buying it there
+    /// is the actual way to get this name.
+    private func forSaleHint(priceDuffs: UInt64) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "tag.fill")
+                .foregroundColor(.dash.blue)
+                .font(.system(size: 20))
+            VStack(alignment: .leading, spacing: 4) {
+                Text(NSLocalizedString("For sale", comment: "Usernames"))
+                    .font(.subheadline.bold())
+                    .foregroundColor(.dash.blue)
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead.",
+                        comment: "Usernames"),
+                    priceDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol))
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.dash.blue.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+
     /// Invitation-claim funding banner (invitation mode only).
     private var invitationFundingBanner: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -505,6 +632,13 @@ struct CreateUsernameView: View {
         }
     }
 
+    /// Encapsulates the submit-to-bridge dance so both the direct
+    /// Continue path and the contested-name alert's "Submit anyway"
+    /// button can share the code. Writes the funding-source pick
+    /// into the bridge right before submit. The bridge resets to
+    /// `.core` on every terminal phase, so a stale picker value
+    /// can't leak into a future attempt; this single write is the
+    /// only synchronization needed.
     private func performSubmit() {
         if !viewModel.isInvitationMode {
             DWIdentityRegistrationBridge.shared.preferredFundingSource =
@@ -646,6 +780,14 @@ struct CreateUsernameView: View {
             if viewModel.isLockedContestedName {
                 return NSLocalizedString(
                     "Username locked by masternode vote — it cannot be registered",
+                    comment: "Usernames")
+            }
+            // Mid-vote with the join window closed — also not "taken":
+            // the vote decides the owner, and no request can be made
+            // until it resolves. The orange callout carries the detail.
+            if viewModel.activeContestContenders != nil {
+                return NSLocalizedString(
+                    "Username is in a network vote — new contenders can no longer join",
                     comment: "Usernames")
             }
             return NSLocalizedString("Username taken", comment: "Usernames")
