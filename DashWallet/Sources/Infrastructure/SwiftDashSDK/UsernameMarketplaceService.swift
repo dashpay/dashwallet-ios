@@ -97,6 +97,156 @@ struct UsernameMarketplaceService {
         return try await wallet.searchDpnsMarketplace(prefix: prefix, limit: limit)
     }
 
+    /// The document-history system contract (platform #4348,
+    /// `document_history_contract::ID_BYTES`). Every `setDocumentPrice`
+    /// also writes a `priceUpdate` row here, indexed by
+    /// `[dataContractId, $createdAt]` — the queryable listing trail the
+    /// DPNS contract itself lacks ($price is not indexable). Browse
+    /// walks it newest-first, so its cost scales with LISTING EVENTS,
+    /// not with the size of the namespace.
+    private static let documentHistoryContractId = "6voHRaoiPcfmMhbqCA9dixH98xcgPQ9UEcuaXjpVu3LD"
+
+    /// One DPNS trade event from the history trail — a `priceUpdate`
+    /// (listing / re-price) or a `purchase`. The event's own price and
+    /// time are historical FACTS and safe to show as such; only claims
+    /// about the PRESENT ("for sale now") require the live document.
+    struct MarketplaceEvent {
+        /// The history row's own `$id` — the dedupe key that makes the
+        /// overlap-tolerant pagination cursor safe (see `eventsPage`).
+        let eventIdBase58: String
+        let dpnsDocumentIdBase58: String
+        let priceCredits: UInt64
+        let createdAtMs: UInt64
+        /// Purchase events only: buyer (`$ownerId`) and seller, base58.
+        let buyerIdBase58: String?
+        let sellerIdBase58: String?
+    }
+
+    /// Newest-first page of DPNS listing / re-price events. `beforeMs`
+    /// is the pagination cursor (previous page's last `createdAtMs`).
+    func recentPriceChanges(beforeMs: UInt64?, limit: UInt32 = 25) async throws -> [MarketplaceEvent] {
+        try await eventsPage(documentType: "priceUpdate", beforeMs: beforeMs, limit: limit)
+    }
+
+    /// Newest-first page of DPNS purchase events, with price paid and
+    /// both counterparties.
+    func recentPurchases(beforeMs: UInt64?, limit: UInt32 = 25) async throws -> [MarketplaceEvent] {
+        try await eventsPage(documentType: "purchase", beforeMs: beforeMs, limit: limit)
+    }
+
+    private func eventsPage(documentType: String, beforeMs: UInt64?, limit: UInt32) async throws -> [MarketplaceEvent] {
+        guard let sdk = SwiftDashSDKHost.shared.sdk else { return [] }
+        var conditions = "[[\"dataContractId\",\"==\",\"\(DPNSVotePoll.contractId)\"]"
+        if let beforeMs {
+            // "<=", not "<": several events can share one block's
+            // $createdAt, and a strict cursor at a page boundary would
+            // silently drop the rest of that timestamp group. The
+            // deliberate overlap re-fetches the boundary rows; callers
+            // dedupe on `eventIdBase58`.
+            conditions += ",[\"$createdAt\",\"<=\",\(beforeMs)]"
+        }
+        conditions += "]"
+        let result = try await sdk.documentList(
+            dataContractId: Self.documentHistoryContractId,
+            documentType: documentType,
+            whereClause: conditions,
+            // Order-by tuples here are [field, ascending-bool] — the FFI
+            // rejects "asc"/"desc" strings. false = newest first.
+            orderByClause: "[[\"$createdAt\",false]]",
+            limit: limit)
+        let docs: [[String: Any]]
+        if let array = result["documents"] as? [[String: Any]] {
+            docs = array
+        } else if let array = result["items"] as? [[String: Any]] {
+            docs = array
+        } else {
+            docs = result.values.compactMap { $0 as? [String: Any] }
+        }
+        return docs.compactMap { doc in
+            guard let rawEventId = doc["$id"] as? String,
+                  let eventId = Self.identifier32(rawEventId),
+                  let raw = doc["documentId"] as? String,
+                  let documentId = Self.identifier32(raw),
+                  let price = (doc["price"] as? NSNumber)?.uint64Value,
+                  let createdAt = (doc["$createdAt"] as? NSNumber)?.uint64Value else { return nil }
+            let buyer = (doc["$ownerId"] as? String).flatMap(Self.identifier32)
+            let seller = (doc["sellerId"] as? String).flatMap(Self.identifier32)
+            return MarketplaceEvent(
+                eventIdBase58: eventId.toBase58String(),
+                dpnsDocumentIdBase58: documentId.toBase58String(),
+                priceCredits: price,
+                createdAtMs: createdAt,
+                buyerIdBase58: documentType == "purchase" ? buyer?.toBase58String() : nil,
+                sellerIdBase58: documentType == "purchase" ? seller?.toBase58String() : nil)
+        }
+    }
+
+    /// Identifier-typed CUSTOM properties serialize as base64 in this
+    /// query path's JSON, while SYSTEM fields ($id, $ownerId) are base58.
+    /// Accept either, but only an exact 32-byte identifier — anything
+    /// else is nil, never a guess.
+    private static func identifier32(_ string: String) -> Data? {
+        if let data = Data(base64Encoded: string), data.count == 32 {
+            return data
+        }
+        if let data = Data.identifier(fromBase58: string), data.count == 32 {
+            return data
+        }
+        return nil
+    }
+
+    /// Live DPNS state for a BATCH of domain document ids — one
+    /// `documentList` on the primary `$id` index (`in` clause) instead of
+    /// two round trips per name. The domain document itself carries the
+    /// entire live state a feed row claims about the present: label,
+    /// owner, and current `$price` (nil = not for sale). Ids absent from
+    /// the result no longer exist.
+    struct LiveDomainName {
+        let documentIdBase58: String
+        let label: String
+        let ownerId: Data
+        let priceCredits: UInt64?
+
+        var isForSale: Bool { priceCredits != nil }
+        var priceDuffs: UInt64? { priceCredits.map { $0 / 1_000 } }
+    }
+
+    func liveDomainNames(forDocumentIds ids: [String]) async throws -> [String: LiveDomainName] {
+        guard let sdk = SwiftDashSDKHost.shared.sdk, !ids.isEmpty else { return [:] }
+        let idList = ids.map { "\"\($0)\"" }.joined(separator: ",")
+        let result = try await sdk.documentList(
+            dataContractId: DPNSVotePoll.contractId,
+            documentType: DPNSVotePoll.documentTypeName,
+            whereClause: "[[\"$id\",\"in\",[\(idList)]]]",
+            orderByClause: "[[\"$id\",true]]",
+            limit: UInt32(ids.count))
+        let docs: [[String: Any]]
+        if let array = result["documents"] as? [[String: Any]] {
+            docs = array
+        } else if let array = result["items"] as? [[String: Any]] {
+            docs = array
+        } else {
+            docs = result.values.compactMap { $0 as? [String: Any] }
+        }
+        var out: [String: LiveDomainName] = [:]
+        for doc in docs {
+            guard let rawId = doc["$id"] as? String,
+                  let id = Self.identifier32(rawId),
+                  let rawOwnerId = doc["$ownerId"] as? String,
+                  let ownerId = Self.identifier32(rawOwnerId),
+                  let label = (doc["label"] as? String) ?? (doc["normalizedLabel"] as? String) else { continue }
+            // Canonical base58 key — must byte-match the event side's
+            // dpnsDocumentIdBase58, which is produced the same way.
+            let documentIdBase58 = id.toBase58String()
+            out[documentIdBase58] = LiveDomainName(
+                documentIdBase58: documentIdBase58,
+                label: label,
+                ownerId: ownerId,
+                priceCredits: (doc["$price"] as? NSNumber)?.uint64Value)
+        }
+        return out
+    }
+
     /// The main identity's tracked names from the wallet's local rows —
     /// no network round-trip. Includes retained `.sold` / `.transferred`
     /// departures so the UI can show what left and to whom.

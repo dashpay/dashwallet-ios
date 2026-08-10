@@ -803,6 +803,39 @@
 /* Username marketplace: activity overlay while the contested request transition runs */
 "Submitting your username request…" = "Submitting your username request…";
 
+/* Username marketplace: browse-for-sale segment */
+"Browse" = "Browse";
+
+/* Username marketplace: browse feed of recent listings and re-prices */
+"Price changes" = "Price changes";
+
+/* Username marketplace: browse feed of recent sales */
+"Purchases" = "Purchases";
+
+/* Username marketplace: price-change feed row — event price, then date */
+"Listed for %1$@ DASH · %2$@" = "Listed for %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, then date */
+"Sold for %1$@ DASH · %2$@" = "Sold for %1$@ DASH · %2$@";
+
+/* Username marketplace: purchases feed row — price paid, date, then seller → buyer short ids */
+"Sold for %1$@ DASH · %2$@ · %3$@ → %4$@" = "Sold for %1$@ DASH · %2$@ · %3$@ → %4$@";
+
+/* Username marketplace: browse row whose name is no longer listed */
+"Not for sale now" = "Not for sale now";
+
+/* Username marketplace: price-changes feed found no live listings yet */
+"No names are for sale in the recent listing activity. Show more reaches further back." = "No names are for sale in the recent listing activity. Show more reaches further back.";
+
+/* Username marketplace: empty purchases feed */
+"No purchases on the network yet." = "No purchases on the network yet.";
+
+/* Username marketplace: browse feed loading */
+"Loading activity…" = "Loading activity…";
+
+/* Username marketplace: load older browse activity */
+"Show more" = "Show more";
+
 /* Username marketplace: contest tallies card title */
 "Network vote so far" = "Network vote so far";
 
