@@ -2,7 +2,7 @@
 //  SendConfirmSheet.swift
 //  DashWallet
 //
-//  Confirmation half-sheet for the non-core external send routes.
+//  Confirmation half-sheet for every external send route.
 //
 
 import SwiftUI
@@ -10,13 +10,112 @@ import DashUIKit
 import SwiftDashSDK
 import UIKit
 
+// MARK: - CoreSendConfirmController
+
+/// Drives the Core → Core leg of `SendConfirmSheet`. Every other route runs
+/// through `ShieldedTransferCoordinator`; a plain L1 send has no shielding/
+/// asset-lock/platform stages, so it gets its own minimal state machine
+/// instead of borrowing a coordinator phase that doesn't apply to it.
+///
+/// Shape: `prepareStandardSendForConfirmation` runs the auth gate and
+/// builds + signs the transaction WITHOUT broadcasting — that happens on
+/// appear, so the sheet can show the real fee off the signed transaction
+/// instead of an estimate. `.ready` is the only phase with a live Confirm
+/// button; tapping it calls `PreparedStandardSend.broadcast()`, the explicit
+/// user-confirm step.
+@MainActor
+final class CoreSendConfirmController: ObservableObject {
+
+    enum Phase: Equatable {
+        /// Auth gate + build/sign in flight (`prepareStandardSendForConfirmation`).
+        case signing
+        /// Prepared: `feeDuffs` holds the real fee off the signed transaction.
+        case ready
+        /// `PreparedStandardSend.broadcast()` in flight.
+        case broadcasting
+        case success
+        /// Broadcast accepted by relay but its result couldn't be confirmed —
+        /// terminal + non-retryable, mirrors
+        /// `ShieldedTransferCoordinator.Phase.submittedUnconfirmed`.
+        case submittedUnconfirmed
+        case failed(String)
+    }
+
+    @Published private(set) var phase: Phase = .signing
+    /// The exact fee (duffs) off the signed transaction. `nil` until
+    /// `.ready` — the summary row shows "—" rather than a guess until then.
+    @Published private(set) var feeDuffs: UInt64?
+
+    private var prepared: PreparedStandardSend?
+
+    /// Build + sign, without broadcasting. Called once when the sheet
+    /// appears; safe to call again from `retry` after a prepare-time
+    /// failure (auth cancelled, offline, chain not synced, ...).
+    func prepare(address: String, amountDuffs: UInt64) async {
+        phase = .signing
+        prepared = nil
+        feeDuffs = nil
+        do {
+            let result = try await WalletSendService.shared.prepareStandardSendForConfirmation(
+                address: address, amount: amountDuffs)
+            prepared = result
+            feeDuffs = result.fee
+            phase = .ready
+        } catch {
+            phase = .failed(Self.message(for: error))
+        }
+    }
+
+    /// Explicit user-confirm step: broadcasts the already-prepared, already-
+    /// signed transaction. No-op unless a prepare succeeded.
+    func confirmBroadcast() async {
+        guard case .ready = phase else { return }
+        await broadcastPrepared()
+    }
+
+    /// `Try again` from `.failed`. A broadcast-time failure (e.g. rejected)
+    /// leaves the signed transaction retryable — `PreparedStandardSend`
+    /// resets its own claim state to `.ready` on a rejected/local failure —
+    /// so retry re-broadcasts the SAME transaction rather than re-signing. A
+    /// prepare-time failure (nothing was ever signed) re-prepares.
+    func retry(address: String, amountDuffs: UInt64) async {
+        guard case .failed = phase else { return }
+        if prepared != nil {
+            await broadcastPrepared()
+        } else {
+            await prepare(address: address, amountDuffs: amountDuffs)
+        }
+    }
+
+    private func broadcastPrepared() async {
+        guard let prepared else { return }
+        phase = .broadcasting
+        do {
+            try prepared.broadcast()
+            phase = .success
+        } catch {
+            if WalletSendService.isBroadcastUnknownError(error as NSError) {
+                phase = .submittedUnconfirmed
+            } else {
+                phase = .failed(Self.message(for: error))
+            }
+        }
+    }
+
+    private static func message(for error: Error) -> String {
+        (error as NSError).localizedDescription
+    }
+}
+
 // MARK: - SendConfirmSheet
 
-/// Confirmation half-sheet for the non-core external send routes. Same
-/// skeleton as `InternalTransferConfirmSheet` (summary → progress checklist →
-/// success), but the To row is the recipient's address and execution runs the
-/// coordinator's external-destination legs. Core → Core never reaches this
-/// sheet — it rides the classic payment processor.
+/// Confirmation half-sheet for every external send route. Same skeleton as
+/// `InternalTransferConfirmSheet` (summary → progress checklist → success);
+/// the To row is the recipient's address. Every route except Core → Core
+/// executes via `ShieldedTransferCoordinator`'s external-destination legs;
+/// Core → Core executes via `CoreSendConfirmController` /
+/// `WalletSendService` instead — see that type's doc for why it doesn't
+/// share the coordinator.
 struct SendConfirmSheet: View {
 
     let route: SendViewModel.Route
@@ -35,6 +134,8 @@ struct SendConfirmSheet: View {
     var onCompleted: () -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
+    /// Core → Core only — see `CoreSendConfirmController`.
+    @StateObject private var coreSend = CoreSendConfirmController()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -47,20 +148,46 @@ struct SendConfirmSheet: View {
                 .foregroundColor(.dash.primaryText)
                 .padding(.top, 20)
 
-            switch coordinator.phase {
-            case .success:
-                successBody
-            case .submittedUnconfirmed:
-                ShieldedSubmittedUnconfirmedView(onDone: onCompleted)
-            default:
-                detailsBody
+            if route == .coreToCore {
+                switch coreSend.phase {
+                case .success:
+                    successBody
+                case .submittedUnconfirmed:
+                    ShieldedSubmittedUnconfirmedView(onDone: onCompleted)
+                default:
+                    detailsBody
+                }
+            } else {
+                switch coordinator.phase {
+                case .success:
+                    successBody
+                case .submittedUnconfirmed:
+                    ShieldedSubmittedUnconfirmedView(onDone: onCompleted)
+                default:
+                    detailsBody
+                }
             }
         }
         .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(isInFlight)
+        .task {
+            // Prepare (auth gate + build/sign, no broadcast) as soon as the
+            // sheet appears, so the summary can show the real fee off the
+            // signed transaction rather than an estimate.
+            guard route == .coreToCore else { return }
+            await coreSend.prepare(address: destinationAddress, amountDuffs: UInt64(dashDuffs))
+        }
     }
 
     private var isInFlight: Bool {
+        if route == .coreToCore {
+            switch coreSend.phase {
+            case .signing, .broadcasting:
+                return true
+            default:
+                return false
+            }
+        }
         switch coordinator.phase {
         case .signing, .locking, .proving, .broadcasting:
             return true
@@ -89,8 +216,8 @@ struct SendConfirmSheet: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
 
-            if case let .failed(message) = coordinator.phase {
-                Text(message)
+            if let failureMessage {
+                Text(failureMessage)
                     .font(.system(size: 13))
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
@@ -104,6 +231,54 @@ struct SendConfirmSheet: View {
 
             Spacer(minLength: 12)
 
+            actionSection
+        }
+    }
+
+    private var failureMessage: String? {
+        if route == .coreToCore {
+            if case let .failed(message) = coreSend.phase { return message }
+            return nil
+        }
+        if case let .failed(message) = coordinator.phase { return message }
+        return nil
+    }
+
+    @ViewBuilder
+    private var actionSection: some View {
+        if route == .coreToCore {
+            switch coreSend.phase {
+            case .ready:
+                ButtonsGroup(
+                    orientation: .horizontal,
+                    size: .large,
+                    positiveButtonText: NSLocalizedString("Confirm", comment: ""),
+                    positiveButtonAction: confirm,
+                    negativeButtonText: NSLocalizedString("Cancel", comment: ""),
+                    negativeButtonAction: onCancel)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+
+            case .failed:
+                ButtonsGroup(
+                    orientation: .horizontal,
+                    size: .large,
+                    positiveButtonText: NSLocalizedString("Try again", comment: ""),
+                    positiveButtonAction: tryAgain,
+                    negativeButtonText: NSLocalizedString("Close", comment: ""),
+                    negativeButtonAction: onCancel)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+
+            case .signing, .broadcasting:
+                ShieldedTransferStepList(labels: coreProgressLabels, currentIndex: coreProgressIndex)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
+
+            case .success, .submittedUnconfirmed:
+                EmptyView()
+            }
+        } else {
             switch coordinator.phase {
             case .idle:
                 ButtonsGroup(
@@ -135,6 +310,23 @@ struct SendConfirmSheet: View {
             case .success, .submittedUnconfirmed:
                 EmptyView()
             }
+        }
+    }
+
+    /// Core → Core's two-stage checklist (`CoreSendConfirmController.Phase`
+    /// has no `.locking`/`.proving` — a plain L1 send doesn't pass through
+    /// them), rendered with `ShieldedTransferStepList`'s positional
+    /// initializer since its phase-based one is typed to
+    /// `ShieldedTransferCoordinator.Phase`.
+    private var coreProgressLabels: [String] {
+        [NSLocalizedString("Authorizing", comment: ""), NSLocalizedString("Broadcasting", comment: "")]
+    }
+
+    private var coreProgressIndex: Int? {
+        switch coreSend.phase {
+        case .signing: return 0
+        case .broadcasting: return 1
+        default: return nil
         }
     }
 
@@ -272,15 +464,21 @@ struct SendConfirmSheet: View {
         case .shieldedToShielded:
             return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
         case .coreToCore:
-            // Never presented here — the L1 processor shows the real fee.
-            return nil
+            // The one route with a real (not projected) fee: off the signed
+            // transaction, once `CoreSendConfirmController` finishes
+            // preparing. `nil` while unknown — the row shows "—", not a guess.
+            guard let feeDuffs = coreSend.feeDuffs else { return nil }
+            return feeDuffs * 1000
         }
     }
 
     private var networkFeeString: String {
         guard let credits = networkFeeCredits else { return "—" }
         let dash = Decimal(credits) / Self.creditsPerDash
-        return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
+        let formatted = CurrencyExchanger.shared.fiatAmountString(for: dash)
+        // Every other route estimates; Core → Core's fee is the exact amount
+        // off the signed transaction, so it doesn't get the "~" prefix.
+        return route == .coreToCore ? formatted : "~ " + formatted
     }
 
     // MARK: - Info card
@@ -413,14 +611,20 @@ struct SendConfirmSheet: View {
                     amountCredits: creditsAmount,
                     recipientRaw43: destinationRaw43)
             case .coreToCore:
-                // Unreachable: the screen routes Core → Core through the L1
-                // payment processor and never presents this sheet.
-                break
+                // Already prepared (auth + build/sign) on appear — Confirm
+                // only broadcasts the signed transaction.
+                await coreSend.confirmBroadcast()
             }
         }
     }
 
     private func tryAgain() {
+        if route == .coreToCore {
+            Task {
+                await coreSend.retry(address: destinationAddress, amountDuffs: UInt64(dashDuffs))
+            }
+            return
+        }
         // If the just-failed Core → Shielded attempt already committed its
         // asset lock, RESUME that exact outpoint with the same recipient
         // instead of building a second lock (which strands the first) —

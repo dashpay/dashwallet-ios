@@ -29,8 +29,9 @@ final class SendViewModel: ObservableObject {
     }
 
     /// Every (source balance → destination address type) leg the Send screen
-    /// can execute. Core → Core rides the classic L1 payment processor; the
-    /// rest run through `ShieldedTransferCoordinator` / the Platform seam.
+    /// can execute — all confirmed and executed from `SendConfirmSheet`.
+    /// Core → Core runs through `WalletSendService` directly; the rest run
+    /// through `ShieldedTransferCoordinator` / the Platform seam.
     enum Route: Equatable {
         case coreToCore
         /// BIP44 UTXOs → asset lock → Type 18 shield note for the
@@ -451,10 +452,11 @@ final class SendViewModel: ObservableObject {
     private var feeReserveCredits: UInt64? {
         switch route {
         case .coreToCore, .coreToShielded, .platformToCore, nil:
-            // L1 send fees are handled by the payment processor; the
-            // asset-lock shield carves its pool fee from the locked value
-            // (nothing reserved from the Core balance, mirroring the
-            // internal transfer); the full-balance platform withdrawal
+            // Core → Core's fee headroom is netted by `coreSpendableAfterFeeDuffs`
+            // (`SwiftDashSDKWalletState.feeAwareMaxSendable()`), not a credits
+            // reserve; the asset-lock shield carves its pool fee from the
+            // locked value (nothing reserved from the Core balance, mirroring
+            // the internal transfer); the full-balance platform withdrawal
             // nets its fee out of the preflighted payout.
             return 0
         case .platformToPlatform:

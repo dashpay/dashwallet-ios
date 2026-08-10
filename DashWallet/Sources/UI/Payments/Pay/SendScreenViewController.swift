@@ -88,26 +88,9 @@ final class SendScreenViewController: DWBasePayViewController {
     }
 }
 
-// MARK: - Core → Core routing
+// MARK: - External send navigation
 
 extension DWBasePayViewController {
-    /// Core L1 send with a fixed amount: a BIP21 `dash:` URI carries the
-    /// amount into the classic payment processor, which goes straight to
-    /// its confirm (real fee math) — the amount screen is skipped because
-    /// the intent already has an amount. Shared by the Send screen and the
-    /// balance-row send sheet.
-    func continueCore(address: String, amountDuffs: UInt64) {
-        guard address.isValidDashAddressForCurrentNetwork else { return }
-        var uriString = "dash:\(address)"
-        if amountDuffs > 0 {
-            let dashAmount = InternalTransferViewModel.formatTyped(
-                amountDuffs.dashAmount, fractionDigits: 8)
-            uriString += "?amount=\(dashAmount)"
-        }
-        guard let url = URL(string: uriString) else { return }
-        performPay(to: url)
-    }
-
     /// Push the external-send SOURCE step (From picker) onto the current
     /// navigation stack, sharing the address step's view model. Continue there
     /// pushes the amount step, whatever the route. Shared by the Send screen and the balance-row
@@ -121,11 +104,7 @@ extension DWBasePayViewController {
             onContinue: { [weak self] in
                 guard let self else { return }
                 // Every route takes the same amount step, Transparent →
-                // Transparent included: it used to jump straight to the
-                // classic L1 amount screen from here, so the one route most
-                // people use was the one that looked different. That step
-                // still finishes through the payment processor — it just
-                // hands it an amount now instead of zero.
+                // Transparent included, and finishes in `SendConfirmSheet`.
                 self.pushExternalSendAmount(viewModel: viewModel, onSendCompleted: onSendCompleted)
             })
         // Every UIHostingController already conforms to NavigationBarDisplayable
@@ -134,17 +113,13 @@ extension DWBasePayViewController {
         navigationController?.pushViewController(host, animated: true)
     }
 
-    /// Push the external-send AMOUNT step (final). Core → Core rides
-    /// `continueCore` (the L1 payment processor); every other route confirms in
-    /// `SendConfirmSheet`.
+    /// Push the external-send AMOUNT step (final). Every route, Transparent →
+    /// Transparent included, confirms and executes in `SendConfirmSheet`.
     func pushExternalSendAmount(viewModel: SendViewModel,
                                 onSendCompleted: @escaping () -> Void) {
         let screen = ExternalSendAmountScreen(
             viewModel: viewModel,
             onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
-            onContinueCore: { [weak self] address, amountDuffs in
-                self?.continueCore(address: address, amountDuffs: amountDuffs)
-            },
             onSendCompleted: onSendCompleted)
         let host = UIHostingController(rootView: screen)
         navigationController?.pushViewController(host, animated: true)

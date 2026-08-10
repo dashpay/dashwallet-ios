@@ -15,18 +15,15 @@ import UIKit
 /// The final step: the address and source are settled and shown read-only,
 /// leaving the amount keypad and the balance/affordability validation.
 ///
-/// Where Send goes depends on the route, not on how the user got here:
-/// Transparent → Transparent hands the amount to the L1 payment processor,
-/// which owns the real fee math and its own confirmation; every other route
-/// confirms in `SendConfirmSheet`.
+/// Every route, Transparent → Transparent included, confirms in
+/// `SendConfirmSheet` — Core → Core prepares (auth + build/sign, showing the
+/// real fee) and broadcasts through `WalletSendService` there instead of
+/// `ShieldedTransferCoordinator`.
 struct ExternalSendAmountScreen: View {
     @ObservedObject var viewModel: SendViewModel
     /// Pop back to the source step.
     var onBack: () -> Void
-    /// Core → Core: hand (address, amount in duffs) to the hosting
-    /// controller, which routes through the L1 payment processor.
-    var onContinueCore: (String, UInt64) -> Void
-    /// A non-core route finished successfully (confirm sheet's Done).
+    /// A route finished successfully (confirm sheet's Done).
     var onSendCompleted: () -> Void
 
     @State private var showConfirm = false
@@ -60,7 +57,7 @@ struct ExternalSendAmountScreen: View {
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
         .sheet(isPresented: $showConfirm) {
-            if let route = viewModel.route, route != .coreToCore {
+            if let route = viewModel.route {
                 SendConfirmSheet(
                     route: route,
                     destinationAddress: viewModel.trimmedAddress,
@@ -125,12 +122,8 @@ struct ExternalSendAmountScreen: View {
     }
 
     private func continueAction() {
-        guard let route = viewModel.route else { return }
-        if route == .coreToCore {
-            onContinueCore(viewModel.trimmedAddress, viewModel.dashDuffsUnsigned)
-        } else {
-            showConfirm = true
-        }
+        guard viewModel.route != nil else { return }
+        showConfirm = true
     }
 
     /// The source picked on the previous step, read-only. Tapping goes back.
@@ -234,19 +227,18 @@ struct ExternalSendAmountScreen: View {
 #Preview("Amount") {
     ExternalSendAmountScreen(
         viewModel: .preview(address: "yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY", destination: .core),
-        onBack: {}, onContinueCore: { _, _ in }, onSendCompleted: {})
+        onBack: {}, onSendCompleted: {})
         .background(Color.dash.primaryBackground)
 }
 
-/// Shielded source: the route leaves the classic payment processor, so the
-/// screen confirms in `SendConfirmSheet` instead of continuing to it.
+/// Shielded source: confirms in `SendConfirmSheet`, same as every other route.
 #Preview("From Shielded") {
     ExternalSendAmountScreen(
         viewModel: .preview(
             address: "yV1D1ivvSUyKPJnbFmzSTVh1MyZ3JbeVkY",
             destination: .core,
             source: .shielded),
-        onBack: {}, onContinueCore: { _, _ in }, onSendCompleted: {})
+        onBack: {}, onSendCompleted: {})
         .background(Color.dash.primaryBackground)
 }
 
