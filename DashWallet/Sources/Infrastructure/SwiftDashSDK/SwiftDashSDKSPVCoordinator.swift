@@ -220,12 +220,28 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private func performStart(for network: Network) async -> Result<Void, Error> {
         let host = SwiftDashSDKHost.shared
         let manager: PlatformWalletManager
+        let wallet: ManagedPlatformWallet
         do {
-            (manager, _) = try host.start(network: network)
+            (manager, wallet) = try host.start(network: network)
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: host.start failed: \(String(describing: error), privacy: .public)")
             return .failure(StartError.walletImport(error))
         }
+
+#if DASHPAY
+        // Startup order: identity → contacts → contact accounts → core sync.
+        // A contact's DIP-15 addresses must be watched before the first filter
+        // set is built, or a payment in an already-scanned block is invisible
+        // until the DIP-15 rescan repairs it. Bounded by its own budget and
+        // best-effort throughout: whatever isn't ready in time is left to that
+        // rescan, exactly as before this call existed.
+        //
+        // Deliberately here and not in the shared `performStart(manager:for:)`
+        // — a Core-only restart re-enters that one, and it must not pay for a
+        // Platform round trip it cannot benefit from.
+        await DashPayContactAddressReadiness.awaitReady(
+            manager: manager, wallet: wallet, network: network)
+#endif
 
         return await performStart(manager: manager, for: network)
     }
