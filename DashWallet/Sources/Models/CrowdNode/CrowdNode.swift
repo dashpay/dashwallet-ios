@@ -124,18 +124,6 @@ public final class CrowdNode {
     private(set) var isOnlineStateRestored = false
     var showNotificationOnResult = false
 
-    /// Persisted transaction count as of the last `restoreState()` that found
-    /// no CrowdNode account at all.
-    ///
-    /// The restore's own guard is `signUpState > .notStarted`, which a wallet
-    /// that never signed up never reaches — so every caller (launch sync-done,
-    /// each entry into the CrowdNode portal) re-ran the full history scan and
-    /// blocked the main thread for seconds apiece. A signup can still turn up
-    /// later when a restored seed syncs its history in, so this memo is keyed
-    /// to the store's row count rather than latching permanently: new rows
-    /// persisted means the scan gets to run again.
-    private var fruitlessRestoreTxCount: Int?
-
     var masternodeAPY: Double
     var crowdnodeAPY: Double
 
@@ -213,9 +201,18 @@ extension CrowdNode {
         // a scan that still owes work on those rows.
         let txCountBeforeScans = TransactionObserver.persistedTransactionCount()
 
-        // A previous pass already scanned this exact history and found no
-        // account; without new rows it would reach the same conclusion.
-        if let scanned = fruitlessRestoreTxCount, txCountBeforeScans == scanned {
+        // A previous pass — this launch or an earlier one; the memo persists
+        // per wallet in CrowdNodeDefaults — already scanned this exact history
+        // and found no account; without new rows it would reach the same
+        // conclusion. The restore's own guard is `signUpState > .notStarted`,
+        // which a wallet that never signed up never reaches, so without this
+        // memo every caller (launch sync-done, each entry into the CrowdNode
+        // portal) re-runs the full history scan and blocks the main thread
+        // for seconds apiece. A signup can still turn up later when a
+        // restored seed syncs its history in, which is why the memo is keyed
+        // to the row count rather than latching: new rows persisted → miss →
+        // the scan runs again.
+        if let scanned = prefs.fruitlessRestoreTxCount, txCountBeforeScans == scanned {
             return
         }
 
@@ -258,8 +255,13 @@ extension CrowdNode {
             DWLogger.log("CrowdNode: account not found")
             // Nothing found by either the signup scan or the online-account
             // lookup, so this whole pass was a no-op — memoize it against the
-            // history the scans actually saw, not the store's count now.
-            fruitlessRestoreTxCount = txCountBeforeScans
+            // history the scans actually saw, not the store's count now. A nil
+            // count means the SDK container wasn't up and the scans were
+            // vacuous: nothing to memoize, and don't clobber a prior launch's
+            // valid memo with it.
+            if let txCountBeforeScans {
+                prefs.fruitlessRestoreTxCount = txCountBeforeScans
+            }
         }
     }
 
@@ -359,7 +361,8 @@ extension CrowdNode {
         primaryAddress = nil
         apiError = nil
         balance = 0
-        fruitlessRestoreTxCount = nil
+        // resetUserDefaults() also clears the persisted fruitless-restore memo,
+        // so a network change or alien-address teardown always rescans.
         prefs.resetUserDefaults()
     }
 
@@ -393,9 +396,13 @@ extension CrowdNode {
         apiError = nil
         balance = 0
         isOnlineStateRestored = false
-        // The memo describes the PREVIOUS wallet's scan; the new wallet must
-        // get a real one even though the store's row count is unchanged.
-        fruitlessRestoreTxCount = nil
+        // The active wallet has already changed here (and invalidateCache()
+        // above dropped the stale per-wallet resolution), so this clears the
+        // NEW wallet's persisted memo: the row count is store-global while the
+        // scan is wallet-scoped, so a memo recorded against a different
+        // wallet-mix of the store can't be trusted after a switch — force a
+        // real scan for this wallet.
+        prefs.fruitlessRestoreTxCount = nil
         restoreState()
     }
     
