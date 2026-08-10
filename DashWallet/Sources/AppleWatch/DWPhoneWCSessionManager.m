@@ -41,6 +41,11 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 
 @property WCSession *session;
 @property id balanceObserver;
+// Coalesces bursts of context sends (every balance tick fires one) into a
+// single delayed send — building the context is expensive (recent-tx
+// snapshot + CoreImage QR render) and `sendApplicationContext` runs on a
+// concurrent queue, so undamped bursts pile up overlapping builds.
+@property (atomic) BOOL contextSendScheduled;
 
 @end
 
@@ -70,7 +75,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                                                                    queue:nil
                                                               usingBlock:^(NSNotification *_Nonnull note) {
                                                                   if ([SyncingActivityMonitor shared].state == SyncingActivityMonitorStateSyncDone)
-                                                                      [self sendApplicationContext];
+                                                                      [self scheduleApplicationContextSend];
                                                               }];
 
             [[SyncingActivityMonitor shared] addObserver:self];
@@ -93,8 +98,24 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
 
 - (void)syncingActivityMonitorStateDidChangeWithPreviousState:(enum SyncingActivityMonitorState)previousState state:(enum SyncingActivityMonitorState)state {
     if (state == SyncingActivityMonitorStateSyncDone || state == SyncingActivityMonitorStateSyncFailed) {
-        [self sendApplicationContext];
+        [self scheduleApplicationContextSend];
     }
+}
+
+// Coalesced entry point for runtime context sends: the first request arms a
+// 15s timer; requests landing while armed fold into that send (the context
+// is built at send time, so it always reflects the latest state). The watch
+// face doesn't need tighter freshness than this, and the damping keeps a
+// balance-tick storm during sync from queueing overlapping context builds.
+- (void)scheduleApplicationContextSend {
+    if (self.contextSendScheduled)
+        return;
+    self.contextSendScheduled = YES;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC)),
+                   dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                       self.contextSendScheduled = NO;
+                       [self sendApplicationContext];
+                   });
 }
 
 - (BOOL)reachable {
