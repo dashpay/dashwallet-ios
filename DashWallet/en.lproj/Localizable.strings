@@ -752,6 +752,12 @@
 /* Username marketplace: section of contested-name requests awaiting the masternode vote */
 "In network vote" = "In network vote";
 
+/* Username marketplace: search row for a contested label with an active vote by others */
+"In a network vote — you can join as a contender" = "In a network vote — you can join as a contender";
+
+/* Username marketplace: search row for a label a past vote locked */
+"Locked by a network vote — nobody can register it" = "Locked by a network vote — nobody can register it";
+
 /* Username marketplace: latest ownership change */
 "Last transferred" = "Last transferred";
 
@@ -2487,6 +2493,9 @@
 
 /* Username marketplace: contested request not yet indexed by Platform */
 "Requested — waiting for the network vote" = "Requested — waiting for the network vote";
+
+/* Username marketplace: search row for a contested label this identity already requested */
+"Requested by you — the network vote is in progress" = "Requested by you — the network vote is in progress";
 
 /* Asset-lock retry in progress */
 "Retrying transfer…" = "Retrying transfer…";
