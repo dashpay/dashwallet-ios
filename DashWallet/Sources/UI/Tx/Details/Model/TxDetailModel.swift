@@ -501,6 +501,11 @@ extension TxDetailModel {
                 ? NSLocalizedString("Rebroadcast", comment: "Retry a stuck balance transfer whose transaction never confirmed")
                 : NSLocalizedString("Complete Transfer", comment: "Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished")
         }
+
+        /// Local removal is offered only while the network has shown no
+        /// acceptance at all (built/broadcast). An IS/CL-locked lock is
+        /// proven on-chain — removing it locally could only corrupt state.
+        var supportsRemoval: Bool { statusRaw <= 1 }
     }
 
     /// Non-nil when this transaction is a funding asset lock parked in a
