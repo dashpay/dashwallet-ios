@@ -745,6 +745,9 @@ struct HomeViewContent<Content: View>: View {
             // Service/merchant metadata wins over the route pair — such rows
             // are external payments, not transfers of own funds.
             let routeSymbols = metadata == nil ? transferRouteSymbols(txItem: txItem) : nil
+            // Same precedence for the amount treatment: only a metadata-less
+            // internal move drops the +/- sign for the circulating-arrows glyph.
+            let isInternalAmount = metadata == nil && txItem.internalTransferRoute != nil
             // A DashPay contact payment shows the counterparty's avatar
             // (profile image, or the deterministic initial placeholder the
             // contacts screens use).
@@ -783,8 +786,8 @@ struct HomeViewContent<Content: View>: View {
                 dashAmount: txItem.signedDashAmount,
                 // Internal moves carry no direction: no +/- sign, a
                 // circulating-arrows glyph qualifies the amount instead.
-                amountSign: txItem.internalTransferRoute == nil ? .always : .none,
-                amountAccessorySystemImage: txItem.internalTransferRoute == nil ? nil : "arrow.triangle.2.circlepath",
+                amountSign: isInternalAmount ? .none : .always,
+                amountAccessorySystemImage: isInternalAmount ? "arrow.triangle.2.circlepath" : nil,
                 fiat: txItem.fiatAmount,
                 trailingStatusText: txItem.state == .locked ? NSLocalizedString("Locked", comment: "Transaction state: coinbase reward locked until 100 confirmations") : nil
             ) {
