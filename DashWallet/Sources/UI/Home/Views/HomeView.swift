@@ -721,7 +721,8 @@ struct HomeViewContent<Content: View>: View {
                 title: NSLocalizedString("Mixing Transactions", comment: "CoinJoin"),
                 subtitle: firstTx?.shortTimeString ?? "",
                 dashAmount: set.amount,
-                amountSign: .none
+                amountSign: .none,
+                amountAccessorySystemImage: "arrow.triangle.2.circlepath"
             )
             .onTapGesture { self.selectedTxDataItem = txDataItem }
             .frame(height: 80)
@@ -780,7 +781,10 @@ struct HomeViewContent<Content: View>: View {
                             // counterparty's actual name underneath.
                             : transferRouteDetails(txItem: txItem) ?? txItem.dashPayPaymentDetailsName),
                 dashAmount: txItem.signedDashAmount,
-                amountSign: .always,
+                // Internal moves carry no direction: no +/- sign, a
+                // circulating-arrows glyph qualifies the amount instead.
+                amountSign: txItem.internalTransferRoute == nil ? .always : .none,
+                amountAccessorySystemImage: txItem.internalTransferRoute == nil ? nil : "arrow.triangle.2.circlepath",
                 fiat: txItem.fiatAmount,
                 trailingStatusText: txItem.state == .locked ? NSLocalizedString("Locked", comment: "Transaction state: coinbase reward locked until 100 confirmations") : nil
             ) {
@@ -812,6 +816,7 @@ struct HomeViewContent<Content: View>: View {
                 details: item.detailsText,
                 dashAmount: item.signedDashAmount,
                 amountSign: item.showsDirectionSign ? .always : .none,
+                amountAccessorySystemImage: item.showsDirectionSign ? nil : "arrow.triangle.2.circlepath",
                 fiat: item.fiatAmount,
                 trailingStatusText: item.trailingStatusText
             ) {
