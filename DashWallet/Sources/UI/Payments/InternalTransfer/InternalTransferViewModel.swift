@@ -151,14 +151,21 @@ final class InternalTransferViewModel: ObservableObject {
     /// remainder, or why it could not produce one at all. Surfaced through
     /// `amountValidationMessage` so tapping Max is never a silent no-op.
     @Published private(set) var maxNotice: String?
+    /// Exact duff amount selected by Max. Fiat text is presentation-only and
+    /// may round to two decimals, so reparsing it must never move the transfer
+    /// above (or below) the source's real spendable ceiling.
+    private var maxAmountDuffs: UInt64?
     private var shieldedSweepAmountCredits: UInt64?
     @Published var unit: InternalTransferUnit = .dash {
         didSet {
             guard oldValue != unit else { return }
-            let preserveMax = isFullShieldedSweep
-            isApplyingMax = preserveMax
-            defer { isApplyingMax = false }
-            convertAmountText(from: oldValue, to: unit)
+            if let maxAmountDuffs {
+                isApplyingMax = true
+                defer { isApplyingMax = false }
+                applyMaxAmountText(maxAmountDuffs)
+            } else {
+                convertAmountText(from: oldValue, to: unit)
+            }
         }
     }
 
@@ -419,6 +426,9 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     var parsedDashAmount: Decimal {
+        if let maxAmountDuffs {
+            return maxAmountDuffs.dashAmount
+        }
         let raw = rawTypedDecimal
         switch unit {
         case .dash:
@@ -823,24 +833,37 @@ final class InternalTransferViewModel: ObservableObject {
 
         isApplyingMax = true
         defer { isApplyingMax = false }
+        applyMaxAmountText(sourceDuffs)
+    }
+
+    /// Render Max in the selected input unit while retaining `duffs` as the
+    /// executable amount. In fiat mode the visible cents are approximate;
+    /// converting those rounded cents back to DASH caused Max to exceed the
+    /// balance and disabled Continue.
+    private func applyMaxAmountText(_ duffs: UInt64) {
+        guard duffs > 0 else {
+            maxAmountDuffs = nil
+            amountText = "0"
+            return
+        }
+
+        maxAmountDuffs = duffs
         switch unit {
         case .dash:
-            amountText = sourceDuffs.formattedDashAmountWithoutCurrencySymbol
+            amountText = duffs.formattedDashAmountWithoutCurrencySymbol
         case .fiat:
-            let dashDecimal = sourceDuffs.dashAmount
-            guard dashDecimal > 0 else {
-                amountText = "0"
-                return
-            }
+            let dashDecimal = duffs.dashAmount
             if let fiat = try? CurrencyExchanger.shared.convertDash(amount: dashDecimal, to: App.fiatCurrency) {
                 amountText = Self.formatTyped(fiat, fractionDigits: 2)
             } else {
+                maxAmountDuffs = nil
                 amountText = "0"
             }
         }
     }
 
     private func clearMaxSelection() {
+        maxAmountDuffs = nil
         isFullShieldedSweep = false
         shieldedSweepAmountCredits = nil
         maxNotice = nil
