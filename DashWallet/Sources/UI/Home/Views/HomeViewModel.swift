@@ -65,6 +65,53 @@ class HomeViewModel: ObservableObject {
     /// Tracks whether initial data load has completed (Fix #2)
     private var hasCompletedInitialLoad: Bool = false
 
+    // MARK: Timeline window (all accessed on `queue`)
+
+    /// Number of rows the first page and each scroll-driven page target.
+    /// Pages are day-completed, so the real count can exceed this by the
+    /// boundary day's remainder.
+    private static let timelinePageSize = 100
+
+    /// Window row count beyond which `trimWindowIfNeeded()` re-tightens an
+    /// untouched full-history window back to about one page (recovery-sync
+    /// growth cap; see that method).
+    private static let timelineTrimThreshold = 400
+
+    /// The wrapped rows of the loaded timeline window, keyed by wire-order
+    /// txid. The visible list is rebuilt from this cache in memory; SwiftData
+    /// is only consulted for the scoped page/delta fetches that maintain it.
+    private var windowTxs: [Data: Transaction] = [:]
+
+    /// Start of the oldest fully-loaded calendar day (Unix seconds); 0 when
+    /// the window covers the whole history.
+    private var windowOldestDayStart: UInt64 = 0
+
+    /// True when wallet rows exist below `windowOldestDayStart`.
+    private var hasOlderHistory: Bool = false
+
+    /// Floor for the next `timelineDelta` fetch — the max `lastUpdated`
+    /// observed across window-covering fetches. Never advanced by older-page
+    /// fetches: a paged-in row's stamp can postdate window updates the next
+    /// delta still has to pick up.
+    private var lastReconcileStamp: Date? = nil
+
+    /// Number of scroll-driven pages the user has loaded this session.
+    /// Non-zero disables the recovery-sync trim so explicitly loaded rows
+    /// are never yanked back out from under the user.
+    private var userRequestedPages = 0
+
+    /// Set (via `queue`) when a save deleted feed rows or the fiat currency
+    /// changed: the next reconcile re-reads and re-wraps the whole window
+    /// instead of merging a delta (deletions are invisible to the
+    /// `lastUpdated` delta; cached wrappers hold currency-specific strings).
+    private var pendingWindowRefetch = false
+
+    /// Worker-side mirrors of the published filter-gate flags, so the pass
+    /// never has to hop to the main thread to read its previous answer when
+    /// `filterCategoryGates()` returns nil.
+    private var knownHasRewards = false
+    private var knownHasMasternodes = false
+
     /// Debounce timer for sync state changes to prevent excessive reloads (Fix #4)
     private var syncStateDebounceWorkItem: DispatchWorkItem?
     private let syncStateDebounceInterval: TimeInterval = 0.5
@@ -100,6 +147,17 @@ class HomeViewModel: ObservableObject {
     /// during the initial load tells the user they have no transactions
     /// before that is known.
     @Published private(set) var hasLoadedInitialTxItems: Bool = false
+
+    /// True when older history exists below the loaded timeline window —
+    /// drives the feed's tail loading row.
+    @Published private(set) var canLoadMoreHistory: Bool = false
+    /// True while a scroll-driven page fetch is in flight.
+    @Published private(set) var isLoadingMoreHistory: Bool = false
+    /// Increments when a page lands. The tail loading row keys its identity
+    /// on this so its `onAppear` re-fires and paging continues while the row
+    /// stays visible (e.g. a filter that matches nothing in the new page).
+    @Published private(set) var historyPageStamp: Int = 0
+
     @Published var shortcutItems: [ShortcutAction] = []
     @Published var showTimeSkewAlertDialog: Bool = false
     @Published var showCoinJoinSweepDialog: Bool = false
@@ -246,6 +304,14 @@ class HomeViewModel: ObservableObject {
             self.txByHash.removeAll()
             self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
             self.coinJoinTxSets.removeAll()
+            self.windowTxs.removeAll()
+            self.windowOldestDayStart = 0
+            self.hasOlderHistory = false
+            self.lastReconcileStamp = nil
+            self.userRequestedPages = 0
+            self.pendingWindowRefetch = false
+            self.knownHasRewards = false
+            self.knownHasMasternodes = false
 
             // Reset load tracking so the new network's data loads correctly
             self.hasCompletedInitialLoad = false
@@ -256,6 +322,8 @@ class HomeViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self.txItems = []
                 self.hasLoadedInitialTxItems = false
+                self.canLoadMoreHistory = false
+                self.isLoadingMoreHistory = false
             }
 
             // Reload fresh data from the new network's wallet
@@ -304,7 +372,11 @@ class HomeViewModel: ObservableObject {
         NotificationCenter.default.publisher(for: Notification.Name.fiatCurrencyDidChange)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.txReloadRequests.send()
+                guard let self else { return }
+                // Cached wrappers hold currency-specific display strings —
+                // re-read and re-wrap the window rather than merge a delta.
+                self.queue.async { self.pendingWindowRefetch = true }
+                self.txReloadRequests.send()
             }
             .store(in: &cancellableBag)
 
@@ -317,9 +389,18 @@ class HomeViewModel: ObservableObject {
         // notification as the reload trigger.
         NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)
             .filter { Self.saveTouchesFeedRows($0) }
+            // Inspected before the main-queue hop, like the filter above —
+            // the userInfo object sets belong to the posting thread.
+            .map { Self.saveDeletesFeedRows($0) }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                self?.txReloadRequests.send()
+            .sink { [weak self] deletedFeedRows in
+                guard let self else { return }
+                if deletedFeedRows {
+                    // A deleted row is invisible to the lastUpdated delta —
+                    // flag the next reconcile to re-read the loaded window.
+                    self.queue.async { self.pendingWindowRefetch = true }
+                }
+                self.txReloadRequests.send()
             }
             .store(in: &cancellableBag)
 
@@ -408,7 +489,23 @@ class HomeViewModel: ObservableObject {
         return !sawInspectableChange
     }
 
-    // This is expensive and should not be called often
+    /// Whether a SwiftData save DELETED feed rows (e.g.
+    /// `UnconfirmedTransactionRemover`). Deletions are invisible to the
+    /// `lastUpdated` delta reconcile, so they force a window re-read. Unlike
+    /// `saveTouchesFeedRows` this fails CLOSED on an uninspectable payload:
+    /// that payload already triggers a reload via the fail-open filter, and
+    /// answering true here would turn every such save into a window refetch.
+    private static func saveDeletesFeedRows(_ notification: Notification) -> Bool {
+        guard let objects = notification.userInfo?[NSDeletedObjectsKey] as? Set<NSManagedObject> else {
+            return false
+        }
+        return objects.contains(where: { feedRowEntityNames.contains($0.entity.name ?? "") })
+    }
+
+    // Entry point of the throttled reconcile pass. The pass is scoped to the
+    // loaded timeline window (page/delta fetches, in-memory rebuild) — but it
+    // still republishes the whole list, so it stays behind the funnel's
+    // throttle rather than running per notification.
     private func reloadTxDataSource() {
         // Read main-actor state BEFORE handing off, never from inside the
         // worker pass. A `DispatchQueue.main.sync` from the queue is a barrier
@@ -436,22 +533,201 @@ class HomeViewModel: ObservableObject {
     }
 
     private func performReload(selectedFilters: Set<TransactionFilterCategory>, startedAt: Date) {
-        DWLogger.log("HomeViewModel: Starting full transaction reload")
+        DWLogger.log("HomeViewModel: Starting timeline reconcile")
 
-        let transactions = transactionSource.allTransactions
+        // --- Stage 1: bring the wrapped-row window up to date. Every
+        // SwiftData read here is scoped to the loaded day range — no path
+        // is O(wallet history).
+        if !hasCompletedInitialLoad {
+            guard let window = transactionSource.timelineWindow(targetRowCount: Self.timelinePageSize) else {
+                // Host not bound yet (launch race): publish the same
+                // "loaded, empty" state this pass always produced here, and
+                // leave `hasCompletedInitialLoad` unset so the next trigger
+                // retries the first page.
+                DispatchQueue.main.async {
+                    self.txItems = []
+                    self.hasLoadedInitialTxItems = true
+                }
+                return
+            }
+            applyTimelineWindow(window)
+            hasCompletedInitialLoad = true
+            DWLogger.log("HomeViewModel: Timeline first page loaded — \(windowTxs.count) rows, older history: \(hasOlderHistory)")
+        } else if pendingWindowRefetch {
+            pendingWindowRefetch = false
+            // Deletions / currency changes invalidate the cached wrappers —
+            // re-read and re-wrap the whole loaded window (window-sized, not
+            // wallet-sized).
+            if let delta = transactionSource.timelineDelta(
+                updatedAfter: .distantPast, notBefore: windowOldestDayStart) {
+                replaceWindow(with: delta)
+            }
+        } else if let delta = transactionSource.timelineDelta(
+            updatedAfter: lastReconcileStamp ?? .distantPast,
+            notBefore: windowOldestDayStart) {
+            if delta.isCompleteWindow {
+                replaceWindow(with: delta)
+            } else {
+                for tx in delta.transactions {
+                    windowTxs[tx.txHashData] = tx
+                }
+                advanceReconcileStamp(delta.maxLastUpdated)
+            }
+        }
+        trimWindowIfNeeded()
+
+        // --- Stage 2: whole-history filter gates, answered by the store
+        // without materializing rows; nil keeps the previous answer.
+        if let gates = transactionSource.filterCategoryGates() {
+            knownHasRewards = gates.hasRewards
+            knownHasMasternodes = gates.hasMasternodes
+        }
+
+        // --- Stage 3: rebuild the visible list from the in-memory window.
+        rebuildTimelineItems(selectedFilters: selectedFilters, startedAt: startedAt, pageCompleted: false)
+    }
+
+    /// Replace the window cache with a freshly fetched first page.
+    private func applyTimelineWindow(_ window: WalletTimelineWindow) {
+        windowTxs = Dictionary(
+            window.transactions.map { ($0.txHashData, $0) },
+            uniquingKeysWith: { first, _ in first })
+        windowOldestDayStart = window.oldestLoadedDayStart
+        hasOlderHistory = window.hasOlderHistory
+        advanceReconcileStamp(window.maxLastUpdated)
+    }
+
+    /// Replace the window cache from a complete-window delta (a refetch
+    /// after deletions/currency change, or the source's predicate-translation
+    /// fallback).
+    private func replaceWindow(with delta: WalletTimelineDelta) {
+        windowTxs = Dictionary(
+            delta.transactions.map { ($0.txHashData, $0) },
+            uniquingKeysWith: { first, _ in first })
+        advanceReconcileStamp(delta.maxLastUpdated)
+    }
+
+    private func advanceReconcileStamp(_ stamp: Date?) {
+        guard let stamp else { return }
+        if lastReconcileStamp.map({ stamp > $0 }) ?? true {
+            lastReconcileStamp = stamp
+        }
+    }
+
+    /// Recovery-sync growth cap. While the window still covers the whole
+    /// (small) history, every restored batch enters through the delta path
+    /// and the window grows with the wallet. Past the threshold, re-tighten
+    /// to about one day-completed page — unless the user has explicitly
+    /// paged deeper, in which case the rows they loaded stay put.
+    private func trimWindowIfNeeded() {
+        guard userRequestedPages == 0,
+              !hasOlderHistory,
+              windowTxs.count > Self.timelineTrimThreshold else { return }
+        let sorted = windowTxs.values.sorted { $0.date > $1.date }
+        let anchor = sorted[Self.timelinePageSize - 1]
+        let dayStart = Calendar.current.startOfDay(for: anchor.date)
+        let kept = sorted.filter { $0.date >= dayStart }
+        guard kept.count < sorted.count else { return }
+        windowTxs = Dictionary(
+            kept.map { ($0.txHashData, $0) },
+            uniquingKeysWith: { first, _ in first })
+        windowOldestDayStart = UInt64(max(0, dayStart.timeIntervalSince1970))
+        hasOlderHistory = true
+        DWLogger.log("HomeViewModel: Timeline window trimmed to \(windowTxs.count) rows (recovery growth cap)")
+    }
+
+    /// Whether an interleaved (shielded / platform / cross-day group) item's
+    /// day is covered by the loaded timeline window. Items below the paged
+    /// window stay hidden until their day is paged in, so a day never
+    /// renders partially. Undated restored entries (the trailing
+    /// "Date unknown" band) are covered only once the whole history is
+    /// loaded — the band renders after the last real day.
+    private func windowCovers(date: Date, hasKnownDate: Bool = true) -> Bool {
+        guard hasOlderHistory else { return true }
+        guard hasKnownDate else { return false }
+        return UInt64(max(0, date.timeIntervalSince1970)) >= windowOldestDayStart
+    }
+
+    /// Extend the timeline window one day-completed page down. Called from
+    /// the feed's tail loading row on the main thread.
+    func loadMoreHistory() {
+        guard canLoadMoreHistory, !isLoadingMoreHistory else { return }
+        isLoadingMoreHistory = true
+        let selectedFilters = self.selectedFilters
+        let startedAt = Date()
+        queue.async { [weak self] in
+            guard let self else { return }
+            guard self.hasOlderHistory, self.windowOldestDayStart > 0,
+                  let page = self.transactionSource.olderTimelinePage(
+                      endingBefore: self.windowOldestDayStart,
+                      targetRowCount: Self.timelinePageSize) else {
+                DispatchQueue.main.async { self.isLoadingMoreHistory = false }
+                return
+            }
+            for tx in page.transactions {
+                self.windowTxs[tx.txHashData] = tx
+            }
+            self.windowOldestDayStart = page.oldestLoadedDayStart
+            self.hasOlderHistory = page.hasOlderHistory
+            self.userRequestedPages += 1
+            // The paged-in rows now sit inside the delta scope (`notBefore`
+            // = the new boundary), so later updates to them reconcile
+            // normally. The page itself must NOT advance the delta stamp:
+            // its rows' `lastUpdated` can postdate window updates the next
+            // delta still has to pick up.
+            DWLogger.log("HomeViewModel: Timeline paged to \(self.windowTxs.count) rows, older history: \(self.hasOlderHistory)")
+            self.rebuildTimelineItems(selectedFilters: selectedFilters, startedAt: startedAt, pageCompleted: true)
+        }
+    }
+
+    /// Rebuild `txItems` from the loaded window. Pure in-memory over the
+    /// cached wrappers except for three intentionally small reads: the
+    /// shielded/platform activity fetches and the sweep-txid point lookups.
+    /// Runs on `queue`.
+    private func rebuildTimelineItems(
+        selectedFilters: Set<TransactionFilterCategory>,
+        startedAt: Date,
+        pageCompleted: Bool
+    ) {
+        // The combined "CoinJoin Withdrawals" group totals every tagged
+        // sweep tx even when its row sits below the loaded window — point
+        // lookups, cost scales with the number of recorded sweeps.
+        var inputByTxid = windowTxs
+        let missingSweepTxids = CoinJoinWithdrawalStore.shared.allTxids()
+            .filter { inputByTxid[$0] == nil }
+        if !missingSweepTxids.isEmpty {
+            for tx in transactionSource.wrappedTransactions(txids: missingSweepTxids) {
+                inputByTxid[tx.txHashData] = tx
+            }
+        }
+        // Deterministic timeline order: date desc with the txid hex as the
+        // tie-breaker, so equal-timestamp rows (same-block mixing bursts)
+        // keep a stable order across rebuilds instead of reshuffling.
+        let transactions = inputByTxid.values.sorted { lhs, rhs in
+            guard lhs.date == rhs.date else { return lhs.date > rhs.date }
+            return lhs.txHashHexString > rhs.txHashHexString
+        }
+
         // Reconcile restored Shielded → Core destinations before Core rows
         // are filtered/classified. The activity projection can recover a
         // destination tag that was absent from the local withdrawal store.
+        // Receipt matching sees the loaded window, not the whole history.
+        // Rendered shielded items sit inside the window (the `windowCovers`
+        // gate below), and the match tolerance is -1h…+24h around the item,
+        // so the only candidate a rendered item can miss is a receipt up to
+        // an hour before it across the window's bottom midnight — a pending
+        // row that resolves once that day is paged in.
         let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity(
             coreTransactions: transactions)
         self.crowdNodeTxSet = FullCrowdNodeSignUpTxSet()
         self.coinJoinTxSets = [:]
         self.coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet()
 
-        // Gate the "Rewards" / "Masternode" filter rows; computed from the
-        // unfiltered history so they don't flap with the current selection.
-        let hasRewards = transactions.contains { $0.isCoinbaseTransaction }
-        let hasMasternodes = transactions.contains { $0.isMasternodeTransaction }
+        // Gate the "Rewards" / "Masternode" filter rows — the store-probed
+        // whole-history answers (stage 2), so they don't flap with the
+        // current selection or the loaded window.
+        let hasRewards = knownHasRewards
+        let hasMasternodes = knownHasMasternodes
 
         // Snapshot each provider's metadata once per reload —
         // `availableMetadata` copies the whole dictionary through the
@@ -499,6 +775,7 @@ class HomeViewModel: ObservableObject {
         // Core rows above only cover operations with an L1 leg. The
         // day-grouping sort below merges the two timelines.
         for shielded in shieldedItems {
+            guard windowCovers(date: shielded.date, hasKnownDate: shielded.hasKnownDate) else { continue }
             guard self.passesShieldedFilter(
                 item: shielded,
                 selected: selectedFilters,
@@ -514,6 +791,7 @@ class HomeViewModel: ObservableObject {
         // construction, so they ride the .received filter category.
         let platformItems = SwiftDashSDKWalletSource.fetchPlatformActivity()
         for platform in platformItems {
+            guard windowCovers(date: platform.date) else { continue }
             guard self.passesCategoryFilter(
                 categories: [.received],
                 selected: selectedFilters,
@@ -542,7 +820,11 @@ class HomeViewModel: ObservableObject {
             }
         }
 
-        if !self.coinJoinWithdrawalSet.transactionMap.isEmpty {
+        // The cross-day sweep group renders only once its (latest-tx) day is
+        // paged in — same day-atomicity as every other row; its totals are
+        // already complete from the point lookups above whenever it shows.
+        if !self.coinJoinWithdrawalSet.transactionMap.isEmpty,
+           windowCovers(date: self.coinJoinWithdrawalSet.groupDay) {
             let item: TransactionListDataItem = .coinjoinWithdrawal(self.coinJoinWithdrawalSet)
             items.append(item)
             self.txByHash[self.coinJoinWithdrawalSet.id] = item
@@ -558,11 +840,15 @@ class HomeViewModel: ObservableObject {
         let groupedItems = Dictionary(
             grouping: items.sorted(by: { lhs, rhs in
                 guard lhs.date == rhs.date else { return lhs.date > rhs.date }
-                // Equal dates are, in practice, the shared `.distantPast`
-                // sentinel of the "Date unknown" band; order it by exact
-                // on-chain sequence, newest (highest note position) first.
-                // Nil keys (no chain-order information) sink to its end.
-                return (lhs.chainOrderKey ?? 0) > (rhs.chainOrderKey ?? 0)
+                // Equal dates: the shared `.distantPast` sentinel of the
+                // "Date unknown" band orders by exact on-chain sequence,
+                // newest (highest note position) first; same-timestamp
+                // dated rows (same-block bursts) fall through to the id so
+                // their order is stable across rebuilds.
+                let lhsKey = lhs.chainOrderKey ?? 0
+                let rhsKey = rhs.chainOrderKey ?? 0
+                guard lhsKey == rhsKey else { return lhsKey > rhsKey }
+                return lhs.id > rhs.id
             }),
             by: {
                 $0.hasKnownDate
@@ -576,15 +862,20 @@ class HomeViewModel: ObservableObject {
             return TransactionGroup(id: key, date: first.date, items: items)
         }.sorted { $0.date > $1.date }
 
-        // Fix #2: Mark initial load complete
-        self.hasCompletedInitialLoad = true
-
         let elapsedMs = Int(Date().timeIntervalSince(startedAt) * 1000)
-        DWLogger.log("HomeViewModel: Full reload complete in \(elapsedMs)ms, \(array.count) groups, \(self.txByHash.count) transactions cached")
+        DWLogger.log("HomeViewModel: Timeline rebuild complete in \(elapsedMs)ms, \(array.count) groups, \(self.txByHash.count) items cached, window \(windowTxs.count) rows")
 
+        let canLoadMore = hasOlderHistory
         DispatchQueue.main.async {
             self.txItems = array
             self.hasLoadedInitialTxItems = true
+            if self.canLoadMoreHistory != canLoadMore {
+                self.canLoadMoreHistory = canLoadMore
+            }
+            if pageCompleted {
+                self.isLoadingMoreHistory = false
+                self.historyPageStamp += 1
+            }
             if self.hasRewardsHistory != hasRewards {
                 self.hasRewardsHistory = hasRewards
             }
@@ -608,17 +899,29 @@ class HomeViewModel: ObservableObject {
                 return
             }
 
+            // Below the paged window: the row isn't on screen and its
+            // day-group isn't loaded — it renders correctly when its day is
+            // paged in. Rows at/above the boundary join the window cache so
+            // the next in-memory rebuild keeps them.
+            if self.hasOlderHistory,
+               UInt64(max(0, tx.date.timeIntervalSince1970)) < self.windowOldestDayStart {
+                return
+            }
+            self.windowTxs[tx.txHashData] = tx
+
             let selectedFilters = DispatchQueue.main.sync { self.selectedFilters }
             let historyFlags = DispatchQueue.main.sync { (self.hasRewardsHistory, self.hasMasternodeHistory) }
 
             // A coinbase / masternode tx arriving incrementally unlocks its
             // filter row without waiting for the next full reload.
             if tx.isCoinbaseTransaction && !historyFlags.0 {
+                self.knownHasRewards = true
                 DispatchQueue.main.async {
                     self.hasRewardsHistory = true
                 }
             }
             if tx.isMasternodeTransaction && !historyFlags.1 {
+                self.knownHasMasternodes = true
                 DispatchQueue.main.async {
                     self.hasMasternodeHistory = true
                 }
@@ -1216,8 +1519,76 @@ extension HomeViewModel {
     }
 }
 
+/// A wrapped, newest-first slice of the wallet timeline covering complete
+/// calendar days: the page fetch always finishes its boundary day, so a
+/// loaded day is never partially represented and per-day aggregations built
+/// from the window (the CoinJoin mixing groups) stay exact without reading
+/// the whole history.
+struct WalletTimelineWindow {
+    let walletId: Data
+    /// Wrapped rows, `firstSeen` desc.
+    let transactions: [Transaction]
+    /// Start of the oldest fully-loaded calendar day (Unix seconds, local
+    /// calendar); 0 when the window reaches the beginning of history.
+    let oldestLoadedDayStart: UInt64
+    /// True when rows exist below `oldestLoadedDayStart`.
+    let hasOlderHistory: Bool
+    /// Max `lastUpdated` across the fetched rows — the caller's floor for
+    /// the next delta fetch. Nil when the fetch produced no rows or the
+    /// source doesn't track update stamps.
+    let maxLastUpdated: Date?
+}
+
+/// Rows changed since a reconcile stamp, scoped to the loaded window.
+struct WalletTimelineDelta {
+    let transactions: [Transaction]
+    let maxLastUpdated: Date?
+    /// True when `transactions` is the ENTIRE loaded window (a from-scratch
+    /// re-read) rather than just the changed rows — the caller replaces its
+    /// cache instead of merging, which is how row deletions get observed.
+    let isCompleteWindow: Bool
+}
+
 protocol TransactionSource {
     var allTransactions: Array<Transaction> { get }
+
+    /// The newest rows as a day-completed window of about `targetRowCount`.
+    /// Nil when the source has no active wallet yet.
+    func timelineWindow(targetRowCount: Int) -> WalletTimelineWindow?
+    /// The next day-completed page strictly below `dayStartCutoff`
+    /// (a previous window's `oldestLoadedDayStart`).
+    func olderTimelinePage(endingBefore dayStartCutoff: UInt64, targetRowCount: Int) -> WalletTimelineWindow?
+    /// Rows with `lastUpdated` after `stamp` whose `firstSeen` is at/after
+    /// `dayStart`. Nil when the source can't answer.
+    func timelineDelta(updatedAfter stamp: Date, notBefore dayStart: UInt64) -> WalletTimelineDelta?
+    /// Whole-history "has any coinbase / masternode special tx" answers for
+    /// the Rewards / Masternode filter rows, computed without materializing
+    /// the history. Nil when unanswerable (caller keeps its previous answer).
+    func filterCategoryGates() -> (hasRewards: Bool, hasMasternodes: Bool)?
+    /// Wrapped rows for specific txids (point lookups).
+    func wrappedTransactions(txids: Set<Data>) -> [Transaction]
+}
+
+/// Fixture-source defaults (onboarding demo, previews): the whole
+/// `allTransactions` set is one complete, already-loaded window; there is
+/// nothing older to page in and no store to answer deltas or gates from.
+extension TransactionSource {
+    func timelineWindow(targetRowCount: Int) -> WalletTimelineWindow? {
+        WalletTimelineWindow(
+            walletId: Data(),
+            transactions: allTransactions.sorted { $0.date > $1.date },
+            oldestLoadedDayStart: 0,
+            hasOlderHistory: false,
+            maxLastUpdated: nil)
+    }
+
+    func olderTimelinePage(endingBefore dayStartCutoff: UInt64, targetRowCount: Int) -> WalletTimelineWindow? { nil }
+
+    func timelineDelta(updatedAfter stamp: Date, notBefore dayStart: UInt64) -> WalletTimelineDelta? { nil }
+
+    func filterCategoryGates() -> (hasRewards: Bool, hasMasternodes: Bool)? { nil }
+
+    func wrappedTransactions(txids: Set<Data>) -> [Transaction] { [] }
 }
 
 struct CoreWithdrawalReceiptCandidate: Equatable {
@@ -1385,6 +1756,29 @@ final class DWAppleWatchSnapshotProvider: NSObject {
 class SwiftDashSDKWalletSource: TransactionSource {
     var allTransactions: Array<Transaction> {
         Self.fetchAll().sorted { $0.date > $1.date }
+    }
+
+    // TransactionSource timeline conformance — the store-backed overrides of
+    // the fixture defaults, delegating to the scoped static fetches below.
+
+    func timelineWindow(targetRowCount: Int) -> WalletTimelineWindow? {
+        Self.fetchTimelineWindow(targetRowCount: targetRowCount)
+    }
+
+    func olderTimelinePage(endingBefore dayStartCutoff: UInt64, targetRowCount: Int) -> WalletTimelineWindow? {
+        Self.fetchOlderTimelinePage(endingBefore: dayStartCutoff, targetRowCount: targetRowCount)
+    }
+
+    func timelineDelta(updatedAfter stamp: Date, notBefore dayStart: UInt64) -> WalletTimelineDelta? {
+        Self.fetchTimelineDelta(updatedAfter: stamp, notBefore: dayStart)
+    }
+
+    func filterCategoryGates() -> (hasRewards: Bool, hasMasternodes: Bool)? {
+        Self.fetchFilterCategoryGates()
+    }
+
+    func wrappedTransactions(txids: Set<Data>) -> [Transaction] {
+        Self.fetch(txids: txids)?.transactions ?? []
     }
 
     /// All persisted SDK transactions wrapped for the app (`firstSeen` desc).
@@ -1983,9 +2377,41 @@ class SwiftDashSDKWalletSource: TransactionSource {
         minFirstSeen: UInt64,
         limit: Int?
     ) -> [Transaction] {
+        do {
+            return try scopedRows(
+                in: context, walletId: walletId,
+                minFirstSeen: minFirstSeen, maxFirstSeen: .max,
+                updatedAfter: .distantPast, limit: limit)
+                .map { wrap($0, walletId: walletId) }
+        } catch {
+            DWLogger.log("SwiftDashSDKWalletSource: scoped fetch failed (\(error)); falling back to the full wallet pass")
+            return fetchAndWrap(in: context, walletId: walletId, minFirstSeen: minFirstSeen, limit: limit)
+        }
+    }
+
+    /// The shared raw timeline fetch every scoped path goes through: wallet
+    /// membership evaluated inside the store, a `firstSeen` range against its
+    /// index, an update-stamp floor for delta reconciles, sorted newest-first
+    /// with the wrap's relationships prefetched. Throws on predicate
+    /// translation failure — callers fall back to the full wallet pass.
+    private static func scopedRows(
+        in context: ModelContext,
+        walletId: Data,
+        minFirstSeen: UInt64,
+        maxFirstSeen: UInt64,
+        updatedAfter: Date,
+        limit: Int?
+    ) throws -> [PersistentTransaction] {
+        // UInt64 round-trips through SQLite's signed Int64: a bound above
+        // Int64.max (the `.max` "no upper bound" sentinel) would compare as
+        // a NEGATIVE number and match nothing. Clamp — every real timestamp
+        // is far below Int64.max, so the clamped bound is still unbounded
+        // in practice.
+        let maxFirstSeen = min(maxFirstSeen, UInt64(Int64.max))
         var descriptor = FetchDescriptor<PersistentTransaction>(
             predicate: #Predicate { tx in
-                tx.firstSeen >= minFirstSeen
+                tx.firstSeen >= minFirstSeen && tx.firstSeen <= maxFirstSeen
+                    && tx.lastUpdated > updatedAfter
                     && (tx.outputs.contains(where: { $0.walletId == walletId })
                         || tx.inputs.contains(where: { $0.walletId == walletId })
                         || tx.involvedAccounts.contains(where: { $0.wallet.walletId == walletId }))
@@ -1993,13 +2419,183 @@ class SwiftDashSDKWalletSource: TransactionSource {
             sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
         if let limit { descriptor.fetchLimit = limit }
         descriptor.relationshipKeyPathsForPrefetching = [\.outputs, \.inputs]
+        return try context.fetch(descriptor)
+    }
+
+    /// Whether any wallet row exists at/below `firstSeen` — the "is there
+    /// older history" probe behind `WalletTimelineWindow.hasOlderHistory`.
+    /// `fetchLimit = 1`, so at most one row is materialized.
+    private static func scopedRowExists(
+        in context: ModelContext,
+        walletId: Data,
+        firstSeenAtOrBelow: UInt64
+    ) throws -> Bool {
+        var descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { tx in
+                tx.firstSeen <= firstSeenAtOrBelow
+                    && (tx.outputs.contains(where: { $0.walletId == walletId })
+                        || tx.inputs.contains(where: { $0.walletId == walletId })
+                        || tx.involvedAccounts.contains(where: { $0.wallet.walletId == walletId }))
+            })
+        descriptor.fetchLimit = 1
+        return try !context.fetch(descriptor).isEmpty
+    }
+
+    /// The home feed's day-completed first page. Safe from any thread.
+    static func fetchTimelineWindow(targetRowCount: Int) -> WalletTimelineWindow? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        return timelinePage(
+            in: ModelContext(container), walletId: walletId,
+            maxFirstSeen: .max, targetRowCount: targetRowCount)
+    }
+
+    /// The next day-completed page strictly below `dayStartCutoff` (a
+    /// previous window's `oldestLoadedDayStart`). Safe from any thread.
+    static func fetchOlderTimelinePage(
+        endingBefore dayStartCutoff: UInt64,
+        targetRowCount: Int
+    ) -> WalletTimelineWindow? {
+        guard dayStartCutoff > 0, let (container, walletId) = hostHandles() else { return nil }
+        return timelinePage(
+            in: ModelContext(container), walletId: walletId,
+            maxFirstSeen: dayStartCutoff - 1, targetRowCount: targetRowCount)
+    }
+
+    /// One timeline page ending at `maxFirstSeen`: fetch `targetRowCount`
+    /// rows newest-first, then extend to the start of the boundary row's
+    /// calendar day so the page never splits a day. `firstSeen` serves as
+    /// both the paging key and the day key — the persister adopts the block
+    /// timestamp once a tx is mined, so for settled history it equals the
+    /// display date the feed groups by.
+    private static func timelinePage(
+        in context: ModelContext,
+        walletId: Data,
+        maxFirstSeen: UInt64,
+        targetRowCount: Int
+    ) -> WalletTimelineWindow {
         do {
-            return try context.fetch(descriptor).map { wrap($0, walletId: walletId) }
+            var rows = try scopedRows(
+                in: context, walletId: walletId,
+                minFirstSeen: 0, maxFirstSeen: maxFirstSeen,
+                updatedAfter: .distantPast, limit: targetRowCount)
+            var oldestLoadedDayStart: UInt64 = 0
+            var hasOlderHistory = false
+            if rows.count >= targetRowCount, let boundary = rows.last?.firstSeen {
+                let dayStart = UInt64(max(0, Calendar.current.startOfDay(
+                    for: Date(timeIntervalSince1970: TimeInterval(boundary))).timeIntervalSince1970))
+                // Finish the boundary day — unconditionally: even when the
+                // boundary row sits exactly at midnight, same-stamp rows
+                // (same-block bursts) can have been cut off by the fetch
+                // limit. The range re-includes rows already fetched at the
+                // boundary stamp, so drop the known txids.
+                let seen = Set(rows.map(\.txid))
+                let tail = try scopedRows(
+                    in: context, walletId: walletId,
+                    minFirstSeen: dayStart, maxFirstSeen: boundary,
+                    updatedAfter: .distantPast, limit: nil)
+                    .filter { !seen.contains($0.txid) }
+                rows += tail
+                if dayStart > 0,
+                   try scopedRowExists(in: context, walletId: walletId, firstSeenAtOrBelow: dayStart - 1) {
+                    oldestLoadedDayStart = dayStart
+                    hasOlderHistory = true
+                }
+            }
+            return WalletTimelineWindow(
+                walletId: walletId,
+                transactions: rows.map { wrap($0, walletId: walletId) },
+                oldestLoadedDayStart: oldestLoadedDayStart,
+                hasOlderHistory: hasOlderHistory,
+                maxLastUpdated: rows.map(\.lastUpdated).max())
         } catch {
-            DWLogger.log("SwiftDashSDKWalletSource: scoped fetch failed (\(error)); falling back to the full wallet pass")
-            return fetchAndWrap(in: context, walletId: walletId, minFirstSeen: minFirstSeen, limit: limit)
+            DWLogger.log("SwiftDashSDKWalletSource: timeline page fetch failed (\(error)); falling back to the full wallet pass")
+            return WalletTimelineWindow(
+                walletId: walletId,
+                transactions: fetchAndWrap(in: context, walletId: walletId),
+                oldestLoadedDayStart: 0,
+                hasOlderHistory: false,
+                maxLastUpdated: nil)
         }
     }
+
+    /// Rows changed after `stamp` within the loaded window (`firstSeen >=
+    /// dayStart`) — the home feed's save-tick reconcile. With `stamp ==
+    /// .distantPast` this is a complete re-read of the window and the caller
+    /// replaces its cache (which is how deletions become visible). Falls
+    /// back to the full wallet pass if the predicate ever fails to
+    /// translate. Safe from any thread.
+    static func fetchTimelineDelta(
+        updatedAfter stamp: Date,
+        notBefore dayStart: UInt64
+    ) -> WalletTimelineDelta? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        let context = ModelContext(container)
+        do {
+            let rows = try scopedRows(
+                in: context, walletId: walletId,
+                minFirstSeen: dayStart, maxFirstSeen: .max,
+                updatedAfter: stamp, limit: nil)
+            return WalletTimelineDelta(
+                transactions: rows.map { wrap($0, walletId: walletId) },
+                maxLastUpdated: rows.map(\.lastUpdated).max(),
+                isCompleteWindow: stamp == .distantPast)
+        } catch {
+            DWLogger.log("SwiftDashSDKWalletSource: timeline delta fetch failed (\(error)); falling back to the full wallet pass")
+            return WalletTimelineDelta(
+                transactions: fetchAndWrap(in: context, walletId: walletId, minFirstSeen: dayStart),
+                maxLastUpdated: nil,
+                isCompleteWindow: true)
+        }
+    }
+
+    /// Whole-history "has any coinbase / masternode special tx" answers for
+    /// the home filter's Rewards / Masternode rows, probed with
+    /// `fetchLimit = 1` existence queries — at most one row materialized
+    /// each, never a wrapped history. Matches the wrapper rules exactly:
+    /// `Transaction.isCoinbaseTransaction` / `isMasternodeTransaction` are
+    /// pure `transactionTypeKind` checks. Nil when no wallet is active or a
+    /// probe fails (callers keep their previous answer). Safe from any thread.
+    static func fetchFilterCategoryGates() -> (hasRewards: Bool, hasMasternodes: Bool)? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        let context = ModelContext(container)
+        let coinbase = coinbaseKindRaw
+        let providers = providerKindRaws
+        var rewardsDescriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { tx in
+                tx.transactionTypeKind == coinbase
+                    && (tx.outputs.contains(where: { $0.walletId == walletId })
+                        || tx.inputs.contains(where: { $0.walletId == walletId })
+                        || tx.involvedAccounts.contains(where: { $0.wallet.walletId == walletId }))
+            })
+        rewardsDescriptor.fetchLimit = 1
+        var masternodeDescriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { tx in
+                providers.contains(tx.transactionTypeKind)
+                    && (tx.outputs.contains(where: { $0.walletId == walletId })
+                        || tx.inputs.contains(where: { $0.walletId == walletId })
+                        || tx.involvedAccounts.contains(where: { $0.wallet.walletId == walletId }))
+            })
+        masternodeDescriptor.fetchLimit = 1
+        do {
+            let hasRewards = try !context.fetch(rewardsDescriptor).isEmpty
+            let hasMasternodes = try !context.fetch(masternodeDescriptor).isEmpty
+            return (hasRewards, hasMasternodes)
+        } catch {
+            DWLogger.log("SwiftDashSDKWalletSource: filter-gate probe failed (\(error))")
+            return nil
+        }
+    }
+
+    /// `TransactionTypeKind` raw values the filter-gate probes match on —
+    /// captured outside the predicates (`#Predicate` bodies can't call
+    /// `rawValue`).
+    private static let coinbaseKindRaw = TransactionTypeKind.coinbase.rawValue
+    private static let providerKindRaws = [
+        TransactionTypeKind.providerRegistration.rawValue,
+        TransactionTypeKind.providerUpdateRegistrar.rawValue,
+        TransactionTypeKind.providerUpdateService.rawValue,
+        TransactionTypeKind.providerUpdateRevocation.rawValue,
+    ]
 
     /// Everything a wallet-wide wrap needs from the TXO table, computed in
     /// one indexed scan with relationships prefetched: the member-txid union

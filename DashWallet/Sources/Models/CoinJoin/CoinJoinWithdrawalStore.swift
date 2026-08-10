@@ -85,6 +85,15 @@ final class CoinJoinWithdrawalStore {
         return loaded().contains(txid)
     }
 
+    /// Every recorded sweep txid (WIRE order) for the active wallet. Thread-safe.
+    /// The home feed uses this to build the combined "CoinJoin Withdrawals"
+    /// group from point lookups instead of scanning the whole history for the
+    /// tagged rows.
+    func allTxids() -> Set<Data> {
+        lock.lock(); defer { lock.unlock() }
+        return loaded()
+    }
+
     /// Clear a SINGLE wallet's recorded sweep txids (used by the per-wallet
     /// Remove flow — the removed wallet may not be the active one, so address it
     /// by explicit `walletIdHex`). Thread-safe. Invalidates the in-memory cache
