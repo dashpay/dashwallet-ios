@@ -22,8 +22,8 @@
 
 import Foundation
 import OSLog
-import SwiftData
 import SwiftDashSDK
+import SwiftData
 
 // MARK: - Identifiable projections for SwiftUI
 
@@ -65,6 +65,9 @@ struct UsernameMarketplaceService {
         case noIdentity
         case contestedName
         case invalidRecipient
+        case invalidPrice
+        case authCancelled
+        case authFailed
 
         var errorDescription: String? {
             switch self {
@@ -74,6 +77,12 @@ struct UsernameMarketplaceService {
                 return NSLocalizedString("Short names are decided by a network vote — use Request Username instead.", comment: "Username marketplace")
             case .invalidRecipient:
                 return NSLocalizedString("The recipient identity couldn't be resolved.", comment: "Username marketplace")
+            case .invalidPrice:
+                return NSLocalizedString("This price is too high to list.", comment: "Username marketplace: listing price exceeds the representable maximum")
+            case .authCancelled:
+                return NSLocalizedString("Authentication cancelled", comment: "DashPay")
+            case .authFailed:
+                return NSLocalizedString("Authentication failed", comment: "DashPay")
             }
         }
     }
@@ -124,7 +133,10 @@ struct UsernameMarketplaceService {
 
     func setPrice(name: String, priceDuffs: UInt64) async throws {
         let (wallet, container, ownerId) = try requireOwnContext()
-        try await authorizer.authorize()
+        guard priceDuffs <= UInt64.max / 1_000 else {
+            throw ServiceError.invalidPrice
+        }
+        try await authorize()
         _ = try await wallet.setDpnsNamePrice(
             ownerIdentityId: ownerId,
             name: name,
@@ -135,7 +147,7 @@ struct UsernameMarketplaceService {
 
     func removeFromSale(name: String) async throws {
         let (wallet, container, ownerId) = try requireOwnContext()
-        try await authorizer.authorize()
+        try await authorize()
         _ = try await wallet.delistDpnsName(
             ownerIdentityId: ownerId,
             name: name,
@@ -148,7 +160,7 @@ struct UsernameMarketplaceService {
         guard let recipientId = Data.identifier(fromBase58: recipient), recipientId.count == 32 else {
             throw ServiceError.invalidRecipient
         }
-        try await authorizer.authorize()
+        try await authorize()
         _ = try await wallet.transferDpnsName(
             ownerIdentityId: ownerId,
             name: name,
@@ -164,7 +176,7 @@ struct UsernameMarketplaceService {
     /// seller-side change (typed `.priceChanged`).
     func purchase(name: String, expectedPriceCredits: UInt64) async throws {
         let (wallet, container, buyerId) = try requireOwnContext()
-        try await authorizer.authorize()
+        try await authorize()
         _ = try await wallet.purchaseDpnsName(
             purchaserIdentityId: buyerId,
             name: name,
@@ -184,7 +196,7 @@ struct UsernameMarketplaceService {
             throw ServiceError.contestedName
         }
         let (wallet, container, identityId) = try requireOwnContext()
-        try await authorizer.authorize()
+        try await authorize()
         _ = try await wallet.registerDpnsName(
             identityId: identityId,
             name: label,
@@ -212,7 +224,14 @@ struct UsernameMarketplaceService {
     @discardableResult
     func requestContestedName(label: String) async throws -> Date? {
         let (wallet, container, identityId) = try requireOwnContext()
-        try await authorizer.authorize()
+        // Capture the network BEFORE the PIN prompt and FFI awaits — a
+        // network switch mid-flight must not scope the bookmark to the
+        // newly-selected network (the network-explicit overload exists
+        // for exactly this).
+        guard let network = WalletEnvironment.network else {
+            throw ServiceError.noIdentity
+        }
+        try await authorize()
         _ = try await wallet.registerDpnsName(
             identityId: identityId,
             name: label,
@@ -221,15 +240,14 @@ struct UsernameMarketplaceService {
         // Bookmark BEFORE the vote-state read — Platform can legitimately
         // return nil until the contest is indexed, and the conservative
         // fallback deadline written here is what reconciliation leans on.
-        DWContestedNameStatusService.shared.recordSubmission(label: label)
+        DWContestedNameStatusService.shared.recordSubmission(label: label, network: network)
         do {
             _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
         } catch {
             Self.logger.warning("🏷️ MARKET :: syncContestedDpnsNames failed: \(String(describing: error), privacy: .public)")
         }
         var endTime: Date?
-        if let network = WalletEnvironment.network,
-           let state = try? await wallet.fetchContestVoteState(identityId: identityId, label: label) {
+        if let state = try? await wallet.fetchContestVoteState(identityId: identityId, label: label) {
             endTime = state.endTime
             DWContestedNameStatusService.shared.recordVotingEndTime(state.endTime, network: network)
         }
@@ -277,11 +295,11 @@ struct UsernameMarketplaceService {
         guard let sdk = SwiftDashSDKHost.shared.sdk else { return .unknown }
         do {
             let state = try await sdk.dpnsGetContestedVoteState(name: label)
-            if let winner = state["winner"] as? String {
-                // "LOCKED" or a winning identity's base58 id. A won label
-                // has a domain document, so the search path already shows
-                // it as taken; treat it as locked-for-registration too.
-                return winner == "LOCKED" ? .locked : .activeContest(contenders: 0)
+            if state["winner"] is String {
+                // "LOCKED" or a winning identity's base58 id. Either way
+                // the vote is over and nobody can register the label, so
+                // both resolve to locked-for-registration.
+                return .locked
             }
             let contenders = (state["contenders"] as? [[String: Any]]) ?? []
             return contenders.isEmpty ? .fresh : .activeContest(contenders: contenders.count)
@@ -332,7 +350,7 @@ struct UsernameMarketplaceService {
                 return NSLocalizedString("This username is not for sale.", comment: "Username marketplace")
             case .priceChanged:
                 return NSLocalizedString("The seller changed the price before your purchase was accepted. Review the new price and try again.", comment: "Username marketplace")
-            case .insufficientIdentityCredits(_, let required, let available):
+            case let .insufficientIdentityCredits(_, required, available):
                 return String.localizedStringWithFormat(
                     NSLocalizedString("Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again.", comment: "Username marketplace"),
                     (required / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol,
@@ -353,5 +371,20 @@ struct UsernameMarketplaceService {
             throw ServiceError.noIdentity
         }
         return (wallet, container, identityId)
+    }
+
+    /// PIN / biometric prompt with the authorizer's errors translated to
+    /// service errors, so a user cancellation stays distinguishable from
+    /// a failed marketplace action without callers importing the
+    /// authorizer's symbols (same shape as
+    /// `SwiftDashSDKContactsService.authorize()`).
+    private func authorize() async throws {
+        do {
+            try await authorizer.authorize()
+        } catch DWIdentityAuthorizer.AuthError.cancelled {
+            throw ServiceError.authCancelled
+        } catch {
+            throw ServiceError.authFailed
+        }
     }
 }

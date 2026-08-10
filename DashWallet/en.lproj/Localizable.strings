@@ -2569,6 +2569,9 @@
 /* Username marketplace: seller-clarity callout on the detail sheet */
 "This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price." = "This name is offered by an independent user on the Dash network — not by Dash or this app. The seller sets the price.";
 
+/* Username marketplace: listing price exceeds the representable maximum */
+"This price is too high to list." = "This price is too high to list.";
+
 /* Asset-lock retry: unsupported funding route */
 "This transfer can't be retried from here." = "This transfer can't be retried from here.";
 
@@ -2648,7 +2651,7 @@
 "Your history, organized" = "Your history, organized";
 
 /* Username marketplace */
-"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again.";
+"Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again." = "Your identity balance can't cover this purchase: %1$@ DASH needed (including a fee reserve), %2$@ DASH available. Top up your identity balance and try again.";
 
 /* DashPay FAQ */
 "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event.";

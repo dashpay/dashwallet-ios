@@ -79,12 +79,13 @@ final class UsernameMarketplaceViewModel: ObservableObject {
         myNames.filter { if case .owned = $0.status { return false }; return true }
     }
 
-    /// DPNS label shape: 3–63 characters, letters/digits/hyphen, no
-    /// leading or trailing hyphen.
+    /// DPNS label shape: 3–63 characters, ASCII letters/digits/hyphen,
+    /// no leading or trailing hyphen. ASCII only — `isLetter` alone
+    /// would admit unregistrable labels like "café".
     static func isValidLabel(_ label: String) -> Bool {
         guard (3...63).contains(label.count) else { return false }
         guard label.first != "-", label.last != "-" else { return false }
-        return label.allSatisfy { $0.isLetter || $0.isNumber || $0 == "-" }
+        return label.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-") }
     }
 
     func updateSearch() {
@@ -168,19 +169,26 @@ final class UsernameMarketplaceViewModel: ObservableObject {
         isPerformingAction = true
         Task { [weak self] in
             guard let self else { return }
-            defer { isPerformingAction = false }
             do {
                 try await operation()
+                isPerformingAction = false
                 withAnimation { successMessage = successText }
                 loadMyNames()
                 updateSearch()
-                try? await Task.sleep(nanoseconds: 2_500_000_000)
-                withAnimation {
-                    if successMessage == successText { successMessage = nil }
+                // Auto-hide in a detached task so the banner's 2.5 s
+                // doesn't keep the action buttons disabled.
+                Task { [weak self] in
+                    try? await Task.sleep(nanoseconds: 2_500_000_000)
+                    guard let self else { return }
+                    withAnimation {
+                        if successMessage == successText { successMessage = nil }
+                    }
                 }
-            } catch DWIdentityAuthorizer.AuthError.cancelled {
+            } catch UsernameMarketplaceService.ServiceError.authCancelled {
                 // Backing out of the PIN prompt is not an error state.
+                isPerformingAction = false
             } catch {
+                isPerformingAction = false
                 errorMessage = UsernameMarketplaceService.userFacingMessage(for: error)
             }
         }
@@ -364,7 +372,7 @@ struct UsernameMarketplaceScreen: View {
                         .lineLimit(1)
                 }
                 Spacer()
-                if let priceDuffs = name.priceDuffs {
+                if name.isForSale, let priceDuffs = name.priceDuffs {
                     VStack(alignment: .trailing, spacing: 1) {
                         Text(NSLocalizedString("For sale", comment: "Username marketplace: listed badge"))
                             .font(.system(size: 10, weight: .semibold))
@@ -854,7 +862,12 @@ private struct MarketplaceNameDetailSheet: View {
             titleVisibility: .visible
         ) {
             Button(NSLocalizedString("Buy", comment: "Username marketplace"), role: .none) {
-                let expected = name.priceCredits ?? 0
+                // The Buy button only renders for a listed name, but never
+                // let a nil price fall through as a 0-credit purchase.
+                guard let expected = name.priceCredits else {
+                    viewModel.errorMessage = NSLocalizedString("This username is not for sale.", comment: "Username marketplace")
+                    return
+                }
                 viewModel.perform(successText: String.localizedStringWithFormat(
                     NSLocalizedString("%@ is now yours", comment: "Username marketplace: purchase success"),
                     label)) {
@@ -1169,7 +1182,10 @@ private struct TransferNameSheet: View {
             run(recipientBase58: input)
             return
         }
-        guard let wallet = SwiftDashSDKHost.shared.wallet else { return }
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            resolveError = NSLocalizedString("Wallet is not ready", comment: "DashPay")
+            return
+        }
         isResolving = true
         Task {
             defer { isResolving = false }
@@ -1216,6 +1232,17 @@ private struct RegisterNameSheet: View {
         viewModel.contestedNames.contains {
             DWContestedNameStatusService.labelsMatch($0, label)
         }
+    }
+
+    /// Whether the identity balance covers the vote-resolution fund —
+    /// the same check `requestCostCard` renders, reused to keep the
+    /// submit button from offering a request that must fail.
+    private var canAffordRequest: Bool {
+        guard let identityId = viewModel.ownIdentityId,
+              let container = SwiftDashSDKHost.shared.modelContainer else { return false }
+        return UsernameMarketplaceService.identityBalanceCredits(
+            identityId: identityId, container: container)
+            > UsernameMarketplaceService.contestedFundCredits
     }
 
     var body: some View {
@@ -1282,8 +1309,7 @@ private struct RegisterNameSheet: View {
 
     // MARK: Contested request
 
-    @ViewBuilder
-    private var contestedContent: some View {
+    @ViewBuilder private var contestedContent: some View {
         Text(NSLocalizedString("Short names — 19 characters or fewer, letters and numbers only — aren't registered instantly. The Dash network votes on who gets them.", comment: "Username marketplace: contested request explainer, paragraph 1"))
             .font(.system(size: 14))
             .foregroundColor(.dash.secondaryText)
@@ -1331,13 +1357,14 @@ private struct RegisterNameSheet: View {
                 }
                 dismiss()
             }
+            .disabled(!canAffordRequest)
+            .opacity(canAffordRequest ? 1 : 0.55)
         }
     }
 
     /// The vote-resolution fund the request locks from the identity
     /// balance (a protocol constant), next to what's available.
-    @ViewBuilder
-    private var requestCostCard: some View {
+    @ViewBuilder private var requestCostCard: some View {
         let fund = UsernameMarketplaceService.contestedFundCredits
         let available: UInt64 = {
             guard let identityId = viewModel.ownIdentityId,
