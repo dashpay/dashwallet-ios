@@ -430,7 +430,33 @@ class Transaction: TransactionDataItem, Identifiable {
             ?? shieldedTransferAmountDuffs
             ?? platformFundingAmountDuffs
             ?? identityFundingAmountDuffs
+            ?? movedAmountDuffs
             ?? _dashAmount
+    }
+
+    /// The amount an UNTRACKED asset lock moved out of the transparent
+    /// UTXO set — the net-change model derives 0 for it (the credit
+    /// outputs live in the lock payload, not in the wallet's TXOs, so
+    /// everything visible is self change), which read as "0 DASH" on
+    /// the history row. The locked amount is exactly what left the
+    /// regular outputs: Σ(owned inputs) − Σ(owned outputs) − fee.
+    /// (Tracked funding locks — shielded / platform / identity — were
+    /// already overridden with their recorded amounts above.)
+    ///
+    /// Deliberately NOT applied to plain `.moved` self-sends: their
+    /// destination-vs-change split is not derivable from the owned
+    /// totals (change is owned too — reconstructing from owned outputs
+    /// showed a 1.2 DASH lock as its ~825 DASH change), so they keep
+    /// the honest net-change 0. CoinJoin mixing rows likewise keep
+    /// their net semantics.
+    private var movedAmountDuffs: UInt64? {
+        guard direction == .moved, !isCoinJoinMixing, _dashAmount == 0,
+              TransactionTypeKind(rawValue: snapshot.typeKind) == .assetLock,
+              snapshot.ownedInputAmount > 0 else { return nil }
+        let (nonLock, overflow) = snapshot.ownedOutputAmount
+            .addingReportingOverflow(snapshot.fee ?? 0)
+        guard !overflow, snapshot.ownedInputAmount > nonLock else { return nil }
+        return snapshot.ownedInputAmount - nonLock
     }
     var signedDashAmount: Int64 {
         if dashAmount == UInt64.max {
