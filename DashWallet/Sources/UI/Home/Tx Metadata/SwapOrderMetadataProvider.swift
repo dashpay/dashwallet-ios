@@ -65,9 +65,13 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     // MARK: - Private
 
     private func updateMetadata(from orders: [SwapOrder]) {
+        // One shared, `firstSeen`-ranged fetch feeds every order that needs
+        // the address+time buy matcher (the previous shape walked the ENTIRE
+        // wallet once per order, on every balance tick).
+        let matcherTransactions = buyMatcherTransactions(for: orders)
         var current: [Data: TxRowMetadata] = [:]
         for order in orders {
-            if let key = metadataKey(for: order) {
+            if let key = metadataKey(for: order, matcherTransactions: matcherTransactions) {
                 current[key] = makeMetadata(for: order)
             }
         }
@@ -85,28 +89,35 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
         }
     }
 
-    private func metadataKey(for order: SwapOrder) -> Data? {
+    private func metadataKey(for order: SwapOrder, matcherTransactions: [Transaction]) -> Data? {
         if order.direction == "sell" {
             return Data(hex: order.id).map { Data($0.reversed()) }
         } else {
+            // `outboundTxHash` is display-order hex; the row lives under its
+            // wire-order reversal — a point lookup on the txid index (the
+            // previous shape scanned the whole wallet for the hex match).
             if let outboundTxHash = order.outboundTxHash?.trimmingCharacters(in: .whitespacesAndNewlines),
                !outboundTxHash.isEmpty,
                let txHashData = Data(hex: outboundTxHash),
-               let matchingTx = SwiftDashSDKWalletSource.fetchAll().first(
-                    where: { $0.txHashHexString.caseInsensitiveCompare(outboundTxHash) == .orderedSame }
-               ),
+               let matchingTx = SwiftDashSDKWalletSource.fetch(txid: Data(txHashData.reversed())),
                SwapBuyTransactionMatcher.matchedTransaction(for: order, in: [matchingTx]) != nil {
                 return Data(txHashData.reversed())
             }
 
-            return walletTxHashData(for: order)
+            return SwapBuyTransactionMatcher.walletTxHashData(for: order, in: matcherTransactions)
         }
     }
 
-    private func walletTxHashData(for order: SwapOrder) -> Data? {
-        // SwiftDashSDK tx set; DashSync's allTransactions is frozen (empty) post-migration.
-        let transactions = SwiftDashSDKWalletSource.fetchAll()
-        return SwapBuyTransactionMatcher.walletTxHashData(for: order, in: transactions)
+    /// Candidate pool for the buy matcher: wallet transactions first seen at/
+    /// after the oldest buy order's fetch cutoff. Empty (and fetch-free) when
+    /// no order needs matching. SwiftDashSDK tx set; DashSync's
+    /// allTransactions is frozen (empty) post-migration.
+    private func buyMatcherTransactions(for orders: [SwapOrder]) -> [Transaction] {
+        let cutoffs = orders
+            .filter { $0.direction != "sell" }
+            .map(SwapBuyTransactionMatcher.fetchCutoff(for:))
+        guard let oldest = cutoffs.min() else { return [] }
+        return SwiftDashSDKWalletSource.fetchRecent(firstSeenSince: oldest)?.transactions ?? []
     }
 
     private func refreshMetadata() {

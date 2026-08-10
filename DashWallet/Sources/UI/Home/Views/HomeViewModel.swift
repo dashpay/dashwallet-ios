@@ -1316,21 +1316,26 @@ final class DWAppleWatchSnapshotProvider: NSObject {
 
     @objc
     static func hasWallet() -> Bool {
-        SwiftDashSDKWalletSource.fetchCurrentWalletSnapshot() != nil
+        SwiftDashSDKWalletSource.hasActiveWallet
     }
 
     /// The legacy bridge sent at most the account's 100 newest Core
     /// transactions. Keep that limit and ordering so existing watches receive
     /// the same archive shape and list semantics.
+    ///
+    /// The page is picked by `firstSeen` (the store's indexed timeline) and
+    /// then displayed in `date` order like before; the two only diverge by
+    /// the mempool→block timestamp skew, and never inside a 100-row window
+    /// that matters to a watch face. Scoping the fetch is what keeps a
+    /// context send from materializing a many-thousand-tx wallet.
     @objc
     static func recentTransactions() -> [DWAppleWatchTransactionSnapshot] {
-        guard let snapshot = SwiftDashSDKWalletSource.fetchCurrentWalletSnapshot() else {
+        guard let snapshot = SwiftDashSDKWalletSource.fetchRecent(limit: 100) else {
             return []
         }
 
         return snapshot.transactions
             .sorted { $0.date > $1.date }
-            .prefix(100)
             .map(makeSnapshot)
     }
 
@@ -1404,6 +1409,59 @@ class SwiftDashSDKWalletSource: TransactionSource {
     static func fetch(txid: Data) -> Transaction? {
         guard let (container, walletId) = hostHandles() else { return nil }
         return fetchOne(txid: txid, in: ModelContext(container), walletId: walletId)
+    }
+
+    /// The newest `limit` wallet transactions (`firstSeen` desc — the same
+    /// timeline the full snapshot is sorted by). Safe from any thread.
+    ///
+    /// Wallet-scoped in SQL against the `firstSeen` index (see
+    /// `scopedNewestFirst`), so callers that need a page of recent rows no
+    /// longer materialize the entire wallet the way
+    /// `fetchCurrentWalletSnapshot()` does.
+    static func fetchRecent(limit: Int) -> SwiftDashSDKWalletTransactionSnapshot? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        let transactions = scopedNewestFirst(
+            in: ModelContext(container), walletId: walletId,
+            minFirstSeen: 0, limit: limit)
+        return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: transactions)
+    }
+
+    /// Wallet transactions first seen at/after `cutoff` (`firstSeen` desc).
+    /// Safe from any thread.
+    ///
+    /// `firstSeen` is the SDK's observation stamp (wall clock when the tx
+    /// enters the mempool; the block timestamp once mined/restored), while
+    /// `Transaction.date` prefers the block timestamp — so callers matching
+    /// on the display date must pad `cutoff` with generous slack for that
+    /// skew rather than pass an exact bound (e.g.
+    /// `SwapBuyTransactionMatcher.fetchCutoff(for:)`).
+    static func fetchRecent(firstSeenSince cutoff: Date) -> SwiftDashSDKWalletTransactionSnapshot? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        let transactions = scopedNewestFirst(
+            in: ModelContext(container), walletId: walletId,
+            minFirstSeen: UInt64(max(0, cutoff.timeIntervalSince1970)), limit: nil)
+        return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: transactions)
+    }
+
+    /// The subset of wallet transactions whose txid (wire order) is in
+    /// `txids`, `firstSeen` desc. Safe from any thread. Point lookups on the
+    /// unique txid index — cost scales with `txids.count`, not with the
+    /// wallet's history size.
+    static func fetch(txids: Set<Data>) -> SwiftDashSDKWalletTransactionSnapshot? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        guard !txids.isEmpty else {
+            return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: [])
+        }
+        let context = ModelContext(container)
+        var descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { txids.contains($0.txid) },
+            sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
+        descriptor.relationshipKeyPathsForPrefetching = [\.outputs, \.inputs]
+        let rows = (try? context.fetch(descriptor)) ?? []
+        let transactions = rows
+            .filter { isWalletMember($0, walletId: walletId) }
+            .map { wrap($0, walletId: walletId) }
+        return SwiftDashSDKWalletTransactionSnapshot(walletId: walletId, transactions: transactions)
     }
 
     /// The active wallet's shielded operations as history items, for
@@ -1847,6 +1905,11 @@ class SwiftDashSDKWalletSource: TransactionSource {
         return row.account?.wallet.walletId == walletId
     }
 
+    /// Whether an active wallet is configured — the same truth
+    /// `fetchCurrentWalletSnapshot() != nil` reports, without materializing
+    /// every wallet transaction to learn it.
+    static var hasActiveWallet: Bool { hostHandles() != nil }
+
     /// The host is `@MainActor`-isolated; grab its container + active-wallet
     /// id in one brief main hop (two property reads — unlike the fetches,
     /// cheap enough to block a worker queue on). `ModelContainer` is
@@ -1878,59 +1941,160 @@ class SwiftDashSDKWalletSource: TransactionSource {
         var descriptor = FetchDescriptor<PersistentTransaction>(
             predicate: #Predicate { $0.txid == txid })
         descriptor.fetchLimit = 1
-        guard let row = (try? context.fetch(descriptor))?.first else {
+        guard let row = (try? context.fetch(descriptor))?.first,
+              isWalletMember(row, walletId: walletId) else {
             return nil
         }
-        // Membership can arrive through either side of the SDK's documented
-        // union: wallet-scoped TXOs or an account's involved-transactions
-        // relation. Accept both so an out-of-order receipt is not discarded.
-        guard row.outputs.contains(where: { $0.walletId == walletId })
+        return wrap(row, walletId: walletId)
+    }
+
+    /// Membership can arrive through either side of the SDK's documented
+    /// union: wallet-scoped TXOs or an account's involved-transactions
+    /// relation. Accept both so an out-of-order receipt is not discarded.
+    /// Reads relationships — call on the row's fetch thread.
+    private static func isWalletMember(_ row: PersistentTransaction, walletId: Data) -> Bool {
+        row.outputs.contains(where: { $0.walletId == walletId })
             || row.inputs.contains(where: { $0.walletId == walletId })
-            || row.involvedAccounts.contains(where: { $0.wallet.walletId == walletId }) else {
-            return nil
-        }
+            || row.involvedAccounts.contains(where: { $0.wallet.walletId == walletId })
+    }
+
+    /// Wrap a fetched row on its fetch thread, stamping the CoinJoin-mixing
+    /// classification (cached — see `cachedIsCoinJoinMixingTx`).
+    private static func wrap(_ row: PersistentTransaction, walletId: Data) -> Transaction {
         let tx = Transaction(persistentTransaction: row, walletId: walletId)
-        tx.sdkCoinJoinMixing = isCoinJoinMixingTx(row)
+        tx.sdkCoinJoinMixing = cachedIsCoinJoinMixingTx(row)
         return tx
     }
 
-    /// Every txid the active wallet participates in. Union the canonical TXO
-    /// membership with `PersistentAccount.involvedTransactions`, as required
-    /// by the SDK model: the latter closes out-of-order/payload-only indexing
-    /// gaps where the transaction record is saved before its TXO relationship
-    /// is available to the home timeline.
-    private static func activeWalletTxids(
+    /// SQL-scoped timeline fetch: wallet membership is evaluated inside the
+    /// store (EXISTS subqueries over the indexed `PersistentTxo.walletId`
+    /// denorm and the `involvedAccounts` join) while scanning the `firstSeen`
+    /// index newest-first, so only the returned rows are ever materialized —
+    /// unlike the full-wallet pass, whose cost is the whole history no matter
+    /// how few rows the caller needs.
+    ///
+    /// If SwiftData fails to translate the membership predicate (an OS
+    /// regression, not a data state), the fetch throws and we fall back to
+    /// the full-wallet pass — same results, old cost — and log it so the
+    /// regression is visible instead of silent.
+    private static func scopedNewestFirst(
         in context: ModelContext,
-        walletId: Data
-    ) -> Set<Data> {
-        let txoDescriptor = FetchDescriptor<PersistentTxo>(
-            predicate: #Predicate { $0.walletId == walletId })
-        let txos = (try? context.fetch(txoDescriptor)) ?? []
-        var txids = Set<Data>()
-        for txo in txos {
-            if let producing = txo.transaction { txids.insert(producing.txid) }
-            if let spending = txo.spendingTransaction { txids.insert(spending.txid) }
+        walletId: Data,
+        minFirstSeen: UInt64,
+        limit: Int?
+    ) -> [Transaction] {
+        var descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { tx in
+                tx.firstSeen >= minFirstSeen
+                    && (tx.outputs.contains(where: { $0.walletId == walletId })
+                        || tx.inputs.contains(where: { $0.walletId == walletId })
+                        || tx.involvedAccounts.contains(where: { $0.wallet.walletId == walletId }))
+            },
+            sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
+        if let limit { descriptor.fetchLimit = limit }
+        descriptor.relationshipKeyPathsForPrefetching = [\.outputs, \.inputs]
+        do {
+            return try context.fetch(descriptor).map { wrap($0, walletId: walletId) }
+        } catch {
+            DWLogger.log("SwiftDashSDKWalletSource: scoped fetch failed (\(error)); falling back to the full wallet pass")
+            return fetchAndWrap(in: context, walletId: walletId, minFirstSeen: minFirstSeen, limit: limit)
         }
+    }
 
+    /// Everything a wallet-wide wrap needs from the TXO table, computed in
+    /// one indexed scan with relationships prefetched: the member-txid union
+    /// AND the per-tx CoinJoin-account roles. Replaces the previous shape —
+    /// a txid walk plus a per-row `isCoinJoinMixingTx` traversal — whose
+    /// per-row relationship faults each cost a separate store round-trip
+    /// (multiple seconds of SwiftData CPU on a CoinJoin-heavy wallet).
+    private struct WalletTxRollup {
+        /// Every txid the wallet participates in: the canonical TXO union
+        /// plus `PersistentAccount.involvedTransactions` (payload-only
+        /// membership — see the SDK model doc on `PersistentTransaction`).
+        var txids: Set<Data> = []
+        /// Txids classified as CoinJoin mixing operations — the same rules
+        /// as `isCoinJoinMixingTx`, evaluated from the wallet's own TXO
+        /// roles (matching DashSync's per-wallet-account grouping; another
+        /// on-device wallet's stake in a shared tx doesn't classify ours).
+        var mixingTxids: Set<Data> = []
+    }
+
+    private static func walletTxRollup(in context: ModelContext, walletId: Data) -> WalletTxRollup {
+        var txoDescriptor = FetchDescriptor<PersistentTxo>(
+            predicate: #Predicate { $0.walletId == walletId })
+        txoDescriptor.relationshipKeyPathsForPrefetching = [
+            \.transaction, \.spendingTransaction, \.coreAddress, \.account,
+        ]
+        let txos = (try? context.fetch(txoDescriptor)) ?? []
+
+        var rollup = WalletTxRollup()
+        // The three classification ingredients (rules 1–3 of
+        // `isCoinJoinMixingTx`), accumulated per txid.
+        var kindOrDepositMixing: Set<Data> = []
+        var spendsCoinJoin: Set<Data> = []
+        var depositsToStandard: Set<Data> = []
+        for txo in txos {
+            let ownerType = ownerAccountType(txo)
+            if let producing = txo.transaction {
+                rollup.txids.insert(producing.txid)
+                if producing.typedKind == .coinJoin || ownerType == coinJoinAccountType {
+                    kindOrDepositMixing.insert(producing.txid)
+                }
+                if ownerType == standardAccountType {
+                    depositsToStandard.insert(producing.txid)
+                }
+            }
+            if let spending = txo.spendingTransaction {
+                rollup.txids.insert(spending.txid)
+                if spending.typedKind == .coinJoin {
+                    kindOrDepositMixing.insert(spending.txid)
+                }
+                if ownerType == coinJoinAccountType {
+                    spendsCoinJoin.insert(spending.txid)
+                }
+            }
+        }
+        rollup.mixingTxids = kindOrDepositMixing
+            .union(spendsCoinJoin.subtracting(depositsToStandard))
+
+        // Payload-only membership (e.g. a ProRegTx matched purely through
+        // its payload keys) is only representable via
+        // `PersistentAccount.involvedTransactions`; union it in, as the SDK
+        // model requires. Nearly every row here is already realized by the
+        // TXO prefetch above, so this walk no longer faults the store per tx.
         var walletDescriptor = FetchDescriptor<PersistentWallet>(
             predicate: #Predicate { $0.walletId == walletId })
         walletDescriptor.fetchLimit = 1
         if let wallet = (try? context.fetch(walletDescriptor))?.first {
             for account in wallet.accounts {
                 for transaction in account.involvedTransactions {
-                    txids.insert(transaction.txid)
+                    rollup.txids.insert(transaction.txid)
+                    if transaction.typedKind == .coinJoin {
+                        rollup.mixingTxids.insert(transaction.txid)
+                    }
                 }
             }
         }
-        return txids
+        return rollup
     }
 
-    private static func fetchAndWrap(in context: ModelContext, walletId: Data) -> [Transaction] {
-        let txids = activeWalletTxids(in: context, walletId: walletId)
-        guard !txids.isEmpty else { return [] }
-        let descriptor = FetchDescriptor<PersistentTransaction>(
-            predicate: #Predicate { txids.contains($0.txid) },
+    private static func fetchAndWrap(
+        in context: ModelContext,
+        walletId: Data,
+        minFirstSeen: UInt64 = 0,
+        limit: Int? = nil
+    ) -> [Transaction] {
+        let rollup = walletTxRollup(in: context, walletId: walletId)
+        guard !rollup.txids.isEmpty else { return [] }
+        let txids = rollup.txids
+        var descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { txids.contains($0.txid) && $0.firstSeen >= minFirstSeen },
             sortBy: [SortDescriptor(\.firstSeen, order: .reverse)])
+        if let limit { descriptor.fetchLimit = limit }
+        // Prefetch what the wrap reads (`SDKSnapshot` walks `outputs` +
+        // `inputs`) — without this every wrapped row costs two more store
+        // round-trips.
+        descriptor.relationshipKeyPathsForPrefetching = [\.outputs, \.inputs]
         let rows: [PersistentTransaction]
         do {
             rows = try context.fetch(descriptor)
@@ -1940,7 +2104,11 @@ class SwiftDashSDKWalletSource: TransactionSource {
         }
         return rows.map { row -> Transaction in
             let tx = Transaction(persistentTransaction: row, walletId: walletId)
-            tx.sdkCoinJoinMixing = Self.isCoinJoinMixingTx(row)
+            let isMixing = rollup.mixingTxids.contains(row.txid)
+            tx.sdkCoinJoinMixing = isMixing
+            // Seed the per-row cache so subsequent scoped fetches skip the
+            // relationship traversal for rows this pass already classified.
+            storeMixingClassification(txid: row.txid, stamp: row.lastUpdated, isMixing: isMixing)
             return tx
         }
     }
@@ -1948,6 +2116,43 @@ class SwiftDashSDKWalletSource: TransactionSource {
     // PersistentAccount.accountType discriminants (stable across releases).
     private static let coinJoinAccountType: UInt32 = 1 // 0=Standard(BIP44/BIP32), 1=CoinJoin
     private static let standardAccountType: UInt32 = 0
+
+    /// CoinJoin-mixing classification cache for the per-row (scoped) fetch
+    /// paths, keyed by txid and stamped with the row's `lastUpdated` — the
+    /// persistence handler bumps that on every re-upsert, so an entry
+    /// self-invalidates the next time the SDK actually rewrites the row.
+    /// Guarded by `mixingCacheLock` (entries are written from whichever
+    /// thread fetched the row). Capacity-bounded: population tracks wallet
+    /// size, and blowing the bound just resets to a cold cache.
+    private static let mixingCacheLock = NSLock()
+    private static var mixingCache: [Data: (stamp: Date, isMixing: Bool)] = [:]
+    private static let mixingCacheCapacity = 20_000
+
+    private static func storeMixingClassification(txid: Data, stamp: Date, isMixing: Bool) {
+        mixingCacheLock.lock()
+        defer { mixingCacheLock.unlock() }
+        if mixingCache.count >= mixingCacheCapacity, mixingCache[txid] == nil {
+            mixingCache.removeAll(keepingCapacity: true)
+        }
+        mixingCache[txid] = (stamp, isMixing)
+    }
+
+    /// Cached front for `isCoinJoinMixingTx` on the scoped fetch paths: a
+    /// hit skips the relationship traversal entirely; a miss computes and
+    /// seeds. Must run on the row's fetch thread (the compute path traverses
+    /// relationships). The full-wallet pass doesn't call this — it derives
+    /// every classification from its single TXO scan and seeds the cache.
+    private static func cachedIsCoinJoinMixingTx(_ row: PersistentTransaction) -> Bool {
+        let txid = row.txid
+        let stamp = row.lastUpdated
+        mixingCacheLock.lock()
+        let hit = mixingCache[txid]
+        mixingCacheLock.unlock()
+        if let hit, hit.stamp == stamp { return hit.isMixing }
+        let isMixing = isCoinJoinMixingTx(row)
+        storeMixingClassification(txid: txid, stamp: stamp, isMixing: isMixing)
+        return isMixing
+    }
 
     /// Account type owning a TXO — canonical path is `coreAddress?.account`;
     /// `account` is the fallback used before the address row is linked.
@@ -1957,7 +2162,10 @@ class SwiftDashSDKWalletSource: TransactionSource {
 
     /// CoinJoin mixing-operation detection. Traverses SwiftData relationships,
     /// so it must run on the thread that owns the row's `ModelContext` (the
-    /// fetch thread). DashSync grouped by CoinJoin-account *role*, not tx
+    /// fetch thread). Called per row only on scoped-fetch cache misses (see
+    /// `cachedIsCoinJoinMixingTx`); the full-wallet pass evaluates these same
+    /// rules set-wise in `walletTxRollup` — keep the two in lockstep.
+    /// DashSync grouped by CoinJoin-account *role*, not tx
     /// structure, so the SDK's structural `typedKind` (mixing rounds only) is
     /// too narrow. We classify a tx as a mixing operation when:
     ///   1. it DEPOSITS into the CoinJoin account (≥1 CoinJoin output) — covers

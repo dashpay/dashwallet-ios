@@ -213,7 +213,11 @@ final class SwapTrackingService {
     private func completedWalletTxHash(for order: SwapOrder) -> String? {
         // Read the wallet's transactions from SwiftDashSDK; DashSync's allTransactions is frozen
         // (empty) post-migration, so a buy's incoming DASH would never match.
-        let transactions = SwiftDashSDKWalletSource.fetchAll()
+        // The matcher only considers rows around the order's own time, so
+        // range the fetch by `firstSeen` instead of walking the wallet.
+        let transactions = SwiftDashSDKWalletSource
+            .fetchRecent(firstSeenSince: SwapBuyTransactionMatcher.fetchCutoff(for: order))?
+            .transactions ?? []
         return SwapBuyTransactionMatcher.walletTxHashHexString(for: order, in: transactions)
     }
 }
