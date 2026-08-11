@@ -13298,7 +13298,7 @@
 /* Begin XCLocalSwiftPackageReference section */
 		3F660CFDC68A3BB11096E81F /* XCLocalSwiftPackageReference "swift-sdk" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../platform/packages/swift-sdk";
+			relativePath = "../platform-dashpay-legacy-keys/packages/swift-sdk";
 		};
 /* End XCLocalSwiftPackageReference section */
 
