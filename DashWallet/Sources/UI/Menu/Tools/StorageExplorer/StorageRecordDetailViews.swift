@@ -58,6 +58,10 @@ private func jsonString(_ data: Data?) -> String? {
 struct IdentityStorageDetailView: View {
     let record: PersistentIdentity
 
+    #if DASHPAY
+    @StateObject private var reloadModel = StorageIdentityReloadModel()
+    #endif
+
     var body: some View {
         Form {
             Section("Core") {
@@ -91,6 +95,28 @@ struct IdentityStorageDetailView: View {
         }
         .navigationTitle("Identity")
         .navigationBarTitleDisplayMode(.inline)
+        #if DASHPAY
+        // Pull-to-refresh re-fetches this identity from Platform — the
+        // local rows (public keys especially) lag keys added on another
+        // device. @Query keeps the form live as the reload persists. The
+        // toolbar button is the same action with a visible affordance.
+        .refreshable { await reloadModel.reload(identityIndex: record.identityIndex) }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task { await reloadModel.reload(identityIndex: record.identityIndex) }
+                } label: {
+                    if reloadModel.isReloading {
+                        SwiftUI.ProgressView()
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                }
+                .disabled(reloadModel.isReloading)
+                .accessibilityLabel(Text("Refresh from Platform"))
+            }
+        }
+        #endif
     }
 }
 

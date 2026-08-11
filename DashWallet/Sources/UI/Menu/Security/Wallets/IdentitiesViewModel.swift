@@ -193,6 +193,31 @@ final class IdentitiesViewModel: ObservableObject {
     /// identity's balance, and backfill a DPNS name for rows that have
     /// none (silent — not every identity has a name). Mirrors the example
     /// app's `IdentityRow.refreshBalance`, batched over the whole list.
+    /// Re-fetch one wallet-owned identity from Platform — public keys
+    /// included — via the Rust load pipeline, then rebuild the rows. The
+    /// persisted key rows lag keys added on another device; this is the
+    /// user-facing "refresh my identity's keys" action (Identities →
+    /// detail → Public keys). Only identities of the ACTIVE wallet can be
+    /// reloaded: `loadIdentity(atIndex:)` probes the active wallet's DIP-9
+    /// tree. The wallet linkage is the gate — deliberately NOT `isLocal`,
+    /// which persisted rows have been observed to carry as false for the
+    /// wallet's own identity. Returns false for other wallets' rows.
+    @discardableResult
+    func refreshIdentityKeys(for row: IdentityRowModel) async -> Bool {
+        guard let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              row.walletId == activeWalletId else {
+            DWLogger.log("IdentitiesViewModel: key refresh skipped — identity \(row.idBase58) is not the active wallet's (walletId=\(row.walletId?.hexEncodedString() ?? "nil"))")
+            return false
+        }
+        #if DASHPAY
+        await DWIdentityReloader.reload(identityIndex: row.identityIndex)
+        reload()
+        return true
+        #else
+        return false
+        #endif
+    }
+
     func refreshFromNetwork() async {
         guard !isRefreshing else { return }
         guard let sdk = SwiftDashSDKHost.shared.sdk,
