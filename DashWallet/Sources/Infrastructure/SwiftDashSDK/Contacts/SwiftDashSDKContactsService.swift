@@ -792,6 +792,37 @@ final class SwiftDashSDKContactsService: ObservableObject {
         return missing
     }
 
+    /// Identity ids whose DIP-15 pair Platform has confirmed enabled this
+    /// session. Platform never silently removes keys (they can only be
+    /// explicitly disabled), so one confirmation spares a network query on
+    /// every subsequent tab load.
+    private var platformConfirmedDashPayIdentities: Set<Data> = []
+
+    /// Authoritative Platform-side count of the missing DIP-15 keys. The
+    /// local SwiftData key rows lag when the pair was added from another
+    /// device — `missingDashPayKeyCount()` alone would keep showing the
+    /// "Enable DashPay" intro for an identity that is already enabled.
+    /// Returns nil when the query can't run (no SDK / no identity / network
+    /// error); callers keep the local answer then.
+    func missingDashPayKeyCountOnPlatform() async -> Int? {
+        guard let sdk = SwiftDashSDKHost.shared.sdk,
+              let ownerId = DWCurrentUserIdentityInfo.shared.identityId else {
+            return nil
+        }
+        if platformConfirmedDashPayIdentities.contains(ownerId) { return 0 }
+        do {
+            let keysById = try await sdk.identityGetKeys(identityId: ownerId.toBase58String())
+            let missing = DWIdentityKeyUpgrader.missingDashPayPurposes(inPlatformKeysById: keysById).count
+            if missing == 0 {
+                platformConfirmedDashPayIdentities.insert(ownerId)
+            }
+            return missing
+        } catch {
+            Self.logger.error("👥 CONTACTS :: platform DashPay-key re-check failed: \(String(describing: error), privacy: .public)")
+            return nil
+        }
+    }
+
     /// Estimated network fee for the enable-DashPay IdentityUpdate, in
     /// duffs (1 duff = 1000 credits): the platform fee schedule's
     /// `identity_update` minimum (100,000 credits) plus

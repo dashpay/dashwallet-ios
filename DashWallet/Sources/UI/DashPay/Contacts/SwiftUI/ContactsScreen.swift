@@ -111,11 +111,31 @@ final class ContactsViewModel: ObservableObject {
         service.refresh()
         missingDashPayKeyCount = service.missingDashPayKeyCount()
         needsDashPayEnable = missingDashPayKeyCount > 0
+        reconcileDashPayEnableWithPlatform()
         let info = DWCurrentUserIdentityInfo.shared
         ownDisplayName = info.displayName
         ownUsername = info.username?.withoutDashSuffix
         ownAvatarURL = info.avatarURL
         ownIdentitySeed = info.identityId ?? Data()
+    }
+
+    /// Guards `reconcileDashPayEnableWithPlatform` against overlapping
+    /// checks when `refresh()` fires in bursts.
+    private var platformKeyCheckInFlight = false
+
+    /// The local key rows lag an "Enable DashPay" done on another device.
+    /// When they claim the DIP-15 pair is missing, confirm against
+    /// Platform's authoritative key set and correct the intro — most
+    /// importantly clearing it for an identity that is already enabled.
+    private func reconcileDashPayEnableWithPlatform() {
+        guard needsDashPayEnable, !platformKeyCheckInFlight else { return }
+        platformKeyCheckInFlight = true
+        Task {
+            defer { platformKeyCheckInFlight = false }
+            guard let missing = await service.missingDashPayKeyCountOnPlatform() else { return }
+            missingDashPayKeyCount = missing
+            needsDashPayEnable = missing > 0
+        }
     }
 
     /// Estimated IdentityUpdate fee for the confirm sheet, sized to the

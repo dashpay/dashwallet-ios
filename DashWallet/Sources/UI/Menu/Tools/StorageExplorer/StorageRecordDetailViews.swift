@@ -91,6 +91,12 @@ struct IdentityStorageDetailView: View {
         }
         .navigationTitle("Identity")
         .navigationBarTitleDisplayMode(.inline)
+        #if DASHPAY
+        // Pull-to-refresh re-fetches this identity from Platform — the
+        // local rows (public keys especially) lag keys added on another
+        // device. @Query keeps the form live as the reload persists.
+        .refreshable { await DWIdentityReloader.reload(identityIndex: record.identityIndex) }
+        #endif
     }
 }
 

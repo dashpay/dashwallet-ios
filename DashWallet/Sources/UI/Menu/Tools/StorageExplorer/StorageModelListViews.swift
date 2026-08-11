@@ -83,6 +83,11 @@ struct PublicKeyStorageListView: View {
         }
         .navigationTitle("Public Keys (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "key") } }
+        #if DASHPAY
+        // Pull-to-refresh re-fetches the current user's identity from
+        // Platform so keys added on another device appear here.
+        .refreshable { await DWIdentityReloader.reloadCurrentUserIdentity() }
+        #endif
     }
 }
 
