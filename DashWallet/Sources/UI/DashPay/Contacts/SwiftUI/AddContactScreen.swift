@@ -35,8 +35,19 @@ struct ContactCandidate: Identifiable, Equatable {
 
 struct AddContactScreen: View {
     @Environment(\.dismiss) private var dismiss
+    @FocusState private var isSearchFocused: Bool
 
     @State private var query: String
+
+    private enum Layout {
+        static let searchFieldHeight: CGFloat = 52
+        static let searchHeaderTopPadding: CGFloat = 12
+        static let searchHeaderHeight = searchFieldHeight + searchHeaderTopPadding
+    }
+
+    private enum ScrollTarget: Hashable {
+        case searchField
+    }
 
     /// `initialQuery` prefills the search (the Contacts tab's network
     /// teaser hands its text over); the search fires on appear so the
@@ -79,18 +90,49 @@ struct AddContactScreen: View {
         NavigationStack {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
-                VStack(spacing: 0) {
-                    header
-                    ContactsSearchField(
-                        placeholder: NSLocalizedString("Search by username", comment: "DashPay Contacts"),
-                        text: $query,
-                        height: 52)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 22)
-                    qrButtonsRow
-                        .padding(.horizontal, 24)
-                        .padding(.top, 12)
-                    resultsList
+                GeometryReader { geometry in
+                    ScrollViewReader { scrollProxy in
+                        ScrollView {
+                            LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                                header
+
+                                Section {
+                                    LazyVStack(spacing: 0) {
+                                        qrButtonsRow
+                                            .padding(.horizontal, 24)
+                                            .padding(.top, 12)
+                                        resultsList
+                                    }
+                                    // Keep the search anchor reachable even before a
+                                    // short/empty result set has enough content to scroll.
+                                    .frame(
+                                        minHeight: max(0, geometry.size.height - Layout.searchHeaderHeight),
+                                        alignment: .top)
+                                } header: {
+                                    ContactsSearchField(
+                                        placeholder: NSLocalizedString("Search by username", comment: "DashPay Contacts"),
+                                        text: $query,
+                                        height: Layout.searchFieldHeight,
+                                        focus: $isSearchFocused)
+                                        .padding(.horizontal, 24)
+                                        .padding(.top, Layout.searchHeaderTopPadding)
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color.dash.primaryBackground)
+                                        .id(ScrollTarget.searchField)
+                                        .zIndex(1)
+                                }
+                            }
+                        }
+                        .onChange(of: isSearchFocused) { _, focused in
+                            guard focused else { return }
+                            Task { @MainActor in
+                                await Task.yield()
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    scrollProxy.scrollTo(ScrollTarget.searchField, anchor: .top)
+                                }
+                            }
+                        }
+                    }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -237,35 +279,33 @@ struct AddContactScreen: View {
 
     @ViewBuilder
     private var resultsList: some View {
-        ScrollView {
-            LazyVStack(spacing: 6) {
-                if isSearching {
-                    SwiftUI.ProgressView()
-                        .padding(.top, 32)
-                } else if results.isEmpty && trimmedQuery.count >= 2 {
-                    Text(NSLocalizedString("No usernames found", comment: "DashPay Contacts"))
-                        .font(.system(size: 14))
-                        .foregroundColor(.dash.secondaryText)
-                        .padding(.top, 32)
-                } else if trimmedQuery.count < 2 && !trimmedQuery.isEmpty {
-                    Text(NSLocalizedString("Type at least 2 characters to search usernames", comment: "DashPay Contacts"))
-                        .font(.system(size: 14))
-                        .foregroundColor(.dash.secondaryText)
-                        .padding(.top, 32)
-                }
-                ForEach(results) { result in
-                    resultRow(result)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.dash.secondaryBackground))
-                        .contentShape(Rectangle())
-                        .onTapGesture { previewTarget = candidate(result) }
-                        .onAppear { checkEligibilityIfNeeded(id: result.identityId) }
-                }
+        LazyVStack(spacing: 6) {
+            if isSearching {
+                SwiftUI.ProgressView()
+                    .padding(.top, 32)
+            } else if results.isEmpty && trimmedQuery.count >= 2 {
+                Text(NSLocalizedString("No usernames found", comment: "DashPay Contacts"))
+                    .font(.system(size: 14))
+                    .foregroundColor(.dash.secondaryText)
+                    .padding(.top, 32)
+            } else if trimmedQuery.count < 2 && !trimmedQuery.isEmpty {
+                Text(NSLocalizedString("Type at least 2 characters to search usernames", comment: "DashPay Contacts"))
+                    .font(.system(size: 14))
+                    .foregroundColor(.dash.secondaryText)
+                    .padding(.top, 32)
             }
-            .padding(.horizontal, 15)
-            .padding(.top, 16)
+            ForEach(results) { result in
+                resultRow(result)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(Color.dash.secondaryBackground))
+                    .contentShape(Rectangle())
+                    .onTapGesture { previewTarget = candidate(result) }
+                    .onAppear { checkEligibilityIfNeeded(id: result.identityId) }
+            }
         }
+        .padding(.horizontal, 15)
+        .padding(.top, 16)
     }
 
     // MARK: Rows

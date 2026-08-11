@@ -129,6 +129,9 @@ struct ContactsSearchField: View {
     let placeholder: String
     @Binding var text: String
     var height: CGFloat = 45
+    var focus: FocusState<Bool>.Binding? = nil
+
+    @FocusState private var internalFocus: Bool
 
     var body: some View {
         HStack(spacing: 10) {
@@ -138,6 +141,7 @@ struct ContactsSearchField: View {
                 .font(.system(size: 15))
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
+                .focused(focus ?? $internalFocus)
             if !text.isEmpty {
                 Button {
                     text = ""
