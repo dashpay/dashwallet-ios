@@ -202,8 +202,13 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     @objc func notificationAction() {
         // Notifications are backed by the SwiftDashSDK contacts service.
-        let controller = UIHostingController(rootView: NotificationsScreen())
-        navigationController?.pushViewController(controller, animated: true)
+        guard let navigation = navigationController,
+              navigation.topViewController === self else { return }
+        let screen = NotificationsScreen(onBack: { [weak navigation] in
+            navigation?.popViewController(animated: true)
+        })
+        let controller = UIHostingController(rootView: screen)
+        navigation.pushViewController(controller, animated: true)
     }
 
     @objc func profileAction() {
