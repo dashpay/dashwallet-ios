@@ -74,11 +74,19 @@ struct DataContractStorageListView: View {
 /// detail (per-record reload).
 @MainActor
 final class StorageIdentityReloadModel: ObservableObject {
+    /// Drives the toolbar refresh button's spinner/disabled state (the
+    /// pull-to-refresh gesture has its own built-in indicator).
+    @Published private(set) var isReloading = false
+
     func reloadCurrentUserIdentity() async {
+        isReloading = true
+        defer { isReloading = false }
         await DWIdentityReloader.reloadCurrentUserIdentity()
     }
 
     func reload(identityIndex: UInt32) async {
+        isReloading = true
+        defer { isReloading = false }
         await DWIdentityReloader.reload(identityIndex: identityIndex)
     }
 
@@ -88,6 +96,8 @@ final class StorageIdentityReloadModel: ObservableObject {
     /// skipped: `loadIdentity(atIndex:)` probes the wallet's own DIP-9
     /// tree and cannot refresh an identity this wallet doesn't own.
     func reloadAllLocalIdentities() async {
+        isReloading = true
+        defer { isReloading = false }
         guard let modelContainer = SwiftDashSDKHost.shared.modelContainer else { return }
         let descriptor = FetchDescriptor<PersistentIdentity>(
             predicate: #Predicate { $0.isLocal })
@@ -122,8 +132,24 @@ struct PublicKeyStorageListView: View {
         #if DASHPAY
         // Pull-to-refresh re-fetches every wallet-owned identity from
         // Platform so keys added on another device appear here — the
-        // list spans identities, not just the current user's.
+        // list spans identities, not just the current user's. The toolbar
+        // button is the same action with a visible affordance.
         .refreshable { await reloadModel.reloadAllLocalIdentities() }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task { await reloadModel.reloadAllLocalIdentities() }
+                } label: {
+                    if reloadModel.isReloading {
+                        SwiftUI.ProgressView()
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                }
+                .disabled(reloadModel.isReloading)
+                .accessibilityLabel(Text("Refresh from Platform"))
+            }
+        }
         #endif
     }
 }
