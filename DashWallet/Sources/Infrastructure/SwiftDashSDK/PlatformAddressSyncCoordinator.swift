@@ -900,11 +900,13 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
 #if DASHPAY
         // A restored seed can already own a Platform identity even though this
-        // install's SwiftData store is empty. Recover it as part of the
-        // serialized runtime start so the wallet handle cannot be torn down
-        // mid-FFI scan, and reconcile the DashPay tabs/banner in this session.
-        // The coordinator is best-effort and owns its error logging; identity
-        // recovery must never turn a healthy BLAST start into a sync failure.
+        // install's SwiftData store is empty. Recovery now runs as step 1 of
+        // `DashPayContactAddressReadiness`, ahead of Core SPV, because the
+        // contacts and contact accounts that depend on it have to exist before
+        // the first filter set is built. This call stays as the backstop for
+        // the orders that do not go through the SPV coordinator — a Platform
+        // sync re-arm, or an SPV start that failed — and is a no-op once the
+        // identity has been adopted.
         if let container = SwiftDashSDKHost.shared.modelContainer {
             await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
                 wallet: resolvedWallet,

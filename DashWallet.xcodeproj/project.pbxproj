@@ -114,6 +114,7 @@
 		9E51F3B86C207A15D2B84E60 /* DashPayUserLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D0A7C21B5E39F04A11C2D57 /* DashPayUserLink.swift */; };
 		1F3FF21B0295D5A326F08B74 /* OrderPreviewFeeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */; };
 		1FAFEA3F516E6CBDD2B49010 /* SwiftDashSDKContactsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02357928871603392E797C9A /* SwiftDashSDKContactsService.swift */; };
+		5ADPR0012E4A0000000000B1 /* DashPayContactAddressReadiness.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ADPR0012E4A0000000000F1 /* DashPayContactAddressReadiness.swift */; };
 		215F9BB0CAADF4D47D95C444 /* DWAvatarUploadClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E2D975669CB53883D56803 /* DWAvatarUploadClientTests.swift */; };
 		2284B63F1C7BD28F0012ECDF /* BRAWKeypad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */; };
 		22B03841025A55A573432CC9 /* WalletAccountsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285B961142AB3AFF2442F4EB /* WalletAccountsScreen.swift */; };
@@ -2006,6 +2007,7 @@
 /* Begin PBXFileReference section */
 		01D55D0FA9AE953CD23DE6B6 /* DWIdentityRegistrationController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWIdentityRegistrationController.swift; sourceTree = "<group>"; };
 		02357928871603392E797C9A /* SwiftDashSDKContactsService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKContactsService.swift; sourceTree = "<group>"; };
+		5ADPR0012E4A0000000000F1 /* DashPayContactAddressReadiness.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DashPayContactAddressReadiness.swift; sourceTree = "<group>"; };
 		0286D4D1CADBBD51F09BE8E8 /* SwapMenuStyles.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwapMenuStyles.swift; sourceTree = "<group>"; };
 		0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporter.swift; sourceTree = "<group>"; };
 		05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferConfirmSheet.swift; sourceTree = "<group>"; };
@@ -6710,6 +6712,7 @@
 				2CE7E8766B8C1601A85AAB4F /* ContactItem.swift */,
 				4D0A7C21B5E39F04A11C2D57 /* DashPayUserLink.swift */,
 				02357928871603392E797C9A /* SwiftDashSDKContactsService.swift */,
+				5ADPR0012E4A0000000000F1 /* DashPayContactAddressReadiness.swift */,
 			);
 			path = Contacts;
 			sourceTree = "<group>";
@@ -11137,6 +11140,7 @@
 				1CDA90D00719D6249F2761AC /* ContactItem.swift in Sources */,
 				9E51F3B86C207A15D2B84E60 /* DashPayUserLink.swift in Sources */,
 				1FAFEA3F516E6CBDD2B49010 /* SwiftDashSDKContactsService.swift in Sources */,
+				5ADPR0012E4A0000000000B1 /* DashPayContactAddressReadiness.swift in Sources */,
 				1C887F21B0826303D34B8D90 /* ContactsScreen.swift in Sources */,
 				07B6BD15F525AAF000B53162 /* AddContactScreen.swift in Sources */,
 				5A64964A3AC243EFA1E525D7 /* ContactProfileSheet.swift in Sources */,

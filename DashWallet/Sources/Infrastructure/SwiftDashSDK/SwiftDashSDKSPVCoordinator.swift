@@ -216,16 +216,51 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     // MARK: - Implementation
 
+    /// Whether SPV is already up on `network`, so a repeated start is a no-op.
+    ///
+    /// One home for the condition: both the pre-start DashPay readiness pass
+    /// and the shared start path elide their work on it, and they must agree —
+    /// a readiness pass that ran while the start it precedes was elided would
+    /// be pure latency.
+    @MainActor
+    private func isAlreadyRunning(manager: PlatformWalletManager, network: Network) -> Bool {
+        (try? manager.isSpvRunning()) == true && runningNetwork == network
+    }
+
     @MainActor
     private func performStart(for network: Network) async -> Result<Void, Error> {
         let host = SwiftDashSDKHost.shared
         let manager: PlatformWalletManager
+        let wallet: ManagedPlatformWallet
         do {
-            (manager, _) = try host.start(network: network)
+            (manager, wallet) = try host.start(network: network)
         } catch {
             Self.logger.error("🛰️ SPVCOORD :: host.start failed: \(String(describing: error), privacy: .public)")
             return .failure(StartError.walletImport(error))
         }
+
+#if DASHPAY
+        // Startup order: identity → contacts → contact accounts → core sync.
+        // A contact's DIP-15 addresses must be watched before the first filter
+        // set is built, or a payment in an already-scanned block is invisible
+        // until the DIP-15 rescan repairs it. Bounded by its own budget and
+        // best-effort throughout: whatever isn't ready in time is left to that
+        // rescan, exactly as before this call existed.
+        //
+        // Deliberately here and not in the shared `performStart(manager:for:)`
+        // — a Core-only restart re-enters that one, and it must not pay for a
+        // Platform round trip it cannot benefit from.
+        //
+        // Skipped when SPV is already up on this network: the start that
+        // brought it up already ran this pass, and the shared path below
+        // elides its own work on the same condition. Without this check a
+        // repeated start would wait out the SDK's whole startup budget only
+        // to reach a guard that returns immediately.
+        if !isAlreadyRunning(manager: manager, network: network) {
+            await DashPayContactAddressReadiness.awaitReady(
+                manager: manager, wallet: wallet, network: network)
+        }
+#endif
 
         return await performStart(manager: manager, for: network)
     }
@@ -238,7 +273,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // If SPV is already running on this network, treat it as a
         // success. Mirrors `SwiftDashSDKWalletRuntime.shouldSkipRefresh`'s
         // start-elision intent.
-        if (try? manager.isSpvRunning()) == true, runningNetwork == network {
+        if isAlreadyRunning(manager: manager, network: network) {
             Self.logger.info("🛰️ SPVCOORD :: already running on \(network.rawValue, privacy: .public)")
             return .success(())
         }
