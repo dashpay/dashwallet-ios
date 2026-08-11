@@ -552,6 +552,19 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
     @MainActor
     private func applyProgress(_ p: PlatformSpvSyncProgress) {
+        // Everything below runs on the main actor, once per progress tick
+        // (~1Hz for as long as any sync phase advances), and reaches
+        // synchronous FFI and a main-context SwiftData fetch. Nothing here has
+        // ever been timed, so a uniform app-wide stutter during sync has no
+        // way of being attributed. Measured here rather than assumed.
+        let tickStartedAt = Date()
+        defer {
+            let heldMs = Int(Date().timeIntervalSince(tickStartedAt) * 1000)
+            if heldMs >= 50 {
+                Self.logger.warning(
+                    "🛰️ SPVCOORD :: progress tick held the main thread \(heldMs, privacy: .public)ms")
+            }
+        }
         let mappedState = mapState(p.overallState)
         let translated = SPVSyncProgress(
             state: mappedState,
@@ -603,6 +616,17 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// publisher was removed in the SDK refactor, so the bridge replaces it.
     @MainActor
     private func refreshBalanceBridge() {
+        // Timed separately from the tick: this is the FFI half, and knowing
+        // which half is expensive decides whether the fix is throttling the
+        // tick or moving the read off the main actor.
+        let startedAt = Date()
+        defer {
+            let ms = Int(Date().timeIntervalSince(startedAt) * 1000)
+            if ms >= 50 {
+                Self.logger.warning(
+                    "🛰️ SPVCOORD :: balance bridge held the main thread \(ms, privacy: .public)ms")
+            }
+        }
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             SwiftDashSDKWalletState.shared.clearBalance()
             return
