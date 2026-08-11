@@ -240,6 +240,12 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)setupView {
+    self.model = [[DWRecoverModel alloc] initWithAction:self.action];
+
+    // ResetPin mode proves ownership before (re)setting the PIN; when no PIN
+    // record exists (partial keychain restore, interrupted setup) there is
+    // nothing to "reset", so the copy says "set".
+    const BOOL hasPinSet = self.model.hasPinSet;
     switch (self.action) {
         case DWRecoverAction_Recover:
             self.title = NSLocalizedString(@"Recover Wallet", nil);
@@ -248,11 +254,11 @@ NS_ASSUME_NONNULL_BEGIN
             self.title = NSLocalizedString(@"Wipe Wallet", nil);
             break;
         case DWRecoverAction_ResetPin:
-            self.title = NSLocalizedString(@"Reset PIN", nil);
+            self.title = hasPinSet
+                             ? NSLocalizedString(@"Reset PIN", nil)
+                             : NSLocalizedString(@"Set PIN", nil);
             break;
     }
-
-    self.model = [[DWRecoverModel alloc] initWithAction:self.action];
 
     self.actionButton.enabled = NO;
 
@@ -260,9 +266,14 @@ NS_ASSUME_NONNULL_BEGIN
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     contentView.model = self.model;
     contentView.delegate = self;
-    contentView.title = (self.action == DWRecoverAction_ResetPin)
-                            ? NSLocalizedString(@"Enter your recovery phrase to reset your PIN", nil)
-                            : NSLocalizedString(@"Enter Recovery Phrase", nil);
+    if (self.action == DWRecoverAction_ResetPin) {
+        contentView.title = hasPinSet
+                                ? NSLocalizedString(@"Enter your recovery phrase to reset your PIN", nil)
+                                : NSLocalizedString(@"Enter your recovery phrase to set a new PIN", nil);
+    }
+    else {
+        contentView.title = NSLocalizedString(@"Enter Recovery Phrase", nil);
+    }
     [self.scrollView addSubview:contentView];
     self.contentView = contentView;
 

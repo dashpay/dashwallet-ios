@@ -128,6 +128,12 @@ NS_ASSUME_NONNULL_BEGIN
     
     [[DWVersionManager sharedInstance] migrateUserDefaults];
     [[DWAuthenticationService shared] enableAuthenticationIfNeeded];
+#ifdef DEBUG
+    // QA fixture: fabricate the wallet-without-PIN keychain state (partial
+    // restore / interrupted setup) to exercise the lock screen's Set PIN
+    // routing. No-op unless QA_DROP_PIN_RECORDS=1 is in the environment.
+    [DWAuthenticationService debugDropPinRecordsIfRequested];
+#endif
 
     // Advance the PIN-lockout clock to the wall clock at every launch, so a
     // lockout keeps elapsing even fully offline (Bug #2 — DashSync's own
