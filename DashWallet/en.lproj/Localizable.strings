@@ -194,6 +194,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -797,6 +800,9 @@
 /* Username marketplace: activity overlay while the purchase transition runs */
 "Completing your purchase…" = "Completing your purchase…";
 
+/* Usernames */
+"Register username" = "Register username";
+
 /* Username marketplace: activity overlay while the delist transition runs */
 "Removing the listing…" = "Removing the listing…";
 
@@ -811,6 +817,9 @@
 
 /* Usernames */
 "The temporary username must not itself require voting." = "The temporary username must not itself require voting.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name.";
 
 /* Usernames */
 "This username would also require voting — try adding a digit between 2 and 9" = "This username would also require voting — try adding a digit between 2 and 9";
@@ -2821,6 +2830,9 @@
 /* Username marketplace: purchase confirmation body with seller clarity */
 "You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately.";
 
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames.";
+
 /* DashPay: body of the enable success sheet */
 "You're all set. Other users can now send you contact requests — and you can send yours." = "You're all set. Other users can now send you contact requests — and you can send yours.";
 
@@ -4458,6 +4470,9 @@
 
 /* Usernames */
 "Your temporary username “%@” could not be registered. You can register another username later." = "Your temporary username “%@” could not be registered. You can register another username later.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames.";
 
 /* Usernames */
 "“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance.";

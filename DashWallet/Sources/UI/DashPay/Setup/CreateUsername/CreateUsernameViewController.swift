@@ -334,6 +334,7 @@ struct CreateUsernameView: View {
         .sheet(isPresented: $showContestedConfirmation) {
             ContestedNameConfirmationSheet(
                 viewModel: viewModel,
+                temporaryField: viewModel.temporaryField,
                 onSubmit: { temporaryUsername in
                     confirmContestedSubmission(temporaryUsername: temporaryUsername)
                 },
@@ -924,11 +925,11 @@ struct CreateUsernameView: View {
 /// swiping the sheet down cancels the submission entirely.
 private struct ContestedNameConfirmationSheet: View {
     @ObservedObject var viewModel: CreateUsernameViewModel
+    @ObservedObject var temporaryField: TemporaryUsernameFieldModel
     /// Called with the validated temporary username, or nil for
     /// "continue without one". The caller dismisses the sheet.
     let onSubmit: (String?) -> Void
     let onCancel: () -> Void
-    @FocusState private var isTemporaryFieldFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -958,27 +959,16 @@ private struct ContestedNameConfirmationSheet: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 4)
 
-                    TextInput(
-                        label: NSLocalizedString("Temporary username", comment: "Usernames"),
-                        text: $viewModel.temporaryUsername,
-                        autocapitalization: .never)
+                    TemporaryUsernameField(model: temporaryField)
                         .padding(.top, 16)
-                        .focused($isTemporaryFieldFocused)
-
-                    if temporaryRuleResult != .hidden {
-                        ValidationCheck(
-                            validationResult: temporaryRuleResult,
-                            text: temporaryRuleText
-                        ).padding(.top, 16)
-                    }
                 }
             }
 
             DashButton(
                 text: NSLocalizedString("Submit both usernames", comment: "Usernames"),
-                isEnabled: viewModel.temporaryUsernameCheck == .available
+                isEnabled: temporaryField.check == .available
             ) {
-                onSubmit(viewModel.temporaryUsername.trimmingCharacters(in: .whitespacesAndNewlines))
+                onSubmit(temporaryField.trimmedText)
             }
             .padding(.top, 8)
 
@@ -1002,27 +992,57 @@ private struct ContestedNameConfirmationSheet: View {
         .padding(.bottom, 20)
         .presentationDetents([.large])
         .onAppear {
-            viewModel.prepareTemporaryUsernameSuggestion()
-            isTemporaryFieldFocused = true
+            temporaryField.seedSuggestion(from: viewModel.username)
         }
     }
 
     /// The join-the-vote wording only holds while the join window is
     /// still open; past it (or with no known contest) the generic
     /// contested message is the honest one — same rule as the alert
-    /// this sheet replaced.
+    /// this sheet replaced. Both variants state the real fee semantics:
+    /// the contest fee is SPENT at submission (it prefunds the vote
+    /// poll's specialized balance, whose leftover goes to the network's
+    /// processing pools at poll end — see rs-drive-abci's
+    /// `clean_up_after_contested_resources_vote_polls_end`), never
+    /// locked-and-returned.
     private var voteMessage: String {
         viewModel.activeContestContenders != nil && !viewModel.activeContestJoinClosed
             ? NSLocalizedString(
-                "A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes.",
+                "A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name.",
                 comment: "Usernames")
             : NSLocalizedString(
-                "This name requires voting. Your Dash will be locked until voting completes.",
+                "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name.",
                 comment: "Usernames")
     }
+}
 
-    private var temporaryRuleResult: UsernameValidationRuleResult {
-        switch viewModel.temporaryUsernameCheck {
+// MARK: - TemporaryUsernameField
+
+/// TextInput + single validation rule row for a temporary-username
+/// field, bound to a `TemporaryUsernameFieldModel`. Shared by the
+/// contested confirmation sheet above and `UsernameRequestStatusScreen`'s
+/// register section so the two surfaces render the same rules.
+struct TemporaryUsernameField: View {
+    @ObservedObject var model: TemporaryUsernameFieldModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            TextInput(
+                label: NSLocalizedString("Temporary username", comment: "Usernames"),
+                text: $model.text,
+                autocapitalization: .never)
+
+            if ruleResult != .hidden {
+                ValidationCheck(
+                    validationResult: ruleResult,
+                    text: ruleText
+                ).padding(.top, 16)
+            }
+        }
+    }
+
+    private var ruleResult: UsernameValidationRuleResult {
+        switch model.check {
         case .empty:
             return .hidden
         case .invalidLength, .invalidCharacters, .stillContested:
@@ -1038,8 +1058,8 @@ private struct ContestedNameConfirmationSheet: View {
         }
     }
 
-    private var temporaryRuleText: String {
-        switch viewModel.temporaryUsernameCheck {
+    private var ruleText: String {
+        switch model.check {
         case .empty:
             return ""
         case .invalidLength:
