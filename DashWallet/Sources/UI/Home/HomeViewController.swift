@@ -556,7 +556,9 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             },
             negativeButtonText: NSLocalizedString("Later", comment: "CoinJoin"),
             negativeButtonAction: {
-                self.viewModel.showCoinJoinSweepDialog = false
+                // Persisted: stops the per-launch re-prompt until new mixed
+                // coins arrive; the Tools/Settings row stays available.
+                self.viewModel.deferCoinJoinSweep()
             }
         )
     }
