@@ -502,6 +502,13 @@ extension TXDetailViewController {
             if retry.supportsRemoval {
                 currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
             }
+        } else if model.supportsUnconfirmedRemoval {
+            // Any other transaction stuck in mempool context (a
+            // network-dropped classic send — e.g. a stalled CoinJoin sweep
+            // chunk) gets the removal action alone: there is no retry
+            // route for it, but deleting the local row frees its inputs.
+            currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
+            currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
         }
         currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)

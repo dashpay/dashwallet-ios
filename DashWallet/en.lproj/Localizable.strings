@@ -1303,6 +1303,9 @@
 /* No comment provided by engineer. */
 "Delete Wallet?" = "Delete Wallet?";
 
+/* SPV diagnostics */
+"Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network." = "Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network.";
+
 /* Location Service Status */
 "Denied" = "Denied";
 
@@ -1386,6 +1389,24 @@
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
 "DPNS Names" = "DPNS Names";
+
+/* SPV diagnostics */
+"Drop & rescan" = "Drop & rescan";
+
+/* SPV diagnostics */
+"Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network." = "Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network.";
+
+/* SPV diagnostics */
+"Drop Unconfirmed & Rescan" = "Drop Unconfirmed & Rescan";
+
+/* SPV diagnostics */
+"Drop unconfirmed transactions?" = "Drop unconfirmed transactions?";
+
+/* SPV diagnostics */
+"Dropped %d unconfirmed transaction(s) — rescanning recent filters, watch the Filters row." = "Dropped %d unconfirmed transaction(s) — rescanning recent filters, watch the Filters row.";
+
+/* SPV diagnostics */
+"Dropping…" = "Dropping…";
 
 /* CrowdNode */
 "Due to CrowdNode’s terms of service users can withdraw no more than:" = "Due to CrowdNode’s terms of service users can withdraw no more than:";
@@ -2843,6 +2864,9 @@
 
 /* (List of) New (notifications) */
 "New" = "New";
+
+/* SPV diagnostics */
+"No unconfirmed transactions to drop." = "No unconfirmed transactions to drop.";
 
 /* CrowdNode */
 "New CrowdNode Account" = "New CrowdNode Account";
@@ -4673,6 +4697,12 @@
 
 /* Voting */
 "Unblocked '%@' username" = "Unblocked '%@' username";
+
+/* SPV diagnostics */
+"Unconfirmed now" = "Unconfirmed now";
+
+/* SPV diagnostics */
+"Unconfirmed Transactions" = "Unconfirmed Transactions";
 
 /* DashPay Contacts */
 "Unhide Contact" = "Unhide Contact";
