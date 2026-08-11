@@ -90,19 +90,20 @@ final class StorageIdentityReloadModel: ObservableObject {
         await DWIdentityReloader.reload(identityIndex: identityIndex)
     }
 
-    /// Reload every local (wallet-owned) identity — the Public Keys list
+    /// Reload every identity of the ACTIVE wallet — the Public Keys list
     /// spans identities, so refreshing only the current user's would leave
-    /// the others' keys stale. Foreign identities (`isLocal == false`) are
-    /// skipped: `loadIdentity(atIndex:)` probes the wallet's own DIP-9
-    /// tree and cannot refresh an identity this wallet doesn't own.
+    /// the others' keys stale. Scoped by the wallet linkage (NOT `isLocal`,
+    /// which persisted rows have been observed carrying as false for the
+    /// wallet's own identity): `loadIdentity(atIndex:)` probes the active
+    /// wallet's DIP-9 tree and cannot refresh other wallets' identities.
     func reloadAllLocalIdentities() async {
         isReloading = true
         defer { isReloading = false }
-        guard let modelContainer = SwiftDashSDKHost.shared.modelContainer else { return }
-        let descriptor = FetchDescriptor<PersistentIdentity>(
-            predicate: #Predicate { $0.isLocal })
-        let rows = (try? modelContainer.mainContext.fetch(descriptor)) ?? []
-        for index in Set(rows.map(\.identityIndex)).sorted() {
+        guard let modelContainer = SwiftDashSDKHost.shared.modelContainer,
+              let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId else { return }
+        let rows = (try? modelContainer.mainContext.fetch(FetchDescriptor<PersistentIdentity>())) ?? []
+        let indexes = Set(rows.filter { $0.wallet?.walletId == activeWalletId }.map(\.identityIndex))
+        for index in indexes.sorted() {
             await DWIdentityReloader.reload(identityIndex: index)
         }
     }

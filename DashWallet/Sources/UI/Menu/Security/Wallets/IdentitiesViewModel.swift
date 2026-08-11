@@ -199,11 +199,16 @@ final class IdentitiesViewModel: ObservableObject {
     /// user-facing "refresh my identity's keys" action (Identities →
     /// detail → Public keys). Only identities of the ACTIVE wallet can be
     /// reloaded: `loadIdentity(atIndex:)` probes the active wallet's DIP-9
-    /// tree. Returns false for foreign identities or other wallets' rows.
+    /// tree. The wallet linkage is the gate — deliberately NOT `isLocal`,
+    /// which persisted rows have been observed to carry as false for the
+    /// wallet's own identity. Returns false for other wallets' rows.
     @discardableResult
     func refreshIdentityKeys(for row: IdentityRowModel) async -> Bool {
-        guard row.isLocal,
-              row.walletId == SwiftDashSDKHost.shared.wallet?.walletId else { return false }
+        guard let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              row.walletId == activeWalletId else {
+            DWLogger.log("IdentitiesViewModel: key refresh skipped — identity \(row.idBase58) is not the active wallet's (walletId=\(row.walletId?.hexEncodedString() ?? "nil"))")
+            return false
+        }
         #if DASHPAY
         await DWIdentityReloader.reload(identityIndex: row.identityIndex)
         reload()

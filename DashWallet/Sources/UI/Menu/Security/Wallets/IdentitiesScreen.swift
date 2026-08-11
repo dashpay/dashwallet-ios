@@ -719,9 +719,11 @@ struct IdentityPublicKeysScreen: View {
     }
 
     /// Refreshing probes the active wallet's DIP-9 tree, so only its own
-    /// identities can be reloaded; the affordance hides otherwise.
+    /// identities can be reloaded; the affordance hides otherwise. Gated
+    /// on the wallet linkage, NOT `isLocal` — persisted rows have been
+    /// observed carrying `isLocal == false` for the wallet's own identity.
     private var canRefresh: Bool {
-        row.isLocal && row.walletId == SwiftDashSDKHost.shared.wallet?.walletId
+        row.walletId != nil && row.walletId == SwiftDashSDKHost.shared.wallet?.walletId
     }
 
     private func refreshKeys() async {
