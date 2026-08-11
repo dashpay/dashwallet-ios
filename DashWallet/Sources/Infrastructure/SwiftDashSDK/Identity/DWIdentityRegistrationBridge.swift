@@ -133,6 +133,15 @@ public final class DWIdentityRegistrationBridge: NSObject {
     /// surface for what is effectively SwiftDashSDK-path-only state.
     @objc public var preferredFundingSource: DWIdentityFundingSource = .core
 
+    /// Non-contested companion ("temporary") username to register in the
+    /// same flow as a contested submission — see
+    /// `DWIdentityRegistrationCoordinator.startCreateUsername`'s
+    /// `temporaryUsername` parameter. Same lifecycle as
+    /// `preferredFundingSource`: written by the SwiftUI form right before
+    /// submit (nil for a plain submission), preserved across `.failed` so
+    /// a retry keeps the user's choice, reset on `.completed`.
+    @objc public var pendingTemporaryUsername: String?
+
     // MARK: - Subscriptions
 
     private var coordinatorSubscription: AnyCancellable?
@@ -155,12 +164,14 @@ public final class DWIdentityRegistrationBridge: NSObject {
         completion: @escaping (String?, NSError?) -> Void
     ) {
         let source = preferredFundingSource
-        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public)")
+        let temporaryUsername = pendingTemporaryUsername
+        Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public)")
         Task { @MainActor in
             do {
                 let identityId = try await DWIdentityRegistrationCoordinator.shared.startCreateUsername(
                     username,
-                    fundingSource: source)
+                    fundingSource: source,
+                    temporaryUsername: temporaryUsername)
                 let hex = identityId.map { String(format: "%02x", $0) }.joined()
                 completion(hex, nil)
             } catch {
@@ -176,12 +187,14 @@ public final class DWIdentityRegistrationBridge: NSObject {
         completion: @escaping (String?, NSError?) -> Void
     ) {
         let source = preferredFundingSource
+        let temporaryUsername = pendingTemporaryUsername
         Self.logger.info("🪪 IDENT-BRIDGE :: retry username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public)")
         Task { @MainActor in
             do {
                 let identityId = try await DWIdentityRegistrationCoordinator.shared.retry(
                     username,
-                    fundingSource: source)
+                    fundingSource: source,
+                    temporaryUsername: temporaryUsername)
                 let hex = identityId.map { String(format: "%02x", $0) }.joined()
                 completion(hex, nil)
             } catch {
@@ -282,6 +295,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         // strand a PP-only wallet on a path that has no Core balance.
         if case .completed = phase {
             preferredFundingSource = .core
+            pendingTemporaryUsername = nil
         }
 
         // Internal notification — DWDashPayModel observes this,
