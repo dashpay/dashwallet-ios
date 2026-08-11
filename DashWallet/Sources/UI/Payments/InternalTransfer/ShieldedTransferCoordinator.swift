@@ -190,6 +190,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     @Published private(set) var phase: Phase = .idle
 
+    /// The typed error behind the current `.failed(_)` phase. `Phase`
+    /// carries only display text (that's what the confirm sheets render), so
+    /// programmatic callers that must branch on the *kind* of failure —
+    /// `AssetLockRecoveryService` telling a PIN cancel from a real error —
+    /// read the error itself here rather than matching localized strings.
+    /// Cleared when a transfer starts and on `reset()`.
+    private(set) var lastFailure: Error?
+
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.shielded-transfer")
@@ -231,6 +239,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case authCancelled
         case authFailed
         case amountBelowCoreToShieldedMinimum(UInt64)
+        case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
         case transferFailed(Error)
@@ -262,6 +271,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
                         "The minimum amount you can send is %@",
                         comment: "Core to Shielded minimum amount"),
                     formattedMinimum)
+            case .platformShieldCapacityChanged(let maxShieldableCredits):
+                guard let maxShieldableCredits else {
+                    return NSLocalizedString(
+                        "Your available Platform balance changed, but the new maximum could not be checked. Return to the amount and try again.",
+                        comment: "Platform Shield capacity changed but refresh failed")
+                }
+                let maximum = (maxShieldableCredits / 1000)
+                    .formattedDashAmountWithoutCurrencySymbol
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Your available Platform balance changed. The new maximum is %@ DASH. Review and confirm the transfer again.",
+                        comment: "Platform Shield capacity changed before authorization"),
+                    maximum)
             case .shieldedSweepWaiting(let credits):
                 let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
                 return String.localizedStringWithFormat(
@@ -456,6 +478,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         stopAssetLockPolling()
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route completed")
         phase = .success
+        ShieldedTxLookup.shared.refresh()
+        NotificationCenter.default.post(
+            name: .swiftDashSDKTransactionProjectionDidChange,
+            object: nil)
         scheduleShieldedResync(manager: env.manager)
     }
 
@@ -497,6 +523,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // no asset-lock polling: there's no new lock to track).
         phase = .proving
 
+        let terminalPhase: Phase
         do {
             let recipient = ShieldedFundFromAssetLockRecipient(
                 recipientRaw43: recipientOverride ?? env.shieldedRecipient,
@@ -506,9 +533,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 outPointTxid: outPointTxidWire,
                 outPointVout: outPointVout,
                 recipients: [recipient])
+            terminalPhase = .success
         } catch {
-            handleSpendError(error, manager: env.manager)
-            return
+            guard let mappedPhase = Self.alreadyConsumedAssetLockResumePhase(for: error) else {
+                handleSpendError(error, manager: env.manager)
+                return
+            }
+            // A DAPI endpoint reported this exact outpoint as consumed, but
+            // rejection responses are not quorum-authenticated. Rust retains
+            // the ChainLock proof and records nonterminal consumption-unknown
+            // state, so suppress retries without claiming verified success.
+            terminalPhase = mappedPhase
+            Self.logger.info("🛡️ SHIELD-TX :: resume found asset lock reported consumed — completion remains unconfirmed")
         }
 
         Self.logger.info("🛡️ SHIELD-TX :: resume completed")
@@ -516,8 +552,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // .broadcasting so the step checklist completes naturally (mirrors
         // `performShield`). No intermediate signal exists for this opaque call.
         phase = .broadcasting
-        phase = .success
+        phase = terminalPhase
+        ShieldedTxLookup.shared.refresh()
+        NotificationCenter.default.post(
+            name: .swiftDashSDKTransactionProjectionDidChange,
+            object: nil)
         scheduleShieldedResync(manager: env.manager)
+    }
+
+    /// Both a local `Consumed` tombstone and a remote already-consumed report
+    /// arrive through this typed error. Neither proves that this particular
+    /// shield completed, so both suppress retry without claiming success.
+    static func alreadyConsumedAssetLockResumePhase(for error: Error) -> Phase? {
+        if case PlatformWalletError.assetLockAlreadyConsumed = error {
+            return .submittedUnconfirmed
+        }
+        return nil
     }
 
     /// Parse a `PersistentAssetLock.outPointHex` ("<txid display hex>:<vout>")
@@ -586,6 +636,26 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
+        // Revalidate the frozen confirmation amount against the same Rust
+        // selector immediately before asking for authentication or building a
+        // proof. The form's cached preflight can become stale while Confirm is
+        // open, but the confirmed amount must never be reduced silently.
+        do {
+            let preflight = try await PlatformAddressSyncCoordinator.shared.preflightShield()
+            let capacity = PlatformShieldCapacity(preflight)
+            guard PlatformShieldAmountPolicy.canSubmit(
+                requestedCredits: amountCredits,
+                capacity: capacity)
+            else {
+                handleFailure(CoordinatorError.platformShieldCapacityChanged(
+                    maxShieldableCredits: capacity.maxShieldableCredits))
+                return
+            }
+        } catch {
+            handleFailure(CoordinatorError.transferFailed(error))
+            return
+        }
+
         do {
             try await authorize()
         } catch {
@@ -607,6 +677,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 amount: amountCredits,
                 addressSigner: signer)
         } catch {
+            if case PlatformWalletError.shieldedInsufficientBalance = error {
+                handleFailure(CoordinatorError.platformShieldCapacityChanged(
+                    maxShieldableCredits: nil))
+                // The rejection came from live Platform state while the
+                // preflight reads cache, so another immediate preflight would
+                // only repeat the stale maximum. Refresh the address cache and
+                // let its published balance re-arm the form preflight.
+                schedulePlatformResync()
+                return
+            }
             handleSpendError(error, manager: env.manager)
             return
         }
@@ -1064,6 +1144,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     func reset() {
         stopAssetLockPolling()
         lastAssetLockOutPoint = nil
+        lastFailure = nil
         phase = .idle
     }
 
@@ -1134,6 +1215,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// first caller wins atomically and the second sees `.signing` + bails.
     private func beginTransfer() -> Bool {
         guard phase == .idle else { return false }
+        lastFailure = nil
         phase = .signing
         return true
     }
@@ -1153,6 +1235,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     private func handleFailure(_ error: Error) {
         Self.logger.error("🛡️ SHIELD-TX :: failure \(String(describing: error), privacy: .public)")
+        lastFailure = error
         let message: String
         if let local = error as? LocalizedError, let description = local.errorDescription {
             message = description

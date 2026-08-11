@@ -161,7 +161,23 @@ class Transaction: TransactionDataItem, Identifiable {
     /// account — see `SwiftDashSDKWalletSource.isCoinJoinMixingTx`), NOT just
     /// the SDK's structural `typedKind`, which only tags the mixing *rounds*
     /// and misses create-denomination / collateral / mixing-fee txs.
-    var isCoinJoinMixing: Bool { sdkCoinJoinMixing }
+    ///
+    /// Asset-lock funding transfers (Shielded / Platform / identity) are
+    /// excluded even when they draw on the CoinJoin account: draining mixed
+    /// funds is a transfer *out of* mixing, not a mixing operation, and must
+    /// render as its own Internal Transfer row instead of folding into the
+    /// "Mixing Transactions" group.
+    var isCoinJoinMixing: Bool { sdkCoinJoinMixing && !isCoinJoinFundedTransfer }
+
+    /// True when this asset-lock funding transfer drew on the CoinJoin
+    /// account (mixed funds moving out) rather than the Standard account.
+    /// Rides the role-computed mixing flag: for an asset-lock funding tx that
+    /// flag is set exactly when its inputs or change touch the CoinJoin
+    /// account — a BIP44/BIP32-funded transfer never sets it.
+    var isCoinJoinFundedTransfer: Bool {
+        sdkCoinJoinMixing
+            && (isShieldedTransfer || isPlatformFundingTransfer || isIdentityFundingTransfer)
+    }
 
     /// Raw signed wallet net change (duffs). Used to total a CoinJoin mixing
     /// group's cost: summing this across the group yields the net wallet
@@ -307,15 +323,6 @@ class Transaction: TransactionDataItem, Identifiable {
 
     private var identityFundingAmountDuffs: UInt64? { identityFundingLockInfo?.amountDuffs }
 
-    /// Locked amount for an asset lock reconstructed from raw tx bytes after
-    /// a restore (`ShieldedTxLookup.reconstructedLockInfo`): the destination
-    /// is unprovable, so the row keeps its generic "Internal Transfer"
-    /// presentation, but the amount is consensus-parsed truth instead of the
-    /// 0 the net-change view derives for a self-directed lock.
-    private var reconstructedLockAmountDuffs: UInt64? {
-        ShieldedTxLookup.shared.reconstructedLockInfo(forTxidHex: shieldedDisplayTxid)?.amountDuffs
-    }
-
     /// True when this is the funding tx of an identity registration/top-up/
     /// invitation.
     var isIdentityFundingTransfer: Bool { identityFundingLockInfo != nil }
@@ -325,6 +332,17 @@ class Transaction: TransactionDataItem, Identifiable {
     var isPendingIdentityFunding: Bool {
         guard let status = identityFundingLockInfo?.statusRaw else { return false }
         return (1...3).contains(status)
+    }
+
+    /// The subset of pending identity fundings whose recovery lives in the
+    /// Join DashPay registration flow (types 0 registration / 3 invitation —
+    /// the ones `AssetLockRecoveryService` deliberately does NOT handle).
+    /// Only these get the home row's "tap to finish" routing into that flow;
+    /// a pending top-up (1/2) recovers from the tx detail sheet instead.
+    var isPendingIdentityRegistration: Bool {
+        guard isPendingIdentityFunding,
+              let type = identityFundingLockInfo?.fundingTypeRaw else { return false }
+        return type == 0 || type == 3
     }
 
     /// True when this incoming tx is the L1 payout of a Shielded → Core
@@ -398,7 +416,7 @@ class Transaction: TransactionDataItem, Identifiable {
         // asset lock; surface the real locked amount the SDK recorded
         // instead of the 0 the generic logic below derives for a
         // self-directed move.
-        if let locked = shieldedTransferAmountDuffs ?? platformFundingAmountDuffs ?? identityFundingAmountDuffs ?? reconstructedLockAmountDuffs { return locked }
+        if let locked = shieldedTransferAmountDuffs ?? platformFundingAmountDuffs ?? identityFundingAmountDuffs { return locked }
         let fee = Int64(snapshot.fee ?? 0)
         switch direction {
         case .received:
@@ -428,8 +446,33 @@ class Transaction: TransactionDataItem, Identifiable {
             ?? shieldedTransferAmountDuffs
             ?? platformFundingAmountDuffs
             ?? identityFundingAmountDuffs
-            ?? reconstructedLockAmountDuffs
+            ?? movedAmountDuffs
             ?? _dashAmount
+    }
+
+    /// The amount an UNTRACKED asset lock moved out of the transparent
+    /// UTXO set — the net-change model derives 0 for it (the credit
+    /// outputs live in the lock payload, not in the wallet's TXOs, so
+    /// everything visible is self change), which read as "0 DASH" on
+    /// the history row. The locked amount is exactly what left the
+    /// regular outputs: Σ(owned inputs) − Σ(owned outputs) − fee.
+    /// (Tracked funding locks — shielded / platform / identity — were
+    /// already overridden with their recorded amounts above.)
+    ///
+    /// Deliberately NOT applied to plain `.moved` self-sends: their
+    /// destination-vs-change split is not derivable from the owned
+    /// totals (change is owned too — reconstructing from owned outputs
+    /// showed a 1.2 DASH lock as its ~825 DASH change), so they keep
+    /// the honest net-change 0. CoinJoin mixing rows likewise keep
+    /// their net semantics.
+    private var movedAmountDuffs: UInt64? {
+        guard direction == .moved, !isCoinJoinMixing, _dashAmount == 0,
+              TransactionTypeKind(rawValue: snapshot.typeKind) == .assetLock,
+              snapshot.ownedInputAmount > 0 else { return nil }
+        let (nonLock, overflow) = snapshot.ownedOutputAmount
+            .addingReportingOverflow(snapshot.fee ?? 0)
+        guard !overflow, snapshot.ownedInputAmount > nonLock else { return nil }
+        return snapshot.ownedInputAmount - nonLock
     }
     var signedDashAmount: Int64 {
         if dashAmount == UInt64.max {
@@ -464,7 +507,7 @@ class Transaction: TransactionDataItem, Identifiable {
         // The shielded / DashPay-payment amount is read live (see
         // `dashAmount`), so compute its fiat live too; other rows keep the
         // lazily-cached value.
-        if dashPayPayment != nil || shieldedTransferAmountDuffs != nil || platformFundingAmountDuffs != nil || identityFundingAmountDuffs != nil || reconstructedLockAmountDuffs != nil {
+        if dashPayPayment != nil || shieldedTransferAmountDuffs != nil || platformFundingAmountDuffs != nil || identityFundingAmountDuffs != nil {
             return userInfo?.fiatAmountString(from: dashAmount) ?? NSLocalizedString("Not available", comment: "")
         }
         return storedFiatAmount

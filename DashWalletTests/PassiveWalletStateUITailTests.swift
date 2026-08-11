@@ -5,12 +5,24 @@
 //  Copyright © 2026 Dash Core Group. All rights reserved.
 //
 
-import Combine
-import XCTest
 @testable import dashwallet
+import Combine
+import SwiftDashSDK
+import XCTest
 
 @MainActor
 final class PassiveWalletStateUITailTests: XCTestCase {
+
+    func testAlreadyConsumedAssetLockMapsToUnconfirmedResume() {
+        let error = PlatformWalletError.assetLockAlreadyConsumed("test outpoint")
+
+        XCTAssertEqual(
+            ShieldedTransferCoordinator.alreadyConsumedAssetLockResumePhase(for: error),
+            .submittedUnconfirmed)
+        XCTAssertNil(
+            ShieldedTransferCoordinator.alreadyConsumedAssetLockResumePhase(
+                for: PlatformWalletError.invalidParameter("unrelated")))
+    }
 
     func testHomeBalanceChangesSkipInitialAndDuplicateSnapshots() {
         let balances = CurrentValueSubject<WalletBalance?, Never>(nil)

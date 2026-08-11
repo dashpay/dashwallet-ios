@@ -36,6 +36,12 @@ enum TxMetadataTaxCategory: Int {
     /// Expense
     case expense
 
+    /// Internal Transfer — movement between the wallet's own balances
+    /// (Core ↔ Shielded/Platform/identity funding, or a plain self-send).
+    /// Appended last so the persisted raw values of the older cases keep
+    /// their meaning.
+    case internalTransfer
+
     var isIncoming: Bool {
         self == .income || self == .transferIn
     }
@@ -59,14 +65,15 @@ class Taxes: NSObject {
     }
 
     func taxCategory(for tx: Transaction) -> TxMetadataTaxCategory {
-        // A stored .unknown means the user never classified the tx (rows
-        // persisted before the direction default existed), so it must not
-        // shadow the direction-derived default.
+        // A stored .unknown means the user never classified the tx (rate
+        // stamping and rows persisted before the direction default existed
+        // both leave it .unknown), so it must not shadow the live
+        // transaction-derived default.
         if let stored = txUserInfos.get(by: tx.txHashData)?.taxCategory, stored != .unknown {
             return stored
         }
 
-        return tx.direction.defaultTaxCategory
+        return tx.defaultTaxCategory
     }
 
     func taxCategory(for address: String) -> TxMetadataTaxCategory? {

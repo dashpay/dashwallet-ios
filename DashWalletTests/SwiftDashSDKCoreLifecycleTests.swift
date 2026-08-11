@@ -376,6 +376,169 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             0)
     }
 
+    func testPlatformShieldScreenshotRegressionUsesSDKSelectableCapacity() {
+        let capacity = PlatformShieldCapacity(
+            canShield: true,
+            accountBalanceCredits: 3_921_114_000,
+            usableBalanceCredits: 3_623_849_220,
+            feeReserveCredits: 1_000_000_000,
+            maxShieldableCredits: 2_623_849_220)
+
+        // Old aggregate-balance Max from the report must be rejected.
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 2_921_114_000,
+            capacity: capacity))
+        // The displayed Max is the SDK ceiling floored to whole duffs.
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.maximumDuffs(capacity: capacity),
+            2_623_849)
+        XCTAssertTrue(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 2_623_849_000,
+            capacity: capacity))
+    }
+
+    func testPlatformShieldRejectsOneDuffAboveDisplayedMax() {
+        let capacity = PlatformShieldCapacity(
+            canShield: true,
+            accountBalanceCredits: 3_921_114_000,
+            usableBalanceCredits: 3_623_849_220,
+            feeReserveCredits: 1_000_000_000,
+            maxShieldableCredits: 2_623_849_220)
+
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 2_623_850_000,
+            capacity: capacity))
+    }
+
+    func testPlatformShieldRejectsZeroAndUnshieldableCapacity() {
+        let unshieldable = PlatformShieldCapacity(
+            canShield: false,
+            accountBalanceCredits: 3_921_114_000,
+            usableBalanceCredits: 0,
+            feeReserveCredits: 1_000_000_000,
+            maxShieldableCredits: 0,
+            reason: "insufficient headroom")
+
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.maximumDuffs(capacity: unshieldable),
+            0)
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 1_000,
+            capacity: unshieldable))
+
+        let shieldable = PlatformShieldCapacity(
+            canShield: true,
+            accountBalanceCredits: 3_921_114_000,
+            usableBalanceCredits: 3_623_849_220,
+            feeReserveCredits: 1_000_000_000,
+            maxShieldableCredits: 2_623_849_220)
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 0,
+            capacity: shieldable))
+    }
+
+    func testPlatformShieldMaxFloorsSubDuffCredits() {
+        let capacity = PlatformShieldCapacity(
+            canShield: true,
+            accountBalanceCredits: 5_000,
+            usableBalanceCredits: 5_000,
+            feeReserveCredits: 1_000,
+            maxShieldableCredits: 3_999)
+
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.maximumDuffs(capacity: capacity),
+            3)
+    }
+
+    func testPlatformShieldHeldBackNoticeUsesDisplayedAggregateBalance() {
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.heldBackCredits(
+                displayedPlatformCredits: 4_500_000_000,
+                accountBalanceCredits: 3_921_114_000,
+                submittedDuffs: 2_623_849),
+            1_876_151_000)
+
+        // If the published aggregate briefly lags, do not understate the
+        // account-level remainder reported by the coherent SDK preflight.
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.heldBackCredits(
+                displayedPlatformCredits: 3_000_000_000,
+                accountBalanceCredits: 3_921_114_000,
+                submittedDuffs: 2_623_849),
+            1_297_265_000)
+    }
+
+    func testPlatformShieldHeldBackIsZeroForOverflowAndFullySubmittedBalance() {
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.heldBackCredits(
+                displayedPlatformCredits: 4_500_000_000,
+                accountBalanceCredits: 3_921_114_000,
+                submittedDuffs: UInt64.max),
+            0)
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.heldBackCredits(
+                displayedPlatformCredits: 2_623_849_000,
+                accountBalanceCredits: 2_623_849_000,
+                submittedDuffs: 2_623_849),
+            0)
+    }
+
+    func testPlatformShieldFailsClosedWithoutResolvedPreflight() {
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 1_000,
+            capacity: nil))
+    }
+
+    func testPlatformShieldStaleCacheWaitsForBalancePublication() {
+        XCTAssertFalse(PlatformShieldAmountPolicy.shouldRefreshPreflight(
+            after: .other,
+            awaitingPlatformResync: true))
+        XCTAssertTrue(PlatformShieldAmountPolicy.shouldRefreshPreflight(
+            after: .balancePublished,
+            awaitingPlatformResync: true))
+        XCTAssertTrue(PlatformShieldAmountPolicy.shouldRefreshPreflight(
+            after: .other,
+            awaitingPlatformResync: false))
+        XCTAssertTrue(PlatformShieldAmountPolicy.awaitingPlatformResync(
+            current: true,
+            after: .other))
+        XCTAssertFalse(PlatformShieldAmountPolicy.awaitingPlatformResync(
+            current: true,
+            after: .balancePublished))
+        XCTAssertTrue(PlatformShieldAmountPolicy.shouldStartManualResync(
+            awaitingPlatformResync: true,
+            retryInFlight: false))
+        XCTAssertFalse(PlatformShieldAmountPolicy.shouldStartManualResync(
+            awaitingPlatformResync: true,
+            retryInFlight: true))
+        XCTAssertFalse(PlatformShieldAmountPolicy.shouldStartManualResync(
+            awaitingPlatformResync: false,
+            retryInFlight: false))
+    }
+
+    func testPlatformShieldCapacityChangeUpdatesOnlyMaxDerivedAmount() {
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.amountAfterCapacityChange(
+                currentDuffs: 2_921_114,
+                wasMaxDerived: true,
+                maxShieldableCredits: 2_623_849_220),
+            2_623_849)
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.amountAfterCapacityChange(
+                currentDuffs: 2_700_000,
+                wasMaxDerived: false,
+                maxShieldableCredits: 2_623_849_220),
+            2_700_000)
+        // A typed insufficient-balance failure followed by a failed preflight
+        // must not invent a zero Max or silently alter the confirmed value.
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.amountAfterCapacityChange(
+                currentDuffs: 2_921_114,
+                wasMaxDerived: true,
+                maxShieldableCredits: nil),
+            2_921_114)
+    }
+
     func testShieldedInsufficientBalanceMessageUsesSpendableAmount() {
         let message = TransferSpendAmountPolicy.insufficientBalanceMessage(
             balanceName: "Shielded",

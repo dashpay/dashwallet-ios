@@ -361,10 +361,16 @@ struct HomeViewContent<Content: View>: View {
                         // reload is still running, so show progress rather than
                         // telling the user they have no transactions.
                         if viewModel.hasLoadedInitialTxItems {
-                            Text(NSLocalizedString("There are no transactions to display", comment: ""))
-                                .font(.caption)
-                                .foregroundColor(Color.primary.opacity(0.5))
-                                .padding(.top, 20)
+                            // With unloaded history remaining, an empty window
+                            // (e.g. a filter matching nothing loaded yet) is
+                            // not "no transactions" — the tail sentinel below
+                            // renders and keeps paging instead.
+                            if !viewModel.canLoadMoreHistory {
+                                Text(NSLocalizedString("There are no transactions to display", comment: ""))
+                                    .font(.caption)
+                                    .foregroundColor(Color.primary.opacity(0.5))
+                                    .padding(.top, 20)
+                            }
                         } else {
                             HStack(spacing: 10) {
                                 SwiftUI.ProgressView()
@@ -394,6 +400,30 @@ struct HomeViewContent<Content: View>: View {
                                 .padding(15)
                                 .shadow(color: .shadow, radius: 10, x: 0, y: 5)
                             }
+                        }
+                    }
+
+                    // Tail sentinel: reaching it pages the next day-completed
+                    // slice of history in. Its identity is keyed on the page
+                    // stamp so `onAppear` re-fires while it stays visible
+                    // (auto-continues when a page adds no visible rows under
+                    // the active filter). Outside the empty/non-empty branch
+                    // on purpose: a filter can hide every loaded row, and the
+                    // empty state must still be able to page deeper.
+                    if viewModel.canLoadMoreHistory {
+                        HStack(spacing: 10) {
+                            SwiftUI.ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+
+                            Text(NSLocalizedString("Loading more transactions", comment: "Home"))
+                                .font(.caption)
+                                .foregroundColor(Color.primary.opacity(0.5))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .id(viewModel.historyPageStamp)
+                        .onAppear {
+                            viewModel.loadMoreHistory()
                         }
                     }
                 }
@@ -464,7 +494,13 @@ struct HomeViewContent<Content: View>: View {
                 pendingShieldedRecovery = nil
             }
         }
-        .sheet(isPresented: $viewModel.showCoinJoinMoveFundsSheet) {
+        .sheet(
+            isPresented: $viewModel.showCoinJoinMoveFundsSheet,
+            // Any dismissal (close button or swipe) counts as "Later": persist
+            // it so the prompt stops re-arming every launch. After a completed
+            // move the recorded balance is moot — the leftover is gone.
+            onDismiss: { viewModel.deferCoinJoinSweep() }
+        ) {
             CoinJoinMoveFundsSheet(amountDuffs: viewModel.coinJoinSweepAmountDuffs) {
                 viewModel.showCoinJoinMoveFundsSheet = false
             }
@@ -671,6 +707,9 @@ struct HomeViewContent<Content: View>: View {
     private func transferRouteDetails(txItem: Transaction) -> String? {
         switch txItem.internalTransferRoute {
         case .coreToShielded:
+            if txItem.isCoinJoinFundedTransfer {
+                return NSLocalizedString("CoinJoin → Shielded", comment: "Transfer of own mixed funds into the private shielded balance")
+            }
             return NSLocalizedString("Transparent → Shielded", comment: "Transfer of own funds into the private shielded balance")
         case .shieldedToCore:
             return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
@@ -721,7 +760,8 @@ struct HomeViewContent<Content: View>: View {
                 title: NSLocalizedString("Mixing Transactions", comment: "CoinJoin"),
                 subtitle: firstTx?.shortTimeString ?? "",
                 dashAmount: set.amount,
-                amountSign: .none
+                amountSign: .none,
+                amountAccessorySystemImage: "arrow.triangle.2.circlepath"
             )
             .onTapGesture { self.selectedTxDataItem = txDataItem }
             .frame(height: 80)
@@ -744,6 +784,9 @@ struct HomeViewContent<Content: View>: View {
             // Service/merchant metadata wins over the route pair — such rows
             // are external payments, not transfers of own funds.
             let routeSymbols = metadata == nil ? transferRouteSymbols(txItem: txItem) : nil
+            // Same precedence for the amount treatment: only a metadata-less
+            // internal move drops the +/- sign for the circulating-arrows glyph.
+            let isInternalAmount = metadata == nil && txItem.internalTransferRoute != nil
             // A DashPay contact payment shows the counterparty's avatar
             // (profile image, or the deterministic initial placeholder the
             // contacts screens use).
@@ -770,9 +813,11 @@ struct HomeViewContent<Content: View>: View {
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
-                    : txItem.isPendingIdentityFunding
+                    : txItem.isPendingIdentityRegistration
                         ? NSLocalizedString("Pending — tap to finish", comment: "DashPay registration recovery")
-                    : txItem.isPendingPlatformFunding
+                    // A pending top-up has nothing to "finish" in another
+                    // flow — it recovers from the tx detail sheet.
+                    : txItem.isPendingIdentityFunding || txItem.isPendingPlatformFunding
                         ? NSLocalizedString("Pending", comment: "")
                         : (metadata?.details?.isEmpty == false
                             ? metadata?.details
@@ -780,7 +825,10 @@ struct HomeViewContent<Content: View>: View {
                             // counterparty's actual name underneath.
                             : transferRouteDetails(txItem: txItem) ?? txItem.dashPayPaymentDetailsName),
                 dashAmount: txItem.signedDashAmount,
-                amountSign: .always,
+                // Internal moves carry no direction: no +/- sign, a
+                // circulating-arrows glyph qualifies the amount instead.
+                amountSign: isInternalAmount ? .none : .always,
+                amountAccessorySystemImage: isInternalAmount ? "arrow.triangle.2.circlepath" : nil,
                 fiat: txItem.fiatAmount,
                 trailingStatusText: txItem.state == .locked ? NSLocalizedString("Locked", comment: "Transaction state: coinbase reward locked until 100 confirmations") : nil
             ) {
@@ -788,7 +836,7 @@ struct HomeViewContent<Content: View>: View {
                 // instead of the read-only detail/gift-card sheets.
                 if txItem.isPendingShieldedTransfer {
                     self.pendingShieldedRecovery = txItem
-                } else if txItem.isPendingIdentityFunding {
+                } else if txItem.isPendingIdentityRegistration {
                     #if DASHPAY
                     delegate?.homeViewRequestUsername()
                     #else
@@ -812,6 +860,7 @@ struct HomeViewContent<Content: View>: View {
                 details: item.detailsText,
                 dashAmount: item.signedDashAmount,
                 amountSign: item.showsDirectionSign ? .always : .none,
+                amountAccessorySystemImage: item.showsDirectionSign ? nil : "arrow.triangle.2.circlepath",
                 fiat: item.fiatAmount,
                 trailingStatusText: item.trailingStatusText
             ) {

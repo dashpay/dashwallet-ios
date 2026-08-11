@@ -77,6 +77,12 @@ final class CoinJoinRecovery: NSObject {
         "coinJoinRecovery.v1.recovered.\(networkTag(network))"
     }
 
+    /// CoinJoin balance (duffs) at the moment the user last chose "Later" on
+    /// the post-sync sweep prompt. Absent = never dismissed.
+    private func sweepPromptDismissedBalanceKey(_ network: Network) -> String {
+        "coinJoinRecovery.v1.sweepPromptDismissedBalance.\(networkTag(network))"
+    }
+
     // MARK: - API
 
     /// Whether the one-time wide CoinJoin recovery gap should be applied for
@@ -102,6 +108,29 @@ final class CoinJoinRecovery: NSObject {
             "🪙 CJRECOV :: recovery complete for \(self.networkTag(network), privacy: .public) — reverting to default gap")
     }
 
+    /// Record that the user chose "Later" on the post-sync sweep prompt while
+    /// holding `balanceDuffs`. The prompt stays suppressed while the CoinJoin
+    /// balance sits at or below this value; mixing new coins (the balance
+    /// rising above it) re-arms the prompt. The Tools / Settings
+    /// "Move CoinJoin Funds" rows stay available throughout. Thread-safe.
+    func recordSweepPromptDismissal(balanceDuffs: UInt64, for network: Network) {
+        lock.lock(); defer { lock.unlock() }
+        defaults.set(balanceDuffs, forKey: sweepPromptDismissedBalanceKey(network))
+        Self.logger.info(
+            "🪙 CJRECOV :: sweep prompt deferred at \(balanceDuffs, privacy: .public) duffs on \(self.networkTag(network), privacy: .public)")
+    }
+
+    /// Whether an earlier "Later" suppresses the sweep prompt at the current
+    /// balance. False once the balance exceeds the dismissed amount (new
+    /// mixed coins arrived since the dismissal). Thread-safe.
+    func isSweepPromptSuppressed(currentBalanceDuffs: UInt64, for network: Network) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        guard let stored = defaults.object(forKey: sweepPromptDismissedBalanceKey(network)) as? UInt64 else {
+            return false
+        }
+        return currentBalanceDuffs <= stored
+    }
+
     /// Clear the terminal per-network recovery flags on a wallet wipe so a
     /// wallet restored afterwards re-runs the one-time wide CoinJoin scan. The
     /// flag is app-level (UserDefaults), not per-wallet, and a wipe deletes the
@@ -114,6 +143,8 @@ final class CoinJoinRecovery: NSObject {
         lock.lock(); defer { lock.unlock() }
         defaults.removeObject(forKey: recoveredKey(.mainnet))
         defaults.removeObject(forKey: recoveredKey(.testnet))
+        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.mainnet))
+        defaults.removeObject(forKey: sweepPromptDismissedBalanceKey(.testnet))
         Self.logger.info(
             "🪙 CJRECOV :: recovery flags cleared on wipe — next wallet re-runs the one-time wide scan")
     }

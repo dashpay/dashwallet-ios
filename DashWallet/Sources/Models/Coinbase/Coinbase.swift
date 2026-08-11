@@ -359,12 +359,28 @@ struct CoinbaseWalletTransactionSnapshot {
     let walletId: Data
     let transactions: [CoinbaseWalletTransactionRecord]
 
-    static func current() -> CoinbaseWalletTransactionSnapshot? {
-        guard let snapshot = SwiftDashSDKWalletSource.fetchCurrentWalletSnapshot() else {
-            return nil
-        }
+    /// Only the wallet transactions whose wire-order txid is in `txids`
+    /// (the `TransactionMetadata.txHash` key convention) — point lookups,
+    /// so resolving stored metadata never materializes the whole wallet.
+    static func matching(txids: Set<Data>) -> CoinbaseWalletTransactionSnapshot? {
+        SwiftDashSDKWalletSource.fetch(txids: txids).map(Self.init(snapshot:))
+    }
 
-        return CoinbaseWalletTransactionSnapshot(
+    /// Only the wallet transactions first seen at/after `cutoff`, for
+    /// matchers that are time-bounded anyway (the pending-receive resolver
+    /// requires `timestamp >= minimumTimestamp`). Callers pad the cutoff
+    /// for the firstSeen-vs-display-date skew.
+    static func recent(since cutoff: Date) -> CoinbaseWalletTransactionSnapshot? {
+        SwiftDashSDKWalletSource.fetchRecent(firstSeenSince: cutoff).map(Self.init(snapshot:))
+    }
+}
+
+// The projection init lives in an extension so the struct keeps its
+// synthesized memberwise initializer (the resolver tests build snapshots
+// with it directly).
+extension CoinbaseWalletTransactionSnapshot {
+    fileprivate init(snapshot: SwiftDashSDKWalletTransactionSnapshot) {
+        self.init(
             walletId: snapshot.walletId,
             transactions: snapshot.transactions.map(CoinbaseWalletTransactionRecord.init(transaction:)))
     }
@@ -511,8 +527,13 @@ final class CoinbaseTransactionMetadataTagger {
     }
 
     private func resolvePendingReceiveTransfersOnQueue() {
-        guard !pendingReceiveTransfers.isEmpty,
-              let snapshot = CoinbaseWalletTransactionSnapshot.current() else {
+        guard !pendingReceiveTransfers.isEmpty else { return }
+        // The resolver only accepts rows at/after each transfer's
+        // `minimumTimestamp`; fetch from the oldest one, padded a day for
+        // the firstSeen-vs-display-date skew, instead of the whole wallet.
+        let oldestMinimum = pendingReceiveTransfers.map(\.minimumTimestamp).min() ?? 0
+        let cutoff = Date(timeIntervalSince1970: max(0, oldestMinimum - 86_400))
+        guard let snapshot = CoinbaseWalletTransactionSnapshot.recent(since: cutoff) else {
             return
         }
 

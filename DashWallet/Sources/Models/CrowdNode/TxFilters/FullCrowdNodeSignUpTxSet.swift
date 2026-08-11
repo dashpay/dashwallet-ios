@@ -36,7 +36,7 @@ final class FullCrowdNodeSignUpTxSet: GroupedTransactions, TransactionWrapper {
     static let id = "FullCrowdNodeSignUpTxSet"
     private let savedAccountAddress = CrowdNodeDefaults.shared.accountAddress
     /// Safe to assume there weren't any CrowdNode accounts before this point.
-    /// Also reused as the SwiftData fetch floor by `tryRestoreSignUp`.
+    /// Also reused as the SwiftData fetch floor by `CrowdNode.restoreState`.
     static let januaryFirst2022Epoch: UInt64 = 1_640_995_200
     private static let januaryFirst2022 = TimeInterval(januaryFirst2022Epoch)
     private var matchedFilters: [CoinsToAddressTxFilter] = []

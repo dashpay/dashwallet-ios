@@ -332,6 +332,8 @@
 		2E08EC52344E430F9BC8DEAA /* TransferAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31AECC5C20684C9293F22A38 /* TransferAmountViewModel.swift */; };
 		2EFDEC7DCA624B16DBBB482D /* SwiftDashSDKWalletCreator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B697D56A525CBF142F4401FE /* SwiftDashSDKWalletCreator.swift */; };
 		30C7DE2E26E849E0D76319FA /* PlatformAddressSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */; };
+		A1FA10C00000000000000002 /* AssetLockRecoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1FA10C00000000000000001 /* AssetLockRecoveryService.swift */; };
+		UTR0B0002FA0000000000002 /* UnconfirmedTransactionRemover.swift in Sources */ = {isa = PBXBuildFile; fileRef = UTR0B0002FA0000000000001 /* UnconfirmedTransactionRemover.swift */; };
 		3116F910F54D310002090CBB /* PinPromptPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D385FC174E5B887CF3398CCD /* PinPromptPresenter.swift */; };
 		35BFE3D1C0B8999FBC8AB180 /* PaymentRequestVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */; };
 		3705C73F15BCD91AF70940B9 /* PlatformCreditsFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43C830DD6D63115525925F75 /* PlatformCreditsFormatter.swift */; };
@@ -355,7 +357,6 @@
 		47081197298CF20C003FCA3D /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47081196298CF20B003FCA3D /* Transaction.swift */; };
 		4708119F2990F56F003FCA3D /* TransactionDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4708119E2990F56F003FCA3D /* TransactionDataItem.swift */; };
 		4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4709C30E287E787700B4BD48 /* Migrations.bundle */; };
-		4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C311287E78BD00B4BD48 /* SeedDB.swift */; };
 		4709C315287EA11900B4BD48 /* TransactionMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C314287EA11900B4BD48 /* TransactionMetadata.swift */; };
 		4709C318287EA23000B4BD48 /* TransactionMetadataDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C317287EA23000B4BD48 /* TransactionMetadataDAO.swift */; };
 		4709C31F28818BAE00B4BD48 /* TxDetailModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C31A288020DE00B4BD48 /* TxDetailModel.swift */; };
@@ -929,6 +930,8 @@
 		8DF3D24EE3B247B79AE9CAB5 /* BuySellPortalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B94B3697D7742BFA991B5CC /* BuySellPortalScreen.swift */; };
 		8E3AF21ED19AEC0FD89A63FC /* IdentitiesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 528594007157A56ABDEAD552 /* IdentitiesScreen.swift */; };
 		8EAA05FA797008525050A2A7 /* PlatformAddressSyncCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */; };
+		A1FA10C00000000000000003 /* AssetLockRecoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1FA10C00000000000000001 /* AssetLockRecoveryService.swift */; };
+		UTR0B0002FA0000000000003 /* UnconfirmedTransactionRemover.swift in Sources */ = {isa = PBXBuildFile; fileRef = UTR0B0002FA0000000000001 /* UnconfirmedTransactionRemover.swift */; };
 		8F0B3AA027F569D8D2E1F900 /* PaymentRequestVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */; };
 		8FCE113ECEA4B9781B24922C /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EE3302C1C5DF898D1A0F915 /* AuthenticationService.swift */; };
 		908AB7EFCC69D3828BBD70A8 /* PaymentsLandingHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B401E660599FEF6B18087F91 /* PaymentsLandingHostingController.swift */; };
@@ -1563,7 +1566,6 @@
 		C9D2C80D2A320AA000D15901 /* MainTabbarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451E42A0B986E00825057 /* MainTabbarController.swift */; };
 		C9D2C80E2A320AA000D15901 /* NumberFormatter+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B30D77290BFCA60080C326 /* NumberFormatter+DashWallet.swift */; };
 		C9D2C8102A320AA000D15901 /* BaseAmountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AF18072907B7880025803E /* BaseAmountModel.swift */; };
-		C9D2C8122A320AA000D15901 /* SeedDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C311287E78BD00B4BD48 /* SeedDB.swift */; };
 		C9D2C8132A320AA000D15901 /* DWPinField.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8EF231ECDE000A96B62 /* DWPinField.m */; };
 		C9D2C8142A320AA000D15901 /* DWCenteredScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CEA122DFC80900C99324 /* DWCenteredScrollView.m */; };
 		C9D2C8162A320AA000D15901 /* DWPhraseRepairViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9172C325233DC50024B4C5 /* DWPhraseRepairViewController.m */; };
@@ -1899,6 +1901,10 @@
 		RC00A0012FA0000000000001 /* TopIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00A0032FA0000000000001 /* TopIntro.swift */; };
 		RC00A0022FA0000000000001 /* TopIntro.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00A0032FA0000000000001 /* TopIntro.swift */; };
 		RC00A0042FA0000000000001 /* ExploreMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00A0062FA0000000000001 /* ExploreMenuScreen.swift */; };
+		UM00A0012FA0000000000001 /* UsernameMarketplaceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = UM00A0032FA0000000000001 /* UsernameMarketplaceScreen.swift */; };
+		UM00A0022FA0000000000001 /* UsernameMarketplaceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = UM00A0032FA0000000000001 /* UsernameMarketplaceScreen.swift */; };
+		UM00B0012FA0000000000001 /* UsernameMarketplaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = UM00B0032FA0000000000001 /* UsernameMarketplaceService.swift */; };
+		UM00B0022FA0000000000001 /* UsernameMarketplaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = UM00B0032FA0000000000001 /* UsernameMarketplaceService.swift */; };
 		RC00A0052FA0000000000001 /* ExploreMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00A0062FA0000000000001 /* ExploreMenuScreen.swift */; };
 		RC00C0012FA0000000000001 /* CSVExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00C0032FA0000000000001 /* CSVExportSheet.swift */; };
 		RC00C0022FA0000000000001 /* CSVExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = RC00C0032FA0000000000001 /* CSVExportSheet.swift */; };
@@ -2579,7 +2585,6 @@
 		47081196298CF20B003FCA3D /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		4708119E2990F56F003FCA3D /* TransactionDataItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDataItem.swift; sourceTree = "<group>"; };
 		4709C30E287E787700B4BD48 /* Migrations.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Migrations.bundle; sourceTree = "<group>"; };
-		4709C311287E78BD00B4BD48 /* SeedDB.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SeedDB.swift; sourceTree = "<group>"; };
 		4709C314287EA11900B4BD48 /* TransactionMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMetadata.swift; sourceTree = "<group>"; };
 		4709C317287EA23000B4BD48 /* TransactionMetadataDAO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMetadataDAO.swift; sourceTree = "<group>"; };
 		4709C31A288020DE00B4BD48 /* TxDetailModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailModel.swift; sourceTree = "<group>"; };
@@ -3579,6 +3584,8 @@
 		E5C4E3EBE8D8A77EBFAA1E86 /* NetworkReachability.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NetworkReachability.swift; sourceTree = "<group>"; };
 		E66B030D4B574621DA2C5816 /* PaymentProtocolWireFormat.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentProtocolWireFormat.swift; sourceTree = "<group>"; };
 		E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlatformAddressSyncCoordinator.swift; sourceTree = "<group>"; };
+		A1FA10C00000000000000001 /* AssetLockRecoveryService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AssetLockRecoveryService.swift; sourceTree = "<group>"; };
+		UTR0B0002FA0000000000001 /* UnconfirmedTransactionRemover.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UnconfirmedTransactionRemover.swift; sourceTree = "<group>"; };
 		E7333F2D05D0DD2D4373FF9B /* StorageExplorerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StorageExplorerView.swift; sourceTree = "<group>"; };
 		E735446F9E918618E97EDD38 /* PaymentsLandingScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentsLandingScreen.swift; sourceTree = "<group>"; };
 		E83D8CEAFF69B6D666C02116 /* Pods-WatchApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.release.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.release.xcconfig"; sourceTree = "<group>"; };
@@ -3639,6 +3646,8 @@
 		GG0000032DUMMYID001234567 /* GeoRestrictionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoRestrictionService.swift; sourceTree = "<group>"; };
 		RC00A0032FA0000000000001 /* TopIntro.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopIntro.swift; sourceTree = "<group>"; };
 		RC00A0062FA0000000000001 /* ExploreMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreMenuScreen.swift; sourceTree = "<group>"; };
+		UM00A0032FA0000000000001 /* UsernameMarketplaceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameMarketplaceScreen.swift; sourceTree = "<group>"; };
+		UM00B0032FA0000000000001 /* UsernameMarketplaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameMarketplaceService.swift; sourceTree = "<group>"; };
 		RC00C0032FA0000000000001 /* CSVExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVExportSheet.swift; sourceTree = "<group>"; };
 		FC1426BD13E794C788646055 /* ContestedNamesService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContestedNamesService.swift; sourceTree = "<group>"; };
 		15D89828EC913714251D0B58 /* MasternodeVoterRegistry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodeVoterRegistry.swift; sourceTree = "<group>"; };
@@ -5695,7 +5704,6 @@
 				AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */,
 				F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */,
 				AA00300B2FD000000000000B /* AddSwapOrdersTable.swift */,
-				4709C311287E78BD00B4BD48 /* SeedDB.swift */,
 			);
 			path = Migrations;
 			sourceTree = "<group>";
@@ -6260,6 +6268,7 @@
 				47AE8BDF28C1305E00490F5E /* Views */,
 				7569D6822DE6DA6800768BFF /* ExploreViewController.swift */,
 				RC00A0062FA0000000000001 /* ExploreMenuScreen.swift */,
+				UM00A0032FA0000000000001 /* UsernameMarketplaceScreen.swift */,
 			);
 			path = "Explore Dash";
 			sourceTree = "<group>";
@@ -7115,6 +7124,9 @@
 				E181EB71C8803101EA789AA4 /* SwiftDashSDKHost.swift */,
 				35F37C177039C76661FA2DB2 /* SwiftDashSDKSPVCoordinator.swift */,
 				E6E56673B2BFED8EC0181A1F /* PlatformAddressSyncCoordinator.swift */,
+				UM00B0032FA0000000000001 /* UsernameMarketplaceService.swift */,
+				A1FA10C00000000000000001 /* AssetLockRecoveryService.swift */,
+				UTR0B0002FA0000000000001 /* UnconfirmedTransactionRemover.swift */,
 				51AA000D2F97000D005A000D /* ShieldedSyncMonitor.swift */,
 				43C830DD6D63115525925F75 /* PlatformCreditsFormatter.swift */,
 				44DCDC3A2B92601BB1E61FD9 /* PlatformSendExecutor.swift */,
@@ -9826,6 +9838,8 @@
 				75EBAA0F2BB99036004488E3 /* TextIntro.swift in Sources */,
 				RC00A0012FA0000000000001 /* TopIntro.swift in Sources */,
 				RC00A0042FA0000000000001 /* ExploreMenuScreen.swift in Sources */,
+				UM00A0012FA0000000000001 /* UsernameMarketplaceScreen.swift in Sources */,
+				UM00B0012FA0000000000001 /* UsernameMarketplaceService.swift in Sources */,
 				0F71317728F436920072F454 /* ServiceOverviewTableCell.swift in Sources */,
 				47838B87290670630003E8AB /* IntegrationViewController.swift in Sources */,
 				758A8F172C4D35A80012FA41 /* NSLayoutConstraint+DashWallet.swift in Sources */,
@@ -9841,7 +9855,6 @@
 				C9F451E52A0B986E00825057 /* MainTabbarController.swift in Sources */,
 				47B30D78290BFCA60080C326 /* NumberFormatter+DashWallet.swift in Sources */,
 				47AF18082907B7880025803E /* BaseAmountModel.swift in Sources */,
-				4709C312287E78BD00B4BD48 /* SeedDB.swift in Sources */,
 				2ACCD8F0231ECDE000A96B62 /* DWPinField.m in Sources */,
 				75050CD22DF2FCC200F586D6 /* ServiceName.swift in Sources */,
 				2AD1CEA222DFC80900C99324 /* DWCenteredScrollView.m in Sources */,
@@ -10140,6 +10153,8 @@
 				19CF9D60B276558AA48380C2 /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 				85448D7537BBD0AE40682EC8 /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 				8EAA05FA797008525050A2A7 /* PlatformAddressSyncCoordinator.swift in Sources */,
+				A1FA10C00000000000000003 /* AssetLockRecoveryService.swift in Sources */,
+				UTR0B0002FA0000000000003 /* UnconfirmedTransactionRemover.swift in Sources */,
 				2D354A4D6053027CA27F02CB /* PlatformSyncStatusScreen.swift in Sources */,
 				51AA00222F970022005A0022 /* MasternodesScreen.swift in Sources */,
 				51AA00022F970002005A0002 /* SyncInfoMenuScreen.swift in Sources */,
@@ -10541,6 +10556,8 @@
 				75EBAA102BB99036004488E3 /* TextIntro.swift in Sources */,
 				RC00A0022FA0000000000001 /* TopIntro.swift in Sources */,
 				RC00A0052FA0000000000001 /* ExploreMenuScreen.swift in Sources */,
+				UM00A0022FA0000000000001 /* UsernameMarketplaceScreen.swift in Sources */,
+				UM00B0022FA0000000000001 /* UsernameMarketplaceService.swift in Sources */,
 				757514E52B1735370026AD8E /* JoinDashPayView.swift in Sources */,
 				C9D2C73C2A320AA000D15901 /* DWDecimalInputValidator.m in Sources */,
 				C9D2C73D2A320AA000D15901 /* PaymentMethods.swift in Sources */,
@@ -10813,7 +10830,6 @@
 				751C05DB2D3D0E8C00475E52 /* JoinDashPayViewModel.swift in Sources */,
 				C9D2C80E2A320AA000D15901 /* NumberFormatter+DashWallet.swift in Sources */,
 				C9D2C8102A320AA000D15901 /* BaseAmountModel.swift in Sources */,
-				C9D2C8122A320AA000D15901 /* SeedDB.swift in Sources */,
 				C9D2C8132A320AA000D15901 /* DWPinField.m in Sources */,
 				C943B3252A408CED00AF23C5 /* DWEditProfileViewController.m in Sources */,
 				75D9EBBC2DE5CD8B009416A2 /* GiftCard.swift in Sources */,
@@ -11144,6 +11160,8 @@
 				DD985ADD7FFF3B9E3C344DED /* SwiftDashSDKSPVCoordinator.swift in Sources */,
 				87AC92AAD9DF8CBF271609AC /* SwiftDashSDKSPVStatusScreen.swift in Sources */,
 				30C7DE2E26E849E0D76319FA /* PlatformAddressSyncCoordinator.swift in Sources */,
+				A1FA10C00000000000000002 /* AssetLockRecoveryService.swift in Sources */,
+				UTR0B0002FA0000000000002 /* UnconfirmedTransactionRemover.swift in Sources */,
 				0308E777B29CC6DE1DB30FDD /* PlatformSyncStatusScreen.swift in Sources */,
 				51AA00212F970021005A0021 /* MasternodesScreen.swift in Sources */,
 				51AA00032F970003005A0003 /* SyncInfoMenuScreen.swift in Sources */,

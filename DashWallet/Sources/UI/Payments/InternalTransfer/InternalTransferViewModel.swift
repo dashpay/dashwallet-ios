@@ -136,6 +136,132 @@ enum TransferSpendAmountPolicy {
     }
 }
 
+/// App-facing value copy of the SDK's Platform → Shielded preflight. Keeping
+/// the policy below independent from FFI-owned types makes its duff flooring
+/// and fail-closed behavior cheap to regression-test.
+struct PlatformShieldCapacity: Equatable {
+    let canShield: Bool
+    let accountBalanceCredits: UInt64
+    let usableBalanceCredits: UInt64
+    let feeReserveCredits: UInt64
+    let maxShieldableCredits: UInt64
+    let reason: String?
+
+    init(_ preflight: PlatformWalletManager.ShieldedShieldPreflight) {
+        canShield = preflight.canShield
+        accountBalanceCredits = preflight.accountBalanceCredits
+        usableBalanceCredits = preflight.usableBalanceCredits
+        feeReserveCredits = preflight.feeReserveCredits
+        maxShieldableCredits = preflight.maxShieldableCredits
+        reason = preflight.reason
+    }
+
+    init(
+        canShield: Bool,
+        accountBalanceCredits: UInt64,
+        usableBalanceCredits: UInt64,
+        feeReserveCredits: UInt64,
+        maxShieldableCredits: UInt64,
+        reason: String? = nil
+    ) {
+        self.canShield = canShield
+        self.accountBalanceCredits = accountBalanceCredits
+        self.usableBalanceCredits = usableBalanceCredits
+        self.feeReserveCredits = feeReserveCredits
+        self.maxShieldableCredits = maxShieldableCredits
+        self.reason = reason
+    }
+}
+
+enum PlatformShieldAmountPolicy {
+    enum PreflightRefreshEvent {
+        case balancePublished
+        case other
+    }
+
+    /// A live Platform rejection proves the cache stale. While waiting for the
+    /// requested sync, route/Max events must not immediately read that same
+    /// cache again; only a balance publication re-arms preflight.
+    static func shouldRefreshPreflight(
+        after event: PreflightRefreshEvent,
+        awaitingPlatformResync: Bool
+    ) -> Bool {
+        guard awaitingPlatformResync else { return true }
+        if case .balancePublished = event { return true }
+        return false
+    }
+
+    /// Cache freshness is independent of the currently displayed route. A
+    /// Platform balance publication completes the wait even if the user has
+    /// navigated elsewhere before the sync finishes.
+    static func awaitingPlatformResync(
+        current: Bool,
+        after event: PreflightRefreshEvent
+    ) -> Bool {
+        if case .balancePublished = event { return false }
+        return current
+    }
+
+    /// Max is the explicit escape hatch while a live rejection waits for a
+    /// fresh Platform publication. At most one retry task may own `syncNow`;
+    /// when it finishes without a publication, another tap may retry.
+    static func shouldStartManualResync(
+        awaitingPlatformResync: Bool,
+        retryInFlight: Bool
+    ) -> Bool {
+        awaitingPlatformResync && !retryInFlight
+    }
+
+    /// Amount input and confirmation are duff-denominated, so never round an
+    /// SDK credit ceiling up to an amount the transition cannot select.
+    static func maximumDuffs(capacity: PlatformShieldCapacity) -> UInt64 {
+        guard capacity.canShield else { return 0 }
+        return capacity.maxShieldableCredits / 1000
+    }
+
+    /// Unknown/loading/failed preflight is deliberately unaffordable. The SDK
+    /// preflight is the sole authority; the aggregate Platform balance is not.
+    static func canSubmit(
+        requestedCredits: UInt64,
+        capacity: PlatformShieldCapacity?
+    ) -> Bool {
+        guard requestedCredits > 0,
+              let capacity,
+              capacity.canShield
+        else { return false }
+        return requestedCredits <= capacity.maxShieldableCredits
+    }
+
+    /// Informational remainder against the balance card's aggregate. The
+    /// preflight account remains the validation authority; `max` only avoids a
+    /// transient smaller published snapshot understating what is held back.
+    static func heldBackCredits(
+        displayedPlatformCredits: UInt64,
+        accountBalanceCredits: UInt64,
+        submittedDuffs: UInt64
+    ) -> UInt64 {
+        let submitted = submittedDuffs.multipliedReportingOverflow(by: 1000)
+        guard !submitted.overflow else { return 0 }
+        let displayedAggregate = max(displayedPlatformCredits, accountBalanceCredits)
+        return displayedAggregate > submitted.partialValue
+            ? displayedAggregate - submitted.partialValue
+            : 0
+    }
+
+    /// A refreshed capacity may rewrite only an amount explicitly derived from
+    /// Max. Manually entered text must remain untouched for the user to review.
+    static func amountAfterCapacityChange(
+        currentDuffs: UInt64,
+        wasMaxDerived: Bool,
+        maxShieldableCredits: UInt64?
+    ) -> UInt64 {
+        guard wasMaxDerived, let maxShieldableCredits else {
+            return currentDuffs
+        }
+        return maxShieldableCredits / 1000
+    }
+}
+
 @MainActor
 final class InternalTransferViewModel: ObservableObject {
 
@@ -151,14 +277,24 @@ final class InternalTransferViewModel: ObservableObject {
     /// remainder, or why it could not produce one at all. Surfaced through
     /// `amountValidationMessage` so tapping Max is never a silent no-op.
     @Published private(set) var maxNotice: String?
+    /// Exact duff amount selected by Max. Fiat text is presentation-only and
+    /// may round to two decimals, so reparsing it must never move the transfer
+    /// above (or below) the source's real spendable ceiling.
+    private var maxAmountDuffs: UInt64?
     private var shieldedSweepAmountCredits: UInt64?
+    private var isPlatformShieldMaxDerived = false
+    private var isPlatformShieldMaxQueued = false
+    private var hasPlatformShieldCapacityChangeNotice = false
     @Published var unit: InternalTransferUnit = .dash {
         didSet {
             guard oldValue != unit else { return }
-            let preserveMax = isFullShieldedSweep
-            isApplyingMax = preserveMax
-            defer { isApplyingMax = false }
-            convertAmountText(from: oldValue, to: unit)
+            if let maxAmountDuffs {
+                isApplyingMax = true
+                defer { isApplyingMax = false }
+                applyMaxAmountText(maxAmountDuffs)
+            } else {
+                convertAmountText(from: oldValue, to: unit)
+            }
         }
     }
 
@@ -201,7 +337,23 @@ final class InternalTransferViewModel: ObservableObject {
     /// reserved fee. `nil` while unknown (loading/failed) — affordability
     /// fails closed.
     @Published private(set) var withdrawalPreflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
-    private var preflightTask: Task<Void, Never>?
+    private var withdrawalPreflightTask: Task<Void, Never>?
+
+    /// SDK-owned selection capacity for Platform → Shielded. `nil` while a
+    /// request is loading or after it fails; both states fail closed rather
+    /// than falling back to the aggregate Platform balance.
+    @Published private(set) var platformShieldCapacity: PlatformShieldCapacity?
+    @Published private(set) var isPlatformShieldPreflightLoading = false
+    private var platformShieldPreflightTask: Task<Void, Never>?
+    private var platformShieldPreflightGeneration: UInt64 = 0
+    private var awaitingPlatformShieldResync = false
+    private var platformShieldManualResyncTask: Task<Void, Never>?
+
+    /// Captured by Confirm so a capacity-change response knows whether it may
+    /// replace the amount with the newly preflighted Max.
+    var platformShieldAmountWasMax: Bool {
+        route == .platformToShielded && isPlatformShieldMaxDerived
+    }
 
     /// Pins the route for the receive sheet: a transfer INTO `target`.
     /// The From rows then pick the source among the other two balances.
@@ -297,18 +449,25 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
-    /// Refreshes route-dependent async state. The Platform → Core route
-    /// needs the withdrawal preflight — for the fee headroom that bounds a
-    /// partial withdrawal, and for the net payout a Max (full-balance,
-    /// AUTO-path) withdrawal pays out.
+    /// Refreshes route-dependent async state. Both Platform-funded routes use
+    /// SDK preflights so their UI amount always matches the builder's real
+    /// input-selection envelope.
     private func routeDidChange() {
         clearMaxSelection()
-        guard route == .platformToCore else {
-            preflightTask?.cancel()
-            preflightTask = nil
-            return
+
+        if route == .platformToCore {
+            startWithdrawalPreflightIfNeeded()
+        } else {
+            withdrawalPreflightTask?.cancel()
+            withdrawalPreflightTask = nil
+            withdrawalPreflight = nil
         }
-        startWithdrawalPreflightIfNeeded()
+
+        if route == .platformToShielded {
+            refreshPlatformShieldPreflight()
+        } else {
+            cancelPlatformShieldPreflight()
+        }
     }
 
     /// Net payout of the full-balance (Max) Platform → Core withdrawal, in
@@ -397,7 +556,18 @@ final class InternalTransferViewModel: ObservableObject {
         PlatformAddressSyncCoordinator.shared.$platformBalance
             .receive(on: RunLoop.main)
             .sink { [weak self] credits in
-                self?.platformCredits = credits
+                guard let self else { return }
+                self.platformCredits = credits
+                // Clear the stale-cache barrier on publication regardless of
+                // route. If this route is inactive, the next route entry will
+                // preflight the now-refreshed cache normally.
+                self.awaitingPlatformShieldResync =
+                    PlatformShieldAmountPolicy.awaitingPlatformResync(
+                        current: self.awaitingPlatformShieldResync,
+                        after: .balancePublished)
+                if self.route == .platformToShielded {
+                    self.refreshPlatformShieldPreflight(after: .balancePublished)
+                }
             }
             .store(in: &cancellables)
 
@@ -419,6 +589,9 @@ final class InternalTransferViewModel: ObservableObject {
     }
 
     var parsedDashAmount: Decimal {
+        if let maxAmountDuffs {
+            return maxAmountDuffs.dashAmount
+        }
         let raw = rawTypedDecimal
         switch unit {
         case .dash:
@@ -497,14 +670,23 @@ final class InternalTransferViewModel: ObservableObject {
                 spendableDuffs: coreSpendableDuffs)
 
         case .platformToShielded:
-            guard let reserve = feeReserveCredits else {
-                return Self.feeEstimateUnavailableMessage
+            if awaitingPlatformShieldResync {
+                return Self.platformShieldCapacityRefreshRequiredMessage
+            }
+            if isPlatformShieldPreflightLoading {
+                return Self.platformShieldPreflightLoadingMessage
+            }
+            guard let capacity = platformShieldCapacity else {
+                return Self.platformShieldPreflightUnavailableMessage
+            }
+            guard capacity.canShield else {
+                return Self.platformShieldHeadroomUnavailableMessage
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedCredits: creditsPreview,
-                balanceCredits: platformCredits,
-                feeReserveCredits: reserve)
+                balanceCredits: capacity.maxShieldableCredits,
+                feeReserveCredits: 0)
 
         case .shieldedToCore, .shieldedToPlatform:
             // A Max sweep is planned against the real note set rather than the
@@ -578,12 +760,10 @@ final class InternalTransferViewModel: ObservableObject {
             // reserve, which is exactly `coreSpendableDuffs`.
             return dashDuffsUnsigned <= coreSpendableDuffs
         case .platformToShielded:
-            // Shield (Type 15): the SDK's input selection requires
-            // balance ≥ amount + reserve. Fail closed if the reserve is
-            // unavailable. Subtraction keeps the UInt64 add overflow-safe.
-            guard let reserve = feeReserveCredits else { return false }
-            return platformCredits >= reserve
-                && creditsPreview <= platformCredits - reserve
+            return !isPlatformShieldPreflightLoading
+                && PlatformShieldAmountPolicy.canSubmit(
+                    requestedCredits: creditsPreview,
+                    capacity: platformShieldCapacity)
         case .shieldedToCore, .shieldedToPlatform:
             if isFullShieldedSweep {
                 return shieldedSweepAmountCredits != nil
@@ -605,14 +785,6 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
-    /// Fixed input-selection reserve the Shield route requires ON TOP of the
-    /// amount — mirrors Rust `FEE_RESERVE_CREDITS = 1_000_000_000`
-    /// (rs-platform-wallet `platform_wallet.rs`; `select_shield_inputs` rejects
-    /// `balance < amount + reserve`). It is a conservative selection headroom,
-    /// NOT the on-chain fee (which is ~6× smaller); the unclaimed remainder
-    /// stays on the source address rather than being spent.
-    private static let shieldSelectionReserveCredits: UInt64 = 1_000_000_000
-
     /// Fee/selection headroom (credits) the SDK requires ON TOP of the amount
     /// for the active route, used by `canContinue` and Max. `nil` means the
     /// requirement is currently unavailable for a fee-reserved route → callers
@@ -624,8 +796,8 @@ final class InternalTransferViewModel: ObservableObject {
             // Asset-lock routes reserve nothing from the source balance.
             return 0
         case .platformToShielded:
-            // Shield: fixed 1e9-credit selection reserve, not the (smaller) fee.
-            return Self.shieldSelectionReserveCredits
+            // Governed by the SDK's account/address-aware shield preflight.
+            return nil
         case .shieldedToCore:
             // The withdraw/unshield fee scales with the number of spent notes;
             // the SDK recomputes it from real note selection (up to the
@@ -640,16 +812,6 @@ final class InternalTransferViewModel: ObservableObject {
             // preflight's `netWithdrawable`; no reserve on top.
             return 0
         }
-    }
-
-    /// A credit balance minus the route's fee reserve, floored at 0 — so a Max
-    /// fill leaves room for the fee/headroom the SDK requires on top of the
-    /// amount. Fails closed (returns 0) when the reserve is unavailable.
-    private func creditsMinusFeeReserve(_ balanceCredits: UInt64) -> UInt64 {
-        guard let fee = feeReserveCredits else { return 0 }
-        return TransferSpendAmountPolicy.spendableCredits(
-            balanceCredits: balanceCredits,
-            feeReserveCredits: fee)
     }
 
     /// `parsedDashAmount` expressed as Int64 duffs, for `DashAmount` views.
@@ -754,6 +916,11 @@ final class InternalTransferViewModel: ObservableObject {
     /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
     /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
+        if route == .platformToShielded {
+            fillPlatformShieldMax()
+            return
+        }
+
         clearMaxSelection()
         let sourceDuffs: UInt64
         switch route {
@@ -772,17 +939,9 @@ final class InternalTransferViewModel: ObservableObject {
                 maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
             }
         case .platformToShielded:
-            // Reserve the fee the SDK charges on top of the amount so Max
-            // stays sendable (credits → duffs: integer divide by 1000).
-            let spendableCredits = creditsMinusFeeReserve(platformCredits)
-            sourceDuffs = spendableCredits / 1000
-            if sourceDuffs == 0 {
-                maxNotice = platformCredits > 0
-                    ? Self.feeReserveExceedsBalanceMessage(route.source)
-                    : Self.emptyBalanceMessage(route.source)
-            } else if platformCredits > spendableCredits {
-                maxNotice = Self.feeHeldBackMessage(platformCredits - spendableCredits)
-            }
+            // Handled above because an unresolved async preflight must preserve
+            // the user's current text while queueing the Max request.
+            return
         case .shieldedToCore, .shieldedToPlatform:
             let feeKind: PlatformWalletManager.ShieldedFeeKind =
                 route == .shieldedToCore ? .withdrawal : .unshield
@@ -823,26 +982,93 @@ final class InternalTransferViewModel: ObservableObject {
 
         isApplyingMax = true
         defer { isApplyingMax = false }
+        applyMaxAmountText(sourceDuffs)
+    }
+
+    /// Platform Max is asynchronous because only the Rust wallet knows which
+    /// address suffix its shield builder can select. If that answer is not
+    /// ready, remember the user's intent and leave the current text untouched.
+    private func fillPlatformShieldMax() {
+        if awaitingPlatformShieldResync {
+            isPlatformShieldMaxQueued = true
+            maxNotice = Self.platformShieldResyncInProgressMessage
+            startManualPlatformShieldResyncIfNeeded()
+            return
+        }
+        guard !isPlatformShieldPreflightLoading,
+              let capacity = platformShieldCapacity
+        else {
+            isPlatformShieldMaxQueued = true
+            maxNotice = Self.platformShieldPreflightLoadingMessage
+            refreshPlatformShieldPreflightIfNeeded()
+            return
+        }
+
+        applyPlatformShieldMax(capacity)
+    }
+
+    private func applyPlatformShieldMax(_ capacity: PlatformShieldCapacity) {
+        let preservesCapacityChangeNotice = hasPlatformShieldCapacityChangeNotice
+        let preservedNotice = preservesCapacityChangeNotice ? maxNotice : nil
+        clearMaxSelection()
+
+        let sourceDuffs = PlatformShieldAmountPolicy.maximumDuffs(capacity: capacity)
+        isApplyingMax = true
+        applyMaxAmountText(sourceDuffs)
+        isApplyingMax = false
+        isPlatformShieldMaxDerived = true
+
+        if let preservedNotice {
+            maxNotice = preservedNotice
+            hasPlatformShieldCapacityChangeNotice = true
+        } else if sourceDuffs == 0 {
+            maxNotice = capacity.accountBalanceCredits > 0
+                ? Self.platformShieldHeadroomUnavailableMessage
+                : Self.emptyBalanceMessage(.platform)
+        } else {
+            let heldBackCredits = PlatformShieldAmountPolicy.heldBackCredits(
+                displayedPlatformCredits: platformCredits,
+                accountBalanceCredits: capacity.accountBalanceCredits,
+                submittedDuffs: sourceDuffs)
+            if heldBackCredits > 0 {
+                maxNotice = Self.platformShieldHeldBackMessage(heldBackCredits)
+            }
+        }
+    }
+
+    /// Render Max in the selected input unit while retaining `duffs` as the
+    /// executable amount. In fiat mode the visible cents are approximate;
+    /// converting those rounded cents back to DASH caused Max to exceed the
+    /// balance and disabled Continue.
+    private func applyMaxAmountText(_ duffs: UInt64) {
+        guard duffs > 0 else {
+            maxAmountDuffs = nil
+            amountText = "0"
+            return
+        }
+
+        maxAmountDuffs = duffs
         switch unit {
         case .dash:
-            amountText = sourceDuffs.formattedDashAmountWithoutCurrencySymbol
+            amountText = duffs.formattedDashAmountWithoutCurrencySymbol
         case .fiat:
-            let dashDecimal = sourceDuffs.dashAmount
-            guard dashDecimal > 0 else {
-                amountText = "0"
-                return
-            }
+            let dashDecimal = duffs.dashAmount
             if let fiat = try? CurrencyExchanger.shared.convertDash(amount: dashDecimal, to: App.fiatCurrency) {
                 amountText = Self.formatTyped(fiat, fractionDigits: 2)
             } else {
+                maxAmountDuffs = nil
                 amountText = "0"
             }
         }
     }
 
     private func clearMaxSelection() {
+        maxAmountDuffs = nil
         isFullShieldedSweep = false
         shieldedSweepAmountCredits = nil
+        isPlatformShieldMaxDerived = false
+        isPlatformShieldMaxQueued = false
+        hasPlatformShieldCapacityChangeNotice = false
         maxNotice = nil
     }
 
@@ -850,12 +1076,168 @@ final class InternalTransferViewModel: ObservableObject {
     /// of `routeDidChange` so Max can retry a preflight that failed, instead of
     /// leaving the route stuck at 0 until the user toggles the route.
     private func startWithdrawalPreflightIfNeeded() {
-        guard route == .platformToCore, preflightTask == nil else { return }
-        preflightTask = Task { [weak self] in
+        guard route == .platformToCore, withdrawalPreflightTask == nil else { return }
+        withdrawalPreflightTask = Task { [weak self] in
             let result = try? await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
             guard let self, !Task.isCancelled else { return }
             self.withdrawalPreflight = result
-            self.preflightTask = nil
+            self.withdrawalPreflightTask = nil
+        }
+    }
+
+    private func refreshPlatformShieldPreflightIfNeeded() {
+        guard route == .platformToShielded,
+              platformShieldPreflightTask == nil
+        else { return }
+        refreshPlatformShieldPreflight()
+    }
+
+    /// User-driven escape for an offline/failed scheduled resync. It retries
+    /// Platform sync, never the cache-only preflight. The stale-cache barrier
+    /// remains until `$platformBalance` publishes; completion merely re-arms
+    /// the button so a later tap can try one more time.
+    private func startManualPlatformShieldResyncIfNeeded() {
+        guard PlatformShieldAmountPolicy.shouldStartManualResync(
+            awaitingPlatformResync: awaitingPlatformShieldResync,
+            retryInFlight: platformShieldManualResyncTask != nil)
+        else { return }
+
+        platformShieldManualResyncTask = Task { [weak self] in
+            await PlatformAddressSyncCoordinator.shared.syncNow()
+            guard let self, !Task.isCancelled else { return }
+            self.platformShieldManualResyncTask = nil
+            if self.awaitingPlatformShieldResync {
+                self.maxNotice = Self.platformShieldCapacityRefreshRequiredMessage
+            }
+        }
+    }
+
+    /// Replaces any in-flight result and advances a generation token. The SDK
+    /// call may not observe Swift task cancellation immediately, so the token
+    /// also prevents a late result from an older balance snapshot winning.
+    private func refreshPlatformShieldPreflight(
+        after event: PlatformShieldAmountPolicy.PreflightRefreshEvent = .other
+    ) {
+        guard route == .platformToShielded,
+              PlatformShieldAmountPolicy.shouldRefreshPreflight(
+                after: event,
+                awaitingPlatformResync: awaitingPlatformShieldResync)
+        else { return }
+
+        if case .balancePublished = event {
+            awaitingPlatformShieldResync = false
+        }
+
+        platformShieldPreflightGeneration &+= 1
+        let generation = platformShieldPreflightGeneration
+        platformShieldPreflightTask?.cancel()
+        platformShieldCapacity = nil
+        isPlatformShieldPreflightLoading = true
+        if isPlatformShieldMaxDerived && !hasPlatformShieldCapacityChangeNotice {
+            maxNotice = Self.platformShieldPreflightLoadingMessage
+        }
+
+        platformShieldPreflightTask = Task { [weak self] in
+            do {
+                let result = try await PlatformAddressSyncCoordinator.shared.preflightShield()
+                guard let self,
+                      !Task.isCancelled,
+                      self.route == .platformToShielded,
+                      self.platformShieldPreflightGeneration == generation
+                else { return }
+
+                let capacity = PlatformShieldCapacity(result)
+                self.platformShieldCapacity = capacity
+                self.isPlatformShieldPreflightLoading = false
+                self.platformShieldPreflightTask = nil
+
+                if self.hasPlatformShieldCapacityChangeNotice {
+                    self.maxNotice = Self.platformShieldCapacityChangedMessage(
+                        maxShieldableCredits: capacity.maxShieldableCredits)
+                }
+
+                if self.isPlatformShieldMaxDerived || self.isPlatformShieldMaxQueued {
+                    self.applyPlatformShieldMax(capacity)
+                }
+            } catch {
+                guard let self,
+                      !Task.isCancelled,
+                      self.route == .platformToShielded,
+                      self.platformShieldPreflightGeneration == generation
+                else { return }
+
+                self.platformShieldCapacity = nil
+                self.isPlatformShieldPreflightLoading = false
+                self.platformShieldPreflightTask = nil
+                if !self.hasPlatformShieldCapacityChangeNotice
+                    && (self.isPlatformShieldMaxQueued || self.isPlatformShieldMaxDerived) {
+                    self.maxNotice = Self.platformShieldPreflightUnavailableMessage
+                }
+            }
+        }
+    }
+
+    private func cancelPlatformShieldPreflight() {
+        platformShieldPreflightGeneration &+= 1
+        platformShieldPreflightTask?.cancel()
+        platformShieldPreflightTask = nil
+        platformShieldCapacity = nil
+        isPlatformShieldPreflightLoading = false
+        isPlatformShieldMaxQueued = false
+        awaitingPlatformShieldResync =
+            PlatformShieldAmountPolicy.awaitingPlatformResync(
+                current: awaitingPlatformShieldResync,
+                after: .other)
+    }
+
+    /// Called when Confirm's last-moment preflight no longer covers the frozen
+    /// submitted amount. The sheet is dismissed by its host. A Max-derived
+    /// amount follows the new ceiling; manual input remains verbatim and fails
+    /// validation until the user edits it.
+    func handlePlatformShieldCapacityChanged(
+        maxShieldableCredits: UInt64?,
+        submittedAmountWasMax: Bool
+    ) {
+        guard route == .platformToShielded else { return }
+
+        let refreshedDuffs = PlatformShieldAmountPolicy.amountAfterCapacityChange(
+            currentDuffs: dashDuffsUnsigned,
+            wasMaxDerived: submittedAmountWasMax,
+            maxShieldableCredits: maxShieldableCredits)
+
+        if submittedAmountWasMax, maxShieldableCredits != nil {
+            isApplyingMax = true
+            applyMaxAmountText(refreshedDuffs)
+            isApplyingMax = false
+            isPlatformShieldMaxDerived = true
+        } else if submittedAmountWasMax {
+            // The typed SDK failure proves the submitted Max is stale, but the
+            // cache cannot yet provide a truthful replacement.
+            // Preserve it visually and keep its Max provenance so the next
+            // successful refresh can replace it; affordability stays closed.
+            isPlatformShieldMaxDerived = true
+        } else {
+            maxAmountDuffs = nil
+            isPlatformShieldMaxDerived = false
+        }
+
+        isPlatformShieldMaxQueued = false
+        hasPlatformShieldCapacityChangeNotice = true
+        if let maxShieldableCredits {
+            awaitingPlatformShieldResync = false
+            maxNotice = Self.platformShieldCapacityChangedMessage(
+                maxShieldableCredits: maxShieldableCredits)
+            refreshPlatformShieldPreflight()
+        } else {
+            maxNotice = Self.platformShieldCapacityRefreshRequiredMessage
+            // Fail closed until the coordinator's scheduled Platform sync
+            // publishes a balance snapshot. Do not re-read the cache here.
+            platformShieldPreflightGeneration &+= 1
+            platformShieldPreflightTask?.cancel()
+            platformShieldPreflightTask = nil
+            platformShieldCapacity = nil
+            isPlatformShieldPreflightLoading = false
+            awaitingPlatformShieldResync = true
         }
     }
 
@@ -888,12 +1270,49 @@ final class InternalTransferViewModel: ObservableObject {
         return feeReserveExceedsBalanceMessage(.core)
     }
 
-    private static func feeHeldBackMessage(_ credits: UInt64) -> String {
+    private static let platformShieldPreflightLoadingMessage = NSLocalizedString(
+        "Checking how much of your Platform balance can be moved…",
+        comment: "Platform to Shielded preflight in progress")
+
+    private static let platformShieldPreflightUnavailableMessage = NSLocalizedString(
+        "Could not check the available Platform balance. Sync and try again.",
+        comment: "Platform to Shielded preflight failed")
+
+    private static let platformShieldCapacityRefreshRequiredMessage = NSLocalizedString(
+        "Your available Platform balance changed, but the new maximum could not be checked. The amount was not changed. Sync and try again.",
+        comment: "Platform Shield capacity changed but refresh failed")
+
+    private static let platformShieldResyncInProgressMessage = NSLocalizedString(
+        "Refreshing your Platform balance before checking the new maximum…",
+        comment: "Platform Shield manual resync in progress")
+
+    private static let platformShieldHeadroomUnavailableMessage = NSLocalizedString(
+        "Your Platform balance cannot currently cover the Shield transfer selection headroom.",
+        comment: "Platform balance cannot fund shield selection headroom")
+
+    private static func platformShieldHeldBackMessage(_ credits: UInt64) -> String {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
         return String.localizedStringWithFormat(
             NSLocalizedString(
-                "%@ DASH is reserved for the transfer fee.",
-                comment: "Max reserves the transfer fee"),
+                "%@ DASH remains in Platform because some address funds cannot be selected and transfer headroom is reserved.",
+                comment: "Platform Shield Max leaves selection headroom and unselectable funds"),
+            formatted)
+    }
+
+    private static func platformShieldCapacityChangedMessage(
+        maxShieldableCredits: UInt64
+    ) -> String {
+        let maxDuffs = maxShieldableCredits / 1000
+        guard maxDuffs > 0 else {
+            return NSLocalizedString(
+                "Your available Platform balance changed and can no longer cover this Shield transfer. Review the amount and try again.",
+                comment: "Platform Shield capacity changed to zero")
+        }
+        let formatted = maxDuffs.formattedDashAmountWithoutCurrencySymbol
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "Your available Platform balance changed. The new maximum is %@ DASH. Review it and confirm again.",
+                comment: "Platform Shield capacity changed before confirmation"),
             formatted)
     }
 

@@ -102,6 +102,14 @@ struct ExploreMenuScreen: View {
                 .frame(minHeight: 56)
 
                 MenuItem(
+                    title: NSLocalizedString("Username Marketplace", comment: "Username marketplace"),
+                    subtitle: NSLocalizedString("Buy, sell and transfer DashPay usernames", comment: "Username marketplace: Explore row subtitle"),
+                    icon: .system("at.circle.fill"),
+                    action: { showUsernameMarketplace() }
+                )
+                .frame(minHeight: 56)
+
+                MenuItem(
                     title: NSLocalizedString("ATMs", comment: ""),
                     subtitle: NSLocalizedString("Find ATMs where you can buy or sell Dash", comment: ""),
                     icon: .custom("image-menu-atm", maxHeight: 30),
@@ -217,6 +225,13 @@ struct ExploreMenuScreen: View {
             controller.hidesBottomBarWhenPushed = true
             vc.pushViewController(controller, animated: true)
         }
+    }
+
+    private func showUsernameMarketplace() {
+        let controller = UIHostingController(
+            rootView: UsernameMarketplaceScreen(vc: vc))
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
     }
 
     private func showAtms() {
