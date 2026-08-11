@@ -153,6 +153,13 @@ NS_ASSUME_NONNULL_BEGIN
     // Kick off the SwiftDashSDK key migration and app-owned runtime early.
     // The runtime wallet is restored from app-owned Keychain state,
     // not from a SwiftData wallet store.
+#ifdef DEBUG
+    // QA fixture: fabricate DashSync's legacy keychain layout when either
+    // LEGACY_KEYCHAIN_MNEMONIC or LEGACY_KEYCHAIN_INVALID=1 is set in the
+    // environment (simulator upgrade-path testing). No-op otherwise;
+    // DEBUG builds only.
+    [DWSwiftDashSDKKeyMigrator debugInstallLegacyFixtureIfRequested];
+#endif
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
     [DWSwiftDashSDKWalletRuntime startObservingNetworkChanges];
     [DWSwiftDashSDKWalletRuntime startIfReady];

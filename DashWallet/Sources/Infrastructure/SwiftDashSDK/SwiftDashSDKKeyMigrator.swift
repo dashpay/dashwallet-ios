@@ -83,6 +83,12 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     private static let deferredMultiWalletKey   = "swiftSDKKeyMigration.v1.deferredMultiWallet"
     private static let deferredUnknownChainKey  = "swiftSDKKeyMigration.v1.deferredUnknownChain"
+    /// Set when a run ended with a read/validate/import failure. Without a
+    /// terminal flag for this case, every consumer waiting on the sentinel
+    /// (the runtime's 30s poll, the root controller's launch decision) timed
+    /// out on every launch while the migrator kept failing — stranding a
+    /// restored wallet behind a permanently stopped runtime.
+    private static let deferredFailureKey = "swiftSDKKeyMigration.v1.deferredFailure"
 
     /// Per-wallet success ledger — DashSync walletIDs that already round-tripped
     /// through `createOrImportWallet`. Lets a partial-failure run resume on next
@@ -126,10 +132,11 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         }
 
         // Clear stale defer flags before re-evaluating. The runtime reads
-        // either flag as permission to stop waiting for migration — leaving
+        // any flag as permission to stop waiting for migration — leaving
         // a stale value would race the loop below.
         defaults.removeObject(forKey: deferredMultiWalletKey)
         defaults.removeObject(forKey: deferredUnknownChainKey)
+        defaults.removeObject(forKey: deferredFailureKey)
 
         let mnemonicAccounts = enumerateDashSyncMnemonicAccounts()
         if mnemonicAccounts.isEmpty {
@@ -194,8 +201,36 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             if hadUnknownChain {
                 defaults.set(true, forKey: deferredUnknownChainKey)
             }
+            if hadFailure {
+                defaults.set(true, forKey: deferredFailureKey)
+            }
             logger.warning("🔑 KEYMIG :: migration incomplete — will retry on next launch")
         }
+    }
+
+    // MARK: - Launch-decision probes
+
+    /// True while DashSync wallet material exists in the keychain and the
+    /// one-shot migration has not completed. The root controller holds its
+    /// initial-screen decision while this is true — deciding "no wallet"
+    /// inside the async migration window showed Create/Recover to upgrading
+    /// users whose wallet was milliseconds from landing (and routed their
+    /// typed phrase into the recover screen's wipe branch).
+    @objc
+    static func legacyWalletMaterialPendingMigration() -> Bool {
+        guard UserDefaults.standard.string(forKey: doneKey) == nil else { return false }
+        return !enumerateDashSyncMnemonicAccounts().isEmpty
+    }
+
+    /// True once the migrator reached a terminal state for this launch:
+    /// completed, or recorded any deferral/failure flag (each of which every
+    /// waiter treats as "stop waiting").
+    @objc
+    static func migrationSettled() -> Bool {
+        let defaults = UserDefaults.standard
+        if defaults.string(forKey: doneKey) != nil { return true }
+        return [deferredMultiWalletKey, deferredUnknownChainKey, deferredFailureKey]
+            .contains { defaults.object(forKey: $0) != nil }
     }
 
     private static func createWalletOnHost(
@@ -338,5 +373,83 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         PinStore.readData(service: service, account: account)
             .flatMap { String(data: $0, encoding: .utf8) }
     }
+
+    #if DEBUG
+    // MARK: - QA fixture (DEBUG only)
+
+    /// Fabricate DashSync's keychain layout so the App Store → SDK upgrade
+    /// path can be exercised on a simulator without a real legacy install.
+    /// Two mutually exclusive triggers, each clearing the migration
+    /// sentinel so the migrator re-runs:
+    /// - `LEGACY_KEYCHAIN_INVALID=1` plants one never-valid mnemonic entry
+    ///   (the perpetually-failing-migration state) and nothing else.
+    /// - `LEGACY_KEYCHAIN_MNEMONIC` = BIP39 phrase to plant, with a legacy
+    ///   PIN (`LEGACY_KEYCHAIN_PIN`, default 1111); optional
+    ///   `LEGACY_KEYCHAIN_ORPHAN=1` skips the chain-wallets list (the
+    ///   unknown-chain defer path). This variant also clears the per-wallet
+    ///   ledger and removes any previously planted invalid entry.
+    /// Call before `migrateIfNeeded`.
+    @objc
+    static func debugInstallLegacyFixtureIfRequested() {
+        let env = ProcessInfo.processInfo.environment
+        // Variant: a DashSync entry whose phrase can never validate — the
+        // migrator fails every run (deferredFailure), reproducing the
+        // "stranded upgrader" state without touching any valid material
+        // already present.
+        if env["LEGACY_KEYCHAIN_INVALID"] == "1" {
+            let defaults = UserDefaults.standard
+            defaults.removeObject(forKey: doneKey)
+            _ = KeychainStore.set(
+                data: Data("definitely not a valid bip39 phrase".utf8),
+                service: dashSyncService,
+                account: dashSyncMnemonicAccountPrefix + "deadbeefdeadbeef",
+                accessibility: .whenUnlockedThisDeviceOnly)
+            logger.warning("🔑 KEYMIG :: DEBUG invalid-mnemonic fixture installed")
+            return
+        }
+        guard let phrase = env["LEGACY_KEYCHAIN_MNEMONIC"], !phrase.isEmpty else { return }
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: doneKey)
+        defaults.removeObject(forKey: migratedDashSyncWalletIdsKey)
+        // Drop any invalid entry a previous LEGACY_KEYCHAIN_INVALID run
+        // planted — otherwise this run's migration sees both accounts,
+        // fails on the invalid one, and can never mark itself done.
+        _ = KeychainStore.set(
+            data: nil,
+            service: dashSyncService,
+            account: dashSyncMnemonicAccountPrefix + "deadbeefdeadbeef",
+            accessibility: .whenUnlockedThisDeviceOnly)
+
+        // The legacy install had a PIN (PinStore reads DashSync's records
+        // in place) — plant one so the post-migration lock screen is
+        // satisfiable, as it is on a real upgrade.
+        let pin = env["LEGACY_KEYCHAIN_PIN"] ?? "1111"
+        _ = PinStore.set(string: pin, for: .pin)
+        _ = PinStore.set(int64: 1, for: .usesAuthentication)
+
+        let walletID = "1122334455667788"
+        _ = KeychainStore.set(
+            data: Data(phrase.utf8),
+            service: dashSyncService,
+            account: dashSyncMnemonicAccountPrefix + walletID,
+            accessibility: .whenUnlockedThisDeviceOnly)
+        let orphan = env["LEGACY_KEYCHAIN_ORPHAN"] == "1"
+        if orphan {
+            _ = KeychainStore.set(
+                data: nil,
+                service: dashSyncService,
+                account: dashSyncChainWalletsKeyPrefix + mainnetGenesisShortHex,
+                accessibility: .whenUnlockedThisDeviceOnly)
+        } else if let archive = try? NSKeyedArchiver.archivedData(
+            withRootObject: [walletID] as NSArray, requiringSecureCoding: false) {
+            _ = KeychainStore.set(
+                data: archive,
+                service: dashSyncService,
+                account: dashSyncChainWalletsKeyPrefix + mainnetGenesisShortHex,
+                accessibility: .whenUnlockedThisDeviceOnly)
+        }
+        logger.warning("🔑 KEYMIG :: DEBUG legacy fixture installed (orphan=\(orphan, privacy: .public))")
+    }
+    #endif
 
 }

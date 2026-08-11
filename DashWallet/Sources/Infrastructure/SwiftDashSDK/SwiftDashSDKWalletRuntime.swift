@@ -50,6 +50,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     private static let seedMigratorDeferredKeys = [
         "swiftSDKKeyMigration.v1.deferredMultiWallet",
         "swiftSDKKeyMigration.v1.deferredUnknownChain",
+        "swiftSDKKeyMigration.v1.deferredFailure",
     ]
     private static let seedMigratorWaitTimeout: TimeInterval = 30.0
     private static let seedMigratorPollInterval: TimeInterval = 0.1
@@ -403,6 +404,18 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     private func waitForSeedMigratorIfNeeded() async -> Bool {
         let defaults = UserDefaults.standard
         if defaults.string(forKey: Self.seedMigratorDoneKey) != nil {
+            return true
+        }
+
+        // A persisted SDK wallet is runnable material regardless of the
+        // migrator's state. Gating on the sentinel here stranded users who
+        // restored a wallet while the migrator kept failing without a
+        // terminal flag: every refresh waited the full timeout, gave up,
+        // and left the runtime stopped — main UI with an empty Wallets
+        // screen and refused imports. A late successful migration still
+        // lands through `handleWalletMaterialChanged`.
+        if WalletEnvironment.hasSDKWallet {
+            Self.logger.info("🧭 RUNTIME :: SDK wallet already persisted; not blocking on key migrator")
             return true
         }
 
