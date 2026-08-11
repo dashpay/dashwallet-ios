@@ -744,36 +744,9 @@ struct PayContactSheet: View {
             } catch {
                 let nsError = error as NSError
                 if !WalletSendService.isAuthenticationCancelledError(nsError) {
-                    errorMessage = Self.payFailureMessage(for: error)
+                    errorMessage = error.localizedDescription
                 }
             }
         }
-    }
-
-    /// User-facing text for a failed contact payment.
-    ///
-    /// The SDK surfaces a missing DIP-15 external account as its own
-    /// internal diagnostic — "Invalid identity data: No
-    /// DashpayExternalAccount found for contact <id> — call
-    /// register_external_contact_account first". That reached users
-    /// verbatim in an alert: unreadable, and it names an API only the
-    /// SDK can call, so it reads as "do something" when there is
-    /// nothing for the user to do.
-    ///
-    /// The channel is built in the background from the counterparty's
-    /// contact request, so the honest advice is to wait and retry. Any
-    /// other failure keeps its own message — this deliberately
-    /// translates one known string rather than swallowing every error
-    /// behind a generic one.
-    static func payFailureMessage(for error: Error) -> String {
-        let description = error.localizedDescription
-        guard description.contains("DashpayExternalAccount")
-            || description.contains("register_external_contact_account")
-        else {
-            return description
-        }
-        return NSLocalizedString(
-            "This contact's payment channel isn't ready yet. It's still being set up in the background — please try again in a few minutes.",
-            comment: "DashPay Contacts")
     }
 }

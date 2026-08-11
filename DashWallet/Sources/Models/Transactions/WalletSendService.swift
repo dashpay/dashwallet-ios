@@ -453,11 +453,16 @@ final class WalletSendService: NSObject {
             )
         }
 
-        let (txid, feeDuffs) = try await context.wallet.sendDashPayPayment(
-            fromIdentityId: context.ourId,
-            toContactIdentityId: contactIdentityId,
-            amountDuffs: amount,
-            memo: memo)
+        let (txid, feeDuffs): (Data, UInt64)
+        do {
+            (txid, feeDuffs) = try await context.wallet.sendDashPayPayment(
+                fromIdentityId: context.ourId,
+                toContactIdentityId: contactIdentityId,
+                amountDuffs: amount,
+                memo: memo)
+        } catch {
+            throw Self.contactPaymentError(from: error)
+        }
         Self.logger.info("💸 TXSEND :: pay-to-contact broadcast, txid \(txid.map { String(format: "%02x", $0) }.joined(), privacy: .public), fee \(feeDuffs, privacy: .public) duffs")
         return (txid: txid, feeDuffs: feeDuffs)
     }
@@ -653,6 +658,35 @@ private extension WalletSendService {
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"
+
+    /// Translate the SDK's internal missing-external-account diagnostic into
+    /// something a user can act on.
+    ///
+    /// A contact's DIP-15 external account is built in the background from the
+    /// counterparty's contact request; until it exists the SDK fails the send
+    /// with "Invalid identity data: No DashpayExternalAccount found for contact
+    /// <id> — call register_external_contact_account first". That reached users
+    /// verbatim in an alert: it names an API only the SDK can call, so it reads
+    /// as an instruction for something they cannot do.
+    ///
+    /// Mapped here rather than at the presentation layer so the diagnostic stops
+    /// at the boundary that owns the SDK call, and every present and future
+    /// caller of `sendToContact` gets the same treatment. Deliberately narrow —
+    /// anything else is returned untouched rather than hidden behind a generic
+    /// message.
+    static func contactPaymentError(from error: Error) -> Error {
+        let description = error.localizedDescription
+        guard description.contains("DashpayExternalAccount")
+            || description.contains("register_external_contact_account")
+        else {
+            return error
+        }
+        return makeError(
+            code: .dashPayPaymentUnavailable,
+            description: NSLocalizedString(
+                "This contact's payment channel isn't ready yet. It's still being set up in the background — please try again in a few minutes.",
+                comment: "DashPay Contacts"))
+    }
 
     static func makeError(code: ErrorCode, description: String) -> NSError {
         NSError(
