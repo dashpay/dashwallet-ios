@@ -184,6 +184,16 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (BOOL)shouldDisplayOnboarding {
+    // The carousel is a new-user intro. An upgrader whose DashSync wallet
+    // is pending migration skips it: the root controller's migration hold
+    // presents their wallet (behind the lock screen) directly, instead of
+    // marketing playing while the wallet is milliseconds from appearing.
+    // The reinstall case (SDK wallet material with wiped defaults) keeps
+    // the carousel — its Keep/Delete prompt is wired to the carousel's
+    // completion.
+    if ([DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration]) {
+        return NO;
+    }
     return [DWGlobalOptions sharedInstance].shouldDisplayOnboarding;
 }
 
