@@ -84,11 +84,6 @@ struct InternalTransferScreen: View {
                     directionCards
                         .padding(.horizontal, 20)
 
-                    if let conflictNotice = viewModel.endpointConflictNotice {
-                        TransferAmountValidationNote(message: conflictNotice)
-                            .padding(.horizontal, 20)
-                    }
-
                     if viewModel.isBlockedBySync {
                         SyncGateNote()
                             .padding(.horizontal, 20)
@@ -269,19 +264,15 @@ struct InternalTransferScreen: View {
     }
 
     private func presentEndpointPicker(_ group: EndpointGroup) {
-        // A conflict notice from an earlier interaction must not open a
-        // fresh picker pre-scolded.
-        viewModel.clearEndpointConflictNotice()
         endpointPicker = group
     }
 
     /// Bottom-sheet balance picker for one endpoint, sized to slide over
-    /// the keypad area. A valid pick applies and dismisses; a conflicting
-    /// pick keeps the sheet open with the inline warning explaining the
-    /// rejection.
+    /// the keypad area. Every pick applies and dismisses — picking the
+    /// balance already on the opposite side moves that side to its default
+    /// (the view model keeps the endpoints distinct).
     private func endpointPickerSheet(for group: EndpointGroup) -> some View {
         let isFrom = group == .from
-        let conflict = isFrom ? viewModel.resolvedSendTarget : viewModel.source
         return VStack(alignment: .leading, spacing: 16) {
             Text(isFrom
                 ? NSLocalizedString("Transfer from", comment: "Internal transfer source picker title")
@@ -295,21 +286,14 @@ struct InternalTransferScreen: View {
                     : NSLocalizedString("To", comment: ""),
                 networks: ChainNetwork.allCases,
                 selected: isFrom ? viewModel.source : viewModel.resolvedSendTarget,
-                conflictingWith: conflict,
                 onSelect: { network in
                     if isFrom {
                         viewModel.selectStandaloneSource(network)
                     } else {
                         viewModel.selectStandaloneTarget(network)
                     }
-                    if network != conflict {
-                        endpointPicker = nil
-                    }
+                    endpointPicker = nil
                 })
-
-            if let notice = viewModel.endpointConflictNotice {
-                TransferAmountValidationNote(message: notice)
-            }
 
             Spacer(minLength: 0)
         }
@@ -357,15 +341,10 @@ struct InternalTransferScreen: View {
         TransferSourceRow.dashBalanceTrailing(formatted)
     }
 
-    /// `conflictingWith` is the balance already occupying the opposite
-    /// endpoint: its row stays visible (the group always lists all three
-    /// balances) but dimmed, and tapping it is rejected by the view model
-    /// with an inline explanation.
     private func selectionGroup(
         caption: String,
         networks: [ChainNetwork],
         selected: ChainNetwork,
-        conflictingWith: ChainNetwork? = nil,
         onSelect: @escaping (ChainNetwork) -> Void
     ) -> some View {
         VStack(spacing: 8) {
@@ -378,7 +357,6 @@ struct InternalTransferScreen: View {
                     balanceTrailing: dashBalanceTrailing(display.balance),
                     selected: selected == network,
                     action: { onSelect(network) })
-                    .opacity(network == conflictingWith ? 0.45 : 1)
             }
         }
     }
