@@ -81,6 +81,21 @@ final class StorageIdentityReloadModel: ObservableObject {
     func reload(identityIndex: UInt32) async {
         await DWIdentityReloader.reload(identityIndex: identityIndex)
     }
+
+    /// Reload every local (wallet-owned) identity — the Public Keys list
+    /// spans identities, so refreshing only the current user's would leave
+    /// the others' keys stale. Foreign identities (`isLocal == false`) are
+    /// skipped: `loadIdentity(atIndex:)` probes the wallet's own DIP-9
+    /// tree and cannot refresh an identity this wallet doesn't own.
+    func reloadAllLocalIdentities() async {
+        guard let modelContainer = SwiftDashSDKHost.shared.modelContainer else { return }
+        let descriptor = FetchDescriptor<PersistentIdentity>(
+            predicate: #Predicate { $0.isLocal })
+        let rows = (try? modelContainer.mainContext.fetch(descriptor)) ?? []
+        for index in Set(rows.map(\.identityIndex)).sorted() {
+            await DWIdentityReloader.reload(identityIndex: index)
+        }
+    }
 }
 #endif
 
@@ -105,9 +120,10 @@ struct PublicKeyStorageListView: View {
         .navigationTitle("Public Keys (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "key") } }
         #if DASHPAY
-        // Pull-to-refresh re-fetches the current user's identity from
-        // Platform so keys added on another device appear here.
-        .refreshable { await reloadModel.reloadCurrentUserIdentity() }
+        // Pull-to-refresh re-fetches every wallet-owned identity from
+        // Platform so keys added on another device appear here — the
+        // list spans identities, not just the current user's.
+        .refreshable { await reloadModel.reloadAllLocalIdentities() }
         #endif
     }
 }
