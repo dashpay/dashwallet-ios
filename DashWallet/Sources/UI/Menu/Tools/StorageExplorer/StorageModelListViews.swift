@@ -67,9 +67,30 @@ struct DataContractStorageListView: View {
 
 // MARK: - PersistentPublicKey
 
+#if DASHPAY
+/// Identity reloads for the Storage Explorer's pull-to-refresh — the
+/// SDK call stays out of the `View` structs per the SwiftUI guardrails.
+/// Shared by the Public Keys list (current-user reload) and the identity
+/// detail (per-record reload).
+@MainActor
+final class StorageIdentityReloadModel: ObservableObject {
+    func reloadCurrentUserIdentity() async {
+        await DWIdentityReloader.reloadCurrentUserIdentity()
+    }
+
+    func reload(identityIndex: UInt32) async {
+        await DWIdentityReloader.reload(identityIndex: identityIndex)
+    }
+}
+#endif
+
 struct PublicKeyStorageListView: View {
     @Query(sort: \PersistentPublicKey.createdAt, order: .reverse)
     private var records: [PersistentPublicKey]
+
+    #if DASHPAY
+    @StateObject private var reloadModel = StorageIdentityReloadModel()
+    #endif
 
     var body: some View {
         List(records) { record in
@@ -86,7 +107,7 @@ struct PublicKeyStorageListView: View {
         #if DASHPAY
         // Pull-to-refresh re-fetches the current user's identity from
         // Platform so keys added on another device appear here.
-        .refreshable { await DWIdentityReloader.reloadCurrentUserIdentity() }
+        .refreshable { await reloadModel.reloadCurrentUserIdentity() }
         #endif
     }
 }

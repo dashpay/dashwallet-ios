@@ -58,6 +58,10 @@ private func jsonString(_ data: Data?) -> String? {
 struct IdentityStorageDetailView: View {
     let record: PersistentIdentity
 
+    #if DASHPAY
+    @StateObject private var reloadModel = StorageIdentityReloadModel()
+    #endif
+
     var body: some View {
         Form {
             Section("Core") {
@@ -95,7 +99,7 @@ struct IdentityStorageDetailView: View {
         // Pull-to-refresh re-fetches this identity from Platform — the
         // local rows (public keys especially) lag keys added on another
         // device. @Query keeps the form live as the reload persists.
-        .refreshable { await DWIdentityReloader.reload(identityIndex: record.identityIndex) }
+        .refreshable { await reloadModel.reload(identityIndex: record.identityIndex) }
         #endif
     }
 }

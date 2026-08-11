@@ -798,15 +798,17 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// every subsequent tab load.
     private var platformConfirmedDashPayIdentities: Set<Data> = []
 
-    /// Authoritative Platform-side count of the missing DIP-15 keys. The
-    /// local SwiftData key rows lag when the pair was added from another
-    /// device — `missingDashPayKeyCount()` alone would keep showing the
-    /// "Enable DashPay" intro for an identity that is already enabled.
-    /// Returns nil when the query can't run (no SDK / no identity / network
-    /// error); callers keep the local answer then.
-    func missingDashPayKeyCountOnPlatform() async -> Int? {
-        guard let sdk = SwiftDashSDKHost.shared.sdk,
-              let ownerId = DWCurrentUserIdentityInfo.shared.identityId else {
+    /// Authoritative Platform-side count of the missing DIP-15 keys for
+    /// `ownerId`. The local SwiftData key rows lag when the pair was added
+    /// from another device — `missingDashPayKeyCount()` alone would keep
+    /// showing the "Enable DashPay" intro for an identity that is already
+    /// enabled. Takes the identity explicitly so a caller can bind the
+    /// result to the identity it captured before awaiting (a wallet switch
+    /// mid-flight must not apply one identity's answer to another).
+    /// Returns nil when the query can't run (no SDK / network error);
+    /// callers keep the local answer then.
+    func missingDashPayKeyCountOnPlatform(identityId ownerId: Data) async -> Int? {
+        guard let sdk = SwiftDashSDKHost.shared.sdk else {
             return nil
         }
         if platformConfirmedDashPayIdentities.contains(ownerId) { return 0 }

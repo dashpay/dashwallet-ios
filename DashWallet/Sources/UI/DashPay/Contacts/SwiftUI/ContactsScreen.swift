@@ -127,12 +127,22 @@ final class ContactsViewModel: ObservableObject {
     /// When they claim the DIP-15 pair is missing, confirm against
     /// Platform's authoritative key set and correct the intro — most
     /// importantly clearing it for an identity that is already enabled.
+    ///
+    /// The result is bound to the identity captured BEFORE the await: a
+    /// wallet switch mid-flight discards the stale answer and re-checks
+    /// for the newly active identity instead.
     private func reconcileDashPayEnableWithPlatform() {
-        guard needsDashPayEnable, !platformKeyCheckInFlight else { return }
+        guard needsDashPayEnable, !platformKeyCheckInFlight,
+              let ownerId = DWCurrentUserIdentityInfo.shared.identityId else { return }
         platformKeyCheckInFlight = true
         Task {
-            defer { platformKeyCheckInFlight = false }
-            guard let missing = await service.missingDashPayKeyCountOnPlatform() else { return }
+            let missing = await service.missingDashPayKeyCountOnPlatform(identityId: ownerId)
+            platformKeyCheckInFlight = false
+            guard DWCurrentUserIdentityInfo.shared.identityId == ownerId else {
+                reconcileDashPayEnableWithPlatform()
+                return
+            }
+            guard let missing else { return }
             missingDashPayKeyCount = missing
             needsDashPayEnable = missing > 0
         }
