@@ -88,7 +88,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// (the runtime's 30s poll, the root controller's launch decision) timed
     /// out on every launch while the migrator kept failing — stranding a
     /// restored wallet behind a permanently stopped runtime.
-    private static let deferredFailureKey       = "swiftSDKKeyMigration.v1.deferredFailure"
+    private static let deferredFailureKey = "swiftSDKKeyMigration.v1.deferredFailure"
 
     /// Per-wallet success ledger — DashSync walletIDs that already round-tripped
     /// through `createOrImportWallet`. Lets a partial-failure run resume on next
@@ -216,7 +216,8 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// inside the async migration window showed Create/Recover to upgrading
     /// users whose wallet was milliseconds from landing (and routed their
     /// typed phrase into the recover screen's wipe branch).
-    @objc static func legacyWalletMaterialPendingMigration() -> Bool {
+    @objc
+    static func legacyWalletMaterialPendingMigration() -> Bool {
         guard UserDefaults.standard.string(forKey: doneKey) == nil else { return false }
         return !enumerateDashSyncMnemonicAccounts().isEmpty
     }
@@ -224,7 +225,8 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// True once the migrator reached a terminal state for this launch:
     /// completed, or recorded any deferral/failure flag (each of which every
     /// waiter treats as "stop waiting").
-    @objc static func migrationSettled() -> Bool {
+    @objc
+    static func migrationSettled() -> Bool {
         let defaults = UserDefaults.standard
         if defaults.string(forKey: doneKey) != nil { return true }
         return [deferredMultiWalletKey, deferredUnknownChainKey, deferredFailureKey]
@@ -377,12 +379,18 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     /// Fabricate DashSync's keychain layout so the App Store → SDK upgrade
     /// path can be exercised on a simulator without a real legacy install.
-    /// Env: `LEGACY_KEYCHAIN_MNEMONIC` = BIP39 phrase to plant; optional
-    /// `LEGACY_KEYCHAIN_ORPHAN=1` skips the chain-wallets list (exercises
-    /// the unknown-chain defer path). Also clears the migration sentinel and
-    /// per-wallet ledger so the migrator re-runs. Call before
-    /// `migrateIfNeeded`.
-    @objc static func debugInstallLegacyFixtureIfRequested() {
+    /// Two mutually exclusive triggers, each clearing the migration
+    /// sentinel so the migrator re-runs:
+    /// - `LEGACY_KEYCHAIN_INVALID=1` plants one never-valid mnemonic entry
+    ///   (the perpetually-failing-migration state) and nothing else.
+    /// - `LEGACY_KEYCHAIN_MNEMONIC` = BIP39 phrase to plant, with a legacy
+    ///   PIN (`LEGACY_KEYCHAIN_PIN`, default 1111); optional
+    ///   `LEGACY_KEYCHAIN_ORPHAN=1` skips the chain-wallets list (the
+    ///   unknown-chain defer path). This variant also clears the per-wallet
+    ///   ledger and removes any previously planted invalid entry.
+    /// Call before `migrateIfNeeded`.
+    @objc
+    static func debugInstallLegacyFixtureIfRequested() {
         let env = ProcessInfo.processInfo.environment
         // Variant: a DashSync entry whose phrase can never validate — the
         // migrator fails every run (deferredFailure), reproducing the
@@ -403,6 +411,14 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         let defaults = UserDefaults.standard
         defaults.removeObject(forKey: doneKey)
         defaults.removeObject(forKey: migratedDashSyncWalletIdsKey)
+        // Drop any invalid entry a previous LEGACY_KEYCHAIN_INVALID run
+        // planted — otherwise this run's migration sees both accounts,
+        // fails on the invalid one, and can never mark itself done.
+        _ = KeychainStore.set(
+            data: nil,
+            service: dashSyncService,
+            account: dashSyncMnemonicAccountPrefix + "deadbeefdeadbeef",
+            accessibility: .whenUnlockedThisDeviceOnly)
 
         // The legacy install had a PIN (PinStore reads DashSync's records
         // in place) — plant one so the post-migration lock screen is
