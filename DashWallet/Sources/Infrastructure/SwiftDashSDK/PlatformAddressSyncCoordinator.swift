@@ -1503,10 +1503,11 @@ final class ShieldedTxLookup {
     /// Snapshot value for one shielded funding tx: the locked amount plus the
     /// asset lock's current status and funding output index. `statusRaw`
     /// distinguishes a still-pending/stuck shield (1…3 — Broadcast/IS/CL) from
-    /// a consumed, successful one (4) and from a restore-scan recovery whose
-    /// Platform-side consumption is unknown (5 — RecoveredFromChain, neither
-    /// pending nor done); `vout` + the txid form the outpoint a recovery
-    /// resume needs.
+    /// a consumed, successful one (4) and from a chain-final lock whose
+    /// Platform-side consumption is unknown (5 — RecoveredFromChain, either
+    /// reconstructed during restore or reconciled from an unauthenticated
+    /// already-consumed report; neither pending nor done); `vout` + the txid
+    /// form the outpoint a recovery resume needs.
     struct ShieldedLockInfo: Sendable {
         let amountDuffs: UInt64
         let statusRaw: Int

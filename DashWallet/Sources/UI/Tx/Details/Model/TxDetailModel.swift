@@ -505,9 +505,10 @@ extension TxDetailModel {
             return NSLocalizedString("Completed", comment: "Shielded transfer status")
         case 5:
             // RecoveredFromChain: the lock is final on Core, but whether it
-            // completed on Platform is unknown after a restore — claiming
-            // neither "Pending" nor "Completed" is deliberate.
-            return NSLocalizedString("Restored — completion unknown", comment: "Status of an asset lock recovered from on-chain data after a wallet restore; whether the transfer finished cannot be determined")
+            // completed on Platform is unknown after a restore or an
+            // unauthenticated already-consumed report. Claiming neither
+            // "Pending" nor "Completed" is deliberate.
+            return NSLocalizedString("Completion unknown", comment: "Status of a chain-locked asset lock whose Platform-side consumption cannot be authenticated")
         default:
             return nil
         }

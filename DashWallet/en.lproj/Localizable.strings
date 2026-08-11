@@ -3583,7 +3583,7 @@
 /* Wallets */
 "Restore an existing wallet" = "Restore an existing wallet";
 
-"Restored — completion unknown" = "Restored — completion unknown";
+"Completion unknown" = "Completion unknown";
 
 /* Location Service Status */
 
