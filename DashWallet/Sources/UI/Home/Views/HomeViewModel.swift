@@ -1215,16 +1215,39 @@ extension HomeViewModel {
     /// sheet (`CoinJoinMoveFundsSheet`) is shown instead of the BIP44-only
     /// dialog.
     func maybeShowCoinJoinSweepDialog() {
-        DWLogger.log("HomeViewModel: sweep dialog check — \(coinJoinSweepAmountDuffs) duffs (\(String(format: "%.6f", Double(coinJoinSweepAmountDuffs) / Double(kOneDash))) DASH), threshold \(CoinJoinRecovery.recoveryDustThresholdDuffs), above=\(coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
+        let balance = coinJoinSweepAmountDuffs
+        // Economic floor: below the L1-fee allowance a drain of many tiny
+        // mixed inputs cannot pay its own fee — prompting would offer a sweep
+        // that can never succeed. Dust leftovers stay visible (and manually
+        // sweepable) via the Tools / Settings "Move CoinJoin Funds" rows,
+        // which keep the lower `recoveryDustThresholdDuffs` floor.
+        let viableFloor = max(WalletBalance.sendFeeReserveDuffs, CoinJoinRecovery.recoveryDustThresholdDuffs)
+        let suppressed = WalletEnvironment.network.map {
+            CoinJoinRecovery.shared.isSweepPromptSuppressed(currentBalanceDuffs: balance, for: $0)
+        } ?? false
+        DWLogger.log("HomeViewModel: sweep dialog check — \(balance) duffs (\(String(format: "%.6f", Double(balance) / Double(kOneDash))) DASH), viableFloor \(viableFloor), above=\(balance > viableFloor), suppressed=\(suppressed), syncDone=\(syncModel.state == .syncDone), alreadyShown=\(coinJoinSweepDialogShown)")
         guard !coinJoinSweepDialogShown,
               syncModel.state == .syncDone,
-              coinJoinSweepAmountDuffs > CoinJoinRecovery.recoveryDustThresholdDuffs else { return }
+              balance > viableFloor,
+              !suppressed else { return }
         coinJoinSweepDialogShown = true
         if coinJoinShieldDestinationAvailable {
             showCoinJoinMoveFundsSheet = true
         } else {
             showCoinJoinSweepDialog = true
         }
+    }
+
+    /// "Later" on either sweep surface: persist the dismissal (keyed to the
+    /// current balance, so newly mixed coins re-arm the prompt) and close the
+    /// surface. The Tools / Settings rows remain the durable entry points.
+    func deferCoinJoinSweep() {
+        if let network = WalletEnvironment.network {
+            CoinJoinRecovery.shared.recordSweepPromptDismissal(
+                balanceDuffs: coinJoinSweepAmountDuffs, for: network)
+        }
+        showCoinJoinSweepDialog = false
+        showCoinJoinMoveFundsSheet = false
     }
 
     /// Sweep the leftover CoinJoin balance into the user's spendable balance
