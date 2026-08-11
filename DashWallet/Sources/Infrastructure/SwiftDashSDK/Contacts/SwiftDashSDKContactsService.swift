@@ -220,6 +220,10 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 alias: rows.compactMap(\.contactAlias).first(where: { !$0.isEmpty }),
                 note: rows.compactMap(\.contactNote).first(where: { !$0.isEmpty }),
                 isHidden: rows.contains(where: \.contactHidden),
+                // The persister mirrors the flag onto both direction
+                // rows, so either carrying it means the channel is
+                // broken.
+                paymentChannelBroken: rows.contains(where: \.paymentChannelBroken),
                 avatarURL: profile?.avatarUrl,
                 publicMessage: profile?.publicMessage,
                 createdAt: Date(timeIntervalSince1970: TimeInterval(newestMillis) / 1000),
