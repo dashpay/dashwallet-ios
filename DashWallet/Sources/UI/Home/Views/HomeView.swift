@@ -494,7 +494,13 @@ struct HomeViewContent<Content: View>: View {
                 pendingShieldedRecovery = nil
             }
         }
-        .sheet(isPresented: $viewModel.showCoinJoinMoveFundsSheet) {
+        .sheet(
+            isPresented: $viewModel.showCoinJoinMoveFundsSheet,
+            // Any dismissal (close button or swipe) counts as "Later": persist
+            // it so the prompt stops re-arming every launch. After a completed
+            // move the recorded balance is moot — the leftover is gone.
+            onDismiss: { viewModel.deferCoinJoinSweep() }
+        ) {
             CoinJoinMoveFundsSheet(amountDuffs: viewModel.coinJoinSweepAmountDuffs) {
                 viewModel.showCoinJoinMoveFundsSheet = false
             }
