@@ -2407,7 +2407,9 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// union: wallet-scoped TXOs or an account's involved-transactions
     /// relation. Accept both so an out-of-order receipt is not discarded.
     /// Reads relationships — call on the row's fetch thread.
-    private static func isWalletMember(_ row: PersistentTransaction, walletId: Data) -> Bool {
+    /// Internal: also the membership test for the bulk unconfirmed-tx
+    /// drop (`UnconfirmedTransactionRemover`).
+    static func isWalletMember(_ row: PersistentTransaction, walletId: Data) -> Bool {
         row.outputs.contains(where: { $0.walletId == walletId })
             || row.inputs.contains(where: { $0.walletId == walletId })
             || row.involvedAccounts.contains(where: { $0.wallet.walletId == walletId })

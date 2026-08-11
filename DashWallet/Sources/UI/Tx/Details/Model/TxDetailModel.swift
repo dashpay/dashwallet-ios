@@ -536,6 +536,17 @@ extension TxDetailModel {
         var supportsRemoval: Bool { statusRaw <= 1 }
     }
 
+    /// True when the "Remove if not on Blockchain" action applies outside
+    /// the asset-lock retry route: the local store still has this
+    /// transaction in mempool context (`.processing` — never IS-locked,
+    /// never mined), which is exactly the state a network-dropped send
+    /// (e.g. a stalled CoinJoin sweep chunk) is stuck in.
+    /// `UnconfirmedTransactionRemover` re-verifies the local state and
+    /// checks a block explorer before touching anything.
+    var supportsUnconfirmedRemoval: Bool {
+        transaction.state == .processing
+    }
+
     /// Non-nil when this transaction is a funding asset lock parked in a
     /// non-terminal state (built/broadcast/IS-locked/CL-locked but never
     /// consumed) on a route `AssetLockRecoveryService` can retry. Status
