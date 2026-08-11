@@ -71,6 +71,11 @@ struct InternalTransferScreen: View {
                     directionCards
                         .padding(.horizontal, 20)
 
+                    if let conflictNotice = viewModel.endpointConflictNotice {
+                        TransferAmountValidationNote(message: conflictNotice)
+                            .padding(.horizontal, 20)
+                    }
+
                     if viewModel.isBlockedBySync {
                         SyncGateNote()
                             .padding(.horizontal, 20)
@@ -202,8 +207,9 @@ struct InternalTransferScreen: View {
             pinnedCard(source, caption: NSLocalizedString("From", comment: ""))
             selectionGroup(
                 caption: NSLocalizedString("To", comment: ""),
-                networks: availableTargets(for: source),
+                networks: ChainNetwork.allCases,
                 selected: sanitizedTarget(for: source, proposed: viewModel.sendTarget),
+                conflictingWith: source,
                 onSelect: viewModel.selectSendTarget)
         }
     }
@@ -240,12 +246,14 @@ struct InternalTransferScreen: View {
                 caption: NSLocalizedString("From", comment: ""),
                 networks: ChainNetwork.allCases,
                 selected: viewModel.source,
+                conflictingWith: sanitizedTarget(for: viewModel.source, proposed: viewModel.sendTarget),
                 onSelect: viewModel.selectStandaloneSource)
 
             selectionGroup(
                 caption: NSLocalizedString("To", comment: ""),
-                networks: availableTargets(for: viewModel.source),
+                networks: ChainNetwork.allCases,
                 selected: sanitizedTarget(for: viewModel.source, proposed: viewModel.sendTarget),
+                conflictingWith: viewModel.source,
                 onSelect: viewModel.selectStandaloneTarget)
         }
     }
@@ -258,8 +266,9 @@ struct InternalTransferScreen: View {
         VStack(spacing: 12) {
             selectionGroup(
                 caption: NSLocalizedString("From", comment: ""),
-                networks: availableSources(for: target),
+                networks: ChainNetwork.allCases,
                 selected: sanitizedSource(into: target, proposed: viewModel.receiveSource),
+                conflictingWith: target,
                 onSelect: viewModel.selectReceiveSource)
 
             pinnedCard(target, caption: NSLocalizedString("To", comment: ""))
@@ -271,10 +280,15 @@ struct InternalTransferScreen: View {
         TransferSourceRow.dashBalanceTrailing(formatted)
     }
 
+    /// `conflictingWith` is the balance already occupying the opposite
+    /// endpoint: its row stays visible (the group always lists all three
+    /// balances) but dimmed, and tapping it is rejected by the view model
+    /// with an inline explanation.
     private func selectionGroup(
         caption: String,
         networks: [ChainNetwork],
         selected: ChainNetwork,
+        conflictingWith: ChainNetwork? = nil,
         onSelect: @escaping (ChainNetwork) -> Void
     ) -> some View {
         VStack(spacing: 8) {
@@ -287,6 +301,7 @@ struct InternalTransferScreen: View {
                     balanceTrailing: dashBalanceTrailing(display.balance),
                     selected: selected == network,
                     action: { onSelect(network) })
+                    .opacity(network == conflictingWith ? 0.45 : 1)
             }
         }
     }
@@ -310,14 +325,6 @@ struct InternalTransferScreen: View {
             selected: selected,
             showsRadio: showsRadio,
             action: action)
-    }
-
-    private func availableTargets(for source: ChainNetwork) -> [ChainNetwork] {
-        ChainNetwork.allCases.filter { $0 != source }
-    }
-
-    private func availableSources(for target: ChainNetwork) -> [ChainNetwork] {
-        ChainNetwork.allCases.filter { $0 != target }
     }
 
     private func sanitizedTarget(for source: ChainNetwork, proposed target: ChainNetwork) -> ChainNetwork {

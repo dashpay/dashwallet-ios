@@ -355,9 +355,15 @@ final class InternalTransferViewModel: ObservableObject {
         route == .platformToShielded && isPlatformShieldMaxDerived
     }
 
+    /// Set when a From/To tap was rejected because it would make both
+    /// endpoints the same balance. The selection is left unchanged; this
+    /// line tells the user why.
+    @Published private(set) var endpointConflictNotice: String?
+
     /// Pins the route for the receive sheet: a transfer INTO `target`.
     /// The From rows then pick the source among the other two balances.
     func applyReceiveRoute(into target: ChainNetwork) {
+        endpointConflictNotice = nil
         sendSource = nil
         receiveTarget = target
         receiveSource = Self.sanitizedSource(into: target, proposed: receiveSource)
@@ -369,28 +375,55 @@ final class InternalTransferViewModel: ObservableObject {
     /// Platform default to Shielded (privacy-forward); Shielded defaults
     /// to Core.
     func applySendRoute(from source: ChainNetwork) {
+        endpointConflictNotice = nil
         receiveTarget = nil
         sendSource = source
         sendTarget = Self.sanitizedDestination(from: source, proposed: sendTarget)
     }
 
     func selectStandaloneSource(_ network: ChainNetwork) {
+        guard network != sendTarget else {
+            endpointConflictNotice = Self.endpointConflictMessage(network)
+            return
+        }
+        endpointConflictNotice = nil
         source = network
-        sendTarget = Self.sanitizedDestination(from: network, proposed: sendTarget)
     }
 
     func selectStandaloneTarget(_ network: ChainNetwork) {
-        sendTarget = Self.sanitizedDestination(from: source, proposed: network)
+        guard network != source else {
+            endpointConflictNotice = Self.endpointConflictMessage(network)
+            return
+        }
+        endpointConflictNotice = nil
+        sendTarget = network
     }
 
     func selectSendTarget(_ network: ChainNetwork) {
-        let from = sendSource ?? source
-        sendTarget = Self.sanitizedDestination(from: from, proposed: network)
+        guard network != (sendSource ?? source) else {
+            endpointConflictNotice = Self.endpointConflictMessage(network)
+            return
+        }
+        endpointConflictNotice = nil
+        sendTarget = network
     }
 
     func selectReceiveSource(_ network: ChainNetwork) {
         guard let receiveTarget else { return }
-        receiveSource = Self.sanitizedSource(into: receiveTarget, proposed: network)
+        guard network != receiveTarget else {
+            endpointConflictNotice = Self.endpointConflictMessage(network)
+            return
+        }
+        endpointConflictNotice = nil
+        receiveSource = network
+    }
+
+    private static func endpointConflictMessage(_ network: ChainNetwork) -> String {
+        String.localizedStringWithFormat(
+            NSLocalizedString(
+                "You can't transfer from %1$@ to %1$@. Pick a different balance for one side.",
+                comment: "Internal transfer From and To must differ"),
+            network.balanceName)
     }
 
     /// The canonical route for validation/fees/execution.
