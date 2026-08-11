@@ -234,6 +234,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
                            selector:@selector(applicationDidEnterBackgroundNotification)
                                name:UIApplicationDidEnterBackgroundNotification
                              object:nil];
+    [notificationCenter addObserver:self
+                           selector:@selector(windowDidBecomeKeyNotification:)
+                               name:UIWindowDidBecomeKeyNotification
+                             object:nil];
 
     __weak typeof(self) weakSelf = self;
     self.model.currentNetworkDidChangeBlock = ^{
@@ -432,6 +436,37 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (void)applicationWillResignActiveNotification {
     [self.model applicationWillResignActiveNotification];
+}
+
+- (void)windowDidBecomeKeyNotification:(NSNotification *)notification {
+    // Keeps the displayed lock window key. The post-onboarding reinstall flow
+    // (Keep Wallet → transitionToAppRoot → deferred
+    // applicationDidBecomeActiveNotification) calls makeKeyAndVisible while the
+    // onboarding container transition and the Keep/Delete alert teardown are
+    // still in flight; their completion can hand key status back to the main
+    // window. The lock screen then stays visible but keyboard/first-responder
+    // input routes to the main window underneath — the failure mode described
+    // by the INFO note in viewDidLoad. Whenever the main window becomes key
+    // while the lock window is displayed, take key (and front) back.
+    if (notification.object != self.view.window) {
+        return;
+    }
+    if (self.displayedLockNavigationController == nil || self.lockWindow.hidden) {
+        return;
+    }
+
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf == nil) {
+            return;
+        }
+        if (strongSelf.displayedLockNavigationController != nil &&
+            !strongSelf.lockWindow.hidden &&
+            !strongSelf.lockWindow.isKeyWindow) {
+            [strongSelf.lockWindow makeKeyAndVisible];
+        }
+    });
 }
 
 #pragma mark - Demo Mode
