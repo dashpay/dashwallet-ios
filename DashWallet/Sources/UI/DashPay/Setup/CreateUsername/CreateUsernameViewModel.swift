@@ -135,6 +135,19 @@ class CreateUsernameViewModel: ObservableObject {
     /// `availabilityCheckTask` for the main field.
     private var temporaryAvailabilityTask: Task<Void, Never>?
 
+    /// The trimmed companion label the current `temporaryUsernameCheck`
+    /// belongs to (in flight or settled) — same role as
+    /// `availabilityCheckLabel` for the main field. Lets the seeding
+    /// path validate synchronously without the later throttled pipeline
+    /// emission restarting the check for the unchanged label.
+    private var temporaryCheckLabel: String?
+
+    /// Main label the current `temporaryUsername` was suggested from
+    /// (or edited against). A different main label invalidates the
+    /// companion — a name derived from an abandoned contested name
+    /// must not survive into the next one's confirmation sheet.
+    private var temporaryUsernameSuggestionBase: String?
+
     /// The typed label lost an earlier contest to a masternode LOCK, so nobody
     /// can register it. It still reports as available (no owner holds the
     /// domain document), which is why this needs its own flag: the rule row
@@ -512,8 +525,12 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {
-        guard let pending = DWContestedNameStatusService.shared.pendingLabel,
-              DWContestedNameStatusService.labelsMatch(pending, username) else {
+        // Membership across ALL pending entries, not the single-slot
+        // `pendingLabel` (the oldest): an older unresolved contested
+        // submission in the store must not make THIS submission read as
+        // a completed registration. Same check the coordinator's
+        // `handlePhaseChange` uses for the mirror-write decision.
+        guard DWContestedNameStatusService.shared.isPendingLabel(username) else {
             return .success
         }
         // The coordinator's companion-name fields are still set here —
@@ -531,23 +548,44 @@ class CreateUsernameViewModel: ObservableObject {
     /// qualifies. Availability is NOT guaranteed — the normal check
     /// runs on it and the user edits if it's taken.
     func prepareTemporaryUsernameSuggestion() {
-        guard temporaryUsername.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return // keep what the user already typed on a reopened sheet
+        let base = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !base.isEmpty else { return }
+        // Keep what the user already typed on a reopened sheet — but
+        // only when it was typed against THIS main label. A companion
+        // suggested from (or edited for) an abandoned contested name is
+        // re-seeded instead of silently carried over.
+        if temporaryUsernameSuggestionBase == base,
+           !temporaryUsername.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            validateTemporaryUsername(temporaryUsername)
+            return
         }
-        var suggestion = username.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !suggestion.isEmpty else { return }
+        temporaryUsernameSuggestionBase = base
+        var suggestion = base
         if suggestion.count >= DW_MAX_USERNAME_LENGTH {
             suggestion = String(suggestion.prefix(Int(DW_MAX_USERNAME_LENGTH) - 1))
         }
         temporaryUsername = suggestion + "2"
+        // Validate synchronously so the sheet's rule row + submit button
+        // don't sit blank/disabled through the pipeline's 500 ms
+        // throttle; the later emission for the same label no-ops via
+        // `temporaryCheckLabel`.
+        validateTemporaryUsername(temporaryUsername)
     }
 
     /// Local rules + non-contested gate + debounced DPNS availability
     /// for the companion label. Mirrors `validateUsername`'s structure,
     /// but as a single verdict enum — the sheet shows one rule row.
     private func validateTemporaryUsername(_ raw: String) {
-        temporaryAvailabilityTask?.cancel()
         let label = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Same label as the existing check state → keep it (a settled
+        // verdict stays settled, an in-flight `.checking` keeps its
+        // task) instead of resetting and re-querying. `.error` retries,
+        // as for the main field.
+        if label == temporaryCheckLabel, temporaryUsernameCheck != .error {
+            return
+        }
+        temporaryAvailabilityTask?.cancel()
+        temporaryCheckLabel = label
         guard !label.isEmpty else {
             temporaryUsernameCheck = .empty
             return

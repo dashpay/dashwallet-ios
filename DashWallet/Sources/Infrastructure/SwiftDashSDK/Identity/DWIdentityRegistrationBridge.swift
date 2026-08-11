@@ -164,7 +164,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         completion: @escaping (String?, NSError?) -> Void
     ) {
         let source = preferredFundingSource
-        let temporaryUsername = pendingTemporaryUsername
+        let temporaryUsername = sanitizedTemporaryUsername(for: username)
         Self.logger.info("🪪 IDENT-BRIDGE :: startCreateUsername username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public)")
         Task { @MainActor in
             do {
@@ -187,7 +187,7 @@ public final class DWIdentityRegistrationBridge: NSObject {
         completion: @escaping (String?, NSError?) -> Void
     ) {
         let source = preferredFundingSource
-        let temporaryUsername = pendingTemporaryUsername
+        let temporaryUsername = sanitizedTemporaryUsername(for: username)
         Self.logger.info("🪪 IDENT-BRIDGE :: retry username=\(username, privacy: .public) funding=\(source.logLabel, privacy: .public)")
         Task { @MainActor in
             do {
@@ -231,6 +231,29 @@ public final class DWIdentityRegistrationBridge: NSObject {
     }
 
     // MARK: - Internal
+
+    /// Resolve `pendingTemporaryUsername` for a submission of `username`.
+    ///
+    /// The property channel can go stale: a PIN-cancelled attempt never
+    /// reaches a terminal phase (so the `.completed` cleanup doesn't
+    /// run), and the legacy Obj-C entry point
+    /// (`DWDashPayModel.createUsername:`) never writes the property at
+    /// all. Rather than let a stale companion fail an unrelated
+    /// submission at the coordinator's pre-flight pairing guard, drop —
+    /// and clear — any value that doesn't validly pair with the label
+    /// actually being submitted (contested main + non-contested
+    /// companion). An intentional retry of the same contested attempt
+    /// still pairs validly, so it keeps the user's choice.
+    private func sanitizedTemporaryUsername(for username: String) -> String? {
+        guard let temporary = pendingTemporaryUsername else { return nil }
+        guard DWContestedNameStatusService.isContestedLabel(username),
+              !DWContestedNameStatusService.isContestedLabel(temporary) else {
+            Self.logger.warning("🪪 IDENT-BRIDGE :: dropping stale temporary username \(temporary, privacy: .public) for submission of \(username, privacy: .public)")
+            pendingTemporaryUsername = nil
+            return nil
+        }
+        return temporary
+    }
 
     /// Subscribe to the coordinator's published surface and mirror
     /// each transition into the cached @objc state + post the internal
