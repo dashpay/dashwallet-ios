@@ -194,12 +194,26 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             controller = [self mainController];
         }
     }
-    else {
+    // A DashSync-era wallet in the keychain with the async key migrator
+    // still running means "no wallet" is a lie about to become true.
+    // Deciding now would show Create/Recover to an upgrading user whose
+    // wallet is milliseconds from appearing — and route their typed
+    // phrase into the recover screen's wipe branch. Hold the launch
+    // background and decide once the migrator settles (typically well
+    // under a second; bounded fallback in the poller).
+    const BOOL keyMigrationPending =
+        !hasAWallet && [DWSwiftDashSDKKeyMigrator legacyWalletMaterialPendingMigration];
+    if (!hasAWallet && !keyMigrationPending) {
         controller = [self setupController];
     }
 
     if (controller) {
         [self transitionToController:controller];
+    }
+
+    if (keyMigrationPending) {
+        [self presentInitialControllerWhenKeyMigrationSettles:
+                  [NSDate dateWithTimeIntervalSinceNow:10.0]];
     }
 
     if (hasAWallet) {
@@ -269,6 +283,38 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         self.launchingWasDeferred = NO;
 
         [self applicationDidBecomeActiveNotification];
+    }
+}
+
+#pragma mark - Key migration launch hold
+
+/// Poll the key migrator's terminal state, then present the initial
+/// controller the normal launch decision would have picked: main (behind
+/// the lock screen — `PinStore` reads DashSync's PIN records in place, so
+/// the migrated wallet keeps its old PIN) when the wallet landed, setup
+/// otherwise. Bounded by `deadline` so a wedged migrator degrades to the
+/// old behavior instead of a blank screen.
+- (void)presentInitialControllerWhenKeyMigrationSettles:(NSDate *)deadline {
+    if (![DWSwiftDashSDKKeyMigrator migrationSettled] && [deadline timeIntervalSinceNow] > 0) {
+        __weak typeof(self) weakSelf = self;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)),
+                       dispatch_get_main_queue(), ^{
+                           [weakSelf presentInitialControllerWhenKeyMigrationSettles:deadline];
+                       });
+        return;
+    }
+
+    const BOOL hasAWallet = self.model.hasAWallet;
+    if (hasAWallet) {
+        if ([self.model shouldShowLockScreen]) {
+            [self showLockControllerIfNeeded];
+        }
+        else {
+            [self transitionToController:[self mainController]];
+        }
+    }
+    else {
+        [self transitionToController:[self setupController]];
     }
 }
 
