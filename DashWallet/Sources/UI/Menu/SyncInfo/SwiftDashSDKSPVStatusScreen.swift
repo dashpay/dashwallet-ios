@@ -785,18 +785,30 @@ extension SwiftDashSDKSPVStatusScreen {
         isDroppingUnconfirmed = true
         Task { @MainActor in
             do {
-                let dropped = try await UnconfirmedTransactionRemover().dropAllUnconfirmedAndRescan()
-                dropResultIsError = false
-                dropResultMessage = dropped == 0
-                    ? NSLocalizedString(
+                let outcome = try await UnconfirmedTransactionRemover().dropAllUnconfirmedAndRescan()
+                if outcome.dropped == 0 {
+                    dropResultIsError = false
+                    dropResultMessage = NSLocalizedString(
                         "No unconfirmed transactions to drop.",
                         comment: "SPV diagnostics")
-                    : String(
+                } else if outcome.rescanArmed {
+                    dropResultIsError = false
+                    dropResultMessage = String(
                         format: NSLocalizedString(
-                            "Dropped %d unconfirmed transaction(s) — rescanning recent filters, watch the Filters row.",
+                            "Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row.",
                             comment: "SPV diagnostics"),
-                        dropped)
-                Self.logger.info("🛰️ SPV-STATUS :: bulk unconfirmed drop finished — \(dropped, privacy: .public) tx(s)")
+                        outcome.dropped)
+                } else {
+                    // The drop finished but the recovery rescan didn't
+                    // arm — flag it instead of claiming the safety net ran.
+                    dropResultIsError = true
+                    dropResultMessage = String(
+                        format: NSLocalizedString(
+                            "Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above.",
+                            comment: "SPV diagnostics"),
+                        outcome.dropped)
+                }
+                Self.logger.info("🛰️ SPV-STATUS :: bulk unconfirmed drop finished — \(outcome.dropped, privacy: .public) tx(s), rescanArmed=\(outcome.rescanArmed, privacy: .public)")
             } catch {
                 dropResultIsError = true
                 dropResultMessage = error.localizedDescription

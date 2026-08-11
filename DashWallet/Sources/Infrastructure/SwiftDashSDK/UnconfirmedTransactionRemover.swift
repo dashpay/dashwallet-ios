@@ -83,12 +83,17 @@ struct UnconfirmedTransactionRemover {
     /// at least ~30 hours even for a fresh transaction, at most ~5 weeks
     /// for a long-stuck one.
     private static let minRescanBlocks: UInt32 = 720
-    private static let maxRescanBlocks: UInt32 = 20_000
     /// Extra rewind margin below the transaction's first-seen height
     /// estimate (~1 day), covering clock skew and variable block times.
     private static let rescanMarginBlocks: UInt32 = 576
 
-    func remove(txidWire: Data) async throws {
+    /// - Returns: whether the recovery filter rescan was armed. `false`
+    ///   means the removal itself succeeded but the rescan didn't start
+    ///   (SPV not running / arm threw) — the caller should tell the user
+    ///   to run Rescan Filters manually so the safety net isn't silently
+    ///   skipped.
+    @discardableResult
+    func remove(txidWire: Data) async throws -> Bool {
         guard let container = SwiftDashSDKHost.shared.modelContainer,
               let network = WalletEnvironment.network,
               let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) else {
@@ -108,7 +113,6 @@ struct UnconfirmedTransactionRemover {
         guard row.context == 0, row.blockHeight == 0 else {
             throw RemovalError.confirmedLocally
         }
-        let firstSeen: UInt64 = row.firstSeen
 
         // 2. The claim in the button title is checked, not assumed: a
         //    transaction the explorer knows (mempool or mined) is never
@@ -118,14 +122,32 @@ struct UnconfirmedTransactionRemover {
             throw RemovalError.transactionOnChain
         }
 
-        // 3. Persistence surgery, then the shared reload + rescan +
+        // 3. The explorer check suspended the main actor, so nothing from
+        //    step 1 is trusted anymore: a filter match can have confirmed
+        //    the transaction, or the active wallet can have switched.
+        //    Re-resolve and re-validate everything before touching rows.
+        guard WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) == walletId else {
+            throw RemovalError.notReady
+        }
+        guard let freshRow = try context.fetch(descriptor).first else {
+            throw RemovalError.transactionNotFound
+        }
+        guard freshRow.context == 0, freshRow.blockHeight == 0 else {
+            throw RemovalError.confirmedLocally
+        }
+        guard SwiftDashSDKWalletSource.isWalletMember(freshRow, walletId: walletId) else {
+            throw RemovalError.transactionNotFound
+        }
+        let firstSeen: UInt64 = freshRow.firstSeen
+
+        // 4. Persistence surgery, then the shared reload + rescan +
         //    cache-refresh tail.
-        Self.excise(row, in: context)
+        Self.excise(freshRow, in: context)
         try Self.deleteAssetLockBookmarks(forDisplayTxids: [displayTxid], walletId: walletId, in: context)
         try context.save()
         Self.logger.notice("🗑️ TX-REMOVE :: deleted \(displayTxid, privacy: .public)")
 
-        try await Self.finishRemoval(
+        return await Self.finishRemoval(
             txidsWire: [txidWire], walletId: walletId, oldestFirstSeen: firstSeen)
     }
 
@@ -137,16 +159,18 @@ struct UnconfirmedTransactionRemover {
     /// a dropped transaction that IS on the blockchain is re-matched and
     /// restored by it. Nothing is sent to the network.
     ///
-    /// - Returns: how many transactions were dropped. 0 means there was
-    ///   nothing to drop; no reload or rescan runs in that case.
-    func dropAllUnconfirmedAndRescan() async throws -> Int {
+    /// - Returns: how many transactions were dropped (0 = nothing to
+    ///   drop; no reload or rescan runs), and whether the recovery
+    ///   rescan was armed — `false` after a successful drop means the
+    ///   caller must tell the user to run Rescan Filters manually.
+    func dropAllUnconfirmedAndRescan() async throws -> (dropped: Int, rescanArmed: Bool) {
         guard let container = SwiftDashSDKHost.shared.modelContainer,
               let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) else {
             throw RemovalError.notReady
         }
         let context = container.mainContext
         let rows = try Self.unconfirmedRows(in: context, walletId: walletId)
-        guard !rows.isEmpty else { return 0 }
+        guard !rows.isEmpty else { return (dropped: 0, rescanArmed: true) }
 
         var oldestFirstSeen = UInt64.max
         var displayTxids: [String] = []
@@ -161,9 +185,9 @@ struct UnconfirmedTransactionRemover {
         try context.save()
         Self.logger.notice("🗑️ TX-REMOVE :: bulk-dropped \(rows.count, privacy: .public) unconfirmed tx(s): \(displayTxids.joined(separator: ","), privacy: .public)")
 
-        try await Self.finishRemoval(
+        let rescanArmed = await Self.finishRemoval(
             txidsWire: txidsWire, walletId: walletId, oldestFirstSeen: oldestFirstSeen)
-        return rows.count
+        return (dropped: rows.count, rescanArmed: rescanArmed)
     }
 
     /// The active wallet's unconfirmed (mempool-context, no block) rows —
@@ -223,10 +247,13 @@ struct UnconfirmedTransactionRemover {
 
     /// Shared removal tail, after the rows are deleted and saved:
     /// app-side metadata cleanup, full runtime reload, filter rescan,
-    /// and cache refresh.
+    /// and cache refresh. Returns whether the rescan was armed — the
+    /// rescan is the recovery step that restores a wrongly-removed
+    /// on-chain transaction, so callers surface `false` to the user
+    /// instead of claiming a complete recovery.
     private static func finishRemoval(
         txidsWire: [Data], walletId: Data, oldestFirstSeen: UInt64
-    ) async throws {
+    ) async -> Bool {
         // App-side metadata (tax category override) keyed by the same
         // hash — a fresh install knows nothing about a removed tx, and
         // neither should this one.
@@ -243,19 +270,23 @@ struct UnconfirmedTransactionRemover {
         // rebroadcasting) restarts without the removed transactions.
         await SwiftDashSDKWalletRuntime.shared.rearmPlatformSync()
 
-        // Rescan recent compact filters, reaching back past the oldest
-        // removed transaction's first appearance: if a removed tx IS
-        // mined, the re-match finds it and the wallet state repairs
-        // itself. Best-effort — a failed arm is logged, not surfaced as
-        // a failed removal.
+        // Rescan compact filters, reaching back past the OLDEST removed
+        // transaction's first appearance — uncapped in depth, because
+        // this is the step that restores a removed tx that actually IS
+        // mined (the bulk path never explorer-checked, and the single
+        // path's explorer can be wrong). The SDK floors the rescan at
+        // the wallet's birth height and the locally stored chain data;
+        // a row with no usable first-seen time rescans from the floor.
+        var rescanArmed = false
         let tip = SwiftDashSDKSPVCoordinator.shared.tipHeight
         if tip > 0, let manager = SwiftDashSDKHost.shared.manager {
             let ageSeconds = max(0, Date().timeIntervalSince1970 - TimeInterval(oldestFirstSeen))
             let ageBlocks = UInt32(clamping: Int(ageSeconds / 150)) + rescanMarginBlocks
-            let blocksBack = min(maxRescanBlocks, max(minRescanBlocks, ageBlocks))
+            let blocksBack = max(minRescanBlocks, ageBlocks)
             let fromHeight = tip > blocksBack ? tip - blocksBack : 1
             do {
                 try manager.spvRescanFilters(walletId: walletId, fromHeight: fromHeight)
+                rescanArmed = true
                 logger.notice("🗑️ TX-REMOVE :: filter rescan armed from height \(fromHeight, privacy: .public) (tip \(tip, privacy: .public))")
             } catch {
                 logger.error("🗑️ TX-REMOVE :: filter rescan arm failed: \(String(describing: error), privacy: .public)")
@@ -266,6 +297,7 @@ struct UnconfirmedTransactionRemover {
 
         // App caches that mirror the deleted rows.
         ShieldedTxLookup.shared.refresh()
+        return rescanArmed
     }
 
     /// One GET against the network's Insight API. 200 = the explorer

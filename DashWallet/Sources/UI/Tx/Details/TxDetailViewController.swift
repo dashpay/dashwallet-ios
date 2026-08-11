@@ -330,8 +330,12 @@ extension TXDetailViewController {
                 self?.view.dw_hideProgressHUD()
             }
             do {
-                try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
-                self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success"))
+                let rescanArmed = try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
+                // Never claim the rescan safety net ran when it didn't —
+                // point at the manual Rescan Filters action instead.
+                self?.view.dw_showInfoHUD(withText: rescanArmed
+                    ? NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success")
+                    : NSLocalizedString("Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm"))
                 // The row this sheet describes no longer exists.
                 self?.closeAction()
             } catch UnconfirmedTransactionRemover.RemovalError.transactionOnChain {
