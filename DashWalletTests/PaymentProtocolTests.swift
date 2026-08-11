@@ -452,6 +452,34 @@ final class PreparedStandardSendBroadcastTests: XCTestCase {
         XCTAssertEqual(calls, 2)
     }
 
+    /// The claim state returning to `.ready` does not mean the captured
+    /// transaction survived: only a failure raised BEFORE the broadcast leaves
+    /// it intact. `CoreSendConfirmController` reads this to decide between
+    /// re-broadcasting and re-preparing.
+    func testBroadcastIsConsumedOnlyOnceTheBroadcastRan() {
+        let offline = NSError(
+            domain: "test.network", code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "offline"])
+        let blocked = prepared(
+            hashByte: 0x17,
+            ensureOnline: { throw offline },
+            action: { .accepted(txid: String(repeating: "17", count: 32)) })
+
+        XCTAssertFalse(blocked.isBroadcastConsumed)
+        XCTAssertThrowsError(try blocked.broadcast())
+        XCTAssertFalse(blocked.isBroadcastConsumed)
+
+        let rejected = prepared(hashByte: 0x28) {
+            .rejected(
+                txid: String(repeating: "28", count: 32),
+                reason: "broadcast was not started")
+        }
+
+        XCTAssertFalse(rejected.isBroadcastConsumed)
+        XCTAssertThrowsError(try rejected.broadcast())
+        XCTAssertTrue(rejected.isBroadcastConsumed)
+    }
+
     func testUnknownRemainsTerminalWhenNetworkStateChanges() {
         let offline = NSError(
             domain: "test.network", code: 2,

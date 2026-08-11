@@ -56,6 +56,19 @@ final class PreparedStandardSend: NSObject {
     /// BEFORE the broadcast (`ensureOnlineAction`) leave a retryable object.
     private let claimLock = NSLock()
     private var broadcastState = BroadcastState.ready
+    private var broadcastActionInvoked = false
+
+    /// `true` once `broadcastAction` has been invoked, whatever it returned or
+    /// threw. The captured `FinalizedCoreTransaction` is single-shot, so from
+    /// that point on this object can only surface the SDK's already-consumed
+    /// error — a caller offering "try again" must re-prepare instead of
+    /// re-broadcasting it. Failures raised BEFORE the broadcast (the online
+    /// precheck) leave this `false`, and the object rebroadcastable.
+    var isBroadcastConsumed: Bool {
+        claimLock.lock()
+        defer { claimLock.unlock() }
+        return broadcastActionInvoked
+    }
 
     init(
         txData: Data,
@@ -124,6 +137,9 @@ final class PreparedStandardSend: NSObject {
             // was prepared. Claiming the state first ensures a stored unknown
             // result is returned without consulting changing network state.
             try ensureOnlineAction()
+            claimLock.lock()
+            broadcastActionInvoked = true
+            claimLock.unlock()
             outcome = try broadcastAction()
         } catch {
             claimLock.lock()

@@ -90,11 +90,14 @@ final class CoreSendConfirmController: ObservableObject {
         await broadcastPrepared()
     }
 
-    /// `Try again` from `.failed`. A broadcast-time failure (e.g. rejected)
-    /// leaves the signed transaction retryable — `PreparedStandardSend`
-    /// resets its own claim state to `.ready` on a rejected/local failure —
-    /// so retry re-broadcasts the SAME transaction rather than re-signing. A
-    /// prepare-time failure (nothing was ever signed) re-prepares.
+    /// `Try again` from `.failed`. Re-broadcasts the SAME signed transaction
+    /// only while it is still intact — a failure raised before the broadcast
+    /// reached the SDK (the online precheck). Once the broadcast ran, the
+    /// captured transaction is consumed and `broadcastPrepared` has dropped
+    /// it, so this re-prepares (auth + build + sign) instead of replaying an
+    /// object that could only report the SDK's already-consumed error. A
+    /// prepare-time failure (nothing was ever signed) re-prepares too.
+    /// Unknown outcomes are terminal and never reach `.failed`.
     func retry(address: String, amountDuffs: UInt64) async {
         guard case .failed = phase else { return }
         if prepared != nil {
@@ -114,6 +117,15 @@ final class CoreSendConfirmController: ObservableObject {
             if WalletSendService.isBroadcastUnknownError(error as NSError) {
                 phase = .submittedUnconfirmed
             } else {
+                // A rejection (or any local failure raised once the broadcast
+                // reached the SDK) consumed the single-shot transaction. Drop
+                // it — and the fee read off it — so `Try again` re-signs
+                // rather than replaying a consumed object. A pre-broadcast
+                // failure keeps it, and retry re-broadcasts as before.
+                if prepared.isBroadcastConsumed {
+                    self.prepared = nil
+                    feeDuffs = nil
+                }
                 phase = .failed(Self.message(for: error))
             }
         }
@@ -424,10 +436,23 @@ struct SendConfirmSheet: View {
             divider
             summaryRow(
                 label: NSLocalizedString("Total", comment: ""),
-                value: dashDuffs.formattedDashAmount)
+                value: totalString)
         }
         .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
+    }
+
+    /// The wallet debit. Core → Core charges the network fee ON TOP of what
+    /// the recipient receives, so its Total is the amount plus the exact fee
+    /// off the signed transaction — the all-in figure the legacy confirm
+    /// screen showed (`DWPaymentProcessor` passed `amount + preparedSend.fee`).
+    /// Until that fee is known, and on every other route (whose fee row is an
+    /// estimate, as in `InternalTransferConfirmSheet`), Total is the amount.
+    private var totalString: String {
+        guard route == .coreToCore, let feeDuffs = coreSend.feeDuffs else {
+            return dashDuffs.formattedDashAmount
+        }
+        return (dashDuffs + Int64(clamping: feeDuffs)).formattedDashAmount
     }
 
     private var fromLabel: String {
@@ -633,8 +658,9 @@ struct SendConfirmSheet: View {
                     amountCredits: creditsAmount,
                     recipientRaw43: destinationRaw43)
             case .coreToCore:
-                // Already prepared (auth + build/sign) on appear — Confirm
-                // only broadcasts the signed transaction.
+                // Already prepared (auth + build/sign) by the amount step
+                // before this sheet was presented — Confirm only broadcasts
+                // the signed transaction.
                 await coreSend.confirmBroadcast()
             }
         }
