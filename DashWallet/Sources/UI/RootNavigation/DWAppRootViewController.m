@@ -448,7 +448,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     // input routes to the main window underneath — the failure mode described
     // by the INFO note in viewDidLoad. Whenever the main window becomes key
     // while the lock window is displayed, take key (and front) back.
-    if (notification.object != self.view.window) {
+    UIWindow *mainWindow = (UIWindow *)notification.object;
+    if (mainWindow != self.view.window) {
         return;
     }
     if (self.displayedLockNavigationController == nil || self.lockWindow.hidden) {
@@ -459,6 +460,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     dispatch_async(dispatch_get_main_queue(), ^{
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (strongSelf == nil) {
+            return;
+        }
+        // Re-validate before acting: only take key back if the main window
+        // still holds it. If key has already moved to another window
+        // (software keyboard, LocalAuthentication prompt), leave it alone —
+        // a later steal by the main window fires this observer again.
+        if (mainWindow != strongSelf.view.window || !mainWindow.isKeyWindow) {
             return;
         }
         if (strongSelf.displayedLockNavigationController != nil &&
