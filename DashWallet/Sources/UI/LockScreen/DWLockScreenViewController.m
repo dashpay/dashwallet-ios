@@ -343,8 +343,11 @@ static CGFloat ActionButtonsHeight(void) {
         self.scanToPayButton.enabled = NO;
         [self hideLoginButtonIfNeeded];
         [self.pinInputView setTitleText:NSLocalizedString(@"PIN Not Set", nil)];
+        // Keep this to one action phrase: the pin-input container is centered
+        // without a width cap (LockScreen.storyboard), so an overlong single
+        // line renders past the screen edges instead of wrapping.
         [self.pinInputView setAttemptsText:nil
-                                 errorText:NSLocalizedString(@"This wallet has no PIN. Verify your recovery phrase to set a new PIN and unlock your wallet.", nil)];
+                                 errorText:NSLocalizedString(@"Verify your recovery phrase to set a new PIN.", nil)];
         return;
     }
 

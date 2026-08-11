@@ -4477,9 +4477,6 @@
 /* DashPay Contacts */
 "This user hasn't set up the keys needed to receive contact requests yet." = "This user hasn't set up the keys needed to receive contact requests yet.";
 
-/* No comment provided by engineer. */
-"This wallet has no PIN. Verify your recovery phrase to set a new PIN and unlock your wallet." = "This wallet has no PIN. Verify your recovery phrase to set a new PIN and unlock your wallet.";
-
 /* Wallets */
 "This wallet is already on this device." = "This wallet is already on this device.";
 
@@ -4855,6 +4852,9 @@
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verify your API Dash address";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Verify your recovery phrase to set a new PIN.";
 
 /* Usernames */
 "Verify your identity" = "Verify your identity";
