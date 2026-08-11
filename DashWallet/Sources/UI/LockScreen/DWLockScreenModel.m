@@ -40,6 +40,10 @@ static NSTimeInterval const CHECK_INTERVAL = 1.0;
            [DWAuthenticationService shared].isBiometricAuthenticationAllowed;
 }
 
+- (BOOL)hasPinSet {
+    return [[DWAuthenticationService shared] hasPin];
+}
+
 - (LABiometryType)biometryType {
 #if (TARGET_OS_SIMULATOR && SHOULD_SIMULATE_BIOMETRICS)
     return LABiometryTypeTouchID;

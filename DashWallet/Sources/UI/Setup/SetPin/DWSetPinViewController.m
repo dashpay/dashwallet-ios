@@ -49,6 +49,10 @@ NS_ASSUME_NONNULL_BEGIN
             controller.title = NSLocalizedString(@"Change PIN", nil);
             break;
         }
+        case DWSetPinIntent_SetPin: {
+            controller.title = NSLocalizedString(@"Set PIN", nil);
+            break;
+        }
     }
 
     controller.model = [[DWSetPinModel alloc] init];

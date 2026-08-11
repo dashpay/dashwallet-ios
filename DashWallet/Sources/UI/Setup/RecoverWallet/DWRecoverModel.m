@@ -45,6 +45,10 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
     return DWWalletEnvironment.hasWallet;
 }
 
+- (BOOL)hasPinSet {
+    return [[DWAuthenticationService shared] hasPin];
+}
+
 // `isWalletEmpty` and `canWipeWithPhrase:` live in DWRecoverModel+Mnemonic.swift
 // (SDK balance + sync-done gate; normalized-phrase comparison) — C6-D.
 

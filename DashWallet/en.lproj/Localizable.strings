@@ -1516,6 +1516,9 @@
 /* No comment provided by engineer. */
 "Enter your recovery phrase to reset your PIN" = "Enter your recovery phrase to reset your PIN";
 
+/* No comment provided by engineer. */
+"Enter your recovery phrase to set a new PIN" = "Enter your recovery phrase to set a new PIN";
+
 /* Voting */
 "Enter your voting key" = "Enter your voting key";
 
@@ -3249,6 +3252,9 @@
 /* No comment provided by engineer. */
 "PIN is always required to make a payment" = "PIN is always required to make a payment";
 
+/* No comment provided by engineer. */
+"PIN Not Set" = "PIN Not Set";
+
 /* Dash Platform chain */
 "Platform" = "Platform";
 
@@ -4846,6 +4852,9 @@
 
 /* CrowdNode */
 "Verify your API Dash address" = "Verify your API Dash address";
+
+/* No comment provided by engineer. */
+"Verify your recovery phrase to set a new PIN." = "Verify your recovery phrase to set a new PIN.";
 
 /* Usernames */
 "Verify your identity" = "Verify your identity";

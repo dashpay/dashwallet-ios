@@ -183,6 +183,21 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         didAuthenticate = false
     }
 
+    #if DEBUG
+    /// QA fixture: fabricate the "wallet exists, no PIN record" keychain
+    /// state (partial iCloud/device-transfer restore, interrupted setup) by
+    /// deleting the PIN records at launch, leaving the wallet mnemonic in
+    /// place. With a wallet on the device,
+    /// `SIMCTL_CHILD_QA_DROP_PIN_RECORDS=1 simctl launch …` reproduces the
+    /// lock screen's no-PIN routing. Called from the AppDelegate before the
+    /// root controller is built.
+    @objc static func debugDropPinRecordsIfRequested() {
+        guard ProcessInfo.processInfo.environment["QA_DROP_PIN_RECORDS"] == "1" else { return }
+        shared.removePin()
+        logger.warning("🔑 QA fixture: PIN records dropped (QA_DROP_PIN_RECORDS)")
+    }
+    #endif
+
     // MARK: Verification
 
     /// Result shape of the pod's 4-flag verification completion, minus the

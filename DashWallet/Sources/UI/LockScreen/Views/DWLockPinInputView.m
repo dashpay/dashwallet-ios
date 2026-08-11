@@ -116,6 +116,10 @@ static CGFloat const SPACING = 8.0;
         [titleLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
 
         [stackView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+        // Cap the stack at the view's width so multi-line attempts/error text
+        // wraps (numberOfLines = 0) instead of extending past the screen edges.
+        [stackView.leadingAnchor constraintGreaterThanOrEqualToAnchor:self.leadingAnchor],
+        [stackView.trailingAnchor constraintLessThanOrEqualToAnchor:self.trailingAnchor],
         [stackView.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor
                                             constant:VERTICAL_PADDING],
         [stackView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
