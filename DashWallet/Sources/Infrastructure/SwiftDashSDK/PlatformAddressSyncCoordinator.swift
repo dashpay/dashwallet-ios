@@ -119,6 +119,20 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     @Published public private(set) var isClearing: Bool = false
     @Published public private(set) var lastSyncTime: Date? = nil
     @Published public private(set) var lastError: String? = nil
+
+    /// Startup failure of `platformAddressWallet()`, held apart from
+    /// `lastError` because it outlives the events that clear it.
+    ///
+    /// The address wallet and the manager's Platform address sync fail
+    /// independently: the sync can complete successfully while this wallet is
+    /// missing, and every success clears `lastError`. Publishing the startup
+    /// failure only once would let the first successful pass erase it, leaving
+    /// the status screen reporting a healthy sync over address surfaces that
+    /// cannot work. Kept here and re-published wherever `lastError` is cleared
+    /// on success. Cleared by `clearDisplay()`, which runs on teardown, wipe
+    /// and network-switch preparation — every path that invalidates the wallet
+    /// this error was recorded against — and overwritten by the next start.
+    private var addressWalletStartupError: String?
     @Published private(set) var platformAccountAvailability: PlatformAccountAvailability = .unknown
 
     @Published public private(set) var platformBalance: UInt64 = 0
@@ -301,7 +315,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 try manager.startPlatformAddressSync()
             }
             isSyncing = true
-            lastError = nil
+            lastError = addressWalletStartupError
             try await manager.syncPlatformAddressNow()
         } catch {
             isSyncing = false
@@ -720,6 +734,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         lastSyncBlockTime = nil
         lastSyncTime = nil
         lastError = nil
+        addressWalletStartupError = nil
         syncCountSinceLaunch = 0
         totalTrunkQueries = 0
         totalBranchQueries = 0
@@ -764,20 +779,31 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         let accountAvailability = resolvePlatformAccountAvailability(
             walletId: resolvedWallet.walletId)
         let addressWallet: ManagedPlatformAddressWallet?
+        // Carried to the end rather than returned on: see below.
+        var addressWalletError: String?
         do {
             addressWallet = try resolvedWallet.platformAddressWallet()
         } catch {
+            addressWallet = nil
             if accountAvailability == .unavailable {
                 // A wallet can legitimately have Shielded state without a
                 // DIP-17 Platform Payment account. Keep the shared manager
                 // alive for Shielded/DashPay and expose a neutral UI state.
-                addressWallet = nil
                 Self.logger.info(
                     "🛰️ PLATFORM-ADDR :: no Platform Payment account; continuing without address wallet")
             } else {
+                // Report the failure, but do not abort the start. Shielded,
+                // the DashPay sync loop and identity recovery share the
+                // manager, not the address wallet, and returning here took all
+                // three down with it: a restored wallet that hit this on the
+                // one start it gets per session lost its identity — and with
+                // it every contact and all contact payment history — until the
+                // app was relaunched. `addressWallet` is already an optional
+                // the rest of this method handles (the branch above sets it to
+                // nil and continues), so the only difference here is that
+                // `lastError` explains why the address surfaces are empty.
                 Self.logger.error("🛰️ PLATFORM-ADDR :: platformAddressWallet() failed: \(String(describing: error), privacy: .public)")
-                lastError = "platformAddressWallet failed: \(error.localizedDescription)"
-                return
+                addressWalletError = "platformAddressWallet failed: \(error.localizedDescription)"
             }
         }
 
@@ -858,7 +884,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         self.platformAccountAvailability = accountAvailability
         self.runningNetwork = network
         self.isRunning = true
-        self.lastError = nil
+        self.addressWalletStartupError = addressWalletError
+        self.lastError = addressWalletError
 
         subscribeToManager(manager: manager, walletId: resolvedWallet.walletId)
         refreshDerivedAddresses()
@@ -1227,7 +1254,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         guard let result = event.result(for: walletId) else { return }
 
         if result.success {
-            lastError = nil
+            // A healthy address-sync pass says nothing about the address
+            // wallet, which failed to resolve at start and stays broken.
+            lastError = addressWalletStartupError
             if result.checkpointHeight > 0 {
                 checkpointHeight = result.checkpointHeight
             }

@@ -249,7 +249,6 @@ final class SwiftDashSDKContactsService: ObservableObject {
         // refreshPaymentsProjection), so ride the snapshot refresh at
         // most once a minute.
         if Date().timeIntervalSince(lastPaymentsProjection) > 60 {
-            lastPaymentsProjection = Date()
             refreshPaymentsProjection()
         }
     }
@@ -269,8 +268,14 @@ final class SwiftDashSDKContactsService: ObservableObject {
         guard let manager = SwiftDashSDKHost.shared.manager,
               let wallet = SwiftDashSDKHost.shared.wallet,
               let ownerId = DWCurrentUserIdentityInfo.shared.identityId else {
+            // No identity yet: nothing was pulled, so leave the piggyback
+            // throttle unarmed. Arming it here spent the launch's first
+            // window on a call that returned immediately — the identity
+            // typically lands seconds later, and the next chance to project
+            // its payments was then a minute away.
             return
         }
+        lastPaymentsProjection = Date()
         do {
             let payments = try manager.refreshDashPayPayments(
                 walletId: wallet.walletId,
@@ -964,7 +969,7 @@ final class ContactsNotificationsBridge: NSObject {
 final class DashPayPaymentTxLookup {
     static let shared = DashPayPaymentTxLookup()
 
-    struct PaymentInfo: Sendable {
+    struct PaymentInfo: Sendable, Equatable {
         let amountDuffs: UInt64
         /// True when the wallet's identity SENT this payment.
         let isOutgoing: Bool
@@ -1061,9 +1066,33 @@ final class DashPayPaymentTxLookup {
         }
     }
 
+    /// Swap the snapshot in, and say so when it actually changed.
+    ///
+    /// The signal matters because nothing else carries it. The payment rows
+    /// behind this snapshot are written by an app-pulled projection, not by
+    /// the SDK persister, and they live in entities the transaction feed's
+    /// SwiftData-save filter ignores — so a feed already on screen kept
+    /// rendering rows with dash-spv's misread direction and no contact name
+    /// for the rest of the session. That was the whole of "DashPay
+    /// transactions only come back after a resync": the data was correct in
+    /// this cache, and nobody asked it again.
+    ///
+    /// Gated on a real change: the projection re-runs on a timer, and an
+    /// unconditional post would rebuild the whole history list every pass.
     private func store(_ map: [String: PaymentInfo]) {
         lock.lock()
+        let changed = infoByTxid != map
         infoByTxid = map
         lock.unlock()
+
+        guard changed else { return }
+        NotificationCenter.default.post(name: Self.didChangeNotification, object: nil)
     }
+}
+
+extension DashPayPaymentTxLookup {
+    /// Posted when the txid → DashPay-payment snapshot gained, lost, or
+    /// altered an entry. Consumers re-read `info(forTxidHex:)`.
+    static let didChangeNotification =
+        Notification.Name("DWDashPayPaymentTxLookupDidChange")
 }
