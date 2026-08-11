@@ -423,8 +423,11 @@ extension TxDetailModel {
         let transparent = NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
         let shielded = NSLocalizedString("Shielded balance", comment: "")
         if transaction.isShieldedTransfer {
+            let source = transaction.isCoinJoinFundedTransfer
+                ? NSLocalizedString("CoinJoin balance", comment: "The wallet's mixed (CoinJoin) funds as the source of an internal transfer")
+                : transparent
             var rows: [DWTitleDetailItem] = [
-                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: transparent),
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: source),
                 DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: shielded),
             ]
             if let status = shieldedStatusText {

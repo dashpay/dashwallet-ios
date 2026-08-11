@@ -161,7 +161,23 @@ class Transaction: TransactionDataItem, Identifiable {
     /// account — see `SwiftDashSDKWalletSource.isCoinJoinMixingTx`), NOT just
     /// the SDK's structural `typedKind`, which only tags the mixing *rounds*
     /// and misses create-denomination / collateral / mixing-fee txs.
-    var isCoinJoinMixing: Bool { sdkCoinJoinMixing }
+    ///
+    /// Asset-lock funding transfers (Shielded / Platform / identity) are
+    /// excluded even when they draw on the CoinJoin account: draining mixed
+    /// funds is a transfer *out of* mixing, not a mixing operation, and must
+    /// render as its own Internal Transfer row instead of folding into the
+    /// "Mixing Transactions" group.
+    var isCoinJoinMixing: Bool { sdkCoinJoinMixing && !isCoinJoinFundedTransfer }
+
+    /// True when this asset-lock funding transfer drew on the CoinJoin
+    /// account (mixed funds moving out) rather than the Standard account.
+    /// Rides the role-computed mixing flag: for an asset-lock funding tx that
+    /// flag is set exactly when its inputs or change touch the CoinJoin
+    /// account — a BIP44/BIP32-funded transfer never sets it.
+    var isCoinJoinFundedTransfer: Bool {
+        sdkCoinJoinMixing
+            && (isShieldedTransfer || isPlatformFundingTransfer || isIdentityFundingTransfer)
+    }
 
     /// Raw signed wallet net change (duffs). Used to total a CoinJoin mixing
     /// group's cost: summing this across the group yields the net wallet

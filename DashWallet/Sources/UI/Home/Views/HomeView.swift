@@ -701,6 +701,9 @@ struct HomeViewContent<Content: View>: View {
     private func transferRouteDetails(txItem: Transaction) -> String? {
         switch txItem.internalTransferRoute {
         case .coreToShielded:
+            if txItem.isCoinJoinFundedTransfer {
+                return NSLocalizedString("CoinJoin → Shielded", comment: "Transfer of own mixed funds into the private shielded balance")
+            }
             return NSLocalizedString("Transparent → Shielded", comment: "Transfer of own funds into the private shielded balance")
         case .shieldedToCore:
             return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
