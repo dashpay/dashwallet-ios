@@ -207,9 +207,8 @@ struct InternalTransferScreen: View {
             pinnedCard(source, caption: NSLocalizedString("From", comment: ""))
             selectionGroup(
                 caption: NSLocalizedString("To", comment: ""),
-                networks: ChainNetwork.allCases,
+                networks: availableTargets(for: source),
                 selected: viewModel.resolvedSendTarget,
-                conflictingWith: source,
                 onSelect: viewModel.selectSendTarget)
         }
     }
@@ -266,9 +265,8 @@ struct InternalTransferScreen: View {
         VStack(spacing: 12) {
             selectionGroup(
                 caption: NSLocalizedString("From", comment: ""),
-                networks: ChainNetwork.allCases,
+                networks: availableSources(for: target),
                 selected: viewModel.resolvedReceiveSource,
-                conflictingWith: target,
                 onSelect: viewModel.selectReceiveSource)
 
             pinnedCard(target, caption: NSLocalizedString("To", comment: ""))
@@ -325,6 +323,17 @@ struct InternalTransferScreen: View {
             selected: selected,
             showsRadio: showsRadio,
             action: action)
+    }
+
+    /// Pinned-sheet picker lists (the balance-row arrow sheets): the fixed
+    /// endpoint's balance is left out entirely — only the standalone screen
+    /// shows all three with same-balance taps rejected.
+    private func availableTargets(for source: ChainNetwork) -> [ChainNetwork] {
+        ChainNetwork.allCases.filter { $0 != source }
+    }
+
+    private func availableSources(for target: ChainNetwork) -> [ChainNetwork] {
+        ChainNetwork.allCases.filter { $0 != target }
     }
 
     // MARK: - Transfer preview
