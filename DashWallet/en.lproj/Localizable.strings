@@ -194,6 +194,9 @@
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
+/* Usernames */
+"A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name.";
+
 /* No comment provided by engineer. */
 "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting." = "A wallet from a previous installation is still stored on this device. Keep using it, or delete it and start fresh? Make sure your recovery phrase is backed up before deleting.";
 
@@ -256,6 +259,9 @@
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
+
+/* Usernames */
+"Add a temporary username" = "Add a temporary username";
 
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
@@ -707,6 +713,9 @@
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Contact request sent to %@";
 
+/* Usernames */
+"Continue without a temporary username" = "Continue without a temporary username";
+
 /* Identity top-up sheet — body */
 "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates." = "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates.";
 
@@ -755,6 +764,9 @@
 /* Username marketplace: search row for a contested label with an active vote by others */
 "In a network vote — you can join as a contender" = "In a network vote — you can join as a contender";
 
+/* Usernames */
+"In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames." = "In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames.";
+
 /* Username marketplace: search row for a label a past vote locked */
 "Locked by a network vote — nobody can register it" = "Locked by a network vote — nobody can register it";
 
@@ -788,11 +800,29 @@
 /* Username marketplace: activity overlay while the purchase transition runs */
 "Completing your purchase…" = "Completing your purchase…";
 
+/* Usernames */
+"Register username" = "Register username";
+
 /* Username marketplace: activity overlay while the delist transition runs */
 "Removing the listing…" = "Removing the listing…";
 
 /* Username marketplace: activity overlay while the set-price transition runs */
 "Listing for sale…" = "Listing for sale…";
+
+/* Usernames */
+"Submit both usernames" = "Submit both usernames";
+
+/* Usernames */
+"Temporary username" = "Temporary username";
+
+/* Usernames */
+"The temporary username must not itself require voting." = "The temporary username must not itself require voting.";
+
+/* Usernames */
+"This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name." = "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name.";
+
+/* Usernames */
+"This username would also require voting — try adding a digit between 2 and 9" = "This username would also require voting — try adding a digit between 2 and 9";
 
 /* Username marketplace: activity overlay while the transfer transition runs */
 "Transferring the username…" = "Transferring the username…";
@@ -2785,6 +2815,9 @@
 /* DashPay FAQ */
 "When will contact requests become private?" = "When will contact requests become private?";
 
+/* Usernames */
+"While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames." = "While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames.";
+
 /* DashPay FAQ */
 "Why do I need to enable it?" = "Why do I need to enable it?";
 
@@ -2796,6 +2829,9 @@
 
 /* Username marketplace: purchase confirmation body with seller clarity */
 "You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately.";
+
+/* Usernames */
+"You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames." = "You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames.";
 
 /* DashPay: body of the enable success sheet */
 "You're all set. Other users can now send you contact requests — and you can send yours." = "You're all set. Other users can now send you contact requests — and you can send yours.";
@@ -4431,6 +4467,12 @@
 
 /* Usernames */
 "Buy username" = "Buy username";
+
+/* Usernames */
+"Your temporary username “%@” could not be registered. You can register another username later." = "Your temporary username “%@” could not be registered. You can register another username later.";
+
+/* Usernames */
+"“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames." = "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames.";
 
 /* Usernames */
 "“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance.";

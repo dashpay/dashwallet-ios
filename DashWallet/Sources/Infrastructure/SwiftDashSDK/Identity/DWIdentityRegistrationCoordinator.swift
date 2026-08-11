@@ -295,6 +295,19 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// an active attempt.
     private(set) var currentFundingSource: DWIdentityFundingSource = .core
 
+    /// Non-contested companion label registered alongside a contested
+    /// submission in the same flow ("temporary username"), non-nil only
+    /// after its `registerDpnsName` succeeded. Read by
+    /// `CreateUsernameViewModel.registrationOutcome(for:)` to tell the
+    /// form which of the two names actually landed.
+    private(set) var registeredTemporaryUsername: String?
+
+    /// Failure description when the companion registration was requested
+    /// but failed. Deliberately non-fatal: the contested submission has
+    /// already succeeded by the time the companion registers, so the flow
+    /// completes and the form reports the partial outcome.
+    private(set) var temporaryUsernameError: String?
+
     // MARK: - Internal state
 
     private var controller: DWIdentityRegistrationController?
@@ -337,6 +350,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case shieldedCreateUnconfirmed
         case missingInvitation
         case alreadyInFlight
+        case invalidTemporaryUsername
 
         var errorDescription: String? {
             switch self {
@@ -395,6 +409,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 return NSLocalizedString("This invitation link is not valid.", comment: "DashPay Invitations")
             case .alreadyInFlight:
                 return NSLocalizedString("Identity registration already in progress", comment: "DashPay")
+            case .invalidTemporaryUsername:
+                return NSLocalizedString("The temporary username must not itself require voting.", comment: "Usernames")
             }
         }
     }
@@ -418,13 +434,38 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// `startClaimInvitation(username:invitationURI:)`, which supplies
     /// the voucher link; calling this method with `.invitation` and no
     /// `invitationURI` fails with `.missingInvitation`.
+    ///
+    /// `temporaryUsername` (contested submissions only) is a
+    /// NON-contested companion label registered to the same identity
+    /// right after the contested submission, inside the same authorized
+    /// flow — the user is reachable at it while masternode voting runs,
+    /// and keeps it permanently afterwards. Its registration failure is
+    /// non-fatal (`temporaryUsernameError`); its success is recorded in
+    /// `registeredTemporaryUsername` and mirrored to `DWGlobalOptions`
+    /// as the active username (the deferred contested label then never
+    /// displaces it — `finalizeWon` only backfills an empty mirror, so
+    /// a vote win adds the second name instead of replacing the first).
     @discardableResult
     func startCreateUsername(
         _ username: String,
         fundingSource: DWIdentityFundingSource = .core,
-        invitationURI: String? = nil
+        invitationURI: String? = nil,
+        temporaryUsername: String? = nil
     ) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username, privacy: .public) funding=\(fundingSource.logLabel, privacy: .public)")
+        Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username, privacy: .public) funding=\(fundingSource.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public)")
+
+        // A companion label only makes sense next to a contested main
+        // label, and must itself be non-contested — registering a second
+        // contested name here would silently open a second vote the UI
+        // never explained. Reject before any money moves.
+        if let temporaryUsername {
+            guard DWContestedNameStatusService.isContestedLabel(username),
+                  !DWContestedNameStatusService.isContestedLabel(temporaryUsername)
+            else {
+                Self.logger.error("🪪 IDENT-COORD :: invalid temporary username pairing main=\(username, privacy: .public) temporary=\(temporaryUsername, privacy: .public)")
+                throw CoordinatorError.invalidTemporaryUsername
+            }
+        }
 
         // Preconditions — resolved once up-front so failures are
         // surfaced before the PIN prompt.
@@ -795,6 +836,34 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             }
         }
 
+        // Step 3.6: companion (temporary) username. The contested label
+        // above is only preregistered — it belongs to nobody until the
+        // vote resolves — so the user asked for a second, non-contested
+        // name to be reachable at in the meantime. Same identity, same
+        // signer, no additional PIN prompt. Failure is deliberately
+        // non-fatal: the contested submission (the primary intent, and
+        // the user's locked funds) already succeeded, so the flow
+        // completes and the form reports the partial outcome from
+        // `temporaryUsernameError`.
+        if let temporaryUsername, isContestedSubmission {
+            do {
+                _ = try await wallet.registerDpnsName(
+                    identityId: identityId,
+                    name: temporaryUsername,
+                    signer: signer)
+                registeredTemporaryUsername = temporaryUsername
+                Self.logger.info("🪪 IDENT-COORD :: temporary DPNS name registered: \(temporaryUsername, privacy: .public)")
+                // Push the new label into the identity read model right
+                // away (same post-registration refresh the marketplace's
+                // `register(label:)` does) so profile/username surfaces
+                // don't wait for the next Home-appear sync.
+                DWCurrentUserIdentityInfo.shared.refreshFromSDK()
+            } catch {
+                temporaryUsernameError = error.localizedDescription
+                Self.logger.error("🪪 IDENT-COORD :: temporary DPNS registration failed: \(String(describing: error), privacy: .public)")
+            }
+        }
+
         // Step 4: mark complete + mirror to DWGlobalOptions. The
         // controller transition triggers the phaseSubscription
         // sink which posts the notification + writes
@@ -820,12 +889,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     @discardableResult
     func startClaimInvitation(
         username: String,
-        invitationURI: String
+        invitationURI: String,
+        temporaryUsername: String? = nil
     ) async throws -> Identifier {
         try await startCreateUsername(
             username,
             fundingSource: .invitation,
-            invitationURI: invitationURI)
+            invitationURI: invitationURI,
+            temporaryUsername: temporaryUsername)
     }
 
     /// Direct purchase of a marketplace-listed name from the
@@ -1019,10 +1090,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     @discardableResult
     func retry(
         _ username: String,
-        fundingSource: DWIdentityFundingSource = .core
+        fundingSource: DWIdentityFundingSource = .core,
+        temporaryUsername: String? = nil
     ) async throws -> Identifier {
         Self.logger.info("🪪 IDENT-COORD :: retry username=\(username, privacy: .public) funding=\(fundingSource.logLabel, privacy: .public)")
-        return try await startCreateUsername(username, fundingSource: fundingSource)
+        return try await startCreateUsername(
+            username,
+            fundingSource: fundingSource,
+            temporaryUsername: temporaryUsername)
     }
 
     /// Abort the current attempt and reset to `.idle`. Safe to call
@@ -1252,7 +1327,19 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         if case .completed = newPhase, let username = currentUsername {
             let isContestedSubmission = DWContestedNameStatusService.shared.isPendingLabel(username)
             if isContestedSubmission {
-                Self.logger.info("🪪 IDENT-COORD :: completed (contested) — deferring DWGlobalOptions mirror writes")
+                if let temporaryUsername = registeredTemporaryUsername {
+                    // The companion name registered in Step 3.6 is live
+                    // immediately — it becomes the active username while
+                    // the contested label stays deferred until the vote
+                    // resolves. `finalizeWon` only backfills an EMPTY
+                    // mirror, so a later vote win adds the contested name
+                    // to the identity without displacing this one.
+                    Self.logger.info("🪪 IDENT-COORD :: completed (contested) — mirroring temporary username \(temporaryUsername, privacy: .public)")
+                    DWGlobalOptions.sharedInstance().dashpayUsername = temporaryUsername
+                    DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
+                } else {
+                    Self.logger.info("🪪 IDENT-COORD :: completed (contested) — deferring DWGlobalOptions mirror writes")
+                }
             } else {
                 DWGlobalOptions.sharedInstance().dashpayUsername = username
                 DWGlobalOptions.sharedInstance().dashpayRegistrationCompleted = true
@@ -1323,6 +1410,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         lastErrorMessage = nil
         currentUsername = nil
         currentFundingSource = .core
+        registeredTemporaryUsername = nil
+        temporaryUsernameError = nil
     }
 
     /// Look up the persisted identity at `pinnedIdentityIndex` for

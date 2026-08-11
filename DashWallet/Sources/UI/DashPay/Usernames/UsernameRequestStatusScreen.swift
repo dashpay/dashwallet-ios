@@ -93,6 +93,59 @@ final class UsernameRequestStatusViewModel: ObservableObject {
             loadError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
         }
     }
+
+    #if DASHPAY
+    // MARK: Temporary username (DASHPAY only — the field model and the
+    // marketplace registration live in dashpay-target-only files)
+
+    /// Input + validation for the non-contested temporary username the
+    /// screen offers while the vote is unresolved. Same shared model the
+    /// signup flow's contested confirmation sheet uses.
+    let temporaryField = TemporaryUsernameFieldModel()
+
+    @Published private(set) var isRegisteringTemporary = false
+    /// Non-nil drives the registration-failure alert.
+    @Published var temporaryRegistrationError: String?
+    /// Set on success — flips the offer section to its confirmation and
+    /// keeps it flipped for this screen visit (the identity-info
+    /// snapshot also stops reporting an empty username list).
+    @Published private(set) var justRegisteredTemporaryUsername: String?
+
+    /// Stateless facade, instantiated per view model by design (see its
+    /// type doc). `register(label:)` refuses contested labels, so the
+    /// field's non-contested gate has a second line of defense.
+    private let marketplaceService = UsernameMarketplaceService()
+
+    /// Offer the temporary-username section only while it can still
+    /// help: the vote is unresolved (or not yet indexed — the bookmark
+    /// this screen was opened from proves a submission exists) and the
+    /// identity owns no other username to be reached at.
+    var canOfferTemporaryUsername: Bool {
+        guard justRegisteredTemporaryUsername == nil else { return false }
+        guard DWCurrentUserIdentityInfo.shared.usernames.isEmpty else { return false }
+        guard let voteState else { return true }
+        if case .ongoing = voteState.outcome { return true }
+        return false
+    }
+
+    /// Register the validated temporary username to the existing
+    /// identity via the marketplace service (own PIN prompt; refreshes
+    /// the identity snapshot on success). PIN cancel is a silent no-op.
+    func registerTemporaryUsername() async {
+        let label = temporaryField.trimmedText
+        guard temporaryField.check == .available, !isRegisteringTemporary else { return }
+        isRegisteringTemporary = true
+        defer { isRegisteringTemporary = false }
+        do {
+            try await marketplaceService.register(label: label)
+            justRegisteredTemporaryUsername = label
+        } catch UsernameMarketplaceService.ServiceError.authCancelled {
+            // User backed out of the PIN — keep the section as-is.
+        } catch {
+            temporaryRegistrationError = UsernameMarketplaceService.userFacingMessage(for: error)
+        }
+    }
+    #endif
 }
 
 // MARK: - UsernameRequestStatusScreen
@@ -138,6 +191,30 @@ struct UsernameRequestStatusScreen: View {
                 }
             }
 
+            #if DASHPAY
+            // The gap this closes: a user whose FIRST username went to a
+            // vote has no username at all until it resolves. Offer the
+            // same non-contested temporary username the signup flow now
+            // prompts for — here, registered to the already-existing
+            // identity.
+            if viewModel.canOfferTemporaryUsername {
+                TemporaryUsernameRegistrationSection(
+                    viewModel: viewModel,
+                    temporaryField: viewModel.temporaryField)
+            } else if let registered = viewModel.justRegisteredTemporaryUsername {
+                Section {
+                    Text(String.localizedStringWithFormat(
+                        NSLocalizedString(
+                            "“%1$@” is now your username. If the vote awards you “%2$@”, you will be reachable at both usernames.",
+                            comment: "Usernames"),
+                        registered,
+                        viewModel.label))
+                        .font(.caption)
+                        .foregroundColor(Color.dash.secondaryText)
+                }
+            }
+            #endif
+
             if let voteState = viewModel.voteState {
                 Section(NSLocalizedString("Who is requesting this name", comment: "Usernames")) {
                     ForEach(voteState.contenders) { contender in
@@ -179,6 +256,21 @@ struct UsernameRequestStatusScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .task { await viewModel.refresh() }
         .refreshable { await viewModel.refresh() }
+        #if DASHPAY
+        .alert(
+            NSLocalizedString("Registration failed", comment: "Usernames"),
+            isPresented: Binding(
+                get: { viewModel.temporaryRegistrationError != nil },
+                set: { if !$0 { viewModel.temporaryRegistrationError = nil } }
+            )
+        ) {
+            Button(NSLocalizedString("OK", comment: "")) {
+                viewModel.temporaryRegistrationError = nil
+            }
+        } message: {
+            Text(viewModel.temporaryRegistrationError ?? "")
+        }
+        #endif
     }
 
     /// Describes only what Platform actually reported. A contest that is not
@@ -219,6 +311,49 @@ struct UsernameRequestStatusScreen: View {
         }
     }
 }
+
+#if DASHPAY
+// MARK: - TemporaryUsernameRegistrationSection
+
+/// "Add a temporary username" list section: explainer, the shared
+/// validated field, and the register action. A separate struct (rather
+/// than inline in the screen body) so it observes the field model
+/// directly — the register button's enabled state must re-render on
+/// every validation change, and nested `ObservableObject`s don't
+/// propagate through the parent's `@StateObject`.
+private struct TemporaryUsernameRegistrationSection: View {
+    @ObservedObject var viewModel: UsernameRequestStatusViewModel
+    @ObservedObject var temporaryField: TemporaryUsernameFieldModel
+
+    var body: some View {
+        Section(NSLocalizedString("Add a temporary username", comment: "Usernames")) {
+            Text(String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "You do not have a username while the vote is in progress. Register a non-contested username now — it is yours to keep, and if the vote awards you “%@”, you will be reachable at both usernames.",
+                    comment: "Usernames"),
+                viewModel.label))
+                .font(.caption)
+                .foregroundColor(Color.dash.secondaryText)
+
+            TemporaryUsernameField(model: temporaryField)
+                .padding(.vertical, 4)
+
+            DashButton(
+                text: NSLocalizedString("Register username", comment: "Usernames"),
+                size: .medium,
+                isEnabled: temporaryField.check == .available && !viewModel.isRegisteringTemporary,
+                isLoading: viewModel.isRegisteringTemporary
+            ) {
+                Task { await viewModel.registerTemporaryUsername() }
+            }
+            .padding(.vertical, 4)
+        }
+        .onAppear {
+            temporaryField.seedSuggestion(from: viewModel.label)
+        }
+    }
+}
+#endif
 
 // MARK: - ContestantStatusRow
 

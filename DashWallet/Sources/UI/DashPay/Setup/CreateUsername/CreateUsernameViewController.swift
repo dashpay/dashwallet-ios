@@ -107,10 +107,21 @@ struct CreateUsernameView: View {
     /// then only corrects a selection that became non-viable, instead
     /// of overriding the user's explicit choice.
     @State private var didUserPickFundingSource: Bool = false
-    /// Tracks the contested-name confirmation alert. Continue routes
-    /// through this alert (instead of submitting directly) when the
+    /// Tracks the contested-name confirmation sheet. Continue routes
+    /// through this sheet (instead of submitting directly) when the
     /// typed name is contested-eligible — `viewModel.isContestedCandidate`.
+    /// Besides acknowledging the vote wait, the sheet prompts for a
+    /// non-contested temporary username registered in the same flow.
     @State private var showContestedConfirmation: Bool = false
+    /// Companion ("temporary") username that the completed contested
+    /// submission actually registered — read by `votingSubmittedMessage`
+    /// (the live `viewModel.temporaryUsername` field must not be read
+    /// there: the sheet is gone and its state can be edited or reset).
+    @State private var registeredTemporaryUsername: String? = nil
+    /// Companion username that was requested but failed to register —
+    /// the contested submission itself succeeded, so the voting alert
+    /// carries the partial-outcome note instead of an error popup.
+    @State private var failedTemporaryUsername: String? = nil
     /// Tracks the buy-listed-name confirmation alert; the button routes
     /// here when `viewModel.canPurchaseListedNameDirectly`.
     @State private var showPurchaseConfirmation: Bool = false
@@ -320,35 +331,14 @@ struct CreateUsernameView: View {
         .onChange(of: viewModel.hasPendingRegistrationRecovery) { _ in
             syncFundingSourceToViableSource()
         }
-        .alert(
-            NSLocalizedString("Contested name", comment: "Usernames"),
-            isPresented: $showContestedConfirmation
-        ) {
-            Button(NSLocalizedString("Submit anyway", comment: "Usernames"), role: .destructive) {
-                // The alert can sit open across the join-window boundary.
-                // Re-check at the moment of confirmation: a submission the
-                // network would refuse is replaced by a fresh availability
-                // answer (which shows the join-closed state) instead of a
-                // broadcast failure.
-                if viewModel.activeContestContenders != nil, viewModel.activeContestJoinClosed {
-                    showContestedConfirmation = false
-                    viewModel.refreshRegistrationRecoveryState()
-                    return
-                }
-                performSubmit()
-            }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-        } message: {
-            // The join-the-vote wording only holds while the join window is
-            // still open; past it (or with no known contest) the generic
-            // contested message is the honest one.
-            Text(viewModel.activeContestContenders != nil && !viewModel.activeContestJoinClosed
-                ? NSLocalizedString(
-                    "A vote for this name is already in progress — your request will join it as a contender. Your Dash will be locked until voting completes.",
-                    comment: "Usernames")
-                : NSLocalizedString(
-                    "This name requires voting. Your Dash will be locked until voting completes.",
-                    comment: "Usernames"))
+        .sheet(isPresented: $showContestedConfirmation) {
+            ContestedNameConfirmationSheet(
+                viewModel: viewModel,
+                temporaryField: viewModel.temporaryField,
+                onSubmit: { temporaryUsername in
+                    confirmContestedSubmission(temporaryUsername: temporaryUsername)
+                },
+                onCancel: { showContestedConfirmation = false })
         }
         .alert(
             NSLocalizedString("Buy username", comment: "Usernames"),
@@ -717,14 +707,29 @@ struct CreateUsernameView: View {
         }
     }
 
-    /// Encapsulates the submit-to-bridge dance so both the direct
-    /// Continue path and the contested-name alert's "Submit anyway"
-    /// button can share the code. Writes the funding-source pick
-    /// into the bridge right before submit. The bridge resets to
-    /// `.core` on every terminal phase, so a stale picker value
-    /// can't leak into a future attempt; this single write is the
-    /// only synchronization needed.
-    private func performSubmit() {
+    /// Confirmation handler for both of the contested-name sheet's
+    /// submit buttons (`temporaryUsername` nil = "without a temporary
+    /// username"). The sheet can sit open across the join-window
+    /// boundary, so re-check at the moment of confirmation: a submission
+    /// the network would refuse is replaced by a fresh availability
+    /// answer (which shows the join-closed state) instead of a
+    /// broadcast failure.
+    private func confirmContestedSubmission(temporaryUsername: String?) {
+        showContestedConfirmation = false
+        if viewModel.activeContestContenders != nil, viewModel.activeContestJoinClosed {
+            viewModel.refreshRegistrationRecoveryState()
+            return
+        }
+        performSubmit(temporaryUsername: temporaryUsername)
+    }
+
+    /// Encapsulates the submit-to-bridge dance so the direct Continue
+    /// path and the contested sheet's confirmation can share the code.
+    /// Writes the funding-source pick into the bridge right before
+    /// submit. The bridge resets to `.core` on every terminal phase, so
+    /// a stale picker value can't leak into a future attempt; this
+    /// single write is the only synchronization needed.
+    private func performSubmit(temporaryUsername: String? = nil) {
         if !viewModel.isInvitationMode {
             DWIdentityRegistrationBridge.shared.preferredFundingSource =
                 viewModel.hasPendingRegistrationRecovery ? .core : fundingSource
@@ -735,7 +740,7 @@ struct CreateUsernameView: View {
             // bridge completion resolves the outcome at the terminal phase.
             inProgress = true
             screenLockedAfterAuth = false
-            let outcome = await viewModel.submitUsernameRequest {
+            let outcome = await viewModel.submitUsernameRequest(temporaryUsername: temporaryUsername) {
                 isTextInputFocused = false
                 screenLockedAfterAuth = true
             }
@@ -744,7 +749,9 @@ struct CreateUsernameView: View {
             switch outcome {
             case .success:
                 showSuccess = true
-            case .submittedForVoting:
+            case let .submittedForVoting(registeredTemporary, temporaryError):
+                registeredTemporaryUsername = registeredTemporary
+                failedTemporaryUsername = temporaryError != nil ? temporaryUsername : nil
                 showVotingSubmitted = true
             case .cancelled:
                 screenLockedAfterAuth = false
@@ -761,19 +768,40 @@ struct CreateUsernameView: View {
     /// hence "around". Falls back to the date-less wording when no pending
     /// bookmark exists rather than inventing a deadline.
     private var votingSubmittedMessage: String {
-        guard let endTime = DWContestedNameStatusService.shared.pendingVotingEndTime else {
-            return String.localizedStringWithFormat(
+        var message: String
+        if let endTime = DWContestedNameStatusService.shared.pendingVotingEndTime {
+            message = String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result.",
+                    comment: "Usernames"),
+                viewModel.username,
+                DWDateFormatter.sharedInstance.dateAndTime(from: endTime))
+        } else {
+            message = String.localizedStringWithFormat(
                 NSLocalizedString(
                     "“%@” has been submitted for voting. It is not registered to you yet. We will notify you when voting ends.",
                     comment: "Usernames"),
                 viewModel.username)
         }
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "“%1$@” has been submitted for voting. It is not registered to you yet. Voting ends around %2$@ — we will notify you with the result.",
-                comment: "Usernames"),
-            viewModel.username,
-            DWDateFormatter.sharedInstance.dateAndTime(from: endTime))
+        // Companion-name outcome from the same flow: registered (the
+        // user is reachable right away, and keeps the name past the
+        // vote) or requested-but-failed (partial outcome — the contested
+        // submission itself succeeded).
+        if let temporary = registeredTemporaryUsername {
+            message += " " + String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "In the meantime you are reachable at “%1$@”, which is yours to keep. If the vote awards you “%2$@”, you will be reachable at both usernames.",
+                    comment: "Usernames"),
+                temporary,
+                viewModel.username)
+        } else if let failed = failedTemporaryUsername {
+            message += " " + String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "Your temporary username “%@” could not be registered. You can register another username later.",
+                    comment: "Usernames"),
+                failed)
+        }
+        return message
     }
 
     /// Viable funding sources in privacy-descending priority order.
@@ -884,6 +912,172 @@ struct CreateUsernameView: View {
             return NSLocalizedString("Username is in voting. You will be notified when voting ends.", comment: "Usernames")
         case .empty, .invalid, .hidden:
             return "" // rule row is hidden for these states
+        }
+    }
+}
+
+/// Contested-name confirmation sheet. Replaces the old plain
+/// "Submit anyway" alert: besides acknowledging the vote wait and the
+/// locked Dash, it prompts the user to register a non-contested
+/// temporary username to the same identity in the same flow (one PIN
+/// prompt) — they are reachable at it while the vote runs, and keep it
+/// permanently afterwards. Skipping is an explicit secondary action;
+/// swiping the sheet down cancels the submission entirely.
+private struct ContestedNameConfirmationSheet: View {
+    @ObservedObject var viewModel: CreateUsernameViewModel
+    @ObservedObject var temporaryField: TemporaryUsernameFieldModel
+    /// Called with the validated temporary username, or nil for
+    /// "continue without one". The caller dismisses the sheet.
+    let onSubmit: (String?) -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(NSLocalizedString("Contested name", comment: "Usernames"))
+                        .foregroundColor(.dash.primaryText)
+                        .font(.title2.bold())
+                        .padding(.top, 24)
+                    Text(voteMessage)
+                        .foregroundColor(.dash.secondaryText)
+                        .font(.subheadline)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 8)
+
+                    Text(NSLocalizedString("Add a temporary username", comment: "Usernames"))
+                        .foregroundColor(.dash.primaryText)
+                        .font(.subheadline.bold())
+                        .padding(.top, 24)
+                    Text(String.localizedStringWithFormat(
+                        NSLocalizedString(
+                            "While the vote is in progress, “%@” does not belong to you yet and other users cannot find you by it. Add a non-contested username to use DashPay right away. It stays yours permanently — if the vote awards you the contested name, you will be reachable at both usernames.",
+                            comment: "Usernames"),
+                        viewModel.username))
+                        .foregroundColor(.dash.secondaryText)
+                        .font(.subheadline)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 4)
+
+                    TemporaryUsernameField(model: temporaryField)
+                        .padding(.top, 16)
+                }
+            }
+
+            DashButton(
+                text: NSLocalizedString("Submit both usernames", comment: "Usernames"),
+                isEnabled: temporaryField.check == .available
+            ) {
+                onSubmit(temporaryField.trimmedText)
+            }
+            .padding(.top, 8)
+
+            DashButton(
+                text: NSLocalizedString("Continue without a temporary username", comment: "Usernames"),
+                style: .plain
+            ) {
+                onSubmit(nil)
+            }
+            .padding(.top, 4)
+
+            DashButton(
+                text: NSLocalizedString("Cancel", comment: ""),
+                style: .plain
+            ) {
+                onCancel()
+            }
+            .padding(.top, 4)
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 20)
+        .presentationDetents([.large])
+        .onAppear {
+            temporaryField.seedSuggestion(from: viewModel.username)
+        }
+    }
+
+    /// The join-the-vote wording only holds while the join window is
+    /// still open; past it (or with no known contest) the generic
+    /// contested message is the honest one — same rule as the alert
+    /// this sheet replaced. Both variants state the real fee semantics:
+    /// the contest fee is SPENT at submission (it prefunds the vote
+    /// poll's specialized balance, whose leftover goes to the network's
+    /// processing pools at poll end — see rs-drive-abci's
+    /// `clean_up_after_contested_resources_vote_polls_end`), never
+    /// locked-and-returned.
+    private var voteMessage: String {
+        viewModel.activeContestContenders != nil && !viewModel.activeContestJoinClosed
+            ? NSLocalizedString(
+                "A vote for this name is already in progress — your request will join it as a contender. The contest fee is spent when you submit and is not returned, even if you do not win the name.",
+                comment: "Usernames")
+            : NSLocalizedString(
+                "This name requires a masternode vote. The contest fee is spent when you submit and is not returned, even if you do not win the name.",
+                comment: "Usernames")
+    }
+}
+
+// MARK: - TemporaryUsernameField
+
+/// TextInput + single validation rule row for a temporary-username
+/// field, bound to a `TemporaryUsernameFieldModel`. Shared by the
+/// contested confirmation sheet above and `UsernameRequestStatusScreen`'s
+/// register section so the two surfaces render the same rules.
+struct TemporaryUsernameField: View {
+    @ObservedObject var model: TemporaryUsernameFieldModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            TextInput(
+                label: NSLocalizedString("Temporary username", comment: "Usernames"),
+                text: $model.text,
+                autocapitalization: .never)
+
+            if ruleResult != .hidden {
+                ValidationCheck(
+                    validationResult: ruleResult,
+                    text: ruleText
+                ).padding(.top, 16)
+            }
+        }
+    }
+
+    private var ruleResult: UsernameValidationRuleResult {
+        switch model.check {
+        case .empty:
+            return .hidden
+        case .invalidLength, .invalidCharacters, .stillContested:
+            return .invalid
+        case .checking:
+            return .loading
+        case .available:
+            return .valid
+        case .taken:
+            return .invalidCritical
+        case .error:
+            return .error
+        }
+    }
+
+    private var ruleText: String {
+        switch model.check {
+        case .empty:
+            return ""
+        case .invalidLength:
+            return NSLocalizedString("Between 3 and 23 characters", comment: "Usernames")
+        case .invalidCharacters:
+            return NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames")
+        case .stillContested:
+            return NSLocalizedString(
+                "This username would also require voting — try adding a digit between 2 and 9",
+                comment: "Usernames")
+        case .checking:
+            return NSLocalizedString("Validating username…", comment: "Usernames")
+        case .available:
+            return NSLocalizedString("Username available", comment: "Usernames")
+        case .taken:
+            return NSLocalizedString("Username taken", comment: "Usernames")
+        case .error:
+            return NSLocalizedString("Validating username failed", comment: "Usernames")
         }
     }
 }

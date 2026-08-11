@@ -53,7 +53,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// type doc). Used here for `contestPrecheck` — the one vote-state
     /// query that distinguishes a locked name from one mid-vote.
     private let marketplaceService = UsernameMarketplaceService()
-    private let illegalChars = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-").inverted
+    private let illegalChars = TemporaryUsernameFieldModel.illegalCharacters
     private var submittedRegistrationUsername: String?
     private var didNotifyRegistrationStarted = false
     private var onRegistrationStarted: (@MainActor () -> Void)?
@@ -103,6 +103,12 @@ class CreateUsernameViewModel: ObservableObject {
     /// client-side via the SDK's deterministic FFI helper
     /// `dash_sdk_dpns_is_contested_username` — no network call.
     @Published private(set) var isContestedCandidate: Bool = false
+
+    /// Input + validation state for the companion ("temporary")
+    /// username collected by the contested-name confirmation sheet.
+    /// Submitted through `submitUsernameRequest(temporaryUsername:)`
+    /// when the user confirms with it.
+    let temporaryField = TemporaryUsernameFieldModel()
 
     /// The typed label lost an earlier contest to a masternode LOCK, so nobody
     /// can register it. It still reports as available (no owner holds the
@@ -174,7 +180,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// mainnet) has closed: the name can no longer be requested until
     /// the vote resolves. Always true once the vote itself has ended.
     /// Consulted at render time AND as the last-moment gate behind the
-    /// contested confirmation's "Submit anyway".
+    /// contested confirmation sheet's submit actions.
     var activeContestJoinClosed: Bool {
         guard let endsAt = activeContestEndsAt else { return false }
         return UsernameMarketplaceService.contenderJoinDeadline(voteEnd: endsAt) <= Date()
@@ -303,16 +309,23 @@ class CreateUsernameViewModel: ObservableObject {
                 self?.handleRegistrationPhase(phase)
             }
             .store(in: &cancellableBag)
-        
+
         observeBalance()
     }
     
     /// Terminal outcome of a username-registration attempt, surfaced to
     /// the SwiftUI form so it can keep the screen up through the PIN +
     /// registration and then show the right native alert.
+    ///
+    /// `.submittedForVoting` carries the companion ("temporary")
+    /// username's result: `temporaryUsername` is the non-contested label
+    /// registered alongside the contested submission (nil when the user
+    /// skipped it), `temporaryUsernameError` the failure description when
+    /// it was requested but could not be registered (the contested
+    /// submission itself still succeeded).
     enum UsernameRegistrationOutcome {
         case success
-        case submittedForVoting
+        case submittedForVoting(temporaryUsername: String?, temporaryUsernameError: String?)
         case cancelled
         case failure(String)
     }
@@ -330,7 +343,14 @@ class CreateUsernameViewModel: ObservableObject {
     /// The funding source is read from
     /// `DWIdentityRegistrationBridge.shared.preferredFundingSource`,
     /// written by `CreateUsernameView` immediately before this call.
-    func submitUsernameRequest(onRegistrationStarted: @escaping @MainActor () -> Void = {}) async -> UsernameRegistrationOutcome {
+    ///
+    /// `temporaryUsername` — non-contested companion label to register
+    /// in the same flow (contested submissions only; the confirmation
+    /// sheet collects it). nil submits the typed name alone.
+    func submitUsernameRequest(
+        temporaryUsername: String? = nil,
+        onRegistrationStarted: @escaping @MainActor () -> Void = {}
+    ) async -> UsernameRegistrationOutcome {
         // The cached ceiling tracks the balance publisher, which is enough for
         // per-keystroke validation. Submission spends real UTXOs, so re-derive
         // it once here from the live set: one FFI walk on an explicit user
@@ -360,7 +380,8 @@ class CreateUsernameViewModel: ObservableObject {
             do {
                 _ = try await DWIdentityRegistrationCoordinator.shared.startClaimInvitation(
                     username: submittedUsername,
-                    invitationURI: invitationURI)
+                    invitationURI: invitationURI,
+                    temporaryUsername: temporaryUsername)
                 return registrationOutcome(for: submittedUsername)
             } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
                 return .cancelled
@@ -369,6 +390,11 @@ class CreateUsernameViewModel: ObservableObject {
                     Self.registrationFailureMessage(error, username: submittedUsername))
             }
         }
+
+        // Same lifecycle as `preferredFundingSource` (written by the
+        // form right before this call): nil for a plain submission,
+        // preserved across `.failed` so a retry keeps the choice.
+        DWIdentityRegistrationBridge.shared.pendingTemporaryUsername = temporaryUsername
 
         return await withCheckedContinuation { (continuation: CheckedContinuation<UsernameRegistrationOutcome, Never>) in
             DWIdentityRegistrationBridge.shared.startCreateUsername(submittedUsername) { [weak self] _, error in
@@ -452,11 +478,20 @@ class CreateUsernameViewModel: ObservableObject {
     }
 
     private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {
-        guard let pending = DWContestedNameStatusService.shared.pendingLabel,
-              DWContestedNameStatusService.labelsMatch(pending, username) else {
+        // Membership across ALL pending entries, not the single-slot
+        // `pendingLabel` (the oldest): an older unresolved contested
+        // submission in the store must not make THIS submission read as
+        // a completed registration. Same check the coordinator's
+        // `handlePhaseChange` uses for the mirror-write decision.
+        guard DWContestedNameStatusService.shared.isPendingLabel(username) else {
             return .success
         }
-        return .submittedForVoting
+        // The coordinator's companion-name fields are still set here —
+        // `resetState()` only clears them when the NEXT attempt starts.
+        let coordinator = DWIdentityRegistrationCoordinator.shared
+        return .submittedForVoting(
+            temporaryUsername: coordinator.registeredTemporaryUsername,
+            temporaryUsernameError: coordinator.temporaryUsernameError)
     }
 
     private func handleRegistrationPhase(_ phase: DWIdentityRegistrationController.Phase) {
@@ -840,5 +875,157 @@ class CreateUsernameViewModel: ObservableObject {
         hasRecommendedBalance = balance >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
             || PlatformPaymentIdentityFundingPolicy.canFundCurrentWallet(
                 fundingDuffs: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME))
+    }
+}
+
+// MARK: - TemporaryUsernameFieldModel
+
+/// Input + validation state for a "temporary username" field — the
+/// non-contested companion label offered next to a contested submission.
+/// One shared implementation for its two surfaces (the signup flow's
+/// contested confirmation sheet, and `UsernameRequestStatusScreen`'s
+/// register section for an identity already waiting on a vote) so the
+/// rules cannot drift: local length/character checks, a
+/// must-not-be-contested gate, then a debounced DPNS availability check.
+@MainActor
+final class TemporaryUsernameFieldModel: ObservableObject {
+    /// The companion label as typed. Bound to the field's `TextInput`;
+    /// validated through the throttled pipeline below into `check`.
+    @Published var text: String = ""
+
+    /// Validation verdict for `text`. Only `.available` labels are
+    /// submittable.
+    @Published private(set) var check: Check = .empty
+
+    enum Check: Equatable {
+        case empty
+        case invalidLength
+        case invalidCharacters
+        /// The label would itself go to a masternode vote — the whole
+        /// point of a temporary username is to avoid that.
+        case stillContested
+        case checking
+        case available
+        case taken
+        case error
+    }
+
+    var trimmedText: String {
+        text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Complement of the characters a DPNS label may contain. Shared
+    /// with `CreateUsernameViewModel`'s main-field validation — one
+    /// definition for the same rule.
+    nonisolated static let illegalCharacters =
+        CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-").inverted
+
+    /// In-flight DPNS availability check — cancelled and replaced on
+    /// every input change, like `CreateUsernameViewModel`'s
+    /// `availabilityCheckTask` for the main field.
+    private var availabilityTask: Task<Void, Never>?
+
+    /// The trimmed label the current `check` belongs to (in flight or
+    /// settled) — same role as the main field's `availabilityCheckLabel`.
+    /// Lets `seedSuggestion` validate synchronously without the later
+    /// throttled pipeline emission restarting the check for the
+    /// unchanged label.
+    private var checkLabel: String?
+
+    /// Main label the current `text` was suggested from (or edited
+    /// against). A different main label invalidates the companion — a
+    /// name derived from an abandoned contested name must not survive
+    /// into the next one's prompt.
+    private var suggestionBase: String?
+
+    private var cancellableBag = Set<AnyCancellable>()
+
+    init() {
+        $text
+            .throttle(for: .milliseconds(500), scheduler: RunLoop.main, latest: true)
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] value in
+                self?.validate(value)
+            }
+            .store(in: &cancellableBag)
+    }
+
+    /// Seed the field with a variant of `mainLabel` that is guaranteed
+    /// non-contested: any digit 2–9 in the label takes it out of the
+    /// contested character set (`[a-z01-]` after homograph folding), so
+    /// `<name>2` always qualifies. Availability is NOT guaranteed — the
+    /// normal check runs on it and the user edits if it's taken.
+    func seedSuggestion(from mainLabel: String) {
+        let base = mainLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !base.isEmpty else { return }
+        // Keep what the user already typed on a reopened surface — but
+        // only when it was typed against THIS main label.
+        if suggestionBase == base, !trimmedText.isEmpty {
+            validate(text)
+            return
+        }
+        suggestionBase = base
+        var suggestion = base
+        if suggestion.count >= DW_MAX_USERNAME_LENGTH {
+            suggestion = String(suggestion.prefix(Int(DW_MAX_USERNAME_LENGTH) - 1))
+        }
+        text = suggestion + "2"
+        // Validate synchronously so the rule row + submit button don't
+        // sit blank/disabled through the pipeline's 500 ms throttle; the
+        // later emission for the same label no-ops via `checkLabel`.
+        validate(text)
+    }
+
+    /// Local rules + non-contested gate + debounced DPNS availability.
+    /// Mirrors `CreateUsernameViewModel.validateUsername`'s structure,
+    /// but as a single verdict enum — the surfaces show one rule row.
+    private func validate(_ raw: String) {
+        let label = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Same label as the existing check state → keep it (a settled
+        // verdict stays settled, an in-flight `.checking` keeps its
+        // task) instead of resetting and re-querying. `.error` retries,
+        // as for the main field.
+        if label == checkLabel, check != .error {
+            return
+        }
+        availabilityTask?.cancel()
+        checkLabel = label
+        guard !label.isEmpty else {
+            check = .empty
+            return
+        }
+        guard label.count >= DW_MIN_USERNAME_LENGTH && label.count <= DW_MAX_USERNAME_LENGTH else {
+            check = .invalidLength
+            return
+        }
+        guard label.rangeOfCharacter(from: Self.illegalCharacters) == nil,
+              label.first != "-", label.last != "-" else {
+            check = .invalidCharacters
+            return
+        }
+        guard !DWContestedNameStatusService.isContestedLabel(label) else {
+            check = .stillContested
+            return
+        }
+        check = .checking
+        availabilityTask = Task { [weak self] in
+            // Same debounce as the main field's availability check
+            // (the legacy VALIDATION_DEBOUNCE_DELAY).
+            do { try await Task.sleep(nanoseconds: 400_000_000) }
+            catch { return }
+            guard let self, !Task.isCancelled else { return }
+            let verdict: Check
+            do {
+                let available = try await DWIdentityRegistrationCoordinator.shared
+                    .dpnsCheckAvailability(label)
+                verdict = available ? .available : .taken
+            } catch {
+                verdict = .error
+            }
+            // Drop stale results — the field changed while the RPC ran.
+            guard !Task.isCancelled, self.trimmedText == label else { return }
+            self.check = verdict
+        }
     }
 }
