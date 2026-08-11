@@ -374,13 +374,17 @@ final class InternalTransferViewModel: ObservableObject {
         sendTarget = Self.sanitizedDestination(from: source, proposed: sendTarget)
     }
 
+    /// Endpoint picks always apply. A pick that collides with the opposite
+    /// endpoint moves THAT endpoint to its default instead — the two sides
+    /// can never be the same balance.
     func selectStandaloneSource(_ network: ChainNetwork) {
         source = network
         sendTarget = Self.sanitizedDestination(from: network, proposed: sendTarget)
     }
 
     func selectStandaloneTarget(_ network: ChainNetwork) {
-        sendTarget = Self.sanitizedDestination(from: source, proposed: network)
+        sendTarget = network
+        source = Self.sanitizedSource(into: network, proposed: source)
     }
 
     func selectSendTarget(_ network: ChainNetwork) {
@@ -391,6 +395,20 @@ final class InternalTransferViewModel: ObservableObject {
     func selectReceiveSource(_ network: ChainNetwork) {
         guard let receiveTarget else { return }
         receiveSource = Self.sanitizedSource(into: receiveTarget, proposed: network)
+    }
+
+    /// The To selection the pickers display: `sendTarget` guarded against
+    /// ever equaling the active From — always the same endpoint `route`
+    /// executes, so a radio can't highlight a balance the transfer won't use.
+    var resolvedSendTarget: ChainNetwork {
+        Self.sanitizedDestination(from: sendSource ?? source, proposed: sendTarget)
+    }
+
+    /// The From selection the receive sheet's pickers display, guarded
+    /// against equaling the pinned destination.
+    var resolvedReceiveSource: ChainNetwork {
+        guard let receiveTarget else { return receiveSource }
+        return Self.sanitizedSource(into: receiveTarget, proposed: receiveSource)
     }
 
     /// The canonical route for validation/fees/execution.

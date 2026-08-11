@@ -3,6 +3,7 @@
 //  DashWallet
 //
 
+import Combine
 import SwiftUI
 import UIKit
 
@@ -10,12 +11,12 @@ import UIKit
 final class PaymentsLandingHostingController: DWBasePayViewController {
 
     private let viewModel: PaymentsLandingViewModel
-    /// Non-nil only for the balance-row receive sheet: the Internal tab
-    /// then embeds the transfer form directly, preconfigured as a transfer
-    /// INTO the balance whose arrow opened the sheet (Core/Platform receive
-    /// from Shielded; Shielded receives from Core). The swap badge on the
-    /// form can still reverse it.
-    private let embeddedTransferViewModel: InternalTransferViewModel?
+    /// The Internal tab's embedded transfer form. Un-pinned (free From/To
+    /// pickers) on the full landing; the balance-row receive sheet pins the
+    /// destination (`transferReceivePinned`), the send sheet pins the source
+    /// (`transferSendFrom`).
+    private let embeddedTransferViewModel: InternalTransferViewModel
+    private let transferReceivePinned: Bool
     /// The Send tab's form. Pinned to the tapped balance as source for the
     /// balance-row send sheet (`transferSendFrom` then also pins the
     /// Internal tab's From card); un-pinned on the full landing.
@@ -29,10 +30,10 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             onShareAddress: { [weak self] in self?.shareCurrentAddress() },
             onSpecifyAmount: { [weak self] in self?.pushSpecifyAmount() },
             onScanQR: { [weak self] in self?.performScanQRCodeAction() },
-            onShieldedBalance: { [weak self] in self?.handleShieldedBalanceTap() },
             embeddedTransferViewModel: embeddedTransferViewModel,
             onTransferCompleted: { [weak self] in self?.dismiss(animated: true) },
             transferSendFrom: transferSendFrom,
+            transferReceivePinned: transferReceivePinned,
             embeddedSendViewModel: embeddedSendViewModel,
             onSendContinue: { [weak self] in
                 guard let self else { return }
@@ -50,11 +51,21 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     private static let shieldedBalanceTimingShownKey = "DWShieldedBalanceTimingShown"
 
-    @objc init(activeTab: Int) {
+    private var cancellables = Set<AnyCancellable>()
+    /// The Internal tab was activated before the landing finished appearing
+    /// (e.g. it is the initial tab) — present the timing sheet from
+    /// `viewDidAppear` instead of against a view that isn't on screen yet.
+    private var timingSheetPendingAppearance = false
+
+    @objc
+    init(activeTab: Int) {
         let resolved = PaymentsLandingTab.allCases.first { $0.rawValue == Self.tabRawValue(for: activeTab) }
             ?? .send
         self.viewModel = PaymentsLandingViewModel(activeTab: resolved)
-        self.embeddedTransferViewModel = nil
+        // The full landing's Internal tab is the transfer form itself,
+        // un-pinned: free From and To pickers.
+        self.embeddedTransferViewModel = InternalTransferViewModel()
+        self.transferReceivePinned = false
         // The full landing's Send tab is the send form itself (un-pinned:
         // full From picker) — same form the balance-row sheet embeds.
         self.embeddedSendViewModel = SendViewModel()
@@ -86,17 +97,18 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         self.showsHeader = showsHeader
         self.embeddedSendViewModel = SendViewModel(pinnedSource: sendNetwork)
         self.transferSendFrom = sendNetwork
+        let transferViewModel = InternalTransferViewModel()
         if let sendNetwork {
-            let transferViewModel = InternalTransferViewModel()
             transferViewModel.applySendRoute(from: sendNetwork)
-            self.embeddedTransferViewModel = transferViewModel
+            self.transferReceivePinned = false
         } else if embedInternalTransfer {
-            let transferViewModel = InternalTransferViewModel()
             transferViewModel.applyReceiveRoute(into: receiveNetwork)
-            self.embeddedTransferViewModel = transferViewModel
+            self.transferReceivePinned = true
         } else {
-            self.embeddedTransferViewModel = nil
+            // Free-form landing: no pinned endpoint.
+            self.transferReceivePinned = false
         }
+        self.embeddedTransferViewModel = transferViewModel
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -143,6 +155,43 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
         hostingController.didMove(toParent: self)
+
+        // Receive sheet: keep the pinned transfer route in lockstep with
+        // the receive toggle, so the fixed To card and the executed
+        // transfer can never disagree. (`$network` republishes the current
+        // value on subscription, covering the initial state too.)
+        if transferReceivePinned {
+            viewModel.$network
+                .receive(on: RunLoop.main)
+                .sink { [weak self] network in
+                    self?.embeddedTransferViewModel.applyReceiveRoute(into: network)
+                }
+                .store(in: &cancellables)
+        }
+
+        // First-time transfer-timing education, free-form landing only —
+        // the balance-row sheets never showed it and keep that behavior.
+        if transferSendFrom == nil && !transferReceivePinned {
+            viewModel.$activeTab
+                .receive(on: RunLoop.main)
+                .sink { [weak self] tab in
+                    guard let self, tab == .internalTransfer else { return }
+                    if self.view.window == nil {
+                        self.timingSheetPendingAppearance = true
+                    } else {
+                        self.presentTransferTimingSheetIfNeeded()
+                    }
+                }
+                .store(in: &cancellables)
+        }
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if timingSheetPendingAppearance {
+            timingSheetPendingAppearance = false
+            presentTransferTimingSheetIfNeeded()
+        }
     }
 
     // MARK: - Actions
@@ -180,37 +229,23 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         }
     }
 
-    private func handleShieldedBalanceTap() {
-        let alreadyShown = UserDefaults.standard.bool(forKey: Self.shieldedBalanceTimingShownKey)
-        if alreadyShown {
-            pushInternalTransfer()
-        } else {
-            presentTransferTimingSheet()
-        }
-    }
-
-    private func presentTransferTimingSheet() {
+    /// First-ever visit to the free-form Internal tab: explain transfer
+    /// timing before the user composes a transfer. The form is already
+    /// embedded underneath; "I got it" (not the X) acknowledges for good.
+    private func presentTransferTimingSheetIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: Self.shieldedBalanceTimingShownKey),
+              presentedViewController == nil
+        else { return }
         let host = UIHostingController(
             rootView: TransferTimingSheet(onConfirm: { [weak self] in
                 UserDefaults.standard.set(true, forKey: Self.shieldedBalanceTimingShownKey)
-                self?.dismiss(animated: true) {
-                    self?.pushInternalTransfer()
-                }
+                self?.dismiss(animated: true)
             }))
         if let sheet = host.sheetPresentationController {
             sheet.detents = [.medium()]
             sheet.prefersGrabberVisible = true
         }
         present(host, animated: true)
-    }
-
-    /// Pushes the internal-transfer screen onto the landing modal's own
-    /// navigation stack, keeping the user inside the same presentation.
-    /// (Full-landing path only — the receive sheet embeds the form in its
-    /// Internal tab instead; see `embeddedTransferViewModel`.)
-    private func pushInternalTransfer() {
-        let target = InternalTransferHostingController()
-        navigationController?.pushViewController(target, animated: true)
     }
 
     private static func tabRawValue(for objcCase: Int) -> String {

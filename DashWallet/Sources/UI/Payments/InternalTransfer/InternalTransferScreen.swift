@@ -48,6 +48,19 @@ struct InternalTransferScreen: View {
 
     @State private var confirmation: InternalTransferConfirmation?
 
+    /// Standalone screen: which endpoint's balance picker is presented as
+    /// the bottom sheet. `nil` = none — the form shows just the two
+    /// selected-endpoint cards, never all six rows at once. Presentation
+    /// state only — the selection itself lives in the view model.
+    @State private var endpointPicker: EndpointGroup?
+
+    private enum EndpointGroup: String, Identifiable {
+        case from
+        case to
+
+        var id: String { rawValue }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             if showsHeader {
@@ -203,7 +216,7 @@ struct InternalTransferScreen: View {
             selectionGroup(
                 caption: NSLocalizedString("To", comment: ""),
                 networks: availableTargets(for: source),
-                selected: sanitizedTarget(for: source, proposed: viewModel.sendTarget),
+                selected: viewModel.resolvedSendTarget,
                 onSelect: viewModel.selectSendTarget)
         }
     }
@@ -236,18 +249,75 @@ struct InternalTransferScreen: View {
 
     private var swappableCards: some View {
         VStack(spacing: 12) {
-            selectionGroup(
-                caption: NSLocalizedString("From", comment: ""),
-                networks: ChainNetwork.allCases,
-                selected: viewModel.source,
-                onSelect: viewModel.selectStandaloneSource)
+            collapsedEndpointCard(viewModel.source, caption: NSLocalizedString("From", comment: "")) {
+                presentEndpointPicker(.from)
+            }
+            collapsedEndpointCard(viewModel.resolvedSendTarget, caption: NSLocalizedString("To", comment: "")) {
+                presentEndpointPicker(.to)
+            }
+        }
+        .sheet(item: $endpointPicker) { group in
+            endpointPickerSheet(for: group)
+                .presentationDetents([.height(400)])
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    private func presentEndpointPicker(_ group: EndpointGroup) {
+        endpointPicker = group
+    }
+
+    /// Bottom-sheet balance picker for one endpoint, sized to slide over
+    /// the keypad area. Every pick applies and dismisses — picking the
+    /// balance already on the opposite side moves that side to its default
+    /// (the view model keeps the endpoints distinct).
+    private func endpointPickerSheet(for group: EndpointGroup) -> some View {
+        let isFrom = group == .from
+        return VStack(alignment: .leading, spacing: 16) {
+            Text(isFrom
+                ? NSLocalizedString("Transfer from", comment: "Internal transfer source picker title")
+                : NSLocalizedString("Transfer to", comment: "Internal transfer destination picker title"))
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.dash.primaryText)
 
             selectionGroup(
-                caption: NSLocalizedString("To", comment: ""),
-                networks: availableTargets(for: viewModel.source),
-                selected: sanitizedTarget(for: viewModel.source, proposed: viewModel.sendTarget),
-                onSelect: viewModel.selectStandaloneTarget)
+                caption: isFrom
+                    ? NSLocalizedString("From", comment: "")
+                    : NSLocalizedString("To", comment: ""),
+                networks: ChainNetwork.allCases,
+                selected: isFrom ? viewModel.source : viewModel.resolvedSendTarget,
+                onSelect: { network in
+                    if isFrom {
+                        viewModel.selectStandaloneSource(network)
+                    } else {
+                        viewModel.selectStandaloneTarget(network)
+                    }
+                    endpointPicker = nil
+                })
+
+            Spacer(minLength: 0)
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 24)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.dash.primaryBackground)
+    }
+
+    private func collapsedEndpointCard(
+        _ network: ChainNetwork,
+        caption: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        let display = networkDisplay(network)
+        return TransferSourceRow(
+            iconSystemName: display.icon,
+            caption: caption,
+            title: display.title,
+            balanceTrailing: dashBalanceTrailing(display.balance),
+            selected: false,
+            showsRadio: false,
+            showsChevron: true,
+            action: action)
     }
 
     /// Receive-sheet layout: the destination stays pinned as the bottom
@@ -259,7 +329,7 @@ struct InternalTransferScreen: View {
             selectionGroup(
                 caption: NSLocalizedString("From", comment: ""),
                 networks: availableSources(for: target),
-                selected: sanitizedSource(into: target, proposed: viewModel.receiveSource),
+                selected: viewModel.resolvedReceiveSource,
                 onSelect: viewModel.selectReceiveSource)
 
             pinnedCard(target, caption: NSLocalizedString("To", comment: ""))
@@ -312,38 +382,15 @@ struct InternalTransferScreen: View {
             action: action)
     }
 
+    /// Pinned-sheet picker lists (the balance-row arrow sheets): the fixed
+    /// endpoint's balance is left out entirely — only the standalone screen
+    /// shows all three with same-balance taps rejected.
     private func availableTargets(for source: ChainNetwork) -> [ChainNetwork] {
         ChainNetwork.allCases.filter { $0 != source }
     }
 
     private func availableSources(for target: ChainNetwork) -> [ChainNetwork] {
         ChainNetwork.allCases.filter { $0 != target }
-    }
-
-    private func sanitizedTarget(for source: ChainNetwork, proposed target: ChainNetwork) -> ChainNetwork {
-        source == target ? defaultTarget(for: source) : target
-    }
-
-    private func sanitizedSource(into target: ChainNetwork, proposed source: ChainNetwork) -> ChainNetwork {
-        source == target ? defaultSource(for: target) : source
-    }
-
-    private func defaultTarget(for source: ChainNetwork) -> ChainNetwork {
-        switch source {
-        case .core, .platform:
-            return .shielded
-        case .shielded:
-            return .core
-        }
-    }
-
-    private func defaultSource(for target: ChainNetwork) -> ChainNetwork {
-        switch target {
-        case .shielded:
-            return .core
-        case .core, .platform:
-            return .shielded
-        }
     }
 
     // MARK: - Transfer preview
@@ -466,6 +513,9 @@ struct TransferSourceRow: View {
     /// False renders a fixed (non-picker) endpoint card: no radio circle
     /// and no selection border.
     var showsRadio: Bool = true
+    /// With `showsRadio` false: true renders a tappable collapsed selector
+    /// (chevron trailing, expands a picker on tap) instead of a fixed card.
+    var showsChevron: Bool = false
     var action: () -> Void
 
     /// Trailing balance amount + Dash currency glyph, the standard trailing
@@ -508,6 +558,10 @@ struct TransferSourceRow: View {
 
                 if showsRadio {
                     radioIndicator
+                } else if showsChevron {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Color.dash.secondaryText)
                 }
             }
             .padding(.horizontal, 14)
@@ -520,7 +574,7 @@ struct TransferSourceRow: View {
             .cornerRadius(12)
         }
         .buttonStyle(.plain)
-        .disabled(!showsRadio)
+        .disabled(!showsRadio && !showsChevron)
     }
 
     private var radioIndicator: some View {
