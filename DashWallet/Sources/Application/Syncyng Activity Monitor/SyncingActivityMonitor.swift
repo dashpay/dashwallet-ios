@@ -17,6 +17,7 @@
 
 import Combine
 import Foundation
+import OSLog
 import SwiftDashSDK
 
 private let kMaxProgressDelta = 0.1 // 10%
@@ -304,8 +305,36 @@ extension SyncingActivityMonitor {
 
         applyProgressWithPeakSmoothing(sdkProgress)
         isSyncing = (mapped == .syncing)
+        let wasDone = state == .syncDone
         state = mapped
+
+        // `syncDone` is derived purely from the SPV network phases — it knows
+        // nothing about how much of what was scanned is durably persisted.
+        // The two can be far apart: the durable watermark is what a relaunch
+        // resumes from, and what the transaction list is built out of, so a
+        // wallet can report "synced" while rows are still materializing.
+        //
+        // Logged at the transition rather than gated on, because whether the
+        // watermark reliably reaches the tip is exactly what is unproven. One
+        // line per completion answers it from an ordinary session.
+        if mapped == .syncDone && !wasDone {
+            logDurableWatermarkAtCompletion(scannedTip: sdkSyncProgress.headers?.currentHeight ?? 0)
+        }
     }
+
+    /// One-shot read of the persisted sync height at the moment the UI first
+    /// calls a sync complete, next to the height that was actually scanned.
+    /// A single fetch on a state transition — not a per-tick cost.
+    private func logDurableWatermarkAtCompletion(scannedTip: UInt32) {
+        guard let durable = SwiftDashSDKWalletSource.persistedSyncedHeight() else {
+            Self.logger.warning("⛓️ SYNCSTATE :: reported done at tip \(scannedTip, privacy: .public); durable watermark unavailable")
+            return
+        }
+        let behind = scannedTip > durable ? scannedTip - durable : 0
+        Self.logger.info("⛓️ SYNCSTATE :: reported done — scanned tip \(scannedTip, privacy: .public), durable watermark \(durable, privacy: .public), behind by \(behind, privacy: .public) block(s)")
+    }
+
+    private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "sync-state")
 
     /// Map SwiftDashSDK's per-phase progress to the snapshot fields the
     /// existing UI consumers expect. The phase priority order

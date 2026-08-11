@@ -2442,6 +2442,21 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// cheap enough to block a worker queue on). `ModelContainer` is
     /// `Sendable`, so the caller then opens its own `ModelContext` on its
     /// own thread and all SwiftData work stays there.
+    /// The durable sync watermark the persister last wrote for the active
+    /// wallet — the height a relaunch resumes from, and the boundary below
+    /// which the transaction list is materialized. Distinct from the height
+    /// the SPV scan has reached, which is what the sync UI reports.
+    ///
+    /// One bounded fetch; call it on a state transition, not per tick.
+    static func persistedSyncedHeight() -> UInt32? {
+        guard let (container, walletId) = hostHandles() else { return nil }
+        let context = ModelContext(container)
+        var descriptor = FetchDescriptor<PersistentWallet>(
+            predicate: #Predicate { $0.walletId == walletId })
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor))?.first?.syncedHeight
+    }
+
     private static func hostHandles() -> (container: ModelContainer, walletId: Data)? {
         onMain {
             guard let container = SwiftDashSDKHost.shared.modelContainer,
