@@ -48,6 +48,17 @@ struct InternalTransferScreen: View {
 
     @State private var confirmation: InternalTransferConfirmation?
 
+    /// Standalone screen: which endpoint group is currently expanded into
+    /// its three-row picker. `nil` = both collapsed to their selected card,
+    /// so the screen never shows all six rows at once. Presentation state
+    /// only — the selection itself lives in the view model.
+    @State private var expandedEndpointGroup: EndpointGroup?
+
+    private enum EndpointGroup {
+        case from
+        case to
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             if showsHeader {
@@ -241,20 +252,68 @@ struct InternalTransferScreen: View {
 
     private var swappableCards: some View {
         VStack(spacing: 12) {
-            selectionGroup(
+            endpointSelector(
+                group: .from,
                 caption: NSLocalizedString("From", comment: ""),
-                networks: ChainNetwork.allCases,
                 selected: viewModel.source,
                 conflictingWith: viewModel.resolvedSendTarget,
                 onSelect: viewModel.selectStandaloneSource)
 
-            selectionGroup(
+            endpointSelector(
+                group: .to,
                 caption: NSLocalizedString("To", comment: ""),
-                networks: ChainNetwork.allCases,
                 selected: viewModel.resolvedSendTarget,
                 conflictingWith: viewModel.source,
                 onSelect: viewModel.selectStandaloneTarget)
         }
+    }
+
+    /// Collapsed: one card showing the group's current selection, chevron
+    /// trailing; tapping expands it. Expanded: the three-row picker — a
+    /// valid pick collapses it again, a conflicting tap keeps it open with
+    /// the inline warning explaining the rejection.
+    @ViewBuilder
+    private func endpointSelector(
+        group: EndpointGroup,
+        caption: String,
+        selected: ChainNetwork,
+        conflictingWith conflict: ChainNetwork,
+        onSelect: @escaping (ChainNetwork) -> Void
+    ) -> some View {
+        if expandedEndpointGroup == group {
+            selectionGroup(
+                caption: caption,
+                networks: ChainNetwork.allCases,
+                selected: selected,
+                conflictingWith: conflict,
+                onSelect: { network in
+                    onSelect(network)
+                    if network != conflict {
+                        withAnimation { expandedEndpointGroup = nil }
+                    }
+                })
+        } else {
+            collapsedEndpointCard(selected, caption: caption) {
+                withAnimation { expandedEndpointGroup = group }
+            }
+        }
+    }
+
+    private func collapsedEndpointCard(
+        _ network: ChainNetwork,
+        caption: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        let display = networkDisplay(network)
+        return TransferSourceRow(
+            iconSystemName: display.icon,
+            caption: caption,
+            title: display.title,
+            balanceTrailing: dashBalanceTrailing(display.balance),
+            selected: false,
+            showsRadio: false,
+            showsChevron: true,
+            action: action)
     }
 
     /// Receive-sheet layout: the destination stays pinned as the bottom
@@ -456,6 +515,9 @@ struct TransferSourceRow: View {
     /// False renders a fixed (non-picker) endpoint card: no radio circle
     /// and no selection border.
     var showsRadio: Bool = true
+    /// With `showsRadio` false: true renders a tappable collapsed selector
+    /// (chevron trailing, expands a picker on tap) instead of a fixed card.
+    var showsChevron: Bool = false
     var action: () -> Void
 
     /// Trailing balance amount + Dash currency glyph, the standard trailing
@@ -498,6 +560,10 @@ struct TransferSourceRow: View {
 
                 if showsRadio {
                     radioIndicator
+                } else if showsChevron {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Color.dash.secondaryText)
                 }
             }
             .padding(.horizontal, 14)
@@ -510,7 +576,7 @@ struct TransferSourceRow: View {
             .cornerRadius(12)
         }
         .buttonStyle(.plain)
-        .disabled(!showsRadio)
+        .disabled(!showsRadio && !showsChevron)
     }
 
     private var radioIndicator: some View {
