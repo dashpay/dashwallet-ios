@@ -48,15 +48,17 @@ struct InternalTransferScreen: View {
 
     @State private var confirmation: InternalTransferConfirmation?
 
-    /// Standalone screen: which endpoint group is currently expanded into
-    /// its three-row picker. `nil` = both collapsed to their selected card,
-    /// so the screen never shows all six rows at once. Presentation state
-    /// only — the selection itself lives in the view model.
-    @State private var expandedEndpointGroup: EndpointGroup?
+    /// Standalone screen: which endpoint's balance picker is presented as
+    /// the bottom sheet. `nil` = none — the form shows just the two
+    /// selected-endpoint cards, never all six rows at once. Presentation
+    /// state only — the selection itself lives in the view model.
+    @State private var endpointPicker: EndpointGroup?
 
-    private enum EndpointGroup {
+    private enum EndpointGroup: String, Identifiable {
         case from
         case to
+
+        var id: String { rawValue }
     }
 
     var body: some View {
@@ -252,51 +254,69 @@ struct InternalTransferScreen: View {
 
     private var swappableCards: some View {
         VStack(spacing: 12) {
-            endpointSelector(
-                group: .from,
-                caption: NSLocalizedString("From", comment: ""),
-                selected: viewModel.source,
-                conflictingWith: viewModel.resolvedSendTarget,
-                onSelect: viewModel.selectStandaloneSource)
-
-            endpointSelector(
-                group: .to,
-                caption: NSLocalizedString("To", comment: ""),
-                selected: viewModel.resolvedSendTarget,
-                conflictingWith: viewModel.source,
-                onSelect: viewModel.selectStandaloneTarget)
+            collapsedEndpointCard(viewModel.source, caption: NSLocalizedString("From", comment: "")) {
+                presentEndpointPicker(.from)
+            }
+            collapsedEndpointCard(viewModel.resolvedSendTarget, caption: NSLocalizedString("To", comment: "")) {
+                presentEndpointPicker(.to)
+            }
+        }
+        .sheet(item: $endpointPicker) { group in
+            endpointPickerSheet(for: group)
+                .presentationDetents([.height(400)])
+                .presentationDragIndicator(.visible)
         }
     }
 
-    /// Collapsed: one card showing the group's current selection, chevron
-    /// trailing; tapping expands it. Expanded: the three-row picker — a
-    /// valid pick collapses it again, a conflicting tap keeps it open with
-    /// the inline warning explaining the rejection.
-    @ViewBuilder
-    private func endpointSelector(
-        group: EndpointGroup,
-        caption: String,
-        selected: ChainNetwork,
-        conflictingWith conflict: ChainNetwork,
-        onSelect: @escaping (ChainNetwork) -> Void
-    ) -> some View {
-        if expandedEndpointGroup == group {
+    private func presentEndpointPicker(_ group: EndpointGroup) {
+        // A conflict notice from an earlier interaction must not open a
+        // fresh picker pre-scolded.
+        viewModel.clearEndpointConflictNotice()
+        endpointPicker = group
+    }
+
+    /// Bottom-sheet balance picker for one endpoint, sized to slide over
+    /// the keypad area. A valid pick applies and dismisses; a conflicting
+    /// pick keeps the sheet open with the inline warning explaining the
+    /// rejection.
+    private func endpointPickerSheet(for group: EndpointGroup) -> some View {
+        let isFrom = group == .from
+        let conflict = isFrom ? viewModel.resolvedSendTarget : viewModel.source
+        return VStack(alignment: .leading, spacing: 16) {
+            Text(isFrom
+                ? NSLocalizedString("Transfer from", comment: "Internal transfer source picker title")
+                : NSLocalizedString("Transfer to", comment: "Internal transfer destination picker title"))
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.dash.primaryText)
+
             selectionGroup(
-                caption: caption,
+                caption: isFrom
+                    ? NSLocalizedString("From", comment: "")
+                    : NSLocalizedString("To", comment: ""),
                 networks: ChainNetwork.allCases,
-                selected: selected,
+                selected: isFrom ? viewModel.source : viewModel.resolvedSendTarget,
                 conflictingWith: conflict,
                 onSelect: { network in
-                    onSelect(network)
+                    if isFrom {
+                        viewModel.selectStandaloneSource(network)
+                    } else {
+                        viewModel.selectStandaloneTarget(network)
+                    }
                     if network != conflict {
-                        withAnimation { expandedEndpointGroup = nil }
+                        endpointPicker = nil
                     }
                 })
-        } else {
-            collapsedEndpointCard(selected, caption: caption) {
-                withAnimation { expandedEndpointGroup = group }
+
+            if let notice = viewModel.endpointConflictNotice {
+                TransferAmountValidationNote(message: notice)
             }
+
+            Spacer(minLength: 0)
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 24)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.dash.primaryBackground)
     }
 
     private func collapsedEndpointCard(

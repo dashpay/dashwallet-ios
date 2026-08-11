@@ -418,6 +418,12 @@ final class InternalTransferViewModel: ObservableObject {
         receiveSource = network
     }
 
+    /// Presentation hook: opening a fresh endpoint picker discards a notice
+    /// left over from an earlier rejected tap.
+    func clearEndpointConflictNotice() {
+        endpointConflictNotice = nil
+    }
+
     private static func endpointConflictMessage(_ network: ChainNetwork) -> String {
         String.localizedStringWithFormat(
             NSLocalizedString(
