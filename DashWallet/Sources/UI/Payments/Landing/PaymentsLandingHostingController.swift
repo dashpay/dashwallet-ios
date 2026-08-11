@@ -57,7 +57,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// `viewDidAppear` instead of against a view that isn't on screen yet.
     private var timingSheetPendingAppearance = false
 
-    @objc init(activeTab: Int) {
+    @objc
+    init(activeTab: Int) {
         let resolved = PaymentsLandingTab.allCases.first { $0.rawValue == Self.tabRawValue(for: activeTab) }
             ?? .send
         self.viewModel = PaymentsLandingViewModel(activeTab: resolved)
@@ -154,6 +155,19 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
         hostingController.didMove(toParent: self)
+
+        // Receive sheet: keep the pinned transfer route in lockstep with
+        // the receive toggle, so the fixed To card and the executed
+        // transfer can never disagree. (`$network` republishes the current
+        // value on subscription, covering the initial state too.)
+        if transferReceivePinned {
+            viewModel.$network
+                .receive(on: RunLoop.main)
+                .sink { [weak self] network in
+                    self?.embeddedTransferViewModel.applyReceiveRoute(into: network)
+                }
+                .store(in: &cancellables)
+        }
 
         // First-time transfer-timing education, free-form landing only —
         // the balance-row sheets never showed it and keep that behavior.

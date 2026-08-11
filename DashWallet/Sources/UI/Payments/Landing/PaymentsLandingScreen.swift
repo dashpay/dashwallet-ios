@@ -24,7 +24,7 @@ struct PaymentsLandingScreen: View {
     /// Set by the balance-row send sheet: the embedded transfer form pins
     /// this balance as its From card (destination picked on the To rows),
     /// instead of the receive sheet's pinned-destination layout.
-    var transferSendFrom: ChainNetwork? = nil
+    var transferSendFrom: ChainNetwork?
     /// True for the balance-row receive sheet: the transfer form pins the
     /// receive toggle's balance as its To card (source picked on the From
     /// rows). False (with `transferSendFrom` nil) = the free-form landing.
@@ -67,18 +67,15 @@ struct PaymentsLandingScreen: View {
                         showsHeader: false,
                         sendFrom: sendFrom)
                 } else if transferReceivePinned {
+                    // The hosting controller keeps the pinned route in
+                    // lockstep with the receive toggle (its `$network`
+                    // subscription), so the fixed To card and the executed
+                    // transfer can never disagree.
                     InternalTransferScreen(
                         viewModel: embeddedTransferViewModel,
                         onCompleted: onTransferCompleted,
                         showsHeader: false,
                         receiveInto: viewModel.network)
-                        // Keep the pinned route in lockstep with the receive
-                        // toggle, so the fixed To card and the executed
-                        // transfer can never disagree.
-                        .onAppear { embeddedTransferViewModel.applyReceiveRoute(into: viewModel.network) }
-                        .onChange(of: viewModel.network) { network in
-                            embeddedTransferViewModel.applyReceiveRoute(into: network)
-                        }
                 } else {
                     // Full landing: the transfer form itself, free From and
                     // To pickers — no intermediate action-row step.

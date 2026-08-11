@@ -208,7 +208,7 @@ struct InternalTransferScreen: View {
             selectionGroup(
                 caption: NSLocalizedString("To", comment: ""),
                 networks: ChainNetwork.allCases,
-                selected: sanitizedTarget(for: source, proposed: viewModel.sendTarget),
+                selected: viewModel.resolvedSendTarget,
                 conflictingWith: source,
                 onSelect: viewModel.selectSendTarget)
         }
@@ -246,13 +246,13 @@ struct InternalTransferScreen: View {
                 caption: NSLocalizedString("From", comment: ""),
                 networks: ChainNetwork.allCases,
                 selected: viewModel.source,
-                conflictingWith: sanitizedTarget(for: viewModel.source, proposed: viewModel.sendTarget),
+                conflictingWith: viewModel.resolvedSendTarget,
                 onSelect: viewModel.selectStandaloneSource)
 
             selectionGroup(
                 caption: NSLocalizedString("To", comment: ""),
                 networks: ChainNetwork.allCases,
-                selected: sanitizedTarget(for: viewModel.source, proposed: viewModel.sendTarget),
+                selected: viewModel.resolvedSendTarget,
                 conflictingWith: viewModel.source,
                 onSelect: viewModel.selectStandaloneTarget)
         }
@@ -267,7 +267,7 @@ struct InternalTransferScreen: View {
             selectionGroup(
                 caption: NSLocalizedString("From", comment: ""),
                 networks: ChainNetwork.allCases,
-                selected: sanitizedSource(into: target, proposed: viewModel.receiveSource),
+                selected: viewModel.resolvedReceiveSource,
                 conflictingWith: target,
                 onSelect: viewModel.selectReceiveSource)
 
@@ -325,32 +325,6 @@ struct InternalTransferScreen: View {
             selected: selected,
             showsRadio: showsRadio,
             action: action)
-    }
-
-    private func sanitizedTarget(for source: ChainNetwork, proposed target: ChainNetwork) -> ChainNetwork {
-        source == target ? defaultTarget(for: source) : target
-    }
-
-    private func sanitizedSource(into target: ChainNetwork, proposed source: ChainNetwork) -> ChainNetwork {
-        source == target ? defaultSource(for: target) : source
-    }
-
-    private func defaultTarget(for source: ChainNetwork) -> ChainNetwork {
-        switch source {
-        case .core, .platform:
-            return .shielded
-        case .shielded:
-            return .core
-        }
-    }
-
-    private func defaultSource(for target: ChainNetwork) -> ChainNetwork {
-        switch target {
-        case .shielded:
-            return .core
-        case .core, .platform:
-            return .shielded
-        }
     }
 
     // MARK: - Transfer preview
