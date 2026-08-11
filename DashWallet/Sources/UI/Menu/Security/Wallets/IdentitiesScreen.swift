@@ -553,7 +553,7 @@ struct IdentityDetailScreen: View {
                         .font(.system(size: 14))
                         .foregroundColor(.dash.secondaryText)
                     Spacer()
-                    Text("\(row.publicKeys.count)")
+                    Text("\(currentRow.publicKeys.count)")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.dash.primaryText)
                     Image(systemName: "chevron.right")
@@ -565,7 +565,7 @@ struct IdentityDetailScreen: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .disabled(row.publicKeys.isEmpty)
+            .disabled(currentRow.publicKeys.isEmpty)
         }
         .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
@@ -575,7 +575,7 @@ struct IdentityDetailScreen: View {
     /// list → detail navigation).
     private func showPublicKeys() {
         let controller = UIHostingController(
-            rootView: IdentityPublicKeysScreen(row: row, vc: vc))
+            rootView: IdentityPublicKeysScreen(row: row, vc: vc, viewModel: viewModel))
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
@@ -704,9 +704,32 @@ struct IdentityDetailScreen: View {
 struct IdentityPublicKeysScreen: View {
     let row: IdentityRowModel
     let vc: UINavigationController
+    @ObservedObject var viewModel: IdentitiesViewModel
 
     /// Key id whose Copy button just fired (transient checkmark).
     @State private var copiedKeyId: Int32?
+    /// Drives the refresh button's spinner/disabled state.
+    @State private var isReloadingKeys = false
+
+    /// Live projection of this identity from the shared view model —
+    /// `row` is the push-time capture; a keys refresh reloads the view
+    /// model and re-renders through this (same pattern as the detail).
+    private var currentRow: IdentityRowModel {
+        viewModel.rows.first(where: { $0.identityId == row.identityId }) ?? row
+    }
+
+    /// Refreshing probes the active wallet's DIP-9 tree, so only its own
+    /// identities can be reloaded; the affordance hides otherwise.
+    private var canRefresh: Bool {
+        row.isLocal && row.walletId == SwiftDashSDKHost.shared.wallet?.walletId
+    }
+
+    private func refreshKeys() async {
+        guard !isReloadingKeys else { return }
+        isReloadingKeys = true
+        defer { isReloadingKeys = false }
+        await viewModel.refreshIdentityKeys(for: currentRow)
+    }
 
     var body: some View {
         ZStack {
@@ -717,7 +740,7 @@ struct IdentityPublicKeysScreen: View {
 
                 ScrollView {
                     VStack(spacing: 12) {
-                        ForEach(row.publicKeys) { key in
+                        ForEach(currentRow.publicKeys) { key in
                             keyCard(key)
                         }
                     }
@@ -725,6 +748,7 @@ struct IdentityPublicKeysScreen: View {
                     .padding(.top, 4)
                     .padding(.bottom, 24)
                 }
+                .refreshable { await refreshKeys() }
             }
         }
         .navigationBarHidden(true)
@@ -743,6 +767,25 @@ struct IdentityPublicKeysScreen: View {
                         .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
                 }
                 Spacer()
+                if canRefresh {
+                    Button {
+                        Task { await refreshKeys() }
+                    } label: {
+                        Group {
+                            if isReloadingKeys {
+                                SwiftUI.ProgressView()
+                            } else {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color.dash.primaryText)
+                            }
+                        }
+                        .frame(width: 36, height: 36)
+                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
+                    }
+                    .disabled(isReloadingKeys)
+                    .accessibilityLabel(Text(NSLocalizedString("Refresh keys from Platform", comment: "Identities: re-fetch this identity's public keys")))
+                }
             }
             .padding(.horizontal, 5)
             .padding(.top, 10)
