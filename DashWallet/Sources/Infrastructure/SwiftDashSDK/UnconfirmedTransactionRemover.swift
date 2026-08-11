@@ -79,9 +79,11 @@ struct UnconfirmedTransactionRemover {
         }
     }
 
-    /// Compact-filter rescan window bounds, in blocks (~2.5 min each):
-    /// at least ~30 hours even for a fresh transaction, at most ~5 weeks
-    /// for a long-stuck one.
+    /// Minimum compact-filter rescan window, in blocks (~2.5 min each):
+    /// at least ~30 hours even for a fresh transaction. There is no
+    /// maximum — recovery depth is uncapped and reaches back past the
+    /// oldest removed transaction's first appearance, bounded only by
+    /// the SDK's wallet birth-height / stored-chain-data floors.
     private static let minRescanBlocks: UInt32 = 720
     /// Extra rewind margin below the transaction's first-seen height
     /// estimate (~1 day), covering clock skew and variable block times.
@@ -160,9 +162,10 @@ struct UnconfirmedTransactionRemover {
     /// restored by it. Nothing is sent to the network.
     ///
     /// - Returns: how many transactions were dropped (0 = nothing to
-    ///   drop; no reload or rescan runs), and whether the recovery
-    ///   rescan was armed — `false` after a successful drop means the
-    ///   caller must tell the user to run Rescan Filters manually.
+    ///   drop; no reload or rescan runs, so `rescanArmed` is `false`),
+    ///   and whether the recovery rescan was armed — `false` after a
+    ///   non-zero drop means the caller must tell the user to run
+    ///   Rescan Filters manually.
     func dropAllUnconfirmedAndRescan() async throws -> (dropped: Int, rescanArmed: Bool) {
         guard let container = SwiftDashSDKHost.shared.modelContainer,
               let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) else {
@@ -170,7 +173,7 @@ struct UnconfirmedTransactionRemover {
         }
         let context = container.mainContext
         let rows = try Self.unconfirmedRows(in: context, walletId: walletId)
-        guard !rows.isEmpty else { return (dropped: 0, rescanArmed: true) }
+        guard !rows.isEmpty else { return (dropped: 0, rescanArmed: false) }
 
         var oldestFirstSeen = UInt64.max
         var displayTxids: [String] = []
