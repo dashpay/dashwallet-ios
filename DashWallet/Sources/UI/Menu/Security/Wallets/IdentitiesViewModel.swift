@@ -229,7 +229,11 @@ final class IdentitiesViewModel: ObservableObject {
         }
 
         var failures = 0
-        for row in rows where !row.isLocal {
+        // Refresh every row — the old `!row.isLocal` filter dates from
+        // when the flag was misread as an on-network badge; under the
+        // real semantics (mine-or-tracked) it would skip exactly the
+        // wallet's own identities.
+        for row in rows {
             do {
                 let fetched = try await sdk.identityGet(identityId: row.idBase58)
                 if let balance = Self.uint64(from: fetched["balance"]) {
