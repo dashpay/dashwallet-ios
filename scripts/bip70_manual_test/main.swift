@@ -215,9 +215,11 @@ func unsignedRequest(network: String? = "test", outputs: [PaymentOutput]? = nil,
 }
 func makeService(_ transport: FakeTransport, _ wallet: FakeWallet,
                  receive: FakeReceive = FakeReceive(), auth: FakeAuth = FakeAuth(),
+                 coreSpendPreflight: @escaping () async throws -> Void = {},
                  allowUntrusted: Bool = true) -> BIP70PaymentService {
     BIP70PaymentService(transport: transport, verifier: PaymentRequestVerifier(), wallet: wallet,
-                        receiveAddress: receive, auth: auth, coreSpendPreflight: {},
+                        receiveAddress: receive, auth: auth,
+                        coreSpendPreflight: coreSpendPreflight,
                         allowUntrustedUnsigned: allowUntrusted)
 }
 let anyURL = URL(string: "http://h/pr")!
@@ -231,17 +233,36 @@ do {
     check("prepare builds/spends nothing (calls empty)", w.calls.isEmpty)
 }
 
-// Call order build → post/ACK → broadcast.
+// Call order preflight → build → post/ACK → broadcast.
 do {
     let w = FakeWallet(); let t = FakeTransport(unsignedRequest()); t.onPost = { w.calls.append("post") }
-    let svc = makeService(t, w)
+    let svc = makeService(t, w, coreSpendPreflight: { w.calls.append("preflight") })
     let r = runSync {
         let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
         return try await svc.confirmAndSend(c)
     }
-    check("confirmAndSend order == [build, post, broadcast]", w.calls == ["build", "post", "broadcast"])
+    check("confirmAndSend order == [preflight, build, post, broadcast]",
+          w.calls == ["preflight", "build", "post", "broadcast"])
     check("POST carries the prepared signed bytes", t.postedPayment?.transactions == [w.prepared.txData])
     check("ack memo surfaced", value(r)?.ackMemo == "thanks")
+}
+
+// A blocked preflight stops before build/sign and broadcast.
+do {
+    let w = FakeWallet()
+    let svc = makeService(
+        FakeTransport(unsignedRequest()),
+        w,
+        coreSpendPreflight: {
+            w.calls.append("preflight")
+            throw BIP70Error.initialRestoreSync
+        })
+    let r = runSync {
+        let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
+        return try await svc.confirmAndSend(c)
+    }
+    check("blocked preflight → .initialRestoreSync; no build/broadcast",
+          threwBIP70(r, .initialRestoreSync) && w.calls == ["preflight"])
 }
 
 // Idempotency: a second confirmAndSend on the SAME Confirmation is rejected (no second spend).
