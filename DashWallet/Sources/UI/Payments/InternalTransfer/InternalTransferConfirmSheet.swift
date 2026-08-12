@@ -48,6 +48,8 @@ struct InternalTransferConfirmSheet: View {
     var onPlatformShieldCapacityChanged: (UInt64?, Bool) -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
+    @ObservedObject private var coreSpendAvailability = CoreSpendAvailability.shared
+    @ObservedObject private var proofAvailability = AssetLockProofAvailability.shared
     @State private var handledPlatformShieldCapacityChange = false
 
     var body: some View {
@@ -117,6 +119,13 @@ struct InternalTransferConfirmSheet: View {
                     .padding(.top, 12)
             }
 
+
+            if let message = assetLockGateMessage {
+                SyncGateNote(message: message)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+            }
+
             Spacer(minLength: 12)
 
             switch coordinator.phase {
@@ -124,6 +133,7 @@ struct InternalTransferConfirmSheet: View {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
+                    positiveActionEnabled: assetLockGateMessage == nil,
                     positiveButtonText: NSLocalizedString("Confirm", comment: ""),
                     positiveButtonAction: confirm,
                     negativeButtonText: NSLocalizedString("Cancel", comment: ""),
@@ -135,6 +145,7 @@ struct InternalTransferConfirmSheet: View {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
+                    positiveActionEnabled: assetLockGateMessage == nil,
                     positiveButtonText: NSLocalizedString("Try again", comment: ""),
                     positiveButtonAction: tryAgain,
                     negativeButtonText: NSLocalizedString("Close", comment: ""),
@@ -152,6 +163,18 @@ struct InternalTransferConfirmSheet: View {
                 EmptyView()
             }
         }
+    }
+
+    private var assetLockGateMessage: String? {
+        guard route == .coreToShielded || route == .coreToPlatform else { return nil }
+        let resumesCommittedLock = coordinator.lastAssetLockOutPoint != nil
+        if !resumesCommittedLock, coreSpendAvailability.isBlocked {
+            return CoreSpendAvailabilityError.initialRestoreSync.localizedDescription
+        }
+        if proofAvailability.isBlocked {
+            return AssetLockProofAvailabilityError.masternodeSync.localizedDescription
+        }
+        return nil
     }
 
     // MARK: - Success body
@@ -525,6 +548,7 @@ struct ShieldedRecoverySheet: View {
     var onDismiss: () -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
+    @ObservedObject private var proofAvailability = AssetLockProofAvailability.shared
 
     /// Set when "Finish now" finds the lock already consumed (a background sync
     /// landed the shield since the history row's snapshot was captured) — shows
@@ -594,11 +618,20 @@ struct ShieldedRecoverySheet: View {
                     .padding(.top, 12)
             }
 
+            if proofAvailability.isBlocked {
+                SyncGateNote(message: NSLocalizedString(
+                    "Your Dash is safe. Finish will be available when the masternode list finishes syncing.",
+                    comment: "Shielded asset-lock recovery waiting for masternode sync"))
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+            }
+
             Spacer(minLength: 12)
 
             ButtonsGroup(
                 orientation: .horizontal,
                 size: .large,
+                positiveActionEnabled: !proofAvailability.isBlocked,
                 positiveButtonText: NSLocalizedString("Finish now", comment: "InternalTransfer recovery"),
                 positiveButtonAction: finish,
                 negativeButtonText: NSLocalizedString("Close", comment: ""),
@@ -711,6 +744,7 @@ struct ShieldedRecoverySheet: View {
     // MARK: - Action
 
     private func finish() {
+        guard !proofAvailability.isBlocked else { return }
         guard let op = transaction.shieldedOutPoint else {
             onDismiss()
             return

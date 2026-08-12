@@ -545,6 +545,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // Defensive boundary for callers that bypass the transfer coordinator.
         // A committed lock uses `resumeFundFromCore` and is exempt.
         try CoreSpendAvailability.shared.requireAllowed()
+        try AssetLockProofAvailability.shared.requireAllowed()
         let (addressWallet, container, recipient, accountIndex) = try resolveFundEnvironment()
         let signer = KeychainSigner(modelContainer: container, network: runningNetwork!)
 
@@ -569,6 +570,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// lock. See `ShieldedTransferCoordinator.resumeAssetLock` for the same
     /// pattern on the shielded route.
     public func resumeFundFromCore(outPointTxid: Data, outPointVout: UInt32) async throws {
+        try AssetLockProofAvailability.shared.requireAllowed()
         let (addressWallet, container, recipient, accountIndex) = try resolveFundEnvironment()
         let signer = KeychainSigner(modelContainer: container, network: runningNetwork!)
 

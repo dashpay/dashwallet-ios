@@ -110,6 +110,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     // MARK: - Singleton
 
     public static let shared = SwiftDashSDKSPVCoordinator()
+    static let proofReadinessDidChangeNotification = Notification.Name(
+        "DWSwiftDashSDKProofReadinessDidChange")
 
     // MARK: - Logging
 
@@ -125,6 +127,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @Published public private(set) var bestPeerHeight: UInt32 = 0
     @Published public private(set) var lastError: String? = nil
     @Published public private(set) var syncProgress: SPVSyncProgress = .default()
+    /// Wallet whose subscription produced `syncProgress`. Kept separate from
+    /// the host's ambient wallet so a late tick from an outgoing subscription
+    /// can never certify the newly-bound wallet as proof-ready.
+    @Published public private(set) var syncProgressWalletId: Data?
     @Published public private(set) var isRestarting = false
     @Published public private(set) var isApplyingChainResync = false
     /// Peers the SPV client is currently connected to, classified against
@@ -378,6 +384,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     func prepareForNetworkSwitch() {
         detachManagerSubscriptions()
+        syncProgressWalletId = nil
+        syncProgress = .default()
+        NotificationCenter.default.post(
+            name: Self.proofReadinessDidChangeNotification,
+            object: self)
         SwiftDashSDKWalletState.shared.clearAllState()
     }
 
@@ -598,6 +609,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // `combineLatest` consumers (`SyncingActivityMonitor`) see a
         // coherent snapshot.
         syncProgress = translated
+        syncProgressWalletId = walletId
         progress = p.overallPercentage
         state = mappedState
         tipHeight = headersCurrent
@@ -605,6 +617,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         if mappedState != .error {
             lastError = nil
         }
+        NotificationCenter.default.post(
+            name: Self.proofReadinessDidChangeNotification,
+            object: self)
 
         // Piggyback on the deduped 1Hz progress tick to refresh the live
         // balance into `SwiftDashSDKWalletState.shared` for downstream
@@ -663,7 +678,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         tipHeight = 0
         bestPeerHeight = 0
         syncProgress = .default()
+        syncProgressWalletId = nil
         connectedPeers = []
+        NotificationCenter.default.post(
+            name: Self.proofReadinessDidChangeNotification,
+            object: self)
     }
 
     // MARK: - Mapping

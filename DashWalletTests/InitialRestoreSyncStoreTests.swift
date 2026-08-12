@@ -1,5 +1,6 @@
 import Foundation
 import XCTest
+@testable import dashwallet
 
 @MainActor
 final class InitialRestoreSyncStoreTests: XCTestCase {
@@ -120,5 +121,90 @@ final class InitialRestoreSyncStoreTests: XCTestCase {
         XCTAssertFalse(
             ShieldedTransferCoordinator.OperationKind.nonCoreSpend
                 .requiresCoreSpendAvailability)
+
+        XCTAssertTrue(
+            ShieldedTransferCoordinator.OperationKind.newCoreSpend
+                .requiresAssetLockProofAvailability)
+        XCTAssertTrue(
+            ShieldedTransferCoordinator.OperationKind.resumeCommittedCoreSpend
+                .requiresAssetLockProofAvailability)
+        XCTAssertFalse(
+            ShieldedTransferCoordinator.OperationKind.nonCoreSpend
+                .requiresAssetLockProofAvailability)
+    }
+
+    func testAssetLockProofReadinessFailsClosed() {
+        let walletA = Data([0xa1])
+        let walletB = Data([0xb1])
+        let synced = MasternodesSubProgress(
+            state: .synced,
+            currentHeight: 100,
+            targetHeight: 100,
+            diffsProcessed: 0)
+
+        XCTAssertEqual(
+            AssetLockProofAvailability.decision(
+                boundWalletId: nil,
+                progressWalletId: walletA,
+                masternodes: synced),
+            .blockedMasternodeSync)
+        XCTAssertEqual(
+            AssetLockProofAvailability.decision(
+                boundWalletId: walletA,
+                progressWalletId: walletB,
+                masternodes: synced),
+            .blockedMasternodeSync)
+        XCTAssertEqual(
+            AssetLockProofAvailability.decision(
+                boundWalletId: walletA,
+                progressWalletId: walletA,
+                masternodes: nil),
+            .blockedMasternodeSync)
+    }
+
+    func testAssetLockProofReadinessRequiresSyncedNonzeroCaughtUpMasternodes() {
+        let walletId = Data([0xc1])
+        let decision: (SPVSyncState, UInt32, UInt32) -> AssetLockProofAvailability.Decision = {
+            state, current, target in
+            AssetLockProofAvailability.decision(
+                boundWalletId: walletId,
+                progressWalletId: walletId,
+                masternodes: MasternodesSubProgress(
+                    state: state,
+                    currentHeight: current,
+                    targetHeight: target,
+                    diffsProcessed: 0))
+        }
+
+        XCTAssertEqual(decision(.syncing, 100, 100), .blockedMasternodeSync)
+        XCTAssertEqual(decision(.waitForEvents, 100, 100), .blockedMasternodeSync)
+        XCTAssertEqual(decision(.error, 100, 100), .blockedMasternodeSync)
+        XCTAssertEqual(decision(.synced, 0, 100), .blockedMasternodeSync)
+        XCTAssertEqual(decision(.synced, 100, 0), .blockedMasternodeSync)
+        XCTAssertEqual(decision(.synced, 99, 100), .blockedMasternodeSync)
+        XCTAssertEqual(decision(.synced, 100, 100), .allowed)
+        XCTAssertEqual(decision(.synced, 101, 100), .allowed)
+    }
+
+    func testAssetLockProofAvailabilityPublishesOnlyDecisionChanges() {
+        let center = NotificationCenter()
+        let availability = AssetLockProofAvailability(
+            notificationCenter: center,
+            observesRuntime: false)
+        var notifications = 0
+        let observer = center.addObserver(
+            forName: AssetLockProofAvailability.didChangeNotification,
+            object: nil,
+            queue: nil) { _ in notifications += 1 }
+        defer { center.removeObserver(observer) }
+
+        availability.apply(.blockedMasternodeSync)
+        XCTAssertEqual(notifications, 0)
+        availability.apply(.allowed)
+        XCTAssertEqual(notifications, 1)
+        availability.apply(.allowed)
+        XCTAssertEqual(notifications, 1)
+        availability.apply(.blockedMasternodeSync)
+        XCTAssertEqual(notifications, 2)
     }
 }

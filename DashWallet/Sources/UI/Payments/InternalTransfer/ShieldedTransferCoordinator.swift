@@ -177,6 +177,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case nonCoreSpend
 
         var requiresCoreSpendAvailability: Bool { self == .newCoreSpend }
+        var requiresAssetLockProofAvailability: Bool { self != .nonCoreSpend }
     }
 
     enum Phase: Equatable {
@@ -452,6 +453,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(error)
             return
         }
+        guard revalidateAvailability(for: .newCoreSpend) else { return }
 
         phase = .locking
         let startTime = Date()
@@ -528,6 +530,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(error)
             return
         }
+        guard revalidateAvailability(for: .resumeCommittedCoreSpend) else { return }
 
         // The lock is already broadcast/locked — only the Orchard proof + the
         // shield ST remain, so jump straight to .proving (no .locking stage and
@@ -942,6 +945,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(error)
             return
         }
+        guard revalidateAvailability(for: .newCoreSpend) else { return }
 
         phase = .locking
         let startTime = Date()
@@ -991,6 +995,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(error)
             return
         }
+        guard revalidateAvailability(for: .resumeCommittedCoreSpend) else { return }
 
         // The lock is already on-chain; only the funding ST remains.
         phase = .broadcasting
@@ -1235,8 +1240,34 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return false
             }
         }
+        if operation.requiresAssetLockProofAvailability {
+            do {
+                try AssetLockProofAvailability.shared.requireAllowed()
+            } catch {
+                handleFailure(error)
+                return false
+            }
+        }
         phase = .signing
         return true
+    }
+
+    /// Readiness can close while the PIN sheet is visible (wallet switch,
+    /// reconnect, or a new masternode catch-up). Re-check at the last safe
+    /// boundary before invoking the non-cancellable FFI call.
+    private func revalidateAvailability(for operation: OperationKind) -> Bool {
+        do {
+            if operation.requiresCoreSpendAvailability {
+                try CoreSpendAvailability.shared.requireAllowed()
+            }
+            if operation.requiresAssetLockProofAvailability {
+                try AssetLockProofAvailability.shared.requireAllowed()
+            }
+            return true
+        } catch {
+            handleFailure(error)
+            return false
+        }
     }
 
     /// PIN/biometric gate. `phase` is already `.signing` (set synchronously

@@ -469,6 +469,16 @@ final class SendViewModel: ObservableObject {
         }
     }
 
+    /// The runtime proof gate is intentionally absent here: users can prepare
+    /// the payment and reach confirmation while the masternode list syncs.
+    var coreSpendGateMessage: String? {
+        guard let route else { return nil }
+        if isCoreSpendBlocked, route == .coreToCore || route == .coreToShielded {
+            return CoreSpendAvailabilityError.initialRestoreSync.localizedDescription
+        }
+        return nil
+    }
+
     /// Type-18's pool fee is carved out of the one-time asset-lock value.
     /// Reuse the internal-transfer policy so external sends to a shielded
     /// address cannot reach Confirm with an amount the SDK must reject.

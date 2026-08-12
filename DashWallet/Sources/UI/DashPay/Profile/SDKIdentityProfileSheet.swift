@@ -465,6 +465,7 @@ final class IdentityTopUpViewModel: ObservableObject {
         if source == .transparent {
             do {
                 try CoreSpendAvailability.shared.requireAllowed()
+                try AssetLockProofAvailability.shared.requireAllowed()
             } catch {
                 errorMessage = error.localizedDescription
                 return nil
@@ -475,6 +476,15 @@ final class IdentityTopUpViewModel: ObservableObject {
         } catch {
             // Backing out of the PIN prompt is not an error state.
             return nil
+        }
+        if source == .transparent {
+            do {
+                try CoreSpendAvailability.shared.requireAllowed()
+                try AssetLockProofAvailability.shared.requireAllowed()
+            } catch {
+                errorMessage = error.localizedDescription
+                return nil
+            }
         }
         do {
             switch source {
@@ -593,6 +603,7 @@ struct IdentityTopUpSheet: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = IdentityTopUpViewModel()
     @ObservedObject private var coreSpendAvailability = CoreSpendAvailability.shared
+    @ObservedObject private var assetLockProofAvailability = AssetLockProofAvailability.shared
     /// nil = the Custom chip is selected and `customText` carries the amount.
     @State private var selectedPresetDuffs: UInt64? = IdentityTopUpViewModel.presetsDuffs[0]
     @State private var customText = ""
@@ -771,9 +782,7 @@ struct IdentityTopUpSheet: View {
                 .padding(.top, 20)
 
                 if isTransparentCoreBlocked {
-                    SyncGateNote(message: NSLocalizedString(
-                        "Your restored wallet is completing its initial sync. Transparent identity top-up will be available once it finishes.",
-                        comment: "Transparent identity top-up blocked during initial restore sync"))
+                    SyncGateNote(message: transparentCoreBlockedMessage)
                         .padding(.horizontal, 20)
                         .padding(.top, 10)
                 }
@@ -807,7 +816,17 @@ struct IdentityTopUpSheet: View {
     }
 
     private var isTransparentCoreBlocked: Bool {
-        source == .transparent && coreSpendAvailability.isBlocked
+        source == .transparent
+            && (coreSpendAvailability.isBlocked || assetLockProofAvailability.isBlocked)
+    }
+
+    private var transparentCoreBlockedMessage: String {
+        if coreSpendAvailability.isBlocked {
+            return NSLocalizedString(
+                "Your restored wallet is completing its initial sync. Transparent identity top-up will be available once it finishes.",
+                comment: "Transparent identity top-up blocked during initial restore sync")
+        }
+        return AssetLockProofAvailabilityError.masternodeSync.localizedDescription
     }
 
     /// Shared chip chrome for the preset and Custom amount buttons.

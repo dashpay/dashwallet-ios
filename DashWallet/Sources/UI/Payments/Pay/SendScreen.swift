@@ -299,8 +299,8 @@ struct SendSourceScreen: View {
 
                     sourceCards
 
-                    if viewModel.isBlockedBySync {
-                        SyncGateNote()
+                    if let message = viewModel.coreSpendGateMessage {
+                        SyncGateNote(message: message)
                             .padding(.horizontal, 20)
                     }
                 }
@@ -312,7 +312,7 @@ struct SendSourceScreen: View {
                 text: NSLocalizedString("Continue", comment: ""),
                 style: .filled,
                 stretch: true,
-                isEnabled: viewModel.route != nil && !viewModel.isBlockedBySync,
+                isEnabled: viewModel.route != nil && viewModel.coreSpendGateMessage == nil,
                 action: onContinue)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
@@ -723,6 +723,8 @@ struct SendConfirmSheet: View {
     var onCompleted: () -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
+    @ObservedObject private var coreSpendAvailability = CoreSpendAvailability.shared
+    @ObservedObject private var proofAvailability = AssetLockProofAvailability.shared
 
     var body: some View {
         VStack(spacing: 0) {
@@ -790,6 +792,13 @@ struct SendConfirmSheet: View {
                     .padding(.top, 12)
             }
 
+
+            if let message = assetLockGateMessage {
+                SyncGateNote(message: message)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
+            }
+
             Spacer(minLength: 12)
 
             switch coordinator.phase {
@@ -797,6 +806,7 @@ struct SendConfirmSheet: View {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
+                    positiveActionEnabled: assetLockGateMessage == nil,
                     positiveButtonText: NSLocalizedString("Confirm", comment: ""),
                     positiveButtonAction: confirm,
                     negativeButtonText: NSLocalizedString("Cancel", comment: ""),
@@ -808,6 +818,7 @@ struct SendConfirmSheet: View {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
+                    positiveActionEnabled: assetLockGateMessage == nil,
                     positiveButtonText: NSLocalizedString("Try again", comment: ""),
                     positiveButtonAction: tryAgain,
                     negativeButtonText: NSLocalizedString("Close", comment: ""),
@@ -824,6 +835,18 @@ struct SendConfirmSheet: View {
                 EmptyView()
             }
         }
+    }
+
+    private var assetLockGateMessage: String? {
+        guard route == .coreToShielded else { return nil }
+        let resumesCommittedLock = coordinator.lastAssetLockOutPoint != nil
+        if !resumesCommittedLock, coreSpendAvailability.isBlocked {
+            return CoreSpendAvailabilityError.initialRestoreSync.localizedDescription
+        }
+        if proofAvailability.isBlocked {
+            return AssetLockProofAvailabilityError.masternodeSync.localizedDescription
+        }
+        return nil
     }
 
     // MARK: - Success body

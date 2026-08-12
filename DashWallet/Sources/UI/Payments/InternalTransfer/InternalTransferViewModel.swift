@@ -627,6 +627,16 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
+    /// The runtime proof gate is intentionally absent here: users can prepare
+    /// the transfer and reach confirmation while the masternode list syncs.
+    var coreSpendGateMessage: String? {
+        guard route == .coreToShielded || route == .coreToPlatform else { return nil }
+        if isCoreSpendBlocked {
+            return CoreSpendAvailabilityError.initialRestoreSync.localizedDescription
+        }
+        return nil
+    }
+
     var coreToShieldedMinimumAmountDuffs: UInt64? {
         guard route == .coreToShielded,
               let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits

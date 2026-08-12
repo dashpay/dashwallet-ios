@@ -174,6 +174,8 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
 struct CoinJoinMoveFundsSheet: View {
 
     @StateObject private var viewModel: CoinJoinMoveFundsViewModel
+    @ObservedObject private var coreSpendAvailability = CoreSpendAvailability.shared
+    @ObservedObject private var proofAvailability = AssetLockProofAvailability.shared
     var onDismiss: () -> Void
 
     init(amountDuffs: UInt64, onDismiss: @escaping () -> Void) {
@@ -237,6 +239,7 @@ struct CoinJoinMoveFundsSheet: View {
                     title: NSLocalizedString("Dash Wallet balance", comment: "CoinJoin"),
                     subtitle: NSLocalizedString(
                         "Move to your regular spendable balance.", comment: "CoinJoin"),
+                    isEnabled: true,
                     action: { Task { await viewModel.moveToWallet() } })
                 destinationCard(
                     icon: "shield.fill",
@@ -244,10 +247,17 @@ struct CoinJoinMoveFundsSheet: View {
                     subtitle: NSLocalizedString(
                         "Keep these coins private. Network and privacy fees apply.",
                         comment: "CoinJoin"),
+                    isEnabled: !isShieldedDestinationBlocked,
                     action: { Task { await viewModel.moveToShielded() } })
             }
             .padding(.horizontal, 16)
             .padding(.top, 20)
+
+            if isShieldedDestinationBlocked {
+                SyncGateNote(message: shieldedDestinationBlockedMessage)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 10)
+            }
 
             Spacer(minLength: 12)
 
@@ -262,7 +272,11 @@ struct CoinJoinMoveFundsSheet: View {
     }
 
     private func destinationCard(
-        icon: String, title: String, subtitle: String, action: @escaping () -> Void
+        icon: String,
+        title: String,
+        subtitle: String,
+        isEnabled: Bool,
+        action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
@@ -297,6 +311,8 @@ struct CoinJoinMoveFundsSheet: View {
             .cornerRadius(12)
         }
         .buttonStyle(.plain)
+        .disabled(!isEnabled)
+        .opacity(isEnabled ? 1 : 0.55)
     }
 
     // MARK: In flight
@@ -401,6 +417,7 @@ struct CoinJoinMoveFundsSheet: View {
             ButtonsGroup(
                 orientation: .horizontal,
                 size: .large,
+                positiveActionEnabled: destination != .shielded || !isShieldedRetryBlocked,
                 positiveButtonText: NSLocalizedString("Try again", comment: ""),
                 positiveButtonAction: {
                     Task {
@@ -417,6 +434,24 @@ struct CoinJoinMoveFundsSheet: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
         }
+    }
+
+    private var isShieldedDestinationBlocked: Bool {
+        coreSpendAvailability.isBlocked || proofAvailability.isBlocked
+    }
+
+    private var isShieldedRetryBlocked: Bool {
+        if viewModel.coordinator.lastAssetLockOutPoint != nil {
+            return proofAvailability.isBlocked
+        }
+        return isShieldedDestinationBlocked
+    }
+
+    private var shieldedDestinationBlockedMessage: String {
+        if coreSpendAvailability.isBlocked {
+            return CoreSpendAvailabilityError.initialRestoreSync.localizedDescription
+        }
+        return AssetLockProofAvailabilityError.masternodeSync.localizedDescription
     }
 
     // MARK: Pieces

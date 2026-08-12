@@ -93,6 +93,7 @@ class CreateUsernameViewController: UIViewController {
 struct CreateUsernameView: View {
     @StateObject private var viewModel = CreateUsernameViewModel()
     @ObservedObject private var coreSpendAvailability = CoreSpendAvailability.shared
+    @ObservedObject private var assetLockProofAvailability = AssetLockProofAvailability.shared
     @FocusState private var isTextInputFocused: Bool
     @State private var inProgress: Bool = false
     @State private var screenLockedAfterAuth: Bool = false
@@ -777,29 +778,38 @@ struct CreateUsernameView: View {
         }
     }
 
-    /// A persisted registration lock resumes the original outpoint and is
-    /// therefore exempt. Invitation, Platform and Shielded funding do not
-    /// spend Core UTXOs.
+    /// Fresh Core funding needs both gates; recovery is exempt from the
+    /// restore gate but still needs quorum data for the existing proof.
+    /// Invitation, Platform and Shielded funding need neither app-side gate.
     private var isFreshCoreRegistrationBlocked: Bool {
         if viewModel.canPurchaseListedNameDirectly {
             return viewModel.directPurchaseRequiresCoreFunding
-                && coreSpendAvailability.isBlocked
+                && (coreSpendAvailability.isBlocked || assetLockProofAvailability.isBlocked)
         }
-        return !viewModel.isInvitationMode
-            && !viewModel.hasPendingRegistrationRecovery
-            && fundingSource == .core
-            && coreSpendAvailability.isBlocked
+        guard !viewModel.isInvitationMode else { return false }
+        if viewModel.hasPendingRegistrationRecovery {
+            return assetLockProofAvailability.isBlocked
+        }
+        return fundingSource == .core
+            && (coreSpendAvailability.isBlocked || assetLockProofAvailability.isBlocked)
     }
 
     private var usernameCoreSpendBlockedMessage: String {
-        if viewModel.canPurchaseListedNameDirectly {
+        let isFreshCoreFunding = viewModel.canPurchaseListedNameDirectly
+            ? viewModel.directPurchaseRequiresCoreFunding
+            : !viewModel.hasPendingRegistrationRecovery && fundingSource == .core
+        if isFreshCoreFunding && coreSpendAvailability.isBlocked,
+           viewModel.canPurchaseListedNameDirectly {
             return NSLocalizedString(
                 "Your restored wallet is completing its initial sync. A Core-funded username purchase will be available once it finishes.",
                 comment: "Core-funded username purchase blocked during initial restore sync")
         }
-        return NSLocalizedString(
-            "Your restored wallet is completing its initial sync. Core-funded identity registration will be available once it finishes.",
-            comment: "Core-funded identity registration blocked during initial restore sync")
+        if isFreshCoreFunding && coreSpendAvailability.isBlocked {
+            return NSLocalizedString(
+                "Your restored wallet is completing its initial sync. Core-funded identity registration will be available once it finishes.",
+                comment: "Core-funded identity registration blocked during initial restore sync")
+        }
+        return AssetLockProofAvailabilityError.masternodeSync.localizedDescription
     }
 
     /// Post-submit copy for a contested name. The deadline is a conservative

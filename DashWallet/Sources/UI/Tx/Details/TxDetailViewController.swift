@@ -109,6 +109,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
     /// Single-flight guard for the stuck-lock retry action.
     private var isRetryingAssetLock = false
+    private var proofAvailabilityObserver: NSObjectProtocol?
 
     enum Section: CaseIterable {
         case header
@@ -202,11 +203,23 @@ class TXDetailViewController: BaseTxDetailsViewController {
 
         configureDataSource()
         reloadDataSource()
+        proofAvailabilityObserver = NotificationCenter.default.addObserver(
+            forName: AssetLockProofAvailability.didChangeNotification,
+            object: nil,
+            queue: .main) { [weak self] _ in
+                self?.reloadDataSource()
+        }
 
         // Dash DEX swap legs get an extra "View NEAR/Maya Explorer" action; the order lookup
         // is async (DAO reads), so resolve then rebuild the rows when it lands.
         model.resolveSwapExplorerLink { [weak self] in
             self?.reloadDataSource()
+        }
+    }
+
+    deinit {
+        if let proofAvailabilityObserver {
+            NotificationCenter.default.removeObserver(proofAvailabilityObserver)
         }
     }
 }
@@ -413,11 +426,20 @@ extension TXDetailViewController {
                     let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailActionCell
                     if case .rebroadcast(let title) = item {
-                        cell.titleLabel.text = title
-                        cell.titleLabel.textColor = .dw_label()
+                        let blocked = AssetLockProofAvailability.shared.isBlocked
+                        cell.titleLabel.text = blocked
+                            ? NSLocalizedString(
+                                "Funds safe — waiting for masternode sync",
+                                comment: "Disabled asset-lock recovery action")
+                            : title
+                        cell.titleLabel.textColor = blocked ? .secondaryLabel : .dw_label()
+                        cell.isUserInteractionEnabled = !blocked
+                        cell.contentView.alpha = blocked ? 0.55 : 1
                     } else if item == .removeUnconfirmed {
                         cell.titleLabel.text = NSLocalizedString("Remove if not on Blockchain", comment: "Delete a never-accepted transaction from local wallet state")
                         cell.titleLabel.textColor = .systemRed
+                        cell.isUserInteractionEnabled = true
+                        cell.contentView.alpha = 1
                     }
                     return cell
 
@@ -542,6 +564,7 @@ extension TXDetailViewController {
             if dataSource.itemIdentifier(for: indexPath) == .removeUnconfirmed {
                 confirmRemoveUnconfirmed()
             } else {
+                guard !AssetLockProofAvailability.shared.isBlocked else { return }
                 retryStuckAssetLock()
             }
         case .rawTransaction:

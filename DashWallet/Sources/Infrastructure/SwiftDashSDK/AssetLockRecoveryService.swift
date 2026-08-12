@@ -68,6 +68,9 @@ struct AssetLockRecoveryService {
     /// still-unlocked transaction includes the IS/CL wait.
     func retry(fundingTypeRaw: Int, txidWire: Data, vout: UInt32) async throws {
         Self.logger.info("🔁 LOCK-RETRY :: type=\(fundingTypeRaw, privacy: .public) vout=\(vout, privacy: .public)")
+        // All supported routes resume an existing asset lock and may enter the
+        // SDK's IS/CL proof wait. Fail before auth while quorum data is absent.
+        try AssetLockProofAvailability.shared.requireAllowed()
         switch fundingTypeRaw {
         case 1, 2:
             try await retryIdentityTopUp(txidWire: txidWire, vout: vout)

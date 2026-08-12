@@ -126,6 +126,103 @@ enum CoreSpendAvailabilityError: LocalizedError, Equatable {
     }
 }
 
+enum AssetLockProofAvailabilityError: LocalizedError, Equatable {
+    case masternodeSync
+
+    var errorDescription: String? {
+        NSLocalizedString(
+            "The masternode list is still syncing. Transfers that require InstantSend will be available once it finishes.",
+            comment: "Asset-lock operation blocked while the masternode list syncs")
+    }
+}
+
+/// Runtime-only gate for operations that need an InstantSend/ChainLock asset
+/// lock proof. Unlike `CoreSpendAvailability`, this is not a wallet lifecycle
+/// marker: it follows the live masternode/quorum readiness and may close again
+/// during a later catch-up or reconnect.
+@MainActor
+final class AssetLockProofAvailability: ObservableObject {
+    enum Decision: Equatable {
+        case allowed
+        case blockedMasternodeSync
+
+        var isBlocked: Bool { self == .blockedMasternodeSync }
+    }
+
+    static let shared = AssetLockProofAvailability()
+    static let didChangeNotification = Notification.Name(
+        "DWAssetLockProofAvailabilityDidChange")
+
+    @Published private(set) var decision: Decision = .blockedMasternodeSync
+
+    private let notificationCenter: NotificationCenter
+    private var observers: [NSObjectProtocol] = []
+
+    init(notificationCenter: NotificationCenter = .default,
+         observesRuntime: Bool = true) {
+        self.notificationCenter = notificationCenter
+        if observesRuntime {
+            for name in [
+                SwiftDashSDKSPVCoordinator.proofReadinessDidChangeNotification,
+                SwiftDashSDKWalletState.activeWalletDidChangeNotification,
+                .DWCurrentNetworkDidChange,
+            ] {
+                observers.append(notificationCenter.addObserver(
+                    forName: name, object: nil, queue: .main) { [weak self] _ in
+                        Task { @MainActor in self?.refresh() }
+                })
+            }
+            refresh()
+        }
+    }
+
+    deinit {
+        observers.forEach(notificationCenter.removeObserver)
+    }
+
+    var isBlocked: Bool { decision.isBlocked }
+
+    var blockedPublisher: AnyPublisher<Bool, Never> {
+        $decision.map(\.isBlocked).removeDuplicates().eraseToAnyPublisher()
+    }
+
+    func requireAllowed() throws {
+        guard !isBlocked else { throw AssetLockProofAvailabilityError.masternodeSync }
+    }
+
+    func refresh() {
+        let coordinator = SwiftDashSDKSPVCoordinator.shared
+        apply(Self.decision(
+            boundWalletId: SwiftDashSDKHost.shared.wallet?.walletId,
+            progressWalletId: coordinator.syncProgressWalletId,
+            masternodes: coordinator.syncProgress.masternodes))
+    }
+
+    static func decision(
+        boundWalletId: Data?,
+        progressWalletId: Data?,
+        masternodes: MasternodesSubProgress?
+    ) -> Decision {
+        guard let boundWalletId,
+              boundWalletId == progressWalletId,
+              let masternodes,
+              masternodes.state == .synced,
+              masternodes.currentHeight > 0,
+              masternodes.targetHeight > 0,
+              masternodes.currentHeight >= masternodes.targetHeight
+        else { return .blockedMasternodeSync }
+        return .allowed
+    }
+
+    /// Internal so policy publication can be verified without constructing an
+    /// SDK host in unit tests; production callers use `refresh()`.
+    func apply(_ newDecision: Decision) {
+        guard decision != newDecision else { return }
+        decision = newDecision
+        notificationCenter.post(name: Self.didChangeNotification, object: self)
+    }
+}
+
 /// Thread-safe projection for legacy UIKit/ObjC call sites whose protocol
 /// requirements are not actor-isolated. The policy owner writes it on the
 /// main actor; readers never touch the wallet runtime directly.

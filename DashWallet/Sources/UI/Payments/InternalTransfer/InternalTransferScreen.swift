@@ -84,8 +84,8 @@ struct InternalTransferScreen: View {
                     directionCards
                         .padding(.horizontal, 20)
 
-                    if viewModel.isBlockedBySync {
-                        SyncGateNote()
+                    if let message = viewModel.coreSpendGateMessage {
+                        SyncGateNote(message: message)
                             .padding(.horizontal, 20)
                     }
 

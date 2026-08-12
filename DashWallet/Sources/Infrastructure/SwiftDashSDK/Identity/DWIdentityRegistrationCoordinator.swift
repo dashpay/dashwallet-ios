@@ -491,11 +491,34 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             Self.logger.info("🪪 IDENT-COORD :: recoverable Core registration found status=\(recoveryLock.statusRaw, privacy: .public)")
         }
 
+        let isContestedSubmission = DWContestedNameStatusService.isContestedLabel(username)
+        let requiredIdentityFundingDuffs = isContestedSubmission
+            ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
+            : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        let existingIdentityNeedsCoreTopUp: Bool
+        if let existingIdentityId, fundingSource == .core {
+            let requiredCredits = UInt64(requiredIdentityFundingDuffs)
+                * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+            existingIdentityNeedsCoreTopUp =
+                UsernameMarketplaceService.identityBalanceCredits(
+                    identityId: existingIdentityId,
+                    container: modelContainer) < requiredCredits
+        } else {
+            existingIdentityNeedsCoreTopUp = false
+        }
+        let resumesCoreAssetLock = recoveryLock != nil
+        let createsCoreAssetLock = recoveryLock == nil
+            && fundingSource == .core
+            && (existingIdentityId == nil || existingIdentityNeedsCoreTopUp)
+
         // A fresh Core-funded registration creates a new asset lock. A
-        // persisted recovery lock resumes its exact outpoint and remains
-        // allowed; any additional top-up is checked separately below.
-        if recoveryLock == nil, existingIdentityId == nil, fundingSource == .core {
+        // persisted recovery resumes its exact outpoint. Both require live
+        // quorum data, but only the fresh operation spends another Core UTXO.
+        if createsCoreAssetLock {
             try CoreSpendAvailability.shared.requireAllowed()
+        }
+        if createsCoreAssetLock || resumesCoreAssetLock {
+            try AssetLockProofAvailability.shared.requireAllowed()
         }
 
         // Single-flight guard. The FFI calls we're about to make
@@ -530,10 +553,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         currentFundingSource = recoveryLock == nil ? fundingSource : .core
         failedAtPhase = nil
         lastErrorMessage = nil
-        let isContestedSubmission = DWContestedNameStatusService.isContestedLabel(username)
-        let requiredIdentityFundingDuffs = isContestedSubmission
-            ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
-            : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
         Self.logger.info(
             "🪪 IDENT-COORD :: contested=\(isContestedSubmission, privacy: .public) identityFundingDuffs=\(requiredIdentityFundingDuffs, privacy: .public)")
 
@@ -562,6 +581,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             lastErrorMessage = CoordinatorError.authFailed.localizedDescription
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
+        }
+
+        // A wallet switch or reconnect can close readiness while the PIN sheet
+        // is visible. Stop before key preparation and before any asset-lock FFI.
+        if createsCoreAssetLock {
+            try CoreSpendAvailability.shared.requireAllowed()
+        }
+        if createsCoreAssetLock || resumesCoreAssetLock {
+            try AssetLockProofAvailability.shared.requireAllowed()
         }
 
         // Step 1: pre-derive identity public keys + persist privates
@@ -937,11 +965,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // funding. An already-funded identity buys with Platform credits and
         // is not a Core spend.
         let requiredCredits = Self.requiredCreditsForUsernamePurchase(priceCredits: priceCredits)
-        if purchaseRequiresCoreFunding(
+        let requiresCoreFunding = purchaseRequiresCoreFunding(
             requiredCredits: requiredCredits,
             walletId: wallet.walletId,
-            modelContainer: modelContainer) {
+            modelContainer: modelContainer)
+        if requiresCoreFunding {
             try CoreSpendAvailability.shared.requireAllowed()
+            try AssetLockProofAvailability.shared.requireAllowed()
         }
 
         // Single-flight — same rationale as `startCreateUsername`: the
@@ -976,6 +1006,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             lastErrorMessage = CoordinatorError.authFailed.localizedDescription
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
+        }
+        if requiresCoreFunding {
+            try CoreSpendAvailability.shared.requireAllowed()
+            try AssetLockProofAvailability.shared.requireAllowed()
         }
 
         // Credits the buyer identity must hold: the sale price plus the
@@ -1521,6 +1555,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // Resuming the original asset lock is allowed, but this is an
             // additional transparent top-up and therefore a NEW Core spend.
             try CoreSpendAvailability.shared.requireAllowed()
+            try AssetLockProofAvailability.shared.requireAllowed()
             let roundedShortfallDuffs =
                 (missingCredits + PlatformPaymentIdentityFundingPolicy.creditsPerDuff - 1)
                 / PlatformPaymentIdentityFundingPolicy.creditsPerDuff
