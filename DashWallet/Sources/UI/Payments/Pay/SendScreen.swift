@@ -1133,14 +1133,20 @@ struct SendConfirmSheet: View {
 
 /// Inline explanation for a restored wallet's one-time Core-spend gate.
 struct SyncGateNote: View {
+    let message: String
+
+    init(message: String = NSLocalizedString(
+        "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+        comment: "Core spend blocked during a restored wallet's first sync")) {
+        self.message = message
+    }
+
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 13))
                 .foregroundColor(.orange)
-            Text(NSLocalizedString(
-                "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
-                comment: "Core spend blocked during a restored wallet's first sync"))
+            Text(message)
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)

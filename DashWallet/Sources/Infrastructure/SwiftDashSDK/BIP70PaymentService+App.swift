@@ -20,7 +20,7 @@ extension BIP70PaymentService {
             coreSpendPreflight: {
                 do {
                     try await CoreSpendAvailability.shared.requireAllowed()
-                } catch {
+                } catch CoreSpendAvailabilityError.initialRestoreSync {
                     throw BIP70Error.initialRestoreSync
                 }
             })

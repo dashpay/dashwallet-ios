@@ -1796,6 +1796,7 @@
 		CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */; };
 		CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */; };
 		CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */; };
+		CB9200042FE3000000000004 /* InitialRestoreSyncStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9200032FE3000000000003 /* InitialRestoreSyncStoreTests.swift */; };
 		B17000022FE4000000000002 /* PaymentProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17000012FE4000000000001 /* PaymentProtocolTests.swift */; };
 		CC0000112DUMMYID001234567 /* PiggyCardsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */; };
 		CC0000122DUMMYID001234567 /* PiggyCardsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */; };
@@ -3539,6 +3540,7 @@
 		CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseTransactionMetadataTests.swift; sourceTree = "<group>"; };
 		CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseTransferAmountTests.swift; sourceTree = "<group>"; };
 		CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassiveWalletStateUITailTests.swift; sourceTree = "<group>"; };
+		CB9200032FE3000000000003 /* InitialRestoreSyncStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialRestoreSyncStoreTests.swift; sourceTree = "<group>"; };
 		B17000012FE4000000000001 /* PaymentProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentProtocolTests.swift; sourceTree = "<group>"; };
 		CC0000062DUMMYID001234567 /* PiggyCardsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsAPI.swift; sourceTree = "<group>"; };
 		CC0000072DUMMYID001234567 /* PiggyCardsCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsCache.swift; sourceTree = "<group>"; };
@@ -7076,6 +7078,7 @@
 				CB9100012FE2000000000001 /* CoinbaseTransferAmountTests.swift */,
 				7A30000130A1000000000001 /* TransactionDirectionTests.swift */,
 				CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */,
+				CB9200032FE3000000000003 /* InitialRestoreSyncStoreTests.swift */,
 				B17000012FE4000000000001 /* PaymentProtocolTests.swift */,
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
 				AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */,
@@ -10255,6 +10258,7 @@
 				CB9100022FE2000000000002 /* CoinbaseTransferAmountTests.swift in Sources */,
 				7A30000230A1000000000002 /* TransactionDirectionTests.swift in Sources */,
 				CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */,
+				CB9200042FE3000000000004 /* InitialRestoreSyncStoreTests.swift in Sources */,
 				B17000022FE4000000000002 /* PaymentProtocolTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
 				AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */,

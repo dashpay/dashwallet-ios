@@ -164,6 +164,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             DWGlobalOptions.sharedInstance().restoreToDefaults()
             DWAppGroupOptions.sharedInstance().restoreToDefaults()
             CrowdNode.shared.resetForWipe()
+            InitialRestoreSyncStore.shared.removeAll()
         }
 
         // These stores use UserDefaults + locks and are safe on this queue.
@@ -171,9 +172,6 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
         SPVChainResyncMarker.resetForWipe()
-        DispatchQueue.main.sync {
-            InitialRestoreSyncStore.shared.removeAll()
-        }
         // Without this a contested submission outlived the wallet that made it:
         // reset mid-vote, create a new wallet, and the new wallet reported the
         // old one's name as still in voting.

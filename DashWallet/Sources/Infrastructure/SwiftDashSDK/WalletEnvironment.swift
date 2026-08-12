@@ -190,7 +190,7 @@ final class CoreSpendAvailability: NSObject, ObservableObject {
                 observers.append(notificationCenter.addObserver(
                     forName: name, object: nil, queue: .main) { [weak self] _ in
                         Task { @MainActor in self?.refresh() }
-                    })
+                })
             }
             refresh()
         }
@@ -202,6 +202,13 @@ final class CoreSpendAvailability: NSObject, ObservableObject {
 
     var isBlocked: Bool { decision.isBlocked }
 
+    var blockedPublisher: AnyPublisher<Bool, Never> {
+        $decision
+            .map(\.isBlocked)
+            .removeDuplicates()
+            .eraseToAnyPublisher()
+    }
+
     func requireAllowed() throws {
         guard !isBlocked else { throw CoreSpendAvailabilityError.initialRestoreSync }
     }
@@ -211,7 +218,8 @@ final class CoreSpendAvailability: NSObject, ObservableObject {
         CoreSpendAvailabilitySnapshot.read()
     }
 
-    @objc nonisolated class func coreSpendBlockedError() -> NSError? {
+    @objc
+    nonisolated static func coreSpendBlockedError() -> NSError? {
         guard blockedSnapshot else { return nil }
         return CoreSpendAvailabilityError.initialRestoreSync as NSError
     }

@@ -771,7 +771,9 @@ struct IdentityTopUpSheet: View {
                 .padding(.top, 20)
 
                 if isTransparentCoreBlocked {
-                    SyncGateNote()
+                    SyncGateNote(message: NSLocalizedString(
+                        "Your restored wallet is completing its initial sync. Transparent identity top-up will be available once it finishes.",
+                        comment: "Transparent identity top-up blocked during initial restore sync"))
                         .padding(.horizontal, 20)
                         .padding(.top, 10)
                 }

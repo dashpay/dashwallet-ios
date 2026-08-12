@@ -111,9 +111,7 @@ final class SendViewModel: ObservableObject {
         }
         refreshClipboardSuggestion()
 
-        CoreSpendAvailability.shared.$decision
-            .map(\.isBlocked)
-            .removeDuplicates()
+        CoreSpendAvailability.shared.blockedPublisher
             .sink { [weak self] isBlocked in self?.isCoreSpendBlocked = isBlocked }
             .store(in: &cancellables)
 

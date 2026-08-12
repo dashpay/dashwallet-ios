@@ -308,7 +308,7 @@ struct CreateUsernameView: View {
                     .padding(.top, 20)
 
                     if isFreshCoreRegistrationBlocked {
-                        SyncGateNote()
+                        SyncGateNote(message: usernameCoreSpendBlockedMessage)
                             .padding(.top, 10)
                     }
                 }
@@ -782,12 +782,24 @@ struct CreateUsernameView: View {
     /// spend Core UTXOs.
     private var isFreshCoreRegistrationBlocked: Bool {
         if viewModel.canPurchaseListedNameDirectly {
-            return coreSpendAvailability.isBlocked
+            return viewModel.directPurchaseRequiresCoreFunding
+                && coreSpendAvailability.isBlocked
         }
         return !viewModel.isInvitationMode
             && !viewModel.hasPendingRegistrationRecovery
             && fundingSource == .core
             && coreSpendAvailability.isBlocked
+    }
+
+    private var usernameCoreSpendBlockedMessage: String {
+        if viewModel.canPurchaseListedNameDirectly {
+            return NSLocalizedString(
+                "Your restored wallet is completing its initial sync. A Core-funded username purchase will be available once it finishes.",
+                comment: "Core-funded username purchase blocked during initial restore sync")
+        }
+        return NSLocalizedString(
+            "Your restored wallet is completing its initial sync. Core-funded identity registration will be available once it finishes.",
+            comment: "Core-funded identity registration blocked during initial restore sync")
     }
 
     /// Post-submit copy for a contested name. The deadline is a conservative

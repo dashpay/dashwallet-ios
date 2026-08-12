@@ -412,7 +412,6 @@ final class SwiftDashSDKHost {
             WalletEnvironment.setActiveWalletId(createdWallet.walletId, for: kind)
         }
         publish(handles: handles, wallet: createdWallet)
-        CoreSpendAvailability.shared.refresh()
 
         Self.logger.info("🪺 HOST :: \(String(describing: origin), privacy: .public) managed wallet for \(network.rawValue, privacy: .public)")
         return createdWallet

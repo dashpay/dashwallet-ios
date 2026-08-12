@@ -271,9 +271,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             .sink { [weak self] _ in self?.refreshBalance() }
             .store(in: &cancellableBag)
 
-        CoreSpendAvailability.shared.$decision
-            .removeDuplicates()
-            .receive(on: RunLoop.main)
+        CoreSpendAvailability.shared.blockedPublisher
             .sink { [weak self] _ in self?.checkAmountForErrors() }
             .store(in: &cancellableBag)
         

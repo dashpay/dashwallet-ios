@@ -484,6 +484,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let recoveryLock = lookupRegistrationRecoveryLock(
             walletId: wallet.walletId,
             modelContainer: modelContainer)
+        let existingIdentityId = lookupExistingIdentityId(
+            walletId: wallet.walletId,
+            modelContainer: modelContainer)
         if let recoveryLock {
             Self.logger.info("🪪 IDENT-COORD :: recoverable Core registration found status=\(recoveryLock.statusRaw, privacy: .public)")
         }
@@ -491,7 +494,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // A fresh Core-funded registration creates a new asset lock. A
         // persisted recovery lock resumes its exact outpoint and remains
         // allowed; any additional top-up is checked separately below.
-        if recoveryLock == nil, fundingSource == .core {
+        if recoveryLock == nil, existingIdentityId == nil, fundingSource == .core {
             try CoreSpendAvailability.shared.requireAllowed()
         }
 
@@ -611,10 +614,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let identityId: Identifier
         var shouldTopUpRecoveredIdentity = false
         do {
-            if let existingId = lookupExistingIdentityId(
-                walletId: wallet.walletId,
-                modelContainer: modelContainer)
-            {
+            if let existingId = existingIdentityId {
                 Self.logger.info("🪪 IDENT-COORD :: recovery — local identity exists at index \(Self.pinnedIdentityIndex, privacy: .public), skipping IdentityCreate")
                 identityId = existingId
                 reconcileConsumedRecoveryLock(
@@ -936,16 +936,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // Determine before PIN whether this purchase needs fresh Core
         // funding. An already-funded identity buys with Platform credits and
         // is not a Core spend.
-        let headroomDuffs = DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        let requiredCredits = priceCredits + headroomDuffs * 1_000
-        let existingIdentityId = lookupExistingIdentityId(
+        let requiredCredits = Self.requiredCreditsForUsernamePurchase(priceCredits: priceCredits)
+        if purchaseRequiresCoreFunding(
+            requiredCredits: requiredCredits,
             walletId: wallet.walletId,
-            modelContainer: modelContainer)
-        let heldCredits = existingIdentityId.map {
-            UsernameMarketplaceService.identityBalanceCredits(
-                identityId: $0, container: modelContainer)
-        } ?? 0
-        if existingIdentityId == nil || heldCredits < requiredCredits {
+            modelContainer: modelContainer) {
             try CoreSpendAvailability.shared.requireAllowed()
         }
 
@@ -1460,6 +1455,39 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         )
         descriptor.fetchLimit = 1
         return (try? context.fetch(descriptor))?.first?.identityId
+    }
+
+    /// Whether buying a listed username needs a new transparent asset lock.
+    /// An existing identity that already holds the price plus fee headroom
+    /// spends Platform credits only and remains available during Core restore.
+    func purchaseRequiresCoreFunding(priceCredits: UInt64) -> Bool {
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
+            return true
+        }
+        return purchaseRequiresCoreFunding(
+            requiredCredits: Self.requiredCreditsForUsernamePurchase(priceCredits: priceCredits),
+            walletId: walletId,
+            modelContainer: modelContainer)
+    }
+
+    private static func requiredCreditsForUsernamePurchase(priceCredits: UInt64) -> UInt64 {
+        priceCredits + DWDP_MIN_BALANCE_TO_CREATE_USERNAME * 1_000
+    }
+
+    private func purchaseRequiresCoreFunding(
+        requiredCredits: UInt64,
+        walletId: Data,
+        modelContainer: ModelContainer
+    ) -> Bool {
+        guard let identityId = lookupExistingIdentityId(
+            walletId: walletId,
+            modelContainer: modelContainer) else {
+            return true
+        }
+        return UsernameMarketplaceService.identityBalanceCredits(
+            identityId: identityId,
+            container: modelContainer) < requiredCredits
     }
 
     /// Bring a previously-created identity up to the amount this name

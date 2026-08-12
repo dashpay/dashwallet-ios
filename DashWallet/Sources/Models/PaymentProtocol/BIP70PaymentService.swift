@@ -175,7 +175,7 @@ final class BIP70PaymentService {
          wallet: WalletSending,
          receiveAddress: ReceiveAddressProviding,
          auth: SendAuthorizing,
-         coreSpendPreflight: @escaping () async throws -> Void = {},
+         coreSpendPreflight: @escaping () async throws -> Void,
          allowUntrustedUnsigned: Bool = true) {
         self.transport = transport
         self.verifier = verifier

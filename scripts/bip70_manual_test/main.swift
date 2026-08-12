@@ -217,7 +217,8 @@ func makeService(_ transport: FakeTransport, _ wallet: FakeWallet,
                  receive: FakeReceive = FakeReceive(), auth: FakeAuth = FakeAuth(),
                  allowUntrusted: Bool = true) -> BIP70PaymentService {
     BIP70PaymentService(transport: transport, verifier: PaymentRequestVerifier(), wallet: wallet,
-                        receiveAddress: receive, auth: auth, allowUntrustedUnsigned: allowUntrusted)
+                        receiveAddress: receive, auth: auth, coreSpendPreflight: {},
+                        allowUntrustedUnsigned: allowUntrusted)
 }
 let anyURL = URL(string: "http://h/pr")!
 
@@ -230,7 +231,7 @@ do {
     check("prepare builds/spends nothing (calls empty)", w.calls.isEmpty)
 }
 
-// Call order build → broadcast → post.
+// Call order build → post/ACK → broadcast.
 do {
     let w = FakeWallet(); let t = FakeTransport(unsignedRequest()); t.onPost = { w.calls.append("post") }
     let svc = makeService(t, w)
@@ -238,7 +239,7 @@ do {
         let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
         return try await svc.confirmAndSend(c)
     }
-    check("confirmAndSend order == [build, broadcast, post]", w.calls == ["build", "broadcast", "post"])
+    check("confirmAndSend order == [build, post, broadcast]", w.calls == ["build", "post", "broadcast"])
     check("POST carries the prepared signed bytes", t.postedPayment?.transactions == [w.prepared.txData])
     check("ack memo surfaced", value(r)?.ackMemo == "thanks")
 }
@@ -327,7 +328,7 @@ do {
     check("auth cancel → .authCancelled; no build", threwBIP70(r, .authCancelled) && w.calls.isEmpty)
 }
 
-// Soft POST failure after broadcast → no throw, ackMemo nil, money moved.
+// POST failure before broadcast → hard throw, money unmoved.
 do {
     let w = FakeWallet(); let t = FakeTransport(unsignedRequest()); t.postShouldThrow = .unexpectedResponse(host: "h")
     let svc = makeService(t, w)
@@ -335,8 +336,8 @@ do {
         let c = try await svc.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet)
         return try await svc.confirmAndSend(c)
     }
-    check("soft POST fail: succeeds, ackMemo nil, broadcast happened",
-          value(r) != nil && value(r)?.ackMemo == nil && w.calls.contains("broadcast"))
+    check("POST fail: throws before broadcast",
+          threwBIP70(r, .unexpectedResponse(host: "h")) && !w.calls.contains("broadcast"))
 }
 
 // Unsigned + no paymentURL → no missingPaymentURL gate (not secure); no POST.

@@ -157,7 +157,16 @@ class CreateUsernameViewModel: ObservableObject {
               !hasPendingRegistrationRecovery else { return false }
         let priceDuffs = credits / 1_000
         guard priceDuffs < Self.directPurchaseMaxDuffs else { return false }
-        return coreSpendableDuffs >= priceDuffs + DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        return !directPurchaseRequiresCoreFunding
+            || coreSpendableDuffs >= priceDuffs + DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+    }
+
+    /// Direct purchases consume Core only when the current identity lacks the
+    /// listing price plus transition-fee headroom.
+    var directPurchaseRequiresCoreFunding: Bool {
+        guard let credits = takenNameSalePriceCredits else { return false }
+        return DWIdentityRegistrationCoordinator.shared
+            .purchaseRequiresCoreFunding(priceCredits: credits)
     }
 
     /// Listed at or above the direct-purchase ceiling — the form points
