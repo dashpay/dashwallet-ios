@@ -215,28 +215,20 @@ struct MainMenuScreen: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
-                TopIntro(title: NSLocalizedString("More", comment: ""))
-                    .padding(.leading, 20)
-                    .padding(.trailing, 60)
-                    .padding(.top, 10)
-                    .padding(.bottom, 20)
-
                 #if DASHPAY
                 if viewModel.showJoinDashpay {
-                    JoinDashPayView(
+                    JoinDashPayMenuItem(
                         viewModel: joinDPViewModel,
+                        // The row replaced a card with two buttons, so it
+                        // needs a handler covering both — see
+                        // `handleJoinDashPayRowTap`.
                         onTap: { state in
-                            handleJoinDashPayTap(state: state)
+                            handleJoinDashPayRowTap(state: state)
                         },
-                        onActionButton: { state in
-                            handleJoinDashPayAction(state: state)
-                        },
-                        onDismissButton: { state in
-                            joinDPViewModel.markAsDismissed()
-                            viewModel.refreshJoinDashPayBanner()
-                        }
+                        isSyncing: viewModel.isSyncing
                     )
-                    .padding(.horizontal, 18)
+                    .padding(.vertical, 20)
+                    .padding(.horizontal, 20)
                 }
                 #endif
                 
@@ -432,6 +424,26 @@ struct MainMenuScreen: View {
         vc.pushViewController(controller, animated: true)
     }
     
+    /// Where a tap on the DashPay menu row goes. The row replaced a card with
+    /// two buttons, so it has to cover what both of them did — it is not the
+    /// old action button under a new name.
+    ///
+    /// In particular `.callToAction` must NOT reach `editProfile()`: that
+    /// method guards on an existing identity and returns silently for exactly
+    /// the users this state describes, which read on screen as a dead row.
+    private func handleJoinDashPayRowTap(state: JoinDashPayState) {
+        switch state {
+        case .none, .callToAction, .blocked, .failed, .contested:
+            // Not registered (or the attempt failed): open the join flow,
+            // which also carries the "Have an invitation?" entry.
+            handleJoinButtonAction()
+        case .approved, .registered:
+            editProfile()
+        case .voting:
+            showUsernameRequestStatus()
+        }
+    }
+
     private func handleJoinDashPayAction(state: JoinDashPayState) {
         switch state {
         case .blocked, .failed, .contested:

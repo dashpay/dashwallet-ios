@@ -63,7 +63,14 @@ class CreateUsernameViewController: UIViewController {
             #if DASHPAY
             let mainTabController = self.tabBarController as? MainTabbarController
             #endif
-            navigationController?.popViewController(animated: true)
+            // Pop the whole registration stack, not one level. The invitation
+            // entry pushes this screen ON TOP of the redeem screen, so popping
+            // once lands the freshly-registered user back on "Claim your
+            // invitation" — a flow they just completed and cannot repeat.
+            // Every push site roots this flow at a tab's own screen, so
+            // unwinding to that root is the correct destination for all of
+            // them (Home for the home/deep-link entries, More for the menu).
+            navigationController?.popToRootViewController(animated: true)
             self.completionHandler?(true)
             #if DASHPAY
             if let transitionCoordinator = navigationController?.transitionCoordinator {

@@ -319,12 +319,19 @@ struct HomeViewContent<Content: View>: View {
                             .frame(height: viewModel.headerHeight)
                     }
                     
+                    SyncingHeaderView(onFilterTap: {
+                        showFilterDialog = true
+                    }, onSyncTap: {
+                        delegate?.homeViewShowSyncingStatus()
+                    })
+
                     #if DASHPAY
                     if viewModel.showJoinDashpay {
-                        JoinDashPayView(
+                        JoinDashPayMenuItem(
                             viewModel: joinDPViewModel,
-                            onTap: { _ in },
-                            onActionButton: { state in
+                            // The row is the action now — this is what the
+                            // Upgrade/Edit/Retry button used to do.
+                            onTap: { state in
                                 if state == .approved {
                                     delegate?.homeViewEditProfile()
                                     joinDPViewModel.markAsDismissed()
@@ -340,21 +347,15 @@ struct HomeViewContent<Content: View>: View {
                                     // they first looked at DashPay.
                                     self.shouldShowJoinDashPayInfo = true
                                 }
-                            }, onDismissButton: { _ in
+                            }, onDismiss: { _ in
                                 joinDPViewModel.markAsDismissed()
                                 viewModel.checkJoinDashPay()
                             }
-                        ).padding(.horizontal, 14)
-                         .padding(.bottom, 4)
+                        )
+                        .padding(.horizontal, 20)
                     }
                     #endif
-                    
-                    SyncingHeaderView(onFilterTap: {
-                        showFilterDialog = true
-                    }, onSyncTap: {
-                        delegate?.homeViewShowSyncingStatus()
-                    })
-                    
+
                     if viewModel.txItems.isEmpty {
                         // An empty feed means "nothing yet" only once the first
                         // load has finished; before that it just means the
