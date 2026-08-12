@@ -158,7 +158,7 @@ struct JoinDashPayMenuItem: View {
     @StateObject var viewModel: JoinDashPayViewModel
     @ObservedObject private var shieldedReadiness = ShieldedIdentityFundingReadiness.shared
     var onTap: (JoinDashPayState) -> Void
-    var onDismiss: ((JoinDashPayState) -> Void)? = nil
+    var onDismiss: ((JoinDashPayState) -> Void)?
     /// Chain still catching up. The row stays visible but presents itself as
     /// unavailable — greyed icon and text, a note saying why, and no action —
     /// because registration cannot start before the chain is synced. Showing
