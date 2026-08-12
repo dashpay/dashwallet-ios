@@ -167,6 +167,10 @@ class HomeViewModel: ObservableObject {
     @Published var showCoinJoinMoveFundsSheet: Bool = false
     @Published private(set) var timeSkew: TimeInterval = 0
     @Published private(set) var showJoinDashpay: Bool = false
+    /// Chain still catching up. The Join DashPay banner stays visible
+    /// throughout but presents itself as unavailable: registration cannot be
+    /// started until the chain is synced.
+    @Published private(set) var isSyncing: Bool = false
     /// Selected filter categories (multi-select checkboxes). Defaults to every
     /// category — i.e. "All". Never empty: the dialog blocks unchecking the
     /// last box.
@@ -440,6 +444,9 @@ class HomeViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 guard let self = self else { return }
+                #if DASHPAY
+                self.isSyncing = state != .syncDone
+                #endif
                 if state == .syncing {
                     // Reload once per transition into .syncing — replaces the
                     // legacy sync-will-start notification observer. Goes
@@ -2930,7 +2937,12 @@ extension HomeViewModel {
 
         self.showJoinDashpay = JoinDashPayBannerPolicy.shouldShow(
             contextReady: identityState.contextReady,
-            syncDone: syncModel.state == .syncDone,
+            // Not gated on sync — same as the More entry. Gating made the
+            // banner appear only once the chain had caught up, so the surface
+            // that carries the "Have an invitation?" entry was missing for the
+            // whole of a long sync. It now stays put and renders as
+            // unavailable (`isSyncing`) instead of vanishing.
+            syncDone: true,
             dismissed: UsernamePrefs.shared.joinDashPayDismissed,
             hasRegisteredUsername: hasRegisteredUsername,
             hasRegistrationInProgress: identityScopedRegistrationState)

@@ -333,12 +333,20 @@ extension MainTabbarController {
     }
 
     func applyPendingDashPayTabReconfiguration() {
-        guard pendingDashPayTabReconfiguration else { return }
-
         if containsCreateUsernameController(in: self) {
             return
         }
 
+        // Deliberately NOT gated on `pendingDashPayTabReconfiguration`. That
+        // flag is only raised once `reconfigureDashPayTabsIfNeeded` has already
+        // seen an identity, but the canonical registration notification can be
+        // posted before `DWCurrentUserIdentityInfo` observes the new
+        // `PersistentIdentity` row — the `hasDashPayIdentity` guard then
+        // returns first and the flag is never set. Gating here on a flag that
+        // was never raised is what left the DashPay tabs missing until the
+        // next launch. `reconfigureDashPayTabsIfNeeded` is idempotent (it
+        // early-returns once the five-tab layout is installed), so calling it
+        // unconditionally is safe.
         reconfigureDashPayTabsIfNeeded()
     }
     #endif

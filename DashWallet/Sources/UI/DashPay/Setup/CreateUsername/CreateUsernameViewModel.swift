@@ -382,6 +382,22 @@ class CreateUsernameViewModel: ObservableObject {
                     username: submittedUsername,
                     invitationURI: invitationURI,
                     temporaryUsername: temporaryUsername)
+                // This path never touches `DWIdentityRegistrationBridge.shared`,
+                // so on an invitation-first launch that singleton is never
+                // constructed, never observes the coordinator's phases, and
+                // never posts the canonical registration notification —
+                // `.shared` and `.stateChangedNotification` are independently
+                // lazy statics, so referencing the notification name does not
+                // build the bridge. Every consumer of app-wide "registered now"
+                // state (the DashPay tab set, the More screen's Join DashPay
+                // banner, `DWCurrentUserIdentityInfo`'s cached snapshot) then
+                // kept its pre-registration value until the next launch rebuilt
+                // it from disk. Announce it explicitly here, the same way
+                // `DWCurrentUserIdentityInfo.reconcileRecoveredIdentity()` does
+                // for identities that arrive outside the bridge's flow.
+                DWCurrentUserIdentityInfo.shared.refreshFromSDK()
+                NotificationCenter.default.post(
+                    name: .DWDashPayRegistrationStatusUpdated, object: nil)
                 return registrationOutcome(for: submittedUsername)
             } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
                 return .cancelled
