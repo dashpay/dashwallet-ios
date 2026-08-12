@@ -350,7 +350,8 @@ struct HomeViewContent<Content: View>: View {
                             }, onDismiss: { _ in
                                 joinDPViewModel.markAsDismissed()
                                 viewModel.checkJoinDashPay()
-                            }
+                            },
+                            isSyncing: viewModel.isSyncing
                         )
                         .padding(.horizontal, 20)
                     }
