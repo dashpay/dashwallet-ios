@@ -282,11 +282,14 @@ private struct IdentityRowView: View {
                     icon: "server.rack",
                     color: .indigo)
             }
-            if row.isLocal {
+            // `isLocal` = mine-or-tracked: wallet-derived identities
+            // are always local, manual adds too. Badge only the rare
+            // incidental rows (observed identities nobody tracks).
+            if !row.isLocal {
                 IdentityBadge(
-                    text: NSLocalizedString("Local Only", comment: "Identities"),
-                    icon: "location",
-                    color: .orange)
+                    text: NSLocalizedString("Observed", comment: "Identities"),
+                    icon: "eye",
+                    color: .gray)
             }
             if row.pendingContestedName != nil {
                 IdentityBadge(
@@ -530,12 +533,16 @@ struct IdentityDetailScreen: View {
             detailRow(
                 label: NSLocalizedString("Type", comment: "Identities"),
                 value: typeName)
-            divider
-            detailRow(
-                label: NSLocalizedString("Status", comment: ""),
-                value: row.isLocal
-                    ? NSLocalizedString("Local Only", comment: "Identities")
-                    : NSLocalizedString("On Network", comment: "Identities"))
+            // A Status row only for the rare incidental case — every
+            // wallet identity is local, so an always-on "Local" row
+            // would be noise; the Wallet row below already names the
+            // owner when there is one.
+            if !row.isLocal {
+                divider
+                detailRow(
+                    label: NSLocalizedString("Status", comment: ""),
+                    value: NSLocalizedString("Observed", comment: "Identities"))
+            }
             if let walletName = row.walletName {
                 divider
                 detailRow(
