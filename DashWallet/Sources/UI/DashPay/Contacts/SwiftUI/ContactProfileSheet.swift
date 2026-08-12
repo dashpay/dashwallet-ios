@@ -254,23 +254,33 @@ struct ContactProfileSheet: View {
                         .zIndex(-1)
                 }
 
-                // Android Button.Primary.Blue: full-width filled pay CTA.
-                Button {
-                    showingPaySheet = true
-                } label: {
-                    Label(
-                        NSLocalizedString("Pay", comment: "DashPay Contacts"),
-                        systemImage: "arrow.up.circle.fill")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Color.dash.whiteText)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 46)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.dash.blue))
+                // Being established means the contact requests are
+                // mutual; it does NOT mean we can pay. Paying needs the
+                // DIP-15 external account built from the counterparty's
+                // encrypted xpub, and when the SDK has permanently
+                // failed to build it, every Pay tap ends in a failure
+                // the user can do nothing about. Say so instead.
+                if contact.paymentChannelBroken {
+                    paymentChannelBrokenNotice
+                } else {
+                    // Android Button.Primary.Blue: full-width filled pay CTA.
+                    Button {
+                        showingPaySheet = true
+                    } label: {
+                        Label(
+                            NSLocalizedString("Pay", comment: "DashPay Contacts"),
+                            systemImage: "arrow.up.circle.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Color.dash.whiteText)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 46)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(Color.dash.blue))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 32)
                 }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 32)
 
                 paymentsSection
 
@@ -398,6 +408,37 @@ struct ContactProfileSheet: View {
             return nil
         }
         return error.localizedDescription
+    }
+
+    /// Shown in place of the Pay CTA when the contact's payment
+    /// channel is permanently broken.
+    ///
+    /// Deliberately actionable rather than an error: the flag only
+    /// clears when the CONTACT sends a fresh request, so telling the
+    /// user what to ask for is the only thing that can fix it. A
+    /// disabled-looking button with no explanation would leave them
+    /// tapping and reading a Rust diagnostic instead.
+    private var paymentChannelBrokenNotice: some View {
+        VStack(spacing: 6) {
+            Label(
+                NSLocalizedString("Payments unavailable", comment: "DashPay Contacts"),
+                systemImage: "exclamationmark.triangle.fill")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.dashGolden)
+            Text(NSLocalizedString(
+                "This contact's payment details couldn't be set up. Ask them to send you a new contact request.",
+                comment: "DashPay Contacts"))
+                .font(.system(size: 13))
+                .foregroundColor(.dash.secondaryText)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.dash.secondaryBackground))
+        .padding(.horizontal, 32)
     }
 
     // MARK: Payments between us — history card

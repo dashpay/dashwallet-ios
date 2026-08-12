@@ -68,6 +68,21 @@ struct ContactItem: Identifiable, Equatable {
     /// Hidden contacts move to the collapsed Hidden section.
     let isHidden: Bool
 
+    /// The SDK gave up on building this contact's DIP-15 payment
+    /// channel for a permanent reason (`EstablishedContact
+    /// .payment_channel_broken`): the counterparty's encrypted xpub
+    /// cannot be decrypted, or their key shape can never satisfy the
+    /// ECDH gate.
+    ///
+    /// Being `.established` is NOT the same as being payable —
+    /// friendship is mutual contact requests, while paying needs the
+    /// external contact account those requests are the input to. A
+    /// broken channel is unrecoverable from this side: the sweep never
+    /// retries it, and only a fresh contact request from the CONTACT
+    /// clears the flag. Surfacing it is what stops the UI offering a
+    /// Pay button that can only ever fail.
+    let paymentChannelBroken: Bool
+
     /// `dashpay.profile.avatarUrl` from the synced contact-profile cache.
     let avatarURL: String?
 
