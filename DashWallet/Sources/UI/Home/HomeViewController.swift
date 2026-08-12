@@ -607,7 +607,9 @@ extension HomeViewController: HomeViewDelegate {
 
     func homeViewShowSyncingStatus() {
         let controller = SyncingAlertViewController()
-        present(controller, animated: true, completion: nil)
+        // Own the popup at the tab-container level so its dimming view also
+        // blocks tab changes while Home's presentation hierarchy is active.
+        (tabBarController ?? self).present(controller, animated: true, completion: nil)
     }
 
     func homeViewDidChangeTopBarVisibility(shouldShow: Bool) {
