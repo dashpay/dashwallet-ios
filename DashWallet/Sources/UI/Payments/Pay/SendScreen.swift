@@ -1131,10 +1131,7 @@ struct SendConfirmSheet: View {
 }
 
 
-/// Inline explanation for a Continue disabled by the chain-sync gate:
-/// Core-funded sends stay off until `SyncingActivityMonitor` reports
-/// `.syncDone` (a stale UTXO set can't safely fund a spend). Shared by
-/// the Send and Internal transfer screens.
+/// Shared explanation for the restored-wallet initial-sync gate.
 struct SyncGateNote: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -1142,8 +1139,8 @@ struct SyncGateNote: View {
                 .font(.system(size: 13))
                 .foregroundColor(.orange)
             Text(NSLocalizedString(
-                "Your wallet is still syncing. Sending from your Transparent balance will be available once syncing completes.",
-                comment: "Core send blocked until chain sync completes"))
+                "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+                comment: "Core send blocked during a restored wallet's initial sync"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)

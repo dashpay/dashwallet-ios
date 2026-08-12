@@ -543,11 +543,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// balance mirror. Updates whenever a shielded sync pass completes.
     @Published private(set) var shieldedBalance: UInt64 = 0
 
-    /// True once the L1 chain sync completed (`SyncingActivityMonitor`
-    /// `.syncDone`). Core-funded routes (asset locks spend BIP44 UTXOs)
-    /// can't Continue before that — the UTXO set may be stale. Mirrors
-    /// `SendViewModel.isChainSynced`; `WalletSendService` guards the
-    /// classic path at the boundary.
+    /// Drives the one-time restore gate reactively. A normal catch-up may set
+    /// this to false, but it only blocks while the recovery marker is active.
     @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
 
     private var cancellables = Set<AnyCancellable>()
@@ -624,13 +621,13 @@ final class InternalTransferViewModel: ObservableObject {
     /// currently-selected source bucket. Each route has its own balance
     /// envelope — asset-lock spends BIP44 duffs, transparent shield spends
     /// DIP-17 credits.
-    /// True when the picked route spends Core UTXOs but the chain hasn't
-    /// finished syncing — Continue stays disabled and the screen explains
-    /// why (a stale UTXO set can't safely fund an asset lock).
+    /// Only Core-funded routes during a restored wallet's first sync block.
     var isBlockedBySync: Bool {
         switch route {
         case .coreToShielded, .coreToPlatform:
-            return !isChainSynced
+            return WalletSendService.isBlockedByInitialRestoreSync(
+                isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingWallet,
+                isChainSynced: isChainSynced)
         default:
             return false
         }

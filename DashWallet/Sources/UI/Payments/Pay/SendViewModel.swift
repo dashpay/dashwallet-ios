@@ -92,10 +92,8 @@ final class SendViewModel: ObservableObject {
     @Published private(set) var withdrawalPreflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
     private var preflightTask: Task<Void, Never>?
 
-    /// True once the L1 chain sync completed (`SyncingActivityMonitor`
-    /// `.syncDone`). Core-funded routes can't Continue before that — the
-    /// UTXO set may be stale (see `WalletSendService.ensureChainSynced`,
-    /// the boundary backstop behind this UI gate).
+    /// Drives the one-time restore gate reactively. A normal catch-up may set
+    /// this to false, but it only blocks while the recovery marker is active.
     @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
 
     private var cancellables = Set<AnyCancellable>()
@@ -463,14 +461,14 @@ final class SendViewModel: ObservableObject {
             && dashDuffsUnsigned == platformWithdrawableDuffs
     }
 
-    /// True when the picked route spends Core UTXOs but the chain hasn't
-    /// finished syncing — Continue stays disabled and the screen explains
-    /// why (a stale UTXO set can't safely fund a send).
+    /// Only Core-funded routes during a restored wallet's first sync block.
     var isBlockedBySync: Bool {
         guard let route else { return false }
         switch route {
         case .coreToCore, .coreToShielded:
-            return !isChainSynced
+            return WalletSendService.isBlockedByInitialRestoreSync(
+                isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingWallet,
+                isChainSynced: isChainSynced)
         default:
             return false
         }
