@@ -30,6 +30,7 @@ struct TextInput: View {
     var trailingIcon: Image?
     var trailingAction: (() -> Void)?
     var onSubmit: (() -> Void)?
+    var focus: FocusState<Bool>.Binding? = nil
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -39,12 +40,12 @@ struct TextInput: View {
                     .foregroundColor(.dash.secondaryText)
                     .offset(y: labelOffset)
                     .scaleEffect(labelScale, anchor: .leading)
-                    .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isFocused || !text.isEmpty)
+                    .animation(.spring(response: 0.2, dampingFraction: 0.8), value: hasFocus || !text.isEmpty)
                 
                 TextField("", text: $text)
                     .keyboardType(keyboardType)
                     .textInputAutocapitalization(autocapitalization)
-                    .focused($isFocused)
+                    .focused(focusBinding)
                     .autocorrectionDisabled(true)
                     .font(.subhead)
                     .padding(.top, 15)
@@ -75,7 +76,7 @@ struct TextInput: View {
         )
         .overlay(
             Group {
-                if isFocused && !isError {
+                if hasFocus && !isError {
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(Color.dash.blue.opacity(0.1), lineWidth: 3)
                         .padding(-2)
@@ -83,17 +84,25 @@ struct TextInput: View {
             }
         )
         .onTapGesture {
-            isFocused = true
+            focusBinding.wrappedValue = true
         }
+    }
+
+    private var focusBinding: FocusState<Bool>.Binding {
+        focus ?? $isFocused
+    }
+
+    private var hasFocus: Bool {
+        focusBinding.wrappedValue
     }
     
     
     private var labelOffset: CGFloat {
-        isFocused || !text.isEmpty ? -16 : 0
+        hasFocus || !text.isEmpty ? -16 : 0
     }
     
     private var labelScale: CGFloat {
-        isFocused || !text.isEmpty ? 0.85 : 1
+        hasFocus || !text.isEmpty ? 0.85 : 1
     }
     
     private var backgroundColor: Color {
@@ -101,7 +110,7 @@ struct TextInput: View {
             return Color.dash.red.opacity(0.1)
         }
         
-        if isFocused {
+        if hasFocus {
             return Color.clear
         }
         
@@ -113,7 +122,7 @@ struct TextInput: View {
             return .dash.red
         }
         
-        if isFocused {
+        if hasFocus {
             return .dash.blue
         }
         
