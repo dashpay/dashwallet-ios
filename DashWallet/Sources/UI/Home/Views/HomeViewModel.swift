@@ -458,9 +458,17 @@ class HomeViewModel: ObservableObject {
     }
     
     /// Entities whose rows the home feed actually renders.
+    ///
+    /// `PersistentShieldedActivity` is included because a shielded operation's
+    /// only history representation is its activity row: the SDK live-records
+    /// it during the spend itself, and without a reload trigger here the row
+    /// stayed invisible until the next shielded resync repainted the list.
+    /// Storm-safe: the Rust scan flushes activity entries only for new
+    /// entries or real status upgrades, never on steady-state passes.
     private static let feedRowEntityNames: Set<String> = [
         "PersistentTransaction",
         "PersistentTxo",
+        "PersistentShieldedActivity",
     ]
 
     /// Whether a SwiftData save touched anything the feed renders.
