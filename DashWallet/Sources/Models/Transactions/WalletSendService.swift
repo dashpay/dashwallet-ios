@@ -226,20 +226,27 @@ final class WalletSendService: NSObject {
         super.init()
     }
 
-    /// Core sends are blocked until the L1 chain sync completes: before
-    /// `.syncDone` the persisted UTXO set can be stale (already-spent inputs,
-    /// missing recent funds), so a built tx could be rejected — or worse,
-    /// double-spend a UTXO consumed while offline. Gate on
-    /// `SyncingActivityMonitor` per the repo guardrail (never raw SPV state).
-    /// UI entry points disable Continue with the same message; this is the
-    /// boundary backstop for programmatic callers.
-    private static func ensureChainSynced() throws {
-        guard SyncingActivityMonitor.shared.state == .syncDone else {
+    /// A normal foreground catch-up must not delay a payment. Only the first
+    /// historical sync after restoring a wallet blocks new Core spends.
+    static func isBlockedByInitialRestoreSync(
+        isResyncingWallet: Bool,
+        isChainSynced: Bool
+    ) -> Bool {
+        isResyncingWallet && !isChainSynced
+    }
+
+    /// Boundary backstop for programmatic callers. This runs before
+    /// authentication and before inputs are selected or reserved.
+    private static func ensureInitialRestoreSyncCompleted() throws {
+        guard !isBlockedByInitialRestoreSync(
+            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingWallet,
+            isChainSynced: SyncingActivityMonitor.shared.state == .syncDone
+        ) else {
             throw Self.makeError(
-                code: .chainNotSynced,
+                code: .initialRestoreSync,
                 description: NSLocalizedString(
-                    "Your wallet is still syncing with the Dash network. Sending will be available once syncing completes.",
-                    comment: "Core send blocked until chain sync completes"))
+                    "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+                    comment: "Core send blocked during a restored wallet's initial sync"))
         }
     }
 
@@ -262,7 +269,7 @@ final class WalletSendService: NSObject {
 
     func prepareStandardSendForConfirmation(address: String, amount: UInt64, sessionAuthSufficient: Bool = false) async throws -> PreparedStandardSend {
         Self.logger.info("💸 TXSEND :: preparing standard send")
-        try Self.ensureChainSynced()
+        try Self.ensureInitialRestoreSyncCompleted()
         try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
         let prepared = try buildPreparedStandardSend(address: address, amount: amount)
         Self.logger.info("💸 TXSEND :: standard send prepared")
@@ -278,7 +285,7 @@ final class WalletSendService: NSObject {
         adjustAmountDownwards: Bool = false,
         sessionAuthSufficient: Bool = false
     ) async throws -> Data {
-        try Self.ensureChainSynced()
+        try Self.ensureInitialRestoreSyncCompleted()
         // Also covers the selected-input path below, whose `buildAndSignFromAddress`
         // broadcasts internally and never reaches `PreparedStandardSend.broadcast()`.
         try Self.ensureOnline()
@@ -325,7 +332,7 @@ final class WalletSendService: NSObject {
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
     func sendSwapDeposit(vaultAddress: String, amount: UInt64, memo: String) async throws -> Data {
-        try Self.ensureChainSynced()
+        try Self.ensureInitialRestoreSyncCompleted()
         try Self.ensureOnline()
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
@@ -433,7 +440,7 @@ final class WalletSendService: NSObject {
         memo: String? = nil
     ) async throws -> (txid: Data, feeDuffs: UInt64) {
         Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
-        try Self.ensureChainSynced()
+        try Self.ensureInitialRestoreSyncCompleted()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
         // authorize a contact payment of any size.
@@ -650,7 +657,7 @@ private extension WalletSendService {
         case coinJoinSweepUnavailable = 4
         case alreadyBroadcast = 5
         case dashPayPaymentUnavailable = 6
-        case chainNotSynced = 7
+        case initialRestoreSync = 7
         case offline = 8
         case broadcastRejected = 9
         case broadcastUnknown = 10
