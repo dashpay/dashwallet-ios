@@ -204,7 +204,10 @@ static CGFloat ActionButtonsHeight(void) {
         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                                                       target:self
                                                       action:@selector(forgotPinRecoveryCancelAction:)];
-    controller.navigationItem.leftBarButtonItem = cancelButton;
+    // This controller is the root of a modal navigation stack. Our shared
+    // navigation controller clears left-side items for root controllers (to
+    // suppress a back button), so keep the modal escape action on the right.
+    controller.navigationItem.rightBarButtonItem = cancelButton;
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
