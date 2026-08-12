@@ -49,6 +49,14 @@ struct AddContactScreen: View {
         case searchField
     }
 
+    /// Contact action selected in the preview. The action is deliberately
+    /// deferred until the preview sheet's dismissal completes so the PIN
+    /// prompt is never presented from a controller that is disappearing.
+    private enum PendingPreviewAction {
+        case send(ContactCandidate)
+        case accept(ContactCandidate)
+    }
+
     /// `initialQuery` prefills the search (the Contacts tab's network
     /// teaser hands its text over); the search fires on appear so the
     /// results are already loading when the sheet lands.
@@ -70,6 +78,7 @@ struct AddContactScreen: View {
     /// Tapped result shown in the preview sheet (the single
     /// send/accept confirmation surface).
     @State private var previewTarget: ContactCandidate? = nil
+    @State private var pendingPreviewAction: PendingPreviewAction? = nil
     @State private var errorMessage: String? = nil
     /// Username of the recipient of a just-sent request — drives the
     /// centered success card (nil = hidden).
@@ -177,13 +186,16 @@ struct AddContactScreen: View {
             } message: {
                 Text(errorMessage ?? "")
             }
-            .sheet(item: $previewTarget) { target in
+            .sheet(
+                item: $previewTarget,
+                onDismiss: performPendingPreviewAction
+            ) { target in
                 AddContactPreviewSheet(
                     result: target,
                     collision: collision(identityId: target.identityId),
                     contact: service.contactItem(for: target.identityId),
-                    onSend: { send(to: target) },
-                    onAccept: { accept(target) })
+                    onSend: { queuePreviewAction(.send(target)) },
+                    onAccept: { queuePreviewAction(.accept(target)) })
             }
             .overlay {
                 if isVerifyingScan {
@@ -545,6 +557,43 @@ struct AddContactScreen: View {
 
     // MARK: Actions
 
+    /// Closing one modal while presenting the PIN modal from it races
+    /// UIKit's presentation hierarchy. Drive dismissal through the owning
+    /// binding, then let the sheet's `onDismiss` start authentication only
+    /// after the transition has completed.
+    private func queuePreviewAction(_ action: PendingPreviewAction) {
+        guard pendingPreviewAction == nil else { return }
+        isSearchFocused = false
+        pendingPreviewAction = action
+        previewTarget = nil
+    }
+
+    private func performPendingPreviewAction() {
+        guard let action = pendingPreviewAction else { return }
+        // Consume first so a repeated dismissal callback cannot dispatch the
+        // same Platform action twice.
+        pendingPreviewAction = nil
+
+        switch action {
+        case .send(let target):
+            // The background contact sync or eligibility lookup may have
+            // changed the relationship while the preview was dismissing.
+            switch collision(identityId: target.identityId) {
+            case .none:
+                send(to: target)
+            case .missingDashPayKeys:
+                errorMessage = NSLocalizedString(
+                    "This user hasn't set up the keys needed to receive contact requests yet.",
+                    comment: "DashPay Contacts")
+            default:
+                return
+            }
+        case .accept(let target):
+            guard case .theyAskedUs = collision(identityId: target.identityId) else { return }
+            accept(target)
+        }
+    }
+
     private func send(to target: ContactCandidate) {
         guard eligibilityById[target.identityId] != false else { return }
         guard !sendingIds.contains(target.identityId) else { return }
@@ -695,12 +744,10 @@ struct AddContactPreviewSheet: View {
         case .none:
             primaryButton(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts"), color: .dash.blue) {
                 onSend()
-                dismiss()
             }
         case .theyAskedUs:
             primaryButton(NSLocalizedString("Accept", comment: "DashPay Contacts"), color: .dashGreen) {
                 onAccept()
-                dismiss()
             }
         case .alreadyRequested:
             statusLabel(NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts"), systemImage: "hourglass", color: .dashGolden)
