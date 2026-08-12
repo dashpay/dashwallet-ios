@@ -233,6 +233,14 @@ static NSString *DWReversedHexString(NSData *data) {
 
 /// Authenticate (PIN / biometric), then build + broadcast + POST via the Swift orchestrator.
 - (void)broadcastBIP70PaymentOutput:(DWPaymentOutput *)paymentOutput {
+    NSError *restoreSyncError = [DWCoreSpendAvailability coreSpendBlockedError];
+    if (restoreSyncError != nil) {
+        [self failedWithError:restoreSyncError
+                        title:NSLocalizedString(@"Couldn't make payment", nil)
+                      message:restoreSyncError.localizedDescription];
+        return;
+    }
+
     BOOL skipAuth = [[DWGlobalOptions sharedInstance] spendingConfirmationDisabled] ||
                     paymentOutput.broadcastAuthorizationState == DWPaymentOutputBroadcastAuthorizationStateAlreadyAuthorized;
 

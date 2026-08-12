@@ -35,6 +35,8 @@ enum BIP70Error: Error, Equatable {
     case ackRejected
     /// The SwiftDashSDK wallet isn't bound yet (no funded wallet to build from).
     case walletNotReady
+    /// A restored wallet is still completing its first historical Core scan.
+    case initialRestoreSync
     /// The user cancelled the PIN/biometric prompt.
     case authCancelled
     /// A second send was attempted on a `Confirmation` that has already been (or is being) sent.
@@ -56,6 +58,10 @@ extension BIP70Error: LocalizedError {
         case .missingPaymentURL: return "The payment request is missing a payment URL."
         case .ackRejected: return "The merchant did not acknowledge the payment."
         case .walletNotReady: return "The wallet isn't ready yet. Please try again in a moment."
+        case .initialRestoreSync:
+            return NSLocalizedString(
+                "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+                comment: "BIP70 Core spend blocked during restored wallet sync")
         case .authCancelled: return "Authentication was cancelled."
         case .alreadySent: return "This payment is already being processed."
         }

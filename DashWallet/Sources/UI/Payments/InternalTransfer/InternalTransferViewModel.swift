@@ -12,7 +12,6 @@ enum InternalTransferUnit: String {
     case dash
     case fiat
 }
-
 /// Every balance-to-balance route the transfer engine can execute. The
 /// canonical read for validation, fees, and execution — derived from the
 /// current explicit (from, to) pair, whether the screen is standalone or
@@ -543,25 +542,21 @@ final class InternalTransferViewModel: ObservableObject {
     /// balance mirror. Updates whenever a shielded sync pass completes.
     @Published private(set) var shieldedBalance: UInt64 = 0
 
-    /// True once the L1 chain sync completed (`SyncingActivityMonitor`
-    /// `.syncDone`). Core-funded routes (asset locks spend BIP44 UTXOs)
-    /// can't Continue before that — the UTXO set may be stale. Mirrors
-    /// `SendViewModel.isChainSynced`; `WalletSendService` guards the
-    /// classic path at the boundary.
-    @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
+    /// One-time policy for a restored wallet's first historical Core scan.
+    @Published private(set) var isCoreSpendBlocked = CoreSpendAvailability.shared.isBlocked
 
     private var cancellables = Set<AnyCancellable>()
 
-    deinit {
-        // The monitor holds observers strongly — remove or leak the VM.
-        SyncingActivityMonitor.shared.remove(observer: self)
-    }
-
     init() {
-        SyncingActivityMonitor.shared.add(observer: self)
         coreBalanceDuffs = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
         platformCredits = PlatformAddressSyncCoordinator.shared.platformBalance
+
+        CoreSpendAvailability.shared.$decision
+            .map(\.isBlocked)
+            .removeDuplicates()
+            .sink { [weak self] isBlocked in self?.isCoreSpendBlocked = isBlocked }
+            .store(in: &cancellables)
 
         SwiftDashSDKWalletState.shared.$balance
             .receive(on: RunLoop.main)
@@ -624,13 +619,11 @@ final class InternalTransferViewModel: ObservableObject {
     /// currently-selected source bucket. Each route has its own balance
     /// envelope — asset-lock spends BIP44 duffs, transparent shield spends
     /// DIP-17 credits.
-    /// True when the picked route spends Core UTXOs but the chain hasn't
-    /// finished syncing — Continue stays disabled and the screen explains
-    /// why (a stale UTXO set can't safely fund an asset lock).
+    /// Only NEW Core-funded asset locks are subject to the restore gate.
     var isBlockedBySync: Bool {
         switch route {
         case .coreToShielded, .coreToPlatform:
-            return !isChainSynced
+            return isCoreSpendBlocked
         default:
             return false
         }
@@ -1404,19 +1397,5 @@ final class InternalTransferViewModel: ObservableObject {
         formatter.decimalSeparator = "."
         let rounded = NSDecimalNumber(decimal: value)
         return formatter.string(from: rounded) ?? "\(value)"
-    }
-}
-
-
-// MARK: - SyncingActivityMonitorObserver
-
-extension InternalTransferViewModel: SyncingActivityMonitorObserver {
-    nonisolated func syncingActivityMonitorProgressDidChange(_ progress: Double) {}
-
-    nonisolated func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State,
-                                                          state: SyncingActivityMonitor.State) {
-        Task { @MainActor in
-            self.isChainSynced = state == .syncDone
-        }
     }
 }

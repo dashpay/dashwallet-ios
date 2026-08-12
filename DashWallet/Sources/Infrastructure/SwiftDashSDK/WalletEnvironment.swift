@@ -15,8 +15,237 @@
 //  limitations under the License.
 //
 
+import Combine
 import Foundation
 import SwiftDashSDK
+
+/// Why wallet material was registered with SwiftDashSDK. Imported material
+/// scans from the historical floor; only restore/reconstruction origins arm
+/// the one-time Core-spend gate.
+enum WalletMaterialOrigin {
+    case fresh
+    case userRestore
+    case legacyMigration
+    case reconstructed
+
+    var scansHistoricalRange: Bool { self != .fresh }
+    var armsInitialRestoreSync: Bool {
+        switch self {
+        case .userRestore, .legacyMigration, .reconstructed: return true
+        case .fresh: return false
+        }
+    }
+}
+
+/// Durable lifecycle of the first Core scan for a restored wallet.
+///
+/// `completed` is deliberately retained as a tombstone: retrying an import is
+/// idempotent and must not re-arm the gate. A reconstruction after local
+/// SwiftData loss explicitly overrides it back to `pending`.
+@MainActor
+final class InitialRestoreSyncStore {
+    enum State: String, Equatable {
+        case pending
+        case completed
+    }
+
+    static let shared = InitialRestoreSyncStore()
+    static let didChangeNotification = Notification.Name(
+        "DWInitialRestoreSyncStoreDidChange")
+
+    private let defaults: UserDefaults
+    private let notificationCenter: NotificationCenter
+    private let statesKey = "coreSpend.initialRestoreSync.v2.states"
+
+    init(defaults: UserDefaults = .standard,
+         notificationCenter: NotificationCenter = .default) {
+        self.defaults = defaults
+        self.notificationCenter = notificationCenter
+    }
+
+    func state(walletId: Data) -> State? {
+        guard let raw = states()[walletId.hexEncodedString()] else { return nil }
+        return State(rawValue: raw)
+    }
+
+    func isPending(walletId: Data) -> Bool {
+        state(walletId: walletId) == .pending
+    }
+
+    func markImportedIfNeeded(walletId: Data) {
+        guard state(walletId: walletId) == nil else { return }
+        set(.pending, walletId: walletId)
+    }
+
+    func markReconstructed(walletId: Data) {
+        set(.pending, walletId: walletId)
+    }
+
+    func completeIfPending(walletId: Data) {
+        guard state(walletId: walletId) == .pending else { return }
+        set(.completed, walletId: walletId)
+    }
+
+    func remove(walletId: Data) {
+        var values = states()
+        guard values.removeValue(forKey: walletId.hexEncodedString()) != nil else { return }
+        persist(values)
+    }
+
+    func removeAll() {
+        guard defaults.object(forKey: statesKey) != nil else { return }
+        defaults.removeObject(forKey: statesKey)
+        notificationCenter.post(name: Self.didChangeNotification, object: self)
+    }
+
+    private func states() -> [String: String] {
+        defaults.dictionary(forKey: statesKey) as? [String: String] ?? [:]
+    }
+
+    private func set(_ state: State, walletId: Data) {
+        var values = states()
+        let key = walletId.hexEncodedString()
+        guard values[key] != state.rawValue else { return }
+        values[key] = state.rawValue
+        persist(values)
+    }
+
+    private func persist(_ values: [String: String]) {
+        defaults.set(values, forKey: statesKey)
+        notificationCenter.post(name: Self.didChangeNotification, object: self)
+    }
+}
+
+enum CoreSpendAvailabilityError: LocalizedError, Equatable {
+    case initialRestoreSync
+
+    var errorDescription: String? {
+        NSLocalizedString(
+            "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+            comment: "Core spend blocked during a restored wallet's first sync")
+    }
+}
+
+/// Thread-safe projection for legacy UIKit/ObjC call sites whose protocol
+/// requirements are not actor-isolated. The policy owner writes it on the
+/// main actor; readers never touch the wallet runtime directly.
+private enum CoreSpendAvailabilitySnapshot {
+    static let lock = NSLock()
+    nonisolated(unsafe) static var blocked = false
+
+    static func read() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return blocked
+    }
+
+    static func write(_ value: Bool) {
+        lock.lock()
+        blocked = value
+        lock.unlock()
+    }
+}
+
+/// One observable policy shared by UI projections and hard transaction
+/// boundaries. The decision is scoped to the wallet actually bound by the
+/// host, never the registry target (which changes before a wallet switch has
+/// finished rebuilding the runtime).
+@objc(DWCoreSpendAvailability)
+@MainActor
+final class CoreSpendAvailability: NSObject, ObservableObject {
+    enum Decision: Equatable {
+        case allowed
+        case blockedInitialRestoreSync
+
+        var isBlocked: Bool { self == .blockedInitialRestoreSync }
+    }
+
+    static let shared = CoreSpendAvailability()
+    static let didChangeNotification = Notification.Name(
+        "DWCoreSpendAvailabilityDidChange")
+
+    @Published private(set) var decision: Decision = .allowed
+
+    private let store: InitialRestoreSyncStore
+    private let defaults: UserDefaults
+    private let notificationCenter: NotificationCenter
+    private var observers: [NSObjectProtocol] = []
+    private let legacyMigrationSentinel = "coreSpend.initialRestoreSync.v2.legacyMigrated"
+
+    init(store: InitialRestoreSyncStore? = nil,
+         defaults: UserDefaults = .standard,
+         notificationCenter: NotificationCenter = .default,
+         observesRuntime: Bool = true) {
+        self.store = store ?? .shared
+        self.defaults = defaults
+        self.notificationCenter = notificationCenter
+        super.init()
+
+        if observesRuntime {
+            for name in [
+                InitialRestoreSyncStore.didChangeNotification,
+                SwiftDashSDKWalletState.activeWalletDidChangeNotification,
+                .DWCurrentNetworkDidChange,
+            ] {
+                observers.append(notificationCenter.addObserver(
+                    forName: name, object: nil, queue: .main) { [weak self] _ in
+                        Task { @MainActor in self?.refresh() }
+                    })
+            }
+            refresh()
+        }
+    }
+
+    deinit {
+        observers.forEach(notificationCenter.removeObserver)
+    }
+
+    var isBlocked: Bool { decision.isBlocked }
+
+    func requireAllowed() throws {
+        guard !isBlocked else { throw CoreSpendAvailabilityError.initialRestoreSync }
+    }
+
+    /// ObjC pre-auth seam used by interactive BIP70.
+    nonisolated static var blockedSnapshot: Bool {
+        CoreSpendAvailabilitySnapshot.read()
+    }
+
+    @objc nonisolated class func coreSpendBlockedError() -> NSError? {
+        guard blockedSnapshot else { return nil }
+        return CoreSpendAvailabilityError.initialRestoreSync as NSError
+    }
+
+    func refresh() {
+        guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
+            apply(.allowed)
+            return
+        }
+
+        migrateLegacyFlagIfNeeded(to: walletId)
+        apply(store.isPending(walletId: walletId)
+            ? .blockedInitialRestoreSync
+            : .allowed)
+    }
+
+    private func apply(_ newDecision: Decision) {
+        CoreSpendAvailabilitySnapshot.write(newDecision.isBlocked)
+        guard decision != newDecision else { return }
+        decision = newDecision
+        notificationCenter.post(name: Self.didChangeNotification, object: self)
+    }
+
+    private func migrateLegacyFlagIfNeeded(to walletId: Data) {
+        guard !defaults.bool(forKey: legacyMigrationSentinel) else { return }
+        let options = DWGlobalOptions.sharedInstance()
+        if options.isResyncingWallet {
+            // Crash-safe order: durable scoped marker, sentinel, legacy clear.
+            store.markImportedIfNeeded(walletId: walletId)
+        }
+        defaults.set(true, forKey: legacyMigrationSentinel)
+        options.isResyncingWallet = false
+    }
+}
 
 /// DashSync-free network identity + wallet presence for the app.
 ///

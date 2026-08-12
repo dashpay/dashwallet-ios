@@ -270,6 +270,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.refreshBalance() }
             .store(in: &cancellableBag)
+
+        CoreSpendAvailability.shared.$decision
+            .removeDuplicates()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.checkAmountForErrors() }
+            .store(in: &cancellableBag)
         
         repository[provider]?.isUserSignedInPublisher
             .receive(on: DispatchQueue.main)
@@ -409,9 +415,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             return
         }
         
-        guard DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
-            SyncingActivityMonitor.shared.state == .syncDone
-        else {
+        guard !CoreSpendAvailability.shared.isBlocked else {
             error = SendAmountError.syncingChain
             return
         }

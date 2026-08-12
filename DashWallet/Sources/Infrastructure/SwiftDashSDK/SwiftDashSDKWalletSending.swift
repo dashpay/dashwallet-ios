@@ -19,6 +19,11 @@ import SwiftDashSDK
 final class SwiftDashSDKWalletSending: WalletSending {
 
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
+        do {
+            try await CoreSpendAvailability.shared.requireAllowed()
+        } catch {
+            throw BIP70Error.initialRestoreSync
+        }
         let (tx, txHash) = try SwiftDashSDKTransactionSender.buildAndSign(recipients: recipients)
         return PreparedSend(
             txData: try tx.serializedData(), fee: tx.fee, txHashDisplay: txHash, sdkTransaction: tx)

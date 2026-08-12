@@ -178,8 +178,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 }
                 let sdkWalletId = try createWalletOnHost(
                     mnemonic: mnemonic,
-                    network: network,
-                    isImported: true)
+                    network: network)
                 let prefix = sdkWalletId.prefix(4).map { String(format: "%02x", $0) }.joined()
                 logger.info("🔑 KEYMIG :: migrated \(walletID, privacy: .public) → \(prefix, privacy: .public)… on \(String(describing: network), privacy: .public)")
 
@@ -235,8 +234,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     private static func createWalletOnHost(
         mnemonic: String,
-        network: Network,
-        isImported: Bool
+        network: Network
     ) throws -> Data {
         guard !Thread.isMainThread else {
             throw MigrationError.hostCreateOnMainThread
@@ -251,7 +249,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 result = .success(try await SwiftDashSDKHost.shared.createOrImportWallet(
                     mnemonic: mnemonic,
                     network: network,
-                    isImported: isImported
+                    origin: .legacyMigration
                 ).walletId)
             } catch {
                 result = .failure(error)

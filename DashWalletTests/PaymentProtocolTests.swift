@@ -548,7 +548,11 @@ private final class FakeReceive: ReceiveAddressProviding {
 
 private final class FakeAuth: SendAuthorizing {
     var error: Error?
-    func authorize() async throws { if let e = error { throw e } }
+    private(set) var calls = 0
+    func authorize() async throws {
+        calls += 1
+        if let e = error { throw e }
+    }
 }
 
 final class BIP70PaymentServiceTests: XCTestCase {
@@ -570,9 +574,13 @@ final class BIP70PaymentServiceTests: XCTestCase {
     }
 
     private func service(_ t: FakeTransport, _ w: FakeWallet, receive: FakeReceive = FakeReceive(),
-                         auth: FakeAuth = FakeAuth(), allowUntrusted: Bool = true) -> BIP70PaymentService {
+                         auth: FakeAuth = FakeAuth(),
+                         coreSpendPreflight: @escaping () async throws -> Void = {},
+                         allowUntrusted: Bool = true) -> BIP70PaymentService {
         BIP70PaymentService(transport: t, verifier: PaymentRequestVerifier(), wallet: w,
-                            receiveAddress: receive, auth: auth, allowUntrustedUnsigned: allowUntrusted)
+                            receiveAddress: receive, auth: auth,
+                            coreSpendPreflight: coreSpendPreflight,
+                            allowUntrustedUnsigned: allowUntrusted)
     }
 
     private func assertThrowsBIP70<T>(_ expression: @autoclosure () async throws -> T, _ expected: BIP70Error,
@@ -678,6 +686,34 @@ final class BIP70PaymentServiceTests: XCTestCase {
         let svc = service(FakeTransport(unsigned()), w, auth: auth)
         await assertThrowsBIP70(try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet), .authCancelled)
         XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    func testInitialRestoreGateStopsInteractiveSendBeforeBuild() async throws {
+        let wallet = FakeWallet()
+        let svc = service(
+            FakeTransport(unsigned()), wallet,
+            coreSpendPreflight: { throw BIP70Error.initialRestoreSync })
+        let confirmation = try await svc.prepareForConfirmation(
+            from: url, scheme: "dash", network: .testnet)
+
+        await assertThrowsBIP70(
+            try await svc.confirmAndSend(confirmation), .initialRestoreSync)
+        XCTAssertTrue(wallet.calls.isEmpty)
+    }
+
+    func testInitialRestoreGateStopsHeadlessSendBeforeAuthAndBuild() async {
+        let wallet = FakeWallet()
+        let auth = FakeAuth()
+        let svc = service(
+            FakeTransport(unsigned()), wallet, auth: auth,
+            coreSpendPreflight: { throw BIP70Error.initialRestoreSync })
+
+        await assertThrowsBIP70(
+            try await svc.confirmAndSendHeadless(
+                from: url, scheme: "dash", network: .testnet),
+            .initialRestoreSync)
+        XCTAssertEqual(auth.calls, 0)
+        XCTAssertTrue(wallet.calls.isEmpty)
     }
 
     func testSoftPostFailureAfterBroadcast() async throws {
@@ -954,4 +990,58 @@ final class BIP70PaymentServiceTests: XCTestCase {
         intent.amount = 42_000_000
         XCTAssertEqual(intent.amount, 42_000_000)
     }
+}
+
+// MARK: - URL loading stub
+
+/// File-private so these tests remain self-contained even when the phrase
+/// repair test helper is not part of the active test target.
+private final class MockURLProtocol: URLProtocol {
+    static var handler: ((URLRequest) -> (Int, Data))?
+    static var responseHandler: ((URLRequest) -> (Int, [String: String], Data))?
+
+    static func bodyData(of request: URLRequest) -> Data? {
+        if let body = request.httpBody { return body }
+        guard let stream = request.httpBodyStream else { return nil }
+        stream.open()
+        defer { stream.close() }
+        var data = Data()
+        let bufferSize = 1024
+        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+        defer { buffer.deallocate() }
+        while stream.hasBytesAvailable {
+            let read = stream.read(buffer, maxLength: bufferSize)
+            guard read > 0 else { break }
+            data.append(buffer, count: read)
+        }
+        return data
+    }
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        let statusCode: Int
+        let headers: [String: String]?
+        let data: Data
+        if let responseHandler = Self.responseHandler {
+            (statusCode, headers, data) = responseHandler(request)
+        } else if let handler = Self.handler {
+            (statusCode, data) = handler(request)
+            headers = nil
+        } else {
+            client?.urlProtocol(self, didFailWithError: URLError(.unsupportedURL))
+            return
+        }
+        let response = HTTPURLResponse(
+            url: request.url ?? URL(string: "https://example.invalid")!,
+            statusCode: statusCode,
+            httpVersion: "HTTP/1.1",
+            headerFields: headers)!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: data)
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
 }

@@ -488,6 +488,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             Self.logger.info("🪪 IDENT-COORD :: recoverable Core registration found status=\(recoveryLock.statusRaw, privacy: .public)")
         }
 
+        // A fresh Core-funded registration creates a new asset lock. A
+        // persisted recovery lock resumes its exact outpoint and remains
+        // allowed; any additional top-up is checked separately below.
+        if recoveryLock == nil, fundingSource == .core {
+            try CoreSpendAvailability.shared.requireAllowed()
+        }
+
         // Single-flight guard. The FFI calls we're about to make
         // (`registerIdentityWithFunding` / `registerIdentityFromAddresses`
         // / `registerDpnsName`) can't be cancelled — `resetState()`
@@ -926,6 +933,22 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             throw CoordinatorError.noModelContainer
         }
 
+        // Determine before PIN whether this purchase needs fresh Core
+        // funding. An already-funded identity buys with Platform credits and
+        // is not a Core spend.
+        let headroomDuffs = DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        let requiredCredits = priceCredits + headroomDuffs * 1_000
+        let existingIdentityId = lookupExistingIdentityId(
+            walletId: wallet.walletId,
+            modelContainer: modelContainer)
+        let heldCredits = existingIdentityId.map {
+            UsernameMarketplaceService.identityBalanceCredits(
+                identityId: $0, container: modelContainer)
+        } ?? 0
+        if existingIdentityId == nil || heldCredits < requiredCredits {
+            try CoreSpendAvailability.shared.requireAllowed()
+        }
+
         // Single-flight — same rationale as `startCreateUsername`: the
         // funding FFI calls race to their terminal even if we stop
         // observing, and two funding attempts must never overlap.
@@ -964,8 +987,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // same 0.03-DASH headroom a fresh registration funds itself with,
         // covering the purchase transition fee (and Core-side asset-lock
         // conversion losses).
-        let headroomDuffs = DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        let requiredCredits = priceCredits + headroomDuffs * 1_000
         let signer = KeychainSigner(modelContainer: modelContainer)
 
         let identityId: Identifier
@@ -1469,6 +1490,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
 
         switch fundingSource {
         case .core:
+            // Resuming the original asset lock is allowed, but this is an
+            // additional transparent top-up and therefore a NEW Core spend.
+            try CoreSpendAvailability.shared.requireAllowed()
             let roundedShortfallDuffs =
                 (missingCredits + PlatformPaymentIdentityFundingPolicy.creditsPerDuff - 1)
                 / PlatformPaymentIdentityFundingPolicy.creditsPerDuff

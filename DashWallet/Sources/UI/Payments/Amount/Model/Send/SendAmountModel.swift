@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import Foundation
 
 // MARK: - SendAmountError
@@ -27,8 +28,7 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .insufficientFunds: return NSLocalizedString("Insufficient funds", comment: "Send screen")
-        case .syncingChain: return NSLocalizedString("Wait until wallet is synced to complete the transaction",
-                                                     comment: "Send screen")
+        case .syncingChain: return CoreSpendAvailabilityError.initialRestoreSync.localizedDescription
         case .networkUnavailable: return NSLocalizedString("Network Unavailable", comment: "Network Unavailable")
         }
     }
@@ -45,11 +45,12 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
 // MARK: - SendAmountModel
 
 class SendAmountModel: BaseAmountModel {
+    private var isCoreSpendBlocked = CoreSpendAvailability.blockedSnapshot
+
     override var isAllowedToContinue: Bool {
         super.isAllowedToContinue &&
             !canShowInsufficientFunds &&
-            (DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
-                SyncingActivityMonitor.shared.state == .syncDone)
+            !isCoreSpendBlocked
     }
 
     var canShowInsufficientFunds: Bool {
@@ -64,6 +65,14 @@ class SendAmountModel: BaseAmountModel {
         super.init()
 
         initializeSyncingActivityMonitor()
+        NotificationCenter.default.publisher(
+            for: CoreSpendAvailability.didChangeNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.isCoreSpendBlocked = CoreSpendAvailability.blockedSnapshot
+                self?.checkAmountForErrors()
+            }
+            .store(in: &cancellableBag)
         checkAmountForErrors()
     }
 
@@ -87,9 +96,7 @@ class SendAmountModel: BaseAmountModel {
     }
 
     override func checkAmountForErrors() {
-        guard DWGlobalOptions.sharedInstance().isResyncingWallet == false ||
-            SyncingActivityMonitor.shared.state == .syncDone
-        else {
+        guard !isCoreSpendBlocked else {
             error = SendAmountError.syncingChain
             return
         }

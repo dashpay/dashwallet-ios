@@ -16,6 +16,13 @@ extension BIP70PaymentService {
         BIP70PaymentService(
             wallet: SwiftDashSDKWalletSending(),
             receiveAddress: SwiftDashSDKReceiveAddressProvider(),
-            auth: BIP70SendAuthorizer())
+            auth: BIP70SendAuthorizer(),
+            coreSpendPreflight: {
+                do {
+                    try await CoreSpendAvailability.shared.requireAllowed()
+                } catch {
+                    throw BIP70Error.initialRestoreSync
+                }
+            })
     }
 }

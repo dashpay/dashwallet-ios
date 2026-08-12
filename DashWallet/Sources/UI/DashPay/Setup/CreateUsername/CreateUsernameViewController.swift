@@ -92,6 +92,7 @@ class CreateUsernameViewController: UIViewController {
 
 struct CreateUsernameView: View {
     @StateObject private var viewModel = CreateUsernameViewModel()
+    @ObservedObject private var coreSpendAvailability = CoreSpendAvailability.shared
     @FocusState private var isTextInputFocused: Bool
     @State private var inProgress: Bool = false
     @State private var screenLockedAfterAuth: Bool = false
@@ -278,7 +279,8 @@ struct CreateUsernameView: View {
                     DashButton(
                         text: primaryButtonText,
                         isEnabled: (viewModel.uiState.canContinue || viewModel.canPurchaseListedNameDirectly)
-                            && !screenLockedAfterAuth,
+                            && !screenLockedAfterAuth
+                            && !isFreshCoreRegistrationBlocked,
                         isLoading: inProgress
                     ) {
                         isTextInputFocused = false
@@ -304,6 +306,11 @@ struct CreateUsernameView: View {
                         }
                     }
                     .padding(.top, 20)
+
+                    if isFreshCoreRegistrationBlocked {
+                        SyncGateNote()
+                            .padding(.top, 10)
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -768,6 +775,19 @@ struct CreateUsernameView: View {
                 registrationErrorMessage = message
             }
         }
+    }
+
+    /// A persisted registration lock resumes the original outpoint and is
+    /// therefore exempt. Invitation, Platform and Shielded funding do not
+    /// spend Core UTXOs.
+    private var isFreshCoreRegistrationBlocked: Bool {
+        if viewModel.canPurchaseListedNameDirectly {
+            return coreSpendAvailability.isBlocked
+        }
+        return !viewModel.isInvitationMode
+            && !viewModel.hasPendingRegistrationRecovery
+            && fundingSource == .core
+            && coreSpendAvailability.isBlocked
     }
 
     /// Post-submit copy for a contested name. The deadline is a conservative

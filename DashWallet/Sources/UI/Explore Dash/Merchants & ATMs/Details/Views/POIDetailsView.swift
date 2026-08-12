@@ -467,8 +467,7 @@ struct POIDetailsView: View {
         }
 
         return viewModel.merchantEnabled &&
-               viewModel.networkStatus == .online &&
-               viewModel.syncState == .syncDone
+               viewModel.networkStatus == .online
     }
     
     private var providerLoginText: String {

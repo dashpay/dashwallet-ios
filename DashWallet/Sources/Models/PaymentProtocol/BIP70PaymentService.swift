@@ -163,6 +163,9 @@ final class BIP70PaymentService {
     private let wallet: WalletSending
     private let receiveAddress: ReceiveAddressProviding
     private let auth: SendAuthorizing
+    /// App-layer policy check. Kept injectable so this protocol core remains
+    /// independent of the wallet runtime and can prove pre-auth ordering.
+    private let coreSpendPreflight: () async throws -> Void
     /// When true, allow unsigned (`pki_type == "none"`) requests. Invalid SIGNED requests are
     /// always blocked regardless of this flag.
     private let allowUntrustedUnsigned: Bool
@@ -172,12 +175,14 @@ final class BIP70PaymentService {
          wallet: WalletSending,
          receiveAddress: ReceiveAddressProviding,
          auth: SendAuthorizing,
+         coreSpendPreflight: @escaping () async throws -> Void = {},
          allowUntrustedUnsigned: Bool = true) {
         self.transport = transport
         self.verifier = verifier
         self.wallet = wallet
         self.receiveAddress = receiveAddress
         self.auth = auth
+        self.coreSpendPreflight = coreSpendPreflight
         self.allowUntrustedUnsigned = allowUntrustedUnsigned
     }
 
@@ -263,6 +268,10 @@ final class BIP70PaymentService {
     /// independently, so a retry would rebuild a conflicting spend of the same inputs.
     func confirmAndSend(_ confirmation: Confirmation, now: Date = Date()) async throws -> SendResult {
 
+        // This is the hard service backstop. Interactive callers also check
+        // before PIN, but no caller may reach build/sign while blocked.
+        try await coreSpendPreflight()
+
         // 1. Expiry re-check at send time (the user may have lingered on the confirm screen).
         try Self.assertNotExpired(confirmation.request.details.expires, now: now)
 
@@ -323,12 +332,14 @@ final class BIP70PaymentService {
                           callbackURL: callbackURL)
     }
 
-    /// One-shot entry for headless flows (CTX gift cards): authorize, then prepare + send.
+    /// One-shot entry for headless flows (CTX gift cards): policy, authorize,
+    /// then prepare + send. The policy must reject before any PIN prompt.
     func confirmAndSendHeadless(from requestURL: URL,
                                 scheme: String,
                                 network: PaymentNetwork,
                                 callbackScheme: String? = nil,
                                 now: Date = Date()) async throws -> SendResult {
+        try await coreSpendPreflight()
         try await auth.authorize()
         let confirmation = try await prepareForConfirmation(from: requestURL, scheme: scheme,
                                                             network: network, callbackScheme: callbackScheme, now: now)

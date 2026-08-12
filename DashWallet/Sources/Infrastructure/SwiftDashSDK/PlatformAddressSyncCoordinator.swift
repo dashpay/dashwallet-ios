@@ -542,6 +542,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// Rust side carves from the single remainder recipient (the wallet's
     /// own next unused Platform address).
     public func fundFromCore(amountDuffs: UInt64) async throws {
+        // Defensive boundary for callers that bypass the transfer coordinator.
+        // A committed lock uses `resumeFundFromCore` and is exempt.
+        try CoreSpendAvailability.shared.requireAllowed()
         let (addressWallet, container, recipient, accountIndex) = try resolveFundEnvironment()
         let signer = KeychainSigner(modelContainer: container, network: runningNetwork!)
 

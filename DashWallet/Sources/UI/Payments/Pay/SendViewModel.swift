@@ -92,11 +92,9 @@ final class SendViewModel: ObservableObject {
     @Published private(set) var withdrawalPreflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
     private var preflightTask: Task<Void, Never>?
 
-    /// True once the L1 chain sync completed (`SyncingActivityMonitor`
-    /// `.syncDone`). Core-funded routes can't Continue before that — the
-    /// UTXO set may be stale (see `WalletSendService.ensureChainSynced`,
-    /// the boundary backstop behind this UI gate).
-    @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
+    /// One-time policy for a restored wallet's first historical Core scan.
+    /// Ordinary foreground catch-up never changes this value.
+    @Published private(set) var isCoreSpendBlocked = CoreSpendAvailability.shared.isBlocked
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -106,19 +104,18 @@ final class SendViewModel: ObservableObject {
     /// rather than silently re-picking the source.
     let pinnedSource: ChainNetwork?
 
-    deinit {
-        // The monitor holds observers strongly — without this the VM (and
-        // its Combine pipelines) outlive the screen.
-        SyncingActivityMonitor.shared.remove(observer: self)
-    }
-
     init(pinnedSource: ChainNetwork? = nil) {
         self.pinnedSource = pinnedSource
         if let pinnedSource {
             source = pinnedSource
         }
         refreshClipboardSuggestion()
-        SyncingActivityMonitor.shared.add(observer: self)
+
+        CoreSpendAvailability.shared.$decision
+            .map(\.isBlocked)
+            .removeDuplicates()
+            .sink { [weak self] isBlocked in self?.isCoreSpendBlocked = isBlocked }
+            .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)
             .receive(on: RunLoop.main)
@@ -463,14 +460,12 @@ final class SendViewModel: ObservableObject {
             && dashDuffsUnsigned == platformWithdrawableDuffs
     }
 
-    /// True when the picked route spends Core UTXOs but the chain hasn't
-    /// finished syncing — Continue stays disabled and the screen explains
-    /// why (a stale UTXO set can't safely fund a send).
+    /// Only NEW Core-funded routes are subject to the one-time restore gate.
     var isBlockedBySync: Bool {
         guard let route else { return false }
         switch route {
         case .coreToCore, .coreToShielded:
-            return !isChainSynced
+            return isCoreSpendBlocked
         default:
             return false
         }
@@ -740,20 +735,6 @@ final class SendViewModel: ObservableObject {
             }
         } catch {
             // Rate fetch failed — leave `amountText` as-is so the user can re-type.
-        }
-    }
-}
-
-
-// MARK: - SyncingActivityMonitorObserver
-
-extension SendViewModel: SyncingActivityMonitorObserver {
-    nonisolated func syncingActivityMonitorProgressDidChange(_ progress: Double) {}
-
-    nonisolated func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State,
-                                                          state: SyncingActivityMonitor.State) {
-        Task { @MainActor in
-            self.isChainSynced = state == .syncDone
         }
     }
 }

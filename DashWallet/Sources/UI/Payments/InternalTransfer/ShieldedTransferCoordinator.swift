@@ -168,6 +168,17 @@ enum ShieldedSweepAvailability: Equatable {
 @MainActor
 final class ShieldedTransferCoordinator: ObservableObject {
 
+    /// Classifies the funding side before any authorization or build work.
+    /// Resuming a committed outpoint is intentionally distinct from creating
+    /// another Core spend.
+    enum OperationKind: Equatable {
+        case newCoreSpend
+        case resumeCommittedCoreSpend
+        case nonCoreSpend
+
+        var requiresCoreSpendAvailability: Bool { self == .newCoreSpend }
+    }
+
     enum Phase: Equatable {
         case idle
         case signing
@@ -406,7 +417,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// stages, polling, and resume semantics for both funding sources (a
     /// stuck lock resumes by outpoint regardless of what funded it).
     func performAssetLock(funding: AssetLockFundingSource, recipientRaw43 recipientOverride: Data? = nil) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(.newCoreSpend) else { return }
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(String(describing: funding), privacy: .public) external=\(recipientOverride != nil)")
 
@@ -500,7 +511,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
     func resumeAssetLock(outPointTxidWire: Data, outPointVout: UInt32, recipientRaw43 recipientOverride: Data? = nil) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(.resumeCommittedCoreSpend) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume asset-lock vout=\(outPointVout) external=\(recipientOverride != nil)")
 
         let env: Environment
@@ -625,7 +636,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// intermediate signals from the FFI — `.proving` covers the whole opaque
     /// ~30 s call; on return we jump to `.success`.
     func performShield(amountCredits: UInt64) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(.nonCoreSpend) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: shield route amount=\(amountCredits) credits")
 
         let env: Environment
@@ -716,7 +727,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         sweepAll: Bool = false,
         toCoreAddress destinationOverride: String? = nil
     ) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(.nonCoreSpend) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
 
         let env: Environment
@@ -821,7 +832,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         sweepAll: Bool = false,
         toPlatformAddress destinationOverride: String? = nil
     ) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(.nonCoreSpend) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: unshield route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
 
         let env: Environment
@@ -913,7 +924,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// committed, `lastAssetLockOutPoint` is captured so "Try again" resumes
     /// that lock via `resumeFundPlatform` instead of stranding it.
     func performFundPlatform(amountDuffs: UInt64) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(.newCoreSpend) else { return }
         lastAssetLockOutPoint = nil
         Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route amount=\(amountDuffs)")
 
@@ -964,7 +975,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// funding ST never landed — drives the remaining stages on the SAME
     /// outpoint. Mirrors `resumeAssetLock` on the shielded route.
     func resumeFundPlatform(outPointTxidWire: Data, outPointVout: UInt32) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(.resumeCommittedCoreSpend) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund vout=\(outPointVout)")
 
         do {
@@ -1016,7 +1027,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         feeHeadroomCredits: UInt64?,
         toCoreAddress destinationOverride: String? = nil
     ) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(.nonCoreSpend) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw route full=\(fullBalance) amount=\(amountCredits) external=\(destinationOverride != nil)")
 
         // Destination Core (BIP44, Base58Check) address — for the internal
@@ -1068,7 +1079,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// `.signing → .proving → .broadcasting → .success` — same opaque-call
     /// shape as `performWithdraw`/`performUnshield`.
     func performShieldedTransfer(amountCredits: UInt64, recipientRaw43: Data) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(.nonCoreSpend) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: shielded→shielded send amount=\(amountCredits) credits")
 
         let env: BasicEnvironment
@@ -1112,7 +1123,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// auto-selected largest-first). Stages: `.signing → .broadcasting →
     /// .success` — a single opaque transition, no proof and no asset lock.
     func performPlatformSend(destination: String, amountCredits: UInt64) async {
-        guard beginTransfer() else { return }
+        guard beginTransfer(.nonCoreSpend) else { return }
         Self.logger.info("🛡️ SHIELD-TX :: platform→platform send amount=\(amountCredits) credits")
 
         do {
@@ -1213,9 +1224,17 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// coordinator is `@MainActor`, the `phase == .idle` check and the
     /// `.signing` write run with no suspension point between them — the
     /// first caller wins atomically and the second sees `.signing` + bails.
-    private func beginTransfer() -> Bool {
+    private func beginTransfer(_ operation: OperationKind) -> Bool {
         guard phase == .idle else { return false }
         lastFailure = nil
+        if operation.requiresCoreSpendAvailability {
+            do {
+                try CoreSpendAvailability.shared.requireAllowed()
+            } catch {
+                handleFailure(error)
+                return false
+            }
+        }
         phase = .signing
         return true
     }

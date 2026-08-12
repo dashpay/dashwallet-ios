@@ -59,6 +59,13 @@ public enum SPVSyncState {
     case unknown
 
     public func isComplete() -> Bool { self == .synced }
+
+    /// dash-spv's steady state drops from `.synced` to `.waitForEvents`.
+    /// Sharing this predicate keeps the UI monitor and the one-time restore
+    /// lifecycle from disagreeing when the transient `.synced` tick is missed.
+    public func isEffectivelyComplete(progress: Double) -> Bool {
+        self == .synced || (self == .waitForEvents && progress >= 0.999)
+    }
 }
 
 /// Local replacement for the SDK's removed `SPVSyncProgress`.
@@ -186,7 +193,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     func restartAsync() async throws {
         let host = SwiftDashSDKHost.shared
         guard let manager = host.manager,
-              host.wallet != nil,
+              let wallet = host.wallet,
               let network = host.runningNetwork else {
             let error = StartError.runtimeNotRunning
             lastError = error.localizedDescription
@@ -200,7 +207,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                     try self.performStop(lastError: nil, clearBalance: false)
                 },
                 start: {
-                    switch await self.performStart(manager: manager, for: network) {
+                    switch await self.performStart(
+                        manager: manager,
+                        walletId: wallet.walletId,
+                        for: network) {
                     case .success:
                         return
                     case .failure(let error):
@@ -262,12 +272,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
 #endif
 
-        return await performStart(manager: manager, for: network)
+        return await performStart(
+            manager: manager,
+            walletId: wallet.walletId,
+            for: network)
     }
 
     @MainActor
     private func performStart(
         manager: PlatformWalletManager,
+        walletId: Data,
         for network: Network
     ) async -> Result<Void, Error> {
         // If SPV is already running on this network, treat it as a
@@ -275,6 +289,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // start-elision intent.
         if isAlreadyRunning(manager: manager, network: network) {
             Self.logger.info("🛰️ SPVCOORD :: already running on \(network.rawValue, privacy: .public)")
+            completeInitialRestoreIfNeeded(
+                walletId: walletId, state: state, progress: progress)
             return .success(())
         }
 
@@ -332,7 +348,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
 
         runningNetwork = network
         lastError = nil
-        subscribeToManagerProgress(manager: manager)
+        subscribeToManagerProgress(manager: manager, walletId: walletId)
         refreshBalanceBridge()
 
         Self.logger.info("🛰️ SPVCOORD :: started on \(network.rawValue, privacy: .public)")
@@ -377,7 +393,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 Self.logger.info("🛰️ SPVCOORD :: stopped")
             } catch {
                 Self.logger.error("🛰️ SPVCOORD :: stopSpv threw: \(String(describing: error), privacy: .public)")
-                subscribeToManagerProgress(manager: manager)
+                if let walletId = SwiftDashSDKHost.shared.wallet?.walletId {
+                    subscribeToManagerProgress(manager: manager, walletId: walletId)
+                }
                 self.lastError = error.localizedDescription
                 state = .error
                 throw StartError.stopSpv(error)
@@ -514,7 +532,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     @MainActor
-    private func subscribeToManagerProgress(manager: PlatformWalletManager) {
+    private func subscribeToManagerProgress(
+        manager: PlatformWalletManager,
+        walletId: Data
+    ) {
         progressCancellable = manager.$spvProgress
             .receive(on: RunLoop.main)
             .sink { [weak self] platformProgress in
@@ -522,7 +543,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 // so we can hop into MainActor isolation synchronously to
                 // touch the host's `@MainActor` wallet inside applyProgress.
                 MainActor.assumeIsolated {
-                    self?.applyProgress(platformProgress)
+                    self?.applyProgress(platformProgress, walletId: walletId)
                 }
             }
         peersCancellable = manager.$spvPeers
@@ -551,7 +572,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     @MainActor
-    private func applyProgress(_ p: PlatformSpvSyncProgress) {
+    private func applyProgress(_ p: PlatformSpvSyncProgress, walletId: Data) {
         let mappedState = mapState(p.overallState)
         let translated = SPVSyncProgress(
             state: mappedState,
@@ -590,10 +611,25 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         // consumers (BalanceModel, SendAmountModel, etc.).
         refreshBalanceBridge()
 
+        completeInitialRestoreIfNeeded(
+            walletId: walletId,
+            state: mappedState,
+            progress: p.overallPercentage)
+
         // Once a wide recovery scan has fully synced, revert to the fast gap if
         // there's nothing (left) to recover. Runs after the balance refresh so
         // `coinJoinBalanceDuffs` reflects the completed scan.
         maybeCompleteCoinJoinRecovery(state: mappedState)
+    }
+
+    @MainActor
+    private func completeInitialRestoreIfNeeded(
+        walletId: Data,
+        state: SPVSyncState,
+        progress: Double
+    ) {
+        guard state.isEffectivelyComplete(progress: progress) else { return }
+        InitialRestoreSyncStore.shared.completeIfPending(walletId: walletId)
     }
 
     /// Pull the latest core-wallet balance via FFI and republish through

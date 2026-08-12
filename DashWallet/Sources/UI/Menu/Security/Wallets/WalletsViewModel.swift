@@ -181,8 +181,8 @@ final class WalletsViewModel: ObservableObject {
         Mnemonic.validate(Self.normalize(phrase))
     }
 
-    /// Add a wallet from `mnemonic` and switch to it. `isImported` distinguishes
-    /// the two entry paths and sets the new wallet's `walletNeedsBackup` flag:
+    /// Add a wallet from `mnemonic` and switch to it. `origin` controls the
+    /// scan/restore lifecycle and the new wallet's `walletNeedsBackup` flag:
     /// a created wallet still needs a backup (its phrase was only shown, not
     /// verified — matches onboarding); an imported wallet does not (the user
     /// already holds the phrase — matches the recover flow).
@@ -195,7 +195,7 @@ final class WalletsViewModel: ObservableObject {
     ///
     /// Returns the outcome; returns nil after surfacing an error (the sheet
     /// stays open on failure — never claims a success that didn't happen).
-    func addWallet(mnemonic: String, isImported: Bool) async -> AddOutcome? {
+    func addWallet(mnemonic: String, origin: WalletMaterialOrigin) async -> AddOutcome? {
         guard !addInProgress, !switchInProgress, !removeInProgress else { return nil }
         let normalized = Self.normalize(mnemonic)
 
@@ -206,7 +206,7 @@ final class WalletsViewModel: ObservableObject {
         do {
             result = try await SwiftDashSDKHost.shared.addWallet(
                 mnemonic: normalized,
-                isImported: isImported)
+                origin: origin)
         } catch {
             Self.logger.error("addWallet failed: \(String(describing: error), privacy: .public)")
             errorMessage = error.localizedDescription
@@ -233,7 +233,11 @@ final class WalletsViewModel: ObservableObject {
 
             // The new wallet is now the active wallet, so this per-wallet flag
             // targets it (DWGlobalOptions scopes by the active walletId).
-            DWGlobalOptions.sharedInstance().walletNeedsBackup = !isImported
+            if case .fresh = origin {
+                DWGlobalOptions.sharedInstance().walletNeedsBackup = true
+            } else {
+                DWGlobalOptions.sharedInstance().walletNeedsBackup = false
+            }
 
             reload()
             return .switched

@@ -629,7 +629,7 @@ private struct CreateWalletView: View {
     private func create() {
         guard let mnemonic else { return }
         Task {
-            let outcome = await viewModel.addWallet(mnemonic: mnemonic, isImported: false)
+            let outcome = await viewModel.addWallet(mnemonic: mnemonic, origin: .fresh)
             if outcome == .switched { onFinished() }
             // A brand-new phrase can't already exist, and on error the sheet
             // stays open (the ViewModel surfaces the message).
@@ -710,7 +710,7 @@ private struct ImportWalletView: View {
     private func importWallet() {
         existingWalletId = nil
         Task {
-            let outcome = await viewModel.addWallet(mnemonic: phrase, isImported: true)
+            let outcome = await viewModel.addWallet(mnemonic: phrase, origin: .userRestore)
             switch outcome {
             case .switched:
                 onFinished()

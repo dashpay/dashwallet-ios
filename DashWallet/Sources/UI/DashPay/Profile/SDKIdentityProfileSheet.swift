@@ -462,6 +462,14 @@ final class IdentityTopUpViewModel: ObservableObject {
             isProcessing = false
             stepLabel = nil
         }
+        if source == .transparent {
+            do {
+                try CoreSpendAvailability.shared.requireAllowed()
+            } catch {
+                errorMessage = error.localizedDescription
+                return nil
+            }
+        }
         do {
             try await authorizer.authorize()
         } catch {
@@ -584,6 +592,7 @@ struct IdentityTopUpSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = IdentityTopUpViewModel()
+    @ObservedObject private var coreSpendAvailability = CoreSpendAvailability.shared
     /// nil = the Custom chip is selected and `customText` carries the amount.
     @State private var selectedPresetDuffs: UInt64? = IdentityTopUpViewModel.presetsDuffs[0]
     @State private var customText = ""
@@ -756,10 +765,16 @@ struct IdentityTopUpSheet: View {
                             .cornerRadius(12)
                     }
                 }
-                .disabled(viewModel.isProcessing || effectiveDuffs == nil)
-                .opacity(effectiveDuffs == nil ? 0.55 : 1)
+                .disabled(viewModel.isProcessing || effectiveDuffs == nil || isTransparentCoreBlocked)
+                .opacity((effectiveDuffs == nil || isTransparentCoreBlocked) ? 0.55 : 1)
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
+
+                if isTransparentCoreBlocked {
+                    SyncGateNote()
+                        .padding(.horizontal, 20)
+                        .padding(.top, 10)
+                }
 
                 Button {
                     dismiss()
@@ -787,6 +802,10 @@ struct IdentityTopUpSheet: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+    }
+
+    private var isTransparentCoreBlocked: Bool {
+        source == .transparent && coreSpendAvailability.isBlocked
     }
 
     /// Shared chip chrome for the preset and Custom amount buttons.

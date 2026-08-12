@@ -50,8 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)recoverWalletWithPhrase:(NSString *)phrase {
     [self importWalletIntoSwiftDashSDK:phrase];
 
-    [DWGlobalOptions sharedInstance].resyncingWallet = YES;
-
     // SwiftDashSDK SPV is started by SwiftDashSDKWalletCreator after the
     // imported wallet record is committed to SwiftData (see
     // SwiftDashSDKWalletCreator.swift). No DashSync startSync needed —

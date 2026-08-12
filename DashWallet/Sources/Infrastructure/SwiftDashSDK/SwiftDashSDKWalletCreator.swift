@@ -66,7 +66,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 mnemonic: mnemonic,
                 pin: pin,
                 network: network,
-                isImported: false,
+                origin: .fresh,
                 label: "Created wallet")
         }
     }
@@ -89,7 +89,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 mnemonic: mnemonic,
                 pin: pin,
                 network: network,
-                isImported: true,
+                origin: .userRestore,
                 label: "Imported wallet")
         }
     }
@@ -103,12 +103,12 @@ final class SwiftDashSDKWalletCreator: NSObject {
     ///
     /// Shared between `createWallet` (fresh-install) and `importWallet`
     /// (recover-from-recovery-phrase). The two callers differ only in the
-    /// `isImported` and `label` values they pass for logging.
+    /// material `origin` and label they pass for lifecycle and logging.
     private static func performCreate(
         mnemonic: String,
         pin: String,
         network: BridgeNetwork,
-        isImported: Bool,
+        origin: WalletMaterialOrigin,
         label: String
     ) {
         let appNetwork: Network = (network == .mainnet) ? .mainnet : .testnet
@@ -137,7 +137,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
             let walletId = try createWalletOnHost(
                 mnemonic: mnemonic,
                 network: appNetwork,
-                isImported: isImported)
+                origin: origin)
 
             let walletPrefix = walletId.prefix(4).map { String(format: "%02x", $0) }.joined()
             logger.info("\(label, privacy: .public) completed on \(appNetwork.rawValue, privacy: .public), wallet=\(walletPrefix, privacy: .public)…")
@@ -152,7 +152,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
     private static func createWalletOnHost(
         mnemonic: String,
         network: Network,
-        isImported: Bool
+        origin: WalletMaterialOrigin
     ) throws -> Data {
         guard !Thread.isMainThread else {
             throw CreateError.hostCreateOnMainThread
@@ -167,7 +167,7 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 result = .success(try await SwiftDashSDKHost.shared.createOrImportWallet(
                     mnemonic: mnemonic,
                     network: network,
-                    isImported: isImported
+                    origin: origin
                 ).walletId)
             } catch {
                 result = .failure(error)

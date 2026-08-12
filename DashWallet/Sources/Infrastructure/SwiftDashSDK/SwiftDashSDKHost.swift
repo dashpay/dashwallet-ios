@@ -16,7 +16,7 @@
 //   - `start(network:)` is idempotent. Re-entering with the same network is
 //     a no-op (preserves running SPV / BLAST state). A different network
 //     tears down and rebuilds.
-//   - `createOrImportWallet(mnemonic:network:isImported:)` is the only path
+//   - `createOrImportWallet(mnemonic:network:origin:)` is the only path
 //     that creates wallet rows and stores the mnemonic in WalletStorage.
 //   - `stop()` releases the manager handle. Wipe-time persisted-row cleanup is
 //     owned by `PlatformAddressSyncCoordinator` before BLAST stops.
@@ -367,13 +367,13 @@ final class SwiftDashSDKHost {
     /// publishes it as bound. Onboarding's first wallet uses this.
     ///
     /// For adding a wallet ALONGSIDE existing ones without rebinding the
-    /// active wallet, use `addWallet(mnemonic:isImported:)` instead — this path replaces
+    /// active wallet, use `addWallet(mnemonic:origin:)` instead — this path replaces
     /// the running runtime and is not additive.
     @discardableResult
     func createOrImportWallet(
         mnemonic: String,
         network: Network,
-        isImported: Bool
+        origin: WalletMaterialOrigin
     ) async throws -> ManagedPlatformWallet {
         guard !mnemonic.isEmpty, Mnemonic.validate(mnemonic) else {
             throw HostError.invalidMnemonic
@@ -394,7 +394,7 @@ final class SwiftDashSDKHost {
                 // `importedWalletBirthHeight`). Freshly generated
                 // mnemonics keep nil — nothing can predate them, so
                 // the scan anchors at the tip.
-                birthHeight: isImported
+                birthHeight: origin.scansHistoricalRange
                     ? Self.importedWalletBirthHeight(for: handles.network)
                     : nil)
         } catch {
@@ -405,17 +405,20 @@ final class SwiftDashSDKHost {
             throw error
         }
 
+        if origin.armsInitialRestoreSync {
+            InitialRestoreSyncStore.shared.markImportedIfNeeded(walletId: createdWallet.walletId)
+        }
         if let kind = registryNetworkKind(for: network) {
             WalletEnvironment.setActiveWalletId(createdWallet.walletId, for: kind)
         }
         publish(handles: handles, wallet: createdWallet)
+        CoreSpendAvailability.shared.refresh()
 
-        let origin = isImported ? "imported" : "created"
-        Self.logger.info("🪺 HOST :: \(origin, privacy: .public) managed wallet for \(network.rawValue, privacy: .public)")
+        Self.logger.info("🪺 HOST :: \(String(describing: origin), privacy: .public) managed wallet for \(network.rawValue, privacy: .public)")
         return createdWallet
     }
 
-    /// Outcome of `addWallet(mnemonic:isImported:)`.
+    /// Outcome of `addWallet(mnemonic:origin:)`.
     enum AddWalletResult {
         /// The wallet was created and its mnemonic persisted; the running
         /// runtime is unchanged (the caller switches to it explicitly).
@@ -441,7 +444,7 @@ final class SwiftDashSDKHost {
     /// `createOrImportWallet` (`createAndPersist`); differs only in that it
     /// uses the LIVE manager and does not publish or set-active.
     @discardableResult
-    func addWallet(mnemonic: String, isImported: Bool) async throws -> AddWalletResult {
+    func addWallet(mnemonic: String, origin: WalletMaterialOrigin) async throws -> AddWalletResult {
         guard !mnemonic.isEmpty, Mnemonic.validate(mnemonic) else {
             throw HostError.invalidMnemonic
         }
@@ -468,9 +471,13 @@ final class SwiftDashSDKHost {
             // Same semantics as `createOrImportWallet`: imports scan
             // from the network's import floor, freshly generated
             // wallets from the tip.
-            birthHeight: isImported
+            birthHeight: origin.scansHistoricalRange
                 ? Self.importedWalletBirthHeight(for: network)
                 : nil)
+
+        if origin.armsInitialRestoreSync {
+            InitialRestoreSyncStore.shared.markImportedIfNeeded(walletId: createdWallet.walletId)
+        }
 
         Self.logger.info("🪺 HOST :: added managed wallet for \(network.rawValue, privacy: .public) (additive)")
         return .added(walletId: createdWallet.walletId)
@@ -842,6 +849,10 @@ final class SwiftDashSDKHost {
                 continue
             }
             do {
+                let derivedId = try Wallet(
+                    mnemonic: entry.mnemonic,
+                    network: handles.network).id
+                let wasMissingLocally = handles.manager.wallets[derivedId] == nil
                 let created = try handles.manager.createWallet(
                     mnemonic: entry.mnemonic,
                     network: handles.network,
@@ -859,6 +870,10 @@ final class SwiftDashSDKHost {
                     birthHeight: Self.importedWalletBirthHeight(for: handles.network))
                 if created.walletId != entry.walletId {
                     try? storage.storeMnemonic(entry.mnemonic, for: created.walletId)
+                    InitialRestoreSyncStore.shared.remove(walletId: entry.walletId)
+                }
+                if wasMissingLocally {
+                    InitialRestoreSyncStore.shared.markReconstructed(walletId: created.walletId)
                 }
             } catch {
                 Self.logger.error("🪺 HOST :: keychain wallet recovery failed for one entry: \(String(describing: error), privacy: .public)")
@@ -876,6 +891,7 @@ final class SwiftDashSDKHost {
         wallet = resolvedWallet
         modelContainer = handles.modelContainer
         runningNetwork = handles.network
+        CoreSpendAvailability.shared.refresh()
     }
 
     // MARK: - ModelContainer

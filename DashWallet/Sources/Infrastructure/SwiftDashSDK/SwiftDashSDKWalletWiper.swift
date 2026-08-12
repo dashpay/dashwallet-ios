@@ -171,6 +171,9 @@ final class SwiftDashSDKWalletWiper: NSObject {
         CoinJoinWithdrawalStore.shared.resetForWipe()
         ShieldedWithdrawalStore.shared.resetForWipe()
         SPVChainResyncMarker.resetForWipe()
+        DispatchQueue.main.sync {
+            InitialRestoreSyncStore.shared.removeAll()
+        }
         // Without this a contested submission outlived the wallet that made it:
         // reset mid-vote, create a new wallet, and the new wallet reported the
         // old one's name as still in voting.
@@ -341,6 +344,8 @@ final class SwiftDashSDKWalletWiper: NSObject {
             logger.error("deleteWallet failed: \(String(describing: error), privacy: .public)")
             throw error
         }
+
+        InitialRestoreSyncStore.shared.remove(walletId: walletId)
 
         // Clear this wallet's per-wallet app-side state that lives outside the
         // SDK/SwiftData/Keychain teardown above: CrowdNode account state and the
