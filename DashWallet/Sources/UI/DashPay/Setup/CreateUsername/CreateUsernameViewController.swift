@@ -158,152 +158,160 @@ struct CreateUsernameView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(NSLocalizedString("Create your username", comment: "Usernames"))
-                .foregroundColor(.dash.primaryText)
-                .font(.title1)
-                .padding(.top, 12)
-            Text(NSLocalizedString("Please note that you will not be able to change it in future", comment: "Usernames"))
-                .foregroundColor(.dash.primaryText)
-                .font(.system(size: 14))
-            TextInput(label: "Username", text: $viewModel.username, isEnabled: !screenLockedAfterAuth)
-                .padding(.top, 20)
-                .focused($isTextInputFocused)
-                .disabled(screenLockedAfterAuth)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(NSLocalizedString("Create your username", comment: "Usernames"))
+                        .foregroundColor(.dash.primaryText)
+                        .font(.title1)
+                        .padding(.top, 12)
+                    Text(NSLocalizedString("Please note that you will not be able to change it in future", comment: "Usernames"))
+                        .foregroundColor(.dash.primaryText)
+                        .font(.system(size: 14))
+                    TextInput(
+                        label: "Username",
+                        text: $viewModel.username,
+                        isEnabled: !screenLockedAfterAuth,
+                        onSubmit: { isTextInputFocused = false },
+                        focus: $isTextInputFocused
+                    )
+                    .padding(.top, 20)
+                    .submitLabel(.done)
+                    .disabled(screenLockedAfterAuth)
                 
-            if viewModel.uiState.lengthRule != .hidden {
-                ValidationCheck(
-                    validationResult: viewModel.uiState.lengthRule,
-                    text: NSLocalizedString("Between 3 and 23 characters", comment: "Usernames")
-                ).padding(.top, 20)
-            }
+                    if viewModel.uiState.lengthRule != .hidden {
+                        ValidationCheck(
+                            validationResult: viewModel.uiState.lengthRule,
+                            text: NSLocalizedString("Between 3 and 23 characters", comment: "Usernames")
+                        ).padding(.top, 20)
+                    }
             
-            if viewModel.uiState.allowedCharactersRule != .hidden {
-                ValidationCheck(
-                    validationResult: viewModel.uiState.allowedCharactersRule,
-                    text: NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames")
-                ).padding(.top, 20)
-            }
+                    if viewModel.uiState.allowedCharactersRule != .hidden {
+                        ValidationCheck(
+                            validationResult: viewModel.uiState.allowedCharactersRule,
+                            text: NSLocalizedString("Letter, numbers and hyphens only", comment: "Usernames")
+                        ).padding(.top, 20)
+                    }
             
-            if viewModel.uiState.costRule != .hidden {
-                ValidationCheck(
-                    validationResult: viewModel.uiState.costRule,
-                    text: String.localizedStringWithFormat(NSLocalizedString("You need to have more %@ Dash to create this username", comment: "Usernames"), viewModel.uiState.requiredDash.dashAmount.formattedDashAmountWithoutCurrencySymbol)
-                ).padding(.top, 20)
-            }
+                    if viewModel.uiState.costRule != .hidden {
+                        ValidationCheck(
+                            validationResult: viewModel.uiState.costRule,
+                            text: String.localizedStringWithFormat(NSLocalizedString("You need to have more %@ Dash to create this username", comment: "Usernames"), viewModel.uiState.requiredDash.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                        ).padding(.top, 20)
+                    }
             
-            if viewModel.uiState.usernameBlockedRule != .hidden {
-                ValidationCheck(
-                    validationResult: viewModel.uiState.usernameBlockedRule,
-                    text: getMessageForBlockedRule()
-                ).padding(.top, 20)
-            }
+                    if viewModel.uiState.usernameBlockedRule != .hidden {
+                        ValidationCheck(
+                            validationResult: viewModel.uiState.usernameBlockedRule,
+                            text: getMessageForBlockedRule()
+                        ).padding(.top, 20)
+                    }
 
-            // Contested-name warning. Shown when the typed label is
-            // ≤19 chars + only [a-zA-Z0-9-] AND otherwise passes the
-            // local validators — EXCEPT when the name is plainly taken:
-            // an owned name will never go to a vote, so the warning
-            // would contradict the "taken" row (`showContestedWarning`).
-            // Submitting a contested name triggers masternode voting
-            // (~45 min testnet, ~2 weeks mainnet) before the name is
-            // actually claimed — the user gets a separate confirmation
-            // alert on Continue. Mirrors the example app's
-            // `RegisterNameView.swift:277-293` styling.
-            if viewModel.showContestedWarning {
-                contestedNameWarning
-                    .padding(.top, 20)
-            }
+                    // Taken-but-listed pointer: the owner has put the name up for
+                    // sale in the Username Marketplace, so "taken" isn't the end
+                    // of the road — affordable listings under the direct-purchase
+                    // ceiling are buyable right here via the Buy button below.
+                    if let salePriceCredits = viewModel.takenNameSalePriceCredits {
+                        forSaleHint(priceCredits: salePriceCredits)
+                            .padding(.top, 20)
+                    }
 
-            // Taken-but-listed pointer: the owner has put the name up for
-            // sale in the Username Marketplace, so "taken" isn't the end
-            // of the road — affordable listings under the direct-purchase
-            // ceiling are buyable right here via the Buy button below.
-            if let salePriceCredits = viewModel.takenNameSalePriceCredits {
-                forSaleHint(priceCredits: salePriceCredits)
-                    .padding(.top, 20)
-            }
+                    if viewModel.hasPendingRegistrationRecovery {
+                        registrationRecoveryBanner
+                            .padding(.top, 20)
+                    }
 
-            if viewModel.hasPendingRegistrationRecovery {
-                registrationRecoveryBanner
-                    .padding(.top, 20)
-            }
+                    // Invitation-claim mode: the voucher funds the registration,
+                    // so the shielded readiness hint and the funding-source
+                    // picker below don't apply and stay hidden. A short banner
+                    // states the funding instead.
+                    if viewModel.isInvitationMode {
+                        invitationFundingBanner
+                            .padding(.top, 20)
+                    }
 
-            // Invitation-claim mode: the voucher funds the registration,
-            // so the shielded readiness hint and the funding-source
-            // picker below don't apply and stay hidden. A short banner
-            // states the funding instead.
-            if viewModel.isInvitationMode {
-                invitationFundingBanner
-                    .padding(.top, 20)
-            }
+                    // Shielded readiness hint. Shown while the privacy-preserving
+                    // funding path is NOT yet available (needs funds / maturing /
+                    // pool below the consensus minimum) so the user learns what
+                    // the wait is for without being blocked — the transparent
+                    // sources below remain an explicit choice. Suppressed when the
+                    // user already answered this question on the readiness
+                    // interstitial (`suppressShieldedHint`).
+                    if !viewModel.isInvitationMode,
+                       !viewModel.hasPendingRegistrationRecovery,
+                       !suppressShieldedHint {
+                        shieldedReadinessHint
+                    }
 
-            // Shielded readiness hint. Shown while the privacy-preserving
-            // funding path is NOT yet available (needs funds / maturing /
-            // pool below the consensus minimum) so the user learns what
-            // the wait is for without being blocked — the transparent
-            // sources below remain an explicit choice. Suppressed when the
-            // user already answered this question on the readiness
-            // interstitial (`suppressShieldedHint`).
-            if !viewModel.isInvitationMode,
-               !viewModel.hasPendingRegistrationRecovery,
-               !suppressShieldedHint {
-                shieldedReadinessHint
-            }
+                    // Funding source picker. Visible when two or more sources
+                    // can cover the identity-registration cost. When only one
+                    // is viable, the picker stays hidden and `fundingSource` is
+                    // auto-pinned by `syncFundingSourceToViableSource()` so the
+                    // Continue handler routes correctly without UI clutter.
+                    if !viewModel.isInvitationMode,
+                       !viewModel.hasPendingRegistrationRecovery,
+                       viableFundingSources.count >= 2 {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(NSLocalizedString("Pay with", comment: "Usernames"))
+                                .foregroundColor(.dash.secondaryText)
+                                .font(.caption)
+                            Picker("", selection: userFundingSourceBinding) {
+                                ForEach(viableFundingSources, id: \.rawValue) { source in
+                                    Text(fundingSourceLabel(source)).tag(source)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .disabled(screenLockedAfterAuth)
+                            fundingPrivacyFootnote
+                        }
+                        .padding(.top, 20)
+                    }
 
-            // Funding source picker. Visible when two or more sources
-            // can cover the identity-registration cost. When only one
-            // is viable, the picker stays hidden and `fundingSource` is
-            // auto-pinned by `syncFundingSourceToViableSource()` so the
-            // Continue handler routes correctly without UI clutter.
-            if !viewModel.isInvitationMode,
-               !viewModel.hasPendingRegistrationRecovery,
-               viableFundingSources.count >= 2 {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(NSLocalizedString("Pay with", comment: "Usernames"))
-                        .foregroundColor(.dash.secondaryText)
-                        .font(.caption)
-                    Picker("", selection: userFundingSourceBinding) {
-                        ForEach(viableFundingSources, id: \.rawValue) { source in
-                            Text(fundingSourceLabel(source)).tag(source)
+                    // Keep the contested-name disclosure immediately before the
+                    // action it qualifies. Because both live in this ScrollView,
+                    // the user can always reveal the full warning and Continue
+                    // above the keyboard, even on compact screens.
+                    if viewModel.showContestedWarning {
+                        contestedNameWarning
+                            .padding(.top, 20)
+                    }
+
+                    DashButton(
+                        text: primaryButtonText,
+                        isEnabled: (viewModel.uiState.canContinue || viewModel.canPurchaseListedNameDirectly)
+                            && !screenLockedAfterAuth,
+                        isLoading: inProgress
+                    ) {
+                        isTextInputFocused = false
+
+                        // `viewModel.uiState.canContinue` is only true after
+                        // `checkIfBlocked` flips `usernameBlockedRule` to
+                        // `.valid`, so the registration branches are gated on the
+                        // same condition. A taken-but-listed name never reaches
+                        // `.valid`; its buyable state enables the button through
+                        // `canPurchaseListedNameDirectly` and routes to the
+                        // purchase confirmation instead.
+                        //
+                        // Contested-name submissions go through a confirmation
+                        // sheet first so the user explicitly acknowledges the
+                        // voting wait and the locked Dash. Non-contested names
+                        // submit directly.
+                        if viewModel.canPurchaseListedNameDirectly {
+                            showPurchaseConfirmation = true
+                        } else if viewModel.isContestedCandidate {
+                            showContestedConfirmation = true
+                        } else {
+                            performSubmit()
                         }
                     }
-                    .pickerStyle(.segmented)
-                    .disabled(screenLockedAfterAuth)
-                    fundingPrivacyFootnote
+                    .padding(.top, 20)
                 }
-                .padding(.top, 20)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-
-            Spacer()
-
-            DashButton(
-                text: primaryButtonText,
-                isEnabled: (viewModel.uiState.canContinue || viewModel.canPurchaseListedNameDirectly)
-                    && !screenLockedAfterAuth,
-                isLoading: inProgress
-            ) {
-                // `viewModel.uiState.canContinue` is only true after
-                // `checkIfBlocked` flips `usernameBlockedRule` to
-                // `.valid`, so the registration branches are gated on the
-                // same condition. A taken-but-listed name never reaches
-                // `.valid`; its buyable state enables the button through
-                // `canPurchaseListedNameDirectly` and routes to the
-                // purchase confirmation instead.
-                //
-                // Contested-name submissions go through a confirmation
-                // alert first so the user explicitly acknowledges the
-                // ~45 min testnet / ~2 weeks mainnet voting wait and
-                // the locked Dash. Non-contested names submit directly.
-                if viewModel.canPurchaseListedNameDirectly {
-                    showPurchaseConfirmation = true
-                } else if viewModel.isContestedCandidate {
-                    showContestedConfirmation = true
-                } else {
-                    performSubmit()
-                }
-            }
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollDismissesKeyboard(.interactively)
         }
-        .padding(.horizontal, 20)
-        .padding(.bottom, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onAppear {
             isTextInputFocused = true
