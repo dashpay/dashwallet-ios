@@ -547,7 +547,6 @@ jobs:
           set -euo pipefail
 
           fastlane_gem_home="$RUNNER_TEMP/fastlane-gems"
-          existing_gem_path=$(gem env path)
           gem install fastlane \
             --version "$FASTLANE_VERSION" \
             --install-dir "$fastlane_gem_home" \
@@ -555,12 +554,12 @@ jobs:
 
           echo "FASTLANE_BIN=$fastlane_gem_home/bin/fastlane" >> "$GITHUB_ENV"
           echo "GEM_HOME=$fastlane_gem_home" >> "$GITHUB_ENV"
-          echo "GEM_PATH=$fastlane_gem_home:$existing_gem_path" >> "$GITHUB_ENV"
+          echo "GEM_PATH=$fastlane_gem_home" >> "$GITHUB_ENV"
           echo "$fastlane_gem_home/bin" >> "$GITHUB_PATH"
 
           GEM_HOME="$fastlane_gem_home" \
-          GEM_PATH="$fastlane_gem_home:$existing_gem_path" \
-            "$fastlane_gem_home/bin/fastlane" --version
+          GEM_PATH="$fastlane_gem_home" \
+            "$fastlane_gem_home/bin/fastlane" "_${FASTLANE_VERSION}_" --version
 
       - name: Distribute build to external TestFlight group
         if: inputs.testflight_group != 'Upload only'
@@ -573,9 +572,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          "$FASTLANE_BIN" pilot distribute \
+          "$FASTLANE_BIN" "_${FASTLANE_VERSION}_" pilot distribute \
             --api_key_path "$FASTLANE_API_KEY_PATH" \
             --app_identifier "$BUNDLE_ID" \
+            --app_platform ios \
             --app_version "$VERSION" \
             --build_number "$BUILD" \
             --groups "$TESTFLIGHT_GROUP" \
