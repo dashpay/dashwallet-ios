@@ -348,6 +348,16 @@ jobs:
         with:
           version: "1.15.2"
 
+      - name: Cache CocoaPods dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ${{ github.workspace }}/dashwallet-ios/Pods
+          key: >-
+            cocoapods-${{ runner.os }}-${{ runner.arch }}-1.15.2-
+            ${{ hashFiles('dashwallet-ios/Podfile.lock') }}
+
       - name: Install CocoaPods dependencies
         run: |
           set -euo pipefail
