@@ -29,7 +29,7 @@ protocol CTXSpendTokenProvider: AnyObject {
 class CTXSpendTokenService {
     static let shared = CTXSpendTokenService()
     
-    private var tokenRefreshTask: Task<Void, Error>?
+    private let tokenRefreshActor = TokenRefreshActor()
     private weak var tokenProvider: CTXSpendTokenProvider?
     
     private init() {}
@@ -39,12 +39,6 @@ class CTXSpendTokenService {
     }
     
     func refreshAccessToken() async throws {
-        // If there's already a refresh task running, wait for it
-        if let task = tokenRefreshTask {
-            try await task.value
-            return
-        }
-
         guard let tokenProvider = tokenProvider else {
             return
         }
@@ -53,11 +47,11 @@ class CTXSpendTokenService {
             return
         }
 
-        tokenRefreshTask = Task {
-            defer {
-                tokenRefreshTask = nil
-            }
-
+        // The actor both serializes concurrent callers — `CTXSpendAPI.request`
+        // funnels every 401 here, and gift-card screens issue several requests
+        // at once — and owns the in-flight task, which a plain property on this
+        // non-isolated class could not do safely.
+        try await tokenRefreshActor.refreshToken(label: "CTXSpend") {
             DWLogger.log("CTXSpend: Attempting to refresh access token")
 
             do {
@@ -77,7 +71,5 @@ class CTXSpendTokenService {
                 throw DashSpendError.tokenRefreshFailed
             }
         }
-
-        try await tokenRefreshTask!.value
     }
 } 

@@ -39,9 +39,15 @@ final class PiggyCardsTokenService {
     /// Thread-safe token refresh with automatic retry prevention
     func refreshAccessToken() async throws {
         // Use actor to ensure thread-safe, single refresh operation
-        try await tokenRefreshActor.refreshToken { [weak self] in
+        try await tokenRefreshActor.refreshToken(label: "PiggyCards") { [weak self] in
             guard let self = self else { throw DashSpendError.tokenRefreshFailed }
-            return try await self.performAutoLogin()
+
+            guard try await self.performAutoLogin() else {
+                DWLogger.log("PiggyCards: Token refresh failed")
+                throw DashSpendError.tokenRefreshFailed
+            }
+
+            DWLogger.log("PiggyCards: Token refresh completed successfully")
         }
     }
     
@@ -85,40 +91,37 @@ final class PiggyCardsTokenService {
 
 // MARK: - Thread-Safe Token Refresh Actor
 
-/// Actor ensures thread-safe token refresh operations
-/// Prevents concurrent refresh attempts that could cause API rate limiting
-private actor TokenRefreshActor {
-    private var isRefreshing = false
-    private var refreshTask: Task<Bool, Error>?
+/// Serializes token refreshes for one service: concurrent callers join the
+/// single in-flight attempt instead of each starting its own. Shared by every
+/// token service that refreshes from more than one API call at a time —
+/// PiggyCards, CTXSpend and Coinbase — because a plain stored `Task` property
+/// on a non-isolated class is a data race there, and force-unwrapping it after
+/// a competing caller's `defer` cleared it is a crash.
+actor TokenRefreshActor {
+    private var refreshTask: Task<Void, Error>?
 
-    func refreshToken(_ performRefresh: @escaping () async throws -> Bool) async throws {
+    /// - Parameters:
+    ///   - label: service name, used for the log line when a caller joins a
+    ///     refresh that is already running.
+    ///   - performRefresh: the refresh itself; throws to report failure.
+    func refreshToken(label: String, _ performRefresh: @escaping () async throws -> Void) async throws {
         // If already refreshing, wait for the existing task
         if let existingTask = refreshTask {
-            DWLogger.log("PiggyCards: Token refresh already in progress, waiting...")
-            _ = try await existingTask.value
+            DWLogger.log("\(label): Token refresh already in progress, waiting...")
+            try await existingTask.value
             return
         }
 
         // Start new refresh task
-        refreshTask = Task {
-            defer {
-                refreshTask = nil
-                isRefreshing = false
-            }
+        let task = Task { try await performRefresh() }
+        refreshTask = task
 
-            isRefreshing = true
-            let success = try await performRefresh()
-
-            if success {
-                DWLogger.log("PiggyCards: Token refresh completed successfully")
-            } else {
-                DWLogger.log("PiggyCards: Token refresh failed")
-                throw DashSpendError.tokenRefreshFailed
-            }
-
-            return success
+        do {
+            try await task.value
+            refreshTask = nil
+        } catch {
+            refreshTask = nil
+            throw error
         }
-
-        _ = try await refreshTask!.value
     }
 }

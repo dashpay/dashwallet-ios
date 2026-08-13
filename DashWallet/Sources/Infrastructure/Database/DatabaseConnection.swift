@@ -55,9 +55,17 @@ class DatabaseConnection: NSObject {
         // one's bookkeeping insert throws mid-chain and every later migration is skipped.
         // (Shipped once: a no-op `SeedDB` duplicating 20250418145536 left fresh installs
         // without any table added after that version, e.g. `swap_orders`.)
+        // Thrown, not asserted: assertions are compiled out under
+        // `ENABLE_NS_ASSERTIONS = NO` in Release and TestFlight, which is
+        // where the duplicate would actually ship. The insert fails there on
+        // its own, but as an opaque SQLite constraint error — this names the
+        // cause in the log `AppDelegate` writes.
         let versions = migrationManager.migrations.map(\.version)
-        assert(Set(versions).count == versions.count,
-               "Duplicate migration versions: \(versions.sorted())")
+        guard Set(versions).count == versions.count else {
+            throw NSError(domain: "DatabaseConnection", code: 2, userInfo: [
+                NSLocalizedDescriptionKey: "Duplicate migration versions: \(versions.sorted())"
+            ])
+        }
 
         if !migrationManager.hasMigrationsTable() {
             try migrationManager.createMigrationsTable()
