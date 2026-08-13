@@ -326,9 +326,10 @@ jobs:
           set -euo pipefail
           rustup target add aarch64-apple-ios aarch64-apple-ios-sim
 
-      - name: Cache Cargo dependencies
+      - name: Restore Cargo dependencies cache
+        id: cargo-cache
         if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v5
+        uses: actions/cache/restore@v5
         with:
           path: |
             ~/.cargo/registry
@@ -355,6 +356,15 @@ jobs:
           ./build_ios.sh --target ios --target sim --profile release
           test -d DashSDKFFI.xcframework
 
+      - name: Save Cargo dependencies cache
+        if: steps.xcframework-cache.outputs.cache-hit != 'true' && steps.cargo-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ steps.cargo-cache.outputs.cache-primary-key }}
+
       - name: Save release XCFramework cache
         if: steps.xcframework-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v5
@@ -370,20 +380,28 @@ jobs:
         with:
           version: "1.15.2"
 
-      - name: Cache CocoaPods dependencies
-        uses: actions/cache@v5
+      - name: Restore CocoaPods dependencies cache
+        id: cocoapods-cache
+        uses: actions/cache/restore@v5
         with:
           path: |
             ~/Library/Caches/CocoaPods
             ${{ github.workspace }}/dashwallet-ios/Pods
-          key: >-
-            cocoapods-${{ runner.os }}-${{ runner.arch }}-1.15.2-
-            ${{ hashFiles('dashwallet-ios/Podfile.lock') }}
+          key: cocoapods-${{ runner.os }}-${{ runner.arch }}-1.15.2-${{ hashFiles('dashwallet-ios/Podfile.lock') }}
 
       - name: Install CocoaPods dependencies
         run: |
           set -euo pipefail
           pod _1.15.2_ install --deployment
+
+      - name: Save CocoaPods dependencies cache
+        if: steps.cocoapods-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ${{ github.workspace }}/dashwallet-ios/Pods
+          key: ${{ steps.cocoapods-cache.outputs.cache-primary-key }}
 
       - name: Restore private app configuration
         env:
