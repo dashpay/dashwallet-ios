@@ -53,8 +53,7 @@ jobs:
 
     env:
       APPLE_TEAM_ID: 44RJ69WHFF
-      ARCHIVE_PATH: ${{ runner.temp }}/dashpay.xcarchive
-      EXPORT_PATH: ${{ runner.temp }}/dashpay-export
+      FASTLANE_VERSION: "2.232.2"
 
     steps:
       # The wallet uses ../platform/packages/swift-sdk as a local Swift
@@ -76,6 +75,12 @@ jobs:
           path: platform
           fetch-depth: 1
           persist-credentials: false
+
+      - name: Resolve archive paths
+        run: |
+          set -euo pipefail
+          echo "ARCHIVE_PATH=$RUNNER_TEMP/dashpay.xcarchive" >> "$GITHUB_ENV"
+          echo "EXPORT_PATH=$RUNNER_TEMP/dashpay-export" >> "$GITHUB_ENV"
 
       - name: Validate release secrets
         env:
@@ -228,16 +233,36 @@ jobs:
 
           certificate_path="$RUNNER_TEMP/apple-distribution.p12"
           keychain_path="$RUNNER_TEMP/app-signing.keychain-db"
+          original_keychains_path="$RUNNER_TEMP/original-user-keychains.txt"
           keychain_password=$(openssl rand -hex 32)
           echo "::add-mask::$keychain_password"
 
           printf '%s' "$CERTIFICATE_BASE64" | base64 --decode -o "$certificate_path"
+          security list-keychains -d user > "$original_keychains_path"
+          original_default_keychain=$(security default-keychain -d user)
+          original_default_keychain="${original_default_keychain#"${original_default_keychain%%[![:space:]]*}"}"
+          original_default_keychain="${original_default_keychain#\"}"
+          original_default_keychain="${original_default_keychain%\"}"
+
+          echo "SIGNING_KEYCHAIN_PATH=$keychain_path" >> "$GITHUB_ENV"
+          echo "ORIGINAL_DEFAULT_KEYCHAIN=$original_default_keychain" >> "$GITHUB_ENV"
+          echo "ORIGINAL_KEYCHAINS_PATH=$original_keychains_path" >> "$GITHUB_ENV"
+
+          existing_keychains=()
+          while IFS= read -r keychain; do
+            keychain="${keychain#"${keychain%%[![:space:]]*}"}"
+            keychain="${keychain#\"}"
+            keychain="${keychain%\"}"
+            [[ -n "$keychain" ]] && existing_keychains+=("$keychain")
+          done < "$original_keychains_path"
+
           security create-keychain -p "$keychain_password" "$keychain_path"
           security set-keychain-settings -lut 21600 "$keychain_path"
           security unlock-keychain -p "$keychain_password" "$keychain_path"
           security import "$certificate_path" \
             -P "$CERTIFICATE_PASSWORD" \
-            -A \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security \
             -t cert \
             -f pkcs12 \
             -k "$keychain_path"
@@ -247,10 +272,9 @@ jobs:
             -k "$keychain_password" \
             "$keychain_path"
           security default-keychain -d user -s "$keychain_path"
-          security list-keychains -d user -s "$keychain_path"
+          security list-keychains -d user -s "$keychain_path" "${existing_keychains[@]}"
           security find-identity -v -p codesigning "$keychain_path"
 
-          echo "SIGNING_KEYCHAIN_PATH=$keychain_path" >> "$GITHUB_ENV"
           rm -f "$certificate_path"
 
       - name: Install App Store Connect API key
@@ -355,6 +379,10 @@ jobs:
 
           def jwt_signature(private_key_path, signing_input)
             private_key = OpenSSL::PKey.read(File.binread(private_key_path))
+            unless private_key.is_a?(OpenSSL::PKey::EC) && private_key.group.curve_name == "prime256v1"
+              warn "::error::App Store Connect API key is not a P-256 EC key."
+              exit 1
+            end
             der_signature = private_key.sign(OpenSSL::Digest::SHA256.new, signing_input)
             sequence = OpenSSL::ASN1.decode(der_signature)
             sequence.value.map do |integer|
@@ -378,7 +406,13 @@ jobs:
             request = Net::HTTP::Get.new(uri)
             request["Authorization"] = "Bearer #{token}"
             request["Content-Type"] = "application/json"
-            response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+            response = Net::HTTP.start(
+              uri.hostname,
+              uri.port,
+              use_ssl: true,
+              open_timeout: 15,
+              read_timeout: 30
+            ) do |http|
               http.request(request)
             end
             unless response.is_a?(Net::HTTPSuccess)
@@ -401,7 +435,14 @@ jobs:
           groups_url.query = URI.encode_www_form("filter[app]" => app.fetch("id"), "limit" => 200)
           groups = []
           next_url = groups_url.to_s
+          page_count = 0
+          max_pages = 20
           while next_url
+            page_count += 1
+            if page_count > max_pages
+              warn "::error::App Store Connect beta group pagination exceeded #{max_pages} pages."
+              exit 1
+            end
             page = get_json(next_url, token)
             groups.concat(page.fetch("data"))
             next_url = page.dig("links", "next")
@@ -451,10 +492,22 @@ jobs:
         if: inputs.testflight_group != 'Upload only'
         run: |
           set -euo pipefail
-          if ! command -v fastlane >/dev/null 2>&1; then
-            gem install fastlane --no-document
-          fi
-          fastlane --version
+
+          fastlane_gem_home="$RUNNER_TEMP/fastlane-gems"
+          existing_gem_path=$(gem env path)
+          gem install fastlane \
+            --version "$FASTLANE_VERSION" \
+            --install-dir "$fastlane_gem_home" \
+            --no-document
+
+          echo "FASTLANE_BIN=$fastlane_gem_home/bin/fastlane" >> "$GITHUB_ENV"
+          echo "GEM_HOME=$fastlane_gem_home" >> "$GITHUB_ENV"
+          echo "GEM_PATH=$fastlane_gem_home:$existing_gem_path" >> "$GITHUB_ENV"
+          echo "$fastlane_gem_home/bin" >> "$GITHUB_PATH"
+
+          GEM_HOME="$fastlane_gem_home" \
+          GEM_PATH="$fastlane_gem_home:$existing_gem_path" \
+            "$fastlane_gem_home/bin/fastlane" --version
 
       - name: Distribute build to external TestFlight group
         if: inputs.testflight_group != 'Upload only'
@@ -467,7 +520,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          fastlane pilot distribute \
+          "$FASTLANE_BIN" pilot distribute \
             --api_key_path "$FASTLANE_API_KEY_PATH" \
             --app_identifier "$BUNDLE_ID" \
             --app_version "$VERSION" \
@@ -511,11 +564,32 @@ jobs:
       - name: Remove temporary signing material
         if: always()
         run: |
+          set -uo pipefail
+
+          if [[ -n "${ORIGINAL_DEFAULT_KEYCHAIN:-}" ]]; then
+            security default-keychain -d user -s "$ORIGINAL_DEFAULT_KEYCHAIN" || true
+          fi
+
+          if [[ -n "${ORIGINAL_KEYCHAINS_PATH:-}" && -f "$ORIGINAL_KEYCHAINS_PATH" ]]; then
+            original_keychains=()
+            while IFS= read -r keychain; do
+              keychain="${keychain#"${keychain%%[![:space:]]*}"}"
+              keychain="${keychain#\"}"
+              keychain="${keychain%\"}"
+              [[ -n "$keychain" ]] && original_keychains+=("$keychain")
+            done < "$ORIGINAL_KEYCHAINS_PATH"
+            if (( ${#original_keychains[@]} > 0 )); then
+              security list-keychains -d user -s "${original_keychains[@]}" || true
+            fi
+          fi
+
           if [[ -n "${SIGNING_KEYCHAIN_PATH:-}" && -f "$SIGNING_KEYCHAIN_PATH" ]]; then
-            security delete-keychain "$SIGNING_KEYCHAIN_PATH"
+            security delete-keychain "$SIGNING_KEYCHAIN_PATH" || true
           fi
           rm -f "${APP_STORE_CONNECT_API_KEY_PATH:-}" \
             "${FASTLANE_API_KEY_PATH:-}" \
+            "${ORIGINAL_KEYCHAINS_PATH:-}" \
+            "$RUNNER_TEMP/apple-distribution.p12" \
             DashWallet/GoogleService-Info.plist \
             DashWallet/Coinbase-Info.plist \
             DashWallet/Topper-Info.plist \
