@@ -15,10 +15,10 @@ on:
       platform_ref:
         description: "dashpay/platform branch, tag, or commit SHA"
         required: true
-        default: v4.1-dev
+        default: v4.2-dev
         type: string
       build_number:
-        description: "CFBundleVersion, or 'auto' for 1000 + workflow run number"
+        description: "CFBundleVersion, or 'auto' for a unique workflow run/attempt number"
         required: true
         default: auto
         type: string
@@ -43,8 +43,8 @@ concurrency:
 jobs:
   release:
     name: Build and upload dashpay
-    runs-on: macos-15
-    timeout-minutes: 180
+    runs-on: macos-26
+    timeout-minutes: 300
     environment: testflight
     defaults:
       run:
@@ -53,7 +53,10 @@ jobs:
 
     env:
       APPLE_TEAM_ID: 44RJ69WHFF
+      DASHPAY_BUNDLE_ID: org.dashfoundation.dash
       FASTLANE_VERSION: "2.232.2"
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
 
     steps:
       # The wallet uses ../platform/packages/swift-sdk as a local Swift
@@ -94,6 +97,7 @@ jobs:
           TOPPER_INFO_PLIST_BASE64: ${{ secrets.TOPPER_INFO_PLIST_BASE64 }}
           ZENLEDGER_INFO_PLIST_BASE64: ${{ secrets.ZENLEDGER_INFO_PLIST_BASE64 }}
           UPHOLD_INFO_PLIST_BASE64: ${{ secrets.UPHOLD_INFO_PLIST_BASE64 }}
+          SWAPKIT_INFO_PLIST_BASE64: ${{ secrets.SWAPKIT_INFO_PLIST_BASE64 }}
         run: |
           set -euo pipefail
 
@@ -108,6 +112,7 @@ jobs:
             TOPPER_INFO_PLIST_BASE64
             ZENLEDGER_INFO_PLIST_BASE64
             UPHOLD_INFO_PLIST_BASE64
+            SWAPKIT_INFO_PLIST_BASE64
           )
 
           missing=0
@@ -133,7 +138,7 @@ jobs:
           platform_sha=$(git -C ../platform rev-parse HEAD)
 
           if [[ "$REQUESTED_BUILD_NUMBER" == "auto" ]]; then
-            build_number=$((1000 + GITHUB_RUN_NUMBER))
+            build_number="$((1000 + GITHUB_RUN_NUMBER)).${GITHUB_RUN_ATTEMPT}"
           else
             build_number="$REQUESTED_BUILD_NUMBER"
           fi
@@ -148,134 +153,6 @@ jobs:
             echo "platform_sha=$platform_sha"
             echo "build_number=$build_number"
           } >> "$GITHUB_OUTPUT"
-
-      - name: Select Xcode 16
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: "16.*"
-
-      - name: Show toolchain versions
-        run: |
-          set -euo pipefail
-          xcodebuild -version
-          swift --version
-
-      - name: Set up Rust 1.92
-        uses: dtolnay/rust-toolchain@1.92.0
-        with:
-          targets: aarch64-apple-ios,aarch64-apple-ios-sim
-
-      - name: Cache Cargo dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: swift-sdk-cargo-${{ runner.os }}-${{ hashFiles('platform/Cargo.lock') }}
-          restore-keys: |
-            swift-sdk-cargo-${{ runner.os }}-
-
-      - name: Install protoc
-        uses: arduino/setup-protoc@v3
-        with:
-          version: "32.x"
-          repo-token: ${{ github.token }}
-
-      - name: Build release XCFramework from platform
-        working-directory: ${{ github.workspace }}/platform/packages/swift-sdk
-        env:
-          PRUNE_CARGO_TARGETS: "1"
-          SKIP_EXAMPLE_APP_BUILD: "1"
-        run: |
-          set -euo pipefail
-          ./build_ios.sh --target ios --target sim --profile release
-          test -d DashSDKFFI.xcframework
-
-      - name: Set up CocoaPods 1.15.2
-        uses: maxim-lobanov/setup-cocoapods@v1
-        with:
-          version: "1.15.2"
-
-      - name: Install CocoaPods dependencies
-        run: |
-          set -euo pipefail
-          pod _1.15.2_ install --deployment
-
-      - name: Restore private app configuration
-        env:
-          GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
-          COINBASE_INFO_PLIST_BASE64: ${{ secrets.COINBASE_INFO_PLIST_BASE64 }}
-          TOPPER_INFO_PLIST_BASE64: ${{ secrets.TOPPER_INFO_PLIST_BASE64 }}
-          ZENLEDGER_INFO_PLIST_BASE64: ${{ secrets.ZENLEDGER_INFO_PLIST_BASE64 }}
-          UPHOLD_INFO_PLIST_BASE64: ${{ secrets.UPHOLD_INFO_PLIST_BASE64 }}
-        run: |
-          set -euo pipefail
-
-          printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/GoogleService-Info.plist
-          printf '%s' "$COINBASE_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/Coinbase-Info.plist
-          printf '%s' "$TOPPER_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/Topper-Info.plist
-          printf '%s' "$ZENLEDGER_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/ZenLedger-Info.plist
-          printf '%s' "$UPHOLD_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/Uphold-Info.plist
-
-          plutil -lint \
-            DashWallet/GoogleService-Info.plist \
-            DashWallet/Coinbase-Info.plist \
-            DashWallet/Topper-Info.plist \
-            DashWallet/ZenLedger-Info.plist \
-            DashWallet/Uphold-Info.plist
-
-      - name: Install Apple distribution certificate
-        env:
-          CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
-          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
-        run: |
-          set -euo pipefail
-
-          certificate_path="$RUNNER_TEMP/apple-distribution.p12"
-          keychain_path="$RUNNER_TEMP/app-signing.keychain-db"
-          original_keychains_path="$RUNNER_TEMP/original-user-keychains.txt"
-          keychain_password=$(openssl rand -hex 32)
-          echo "::add-mask::$keychain_password"
-
-          printf '%s' "$CERTIFICATE_BASE64" | base64 --decode -o "$certificate_path"
-          security list-keychains -d user > "$original_keychains_path"
-          original_default_keychain=$(security default-keychain -d user)
-          original_default_keychain="${original_default_keychain#"${original_default_keychain%%[![:space:]]*}"}"
-          original_default_keychain="${original_default_keychain#\"}"
-          original_default_keychain="${original_default_keychain%\"}"
-
-          echo "SIGNING_KEYCHAIN_PATH=$keychain_path" >> "$GITHUB_ENV"
-          echo "ORIGINAL_DEFAULT_KEYCHAIN=$original_default_keychain" >> "$GITHUB_ENV"
-          echo "ORIGINAL_KEYCHAINS_PATH=$original_keychains_path" >> "$GITHUB_ENV"
-
-          existing_keychains=()
-          while IFS= read -r keychain; do
-            keychain="${keychain#"${keychain%%[![:space:]]*}"}"
-            keychain="${keychain#\"}"
-            keychain="${keychain%\"}"
-            [[ -n "$keychain" ]] && existing_keychains+=("$keychain")
-          done < "$original_keychains_path"
-
-          security create-keychain -p "$keychain_password" "$keychain_path"
-          security set-keychain-settings -lut 21600 "$keychain_path"
-          security unlock-keychain -p "$keychain_password" "$keychain_path"
-          security import "$certificate_path" \
-            -P "$CERTIFICATE_PASSWORD" \
-            -T /usr/bin/codesign \
-            -T /usr/bin/security \
-            -t cert \
-            -f pkcs12 \
-            -k "$keychain_path"
-          security set-key-partition-list \
-            -S apple-tool:,apple:,codesign: \
-            -s \
-            -k "$keychain_password" \
-            "$keychain_path"
-          security default-keychain -d user -s "$keychain_path"
-          security list-keychains -d user -s "$keychain_path" "${existing_keychains[@]}"
-          security find-identity -v -p codesigning "$keychain_path"
-
-          rm -f "$certificate_path"
 
       - name: Install App Store Connect API key
         env:
@@ -310,58 +187,12 @@ jobs:
           chmod 600 "$fastlane_api_key_path"
           echo "FASTLANE_API_KEY_PATH=$fastlane_api_key_path" >> "$GITHUB_ENV"
 
-      - name: Archive dashpay
-        env:
-          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-          BUILD_NUMBER: ${{ steps.release-info.outputs.build_number }}
-        run: |
-          set -euo pipefail
-
-          xcodebuild archive \
-            -workspace DashWallet.xcworkspace \
-            -scheme dashpay \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath "$ARCHIVE_PATH" \
-            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
-            -disableAutomaticPackageResolution \
-            -onlyUsePackageVersionsFromResolvedFile \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$APP_STORE_CONNECT_API_KEY_PATH" \
-            -authenticationKeyID "$API_KEY_ID" \
-            -authenticationKeyIssuerID "$API_ISSUER_ID" \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CODE_SIGN_STYLE=Automatic \
-            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
-
-      - name: Read archived app version
-        id: app-version
-        run: |
-          set -euo pipefail
-
-          app_path=$(find "$ARCHIVE_PATH/Products/Applications" -maxdepth 1 -name '*.app' -print -quit)
-          if [[ -z "$app_path" ]]; then
-            echo "::error::The archive does not contain an app bundle."
-            exit 1
-          fi
-
-          version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app_path/Info.plist")
-          build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app_path/Info.plist")
-          bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_path/Info.plist")
-
-          {
-            echo "version=$version"
-            echo "build=$build"
-            echo "bundle_id=$bundle_id"
-          } >> "$GITHUB_OUTPUT"
-
       - name: Validate TestFlight group
         if: inputs.testflight_group != 'Upload only'
         env:
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+          BUNDLE_ID: ${{ env.DASHPAY_BUNDLE_ID }}
           TESTFLIGHT_GROUP: ${{ inputs.testflight_group }}
         run: |
           set -euo pipefail
@@ -463,6 +294,196 @@ jobs:
 
           puts "Validated external TestFlight group: #{requested_group}"
           RUBY
+
+      - name: Select Xcode 26.6
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.6"
+
+      - name: Show toolchain versions
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          swift --version
+
+      - name: Set up Rust 1.92
+        uses: dtolnay/rust-toolchain@1.92.0
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+
+      - name: Ensure iOS Rust targets for platform toolchain
+        working-directory: ${{ github.workspace }}/platform
+        run: |
+          set -euo pipefail
+          rustup target add aarch64-apple-ios aarch64-apple-ios-sim
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: swift-sdk-cargo-${{ runner.os }}-${{ hashFiles('platform/Cargo.lock') }}
+          restore-keys: |
+            swift-sdk-cargo-${{ runner.os }}-
+
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "32.x"
+          repo-token: ${{ github.token }}
+
+      - name: Build release XCFramework from platform
+        working-directory: ${{ github.workspace }}/platform/packages/swift-sdk
+        env:
+          PRUNE_CARGO_TARGETS: "1"
+          SKIP_EXAMPLE_APP_BUILD: "1"
+        run: |
+          set -euo pipefail
+          ./build_ios.sh --target ios --target sim --profile release
+          test -d DashSDKFFI.xcframework
+
+      - name: Set up CocoaPods 1.15.2
+        uses: maxim-lobanov/setup-cocoapods@v1
+        with:
+          version: "1.15.2"
+
+      - name: Install CocoaPods dependencies
+        run: |
+          set -euo pipefail
+          pod _1.15.2_ install --deployment
+
+      - name: Restore private app configuration
+        env:
+          GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+          COINBASE_INFO_PLIST_BASE64: ${{ secrets.COINBASE_INFO_PLIST_BASE64 }}
+          TOPPER_INFO_PLIST_BASE64: ${{ secrets.TOPPER_INFO_PLIST_BASE64 }}
+          ZENLEDGER_INFO_PLIST_BASE64: ${{ secrets.ZENLEDGER_INFO_PLIST_BASE64 }}
+          UPHOLD_INFO_PLIST_BASE64: ${{ secrets.UPHOLD_INFO_PLIST_BASE64 }}
+          SWAPKIT_INFO_PLIST_BASE64: ${{ secrets.SWAPKIT_INFO_PLIST_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/GoogleService-Info.plist
+          printf '%s' "$COINBASE_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/Coinbase-Info.plist
+          printf '%s' "$TOPPER_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/Topper-Info.plist
+          printf '%s' "$ZENLEDGER_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/ZenLedger-Info.plist
+          printf '%s' "$UPHOLD_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/Uphold-Info.plist
+          printf '%s' "$SWAPKIT_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/SwapKit-Info.plist
+
+          plutil -lint \
+            DashWallet/GoogleService-Info.plist \
+            DashWallet/Coinbase-Info.plist \
+            DashWallet/Topper-Info.plist \
+            DashWallet/ZenLedger-Info.plist \
+            DashWallet/Uphold-Info.plist \
+            DashWallet/SwapKit-Info.plist
+
+      - name: Install Apple distribution certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          certificate_path="$RUNNER_TEMP/apple-distribution.p12"
+          keychain_path="$RUNNER_TEMP/app-signing.keychain-db"
+          original_keychains_path="$RUNNER_TEMP/original-user-keychains.txt"
+          keychain_password=$(openssl rand -hex 32)
+          echo "::add-mask::$keychain_password"
+
+          printf '%s' "$CERTIFICATE_BASE64" | base64 --decode -o "$certificate_path"
+          security list-keychains -d user > "$original_keychains_path"
+          original_default_keychain=$(security default-keychain -d user)
+          original_default_keychain="${original_default_keychain#"${original_default_keychain%%[![:space:]]*}"}"
+          original_default_keychain="${original_default_keychain#\"}"
+          original_default_keychain="${original_default_keychain%\"}"
+
+          echo "SIGNING_KEYCHAIN_PATH=$keychain_path" >> "$GITHUB_ENV"
+          echo "ORIGINAL_DEFAULT_KEYCHAIN=$original_default_keychain" >> "$GITHUB_ENV"
+          echo "ORIGINAL_KEYCHAINS_PATH=$original_keychains_path" >> "$GITHUB_ENV"
+
+          existing_keychains=()
+          while IFS= read -r keychain; do
+            keychain="${keychain#"${keychain%%[![:space:]]*}"}"
+            keychain="${keychain#\"}"
+            keychain="${keychain%\"}"
+            [[ -n "$keychain" ]] && existing_keychains+=("$keychain")
+          done < "$original_keychains_path"
+
+          security create-keychain -p "$keychain_password" "$keychain_path"
+          security set-keychain-settings -lut 21600 "$keychain_path"
+          security unlock-keychain -p "$keychain_password" "$keychain_path"
+          security import "$certificate_path" \
+            -P "$CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign \
+            -T /usr/bin/security \
+            -t cert \
+            -f pkcs12 \
+            -k "$keychain_path"
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s \
+            -k "$keychain_password" \
+            "$keychain_path"
+          security default-keychain -d user -s "$keychain_path"
+          security list-keychains -d user -s "$keychain_path" "${existing_keychains[@]}"
+          security find-identity -v -p codesigning "$keychain_path"
+
+          rm -f "$certificate_path"
+
+      - name: Archive dashpay
+        env:
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          BUILD_NUMBER: ${{ steps.release-info.outputs.build_number }}
+        run: |
+          set -euo pipefail
+
+          xcodebuild archive \
+            -workspace DashWallet.xcworkspace \
+            -scheme dashpay \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$ARCHIVE_PATH" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -disableAutomaticPackageResolution \
+            -onlyUsePackageVersionsFromResolvedFile \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$APP_STORE_CONNECT_API_KEY_PATH" \
+            -authenticationKeyID "$API_KEY_ID" \
+            -authenticationKeyIssuerID "$API_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+
+      - name: Read archived app version
+        id: app-version
+        env:
+          EXPECTED_BUNDLE_ID: ${{ env.DASHPAY_BUNDLE_ID }}
+        run: |
+          set -euo pipefail
+
+          app_path=$(find "$ARCHIVE_PATH/Products/Applications" -maxdepth 1 -name '*.app' -print -quit)
+          if [[ -z "$app_path" ]]; then
+            echo "::error::The archive does not contain an app bundle."
+            exit 1
+          fi
+
+          version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app_path/Info.plist")
+          build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app_path/Info.plist")
+          bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_path/Info.plist")
+
+          if [[ "$bundle_id" != "$EXPECTED_BUNDLE_ID" ]]; then
+            echo "::error::Archived bundle ID '$bundle_id' does not match expected '$EXPECTED_BUNDLE_ID'."
+            exit 1
+          fi
+
+          {
+            echo "version=$version"
+            echo "build=$build"
+            echo "bundle_id=$bundle_id"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Upload archive to TestFlight
         env:
@@ -594,4 +615,5 @@ jobs:
             DashWallet/Coinbase-Info.plist \
             DashWallet/Topper-Info.plist \
             DashWallet/ZenLedger-Info.plist \
-            DashWallet/Uphold-Info.plist
+            DashWallet/Uphold-Info.plist \
+            DashWallet/SwapKit-Info.plist
