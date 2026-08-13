@@ -1,0 +1,523 @@
+name: Release dashpay to TestFlight
+
+run-name: >-
+  dashpay TestFlight from ${{ inputs.wallet_ref }}
+  → ${{ inputs.testflight_group }} (platform ${{ inputs.platform_ref }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      wallet_ref:
+        description: "dashwallet-ios branch, tag, or commit SHA"
+        required: true
+        default: develop
+        type: string
+      platform_ref:
+        description: "dashpay/platform branch, tag, or commit SHA"
+        required: true
+        default: v4.1-dev
+        type: string
+      build_number:
+        description: "CFBundleVersion, or 'auto' for 1000 + workflow run number"
+        required: true
+        default: auto
+        type: string
+      testflight_group:
+        description: "Exact external TestFlight group name, or 'Upload only'"
+        required: true
+        default: Public Beta v9.0
+        type: string
+      what_to_test:
+        description: "TestFlight 'What to Test' notes"
+        required: true
+        default: "New beta build."
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dashpay-testflight
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and upload dashpay
+    runs-on: macos-15
+    timeout-minutes: 180
+    environment: testflight
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}/dashwallet-ios
+
+    env:
+      APPLE_TEAM_ID: 44RJ69WHFF
+      ARCHIVE_PATH: ${{ runner.temp }}/dashpay.xcarchive
+      EXPORT_PATH: ${{ runner.temp }}/dashpay-export
+
+    steps:
+      # The wallet uses ../platform/packages/swift-sdk as a local Swift
+      # package, so both repositories must be siblings in the Actions
+      # workspace.
+      - name: Checkout dashwallet-ios
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.wallet_ref }}
+          path: dashwallet-ios
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Checkout platform
+        uses: actions/checkout@v4
+        with:
+          repository: dashpay/platform
+          ref: ${{ inputs.platform_ref }}
+          path: platform
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Validate release secrets
+        env:
+          APPLE_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64 }}
+          GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+          COINBASE_INFO_PLIST_BASE64: ${{ secrets.COINBASE_INFO_PLIST_BASE64 }}
+          TOPPER_INFO_PLIST_BASE64: ${{ secrets.TOPPER_INFO_PLIST_BASE64 }}
+          ZENLEDGER_INFO_PLIST_BASE64: ${{ secrets.ZENLEDGER_INFO_PLIST_BASE64 }}
+          UPHOLD_INFO_PLIST_BASE64: ${{ secrets.UPHOLD_INFO_PLIST_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          required_secrets=(
+            APPLE_DISTRIBUTION_CERTIFICATE_BASE64
+            APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD
+            APP_STORE_CONNECT_API_KEY_ID
+            APP_STORE_CONNECT_API_ISSUER_ID
+            APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64
+            GOOGLE_SERVICE_INFO_PLIST_BASE64
+            COINBASE_INFO_PLIST_BASE64
+            TOPPER_INFO_PLIST_BASE64
+            ZENLEDGER_INFO_PLIST_BASE64
+            UPHOLD_INFO_PLIST_BASE64
+          )
+
+          missing=0
+          for name in "${required_secrets[@]}"; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing GitHub secret: ${name}"
+              missing=1
+            fi
+          done
+
+          if [[ "$missing" -ne 0 ]]; then
+            exit 1
+          fi
+
+      - name: Resolve build provenance and number
+        id: release-info
+        env:
+          REQUESTED_BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          set -euo pipefail
+
+          wallet_sha=$(git rev-parse HEAD)
+          platform_sha=$(git -C ../platform rev-parse HEAD)
+
+          if [[ "$REQUESTED_BUILD_NUMBER" == "auto" ]]; then
+            build_number=$((1000 + GITHUB_RUN_NUMBER))
+          else
+            build_number="$REQUESTED_BUILD_NUMBER"
+          fi
+
+          if ! [[ "$build_number" =~ ^[0-9]+([.][0-9]+){0,2}$ ]]; then
+            echo "::error::Invalid build number '$build_number'. Use one to three numeric components."
+            exit 1
+          fi
+
+          {
+            echo "wallet_sha=$wallet_sha"
+            echo "platform_sha=$platform_sha"
+            echo "build_number=$build_number"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Select Xcode 16
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16.*"
+
+      - name: Show toolchain versions
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          swift --version
+
+      - name: Set up Rust 1.92
+        uses: dtolnay/rust-toolchain@1.92.0
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: swift-sdk-cargo-${{ runner.os }}-${{ hashFiles('platform/Cargo.lock') }}
+          restore-keys: |
+            swift-sdk-cargo-${{ runner.os }}-
+
+      - name: Install protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: "32.x"
+          repo-token: ${{ github.token }}
+
+      - name: Build release XCFramework from platform
+        working-directory: ${{ github.workspace }}/platform/packages/swift-sdk
+        env:
+          PRUNE_CARGO_TARGETS: "1"
+          SKIP_EXAMPLE_APP_BUILD: "1"
+        run: |
+          set -euo pipefail
+          ./build_ios.sh --target ios --target sim --profile release
+          test -d DashSDKFFI.xcframework
+
+      - name: Set up CocoaPods 1.15.2
+        uses: maxim-lobanov/setup-cocoapods@v1
+        with:
+          version: "1.15.2"
+
+      - name: Install CocoaPods dependencies
+        run: |
+          set -euo pipefail
+          pod _1.15.2_ install --deployment
+
+      - name: Restore private app configuration
+        env:
+          GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+          COINBASE_INFO_PLIST_BASE64: ${{ secrets.COINBASE_INFO_PLIST_BASE64 }}
+          TOPPER_INFO_PLIST_BASE64: ${{ secrets.TOPPER_INFO_PLIST_BASE64 }}
+          ZENLEDGER_INFO_PLIST_BASE64: ${{ secrets.ZENLEDGER_INFO_PLIST_BASE64 }}
+          UPHOLD_INFO_PLIST_BASE64: ${{ secrets.UPHOLD_INFO_PLIST_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          printf '%s' "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/GoogleService-Info.plist
+          printf '%s' "$COINBASE_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/Coinbase-Info.plist
+          printf '%s' "$TOPPER_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/Topper-Info.plist
+          printf '%s' "$ZENLEDGER_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/ZenLedger-Info.plist
+          printf '%s' "$UPHOLD_INFO_PLIST_BASE64" | base64 --decode -o DashWallet/Uphold-Info.plist
+
+          plutil -lint \
+            DashWallet/GoogleService-Info.plist \
+            DashWallet/Coinbase-Info.plist \
+            DashWallet/Topper-Info.plist \
+            DashWallet/ZenLedger-Info.plist \
+            DashWallet/Uphold-Info.plist
+
+      - name: Install Apple distribution certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          certificate_path="$RUNNER_TEMP/apple-distribution.p12"
+          keychain_path="$RUNNER_TEMP/app-signing.keychain-db"
+          keychain_password=$(openssl rand -hex 32)
+          echo "::add-mask::$keychain_password"
+
+          printf '%s' "$CERTIFICATE_BASE64" | base64 --decode -o "$certificate_path"
+          security create-keychain -p "$keychain_password" "$keychain_path"
+          security set-keychain-settings -lut 21600 "$keychain_path"
+          security unlock-keychain -p "$keychain_password" "$keychain_path"
+          security import "$certificate_path" \
+            -P "$CERTIFICATE_PASSWORD" \
+            -A \
+            -t cert \
+            -f pkcs12 \
+            -k "$keychain_path"
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: \
+            -s \
+            -k "$keychain_password" \
+            "$keychain_path"
+          security default-keychain -d user -s "$keychain_path"
+          security list-keychains -d user -s "$keychain_path"
+          security find-identity -v -p codesigning "$keychain_path"
+
+          echo "SIGNING_KEYCHAIN_PATH=$keychain_path" >> "$GITHUB_ENV"
+          rm -f "$certificate_path"
+
+      - name: Install App Store Connect API key
+        env:
+          API_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64 }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+
+          api_key_path="$RUNNER_TEMP/AuthKey_${API_KEY_ID}.p8"
+          printf '%s' "$API_PRIVATE_KEY_BASE64" | base64 --decode -o "$api_key_path"
+          chmod 600 "$api_key_path"
+          echo "APP_STORE_CONNECT_API_KEY_PATH=$api_key_path" >> "$GITHUB_ENV"
+
+          fastlane_api_key_path="$RUNNER_TEMP/app-store-connect-api-key.json"
+          FASTLANE_API_KEY_PATH="$fastlane_api_key_path" \
+          APP_STORE_CONNECT_API_KEY_PATH="$api_key_path" \
+          API_KEY_ID="$API_KEY_ID" \
+          API_ISSUER_ID="$API_ISSUER_ID" \
+          ruby -rjson -e '
+            File.write(
+              ENV.fetch("FASTLANE_API_KEY_PATH"),
+              JSON.generate(
+                key_id: ENV.fetch("API_KEY_ID"),
+                issuer_id: ENV.fetch("API_ISSUER_ID"),
+                key: File.read(ENV.fetch("APP_STORE_CONNECT_API_KEY_PATH")),
+                duration: 1200,
+                in_house: false
+              )
+            )
+          '
+          chmod 600 "$fastlane_api_key_path"
+          echo "FASTLANE_API_KEY_PATH=$fastlane_api_key_path" >> "$GITHUB_ENV"
+
+      - name: Archive dashpay
+        env:
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          BUILD_NUMBER: ${{ steps.release-info.outputs.build_number }}
+        run: |
+          set -euo pipefail
+
+          xcodebuild archive \
+            -workspace DashWallet.xcworkspace \
+            -scheme dashpay \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$ARCHIVE_PATH" \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -disableAutomaticPackageResolution \
+            -onlyUsePackageVersionsFromResolvedFile \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$APP_STORE_CONNECT_API_KEY_PATH" \
+            -authenticationKeyID "$API_KEY_ID" \
+            -authenticationKeyIssuerID "$API_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+
+      - name: Read archived app version
+        id: app-version
+        run: |
+          set -euo pipefail
+
+          app_path=$(find "$ARCHIVE_PATH/Products/Applications" -maxdepth 1 -name '*.app' -print -quit)
+          if [[ -z "$app_path" ]]; then
+            echo "::error::The archive does not contain an app bundle."
+            exit 1
+          fi
+
+          version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app_path/Info.plist")
+          build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app_path/Info.plist")
+          bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_path/Info.plist")
+
+          {
+            echo "version=$version"
+            echo "build=$build"
+            echo "bundle_id=$bundle_id"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Validate TestFlight group
+        if: inputs.testflight_group != 'Upload only'
+        env:
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+          TESTFLIGHT_GROUP: ${{ inputs.testflight_group }}
+        run: |
+          set -euo pipefail
+
+          ruby <<'RUBY'
+          require "base64"
+          require "json"
+          require "net/http"
+          require "openssl"
+          require "uri"
+
+          def base64url(value)
+            Base64.urlsafe_encode64(value, padding: false)
+          end
+
+          def jwt_signature(private_key_path, signing_input)
+            private_key = OpenSSL::PKey.read(File.binread(private_key_path))
+            der_signature = private_key.sign(OpenSSL::Digest::SHA256.new, signing_input)
+            sequence = OpenSSL::ASN1.decode(der_signature)
+            sequence.value.map do |integer|
+              [integer.value.to_i.to_s(16).rjust(64, "0")].pack("H*")
+            end.join
+          end
+
+          issued_at = Time.now.to_i
+          header = { alg: "ES256", kid: ENV.fetch("API_KEY_ID"), typ: "JWT" }
+          payload = {
+            iss: ENV.fetch("API_ISSUER_ID"),
+            iat: issued_at,
+            exp: issued_at + 1_200,
+            aud: "appstoreconnect-v1"
+          }
+          signing_input = [header, payload].map { |part| base64url(JSON.generate(part)) }.join(".")
+          token = "#{signing_input}.#{base64url(jwt_signature(ENV.fetch("APP_STORE_CONNECT_API_KEY_PATH"), signing_input))}"
+
+          def get_json(url, token)
+            uri = URI(url)
+            request = Net::HTTP::Get.new(uri)
+            request["Authorization"] = "Bearer #{token}"
+            request["Content-Type"] = "application/json"
+            response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+              http.request(request)
+            end
+            unless response.is_a?(Net::HTTPSuccess)
+              warn "::error::App Store Connect API returned HTTP #{response.code}: #{response.body}"
+              exit 1
+            end
+            JSON.parse(response.body)
+          end
+
+          bundle_id = ENV.fetch("BUNDLE_ID")
+          apps_url = URI("https://api.appstoreconnect.apple.com/v1/apps")
+          apps_url.query = URI.encode_www_form("filter[bundleId]" => bundle_id, "limit" => 1)
+          app = get_json(apps_url.to_s, token).fetch("data").first
+          unless app
+            warn "::error::No App Store Connect app found for bundle ID #{bundle_id}."
+            exit 1
+          end
+
+          groups_url = URI("https://api.appstoreconnect.apple.com/v1/betaGroups")
+          groups_url.query = URI.encode_www_form("filter[app]" => app.fetch("id"), "limit" => 200)
+          groups = []
+          next_url = groups_url.to_s
+          while next_url
+            page = get_json(next_url, token)
+            groups.concat(page.fetch("data"))
+            next_url = page.dig("links", "next")
+          end
+
+          external_group_names = groups.map do |group|
+            attributes = group.fetch("attributes")
+            attributes.fetch("name") unless attributes["isInternalGroup"]
+          end.compact.sort
+          requested_group = ENV.fetch("TESTFLIGHT_GROUP")
+
+          unless external_group_names.include?(requested_group)
+            warn "::error::External TestFlight group '#{requested_group}' does not exist."
+            warn "Available external TestFlight groups:"
+            external_group_names.each { |name| warn "  - #{name}" }
+            exit 1
+          end
+
+          puts "Validated external TestFlight group: #{requested_group}"
+          RUBY
+
+      - name: Upload archive to TestFlight
+        env:
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+
+          export_options="$RUNNER_TEMP/TestFlightExportOptions.plist"
+          /usr/libexec/PlistBuddy -c 'Add :destination string upload' "$export_options"
+          /usr/libexec/PlistBuddy -c 'Add :method string app-store-connect' "$export_options"
+          /usr/libexec/PlistBuddy -c 'Add :signingStyle string automatic' "$export_options"
+          /usr/libexec/PlistBuddy -c "Add :teamID string $APPLE_TEAM_ID" "$export_options"
+          /usr/libexec/PlistBuddy -c 'Add :manageAppVersionAndBuildNumber bool false' "$export_options"
+          /usr/libexec/PlistBuddy -c 'Add :uploadSymbols bool true' "$export_options"
+
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$EXPORT_PATH" \
+            -exportOptionsPlist "$export_options" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$APP_STORE_CONNECT_API_KEY_PATH" \
+            -authenticationKeyID "$API_KEY_ID" \
+            -authenticationKeyIssuerID "$API_ISSUER_ID"
+
+      - name: Ensure fastlane is available
+        if: inputs.testflight_group != 'Upload only'
+        run: |
+          set -euo pipefail
+          if ! command -v fastlane >/dev/null 2>&1; then
+            gem install fastlane --no-document
+          fi
+          fastlane --version
+
+      - name: Distribute build to external TestFlight group
+        if: inputs.testflight_group != 'Upload only'
+        env:
+          TESTFLIGHT_GROUP: ${{ inputs.testflight_group }}
+          WHAT_TO_TEST: ${{ inputs.what_to_test }}
+          VERSION: ${{ steps.app-version.outputs.version }}
+          BUILD: ${{ steps.app-version.outputs.build }}
+          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+        run: |
+          set -euo pipefail
+
+          fastlane pilot distribute \
+            --api_key_path "$FASTLANE_API_KEY_PATH" \
+            --app_identifier "$BUNDLE_ID" \
+            --app_version "$VERSION" \
+            --build_number "$BUILD" \
+            --groups "$TESTFLIGHT_GROUP" \
+            --distribute_external true \
+            --notify_external_testers true \
+            --submit_beta_review true \
+            --changelog "$WHAT_TO_TEST" \
+            --wait_processing_interval 30 \
+            --wait_processing_timeout_duration 7200
+
+      - name: Write release summary
+        env:
+          WALLET_SHA: ${{ steps.release-info.outputs.wallet_sha }}
+          PLATFORM_SHA: ${{ steps.release-info.outputs.platform_sha }}
+          REQUESTED_WALLET_REF: ${{ inputs.wallet_ref }}
+          REQUESTED_PLATFORM_REF: ${{ inputs.platform_ref }}
+          VERSION: ${{ steps.app-version.outputs.version }}
+          BUILD: ${{ steps.app-version.outputs.build }}
+          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+          TESTFLIGHT_GROUP: ${{ inputs.testflight_group }}
+        run: |
+          {
+            echo '## dashpay uploaded to TestFlight'
+            echo
+            echo "- App: ${VERSION} (${BUILD})"
+            echo "- Bundle ID: \`${BUNDLE_ID}\`"
+            echo "- dashwallet-ios: \`${WALLET_SHA}\` (requested: \`${REQUESTED_WALLET_REF}\`)"
+            echo "- platform: \`${PLATFORM_SHA}\` (requested: \`${REQUESTED_PLATFORM_REF}\`)"
+            if [[ "$TESTFLIGHT_GROUP" == 'Upload only' ]]; then
+              echo '- Distribution: upload only'
+            else
+              echo "- External group: \`${TESTFLIGHT_GROUP}\`"
+              echo '- External tester notifications: enabled'
+            fi
+            echo
+            echo 'App Store Connect may need additional time to process the uploaded build.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove temporary signing material
+        if: always()
+        run: |
+          if [[ -n "${SIGNING_KEYCHAIN_PATH:-}" && -f "$SIGNING_KEYCHAIN_PATH" ]]; then
+            security delete-keychain "$SIGNING_KEYCHAIN_PATH"
+          fi
+          rm -f "${APP_STORE_CONNECT_API_KEY_PATH:-}" \
+            "${FASTLANE_API_KEY_PATH:-}" \
+            DashWallet/GoogleService-Info.plist \
+            DashWallet/Coinbase-Info.plist \
+            DashWallet/Topper-Info.plist \
+            DashWallet/ZenLedger-Info.plist \
+            DashWallet/Uphold-Info.plist
