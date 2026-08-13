@@ -635,10 +635,16 @@ jobs:
               platform: "IOS",
               limit: 30
             )
-            uploaded_build = builds
+            new_builds = builds
               .reject { |build| existing_build_ids.include?(build.id) }
               .select { |build| Time.parse(build.uploaded_date.to_s) >= upload_started_at }
-              .max_by { |build| Time.parse(build.uploaded_date.to_s) }
+            if new_builds.size > 1
+              candidates = new_builds.map { |build| "#{build.version} (#{build.id})" }.join(", ")
+              warn "::error::Multiple builds appeared after this upload: #{candidates}. Refusing to distribute an ambiguous build."
+              exit 1
+            end
+
+            uploaded_build = new_builds.first
             break if uploaded_build
 
             if Time.now >= deadline
