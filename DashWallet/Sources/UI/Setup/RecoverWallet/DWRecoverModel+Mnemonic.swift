@@ -12,6 +12,7 @@
 //
 
 import Foundation
+import OSLog
 import SwiftDashSDK
 
 // Cached BIP-39 wordlist membership sets, composed once from the SDK's
@@ -33,45 +34,90 @@ private let dwAllLanguagesWordSet: Set<String> = MnemonicLanguage.allCases
         union.formUnion(Mnemonic.wordList(language: language))
     }
 
+private let dwRecoverLogger = Logger(
+    subsystem: "org.dashfoundation.dash",
+    category: "recover-wipe")
+
 extension DWRecoverModel {
-    /// The plain-"wipe" gate (C6-D): empty means "zero SDK balance AND the
-    /// chain is fully synced" — an unsynced wallet can't prove it's empty, so
-    /// it reads as non-empty (fail-closed; the strong accept-phrase remains
-    /// the override). Replaces the DashSync read (`wallet.balance` + frozen
+    /// The plain-"wipe" gate: empty means "zero SDK balance AND the chain is
+    /// fully synced" — an unsynced wallet can't prove it's empty, so it reads
+    /// as non-empty (fail-closed; the strong accept-phrase remains the
+    /// override). Replaces the DashSync read (`wallet.balance` + frozen
     /// `lastSyncBlockTimestamp`/`lastSyncBlockHeight`), which post-M6 never
     /// advanced and made this permanently false — the plain-"wipe" phrase was
-    /// always refused. The literal shortcut is permitted only when Keychain
-    /// proves there is exactly one stored wallet id; the published balance is
-    /// active-wallet state and cannot prove that another wallet or network is
-    /// empty.
+    /// always refused. The literal shortcut is additionally permitted only
+    /// when Keychain proves there is exactly one stored wallet id AND the
+    /// active network is mainnet: the published balance is active-wallet,
+    /// active-network state, so it can prove neither another wallet's balance
+    /// nor the same seed's mainnet balance while running on testnet. The
+    /// cheap in-memory checks run first; the id count is an attributes-only
+    /// Keychain enumeration (no mnemonic secrets are read). Enumeration
+    /// failure denies (logged).
     @objc(isWalletEmpty)
     func isWalletEmpty() -> Bool {
-        guard let entries = try? SwiftDashSDKHost.strictlyPersistedMnemonics(),
-              entries.count == 1 else { return false }
-        guard let balance = SwiftDashSDKWalletState.shared.balance else { return false }
-        return balance.total == 0 && SyncingActivityMonitor.shared.state == .syncDone
+        guard let balance = SwiftDashSDKWalletState.shared.balance,
+              balance.total == 0,
+              SyncingActivityMonitor.shared.state == .syncDone,
+              WalletEnvironment.isMainnet else { return false }
+        do {
+            return try SwiftDashSDKHost.persistedWalletIdCount() == 1
+        } catch {
+            dwRecoverLogger.error("plain-wipe gate: wallet-id count failed; refusing: \(String(describing: error), privacy: .public)")
+            return false
+        }
     }
 
-    /// Authorizes the GLOBAL wipe with a recovery phrase (C6-D): the typed
-    /// phrase, normalized, must match EVERY stored SDK mnemonic. Multiple
-    /// network-scoped ids for the same seed are allowed; a distinct second
-    /// wallet blocks authorization. Enumeration or any individual read failure
-    /// also blocks it, so a partially readable Keychain can never be mistaken
+    /// The plain-"wipe" shortcut is mainnet-only (see `isWalletEmpty`). Lets
+    /// the wipe screen explain a testnet denial honestly instead of claiming
+    /// the wallet is not empty.
+    @objc(plainWipeAllowedOnCurrentNetwork)
+    func plainWipeAllowedOnCurrentNetwork() -> Bool {
+        WalletEnvironment.isMainnet
+    }
+
+    /// True when more than one wallet id is stored — the reason the plain
+    /// "wipe" shortcut (and a single wallet's phrase) can be refused. Lets
+    /// the wipe screen explain a denial honestly instead of blaming balance
+    /// or the phrase. Enumeration failure reads as false (the generic denial
+    /// copy applies; logged).
+    @objc(hasMultipleStoredWalletIds)
+    func hasMultipleStoredWalletIds() -> Bool {
+        do {
+            return try SwiftDashSDKHost.persistedWalletIdCount() > 1
+        } catch {
+            dwRecoverLogger.error("wallet-id count failed: \(String(describing: error), privacy: .public)")
+            return false
+        }
+    }
+
+    /// Authorizes the GLOBAL wipe with a recovery phrase: the typed phrase,
+    /// normalized, must match EVERY stored SDK mnemonic
+    /// (`SwiftDashSDKHost.allStoredMnemonicsMatch`). Multiple network-scoped
+    /// ids for the same seed are allowed; a distinct second wallet blocks
+    /// authorization. Enumeration or any individual read failure also blocks
+    /// it (logged), so a partially readable Keychain can never be mistaken
     /// for the complete wallet set. Phrase→seed is deterministic, but no key
-    /// material is derived here. The strong accept-phrase remains the explicit
-    /// override.
-    /// The literal-"wipe" arm of the old method was dead here — the caller
-    /// (`DWRecoverContentView.wipeWithPhrase:`) routes `DW_WIPE` to
-    /// `isWalletEmpty` before ever reaching this check.
+    /// material is derived here. The strong accept-phrase remains the
+    /// explicit override; the caller (`DWRecoverContentView.wipeWithPhrase:`)
+    /// routes the literal `DW_WIPE` shortcut to `isWalletEmpty` before this
+    /// check.
     @objc(canWipeWithPhrase:)
     func canWipeWithPhrase(_ phrase: String) -> Bool {
-        let typed = Mnemonic.normalizePhrase(phrase)
-        guard !typed.isEmpty else { return false }
-        guard let entries = try? SwiftDashSDKHost.strictlyPersistedMnemonics(),
-              !entries.isEmpty else { return false }
-        return entries.allSatisfy { entry in
-            Mnemonic.normalizePhrase(entry.mnemonic) == typed
+        do {
+            return try SwiftDashSDKHost.allStoredMnemonicsMatch(phrase: phrase)
+        } catch {
+            dwRecoverLogger.error("wipe-with-phrase: keychain read failed; refusing: \(String(describing: error), privacy: .public)")
+            return false
         }
+    }
+
+    /// True when `phrase` matches at least one readable stored mnemonic — a
+    /// non-destructive ownership signal. Backs the forgot-PIN check and the
+    /// wipe screen's honest-denial copy (the typed phrase matches one wallet
+    /// of several, so the set-wide wipe authorization refused it).
+    @objc(phraseMatchesAnyStoredWallet:)
+    func phraseMatchesAnyStoredWallet(_ phrase: String) -> Bool {
+        SwiftDashSDKHost.anyStoredMnemonicMatches(phrase: phrase)
     }
 
     /// Non-destructive forgot-PIN ownership check. Any one persisted wallet's
@@ -80,11 +126,7 @@ extension DWRecoverModel {
     /// whose global destructive action must account for the complete set.
     @objc(canResetPinWithPhrase:)
     func canResetPinWithPhrase(_ phrase: String) -> Bool {
-        let typed = Mnemonic.normalizePhrase(phrase)
-        guard !typed.isEmpty else { return false }
-        return SwiftDashSDKHost.persistedMnemonics().contains { entry in
-            Mnemonic.normalizePhrase(entry.mnemonic) == typed
-        }
+        phraseMatchesAnyStoredWallet(phrase)
     }
 
     @objc(phraseIsValid:)

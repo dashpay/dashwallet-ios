@@ -122,15 +122,31 @@ A Wallets-screen Remove may route into the global wipe only after Keychain
 ground truth proves every stored wallet ID belongs to the same recovery phrase
 as the target; the currently rendered row count is not an authoritative
 last-wallet check. Enumeration or any individual mnemonic-read failure denies
-that route.
+that route. A sole rendered wallet whose removal cannot route to the reset
+flow is refused up front with an explanation, rather than walked into a
+per-wallet removal that must fail (per-wallet removal always leaves a wallet
+to switch to, enforced independently of the active-wallet registry).
 
-Recovery-phrase authorization inside the global wipe is set-wide: the typed
-phrase must match every strictly readable stored mnemonic (multiple
-network-scoped IDs for that same phrase are allowed). The plain `wipe` shortcut
-is allowed only with exactly one stored wallet ID because the published balance
-is scoped to the active wallet/network. The explicit strong acceptance phrase
-remains the global emergency override. Forgot-PIN recovery stays
-non-destructive and may prove ownership with any one stored wallet phrase.
+Recovery-phrase authorization on the recover-screen wipe path is set-wide: the
+typed phrase must match every stored mnemonic, and any unreadable entry (or an
+enumeration failure) denies authorization outright — a partially readable
+Keychain never authorizes. Multiple network-scoped IDs for the same phrase are
+allowed. A phrase that matches some but not all stored wallets is refused with
+copy that says so (it is not reported as a phrase mismatch). The plain `wipe`
+shortcut is allowed only with exactly one stored wallet ID and only while the
+active network is mainnet, because the published balance is scoped to the
+active wallet/network and cannot prove a mainnet balance while running on
+testnet. The explicit strong acceptance phrase overrides both checks on this
+path. Forgot-PIN recovery stays non-destructive and may prove ownership with
+any one stored wallet phrase.
+
+These checks live at the wipe entry points, not inside
+`DWSwiftDashSDKWalletWiper` itself. Routes that reach the wiper without any
+recovery phrase remain: the lock-screen wipe offered after repeated failed PIN
+attempts, and the dev-only Reset Wallet menu item (compile-gated out of
+Release). Any new wipe entry point must bring its own authorization.
+TODO(wipe-auth): move set-wide authorization into a single boundary in front
+of the wiper so entry points collect evidence instead of enforcing policy.
 
 ## Acceptance criteria
 
@@ -145,7 +161,7 @@ non-destructive and may prove ownership with any one stored wallet phrase.
   into the global wipe;
 - one wallet's recovery phrase cannot authorize a global wipe while a distinct
   wallet is stored, and active-network zero balance cannot authorize one while
-  any additional wallet ID is stored;
+  any additional wallet ID is stored or while the active network is testnet;
 - a successful wipe deletes all SDK-owned mnemonic/managed-wallet/active-wallet
   state, while a failed wipe reports failure without an app-side seed deletion;
 - no migration code deletes `org.dashfoundation.dash` entries;

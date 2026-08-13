@@ -118,6 +118,10 @@ class SecurityMenuViewModel: ObservableObject {
             }
         ))
         
+        // Dev-only: wipes every wallet with no phrase, bypassing the wipe
+        // authorization the release flows enforce — never ship it. Gated for
+        // dev builds of both schemes (the dashpay scheme has no DASH_TESTNET).
+        #if DEBUG || DASH_TESTNET
         menuItems.append(MenuItemModel(
             title: "Reset Wallet (Debug)",
             icon: .custom("image-menu-reset_wallet", maxHeight: 22),
@@ -125,6 +129,7 @@ class SecurityMenuViewModel: ObservableObject {
                 self?.navigationDestination = .resetWalletDebug
             }
         ))
+        #endif
 
         items = menuItems
     }

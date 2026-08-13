@@ -252,6 +252,16 @@ NS_ASSUME_NONNULL_BEGIN
             if ([self.model isWalletEmpty]) {
                 [self.delegate recoverContentViewPerformWipe:self];
             }
+            else if ([self.model hasMultipleStoredWalletIds]) {
+                // The shortcut is refused because of the stored-wallet count,
+                // not balance/sync — the "not empty" copy would be false.
+                [self.delegate recoverContentViewWipeBlockedByMultipleWallets:self];
+            }
+            else if (![self.model plainWipeAllowedOnCurrentNetwork]) {
+                // Mainnet-only shortcut: a zero testnet balance can't prove
+                // the seed's mainnet balance is empty.
+                [self.delegate recoverContentViewWipeShortcutUnavailableOnTestnet:self];
+            }
             else {
                 [self.delegate recoverContentViewWipeNotAllowed:self];
             }
@@ -262,6 +272,12 @@ NS_ASSUME_NONNULL_BEGIN
         else {
             if ([self.model canWipeWithPhrase:phrase]) {
                 [self.delegate recoverContentViewPerformWipe:self];
+            }
+            else if ([self.model phraseMatchesAnyStoredWallet:phrase]) {
+                // The phrase does match a stored wallet — just not all of
+                // them, so the set-wide wipe authorization refused it. Saying
+                // "doesn't match" here would be false and alarming.
+                [self.delegate recoverContentViewWipeBlockedByMultipleWallets:self];
             }
             else if (phrase) {
                 [self.delegate recoverContentViewWipeNotAllowedPhraseMismatch:self];

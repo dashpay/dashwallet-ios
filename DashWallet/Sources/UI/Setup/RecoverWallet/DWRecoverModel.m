@@ -50,7 +50,7 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 }
 
 // `isWalletEmpty`, wipe/reset-PIN phrase authorization, and mnemonic helpers
-// live in DWRecoverModel+Mnemonic.swift — C6-D.
+// live in DWRecoverModel+Mnemonic.swift.
 
 - (void)wipeWallet {
     [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:YES];

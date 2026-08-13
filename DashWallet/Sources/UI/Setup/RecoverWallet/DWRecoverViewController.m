@@ -218,6 +218,22 @@ NS_ASSUME_NONNULL_BEGIN
     [self showAlertWithTitle:nil message:message];
 }
 
+- (void)recoverContentViewWipeBlockedByMultipleWallets:(DWRecoverContentView *)view {
+    NSString *title = NSLocalizedString(@"Multiple wallets are stored on this device", nil);
+    NSString *message = [NSString stringWithFormat:
+                                      NSLocalizedString(@"Wiping would erase all of them, so a single wallet's recovery phrase is not enough. To erase every wallet on this device please input: \"%@\"", nil),
+                                      self.model.wipeAcceptPhrase];
+    [self showAlertWithTitle:title message:message];
+}
+
+- (void)recoverContentViewWipeShortcutUnavailableOnTestnet:(DWRecoverContentView *)view {
+    NSString *title = NSLocalizedString(@"The \"wipe\" shortcut is not available on testnet", nil);
+    NSString *message = [NSString stringWithFormat:
+                                      NSLocalizedString(@"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase, or input: \"%@\"", nil),
+                                      self.model.wipeAcceptPhrase];
+    [self showAlertWithTitle:title message:message];
+}
+
 - (void)recoverContentView:(DWRecoverContentView *)view phraseDidChange:(NSString *)phrase {
     BOOL isPhraseValid = [phrase wordsCount] >= 10;
     [self.actionButton setEnabled:isPhraseValid];

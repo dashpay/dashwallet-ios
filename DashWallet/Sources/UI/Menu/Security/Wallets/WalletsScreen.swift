@@ -246,16 +246,26 @@ struct WalletsScreen: View {
 
     // MARK: - Remove routing
 
-    /// The last remaining wallet routes to the existing full reset flow
-    /// (`DWResetWalletInfoViewController`), preserving today's reset semantics;
-    /// any other wallet gets the per-wallet recovery-phrase remove sheet.
+    /// A wallet whose recovery phrase provably covers every stored wallet
+    /// (Keychain ground truth) routes to the full reset flow
+    /// (`DWResetWalletInfoViewController`); a wallet with siblings on this
+    /// network gets the per-wallet recovery-phrase remove sheet. A sole
+    /// rendered wallet that can't route to reset — a distinct wallet is
+    /// stored for the other network, or the Keychain couldn't be read — is
+    /// refused up front with an explanation: the per-wallet sheet would
+    /// verify the phrase and then refuse anyway, because removal must leave
+    /// a wallet to switch to.
     private func beginRemove(_ row: WalletRow) {
         if viewModel.removalRoutesToFullReset(walletId: row.walletId) {
             let controller = DWResetWalletInfoViewController.make()
             controller.delegate = resetDelegate
             vc.pushViewController(controller, animated: true)
-        } else {
+        } else if viewModel.rows.contains(where: { $0.walletId != row.walletId }) {
             removeTarget = row
+        } else {
+            viewModel.errorMessage = NSLocalizedString(
+                "This is the only wallet on this network, but other wallet data is stored on this device (or the wallet list could not be read), so it can't be removed here. Remove the other wallet first, or add another wallet on this network.",
+                comment: "Wallets")
         }
     }
 }
