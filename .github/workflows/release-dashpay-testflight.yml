@@ -63,7 +63,7 @@ jobs:
       # package, so both repositories must be siblings in the Actions
       # workspace.
       - name: Checkout dashwallet-ios
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.wallet_ref }}
           path: dashwallet-ios
@@ -71,7 +71,7 @@ jobs:
           persist-credentials: false
 
       - name: Checkout platform
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: dashpay/platform
           ref: ${{ inputs.platform_ref }}
@@ -308,7 +308,7 @@ jobs:
 
       - name: Restore release XCFramework cache
         id: xcframework-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{ github.workspace }}/platform/packages/swift-sdk/DashSDKFFI.xcframework
           key: dash-sdk-xcframework-v1-${{ runner.os }}-${{ runner.arch }}-xcode-26.6-rust-1.92-ios-sim-release-${{ steps.release-info.outputs.platform_sha }}
@@ -328,7 +328,7 @@ jobs:
 
       - name: Cache Cargo dependencies
         if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -357,7 +357,7 @@ jobs:
 
       - name: Save release XCFramework cache
         if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ github.workspace }}/platform/packages/swift-sdk/DashSDKFFI.xcframework
           key: ${{ steps.xcframework-cache.outputs.cache-primary-key }}
@@ -371,7 +371,7 @@ jobs:
           version: "1.15.2"
 
       - name: Cache CocoaPods dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/Library/Caches/CocoaPods
