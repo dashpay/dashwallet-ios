@@ -370,8 +370,9 @@ jobs:
         with:
           version: "1.15.2"
 
-      - name: Cache CocoaPods dependencies
-        uses: actions/cache@v5
+      - name: Restore CocoaPods dependencies cache
+        id: cocoapods-cache
+        uses: actions/cache/restore@v5
         with:
           path: |
             ~/Library/Caches/CocoaPods
@@ -384,6 +385,15 @@ jobs:
         run: |
           set -euo pipefail
           pod _1.15.2_ install --deployment
+
+      - name: Save CocoaPods dependencies cache
+        if: steps.cocoapods-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ${{ github.workspace }}/dashwallet-ios/Pods
+          key: ${{ steps.cocoapods-cache.outputs.cache-primary-key }}
 
       - name: Restore private app configuration
         env:
