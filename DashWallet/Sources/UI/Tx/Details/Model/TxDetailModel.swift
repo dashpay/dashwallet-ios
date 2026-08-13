@@ -536,7 +536,7 @@ extension TxDetailModel {
         var supportsRemoval: Bool { statusRaw <= 1 }
     }
 
-    /// True when the "Remove if not on Blockchain" action applies outside
+    /// True when the "Remove if Not on Network" action applies outside
     /// the asset-lock retry route: the local store still has this
     /// transaction in mempool context (`.processing` — never IS-locked,
     /// never mined), which is exactly the state a network-dropped send

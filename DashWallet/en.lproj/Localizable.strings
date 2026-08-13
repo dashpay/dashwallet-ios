@@ -2594,7 +2594,7 @@
 "Rebroadcast" = "Rebroadcast";
 
 /* Delete a never-accepted transaction from local wallet state */
-"Remove if not on Blockchain" = "Remove if not on Blockchain";
+"Remove if Not on Network" = "Remove if Not on Network";
 
 /* Remove never-accepted transaction: confirmation title */
 "Remove this transaction?" = "Remove this transaction?";
@@ -2630,10 +2630,10 @@
 "Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name." = "Removing the listing is a network transaction with a small fee, paid from your identity balance. You keep the name.";
 
 /* Remove never-accepted transaction: refused because the explorer found it */
-"Transaction is on the blockchain" = "Transaction is on the blockchain";
+"Transaction is known to the network" = "Transaction is known to the network";
 
 /* Remove never-accepted transaction: refusal body */
-"A block explorer reports this transaction on the Dash network, so it wasn't removed. The wallet will catch up with its confirmation on its own." = "A block explorer reports this transaction on the Dash network, so it wasn't removed. The wallet will catch up with its confirmation on its own.";
+"A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block." = "A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block.";
 
 /* Remove never-accepted transaction: success */
 "Transaction removed" = "Transaction removed";
@@ -2642,7 +2642,7 @@
 "Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status" = "Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status";
 
 /* Remove never-accepted transaction: confirmation body */
-"The wallet first checks a block explorer — a transaction that is on the blockchain is never removed. If it isn't found, the transaction is deleted from this wallet on this device and the coins it was trying to spend become available again. The wallet then rescans recent blocks, so if the transaction does turn out to be on the blockchain, it comes back on its own. Nothing is sent to the network." = "The wallet first checks a block explorer — a transaction that is on the blockchain is never removed. If it isn't found, the transaction is deleted from this wallet on this device and the coins it was trying to spend become available again. The wallet then rescans recent blocks, so if the transaction does turn out to be on the blockchain, it comes back on its own. Nothing is sent to the network.";
+"The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network.";
 
 /* Remove never-accepted transaction: failure title */
 "Couldn't remove the transaction" = "Couldn't remove the transaction";
