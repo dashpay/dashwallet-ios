@@ -75,6 +75,10 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
+    [self dw_endExclusiveUserAction];
+    self.createWalletButton.enabled = YES;
+    self.recoverWalletButton.enabled = YES;
+
     if (!self.initialAnimationCompleted) {
         self.initialAnimationCompleted = YES;
 
@@ -94,6 +98,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 #pragma mark - Actions
 
 - (IBAction)createWalletButtonAction:(id)sender {
+    if (![self dw_beginExclusiveUserAction]) {
+        return;
+    }
+    self.createWalletButton.enabled = NO;
+    self.recoverWalletButton.enabled = NO;
+
     self.recoverWalletCommand = nil;
 
     [DWGlobalOptions sharedInstance].walletNeedsBackup = YES;
@@ -104,6 +114,12 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 }
 
 - (IBAction)recoverWalletButtonAction:(id)sender {
+    if (![self dw_beginExclusiveUserAction]) {
+        return;
+    }
+    self.createWalletButton.enabled = NO;
+    self.recoverWalletButton.enabled = NO;
+
     self.recoverWalletCommand = nil;
 
     DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];

@@ -79,10 +79,16 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWPinViewDelegate
 
 - (void)pinViewCancelButtonTap:(DWPinView *)pinView {
-    [self.delegate setPinViewControllerDidCancel:self];
+    if ([self dw_beginExclusiveUserAction]) {
+        [self.delegate setPinViewControllerDidCancel:self];
+    }
 }
 
 - (void)pinView:(DWPinView *)pinView didFinishWithPin:(NSString *)pin {
+    if (![self dw_beginExclusiveUserAction]) {
+        return;
+    }
+
     BOOL success = [self.model setPin:pin];
     if (success) {
         [self.delegate setPinViewControllerDidSetPin:self];

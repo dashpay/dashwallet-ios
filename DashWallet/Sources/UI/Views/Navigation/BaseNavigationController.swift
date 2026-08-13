@@ -91,7 +91,10 @@ class BaseNavigationController: UINavigationController {
 
     @IBAction
     func cancelButtonAction() {
-        dismiss(animated: true)
+        guard dw_beginExclusiveUserAction() else { return }
+        dismiss(animated: true) { [weak self] in
+            self?.dw_endExclusiveUserAction()
+        }
     }
 
     @objc
@@ -113,9 +116,18 @@ class BaseNavigationController: UINavigationController {
     }
 
     override func pushViewController(_ viewController: UIViewController, animated: Bool) {
+        guard !isPushAnimationInProgress else { return }
+
         isPushAnimationInProgress = true
 
         super.pushViewController(viewController, animated: animated)
+
+        // UIKit does not call the navigation delegate when a stack is being
+        // assembled before it is on screen. There is no visible transition to
+        // protect in that case, so do not leave the gate acquired indefinitely.
+        if !animated || view.window == nil {
+            isPushAnimationInProgress = false
+        }
     }
 
     override func viewDidLoad() {

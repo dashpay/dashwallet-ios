@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)activateTextView;
 - (void)continueAction;
+- (void)endRecoveryAttempt;
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_UNAVAILABLE;
 

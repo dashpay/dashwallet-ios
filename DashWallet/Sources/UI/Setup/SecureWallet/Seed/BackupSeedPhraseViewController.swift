@@ -22,6 +22,7 @@ import UIKit
 class BackupSeedPhraseViewController: DWPreviewSeedPhraseViewController {
 
     var shouldCreateNewWalletOnScreenshot: Bool = false
+    private var hasAppeared = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,7 +41,20 @@ class BackupSeedPhraseViewController: DWPreviewSeedPhraseViewController {
         return NSLocalizedString("Continue", comment: "")
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        dw_endExclusiveUserAction()
+        if hasAppeared {
+            actionButton?.isEnabled = true
+        }
+        hasAppeared = true
+    }
+
     @objc override func actionButtonAction(_ sender: Any) {
+        guard dw_beginExclusiveUserAction() else { return }
+        actionButton?.isEnabled = false
+
         let seedPhrase = self.contentView.model
 
         let controller = DWVerifySeedPhraseViewController(seedPhrase: seedPhrase!)

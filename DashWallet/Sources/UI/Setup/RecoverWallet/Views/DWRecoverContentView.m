@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, strong) NSLayoutConstraint *topConstraint;
 @property (readonly, nonatomic, strong) NSLayoutConstraint *textViewMinHeightConstraint;
 
+@property (nonatomic, assign) BOOL recoveryAttemptInProgress;
+
 @end
 
 @implementation DWRecoverContentView
@@ -133,6 +135,10 @@ NS_ASSUME_NONNULL_BEGIN
     [self recoverWalletWithCurrentSeedPhrase];
 }
 
+- (void)endRecoveryAttempt {
+    self.recoveryAttemptInProgress = NO;
+}
+
 - (void)appendText:(NSString *)text {
     self.textView.text = [self.textView.text stringByAppendingFormat:@" %@", text];
 }
@@ -166,9 +172,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)recoverWalletWithCurrentSeedPhrase {
     NSUInteger count = [self.textView.text wordsCount];
-    if (count < 10) {
+    if (count < 10 || self.recoveryAttemptInProgress) {
         return;
     }
+    self.recoveryAttemptInProgress = YES;
 
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
         UITextView *textView = self.textView;

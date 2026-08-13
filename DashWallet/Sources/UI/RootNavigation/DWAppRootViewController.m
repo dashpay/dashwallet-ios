@@ -51,6 +51,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
 @property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
 @property (nonatomic, assign) BOOL walletWipeInProgress;
+@property (nonatomic, assign) BOOL setupCompletionInProgress;
 #if DASHPAY
 @property (null_resettable, nonatomic, strong) DWInvitationSetupState *invitationSetup;
 #endif
@@ -325,6 +326,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - DWSetupViewControllerDelegate
 
 - (void)setupViewControllerDidFinish:(DWSetupViewController *)controller {
+    if (self.setupCompletionInProgress) {
+        return;
+    }
+    self.setupCompletionInProgress = YES;
+
     [self.model setupDidFinish];
 
     UIViewController *mainController = self.mainController;
@@ -345,6 +351,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 #pragma mark - DWWipeDelegate
 
 - (void)didWipeWallet {
+    self.setupCompletionInProgress = NO;
+
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
                   transitionType:DWContainerTransitionType_ScaleAndCrossDissolve];
@@ -365,6 +373,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
     self.walletWipeInProgress = YES;
+    self.setupCompletionInProgress = NO;
 
     UIViewController *setupController = [self setupController];
     [self transitionToController:setupController
