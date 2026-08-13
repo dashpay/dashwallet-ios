@@ -306,18 +306,28 @@ jobs:
           xcodebuild -version
           swift --version
 
+      - name: Restore release XCFramework cache
+        id: xcframework-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/platform/packages/swift-sdk/DashSDKFFI.xcframework
+          key: dash-sdk-xcframework-v1-${{ runner.os }}-${{ runner.arch }}-xcode-26.6-rust-1.92-ios-sim-release-${{ steps.release-info.outputs.platform_sha }}
+
       - name: Set up Rust 1.92
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
         uses: dtolnay/rust-toolchain@1.92.0
         with:
           targets: aarch64-apple-ios,aarch64-apple-ios-sim
 
       - name: Ensure iOS Rust targets for platform toolchain
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}/platform
         run: |
           set -euo pipefail
           rustup target add aarch64-apple-ios aarch64-apple-ios-sim
 
       - name: Cache Cargo dependencies
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
         with:
           path: |
@@ -328,12 +338,14 @@ jobs:
             swift-sdk-cargo-${{ runner.os }}-
 
       - name: Install protoc
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
         uses: arduino/setup-protoc@v3
         with:
           version: "32.x"
           repo-token: ${{ github.token }}
 
       - name: Build release XCFramework from platform
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}/platform/packages/swift-sdk
         env:
           PRUNE_CARGO_TARGETS: "1"
@@ -342,6 +354,16 @@ jobs:
           set -euo pipefail
           ./build_ios.sh --target ios --target sim --profile release
           test -d DashSDKFFI.xcframework
+
+      - name: Save release XCFramework cache
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/platform/packages/swift-sdk/DashSDKFFI.xcframework
+          key: ${{ steps.xcframework-cache.outputs.cache-primary-key }}
+
+      - name: Verify release XCFramework
+        run: test -d ../platform/packages/swift-sdk/DashSDKFFI.xcframework
 
       - name: Set up CocoaPods 1.15.2
         uses: maxim-lobanov/setup-cocoapods@v1
