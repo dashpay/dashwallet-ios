@@ -40,24 +40,46 @@ extension DWRecoverModel {
     /// the override). Replaces the DashSync read (`wallet.balance` + frozen
     /// `lastSyncBlockTimestamp`/`lastSyncBlockHeight`), which post-M6 never
     /// advanced and made this permanently false — the plain-"wipe" phrase was
-    /// always refused.
+    /// always refused. The literal shortcut is permitted only when Keychain
+    /// proves there is exactly one stored wallet id; the published balance is
+    /// active-wallet state and cannot prove that another wallet or network is
+    /// empty.
     @objc(isWalletEmpty)
     func isWalletEmpty() -> Bool {
+        guard let entries = try? SwiftDashSDKHost.strictlyPersistedMnemonics(),
+              entries.count == 1 else { return false }
         guard let balance = SwiftDashSDKWalletState.shared.balance else { return false }
         return balance.total == 0 && SyncingActivityMonitor.shared.state == .syncDone
     }
 
-    /// Authorizes a wipe with the wallet's own recovery phrase (C6-D): the
-    /// typed phrase, normalized, must equal a persisted SDK mnemonic
-    /// (normalized). Equivalent to the old DashSync check — a transient
-    /// wallet's BIP32/BIP44 xpub comparison — because BIP39 phrase→seed is
-    /// deterministic, but derives no key material. No persisted SDK mnemonic
-    /// ⇒ false (fail-closed; the strong accept-phrase still allows a wipe).
+    /// Authorizes the GLOBAL wipe with a recovery phrase (C6-D): the typed
+    /// phrase, normalized, must match EVERY stored SDK mnemonic. Multiple
+    /// network-scoped ids for the same seed are allowed; a distinct second
+    /// wallet blocks authorization. Enumeration or any individual read failure
+    /// also blocks it, so a partially readable Keychain can never be mistaken
+    /// for the complete wallet set. Phrase→seed is deterministic, but no key
+    /// material is derived here. The strong accept-phrase remains the explicit
+    /// override.
     /// The literal-"wipe" arm of the old method was dead here — the caller
     /// (`DWRecoverContentView.wipeWithPhrase:`) routes `DW_WIPE` to
     /// `isWalletEmpty` before ever reaching this check.
     @objc(canWipeWithPhrase:)
     func canWipeWithPhrase(_ phrase: String) -> Bool {
+        let typed = Mnemonic.normalizePhrase(phrase)
+        guard !typed.isEmpty else { return false }
+        guard let entries = try? SwiftDashSDKHost.strictlyPersistedMnemonics(),
+              !entries.isEmpty else { return false }
+        return entries.allSatisfy { entry in
+            Mnemonic.normalizePhrase(entry.mnemonic) == typed
+        }
+    }
+
+    /// Non-destructive forgot-PIN ownership check. Any one persisted wallet's
+    /// phrase is sufficient because resetting the app-global PIN keeps every
+    /// wallet intact. This deliberately differs from `canWipeWithPhrase`,
+    /// whose global destructive action must account for the complete set.
+    @objc(canResetPinWithPhrase:)
+    func canResetPinWithPhrase(_ phrase: String) -> Bool {
         let typed = Mnemonic.normalizePhrase(phrase)
         guard !typed.isEmpty else { return false }
         return SwiftDashSDKHost.persistedMnemonics().contains { entry in

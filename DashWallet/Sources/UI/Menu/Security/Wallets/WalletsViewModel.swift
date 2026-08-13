@@ -264,12 +264,24 @@ final class WalletsViewModel: ObservableObject {
 
     // MARK: - Remove
 
-    /// Whether removing `walletId` requires routing to the full reset flow —
-    /// true only when it is the sole remaining wallet. The screen presents
-    /// `DWResetWalletInfoViewController` in that case (preserving today's
-    /// last-wallet reset semantics); otherwise it drives `removeWallet`.
+    /// Whether removing `walletId` may route to the GLOBAL reset flow. The
+    /// reset deletes every SDK mnemonic, including wallets that are not
+    /// loaded/rendered on the current network, so `rows.count` is not a safe
+    /// last-wallet test. Prove from Keychain ground truth that every stored
+    /// wallet id resolves to the same recovery phrase as the target. Any
+    /// enumeration/read failure returns false (fail closed).
     func removalRoutesToFullReset(walletId: Data) -> Bool {
-        rows.count <= 1
+        do {
+            let entries = try SwiftDashSDKHost.strictlyPersistedMnemonics()
+            guard let target = entries.first(where: { $0.walletId == walletId }) else { return false }
+            let targetMnemonic = Mnemonic.normalizePhrase(target.mnemonic)
+            return !targetMnemonic.isEmpty && entries.allSatisfy {
+                Mnemonic.normalizePhrase($0.mnemonic) == targetMnemonic
+            }
+        } catch {
+            Self.logger.error("last-wallet proof failed; refusing global reset: \(String(describing: error), privacy: .public)")
+            return false
+        }
     }
 
     /// Derive the walletId of `mnemonic` on the current network WITHOUT

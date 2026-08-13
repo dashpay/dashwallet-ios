@@ -239,7 +239,7 @@ NS_ASSUME_NONNULL_BEGIN
         // wallet; anything else (including the wipe magic words) is a mismatch.
         // Isolated from the wipe machinery so no wallet is ever erased here.
         if (self.model.action == DWRecoverAction_ResetPin) {
-            if ([self.model canWipeWithPhrase:phrase]) {
+            if ([self.model canResetPinWithPhrase:phrase]) {
                 [self.delegate recoverContentViewDidVerifyPhraseForPinReset:self];
             }
             else {
