@@ -17,11 +17,6 @@ on:
         required: true
         default: v4.2-dev
         type: string
-      build_number:
-        description: "CFBundleVersion, or 'auto' for a unique workflow run/attempt number"
-        required: true
-        default: auto
-        type: string
       testflight_group:
         description: "Exact external TestFlight group name, or 'Upload only'"
         required: true
@@ -127,31 +122,17 @@ jobs:
             exit 1
           fi
 
-      - name: Resolve build provenance and number
+      - name: Resolve build provenance
         id: release-info
-        env:
-          REQUESTED_BUILD_NUMBER: ${{ inputs.build_number }}
         run: |
           set -euo pipefail
 
           wallet_sha=$(git rev-parse HEAD)
           platform_sha=$(git -C ../platform rev-parse HEAD)
 
-          if [[ "$REQUESTED_BUILD_NUMBER" == "auto" ]]; then
-            build_number="$((1000 + GITHUB_RUN_NUMBER)).${GITHUB_RUN_ATTEMPT}"
-          else
-            build_number="$REQUESTED_BUILD_NUMBER"
-          fi
-
-          if ! [[ "$build_number" =~ ^[0-9]+([.][0-9]+){0,2}$ ]]; then
-            echo "::error::Invalid build number '$build_number'. Use one to three numeric components."
-            exit 1
-          fi
-
           {
             echo "wallet_sha=$wallet_sha"
             echo "platform_sha=$platform_sha"
-            echo "build_number=$build_number"
           } >> "$GITHUB_OUTPUT"
 
       - name: Install App Store Connect API key
@@ -486,7 +467,6 @@ jobs:
         env:
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-          BUILD_NUMBER: ${{ steps.release-info.outputs.build_number }}
         run: |
           set -euo pipefail
 
@@ -504,8 +484,7 @@ jobs:
             -authenticationKeyID "$API_KEY_ID" \
             -authenticationKeyIssuerID "$API_ISSUER_ID" \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CODE_SIGN_STYLE=Automatic \
-            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+            CODE_SIGN_STYLE=Automatic
 
       - name: Read archived app version
         id: app-version
@@ -521,7 +500,6 @@ jobs:
           fi
 
           version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app_path/Info.plist")
-          build=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app_path/Info.plist")
           bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_path/Info.plist")
 
           if [[ "$bundle_id" != "$EXPECTED_BUNDLE_ID" ]]; then
@@ -531,36 +509,10 @@ jobs:
 
           {
             echo "version=$version"
-            echo "build=$build"
             echo "bundle_id=$bundle_id"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Upload archive to TestFlight
-        env:
-          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-        run: |
-          set -euo pipefail
-
-          export_options="$RUNNER_TEMP/TestFlightExportOptions.plist"
-          /usr/libexec/PlistBuddy -c 'Add :destination string upload' "$export_options"
-          /usr/libexec/PlistBuddy -c 'Add :method string app-store-connect' "$export_options"
-          /usr/libexec/PlistBuddy -c 'Add :signingStyle string automatic' "$export_options"
-          /usr/libexec/PlistBuddy -c "Add :teamID string $APPLE_TEAM_ID" "$export_options"
-          /usr/libexec/PlistBuddy -c 'Add :manageAppVersionAndBuildNumber bool false' "$export_options"
-          /usr/libexec/PlistBuddy -c 'Add :uploadSymbols bool true' "$export_options"
-
-          xcodebuild -exportArchive \
-            -archivePath "$ARCHIVE_PATH" \
-            -exportPath "$EXPORT_PATH" \
-            -exportOptionsPlist "$export_options" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$APP_STORE_CONNECT_API_KEY_PATH" \
-            -authenticationKeyID "$API_KEY_ID" \
-            -authenticationKeyIssuerID "$API_ISSUER_ID"
-
       - name: Ensure fastlane is available
-        if: inputs.testflight_group != 'Upload only'
         run: |
           set -euo pipefail
 
@@ -575,9 +527,135 @@ jobs:
           echo "GEM_PATH=$fastlane_gem_home" >> "$GITHUB_ENV"
           echo "$fastlane_gem_home/bin" >> "$GITHUB_PATH"
 
+          fastlane_ruby=$(sed -n '1s/^#!//p' "$fastlane_gem_home/bin/fastlane")
+          if [[ ! -x "$fastlane_ruby" ]]; then
+            echo "::error::Unable to resolve the Ruby interpreter used by fastlane."
+            exit 1
+          fi
+          echo "FASTLANE_RUBY=$fastlane_ruby" >> "$GITHUB_ENV"
+
           GEM_HOME="$fastlane_gem_home" \
           GEM_PATH="$fastlane_gem_home" \
             "$fastlane_gem_home/bin/fastlane" "_${FASTLANE_VERSION}_" --version
+
+      - name: Snapshot existing TestFlight builds
+        id: existing-builds
+        env:
+          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+          VERSION: ${{ steps.app-version.outputs.version }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+
+          "$FASTLANE_RUBY" <<'RUBY'
+          require "spaceship/connect_api"
+
+          Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.from_json_file(
+            ENV.fetch("FASTLANE_API_KEY_PATH")
+          )
+          app = Spaceship::ConnectAPI::App.find(ENV.fetch("BUNDLE_ID"))
+          unless app
+            warn "::error::App Store Connect app not found for #{ENV.fetch('BUNDLE_ID')}."
+            exit 1
+          end
+
+          builds = Spaceship::ConnectAPI::Build.all(
+            app_id: app.id,
+            version: ENV.fetch("VERSION"),
+            platform: "IOS",
+            limit: 30
+          )
+          File.open(ENV.fetch("GITHUB_OUTPUT"), "a") do |output|
+            output.puts "ids=#{builds.map(&:id).join(',')}"
+          end
+          RUBY
+
+      - name: Upload archive to TestFlight
+        id: upload
+        env:
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+        run: |
+          set -euo pipefail
+
+          export_options="$RUNNER_TEMP/TestFlightExportOptions.plist"
+          /usr/libexec/PlistBuddy -c 'Add :destination string upload' "$export_options"
+          /usr/libexec/PlistBuddy -c 'Add :method string app-store-connect' "$export_options"
+          /usr/libexec/PlistBuddy -c 'Add :signingStyle string automatic' "$export_options"
+          /usr/libexec/PlistBuddy -c "Add :teamID string $APPLE_TEAM_ID" "$export_options"
+          /usr/libexec/PlistBuddy -c 'Add :manageAppVersionAndBuildNumber bool true' "$export_options"
+          /usr/libexec/PlistBuddy -c 'Add :uploadSymbols bool true' "$export_options"
+
+          echo "started_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$EXPORT_PATH" \
+            -exportOptionsPlist "$export_options" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$APP_STORE_CONNECT_API_KEY_PATH" \
+            -authenticationKeyID "$API_KEY_ID" \
+            -authenticationKeyIssuerID "$API_ISSUER_ID"
+
+      - name: Resolve App Store Connect build number
+        id: uploaded-build
+        env:
+          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+          VERSION: ${{ steps.app-version.outputs.version }}
+          EXISTING_BUILD_IDS: ${{ steps.existing-builds.outputs.ids }}
+          UPLOAD_STARTED_AT: ${{ steps.upload.outputs.started_at }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+
+          "$FASTLANE_RUBY" <<'RUBY'
+          require "spaceship/connect_api"
+          require "set"
+          require "time"
+
+          Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.from_json_file(
+            ENV.fetch("FASTLANE_API_KEY_PATH")
+          )
+
+          app = Spaceship::ConnectAPI::App.find(ENV.fetch("BUNDLE_ID"))
+          unless app
+            warn "::error::App Store Connect app not found for #{ENV.fetch('BUNDLE_ID')}."
+            exit 1
+          end
+
+          upload_started_at = Time.iso8601(ENV.fetch("UPLOAD_STARTED_AT"))
+          existing_build_ids = ENV.fetch("EXISTING_BUILD_IDS").split(",").to_set
+          deadline = Time.now + 1_800
+          uploaded_build = nil
+
+          loop do
+            builds = Spaceship::ConnectAPI::Build.all(
+              app_id: app.id,
+              version: ENV.fetch("VERSION"),
+              platform: "IOS",
+              limit: 30
+            )
+            uploaded_build = builds
+              .reject { |build| existing_build_ids.include?(build.id) }
+              .select { |build| Time.parse(build.uploaded_date.to_s) >= upload_started_at }
+              .max_by { |build| Time.parse(build.uploaded_date.to_s) }
+            break if uploaded_build
+
+            if Time.now >= deadline
+              warn "::error::Timed out waiting for the uploaded build to appear in App Store Connect."
+              exit 1
+            end
+
+            puts "Waiting for App Store Connect to expose the uploaded build number..."
+            sleep 15
+          end
+
+          puts "Apple assigned build number #{uploaded_build.version}."
+          File.open(ENV.fetch("GITHUB_OUTPUT"), "a") do |output|
+            output.puts "number=#{uploaded_build.version}"
+            output.puts "id=#{uploaded_build.id}"
+          end
+          RUBY
 
       - name: Distribute build to external TestFlight group
         if: inputs.testflight_group != 'Upload only'
@@ -585,7 +663,7 @@ jobs:
           TESTFLIGHT_GROUP: ${{ inputs.testflight_group }}
           WHAT_TO_TEST: ${{ inputs.what_to_test }}
           VERSION: ${{ steps.app-version.outputs.version }}
-          BUILD: ${{ steps.app-version.outputs.build }}
+          BUILD: ${{ steps.uploaded-build.outputs.number }}
           BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
         run: |
           set -euo pipefail
@@ -612,7 +690,7 @@ jobs:
           REQUESTED_WALLET_REF: ${{ inputs.wallet_ref }}
           REQUESTED_PLATFORM_REF: ${{ inputs.platform_ref }}
           VERSION: ${{ steps.app-version.outputs.version }}
-          BUILD: ${{ steps.app-version.outputs.build }}
+          BUILD: ${{ steps.uploaded-build.outputs.number }}
           BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
           TESTFLIGHT_GROUP: ${{ inputs.testflight_group }}
         run: |
