@@ -548,7 +548,7 @@ jobs:
           cd "$RUNNER_TEMP"
 
           "$FASTLANE_RUBY" <<'RUBY'
-          require "spaceship/connect_api"
+          require "spaceship"
 
           Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.from_json_file(
             ENV.fetch("FASTLANE_API_KEY_PATH")
@@ -609,7 +609,7 @@ jobs:
           cd "$RUNNER_TEMP"
 
           "$FASTLANE_RUBY" <<'RUBY'
-          require "spaceship/connect_api"
+          require "spaceship"
           require "set"
           require "time"
 
