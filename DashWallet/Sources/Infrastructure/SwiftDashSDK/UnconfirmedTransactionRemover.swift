@@ -4,7 +4,7 @@
 //
 //  Removes never-accepted transactions from local wallet state. Two
 //  entry points share the surgery:
-//  - `remove(txidWire:)` — the tx-detail "Remove if not on Blockchain"
+//  - `remove(txidWire:)` — the tx-detail "Remove if Not on Network"
 //    action for one stuck transaction (a parked asset lock, or any
 //    network-dropped send such as a stalled CoinJoin sweep chunk);
 //    explorer-checked per the rails below.
@@ -72,7 +72,7 @@ struct UnconfirmedTransactionRemover {
             case .confirmedLocally:
                 return NSLocalizedString("This transaction is confirmed and can't be removed.", comment: "Remove never-accepted transaction: local state says it's on-chain")
             case .transactionOnChain:
-                return NSLocalizedString("Transaction is on the blockchain", comment: "Remove never-accepted transaction: refused because the explorer found it")
+                return NSLocalizedString("Transaction is known to the network", comment: "Remove never-accepted transaction: refused because the explorer found it")
             case .verificationUnavailable:
                 return NSLocalizedString("Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again.", comment: "Remove never-accepted transaction: explorer unreachable")
             }

@@ -308,7 +308,7 @@ extension TXDetailViewController {
     private func confirmRemoveUnconfirmed() {
         let alert = UIAlertController(
             title: NSLocalizedString("Remove this transaction?", comment: "Remove never-accepted transaction: confirmation title"),
-            message: NSLocalizedString("The wallet first checks a block explorer — a transaction that is on the blockchain is never removed. If it isn't found, the transaction is deleted from this wallet on this device and the coins it was trying to spend become available again. The wallet then rescans recent blocks, so if the transaction does turn out to be on the blockchain, it comes back on its own. Nothing is sent to the network.", comment: "Remove never-accepted transaction: confirmation body"),
+            message: NSLocalizedString("The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network.", comment: "Remove never-accepted transaction: confirmation body"),
             preferredStyle: .alert)
         alert.addAction(UIAlertAction(
             title: NSLocalizedString("Remove Transaction", comment: "Remove never-accepted transaction: destructive confirm button"),
@@ -351,12 +351,12 @@ extension TXDetailViewController {
         }
     }
 
-    /// The explorer says the transaction IS on the blockchain — removal
-    /// is refused and the wallet just needs to catch up.
+    /// The explorer knows the transaction, either from the mempool or a
+    /// block. Removal is refused until the local wallet catches up.
     private func presentRemovalRefused() {
         let alert = UIAlertController(
-            title: NSLocalizedString("Transaction is on the blockchain", comment: "Remove never-accepted transaction: refused because the explorer found it"),
-            message: NSLocalizedString("A block explorer reports this transaction on the Dash network, so it wasn't removed. The wallet will catch up with its confirmation on its own.", comment: "Remove never-accepted transaction: refusal body"),
+            title: NSLocalizedString("Transaction is known to the network", comment: "Remove never-accepted transaction: refused because the explorer found it"),
+            message: NSLocalizedString("A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block.", comment: "Remove never-accepted transaction: refusal body"),
             preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
         present(alert, animated: true)
@@ -416,7 +416,7 @@ extension TXDetailViewController {
                         cell.titleLabel.text = title
                         cell.titleLabel.textColor = .dw_label()
                     } else if item == .removeUnconfirmed {
-                        cell.titleLabel.text = NSLocalizedString("Remove if not on Blockchain", comment: "Delete a never-accepted transaction from local wallet state")
+                        cell.titleLabel.text = NSLocalizedString("Remove if Not on Network", comment: "Delete a never-accepted transaction from local wallet state")
                         cell.titleLabel.textColor = .systemRed
                     }
                     return cell
