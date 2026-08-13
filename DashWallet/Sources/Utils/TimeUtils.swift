@@ -71,11 +71,26 @@ class TimeUtils {
                         return
                     }
                     
+                    // A datagram connection hands back whatever arrived, so
+                    // `minimumIncompleteLength` is not a floor here: a runt or
+                    // rewritten packet (captive portal, spoofed reply to this
+                    // ephemeral port) is delivered with no error, and indexing
+                    // past its end traps instead of throwing.
+                    // Copied into an array so the offsets below are positions
+                    // in the packet: `Data` subscripting is absolute, and a
+                    // sliced `Data` does not start at 0.
+                    let packet = [UInt8](message)
+
+                    guard packet.count >= 44 else {
+                        safeResume(with: nil)
+                        return
+                    }
+
                     // Parse the NTP response.
-                    let seconds = Int64(message[40]) << 24 |
-                        Int64(message[41]) << 16 |
-                        Int64(message[42]) << 8 |
-                        Int64(message[43])
+                    let seconds = Int64(packet[40]) << 24 |
+                        Int64(packet[41]) << 16 |
+                        Int64(packet[42]) << 8 |
+                        Int64(packet[43])
                     
                     let result = (seconds - 2_208_988_800) * 1000
                     safeResume(with: result)
