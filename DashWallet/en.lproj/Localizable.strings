@@ -5572,3 +5572,11 @@
 "The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.";
 "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone.";
 "Wipe All Wallets" = "Wipe All Wallets";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Choose Wallet";
+"Couldn’t Read Recovery Phrases" = "Couldn’t Read Recovery Phrases";
+"No Recovery Phrase Found" = "No Recovery Phrase Found";
+"No recovery phrase is stored on this device." = "No recovery phrase is stored on this device.";
+"Select the wallet whose recovery phrase you want to view." = "Select the wallet whose recovery phrase you want to view.";
+"The recovery phrases stored on this device could not be read. Please try again." = "The recovery phrases stored on this device could not be read. Please try again.";

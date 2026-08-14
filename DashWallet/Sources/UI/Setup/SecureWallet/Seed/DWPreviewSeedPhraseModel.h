@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, class, nonatomic, assign) BOOL shouldVerifyPassphrase;
 
+- (instancetype)initWithExistingSeedPhrase:(NSString *)seedPhrase;
 - (DWSeedPhraseModel *)getOrCreateNewWallet;
 - (void)clearAllWallets;
 

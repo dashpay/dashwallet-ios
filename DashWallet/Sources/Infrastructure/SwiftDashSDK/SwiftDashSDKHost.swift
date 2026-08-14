@@ -261,6 +261,13 @@ final class SwiftDashSDKHost {
         }
     }
 
+    /// Strict exact-id read for flows that already selected a concrete wallet.
+    /// Unlike the legacy active-wallet reader, this never substitutes another
+    /// Keychain entry when the requested id is missing or unreadable.
+    nonisolated static func strictlyPersistedMnemonic(for walletId: Data) throws -> String {
+        try WalletStorage().retrieveMnemonic(for: walletId)
+    }
+
     /// Count of persisted SDK wallet ids. Attributes-only Keychain
     /// enumeration — no mnemonic secrets are read. Throws on enumeration
     /// failure so destructive callers stay fail-closed.
