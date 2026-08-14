@@ -314,15 +314,31 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(NormalizePlatformAddressActivityUnits().version, 20260727140000)
     }
 
-    func testCoreToShieldedMinimumIsFirstWholeDuffStrictlyAbovePoolFee() {
+    func testCoreToShieldedPoolFeeDuffsRoundsUpToCoverTheCreditFee() {
+        // A 200-credit remainder rounds up to the next whole duff…
         XCTAssertEqual(
-            CoreToShieldedAmountPolicy.minimumAmountDuffs(
+            CoreToShieldedAmountPolicy.poolFeeDuffs(poolFeeCredits: 212_851_200),
+            212_852)
+        // …while an exact duff multiple must NOT gain a spurious +1.
+        XCTAssertEqual(
+            CoreToShieldedAmountPolicy.poolFeeDuffs(poolFeeCredits: 212_851_000),
+            212_851)
+    }
+
+    func testCoreToShieldedLockValueIsAmountPlusRoundedUpFee() {
+        // Fee-on-top: the lock delivers the full typed amount to the pool.
+        XCTAssertEqual(
+            CoreToShieldedAmountPolicy.lockValueDuffs(
+                forAmountDuffs: 1_000_000,
                 poolFeeCredits: 212_851_200),
-            212_852)
-        XCTAssertEqual(
-            CoreToShieldedAmountPolicy.minimumAmountDuffs(
-                poolFeeCredits: 212_851_000),
-            212_852)
+            1_212_852)
+    }
+
+    func testCoreToShieldedLockValueFailsClosedOnOverflow() {
+        XCTAssertNil(
+            CoreToShieldedAmountPolicy.lockValueDuffs(
+                forAmountDuffs: UInt64.max,
+                poolFeeCredits: 212_851_200))
     }
 
     func testShieldedSweepChoosesPrefixWithLargestNetPayout() {

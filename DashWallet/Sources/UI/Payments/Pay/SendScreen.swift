@@ -898,7 +898,7 @@ struct SendConfirmSheet: View {
             divider
             summaryRow(
                 label: NSLocalizedString("Total", comment: ""),
-                value: dashDuffs.formattedDashAmount)
+                value: totalString)
         }
         .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
@@ -969,6 +969,25 @@ struct SendConfirmSheet: View {
         guard let credits = networkFeeCredits else { return "—" }
         let dash = Decimal(credits) / Self.creditsPerDash
         return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
+    }
+
+    /// What actually leaves the source balance. Core→Shielded charges the
+    /// pool fee on top of the amount (the executed lock value); every other
+    /// route's total is the amount itself. "—" when the fee estimate is
+    /// unavailable — `canContinue` fails closed before that can be confirmed,
+    /// but the row must never show the un-inflated number.
+    private var totalString: String {
+        guard route == .coreToShielded else {
+            return dashDuffs.formattedDashAmount
+        }
+        guard let amountDuffs = UInt64(exactly: dashDuffs),
+              let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
+              let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
+                  forAmountDuffs: amountDuffs,
+                  poolFeeCredits: poolFeeCredits),
+              let signedLockDuffs = Int64(exactly: lockDuffs)
+        else { return "—" }
+        return signedLockDuffs.formattedDashAmount
     }
 
     // MARK: - Info card
@@ -1070,7 +1089,7 @@ struct SendConfirmSheet: View {
                     return
                 }
                 await coordinator.performAssetLock(
-                    amountDuffs: UInt64(dashDuffs),
+                    recipientAmountDuffs: UInt64(dashDuffs),
                     recipientRaw43: destinationRaw43)
             case .platformToPlatform:
                 await coordinator.performPlatformSend(

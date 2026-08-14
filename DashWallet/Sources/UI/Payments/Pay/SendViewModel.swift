@@ -34,8 +34,9 @@ final class SendViewModel: ObservableObject {
     enum Route: Equatable {
         case coreToCore
         /// BIP44 UTXOs → asset lock → Type 18 shield note for the
-        /// recipient's Orchard address (remainder semantics: they receive
-        /// `lock_value − pool_fee`).
+        /// recipient's Orchard address. The pool fee rides on top: the
+        /// coordinator locks `amount + pool_fee`, so the recipient receives
+        /// the full typed amount.
         case coreToShielded
         case platformToPlatform
         case platformToCore
@@ -443,9 +444,9 @@ final class SendViewModel: ObservableObject {
         switch route {
         case .coreToCore, .coreToShielded, .platformToCore, nil:
             // L1 send fees are handled by the payment processor; the
-            // asset-lock shield carves its pool fee from the locked value
-            // (nothing reserved from the Core balance, mirroring the
-            // internal transfer); the full-balance platform withdrawal
+            // asset-lock shield's pool fee is duff-denominated and enforced
+            // in the route branches (`canContinue`, Max) directly, mirroring
+            // the internal transfer; the full-balance platform withdrawal
             // nets its fee out of the preflighted payout.
             return 0
         case .platformToPlatform:
@@ -511,38 +512,18 @@ final class SendViewModel: ObservableObject {
         }
     }
 
-    /// Type-18's pool fee is carved out of the one-time asset-lock value.
-    /// Reuse the internal-transfer policy so external sends to a shielded
-    /// address cannot reach Confirm with an amount the SDK must reject.
-    var coreToShieldedMinimumAmountDuffs: UInt64? {
-        guard route == .coreToShielded,
-              let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits
-        else { return nil }
-        return CoreToShieldedAmountPolicy.minimumAmountDuffs(
-            poolFeeCredits: poolFeeCredits)
-    }
-
     /// Inline explanation for an amount rejected before Confirm. Keep zero
     /// quiet until the user types.
     var amountValidationMessage: String? {
         if let shieldedMaxNotice { return shieldedMaxNotice }
         guard dashDuffsUnsigned > 0, let route else { return nil }
 
-        // Route minimum first: below the Type-18 pool fee the SDK refuses the
-        // asset lock however much Core balance backs it.
-        if route == .coreToShielded {
-            guard let minimumDuffs = coreToShieldedMinimumAmountDuffs else {
-                return Self.feeEstimateUnavailableMessage
-            }
-            if dashDuffsUnsigned < minimumDuffs {
-                let formattedMinimum =
-                    "\(minimumDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "The minimum amount you can send is %@",
-                        comment: "External shielded send minimum amount"),
-                    formattedMinimum)
-            }
+        // The Core → Shielded pool fee rides on top of the amount, so there
+        // is no route minimum — but without the estimate the lock value
+        // cannot be derived, so fail closed before Confirm.
+        if route == .coreToShielded,
+           CoreToShieldedAmountPolicy.currentPoolFeeDuffs == nil {
+            return Self.feeEstimateUnavailableMessage
         }
 
         return insufficientBalanceMessage
@@ -556,11 +537,24 @@ final class SendViewModel: ObservableObject {
         let balanceName = source.balanceName
 
         switch route {
-        case .coreToCore, .coreToShielded:
+        case .coreToCore:
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
                 spendableDuffs: coreBalanceDuffs)
+
+        case .coreToShielded:
+            // The pool fee rides on top of the amount, so the spendable
+            // envelope shrinks by the fee. Mirrors `canContinue`:
+            // requested > spendable − fee ⟺ requested + fee > spendable.
+            guard let feeDuffs = CoreToShieldedAmountPolicy.currentPoolFeeDuffs else {
+                return Self.feeEstimateUnavailableMessage
+            }
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: balanceName,
+                requestedDuffs: dashDuffsUnsigned,
+                spendableDuffs: coreBalanceDuffs > feeDuffs
+                    ? coreBalanceDuffs - feeDuffs : 0)
 
         case .platformToPlatform:
             guard let reserve = feeReserveCredits else {
@@ -653,14 +647,15 @@ final class SendViewModel: ObservableObject {
             // unfundable send with its own error, so gate on the balance only.
             return dashDuffsUnsigned <= coreBalanceDuffs
         case .coreToShielded:
-            // Asset-lock route: the pool fee is carved from the locked value
-            // and the Rust side rejects an undersized lock. Enforce the same
-            // strict minimum as the internal Core → Shielded transfer before
-            // opening Confirm.
-            guard let minimumDuffs = coreToShieldedMinimumAmountDuffs,
-                  dashDuffsUnsigned >= minimumDuffs
+            // Fee-on-top: the lock value is amount + pool fee, so the balance
+            // must cover both. Fails closed when the estimate is unavailable
+            // or the sum overflows — same policy as the internal transfer.
+            guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
+                  let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
+                      forAmountDuffs: dashDuffsUnsigned,
+                      poolFeeCredits: poolFeeCredits)
             else { return false }
-            return dashDuffsUnsigned <= coreBalanceDuffs
+            return lockDuffs <= coreBalanceDuffs
         case .platformToPlatform:
             guard let reserve = feeReserveCredits else { return false }
             return platformCredits >= reserve
@@ -689,11 +684,25 @@ final class SendViewModel: ObservableObject {
         clearShieldedMaxSelection()
         let sourceDuffs: UInt64
         switch route {
-        case .coreToCore, .coreToShielded, nil:
+        case .coreToCore, nil:
             // Fee-aware max: spendable minus the send fee reserve (mirrors
             // DSAccount.maxOutputAmount), never the raw total — which would
             // include unconfirmed/immature funds and leave no room for the fee.
             sourceDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+        case .coreToShielded:
+            // Fee-on-top Max: the lock is amount + pool fee, so the largest
+            // recipient amount is the L1-fee-aware spendable minus the pool
+            // fee. Fails closed (fills 0) when the estimate is unavailable.
+            let spendable = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+            guard let feeDuffs = CoreToShieldedAmountPolicy.currentPoolFeeDuffs else {
+                shieldedMaxNotice = Self.feeEstimateUnavailableMessage
+                sourceDuffs = 0
+                break
+            }
+            sourceDuffs = spendable > feeDuffs ? spendable - feeDuffs : 0
+            if spendable > 0, sourceDuffs == 0 {
+                shieldedMaxNotice = InternalTransferViewModel.feeReserveExceedsBalanceMessage(source)
+            }
         case .platformToPlatform:
             sourceDuffs = creditsMinusFeeReserve(platformCredits) / 1000
         case .platformToCore:
