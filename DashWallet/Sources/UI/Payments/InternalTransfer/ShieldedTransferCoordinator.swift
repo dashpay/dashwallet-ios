@@ -260,6 +260,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
+        case shieldedAmountExceedsBundle(UInt64)
         case transferFailed(Error)
 
         var errorDescription: String? {
@@ -313,6 +314,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "Your Shielded balance changed. Close this confirmation and tap Max again.",
                     comment: "Shielded sweep changed before submit")
+            case .shieldedAmountExceedsBundle(let ceiling):
+                let formatted = (ceiling / 1000).formattedDashAmountWithoutCurrencySymbol
+                return String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Your Shielded balance is split across notes, and at most %@ DASH of it can be sent in one transaction.",
+                        comment: "Shielded amount above the single-transaction ceiling"),
+                    formatted)
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
             }
@@ -391,6 +399,36 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 feeCredits: exact.feeCredits,
                 inputCredits: exact.inputCredits,
                 remainingCredits: allCredits - exact.inputCredits))
+    }
+
+    /// Largest amount the pool can fund inside ONE transition — the sweep
+    /// plan's payout, which is by construction the best `ShieldedActionBudget`
+    /// notes can do. A larger amount needs more notes than the 20 KiB
+    /// state-transition limit admits, so it would be rejected at broadcast
+    /// after the proof was built.
+    ///
+    /// `nil` while the note set is mid-reconcile — the caller then has no
+    /// note-aware bound and falls back to its balance envelope.
+    static func spendCeilingCredits(
+        feeKind: PlatformWalletManager.ShieldedFeeKind
+    ) -> UInt64? {
+        guard case .ready(let plan) = sweepAvailability(feeKind: feeKind) else { return nil }
+        return plan.amountCredits
+    }
+
+    /// Fails closed when a non-sweep amount needs more notes than one
+    /// transition can carry. The amount screens check this too, but the guard
+    /// belongs here as well: it is the last point before authorization and
+    /// proof generation, and it covers callers that never ran that check.
+    private func rejectIfAboveSpendCeiling(
+        _ amountCredits: UInt64,
+        feeKind: PlatformWalletManager.ShieldedFeeKind
+    ) -> Bool {
+        guard let ceiling = Self.spendCeilingCredits(feeKind: feeKind),
+              amountCredits > ceiling
+        else { return false }
+        handleFailure(CoordinatorError.shieldedAmountExceedsBundle(ceiling))
+        return true
     }
 
     // MARK: - Public API
@@ -758,6 +796,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return
             }
         } else {
+            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .withdrawal) { return }
             submittedAmount = amountCredits
         }
 
@@ -863,6 +902,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return
             }
         } else {
+            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .unshield) { return }
             submittedAmount = amountCredits
         }
 
@@ -1118,6 +1158,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return
             }
         } else {
+            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .transfer) { return }
             submittedAmount = amountCredits
         }
 

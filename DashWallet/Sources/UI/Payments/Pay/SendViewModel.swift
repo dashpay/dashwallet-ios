@@ -177,13 +177,11 @@ final class SendViewModel: ObservableObject {
     /// Recomputes `shieldedSpendCeilingCredits` from the current note set.
     /// Cached rather than computed per keystroke — it reads SwiftData.
     private func refreshShieldedSpendCeiling() {
-        guard let feeKind = shieldedFeeKind(for: route),
-              case .ready(let plan) = ShieldedTransferCoordinator.sweepAvailability(feeKind: feeKind)
-        else {
+        guard let feeKind = shieldedFeeKind(for: route) else {
             shieldedSpendCeilingCredits = nil
             return
         }
-        shieldedSpendCeilingCredits = plan.amountCredits
+        shieldedSpendCeilingCredits = ShieldedTransferCoordinator.spendCeilingCredits(feeKind: feeKind)
     }
 
     // MARK: - Destination classification

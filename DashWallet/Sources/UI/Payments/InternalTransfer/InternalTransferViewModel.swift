@@ -472,6 +472,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// input-selection envelope.
     private func routeDidChange() {
         clearMaxSelection()
+        refreshShieldedSpendCeiling()
 
         if route == .platformToCore {
             startWithdrawalPreflightIfNeeded()
@@ -543,6 +544,14 @@ final class InternalTransferViewModel: ObservableObject {
     /// balance mirror. Updates whenever a shielded sync pass completes.
     @Published private(set) var shieldedBalance: UInt64 = 0
 
+    /// Largest amount the pool can fund inside ONE transition — see
+    /// `ShieldedTransferCoordinator.spendCeilingCredits`. A typed amount above
+    /// this needs more notes than the 20 KiB state-transition limit admits and
+    /// would be rejected at broadcast, after the proof was built. `nil` while
+    /// the note set is reconciling, in which case the balance envelope is the
+    /// only bound this screen can apply; the coordinator still fails closed.
+    @Published private(set) var shieldedSpendCeilingCredits: UInt64?
+
     /// Drives the one-time restore gate reactively. A normal catch-up may set
     /// this to false, but it only blocks while the recovery marker is active.
     @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
@@ -591,8 +600,28 @@ final class InternalTransferViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] credits in
                 self?.shieldedBalance = credits
+                self?.refreshShieldedSpendCeiling()
             }
             .store(in: &cancellables)
+    }
+
+    /// Fee kind for the pool-spending routes; `nil` for every other route.
+    private func shieldedFeeKind(for route: InternalTransferRoute) -> PlatformWalletManager.ShieldedFeeKind? {
+        switch route {
+        case .shieldedToCore: return .withdrawal
+        case .shieldedToPlatform: return .unshield
+        default: return nil
+        }
+    }
+
+    /// Recomputes `shieldedSpendCeilingCredits` from the current note set.
+    /// Cached rather than computed per keystroke — it reads SwiftData.
+    private func refreshShieldedSpendCeiling() {
+        guard let feeKind = shieldedFeeKind(for: route) else {
+            shieldedSpendCeilingCredits = nil
+            return
+        }
+        shieldedSpendCeilingCredits = ShieldedTransferCoordinator.spendCeilingCredits(feeKind: feeKind)
     }
 
     /// The raw numeric value the user has typed, with locale comma normalised
@@ -710,11 +739,19 @@ final class InternalTransferViewModel: ObservableObject {
             guard let reserve = feeReserveCredits else {
                 return Self.feeEstimateUnavailableMessage
             }
-            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+            if let message = TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedCredits: creditsPreview,
                 balanceCredits: shieldedBalance,
-                feeReserveCredits: reserve)
+                feeReserveCredits: reserve) {
+                return message
+            }
+            // Affordable against the balance, but still unspendable in one
+            // transition when the notes are too fragmented.
+            if let ceiling = shieldedSpendCeilingCredits, creditsPreview > ceiling {
+                return Self.shieldedCeilingMessage(ceiling)
+            }
+            return nil
 
         case .platformToCore:
             // Stay quiet while the preflight is still resolving: Continue is
@@ -787,8 +824,13 @@ final class InternalTransferViewModel: ObservableObject {
             // pool (recipient receives the full amount), so the balance must
             // cover amount + fee. Fail closed if the reserve is unavailable.
             guard let reserve = feeReserveCredits else { return false }
-            return shieldedBalance >= reserve
-                && creditsPreview <= shieldedBalance - reserve
+            guard shieldedBalance >= reserve,
+                  creditsPreview <= shieldedBalance - reserve
+            else { return false }
+            if let ceiling = shieldedSpendCeilingCredits {
+                return creditsPreview <= ceiling
+            }
+            return true
         case .platformToCore:
             // Either the exact full-balance net payout (Max → AUTO path over
             // every address), or a partial amount within the single-input
@@ -1358,6 +1400,15 @@ final class InternalTransferViewModel: ObservableObject {
             NSLocalizedString(
                 "%@ DASH is still confirming. Use Max again once it settles.",
                 comment: "Shielded Max pending change"),
+            formatted)
+    }
+
+    private static func shieldedCeilingMessage(_ credits: UInt64) -> String {
+        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "Your Shielded balance is split across notes, and at most %@ DASH of it can be sent in one transaction. Send the rest afterwards.",
+                comment: "Shielded amount above the single-transaction ceiling"),
             formatted)
     }
 
