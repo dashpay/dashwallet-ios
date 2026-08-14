@@ -20,6 +20,13 @@ import Foundation
 private let formatterLock = NSLock()
 private var _cachedFormatters: [String: NumberFormatter] = [:]
 
+/// Guards the two lazily built singletons below. Deliberately not
+/// `formatterLock`: the `fiatFormatter` getter calls
+/// `fiatFormatter(currencyCode:)`, which takes that lock, and `NSLock` is not
+/// recursive. Nothing under `formatterLock` reaches back for this one, so the
+/// two never interleave.
+private let sharedFormatterLock = NSLock()
+
 private var _decimalFormatter: NumberFormatter!
 private var _fiatFormatter: NumberFormatter!
 private var _dashFormatter: NumberFormatter = {
@@ -80,6 +87,9 @@ private var _csvDashFormatter: NumberFormatter = {
 extension NumberFormatter {
 
     static var decimalFormatter: NumberFormatter {
+        sharedFormatterLock.lock()
+        defer { sharedFormatterLock.unlock() }
+
         guard let formatter = _decimalFormatter else {
             let formatter = NumberFormatter()
             formatter.isLenient = true
@@ -106,6 +116,9 @@ extension NumberFormatter {
     /// - Returns:`NumberFormatter`
     ///
     static var fiatFormatter: NumberFormatter {
+        sharedFormatterLock.lock()
+        defer { sharedFormatterLock.unlock() }
+
         if let fiatFormatter = _fiatFormatter, fiatFormatter.currencyCode == App.fiatCurrency {
             return fiatFormatter
         }

@@ -76,7 +76,12 @@ class CrowdNodeWebViewController: BaseViewController {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 if state == .linkedOnline {
-                    self?.navigationController?.replaceLast(3, with: CrowdNodePortalController.controller())
+                    // Both routes here end at the portal with nothing behind
+                    // it: entry from the shortcut starts on the portal itself
+                    // (two screens deep by now), entry from Getting Started is
+                    // three. Set the stack instead of counting screens off it.
+                    self?.navigationController?
+                        .setViewControllers([CrowdNodePortalController.controller()], animated: true)
                 }
             }
             .store(in: &cancellableBag)

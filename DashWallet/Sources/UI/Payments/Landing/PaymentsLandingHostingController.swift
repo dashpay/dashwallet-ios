@@ -205,8 +205,10 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     private func shareCurrentAddress() {
         guard let address = viewModel.currentAddress else { return }
-        let share = UIActivityViewController(activityItems: [address], applicationActivities: nil)
-        present(share, animated: true)
+        // The share control lives in the SwiftUI hierarchy, so there is no
+        // sender view to anchor to — the helper's centred default carries the
+        // popover anchor iPad requires.
+        dw_presentActivityViewController(activityItems: [address])
     }
 
     private func pushSpecifyAmount() {

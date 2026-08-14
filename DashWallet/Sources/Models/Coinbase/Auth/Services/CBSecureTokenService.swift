@@ -25,7 +25,10 @@ class CBSecureTokenService: Codable {
     private(set) var accessTokenExpirationDate: Date
 
     private var httpClient: CoinbaseAPI { CoinbaseAPI.shared }
-    private var tokenRefreshTask: Task<Void, any Error>?
+    /// Every Coinbase request routes through `refreshTokenIfNeeded`, so
+    /// parallel requests reach this service at once; the actor keeps them to
+    /// one refresh and owns the task this class cannot hold safely.
+    private let tokenRefreshActor = TokenRefreshActor()
 
     init(accessToken: String, refreshToken: String, accessTokenExpirationDate: Date) {
         self.accessToken = accessToken
@@ -38,28 +41,19 @@ class CBSecureTokenService: Codable {
     }
 
     func refreshAccessToken() async throws {
-        if let task = tokenRefreshTask {
-            try await task.value
-            return
-        }
-
         if hasValidAccessToken &&
             accessTokenExpirationDate.timeIntervalSince1970 - Date().timeIntervalSince1970 > 300 {
             return
         }
 
-        tokenRefreshTask = Task {
-            defer {
-                tokenRefreshTask = nil
-            }
+        try await tokenRefreshActor.refreshToken(label: "Coinbase") { [weak self] in
+            guard let self else { return }
 
-            let result: CoinbaseTokenResponse = try await httpClient.request(.refreshToken(refreshToken: refreshToken))
-            accessToken = result.accessToken
-            refreshToken = result.refreshToken
-            accessTokenExpirationDate = result.expirationDate
+            let result: CoinbaseTokenResponse = try await self.httpClient.request(.refreshToken(refreshToken: self.refreshToken))
+            self.accessToken = result.accessToken
+            self.refreshToken = result.refreshToken
+            self.accessTokenExpirationDate = result.expirationDate
         }
-
-        try await tokenRefreshTask!.value
     }
 
     func revokeAccessToken() async throws {
