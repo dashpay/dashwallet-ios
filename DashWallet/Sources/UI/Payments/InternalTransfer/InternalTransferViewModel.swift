@@ -978,7 +978,7 @@ final class InternalTransferViewModel: ObservableObject {
                 sourceDuffs = 0
             case .unavailable:
                 maxNotice = NSLocalizedString(
-                    "Your Shielded balance is not ready to withdraw. Sync and try Max again.",
+                    "Your Shielded balance is not ready to spend. Sync and try Max again.",
                     comment: "Shielded Max unavailable")
                 sourceDuffs = 0
             }
@@ -1365,7 +1365,7 @@ final class InternalTransferViewModel: ObservableObject {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
         return String.localizedStringWithFormat(
             NSLocalizedString(
-                "%@ DASH requires another Shielded withdrawal. Use Max again after this transfer settles.",
+                "%@ DASH is held in notes that don't fit in one transaction. Use Max again after this one settles to send the rest.",
                 comment: "Shielded Max multi-bundle remainder"),
             formatted)
     }
