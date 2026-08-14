@@ -9,6 +9,7 @@
 
 import Foundation
 import OSLog
+import SwiftDashSDK
 import UIKit
 
 @objc(DWWalletDeleteAllConfirmationCoordinator)
@@ -132,14 +133,17 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
         completion: @escaping (Bool) -> Void
     ) {
         do {
-            let walletCount = try SwiftDashSDKHost.distinctStoredWalletCount()
+            let entries = try SwiftDashSDKHost.strictlyPersistedMnemonics()
+            let walletCount = SwiftDashSDKHost.distinctWalletCount(in: entries)
             guard walletCount > 0 else {
                 completion(true)
                 return
             }
+            let storedNetworks = try SwiftDashSDKHost.persistedSDKWalletNetworks(in: entries)
             presentPrimaryAlert(
                 from: host,
                 walletCount: walletCount,
+                storedNetworks: storedNetworks,
                 completion: completion)
         } catch {
             presentInventoryReadFailure(from: host, completion: completion)
@@ -149,6 +153,7 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
     private static func presentPrimaryAlert(
         from host: UIViewController,
         walletCount: Int,
+        storedNetworks: Set<Network>,
         completion: @escaping (Bool) -> Void
     ) {
         let title: String
@@ -192,6 +197,7 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
                             presentPrimaryAlert(
                                 from: host,
                                 walletCount: walletCount,
+                                storedNetworks: storedNetworks,
                                 completion: completion)
                         },
                         deleteAllHandler: { completion(false) })
@@ -202,10 +208,28 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
                 title: keepTitle,
                 style: .default,
                 handler: { _ in
-                    completion(true)
+                    keepWallets(
+                        storedNetworks: storedNetworks,
+                        completion: completion)
                 }))
 
         host.present(alert, animated: true)
+    }
+
+    private static func keepWallets(
+        storedNetworks: Set<Network>,
+        completion: @escaping (Bool) -> Void
+    ) {
+        guard storedNetworks.count == 1, let network = storedNetworks.first else {
+            completion(true)
+            return
+        }
+
+        Task { @MainActor in
+            let kind: WalletEnvironment.NetworkKind = network == .mainnet ? .mainnet : .testnet
+            _ = WalletEnvironment.switchToNetwork(kind)
+            completion(true)
+        }
     }
 
     private static func presentInventoryReadFailure(

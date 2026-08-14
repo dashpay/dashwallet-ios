@@ -26,9 +26,14 @@ enum SwiftDashSDKWalletWipeAuthorization: Int {
     case recoveryFlow
     case confirmedDeleteAll
     case screenshotReplacement
+    case debugReset
 
     fileprivate var removesPin: Bool {
         self != .screenshotReplacement
+    }
+
+    fileprivate var removesLegacyMnemonicAccounts: Bool {
+        self == .recoveryFlow || self == .confirmedDeleteAll
     }
 
     fileprivate var logLabel: String {
@@ -36,6 +41,7 @@ enum SwiftDashSDKWalletWipeAuthorization: Int {
         case .recoveryFlow: return "recovery-flow"
         case .confirmedDeleteAll: return "confirmed-delete-all"
         case .screenshotReplacement: return "screenshot-replacement"
+        case .debugReset: return "debug-reset"
         }
     }
 }
@@ -71,11 +77,17 @@ final class WalletWipeSerialExecutor {
 }
 
 enum SwiftDashSDKWalletDeletionError: LocalizedError {
+    case invalidMnemonic
     case managerUnavailable
     case unrecognizedWalletNetwork
+    case walletDeletionIncomplete
 
     var errorDescription: String? {
         switch self {
+        case .invalidMnemonic:
+            return NSLocalizedString(
+                "The wallet recovery phrase is invalid. Please try again.",
+                comment: "Wallets")
         case .managerUnavailable:
             return NSLocalizedString(
                 "The wallet manager is not available. Please try again.",
@@ -83,6 +95,10 @@ enum SwiftDashSDKWalletDeletionError: LocalizedError {
         case .unrecognizedWalletNetwork:
             return NSLocalizedString(
                 "The wallet network could not be determined. Please try again.",
+                comment: "Wallets")
+        case .walletDeletionIncomplete:
+            return NSLocalizedString(
+                "The wallet could not be fully removed. Please try again.",
                 comment: "Wallets")
         }
     }
@@ -98,19 +114,33 @@ enum SwiftDashSDKStoredWalletNetworkResolver {
         let canonicalMainnetWalletId: Data
     }
 
+    static func walletIds(for mnemonic: String) throws -> [Network: Data] {
+        let mnemonic = Mnemonic.normalizePhrase(mnemonic)
+        guard Mnemonic.validate(mnemonic) else {
+            throw SwiftDashSDKWalletDeletionError.invalidMnemonic
+        }
+        return [
+            .mainnet: try SwiftDashSDK.Wallet(
+                mnemonic: mnemonic,
+                network: .mainnet
+            ).id,
+            .testnet: try SwiftDashSDK.Wallet(
+                mnemonic: mnemonic,
+                network: .testnet
+            ).id,
+        ]
+    }
+
     static func resolve(walletId: Data, mnemonic: String) throws -> Resolution {
-        let mainnetWalletId = try SwiftDashSDK.Wallet(
-            mnemonic: mnemonic,
-            network: .mainnet
-        ).id
+        let walletIds = try walletIds(for: mnemonic)
+        guard let mainnetWalletId = walletIds[.mainnet],
+              let testnetWalletId = walletIds[.testnet] else {
+            throw SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork
+        }
         if mainnetWalletId == walletId {
             return Resolution(network: .mainnet, canonicalMainnetWalletId: mainnetWalletId)
         }
 
-        let testnetWalletId = try SwiftDashSDK.Wallet(
-            mnemonic: mnemonic,
-            network: .testnet
-        ).id
         if testnetWalletId == walletId {
             return Resolution(network: .testnet, canonicalMainnetWalletId: mainnetWalletId)
         }
@@ -186,6 +216,16 @@ final class SwiftDashSDKWalletWiper: NSObject {
         authorization: SwiftDashSDKWalletWipeAuthorization
     ) -> Bool {
         let startedAt = ContinuousClock.now
+
+        if authorization.removesLegacyMnemonicAccounts {
+            do {
+                try SwiftDashSDKKeyMigrator.removeAllLegacyMnemonicAccounts()
+            } catch {
+                logger.error(
+                    "legacy mnemonic cleanup failed; refusing SDK wipe: \(String(describing: error), privacy: .public)")
+                return false
+            }
+        }
 
         // Classify the global Keychain inventory by its network-derived wallet
         // id. Wallet ids and SwiftData stores are network-scoped even though a
@@ -356,6 +396,66 @@ final class SwiftDashSDKWalletWiper: NSObject {
             .joined()
         logger.error(
             "deleteWallet failed for \(network.networkName, privacy: .public)/\(walletLabel, privacy: .public)…: \(String(describing: error), privacy: .public)")
+    }
+
+    /// Delete every mainnet/testnet SDK representation of one recovery phrase.
+    /// Legacy cleanup runs first on the migrator's serial queue, so an import
+    /// that was already in flight is visible to the managers prepared below.
+    /// The live network is deleted last, preserving its mnemonic for Retry if
+    /// inactive-network deletion fails.
+    @MainActor
+    static func deleteLogicalWallet(mnemonic phrase: String) async throws {
+        let mnemonic = Mnemonic.normalizePhrase(phrase)
+        guard Mnemonic.validate(mnemonic) else {
+            throw SwiftDashSDKWalletDeletionError.invalidMnemonic
+        }
+
+        let walletIds = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(
+            for: mnemonic)
+        guard walletIds.count == 2 else {
+            throw SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork
+        }
+
+        try await SwiftDashSDKKeyMigrator.removeLegacyMnemonicAccounts(
+            matching: mnemonic)
+
+        let storage = WalletStorage()
+        let storedWalletIds = Set(try storage.listWalletIdsWithMnemonic())
+        let host = SwiftDashSDKHost.shared
+        var networks: [Network] = [.mainnet, .testnet]
+        if let current = host.runningNetwork ?? WalletEnvironment.network,
+           let currentIndex = networks.firstIndex(of: current) {
+            networks.remove(at: currentIndex)
+            networks.append(current)
+        }
+
+        var deletions: [(network: Network, walletId: Data, manager: PlatformWalletManager)] = []
+        for network in networks {
+            guard let walletId = walletIds[network] else { continue }
+            let manager = try host.managerForWipe(network: network)
+            if storedWalletIds.contains(walletId) || manager.wallets[walletId] != nil {
+                deletions.append((network, walletId, manager))
+            }
+        }
+
+        for deletion in deletions {
+            try deleteWalletFromSDK(
+                deletion.walletId,
+                deleteWallet: { walletId in
+                    try deletion.manager.deleteWallet(walletId: walletId)
+                })
+
+            let kind: WalletEnvironment.NetworkKind =
+                deletion.network == .mainnet ? .mainnet : .testnet
+            if WalletEnvironment.activeWalletId(for: kind) == deletion.walletId {
+                WalletEnvironment.setActiveWalletId(nil, for: kind)
+            }
+        }
+
+        let remaining = Set(try storage.listWalletIdsWithMnemonic())
+        guard walletIds.values.allSatisfy({ !remaining.contains($0) }) else {
+            throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
+        }
     }
 
     /// Full per-wallet SwiftDashSDK deletion of a single wallet: the Rust

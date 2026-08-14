@@ -51,6 +51,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
 @property (nullable, nonatomic, strong) NSURL *deferredDeeplinkToProcess;
 @property (nonatomic, assign) BOOL walletWipeInProgress;
+
+- (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
+- (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization;
 #if DASHPAY
 @property (null_resettable, nonatomic, strong) DWInvitationSetupState *invitationSetup;
 #endif
@@ -361,6 +364,14 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 /// FIFO barrier has completed. This avoids displaying a tappable-looking
 /// onboarding screen while synchronous SDK deletion still occupies MainActor.
 - (void)beginWipeWallet {
+    [self beginWipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationConfirmedDeleteAll];
+}
+
+- (void)beginDebugWipeWallet {
+    [self beginWipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationDebugReset];
+}
+
+- (void)beginWipeWalletWithAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization {
     if (self.walletWipeInProgress) {
         return;
     }
@@ -386,7 +397,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             return;
         }
 
-        [strongSelf.model wipeWallet];
+        [DWSwiftDashSDKWalletWiper wipeWalletWithAuthorization:authorization];
         [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
             typeof(self) completedSelf = weakSelf;
             if (completedSelf == nil) {
@@ -395,13 +406,13 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             [setupController.view dw_hideProgressHUD];
             completedSelf.walletWipeInProgress = NO;
             if (!wipeSucceeded) {
-                [completedSelf presentWalletWipeFailure];
+                [completedSelf presentWalletWipeFailureForAuthorization:authorization];
             }
         }];
     });
 }
 
-- (void)presentWalletWipeFailure {
+- (void)presentWalletWipeFailureForAuthorization:(DWSwiftDashSDKWalletWipeAuthorization)authorization {
     UIAlertController *alert =
         [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Couldn’t Delete All Wallets", nil)
                                             message:NSLocalizedString(@"Not all wallets could be deleted. Please try again.", nil)
@@ -411,7 +422,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Retry", nil)
                                               style:UIAlertActionStyleDefault
                                             handler:^(UIAlertAction *_Nonnull action) {
-                                                [weakSelf beginWipeWallet];
+                                                [weakSelf beginWipeWalletWithAuthorization:authorization];
                                             }]];
     [self.currentController presentViewController:alert animated:YES completion:nil];
 }

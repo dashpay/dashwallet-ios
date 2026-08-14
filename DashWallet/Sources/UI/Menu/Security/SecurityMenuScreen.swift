@@ -94,10 +94,10 @@ struct SecurityMenuScreen: View {
         .alert("Reset All Wallets (Debug)", isPresented: $showResetWalletDebugAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete All", role: .destructive) {
-                delegateInternal.beginWipeWallet()
+                delegateInternal.beginDebugWipeWallet()
             }
         } message: {
-            Text("Permanently deletes all wallets on this device without asking for their recovery phrases.")
+            Text("Deletes all SDK wallets without asking for their recovery phrases. Legacy DashSync seed fixtures are preserved.")
         }
         .alert(
             recoveryPhraseFlow.alertState?.title ?? "",
@@ -224,14 +224,14 @@ extension SecurityMenuScreen {
         /// Debug Reset must not expose a live onboarding screen while the SDK
         /// wipe is still queued. The root coordinator presents a blocking wipe
         /// gate first, then starts deletion after its HUD is visible.
-        func beginWipeWallet() {
+        func beginDebugWipeWallet() {
             if let wipeDelegate,
-               wipeDelegate.responds(to: #selector(DWWipeDelegate.beginWipeWallet)) {
-                wipeDelegate.beginWipeWallet?()
+               wipeDelegate.responds(to: #selector(DWWipeDelegate.beginDebugWipeWallet)) {
+                wipeDelegate.beginDebugWipeWallet?()
             } else {
                 // This screen can be embedded without the app-root delegate in
                 // previews. Preserve the local delete-all behavior in that case.
-                SwiftDashSDKWalletWiper.wipeWallet(authorization: .confirmedDeleteAll)
+                SwiftDashSDKWalletWiper.wipeWallet(authorization: .debugReset)
                 onHide()
             }
         }

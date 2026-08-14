@@ -261,6 +261,43 @@ final class SwiftDashSDKHost {
         }
     }
 
+    /// Networks represented by a strict SDK-owned Keychain inventory. Used
+    /// after reinstall to select a sole stored network without manufacturing
+    /// a network mirror from the same seed.
+    nonisolated static func persistedSDKWalletNetworks(
+        in entries: [(walletId: Data, mnemonic: String)]
+    ) throws -> Set<Network> {
+        try Set(entries.map { entry in
+            try SwiftDashSDKStoredWalletNetworkResolver.resolve(
+                walletId: entry.walletId,
+                mnemonic: entry.mnemonic
+            ).network
+        })
+    }
+
+    nonisolated static func persistedSDKWalletNetworks() throws -> Set<Network> {
+        try persistedSDKWalletNetworks(in: strictlyPersistedMnemonics())
+    }
+
+    /// Pure filtering used by reinstall recovery: a manager must only receive
+    /// entries whose deterministic id belongs to that manager's network.
+    nonisolated static func recoverablePersistedMnemonics(
+        _ entries: [(walletId: Data, mnemonic: String)],
+        for network: Network
+    ) -> [(walletId: Data, mnemonic: String)] {
+        entries.compactMap { entry in
+            let mnemonic = Mnemonic.normalizePhrase(entry.mnemonic)
+            guard Mnemonic.validate(mnemonic),
+                  let resolution = try? SwiftDashSDKStoredWalletNetworkResolver.resolve(
+                      walletId: entry.walletId,
+                      mnemonic: mnemonic),
+                  resolution.network == network else {
+                return nil
+            }
+            return (walletId: entry.walletId, mnemonic: mnemonic)
+        }
+    }
+
     /// Strict exact-id read for flows that already selected a concrete wallet.
     /// Unlike the legacy active-wallet reader, this never substitutes another
     /// Keychain entry when the requested id is missing or unreadable.
@@ -905,22 +942,19 @@ final class SwiftDashSDKHost {
     /// `walletNotFound` retry: re-create wallet rows from the keychain
     /// mnemonics (`persistedMnemonics`). One attempt per entry, no retry loop —
     /// `createWallet` is idempotent by walletId (`Wallet(mnemonic:network:).id`),
-    /// so a re-run after a partial failure converges. The mnemonic is re-stored
-    /// under the created walletId when the stored key was derived for a
-    /// different network (mnemonics are network-agnostic; ids aren't).
+    /// so a re-run after a partial failure converges. Network-scoped ids are
+    /// never replayed through the other network's manager.
     /// Wipe race note: the wiper deletes mnemonics before `handleWalletWiped`,
     /// so a refresh racing a wipe finds an empty list here and fails the start
     /// — and the next refresh's `hasSDKWallet` gate stays closed.
     private func recoverPersistedWallet(handles: RuntimeHandles) -> ManagedPlatformWallet? {
-        let entries = Self.persistedMnemonics()
+        let inventory = Self.persistedMnemonics()
+        let entries = Self.recoverablePersistedMnemonics(
+            inventory,
+            for: handles.network)
         guard !entries.isEmpty else { return nil }
 
-        let storage = WalletStorage()
         for entry in entries {
-            guard Mnemonic.validate(entry.mnemonic) else {
-                Self.logger.error("🪺 HOST :: skipping keychain mnemonic for \(entry.walletId.prefix(4).map { String(format: "%02x", $0) }.joined(), privacy: .public)… — failed validation")
-                continue
-            }
             do {
                 let created = try handles.manager.createWallet(
                     mnemonic: entry.mnemonic,
@@ -938,7 +972,8 @@ final class SwiftDashSDKHost {
                     // funds is not.
                     birthHeight: Self.importedWalletBirthHeight(for: handles.network))
                 if created.walletId != entry.walletId {
-                    try? storage.storeMnemonic(entry.mnemonic, for: created.walletId)
+                    try? handles.manager.deleteWallet(walletId: created.walletId)
+                    Self.logger.error("🪺 HOST :: recovered wallet id did not match its network-scoped Keychain id; discarded created wallet")
                 }
             } catch {
                 Self.logger.error("🪺 HOST :: keychain wallet recovery failed for one entry: \(String(describing: error), privacy: .public)")
@@ -946,7 +981,7 @@ final class SwiftDashSDKHost {
         }
 
         guard let resolved = resolveActiveWallet(in: handles.manager, network: handles.network) else { return nil }
-        Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); entries=\(entries.count, privacy: .public)")
+        Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); network=\(handles.network.networkName, privacy: .public) eligible=\(entries.count, privacy: .public) skipped=\(inventory.count - entries.count, privacy: .public)")
         return resolved
     }
 

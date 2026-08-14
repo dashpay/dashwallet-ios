@@ -29,6 +29,10 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 - (void)beginWipeWallet;
 
+/// Begin the developer-only reset. It uses the same coordinated UI teardown
+/// but deliberately preserves legacy DashSync mnemonic accounts.
+- (void)beginDebugWipeWallet;
+
 @end
 
 NS_ASSUME_NONNULL_END
