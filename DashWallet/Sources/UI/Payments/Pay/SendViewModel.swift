@@ -86,6 +86,15 @@ final class SendViewModel: ObservableObject {
     @Published private(set) var platformCredits: UInt64 = 0
     @Published private(set) var shieldedBalance: UInt64 = 0
 
+    /// Largest amount the pool can fund inside ONE transition — the same
+    /// note-aware number Max produces. A typed amount above this needs more
+    /// notes than `ShieldedActionBudget` admits, so the bundle would exceed the
+    /// 20 KiB state-transition limit and be rejected at broadcast, after the
+    /// proof was already built. `nil` while the note set is mid-reconcile
+    /// (`sweepAvailability` is not `.ready`), in which case the amount screen
+    /// falls back to the balance envelope alone.
+    @Published private(set) var shieldedSpendCeilingCredits: UInt64?
+
     /// Live result of `preflightWithdrawal()` for the Platform → Core route —
     /// same semantics as the internal transfer's: `nil` while unknown,
     /// affordability fails closed.
@@ -150,8 +159,31 @@ final class SendViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] credits in
                 self?.shieldedBalance = credits
+                self?.refreshShieldedSpendCeiling()
             }
             .store(in: &cancellables)
+    }
+
+    /// Fee kind for the pool-spending routes; `nil` for every other route.
+    private func shieldedFeeKind(for route: Route?) -> PlatformWalletManager.ShieldedFeeKind? {
+        switch route {
+        case .shieldedToCore: return .withdrawal
+        case .shieldedToPlatform: return .unshield
+        case .shieldedToShielded: return .transfer
+        default: return nil
+        }
+    }
+
+    /// Recomputes `shieldedSpendCeilingCredits` from the current note set.
+    /// Cached rather than computed per keystroke — it reads SwiftData.
+    private func refreshShieldedSpendCeiling() {
+        guard let feeKind = shieldedFeeKind(for: route),
+              case .ready(let plan) = ShieldedTransferCoordinator.sweepAvailability(feeKind: feeKind)
+        else {
+            shieldedSpendCeilingCredits = nil
+            return
+        }
+        shieldedSpendCeilingCredits = plan.amountCredits
     }
 
     // MARK: - Destination classification
@@ -258,6 +290,7 @@ final class SendViewModel: ObservableObject {
     /// needs the withdrawal preflight (fee headroom + full-balance payout).
     private func routeDidChange() {
         clearShieldedMaxSelection()
+        refreshShieldedSpendCeiling()
         guard route == .platformToCore else {
             preflightTask?.cancel()
             preflightTask = nil
@@ -548,11 +581,19 @@ final class SendViewModel: ObservableObject {
             guard let reserve = feeReserveCredits else {
                 return Self.feeEstimateUnavailableMessage
             }
-            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+            if let message = TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedCredits: creditsPreview,
                 balanceCredits: shieldedBalance,
-                feeReserveCredits: reserve)
+                feeReserveCredits: reserve) {
+                return message
+            }
+            // Affordable against the balance, but still unspendable in one
+            // transition when the notes are too fragmented.
+            if let ceiling = shieldedSpendCeilingCredits, creditsPreview > ceiling {
+                return Self.shieldedCeilingMessage(ceiling)
+            }
+            return nil
 
         case .platformToCore:
             // Stay quiet while the preflight is still resolving: Continue is
@@ -626,8 +667,13 @@ final class SendViewModel: ObservableObject {
                 return shieldedSweepAmountCredits != nil
             }
             guard let reserve = feeReserveCredits else { return false }
-            return shieldedBalance >= reserve
-                && creditsPreview <= shieldedBalance - reserve
+            guard shieldedBalance >= reserve,
+                  creditsPreview <= shieldedBalance - reserve
+            else { return false }
+            if let ceiling = shieldedSpendCeilingCredits {
+                return creditsPreview <= ceiling
+            }
+            return true
         }
     }
 
@@ -651,12 +697,7 @@ final class SendViewModel: ObservableObject {
             // All three spend the pool, so all three plan Max against the real
             // note set. A flat reserve here would price a full-size bundle and
             // hand the unspent difference back as a change note.
-            let feeKind: PlatformWalletManager.ShieldedFeeKind
-            switch route {
-            case .shieldedToCore: feeKind = .withdrawal
-            case .shieldedToPlatform: feeKind = .unshield
-            default: feeKind = .transfer
-            }
+            guard let feeKind = shieldedFeeKind(for: route) else { return }
             switch ShieldedTransferCoordinator.sweepAvailability(feeKind: feeKind) {
             case .ready(let plan):
                 isFullShieldedSweep = true
@@ -718,6 +759,15 @@ final class SendViewModel: ObservableObject {
             NSLocalizedString(
                 "%@ DASH is still confirming. Withdraw again once it settles.",
                 comment: "Shielded Max pending change"),
+            formatted)
+    }
+
+    private static func shieldedCeilingMessage(_ credits: UInt64) -> String {
+        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "Your Shielded balance is split across notes, and at most %@ DASH of it can be sent in one transaction. Send the rest afterwards.",
+                comment: "Shielded amount above the single-transaction ceiling"),
             formatted)
     }
 
