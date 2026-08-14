@@ -736,22 +736,31 @@ final class InternalTransferViewModel: ObservableObject {
             // A Max sweep is planned against the real note set rather than the
             // amount+reserve envelope, so it is affordable by construction.
             if isFullShieldedSweep { return nil }
+            // The ceiling is priced from the notes that would actually be
+            // spent, so it supersedes the flat reserve — which always charges
+            // a full-size bundle and would reject amounts a one- or two-note
+            // spend can afford.
+            if let ceiling = shieldedSpendCeilingCredits {
+                if creditsPreview > shieldedBalance {
+                    // Simply more than the wallet holds: name that, rather than
+                    // blaming note fragmentation.
+                    return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                        balanceName: balanceName,
+                        requestedDuffs: creditsPreview / 1000,
+                        spendableDuffs: ceiling / 1000)
+                }
+                return creditsPreview > ceiling ? Self.shieldedCeilingMessage(ceiling) : nil
+            }
+            // Ceiling unavailable (notes reconciling): fall back to the flat
+            // worst-case reserve.
             guard let reserve = feeReserveCredits else {
                 return Self.feeEstimateUnavailableMessage
             }
-            if let message = TransferSpendAmountPolicy.insufficientBalanceMessage(
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedCredits: creditsPreview,
                 balanceCredits: shieldedBalance,
-                feeReserveCredits: reserve) {
-                return message
-            }
-            // Affordable against the balance, but still unspendable in one
-            // transition when the notes are too fragmented.
-            if let ceiling = shieldedSpendCeilingCredits, creditsPreview > ceiling {
-                return Self.shieldedCeilingMessage(ceiling)
-            }
-            return nil
+                feeReserveCredits: reserve)
 
         case .platformToCore:
             // Stay quiet while the preflight is still resolving: Continue is
@@ -823,14 +832,12 @@ final class InternalTransferViewModel: ObservableObject {
             // Unshield/withdraw: the SDK debits amount + fee from the shielded
             // pool (recipient receives the full amount), so the balance must
             // cover amount + fee. Fail closed if the reserve is unavailable.
-            guard let reserve = feeReserveCredits else { return false }
-            guard shieldedBalance >= reserve,
-                  creditsPreview <= shieldedBalance - reserve
-            else { return false }
             if let ceiling = shieldedSpendCeilingCredits {
                 return creditsPreview <= ceiling
             }
-            return true
+            guard let reserve = feeReserveCredits else { return false }
+            return shieldedBalance >= reserve
+                && creditsPreview <= shieldedBalance - reserve
         case .platformToCore:
             // Either the exact full-balance net payout (Max → AUTO path over
             // every address), or a partial amount within the single-input
