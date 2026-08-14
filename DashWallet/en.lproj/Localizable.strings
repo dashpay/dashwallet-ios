@@ -5565,6 +5565,7 @@
 "Delete All" = "Delete All";
 "Delete All Wallets?" = "Delete All Wallets?";
 "Deleting All Wallets…" = "Deleting All Wallets…";
+"The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted." = "The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted.";
 "Keep Wallets" = "Keep Wallets";
 "No stored wallets were found. Nothing was deleted." = "No stored wallets were found. Nothing was deleted.";
 "No Wallets Found" = "No Wallets Found";
@@ -5572,3 +5573,6 @@
 "The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.";
 "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone.";
 "Wipe All Wallets" = "Wipe All Wallets";
+"A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "A single wallet's recovery phrase cannot authorize deleting multiple different wallets.";
+"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue.";
+"Enter the recovery phrase to continue." = "Enter the recovery phrase to continue.";

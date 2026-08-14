@@ -20,8 +20,8 @@
 #import "DWAppRootViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWOnboardingViewController.h"
+#import "DWRecoverViewController.h"
 #import "DWUIKit.h"
-#import "UIView+DWHUD.h"
 #import "dashwallet-Swift.h"
 
 #if SNAPSHOT
@@ -30,10 +30,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWInitialViewController () <DWOnboardingViewControllerDelegate>
+@interface DWInitialViewController () <DWOnboardingViewControllerDelegate, DWRecoverViewControllerDelegate>
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
 @property (nullable, nonatomic, strong) DWAppRootViewController *rootController;
+@property (nullable, nonatomic, weak) UIViewController *reinstallWalletChoiceController;
 
 #if DASHPAY
 @property (nullable, nonatomic, strong) NSURL *deferredDeeplink;
@@ -94,6 +95,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onboardingViewControllerDidFinish:(DWOnboardingViewController *)controller {
     [self onboardingDidFinish];
 
+    [self presentReinstallWalletChoiceFromController:controller];
+}
+
+- (void)presentReinstallWalletChoiceFromController:(UIViewController *)controller {
+    self.reinstallWalletChoiceController = controller;
+
     // Reinstall detection must use the coordinator's strict, set-wide
     // inventory. The old Boolean presence check treated a Keychain read error
     // as "no wallet" and could skip the Keep/Delete All prompt entirely.
@@ -106,64 +113,65 @@ NS_ASSUME_NONNULL_BEGIN
                                             return;
                                         }
                                         if (!keep) {
-                                            [strongSelf deleteRecoveredWalletThenTransitionFromController:controller];
+                                            [strongSelf presentReinstallSupportWipeFromController:controller];
                                             return;
                                         }
+                                        strongSelf.reinstallWalletChoiceController = nil;
                                         [strongSelf transitionToAppRoot];
                                     }];
 }
 
-- (void)deleteRecoveredWalletThenTransitionFromController:(UIViewController *)controller {
-    [controller.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting All Wallets…", nil)];
+- (void)presentReinstallSupportWipeFromController:(UIViewController *)host {
+    DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
+    controller.action = DWRecoverAction_SupportWipe;
+    controller.delegate = self;
+    UIBarButtonItem *cancelButton =
+        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                                                      target:self
+                                                      action:@selector(reinstallSupportWipeCancelAction:)];
+    controller.navigationItem.rightBarButtonItem = cancelButton;
 
-    __weak typeof(self) weakSelf = self;
-    // `PlatformWalletManager.deleteWallet` is synchronous and blocks the main
-    // thread. Give UIKit enough time to commit the HUD's first frame before
-    // starting the wipe; a zero-delay main-queue dispatch can still run before
-    // the current render pass and leave the user staring at a frozen screen.
-    dispatch_time_t startTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC));
-    dispatch_after(startTime, dispatch_get_main_queue(), ^{
-        typeof(self) strongSelf = weakSelf;
-        if (strongSelf == nil) {
-            return;
-        }
-
-        // SDK Keychain/runtime deletion and the successful PIN commit run as
-        // one operation on the app-owned serial wipe executor.
-        [DWSwiftDashSDKWalletWiper
-            wipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationConfirmedDeleteAll];
-
-        [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
-            typeof(self) completedSelf = weakSelf;
-            if (completedSelf == nil) {
-                return;
-            }
-            [controller.view dw_hideProgressHUD];
-            if (!wipeSucceeded) {
-                [completedSelf presentRecoveredWalletDeleteFailureFromController:controller];
-                return;
-            }
-            [completedSelf transitionToAppRoot];
-        }];
-    });
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
+    [host presentViewController:navigationController animated:YES completion:nil];
 }
 
-- (void)presentRecoveredWalletDeleteFailureFromController:(UIViewController *)controller {
-    UIAlertController *alert =
-        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Couldn’t Delete All Wallets", nil)
-                                            message:NSLocalizedString(@"Not all wallets could be deleted. Please try again.", nil)
-                                     preferredStyle:UIAlertControllerStyleAlert];
-
+- (void)reinstallSupportWipeCancelAction:(id)sender {
+    UIViewController *host = self.reinstallWalletChoiceController;
+    if (host == nil) {
+        return;
+    }
     __weak typeof(self) weakSelf = self;
-    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Retry", nil)
-                                              style:UIAlertActionStyleDefault
-                                            handler:^(UIAlertAction *_Nonnull action) {
-                                                typeof(self) strongSelf = weakSelf;
-                                                if (strongSelf != nil) {
-                                                    [strongSelf deleteRecoveredWalletThenTransitionFromController:controller];
-                                                }
-                                            }]];
-    [controller presentViewController:alert animated:YES completion:nil];
+    [host dismissViewControllerAnimated:YES
+                             completion:^{
+                                 typeof(self) strongSelf = weakSelf;
+                                 if (strongSelf != nil) {
+                                     [strongSelf presentReinstallWalletChoiceFromController:host];
+                                 }
+                             }];
+}
+
+#pragma mark - DWRecoverViewControllerDelegate
+
+- (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller {
+    NSAssert(controller.action == DWRecoverAction_SupportWipe, @"Only support wipe is presented during reinstall");
+    UIViewController *host = self.reinstallWalletChoiceController;
+    self.reinstallWalletChoiceController = nil;
+    if (host == nil) {
+        [self transitionToAppRoot];
+        return;
+    }
+    [host dismissViewControllerAnimated:YES
+                             completion:^{
+                                 [self transitionToAppRoot];
+                             }];
+}
+
+- (void)recoverViewControllerDidRecoverWallet:(DWRecoverViewController *)controller
+                               recoverCommand:(DWRecoverWalletCommand *)recoverCommand {
+    NSAssert(NO, @"Support wipe never recovers a wallet");
+    [self reinstallSupportWipeCancelAction:nil];
 }
 
 - (void)transitionToAppRoot {

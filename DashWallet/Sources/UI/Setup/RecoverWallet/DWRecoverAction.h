@@ -25,6 +25,10 @@ typedef NS_ENUM(NSUInteger, DWRecoverAction) {
     // keep the wallet untouched (no re-import, no re-sync, no data loss). The
     // caller drives the Set-PIN step; this screen only gates on the phrase.
     DWRecoverAction_ResetPin,
+    // Rare support-assisted fallback for users who no longer have either the
+    // PIN or their recovery phrase. Unlike the regular Wipe flow, this mode
+    // accepts the localized acknowledgement phrase supplied by support.
+    DWRecoverAction_SupportWipe,
 };
 
 #endif /* DWRecoverAction_h */

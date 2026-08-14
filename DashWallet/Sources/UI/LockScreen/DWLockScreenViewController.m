@@ -235,8 +235,24 @@ static CGFloat ActionButtonsHeight(void) {
             if (strongSelf == nil) {
                 return;
             }
-            [strongSelf.delegate lockScreenViewControllerDidWipe:strongSelf];
+            [strongSelf presentSupportWipeRecovery];
         }];
+}
+
+- (void)presentSupportWipeRecovery {
+    DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
+    controller.action = DWRecoverAction_SupportWipe;
+    controller.delegate = self;
+    UIBarButtonItem *cancelButton =
+        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                                                      target:self
+                                                      action:@selector(forgotPinRecoveryCancelAction:)];
+    controller.navigationItem.rightBarButtonItem = cancelButton;
+
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:navigationController animated:YES completion:nil];
 }
 
 #pragma mark - DWRecoverViewControllerDelegate
@@ -251,10 +267,16 @@ static CGFloat ActionButtonsHeight(void) {
 }
 
 - (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller {
-    // Unreachable in ResetPin mode (wipe is offered by the lock screen's own
-    // action sheet, not this screen). Implemented for protocol conformance; if
-    // it ever fires, fail loud in debug and recover safely in release.
-    NSAssert(NO, @"ResetPin recovery never wipes; wipe is the lock screen's own path");
+    if (controller.action == DWRecoverAction_SupportWipe) {
+        [self dismissViewControllerAnimated:YES
+                                 completion:^{
+                                     [self.delegate lockScreenViewControllerDidWipe:self];
+                                 }];
+        return;
+    }
+
+    // ResetPin verifies ownership but never deletes wallet data.
+    NSAssert(NO, @"ResetPin recovery never wipes");
     [self dismissViewControllerAnimated:YES
                              completion:^{
                                  [self.model startCheckingAuthState];

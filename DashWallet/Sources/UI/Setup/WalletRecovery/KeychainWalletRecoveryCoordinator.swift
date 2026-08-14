@@ -18,9 +18,10 @@ final class WalletDeleteAllConfirmationCoordinator: NSObject {
         subsystem: "org.dashfoundation.dash",
         category: "wallet-delete-all-confirmation")
 
-    /// Presents the lock-screen delete-all confirmation after first obtaining
-    /// a complete, strict inventory. An unreadable or empty inventory never
-    /// produces a destructive action.
+    /// Presents the lock-screen warning before the support-assisted wipe flow.
+    /// A readable inventory produces exact count-aware copy. If inventory is
+    /// empty or unreadable, the user may still continue with a generic warning,
+    /// but deletion remains gated by the support acknowledgement phrase.
     @objc(presentFrom:cancelHandler:deleteAllHandler:)
     static func present(
         from host: UIViewController,
@@ -30,7 +31,10 @@ final class WalletDeleteAllConfirmationCoordinator: NSObject {
         do {
             let walletCount = try SwiftDashSDKHost.distinctStoredWalletCount()
             guard walletCount > 0 else {
-                presentEmptyInventory(from: host, completion: cancelHandler)
+                presentWithoutVerifiedCount(
+                    from: host,
+                    cancelHandler: cancelHandler,
+                    continueHandler: deleteAllHandler)
                 return
             }
             present(
@@ -41,15 +45,10 @@ final class WalletDeleteAllConfirmationCoordinator: NSObject {
         } catch {
             logger.error(
                 "failed to inventory wallets for delete-all confirmation: \(String(describing: error), privacy: .public)")
-            presentReadFailure(
+            presentWithoutVerifiedCount(
                 from: host,
                 cancelHandler: cancelHandler,
-                retryHandler: {
-                    present(
-                        from: host,
-                        cancelHandler: cancelHandler,
-                        deleteAllHandler: deleteAllHandler)
-                })
+                continueHandler: deleteAllHandler)
         }
     }
 
@@ -97,15 +96,15 @@ final class WalletDeleteAllConfirmationCoordinator: NSObject {
         host.present(alert, animated: true)
     }
 
-    private static func presentReadFailure(
+    private static func presentWithoutVerifiedCount(
         from host: UIViewController,
         cancelHandler: @escaping () -> Void,
-        retryHandler: @escaping () -> Void
+        continueHandler: @escaping () -> Void
     ) {
         let alert = UIAlertController(
-            title: NSLocalizedString("Couldn’t Read Wallets", comment: ""),
+            title: NSLocalizedString("Delete All Wallets?", comment: ""),
             message: NSLocalizedString(
-                "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.",
+                "The number of wallets stored on this device could not be verified. Continuing requires a confirmation phrase provided by Dash Support before any wallet is deleted.",
                 comment: ""),
             preferredStyle: .alert)
         alert.addAction(
@@ -115,25 +114,9 @@ final class WalletDeleteAllConfirmationCoordinator: NSObject {
                 handler: { _ in cancelHandler() }))
         alert.addAction(
             UIAlertAction(
-                title: NSLocalizedString("Retry", comment: ""),
-                style: .default,
-                handler: { _ in retryHandler() }))
-        host.present(alert, animated: true)
-    }
-
-    private static func presentEmptyInventory(
-        from host: UIViewController,
-        completion: @escaping () -> Void
-    ) {
-        let alert = UIAlertController(
-            title: NSLocalizedString("No Wallets Found", comment: ""),
-            message: NSLocalizedString("No stored wallets were found. Nothing was deleted.", comment: ""),
-            preferredStyle: .alert)
-        alert.addAction(
-            UIAlertAction(
-                title: NSLocalizedString("OK", comment: ""),
-                style: .default,
-                handler: { _ in completion() }))
+                title: NSLocalizedString("Continue", comment: ""),
+                style: .destructive,
+                handler: { _ in continueHandler() }))
         host.present(alert, animated: true)
     }
 }
@@ -141,8 +124,8 @@ final class WalletDeleteAllConfirmationCoordinator: NSObject {
 @objc(DWKeychainWalletRecoveryCoordinator)
 final class KeychainWalletRecoveryCoordinator: NSObject {
 
-    /// `true` = keep the stored wallets (or none exist), `false` = the user
-    /// explicitly confirmed Delete All.
+    /// `true` = keep the stored wallets (or none exist), `false` = continue to
+    /// the support-phrase gate. This coordinator never deletes wallets itself.
     @objc(presentReinstallKeepOrDeleteChoiceFrom:completion:)
     static func presentReinstallKeepOrDeleteChoice(
         from host: UIViewController,

@@ -41,8 +41,8 @@ private let dwRecoverLogger = Logger(
 extension DWRecoverModel {
     /// The plain-"wipe" gate: empty means "zero SDK balance AND the chain is
     /// fully synced" — an unsynced wallet can't prove it's empty, so it reads
-    /// as non-empty (fail-closed; the strong accept-phrase remains the
-    /// override). Replaces the DashSync read (`wallet.balance` + frozen
+    /// as non-empty (fail-closed; an exact recovery phrase remains available).
+    /// Replaces the DashSync read (`wallet.balance` + frozen
     /// `lastSyncBlockTimestamp`/`lastSyncBlockHeight`), which post-M6 never
     /// advanced and made this permanently false — the plain-"wipe" phrase was
     /// always refused. The literal shortcut is additionally permitted only
@@ -97,10 +97,9 @@ extension DWRecoverModel {
     /// authorization. Enumeration or any individual read failure also blocks
     /// it (logged), so a partially readable Keychain can never be mistaken
     /// for the complete wallet set. Phrase→seed is deterministic, but no key
-    /// material is derived here. The strong accept-phrase remains the
-    /// explicit override; the caller (`DWRecoverContentView.wipeWithPhrase:`)
-    /// routes the literal `DW_WIPE` shortcut to `isWalletEmpty` before this
-    /// check.
+    /// material is derived here. The support acknowledgement is deliberately
+    /// isolated in `DWRecoverAction_SupportWipe`; the regular caller routes the
+    /// literal `DW_WIPE` shortcut to `isWalletEmpty` before this check.
     @objc(canWipeWithPhrase:)
     func canWipeWithPhrase(_ phrase: String) -> Bool {
         do {
@@ -109,6 +108,26 @@ extension DWRecoverModel {
             dwRecoverLogger.error("wipe-with-phrase: keychain read failed; refusing: \(String(describing: error), privacy: .public)")
             return false
         }
+    }
+
+    /// Matches the localized support-only destructive acknowledgement after
+    /// applying the same Unicode canonicalization to both strings. The raw
+    /// text must reach this method before mnemonic cleanup, which deliberately
+    /// strips punctuation. `normalizePhrase` performs NFKD, lowercasing, and
+    /// whitespace collapsing without discarding diacritics or punctuation.
+    @objc(isWipeAcceptancePhrase:)
+    func isWipeAcceptancePhrase(_ phrase: String) -> Bool {
+        guard action == .supportWipe else { return false }
+        return Self.wipeAcceptancePhraseMatches(
+            phrase,
+            expectedPhrase: wipeAcceptPhrase())
+    }
+
+    static func wipeAcceptancePhraseMatches(
+        _ phrase: String,
+        expectedPhrase: String
+    ) -> Bool {
+        Mnemonic.normalizePhrase(phrase) == Mnemonic.normalizePhrase(expectedPhrase)
     }
 
     /// True when `phrase` matches at least one readable stored mnemonic — a

@@ -120,6 +120,72 @@ final class StoredWalletInventoryTests: XCTestCase {
     }
 }
 
+final class WipeAcceptancePhraseTests: XCTestCase {
+    private let polishPhrase =
+        "Akceptuję to, że stracę wszystkie moje monety jeśli nie będę miał frazy do odzyskiwania portfela"
+
+    func testRawPrecomposedPhraseMatchesDecomposedUnicodeWithoutRemovingPunctuation() {
+        let decomposed = polishPhrase.decomposedStringWithCompatibilityMapping
+
+        XCTAssertTrue(DWRecoverModel.wipeAcceptancePhraseMatches(
+            polishPhrase,
+            expectedPhrase: decomposed))
+    }
+
+    func testCaseAndWhitespaceAreNormalized() {
+        let typed =
+            "  AKCEPTUJĘ   TO, ŻE  STRACĘ WSZYSTKIE MOJE MONETY JEŚLI NIE BĘDĘ MIAŁ FRAZY DO ODZYSKIWANIA PORTFELA  "
+
+        XCTAssertTrue(DWRecoverModel.wipeAcceptancePhraseMatches(
+            typed,
+            expectedPhrase: polishPhrase))
+    }
+
+    func testSemanticChangesAreRejected() {
+        let missingDiacritic = polishPhrase.replacingOccurrences(
+            of: "Akceptuję",
+            with: "Akceptuje")
+        let missingComma = polishPhrase.replacingOccurrences(
+            of: "to, że",
+            with: "to że")
+        let changedWord = polishPhrase.replacingOccurrences(
+            of: "monety",
+            with: "środki")
+
+        XCTAssertFalse(DWRecoverModel.wipeAcceptancePhraseMatches(
+            missingDiacritic,
+            expectedPhrase: polishPhrase))
+        XCTAssertFalse(DWRecoverModel.wipeAcceptancePhraseMatches(
+            missingComma,
+            expectedPhrase: polishPhrase))
+        XCTAssertFalse(DWRecoverModel.wipeAcceptancePhraseMatches(
+            changedWord,
+            expectedPhrase: polishPhrase))
+    }
+
+    func testAcceptanceTextCanMatchBelowMnemonicWordThreshold() {
+        let phrase = "確認"
+
+        XCTAssertLessThan((phrase as NSString).wordsCount, 10)
+        XCTAssertTrue(DWRecoverModel.wipeAcceptancePhraseMatches(
+            phrase,
+            expectedPhrase: phrase))
+    }
+
+    func testObjectiveCBridgeAcceptsPhraseOnlyInSupportWipeMode() {
+        let supportModel = DWRecoverModel(action: .supportWipe)
+        let regularWipeModel = DWRecoverModel(action: .wipe)
+        let resetPinModel = DWRecoverModel(action: .resetPin)
+        let localizedPhrase = supportModel.wipeAcceptPhrase()
+
+        XCTAssertTrue(supportModel.isWipeAcceptancePhrase(localizedPhrase))
+        XCTAssertFalse(regularWipeModel.isWipeAcceptancePhrase(localizedPhrase))
+        XCTAssertFalse(resetPinModel.isWipeAcceptancePhrase(localizedPhrase))
+        XCTAssertFalse(supportModel.isWipeAcceptancePhrase("wipe"))
+        XCTAssertFalse(supportModel.isWipeAcceptancePhrase("exterminate!"))
+    }
+}
+
 final class MnemonicFirstWalletCreationTests: XCTestCase {
     func testPersistenceFailureDoesNotCreateWallet() {
         var storedMnemonic: String?
