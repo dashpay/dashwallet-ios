@@ -815,13 +815,18 @@ final class InternalTransferViewModel: ObservableObject {
             return nil
         case .shieldedToCore:
             // The withdraw/unshield fee scales with the number of spent notes;
-            // the SDK recomputes it from real note selection (up to the
-            // 16-action `max_shielded_transition_actions` cap) at send time.
-            // Reserve that worst case so a fragmented wallet can't pass the
-            // affordability check and then fail SDK note selection.
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 16)
+            // the SDK recomputes it from real note selection at send time.
+            // Reserve the worst case the 20 KiB state-transition limit admits
+            // (`ShieldedActionBudget.maxActionsPerTransition`) so a fragmented
+            // wallet can't pass the affordability check and then fail SDK note
+            // selection.
+            return try? PlatformWalletManager.estimateShieldedFee(
+                kind: .withdrawal,
+                numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 16)
+            return try? PlatformWalletManager.estimateShieldedFee(
+                kind: .unshield,
+                numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .platformToCore:
             // Full-balance withdrawal: the fee is already netted out of the
             // preflight's `netWithdrawable`; no reserve on top.

@@ -1099,6 +1099,7 @@ struct SendConfirmSheet: View {
                 }
                 await coordinator.performShieldedTransfer(
                     amountCredits: creditsAmount,
+                    sweepAll: isFullShieldedSweep,
                     recipientRaw43: destinationRaw43)
             case .coreToCore:
                 // Unreachable: the screen routes Core → Core through the L1

@@ -420,13 +420,19 @@ final class SendViewModel: ObservableObject {
         case .platformToPlatform:
             return Self.platformTransferFeeReserveCredits
         case .shieldedToCore:
-            // Worst-case note selection (16 actions) — same reasoning as the
-            // internal transfer's reserve.
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 16)
+            // Worst-case note selection for a bundle the size limit actually
+            // admits — same reasoning as the internal transfer's reserve.
+            return try? PlatformWalletManager.estimateShieldedFee(
+                kind: .withdrawal,
+                numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 16)
+            return try? PlatformWalletManager.estimateShieldedFee(
+                kind: .unshield,
+                numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .shieldedToShielded:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 16)
+            return try? PlatformWalletManager.estimateShieldedFee(
+                kind: .transfer,
+                numActions: ShieldedActionBudget.maxActionsPerTransition)
         }
     }
 
@@ -641,9 +647,16 @@ final class SendViewModel: ObservableObject {
             sourceDuffs = creditsMinusFeeReserve(platformCredits) / 1000
         case .platformToCore:
             sourceDuffs = platformWithdrawableDuffs ?? 0
-        case .shieldedToCore, .shieldedToPlatform:
-            let feeKind: PlatformWalletManager.ShieldedFeeKind =
-                route == .shieldedToCore ? .withdrawal : .unshield
+        case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
+            // All three spend the pool, so all three plan Max against the real
+            // note set. A flat reserve here would price a full-size bundle and
+            // hand the unspent difference back as a change note.
+            let feeKind: PlatformWalletManager.ShieldedFeeKind
+            switch route {
+            case .shieldedToCore: feeKind = .withdrawal
+            case .shieldedToPlatform: feeKind = .unshield
+            default: feeKind = .transfer
+            }
             switch ShieldedTransferCoordinator.sweepAvailability(feeKind: feeKind) {
             case .ready(let plan):
                 isFullShieldedSweep = true
@@ -661,8 +674,6 @@ final class SendViewModel: ObservableObject {
                     comment: "Shielded Max unavailable")
                 sourceDuffs = 0
             }
-        case .shieldedToShielded:
-            sourceDuffs = creditsMinusFeeReserve(shieldedBalance) / 1000
         }
 
         isApplyingMax = true

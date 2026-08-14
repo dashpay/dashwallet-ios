@@ -363,6 +363,23 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 noteCount: 2))
     }
 
+    func testShieldedSweepStopsAtTheActionBudget() {
+        // The 20 KiB `max_state_transition_size` ceiling, not the 16-action
+        // consensus cap, is what bounds a bundle: a 7-action transition is
+        // ~21,699 B and DAPI rejects it. The planner must stop at the budget
+        // even when every further note would raise the payout.
+        let notes = Array(repeating: UInt64(1_000), count: 12)
+        let budget = ShieldedActionBudget.maxActionsPerTransition
+
+        let candidate = ShieldedSweepPlanner.bestCandidate(
+            noteValues: notes,
+            feeForActions: { _ in 100 })
+
+        XCTAssertEqual(candidate?.noteCount, budget)
+        XCTAssertEqual(candidate?.inputCredits, UInt64(budget) * 1_000)
+        XCTAssertEqual(candidate?.amountCredits, UInt64(budget) * 1_000 - 100)
+    }
+
     func testShieldedSpendableBalanceSubtractsFeeReserve() {
         XCTAssertEqual(
             TransferSpendAmountPolicy.spendableCredits(
