@@ -95,6 +95,31 @@ final class WalletWipeSerialExecutorTests: XCTestCase {
     }
 }
 
+final class StoredWalletInventoryTests: XCTestCase {
+    func testDistinctWalletCountDeduplicatesNetworkScopedCopiesOfOneSeed() {
+        let seed = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+        let entries = [
+            (walletId: Data([0x01]), mnemonic: seed),
+            (walletId: Data([0x02]), mnemonic: seed),
+        ]
+
+        XCTAssertEqual(SwiftDashSDKHost.distinctWalletCount(in: entries), 1)
+    }
+
+    func testDistinctWalletCountIncludesDifferentSeedsAcrossNetworks() {
+        let entries = [
+            (
+                walletId: Data([0x01]),
+                mnemonic: "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"),
+            (
+                walletId: Data([0x02]),
+                mnemonic: "legal winner thank year wave sausage worth useful legal winner thank yellow"),
+        ]
+
+        XCTAssertEqual(SwiftDashSDKHost.distinctWalletCount(in: entries), 2)
+    }
+}
+
 final class MnemonicFirstWalletCreationTests: XCTestCase {
     func testPersistenceFailureDoesNotCreateWallet() {
         var storedMnemonic: String?

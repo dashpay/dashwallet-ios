@@ -355,11 +355,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     _mainController = nil;
 }
 
-/// Debug Reset's coordinated wipe path. Unlike the legacy `didWipeWallet`
-/// notification, this transitions to the setup screen BEFORE deleting state,
-/// then blocks that screen with a HUD until the SDK wiper's FIFO barrier has
-/// completed. This avoids displaying a tappable-looking onboarding screen
-/// while synchronous SDK deletion still occupies MainActor.
+/// Coordinated path for an already-confirmed Delete All. Unlike the legacy
+/// `didWipeWallet` notification, this transitions to the setup screen BEFORE
+/// deleting state, then blocks that screen with a HUD until the SDK wiper's
+/// FIFO barrier has completed. This avoids displaying a tappable-looking
+/// onboarding screen while synchronous SDK deletion still occupies MainActor.
 - (void)beginWipeWallet {
     if (self.walletWipeInProgress) {
         return;
@@ -373,7 +373,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
     [self.model.homeModel walletDidWipe];
     _mainController = nil;
 
-    [setupController.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting Wallet…", nil)];
+    [setupController.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting All Wallets…", nil)];
 
     __weak typeof(self) weakSelf = self;
     // The SDK delete is synchronous on MainActor. Let UIKit commit the setup
@@ -403,8 +403,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 
 - (void)presentWalletWipeFailure {
     UIAlertController *alert =
-        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Couldn’t Delete Wallet", nil)
-                                            message:NSLocalizedString(@"The wallet is still stored on this device. Please try again.", nil)
+        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Couldn’t Delete All Wallets", nil)
+                                            message:NSLocalizedString(@"Not all wallets could be deleted. Please try again.", nil)
                                      preferredStyle:UIAlertControllerStyleAlert];
 
     __weak typeof(self) weakSelf = self;

@@ -179,7 +179,7 @@ static CGFloat ActionButtonsHeight(void) {
                                                 handler:^(UIAlertAction *action) {
                                                     [self presentPinResetRecovery];
                                                 }]];
-        [sheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Wipe wallet", nil)
+        [sheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Wipe All Wallets", nil)
                                                   style:UIAlertActionStyleDestructive
                                                 handler:^(UIAlertAction *action) {
                                                     [self confirmWipeWallet];
@@ -223,21 +223,20 @@ static CGFloat ActionButtonsHeight(void) {
 }
 
 - (void)confirmWipeWallet {
-    UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:NSLocalizedString(@"Wipe wallet", nil)
-                         message:NSLocalizedString(@"This will erase this wallet from this device. You can only restore it with your recovery phrase.", nil)
-                  preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                                              style:UIAlertActionStyleCancel
-                                            handler:^(UIAlertAction *action) {
-                                                [self.model startCheckingAuthState];
-                                            }]];
-    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Wipe wallet", nil)
-                                              style:UIAlertActionStyleDestructive
-                                            handler:^(UIAlertAction *action) {
-                                                [self.delegate lockScreenViewControllerDidWipe:self];
-                                            }]];
-    [self presentViewController:alert animated:YES completion:nil];
+    __weak typeof(self) weakSelf = self;
+    [DWWalletDeleteAllConfirmationCoordinator
+        presentFrom:self
+        cancelHandler:^{
+            typeof(self) strongSelf = weakSelf;
+            [strongSelf.model startCheckingAuthState];
+        }
+        deleteAllHandler:^{
+            typeof(self) strongSelf = weakSelf;
+            if (strongSelf == nil) {
+                return;
+            }
+            [strongSelf.delegate lockScreenViewControllerDidWipe:strongSelf];
+        }];
 }
 
 #pragma mark - DWRecoverViewControllerDelegate

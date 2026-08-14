@@ -5556,3 +5556,19 @@
 "Every node votes together. Faster, but it publicly links your masternodes to each other." = "Every node votes together. Faster, but it publicly links your masternodes to each other.";
 "Each tap votes with one more node, so you choose how many to link together." = "Each tap votes with one more node, so you choose how many to link together.";
 "Selecting fewer nodes reveals less about which masternodes you run." = "Selecting fewer nodes reveals less about which masternodes you run.";
+
+/* Global wallet deletion */
+"%ld wallets found on this device" = "%ld wallets found on this device";
+"%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting." = "%ld wallets from a previous installation are stored on this device. Delete All removes every wallet. Back up every recovery phrase before deleting.";
+"Couldn’t Delete All Wallets" = "Couldn’t Delete All Wallets";
+"Couldn’t Read Wallets" = "Couldn’t Read Wallets";
+"Delete All" = "Delete All";
+"Delete All Wallets?" = "Delete All Wallets?";
+"Deleting All Wallets…" = "Deleting All Wallets…";
+"Keep Wallets" = "Keep Wallets";
+"No stored wallets were found. Nothing was deleted." = "No stored wallets were found. Nothing was deleted.";
+"No Wallets Found" = "No Wallets Found";
+"Not all wallets could be deleted. Please try again." = "Not all wallets could be deleted. Please try again.";
+"The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.";
+"This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone.";
+"Wipe All Wallets" = "Wipe All Wallets";

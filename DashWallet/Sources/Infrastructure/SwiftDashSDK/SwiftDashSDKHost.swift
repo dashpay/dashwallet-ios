@@ -268,6 +268,26 @@ final class SwiftDashSDKHost {
         try WalletStorage().listWalletIdsWithMnemonic().count
     }
 
+    /// Number of logical wallets represented by the strict Keychain inventory.
+    /// The same recovery phrase may be stored under separate network-scoped
+    /// wallet ids; those entries count as one wallet in destructive UI copy.
+    /// Throws when enumeration or any mnemonic read fails so callers can fall
+    /// back to non-destructive retry/keep actions.
+    nonisolated static func distinctStoredWalletCount() throws -> Int {
+        distinctWalletCount(in: try strictlyPersistedMnemonics())
+    }
+
+    /// Pure logical-wallet count used after a strict inventory read. Separate
+    /// network-scoped ids carrying the same normalized phrase are one wallet.
+    nonisolated static func distinctWalletCount(
+        in entries: [(walletId: Data, mnemonic: String)]
+    ) -> Int {
+        let phrases = entries.map {
+            Mnemonic.normalizePhrase($0.mnemonic)
+        }
+        return Set(phrases).count
+    }
+
     /// Set-wide destructive-authorization predicate: true only when `phrase`,
     /// normalized, matches EVERY strictly readable stored mnemonic (multiple
     /// network-scoped ids for one seed all carry the same phrase and match).

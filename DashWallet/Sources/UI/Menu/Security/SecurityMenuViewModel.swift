@@ -123,7 +123,7 @@ class SecurityMenuViewModel: ObservableObject {
         // dev builds of both schemes (the dashpay scheme has no DASH_TESTNET).
         #if DEBUG || DASH_TESTNET
         menuItems.append(MenuItemModel(
-            title: "Reset Wallet (Debug)",
+            title: "Reset All Wallets (Debug)",
             icon: .custom("image-menu-reset_wallet", maxHeight: 22),
             action: { [weak self] in
                 self?.navigationDestination = .resetWalletDebug

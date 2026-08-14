@@ -94,18 +94,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onboardingViewControllerDidFinish:(DWOnboardingViewController *)controller {
     [self onboardingDidFinish];
 
-    // Reinstall detection: if SDK wallet keychain material survived while
-    // UserDefaults did not, ask whether to keep or delete it.
-    // while UserDefaults didn't, the default transition to
-    // `DWAppRootViewController` would jump straight to the wallet home
-    // without ever asking the user. Gate the transition behind a Keep/Delete
-    // prompt, mirroring the SwiftExampleApp orphan-mnemonic UX. (Delete
-    // Keep lets the SDK host recover the persisted wallet.)
-    if (!DWWalletEnvironment.hasWallet) {
-        [self transitionToAppRoot];
-        return;
-    }
-
+    // Reinstall detection must use the coordinator's strict, set-wide
+    // inventory. The old Boolean presence check treated a Keychain read error
+    // as "no wallet" and could skip the Keep/Delete All prompt entirely.
     __weak typeof(self) weakSelf = self;
     [DWKeychainWalletRecoveryCoordinator
         presentReinstallKeepOrDeleteChoiceFrom:controller
@@ -123,7 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)deleteRecoveredWalletThenTransitionFromController:(UIViewController *)controller {
-    [controller.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting Wallet…", nil)];
+    [controller.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting All Wallets…", nil)];
 
     __weak typeof(self) weakSelf = self;
     // `PlatformWalletManager.deleteWallet` is synchronous and blocks the main
@@ -139,7 +130,8 @@ NS_ASSUME_NONNULL_BEGIN
 
         // SDK Keychain/runtime deletion and the successful PIN commit run as
         // one operation on the app-owned serial wipe executor.
-        [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:YES];
+        [DWSwiftDashSDKWalletWiper
+            wipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationConfirmedDeleteAll];
 
         [DWSwiftDashSDKWalletWiper waitForPendingWipeWithCompletion:^(BOOL wipeSucceeded) {
             typeof(self) completedSelf = weakSelf;
@@ -158,8 +150,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)presentRecoveredWalletDeleteFailureFromController:(UIViewController *)controller {
     UIAlertController *alert =
-        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Couldn’t Delete Wallet", nil)
-                                            message:NSLocalizedString(@"The wallet is still stored on this device. Please try again.", nil)
+        [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Couldn’t Delete All Wallets", nil)
+                                            message:NSLocalizedString(@"Not all wallets could be deleted. Please try again.", nil)
                                      preferredStyle:UIAlertControllerStyleAlert];
 
     __weak typeof(self) weakSelf = self;
