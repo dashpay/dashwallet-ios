@@ -70,8 +70,14 @@ struct ShieldedSweepPlan: Equatable {
     let feeCredits: UInt64
     let inputCredits: UInt64
     /// Funds that necessarily stay in the pool after this bundle. Normally
-    /// zero; non-zero when more than 16 notes require another sweep.
+    /// zero; non-zero when the notes do not all fit, or when some are worth
+    /// less than the fee of the action that would spend them.
     let remainingCredits: UInt64
+    /// What a FOLLOW-UP sweep of the leftover notes could actually pay out,
+    /// once its own fee is deducted. Zero when the leftovers are dust: they
+    /// cost more to spend than they carry, so no later sweep can move them
+    /// and telling the user to retry would loop forever.
+    let followUpCredits: UInt64
 }
 
 struct ShieldedSweepCandidate: Equatable {
@@ -393,12 +399,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return .waitingForConfirmation(publishedBalance)
         }
 
+        // What a follow-up sweep of the untouched notes could pay out. The
+        // planner drops a note whose value is below the fee of the action that
+        // would carry it, so a leftover is not automatically sendable later —
+        // price it instead of assuming.
+        let leftovers = Array(noteValues.dropFirst(exact.noteCount))
+        let followUpCredits = ShieldedSweepPlanner.bestCandidate(
+            noteValues: leftovers,
+            feeForActions: feeForActions)?.amountCredits ?? 0
+
         return .ready(
             ShieldedSweepPlan(
                 amountCredits: exact.amountCredits,
                 feeCredits: exact.feeCredits,
                 inputCredits: exact.inputCredits,
-                remainingCredits: allCredits - exact.inputCredits))
+                remainingCredits: allCredits - exact.inputCredits,
+                followUpCredits: followUpCredits))
     }
 
     /// Largest amount the pool can fund inside ONE transition — the sweep
