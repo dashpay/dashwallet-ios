@@ -62,6 +62,32 @@ final class SendViewModel: ObservableObject {
     }
     @Published private(set) var isFullShieldedSweep = false
     @Published private(set) var shieldedMaxNotice: String?
+
+    /// The "send everything" alternative to the current Max amount, present
+    /// only when Max leaves dust behind AND spending it is possible. Applying
+    /// it lowers the amount by `forgoneCredits` — the extra fee the dust costs
+    /// — so it is surfaced as a choice, never applied on its own.
+    @Published private(set) var emptyPoolOffer: EmptyPoolOffer?
+
+    struct EmptyPoolOffer: Equatable {
+        let amountCredits: UInt64
+        /// How much less the recipient gets by taking this option.
+        let forgoneCredits: UInt64
+        /// What stays in the pool if the offer is declined.
+        let strandedCredits: UInt64
+    }
+
+    /// Switches the amount to the pool-emptying plan.
+    func applyEmptyPoolOffer() {
+        guard let offer = emptyPoolOffer else { return }
+        shieldedSweepAmountCredits = offer.amountCredits
+        isFullShieldedSweep = true
+        emptyPoolOffer = nil
+        shieldedMaxNotice = nil
+        isApplyingMax = true
+        defer { isApplyingMax = false }
+        applyMaxAmountText(offer.amountCredits / 1000)
+    }
     /// Exact duff amount selected by Max. The two-decimal fiat value is only
     /// its display representation and must not be converted back for sending.
     private var maxAmountDuffs: UInt64?
@@ -711,6 +737,15 @@ final class SendViewModel: ObservableObject {
                     shieldedMaxNotice = Self.shieldedRemainderMessage(
                         plan.remainingCredits,
                         followUpCredits: plan.followUpCredits)
+                    // Only offer emptying the pool when it actually beats
+                    // leaving the remainder for a later sweep — i.e. the
+                    // leftovers are dust no follow-up can move.
+                    if plan.followUpCredits == 0, let emptyPool = plan.emptyPoolAmountCredits {
+                        emptyPoolOffer = EmptyPoolOffer(
+                            amountCredits: emptyPool,
+                            forgoneCredits: plan.amountCredits - emptyPool,
+                            strandedCredits: plan.remainingCredits)
+                    }
                 }
                 sourceDuffs = plan.amountCredits / 1000
             case .waitingForConfirmation(let credits):
@@ -758,6 +793,7 @@ final class SendViewModel: ObservableObject {
         isFullShieldedSweep = false
         shieldedSweepAmountCredits = nil
         shieldedMaxNotice = nil
+        emptyPoolOffer = nil
     }
 
     private static func shieldedConfirmingMessage(_ credits: UInt64) -> String {

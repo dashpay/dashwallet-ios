@@ -402,6 +402,33 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 feeForActions: { fees[$0] }))
     }
 
+    func testShieldedFullSweepIncludesDustAtALowerPayout() {
+        // The pool-emptying alternative: same notes as
+        // `testShieldedSweepSkipsNotesWorthLessThanTheirAction`, but every note
+        // is spent. It must pay out LESS than the best plan — that lower figure
+        // is exactly the cost the offer has to disclose.
+        let fees: [Int: UInt64] = [2: 100, 3: 150]
+
+        let full = ShieldedSweepPlanner.fullSweepCandidate(
+            noteValues: [1_000, 500, 1],
+            feeForActions: { fees[$0] })
+
+        XCTAssertEqual(full?.noteCount, 3)
+        XCTAssertEqual(full?.inputCredits, 1_501)
+        XCTAssertEqual(full?.amountCredits, 1_351)
+
+        let best = ShieldedSweepPlanner.bestCandidate(
+            noteValues: [1_000, 500, 1],
+            feeForActions: { fees[$0] })
+        XCTAssertGreaterThan(best!.amountCredits, full!.amountCredits)
+
+        // Beyond the action budget there is no single-transition full sweep.
+        XCTAssertNil(
+            ShieldedSweepPlanner.fullSweepCandidate(
+                noteValues: Array(repeating: UInt64(1_000), count: 7),
+                feeForActions: { _ in 100 }))
+    }
+
     func testShieldedSpendableBalanceSubtractsFeeReserve() {
         XCTAssertEqual(
             TransferSpendAmountPolicy.spendableCredits(

@@ -398,6 +398,19 @@ struct ExternalSendAmountScreen: View {
                         TransferAmountValidationNote(message: message)
                             .padding(.horizontal, 20)
                     }
+
+                    if let offer = viewModel.emptyPoolOffer {
+                        Button {
+                            viewModel.applyEmptyPoolOffer()
+                        } label: {
+                            Text(Self.emptyPoolOfferTitle(offer))
+                                .font(.footnote.weight(.medium))
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 4)
+                    }
                 }
                 .padding(.bottom, 8)
             }
@@ -574,6 +587,19 @@ struct ExternalSendAmountScreen: View {
                     viewModel.amountText = newValue
                 }
             })
+    }
+
+    /// Names both sides of the trade so the cost is visible before the tap:
+    /// the pool empties, and the recipient gets `forgone` less.
+    static func emptyPoolOfferTitle(_ offer: SendViewModel.EmptyPoolOffer) -> String {
+        let stranded = (offer.strandedCredits / 1000).formattedDashAmountWithoutCurrencySymbol
+        let forgone = (offer.forgoneCredits / 1000).formattedDashAmountWithoutCurrencySymbol
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "Send the remaining %1$@ DASH too — the extra fee costs %2$@ DASH.",
+                comment: "Shielded Max: offer to empty the pool including dust"),
+            stranded,
+            forgone)
     }
 }
 

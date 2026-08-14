@@ -78,6 +78,15 @@ struct ShieldedSweepPlan: Equatable {
     /// cost more to spend than they carry, so no later sweep can move them
     /// and telling the user to retry would loop forever.
     let followUpCredits: UInt64
+    /// Payout of the alternative plan that spends EVERY note within the action
+    /// budget, emptying the pool. `nil` when that is impossible (more notes
+    /// than the budget admits, or the full set cannot cover its own fee).
+    ///
+    /// Always `<= amountCredits` when present: the extra notes cost more in
+    /// fee than they carry, which is exactly why `amountCredits` left them
+    /// out. Offered as an explicit choice rather than applied silently — the
+    /// recipient receives less, so it is the user's call.
+    let emptyPoolAmountCredits: UInt64?
 }
 
 struct ShieldedSweepCandidate: Equatable {
@@ -91,6 +100,43 @@ struct ShieldedSweepCandidate: Equatable {
 /// prefix optimization separate from SwiftData makes the dust/action-fee edge
 /// cases deterministic and regression-testable.
 enum ShieldedSweepPlanner {
+    /// Longest prefix that still pays out — the "empty the pool" counterpart of
+    /// [`bestCandidate`]. It deliberately does NOT maximise the payout: it
+    /// takes every note the action budget admits, so notes worth less than the
+    /// action carrying them are included and the payout drops accordingly.
+    ///
+    /// Returns `nil` when even the full prefix cannot cover its own fee, and
+    /// never returns a candidate that spends fewer notes than are available
+    /// within the budget — a caller offering "send everything" needs the whole
+    /// set or nothing.
+    static func fullSweepCandidate(
+        noteValues: [UInt64],
+        maxActions: Int = ShieldedActionBudget.maxActionsPerTransition,
+        feeForActions: (Int) -> UInt64?
+    ) -> ShieldedSweepCandidate? {
+        guard maxActions > 0, noteValues.count <= maxActions else { return nil }
+
+        let values = noteValues.sorted(by: >)
+        var input: UInt64 = 0
+        for value in values {
+            let next = input.addingReportingOverflow(value)
+            guard !next.overflow else { return nil }
+            input = next.partialValue
+        }
+
+        let noteCount = values.count
+        guard noteCount > 0,
+              let fee = feeForActions(max(noteCount, 2)),
+              input > fee
+        else { return nil }
+
+        return ShieldedSweepCandidate(
+            amountCredits: input - fee,
+            inputCredits: input,
+            feeCredits: fee,
+            noteCount: noteCount)
+    }
+
     static func bestCandidate(
         noteValues: [UInt64],
         maxActions: Int = ShieldedActionBudget.maxActionsPerTransition,
@@ -408,13 +454,24 @@ final class ShieldedTransferCoordinator: ObservableObject {
             noteValues: leftovers,
             feeForActions: feeForActions)?.amountCredits ?? 0
 
+        // The "send everything" alternative, offered only when it would
+        // actually change the outcome — i.e. the best plan already leaves
+        // something behind and the whole note set still fits and pays for
+        // itself.
+        let emptyPool = exact.inputCredits < allCredits
+            ? ShieldedSweepPlanner.fullSweepCandidate(
+                noteValues: noteValues,
+                feeForActions: feeForActions)?.amountCredits
+            : nil
+
         return .ready(
             ShieldedSweepPlan(
                 amountCredits: exact.amountCredits,
                 feeCredits: exact.feeCredits,
                 inputCredits: exact.inputCredits,
                 remainingCredits: allCredits - exact.inputCredits,
-                followUpCredits: followUpCredits))
+                followUpCredits: followUpCredits,
+                emptyPoolAmountCredits: emptyPool))
     }
 
     /// Largest amount the pool can fund inside ONE transition — the sweep
@@ -802,8 +859,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         let submittedAmount: UInt64
         if sweepAll {
             switch Self.sweepAvailability(feeKind: .withdrawal) {
-            case .ready(let plan) where plan.amountCredits == amountCredits:
-                submittedAmount = plan.amountCredits
+            case .ready(let plan) where plan.amountCredits == amountCredits
+                || plan.emptyPoolAmountCredits == amountCredits:
+                // Either sweep the user could have picked: the
+                // max-payout plan, or the pool-emptying alternative.
+                submittedAmount = amountCredits
             case .waitingForConfirmation(let credits):
                 handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
                 return
@@ -908,8 +968,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         let submittedAmount: UInt64
         if sweepAll {
             switch Self.sweepAvailability(feeKind: .unshield) {
-            case .ready(let plan) where plan.amountCredits == amountCredits:
-                submittedAmount = plan.amountCredits
+            case .ready(let plan) where plan.amountCredits == amountCredits
+                || plan.emptyPoolAmountCredits == amountCredits:
+                // Either sweep the user could have picked: the
+                // max-payout plan, or the pool-emptying alternative.
+                submittedAmount = amountCredits
             case .waitingForConfirmation(let credits):
                 handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
                 return
@@ -1164,8 +1227,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
         let submittedAmount: UInt64
         if sweepAll {
             switch Self.sweepAvailability(feeKind: .transfer) {
-            case .ready(let plan) where plan.amountCredits == amountCredits:
-                submittedAmount = plan.amountCredits
+            case .ready(let plan) where plan.amountCredits == amountCredits
+                || plan.emptyPoolAmountCredits == amountCredits:
+                // Either sweep the user could have picked: the
+                // max-payout plan, or the pool-emptying alternative.
+                submittedAmount = amountCredits
             case .waitingForConfirmation(let credits):
                 handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
                 return
