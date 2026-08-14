@@ -243,6 +243,11 @@ class HomeViewModel: ObservableObject {
         // start immediately.
         self.reloadTxsAndShortcuts()
 
+        // A fixture-backed model has no live data to observe. Subscribing
+        // anyway is what kept the onboarding demos reacting to every persister
+        // save and balance change for the whole session.
+        guard transactionSource.isLiveWalletSource else { return }
+
         self.observeCoinJoinSweep()
         self.observeWallet()
         self.observeNetworkChange()
@@ -1685,6 +1690,16 @@ struct WalletTimelineDelta {
 protocol TransactionSource {
     var allTransactions: Array<Transaction> { get }
 
+    /// Whether this source is backed by the real wallet.
+    ///
+    /// A fixture source has nothing to learn from a persister save or a
+    /// balance change, so a view model built on one must not subscribe to
+    /// them: the onboarding demo screens outlive their own presentation, and
+    /// two such view models were found still rebuilding their four-row
+    /// fixture window on every notification twenty minutes into a session,
+    /// long after onboarding had finished.
+    var isLiveWalletSource: Bool { get }
+
     /// The newest rows as a day-completed window of about `targetRowCount`.
     /// Nil when the source has no active wallet yet.
     func timelineWindow(targetRowCount: Int) -> WalletTimelineWindow?
@@ -1706,6 +1721,10 @@ protocol TransactionSource {
 /// `allTransactions` set is one complete, already-loaded window; there is
 /// nothing older to page in and no store to answer deltas or gates from.
 extension TransactionSource {
+    /// Live unless a source opts out, so adding this cannot silently
+    /// disconnect a real one.
+    var isLiveWalletSource: Bool { true }
+
     func timelineWindow(targetRowCount: Int) -> WalletTimelineWindow? {
         WalletTimelineWindow(
             walletId: Data(),
