@@ -5576,3 +5576,11 @@
 "A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "A single wallet's recovery phrase cannot authorize deleting multiple different wallets.";
 "A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue.";
 "Enter the recovery phrase to continue." = "Enter the recovery phrase to continue.";
+
+/* Recovery phrase selection */
+"Choose Wallet" = "Choose Wallet";
+"Couldn’t Read Recovery Phrases" = "Couldn’t Read Recovery Phrases";
+"No Recovery Phrase Found" = "No Recovery Phrase Found";
+"No recovery phrase is stored on this device." = "No recovery phrase is stored on this device.";
+"Select the wallet whose recovery phrase you want to view." = "Select the wallet whose recovery phrase you want to view.";
+"The recovery phrases stored on this device could not be read. Please try again." = "The recovery phrases stored on this device could not be read. Please try again.";

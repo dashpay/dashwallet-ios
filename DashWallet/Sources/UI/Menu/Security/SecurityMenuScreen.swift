@@ -24,6 +24,7 @@ struct SecurityMenuScreen: View {
     private let delegateInternal: DelegateInternal
     
     @StateObject private var viewModel = SecurityMenuViewModel()
+    @StateObject private var recoveryPhraseFlow = RecoveryPhraseFlowViewModel()
     @State private var showBiometricsAlert = false
     @State private var showResetWalletDebugAlert = false
     
@@ -79,6 +80,9 @@ struct SecurityMenuScreen: View {
         .onReceive(viewModel.$showBiometricsAlert) { show in
             showBiometricsAlert = show
         }
+        .onReceive(recoveryPhraseFlow.$navigationEvent.compactMap { $0 }) { event in
+            handleRecoveryPhraseNavigation(event)
+        }
         .alert(NSLocalizedString("Biometrics Access Required", comment: ""), isPresented: $showBiometricsAlert) {
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
             Button(NSLocalizedString("Settings", comment: "")) {
@@ -95,21 +99,27 @@ struct SecurityMenuScreen: View {
         } message: {
             Text("Permanently deletes all wallets on this device without asking for their recovery phrases.")
         }
+        .alert(
+            recoveryPhraseFlow.alertState?.title ?? "",
+            isPresented: Binding(
+                get: { recoveryPhraseFlow.alertState != nil },
+                set: { if !$0 { recoveryPhraseFlow.dismissAlert() } })
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                recoveryPhraseFlow.dismissAlert()
+            }
+            Button(NSLocalizedString("Retry", comment: "")) {
+                recoveryPhraseFlow.retry()
+            }
+        } message: {
+            Text(recoveryPhraseFlow.alertState?.message ?? "")
+        }
     }
     
     private func handleNavigation(_ destination: SecurityMenuNavigationDestination?) {
         switch destination {
         case .viewRecoveryPhrase:
-            viewModel.authenticate { authenticated in
-                if authenticated {
-                    let model = DWPreviewSeedPhraseModel()
-                    model.getOrCreateNewWallet()
-                    let controller = DWPreviewSeedPhraseViewController(model: model)
-                    controller.delegate = delegateInternal
-                    controller.hidesBottomBarWhenPushed = true
-                    self.vc.pushViewController(controller, animated: true)
-                }
-            }
+            recoveryPhraseFlow.beginGlobal()
         case .changePin:
             viewModel.authenticate { authenticated in
                 if authenticated {
@@ -139,6 +149,28 @@ struct SecurityMenuScreen: View {
         // Reset navigation destination after handling
         if destination != nil {
             viewModel.resetNavigation()
+        }
+    }
+
+    private func handleRecoveryPhraseNavigation(_ event: RecoveryPhraseFlowViewModel.NavigationEvent) {
+        switch event.destination {
+        case .picker(let options):
+            let controller = RecoveryPhraseNavigation.pickerController(
+                options: options,
+                flowModel: recoveryPhraseFlow,
+                onCancel: { [weak vc] in
+                    vc?.popViewController(animated: true)
+                })
+            vc.pushViewController(controller, animated: true)
+        case .phrase(let presentation):
+            RecoveryPhraseNavigation.showPhrase(
+                presentation,
+                in: vc,
+                delegate: delegateInternal)
+        }
+
+        DispatchQueue.main.async {
+            recoveryPhraseFlow.consumeNavigationEvent(id: event.id)
         }
     }
     
