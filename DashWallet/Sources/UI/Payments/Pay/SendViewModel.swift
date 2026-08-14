@@ -757,7 +757,7 @@ final class SendViewModel: ObservableObject {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
         return String.localizedStringWithFormat(
             NSLocalizedString(
-                "%@ DASH is still confirming. Withdraw again once it settles.",
+                "%@ DASH is still confirming. Use Max again once it settles.",
                 comment: "Shielded Max pending change"),
             formatted)
     }

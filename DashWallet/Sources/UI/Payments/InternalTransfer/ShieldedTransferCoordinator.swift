@@ -306,7 +306,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
                 return String.localizedStringWithFormat(
                     NSLocalizedString(
-                        "%@ DASH is still confirming. Withdraw again once it settles.",
+                        "%@ DASH is still confirming. Try again once it settles.",
                         comment: "Shielded sweep pending change"),
                     formatted)
             case .shieldedSweepChanged:
