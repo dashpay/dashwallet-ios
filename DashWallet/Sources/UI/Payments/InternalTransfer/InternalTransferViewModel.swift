@@ -472,6 +472,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// input-selection envelope.
     private func routeDidChange() {
         clearMaxSelection()
+        refreshShieldedSpendCeiling()
 
         if route == .platformToCore {
             startWithdrawalPreflightIfNeeded()
@@ -543,6 +544,14 @@ final class InternalTransferViewModel: ObservableObject {
     /// balance mirror. Updates whenever a shielded sync pass completes.
     @Published private(set) var shieldedBalance: UInt64 = 0
 
+    /// Largest amount the pool can fund inside ONE transition — see
+    /// `ShieldedTransferCoordinator.spendCeilingCredits`. A typed amount above
+    /// this needs more notes than the 20 KiB state-transition limit admits and
+    /// would be rejected at broadcast, after the proof was built. `nil` while
+    /// the note set is reconciling, in which case the balance envelope is the
+    /// only bound this screen can apply; the coordinator still fails closed.
+    @Published private(set) var shieldedSpendCeilingCredits: UInt64?
+
     /// Drives the one-time restore gate reactively. A normal catch-up may set
     /// this to false, but it only blocks while the recovery marker is active.
     @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
@@ -591,8 +600,28 @@ final class InternalTransferViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] credits in
                 self?.shieldedBalance = credits
+                self?.refreshShieldedSpendCeiling()
             }
             .store(in: &cancellables)
+    }
+
+    /// Fee kind for the pool-spending routes; `nil` for every other route.
+    private func shieldedFeeKind(for route: InternalTransferRoute) -> PlatformWalletManager.ShieldedFeeKind? {
+        switch route {
+        case .shieldedToCore: return .withdrawal
+        case .shieldedToPlatform: return .unshield
+        default: return nil
+        }
+    }
+
+    /// Recomputes `shieldedSpendCeilingCredits` from the current note set.
+    /// Cached rather than computed per keystroke — it reads SwiftData.
+    private func refreshShieldedSpendCeiling() {
+        guard let feeKind = shieldedFeeKind(for: route) else {
+            shieldedSpendCeilingCredits = nil
+            return
+        }
+        shieldedSpendCeilingCredits = ShieldedTransferCoordinator.spendCeilingCredits(feeKind: feeKind)
     }
 
     /// The raw numeric value the user has typed, with locale comma normalised
@@ -707,6 +736,23 @@ final class InternalTransferViewModel: ObservableObject {
             // A Max sweep is planned against the real note set rather than the
             // amount+reserve envelope, so it is affordable by construction.
             if isFullShieldedSweep { return nil }
+            // The ceiling is priced from the notes that would actually be
+            // spent, so it supersedes the flat reserve — which always charges
+            // a full-size bundle and would reject amounts a one- or two-note
+            // spend can afford.
+            if let ceiling = shieldedSpendCeilingCredits {
+                if creditsPreview > shieldedBalance {
+                    // Simply more than the wallet holds: name that, rather than
+                    // blaming note fragmentation.
+                    return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                        balanceName: balanceName,
+                        requestedDuffs: creditsPreview / 1000,
+                        spendableDuffs: ceiling / 1000)
+                }
+                return creditsPreview > ceiling ? Self.shieldedCeilingMessage(ceiling) : nil
+            }
+            // Ceiling unavailable (notes reconciling): fall back to the flat
+            // worst-case reserve.
             guard let reserve = feeReserveCredits else {
                 return Self.feeEstimateUnavailableMessage
             }
@@ -786,6 +832,9 @@ final class InternalTransferViewModel: ObservableObject {
             // Unshield/withdraw: the SDK debits amount + fee from the shielded
             // pool (recipient receives the full amount), so the balance must
             // cover amount + fee. Fail closed if the reserve is unavailable.
+            if let ceiling = shieldedSpendCeilingCredits {
+                return creditsPreview <= ceiling
+            }
             guard let reserve = feeReserveCredits else { return false }
             return shieldedBalance >= reserve
                 && creditsPreview <= shieldedBalance - reserve
@@ -815,13 +864,18 @@ final class InternalTransferViewModel: ObservableObject {
             return nil
         case .shieldedToCore:
             // The withdraw/unshield fee scales with the number of spent notes;
-            // the SDK recomputes it from real note selection (up to the
-            // 16-action `max_shielded_transition_actions` cap) at send time.
-            // Reserve that worst case so a fragmented wallet can't pass the
-            // affordability check and then fail SDK note selection.
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 16)
+            // the SDK recomputes it from real note selection at send time.
+            // Reserve the worst case the 20 KiB state-transition limit admits
+            // (`ShieldedActionBudget.maxActionsPerTransition`) so a fragmented
+            // wallet can't pass the affordability check and then fail SDK note
+            // selection.
+            return try? PlatformWalletManager.estimateShieldedFee(
+                kind: .withdrawal,
+                numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .shieldedToPlatform:
-            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 16)
+            return try? PlatformWalletManager.estimateShieldedFee(
+                kind: .unshield,
+                numActions: ShieldedActionBudget.maxActionsPerTransition)
         case .platformToCore:
             // Full-balance withdrawal: the fee is already netted out of the
             // preflight's `netWithdrawable`; no reserve on top.
@@ -973,7 +1027,7 @@ final class InternalTransferViewModel: ObservableObject {
                 sourceDuffs = 0
             case .unavailable:
                 maxNotice = NSLocalizedString(
-                    "Your Shielded balance is not ready to withdraw. Sync and try Max again.",
+                    "Your Shielded balance is not ready to spend. Sync and try Max again.",
                     comment: "Shielded Max unavailable")
                 sourceDuffs = 0
             }
@@ -1351,8 +1405,17 @@ final class InternalTransferViewModel: ObservableObject {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
         return String.localizedStringWithFormat(
             NSLocalizedString(
-                "%@ DASH is still confirming. Withdraw again once it settles.",
+                "%@ DASH is still confirming. Use Max again once it settles.",
                 comment: "Shielded Max pending change"),
+            formatted)
+    }
+
+    private static func shieldedCeilingMessage(_ credits: UInt64) -> String {
+        let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "Your Shielded balance is split across notes, and at most %@ DASH of it can be sent in one transaction. Send the rest afterwards.",
+                comment: "Shielded amount above the single-transaction ceiling"),
             formatted)
     }
 
@@ -1360,7 +1423,7 @@ final class InternalTransferViewModel: ObservableObject {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
         return String.localizedStringWithFormat(
             NSLocalizedString(
-                "%@ DASH requires another Shielded withdrawal. Use Max again after this transfer settles.",
+                "%@ DASH is held in notes that don't fit in one transaction. Use Max again after this one settles to send the rest.",
                 comment: "Shielded Max multi-bundle remainder"),
             formatted)
     }
