@@ -111,6 +111,23 @@ extension DWRecoverModel {
         }
     }
 
+    /// Matches the localized destructive-action acknowledgement after applying
+    /// the same Unicode canonicalization to both strings. `normalizePhrase`
+    /// performs NFKD, lowercasing, and whitespace collapsing; it does not
+    /// discard diacritics, words, or punctuation, so the acknowledgement
+    /// remains semantically exact.
+    @objc(isWipeAcceptancePhrase:)
+    func isWipeAcceptancePhrase(_ phrase: String) -> Bool {
+        Self.wipeAcceptancePhraseMatches(phrase, expectedPhrase: wipeAcceptPhrase())
+    }
+
+    static func wipeAcceptancePhraseMatches(
+        _ phrase: String,
+        expectedPhrase: String
+    ) -> Bool {
+        Mnemonic.normalizePhrase(phrase) == Mnemonic.normalizePhrase(expectedPhrase)
+    }
+
     /// True when `phrase` matches at least one readable stored mnemonic — a
     /// non-destructive ownership signal. Backs the forgot-PIN check and the
     /// wipe screen's honest-denial copy (the typed phrase matches one wallet

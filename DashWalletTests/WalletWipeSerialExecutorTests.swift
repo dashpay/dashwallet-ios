@@ -120,6 +120,48 @@ final class StoredWalletInventoryTests: XCTestCase {
     }
 }
 
+final class WipeAcceptancePhraseTests: XCTestCase {
+    private let polishPhrase = "Akceptuję to, że stracę wszystkie moje monety jeśli nie będę miał frazy do odzyskiwania portfela"
+
+    func testPrecomposedPhraseMatchesDecomposedUnicode() {
+        let decomposed = polishPhrase.decomposedStringWithCompatibilityMapping
+
+        XCTAssertTrue(DWRecoverModel.wipeAcceptancePhraseMatches(
+            polishPhrase,
+            expectedPhrase: decomposed))
+    }
+
+    func testCaseAndWhitespaceAreNormalized() {
+        let typed = "  AKCEPTUJĘ   TO, ŻE  STRACĘ WSZYSTKIE MOJE MONETY JEŚLI NIE BĘDĘ MIAŁ FRAZY DO ODZYSKIWANIA PORTFELA  "
+
+        XCTAssertTrue(DWRecoverModel.wipeAcceptancePhraseMatches(
+            typed,
+            expectedPhrase: polishPhrase))
+    }
+
+    func testMissingDiacriticIsRejected() {
+        let typed = polishPhrase.replacingOccurrences(of: "Akceptuję", with: "Akceptuje")
+
+        XCTAssertFalse(DWRecoverModel.wipeAcceptancePhraseMatches(
+            typed,
+            expectedPhrase: polishPhrase))
+    }
+
+    func testChangedPunctuationIsRejected() {
+        let typed = polishPhrase.replacingOccurrences(of: "to, że", with: "to że")
+
+        XCTAssertFalse(DWRecoverModel.wipeAcceptancePhraseMatches(
+            typed,
+            expectedPhrase: polishPhrase))
+    }
+
+    func testLocalizedAcceptancePhrasePassesObjectiveCBridge() {
+        let model = DWRecoverModel(action: .wipe)
+
+        XCTAssertTrue(model.isWipeAcceptancePhrase(model.wipeAcceptPhrase()))
+    }
+}
+
 final class RecoveryPhraseRoutingTests: XCTestCase {
     private let seedA = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
     private let seedB = "legal winner thank year wave sausage worth useful legal winner thank yellow"
