@@ -946,7 +946,9 @@ struct SendConfirmSheet: View {
     private var networkFeeCredits: UInt64? {
         switch route {
         case .coreToShielded:
-            return CoreToShieldedAmountPolicy.poolFeeCredits
+            // The lock charges the fee rounded UP to a whole duff — display
+            // that, so Amount + Network fee equals Total exactly.
+            return CoreToShieldedAmountPolicy.currentPoolFeeDuffs.map { $0 * 1000 }
         case .platformToPlatform:
             // Credit transfer: the metered transition fee. The executor
             // states ~0.001 DASH as the conservative max.

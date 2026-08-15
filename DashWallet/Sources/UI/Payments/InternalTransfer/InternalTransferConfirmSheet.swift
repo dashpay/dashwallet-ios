@@ -217,7 +217,9 @@ struct InternalTransferConfirmSheet: View {
     private var networkFeeCredits: UInt64? {
         switch route {
         case .coreToShielded:
-            return CoreToShieldedAmountPolicy.poolFeeCredits
+            // The lock charges the fee rounded UP to a whole duff — display
+            // that, so Amount + Network fee equals Total exactly.
+            return CoreToShieldedAmountPolicy.currentPoolFeeDuffs.map { $0 * 1000 }
         case .platformToShielded:
             // Shield (Type 15): base shielded fee. Real metered storage is
             // extra and only knowable on-chain, so this is a lower bound.

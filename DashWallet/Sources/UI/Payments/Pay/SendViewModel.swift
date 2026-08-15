@@ -84,6 +84,13 @@ final class SendViewModel: ObservableObject {
     // Balances — same feeds as `InternalTransferViewModel` (BIP44 duffs,
     // DIP-17 credits, Orchard credits).
     @Published private(set) var coreBalanceDuffs: UInt64 = 0
+
+    /// L1-fee-aware spendable Core balance — the same envelope Max fills.
+    /// Core → Shielded validation checks the fee-inclusive lock against this,
+    /// mirroring the internal transfer's `coreSpendableDuffs`.
+    var coreSpendableDuffs: UInt64 {
+        SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+    }
     @Published private(set) var platformCredits: UInt64 = 0
     @Published private(set) var shieldedBalance: UInt64 = 0
 
@@ -550,11 +557,12 @@ final class SendViewModel: ObservableObject {
             guard let feeDuffs = CoreToShieldedAmountPolicy.currentPoolFeeDuffs else {
                 return Self.feeEstimateUnavailableMessage
             }
+            let spendableDuffs = coreSpendableDuffs
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreBalanceDuffs > feeDuffs
-                    ? coreBalanceDuffs - feeDuffs : 0)
+                spendableDuffs: spendableDuffs > feeDuffs
+                    ? spendableDuffs - feeDuffs : 0)
 
         case .platformToPlatform:
             guard let reserve = feeReserveCredits else {
@@ -647,15 +655,17 @@ final class SendViewModel: ObservableObject {
             // unfundable send with its own error, so gate on the balance only.
             return dashDuffsUnsigned <= coreBalanceDuffs
         case .coreToShielded:
-            // Fee-on-top: the lock value is amount + pool fee, so the balance
-            // must cover both. Fails closed when the estimate is unavailable
-            // or the sum overflows — same policy as the internal transfer.
+            // Fee-on-top: the lock value is amount + pool fee, and the
+            // asset-lock funding is an L1 spend — validate against the
+            // fee-aware spendable envelope (same basis as Max), not the raw
+            // balance. Fails closed when the estimate is unavailable or the
+            // sum overflows — same policy as the internal transfer.
             guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
                   let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
                       forAmountDuffs: dashDuffsUnsigned,
                       poolFeeCredits: poolFeeCredits)
             else { return false }
-            return lockDuffs <= coreBalanceDuffs
+            return lockDuffs <= coreSpendableDuffs
         case .platformToPlatform:
             guard let reserve = feeReserveCredits else { return false }
             return platformCredits >= reserve
@@ -693,7 +703,7 @@ final class SendViewModel: ObservableObject {
             // Fee-on-top Max: the lock is amount + pool fee, so the largest
             // recipient amount is the L1-fee-aware spendable minus the pool
             // fee. Fails closed (fills 0) when the estimate is unavailable.
-            let spendable = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+            let spendable = coreSpendableDuffs
             guard let feeDuffs = CoreToShieldedAmountPolicy.currentPoolFeeDuffs else {
                 shieldedMaxNotice = Self.feeEstimateUnavailableMessage
                 sourceDuffs = 0
