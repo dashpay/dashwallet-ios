@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DWInitialViewController () <DWOnboardingViewControllerDelegate>
 
 @property (nonatomic, assign) BOOL launchingWasDeferred;
+@property (nonatomic, assign) BOOL onboardingCompletionInProgress;
 @property (nullable, nonatomic, strong) DWAppRootViewController *rootController;
 
 #if DASHPAY
@@ -92,6 +93,11 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWOnboardingViewControllerDelegate
 
 - (void)onboardingViewControllerDidFinish:(DWOnboardingViewController *)controller {
+    if (self.onboardingCompletionInProgress) {
+        return;
+    }
+    self.onboardingCompletionInProgress = YES;
+
     [self onboardingDidFinish];
 
     // Reinstall detection: if SDK wallet keychain material survived while

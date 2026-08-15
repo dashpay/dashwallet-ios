@@ -17,10 +17,58 @@
 
 import UIKit
 import MessageUI
+import ObjectiveC
 import SwiftDashSDK
 
-@objc
+private final class UserActionGate {
+    private var isInProgress = false
+
+    func begin() -> Bool {
+        guard !isInProgress else { return false }
+
+        isInProgress = true
+        return true
+    }
+
+    func end() {
+        isInProgress = false
+    }
+}
+
+private var userActionGateKey: UInt8 = 0
+
 extension UIViewController {
+    /// Starts a UI action only when this controller does not already have one
+    /// in flight. Call this synchronously, before navigation, presentation, or
+    /// an asynchronous operation can yield back to the main run loop.
+    ///
+    /// End the action when a recoverable failure/cancel occurs or when the
+    /// source controller becomes visible again. Successful one-way transitions
+    /// intentionally leave it acquired so queued taps cannot replay afterward.
+    @objc(dw_beginExclusiveUserAction)
+    func dw_beginExclusiveUserAction() -> Bool {
+        userActionGate.begin()
+    }
+
+    @objc(dw_endExclusiveUserAction)
+    func dw_endExclusiveUserAction() {
+        userActionGate.end()
+    }
+
+    private var userActionGate: UserActionGate {
+        if let gate = objc_getAssociatedObject(self, &userActionGateKey) as? UserActionGate {
+            return gate
+        }
+
+        let gate = UserActionGate()
+        objc_setAssociatedObject(
+            self,
+            &userActionGateKey,
+            gate,
+            .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        return gate
+    }
+
     @objc
     func topController() -> UIViewController {
         if let vc = self as? UITabBarController {

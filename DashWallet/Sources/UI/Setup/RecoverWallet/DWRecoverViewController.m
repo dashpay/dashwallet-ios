@@ -95,11 +95,13 @@ NS_ASSUME_NONNULL_BEGIN
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
                                                            style:UIAlertActionStyleCancel
                                                          handler:^(UIAlertAction *_Nonnull action) {
+                                                             [self.contentView endRecoveryAttempt];
                                                              [self.contentView activateTextView];
                                                          }];
     UIAlertAction *recoverAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Recover", nil)
                                                             style:UIAlertActionStyleDefault
                                                           handler:^(UIAlertAction *_Nonnull action) {
+                                                              [self.contentView endRecoveryAttempt];
                                                               DWPhraseRepairViewController *controller =
                                                                   [[DWPhraseRepairViewController alloc] initWithPhrase:phrase
                                                                                                          incorrectWord:incorrectWord];
@@ -109,7 +111,6 @@ NS_ASSUME_NONNULL_BEGIN
     [alert addAction:cancelAction];
     [alert addAction:recoverAction];
     [self presentViewController:alert animated:YES completion:nil];
-    [self showAlertWithTitle:nil message:message];
 }
 
 - (void)recoverContentView:(DWRecoverContentView *)view usedWordsHaveInvalidCount:(NSArray *)words {
@@ -127,11 +128,13 @@ NS_ASSUME_NONNULL_BEGIN
         UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
                                                                style:UIAlertActionStyleCancel
                                                              handler:^(UIAlertAction *_Nonnull action) {
+                                                                 [self.contentView endRecoveryAttempt];
                                                                  [self.contentView activateTextView];
                                                              }];
         UIAlertAction *recoverAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Recover", nil)
                                                                 style:UIAlertActionStyleDefault
                                                               handler:^(UIAlertAction *_Nonnull action) {
+                                                                  [self.contentView endRecoveryAttempt];
                                                                   DWPhraseRepairViewController *controller =
                                                                       [[DWPhraseRepairViewController alloc] initWithPhrase:[words componentsJoinedByString:@" "]
                                                                                                              incorrectWord:nil];
@@ -141,7 +144,6 @@ NS_ASSUME_NONNULL_BEGIN
         [alert addAction:cancelAction];
         [alert addAction:recoverAction];
         [self presentViewController:alert animated:YES completion:nil];
-        [self showAlertWithTitle:nil message:message];
     }
     else {
         NSString *message = NSLocalizedString(@"Recovery phrase must have 12, 15, 18, 21 or 24 words", nil);
@@ -173,6 +175,7 @@ NS_ASSUME_NONNULL_BEGIN
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
                                                            style:UIAlertActionStyleCancel
                                                          handler:^(UIAlertAction *action) {
+                                                             [self.contentView endRecoveryAttempt];
                                                              [self.contentView activateTextView];
                                                          }];
     [alert addAction:cancelAction];
@@ -308,6 +311,7 @@ NS_ASSUME_NONNULL_BEGIN
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil)
                                                        style:UIAlertActionStyleCancel
                                                      handler:^(UIAlertAction *_Nonnull action) {
+                                                         [self.contentView endRecoveryAttempt];
                                                          [self.contentView activateTextView];
                                                      }];
     [alert addAction:okAction];

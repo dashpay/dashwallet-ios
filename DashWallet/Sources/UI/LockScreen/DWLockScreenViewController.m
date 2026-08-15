@@ -20,6 +20,7 @@
 #import "DWLockActionButton.h"
 #import "DWLockPinInputView.h"
 #import "DWLockScreenModel.h"
+#import "DWQRScanModel.h"
 #import "DWRecoverViewController.h"
 #import "DWSetPinViewController.h"
 #import "DWUIKit.h"
@@ -70,7 +71,8 @@ static CGFloat ActionButtonsHeight(void) {
 @interface DWLockScreenViewController () <DWLockPinInputViewDelegate,
                                           DWLockScreenModelDelegate,
                                           DWRecoverViewControllerDelegate,
-                                          DWSetPinViewControllerDelegate>
+                                          DWSetPinViewControllerDelegate,
+                                          UIAdaptivePresentationControllerDelegate>
 
 @property (strong, nonatomic) DWLockScreenModel *model;
 
@@ -86,6 +88,9 @@ static CGFloat ActionButtonsHeight(void) {
 @property (strong, nonatomic) IBOutlet NSLayoutConstraint *actionButtonsHeightConstraint;
 
 @property (nonatomic, assign) BOOL biometricsAuthorizationAttemptWasMade;
+
+- (BOOL)beginExclusiveUserAction;
+- (void)endExclusiveUserAction;
 
 @end
 
@@ -138,6 +143,8 @@ static CGFloat ActionButtonsHeight(void) {
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
 
+    [self endExclusiveUserAction];
+
     if (self.unlockMode == DWLockScreenViewControllerUnlockMode_Instantly) {
         [self tryOnceToUnlockUsingBiometrics];
     }
@@ -152,6 +159,10 @@ static CGFloat ActionButtonsHeight(void) {
 #pragma mark - Actions
 
 - (IBAction)forgotPinButtonAction:(UIButton *)sender {
+    if (![self beginExclusiveUserAction]) {
+        return;
+    }
+
     [self.model stopCheckingAuthState];
 
     // No PIN record at all (partial keychain restore, interrupted setup):
@@ -188,6 +199,7 @@ static CGFloat ActionButtonsHeight(void) {
                                                   style:UIAlertActionStyleCancel
                                                 handler:^(UIAlertAction *action) {
                                                     [self.model startCheckingAuthState];
+                                                    [self endExclusiveUserAction];
                                                 }]];
         [self presentViewController:sheet animated:YES completion:nil];
     }
@@ -219,6 +231,7 @@ static CGFloat ActionButtonsHeight(void) {
     [self dismissViewControllerAnimated:YES
                              completion:^{
                                  [self.model startCheckingAuthState];
+                                 [self endExclusiveUserAction];
                              }];
 }
 
@@ -231,6 +244,7 @@ static CGFloat ActionButtonsHeight(void) {
                                               style:UIAlertActionStyleCancel
                                             handler:^(UIAlertAction *action) {
                                                 [self.model startCheckingAuthState];
+                                                [self endExclusiveUserAction];
                                             }]];
     [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Wipe wallet", nil)
                                               style:UIAlertActionStyleDestructive
@@ -308,10 +322,15 @@ static CGFloat ActionButtonsHeight(void) {
 }
 
 - (IBAction)receiveButtonAction:(DWLockActionButton *)sender {
+    if (![self beginExclusiveUserAction]) {
+        return;
+    }
+
     // SwiftUI receive surface (Transparent / Platform / Shielded toggle),
     // narrowed to the Receive tab for the locked context.
     UIViewController *controller = [DWPaymentsLandingHostingController quickReceiveController];
     [self presentViewController:controller animated:YES completion:nil];
+    controller.presentationController.delegate = self;
 }
 
 - (IBAction)loginButtonAction:(DWLockActionButton *)sender {
@@ -319,7 +338,26 @@ static CGFloat ActionButtonsHeight(void) {
 }
 
 - (IBAction)scanToPayButtonAction:(DWLockActionButton *)sender {
+    if (![self beginExclusiveUserAction]) {
+        return;
+    }
+
     [self performScanQRCodeAction];
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController {
+    [self endExclusiveUserAction];
+}
+
+#pragma mark - DWQRScanModelDelegate
+
+- (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel {
+    [self dismissViewControllerAnimated:YES
+                             completion:^{
+                                 [self endExclusiveUserAction];
+                             }];
 }
 
 #pragma mark - DWNavigationFullscreenable
@@ -388,7 +426,9 @@ static CGFloat ActionButtonsHeight(void) {
 - (void)lockPinInputView:(DWLockPinInputView *)view didFinishInputWithText:(NSString *)text {
     BOOL isPinValid = [self.model checkPin:text];
     if (isPinValid) {
-        [self.delegate lockScreenViewControllerDidUnlock:self];
+        if ([self beginExclusiveUserAction]) {
+            [self.delegate lockScreenViewControllerDidUnlock:self];
+        }
     }
     else {
         [view clearAndShakePinField];
@@ -481,15 +521,34 @@ static CGFloat ActionButtonsHeight(void) {
     }
 
     if (self.model.isBiometricAuthenticationAllowed) {
+        if (![self beginExclusiveUserAction]) {
+            return;
+        }
+
         [self.model authenticateUsingBiometricsOnlyCompletion:^(BOOL authenticated) {
             if (authenticated) {
                 [self.delegate lockScreenViewControllerDidUnlock:self];
             }
             else {
+                [self endExclusiveUserAction];
                 [self hideLoginButtonIfNeeded];
             }
         }];
     }
+}
+
+- (BOOL)beginExclusiveUserAction {
+    if (![self dw_beginExclusiveUserAction]) {
+        return NO;
+    }
+
+    self.view.userInteractionEnabled = NO;
+    return YES;
+}
+
+- (void)endExclusiveUserAction {
+    [self dw_endExclusiveUserAction];
+    self.view.userInteractionEnabled = YES;
 }
 
 - (void)hideLoginButtonIfNeeded {

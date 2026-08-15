@@ -49,6 +49,8 @@ final class VerifiedSuccessfullyViewController : UIViewController, NavigationFul
 
     @IBAction
     func continueButtonAction() {
+        guard dw_beginExclusiveUserAction() else { return }
+        continueButton.isEnabled = false
         delegate?.secureWalletRoutineDidFinish(self)
     }
 }

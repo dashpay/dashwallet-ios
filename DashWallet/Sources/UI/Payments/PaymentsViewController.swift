@@ -99,6 +99,8 @@ class PaymentsViewController: BaseViewController {
 
     @IBAction
     func closeButtonAction() {
+        guard dw_beginExclusiveUserAction() else { return }
+        view.isUserInteractionEnabled = false
         delegate?.paymentsViewControllerDidCancel(self)
     }
 
@@ -106,6 +108,13 @@ class PaymentsViewController: BaseViewController {
         super.viewDidLoad()
 
         configureHierarchy()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        dw_endExclusiveUserAction()
+        view.isUserInteractionEnabled = true
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -117,10 +126,6 @@ class PaymentsViewController: BaseViewController {
                 self.forceShowingEnterAddress = false
             }
         }
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
     }
 
     class func controller() -> PaymentsViewController {

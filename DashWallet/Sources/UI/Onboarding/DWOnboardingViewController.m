@@ -150,6 +150,11 @@ static CGFloat const SCALE_FACTOR = 0.5;
 #pragma mark - Actions
 
 - (IBAction)skipButtonAction:(id)sender {
+    if (![self dw_beginExclusiveUserAction]) {
+        return;
+    }
+    self.view.userInteractionEnabled = NO;
+
     [self.delegate onboardingViewControllerDidFinish:self];
 }
 

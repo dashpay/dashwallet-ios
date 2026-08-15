@@ -56,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSLayoutConstraint *verificationSeedPhraseTopConstraint;
 
 @property (nonatomic, assign) BOOL initialAnimationCompleted;
+@property (nonatomic, assign) BOOL verificationCompletionScheduled;
 
 @end
 
@@ -181,6 +182,11 @@ NS_ASSUME_NONNULL_BEGIN
     [self.model selectWord:wordModel];
 
     if (self.model.seedPhraseHasBeenVerified) {
+        if (self.verificationCompletionScheduled) {
+            return;
+        }
+        self.verificationCompletionScheduled = YES;
+
         // show result when animation ends
         dispatch_time_t when = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(DW_VERIFY_APPEAR_ANIMATION_DURATION * NSEC_PER_SEC));
         dispatch_after(when, dispatch_get_main_queue(), ^{

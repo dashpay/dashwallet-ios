@@ -19,6 +19,7 @@
 
 #import "DWBiometricAuthModel.h"
 #import "DWUIKit.h"
+#import "dashwallet-Swift.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -63,6 +64,9 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Actions
 
 - (IBAction)enableBiometricButtonAction:(id)sender {
+    if (![self dw_beginExclusiveUserAction]) {
+        return;
+    }
     self.view.userInteractionEnabled = NO;
 
     __weak typeof(self) weakSelf = self;
@@ -82,6 +86,11 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (IBAction)skipBiometricButtonAction:(id)sender {
+    if (![self dw_beginExclusiveUserAction]) {
+        return;
+    }
+    self.view.userInteractionEnabled = NO;
+
     [self.model disableBiometricAuth];
     [self.delegate biometricAuthViewControllerDidFinish:self];
 }

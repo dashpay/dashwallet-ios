@@ -113,16 +113,23 @@ final class BackupInfoViewController: BaseViewController {
 
     @objc
     private func closeAction() {
+        guard dw_beginExclusiveUserAction() else { return }
+        setActionsEnabled(false)
         delegate?.secureWalletRoutineDidCancel(self)
     }
 
     @IBAction
     func skipButtonAction() {
+        guard dw_beginExclusiveUserAction() else { return }
+        setActionsEnabled(false)
         delegate?.secureWalletRoutineDidCancel(self)
     }
 
     @IBAction
     func backupButtonAction() {
+        guard dw_beginExclusiveUserAction() else { return }
+        setActionsEnabled(false)
+
         let authManager = AuthenticationService.shared
         
         if type == .setup && authManager.didAuthenticate {
@@ -132,6 +139,7 @@ final class BackupInfoViewController: BaseViewController {
                    usingBiometricAuthentication: false,
                    alertIfLockout: true) { [weak self] authenticated, _, _ in
                 guard authenticated else {
+                    self?.endUserAction()
                     return
                 }
 
@@ -160,6 +168,12 @@ final class BackupInfoViewController: BaseViewController {
 
 
         configureHierarchy()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        endUserAction()
     }
 
     @objc
@@ -202,6 +216,16 @@ extension BackupInfoViewController {
         controller.shouldCreateNewWalletOnScreenshot = shouldCreateNewWalletOnScreenshot
         controller.delegate = delegate
         navigationController?.pushViewController(controller, animated: true)
+    }
+
+    private func endUserAction() {
+        dw_endExclusiveUserAction()
+        setActionsEnabled(true)
+    }
+
+    private func setActionsEnabled(_ enabled: Bool) {
+        bottomButtonStack.isUserInteractionEnabled = enabled
+        navigationItem.rightBarButtonItem?.isEnabled = enabled
     }
 
     private func reloadCloseButton() {
