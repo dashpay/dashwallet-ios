@@ -53,6 +53,15 @@ final class SendViewModel: ObservableObject {
     @Published var source: ChainNetwork = .core {
         didSet { sourceDidChange() }
     }
+    /// True once the From step has been changed by the user. Until then the
+    /// source is derived from the destination on every address change: the
+    /// initial `.core` is a placeholder, not a decision, and treating it as
+    /// one is what left a pasted shielded address funded from the
+    /// transparent balance.
+    private var userPickedSource = false
+    /// Set while `destinationDidChange` derives the source, so its write to
+    /// `source` isn't mistaken for a user pick.
+    private var isDerivingSource = false
     private var isApplyingMax = false
     @Published var amountText: String = "0" {
         didSet {
@@ -218,13 +227,22 @@ final class SendViewModel: ObservableObject {
         guard newDestination != destination else { return }
         destination = newDestination
 
-        // Keep the source legal for the new destination; prefer keeping the
-        // user's pick, else the first valid source that has any balance,
-        // else the first valid source. A pinned source never moves — an
-        // incompatible destination reads back as `pinnedSourceMismatch`.
+        // Keep an explicit user pick when it is still legal for the new
+        // destination; otherwise derive the source from the destination —
+        // the first valid source that has any balance, else the first valid
+        // source. `validSources` is ordered by preference, so a shielded
+        // address funds itself from the pool rather than from the standing
+        // `.core` default (which is legal for it, and would therefore have
+        // survived a "keep whatever is selected" rule and silently turned a
+        // private transfer into an on-chain shield). A pinned source never
+        // moves — an incompatible destination reads back as
+        // `pinnedSourceMismatch`.
         let valid = validSources
-        if pinnedSource == nil, !valid.isEmpty, !valid.contains(source) {
-            source = valid.first { balanceDuffs(of: $0) > 0 } ?? valid[0]
+        if pinnedSource == nil, !valid.isEmpty, !userPickedSource || !valid.contains(source) {
+            let preferred = valid.first { balanceDuffs(of: $0) > 0 } ?? valid[0]
+            if preferred != source {
+                setSourceWithoutClaimingUserIntent(preferred)
+            }
         }
         routeDidChange()
     }
@@ -249,7 +267,18 @@ final class SendViewModel: ObservableObject {
     }
 
     private func sourceDidChange() {
+        if !isDerivingSource {
+            userPickedSource = true
+        }
         routeDidChange()
+    }
+
+    /// Move the source without recording it as the user's pick, so a later
+    /// destination change is still free to re-derive it.
+    private func setSourceWithoutClaimingUserIntent(_ network: ChainNetwork) {
+        isDerivingSource = true
+        defer { isDerivingSource = false }
+        source = network
     }
 
     // MARK: - Sources & route
