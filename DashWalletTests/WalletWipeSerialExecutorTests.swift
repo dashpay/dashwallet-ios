@@ -93,9 +93,36 @@ final class WalletWipeSerialExecutorTests: XCTestCase {
 
         XCTAssertFalse(appStateCleared)
     }
+
+    func testLegacyCleanupAuthorizationScope() {
+        XCTAssertTrue(
+            SwiftDashSDKWalletWipeAuthorization.recoveryFlow
+                .removesMatchingLegacyMnemonicAccounts)
+        XCTAssertFalse(
+            SwiftDashSDKWalletWipeAuthorization.recoveryFlow
+                .removesAllLegacyMnemonicAccounts)
+
+        XCTAssertTrue(
+            SwiftDashSDKWalletWipeAuthorization.confirmedDeleteAll
+                .removesAllLegacyMnemonicAccounts)
+        XCTAssertFalse(
+            SwiftDashSDKWalletWipeAuthorization.confirmedDeleteAll
+                .removesMatchingLegacyMnemonicAccounts)
+
+        for authorization in [
+            SwiftDashSDKWalletWipeAuthorization.debugReset,
+            .screenshotReplacement,
+        ] {
+            XCTAssertFalse(authorization.removesMatchingLegacyMnemonicAccounts)
+            XCTAssertFalse(authorization.removesAllLegacyMnemonicAccounts)
+        }
+    }
 }
 
 final class StoredWalletInventoryTests: XCTestCase {
+    private let seedA = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+    private let seedB = "legal winner thank year wave sausage worth useful legal winner thank yellow"
+
     func testDistinctWalletCountDeduplicatesNetworkScopedCopiesOfOneSeed() {
         let seed = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
         let entries = [
@@ -117,6 +144,96 @@ final class StoredWalletInventoryTests: XCTestCase {
         ]
 
         XCTAssertEqual(SwiftDashSDKHost.distinctWalletCount(in: entries), 2)
+    }
+
+    func testRecoveryFiltersPersistedWalletsByNetwork() throws {
+        let idsA = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: seedA)
+        let idsB = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: seedB)
+        let mainnetId = try XCTUnwrap(idsA[.mainnet])
+        let testnetId = try XCTUnwrap(idsB[.testnet])
+        let entries = [
+            (walletId: mainnetId, mnemonic: seedA),
+            (walletId: testnetId, mnemonic: seedB),
+        ]
+
+        let mainnet = SwiftDashSDKHost.recoverablePersistedMnemonics(
+            entries,
+            for: .mainnet)
+        let testnet = SwiftDashSDKHost.recoverablePersistedMnemonics(
+            entries,
+            for: .testnet)
+
+        XCTAssertEqual(mainnet.map { $0.walletId }, [mainnetId])
+        XCTAssertEqual(testnet.map { $0.walletId }, [testnetId])
+    }
+
+    func testRecoverySkipsUnrecognizedStoredId() {
+        let entries = [
+            (walletId: Data(repeating: 0xff, count: 32), mnemonic: seedA),
+        ]
+
+        XCTAssertTrue(SwiftDashSDKHost.recoverablePersistedMnemonics(
+            entries,
+            for: .mainnet).isEmpty)
+        XCTAssertTrue(SwiftDashSDKHost.recoverablePersistedMnemonics(
+            entries,
+            for: .testnet).isEmpty)
+    }
+
+    func testMirroredSeedClassifiesAsTwoStoredNetworks() throws {
+        let ids = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: seedA)
+        let mainnetId = try XCTUnwrap(ids[.mainnet])
+        let testnetId = try XCTUnwrap(ids[.testnet])
+        let entries = [
+            (walletId: mainnetId, mnemonic: seedA),
+            (walletId: testnetId, mnemonic: seedA),
+        ]
+
+        XCTAssertEqual(
+            try SwiftDashSDKHost.persistedSDKWalletNetworks(in: entries),
+            Set([.mainnet, .testnet]))
+    }
+
+    func testLogicalWalletIdsAreNetworkScoped() throws {
+        let ids = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: seedA)
+
+        XCTAssertEqual(ids.count, 2)
+        XCTAssertNotEqual(ids[.mainnet], ids[.testnet])
+    }
+
+    func testRecoveryWipeTreatsMirroredIdsAsOneNormalizedSeed() {
+        XCTAssertEqual(
+            SwiftDashSDKWalletWiper.soleNormalizedMnemonic(
+                in: [seedA, "  \(seedA.uppercased())  "]),
+            seedA)
+    }
+
+    func testRecoveryWipeRejectsEmptyOrDifferentSeeds() {
+        XCTAssertNil(SwiftDashSDKWalletWiper.soleNormalizedMnemonic(in: []))
+        XCTAssertNil(
+            SwiftDashSDKWalletWiper.soleNormalizedMnemonic(
+                in: [seedA, seedB]))
+    }
+}
+
+final class LegacyMnemonicSelectionTests: XCTestCase {
+    func testTargetedCleanupSelectsOnlyMatchingNormalizedSeed() {
+        let target = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+        let other = "legal winner thank year wave sausage worth useful legal winner thank yellow"
+        let entries = [
+            SwiftDashSDKKeyMigrator.LegacyMnemonicEntry(
+                account: "WALLET_MNEMONIC_KEY_a",
+                mnemonic: "  \(target.uppercased())  "),
+            SwiftDashSDKKeyMigrator.LegacyMnemonicEntry(
+                account: "WALLET_MNEMONIC_KEY_b",
+                mnemonic: other),
+        ]
+
+        XCTAssertEqual(
+            SwiftDashSDKKeyMigrator.legacyMnemonicAccountsToRemove(
+                matching: target,
+                in: entries),
+            ["WALLET_MNEMONIC_KEY_a"])
     }
 }
 

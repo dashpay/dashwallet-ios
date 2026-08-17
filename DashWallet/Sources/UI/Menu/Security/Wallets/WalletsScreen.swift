@@ -450,7 +450,7 @@ private struct RemoveWalletSheet: View {
                             .foregroundColor(.dash.primaryText)
 
                         Text(NSLocalizedString(
-                            "This removes this device's copy of the wallet, including its keys and synced data. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.",
+                            "This removes this wallet from this device on every network where it is stored, including its private keys and synced data. Other wallets are not affected. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.",
                             comment: "Wallets"))
                             .font(.subheadline)
                             .foregroundColor(.dash.secondaryText)

@@ -8,13 +8,13 @@
 //  stores the mnemonic in WalletStorage under the returned wallet id.
 //
 //  Hard invariants — see DASHSYNC_KEY_MIGRATION.md:
-//    1. NEVER deletes from `org.dashfoundation.dash` (DashSync's keychain
-//       service). DashSync entries are read-only here forever; they are
-//       preserved indefinitely as belt-and-suspenders rollback source.
+//    1. DashSync entries are read-only except when an explicit production
+//       Remove/Delete All operation deletes wallet mnemonic accounts. The
+//       service itself, PIN, chain lists, and unrelated records are untouched.
 //    2. NEVER throws and NEVER crashes — `migrateIfNeeded()` returns Void
 //       and swallows all errors into os.log entries.
-//    3. NEVER modifies user-visible state. No UI, no DWGlobalOptions,
-//       no DashSync state mutation.
+//    3. The migration path never modifies user-visible state. No UI, no
+//       DWGlobalOptions, and no DashSync mutation outside explicit cleanup.
 //    4. Runs early in app launch, BEFORE any DashSync initialization, so
 //       the migrator owns the keychain read window before DashSync touches
 //       its own wallet state.
@@ -24,7 +24,7 @@
 //  keychain layout. The constants below are a frozen contract — once this
 //  ships, DashSync the *library* can be removed from the binary and the
 //  migrator will still work, because the keychain items previous app
-//  versions wrote survive app updates and we never delete them.
+//  versions wrote survive app updates until the user explicitly removes them.
 //
 
 import Foundation
@@ -41,7 +41,15 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.key-migrator")
 
-    // MARK: - Frozen contract: DashSync keychain layout (read-only forever)
+    /// Migration and destructive legacy cleanup share one queue. If cleanup
+    /// arrives during launch migration, it waits for the import and the caller
+    /// then deletes the resulting SDK wallet; if cleanup wins, migration sees
+    /// no mnemonic account to import.
+    private static let legacyWalletQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.legacy-wallet-material",
+        qos: .userInitiated)
+
+    // MARK: - Frozen contract: DashSync keychain layout
 
     /// DashSync's keychain service identifier — `NSData+Dash.h:37`.
     private static let dashSyncService = "org.dashfoundation.dash"
@@ -98,7 +106,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     // MARK: - Public entry point
 
     /// Synchronous Obj-C entry point. Dispatches the entire migrator body
-    /// to a background queue (`DispatchQueue.global(qos: .userInitiated)`)
+    /// to the serial legacy-wallet queue
     /// and returns to the caller in microseconds, so launch is not blocked.
     /// The actual migration completes ~300–500 ms later in the background
     /// while the user is already looking at the home screen.
@@ -109,7 +117,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// Never throws, never crashes.
     @objc(migrateIfNeeded)
     static func migrateIfNeeded() {
-        DispatchQueue.global(qos: .userInitiated).async {
+        legacyWalletQueue.async {
             performMigration()
         }
     }
@@ -138,7 +146,15 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         defaults.removeObject(forKey: deferredUnknownChainKey)
         defaults.removeObject(forKey: deferredFailureKey)
 
-        let mnemonicAccounts = enumerateDashSyncMnemonicAccounts()
+        let mnemonicAccounts: [String]
+        do {
+            mnemonicAccounts = try strictlyEnumerateDashSyncMnemonicAccounts()
+        } catch {
+            defaults.set(true, forKey: deferredFailureKey)
+            logger.error(
+                "🔑 KEYMIG :: DashSync mnemonic enumeration failed: \(String(describing: error), privacy: .public)")
+            return
+        }
         if mnemonicAccounts.isEmpty {
             defaults.set("v1", forKey: doneKey)
             logger.info("🔑 KEYMIG :: no DashSync mnemonics found — fresh install or post-wipe, marking done")
@@ -233,6 +249,116 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             .contains { defaults.object(forKey: $0) != nil }
     }
 
+    // MARK: - Explicit legacy wallet cleanup
+
+    struct LegacyMnemonicEntry: Equatable {
+        let account: String
+        let mnemonic: String
+    }
+
+    private enum LegacyMnemonicCleanupError: LocalizedError {
+        case keychainRead(OSStatus)
+        case mnemonicRead
+        case deletionFailed
+        case verificationFailed
+
+        var errorDescription: String? {
+            NSLocalizedString(
+                "The old wallet data could not be removed. Please try again.",
+                comment: "Wallets")
+        }
+    }
+
+    /// Pure matching used by targeted Remove and its regression tests.
+    static func legacyMnemonicAccountsToRemove(
+        matching mnemonic: String,
+        in entries: [LegacyMnemonicEntry]
+    ) -> [String] {
+        let target = Mnemonic.normalizePhrase(mnemonic)
+        return entries.compactMap { entry in
+            Mnemonic.normalizePhrase(entry.mnemonic) == target ? entry.account : nil
+        }
+    }
+
+    /// Remove every old DashSync mnemonic account for one logical seed without
+    /// blocking MainActor while a launch migration is finishing.
+    static func removeLegacyMnemonicAccounts(matching mnemonic: String) async throws {
+        try await withCheckedThrowingContinuation {
+            (continuation: CheckedContinuation<Void, Error>) in
+            legacyWalletQueue.async {
+                do {
+                    try performRemoveLegacyMnemonicAccounts(matching: mnemonic)
+                    continuation.resume(returning: ())
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    /// The global wiper already runs off-main and must wait for any migration
+    /// that started first. This is the synchronous counterpart of targeted
+    /// Remove, using the same queue and the same matching implementation.
+    static func removeLegacyMnemonicAccountsBeforeWipe(matching mnemonic: String) throws {
+        try legacyWalletQueue.sync {
+            try performRemoveLegacyMnemonicAccounts(matching: mnemonic)
+        }
+    }
+
+    /// Full production wipe runs on the wiper's background queue, so it can
+    /// synchronously wait behind any launch migration without blocking UI.
+    static func removeAllLegacyMnemonicAccounts() throws {
+        try legacyWalletQueue.sync {
+            let accounts = try strictlyEnumerateDashSyncMnemonicAccounts()
+            try deleteLegacyMnemonicAccounts(accounts)
+            guard try strictlyEnumerateDashSyncMnemonicAccounts().isEmpty else {
+                throw LegacyMnemonicCleanupError.verificationFailed
+            }
+            logger.info(
+                "🔑 KEYMIG :: explicit Delete All removed \(accounts.count, privacy: .public) legacy mnemonic account(s)")
+        }
+    }
+
+    private static func performRemoveLegacyMnemonicAccounts(matching mnemonic: String) throws {
+        let entries = try loadLegacyMnemonicEntries()
+        let accounts = legacyMnemonicAccountsToRemove(
+            matching: mnemonic,
+            in: entries)
+        try deleteLegacyMnemonicAccounts(accounts)
+
+        let remaining = try loadLegacyMnemonicEntries()
+        guard legacyMnemonicAccountsToRemove(
+            matching: mnemonic,
+            in: remaining).isEmpty else {
+            throw LegacyMnemonicCleanupError.verificationFailed
+        }
+        logger.info(
+            "🔑 KEYMIG :: explicit matching cleanup deleted \(accounts.count, privacy: .public) legacy mnemonic account(s)")
+    }
+
+    private static func loadLegacyMnemonicEntries() throws -> [LegacyMnemonicEntry] {
+        try strictlyEnumerateDashSyncMnemonicAccounts().map { account in
+            guard let mnemonic = readKeychainString(
+                service: dashSyncService,
+                account: account) else {
+                throw LegacyMnemonicCleanupError.mnemonicRead
+            }
+            return LegacyMnemonicEntry(account: account, mnemonic: mnemonic)
+        }
+    }
+
+    private static func deleteLegacyMnemonicAccounts(_ accounts: [String]) throws {
+        for account in accounts {
+            guard KeychainStore.set(
+                data: nil,
+                service: dashSyncService,
+                account: account,
+                accessibility: .whenUnlockedThisDeviceOnly) else {
+                throw LegacyMnemonicCleanupError.deletionFailed
+            }
+        }
+    }
+
     private static func createWalletOnHost(
         mnemonic: String,
         network: Network,
@@ -276,6 +402,10 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     /// account name starts with `WALLET_MNEMONIC_KEY_`. Returns the full
     /// account names (including the prefix), sorted for determinism.
     private static func enumerateDashSyncMnemonicAccounts() -> [String] {
+        (try? strictlyEnumerateDashSyncMnemonicAccounts()) ?? []
+    }
+
+    private static func strictlyEnumerateDashSyncMnemonicAccounts() throws -> [String] {
         let query: [String: Any] = [
             kSecClass as String:           kSecClassGenericPassword,
             kSecAttrService as String:     dashSyncService,
@@ -284,8 +414,11 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         ]
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess, let items = result as? [[String: Any]] else {
+        if status == errSecItemNotFound {
             return []
+        }
+        guard status == errSecSuccess, let items = result as? [[String: Any]] else {
+            throw LegacyMnemonicCleanupError.keychainRead(status)
         }
         return items
             .compactMap { $0[kSecAttrAccount as String] as? String }

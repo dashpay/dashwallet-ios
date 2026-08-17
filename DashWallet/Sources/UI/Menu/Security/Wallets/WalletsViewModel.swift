@@ -300,8 +300,8 @@ final class WalletsViewModel: ObservableObject {
         }
     }
 
-    /// Remove `walletId` from this device (this device's copy only — funds stay
-    /// recoverable with the phrase). Precondition (enforced by the screen): the
+    /// Remove the logical wallet represented by `walletId` from this device on
+    /// both supported networks. Precondition (enforced by the screen): the
     /// recovery phrase was verified, and another wallet exists on this network
     /// to switch to — also re-checked here, independent of the registry's
     /// active id, so a stale registry can never let the only rendered wallet
@@ -309,9 +309,8 @@ final class WalletsViewModel: ObservableObject {
     ///
     /// If `walletId` is the active wallet, auto-switch to any other wallet
     /// first (await the rebind) so the runtime never ends up bound to a
-    /// deleted wallet, then delete. Deletion reuses the wiper's promoted
-    /// per-wallet primitive (`SwiftDashSDKWalletWiper.deleteWalletFromSDK`) and
-    /// clears the per-network registry entry if it still names this wallet.
+    /// deleted wallet, then delete both deterministic network ids plus any
+    /// matching legacy DashSync mnemonic account.
     func removeWallet(walletId: Data) async {
         guard !addInProgress, !switchInProgress, !removeInProgress else { return }
         removeInProgress = true
@@ -323,6 +322,15 @@ final class WalletsViewModel: ObservableObject {
             // (`beginRemove`); this bail is defense in depth.
             Self.logger.error("removeWallet: refusing to remove the only wallet on this network")
             errorMessage = NSLocalizedString("Cannot remove the last wallet here.", comment: "Wallets")
+            return
+        }
+
+        let mnemonic: String
+        do {
+            mnemonic = try SwiftDashSDKHost.strictlyPersistedMnemonic(for: walletId)
+        } catch {
+            Self.logger.error("removeWallet mnemonic read failed: \(String(describing: error), privacy: .public)")
+            errorMessage = error.localizedDescription
             return
         }
 
@@ -340,21 +348,13 @@ final class WalletsViewModel: ObservableObject {
         }
 
         do {
-            try SwiftDashSDKWalletWiper.deleteWalletFromSDK(walletId)
+            try await SwiftDashSDKWalletWiper.deleteLogicalWallet(
+                mnemonic: mnemonic)
         } catch {
             Self.logger.error("removeWallet failed: \(String(describing: error), privacy: .public)")
             errorMessage = error.localizedDescription
             reload()
             return
-        }
-
-        // Keep the registry honest: if the removed wallet is still recorded as
-        // active for either registry network, drop it so a stale id can't be
-        // resolved. The removed wallet is gone from `wallets` now.
-        for kind in [WalletEnvironment.NetworkKind.mainnet, .testnet] {
-            if WalletEnvironment.activeWalletId(for: kind) == walletId {
-                WalletEnvironment.setActiveWalletId(nil, for: kind)
-            }
         }
 
         reload()
@@ -363,7 +363,9 @@ final class WalletsViewModel: ObservableObject {
     // MARK: - Helpers
 
     private func activeWalletId() -> Data? {
-        WalletEnvironment.activeWalletId(for: WalletEnvironment.isTestnet ? .testnet : .mainnet)
+        SwiftDashSDKHost.shared.wallet?.walletId
+            ?? WalletEnvironment.activeWalletId(
+                for: WalletEnvironment.isTestnet ? .testnet : .mainnet)
     }
 
     /// Collapse a user-entered recovery phrase to canonical form: trim, then
