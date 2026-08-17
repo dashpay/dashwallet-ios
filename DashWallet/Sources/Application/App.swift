@@ -131,6 +131,10 @@ private let kFiatCurrencyDidChange = "FiatCurrencyDidChange"
 
 extension Notification.Name {
     static let fiatCurrencyDidChange = Notification.Name(kFiatCurrencyDidChange)
+    /// `DWGlobalOptions.advancedModeEnabled` was flipped. Posted by whoever
+    /// writes it, so a screen already on display can rebuild rather than show
+    /// the value it happened to read when it appeared.
+    static let advancedModeDidChange = Notification.Name("org.dash.advanced-mode-did-change")
     static let willRequestOSPermission = Notification.Name("org.dash.will-request-permission-notification")
     static let didRequestOSPermission = Notification.Name("org.dash.did-request-permission-notification")
     static let applicationTerminationRequest = Notification.Name("DWApplicationTerminationRequestNotification")

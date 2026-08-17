@@ -32,6 +32,7 @@ class SettingsMenuViewModel: ObservableObject {
     @Published var items: [MenuItemModel] = []
     @Published var navigationDestination: SettingsMenuNavigationDestination?
     @Published var notificationsEnabled: Bool
+    @Published var advancedModeEnabled: Bool
     @Published var showCSVExportActivity = false
     @Published var csvExportData: (fileName: String, file: URL)?
     @Published var showCoinJoinSweepConfirmation = false
@@ -71,6 +72,7 @@ class SettingsMenuViewModel: ObservableObject {
     
     init() {
         self.notificationsEnabled = DWGlobalOptions.sharedInstance().localNotificationsEnabled
+        self.advancedModeEnabled = DWGlobalOptions.sharedInstance().advancedModeEnabled
         refreshMenuItems()
         setupCoinJoinObservers()
         setupCurrencyChangeObserver()
@@ -127,6 +129,17 @@ class SettingsMenuViewModel: ObservableObject {
                 }
             ),
             MenuItemModel(
+                title: NSLocalizedString("Advanced mode", comment: "Settings"),
+                subtitle: NSLocalizedString("Show advanced wallet details and actions", comment: "Settings"),
+                icon: .custom("image.about", maxHeight: 30),
+                showToggle: true,
+                isToggled: advancedModeEnabled,
+                action: { [weak self] in
+                    guard let self = self else { return }
+                    self.setAdvancedMode(!self.advancedModeEnabled)
+                }
+            ),
+            MenuItemModel(
                 title: NSLocalizedString("Network", comment: ""),
                 subtitle: networkName,
                 icon: .custom("image.network.monitor", maxHeight: 30),
@@ -169,6 +182,21 @@ class SettingsMenuViewModel: ObservableObject {
             )
         ])
         #endif
+    }
+
+    // MARK: - Advanced mode
+
+    /// Write the flag, then announce it. The announcement is the point: the
+    /// setting reaches far beyond this screen, and a consumer that only read
+    /// the value when it appeared would keep showing the old state until it
+    /// was rebuilt for some unrelated reason.
+    func setAdvancedMode(_ enabled: Bool) {
+        guard enabled != advancedModeEnabled else { return }
+        advancedModeEnabled = enabled
+        DWGlobalOptions.sharedInstance().advancedModeEnabled = enabled
+        DWLogger.log("Settings: advanced mode \(enabled ? "enabled" : "disabled")")
+        NotificationCenter.default.post(name: .advancedModeDidChange, object: nil)
+        refreshMenuItems()
     }
 
     // MARK: - CoinJoin Sweep
