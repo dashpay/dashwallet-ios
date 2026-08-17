@@ -51,29 +51,36 @@ public struct WalletBalance: Equatable, Sendable {
         self.locked = locked
     }
 
-    /// Total user-visible balance: confirmed + unconfirmed + immature.
-    ///
-    /// `locked` is a bucket of its own — `key-wallet`'s `WalletCoreBalance`
-    /// documents it as "UTXOs reserved for specific purposes like CoinJoin"
-    /// and sums all four fields for its own total. Those coins are surfaced
-    /// separately (`coinJoinBalanceDuffs` and the mixed-coins screens), so
-    /// they stay out of this figure.
-    public var total: UInt64 { confirmed + unconfirmed + immature }
+    // The four fields are DISJOINT buckets. `key-wallet`'s
+    // `ManagedCoreFundsAccount::update_balance` sorts every UTXO with a single
+    // if / else-if chain — locked first, then immature, then
+    // confirmed-or-InstantSend-locked-or-trusted, else unconfirmed — so a UTXO
+    // contributes to exactly one of them.
+    //
+    // In particular `locked` is NOT the InstantSend-locked part of `confirmed`:
+    // IS-locked funds land in `confirmed`, while `locked` is a separate
+    // reserved bucket (`Utxo.is_locked`, intended for CoinJoin-style coin
+    // locking). Nothing in production sets that flag today, so it reads 0 —
+    // which is why the earlier arithmetic could be wrong here without anyone
+    // noticing.
 
-    /// Balance a send can draw on right now: the confirmed bucket (mature
-    /// UTXOs in a block or InstantSend-locked).
+    /// Total user-visible balance — every bucket, matching
+    /// `WalletCoreBalance::total()`.
+    public var total: UInt64 { confirmed + unconfirmed + immature + locked }
+
+    /// Spendable balance — `confirmed` only.
     ///
-    /// `locked` is NOT subtracted. It is disjoint from `confirmed` (see
-    /// `total`), so taking it off removed coins that were never in there —
-    /// with enough reserved UTXOs this floored a funded wallet's spendable
-    /// balance at 0, which silently disabled "Max" and reported insufficient
-    /// funds for every amount.
+    /// Deliberately NOT `WalletCoreBalance::spendable()` (confirmed +
+    /// unconfirmed). What gates a real send is the transaction builder's coin
+    /// selection, and that is the stricter set: `Utxo::is_spendable`'s own doc
+    /// tells callers that want "the spendable balance bucket or conservative
+    /// coin selection" to check `is_confirmed || is_instantlocked` — which is
+    /// what the `confirmed` bucket already holds (plus trusted change).
+    /// Reporting untrusted 0-conf here would offer the user money that coin
+    /// selection then refuses, failing the send with "Insufficient funds".
     ///
-    /// `unconfirmed` stays out even though `key-wallet`'s own `spendable()`
-    /// counts it and ordinary spends do admit mempool inputs: the asset-lock
-    /// builders behind the shield routes take confirmed inputs only, and
-    /// every core "Max" in the app is held to that stricter bar rather than
-    /// offering an amount some routes cannot fund.
+    /// `locked` is absent from the sum rather than subtracted: the buckets are
+    /// disjoint, so it never overlapped `confirmed` to begin with.
     public var spendable: UInt64 { confirmed }
 
     /// Conservative fee headroom reserved on top of a fixed-amount send so a
