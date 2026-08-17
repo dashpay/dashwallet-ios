@@ -481,7 +481,10 @@ final class SwiftDashSDKHost {
     /// This is the fresh-install / recover path: it rebuilds the runtime from
     /// scratch (`buildRuntime` tears down any running manager), stores and
     /// verifies its mnemonic, creates the wallet, pins it active in the registry, and
-    /// publishes it as bound. Onboarding's first wallet uses this.
+    /// publishes it as bound. Onboarding's first wallet uses this and requests
+    /// an explicit representation on every supported network. Legacy DashSync
+    /// migration keeps the default network-scoped behavior so it can never
+    /// manufacture cross-network copies while replaying old key material.
     ///
     /// For adding a wallet ALONGSIDE existing ones without rebinding the
     /// active wallet, use `addWallet(mnemonic:isImported:)` instead — this path replaces
@@ -490,7 +493,8 @@ final class SwiftDashSDKHost {
     func createOrImportWallet(
         mnemonic: String,
         network: Network,
-        isImported: Bool
+        isImported: Bool,
+        provisionAcrossSupportedNetworks: Bool = false
     ) async throws -> ManagedPlatformWallet {
         guard !mnemonic.isEmpty, Mnemonic.validate(mnemonic) else {
             throw HostError.invalidMnemonic
@@ -514,6 +518,28 @@ final class SwiftDashSDKHost {
                 birthHeight: isImported
                     ? Self.importedWalletBirthHeight(for: handles.network)
                     : nil)
+
+            if provisionAcrossSupportedNetworks {
+                let persistedWalletIds = Set(try WalletStorage().listWalletIdsWithMnemonic())
+                let missingNetworks = try Self.missingWalletNetworks(
+                    mnemonic: mnemonic,
+                    persistedWalletIds: persistedWalletIds,
+                    currentNetwork: network)
+
+                for targetNetwork in missingNetworks where targetNetwork != network {
+                    let targetManager = try managerForStoredWalletOperation(
+                        network: targetNetwork)
+                    _ = try createAndPersist(
+                        mnemonic: mnemonic,
+                        manager: targetManager,
+                        network: targetNetwork,
+                        birthHeight: isImported
+                            ? Self.importedWalletBirthHeight(for: targetNetwork)
+                            : nil)
+                    Self.logger.info(
+                        "🪺 HOST :: provisioned onboarding wallet for \(targetNetwork.rawValue, privacy: .public)")
+                }
+            }
         } catch {
             // `createOrImportWallet` owns a freshly-built (not yet published)
             // runtime, so tear it down on failure. `createAndPersist` has

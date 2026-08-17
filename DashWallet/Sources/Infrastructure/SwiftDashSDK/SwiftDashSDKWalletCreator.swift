@@ -167,7 +167,8 @@ final class SwiftDashSDKWalletCreator: NSObject {
                 result = .success(try await SwiftDashSDKHost.shared.createOrImportWallet(
                     mnemonic: mnemonic,
                     network: network,
-                    isImported: isImported
+                    isImported: isImported,
+                    provisionAcrossSupportedNetworks: true
                 ).walletId)
             } catch {
                 result = .failure(error)
