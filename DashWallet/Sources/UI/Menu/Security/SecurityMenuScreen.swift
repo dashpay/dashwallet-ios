@@ -140,6 +140,10 @@ struct SecurityMenuScreen: View {
                     self.vc.pushViewController(controller, animated: true)
                 }
             }
+        case .resetWallet:
+            let controller = DWResetWalletInfoViewController.make()
+            controller.delegate = delegateInternal
+            vc.pushViewController(controller, animated: true)
         case .resetWalletDebug:
             showResetWalletDebugAlert = true
         case .none:
