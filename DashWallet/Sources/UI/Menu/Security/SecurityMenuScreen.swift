@@ -87,13 +87,13 @@ struct SecurityMenuScreen: View {
         } message: {
             Text(biometricsAlertMessage)
         }
-        .alert("Reset Wallet (Debug)", isPresented: $showResetWalletDebugAlert) {
+        .alert("Reset All Wallets (Debug)", isPresented: $showResetWalletDebugAlert) {
             Button("Cancel", role: .cancel) { }
-            Button("Wipe", role: .destructive) {
+            Button("Delete All", role: .destructive) {
                 delegateInternal.beginWipeWallet()
             }
         } message: {
-            Text("Wipes the wallet immediately without asking for the recovery phrase.")
+            Text("Permanently deletes all wallets on this device without asking for their recovery phrases.")
         }
     }
     
@@ -198,8 +198,8 @@ extension SecurityMenuScreen {
                 wipeDelegate.beginWipeWallet?()
             } else {
                 // This screen can be embedded without the app-root delegate in
-                // previews. Preserve the legacy local behavior in that case.
-                DWRecoverModel(action: .wipe).wipeWallet()
+                // previews. Preserve the local delete-all behavior in that case.
+                SwiftDashSDKWalletWiper.wipeWallet(authorization: .confirmedDeleteAll)
                 onHide()
             }
         }

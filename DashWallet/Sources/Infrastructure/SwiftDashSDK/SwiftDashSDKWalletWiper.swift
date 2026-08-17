@@ -17,6 +17,29 @@ import Foundation
 import OSLog
 import SwiftDashSDK
 
+/// Why a caller is allowed to request a global wallet wipe. Requiring an
+/// explicit value keeps phrase-authorized recovery, an honest user-confirmed
+/// delete-all action, and setup-time wallet replacement distinguishable at the
+/// destructive boundary and in logs.
+@objc(DWSwiftDashSDKWalletWipeAuthorization)
+enum SwiftDashSDKWalletWipeAuthorization: Int {
+    case recoveryFlow
+    case confirmedDeleteAll
+    case screenshotReplacement
+
+    fileprivate var removesPin: Bool {
+        self != .screenshotReplacement
+    }
+
+    fileprivate var logLabel: String {
+        switch self {
+        case .recoveryFlow: return "recovery-flow"
+        case .confirmedDeleteAll: return "confirmed-delete-all"
+        case .screenshotReplacement: return "screenshot-replacement"
+        }
+    }
+}
+
 /// Serializes full-wallet wipes and provides a FIFO barrier for callers that
 /// must not continue while a wipe is still mutating Keychain/runtime state.
 ///
@@ -95,14 +118,18 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
     // MARK: - Public entry point
 
-    /// Starts a full app/SDK-owned wipe. PIN removal is part of the successful
-    /// wipe commit: a failed SDK deletion leaves both wallet material and its
-    /// authentication state available for retry. Callers observe completion
-    /// through `waitForPendingWipe`.
-    @objc(wipeWalletRemovingPin:)
-    static func wipeWallet(removingPin: Bool) {
+    /// Starts a full app/SDK-owned wipe for an explicitly identified
+    /// authorization path. Whether the PIN is removed is part of that path,
+    /// rather than an independently selectable flag: a failed SDK deletion
+    /// leaves both wallet material and its authentication state available for
+    /// retry. Callers observe completion through `waitForPendingWipe`.
+    @objc(wipeWalletWithAuthorization:)
+    static func wipeWallet(authorization: SwiftDashSDKWalletWipeAuthorization) {
+        logger.notice("global wipe requested; authorization=\(authorization.logLabel, privacy: .public)")
         wipeExecutor.enqueue {
-            performWipe(removingPin: removingPin)
+            performWipe(
+                removingPin: authorization.removesPin,
+                authorization: authorization)
         }
     }
 
@@ -123,7 +150,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
     ///
     /// Idempotent. Reports failure when enumeration or any per-wallet SDK
     /// deletion fails, leaving runtime/registry state available for retry.
-    private static func performWipe(removingPin: Bool) -> Bool {
+    private static func performWipe(
+        removingPin: Bool,
+        authorization: SwiftDashSDKWalletWipeAuthorization
+    ) -> Bool {
         let startedAt = ContinuousClock.now
 
         // Classify the global Keychain inventory by its network-derived wallet
@@ -183,7 +213,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
         let elapsed = startedAt.duration(to: .now)
         logger.info(
-            "wiped SwiftDashSDK wallets across mainnet/testnet in \(String(describing: elapsed), privacy: .public)")
+            "wiped SwiftDashSDK wallets across mainnet/testnet in \(String(describing: elapsed), privacy: .public); authorization=\(authorization.logLabel, privacy: .public)")
 
         // Tear down the app-owned runtime now that all wallet material is
         // gone. This stops BLAST/SPV, drops the host-owned manager/wallet, and

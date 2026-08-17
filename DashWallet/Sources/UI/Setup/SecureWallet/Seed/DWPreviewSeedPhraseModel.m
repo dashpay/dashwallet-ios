@@ -100,7 +100,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)clearAllWallets {
-    [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:NO];
+    [DWSwiftDashSDKWalletWiper
+        wipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationScreenshotReplacement];
 }
 
 @end

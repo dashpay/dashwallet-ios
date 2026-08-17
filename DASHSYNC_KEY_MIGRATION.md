@@ -140,13 +140,16 @@ testnet. The explicit strong acceptance phrase overrides both checks on this
 path. Forgot-PIN recovery stays non-destructive and may prove ownership with
 any one stored wallet phrase.
 
-These checks live at the wipe entry points, not inside
-`DWSwiftDashSDKWalletWiper` itself. Routes that reach the wiper without any
-recovery phrase remain: the lock-screen wipe offered after repeated failed PIN
-attempts, and the dev-only Reset Wallet menu item (compile-gated out of
-Release). Any new wipe entry point must bring its own authorization.
-TODO(wipe-auth): move set-wide authorization into a single boundary in front
-of the wiper so entry points collect evidence instead of enforcing policy.
+Every call to `DWSwiftDashSDKWalletWiper` supplies an explicit authorization
+reason. Recovery-screen wipes use `.recoveryFlow`; screenshot-triggered wallet
+replacement uses `.screenshotReplacement`; and phrase-less global deletion
+uses `.confirmedDeleteAll`. The post-reinstall and lock-screen routes obtain a
+strict count of distinct stored recovery phrases and, when more than one is
+present, name that count and require an explicit Delete All confirmation. A
+Keychain inventory error never produces the destructive action. The dev-only
+Reset All Wallets item uses the same all-wallet confirmation wording. Any new
+wipe entry point must collect one of these authorizations before invoking the
+wiper.
 
 ## Acceptance criteria
 

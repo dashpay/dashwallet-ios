@@ -98,7 +98,8 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)wipeWallet {
-    [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:YES];
+    [DWSwiftDashSDKWalletWiper
+        wipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationConfirmedDeleteAll];
 }
 
 #pragma mark - Notifications
