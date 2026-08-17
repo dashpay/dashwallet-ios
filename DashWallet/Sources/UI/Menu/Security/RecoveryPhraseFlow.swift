@@ -96,22 +96,44 @@ struct RecoveryPhraseInventoryEntry: Equatable {
 
 enum RecoveryPhraseInventoryError: Error {
     case noRecoveryPhrase
+    case noReadableRecoveryPhrase
     case invalidMnemonic
     case unsupportedWalletNetwork
     case walletChanged
 }
 
 enum RecoveryPhraseInventory {
+    struct ReadableEntries {
+        let entries: [RecoveryPhraseInventoryEntry]
+        let skippedWalletIds: [Data]
+    }
+
     struct MnemonicMaterial {
         let mnemonic: String
         let canonicalWalletId: Data
         let network: RecoveryPhraseWalletNetwork
     }
 
+    private static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "recovery-phrase-inventory")
+
     @MainActor
     static func load() throws -> [RecoveryPhraseWalletDescriptor] {
-        let storedEntries = try SwiftDashSDKHost.strictlyPersistedMnemonics()
-        let entries = try storedEntries.map(classify)
+        let walletIds = try WalletStorage().listWalletIdsWithMnemonic()
+        let result = try collectReadableEntries(walletIds: walletIds) { walletId in
+            let mnemonic = try SwiftDashSDKHost.strictlyPersistedMnemonic(for: walletId)
+            return try classify((walletId: walletId, mnemonic: mnemonic))
+        }
+        if !result.skippedWalletIds.isEmpty {
+            let labels = result.skippedWalletIds.map {
+                $0.prefix(4).map { String(format: "%02x", $0) }.joined()
+            }.joined(separator: ",")
+            logger.error(
+                "Skipping \(result.skippedWalletIds.count, privacy: .public) unreadable recovery-phrase entry/entries ids=\(labels, privacy: .public)")
+        }
+
+        let entries = result.entries
         let displayNames = Dictionary(uniqueKeysWithValues: entries.map {
             ($0.walletId, WalletsViewModel.displayName(for: $0.walletId))
         })
@@ -126,6 +148,31 @@ enum RecoveryPhraseInventory {
             currentNetwork: RecoveryPhraseWalletNetwork(environmentKind: WalletEnvironment.networkKind),
             activeWalletIds: activeWalletIds,
             displayNames: displayNames)
+    }
+
+    /// Best-effort collection for the non-destructive recovery-phrase list.
+    /// Enumeration itself remains strict, while an unreadable or malformed
+    /// neighboring entry cannot hide every otherwise valid recovery phrase.
+    static func collectReadableEntries(
+        walletIds: [Data],
+        loadEntry: (Data) throws -> RecoveryPhraseInventoryEntry
+    ) throws -> ReadableEntries {
+        var entries: [RecoveryPhraseInventoryEntry] = []
+        var skippedWalletIds: [Data] = []
+        for walletId in walletIds {
+            do {
+                entries.append(try loadEntry(walletId))
+            } catch {
+                skippedWalletIds.append(walletId)
+            }
+        }
+
+        guard walletIds.isEmpty || !entries.isEmpty else {
+            throw RecoveryPhraseInventoryError.noReadableRecoveryPhrase
+        }
+        return ReadableEntries(
+            entries: entries,
+            skippedWalletIds: skippedWalletIds)
     }
 
     static func route(for descriptors: [RecoveryPhraseWalletDescriptor]) -> RecoveryPhraseRoute {
