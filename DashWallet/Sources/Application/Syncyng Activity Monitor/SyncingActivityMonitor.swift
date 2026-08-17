@@ -179,7 +179,14 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     private var lastPeakDate: Date?
     private var cancellables = Set<AnyCancellable>()
 
-    private var observers: [SyncingActivityMonitorObserver] = []
+    /// Weak, because this is a singleton that outlives every observer and a
+    /// strong array here turns any missed `remove(observer:)` into an
+    /// unbounded leak — one did, silently, until a large-wallet scan had
+    /// accumulated 3321 live `SyncModelImpl`s and the per-tick fan-out over
+    /// them became the dominant cost. Every observer is owned by whoever
+    /// created it (a view model, a `UIView`, a `@StateObject`), so the monitor
+    /// has no reason to keep any of them alive.
+    private let observers = NSHashTable<AnyObject>.weakObjects()
     private let observersLock = NSLock()
 
     override init() {
@@ -200,22 +207,21 @@ class SyncingActivityMonitor: NSObject, NetworkReachabilityHandling {
     public func add(observer: SyncingActivityMonitorObserver) {
         observersLock.lock()
         defer { observersLock.unlock() }
-        observers.append(observer)
+        observers.add(observer)
     }
 
     @objc(removeObserver:)
     public func remove(observer: SyncingActivityMonitorObserver) {
         observersLock.lock()
         defer { observersLock.unlock() }
-        if let idx = observers.firstIndex(where: { $0 === observer }) {
-            observers.remove(at: idx)
-        }
+        observers.remove(observer)
     }
 
     private func observerSnapshot() -> [SyncingActivityMonitorObserver] {
         observersLock.lock()
         defer { observersLock.unlock() }
-        return observers
+        // `allObjects` already drops entries whose object has gone away.
+        return observers.allObjects.compactMap { $0 as? SyncingActivityMonitorObserver }
     }
 
     deinit {

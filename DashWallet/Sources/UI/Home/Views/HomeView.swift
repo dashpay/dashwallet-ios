@@ -245,7 +245,13 @@ struct HomeViewContent<Content: View>: View {
     #endif
 
     @ObservedObject var viewModel: HomeViewModel
-    @ObservedObject private var balanceModel = BalanceModel()
+    // Owned here, so `@StateObject`: `BalanceModel.init` registers with
+    // `SyncingActivityMonitor.shared`, which holds its observers strongly, so
+    // an instance built by a struct re-init can never be released. `HomeView`
+    // is re-created far less often than the list header that hit this hard
+    // (see `SyncingHeaderView`), but four live models were still found in a
+    // single session.
+    @StateObject private var balanceModel = BalanceModel()
     #if DASHPAY
     @ObservedObject var joinDPViewModel: JoinDashPayViewModel
     #endif
