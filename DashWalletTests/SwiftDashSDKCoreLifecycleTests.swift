@@ -396,6 +396,28 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(candidate?.amountCredits, UInt64(budget) * 1_000 - 100)
     }
 
+    func testShieldedSweepSkipsNotesWorthLessThanTheirAction() {
+        // A note below the marginal fee of the action that would spend it
+        // lowers the payout, so the planner must leave it. The 1-credit note
+        // here is exactly that case: taking it would cost 50 and gain 1.
+        let fees: [Int: UInt64] = [2: 100, 3: 150]
+
+        let candidate = ShieldedSweepPlanner.bestCandidate(
+            noteValues: [1_000, 500, 1],
+            feeForActions: { fees[$0] })
+
+        XCTAssertEqual(candidate?.noteCount, 2)
+        XCTAssertEqual(candidate?.inputCredits, 1_500)
+        XCTAssertEqual(candidate?.amountCredits, 1_400)
+
+        // And a follow-up sweep of that leftover pays out nothing, which is
+        // what tells the UI to stop inviting the user to retry.
+        XCTAssertNil(
+            ShieldedSweepPlanner.bestCandidate(
+                noteValues: [1],
+                feeForActions: { fees[$0] }))
+    }
+
     func testShieldedSpendableBalanceSubtractsFeeReserve() {
         XCTAssertEqual(
             TransferSpendAmountPolicy.spendableCredits(

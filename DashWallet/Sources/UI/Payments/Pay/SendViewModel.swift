@@ -727,7 +727,9 @@ final class SendViewModel: ObservableObject {
                 isFullShieldedSweep = true
                 shieldedSweepAmountCredits = plan.amountCredits
                 if plan.remainingCredits > 0 {
-                    shieldedMaxNotice = Self.shieldedRemainderMessage(plan.remainingCredits)
+                    shieldedMaxNotice = Self.shieldedRemainderMessage(
+                        plan.remainingCredits,
+                        followUpCredits: plan.followUpCredits)
                 }
                 sourceDuffs = plan.amountCredits / 1000
             case .waitingForConfirmation(let credits):
@@ -795,8 +797,20 @@ final class SendViewModel: ObservableObject {
             formatted)
     }
 
-    private static func shieldedRemainderMessage(_ credits: UInt64) -> String {
+    private static func shieldedRemainderMessage(
+        _ credits: UInt64,
+        followUpCredits: UInt64
+    ) -> String {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
+        guard followUpCredits > 0 else {
+            // Spending these notes costs more than they hold, so no later
+            // sweep can move them — do not send the user round that loop.
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "%@ DASH stays in your Shielded balance: those notes are worth less than the fee to send them.",
+                    comment: "Shielded Max dust remainder"),
+                formatted)
+        }
         return String.localizedStringWithFormat(
             NSLocalizedString(
                 "%@ DASH is held in notes that don't fit in one transaction. Use Max again after this one settles to send the rest.",
