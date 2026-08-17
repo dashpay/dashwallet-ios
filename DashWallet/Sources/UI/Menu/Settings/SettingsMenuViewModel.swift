@@ -33,6 +33,7 @@ class SettingsMenuViewModel: ObservableObject {
     @Published var navigationDestination: SettingsMenuNavigationDestination?
     @Published var notificationsEnabled: Bool
     @Published var advancedModeEnabled: Bool
+    @Published var showAdvancedModeInfo = false
     @Published var showCSVExportActivity = false
     @Published var csvExportData: (fileName: String, file: URL)?
     @Published var showCoinJoinSweepConfirmation = false
@@ -129,17 +130,6 @@ class SettingsMenuViewModel: ObservableObject {
                 }
             ),
             MenuItemModel(
-                title: NSLocalizedString("Advanced mode", comment: "Settings"),
-                subtitle: NSLocalizedString("Show advanced wallet details and actions", comment: "Settings"),
-                icon: .custom("image.about", maxHeight: 30),
-                showToggle: true,
-                isToggled: advancedModeEnabled,
-                action: { [weak self] in
-                    guard let self = self else { return }
-                    self.setAdvancedMode(!self.advancedModeEnabled)
-                }
-            ),
-            MenuItemModel(
                 title: NSLocalizedString("Network", comment: ""),
                 subtitle: networkName,
                 icon: .custom("image.network.monitor", maxHeight: 30),
@@ -182,6 +172,26 @@ class SettingsMenuViewModel: ObservableObject {
             )
         ])
         #endif
+
+        // Last: it changes what other screens show rather than doing anything
+        // here, so it reads as a postscript to the settings above rather than
+        // one of them.
+        items.append(
+            MenuItemModel(
+                title: NSLocalizedString("Advanced mode", comment: "Settings"),
+                icon: .custom("image.about", maxHeight: 30),
+                showInfo: true,
+                showToggle: true,
+                isToggled: advancedModeEnabled,
+                action: { [weak self] in
+                    guard let self = self else { return }
+                    self.setAdvancedMode(!self.advancedModeEnabled)
+                },
+                infoAction: { [weak self] in
+                    self?.showAdvancedModeInfo = true
+                }
+            )
+        )
     }
 
     // MARK: - Advanced mode

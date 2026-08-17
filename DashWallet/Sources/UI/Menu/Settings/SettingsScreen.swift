@@ -58,6 +58,7 @@ struct SettingsScreen: View {
                         details: item.details,
                         icon: item.icon,
                         showInfo: item.showInfo,
+                        infoAction: item.infoAction,
                         showChevron: false,
                         showToggle: item.showToggle,
                         isToggled: item.isToggled,
@@ -100,6 +101,16 @@ struct SettingsScreen: View {
                 }
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+        }
+        .alert(
+            NSLocalizedString("Advanced mode", comment: "Settings"),
+            isPresented: $viewModel.showAdvancedModeInfo
+        ) {
+            Button(NSLocalizedString("OK", comment: "")) { }
+        } message: {
+            Text(NSLocalizedString(
+                "Reveals extra wallet details and actions intended for experienced users. Turning it off hides them again; nothing about your funds changes either way.",
+                comment: "Settings"))
         }
         .alert(NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
             Button(NSLocalizedString("Move funds", comment: "CoinJoin")) {
