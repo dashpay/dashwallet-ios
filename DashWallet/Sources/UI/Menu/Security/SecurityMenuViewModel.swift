@@ -23,13 +23,20 @@ enum SecurityMenuNavigationDestination {
     case viewRecoveryPhrase
     case changePin
     case advancedSecurity
-    case resetWallet
     case resetWalletDebug
+}
+
+enum SecurityMenuResetWalletDestination {
+    case reset
+    case multipleWallets
+    case noWallet
+    case readError
 }
 
 @MainActor
 class SecurityMenuViewModel: ObservableObject {
     @Published var navigationDestination: SecurityMenuNavigationDestination?
+    @Published var resetWalletDestination: SecurityMenuResetWalletDestination?
     @Published var showBiometricsAlert = false
     @Published var items: [MenuItemModel] = []
     @Published var biometricsEnabled = false
@@ -123,7 +130,7 @@ class SecurityMenuViewModel: ObservableObject {
             title: NSLocalizedString("Reset Wallet", comment: ""),
             icon: .custom("image-menu-reset_wallet", maxHeight: 22),
             action: { [weak self] in
-                self?.navigationDestination = .resetWallet
+                self?.beginResetWallet()
             }
         ))
         
@@ -141,6 +148,25 @@ class SecurityMenuViewModel: ObservableObject {
         #endif
 
         items = menuItems
+    }
+
+    func beginResetWallet() {
+        do {
+            switch try SwiftDashSDKHost.distinctStoredWalletCount() {
+            case 0:
+                resetWalletDestination = .noWallet
+            case 1:
+                resetWalletDestination = .reset
+            default:
+                resetWalletDestination = .multipleWallets
+            }
+        } catch {
+            resetWalletDestination = .readError
+        }
+    }
+
+    func resetWalletDestinationHandled() {
+        resetWalletDestination = nil
     }
     
     private func toggleBiometrics(_ enabled: Bool) {

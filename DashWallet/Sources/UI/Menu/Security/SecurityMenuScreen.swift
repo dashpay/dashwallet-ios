@@ -27,6 +27,7 @@ struct SecurityMenuScreen: View {
     @StateObject private var recoveryPhraseFlow = RecoveryPhraseFlowViewModel()
     @State private var showBiometricsAlert = false
     @State private var showMultipleWalletsResetAlert = false
+    @State private var showNoWalletResetAlert = false
     @State private var showResetWalletInventoryError = false
     @State private var showResetWalletDebugAlert = false
     
@@ -82,6 +83,9 @@ struct SecurityMenuScreen: View {
         .onReceive(viewModel.$showBiometricsAlert) { show in
             showBiometricsAlert = show
         }
+        .onReceive(viewModel.$resetWalletDestination.compactMap { $0 }) { destination in
+            handleResetWalletDestination(destination)
+        }
         .onReceive(recoveryPhraseFlow.$navigationEvent.compactMap { $0 }) { event in
             handleRecoveryPhraseNavigation(event)
         }
@@ -107,12 +111,22 @@ struct SecurityMenuScreen: View {
                 comment: "Security — reset wallet"))
         }
         .alert(
+            NSLocalizedString("No Wallet Found", comment: "Security — reset wallet"),
+            isPresented: $showNoWalletResetAlert
+        ) {
+            Button(NSLocalizedString("OK", comment: ""), role: .cancel) { }
+        } message: {
+            Text(NSLocalizedString(
+                "There are no wallets stored on this device to reset.",
+                comment: "Security — reset wallet"))
+        }
+        .alert(
             NSLocalizedString("Could Not Read Wallets", comment: "Security — reset wallet"),
             isPresented: $showResetWalletInventoryError
         ) {
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
             Button(NSLocalizedString("Retry", comment: "")) {
-                beginResetWallet()
+                viewModel.beginResetWallet()
             }
         } message: {
             Text(NSLocalizedString(
@@ -168,8 +182,6 @@ struct SecurityMenuScreen: View {
                     self.vc.pushViewController(controller, animated: true)
                 }
             }
-        case .resetWallet:
-            beginResetWallet()
         case .resetWalletDebug:
             showResetWalletDebugAlert = true
         case .none:
@@ -222,21 +234,21 @@ struct SecurityMenuScreen: View {
         }
     }
 
-    private func beginResetWallet() {
-        do {
-            switch try SwiftDashSDKHost.distinctStoredWalletCount() {
-            case 1:
-                let controller = DWResetWalletInfoViewController.make()
-                controller.delegate = delegateInternal
-                vc.pushViewController(controller, animated: true)
-            case 2...:
-                showMultipleWalletsResetAlert = true
-            default:
-                showResetWalletInventoryError = true
-            }
-        } catch {
+    private func handleResetWalletDestination(_ destination: SecurityMenuResetWalletDestination) {
+        switch destination {
+        case .reset:
+            let controller = DWResetWalletInfoViewController.make()
+            controller.delegate = delegateInternal
+            vc.pushViewController(controller, animated: true)
+        case .multipleWallets:
+            showMultipleWalletsResetAlert = true
+        case .noWallet:
+            showNoWalletResetAlert = true
+        case .readError:
             showResetWalletInventoryError = true
         }
+
+        viewModel.resetWalletDestinationHandled()
     }
 
     private func openWallets() {
