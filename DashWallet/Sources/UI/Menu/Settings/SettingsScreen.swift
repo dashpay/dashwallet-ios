@@ -248,15 +248,6 @@ struct SettingsScreen: View {
 }
 
 
-struct ActivityView: UIViewControllerRepresentable {
-    let activityItems: [Any]
-    
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        return UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-    
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
 
 private final class LocalCurrencyHostingViewController: BaseViewController {
     private let rootView: LocalCurrencyView

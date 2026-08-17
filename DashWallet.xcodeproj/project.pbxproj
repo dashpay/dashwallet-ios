@@ -772,6 +772,8 @@
 		5AGOV0002F9A0000000000V2 /* GovernanceMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */; };
 		5AGOV0002F9A0000000000V3 /* GovernanceMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */; };
 		7566F48A2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
+		AC71E0000000000000000002 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC71E0000000000000000001 /* ActivityView.swift */; };
+		AC71E0000000000000000003 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC71E0000000000000000001 /* ActivityView.swift */; };
 		7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
 		7569D6832DE6DA6800768BFF /* ExploreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7569D6822DE6DA6800768BFF /* ExploreViewController.swift */; };
 		7569D6842DE6DA6800768BFF /* ExploreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7569D6822DE6DA6800768BFF /* ExploreViewController.swift */; };
@@ -2903,6 +2905,7 @@
 		5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuScreen.swift; sourceTree = "<group>"; };
 		5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuViewModel.swift; sourceTree = "<group>"; };
 		7566F4892BB6CAF2005238D2 /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
+		AC71E0000000000000000001 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		7569D6822DE6DA6800768BFF /* ExploreViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreViewController.swift; sourceTree = "<group>"; };
 		7569D6852DE6DB1B00768BFF /* ExploreHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreHeaderView.swift; sourceTree = "<group>"; };
 		7569D6882DE6DB6700768BFF /* ExploreContentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreContentsView.swift; sourceTree = "<group>"; };
@@ -6836,6 +6839,7 @@
 				75EBAA082BB9791B004488E3 /* Icon.swift */,
 				AA0031012FD0000000000011 /* IconName+DashIconSource.swift */,
 				7566F4892BB6CAF2005238D2 /* MenuItem.swift */,
+				AC71E0000000000000000001 /* ActivityView.swift */,
 				75EBAA0B2BB9792F004488E3 /* FeatureTopText.swift */,
 				754C27CB2CC3C14F00BA7B9F /* FeatureSingleItem.swift */,
 				75EBAA0E2BB99036004488E3 /* TextIntro.swift */,
@@ -10016,6 +10020,7 @@
 				47A2E3A92972B15F0032A63B /* RatesProvider.swift in Sources */,
 				47A2A2E9293E612900938DB7 /* CBAuth.swift in Sources */,
 				7566F48A2BB6CAF2005238D2 /* MenuItem.swift in Sources */,
+				AC71E0000000000000000002 /* ActivityView.swift in Sources */,
 				0F6EDFD128C896BD000427E7 /* CoinbaseCreateAddressesRequest.swift in Sources */,
 				471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */,
 				51BA2EA02F0B2E0100A1B201 /* SwapPendingGate.swift in Sources */,
@@ -10595,6 +10600,7 @@
 				C943B32F2A408CED00AF23C5 /* DWSaveAlertViewController.m in Sources */,
 				C930784C2A6AD59700906E4B /* TitleValueCell.swift in Sources */,
 				7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */,
+				AC71E0000000000000000003 /* ActivityView.swift in Sources */,
 				C9D2C74F2A320AA000D15901 /* DWSeedPhraseRow.m in Sources */,
 				7531308E2B47EC910069C9B7 /* UpholdClient.swift in Sources */,
 				751C05D92D3BB6AA00475E52 /* CurrentUserProfileModel.swift in Sources */,
