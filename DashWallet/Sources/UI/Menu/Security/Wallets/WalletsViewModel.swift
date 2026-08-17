@@ -394,7 +394,18 @@ final class WalletsViewModel: ObservableObject {
             .nonEmpty
     }
 
-    private static func fallbackName(for walletId: Data) -> String {
+    /// Best available name for a wallet id in the current network's store.
+    /// Recovery-phrase inventory also uses this for Keychain entries that are
+    /// not loaded into the current manager; those safely fall back to a short
+    /// id rather than being omitted from the chooser.
+    static func displayName(for walletId: Data) -> String {
+        let context = SwiftDashSDKHost.shared.modelContainer?.mainContext
+        let persisted = context.flatMap { fetchPersistentWallet(walletId: walletId, in: $0) }
+        let name = persisted?.name?.nonEmpty
+        return name ?? fallbackName(for: walletId)
+    }
+
+    nonisolated static func fallbackName(for walletId: Data) -> String {
         let prefix = walletId.prefix(4).map { String(format: "%02x", $0) }.joined()
         return String(
             format: NSLocalizedString("Wallet %@…", comment: "Wallets — placeholder name with short id"),

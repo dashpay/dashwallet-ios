@@ -186,6 +186,180 @@ final class WipeAcceptancePhraseTests: XCTestCase {
     }
 }
 
+final class RecoveryPhraseRoutingTests: XCTestCase {
+    private enum EntryReadError: Error {
+        case unreadable
+        case invalidMnemonic
+    }
+
+    private let seedA = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+    private let seedB = "legal winner thank year wave sausage worth useful legal winner thank yellow"
+
+    func testUnreadableNeighborDoesNotHideReadableWallet() throws {
+        let walletA = Data(repeating: 0x01, count: 32)
+        let walletB = Data(repeating: 0x02, count: 32)
+        let result = try RecoveryPhraseInventory.collectReadableEntries(
+            walletIds: [walletA, walletB],
+            loadEntry: { walletId in
+                guard walletId == walletA else { throw EntryReadError.unreadable }
+                return self.entry(
+                    walletId: walletA,
+                    canonicalId: walletA,
+                    mnemonic: self.seedA,
+                    network: .mainnet)
+            })
+
+        XCTAssertEqual(result.entries.map(\.walletId), [walletA])
+        XCTAssertEqual(result.skippedWalletIds, [walletB])
+    }
+
+    func testInvalidNeighborDoesNotHideTwoReadableWallets() throws {
+        let walletA = Data(repeating: 0x11, count: 32)
+        let walletB = Data(repeating: 0x12, count: 32)
+        let walletC = Data(repeating: 0x13, count: 32)
+        let result = try RecoveryPhraseInventory.collectReadableEntries(
+            walletIds: [walletA, walletB, walletC],
+            loadEntry: { walletId in
+                switch walletId {
+                case walletA:
+                    return self.entry(
+                        walletId: walletA,
+                        canonicalId: walletA,
+                        mnemonic: self.seedA,
+                        network: .mainnet)
+                case walletB:
+                    return self.entry(
+                        walletId: walletB,
+                        canonicalId: walletB,
+                        mnemonic: self.seedB,
+                        network: .testnet)
+                default:
+                    throw EntryReadError.invalidMnemonic
+                }
+            })
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: result.entries,
+            currentNetwork: .mainnet,
+            activeWalletIds: [:],
+            displayNames: [walletA: "A", walletB: "B"])
+
+        guard case .choose(let options) = RecoveryPhraseInventory.route(for: descriptors) else {
+            return XCTFail("Expected readable wallets to remain in the chooser")
+        }
+        XCTAssertEqual(options.map(\.displayName), ["A", "B"])
+        XCTAssertEqual(result.skippedWalletIds, [walletC])
+    }
+
+    func testOnlyUnreadableEntriesProduceReadFailure() {
+        let walletA = Data(repeating: 0x21, count: 32)
+        XCTAssertThrowsError(try RecoveryPhraseInventory.collectReadableEntries(
+            walletIds: [walletA],
+            loadEntry: { _ in throw EntryReadError.unreadable }
+        )) { error in
+            guard case RecoveryPhraseInventoryError.noReadableRecoveryPhrase = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+        }
+    }
+
+    func testNoStoredWalletIdsRemainAvailableAsEmptyInventory() throws {
+        let result = try RecoveryPhraseInventory.collectReadableEntries(
+            walletIds: [],
+            loadEntry: { _ in throw EntryReadError.unreadable })
+
+        XCTAssertTrue(result.entries.isEmpty)
+        XCTAssertTrue(result.skippedWalletIds.isEmpty)
+    }
+
+    func testSingleWalletRoutesDirectly() throws {
+        let walletId = Data(repeating: 0x01, count: 32)
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: [entry(walletId: walletId, canonicalId: walletId, mnemonic: seedA, network: .mainnet)],
+            currentNetwork: .mainnet,
+            activeWalletIds: [.mainnet: walletId],
+            displayNames: [walletId: "Primary"])
+
+        guard case .direct(let descriptor) = RecoveryPhraseInventory.route(for: descriptors) else {
+            return XCTFail("Expected one logical wallet to route directly")
+        }
+        XCTAssertEqual(descriptor.sourceWalletId, walletId)
+        XCTAssertEqual(descriptor.displayName, "Primary")
+    }
+
+    func testMirroredNetworkEntriesForSameSeedRouteDirectly() throws {
+        let mainnetId = Data(repeating: 0x11, count: 32)
+        let testnetId = Data(repeating: 0x22, count: 32)
+        let entries = [
+            entry(walletId: mainnetId, canonicalId: mainnetId, mnemonic: seedA, network: .mainnet),
+            entry(walletId: testnetId, canonicalId: mainnetId, mnemonic: seedA, network: .testnet),
+        ]
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: entries,
+            currentNetwork: .testnet,
+            activeWalletIds: [.testnet: testnetId],
+            displayNames: [testnetId: "Mirrored"])
+
+        XCTAssertEqual(descriptors.count, 1)
+        XCTAssertEqual(descriptors[0].sourceWalletId, testnetId)
+        XCTAssertEqual(descriptors[0].networks, [.mainnet, .testnet])
+        guard case .direct = RecoveryPhraseInventory.route(for: descriptors) else {
+            return XCTFail("A mirrored seed must not show a chooser")
+        }
+    }
+
+    func testDistinctSeedsRouteToChooser() throws {
+        let walletA = Data(repeating: 0x31, count: 32)
+        let walletB = Data(repeating: 0x42, count: 32)
+        let descriptors = try RecoveryPhraseInventory.makeDescriptors(
+            entries: [
+                entry(walletId: walletA, canonicalId: walletA, mnemonic: seedA, network: .mainnet),
+                entry(walletId: walletB, canonicalId: walletB, mnemonic: seedB, network: .testnet),
+            ],
+            currentNetwork: .mainnet,
+            activeWalletIds: [.mainnet: walletA],
+            displayNames: [walletA: "A", walletB: "B"])
+
+        guard case .choose(let options) = RecoveryPhraseInventory.route(for: descriptors) else {
+            return XCTFail("Distinct seeds must show the wallet chooser")
+        }
+        XCTAssertEqual(options.map(\.displayName), ["A", "B"])
+        XCTAssertEqual(options.map(\.sourceWalletId), [walletA, walletB])
+    }
+
+    func testEmptyInventoryIsUnavailable() {
+        XCTAssertEqual(RecoveryPhraseInventory.route(for: []), .unavailable)
+    }
+
+    func testConflictingMnemonicForCanonicalWalletFailsClosed() {
+        let canonicalId = Data(repeating: 0x51, count: 32)
+        XCTAssertThrowsError(try RecoveryPhraseInventory.makeDescriptors(
+            entries: [
+                entry(walletId: canonicalId, canonicalId: canonicalId, mnemonic: seedA, network: .mainnet),
+                entry(
+                    walletId: Data(repeating: 0x52, count: 32),
+                    canonicalId: canonicalId,
+                    mnemonic: seedB,
+                    network: .testnet),
+            ],
+            currentNetwork: .mainnet,
+            activeWalletIds: [:],
+            displayNames: [:]))
+    }
+
+    private func entry(
+        walletId: Data,
+        canonicalId: Data,
+        mnemonic: String,
+        network: RecoveryPhraseWalletNetwork
+    ) -> RecoveryPhraseInventoryEntry {
+        RecoveryPhraseInventoryEntry(
+            walletId: walletId,
+            canonicalWalletId: canonicalId,
+            normalizedMnemonic: mnemonic,
+            network: network)
+    }
+}
+
 final class MnemonicFirstWalletCreationTests: XCTestCase {
     func testPersistenceFailureDoesNotCreateWallet() {
         var storedMnemonic: String?

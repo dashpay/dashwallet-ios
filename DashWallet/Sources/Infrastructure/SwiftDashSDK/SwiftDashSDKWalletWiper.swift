@@ -88,6 +88,37 @@ enum SwiftDashSDKWalletDeletionError: LocalizedError {
     }
 }
 
+/// Resolves a Keychain wallet id against the deterministic ids derived from
+/// its mnemonic. Wallet ids are network-scoped even when a seed is shared;
+/// the mainnet-derived id is also a stable logical identifier for grouping
+/// mirrored mainnet/testnet entries without retaining the mnemonic.
+enum SwiftDashSDKStoredWalletNetworkResolver {
+    struct Resolution {
+        let network: Network
+        let canonicalMainnetWalletId: Data
+    }
+
+    static func resolve(walletId: Data, mnemonic: String) throws -> Resolution {
+        let mainnetWalletId = try SwiftDashSDK.Wallet(
+            mnemonic: mnemonic,
+            network: .mainnet
+        ).id
+        if mainnetWalletId == walletId {
+            return Resolution(network: .mainnet, canonicalMainnetWalletId: mainnetWalletId)
+        }
+
+        let testnetWalletId = try SwiftDashSDK.Wallet(
+            mnemonic: mnemonic,
+            network: .testnet
+        ).id
+        if testnetWalletId == walletId {
+            return Resolution(network: .testnet, canonicalMainnetWalletId: mainnetWalletId)
+        }
+
+        throw SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork
+    }
+}
+
 private final class WalletWipeResultAccumulator: @unchecked Sendable {
     private let lock = NSLock()
     private var failureCount = 0
@@ -235,23 +266,10 @@ final class SwiftDashSDKWalletWiper: NSObject {
 
         for walletId in try storage.listWalletIdsWithMnemonic() {
             let mnemonic = try storage.retrieveMnemonic(for: walletId)
-            var matchedNetwork: Network?
-
-            for network in [Network.mainnet, .testnet] {
-                let derivedId = try SwiftDashSDK.Wallet(
-                    mnemonic: mnemonic,
-                    network: network
-                ).id
-                if derivedId == walletId {
-                    matchedNetwork = network
-                    break
-                }
-            }
-
-            guard let matchedNetwork else {
-                throw SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork
-            }
-            result[matchedNetwork, default: []].insert(walletId)
+            let resolution = try SwiftDashSDKStoredWalletNetworkResolver.resolve(
+                walletId: walletId,
+                mnemonic: mnemonic)
+            result[resolution.network, default: []].insert(walletId)
         }
 
         return result
