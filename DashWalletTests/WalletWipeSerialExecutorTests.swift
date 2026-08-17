@@ -93,6 +93,30 @@ final class WalletWipeSerialExecutorTests: XCTestCase {
 
         XCTAssertFalse(appStateCleared)
     }
+
+    func testLegacyCleanupAuthorizationScope() {
+        XCTAssertTrue(
+            SwiftDashSDKWalletWipeAuthorization.recoveryFlow
+                .removesMatchingLegacyMnemonicAccounts)
+        XCTAssertFalse(
+            SwiftDashSDKWalletWipeAuthorization.recoveryFlow
+                .removesAllLegacyMnemonicAccounts)
+
+        XCTAssertTrue(
+            SwiftDashSDKWalletWipeAuthorization.confirmedDeleteAll
+                .removesAllLegacyMnemonicAccounts)
+        XCTAssertFalse(
+            SwiftDashSDKWalletWipeAuthorization.confirmedDeleteAll
+                .removesMatchingLegacyMnemonicAccounts)
+
+        for authorization in [
+            SwiftDashSDKWalletWipeAuthorization.debugReset,
+            .screenshotReplacement,
+        ] {
+            XCTAssertFalse(authorization.removesMatchingLegacyMnemonicAccounts)
+            XCTAssertFalse(authorization.removesAllLegacyMnemonicAccounts)
+        }
+    }
 }
 
 final class StoredWalletInventoryTests: XCTestCase {
@@ -175,6 +199,20 @@ final class StoredWalletInventoryTests: XCTestCase {
 
         XCTAssertEqual(ids.count, 2)
         XCTAssertNotEqual(ids[.mainnet], ids[.testnet])
+    }
+
+    func testRecoveryWipeTreatsMirroredIdsAsOneNormalizedSeed() {
+        XCTAssertEqual(
+            SwiftDashSDKWalletWiper.soleNormalizedMnemonic(
+                in: [seedA, "  \(seedA.uppercased())  "]),
+            seedA)
+    }
+
+    func testRecoveryWipeRejectsEmptyOrDifferentSeeds() {
+        XCTAssertNil(SwiftDashSDKWalletWiper.soleNormalizedMnemonic(in: []))
+        XCTAssertNil(
+            SwiftDashSDKWalletWiper.soleNormalizedMnemonic(
+                in: [seedA, seedB]))
     }
 }
 

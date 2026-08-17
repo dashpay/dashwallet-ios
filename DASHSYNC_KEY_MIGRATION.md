@@ -119,10 +119,12 @@ state belonging to a wallet already deleted successfully may be cleared with
 that wallet during a partially successful attempt.
 
 Every wipe entry point waits for the same explicit result before navigating or
-creating a replacement wallet. Production recovery and confirmed Delete All
-remove legacy mnemonic accounts before SDK deletion; a cleanup failure aborts
-the SDK wipe. Debug reset and screenshot replacement preserve legacy data.
-The app never deletes the whole `org.dashfoundation.dash` service.
+creating a replacement wallet. Production recovery removes only the legacy
+mnemonic accounts matching its single authorized SDK seed; confirmed Delete
+All removes every legacy mnemonic account. Both run before SDK deletion, and a
+cleanup failure aborts the SDK wipe. Debug reset and screenshot replacement
+preserve legacy data. The app never deletes the whole
+`org.dashfoundation.dash` service.
 
 Per-wallet Remove deletes matching legacy mnemonic accounts, then the
 deterministic mainnet and testnet SDK IDs for that seed, with the live network
@@ -147,20 +149,17 @@ copy that says so (it is not reported as a phrase mismatch). The plain `wipe`
 shortcut is allowed only with exactly one stored wallet ID and only while the
 active network is mainnet, because the published balance is scoped to the
 active wallet/network and cannot prove a mainnet balance while running on
-testnet. The explicit strong acceptance phrase overrides both checks on this
-path. Forgot-PIN recovery stays non-destructive and may prove ownership with
-any one stored wallet phrase.
+testnet. The support acknowledgement is accepted only by the separate Support
+Wipe path. Forgot-PIN recovery stays non-destructive and may prove ownership
+with any one stored wallet phrase.
 
 Every call to `DWSwiftDashSDKWalletWiper` supplies an explicit authorization
-reason. Recovery-screen wipes use `.recoveryFlow`; screenshot-triggered wallet
-replacement uses `.screenshotReplacement`; and phrase-less global deletion
-uses `.confirmedDeleteAll`. The post-reinstall and lock-screen routes obtain a
-strict count of distinct stored recovery phrases and, when more than one is
-present, name that count and require an explicit Delete All confirmation. A
-Keychain inventory error never produces the destructive action. The dev-only
-Reset All Wallets item uses the same all-wallet confirmation wording. Any new
-wipe entry point must collect one of these authorizations before invoking the
-wiper.
+reason. Ordinary recovery-screen wipes use `.recoveryFlow`; Support Wipe uses
+`.confirmedDeleteAll`; screenshot-triggered replacement uses
+`.screenshotReplacement`; and the dev-only reset uses `.debugReset`.
+Post-reinstall and lock-screen Delete All warnings deliberately omit an SDK-only
+count because the operation may also remove legacy-only seeds. Any new wipe
+entry point must collect one of these authorizations before invoking the wiper.
 
 ## Acceptance criteria
 

@@ -296,6 +296,15 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         }
     }
 
+    /// The global wiper already runs off-main and must wait for any migration
+    /// that started first. This is the synchronous counterpart of targeted
+    /// Remove, using the same queue and the same matching implementation.
+    static func removeLegacyMnemonicAccountsBeforeWipe(matching mnemonic: String) throws {
+        try legacyWalletQueue.sync {
+            try performRemoveLegacyMnemonicAccounts(matching: mnemonic)
+        }
+    }
+
     /// Full production wipe runs on the wiper's background queue, so it can
     /// synchronously wait behind any launch migration without blocking UI.
     static func removeAllLegacyMnemonicAccounts() throws {
@@ -324,7 +333,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             throw LegacyMnemonicCleanupError.verificationFailed
         }
         logger.info(
-            "🔑 KEYMIG :: explicit Remove deleted \(accounts.count, privacy: .public) matching legacy mnemonic account(s)")
+            "🔑 KEYMIG :: explicit matching cleanup deleted \(accounts.count, privacy: .public) legacy mnemonic account(s)")
     }
 
     private static func loadLegacyMnemonicEntries() throws -> [LegacyMnemonicEntry] {

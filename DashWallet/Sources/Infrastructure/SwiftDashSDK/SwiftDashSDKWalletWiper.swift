@@ -32,8 +32,12 @@ enum SwiftDashSDKWalletWipeAuthorization: Int {
         self != .screenshotReplacement
     }
 
-    fileprivate var removesLegacyMnemonicAccounts: Bool {
-        self == .recoveryFlow || self == .confirmedDeleteAll
+    var removesMatchingLegacyMnemonicAccounts: Bool {
+        self == .recoveryFlow
+    }
+
+    var removesAllLegacyMnemonicAccounts: Bool {
+        self == .confirmedDeleteAll
     }
 
     fileprivate var logLabel: String {
@@ -216,29 +220,59 @@ final class SwiftDashSDKWalletWiper: NSObject {
         authorization: SwiftDashSDKWalletWipeAuthorization
     ) -> Bool {
         let startedAt = ContinuousClock.now
-
-        if authorization.removesLegacyMnemonicAccounts {
-            do {
-                try SwiftDashSDKKeyMigrator.removeAllLegacyMnemonicAccounts()
-            } catch {
-                logger.error(
-                    "legacy mnemonic cleanup failed; refusing SDK wipe: \(String(describing: error), privacy: .public)")
-                return false
-            }
-        }
-
-        // Classify the global Keychain inventory by its network-derived wallet
-        // id. Wallet ids and SwiftData stores are network-scoped even though a
-        // mnemonic can be used on both networks; sending every id through the
-        // current manager would silently delete the wrong Keychain row while
-        // leaving the other network's persisted wallet behind.
         let storage = WalletStorage()
         let walletIdsByNetwork: [Network: Set<Data>]
-        do {
-            walletIdsByNetwork = try classifyStoredWalletIdsByNetwork(storage: storage)
-        } catch {
-            logger.error("failed to classify wallet inventory: \(String(describing: error), privacy: .public)")
-            return false
+
+        if authorization.removesMatchingLegacyMnemonicAccounts {
+            do {
+                let beforeCleanup = try classifyStoredWallets(storage: storage)
+                guard let authorizedMnemonic = soleNormalizedMnemonic(
+                    in: beforeCleanup.mnemonics) else {
+                    logger.error(
+                        "recovery wipe requires exactly one distinct SDK mnemonic; refusing legacy and SDK deletion")
+                    return false
+                }
+
+                try SwiftDashSDKKeyMigrator.removeLegacyMnemonicAccountsBeforeWipe(
+                    matching: authorizedMnemonic)
+
+                // Migration and cleanup share a queue. Re-read SDK state after
+                // that barrier so a different seed imported while cleanup was
+                // waiting can never be swept by this phrase-authorized flow.
+                let afterCleanup = try classifyStoredWallets(storage: storage)
+                guard soleNormalizedMnemonic(in: afterCleanup.mnemonics) == authorizedMnemonic else {
+                    logger.error(
+                        "SDK mnemonic inventory changed during recovery wipe; refusing SDK deletion")
+                    return false
+                }
+                walletIdsByNetwork = afterCleanup.walletIdsByNetwork
+            } catch {
+                logger.error(
+                    "matching legacy mnemonic cleanup failed; refusing SDK wipe: \(String(describing: error), privacy: .public)")
+                return false
+            }
+        } else {
+            if authorization.removesAllLegacyMnemonicAccounts {
+                do {
+                    try SwiftDashSDKKeyMigrator.removeAllLegacyMnemonicAccounts()
+                } catch {
+                    logger.error(
+                        "legacy mnemonic cleanup failed; refusing SDK wipe: \(String(describing: error), privacy: .public)")
+                    return false
+                }
+            }
+
+            // Classify the global Keychain inventory by its network-derived
+            // wallet id. Debug and screenshot flows reach this branch without
+            // touching legacy DashSync data.
+            do {
+                walletIdsByNetwork = try classifyStoredWallets(
+                    storage: storage).walletIdsByNetwork
+            } catch {
+                logger.error(
+                    "failed to classify wallet inventory: \(String(describing: error), privacy: .public)")
+                return false
+            }
         }
 
         // Delete each network through a manager configured with that network's
@@ -299,20 +333,33 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// included in its deterministic id. An unknown id is a hard failure:
     /// guessing a manager could recreate the false-success/data-resurrection
     /// bug this classification exists to prevent.
-    private static func classifyStoredWalletIdsByNetwork(
+    private static func classifyStoredWallets(
         storage: WalletStorage
-    ) throws -> [Network: Set<Data>] {
-        var result: [Network: Set<Data>] = [.mainnet: [], .testnet: []]
+    ) throws -> (
+        walletIdsByNetwork: [Network: Set<Data>],
+        mnemonics: [String]
+    ) {
+        var walletIdsByNetwork: [Network: Set<Data>] = [.mainnet: [], .testnet: []]
+        var mnemonics: [String] = []
 
         for walletId in try storage.listWalletIdsWithMnemonic() {
             let mnemonic = try storage.retrieveMnemonic(for: walletId)
             let resolution = try SwiftDashSDKStoredWalletNetworkResolver.resolve(
                 walletId: walletId,
                 mnemonic: mnemonic)
-            result[resolution.network, default: []].insert(walletId)
+            walletIdsByNetwork[resolution.network, default: []].insert(walletId)
+            mnemonics.append(mnemonic)
         }
 
-        return result
+        return (walletIdsByNetwork, mnemonics)
+    }
+
+    /// Phrase-authorized recovery may wipe mirrored mainnet/testnet IDs, but
+    /// never two different logical seeds. Empty or ambiguous input fails closed.
+    static func soleNormalizedMnemonic(in mnemonics: [String]) -> String? {
+        let distinct = Set(mnemonics.map(Mnemonic.normalizePhrase))
+        guard distinct.count == 1 else { return nil }
+        return distinct.first
     }
 
     /// Run synchronous full deletion through the manager belonging to each

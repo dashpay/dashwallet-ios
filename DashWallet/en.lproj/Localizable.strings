@@ -5570,8 +5570,11 @@
 "No stored wallets were found. Nothing was deleted." = "No stored wallets were found. Nothing was deleted.";
 "No Wallets Found" = "No Wallets Found";
 "Not all wallets could be deleted. Please try again." = "Not all wallets could be deleted. Please try again.";
+"This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone.";
 "The wallets stored on this device could not be verified. Nothing was deleted. Please try again." = "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.";
 "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone." = "This will erase all %ld wallets stored on this device. They can only be restored with their recovery phrases. Deleting them from this device cannot be undone.";
+"Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting.";
+"Wallets found on this device" = "Wallets found on this device";
 "Wipe All Wallets" = "Wipe All Wallets";
 "A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "A single wallet's recovery phrase cannot authorize deleting multiple different wallets.";
 "A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue.";

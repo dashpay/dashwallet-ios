@@ -53,8 +53,12 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
 // live in DWRecoverModel+Mnemonic.swift.
 
 - (void)wipeWallet {
+    DWSwiftDashSDKWalletWipeAuthorization authorization =
+        self.action == DWRecoverAction_SupportWipe
+            ? DWSwiftDashSDKWalletWipeAuthorizationConfirmedDeleteAll
+            : DWSwiftDashSDKWalletWipeAuthorizationRecoveryFlow;
     [DWSwiftDashSDKWalletWiper
-        wipeWalletWithAuthorization:DWSwiftDashSDKWalletWipeAuthorizationRecoveryFlow];
+        wipeWalletWithAuthorization:authorization];
 }
 
 - (NSString *)wipeAcceptPhrase {
