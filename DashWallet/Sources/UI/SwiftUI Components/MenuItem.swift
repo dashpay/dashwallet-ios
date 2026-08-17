@@ -32,10 +32,6 @@ struct MenuItem: View {
     var secondaryIcon: IconName?
     var iconAlignment: VerticalAlignment = .center
     var showInfo: Bool = false
-    /// Tap handler for the info icon. When set, the icon becomes its own
-    /// button so a row whose body already does something (a toggle) can still
-    /// explain itself without the two gestures fighting.
-    var infoAction: (() -> Void)? = nil
     var showChevron: Bool = false
     var badgeText: String?
     var dashAmount: Int64?
@@ -59,7 +55,6 @@ struct MenuItem: View {
          secondaryIcon: IconName? = nil,
          iconAlignment: VerticalAlignment = .center,
          showInfo: Bool = false,
-         infoAction: (() -> Void)? = nil,
          showChevron: Bool = false,
          badgeText: String? = nil,
          dashAmount: Int64? = nil,
@@ -91,7 +86,6 @@ struct MenuItem: View {
             secondaryIcon: secondaryIcon,
             iconAlignment: iconAlignment,
             showInfo: showInfo,
-            infoAction: infoAction,
             showChevron: showChevron,
             badgeText: badgeText,
             dashAmount: dashAmount,
@@ -116,7 +110,6 @@ struct MenuItem: View {
          secondaryIcon: IconName? = nil,
          iconAlignment: VerticalAlignment = .center,
          showInfo: Bool = false,
-         infoAction: (() -> Void)? = nil,
          showChevron: Bool = false,
          badgeText: String? = nil,
          dashAmount: Int64? = nil,
@@ -138,7 +131,6 @@ struct MenuItem: View {
         self.secondaryIcon = secondaryIcon
         self.iconAlignment = iconAlignment
         self.showInfo = showInfo
-        self.infoAction = infoAction
         self.showChevron = showChevron
         self.dashAmount = dashAmount
         self.showDashAmountDirection = showDashAmountDirection
@@ -203,17 +195,9 @@ struct MenuItem: View {
                             .foregroundColor(.dash.primaryText)
                         
                         if showInfo {
-                            let infoIcon = Image(systemName: "info.circle.fill")
+                            Image(systemName: "info.circle.fill")
                                 .foregroundColor(.dash.gray300)
                                 .imageScale(.small)
-                            if let infoAction {
-                                Button(action: infoAction) { infoIcon }
-                                    .buttonStyle(.plain)
-                                    .accessibilityLabel(Text(
-                                        NSLocalizedString("More info", comment: "Menu item")))
-                            } else {
-                                infoIcon
-                            }
                         }
                         
                         Spacer()

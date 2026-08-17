@@ -52,19 +52,8 @@ struct SettingsScreen: View {
             // Menu list
             VStack(spacing: 2) {
                 ForEach(viewModel.items) { item in
-                    MenuItem(
-                        title: item.title,
-                        subtitle: item.subtitle,
-                        details: item.details,
-                        icon: item.icon,
-                        showInfo: item.showInfo,
-                        infoAction: item.infoAction,
-                        showChevron: false,
-                        showToggle: item.showToggle,
-                        isToggled: item.isToggled,
-                        action: item.action
-                    )
-                    .frame(minHeight: 60)
+                    row(for: item)
+                        .frame(minHeight: 60)
                 }
             }
             .padding(6)
@@ -139,6 +128,68 @@ struct SettingsScreen: View {
         }
     }
     
+    // MARK: - Rows
+
+    /// One settings row, rendered by the design system's `MenuItem`.
+    ///
+    /// `DashUIKit.MenuItem` draws the row and nothing else — it carries no tap
+    /// handler of its own — so what a tap means is decided here, per row:
+    ///
+    /// - a switch owns its own gesture, so a plain toggle row is not wrapped;
+    /// - a row that also has something to explain puts the explanation on the
+    ///   row body, leaving the switch to toggle and the rest to inform (the
+    ///   info glyph is drawn by `MenuItem` but is not itself a button);
+    /// - everything else is a button that runs the row's action.
+    @ViewBuilder
+    private func row(for item: MenuItemModel) -> some View {
+        let content = DashUIKit.MenuItem(
+            leadingIcon: item.icon.map(Self.iconSource),
+            title: item.title,
+            helpText: item.subtitle,
+            infoIcon: item.showInfo ? .system("info.circle.fill") : nil,
+            accessory: item.showToggle
+                ? .toggle(isOn: Self.toggleBinding(item))
+                : (item.details.map { .text($0) } ?? .none)
+        )
+
+        if item.showToggle {
+            if let infoAction = item.infoAction {
+                Button(action: infoAction) { content }
+                    .buttonStyle(.plain)
+            } else {
+                content
+            }
+        } else if let action = item.action {
+            Button(action: action) { content }
+                .buttonStyle(.plain)
+        } else {
+            content
+        }
+    }
+
+    /// Writing through the switch runs the row's action, which is what the
+    /// view model already uses to flip the underlying setting; the getter stays
+    /// the model's value so a refresh is what moves the switch.
+    private static func toggleBinding(_ item: MenuItemModel) -> Binding<Bool> {
+        Binding(
+            get: { item.isToggled },
+            set: { _ in item.action?() }
+        )
+    }
+
+    /// `IconName` predates `DashIconSource` and says the same things. The one
+    /// field with no counterpart is `maxHeight`: `MenuItem` sizes its own icon.
+    private static func iconSource(_ icon: IconName) -> DashIconSource {
+        switch icon {
+        case .system(let name):
+            .system(name)
+        case .custom(let name, let bundle, _):
+            .custom(name, bundle: bundle)
+        case .image(let uiImage, _):
+            .uiImage(uiImage)
+        }
+    }
+
     private func handleNavigation(_ destination: SettingsMenuNavigationDestination?) {
         switch destination {
         case .currencySelector:
