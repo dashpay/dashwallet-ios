@@ -680,11 +680,17 @@ struct AddContactPreviewSheet: View {
                     Text(title)
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.dash.primaryText)
-                    if username != title {
-                        Text(username)
-                            .font(.system(size: 14))
-                            .foregroundColor(.dash.secondaryText)
-                    }
+                    // Kept even when it equals the title: the title may be an
+                    // alias for an already-known contact, and the registered
+                    // username is what the request is actually addressed to.
+                    Text(username)
+                        .font(.system(size: 14))
+                        .foregroundColor(.dash.secondaryText)
+                    // Before accepting a request or sending one, the id is the
+                    // only field that distinguishes two identities presenting
+                    // the same DPNS label.
+                    ContactIdentityIdView(identityId: result.identityId)
+                        .padding(.top, 2)
                     if let message = contact?.publicMessage, !message.isEmpty {
                         Text(message)
                             .font(.system(size: 14))

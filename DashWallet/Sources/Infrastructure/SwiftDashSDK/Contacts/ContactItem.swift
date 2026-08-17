@@ -11,6 +11,7 @@
 //
 
 import Foundation
+import SwiftDashSDK
 
 extension String {
     /// DPNS labels render without the implied ".dash" parent domain
@@ -120,4 +121,10 @@ struct ContactItem: Identifiable, Equatable {
         }
         return String(contactIdentityId.map { String(format: "%02x", $0) }.joined().prefix(8)) + "…"
     }
+
+    /// The identity id as users see it elsewhere — Platform explorers, the
+    /// wallet's own identity list and the `dashpay://user` QR payload all read
+    /// base58, so a contact's id is shown the same way rather than as the hex
+    /// `displayTitle`'s fallback happens to use.
+    var identityIdBase58: String { contactIdentityId.toBase58String() }
 }
