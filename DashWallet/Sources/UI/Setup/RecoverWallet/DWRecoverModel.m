@@ -49,8 +49,8 @@ NSInteger const DW_PHRASE_MULTIPLE = 3;
     return [[DWAuthenticationService shared] hasPin];
 }
 
-// `isWalletEmpty` and `canWipeWithPhrase:` live in DWRecoverModel+Mnemonic.swift
-// (SDK balance + sync-done gate; normalized-phrase comparison) — C6-D.
+// `isWalletEmpty`, wipe/reset-PIN phrase authorization, and mnemonic helpers
+// live in DWRecoverModel+Mnemonic.swift.
 
 - (void)wipeWallet {
     [DWSwiftDashSDKWalletWiper wipeWalletRemovingPin:YES];

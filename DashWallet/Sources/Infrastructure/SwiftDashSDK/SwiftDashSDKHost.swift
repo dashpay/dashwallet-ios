@@ -230,9 +230,11 @@ final class SwiftDashSDKHost {
 
     /// Every persisted SDK wallet mnemonic, keyed by its stored walletId —
     /// the same `WalletStorage` keychain surface `hasPersistedSDKWallet` reads.
-    /// Consumers: reinstall recovery (`start`'s `walletNotFound` retry) and
-    /// the wipe-with-phrase comparison. A keychain error reads as empty
-    /// (logged); an entry whose mnemonic can't be retrieved is skipped.
+    /// Consumers: reinstall recovery (`start`'s `walletNotFound` retry),
+    /// switchable-wallet discovery, and non-destructive phrase checks. A
+    /// keychain error reads as empty (logged); an entry whose mnemonic can't
+    /// be retrieved is skipped. Destructive authorization uses the strict
+    /// variant below.
     nonisolated static func persistedMnemonics() -> [(walletId: Data, mnemonic: String)] {
         do {
             let storage = WalletStorage()
@@ -245,6 +247,57 @@ final class SwiftDashSDKHost {
             logger.error("🪺 HOST :: mnemonic keychain enumeration failed: \(String(describing: error), privacy: .public)")
             return []
         }
+    }
+
+    /// Strict variant for destructive authorization. Unlike
+    /// `persistedMnemonics()`, this throws when enumeration OR any individual
+    /// mnemonic read fails, so callers cannot mistake a partially readable
+    /// Keychain for the complete wallet set.
+    nonisolated static func strictlyPersistedMnemonics() throws -> [(walletId: Data, mnemonic: String)] {
+        let storage = WalletStorage()
+        return try storage.listWalletIdsWithMnemonic().map { walletId in
+            let mnemonic = try storage.retrieveMnemonic(for: walletId)
+            return (walletId: walletId, mnemonic: mnemonic)
+        }
+    }
+
+    /// Count of persisted SDK wallet ids. Attributes-only Keychain
+    /// enumeration — no mnemonic secrets are read. Throws on enumeration
+    /// failure so destructive callers stay fail-closed.
+    nonisolated static func persistedWalletIdCount() throws -> Int {
+        try WalletStorage().listWalletIdsWithMnemonic().count
+    }
+
+    /// Set-wide destructive-authorization predicate: true only when `phrase`,
+    /// normalized, matches EVERY strictly readable stored mnemonic (multiple
+    /// network-scoped ids for one seed all carry the same phrase and match).
+    /// False for an empty normalized phrase or an empty wallet set —
+    /// `allSatisfy` on `[]` is vacuously true, and a walletless install must
+    /// never authorize a wipe. Throws when enumeration or any individual
+    /// mnemonic read fails. Consumers: `canWipeWithPhrase` and the
+    /// Wallets-screen reset routing.
+    nonisolated static func allStoredMnemonicsMatch(phrase: String) throws -> Bool {
+        try allMnemonicsMatch(phrase: phrase, in: strictlyPersistedMnemonics())
+    }
+
+    /// Core of `allStoredMnemonicsMatch(phrase:)` over pre-fetched `entries`,
+    /// for callers that already hold the strict enumeration (avoids a second
+    /// Keychain pass).
+    nonisolated static func allMnemonicsMatch(
+        phrase: String, in entries: [(walletId: Data, mnemonic: String)]) -> Bool {
+        let typed = Mnemonic.normalizePhrase(phrase)
+        guard !typed.isEmpty, !entries.isEmpty else { return false }
+        return entries.allSatisfy { Mnemonic.normalizePhrase($0.mnemonic) == typed }
+    }
+
+    /// Lenient any-match sibling for NON-destructive ownership checks
+    /// (forgot-PIN, honest-denial copy selection): true when `phrase` matches
+    /// at least one readable stored mnemonic; unreadable entries are skipped
+    /// (`persistedMnemonics()` semantics, errors logged there).
+    nonisolated static func anyStoredMnemonicMatches(phrase: String) -> Bool {
+        let typed = Mnemonic.normalizePhrase(phrase)
+        guard !typed.isEmpty else { return false }
+        return persistedMnemonics().contains { Mnemonic.normalizePhrase($0.mnemonic) == typed }
     }
 
     /// Throwaway key-wallet stack (manager + wallet) for path-based key

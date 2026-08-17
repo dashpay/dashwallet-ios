@@ -118,6 +118,36 @@ Every wipe entry point waits for the same explicit result before navigating or
 creating a replacement wallet. The frozen DashSync mnemonic keychain service
 `org.dashfoundation.dash` remains read-only and is never deleted by app wipe.
 
+A Wallets-screen Remove may route into the global wipe only after Keychain
+ground truth proves every stored wallet ID belongs to the same recovery phrase
+as the target; the currently rendered row count is not an authoritative
+last-wallet check. Enumeration or any individual mnemonic-read failure denies
+that route. A sole rendered wallet whose removal cannot route to the reset
+flow is refused up front with an explanation, rather than walked into a
+per-wallet removal that must fail (per-wallet removal always leaves a wallet
+to switch to, enforced independently of the active-wallet registry).
+
+Recovery-phrase authorization on the recover-screen wipe path is set-wide: the
+typed phrase must match every stored mnemonic, and any unreadable entry (or an
+enumeration failure) denies authorization outright — a partially readable
+Keychain never authorizes. Multiple network-scoped IDs for the same phrase are
+allowed. A phrase that matches some but not all stored wallets is refused with
+copy that says so (it is not reported as a phrase mismatch). The plain `wipe`
+shortcut is allowed only with exactly one stored wallet ID and only while the
+active network is mainnet, because the published balance is scoped to the
+active wallet/network and cannot prove a mainnet balance while running on
+testnet. The explicit strong acceptance phrase overrides both checks on this
+path. Forgot-PIN recovery stays non-destructive and may prove ownership with
+any one stored wallet phrase.
+
+These checks live at the wipe entry points, not inside
+`DWSwiftDashSDKWalletWiper` itself. Routes that reach the wiper without any
+recovery phrase remain: the lock-screen wipe offered after repeated failed PIN
+attempts, and the dev-only Reset Wallet menu item (compile-gated out of
+Release). Any new wipe entry point must bring its own authorization.
+TODO(wipe-auth): move set-wide authorization into a single boundary in front
+of the wiper so entry points collect evidence instead of enforcing policy.
+
 ## Acceptance criteria
 
 - one and multiple DashSync wallets import without selecting the wrong active
@@ -127,6 +157,11 @@ creating a replacement wallet. The frozen DashSync mnemonic keychain service
 - create/import/recovery use the same host boundary;
 - create/import persist and verify the mnemonic before the wallet becomes live;
 - network switch mirrors only the active wallet while the legacy shim exists;
+- a hidden or unrestorable second wallet cannot make a row-level Remove route
+  into the global wipe;
+- one wallet's recovery phrase cannot authorize a global wipe while a distinct
+  wallet is stored, and active-network zero balance cannot authorize one while
+  any additional wallet ID is stored or while the active network is testnet;
 - a successful wipe deletes all SDK-owned mnemonic/managed-wallet/active-wallet
   state, while a failed wipe reports failure without an app-side seed deletion;
 - no migration code deletes `org.dashfoundation.dash` entries;

@@ -38,8 +38,8 @@ extern NSInteger const DW_PHRASE_MULTIPLE;
 /// keychain restore, interrupted setup) is "set".
 - (BOOL)hasPinSet;
 
-// `isWalletEmpty`, `canWipeWithPhrase:`, `cleanupPhrase:`, `normalizePhrase:`,
-// `wordIsLocal:`, `wordIsValid:` are provided by the Swift extension
+// `isWalletEmpty`, wipe/reset-PIN phrase authorization, and mnemonic helpers
+// are provided by the Swift extension
 // `DWRecoverModel+Mnemonic.swift` (SwiftDashSDK) and reach Obj-C callers
 // through the generated `dashwallet-Swift.h`.
 
