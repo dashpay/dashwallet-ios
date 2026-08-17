@@ -52,12 +52,29 @@ public struct WalletBalance: Equatable, Sendable {
     }
 
     /// Total user-visible balance: confirmed + unconfirmed + immature.
-    /// `locked` is a subset of `confirmed` (the InstantSend-locked portion
-    /// of the confirmed balance) so it is NOT added separately.
+    ///
+    /// `locked` is a bucket of its own — `key-wallet`'s `WalletCoreBalance`
+    /// documents it as "UTXOs reserved for specific purposes like CoinJoin"
+    /// and sums all four fields for its own total. Those coins are surfaced
+    /// separately (`coinJoinBalanceDuffs` and the mixed-coins screens), so
+    /// they stay out of this figure.
     public var total: UInt64 { confirmed + unconfirmed + immature }
 
-    /// Spendable balance: confirmed minus the InstantSend-locked subset.
-    public var spendable: UInt64 { confirmed > locked ? confirmed - locked : 0 }
+    /// Balance a send can draw on right now: the confirmed bucket (mature
+    /// UTXOs in a block or InstantSend-locked).
+    ///
+    /// `locked` is NOT subtracted. It is disjoint from `confirmed` (see
+    /// `total`), so taking it off removed coins that were never in there —
+    /// with enough reserved UTXOs this floored a funded wallet's spendable
+    /// balance at 0, which silently disabled "Max" and reported insufficient
+    /// funds for every amount.
+    ///
+    /// `unconfirmed` stays out even though `key-wallet`'s own `spendable()`
+    /// counts it and ordinary spends do admit mempool inputs: the asset-lock
+    /// builders behind the shield routes take confirmed inputs only, and
+    /// every core "Max" in the app is held to that stricter bar rather than
+    /// offering an amount some routes cannot fund.
+    public var spendable: UInt64 { confirmed }
 
     /// Conservative fee headroom reserved on top of a fixed-amount send so a
     /// "Max"/affordability value stays sendable. Approximate — Core has no
