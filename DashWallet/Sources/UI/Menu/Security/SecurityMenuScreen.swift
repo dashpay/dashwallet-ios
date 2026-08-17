@@ -26,6 +26,8 @@ struct SecurityMenuScreen: View {
     @StateObject private var viewModel = SecurityMenuViewModel()
     @StateObject private var recoveryPhraseFlow = RecoveryPhraseFlowViewModel()
     @State private var showBiometricsAlert = false
+    @State private var showMultipleWalletsResetAlert = false
+    @State private var showResetWalletInventoryError = false
     @State private var showResetWalletDebugAlert = false
     
     init(vc: UINavigationController, wipeDelegate: DWWipeDelegate? = nil) {
@@ -91,6 +93,32 @@ struct SecurityMenuScreen: View {
         } message: {
             Text(biometricsAlertMessage)
         }
+        .alert(
+            NSLocalizedString("Multiple Wallets Found", comment: "Security — reset wallet"),
+            isPresented: $showMultipleWalletsResetAlert
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Open Wallets", comment: "Security — reset wallet")) {
+                openWallets()
+            }
+        } message: {
+            Text(NSLocalizedString(
+                "Reset Wallet is unavailable while multiple wallets are stored. Open Wallets and remove each wallet individually using its recovery phrase.",
+                comment: "Security — reset wallet"))
+        }
+        .alert(
+            NSLocalizedString("Could Not Read Wallets", comment: "Security — reset wallet"),
+            isPresented: $showResetWalletInventoryError
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Retry", comment: "")) {
+                beginResetWallet()
+            }
+        } message: {
+            Text(NSLocalizedString(
+                "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.",
+                comment: "Security — reset wallet"))
+        }
         .alert("Reset All Wallets (Debug)", isPresented: $showResetWalletDebugAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete All", role: .destructive) {
@@ -141,9 +169,7 @@ struct SecurityMenuScreen: View {
                 }
             }
         case .resetWallet:
-            let controller = DWResetWalletInfoViewController.make()
-            controller.delegate = delegateInternal
-            vc.pushViewController(controller, animated: true)
+            beginResetWallet()
         case .resetWalletDebug:
             showResetWalletDebugAlert = true
         case .none:
@@ -194,6 +220,31 @@ struct SecurityMenuScreen: View {
            UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
         }
+    }
+
+    private func beginResetWallet() {
+        do {
+            switch try SwiftDashSDKHost.distinctStoredWalletCount() {
+            case 1:
+                let controller = DWResetWalletInfoViewController.make()
+                controller.delegate = delegateInternal
+                vc.pushViewController(controller, animated: true)
+            case 2...:
+                showMultipleWalletsResetAlert = true
+            default:
+                showResetWalletInventoryError = true
+            }
+        } catch {
+            showResetWalletInventoryError = true
+        }
+    }
+
+    private func openWallets() {
+        let controller = UIHostingController(
+            rootView: WalletsScreen(
+                vc: vc,
+                wipeDelegate: delegateInternal.wipeDelegate))
+        vc.pushViewController(controller, animated: true)
     }
 }
 
