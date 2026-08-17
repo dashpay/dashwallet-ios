@@ -201,6 +201,40 @@ final class StoredWalletInventoryTests: XCTestCase {
         XCTAssertNotEqual(ids[.mainnet], ids[.testnet])
     }
 
+    func testAddWalletCreatesCurrentNetworkThenMissingMirror() throws {
+        XCTAssertEqual(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [],
+                currentNetwork: .mainnet),
+            [.mainnet, .testnet])
+        XCTAssertEqual(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [],
+                currentNetwork: .testnet),
+            [.testnet, .mainnet])
+    }
+
+    func testAddWalletCreatesOnlyMissingNetworkMirror() throws {
+        let ids = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: seedA)
+        let mainnetId = try XCTUnwrap(ids[.mainnet])
+        let testnetId = try XCTUnwrap(ids[.testnet])
+
+        XCTAssertEqual(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [mainnetId],
+                currentNetwork: .mainnet),
+            [.testnet])
+        XCTAssertEqual(
+            try SwiftDashSDKHost.missingWalletNetworks(
+                mnemonic: seedA,
+                persistedWalletIds: [mainnetId, testnetId],
+                currentNetwork: .mainnet),
+            [])
+    }
+
     func testRecoveryWipeTreatsMirroredIdsAsOneNormalizedSeed() {
         XCTAssertEqual(
             SwiftDashSDKWalletWiper.soleNormalizedMnemonic(

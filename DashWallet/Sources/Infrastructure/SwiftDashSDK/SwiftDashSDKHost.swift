@@ -542,11 +542,41 @@ final class SwiftDashSDKHost {
         case alreadyExists(walletId: Data)
     }
 
+    /// Networks that still need a persisted representation for a logical
+    /// wallet, ordered so the running network is created first. Keeping this
+    /// decision pure makes the cross-network add behavior regression-testable
+    /// without constructing SDK managers.
+    nonisolated static func missingWalletNetworks(
+        mnemonic: String,
+        persistedWalletIds: Set<Data>,
+        currentNetwork: Network
+    ) throws -> [Network] {
+        let otherNetwork: Network
+        switch currentNetwork {
+        case .mainnet:
+            otherNetwork = .testnet
+        case .testnet:
+            otherNetwork = .mainnet
+        default:
+            throw HostError.unsupportedNetwork(currentNetwork)
+        }
+
+        let walletIds = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: mnemonic)
+        return [currentNetwork, otherNetwork].filter { network in
+            guard let walletId = walletIds[network] else { return false }
+            return !persistedWalletIds.contains(walletId)
+        }
+    }
+
     /// Add a wallet from `mnemonic` ADDITIVELY: create it in the already-running
-    /// manager and persist its mnemonic, WITHOUT tearing down the runtime,
-    /// touching the active-wallet registry, or rebinding the published active
-    /// wallet. The caller (Wallets screen "Add Wallet") switches to the new
-    /// wallet afterward via `SwiftDashSDKWalletRuntime.switchWallet`.
+    /// manager and persist its mnemonic, then materialize the same logical
+    /// wallet for the other supported network. This is explicit provisioning
+    /// at create/import time; reinstall recovery remains network-scoped and
+    /// must never manufacture a mirror from an arbitrary surviving entry.
+    /// Neither operation touches the active-wallet registries or rebinds the
+    /// published active wallet. The caller (Wallets screen "Add Wallet")
+    /// switches to the current-network wallet afterward via
+    /// `SwiftDashSDKWalletRuntime.switchWallet`.
     ///
     /// Requires a running host (a bound active wallet already exists — adding
     /// is only reachable from the Wallets screen). Returns `.alreadyExists`
@@ -559,6 +589,7 @@ final class SwiftDashSDKHost {
     /// uses the LIVE manager and does not publish or set-active.
     @discardableResult
     func addWallet(mnemonic: String, isImported: Bool) async throws -> AddWalletResult {
+        let mnemonic = Mnemonic.normalizePhrase(mnemonic)
         guard !mnemonic.isEmpty, Mnemonic.validate(mnemonic) else {
             throw HostError.invalidMnemonic
         }
@@ -568,29 +599,42 @@ final class SwiftDashSDKHost {
             throw HostError.walletNotFound(runningNetwork ?? .mainnet)
         }
 
-        // Idempotence guard: `createWallet` is keyed by the deterministic
-        // walletId, so adding an already-present wallet would no-op. Detect it
-        // from the persisted-mnemonic set (the switchable-wallet source of
-        // truth) and report `.alreadyExists` rather than a fabricated success.
-        let derivedId = try Wallet(mnemonic: mnemonic, network: network).id
-        if Self.persistedMnemonics().contains(where: { $0.walletId == derivedId }) {
-            Self.logger.info("🪺 HOST :: addWallet — walletId already persisted; not re-adding")
-            return .alreadyExists(walletId: derivedId)
+        let walletIds = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: mnemonic)
+        guard let currentWalletId = walletIds[network] else {
+            throw HostError.unsupportedNetwork(network)
         }
 
-        let createdWallet = try createAndPersist(
+        let persistedWalletIds = Set(try WalletStorage().listWalletIdsWithMnemonic())
+        let networksToCreate = try Self.missingWalletNetworks(
             mnemonic: mnemonic,
-            manager: manager,
-            network: network,
-            // Same semantics as `createOrImportWallet`: imports scan
-            // from the network's import floor, freshly generated
-            // wallets from the tip.
-            birthHeight: isImported
-                ? Self.importedWalletBirthHeight(for: network)
-                : nil)
+            persistedWalletIds: persistedWalletIds,
+            currentNetwork: network)
+        let createsCurrentNetwork = networksToCreate.contains(network)
 
-        Self.logger.info("🪺 HOST :: added managed wallet for \(network.rawValue, privacy: .public) (additive)")
-        return .added(walletId: createdWallet.walletId)
+        for targetNetwork in networksToCreate {
+            let targetManager = targetNetwork == network
+                ? manager
+                : try managerForStoredWalletOperation(network: targetNetwork)
+            _ = try createAndPersist(
+                mnemonic: mnemonic,
+                manager: targetManager,
+                network: targetNetwork,
+                // Same semantics as `createOrImportWallet`: imports scan
+                // from each network's import floor, freshly generated
+                // wallets from that network's tip.
+                birthHeight: isImported
+                    ? Self.importedWalletBirthHeight(for: targetNetwork)
+                    : nil)
+            Self.logger.info(
+                "🪺 HOST :: added managed wallet for \(targetNetwork.rawValue, privacy: .public) (additive)")
+        }
+
+        if createsCurrentNetwork {
+            return .added(walletId: currentWalletId)
+        }
+
+        Self.logger.info("🪺 HOST :: current-network walletId already persisted; missing mirror repaired if needed")
+        return .alreadyExists(walletId: currentWalletId)
     }
 
     /// Derive the deterministic wallet id, persist and verify its mnemonic, then
@@ -764,6 +808,13 @@ final class SwiftDashSDKHost {
     /// second open of the same SQLite store and leaving the published runtime
     /// unchanged until the wipe commits.
     func managerForWipe(network: Network) throws -> PlatformWalletManager {
+        try managerForStoredWalletOperation(network: network)
+    }
+
+    /// Returns a manager over the network's persisted store without changing
+    /// the published runtime. Shared by full-device wipe and explicit
+    /// cross-network wallet provisioning.
+    private func managerForStoredWalletOperation(network: Network) throws -> PlatformWalletManager {
         if runningNetwork == network, let manager {
             return manager
         }
