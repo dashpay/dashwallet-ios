@@ -26,6 +26,9 @@ struct SecurityMenuScreen: View {
     @StateObject private var viewModel = SecurityMenuViewModel()
     @StateObject private var recoveryPhraseFlow = RecoveryPhraseFlowViewModel()
     @State private var showBiometricsAlert = false
+    @State private var showMultipleWalletsResetAlert = false
+    @State private var showNoWalletResetAlert = false
+    @State private var showResetWalletInventoryError = false
     @State private var showResetWalletDebugAlert = false
     
     init(vc: UINavigationController, wipeDelegate: DWWipeDelegate? = nil) {
@@ -80,6 +83,9 @@ struct SecurityMenuScreen: View {
         .onReceive(viewModel.$showBiometricsAlert) { show in
             showBiometricsAlert = show
         }
+        .onReceive(viewModel.$resetWalletDestination.compactMap { $0 }) { destination in
+            handleResetWalletDestination(destination)
+        }
         .onReceive(recoveryPhraseFlow.$navigationEvent.compactMap { $0 }) { event in
             handleRecoveryPhraseNavigation(event)
         }
@@ -90,6 +96,42 @@ struct SecurityMenuScreen: View {
             }
         } message: {
             Text(biometricsAlertMessage)
+        }
+        .alert(
+            NSLocalizedString("Multiple Wallets Found", comment: "Security — reset wallet"),
+            isPresented: $showMultipleWalletsResetAlert
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Open Wallets", comment: "Security — reset wallet")) {
+                openWallets()
+            }
+        } message: {
+            Text(NSLocalizedString(
+                "Reset Wallet is unavailable while multiple wallets are stored. Open Wallets and remove each wallet individually using its recovery phrase.",
+                comment: "Security — reset wallet"))
+        }
+        .alert(
+            NSLocalizedString("No Wallet Found", comment: "Security — reset wallet"),
+            isPresented: $showNoWalletResetAlert
+        ) {
+            Button(NSLocalizedString("OK", comment: ""), role: .cancel) { }
+        } message: {
+            Text(NSLocalizedString(
+                "There are no wallets stored on this device to reset.",
+                comment: "Security — reset wallet"))
+        }
+        .alert(
+            NSLocalizedString("Could Not Read Wallets", comment: "Security — reset wallet"),
+            isPresented: $showResetWalletInventoryError
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(NSLocalizedString("Retry", comment: "")) {
+                viewModel.beginResetWallet()
+            }
+        } message: {
+            Text(NSLocalizedString(
+                "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.",
+                comment: "Security — reset wallet"))
         }
         .alert("Reset All Wallets (Debug)", isPresented: $showResetWalletDebugAlert) {
             Button("Cancel", role: .cancel) { }
@@ -190,6 +232,31 @@ struct SecurityMenuScreen: View {
            UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
         }
+    }
+
+    private func handleResetWalletDestination(_ destination: SecurityMenuResetWalletDestination) {
+        switch destination {
+        case .reset:
+            let controller = DWResetWalletInfoViewController.make()
+            controller.delegate = delegateInternal
+            vc.pushViewController(controller, animated: true)
+        case .multipleWallets:
+            showMultipleWalletsResetAlert = true
+        case .noWallet:
+            showNoWalletResetAlert = true
+        case .readError:
+            showResetWalletInventoryError = true
+        }
+
+        viewModel.resetWalletDestinationHandled()
+    }
+
+    private func openWallets() {
+        let controller = UIHostingController(
+            rootView: WalletsScreen(
+                vc: vc,
+                wipeDelegate: delegateInternal.wipeDelegate))
+        vc.pushViewController(controller, animated: true)
     }
 }
 

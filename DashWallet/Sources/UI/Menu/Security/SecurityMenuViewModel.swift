@@ -26,9 +26,17 @@ enum SecurityMenuNavigationDestination {
     case resetWalletDebug
 }
 
+enum SecurityMenuResetWalletDestination {
+    case reset
+    case multipleWallets
+    case noWallet
+    case readError
+}
+
 @MainActor
 class SecurityMenuViewModel: ObservableObject {
     @Published var navigationDestination: SecurityMenuNavigationDestination?
+    @Published var resetWalletDestination: SecurityMenuResetWalletDestination?
     @Published var showBiometricsAlert = false
     @Published var items: [MenuItemModel] = []
     @Published var biometricsEnabled = false
@@ -117,11 +125,19 @@ class SecurityMenuViewModel: ObservableObject {
                 self?.navigationDestination = .advancedSecurity
             }
         ))
+
+        menuItems.append(MenuItemModel(
+            title: NSLocalizedString("Reset Wallet", comment: ""),
+            icon: .custom("image-menu-reset_wallet", maxHeight: 22),
+            action: { [weak self] in
+                self?.beginResetWallet()
+            }
+        ))
         
         // Dev-only: wipes every wallet with no phrase, bypassing the wipe
-        // authorization the release flows enforce — never ship it. Gated for
-        // dev builds of both schemes (the dashpay scheme has no DASH_TESTNET).
-        #if DEBUG || DASH_TESTNET
+        // authorization the release flows enforce — never ship it. Both the
+        // Debug and Testnet development configurations define DEBUG.
+        #if DEBUG
         menuItems.append(MenuItemModel(
             title: "Reset All Wallets (Debug)",
             icon: .custom("image-menu-reset_wallet", maxHeight: 22),
@@ -132,6 +148,25 @@ class SecurityMenuViewModel: ObservableObject {
         #endif
 
         items = menuItems
+    }
+
+    func beginResetWallet() {
+        do {
+            switch try SwiftDashSDKHost.distinctStoredWalletCount() {
+            case 0:
+                resetWalletDestination = .noWallet
+            case 1:
+                resetWalletDestination = .reset
+            default:
+                resetWalletDestination = .multipleWallets
+            }
+        } catch {
+            resetWalletDestination = .readError
+        }
+    }
+
+    func resetWalletDestinationHandled() {
+        resetWalletDestination = nil
     }
     
     private func toggleBiometrics(_ enabled: Bool) {
