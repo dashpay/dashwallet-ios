@@ -17,7 +17,7 @@ import SwiftDashSDK
 ///   - `.failed(msg)`    → summary card with red error + Try again / Close.
 ///
 /// Confirm executes `route` via the coordinator:
-///   - `.coreToShielded`     → `performAssetLock(amountDuffs:)`
+///   - `.coreToShielded`     → `performAssetLock(recipientAmountDuffs:)`
 ///   - `.platformToShielded` → `performShield(amountCredits:)`
 ///   - `.shieldedToCore`     → `performWithdraw(amountCredits:)`
 ///   - `.shieldedToPlatform` → `performUnshield(amountCredits:)`
@@ -211,12 +211,15 @@ struct InternalTransferConfirmSheet: View {
     private static let creditsPerDash: Decimal = 100_000_000_000
 
     /// Flat fee estimate (credits) for the active route, computed offline by
-    /// the SDK against the latest protocol version (so it matches the carved
-    /// fee). `nil` if the estimate is unavailable → the row shows "—".
+    /// the SDK against the latest protocol version (so it matches the fee the
+    /// SDK will charge). `nil` if the estimate is unavailable → the row
+    /// shows "—".
     private var networkFeeCredits: UInt64? {
         switch route {
         case .coreToShielded:
-            return CoreToShieldedAmountPolicy.poolFeeCredits
+            // The lock charges the fee rounded UP to a whole duff — display
+            // that, so Amount + Network fee equals Total exactly.
+            return CoreToShieldedAmountPolicy.currentPoolFeeDuffs.map { $0 * 1000 }
         case .platformToShielded:
             // Shield (Type 15): base shielded fee. Real metered storage is
             // extra and only knowable on-chain, so this is a lower bound.
@@ -245,6 +248,24 @@ struct InternalTransferConfirmSheet: View {
         return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
     }
 
+    /// What actually leaves the source balance. Core→Shielded charges the
+    /// pool fee on top of the amount (the executed lock value); every other
+    /// route's total is the amount itself. "—" when the fee estimate is
+    /// unavailable — `canContinue` fails closed before that can be confirmed,
+    /// but the row must never show the un-inflated number.
+    private var totalString: String {
+        guard route == .coreToShielded else {
+            return dashDuffs.formattedDashAmount
+        }
+        guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
+              let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
+                  forAmountDuffs: amountDuffsUnsigned,
+                  poolFeeCredits: poolFeeCredits),
+              let signedLockDuffs = Int64(exactly: lockDuffs)
+        else { return "—" }
+        return signedLockDuffs.formattedDashAmount
+    }
+
 
     // MARK: - Summary card
 
@@ -264,7 +285,7 @@ struct InternalTransferConfirmSheet: View {
             divider
             summaryRow(
                 label: NSLocalizedString("Total", comment: ""),
-                value: dashDuffs.formattedDashAmount)
+                value: totalString)
         }
         .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
@@ -445,7 +466,7 @@ struct InternalTransferConfirmSheet: View {
         Task {
             switch route {
             case .coreToShielded:
-                await coordinator.performAssetLock(amountDuffs: amountDuffsUnsigned)
+                await coordinator.performAssetLock(recipientAmountDuffs: amountDuffsUnsigned)
             case .platformToShielded:
                 await coordinator.performShield(amountCredits: creditsAmount)
             case .shieldedToCore:
