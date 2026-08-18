@@ -582,8 +582,6 @@
 		51629A945A8CEF6EF50F9A4A /* DWIdentityKeyUpgrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74AAC8F08DF00D0070EE71C3 /* DWIdentityKeyUpgrader.swift */; };
 		51646C723006263C00BE3070 /* Uphold-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51646C713006263C00BE3070 /* Uphold-Info.plist */; };
 		51646C733006263C00BE3070 /* Uphold-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51646C713006263C00BE3070 /* Uphold-Info.plist */; };
-		516983C22FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */; };
-		516983C32FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */; };
 		516C63E52FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */; };
 		516C63E62FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */; };
 		516C63E82FE9BE0A00DD6BC3 /* AboutDashViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */; };
@@ -2785,7 +2783,6 @@
 		51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewController.swift; sourceTree = "<group>"; };
 		51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewModel.swift; sourceTree = "<group>"; };
 		51646C713006263C00BE3070 /* Uphold-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Uphold-Info.plist"; sourceTree = "<group>"; };
-		516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XmarkIcon.swift; sourceTree = "<group>"; };
 		516C4047DB43CFFBB8ED541B /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutDashView.swift; sourceTree = "<group>"; };
 		516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutDashViewModel.swift; sourceTree = "<group>"; };
@@ -6658,7 +6655,6 @@
 			children = (
 				51F0D10330BF98BA00B27E11 /* ArrowDownIcon.swift */,
 				51F0D10030BF97A900B27E11 /* ExclamationIcon.swift */,
-				516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */,
 			);
 			path = Icons;
 			sourceTree = "<group>";
@@ -9856,7 +9852,6 @@
 				47AE8C1A28C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift in Sources */,
 				754565CC2DAA52A000DA4E8E /* CTXSpendAPI.swift in Sources */,
 				51F0D10430BF98BA00B27E11 /* ArrowDownIcon.swift in Sources */,
-				516983C22FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */,
 				51F0D10130BF97A900B27E11 /* ExclamationIcon.swift in Sources */,
 				754565CE2DAA52A000DA4E8E /* CTXSpendRepository.swift in Sources */,
 				754565CF2DAA52A000DA4E8E /* CTXSpendEndpoint.swift in Sources */,
@@ -10561,7 +10556,6 @@
 				C9D2C7392A320AA000D15901 /* CoinbaseAmount.swift in Sources */,
 				C9D2C73B2A320AA000D15901 /* SendAmountModel.swift in Sources */,
 				51F0D10530BF98BA00B27E11 /* ArrowDownIcon.swift in Sources */,
-				516983C32FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */,
 				51F0D10230BF97A900B27E11 /* ExclamationIcon.swift in Sources */,
 				75EBAA102BB99036004488E3 /* TextIntro.swift in Sources */,
 				RC00A0022FA0000000000001 /* TopIntro.swift in Sources */,
