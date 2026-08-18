@@ -154,7 +154,7 @@ struct SettingsScreen: View {
             leadingIcon: item.icon.map(Self.iconSource),
             title: item.title,
             helpText: item.subtitle,
-            infoIcon: item.showInfo ? .system("info.circle.fill") : nil,
+            info: item.showInfo ? .round(color: Color.dash.gray300Alpha70) : nil,
             accessory: item.showToggle
                 ? .toggle(isOn: Self.toggleBinding(item))
                 : (item.details.map { .text($0) } ?? .none)
