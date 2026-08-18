@@ -627,6 +627,14 @@
 		56F5C9FD51AE5508BB5E579B /* ChainNetworkToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D788CCB6B35B655BD713129E /* ChainNetworkToggle.swift */; };
 		57632D5A61F78ED6E896B1AF /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		58825FFD2913876CC5D4AA21 /* InternalTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */; };
+		C0171F000000000000001A2 /* TransferSourceRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001A1 /* TransferSourceRow.swift */; };
+		C0171F000000000000001A3 /* TransferSourceRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001A1 /* TransferSourceRow.swift */; };
+		C0171F000000000000001B2 /* TransferAmountValidationNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001B1 /* TransferAmountValidationNote.swift */; };
+		C0171F000000000000001B3 /* TransferAmountValidationNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001B1 /* TransferAmountValidationNote.swift */; };
+		C0171F000000000000001C2 /* TransferPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001C1 /* TransferPreview.swift */; };
+		C0171F000000000000001C3 /* TransferPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001C1 /* TransferPreview.swift */; };
+		C0171F000000000000001D2 /* TransferEndpointCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001D1 /* TransferEndpointCards.swift */; };
+		C0171F000000000000001D3 /* TransferEndpointCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001D1 /* TransferEndpointCards.swift */; };
 		59A140F3992CD2438ADC84CE /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */; };
 		5A1EC0FE2E29A10000000002 /* ShieldedActivityHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */; };
 		5A1EC0FE2E29A10000000003 /* ShieldedActivityHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */; };
@@ -3036,6 +3044,10 @@
 		A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletWipeSerialExecutorTests.swift; sourceTree = "<group>"; };
 		A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentRequestVerifier.swift; sourceTree = "<group>"; };
 		A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferScreen.swift; sourceTree = "<group>"; };
+		C0171F000000000000001A1 /* TransferSourceRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferSourceRow.swift; sourceTree = "<group>"; };
+		C0171F000000000000001B1 /* TransferAmountValidationNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountValidationNote.swift; sourceTree = "<group>"; };
+		C0171F000000000000001C1 /* TransferPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferPreview.swift; sourceTree = "<group>"; };
+		C0171F000000000000001D1 /* TransferEndpointCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferEndpointCards.swift; sourceTree = "<group>"; };
 		A876A874736D422F781F797F /* SwiftDashSDKReceiveAddressReader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKReceiveAddressReader.swift; sourceTree = "<group>"; };
 		AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalView.swift; sourceTree = "<group>"; };
 		AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProviderToGiftCardsTable.swift; sourceTree = "<group>"; };
@@ -3746,9 +3758,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C0171F000000000000000000 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				C0171F000000000000001A1 /* TransferSourceRow.swift */,
+				C0171F000000000000001B1 /* TransferAmountValidationNote.swift */,
+				C0171F000000000000001C1 /* TransferPreview.swift */,
+				C0171F000000000000001D1 /* TransferEndpointCards.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		0529717581A09721B3115957 /* InternalTransfer */ = {
 			isa = PBXGroup;
 			children = (
+				C0171F000000000000000000 /* Components */,
 				67FCD2ED5EDFD68CDE1FE7CC /* TransferTimingSheet.swift */,
 				7249AC40404B20F2AEE590F1 /* InternalTransferViewModel.swift */,
 				A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */,
@@ -10179,6 +10203,10 @@
 				0EB4679BC135B464D90CDC8B /* TransferTimingSheet.swift in Sources */,
 				EF053C0D81A007CC015EB3EE /* InternalTransferViewModel.swift in Sources */,
 				58825FFD2913876CC5D4AA21 /* InternalTransferScreen.swift in Sources */,
+				C0171F000000000000001A2 /* TransferSourceRow.swift in Sources */,
+				C0171F000000000000001B2 /* TransferAmountValidationNote.swift in Sources */,
+				C0171F000000000000001C2 /* TransferPreview.swift in Sources */,
+				C0171F000000000000001D2 /* TransferEndpointCards.swift in Sources */,
 				7C93319817E9E574070A504D /* InternalTransferHostingController.swift in Sources */,
 				C6344885F1E0A6C04D3D8437 /* InternalTransferConfirmSheet.swift in Sources */,
 				A15ED0B9E7AAF29C694E4E17 /* DWIdentityAuthorizer.swift in Sources */,
@@ -11187,6 +11215,10 @@
 				1C2999FF1FC854E7DB138250 /* TransferTimingSheet.swift in Sources */,
 				FF4A426923D0CF755AE981FB /* InternalTransferViewModel.swift in Sources */,
 				EFCF9D5D6630AD9BD0A62E29 /* InternalTransferScreen.swift in Sources */,
+				C0171F000000000000001A3 /* TransferSourceRow.swift in Sources */,
+				C0171F000000000000001B3 /* TransferAmountValidationNote.swift in Sources */,
+				C0171F000000000000001C3 /* TransferPreview.swift in Sources */,
+				C0171F000000000000001D3 /* TransferEndpointCards.swift in Sources */,
 				428C56F90F533CF0DD6774F1 /* InternalTransferHostingController.swift in Sources */,
 				E2D0F4AD56B92356C871F568 /* InternalTransferConfirmSheet.swift in Sources */,
 				17ED79A8B56522CD03A8CD5E /* ShieldedTransferCoordinator.swift in Sources */,
