@@ -72,63 +72,30 @@ struct SettingsScreen: View {
         .onReceive(viewModel.$showCSVExportActivity) { show in
             showCSVExportActivity = show
         }
-        .alert(NSLocalizedString("Network", comment: ""), isPresented: $showNetworkAlert) {
-            Button(NSLocalizedString("Mainnet", comment: "")) {
+        .networkChoiceAlert(
+            isPresented: $showNetworkAlert,
+            onMainnet: {
                 Task {
-                    let success = await viewModel.switchToMainnet()
-                    if success {
+                    if await viewModel.switchToMainnet() {
                         updateView()
                     }
                 }
-            }
-            Button(NSLocalizedString("Testnet", comment: "")) {
+            },
+            onTestnet: {
                 Task {
-                    let success = await viewModel.switchToTestnet()
-                    if success {
+                    if await viewModel.switchToTestnet() {
                         updateView()
                     }
                 }
-            }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-        }
+            })
         .sheet(isPresented: $viewModel.showAdvancedModeInfo) {
-            DashUIKit.BottomSheet.selfSizing(
-                title: NSLocalizedString("Advanced mode", comment: "Settings"),
-                showBackButton: .constant(false)
-            ) {
-                // TODO(advanced-mode): the copy lands here once the surfaces
-                // the flag gates are decided. Until then this says only what is
-                // true of the build it ships in.
-                Text(NSLocalizedString(
-                    "Reveals extra wallet details and actions intended for experienced users. Turning it off hides them again; nothing about your funds changes either way.",
-                    comment: "Settings"))
-                    .dashFont(.footnote)
-                    .foregroundStyle(Color.dash.secondaryText)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
-            }
+            AdvancedModeInfoSheet()
         }
-        .alert(NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
-            Button(NSLocalizedString("Move funds", comment: "CoinJoin")) {
-                Task { await viewModel.performCoinJoinSweep() }
-            }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-        } message: {
-            Text(String(format: NSLocalizedString("Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported.", comment: "CoinJoin"), viewModel.coinJoinLeftoverFormatted))
-        }
-        .alert(
-            NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
-            isPresented: Binding(
-                get: { viewModel.coinJoinSweepErrorMessage != nil },
-                set: { if !$0 { viewModel.coinJoinSweepErrorMessage = nil } }
-            ),
-            presenting: viewModel.coinJoinSweepErrorMessage
-        ) { _ in
-            Button(NSLocalizedString("OK", comment: "")) { viewModel.coinJoinSweepErrorMessage = nil }
-        } message: { message in
-            Text(message)
-        }
+        .coinJoinSweepAlerts(
+            isConfirming: $viewModel.showCoinJoinSweepConfirmation,
+            amount: viewModel.coinJoinLeftoverFormatted,
+            onConfirm: { Task { await viewModel.performCoinJoinSweep() } },
+            errorMessage: $viewModel.coinJoinSweepErrorMessage)
         .sheet(isPresented: $showCSVExportActivity) {
             if let csvData = viewModel.csvExportData {
                 ActivityView(activityItems: [csvData.file])

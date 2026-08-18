@@ -206,6 +206,10 @@
 		2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */; };
 		2A7A7BC92347E0D700451078 /* DWBaseFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BC82347E0D700451078 /* DWBaseFormTableViewCell.m */; };
 		2A7A7BD62348CB6600451078 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BD52348CB6600451078 /* SettingsScreen.swift */; };
+		C0FA5E0000000000000000A2 /* AdvancedModeInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FA5E0000000000000000A1 /* AdvancedModeInfoSheet.swift */; };
+		C0FA5E0000000000000000A3 /* AdvancedModeInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FA5E0000000000000000A1 /* AdvancedModeInfoSheet.swift */; };
+		C0FA5E0000000000000000B2 /* SettingsAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FA5E0000000000000000B1 /* SettingsAlerts.swift */; };
+		C0FA5E0000000000000000B3 /* SettingsAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FA5E0000000000000000B1 /* SettingsAlerts.swift */; };
 		2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */; };
 		2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */; };
@@ -2292,6 +2296,8 @@
 		2A7A7BC72347E0D700451078 /* DWBaseFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseFormTableViewCell.h; sourceTree = "<group>"; };
 		2A7A7BC82347E0D700451078 /* DWBaseFormTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseFormTableViewCell.m; sourceTree = "<group>"; };
 		2A7A7BD52348CB6600451078 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
+		C0FA5E0000000000000000A1 /* AdvancedModeInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedModeInfoSheet.swift; sourceTree = "<group>"; };
+		C0FA5E0000000000000000B1 /* SettingsAlerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAlerts.swift; sourceTree = "<group>"; };
 		2A7A7C14234B763600451078 /* DWLocalCurrencyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyViewController.h; sourceTree = "<group>"; };
 		2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyViewController.m; sourceTree = "<group>"; };
 		2A7A7C1B234B771400451078 /* DWLocalCurrencyModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyModel.h; sourceTree = "<group>"; };
@@ -4759,10 +4765,20 @@
 			path = Security;
 			sourceTree = "<group>";
 		};
+		C0FA5E0000000000000000A0 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				C0FA5E0000000000000000A1 /* AdvancedModeInfoSheet.swift */,
+				C0FA5E0000000000000000B1 /* SettingsAlerts.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		2A7A7BD32348CB4F00451078 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
 				2A7A7C13234B761700451078 /* LocalCurrency */,
+				C0FA5E0000000000000000A0 /* Components */,
 				2A8F420A21BEE69E00858B91 /* About */,
 				2A7A7BD52348CB6600451078 /* SettingsScreen.swift */,
 				750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */,
@@ -9471,6 +9487,8 @@
 				CNR0000052FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */,
 				CNR0000112FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */,
 				2A7A7BD62348CB6600451078 /* SettingsScreen.swift in Sources */,
+				C0FA5E0000000000000000A2 /* AdvancedModeInfoSheet.swift in Sources */,
+				C0FA5E0000000000000000B2 /* SettingsAlerts.swift in Sources */,
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
 				47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */,
 				11AE3DD82997C599000856EE /* IsDefaultEmail.swift in Sources */,
@@ -10349,6 +10367,8 @@
 				CNR0000062FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */,
 				CNR0000122FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */,
 				C9D2C6B02A320AA000D15901 /* SettingsScreen.swift in Sources */,
+				C0FA5E0000000000000000A3 /* AdvancedModeInfoSheet.swift in Sources */,
+				C0FA5E0000000000000000B3 /* SettingsAlerts.swift in Sources */,
 				751B61C52ADFFD0700D1C2EF /* IntegrationViewController+Uphold.swift in Sources */,
 				C9D2C6B22A320AA000D15901 /* UISpringTimingParameters+DWInit.m in Sources */,
 				C9D2C6B62A320AA000D15901 /* NumberKeyboardButton.swift in Sources */,
