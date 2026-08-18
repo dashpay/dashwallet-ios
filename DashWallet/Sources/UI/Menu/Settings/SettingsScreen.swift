@@ -91,15 +91,23 @@ struct SettingsScreen: View {
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
         }
-        .alert(
-            NSLocalizedString("Advanced mode", comment: "Settings"),
-            isPresented: $viewModel.showAdvancedModeInfo
-        ) {
-            Button(NSLocalizedString("OK", comment: "")) { }
-        } message: {
-            Text(NSLocalizedString(
-                "Reveals extra wallet details and actions intended for experienced users. Turning it off hides them again; nothing about your funds changes either way.",
-                comment: "Settings"))
+        .sheet(isPresented: $viewModel.showAdvancedModeInfo) {
+            DashUIKit.BottomSheet.selfSizing(
+                title: NSLocalizedString("Advanced mode", comment: "Settings"),
+                showBackButton: .constant(false)
+            ) {
+                // TODO(advanced-mode): the copy lands here once the surfaces
+                // the flag gates are decided. Until then this says only what is
+                // true of the build it ships in.
+                Text(NSLocalizedString(
+                    "Reveals extra wallet details and actions intended for experienced users. Turning it off hides them again; nothing about your funds changes either way.",
+                    comment: "Settings"))
+                    .dashFont(.footnote)
+                    .foregroundStyle(Color.dash.secondaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
+            }
         }
         .alert(NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
             Button(NSLocalizedString("Move funds", comment: "CoinJoin")) {
@@ -154,6 +162,8 @@ struct SettingsScreen: View {
 
         if item.showToggle {
             if let infoAction = item.infoAction {
+                // The switch owns its own tap, so the rest of the row is free
+                // to answer the question the info glyph poses.
                 Button(action: infoAction) { content }
                     .buttonStyle(.plain)
             } else {
