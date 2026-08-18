@@ -243,9 +243,33 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
                 UserDefaults.standard.set(true, forKey: Self.shieldedBalanceTimingShownKey)
                 self?.dismiss(animated: true)
             }))
+        host.modalPresentationStyle = .pageSheet
+        // Fill the whole sheet, including the bottom safe-area strip, with the
+        // sheet background — the detent paints that strip itself.
+        host.view.backgroundColor = UIColor(Color.dash.primaryBackground)
+
         if let sheet = host.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
+            // `BottomSheet` draws its own grabber.
+            sheet.prefersGrabberVisible = false
+            if #unavailable(iOS 26.0) {
+                sheet.preferredCornerRadius = 24
+            }
+            // SwiftUI's `.presentationDetents` does not bridge to a
+            // `UIHostingController` presented with `present()` — UIKit falls
+            // back to `.large` — so the content is measured here and given a
+            // matching detent. Mirrors `HomeViewController`'s reminder sheet.
+            if #available(iOS 16.0, *) {
+                let width = view.bounds.width
+                let bottomInset = view.window?.safeAreaInsets.bottom ?? 0
+                let contentHeight = host
+                    .sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude))
+                    .height
+                sheet.detents = [.custom { context in
+                    min(contentHeight + bottomInset, context.maximumDetentValue)
+                }]
+            } else {
+                sheet.detents = [.medium()]
+            }
         }
         present(host, animated: true)
     }
