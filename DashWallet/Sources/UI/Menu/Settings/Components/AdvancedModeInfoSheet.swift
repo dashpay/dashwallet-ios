@@ -25,22 +25,30 @@ import DashUIKit
 /// with the sizing modifier so the sheet keeps snapping to it without anything
 /// here being re-tuned.
 struct AdvancedModeInfoSheet: View {
+
     var body: some View {
         DashUIKit.BottomSheet.selfSizing(
-            title: NSLocalizedString("Advanced mode", comment: "Settings"),
             showBackButton: .constant(false)
         ) {
-            // TODO(advanced-mode): the copy lands here once the surfaces the
-            // flag gates are decided. Until then this says only what is true of
-            // the build it ships in.
-            Text(NSLocalizedString(
-                "Reveals extra wallet details and actions intended for experienced users. Turning it off hides them again; nothing about your funds changes either way.",
-                comment: "Settings"))
-                .dashFont(.footnote)
-                .foregroundStyle(Color.dash.secondaryText)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
+            VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(NSLocalizedString("What is advanced mode?", comment: "Settings"))
+                        .dashFont(.title1)
+                        .foregroundStyle(Color.dash.primaryText)
+
+                    Text(NSLocalizedString("It unlocks powerful features for managing your Dash across the network", comment: "Settings"))
+                        .dashFont(.body)
+                        .foregroundStyle(Color.dash.secondaryText)
+                }
                 .padding(.bottom, 20)
+
+                VStack(alignment: .leading, spacing: 16) {
+
+                }
+                .padding(.top, 10)
+            }
+            .padding(.horizontal, 40)
+            .padding(.vertical, 20)
         }
     }
 }
