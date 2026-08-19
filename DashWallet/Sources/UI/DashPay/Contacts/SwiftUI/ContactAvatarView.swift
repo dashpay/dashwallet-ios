@@ -7,6 +7,7 @@
 //  design (wallet/res/layout/dashpay_contact_row.xml and friends).
 //
 
+import SwiftDashSDK
 import SwiftUI
 import DashUIKit
 
@@ -202,3 +203,62 @@ struct ContactsCard<Content: View>: View {
 }
 
 #endif
+
+// MARK: - Identity ID
+
+/// The contact's Platform identity id, in the centred style the contact sheets
+/// already use for the lines under the name.
+///
+/// A username is a DPNS label — it can be contested, transferred, or released
+/// and taken by somebody else — so it does not identify a person on its own.
+/// The identity id does, which is why it belongs next to the name rather than
+/// only inside the QR payload.
+///
+/// Shown in full base58: that is how identities read on Platform explorers, in
+/// the wallet's own identity list and in the `dashpay://user` link, and a
+/// reader who needs it at all usually needs to paste the whole value.
+struct ContactIdentityIdView: View {
+    let identityId: Data
+    /// Called once the value is on the pasteboard, for a host that shows its
+    /// own confirmation. Without one the button acknowledges the copy itself.
+    var onCopy: (() -> Void)? = nil
+
+    @State private var didCopy = false
+
+    private var base58: String { identityId.toBase58String() }
+
+    var body: some View {
+        VStack(spacing: 2) {
+            Text(NSLocalizedString("Identity ID", comment: "DashPay Contacts"))
+                .font(.system(size: 12))
+                .foregroundColor(.dash.tertiaryText)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(base58)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(.dash.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .textSelection(.enabled)
+                Image(systemName: didCopy ? "checkmark" : "doc.on.doc")
+                    .font(.system(size: 11))
+                    .foregroundColor(.dash.tertiaryText)
+            }
+        }
+        .padding(.horizontal, 32)
+        .contentShape(Rectangle())
+        .onTapGesture { copyToPasteboard() }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
+    }
+
+    private func copyToPasteboard() {
+        UIPasteboard.general.string = base58
+        if let onCopy {
+            onCopy()
+            return
+        }
+        withAnimation { didCopy = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation { didCopy = false }
+        }
+    }
+}
