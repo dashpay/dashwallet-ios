@@ -32,14 +32,14 @@ struct TransferTimingSheet: View {
                         SheetFeature(
                             title: NSLocalizedString("From Dash Wallet to Shielded balance", comment: "Payments"),
                             description: NSLocalizedString("The transfer is instant", comment: "Payments"),
-                            icon: .custom("feature-instant", bundle: .dashUIKit),
+                            icon: DashIcon.Features.instant.source,
                             iconColor: .dash.yellow
                         )
 
                         SheetFeature(
                             title: NSLocalizedString("From Shielded balance to Dash Wallet", comment: "Payments"),
                             description: NSLocalizedString("The transfer could take up to 10 minutes", comment: "Payments"),
-                            icon: .custom("feature-timer-purple", bundle: .dashUIKit)
+                            icon: DashIcon.Features.timerPurple.source
                         )
                     }
                 }
