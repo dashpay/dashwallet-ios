@@ -570,17 +570,33 @@ final class InternalTransferViewModel: ObservableObject {
 
     /// Drives the one-time restore gate reactively. A normal catch-up may set
     /// this to false, but it only blocks while the recovery marker is active.
-    @Published private(set) var isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
+    ///
+    /// Seeded from the monitor in `init()` rather than here: a property default
+    /// runs in EVERY initializer, and the preview initializer must not spin up
+    /// the sync monitor singleton.
+    @Published private(set) var isChainSynced = false
 
     private var cancellables = Set<AnyCancellable>()
 
+    #if DEBUG
+    /// True only for `makeForPreview` instances. They never registered with the
+    /// sync monitor, so `deinit` must not reach for that singleton to
+    /// unregister — building it inside a preview process starts reachability
+    /// and SPV observation this instance never wanted.
+    private var isPreviewInstance = false
+    #endif
+
     deinit {
+        #if DEBUG
+        if isPreviewInstance { return }
+        #endif
         // The monitor holds observers strongly — remove or leak the VM.
         SyncingActivityMonitor.shared.remove(observer: self)
     }
 
     init() {
         SyncingActivityMonitor.shared.add(observer: self)
+        isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
         coreBalanceDuffs = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
         platformCredits = PlatformAddressSyncCoordinator.shared.platformBalance
@@ -620,6 +636,75 @@ final class InternalTransferViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
+
+    #if DEBUG
+    /// Lightweight initializer used only by SwiftUI previews. Assigns the
+    /// balances and the endpoint selection directly and skips the wallet /
+    /// sync / preflight wiring the real `init()` sets up.
+    ///
+    /// Property observers do not fire during initialization, so assigning the
+    /// endpoints here also skips `routeDidChange()` — no preflight task is
+    /// started and no SwiftData note read happens.
+    private init(
+        previewSource: ChainNetwork,
+        previewTarget: ChainNetwork,
+        previewSendFrom: ChainNetwork?,
+        previewReceiveInto: ChainNetwork?,
+        previewAmountText: String,
+        previewCoreDuffs: UInt64,
+        previewPlatformCredits: UInt64,
+        previewShieldedCredits: UInt64,
+        previewIsChainSynced: Bool
+    ) {
+        isPreviewInstance = true
+        source = previewSource
+        sendTarget = previewTarget
+        receiveSource = previewSource
+        sendSource = previewSendFrom
+        receiveTarget = previewReceiveInto
+        amountText = previewAmountText
+        coreBalanceDuffs = previewCoreDuffs
+        // No fee reserve to subtract without a wallet — previews want the
+        // whole balance to read as spendable so Max and Continue behave.
+        coreSpendableDuffs = previewCoreDuffs
+        platformCredits = previewPlatformCredits
+        shieldedBalance = previewShieldedCredits
+        isChainSynced = previewIsChainSynced
+    }
+
+    /// Preview view model with stubbed balances.
+    ///
+    /// Balances are in their published units: Core in duffs (1e8 per DASH),
+    /// Platform and Shielded in credits (1e11 per DASH). Defaults are
+    /// 2.45 / 1.2 / 0.785 DASH.
+    ///
+    /// Routes that spend the shielded pool (and `.coreToShielded`) ask the
+    /// SDK for a fee estimate while rendering; without a wallet those return
+    /// `nil` and the screen falls back to its "fee unavailable" state. Pick a
+    /// `.coreToPlatform` pair to preview an enabled Continue button.
+    static func makeForPreview(
+        source: ChainNetwork = .core,
+        target: ChainNetwork = .platform,
+        sendFrom: ChainNetwork? = nil,
+        receiveInto: ChainNetwork? = nil,
+        amountText: String = "0",
+        coreDuffs: UInt64 = 245_000_000,
+        platformCredits: UInt64 = 120_000_000_000,
+        shieldedCredits: UInt64 = 78_500_000_000,
+        isChainSynced: Bool = true
+    ) -> InternalTransferViewModel {
+        InternalTransferViewModel(
+            previewSource: source,
+            previewTarget: target,
+            previewSendFrom: sendFrom,
+            previewReceiveInto: receiveInto,
+            previewAmountText: amountText,
+            previewCoreDuffs: coreDuffs,
+            previewPlatformCredits: platformCredits,
+            previewShieldedCredits: shieldedCredits,
+            previewIsChainSynced: isChainSynced)
+    }
+    #endif
 
     /// Fee kind for the pool-spending routes; `nil` for every other route.
     private func shieldedFeeKind(for route: InternalTransferRoute) -> PlatformWalletManager.ShieldedFeeKind? {

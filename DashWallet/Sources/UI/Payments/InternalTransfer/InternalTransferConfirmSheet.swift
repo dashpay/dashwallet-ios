@@ -935,3 +935,149 @@ struct ShieldedSubmittedUnconfirmedView: View {
         }
     }
 }
+
+#if DEBUG
+
+// MARK: - Previews
+
+/// The sheet owns its coordinator and `phase` is `private(set)`, so previews
+/// can only reach the idle summary. The in-flight, success and failure bodies
+/// are previewed through `ShieldedTransferStepList` and
+/// `ShieldedSubmittedUnconfirmedView` below.
+///
+/// Network-fee and total rows ask the SDK to price the route; without a wallet
+/// those return `nil` and the rows render "—". `.coreToPlatform` prices from a
+/// constant, so it is the route to use when the fee row itself matters.
+private func confirmSheetSample(
+    route: InternalTransferRoute,
+    dash: Decimal = 0.5,
+    withdrawalFeeCredits: UInt64? = nil,
+    isFullPlatformWithdrawal: Bool = false,
+    isFullShieldedSweep: Bool = false
+) -> some View {
+    let duffs = Int64(truncating: NSDecimalNumber(decimal: dash * 100_000_000))
+    return InternalTransferConfirmSheet(
+        route: route,
+        dashDuffs: duffs,
+        amountDuffsUnsigned: UInt64(duffs),
+        creditsAmount: UInt64(duffs) * 1000,
+        fiatText: "$32.75",
+        withdrawalFeeCredits: withdrawalFeeCredits,
+        isFullPlatformWithdrawal: isFullPlatformWithdrawal,
+        isFullShieldedSweep: isFullShieldedSweep,
+        platformShieldAmountWasMax: false,
+        onCancel: {},
+        onCompleted: {},
+        onPlatformShieldCapacityChanged: { _, _ in })
+}
+
+@available(iOS 17, *)
+#Preview("Core → Platform") {
+    confirmSheetSample(route: .coreToPlatform)
+}
+
+@available(iOS 17, *)
+#Preview("Core → Shielded") {
+    confirmSheetSample(route: .coreToShielded)
+}
+
+@available(iOS 17, *)
+#Preview("Shielded → Core · sweep") {
+    confirmSheetSample(route: .shieldedToCore, isFullShieldedSweep: true)
+}
+
+/// Full-balance withdrawal: the fee is already netted out of the payout, and
+/// the preflight fee is the only one the sheet can show.
+@available(iOS 17, *)
+#Preview("Platform → Core · full") {
+    confirmSheetSample(
+        route: .platformToCore,
+        withdrawalFeeCredits: 1_240_000,
+        isFullPlatformWithdrawal: true)
+}
+
+@available(iOS 17, *)
+#Preview("Dark") {
+    confirmSheetSample(route: .coreToPlatform)
+        .preferredColorScheme(.dark)
+}
+
+/// Presented the way the screen presents it — verifies the drag handle and the
+/// `.large` detent, which the bare-content previews above can't show.
+@available(iOS 17, *)
+#Preview("As a sheet") {
+    Color.dash.primaryBackground
+        .ignoresSafeArea()
+        .sheet(isPresented: .constant(true)) {
+            confirmSheetSample(route: .coreToPlatform)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.hidden)
+        }
+}
+
+// MARK: Step list
+
+private let shieldedSteps: [ShieldedTransferStepList.Step] = [
+    .init(label: "Signing", phase: .signing),
+    .init(label: "Locking funds", phase: .locking),
+    .init(label: "Generating proof", phase: .proving),
+    .init(label: "Broadcasting", phase: .broadcasting),
+]
+
+private func stepListSample(_ phase: ShieldedTransferCoordinator.Phase) -> some View {
+    ShieldedTransferStepList(currentPhase: phase, steps: shieldedSteps)
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.dash.primaryBackground)
+}
+
+/// Every position in the ordering — pending, first active, mid-run, and all
+/// complete — side by side, since the row states are derived rather than set.
+@available(iOS 17, *)
+#Preview("Steps · idle") {
+    stepListSample(.idle)
+}
+
+@available(iOS 17, *)
+#Preview("Steps · signing") {
+    stepListSample(.signing)
+}
+
+@available(iOS 17, *)
+#Preview("Steps · proving") {
+    stepListSample(.proving)
+}
+
+@available(iOS 17, *)
+#Preview("Steps · success") {
+    stepListSample(.success)
+}
+
+/// Positional init — the CoinJoin → Shielded flow's extra sweep leg, whose
+/// stages have no coordinator phase.
+@available(iOS 17, *)
+#Preview("Steps · positional") {
+    ShieldedTransferStepList(
+        labels: ["Sweeping CoinJoin funds", "Signing", "Generating proof", "Broadcasting"],
+        currentIndex: 1)
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.dash.primaryBackground)
+}
+
+// MARK: Submitted-unconfirmed terminal state
+
+@available(iOS 17, *)
+#Preview("Submitted — confirming") {
+    ShieldedSubmittedUnconfirmedView(onDone: {})
+        .background(Color.dash.primaryBackground)
+}
+
+@available(iOS 17, *)
+#Preview("Submitted — large type") {
+    ShieldedSubmittedUnconfirmedView(onDone: {})
+        .background(Color.dash.primaryBackground)
+        .environment(\.dynamicTypeSize, .accessibility1)
+}
+
+#endif

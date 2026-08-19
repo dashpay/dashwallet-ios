@@ -37,3 +37,46 @@ struct TransferAmountValidationNote: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
+
+#if DEBUG
+
+/// The real messages, since wrapping is the whole risk here: the triangle is
+/// baseline-aligned to the first line and must not drift on a two-line note.
+private let shortValidationMessage = "You don't have that much Transparent balance."
+private let longValidationMessage = """
+    You don't have that much Shielded balance. Transfers from the shielded pool \
+    also reserve a fee, so the most you can send right now is 0.78412 DASH.
+    """
+
+@available(iOS 17, *)
+#Preview("Short") {
+    TransferAmountValidationNote(message: shortValidationMessage)
+        .padding(20)
+        .background(Color.dash.primaryBackground)
+}
+
+@available(iOS 17, *)
+#Preview("Wrapping") {
+    TransferAmountValidationNote(message: longValidationMessage)
+        .padding(20)
+        .background(Color.dash.primaryBackground)
+}
+
+@available(iOS 17, *)
+#Preview("Dark") {
+    TransferAmountValidationNote(message: longValidationMessage)
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.dash.primaryBackground)
+        .preferredColorScheme(.dark)
+}
+
+@available(iOS 17, *)
+#Preview("Large type") {
+    TransferAmountValidationNote(message: longValidationMessage)
+        .padding(20)
+        .background(Color.dash.primaryBackground)
+        .environment(\.dynamicTypeSize, .accessibility1)
+}
+
+#endif

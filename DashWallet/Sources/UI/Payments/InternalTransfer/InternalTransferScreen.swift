@@ -278,6 +278,98 @@ struct InternalTransferScreen: View {
     }
 }
 
+#if DEBUG
+
+/// Previews run without a wallet, so anything the SDK has to price is
+/// unavailable: the pool-fee routes (`.coreToShielded`) and the shielded
+/// reverse routes render their "fee unavailable" validation note instead of an
+/// enabled Continue. `.core → .platform` needs no estimate, so that pair is the
+/// default here and the one to use when previewing an enabled action button.
+@MainActor
+private func transferScreenSample(
+    source: ChainNetwork = .core,
+    target: ChainNetwork = .platform,
+    amountText: String = "0",
+    sendFrom: ChainNetwork? = nil,
+    receiveInto: ChainNetwork? = nil,
+    showsHeader: Bool = true,
+    isChainSynced: Bool = true
+) -> some View {
+    InternalTransferScreen(
+        viewModel: .makeForPreview(
+            source: source,
+            target: target,
+            sendFrom: sendFrom,
+            receiveInto: receiveInto,
+            amountText: amountText,
+            isChainSynced: isChainSynced),
+        showsHeader: showsHeader,
+        receiveInto: receiveInto,
+        sendFrom: sendFrom)
+}
+
+@available(iOS 17, *)
+#Preview("Standalone · empty") {
+    transferScreenSample()
+}
+
+/// Amount entered and affordable: the "You will transfer" line appears and
+/// Continue is enabled.
+@available(iOS 17, *)
+#Preview("Standalone · valid amount") {
+    transferScreenSample(amountText: "0.5")
+}
+
+/// Above the 2.45 DASH preview balance — the inline insufficient-balance note
+/// replaces the transfer preview and Continue stays disabled.
+@available(iOS 17, *)
+#Preview("Standalone · over balance") {
+    transferScreenSample(amountText: "9.5")
+}
+
+/// A restored wallet still syncing blocks the Core-funded routes only.
+@available(iOS 17, *)
+#Preview("Sync gate") {
+    transferScreenSample(amountText: "0.5", isChainSynced: false)
+}
+
+/// Send-sheet embedding: source pinned, host draws its own title.
+@available(iOS 17, *)
+#Preview("Send sheet · no header") {
+    transferScreenSample(
+        source: .core,
+        amountText: "0.5",
+        sendFrom: .core,
+        showsHeader: false)
+}
+
+/// Receive-sheet embedding: destination pinned at the bottom.
+@available(iOS 17, *)
+#Preview("Receive sheet · no header") {
+    transferScreenSample(
+        source: .core,
+        target: .platform,
+        amountText: "0.5",
+        receiveInto: .platform,
+        showsHeader: false)
+}
+
+@available(iOS 17, *)
+#Preview("Dark") {
+    transferScreenSample(amountText: "0.5")
+        .preferredColorScheme(.dark)
+}
+
+/// The form scrolls above the pinned keypad — at accessibility sizes the
+/// action button must stay reachable rather than being pushed off screen.
+@available(iOS 17, *)
+#Preview("Large type") {
+    transferScreenSample(amountText: "0.5")
+        .environment(\.dynamicTypeSize, .accessibility1)
+}
+
+#endif
+
 
 
 

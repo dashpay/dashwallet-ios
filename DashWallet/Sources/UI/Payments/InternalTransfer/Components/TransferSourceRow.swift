@@ -104,3 +104,80 @@ struct TransferSourceRow: View {
         }
     }
 }
+
+#if DEBUG
+
+/// One row per trailing treatment, on the background the screen actually puts
+/// them on — the selection border only reads correctly against it.
+private func sourceRowGallery(
+    balance: String = "2.45",
+    title: String = "Transparent"
+) -> some View {
+    VStack(spacing: 8) {
+        TransferSourceRow(
+            iconSystemName: "d.circle.fill",
+            caption: "From",
+            title: title,
+            balanceTrailing: TransferSourceRow.dashBalanceTrailing(balance),
+            selected: true,
+            action: {})
+
+        TransferSourceRow(
+            iconSystemName: "creditcard.fill",
+            caption: "From",
+            title: "Platform",
+            balanceTrailing: TransferSourceRow.dashBalanceTrailing("1.2"),
+            selected: false,
+            action: {})
+
+        TransferSourceRow(
+            iconSystemName: "shield.fill",
+            caption: "To",
+            title: "Shielded",
+            balanceTrailing: TransferSourceRow.dashBalanceTrailing("0.785"),
+            selected: false,
+            showsRadio: false,
+            action: {})
+
+        TransferSourceRow(
+            iconSystemName: "d.circle.fill",
+            caption: "From",
+            title: title,
+            balanceTrailing: TransferSourceRow.dashBalanceTrailing(balance),
+            selected: false,
+            showsRadio: false,
+            showsChevron: true,
+            action: {})
+    }
+    .padding(20)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Color.dash.primaryBackground)
+}
+
+@available(iOS 17, *)
+#Preview("Variants") {
+    sourceRowGallery()
+}
+
+@available(iOS 17, *)
+#Preview("Dark") {
+    sourceRowGallery()
+        .preferredColorScheme(.dark)
+}
+
+/// A 5-fraction-digit balance next to a long balance name is the widest the
+/// row ever gets — the title must shrink or truncate before the amount does.
+@available(iOS 17, *)
+#Preview("Widest content") {
+    sourceRowGallery(balance: "123.45678", title: "Transparent balance")
+}
+
+/// The caption/title column stacks at accessibility sizes; the balance and the
+/// radio must stay on the same line as the icon.
+@available(iOS 17, *)
+#Preview("Large type") {
+    sourceRowGallery()
+        .environment(\.dynamicTypeSize, .accessibility1)
+}
+
+#endif

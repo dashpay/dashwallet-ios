@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 /// "You will transfer ~ N" under the form, shown once the amount is valid.
 ///
@@ -45,11 +46,35 @@ struct TransferPreview: View {
 
 #if DEBUG
 
+private func transferPreviewSample(_ amount: String) -> some View {
+    TransferPreview(amountFormatted: amount)
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(Color.dash.primaryBackground)
+}
+
 @available(iOS 17, *)
 #Preview {
-    TransferPreview(amountFormatted: "0.0125")
-        .padding()
-        .background(Color.dash.primaryBackground)
+    transferPreviewSample("0.0125")
+}
+
+/// Full 8-digit precision — the amount and the Dash glyph stay centred as one
+/// unit rather than the glyph being pushed off the trailing edge.
+@available(iOS 17, *)
+#Preview("Full precision") {
+    transferPreviewSample("123.45678901")
+}
+
+@available(iOS 17, *)
+#Preview("Dark") {
+    transferPreviewSample("0.0125")
+        .preferredColorScheme(.dark)
+}
+
+@available(iOS 17, *)
+#Preview("Large type") {
+    transferPreviewSample("0.0125")
+        .environment(\.dynamicTypeSize, .accessibility1)
 }
 
 #endif

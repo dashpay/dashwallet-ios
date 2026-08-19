@@ -16,6 +16,7 @@
 //
 
 import SwiftUI
+import DashUIKit
 
 /// The From / To endpoint cards, in whichever of the three shapes the host
 /// asked for.
@@ -224,3 +225,72 @@ struct TransferEndpointCards: View {
         ChainNetwork.allCases.filter { $0 != target }
     }
 }
+
+#if DEBUG
+
+@MainActor
+private func endpointCardsSample(
+    sendFrom: ChainNetwork? = nil,
+    receiveInto: ChainNetwork? = nil,
+    source: ChainNetwork = .core,
+    target: ChainNetwork = .platform
+) -> some View {
+    TransferEndpointCards(
+        viewModel: .makeForPreview(
+            source: source,
+            target: target,
+            sendFrom: sendFrom,
+            receiveInto: receiveInto),
+        sendFrom: sendFrom,
+        receiveInto: receiveInto)
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.dash.primaryBackground)
+}
+
+/// The standalone screen: two collapsed cards, each opening a picker sheet.
+/// Tapping one in the canvas presents the real sheet.
+@available(iOS 17, *)
+#Preview("Standalone · collapsed") {
+    endpointCardsSample()
+}
+
+/// Send sheet: the From card is pinned, the To rows are the picker.
+@available(iOS 17, *)
+#Preview("Send · from Transparent") {
+    endpointCardsSample(sendFrom: .core, source: .core, target: .shielded)
+}
+
+@available(iOS 17, *)
+#Preview("Send · from Shielded") {
+    endpointCardsSample(sendFrom: .shielded, source: .shielded, target: .core)
+}
+
+/// Receive sheet: the To card is pinned at the bottom, the From rows above it.
+@available(iOS 17, *)
+#Preview("Receive · into Shielded") {
+    endpointCardsSample(receiveInto: .shielded, source: .core, target: .shielded)
+}
+
+@available(iOS 17, *)
+#Preview("Dark") {
+    endpointCardsSample(sendFrom: .core, source: .core, target: .shielded)
+        .preferredColorScheme(.dark)
+}
+
+/// A zero balance still has to render an amount, not an empty trailing slot.
+@available(iOS 17, *)
+#Preview("Empty balances") {
+    TransferEndpointCards(
+        viewModel: .makeForPreview(
+            coreDuffs: 0,
+            platformCredits: 0,
+            shieldedCredits: 0),
+        sendFrom: nil,
+        receiveInto: nil)
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.dash.primaryBackground)
+}
+
+#endif

@@ -76,6 +76,46 @@ final class PaymentsLandingViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
+    #if DEBUG
+    /// Lightweight initializer used only by SwiftUI previews: takes the
+    /// addresses as literals instead of reading them from the wallet, and
+    /// subscribes to nothing.
+    private init(
+        previewActiveTab: PaymentsLandingTab,
+        previewNetwork: ChainNetwork,
+        previewVisibleTabs: [PaymentsLandingTab],
+        previewCoreAddress: String?,
+        previewPlatformAddress: String?,
+        previewShieldedAddress: String?
+    ) {
+        activeTab = previewActiveTab
+        network = previewNetwork
+        visibleTabs = previewVisibleTabs
+        coreAddress = previewCoreAddress
+        platformAddress = previewPlatformAddress
+        shieldedAddress = previewShieldedAddress
+    }
+
+    /// Preview view model. Pass `nil` for an address to preview that
+    /// network's placeholder state instead of the QR card.
+    static func makeForPreview(
+        activeTab: PaymentsLandingTab = .internalTransfer,
+        network: ChainNetwork = .core,
+        visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
+        coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
+        platformAddress: String? = "XmQ4rT7bN2vK9sD5xF8jH3kL6pW1aZcYuE",
+        shieldedAddress: String? = nil
+    ) -> PaymentsLandingViewModel {
+        PaymentsLandingViewModel(
+            previewActiveTab: activeTab,
+            previewNetwork: network,
+            previewVisibleTabs: visibleTabs,
+            previewCoreAddress: coreAddress,
+            previewPlatformAddress: platformAddress,
+            previewShieldedAddress: shieldedAddress)
+    }
+    #endif
+
     var currentAddress: String? {
         switch network {
         case .core: return coreAddress
