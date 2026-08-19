@@ -81,6 +81,12 @@ class MainTabbarController: UITabBarController {
     private var paymentIsOpened = false
 
     weak var homeController: HomeViewController?
+    /// Root of the payments tab. Held so shortcut entry points can put it on
+    /// the right sub-tab before selecting it. Rebuilt by
+    /// `configureControllers()`, which also refreshes `paymentsTabIndex` —
+    /// the DashPay layout inserts tabs before this one.
+    private weak var paymentsTabRootController: PaymentsTabRootController?
+    private var paymentsTabIndex: Int?
     weak var menuNavigationController: MainMenuViewController?
 
     #if DASHPAY
@@ -205,14 +211,21 @@ extension MainTabbarController {
         }
         #endif
 
-        // Payment (tapping this tab opens the payment modal instead of switching tabs)
+        // Payment. A real tab, not a modal: the landing is where the send /
+        // receive / transfer flows start, and the tab bar stays visible on it.
+        // The screens it pushes set `hidesBottomBarWhenPushed`, so the bar is
+        // gone from the first step that asks for an amount.
         let paymentImage = Self.makePaymentTabImage()
         item = UITabBarItem(title: nil, image: paymentImage, selectedImage: paymentImage)
         item.imageInsets = UIEdgeInsets(top: 6, left: 0, bottom: -6, right: 0)
         item.accessibilityIdentifier = "tabbar_payments_button"
 
-        let paymentVC = EmptyController()
+        let paymentsRoot = PaymentsTabRootController()
+        paymentsTabRootController = paymentsRoot
+        let paymentVC = BaseNavigationController(rootViewController: paymentsRoot)
+        paymentVC.isNavigationBarHidden = true
         paymentVC.tabBarItem = item
+        paymentsTabIndex = viewControllers.count
         viewControllers.append(paymentVC)
         
         #if DASHPAY
@@ -485,12 +498,22 @@ extension MainTabbarController: HomeViewControllerDelegate {
     func showPaymentsController(withActivePage pageIndex: PaymentsViewControllerState) {
         switch pageIndex {
         case .receive:
-            presentPaymentsLandingScreen(activeTab: .receive)
+            selectPaymentsTab(activeTab: .receive)
         case .enterAddress:
             presentSendToAddressScreen()
         case .pay, .none:
-            presentPaymentsLandingScreen(activeTab: .send)
+            selectPaymentsTab(activeTab: .send)
         }
+    }
+
+    /// Every shortcut and menu entry into payments lands on the payments tab
+    /// rather than presenting a copy of it. Unwinds whatever that tab was left
+    /// showing, so an entry point always starts at the destination picker.
+    private func selectPaymentsTab(activeTab: PaymentsLandingTab) {
+        guard let paymentsTabIndex, let root = paymentsTabRootController else { return }
+        root.navigationController?.popToRootViewController(animated: false)
+        root.select(tab: activeTab)
+        selectedIndex = paymentsTabIndex
     }
 
     /// The "Send to Address" shortcut skips the payments landing: straight
@@ -571,12 +594,7 @@ extension MainTabbarController: HomeViewControllerDelegate {
 
 extension MainTabbarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-        if viewController is EmptyController {
-            showPaymentsController(withActivePage: .none)
-            return false
-        }
-
-        return true
+        true
     }
 }
 

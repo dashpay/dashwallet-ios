@@ -22,6 +22,17 @@ final class InternalTransferHostingController: UIViewController {
         viewModel.amountText = "\(prefillDashAmount)"
     }
 
+    /// Opens the form with `target` already selected as the To endpoint —
+    /// the payments landing's Internal card picks where a transfer is headed
+    /// before any amount is typed.
+    ///
+    /// Preselected, not pinned: both cards stay pickers, and the view model
+    /// moves the From side off `target` if that is where it currently sits.
+    convenience init(transferTo target: ChainNetwork) {
+        self.init(nibName: nil, bundle: nil)
+        viewModel.selectStandaloneTarget(target)
+    }
+
     private lazy var hostingController: UIHostingController<InternalTransferScreen> = {
         let screen = InternalTransferScreen(viewModel: viewModel) { [weak self] in
             // After a successful transfer the user taps "Done" inside the

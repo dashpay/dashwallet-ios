@@ -41,6 +41,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
                     viewModel: self.embeddedSendViewModel,
                     onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
             },
+            onInternalTransfer: { [weak self] target in self?.pushInternalTransfer(to: target) },
+            onSendToAddress: { [weak self] in self?.pushSendToAddress() },
             showsHeader: showsHeader)
         return UIHostingController(rootView: screen)
     }()
@@ -196,11 +198,11 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     // MARK: - Actions
 
+    /// Copies only. The "Copied" toast is drawn by the SwiftUI screen — this
+    /// controller has no view of its own to hang it on that isn't behind the
+    /// tab bar.
     private func copyCurrentAddress() {
         viewModel.copyCurrentAddressToPasteboard()
-        view.dw_showInfoHUD(
-            withText: NSLocalizedString("Copied", comment: ""),
-            offsetForNavBar: false)
     }
 
     private func shareCurrentAddress() {
@@ -214,7 +216,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private func pushSpecifyAmount() {
         let specify = SpecifyAmountViewController.controller()
         specify.delegate = self
-        navigationController?.pushViewController(specify, animated: true)
+        pushWithoutTabBar(specify)
     }
 
     /// The base class routes a scanned payment straight into the payment
@@ -234,6 +236,32 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// First-ever visit to the free-form Internal tab: explain transfer
     /// timing before the user composes a transfer. The form is already
     /// embedded underneath; "I got it" (not the X) acknowledges for good.
+    /// Puts the landing on `tab` without rebuilding it — the tab-bar entry
+    /// points select this controller rather than presenting a copy.
+    func select(tab: PaymentsLandingTab) {
+        viewModel.activeTab = tab
+    }
+
+    /// Internal card → the transfer form, on this controller's own navigation
+    /// stack so the user stays inside the payments tab.
+    private func pushInternalTransfer(to target: ChainNetwork) {
+        let controller = InternalTransferHostingController(transferTo: target)
+        pushWithoutTabBar(controller)
+    }
+
+    /// Send card → the address-entry form. Pushed rather than embedded: the
+    /// landing's Send tab is now the destination picker, not the form.
+    private func pushSendToAddress() {
+        pushWithoutTabBar(SendScreenViewController())
+    }
+
+    /// The landing keeps the tab bar; everything it pushes is a step in a
+    /// flow and takes the whole screen.
+    private func pushWithoutTabBar(_ controller: UIViewController) {
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
+    }
+
     private func presentTransferTimingSheetIfNeeded() {
         guard !UserDefaults.standard.bool(forKey: Self.shieldedBalanceTimingShownKey),
               presentedViewController == nil

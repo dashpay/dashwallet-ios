@@ -9,7 +9,6 @@ import UIKit
 
 struct PaymentsLandingScreen: View {
     @ObservedObject var viewModel: PaymentsLandingViewModel
-    @Environment(\.colorScheme) private var colorScheme
 
     var onClose: () -> Void
     var onCopyAddress: () -> Void
@@ -36,210 +35,348 @@ struct PaymentsLandingScreen: View {
     /// The Send tab's address is valid → advance to the amount step. The host
     /// pushes `ExternalSendAmountScreen` onto the landing's navigation stack.
     var onSendContinue: () -> Void = {}
+    /// A destination picked on the Internal tab's card — the host pushes the
+    /// transfer form with that balance preselected as the To endpoint.
+    var onInternalTransfer: (ChainNetwork) -> Void = { _ in }
+    /// "Send to address" on the Send tab's card — the host pushes the send
+    /// form. (Its sibling row routes through `onScanQR`.)
+    var onSendToAddress: () -> Void = {}
     /// False for the balance-row receive/send sheets: their grabber + hero
     /// selector are the top chrome — no X close button or title row.
     var showsHeader: Bool = true
 
+    /// Raised by the Receive tab's copy button. Lives here rather than in
+    /// `PaymentsReceiveContent` so the toast floats over the whole screen —
+    /// inside that subtree it would be pinned above the action buttons.
+    @State private var showsCopiedToast = false
+    /// Which way the last tab change moved along `visibleTabs`, so the
+    /// incoming content slides in from the side it came from.
+    @State private var slidesForward = true
+
+    private enum Layout {
+        /// Gap under the tab selector before the landing's own picker card.
+        static let pickerTopPadding: CGFloat = 20
+        /// Tighter for the balance-row sheets: the form they embed needs the
+        /// vertical room for its amount row, endpoint cards and keypad.
+        static let embeddedFormTopPadding: CGFloat = 12
+        /// Far enough that a tap that drifts, or a vertical flick, is not read
+        /// as a tab change.
+        static let swipeMinimumDistance: CGFloat = 24
+        /// Matches the selector pill's own spring (`SegmentedControlLayout`),
+        /// so the pill and the content travel together.
+        static let slideResponse: Double = 0.3
+        static let slideDamping: Double = 0.7
+    }
+
+    /// Who the screen is drawing for. The payments tab shows pickers; the
+    /// balance-row sheets hand one pinned endpoint to a whole embedded form
+    /// instead. Resolved once here rather than re-derived per tab, so the
+    /// spacing and the content can never disagree about which one it is.
+    private enum Mode {
+        /// The payments tab: every tab opens on a destination card.
+        case picker
+        /// Balance-row send sheet — the tapped balance is the source.
+        case sendingFrom(ChainNetwork)
+        /// Balance-row receive sheet — the receive toggle's balance is the
+        /// destination, kept in lockstep by the hosting controller.
+        case receivingInto
+    }
+
+    private var mode: Mode {
+        if let transferSendFrom { return .sendingFrom(transferSendFrom) }
+        if transferReceivePinned { return .receivingInto }
+        return .picker
+    }
+
+    private var isPickerMode: Bool {
+        if case .picker = mode { return true }
+        return false
+    }
+
     var body: some View {
-        // Tighter chrome when a tab embeds a full form (transfer or send) —
-        // its amount + cards + keypad need most of the sheet.
-        let isEmbeddedForm = viewModel.activeTab != .receive
-        VStack(alignment: .center, spacing: isEmbeddedForm ? 12 : 20) {
+        VStack(alignment: .center, spacing: 0) {
             if showsHeader {
                 header
             }
 
-            tabSelector
-                .padding(.horizontal, 20)
-                .padding(.top, showsHeader ? 0 : 12)
+            PaymentsTabSelector(
+                tabs: viewModel.visibleTabs,
+                selection: tabSelection
+            )
+            .frame(height: 70)
 
-            switch viewModel.activeTab {
-            case .receive:
-                receiveContent
-                Spacer()
-            case .internalTransfer:
-                if let sendFrom = transferSendFrom {
-                    // Send sheet: the From card is pinned by the tapped
-                    // balance; the To rows pick the destination.
-                    InternalTransferScreen(
-                        viewModel: embeddedTransferViewModel,
-                        onCompleted: onTransferCompleted,
-                        showsHeader: false,
-                        sendFrom: sendFrom)
-                } else if transferReceivePinned {
-                    // The hosting controller keeps the pinned route in
-                    // lockstep with the receive toggle (its `$network`
-                    // subscription), so the fixed To card and the executed
-                    // transfer can never disagree.
-                    InternalTransferScreen(
-                        viewModel: embeddedTransferViewModel,
-                        onCompleted: onTransferCompleted,
-                        showsHeader: false,
-                        receiveInto: viewModel.network)
-                } else {
-                    // Full landing: the transfer form itself, free From and
-                    // To pickers — no intermediate action-row step.
-                    InternalTransferScreen(
-                        viewModel: embeddedTransferViewModel,
-                        onCompleted: onTransferCompleted,
-                        showsHeader: false)
+            // ZStack, not a plain sibling: during the slide both the outgoing
+            // and incoming tab exist, and they have to share one slot instead
+            // of stacking and shoving the layout.
+            ZStack(alignment: .top) {
+                tabContent
+                    .id(viewModel.activeTab)
+                    .transition(slide)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+        }
+        .background(Color.dash.primaryBackground)
+        // Makes the empty area below the card draggable too, so the swipe
+        // works on the whole screen rather than only over the content.
+        .contentShape(Rectangle())
+        // `.gesture` (not `highPriority`) so rows and buttons keep winning
+        // their taps. `including:` is how the gesture is switched off — the
+        // modifier has no nil overload.
+        .gesture(tabSwipe, including: isPickerMode ? .all : .subviews)
+        .navigationBarHidden(true)
+        .transientToast(
+            isPresented: $showsCopiedToast,
+            style: .copied,
+            message: NSLocalizedString("Copied", comment: ""))
+    }
+
+    // MARK: - Swipe between tabs
+
+    /// A horizontal swipe anywhere on the screen moves the selector one tab,
+    /// the way the segmented control above it implies it should.
+    ///
+    /// Off in the balance-row sheets (`including: .subviews` above): there a
+    /// tab is a whole form with a keypad, and paging away mid-entry would drop
+    /// what the user typed. The picker tabs have nothing to lose and no scroll
+    /// view of their own to fight over the gesture.
+    private var tabSwipe: some Gesture {
+        DragGesture(minimumDistance: Layout.swipeMinimumDistance)
+            .onEnded { value in
+                // Ignore a mostly-vertical drag, so a flick down the screen
+                // doesn't change tab on its horizontal wobble.
+                guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                selectTab(offsetBy: value.translation.width < 0 ? 1 : -1)
+            }
+    }
+
+    /// Moves `offset` tabs along `visibleTabs`, stopping at either end rather
+    /// than wrapping — the selector shows the whole list, so wrapping would
+    /// read as the pill teleporting.
+    private func selectTab(offsetBy offset: Int) {
+        let tabs = viewModel.visibleTabs
+        guard let current = tabs.firstIndex(of: viewModel.activeTab) else { return }
+        let target = current + offset
+        guard tabs.indices.contains(target) else { return }
+
+        select(tabs[target])
+    }
+
+    /// Everything that changes the tab goes through here, including the
+    /// selector's own taps and drag — the content slides in from whichever
+    /// side the new tab sits on, and only this knows which side that is.
+    private var tabSelection: Binding<PaymentsLandingTab> {
+        Binding(
+            get: { viewModel.activeTab },
+            set: { select($0) })
+    }
+
+    private func select(_ tab: PaymentsLandingTab) {
+        let tabs = viewModel.visibleTabs
+        guard let from = tabs.firstIndex(of: viewModel.activeTab),
+              let to = tabs.firstIndex(of: tab),
+              from != to
+        else { return }
+
+        slidesForward = to > from
+        withAnimation(.spring(response: Layout.slideResponse,
+                              dampingFraction: Layout.slideDamping)) {
+            viewModel.activeTab = tab
+        }
+    }
+
+    /// Matches the direction of travel: going right, the new tab enters from
+    /// the right and the old one leaves to the left.
+    private var slide: AnyTransition {
+        .asymmetric(
+            insertion: .move(edge: slidesForward ? .trailing : .leading),
+            removal: .move(edge: slidesForward ? .leading : .trailing))
+    }
+
+    /// Wraps a picker card as ONE view: spaced off the selector and pinned to
+    /// the top. The Spacer has to live inside the branch — as a sibling in the
+    /// outer stack it would not travel with the card, and the slide would tear
+    /// the two apart.
+    private func pickerLayout<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        VStack(spacing: 0) {
+            content()
+                .padding(.top, Layout.pickerTopPadding)
+            Spacer(minLength: 0)
+        }
+    }
+
+    // MARK: - Tab content
+
+    /// Each branch owns the gap under the selector, because the two kinds of
+    /// content want different ones — a picker card breathes, an embedded form
+    /// needs the pixels for its keypad.
+    @ViewBuilder
+    private var tabContent: some View {
+        switch viewModel.activeTab {
+        case .receive:
+            pickerLayout {
+                PaymentsReceiveContent(
+                    viewModel: viewModel,
+                    onCopyAddress: {
+                        onCopyAddress()
+                        showsCopiedToast = true
+                    },
+                    onShareAddress: onShareAddress,
+                    onSpecifyAmount: onSpecifyAmount)
+            }
+
+        case .internalTransfer:
+            switch mode {
+            case .picker:
+                pickerLayout {
+                    PaymentsInternalCard(onSelect: onInternalTransfer)
                 }
-            case .send:
+
+            case let .sendingFrom(source):
+                InternalTransferScreen(
+                    viewModel: embeddedTransferViewModel,
+                    onCompleted: onTransferCompleted,
+                    showsHeader: false,
+                    sendFrom: source)
+                    .padding(.top, Layout.embeddedFormTopPadding)
+
+            case .receivingInto:
+                InternalTransferScreen(
+                    viewModel: embeddedTransferViewModel,
+                    onCompleted: onTransferCompleted,
+                    showsHeader: false,
+                    receiveInto: viewModel.network)
+                    .padding(.top, Layout.embeddedFormTopPadding)
+            }
+
+        case .send:
+            switch mode {
+            case .picker, .receivingInto:
+                pickerLayout {
+                    PaymentsSendCard(
+                        onScanQR: onScanQR,
+                        onSendToAddress: onSendToAddress)
+                }
+
+            case .sendingFrom:
                 SendScreen(
                     viewModel: embeddedSendViewModel,
                     onClose: onClose,
                     onScanQR: onScanQR,
                     onContinue: onSendContinue,
                     showsHeader: false)
+                    .padding(.top, Layout.embeddedFormTopPadding)
             }
         }
-        .background(Color.dash.primaryBackground)
-        .navigationBarHidden(true)
     }
 
     // MARK: - Header
 
+    /// Back only, no title. The landing is where a flow starts, so the tab
+    /// selector below already names the destination; the screens it pushes
+    /// carry their own titles.
+    ///
+    /// Currently unreachable: every caller passes `showsHeader: false` since
+    /// the landing became a tab.
     private var header: some View {
-        HStack {
-            Button(action: onClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color.dash.primaryText)
-                    .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-            }
-            Spacer()
-            Text(headerTitle)
-                .font(.headline)
-                .foregroundColor(.dash.primaryText)
-            Spacer()
-            Color.clear.frame(width: 36, height: 36)
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 10)
-    }
-
-    private var headerTitle: String {
-        switch viewModel.activeTab {
-        case .receive: return NSLocalizedString("Receive", comment: "")
-        case .internalTransfer: return NSLocalizedString("Internal transfer", comment: "")
-        case .send: return NSLocalizedString("Send", comment: "")
-        }
-    }
-
-    // MARK: - Tab selector
-
-    private var tabSelector: some View {
-        HStack(spacing: 4) {
-            ForEach(viewModel.visibleTabs) { tab in
-                Button(action: { viewModel.activeTab = tab }) {
-                    VStack(spacing: 4) {
-                        Image(systemName: tab.iconSystemName)
-                            .font(.system(size: 16, weight: .semibold))
-                        Text(tab.title)
-                            .font(.system(size: 13, weight: .medium))
-                    }
-                    .foregroundColor(viewModel.activeTab == tab ? Color.dash.primaryText : Color.dash.secondaryText)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            // Selected pill: a solid white raised card in light mode; a
-                            // translucent light fill in dark so the primaryText label stays
-                            // legible (pure white would be invisible on the dark selector).
-                            // Mirrors the app's SegmentedControl selected-fill treatment.
-                            .fill(viewModel.activeTab == tab
-                                ? (colorScheme == .dark ? Color.dash.whiteAlpha20 : Color.dash.white)
-                                : Color.clear)
-                            .shadow(
-                                color: viewModel.activeTab == tab
-                                    ? Color.dash.shadow : .clear,
-                                radius: 2, x: 0, y: 1))
-                }
-            }
-        }
-        .padding(4)
-        .background(Color.dash.secondaryBackground)
-        .cornerRadius(10)
-    }
-
-    // MARK: - Receive
-
-    private var receiveContent: some View {
-        VStack(alignment: .center, spacing: 20) {
-            ChainNetworkToggle(selection: $viewModel.network, options: ChainNetwork.allCases)
-                .padding(.horizontal, 20)
-
-            qrCard
-
-            HStack(spacing: 12) {
-                Button(action: onShareAddress) {
-                    actionPill(title: NSLocalizedString("Share address", comment: ""))
-                }
-                .disabled(viewModel.currentAddress == nil)
-
-                Button(action: onSpecifyAmount) {
-                    actionPill(title: NSLocalizedString("Specify amount", comment: ""))
-                }
-                .disabled(viewModel.currentAddress == nil || viewModel.network != .core)
-            }
-            .padding(.horizontal, 20)
-        }
-    }
-
-    private var qrCard: some View {
-        VStack(spacing: 14) {
-            if let address = viewModel.currentAddress,
-               let qr = QRCodeGenerator.image(for: address) {
-                Image(uiImage: qr)
-                    .interpolation(.none)
-                    .resizable()
-                    .frame(width: 220, height: 220)
-                    .padding(12)
-                    .background(Color.dash.white)
-                    .cornerRadius(16)
-
-                VStack(spacing: 4) {
-                    Text(NSLocalizedString("Your DASH address", comment: ""))
-                        .font(.caption)
-                        .foregroundColor(Color.dash.secondaryText)
-                    Text(address)
-                        .font(.system(.footnote, design: .monospaced))
-                        .foregroundColor(.dash.primaryText)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(.horizontal, 20)
-                .onTapGesture { onCopyAddress() }
-            } else if viewModel.network == .platform && !viewModel.platformIsReady {
-                placeholder(NSLocalizedString("Platform sync starting…", comment: ""))
-            } else if viewModel.network == .shielded {
-                // Nil only until the shielded sub-wallet binds at startup
-                // (the view model retries as the platform stack comes up).
-                placeholder(NSLocalizedString("Shielded wallet starting…", comment: ""))
-            } else {
-                placeholder(NSLocalizedString("No address available", comment: ""))
-            }
-        }
-    }
-
-    private func placeholder(_ message: String) -> some View {
-        VStack(spacing: 8) {
-            SwiftUI.ProgressView()
-            Text(message)
-                .font(.footnote)
-                .foregroundColor(Color.dash.secondaryText)
-        }
-        .frame(width: 220, height: 220)
-    }
-
-    private func actionPill(title: String) -> some View {
-        Text(title)
-            .font(.system(size: 14, weight: .medium))
-            .foregroundColor(.dash.primaryText)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.dash.secondaryBackground)
-            .cornerRadius(12)
+        NavigationBar(
+            leading: { NavigationBarElement.back.button(action: onClose) })
+            .padding(.bottom, Layout.pickerTopPadding)
     }
 
 }
+
+#if DEBUG
+
+/// The full landing draws destination cards, which need no wallet at all. The
+/// pinned variants at the bottom embed real forms instead, and previews run
+/// without a wallet — those price nothing the SDK owns, so they render the
+/// "fee unavailable" state rather than an enabled Continue.
+@MainActor
+private func landingSample(
+    activeTab: PaymentsLandingTab = .internalTransfer,
+    network: ChainNetwork = .core,
+    visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
+    coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
+    transferAmount: String = "0",
+    transferSendFrom: ChainNetwork? = nil,
+    transferReceivePinned: Bool = false,
+    showsHeader: Bool = true
+) -> some View {
+
+    PaymentsLandingScreen(
+        viewModel: .makeForPreview(
+            activeTab: activeTab,
+            network: network,
+            visibleTabs: visibleTabs,
+            coreAddress: coreAddress),
+        onClose: {},
+        onCopyAddress: {},
+        onShareAddress: {},
+        onSpecifyAmount: {},
+        onScanQR: {},
+        embeddedTransferViewModel: .makeForPreview(amountText: transferAmount),
+        transferSendFrom: transferSendFrom,
+        transferReceivePinned: transferReceivePinned,
+        embeddedSendViewModel: .makeForPreview(pinnedSource: transferSendFrom),
+        showsHeader: showsHeader)
+}
+
+// MARK: Tabs
+
+/// The tab selector is the shared chrome — these three show it in each of its
+/// selected states, above the content that tab actually renders.
+@available(iOS 17, *)
+#Preview("Internal tab") {
+    landingSample(showsHeader: false)
+}
+
+/// The presentation the balance-row receive sheet uses: Send is not offered,
+/// so the landing has to hold together on two tabs. `PaymentsTabSelector` has
+/// its own previews for the selector's own states.
+@available(iOS 17, *)
+#Preview("Two tabs · receive sheet") {
+    landingSample(
+        activeTab: .receive,
+        visibleTabs: [.receive, .internalTransfer])
+}
+
+// MARK: Receive tab states
+
+/// No address resolved yet — the QR card gives way to its placeholder.
+@available(iOS 17, *)
+#Preview("Receive · no address") {
+    landingSample(activeTab: .receive, coreAddress: nil)
+}
+
+@available(iOS 17, *)
+#Preview("Receive · shielded placeholder") {
+    landingSample(activeTab: .receive, network: .shielded)
+}
+
+// MARK: Sheet embeddings
+
+/// Balance-row send sheet: no header (the sheet's grabber and hero selector are
+/// the top chrome) and the transfer form's From card pinned.
+@available(iOS 17, *)
+#Preview("Send sheet · pinned From") {
+    landingSample(
+        transferAmount: "0.5",
+        transferSendFrom: .core,
+        showsHeader: false)
+}
+
+/// Balance-row receive sheet: the transfer form's To card is pinned to the
+/// receive toggle's network.
+@available(iOS 17, *)
+#Preview("Receive sheet · pinned To") {
+    landingSample(
+        network: .platform,
+        visibleTabs: [.receive, .internalTransfer],
+        transferAmount: "0.5",
+        transferReceivePinned: true,
+        showsHeader: false)
+}
+
+#endif
+

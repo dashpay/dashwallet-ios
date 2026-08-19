@@ -627,6 +627,16 @@
 		56F5C9FD51AE5508BB5E579B /* ChainNetworkToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D788CCB6B35B655BD713129E /* ChainNetworkToggle.swift */; };
 		57632D5A61F78ED6E896B1AF /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		58825FFD2913876CC5D4AA21 /* InternalTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */; };
+		C0172000000000000003A2 /* PaymentsTabRootController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000003A1 /* PaymentsTabRootController.swift */; };
+		C0172000000000000003A3 /* PaymentsTabRootController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000003A1 /* PaymentsTabRootController.swift */; };
+		C0172000000000000005A2 /* PaymentsInternalCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000005A1 /* PaymentsInternalCard.swift */; };
+		C0172000000000000005A3 /* PaymentsInternalCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000005A1 /* PaymentsInternalCard.swift */; };
+		C0172000000000000006A2 /* PaymentsSendCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000006A1 /* PaymentsSendCard.swift */; };
+		C0172000000000000006A3 /* PaymentsSendCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000006A1 /* PaymentsSendCard.swift */; };
+		C0172000000000000007A2 /* PaymentsReceiveContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000007A1 /* PaymentsReceiveContent.swift */; };
+		C0172000000000000007A3 /* PaymentsReceiveContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000007A1 /* PaymentsReceiveContent.swift */; };
+		C0172000000000000002A2 /* PaymentsActionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000002A1 /* PaymentsActionCard.swift */; };
+		C0172000000000000002A3 /* PaymentsActionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000002A1 /* PaymentsActionCard.swift */; };
 		C0172000000000000001A2 /* PaymentsTabSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000001A1 /* PaymentsTabSelector.swift */; };
 		C0172000000000000001A3 /* PaymentsTabSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000001A1 /* PaymentsTabSelector.swift */; };
 		C0171F000000000000001A2 /* TransferSourceRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001A1 /* TransferSourceRow.swift */; };
@@ -848,6 +858,8 @@
 		75B3C1A32E36100100CAFE03 /* ShortcutSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B3C1A12E36100100CAFE01 /* ShortcutSelectionView.swift */; };
 		75B3C1B22E36100100CAFE05 /* ShortcutCustomizeBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B3C1B12E36100100CAFE04 /* ShortcutCustomizeBannerView.swift */; };
 		75B3C1B32E36100100CAFE06 /* ShortcutCustomizeBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B3C1B12E36100100CAFE04 /* ShortcutCustomizeBannerView.swift */; };
+		C0172000000000000008A2 /* TransientToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000008A1 /* TransientToastModifier.swift */; };
+		C0172000000000000008A3 /* TransientToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000008A1 /* TransientToastModifier.swift */; };
 		75BDE7AC2BF3287400556791 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BDE7AB2BF3287400556791 /* Toast.swift */; };
 		75BDE7AD2BF3287400556791 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75BDE7AB2BF3287400556791 /* Toast.swift */; };
 		75C3EE002DA7C63C00A4E9C0 /* DashSpendUserAuthScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75C3EDFE2DA7C63C00A4E9C0 /* DashSpendUserAuthScreen.swift */; };
@@ -2955,6 +2967,7 @@
 		75AA33D72BFB4A5A00F12465 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		75B3C1A12E36100100CAFE01 /* ShortcutSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutSelectionView.swift; sourceTree = "<group>"; };
 		75B3C1B12E36100100CAFE04 /* ShortcutCustomizeBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutCustomizeBannerView.swift; sourceTree = "<group>"; };
+		C0172000000000000008A1 /* TransientToastModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransientToastModifier.swift; sourceTree = "<group>"; };
 		75BDE7AB2BF3287400556791 /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		75C1F0442AE26AC0006929CA /* CoinJoinLevelsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinLevelsViewModel.swift; sourceTree = "<group>"; };
 		75C3EDFD2DA7C63C00A4E9C0 /* DashSpendLoginInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendLoginInfoView.swift; sourceTree = "<group>"; };
@@ -3046,6 +3059,11 @@
 		A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletWipeSerialExecutorTests.swift; sourceTree = "<group>"; };
 		A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentRequestVerifier.swift; sourceTree = "<group>"; };
 		A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferScreen.swift; sourceTree = "<group>"; };
+		C0172000000000000003A1 /* PaymentsTabRootController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsTabRootController.swift; sourceTree = "<group>"; };
+		C0172000000000000005A1 /* PaymentsInternalCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsInternalCard.swift; sourceTree = "<group>"; };
+		C0172000000000000006A1 /* PaymentsSendCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsSendCard.swift; sourceTree = "<group>"; };
+		C0172000000000000007A1 /* PaymentsReceiveContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsReceiveContent.swift; sourceTree = "<group>"; };
+		C0172000000000000002A1 /* PaymentsActionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsActionCard.swift; sourceTree = "<group>"; };
 		C0172000000000000001A1 /* PaymentsTabSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsTabSelector.swift; sourceTree = "<group>"; };
 		C0171F000000000000001A1 /* TransferSourceRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferSourceRow.swift; sourceTree = "<group>"; };
 		C0171F000000000000001B1 /* TransferAmountValidationNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountValidationNote.swift; sourceTree = "<group>"; };
@@ -6761,6 +6779,10 @@
 			isa = PBXGroup;
 			children = (
 				C0172000000000000001A1 /* PaymentsTabSelector.swift */,
+				C0172000000000000002A1 /* PaymentsActionCard.swift */,
+				C0172000000000000007A1 /* PaymentsReceiveContent.swift */,
+				C0172000000000000006A1 /* PaymentsSendCard.swift */,
+				C0172000000000000005A1 /* PaymentsInternalCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -6770,6 +6792,7 @@
 			children = (
 				C0172000000000000000000 /* Components */,
 				E735446F9E918618E97EDD38 /* PaymentsLandingScreen.swift */,
+				C0172000000000000003A1 /* PaymentsTabRootController.swift */,
 				FE64C10DA9C338D408982EBE /* PaymentsLandingViewModel.swift */,
 				B401E660599FEF6B18087F91 /* PaymentsLandingHostingController.swift */,
 			);
@@ -6877,6 +6900,7 @@
 				75EBAA0E2BB99036004488E3 /* TextIntro.swift */,
 				RC00A0032FA0000000000001 /* TopIntro.swift */,
 				75BDE7AB2BF3287400556791 /* Toast.swift */,
+				C0172000000000000008A1 /* TransientToastModifier.swift */,
 				75AA33CE2BF9D44A00F12465 /* ButtonsGroup.swift */,
 				75AA33D12BF9E18E00F12465 /* Color+DWStyle.swift */,
 				75AA33D42BF9E1D400F12465 /* Font+DWStyle.swift */,
@@ -10128,6 +10152,7 @@
 				753130972B4944130069C9B7 /* UpholdError.swift in Sources */,
 				2A913E9823A400D3006A2A59 /* DWContainerViewController.m in Sources */,
 				75BDE7AC2BF3287400556791 /* Toast.swift in Sources */,
+				C0172000000000000008A2 /* TransientToastModifier.swift in Sources */,
 				47B30D7A290D035B0080C326 /* DashTextAttachment.swift in Sources */,
 				BA1A0003C0FFEE00B15A0003 /* BalanceInfoSheet.swift in Sources */,
 				C9F067F229E4576D0022D958 /* HomeBalanceView.swift in Sources */,
@@ -10216,6 +10241,11 @@
 				EF053C0D81A007CC015EB3EE /* InternalTransferViewModel.swift in Sources */,
 				58825FFD2913876CC5D4AA21 /* InternalTransferScreen.swift in Sources */,
 				C0172000000000000001A2 /* PaymentsTabSelector.swift in Sources */,
+				C0172000000000000002A2 /* PaymentsActionCard.swift in Sources */,
+				C0172000000000000007A2 /* PaymentsReceiveContent.swift in Sources */,
+				C0172000000000000006A2 /* PaymentsSendCard.swift in Sources */,
+				C0172000000000000005A2 /* PaymentsInternalCard.swift in Sources */,
+				C0172000000000000003A2 /* PaymentsTabRootController.swift in Sources */,
 				C0171F000000000000001A2 /* TransferSourceRow.swift in Sources */,
 				C0171F000000000000001B2 /* TransferAmountValidationNote.swift in Sources */,
 				C0171F000000000000001C2 /* TransferPreview.swift in Sources */,
@@ -10738,6 +10768,7 @@
 				C9D2C7A32A320AA000D15901 /* DWVersionManager.m in Sources */,
 				C9D2C7A52A320AA000D15901 /* DWModalPresentationController.m in Sources */,
 				75BDE7AD2BF3287400556791 /* Toast.swift in Sources */,
+				C0172000000000000008A3 /* TransientToastModifier.swift in Sources */,
 				C9D2C7A72A320AA000D15901 /* ActionButtonViewController.swift in Sources */,
 				C9D2C7A82A320AA000D15901 /* BuySellServiceItemCell.swift in Sources */,
 				C956AF122A5B5949002FAB75 /* PasteboardContentView.swift in Sources */,
@@ -11229,6 +11260,11 @@
 				FF4A426923D0CF755AE981FB /* InternalTransferViewModel.swift in Sources */,
 				EFCF9D5D6630AD9BD0A62E29 /* InternalTransferScreen.swift in Sources */,
 				C0172000000000000001A3 /* PaymentsTabSelector.swift in Sources */,
+				C0172000000000000002A3 /* PaymentsActionCard.swift in Sources */,
+				C0172000000000000007A3 /* PaymentsReceiveContent.swift in Sources */,
+				C0172000000000000006A3 /* PaymentsSendCard.swift in Sources */,
+				C0172000000000000005A3 /* PaymentsInternalCard.swift in Sources */,
+				C0172000000000000003A3 /* PaymentsTabRootController.swift in Sources */,
 				C0171F000000000000001A3 /* TransferSourceRow.swift in Sources */,
 				C0171F000000000000001B3 /* TransferAmountValidationNote.swift in Sources */,
 				C0171F000000000000001C3 /* TransferPreview.swift in Sources */,
