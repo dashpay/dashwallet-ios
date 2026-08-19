@@ -1365,7 +1365,12 @@ final class InternalTransferViewModel: ObservableObject {
     /// Why a Core Max produced nothing, told apart by the three states that
     /// reach it: no funds at all, funds that are still confirming, and a
     /// confirmed balance too small to also cover the L1 fee.
-    private static func coreZeroMaxMessage(
+    ///
+    /// Shared with the classic send amount screen (`SendAmountModel`), which
+    /// runs the same Core Max against the same balance and must explain a
+    /// zero result in the same words. `nonisolated` so that caller — which
+    /// is not main-actor bound — can reach it; the body is pure string work.
+    nonisolated static func coreZeroMaxMessage(
         totalDuffs: UInt64,
         confirmedSpendableDuffs: UInt64
     ) -> String {
@@ -1428,7 +1433,7 @@ final class InternalTransferViewModel: ObservableObject {
 
     /// Shared with `SendViewModel`'s Core → Shielded Max (same fee-on-top
     /// envelope) — keep `internal`.
-    static func feeReserveExceedsBalanceMessage(_ source: ChainNetwork) -> String {
+    nonisolated static func feeReserveExceedsBalanceMessage(_ source: ChainNetwork) -> String {
         String.localizedStringWithFormat(
             NSLocalizedString(
                 "Your %@ balance is too low to cover the transfer fee.",
@@ -1436,7 +1441,7 @@ final class InternalTransferViewModel: ObservableObject {
             source.balanceName)
     }
 
-    private static func emptyBalanceMessage(_ source: ChainNetwork) -> String {
+    nonisolated private static func emptyBalanceMessage(_ source: ChainNetwork) -> String {
         String.localizedStringWithFormat(
             NSLocalizedString(
                 "Your %@ balance is empty.",
