@@ -627,6 +627,8 @@
 		56F5C9FD51AE5508BB5E579B /* ChainNetworkToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D788CCB6B35B655BD713129E /* ChainNetworkToggle.swift */; };
 		57632D5A61F78ED6E896B1AF /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
 		58825FFD2913876CC5D4AA21 /* InternalTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */; };
+		C0172000000000000001A2 /* PaymentsTabSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000001A1 /* PaymentsTabSelector.swift */; };
+		C0172000000000000001A3 /* PaymentsTabSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000001A1 /* PaymentsTabSelector.swift */; };
 		C0171F000000000000001A2 /* TransferSourceRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001A1 /* TransferSourceRow.swift */; };
 		C0171F000000000000001A3 /* TransferSourceRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001A1 /* TransferSourceRow.swift */; };
 		C0171F000000000000001B2 /* TransferAmountValidationNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001B1 /* TransferAmountValidationNote.swift */; };
@@ -3044,6 +3046,7 @@
 		A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletWipeSerialExecutorTests.swift; sourceTree = "<group>"; };
 		A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentRequestVerifier.swift; sourceTree = "<group>"; };
 		A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferScreen.swift; sourceTree = "<group>"; };
+		C0172000000000000001A1 /* PaymentsTabSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsTabSelector.swift; sourceTree = "<group>"; };
 		C0171F000000000000001A1 /* TransferSourceRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferSourceRow.swift; sourceTree = "<group>"; };
 		C0171F000000000000001B1 /* TransferAmountValidationNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountValidationNote.swift; sourceTree = "<group>"; };
 		C0171F000000000000001C1 /* TransferPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferPreview.swift; sourceTree = "<group>"; };
@@ -6754,9 +6757,18 @@
 			path = Codec;
 			sourceTree = "<group>";
 		};
+		C0172000000000000000000 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				C0172000000000000001A1 /* PaymentsTabSelector.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		6916981A49557073ABA80EAB /* Landing */ = {
 			isa = PBXGroup;
 			children = (
+				C0172000000000000000000 /* Components */,
 				E735446F9E918618E97EDD38 /* PaymentsLandingScreen.swift */,
 				FE64C10DA9C338D408982EBE /* PaymentsLandingViewModel.swift */,
 				B401E660599FEF6B18087F91 /* PaymentsLandingHostingController.swift */,
@@ -10203,6 +10215,7 @@
 				0EB4679BC135B464D90CDC8B /* TransferTimingSheet.swift in Sources */,
 				EF053C0D81A007CC015EB3EE /* InternalTransferViewModel.swift in Sources */,
 				58825FFD2913876CC5D4AA21 /* InternalTransferScreen.swift in Sources */,
+				C0172000000000000001A2 /* PaymentsTabSelector.swift in Sources */,
 				C0171F000000000000001A2 /* TransferSourceRow.swift in Sources */,
 				C0171F000000000000001B2 /* TransferAmountValidationNote.swift in Sources */,
 				C0171F000000000000001C2 /* TransferPreview.swift in Sources */,
@@ -11215,6 +11228,7 @@
 				1C2999FF1FC854E7DB138250 /* TransferTimingSheet.swift in Sources */,
 				FF4A426923D0CF755AE981FB /* InternalTransferViewModel.swift in Sources */,
 				EFCF9D5D6630AD9BD0A62E29 /* InternalTransferScreen.swift in Sources */,
+				C0172000000000000001A3 /* PaymentsTabSelector.swift in Sources */,
 				C0171F000000000000001A3 /* TransferSourceRow.swift in Sources */,
 				C0171F000000000000001B3 /* TransferAmountValidationNote.swift in Sources */,
 				C0171F000000000000001C3 /* TransferPreview.swift in Sources */,

@@ -28,6 +28,12 @@ private enum SegmentedControlLayout {
     static let shadowY: CGFloat = 5
     static let springResponse: Double = 0.3
     static let springDamping: Double = 0.7
+
+    // Icon variant (an SF Symbol stacked over the label). It sizes to its
+    // content instead of `height`, which only fits a single text line.
+    static let iconSize: CGFloat = 16
+    static let iconLabelSpacing: CGFloat = 4
+    static let iconSegmentVerticalPadding: CGFloat = 10
 }
 
 struct SegmentedControl<T: Hashable>: View {
@@ -36,6 +42,9 @@ struct SegmentedControl<T: Hashable>: View {
     let options: [T]
     @Binding var selection: T
     let label: (T) -> String
+    /// SF Symbol drawn above each label. `nil` (the default) keeps the
+    /// text-only segment every existing caller uses.
+    var icon: ((T) -> String)? = nil
 
     @Environment(\.colorScheme) private var colorScheme
     @State private var containerWidth: CGFloat = 0
@@ -65,12 +74,12 @@ struct SegmentedControl<T: Hashable>: View {
                     Button(action: {
                         select(option)
                     }) {
-                        Text(label(option))
-                            .font(.footnoteMedium)
+                        segmentContent(option)
                             .foregroundColor(selection == option ? .dash.primaryText : .dash.primaryText.opacity(0.4))
-                            .lineLimit(1)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, Layout.segmentVerticalPadding)
+                            .padding(.vertical, icon == nil
+                                ? Layout.segmentVerticalPadding
+                                : Layout.iconSegmentVerticalPadding)
                             .contentShape(Rectangle())
                             .animation(.spring(response: Layout.springResponse, dampingFraction: Layout.springDamping), value: selection)
                     }
@@ -99,9 +108,30 @@ struct SegmentedControl<T: Hashable>: View {
                 }
         )
         .padding(Layout.containerPadding)
-        .frame(height: Layout.height)
+        // The icon variant is two lines tall, so it sizes to its content —
+        // `height` is the single-line text measurement.
+        .frame(height: icon == nil ? Layout.height : nil)
         .background(Color.dash.gray300Alpha20)
         .clipShape(RoundedRectangle(cornerRadius: Layout.containerCornerRadius))
+    }
+
+    @ViewBuilder
+    private func segmentContent(_ option: T) -> some View {
+        if let icon {
+            VStack(spacing: Layout.iconLabelSpacing) {
+                Image(systemName: icon(option))
+                    .font(.system(size: Layout.iconSize, weight: .semibold))
+                segmentLabel(option)
+            }
+        } else {
+            segmentLabel(option)
+        }
+    }
+
+    private func segmentLabel(_ option: T) -> some View {
+        Text(label(option))
+            .font(.footnoteMedium)
+            .lineLimit(1)
     }
 
     private func updateSelection(at x: CGFloat) {
@@ -141,6 +171,37 @@ private struct SegmentedControlPreview: View {
             SegmentedControl(options: ["Day", "Week", "Month"], selection: $three)
 
             SegmentedControl(options: ["1D", "1W", "1M", "1Y"], selection: $four)
+        }
+        .padding()
+    }
+}
+
+#Preview("Icon variant") {
+    SegmentedControlIconPreview()
+}
+
+/// The icon variant next to the text-only one, so the two stay recognisably the
+/// same control: same track, same pill, only the segment is two lines tall.
+private struct SegmentedControlIconPreview: View {
+    @State private var withIcons = "Internal"
+    @State private var textOnly = "Internal"
+
+    private let options = ["Receive", "Internal", "Send"]
+    private let icons = [
+        "Receive": "arrow.down",
+        "Internal": "arrow.up.arrow.down",
+        "Send": "arrow.up",
+    ]
+
+    var body: some View {
+        VStack(spacing: 24) {
+            SegmentedControl(
+                options: options,
+                selection: $withIcons,
+                label: { $0 },
+                icon: { icons[$0] ?? "questionmark" })
+
+            SegmentedControl(options: options, selection: $textOnly)
         }
         .padding()
     }
