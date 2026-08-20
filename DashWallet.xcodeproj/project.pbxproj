@@ -454,6 +454,8 @@
 		47A514602848F75B005A8E3E /* TxDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */; };
 		47A514622848FEAD005A8E3E /* Tx.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47A514612848FEAD005A8E3E /* Tx.storyboard */; };
 		47A5146428491C60005A8E3E /* TxDetailCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5146328491C60005A8E3E /* TxDetailCells.swift */; };
+		C0172000000000000009A2 /* SpecifyAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000009A1 /* SpecifyAmountView.swift */; };
+		C0172000000000000009A3 /* SpecifyAmountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000009A1 /* SpecifyAmountView.swift */; };
 		47AC8413297822E000BD1B49 /* SpecifyAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AC8412297822E000BD1B49 /* SpecifyAmountViewController.swift */; };
 		47AE8B9528BFACA100490F5E /* ExploreDash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8B9428BFACA100490F5E /* ExploreDash.swift */; };
 		47AE8B9C28BFAD3600490F5E /* ExplorePointOfUse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8B9B28BFAD2800490F5E /* ExplorePointOfUse.swift */; };
@@ -2713,6 +2715,7 @@
 		47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailViewController.swift; sourceTree = "<group>"; };
 		47A514612848FEAD005A8E3E /* Tx.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Tx.storyboard; sourceTree = "<group>"; };
 		47A5146328491C60005A8E3E /* TxDetailCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailCells.swift; sourceTree = "<group>"; };
+		C0172000000000000009A1 /* SpecifyAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecifyAmountView.swift; sourceTree = "<group>"; };
 		47AC8412297822E000BD1B49 /* SpecifyAmountViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecifyAmountViewController.swift; sourceTree = "<group>"; };
 		47AE8B9428BFACA100490F5E /* ExploreDash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreDash.swift; sourceTree = "<group>"; };
 		47AE8B9B28BFAD2800490F5E /* ExplorePointOfUse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExplorePointOfUse.swift; sourceTree = "<group>"; };
@@ -5496,6 +5499,7 @@
 				47A1B00030B5A10000D15A01 /* SendAmountScreen.swift */,
 				47B30D7F291123D30080C326 /* SendAmountViewController.swift */,
 				47AC8412297822E000BD1B49 /* SpecifyAmountViewController.swift */,
+				C0172000000000000009A1 /* SpecifyAmountView.swift */,
 			);
 			path = Amount;
 			sourceTree = "<group>";
@@ -9816,6 +9820,7 @@
 				759609232C455B2000F3BF04 /* SendIntro.swift in Sources */,
 				7549BE5A2DEAF50D004F0BAF /* IconBitmap.swift in Sources */,
 				47AC8413297822E000BD1B49 /* SpecifyAmountViewController.swift in Sources */,
+				C0172000000000000009A2 /* SpecifyAmountView.swift in Sources */,
 				2AFCB9C423BE76EC00FF59A6 /* DWUpholdTransactionObject+DWView.m in Sources */,
 				75CDD7862C08D61300F433D2 /* DashAmount.swift in Sources */,
 				114CFED0296469D9005F421B /* CrowdNodeDepositTx.swift in Sources */,
@@ -10795,6 +10800,7 @@
 				C9D2C7B12A320AA000D15901 /* CoinbaseBaseIDForCurrencyResponse.swift in Sources */,
 				C9D2C7B22A320AA000D15901 /* BuildFile in Sources */,
 				C9D2C7B32A320AA000D15901 /* SpecifyAmountViewController.swift in Sources */,
+				C0172000000000000009A3 /* SpecifyAmountView.swift in Sources */,
 				756557B62CE84FFA0060348D /* FeeInfo.swift in Sources */,
 				C943B5922A40ED7B00AF23C5 /* DWTextField.m in Sources */,
 				75EBAA0D2BB9792F004488E3 /* FeatureTopText.swift in Sources */,
