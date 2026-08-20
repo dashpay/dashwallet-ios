@@ -4919,6 +4919,15 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Ĉi tiuj monrimedoj transiras al via Platform-saldo kaj pretas por elspezo tuj kiam la transpago finiĝos.";
 
+/* Informational estimate of the Platform fee taken out of the fee reserve */
+"Estimated Platform fee" = "Taksita Platform-kotizo";
+
+/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
+"Fee reserve" = "Kotizo-rezervo";
+
+/* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Ĉi tiuj monrimedoj transiras al via Platform-saldo kaj pretas por elspezo tuj kiam la transpago finiĝos. La Platform-kotizo estas prenata el la kotizo-rezervo — kion la reto ne uzas, tio ankaŭ estas kreditata al via Platform-saldo.";
+
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 

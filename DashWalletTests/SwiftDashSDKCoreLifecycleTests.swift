@@ -501,6 +501,32 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
             spendable)
     }
 
+    func testCoreToPlatformMaxHeldBackExcludesTheFundingReserve() {
+        // The held-back notice describes what STAYS in Core after the Max
+        // lock executes. The funding reserve leaves Core inside the lock,
+        // so it must never be counted as held back.
+        let reserve = CoreToPlatformAmountPolicy.fundingReserveDuffs
+
+        // Whole balance spendable: Max locks all of it — nothing stays in
+        // Core, so no notice (a "0.00056 DASH is held back" line here
+        // would falsely report the reserve as staying behind).
+        let spendable: UInt64 = 4_043_550_440
+        XCTAssertNil(
+            CoreToPlatformAmountPolicy.maxHeldBackDuffs(
+                coreBalanceDuffs: spendable,
+                maxAmountDuffs: spendable - reserve))
+
+        // With unconfirmed coins on top of the spendable envelope, the
+        // held-back value is exactly those coins — the reserve does not
+        // leak into it.
+        let unconfirmed: UInt64 = 123_456
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.maxHeldBackDuffs(
+                coreBalanceDuffs: spendable + unconfirmed,
+                maxAmountDuffs: spendable - reserve),
+            unconfirmed)
+    }
+
     func testCoreToPlatformLockValueFailsClosedOnOverflow() {
         XCTAssertNil(
             CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: UInt64.max))

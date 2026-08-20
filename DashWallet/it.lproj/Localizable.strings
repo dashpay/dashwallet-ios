@@ -4917,6 +4917,15 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Questi fondi si spostano nel tuo saldo Platform e sono pronti da spendere non appena il trasferimento è completato.";
 
+/* Informational estimate of the Platform fee taken out of the fee reserve */
+"Estimated Platform fee" = "Commissione Platform stimata";
+
+/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
+"Fee reserve" = "Riserva commissione";
+
+/* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Questi fondi si spostano nel tuo saldo Platform e sono pronti da spendere non appena il trasferimento è completato. La commissione Platform viene prelevata dalla riserva commissione — ciò che la rete non utilizza viene comunque accreditato sul tuo saldo Platform.";
+
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 

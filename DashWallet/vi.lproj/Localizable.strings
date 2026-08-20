@@ -4919,6 +4919,15 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Số tiền này chuyển vào số dư Platform của bạn và sẵn sàng để chi tiêu ngay khi việc chuyển hoàn tất.";
 
+/* Informational estimate of the Platform fee taken out of the fee reserve */
+"Estimated Platform fee" = "Phí Platform ước tính";
+
+/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
+"Fee reserve" = "Khoản dự phòng phí";
+
+/* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Số tiền này chuyển vào số dư Platform của bạn và sẵn sàng để chi tiêu ngay khi việc chuyển hoàn tất. Phí Platform được trích từ khoản dự phòng phí — phần nào mạng lưới không dùng đến cũng sẽ được cộng vào số dư Platform của bạn.";
+
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 

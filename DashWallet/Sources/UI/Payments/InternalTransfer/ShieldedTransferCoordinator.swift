@@ -1020,10 +1020,12 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// (the remainder recipient absorbs `lock − fee`), so the lock carries
     /// `CoreToPlatformAmountPolicy.fundingReserveDuffs` on top of
     /// `recipientAmountDuffs` — a deterministic wallet funding reserve the
-    /// fee is taken from; the unused part is credited to the Platform
-    /// balance along with the amount. Deterministic on purpose: the same
-    /// policy sizes the confirm sheet's Total, so the executed lock can
-    /// never differ from what the user confirmed.
+    /// fee is taken from. The Platform balance is credited with
+    /// `lock − actual fee`; the reserve has covered the fee in every
+    /// scenario tested so far, but that is a wallet policy, not a protocol
+    /// guarantee. Deterministic on purpose: the same policy sizes the
+    /// confirm sheet's Total, so the executed lock can never differ from
+    /// what the user confirmed.
     func performFundPlatform(recipientAmountDuffs: UInt64) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil

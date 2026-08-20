@@ -4919,6 +4919,15 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Aceste fonduri trec în soldul tău Platform și sunt gata de cheltuit imediat ce transferul se finalizează.";
 
+/* Informational estimate of the Platform fee taken out of the fee reserve */
+"Estimated Platform fee" = "Taxă Platform estimată";
+
+/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
+"Fee reserve" = "Rezervă pentru taxă";
+
+/* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Aceste fonduri trec în soldul tău Platform și sunt gata de cheltuit imediat ce transferul se finalizează. Taxa Platform este luată din rezerva pentru taxă — tot ce nu folosește rețeaua este, de asemenea, creditat în soldul tău Platform.";
+
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 

@@ -4917,6 +4917,15 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "이 자금은 Platform 잔액으로 옮겨지며, 전송이 완료되는 즉시 사용할 수 있습니다.";
 
+/* Informational estimate of the Platform fee taken out of the fee reserve */
+"Estimated Platform fee" = "예상 Platform 수수료";
+
+/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
+"Fee reserve" = "수수료 예비금";
+
+/* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "이 자금은 Platform 잔액으로 옮겨지며, 전송이 완료되는 즉시 사용할 수 있습니다. Platform 수수료는 수수료 예비금에서 차감되며, 네트워크가 사용하지 않은 금액도 회원님의 Platform 잔액에 적립됩니다.";
+
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 

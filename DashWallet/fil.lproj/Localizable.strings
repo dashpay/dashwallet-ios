@@ -4917,6 +4917,15 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Napupunta ang pondong ito sa iyong balanse sa Platform at handa nang gastusin sa oras na matapos ang paglilipat.";
 
+/* Informational estimate of the Platform fee taken out of the fee reserve */
+"Estimated Platform fee" = "Tinatayang bayarin sa Platform";
+
+/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
+"Fee reserve" = "Reserba sa bayarin";
+
+/* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Napupunta ang pondong ito sa iyong balanse sa Platform at handa nang gastusin sa oras na matapos ang paglilipat. Ang bayarin sa Platform ay kinukuha mula sa reserba sa bayarin — anumang hindi magamit ng network ay maikekredito rin sa iyong Platform balance.";
+
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 

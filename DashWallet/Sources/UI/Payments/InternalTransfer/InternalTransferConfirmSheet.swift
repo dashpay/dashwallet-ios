@@ -39,8 +39,9 @@ struct InternalTransferConfirmSheet: View {
     /// balance (`InternalTransferViewModel.confirmTotalDuffs`). `nil`
     /// renders as "—".
     var totalDuffs: Int64? = nil
-    /// Resolved "Fee reserve" row value (credits) — the unused part of the
-    /// Core→Platform lock headroom, credited back to the Platform balance
+    /// Resolved "Fee reserve" row value (credits) — the FULL Core→Platform
+    /// funding reserve the fee is taken from; whatever the network doesn't
+    /// use is credited to the Platform balance
     /// (`InternalTransferViewModel.confirmFeeReserveCredits`). `nil` hides
     /// the row.
     var feeReserveCredits: UInt64? = nil

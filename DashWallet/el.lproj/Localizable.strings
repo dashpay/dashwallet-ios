@@ -4917,6 +4917,15 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Αυτά τα κεφάλαια μεταφέρονται στο υπόλοιπο Platform και είναι έτοιμα για δαπάνη μόλις ολοκληρωθεί η μεταφορά.";
 
+/* Informational estimate of the Platform fee taken out of the fee reserve */
+"Estimated Platform fee" = "Εκτιμώμενο τέλος Platform";
+
+/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
+"Fee reserve" = "Αποθεματικό τέλους";
+
+/* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Αυτά τα κεφάλαια μεταφέρονται στο υπόλοιπο Platform και είναι έτοιμα για δαπάνη μόλις ολοκληρωθεί η μεταφορά. Το τέλος Platform αφαιρείται από το αποθεματικό τέλους — ό,τι δεν χρησιμοποιήσει το δίκτυο πιστώνεται επίσης στο υπόλοιπο Platform σας.";
+
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 

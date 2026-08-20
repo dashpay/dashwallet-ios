@@ -4919,6 +4919,15 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Tyto prostředky přejdou na váš zůstatek Platform a budou připraveny k použití, jakmile se převod dokončí.";
 
+/* Informational estimate of the Platform fee taken out of the fee reserve */
+"Estimated Platform fee" = "Odhadovaný poplatek Platform";
+
+/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
+"Fee reserve" = "Rezerva na poplatek";
+
+/* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Tyto prostředky přejdou na váš zůstatek Platform a budou připraveny k použití, jakmile se převod dokončí. Poplatek Platform se strhává z rezervy na poplatek — vše, co síť nevyužije, se také připíše na váš zůstatek Platform.";
+
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 

@@ -109,11 +109,13 @@ enum CoreToShieldedAmountPolicy {
 ///
 /// The address-funding ST's fee is deducted from the locked value (the
 /// single remainder recipient absorbs `lock − fee`), so the lock carries a
-/// funding reserve on top of the typed amount: the network takes its fee
-/// out of the reserve and whatever it doesn't use is credited to the
-/// Platform balance along with the amount. Keep the calculation here as
-/// the one source of truth for amount validation, Max, the confirm sheet,
-/// and the executed lock value — all of them must derive the SAME lock.
+/// funding reserve on top of the typed amount. What the Platform balance
+/// actually receives is `lock − actual fee` — the reserve is sized so the
+/// fee has fit inside it in every scenario tested so far, but there is no
+/// protocol-level guarantee of that on arbitrary live state. Keep the
+/// calculation here as the one source of truth for amount validation, Max,
+/// the confirm sheet, and the executed lock value — all of them must
+/// derive the SAME lock.
 @MainActor
 enum CoreToPlatformAmountPolicy {
     /// Minimum credits the Platform side requires a one-output address
@@ -129,18 +131,20 @@ enum CoreToPlatformAmountPolicy {
         CoreToShieldedAmountPolicy.assetLockBaseCostCredits + 6_000_000
 
     /// Wallet-chosen funding reserve (duffs) the lock carries on top of
-    /// the typed amount. Deliberately conservative and DETERMINISTIC — the
-    /// display-only fee estimate must never size the lock, because nothing
-    /// upper-bounds the charged fee formally: it is GroveDB-metered on
-    /// live state, grows with `user_fee_increase` (the SDK's stuck-ST
-    /// retry bumps it up to ~14%), and the pre-execution
-    /// `validate_fees_of_event` gate additionally requires the lock to
-    /// cover an average-case ESTIMATE of that fee. The reserve equals the
-    /// admission floor, giving ~3.7× margin over observed actual fees
-    /// (~15k duffs) and covering every gate for any amount ≥ 1 duff; its
-    /// adequacy on-chain is pinned by the drive-abci
-    /// `expected_fee_calibration` tests. The unused part is credited back
-    /// to the Platform balance — the reserve is a round trip, not a cost.
+    /// the typed amount — a TEMPORARY wallet policy, deliberately
+    /// conservative and DETERMINISTIC. The display-only fee estimate must
+    /// never size the lock, because nothing upper-bounds the charged fee
+    /// formally: it is GroveDB-metered on live state, grows with
+    /// `user_fee_increase` (the SDK's stuck-ST retry bumps it up to
+    /// ~14%), and the pre-execution `validate_fees_of_event` gate
+    /// additionally requires the lock to cover an average-case ESTIMATE
+    /// of that fee. The reserve equals the admission floor, ~3.7× the
+    /// fees observed so far (~15k duffs). The credited value is
+    /// `lock − actual fee`: the drive-abci `expected_fee_calibration`
+    /// tests are regression SAMPLES confirming the reserve for specific
+    /// protocol versions and scenarios — they do NOT prove an upper
+    /// bound of the fee on every possible live GroveDB state, so the
+    /// typed amount is what the user should expect, not a guarantee.
     static let fundingReserveDuffs: UInt64 = minLockCostCredits / 1000
 
     /// Fee-on-top L1 lock value: amount + funding reserve, so the whole
@@ -149,6 +153,21 @@ enum CoreToPlatformAmountPolicy {
     static func lockValueDuffs(forAmountDuffs amountDuffs: UInt64) -> UInt64? {
         let (total, overflow) = amountDuffs.addingReportingOverflow(fundingReserveDuffs)
         return overflow ? nil : total
+    }
+
+    /// What actually STAYS in the Core balance after a Max fill executes:
+    /// the total balance minus the executed lock (amount + reserve). The
+    /// reserve itself leaves Core inside the asset lock, so it must never
+    /// be described as held back. `nil` when nothing stays behind (or on
+    /// overflow) — callers show no held-back notice.
+    static func maxHeldBackDuffs(
+        coreBalanceDuffs: UInt64,
+        maxAmountDuffs: UInt64
+    ) -> UInt64? {
+        guard let lockDuffs = lockValueDuffs(forAmountDuffs: maxAmountDuffs),
+              coreBalanceDuffs > lockDuffs
+        else { return nil }
+        return coreBalanceDuffs - lockDuffs
     }
 }
 
@@ -1192,10 +1211,16 @@ final class InternalTransferViewModel: ObservableObject {
                     confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0)
             } else if sourceDuffs == 0 {
                 maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
-            } else {
+            } else if let heldBackDuffs = CoreToPlatformAmountPolicy.maxHeldBackDuffs(
+                coreBalanceDuffs: coreBalanceDuffs,
+                maxAmountDuffs: sourceDuffs) {
                 // The balance card shows the total, so a Max that lands below
-                // it reads as a bug unless the held-back part is accounted for.
-                maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
+                // it reads as a bug unless the part staying in Core (L1 fee
+                // headroom + unconfirmed coins) is accounted for. The funding
+                // reserve is NOT part of it — it leaves Core inside the
+                // executed lock — so the notice is derived from the executed
+                // lock value, and skipped entirely when nothing stays behind.
+                maxNotice = Self.coreHeldBackMessage(heldBackDuffs)
             }
         case .platformToShielded:
             // Handled above because an unresolved async preflight must preserve

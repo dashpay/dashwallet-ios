@@ -4919,6 +4919,15 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Dana ini berpindah ke baki Platform anda dan sedia untuk dibelanjakan sebaik sahaja pemindahan selesai.";
 
+/* Informational estimate of the Platform fee taken out of the fee reserve */
+"Estimated Platform fee" = "Anggaran yuran Platform";
+
+/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
+"Fee reserve" = "Rizab yuran";
+
+/* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Dana ini berpindah ke baki Platform anda dan sedia untuk dibelanjakan sebaik sahaja pemindahan selesai. Yuran Platform diambil daripada rizab yuran — apa-apa yang tidak digunakan oleh rangkaian juga dikreditkan ke baki Platform anda.";
+
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 
