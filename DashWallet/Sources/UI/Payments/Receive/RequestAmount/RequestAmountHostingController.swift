@@ -52,6 +52,8 @@ final class RequestAmountHostingController: UIViewController {
         @Published var qrCodeImage: UIImage?
         @Published var paymentAddress: String?
         @Published var username: String?
+        /// Raised by a copy, cleared by `transientToast`'s own timer.
+        @Published var copiedToastVisible = false
     }
 
     /// The content's natural height, as `BottomSheet(fillsHeight: false)`
@@ -225,12 +227,13 @@ final class RequestAmountHostingController: UIViewController {
         #endif
     }
 
+    /// Only the haptic. The toast is drawn by the SwiftUI sheet through
+    /// `transientToast`, the same `DashUIKit.Toast` the Receive tab raises —
+    /// the UIKit `showToast` anchors to this controller's view, which inside a
+    /// sheet puts it behind the sheet rather than over it.
     private func showCopied() {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
-        showToast(
-            text: NSLocalizedString("Copied", comment: ""),
-            icon: .custom(DashIcon.Toast.copied.rawValue, bundle: .dashUIKit),
-            duration: 1.5)
+        state.copiedToastVisible = true
     }
 
     /// The helper anchors its iPad popover on a `UIButton`, and the real one
@@ -292,5 +295,9 @@ private struct RequestAmountScreenContainer: View {
             onCopyQRCode: onCopyQRCode,
             onCopyUsername: onCopyUsername,
             onShare: onShare)
+            .transientToast(
+                isPresented: $state.copiedToastVisible,
+                style: .copied,
+                message: NSLocalizedString("Copied", comment: ""))
     }
 }
