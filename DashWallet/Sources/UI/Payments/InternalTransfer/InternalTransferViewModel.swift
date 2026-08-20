@@ -942,6 +942,65 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
+    /// Resolved "Network fee" row (credits) for the confirm sheet: a flat
+    /// estimate computed offline by the SDK against the latest protocol
+    /// version (so it matches the fee the SDK will charge), or the route's
+    /// fee-on-top headroom. Lives here because fee math is banned inside
+    /// View structs; frozen into the submission at Continue. `nil` renders
+    /// as "—".
+    var confirmNetworkFeeCredits: UInt64? {
+        switch route {
+        case .coreToShielded:
+            // The lock charges the fee rounded UP to a whole duff — display
+            // that, so Amount + Network fee equals Total exactly.
+            return CoreToShieldedAmountPolicy.currentPoolFeeDuffs.map { $0 * 1000 }
+        case .platformToShielded:
+            // Shield (Type 15): base shielded fee. Real metered storage is
+            // extra and only knowable on-chain, so this is a lower bound.
+            return try? PlatformWalletManager.estimateShieldedFee(kind: .transfer, numActions: 2)
+        case .shieldedToCore:
+            return try? PlatformWalletManager.estimateShieldedFee(kind: .withdrawal, numActions: 2)
+        case .shieldedToPlatform:
+            return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
+        case .coreToPlatform:
+            // Address-funding asset lock: the headroom the coordinator adds
+            // ON TOP of the amount, so Amount + Network fee equals Total
+            // exactly. The funding ST's metered fee comes out of it; the
+            // unspent part lands back on the Platform balance.
+            return CoreToPlatformAmountPolicy.topUpHeadroomDuffs * 1000
+        case .platformToCore:
+            // The exact transition fee the preflight already netted out of
+            // the payout amount.
+            return withdrawalPreflight?.estimatedFee
+        }
+    }
+
+    /// Resolved "Total" row (duffs) for the confirm sheet — what actually
+    /// leaves the source balance. Both Core-funded asset-lock routes charge
+    /// their fee/headroom on top of the amount (the executed lock value);
+    /// every other route's total is the amount itself. `nil` (rendered "—")
+    /// when the fee estimate is unavailable or the sum overflows —
+    /// `canContinue` fails closed before that can be confirmed, but the row
+    /// must never show the un-inflated number.
+    var confirmTotalDuffs: Int64? {
+        switch route {
+        case .coreToShielded:
+            guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
+                  let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
+                      forAmountDuffs: dashDuffsUnsigned,
+                      poolFeeCredits: poolFeeCredits)
+            else { return nil }
+            return Int64(exactly: lockDuffs)
+        case .coreToPlatform:
+            guard let lockDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: dashDuffsUnsigned)
+            else { return nil }
+            return Int64(exactly: lockDuffs)
+        default:
+            return dashDuffs
+        }
+    }
+
     /// `parsedDashAmount` expressed as Int64 duffs, for `DashAmount` views.
     var dashDuffs: Int64 {
         Int64(parsedDashAmount.plainDashAmount)
