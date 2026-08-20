@@ -457,41 +457,67 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 poolFeeCredits: 212_851_200))
     }
 
-    func testCoreToPlatformHeadroomCoversTheMinimumLockCost() {
-        // The headroom is the full Platform-side minimum for a one-output
-        // funding: processing base cost (50k duffs) + one remainder output
-        // at address_funds_transfer_output_cost (6M credits) = 56k duffs.
+    func testCoreToPlatformMinimumLockConstants() {
+        // The Platform-side minimum for a one-output funding: processing
+        // base cost (50k duffs) + one remainder output at
+        // address_funds_transfer_output_cost (6M credits) = 56k duffs;
+        // minLockDuffs sits strictly above it.
         XCTAssertEqual(
             CoreToPlatformAmountPolicy.minLockCostCredits,
             CoreToShieldedAmountPolicy.assetLockBaseCostCredits + 6_000_000)
-        XCTAssertEqual(CoreToPlatformAmountPolicy.topUpHeadroomDuffs, 56_000)
-        XCTAssertEqual(
-            CoreToPlatformAmountPolicy.topUpHeadroomDuffs * 1000,
-            CoreToPlatformAmountPolicy.minLockCostCredits)
+        XCTAssertEqual(CoreToPlatformAmountPolicy.minLockDuffs, 56_001)
+        XCTAssertEqual(CoreToPlatformAmountPolicy.fallbackHeadroomDuffs, 56_000)
     }
 
-    func testCoreToPlatformLockValueIsAmountPlusHeadroom() {
-        // Fee-on-top: the lock delivers at least the typed amount to the
-        // Platform balance; the ST fee comes out of the headroom.
+    func testCoreToPlatformNormalAmountHeadroomIsTheExpectedFee() {
+        // Fee-on-top: for normal amounts the lock is amount + expected fee
+        // (the estimate already carries a calibrated margin), so the
+        // Platform balance receives at least the typed amount.
         XCTAssertEqual(
-            CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: 5_000_000),
-            5_056_000)
+            CoreToPlatformAmountPolicy.headroomDuffs(
+                forAmountDuffs: 5_000_000, expectedFeeDuffs: 17_500),
+            17_500)
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: 5_000_000, expectedFeeDuffs: 17_500),
+            5_017_500)
     }
 
-    func testCoreToPlatformSmallestAmountStillClearsTheMinimumLockCost() {
-        // Boundary: even a 1-duff topup must lock STRICTLY more than the
+    func testCoreToPlatformMicroAmountRaisesTheLockToTheMinimum() {
+        // Boundary: a micro topup must still lock STRICTLY more than the
         // minimum lock cost, or Platform rejects the funding ST after the
         // L1 broadcast and the outpoint is stranded.
-        let lock = CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: 1)
-        XCTAssertEqual(lock, 56_001)
-        XCTAssertGreaterThan(
-            (lock ?? 0) * 1000,
-            CoreToPlatformAmountPolicy.minLockCostCredits)
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: 1, expectedFeeDuffs: 17_500),
+            56_001)
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: 5_000, expectedFeeDuffs: 17_500),
+            56_001)
+        // Just past the kick-in point (amount + fee ≥ minLockDuffs) the
+        // headroom is the fee again.
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: 38_501, expectedFeeDuffs: 17_500),
+            56_001)
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: 38_502, expectedFeeDuffs: 17_500),
+            56_002)
+    }
+
+    func testCoreToPlatformMissingEstimateFallsBackToTheFullHeadroom() {
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: 5_000_000, expectedFeeDuffs: nil),
+            5_056_000)
     }
 
     func testCoreToPlatformLockValueFailsClosedOnOverflow() {
         XCTAssertNil(
-            CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: UInt64.max))
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: UInt64.max, expectedFeeDuffs: 17_500))
     }
 
     func testShieldedSweepChoosesPrefixWithLargestNetPayout() {

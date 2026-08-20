@@ -109,10 +109,11 @@ enum CoreToShieldedAmountPolicy {
 ///
 /// The address-funding ST's metered fee is deducted from the locked value
 /// (the single remainder recipient absorbs `lock − fee`), so the lock is
-/// inflated by a fixed headroom: the Platform balance receives at least the
-/// typed amount, and the unspent headroom lands back on the same balance in
-/// the user's favor. Keep the constant here as the one source of truth for
-/// amount validation, Max, the confirm sheet, and the executed lock value.
+/// inflated by a headroom sized from the SDK's expected-fee estimate: the
+/// Platform balance receives at least the typed amount, and the small
+/// unspent margin lands back on the same balance in the user's favor. Keep
+/// the calculation here as the one source of truth for amount validation,
+/// Max, the confirm sheet, and the executed lock value.
 @MainActor
 enum CoreToPlatformAmountPolicy {
     /// Minimum credits the Platform side requires a one-output address
@@ -126,16 +127,51 @@ enum CoreToPlatformAmountPolicy {
     static let minLockCostCredits: UInt64 =
         CoreToShieldedAmountPolicy.assetLockBaseCostCredits + 6_000_000
 
-    /// Duff headroom the lock carries on top of the typed amount — the full
-    /// minimum lock cost, so every lock (amount ≥ 1 duff) clears the
-    /// Platform-side minimum by construction.
-    static let topUpHeadroomDuffs: UInt64 = minLockCostCredits / 1000
+    /// Smallest lock (duffs) that strictly clears the Platform-side
+    /// minimum.
+    static let minLockDuffs: UInt64 = minLockCostCredits / 1000 + 1
+
+    /// Fallback duff headroom when the fee estimate is unavailable — the
+    /// full minimum lock cost, the pre-estimator sizing (over-reserves,
+    /// but the surplus returns to the Platform balance).
+    static let fallbackHeadroomDuffs: UInt64 = minLockCostCredits / 1000
+
+    /// The SDK's expected metered fee for the canonical topup (0 inputs,
+    /// 1 remainder output), in whole duffs rounded UP. The estimate
+    /// already carries a calibrated margin over the actually-charged fee
+    /// (pinned by the drive-abci calibration tests), so it needs no extra
+    /// buffer here. `nil` when the estimator is unavailable — callers fall
+    /// back to `fallbackHeadroomDuffs`.
+    static var expectedFeeDuffs: UInt64? {
+        guard let credits = try? ManagedPlatformAddressWallet.estimateAddressFundingFee(
+            inputCount: 0,
+            outputCount: 1)
+        else { return nil }
+        return credits / 1000 + (credits.isMultiple(of: 1000) ? 0 : 1)
+    }
+
+    /// Duff headroom the lock carries on top of the typed amount: the
+    /// expected fee, raised only when needed so the whole lock still
+    /// strictly clears the Platform-side minimum (binding for micro
+    /// amounts only). With no estimate, the full fallback headroom.
+    static func headroomDuffs(
+        forAmountDuffs amountDuffs: UInt64,
+        expectedFeeDuffs: UInt64?
+    ) -> UInt64 {
+        guard let feeDuffs = expectedFeeDuffs else { return fallbackHeadroomDuffs }
+        let floorTopUp = amountDuffs >= minLockDuffs ? 0 : minLockDuffs - amountDuffs
+        return max(feeDuffs, floorTopUp)
+    }
 
     /// Fee-on-top L1 lock value that delivers at least `amountDuffs` to the
     /// wallet's Platform balance. `nil` on UInt64 overflow — callers fail
     /// closed.
-    static func lockValueDuffs(forAmountDuffs amountDuffs: UInt64) -> UInt64? {
-        let (total, overflow) = amountDuffs.addingReportingOverflow(topUpHeadroomDuffs)
+    static func lockValueDuffs(
+        forAmountDuffs amountDuffs: UInt64,
+        expectedFeeDuffs: UInt64?
+    ) -> UInt64? {
+        let (total, overflow) = amountDuffs.addingReportingOverflow(
+            headroomDuffs(forAmountDuffs: amountDuffs, expectedFeeDuffs: expectedFeeDuffs))
         return overflow ? nil : total
     }
 }
@@ -766,14 +802,17 @@ final class InternalTransferViewModel: ObservableObject {
                     ? coreSpendableDuffs - feeDuffs : 0)
 
         case .coreToPlatform:
-            // The headroom rides on top of the amount, so the spendable
+            // The expected fee rides on top of the amount, so the spendable
             // envelope shrinks by it — same shape as Core → Shielded above.
-            let headroomDuffs = CoreToPlatformAmountPolicy.topUpHeadroomDuffs
+            // (Mirrors Max: below the minimum-lock floor nothing is
+            // affordable at all.)
+            let feeDuffs = CoreToPlatformAmountPolicy.expectedFeeDuffs
+                ?? CoreToPlatformAmountPolicy.fallbackHeadroomDuffs
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreSpendableDuffs > headroomDuffs
-                    ? coreSpendableDuffs - headroomDuffs : 0)
+                spendableDuffs: coreSpendableDuffs >= CoreToPlatformAmountPolicy.minLockDuffs
+                    ? coreSpendableDuffs - feeDuffs : 0)
 
         case .platformToShielded:
             if awaitingPlatformShieldResync {
@@ -884,7 +923,8 @@ final class InternalTransferViewModel: ObservableObject {
             // so the L1 spendable balance must cover both. Fails closed on
             // overflow.
             guard let lockDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
-                forAmountDuffs: dashDuffsUnsigned)
+                forAmountDuffs: dashDuffsUnsigned,
+                expectedFeeDuffs: CoreToPlatformAmountPolicy.expectedFeeDuffs)
             else { return false }
             return lockDuffs <= coreSpendableDuffs
         case .platformToShielded:
@@ -974,16 +1014,48 @@ final class InternalTransferViewModel: ObservableObject {
         case .shieldedToPlatform:
             return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
         case .coreToPlatform:
-            // Address-funding asset lock: the headroom the coordinator adds
-            // ON TOP of the amount, so Amount + Network fee equals Total
-            // exactly. The funding ST's metered fee comes out of it; the
-            // unspent part lands back on the Platform balance.
-            return CoreToPlatformAmountPolicy.topUpHeadroomDuffs * 1000
+            // The funding ST's expected metered fee (SDK estimate, pinned
+            // by the drive-abci calibration tests) — which is also the lock
+            // headroom for normal amounts, so Amount + Network fee equals
+            // Total. Micro amounts additionally freeze the protocol's
+            // minimum-lock floor; `confirmFeeReserveCredits` surfaces that
+            // extra so the rows still sum. Fail-soft: with no estimate,
+            // fall back to showing the whole fallback headroom as the fee.
+            return coreToPlatformExpectedFeeCredits
+                ?? CoreToPlatformAmountPolicy.fallbackHeadroomDuffs * 1000
         case .platformToCore:
             // The exact transition fee the preflight already netted out of
             // the payout amount.
             return withdrawalPreflight?.estimatedFee
         }
+    }
+
+    /// SDK estimate of the funding ST's metered fee for the canonical
+    /// Core → Platform topup (0 inputs, 1 remainder output); `nil` when
+    /// the estimator is unavailable.
+    private var coreToPlatformExpectedFeeCredits: UInt64? {
+        try? ManagedPlatformAddressWallet.estimateAddressFundingFee(
+            inputCount: 0,
+            outputCount: 1)
+    }
+
+    /// Resolved "Fee reserve" row (credits) for the confirm sheet — the
+    /// part of the Core → Platform lock headroom ABOVE the expected fee.
+    /// Non-nil only for micro amounts, where the protocol's minimum-lock
+    /// floor forces freezing more than the fee (the surplus lands back on
+    /// the Platform balance after execution). For normal amounts the
+    /// headroom IS the fee, so the row hides. Also hidden when the fee
+    /// estimate is unavailable — the fee row then shows the whole fallback
+    /// headroom instead.
+    var confirmFeeReserveCredits: UInt64? {
+        guard route == .coreToPlatform,
+              let expectedFeeDuffs = CoreToPlatformAmountPolicy.expectedFeeDuffs
+        else { return nil }
+        let headroomDuffs = CoreToPlatformAmountPolicy.headroomDuffs(
+            forAmountDuffs: dashDuffsUnsigned,
+            expectedFeeDuffs: expectedFeeDuffs)
+        guard headroomDuffs > expectedFeeDuffs else { return nil }
+        return (headroomDuffs - expectedFeeDuffs) * 1000
     }
 
     /// Resolved "Total" row (duffs) for the confirm sheet — what actually
@@ -1004,7 +1076,8 @@ final class InternalTransferViewModel: ObservableObject {
             return Int64(exactly: lockDuffs)
         case .coreToPlatform:
             guard let lockDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
-                forAmountDuffs: dashDuffsUnsigned)
+                forAmountDuffs: dashDuffsUnsigned,
+                expectedFeeDuffs: CoreToPlatformAmountPolicy.expectedFeeDuffs)
             else { return nil }
             return Int64(exactly: lockDuffs)
         default:
@@ -1145,11 +1218,17 @@ final class InternalTransferViewModel: ObservableObject {
                 maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
             }
         case .coreToPlatform:
-            // Fee-on-top Max: the lock is amount + headroom, so the largest
-            // topup is the L1-fee-aware spendable minus the headroom.
-            let headroomDuffs = CoreToPlatformAmountPolicy.topUpHeadroomDuffs
-            sourceDuffs = coreSpendableDuffs > headroomDuffs
-                ? coreSpendableDuffs - headroomDuffs : 0
+            // Fee-on-top Max: the lock is amount + expected fee, so the
+            // largest topup is the L1-fee-aware spendable minus the fee —
+            // unless the whole spendable can't reach the protocol's
+            // minimum lock, in which case nothing is affordable. (For
+            // `spendable ≥ minLockDuffs` the resulting amount is always
+            // above the floor's kick-in point, so `amount + fee` covers
+            // the lock exactly.)
+            let feeDuffs = CoreToPlatformAmountPolicy.expectedFeeDuffs
+                ?? CoreToPlatformAmountPolicy.fallbackHeadroomDuffs
+            sourceDuffs = coreSpendableDuffs >= CoreToPlatformAmountPolicy.minLockDuffs
+                ? coreSpendableDuffs - feeDuffs : 0
             if coreSpendableDuffs == 0 {
                 maxNotice = Self.coreZeroMaxMessage(
                     totalDuffs: coreBalanceDuffs,

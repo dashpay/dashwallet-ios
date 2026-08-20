@@ -1018,9 +1018,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ///
     /// Fee-on-top: the funding ST's metered fee is deducted from the locked
     /// value (the remainder recipient absorbs `lock − fee`), so the lock is
-    /// inflated by `CoreToPlatformAmountPolicy.topUpHeadroomDuffs` here —
-    /// the Platform balance receives at least `recipientAmountDuffs`, plus
-    /// whatever the fee leaves of the headroom.
+    /// inflated by `CoreToPlatformAmountPolicy.headroomDuffs` here — the
+    /// expected fee (raised to the protocol's minimum lock for micro
+    /// amounts) — and the Platform balance receives at least
+    /// `recipientAmountDuffs`, plus whatever the fee leaves of the headroom.
     func performFundPlatform(recipientAmountDuffs: UInt64) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
@@ -1030,7 +1031,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // lock (which could not cover its own processing cost).
         guard recipientAmountDuffs > 0,
               let lockValueDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
-                  forAmountDuffs: recipientAmountDuffs)
+                  forAmountDuffs: recipientAmountDuffs,
+                  expectedFeeDuffs: CoreToPlatformAmountPolicy.expectedFeeDuffs)
         else {
             handleFailure(CoordinatorError.shieldedPoolFeeUnavailable)
             return

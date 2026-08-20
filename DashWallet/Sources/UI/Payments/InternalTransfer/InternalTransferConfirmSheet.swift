@@ -39,6 +39,11 @@ struct InternalTransferConfirmSheet: View {
     /// balance (`InternalTransferViewModel.confirmTotalDuffs`). `nil`
     /// renders as "—".
     var totalDuffs: Int64? = nil
+    /// Resolved "Fee reserve" row value (credits) — the unused part of the
+    /// Core→Platform lock headroom, credited back to the Platform balance
+    /// (`InternalTransferViewModel.confirmFeeReserveCredits`). `nil` hides
+    /// the row.
+    var feeReserveCredits: UInt64? = nil
     /// Preflighted `AddressCreditWithdrawalTransition` fee — only meaningful
     /// for `.platformToCore` (the fee headroom / netting basis).
     var withdrawalFeeCredits: UInt64? = nil
@@ -238,6 +243,16 @@ struct InternalTransferConfirmSheet: View {
         totalDuffs?.formattedDashAmount ?? "—"
     }
 
+    /// "Fee reserve" as fiat — the unused part of the lock headroom,
+    /// credited back to the Platform balance after execution. `nil` hides
+    /// the row (non-topup routes, or the fee estimate is unavailable and
+    /// the fee row already shows the whole headroom).
+    private var feeReserveString: String? {
+        guard let credits = feeReserveCredits else { return nil }
+        let dash = Decimal(credits) / Self.creditsPerDash
+        return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
+    }
+
 
     // MARK: - Summary card
 
@@ -254,6 +269,14 @@ struct InternalTransferConfirmSheet: View {
             summaryRow(
                 label: NSLocalizedString("Network fee", comment: ""),
                 value: networkFeeString)
+            if let feeReserveString {
+                divider
+                summaryRow(
+                    label: NSLocalizedString(
+                        "Fee reserve",
+                        comment: "The unused part of the Core→Platform fee reserve, returned to the Platform balance"),
+                    value: feeReserveString)
+            }
             divider
             summaryRow(
                 label: NSLocalizedString("Total", comment: ""),

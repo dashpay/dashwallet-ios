@@ -18,6 +18,7 @@ private struct InternalTransferConfirmation: Identifiable {
     let fiatText: String
     let networkFeeCredits: UInt64?
     let totalDuffs: Int64?
+    let feeReserveCredits: UInt64?
     let withdrawalFeeCredits: UInt64?
     let isFullPlatformWithdrawal: Bool
     let isFullShieldedSweep: Bool
@@ -117,6 +118,7 @@ struct InternalTransferScreen: View {
                 fiatText: submission.fiatText,
                 networkFeeCredits: submission.networkFeeCredits,
                 totalDuffs: submission.totalDuffs,
+                feeReserveCredits: submission.feeReserveCredits,
                 withdrawalFeeCredits: submission.withdrawalFeeCredits,
                 isFullPlatformWithdrawal: submission.isFullPlatformWithdrawal,
                 isFullShieldedSweep: submission.isFullShieldedSweep,
@@ -193,6 +195,7 @@ struct InternalTransferScreen: View {
             fiatText: viewModel.fiatAmountString,
             networkFeeCredits: viewModel.confirmNetworkFeeCredits,
             totalDuffs: viewModel.confirmTotalDuffs,
+            feeReserveCredits: viewModel.confirmFeeReserveCredits,
             withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
             isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
             isFullShieldedSweep: viewModel.isFullShieldedSweep,
