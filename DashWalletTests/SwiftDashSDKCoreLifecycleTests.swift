@@ -457,13 +457,17 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 poolFeeCredits: 212_851_200))
     }
 
-    func testCoreToPlatformHeadroomMatchesTheCreditBaseCost() {
-        // One source of truth: the duff headroom is the credit-denominated
-        // processing base cost, whole-duff exact (50k duffs ↔ 50M credits).
-        XCTAssertEqual(CoreToPlatformAmountPolicy.topUpHeadroomDuffs, 50_000)
+    func testCoreToPlatformHeadroomCoversTheMinimumLockCost() {
+        // The headroom is the full Platform-side minimum for a one-output
+        // funding: processing base cost (50k duffs) + one remainder output
+        // at address_funds_transfer_output_cost (6M credits) = 56k duffs.
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.minLockCostCredits,
+            CoreToShieldedAmountPolicy.assetLockBaseCostCredits + 6_000_000)
+        XCTAssertEqual(CoreToPlatformAmountPolicy.topUpHeadroomDuffs, 56_000)
         XCTAssertEqual(
             CoreToPlatformAmountPolicy.topUpHeadroomDuffs * 1000,
-            CoreToShieldedAmountPolicy.assetLockBaseCostCredits)
+            CoreToPlatformAmountPolicy.minLockCostCredits)
     }
 
     func testCoreToPlatformLockValueIsAmountPlusHeadroom() {
@@ -471,7 +475,18 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         // Platform balance; the ST fee comes out of the headroom.
         XCTAssertEqual(
             CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: 5_000_000),
-            5_050_000)
+            5_056_000)
+    }
+
+    func testCoreToPlatformSmallestAmountStillClearsTheMinimumLockCost() {
+        // Boundary: even a 1-duff topup must lock STRICTLY more than the
+        // minimum lock cost, or Platform rejects the funding ST after the
+        // L1 broadcast and the outpoint is stranded.
+        let lock = CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: 1)
+        XCTAssertEqual(lock, 56_001)
+        XCTAssertGreaterThan(
+            (lock ?? 0) * 1000,
+            CoreToPlatformAmountPolicy.minLockCostCredits)
     }
 
     func testCoreToPlatformLockValueFailsClosedOnOverflow() {

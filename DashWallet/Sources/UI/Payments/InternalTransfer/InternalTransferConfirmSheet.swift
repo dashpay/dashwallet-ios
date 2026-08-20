@@ -389,7 +389,7 @@ struct InternalTransferConfirmSheet: View {
                 comment: "")
         case .coreToPlatform:
             return NSLocalizedString(
-                "These funds move to your Platform balance and are ready to spend as soon as the transfer completes.",
+                "These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The network fee is a reserve — whatever the network doesn't use is credited to your Platform balance too.",
                 comment: "")
         case .platformToCore:
             return isFullPlatformWithdrawal

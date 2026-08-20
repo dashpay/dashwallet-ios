@@ -115,10 +115,21 @@ enum CoreToShieldedAmountPolicy {
 /// amount validation, Max, the confirm sheet, and the executed lock value.
 @MainActor
 enum CoreToPlatformAmountPolicy {
-    /// Duff headroom the lock carries on top of the typed amount — the
-    /// credit-denominated processing base cost expressed in whole duffs.
-    static let topUpHeadroomDuffs: UInt64 =
-        CoreToShieldedAmountPolicy.assetLockBaseCostCredits / 1000
+    /// Minimum credits the Platform side requires a one-output address
+    /// funding's lock to cover: the processing base cost (50_000 duffs ×
+    /// 1000) plus one remainder output at `address_funds_transfer_output_cost`
+    /// (6_000_000 credits). Mirrors rs-dpp
+    /// `AddressFundingFromAssetLockTransition::calculate_min_required_fee`
+    /// with 0 transfer inputs and 1 output. Locking less strands the
+    /// outpoint — Platform rejects the ST only after the L1 broadcast, and
+    /// a resume reuses the same too-small lock.
+    static let minLockCostCredits: UInt64 =
+        CoreToShieldedAmountPolicy.assetLockBaseCostCredits + 6_000_000
+
+    /// Duff headroom the lock carries on top of the typed amount — the full
+    /// minimum lock cost, so every lock (amount ≥ 1 duff) clears the
+    /// Platform-side minimum by construction.
+    static let topUpHeadroomDuffs: UInt64 = minLockCostCredits / 1000
 
     /// Fee-on-top L1 lock value that delivers at least `amountDuffs` to the
     /// wallet's Platform balance. `nil` on UInt64 overflow — callers fail
