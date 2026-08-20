@@ -327,18 +327,23 @@ extension PaymentsLandingHostingController: NavigationBarDisplayable {
 
 extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate {
     func specifyAmountViewController(_ vc: SpecifyAmountViewController, didInput amount: UInt64) {
-        let model = DWReceiveModel(amount: amount)
-
-        let requestController = DWRequestAmountViewController(model: model)
-        requestController.delegate = self
-        present(requestController, animated: true)
+        // The SwiftUI sheet, not `DWRequestAmountViewController`: this landing
+        // is the redesigned path, and it sizes its own detent. The ObjC pair is
+        // still what the legacy `ReceiveViewController` presents.
+        RequestAmountHostingController.present(
+            from: self,
+            model: DWReceiveModel(amount: amount),
+            delegate: self)
     }
 }
 
-// MARK: DWRequestAmountViewControllerDelegate
+// MARK: RequestAmountHostingControllerDelegate
 
-extension PaymentsLandingHostingController: DWRequestAmountViewControllerDelegate {
-    func requestAmountViewController(_ controller: DWRequestAmountViewController, didReceiveAmountWithInfo info: String) {
+extension PaymentsLandingHostingController: RequestAmountHostingControllerDelegate {
+    func requestAmountHostingController(
+        _ controller: RequestAmountHostingController,
+        didReceiveAmountWithInfo info: String
+    ) {
         controller.dismiss(animated: true) {
             self.navigationController?.popViewController(animated: true)
 
