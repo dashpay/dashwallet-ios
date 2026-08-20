@@ -28,7 +28,7 @@ final class SendScreenViewController: DWBasePayViewController {
 
     private let sendViewModel = SendViewModel()
     private lazy var hostingController: UIHostingController<SendScreen> = {
-        let screen = SendScreen(
+        var screen = SendScreen(
             viewModel: sendViewModel,
             onClose: { [weak self] in self?.dismiss(animated: true) },
             onScanQR: { [weak self] in self?.performScanQRCodeAction() },
@@ -38,6 +38,11 @@ final class SendScreenViewController: DWBasePayViewController {
                     viewModel: self.sendViewModel,
                     onSendCompleted: { [weak self] in self?.dismiss(animated: true) })
             })
+        // Pushed from the payments landing there is somewhere to go back to;
+        // presented as the "Send to Address" shortcut there is not.
+        if let navigationController, navigationController.viewControllers.first !== self {
+            screen.onBack = { [weak self] in self?.navigationController?.popViewController(animated: true) }
+        }
         return UIHostingController(rootView: screen)
     }()
 
@@ -159,8 +164,9 @@ extension DWBasePayViewController {
 // The screen draws its own X + title header. When it is the root of its own
 // modal (the "Send to Address" shortcut), BaseNavigationController's willShow
 // pass must not re-show the (empty) navigation bar above it. Pushed from the
-// payments landing it keeps the bar's back arrow, as before.
+// payments landing the bar stays hidden too — `SendScreen` draws the design
+// system's own `NavigationBar`, with back in place of close.
 extension SendScreenViewController: NavigationBarDisplayable {
-    var isBackButtonHidden: Bool { navigationController?.viewControllers.first === self }
-    var isNavigationBarHidden: Bool { navigationController?.viewControllers.first === self }
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 }

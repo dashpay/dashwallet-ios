@@ -163,11 +163,6 @@ struct SwapConvertView: View {
             inProgress: viewModel.isLoading,
             actionHandler: onContinue
         )
-        .frame(maxWidth: .infinity, maxHeight: 320)
-        .padding(.horizontal, Layout.hPadding)
-        .background(Color.dash.secondaryBackground)
-        .clipShape(.rect(cornerRadius: 20))
-        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 }
 

@@ -34,6 +34,12 @@ struct InternalTransferScreen: View {
     /// (the balance-row receive sheet) — hides the built-in header.
     var showsHeader: Bool = true
 
+    /// Draws the design system's navigation bar with a back button above the
+    /// title. `nil` for the embedded variants, which sit under the host's own
+    /// chrome. The host hides the UIKit bar and passes the pop through here,
+    /// so the back button is `DashUIKit`'s rather than the system's.
+    var onBack: (() -> Void)? = nil
+
     /// Receive-sheet variant: fixes the destination card (the balance being
     /// received into) at the bottom, turns the rows above it into the
     /// source picker, and hides the swap badge. `nil` = the standard
@@ -50,10 +56,15 @@ struct InternalTransferScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if let onBack {
+                DashUIKit.NavigationBar(
+                    leading: { DashUIKit.NavigationBarElement.back.button(action: onBack) })
+            }
+
             if showsHeader {
                 header
                     .padding(.horizontal, 20)
-                    .padding(.top, 10)
+                    .padding(.top, onBack == nil ? 10 : 0)
             }
 
             // Scrollable so the keypad and action button stay fully on
@@ -161,12 +172,6 @@ struct InternalTransferScreen: View {
             inProgress: false,
             actionHandler: presentConfirmation
         )
-        .padding(.top, 12)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 12)
-        .background(Color.dash.secondaryBackground)
-        .clipShape(.rect(cornerRadius: 20))
-        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 
     private func presentConfirmation() {

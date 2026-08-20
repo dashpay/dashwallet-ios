@@ -656,7 +656,6 @@ struct PayContactSheet: View {
             inProgress: isSending,
             actionHandler: { pay() }
         )
-        .padding(.top, 8)
     }
 
     /// Fiat equivalent of what is typed, for the secondary line. Empty while

@@ -34,22 +34,28 @@ final class InternalTransferHostingController: UIViewController {
     }
 
     private lazy var hostingController: UIHostingController<InternalTransferScreen> = {
-        let screen = InternalTransferScreen(viewModel: viewModel) { [weak self] in
+        var screen = InternalTransferScreen(viewModel: viewModel) { [weak self] in
             // After a successful transfer the user taps "Done" inside the
             // confirm sheet; the screen forwards that to us so we can
             // leave — pop when pushed (landing / readiness flows), dismiss
             // if some future presenter shows this standalone as a sheet.
-            guard let self else { return }
-            if let navigationController = self.navigationController {
-                navigationController.popViewController(animated: true)
-            } else {
-                self.dismiss(animated: true)
-            }
+            self?.leave()
+        }
+        // Only when pushed: presented as a sheet there is nothing to go back
+        // to, and the grabber is the way out.
+        if navigationController != nil {
+            screen.onBack = { [weak self] in self?.leave() }
         }
         return UIHostingController(rootView: screen)
     }()
 
-    private var previousNavBarHidden: Bool = false
+    private func leave() {
+        if let navigationController {
+            navigationController.popViewController(animated: true)
+        } else {
+            dismiss(animated: true)
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,9 +65,9 @@ final class InternalTransferHostingController: UIViewController {
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         hostingController.view.backgroundColor = .clear
         view.addSubview(hostingController.view)
-        // Pushed: the navigation bar provides the top spacing. Presented
-        // as a sheet: there is no bar, so inset the content below the
-        // grabber instead of letting the title crowd the sheet's edge.
+        // Pushed: the screen draws its own `NavigationBar`, which carries the
+        // top spacing. Presented as a sheet: no bar, so inset the content
+        // below the grabber instead of letting the title crowd the edge.
         let isSheet = navigationController == nil
         let topInset: CGFloat = isSheet ? 28.0 : 0.0
         NSLayoutConstraint.activate([
@@ -72,15 +78,14 @@ final class InternalTransferHostingController: UIViewController {
         ])
         hostingController.didMove(toParent: self)
     }
+}
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        previousNavBarHidden = navigationController?.isNavigationBarHidden ?? false
-        navigationController?.setNavigationBarHidden(false, animated: animated)
-    }
+// MARK: - NavigationBarDisplayable
 
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        navigationController?.setNavigationBarHidden(previousNavBarHidden, animated: animated)
-    }
+/// The screen draws the design system's `NavigationBar` itself, so the UIKit
+/// one has to stay down. Without this, `BaseNavigationController`'s `willShow`
+/// pass falls back to showing it and the screen gets two back buttons.
+extension InternalTransferHostingController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 }
