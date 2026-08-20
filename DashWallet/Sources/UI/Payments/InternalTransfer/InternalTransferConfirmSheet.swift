@@ -243,16 +243,27 @@ struct InternalTransferConfirmSheet: View {
         totalDuffs?.formattedDashAmount ?? "—"
     }
 
-    /// "Fee reserve" as fiat — the unused part of the lock headroom,
-    /// credited back to the Platform balance after execution. `nil` hides
-    /// the row (non-topup routes, or the fee estimate is unavailable and
-    /// the fee row already shows the whole headroom).
+    /// "Fee reserve" as DASH text — the FULL funding reserve the lock
+    /// carries on top of the amount (Amount + Fee reserve = Total). The
+    /// network's fee is taken out of it and the unused part is credited to
+    /// the Platform balance. `nil` hides the row (non-topup routes).
     private var feeReserveString: String? {
-        guard let credits = feeReserveCredits else { return nil }
-        let dash = Decimal(credits) / Self.creditsPerDash
-        return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
+        guard let credits = feeReserveCredits,
+              let duffs = Int64(exactly: credits / 1000)
+        else { return nil }
+        return duffs.formattedDashAmount
     }
 
+    /// The fee row's label: the Core→Platform fee is an informational
+    /// estimate (the reserve, not the estimate, sizes the lock), so name
+    /// it honestly; other routes keep the plain "Network fee".
+    private var feeRowLabel: String {
+        route == .coreToPlatform
+            ? NSLocalizedString(
+                "Estimated Platform fee",
+                comment: "Informational estimate of the Platform fee taken out of the fee reserve")
+            : NSLocalizedString("Network fee", comment: "")
+    }
 
     // MARK: - Summary card
 
@@ -267,14 +278,14 @@ struct InternalTransferConfirmSheet: View {
                 value: toLabel)
             divider
             summaryRow(
-                label: NSLocalizedString("Network fee", comment: ""),
+                label: feeRowLabel,
                 value: networkFeeString)
             if let feeReserveString {
                 divider
                 summaryRow(
                     label: NSLocalizedString(
                         "Fee reserve",
-                        comment: "The unused part of the Core→Platform fee reserve, returned to the Platform balance"),
+                        comment: "The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance"),
                     value: feeReserveString)
             }
             divider
@@ -412,7 +423,7 @@ struct InternalTransferConfirmSheet: View {
                 comment: "")
         case .coreToPlatform:
             return NSLocalizedString(
-                "These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The network fee is a reserve — whatever the network doesn't use is credited to your Platform balance too.",
+                "These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too.",
                 comment: "")
         case .platformToCore:
             return isFullPlatformWithdrawal
