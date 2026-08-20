@@ -125,16 +125,12 @@ extension DWBasePayViewController {
             onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
             onContinue: { [weak self] in
                 guard let self else { return }
-                if viewModel.route == .coreToCore {
-                    // Transparent → Transparent: skip our amount step and use
-                    // the classic L1 amount screen (real fee math + its own
-                    // confirm) reached through the payment processor.
-                    self.continueCore(address: viewModel.trimmedAddress, amountDuffs: 0)
-                } else {
-                    // Legs the L1 amount screen can't fund (asset-lock shield,
-                    // platform/shielded sources): our amount step + confirm.
-                    self.pushExternalSendAmount(viewModel: viewModel, onSendCompleted: onSendCompleted)
-                }
+                // Every source lands on the same amount step, Transparent
+                // included. Core → Core still finishes in the L1 payment
+                // processor for the real fee math and its confirm, but it
+                // gets there from that step carrying the amount, rather than
+                // being handed off before one is entered.
+                self.pushExternalSendAmount(viewModel: viewModel, onSendCompleted: onSendCompleted)
             })
         // Every UIHostingController already conforms to NavigationBarDisplayable
         // (nav bar + back button hidden); the screen draws its own back + title.
