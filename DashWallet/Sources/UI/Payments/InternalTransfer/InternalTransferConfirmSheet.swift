@@ -21,7 +21,7 @@ import SwiftDashSDK
 ///   - `.platformToShielded` → `performShield(amountCredits:)`
 ///   - `.shieldedToCore`     → `performWithdraw(amountCredits:)`
 ///   - `.shieldedToPlatform` → `performUnshield(amountCredits:)`
-///   - `.coreToPlatform`     → `performFundPlatform(amountDuffs:)`
+///   - `.coreToPlatform`     → `performFundPlatform(recipientAmountDuffs:)`
 ///   - `.platformToCore`     → `performPlatformWithdrawAll()` (full balance)
 struct InternalTransferConfirmSheet: View {
 
@@ -231,11 +231,11 @@ struct InternalTransferConfirmSheet: View {
         case .shieldedToPlatform:
             return try? SwiftDashSDKHost.shared.manager?.estimateShieldedFee(kind: .unshield, numActions: 2)
         case .coreToPlatform:
-            // Address-funding asset lock: the required processing balance
-            // (the same 50k-duff base the Rust side reserves for address
-            // funding). The funding ST's metered fee is extra and only
-            // knowable on-chain, so this is a lower bound.
-            return CoreToShieldedAmountPolicy.assetLockBaseCostCredits
+            // Address-funding asset lock: the headroom the coordinator adds
+            // ON TOP of the amount, so Amount + Network fee equals Total
+            // exactly. The funding ST's metered fee comes out of it; the
+            // unspent part lands back on the Platform balance.
+            return CoreToPlatformAmountPolicy.topUpHeadroomDuffs * 1000
         case .platformToCore:
             // The exact transition fee the preflight already netted out of
             // the payout amount.
@@ -250,22 +250,31 @@ struct InternalTransferConfirmSheet: View {
         return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
     }
 
-    /// What actually leaves the source balance. Core→Shielded charges the
-    /// pool fee on top of the amount (the executed lock value); every other
-    /// route's total is the amount itself. "—" when the fee estimate is
-    /// unavailable — `canContinue` fails closed before that can be confirmed,
-    /// but the row must never show the un-inflated number.
+    /// What actually leaves the source balance. Both Core-funded asset-lock
+    /// routes charge their fee/headroom on top of the amount (the executed
+    /// lock value); every other route's total is the amount itself. "—" when
+    /// the fee estimate is unavailable — `canContinue` fails closed before
+    /// that can be confirmed, but the row must never show the un-inflated
+    /// number.
     private var totalString: String {
-        guard route == .coreToShielded else {
+        switch route {
+        case .coreToShielded:
+            guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
+                  let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
+                      forAmountDuffs: amountDuffsUnsigned,
+                      poolFeeCredits: poolFeeCredits),
+                  let signedLockDuffs = Int64(exactly: lockDuffs)
+            else { return "—" }
+            return signedLockDuffs.formattedDashAmount
+        case .coreToPlatform:
+            guard let lockDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
+                      forAmountDuffs: amountDuffsUnsigned),
+                  let signedLockDuffs = Int64(exactly: lockDuffs)
+            else { return "—" }
+            return signedLockDuffs.formattedDashAmount
+        default:
             return dashDuffs.formattedDashAmount
         }
-        guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
-              let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
-                  forAmountDuffs: amountDuffsUnsigned,
-                  poolFeeCredits: poolFeeCredits),
-              let signedLockDuffs = Int64(exactly: lockDuffs)
-        else { return "—" }
-        return signedLockDuffs.formattedDashAmount
     }
 
 
@@ -480,7 +489,7 @@ struct InternalTransferConfirmSheet: View {
                     amountCredits: creditsAmount,
                     sweepAll: isFullShieldedSweep)
             case .coreToPlatform:
-                await coordinator.performFundPlatform(amountDuffs: amountDuffsUnsigned)
+                await coordinator.performFundPlatform(recipientAmountDuffs: amountDuffsUnsigned)
             case .platformToCore:
                 await coordinator.performPlatformWithdraw(
                     amountCredits: creditsAmount,

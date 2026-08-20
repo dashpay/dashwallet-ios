@@ -457,6 +457,28 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 poolFeeCredits: 212_851_200))
     }
 
+    func testCoreToPlatformHeadroomMatchesTheCreditBaseCost() {
+        // One source of truth: the duff headroom is the credit-denominated
+        // processing base cost, whole-duff exact (50k duffs ↔ 50M credits).
+        XCTAssertEqual(CoreToPlatformAmountPolicy.topUpHeadroomDuffs, 50_000)
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.topUpHeadroomDuffs * 1000,
+            CoreToShieldedAmountPolicy.assetLockBaseCostCredits)
+    }
+
+    func testCoreToPlatformLockValueIsAmountPlusHeadroom() {
+        // Fee-on-top: the lock delivers at least the typed amount to the
+        // Platform balance; the ST fee comes out of the headroom.
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: 5_000_000),
+            5_050_000)
+    }
+
+    func testCoreToPlatformLockValueFailsClosedOnOverflow() {
+        XCTAssertNil(
+            CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: UInt64.max))
+    }
+
     func testShieldedSweepChoosesPrefixWithLargestNetPayout() {
         let fees: [Int: UInt64] = [2: 100, 3: 150]
 

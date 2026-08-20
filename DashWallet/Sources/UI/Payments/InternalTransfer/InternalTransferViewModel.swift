@@ -105,6 +105,30 @@ enum CoreToShieldedAmountPolicy {
     }
 }
 
+/// Shared fee-on-top amount boundary for Core → Platform address topups.
+///
+/// The address-funding ST's metered fee is deducted from the locked value
+/// (the single remainder recipient absorbs `lock − fee`), so the lock is
+/// inflated by a fixed headroom: the Platform balance receives at least the
+/// typed amount, and the unspent headroom lands back on the same balance in
+/// the user's favor. Keep the constant here as the one source of truth for
+/// amount validation, Max, the confirm sheet, and the executed lock value.
+@MainActor
+enum CoreToPlatformAmountPolicy {
+    /// Duff headroom the lock carries on top of the typed amount — the
+    /// credit-denominated processing base cost expressed in whole duffs.
+    static let topUpHeadroomDuffs: UInt64 =
+        CoreToShieldedAmountPolicy.assetLockBaseCostCredits / 1000
+
+    /// Fee-on-top L1 lock value that delivers at least `amountDuffs` to the
+    /// wallet's Platform balance. `nil` on UInt64 overflow — callers fail
+    /// closed.
+    static func lockValueDuffs(forAmountDuffs amountDuffs: UInt64) -> UInt64? {
+        let (total, overflow) = amountDuffs.addingReportingOverflow(topUpHeadroomDuffs)
+        return overflow ? nil : total
+    }
+}
+
 /// Shared affordability boundary for every transfer route, whichever balance
 /// it spends.
 ///
@@ -731,13 +755,14 @@ final class InternalTransferViewModel: ObservableObject {
                     ? coreSpendableDuffs - feeDuffs : 0)
 
         case .coreToPlatform:
-            // This asset-lock route carves its processing fee from the locked
-            // value, but the funding transaction is still an L1 spend — only
-            // confirmed UTXOs, and the miner fee comes off the top.
+            // The headroom rides on top of the amount, so the spendable
+            // envelope shrinks by it — same shape as Core → Shielded above.
+            let headroomDuffs = CoreToPlatformAmountPolicy.topUpHeadroomDuffs
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreSpendableDuffs)
+                spendableDuffs: coreSpendableDuffs > headroomDuffs
+                    ? coreSpendableDuffs - headroomDuffs : 0)
 
         case .platformToShielded:
             if awaitingPlatformShieldResync {
@@ -843,11 +868,14 @@ final class InternalTransferViewModel: ObservableObject {
             else { return false }
             return lockDuffs <= coreSpendableDuffs
         case .coreToPlatform:
-            // This asset-lock route carves its processing fee from the locked
-            // value rather than charging it on top. What still bounds it is
-            // the funding spend itself — confirmed UTXOs minus the L1 fee
-            // reserve, which is exactly `coreSpendableDuffs`.
-            return dashDuffsUnsigned <= coreSpendableDuffs
+            // Fee-on-top: the lock value is amount + headroom (the funding
+            // ST's metered fee comes out of the headroom, not the amount),
+            // so the L1 spendable balance must cover both. Fails closed on
+            // overflow.
+            guard let lockDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: dashDuffsUnsigned)
+            else { return false }
+            return lockDuffs <= coreSpendableDuffs
         case .platformToShielded:
             return !isPlatformShieldPreflightLoading
                 && PlatformShieldAmountPolicy.canSubmit(
@@ -885,10 +913,10 @@ final class InternalTransferViewModel: ObservableObject {
     private var feeReserveCredits: UInt64? {
         switch route {
         case .coreToShielded, .coreToPlatform:
-            // Core→Shielded's pool fee is duff-denominated and enforced in
-            // the route branches (`canContinue`, Max) directly; Core→Platform
-            // carves its fee from the locked value. Neither reserves credits
-            // from the source balance here.
+            // Both Core-funded routes charge their fee/headroom ON TOP of the
+            // amount, but duff-denominated and enforced in the route branches
+            // (`canContinue`, Max) directly. Neither reserves credits from
+            // the source balance here.
             return 0
         case .platformToShielded:
             // Governed by the SDK's account/address-aware shield preflight.
@@ -1047,15 +1075,18 @@ final class InternalTransferViewModel: ObservableObject {
                 maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
             }
         case .coreToPlatform:
-            // Fee-aware max: spendable minus the send fee reserve (mirrors
-            // DSAccount.maxOutputAmount), never the raw total — the asset-lock
-            // spends core UTXOs and still needs room for the L1 fee.
-            sourceDuffs = coreSpendableDuffs
-            if sourceDuffs == 0 {
+            // Fee-on-top Max: the lock is amount + headroom, so the largest
+            // topup is the L1-fee-aware spendable minus the headroom.
+            let headroomDuffs = CoreToPlatformAmountPolicy.topUpHeadroomDuffs
+            sourceDuffs = coreSpendableDuffs > headroomDuffs
+                ? coreSpendableDuffs - headroomDuffs : 0
+            if coreSpendableDuffs == 0 {
                 maxNotice = Self.coreZeroMaxMessage(
                     totalDuffs: coreBalanceDuffs,
                     confirmedSpendableDuffs: SwiftDashSDKWalletState.shared.balance?.spendable ?? 0)
-            } else if sourceDuffs < coreBalanceDuffs {
+            } else if sourceDuffs == 0 {
+                maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
+            } else {
                 // The balance card shows the total, so a Max that lands below
                 // it reads as a bug unless the held-back part is accounted for.
                 maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)

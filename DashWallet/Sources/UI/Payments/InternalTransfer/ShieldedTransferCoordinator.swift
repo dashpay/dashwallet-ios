@@ -1015,10 +1015,27 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// (IS/CL-locked) before the funding ST lands. On failure after the lock
     /// committed, `lastAssetLockOutPoint` is captured so "Try again" resumes
     /// that lock via `resumeFundPlatform` instead of stranding it.
-    func performFundPlatform(amountDuffs: UInt64) async {
+    ///
+    /// Fee-on-top: the funding ST's metered fee is deducted from the locked
+    /// value (the remainder recipient absorbs `lock − fee`), so the lock is
+    /// inflated by `CoreToPlatformAmountPolicy.topUpHeadroomDuffs` here —
+    /// the Platform balance receives at least `recipientAmountDuffs`, plus
+    /// whatever the fee leaves of the headroom.
+    func performFundPlatform(recipientAmountDuffs: UInt64) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
-        Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route amount=\(amountDuffs)")
+
+        // The single fee-on-top point, mirroring `performAssetLock`. Fails
+        // closed — a zero amount or overflow must never submit an un-inflated
+        // lock (which could not cover its own processing cost).
+        guard recipientAmountDuffs > 0,
+              let lockValueDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
+                  forAmountDuffs: recipientAmountDuffs)
+        else {
+            handleFailure(CoordinatorError.shieldedPoolFeeUnavailable)
+            return
+        }
+        Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route recipient=\(recipientAmountDuffs) lock=\(lockValueDuffs)")
 
         let env: BasicEnvironment
         do {
@@ -1044,7 +1061,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             fundingType: Self.addressAssetLockFundingType)
 
         do {
-            try await PlatformAddressSyncCoordinator.shared.fundFromCore(amountDuffs: amountDuffs)
+            try await PlatformAddressSyncCoordinator.shared.fundFromCore(amountDuffs: lockValueDuffs)
         } catch {
             stopAssetLockPolling()
             captureLatestAssetLockOutPoint(
