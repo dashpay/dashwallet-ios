@@ -1703,6 +1703,9 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Mulai menggunakan CrowdNode";
 
+/* Core to Platform fee quote request in progress */
+"Getting the network fee quote…" = "Mengambil kuotasi biaya jaringan…";
+
 /* No comment provided by engineer. */
 "Gift card" = "Kartu Hadiah";
 
@@ -4857,6 +4860,9 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Tempat paling privat untuk menyimpan Dash Anda";
 
+/* Core to Platform fee quote unavailable */
+"The network fee quote is unavailable. Check your connection and try again." = "Kuotasi biaya jaringan tidak tersedia. Periksa koneksi Anda dan coba lagi.";
+
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Baris dompet tersimpan tidak memiliki jaringan — tidak dapat menyiapkan sinkronisasi ulang.";
 
@@ -4917,14 +4923,8 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Dana ini berpindah ke saldo Platform Anda dan siap dibelanjakan begitu transfer selesai.";
 
-/* Informational estimate of the Platform fee taken out of the fee reserve */
+/* Advisory estimate of the Platform fee deducted from the locked total */
 "Estimated Platform fee" = "Perkiraan biaya Platform";
-
-/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
-"Fee reserve" = "Cadangan biaya";
-
-/* No comment provided by engineer. */
-"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Dana ini berpindah ke saldo Platform Anda dan siap dibelanjakan begitu transfer selesai. Biaya Platform diambil dari cadangan biaya — apa pun yang tidak digunakan jaringan juga dikreditkan ke saldo Platform Anda.";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

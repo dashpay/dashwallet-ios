@@ -1703,6 +1703,9 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Mit CrowdNode loslegen";
 
+/* Core to Platform fee quote request in progress */
+"Getting the network fee quote…" = "Netzwerk-Gebühr wird abgefragt…";
+
 /* No comment provided by engineer. */
 "Gift card" = "Gutscheinkarte";
 
@@ -4857,6 +4860,9 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Der privateste Ort, um deine Dash aufzubewahren";
 
+/* Core to Platform fee quote unavailable */
+"The network fee quote is unavailable. Check your connection and try again." = "Die Netzwerk-Gebühr konnte nicht abgefragt werden. Prüfe deine Verbindung und versuche es erneut.";
+
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Der gespeicherte Wallet-Eintrag hat kein Netzwerk — eine Neusynchronisierung kann nicht vorbereitet werden.";
 
@@ -4917,14 +4923,8 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Diese Mittel werden in dein Platform-Guthaben verschoben und stehen zum Ausgeben bereit, sobald der Transfer abgeschlossen ist.";
 
-/* Informational estimate of the Platform fee taken out of the fee reserve */
+/* Advisory estimate of the Platform fee deducted from the locked total */
 "Estimated Platform fee" = "Geschätzte Platform-Gebühr";
-
-/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
-"Fee reserve" = "Gebühren-Reserve";
-
-/* No comment provided by engineer. */
-"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Diese Mittel werden in dein Platform-Guthaben verschoben und stehen zum Ausgeben bereit, sobald der Transfer abgeschlossen ist. Die Platform-Gebühr wird aus der Gebühren-Reserve entnommen — was das Netzwerk nicht verbraucht, wird ebenfalls deinem Platform-Guthaben gutgeschrieben.";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

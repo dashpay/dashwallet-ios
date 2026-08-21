@@ -1703,6 +1703,9 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "الشروع في العمل مع CrowdNode";
 
+/* Core to Platform fee quote request in progress */
+"Getting the network fee quote…" = "جارٍ الحصول على عرض رسوم الشبكة…";
+
 /* No comment provided by engineer. */
 "Gift card" = "كرت هدية";
 
@@ -4859,6 +4862,9 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "أكثر الأماكن خصوصية للاحتفاظ بداش الخاصة بك";
 
+/* Core to Platform fee quote unavailable */
+"The network fee quote is unavailable. Check your connection and try again." = "عرض رسوم الشبكة غير متوفر. تحقق من اتصالك وحاول مرة أخرى.";
+
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "سجل المحفظة المحفوظ ليس له شبكة — تعذّر تجهيز إعادة المزامنة.";
 
@@ -4919,14 +4925,8 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "تنتقل هذه الأموال إلى رصيد Platform وتصبح جاهزة للإنفاق بمجرد اكتمال التحويل.";
 
-/* Informational estimate of the Platform fee taken out of the fee reserve */
+/* Advisory estimate of the Platform fee deducted from the locked total */
 "Estimated Platform fee" = "رسوم Platform التقديرية";
-
-/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
-"Fee reserve" = "احتياطي الرسوم";
-
-/* No comment provided by engineer. */
-"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "تنتقل هذه الأموال إلى رصيد Platform وتصبح جاهزة للإنفاق بمجرد اكتمال التحويل. تُخصم رسوم Platform من احتياطي الرسوم — وكل ما لا تستخدمه الشبكة يُضاف أيضًا إلى رصيد Platform الخاص بك.";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

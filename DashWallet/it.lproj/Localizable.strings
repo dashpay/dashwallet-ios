@@ -1703,6 +1703,9 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Iniziare con CrowdNode";
 
+/* Core to Platform fee quote request in progress */
+"Getting the network fee quote…" = "Recupero del preventivo della commissione di rete…";
+
 /* No comment provided by engineer. */
 "Gift card" = "Carta Regalo";
 
@@ -4857,6 +4860,9 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Il posto più privato dove tenere i tuoi Dash";
 
+/* Core to Platform fee quote unavailable */
+"The network fee quote is unavailable. Check your connection and try again." = "Il preventivo della commissione di rete non è disponibile. Controlla la connessione e riprova.";
+
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "La riga di portafoglio salvata non ha una rete: impossibile programmare una risincronizzazione.";
 
@@ -4917,14 +4923,8 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Questi fondi si spostano nel tuo saldo Platform e sono pronti da spendere non appena il trasferimento è completato.";
 
-/* Informational estimate of the Platform fee taken out of the fee reserve */
+/* Advisory estimate of the Platform fee deducted from the locked total */
 "Estimated Platform fee" = "Commissione Platform stimata";
-
-/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
-"Fee reserve" = "Riserva commissione";
-
-/* No comment provided by engineer. */
-"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Questi fondi si spostano nel tuo saldo Platform e sono pronti da spendere non appena il trasferimento è completato. La commissione Platform viene prelevata dalla riserva commissione — ciò che la rete non utilizza viene comunque accreditato sul tuo saldo Platform.";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

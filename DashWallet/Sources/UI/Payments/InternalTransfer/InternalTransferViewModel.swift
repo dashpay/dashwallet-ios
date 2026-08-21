@@ -105,54 +105,117 @@ enum CoreToShieldedAmountPolicy {
     }
 }
 
-/// Shared fee-on-top amount boundary for Core → Platform address topups.
+/// App-side value copy of the SDK's Core → Platform funding fee quote
+/// (`getAddressFundingFeeQuote`). FFI-free so the reserve math below stays
+/// cheap to regression-test with mock quotes.
+struct CoreToPlatformFundingQuote: Equatable {
+    /// State-aware estimate of the fee the network would charge, INCLUDING
+    /// the `userFeeIncrease` the quote was requested with. Advisory — a
+    /// single node's planning data, not a proven upper bound.
+    let estimatedFeeCredits: UInt64
+    /// The consensus admission floor the whole lock must clear or Platform
+    /// rejects the funding ST after the L1 broadcast (stranding the
+    /// outpoint until a resume).
+    let minimumRequiredLockCredits: UInt64
+    /// The committed block height the node quoted on — log/debug only.
+    let stateHeight: UInt64
+
+    init(
+        estimatedFeeCredits: UInt64,
+        minimumRequiredLockCredits: UInt64,
+        stateHeight: UInt64 = 0
+    ) {
+        self.estimatedFeeCredits = estimatedFeeCredits
+        self.minimumRequiredLockCredits = minimumRequiredLockCredits
+        self.stateHeight = stateHeight
+    }
+
+    init(_ quote: ManagedPlatformAddressWallet.AddressFundingFeeQuote) {
+        self.init(
+            estimatedFeeCredits: quote.estimatedFeeCredits,
+            minimumRequiredLockCredits: quote.minimumRequiredLockCredits,
+            stateHeight: quote.stateHeight)
+    }
+}
+
+/// Shared fee-on-top amount boundary for Core → Platform address topups,
+/// sized from a live network quote.
 ///
 /// The address-funding ST's fee is deducted from the locked value (the
 /// single remainder recipient absorbs `lock − fee`), so the lock carries a
-/// funding reserve on top of the typed amount. What the Platform balance
-/// actually receives is `lock − actual fee` — the reserve is sized so the
-/// fee has fit inside it in every scenario tested so far, but there is no
-/// protocol-level guarantee of that on arbitrary live state. Keep the
-/// calculation here as the one source of truth for amount validation, Max,
-/// the confirm sheet, and the executed lock value — all of them must
-/// derive the SAME lock.
-@MainActor
+/// quote-sized funding reserve on top of the typed amount and the Platform
+/// balance receives `lock − actual fee` — at least the typed amount when
+/// the actual fee stays within the reserve. The quote is ADVISORY (a single
+/// node's state-aware estimate, no proof, no guaranteed upper bound); the
+/// margin against the SDK's stuck-ST retry loop is baked in by quoting with
+/// `quoteUserFeeIncrease`. Keep the calculation here as the one source of
+/// truth for amount validation, Max, the confirm sheet, and the executed
+/// lock value — all of them must derive the SAME lock, and the lock frozen
+/// at Continue is exactly the one executed. No quote → every caller fails
+/// closed; there is no static production fallback.
 enum CoreToPlatformAmountPolicy {
-    /// Minimum credits the Platform side requires a one-output address
-    /// funding's lock to cover to start processing: the base cost
-    /// (50_000 duffs × 1000) plus one remainder output at
-    /// `address_funds_transfer_output_cost` (6_000_000 credits). Mirrors
-    /// rs-dpp `AddressFundingFromAssetLockTransition::calculate_min_required_fee`
-    /// with 0 transfer inputs and 1 output. This is an ADMISSION FLOOR,
-    /// not an upper bound of the charged fee. Locking less strands the
-    /// outpoint — Platform rejects the ST only after the L1 broadcast, and
-    /// a resume reuses the same too-small lock.
-    static let minLockCostCredits: UInt64 =
-        CoreToShieldedAmountPolicy.assetLockBaseCostCredits + 6_000_000
+    /// The `userFeeIncrease` every quote is requested with. The SDK's
+    /// chain-lock retry loop can bump a stuck funding's fee by up to 14
+    /// units, so quoting at the ceiling makes `estimatedFeeCredits`
+    /// already include that retry margin — no additional app-side margin
+    /// is applied on top.
+    static let quoteUserFeeIncrease: UInt16 = 14
 
-    /// Wallet-chosen funding reserve (duffs) the lock carries on top of
-    /// the typed amount — a TEMPORARY wallet policy, deliberately
-    /// conservative and DETERMINISTIC. The display-only fee estimate must
-    /// never size the lock, because nothing upper-bounds the charged fee
-    /// formally: it is GroveDB-metered on live state, grows with
-    /// `user_fee_increase` (the SDK's stuck-ST retry bumps it up to
-    /// ~14%), and the pre-execution `validate_fees_of_event` gate
-    /// additionally requires the lock to cover an average-case ESTIMATE
-    /// of that fee. The reserve equals the admission floor, ~3.7× the
-    /// fees observed so far (~15k duffs). The credited value is
-    /// `lock − actual fee`: the drive-abci `expected_fee_calibration`
-    /// tests are regression SAMPLES confirming the reserve for specific
-    /// protocol versions and scenarios — they do NOT prove an upper
-    /// bound of the fee on every possible live GroveDB state, so the
-    /// typed amount is what the user should expect, not a guarantee.
-    static let fundingReserveDuffs: UInt64 = minLockCostCredits / 1000
+    /// Funding reserve (duffs) the lock carries on top of `amountDuffs`:
+    /// covers the quoted fee estimate AND tops the whole lock up to the
+    /// admission floor (`max(estimatedFee, minLock − amount)`), rounded UP
+    /// to a whole duff so the duff-denominated lock always covers the
+    /// credit-denominated requirement. `nil` on overflow — callers fail
+    /// closed.
+    static func reserveDuffs(
+        forAmountDuffs amountDuffs: UInt64,
+        quote: CoreToPlatformFundingQuote
+    ) -> UInt64? {
+        let amountCredits = amountDuffs.multipliedReportingOverflow(by: 1000)
+        guard !amountCredits.overflow else { return nil }
+        let floorGapCredits = quote.minimumRequiredLockCredits > amountCredits.partialValue
+            ? quote.minimumRequiredLockCredits - amountCredits.partialValue
+            : 0
+        let reserveCredits = max(quote.estimatedFeeCredits, floorGapCredits)
+        return reserveCredits / 1000 + (reserveCredits.isMultiple(of: 1000) ? 0 : 1)
+    }
 
-    /// Fee-on-top L1 lock value: amount + funding reserve, so the whole
-    /// lock strictly clears the admission floor for any amount ≥ 1 duff.
-    /// `nil` on UInt64 overflow — callers fail closed.
-    static func lockValueDuffs(forAmountDuffs amountDuffs: UInt64) -> UInt64? {
-        let (total, overflow) = amountDuffs.addingReportingOverflow(fundingReserveDuffs)
+    /// Fee-on-top L1 lock value: amount + quote-sized reserve. By
+    /// construction `lock × 1000 ≥ minimumRequiredLockCredits` and
+    /// `reserve × 1000 ≥ estimatedFeeCredits`. `nil` on overflow — callers
+    /// fail closed.
+    static func lockValueDuffs(
+        forAmountDuffs amountDuffs: UInt64,
+        quote: CoreToPlatformFundingQuote
+    ) -> UInt64? {
+        guard let reserve = reserveDuffs(forAmountDuffs: amountDuffs, quote: quote)
+        else { return nil }
+        let (total, overflow) = amountDuffs.addingReportingOverflow(reserve)
         return overflow ? nil : total
+    }
+
+    /// Largest topup amount the spendable balance can fund: the whole
+    /// spendable envelope goes into the lock, minus the rounded-up fee
+    /// estimate. 0 when the fee alone exhausts the balance, or when even
+    /// locking the entire spendable balance could not clear the admission
+    /// floor (a smaller amount only widens the floor gap, so no amount
+    /// works).
+    static func maxAmountDuffs(
+        spendableDuffs: UInt64,
+        quote: CoreToPlatformFundingQuote
+    ) -> UInt64 {
+        let fee = quote.estimatedFeeCredits
+        let feeDuffs = fee / 1000 + (fee.isMultiple(of: 1000) ? 0 : 1)
+        let spendableCredits = spendableDuffs.multipliedReportingOverflow(by: 1000)
+        guard spendableDuffs > feeDuffs,
+              // Overflowed spendable credits trivially exceed any floor.
+              spendableCredits.overflow
+                  || spendableCredits.partialValue >= quote.minimumRequiredLockCredits
+        else { return 0 }
+        // With `amount × 1000 + reserve ≥ minLock` already satisfied at this
+        // amount, `reserveDuffs` reduces to the fee term, so
+        // `lockValueDuffs(max) == spendableDuffs` exactly.
+        return spendableDuffs - feeDuffs
     }
 
     /// What actually STAYS in the Core balance after a Max fill executes:
@@ -162,13 +225,31 @@ enum CoreToPlatformAmountPolicy {
     /// overflow) — callers show no held-back notice.
     static func maxHeldBackDuffs(
         coreBalanceDuffs: UInt64,
-        maxAmountDuffs: UInt64
+        maxAmountDuffs: UInt64,
+        quote: CoreToPlatformFundingQuote
     ) -> UInt64? {
-        guard let lockDuffs = lockValueDuffs(forAmountDuffs: maxAmountDuffs),
+        guard let lockDuffs = lockValueDuffs(forAmountDuffs: maxAmountDuffs, quote: quote),
               coreBalanceDuffs > lockDuffs
         else { return nil }
         return coreBalanceDuffs - lockDuffs
     }
+
+    #if DEBUG || DASH_TESTNET
+    /// TEMPORARY dev-only fallback for networks whose DAPI does not yet
+    /// serve `getAddressFundingFeeQuote`. Default OFF: even dev builds fail
+    /// closed on a quote failure unless a developer flips this locally, and
+    /// release builds have no fallback at all. The fallback reproduces the
+    /// pre-quote deterministic policy: reserve = the one-output admission
+    /// floor (50_000 duffs base cost + 6_000_000 credits remainder-output
+    /// cost = 56_000 duffs), which covered the observed ~15k-duff fees with
+    /// ~3.7× headroom on the networks tested.
+    /// TODO(quote-dapi): delete once every supported network's DAPI serves
+    /// the quote endpoint.
+    static let useDevFallbackQuote = false
+    static let devFallbackQuote = CoreToPlatformFundingQuote(
+        estimatedFeeCredits: 56_000_000,
+        minimumRequiredLockCredits: 56_000_000)
+    #endif
 }
 
 /// Shared affordability boundary for every transfer route, whichever balance
@@ -435,6 +516,16 @@ final class InternalTransferViewModel: ObservableObject {
     @Published private(set) var withdrawalPreflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
     private var withdrawalPreflightTask: Task<Void, Never>?
 
+    /// Live network fee quote for the Core → Platform topup — the sole
+    /// production source of the funding reserve. `nil` while loading or
+    /// after a failure; every consumer (validation, Continue, Max, the
+    /// confirm sheet's fee/total) fails closed on `nil` rather than falling
+    /// back to a static reserve.
+    @Published private(set) var coreToPlatformQuote: CoreToPlatformFundingQuote?
+    @Published private(set) var isCoreToPlatformQuoteLoading = false
+    private var coreToPlatformQuoteTask: Task<Void, Never>?
+    private var coreToPlatformQuoteGeneration: UInt64 = 0
+
     /// SDK-owned selection capacity for Platform → Shielded. `nil` while a
     /// request is loading or after it fails; both states fail closed rather
     /// than falling back to the aggregate Platform balance.
@@ -582,6 +673,12 @@ final class InternalTransferViewModel: ObservableObject {
             refreshPlatformShieldPreflight()
         } else {
             cancelPlatformShieldPreflight()
+        }
+
+        if route == .coreToPlatform {
+            refreshCoreToPlatformQuote()
+        } else {
+            cancelCoreToPlatformQuote()
         }
     }
 
@@ -797,15 +894,21 @@ final class InternalTransferViewModel: ObservableObject {
                     ? coreSpendableDuffs - feeDuffs : 0)
 
         case .coreToPlatform:
-            // The funding reserve rides on top of the amount, so the
+            // The quote-sized reserve rides on top of the amount, so the
             // spendable envelope shrinks by it — same shape as
-            // Core → Shielded above.
-            let reserveDuffs = CoreToPlatformAmountPolicy.fundingReserveDuffs
+            // Core → Shielded above. No quote → fail closed with why.
+            if isCoreToPlatformQuoteLoading {
+                return Self.coreToPlatformQuoteLoadingMessage
+            }
+            guard let quote = coreToPlatformQuote else {
+                return Self.coreToPlatformQuoteUnavailableMessage
+            }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
                 requestedDuffs: dashDuffsUnsigned,
-                spendableDuffs: coreSpendableDuffs > reserveDuffs
-                    ? coreSpendableDuffs - reserveDuffs : 0)
+                spendableDuffs: CoreToPlatformAmountPolicy.maxAmountDuffs(
+                    spendableDuffs: coreSpendableDuffs,
+                    quote: quote))
 
         case .platformToShielded:
             if awaitingPlatformShieldResync {
@@ -893,6 +996,20 @@ final class InternalTransferViewModel: ObservableObject {
         "There was an error, please try again later",
         comment: "Internal transfer fee estimate unavailable")
 
+    private static let coreToPlatformQuoteLoadingMessage = NSLocalizedString(
+        "Getting the network fee quote…",
+        comment: "Core to Platform fee quote request in progress")
+
+    /// Shared with `ShieldedTransferCoordinator.CoordinatorError` — the
+    /// coordinator's fail-closed guard names the same missing quote.
+    /// `nonisolated` so the error's non-main-actor `errorDescription` can
+    /// reach it; the body is pure string work.
+    nonisolated static var coreToPlatformQuoteUnavailableMessage: String {
+        NSLocalizedString(
+            "The network fee quote is unavailable. Check your connection and try again.",
+            comment: "Core to Platform fee quote unavailable")
+    }
+
     var canContinue: Bool {
         // Gate on duffs, not raw DASH: a sub-duff amount (e.g. 1e-9 DASH)
         // renders as 0 in the confirm sheet, so it must not enable Continue —
@@ -911,12 +1028,15 @@ final class InternalTransferViewModel: ObservableObject {
             else { return false }
             return lockDuffs <= coreSpendableDuffs
         case .coreToPlatform:
-            // Fee-on-top: the lock value is amount + funding reserve (the
-            // ST's fee is taken from the reserve, not the amount), so the
-            // L1 spendable balance must cover both. Fails closed on
-            // overflow.
-            guard let lockDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
-                forAmountDuffs: dashDuffsUnsigned)
+            // Fee-on-top: the lock value is amount + quote-sized reserve
+            // (the ST's fee is taken from the reserve, not the amount), so
+            // the L1 spendable balance must cover both. Fails closed while
+            // the quote is loading/unavailable and on overflow.
+            guard !isCoreToPlatformQuoteLoading,
+                  let quote = coreToPlatformQuote,
+                  let lockDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
+                      forAmountDuffs: dashDuffsUnsigned,
+                      quote: quote)
             else { return false }
             return lockDuffs <= coreSpendableDuffs
         case .platformToShielded:
@@ -1006,13 +1126,12 @@ final class InternalTransferViewModel: ObservableObject {
         case .shieldedToPlatform:
             return try? PlatformWalletManager.estimateShieldedFee(kind: .unshield, numActions: 2)
         case .coreToPlatform:
-            // The funding ST's expected fee (SDK estimate, pinned by the
-            // drive-abci calibration tests) — DISPLAY-ONLY: it never sizes
-            // the lock. The row is labeled "Estimated Platform fee"; the
-            // fee is taken out of the funding reserve
-            // (`confirmFeeReserveCredits`), so Amount + Fee reserve equals
-            // Total and the estimate is informational. `nil` renders "—".
-            return coreToPlatformExpectedFeeCredits
+            // The node's state-aware estimate of the funding ST's fee
+            // (already including the retry-ceiling `userFeeIncrease`). The
+            // row is labeled "Estimated Platform fee" — advisory, not a
+            // guarantee; the actual fee is deducted from the executed
+            // lock's reserve. `nil` renders "—".
+            return coreToPlatformQuote?.estimatedFeeCredits
         case .platformToCore:
             // The exact transition fee the preflight already netted out of
             // the payout amount.
@@ -1020,24 +1139,18 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
-    /// SDK estimate of the funding ST's fee for the canonical
-    /// Core → Platform topup (0 inputs, 1 remainder output); `nil` when
-    /// the estimator is unavailable. Fetched ONCE per view model — the
-    /// single frozen quote every consumer shares (the FFI is a pure
-    /// constant formula, but consumers must not each call it separately).
-    private lazy var coreToPlatformExpectedFeeCredits: UInt64? =
-        try? ManagedPlatformAddressWallet.estimateAddressFundingFee(
-            inputCount: 0,
-            outputCount: 1)
-
-    /// Resolved "Fee reserve" row (credits) for the confirm sheet — the
-    /// FULL funding reserve the Core → Platform lock carries on top of the
-    /// amount. The network's fee is taken out of it and the unused part is
-    /// credited to the Platform balance, so Amount + Fee reserve = Total.
-    /// `nil` (row hidden) for every other route.
-    var confirmFeeReserveCredits: UInt64? {
-        guard route == .coreToPlatform else { return nil }
-        return CoreToPlatformAmountPolicy.fundingReserveDuffs * 1000
+    /// The exact L1 lock value the Core → Platform submission will execute:
+    /// amount + quote-sized reserve. Resolved here (fee math is banned in
+    /// View structs) and FROZEN into the confirmation at Continue — the
+    /// coordinator receives this value verbatim and never recomputes it, so
+    /// the Total the user confirms is exactly the lock executed. `nil`
+    /// while the quote is unavailable or on overflow — `canContinue` fails
+    /// closed first.
+    var coreToPlatformLockValueDuffs: UInt64? {
+        guard route == .coreToPlatform, let quote = coreToPlatformQuote else { return nil }
+        return CoreToPlatformAmountPolicy.lockValueDuffs(
+            forAmountDuffs: dashDuffsUnsigned,
+            quote: quote)
     }
 
     /// Resolved "Total" row (duffs) for the confirm sheet — what actually
@@ -1057,9 +1170,7 @@ final class InternalTransferViewModel: ObservableObject {
             else { return nil }
             return Int64(exactly: lockDuffs)
         case .coreToPlatform:
-            guard let lockDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
-                forAmountDuffs: dashDuffsUnsigned)
-            else { return nil }
+            guard let lockDuffs = coreToPlatformLockValueDuffs else { return nil }
             return Int64(exactly: lockDuffs)
         default:
             return dashDuffs
@@ -1199,12 +1310,24 @@ final class InternalTransferViewModel: ObservableObject {
                 maxNotice = Self.coreHeldBackMessage(coreBalanceDuffs - sourceDuffs)
             }
         case .coreToPlatform:
-            // Fee-on-top Max: the lock is amount + funding reserve, so the
-            // largest topup is the L1-fee-aware spendable minus the
-            // reserve.
-            let reserveDuffs = CoreToPlatformAmountPolicy.fundingReserveDuffs
-            sourceDuffs = coreSpendableDuffs > reserveDuffs
-                ? coreSpendableDuffs - reserveDuffs : 0
+            // Fee-on-top Max: the lock is amount + quote-sized reserve, so
+            // the largest topup is the L1-fee-aware spendable minus the
+            // rounded-up quoted fee. No quote → fail closed (fill 0), say
+            // why, and re-arm a failed fetch so tapping Max can retry.
+            if isCoreToPlatformQuoteLoading {
+                maxNotice = Self.coreToPlatformQuoteLoadingMessage
+                sourceDuffs = 0
+                break
+            }
+            guard let quote = coreToPlatformQuote else {
+                maxNotice = Self.coreToPlatformQuoteUnavailableMessage
+                refreshCoreToPlatformQuoteIfNeeded()
+                sourceDuffs = 0
+                break
+            }
+            sourceDuffs = CoreToPlatformAmountPolicy.maxAmountDuffs(
+                spendableDuffs: coreSpendableDuffs,
+                quote: quote)
             if coreSpendableDuffs == 0 {
                 maxNotice = Self.coreZeroMaxMessage(
                     totalDuffs: coreBalanceDuffs,
@@ -1213,7 +1336,8 @@ final class InternalTransferViewModel: ObservableObject {
                 maxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
             } else if let heldBackDuffs = CoreToPlatformAmountPolicy.maxHeldBackDuffs(
                 coreBalanceDuffs: coreBalanceDuffs,
-                maxAmountDuffs: sourceDuffs) {
+                maxAmountDuffs: sourceDuffs,
+                quote: quote) {
                 // The balance card shows the total, so a Max that lands below
                 // it reads as a bug unless the part staying in Core (L1 fee
                 // headroom + unconfirmed coins) is accounted for. The funding
@@ -1369,6 +1493,64 @@ final class InternalTransferViewModel: ObservableObject {
             self.withdrawalPreflight = result
             self.withdrawalPreflightTask = nil
         }
+    }
+
+    /// Fetch (or re-fetch) the Core → Platform funding fee quote. Replaces
+    /// any in-flight request; a generation token keeps a late result from an
+    /// older request winning. On failure the quote stays `nil` — validation,
+    /// Continue, Max, and the confirm rows all fail closed (dev builds can
+    /// opt into `CoreToPlatformAmountPolicy.useDevFallbackQuote` while the
+    /// DAPI endpoint is not deployed; production has no fallback).
+    private func refreshCoreToPlatformQuote() {
+        guard route == .coreToPlatform else { return }
+
+        coreToPlatformQuoteGeneration &+= 1
+        let generation = coreToPlatformQuoteGeneration
+        coreToPlatformQuoteTask?.cancel()
+        coreToPlatformQuote = nil
+        isCoreToPlatformQuoteLoading = true
+
+        coreToPlatformQuoteTask = Task { [weak self] in
+            var quote: CoreToPlatformFundingQuote?
+            do {
+                let result = try await PlatformAddressSyncCoordinator.shared
+                    .quoteCoreToPlatformFundingFee(
+                        userFeeIncrease: CoreToPlatformAmountPolicy.quoteUserFeeIncrease)
+                quote = CoreToPlatformFundingQuote(result)
+            } catch {
+                #if DEBUG || DASH_TESTNET
+                if CoreToPlatformAmountPolicy.useDevFallbackQuote {
+                    // TEMPORARY dev-only path — see the flag's doc comment.
+                    quote = CoreToPlatformAmountPolicy.devFallbackQuote
+                }
+                #endif
+            }
+            guard let self,
+                  !Task.isCancelled,
+                  self.coreToPlatformQuoteGeneration == generation
+            else { return }
+            self.coreToPlatformQuote = quote
+            self.isCoreToPlatformQuoteLoading = false
+            self.coreToPlatformQuoteTask = nil
+        }
+    }
+
+    /// Re-arm a failed quote fetch (Max tap, screen retry) without
+    /// restarting one that is still in flight.
+    private func refreshCoreToPlatformQuoteIfNeeded() {
+        guard route == .coreToPlatform,
+              coreToPlatformQuote == nil,
+              coreToPlatformQuoteTask == nil
+        else { return }
+        refreshCoreToPlatformQuote()
+    }
+
+    private func cancelCoreToPlatformQuote() {
+        coreToPlatformQuoteGeneration &+= 1
+        coreToPlatformQuoteTask?.cancel()
+        coreToPlatformQuoteTask = nil
+        coreToPlatformQuote = nil
+        isCoreToPlatformQuoteLoading = false
     }
 
     private func refreshPlatformShieldPreflightIfNeeded() {

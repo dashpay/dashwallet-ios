@@ -21,7 +21,7 @@ import SwiftDashSDK
 ///   - `.platformToShielded` → `performShield(amountCredits:)`
 ///   - `.shieldedToCore`     → `performWithdraw(amountCredits:)`
 ///   - `.shieldedToPlatform` → `performUnshield(amountCredits:)`
-///   - `.coreToPlatform`     → `performFundPlatform(recipientAmountDuffs:)`
+///   - `.coreToPlatform`     → `performFundPlatform(recipientAmountDuffs:lockValueDuffs:)`
 ///   - `.platformToCore`     → `performPlatformWithdrawAll()` (full balance)
 struct InternalTransferConfirmSheet: View {
 
@@ -39,12 +39,12 @@ struct InternalTransferConfirmSheet: View {
     /// balance (`InternalTransferViewModel.confirmTotalDuffs`). `nil`
     /// renders as "—".
     var totalDuffs: Int64? = nil
-    /// Resolved "Fee reserve" row value (credits) — the FULL Core→Platform
-    /// funding reserve the fee is taken from; whatever the network doesn't
-    /// use is credited to the Platform balance
-    /// (`InternalTransferViewModel.confirmFeeReserveCredits`). `nil` hides
-    /// the row.
-    var feeReserveCredits: UInt64? = nil
+    /// Frozen Core→Platform lock value (duffs) — amount + quote-sized
+    /// reserve, resolved by `InternalTransferViewModel` from the live fee
+    /// quote at Continue and executed verbatim (the coordinator never
+    /// recomputes it), so the Total the user confirms is exactly the lock
+    /// executed. Only meaningful for `.coreToPlatform`.
+    var coreToPlatformLockDuffs: UInt64? = nil
     /// Preflighted `AddressCreditWithdrawalTransition` fee — only meaningful
     /// for `.platformToCore` (the fee headroom / netting basis).
     var withdrawalFeeCredits: UInt64? = nil
@@ -244,25 +244,14 @@ struct InternalTransferConfirmSheet: View {
         totalDuffs?.formattedDashAmount ?? "—"
     }
 
-    /// "Fee reserve" as DASH text — the FULL funding reserve the lock
-    /// carries on top of the amount (Amount + Fee reserve = Total). The
-    /// network's fee is taken out of it and the unused part is credited to
-    /// the Platform balance. `nil` hides the row (non-topup routes).
-    private var feeReserveString: String? {
-        guard let credits = feeReserveCredits,
-              let duffs = Int64(exactly: credits / 1000)
-        else { return nil }
-        return duffs.formattedDashAmount
-    }
-
-    /// The fee row's label: the Core→Platform fee is an informational
-    /// estimate (the reserve, not the estimate, sizes the lock), so name
-    /// it honestly; other routes keep the plain "Network fee".
+    /// The fee row's label: the Core→Platform fee is the node's advisory
+    /// estimate (charged out of the executed lock, not guaranteed exact),
+    /// so name it honestly; other routes keep the plain "Network fee".
     private var feeRowLabel: String {
         route == .coreToPlatform
             ? NSLocalizedString(
                 "Estimated Platform fee",
-                comment: "Informational estimate of the Platform fee taken out of the fee reserve")
+                comment: "Advisory estimate of the Platform fee deducted from the locked total")
             : NSLocalizedString("Network fee", comment: "")
     }
 
@@ -281,14 +270,6 @@ struct InternalTransferConfirmSheet: View {
             summaryRow(
                 label: feeRowLabel,
                 value: networkFeeString)
-            if let feeReserveString {
-                divider
-                summaryRow(
-                    label: NSLocalizedString(
-                        "Fee reserve",
-                        comment: "The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance"),
-                    value: feeReserveString)
-            }
             divider
             summaryRow(
                 label: NSLocalizedString("Total", comment: ""),
@@ -424,7 +405,7 @@ struct InternalTransferConfirmSheet: View {
                 comment: "")
         case .coreToPlatform:
             return NSLocalizedString(
-                "These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too.",
+                "These funds move to your Platform balance and are ready to spend as soon as the transfer completes.",
                 comment: "")
         case .platformToCore:
             return isFullPlatformWithdrawal
@@ -485,7 +466,9 @@ struct InternalTransferConfirmSheet: View {
                     amountCredits: creditsAmount,
                     sweepAll: isFullShieldedSweep)
             case .coreToPlatform:
-                await coordinator.performFundPlatform(recipientAmountDuffs: amountDuffsUnsigned)
+                await coordinator.performFundPlatform(
+                    recipientAmountDuffs: amountDuffsUnsigned,
+                    lockValueDuffs: coreToPlatformLockDuffs)
             case .platformToCore:
                 await coordinator.performPlatformWithdraw(
                     amountCredits: creditsAmount,

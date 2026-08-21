@@ -1703,6 +1703,9 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "آغاز کار با کراودنود";
 
+/* Core to Platform fee quote request in progress */
+"Getting the network fee quote…" = "در حال دریافت برآورد کارمزد شبکه…";
+
 /* No comment provided by engineer. */
 "Gift card" = "کارت هدیه";
 
@@ -4857,6 +4860,9 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "خصوصی‌ترین جا برای نگهداری دش‌های شما";
 
+/* Core to Platform fee quote unavailable */
+"The network fee quote is unavailable. Check your connection and try again." = "برآورد کارمزد شبکه در دسترس نیست. اتصال خود را بررسی کنید و دوباره تلاش کنید.";
+
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "ردیف ذخیره‌شده کیف پول شبکه ندارد — نمی‌توان همزمان‌سازی مجدد را آماده کرد.";
 
@@ -4917,14 +4923,8 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "این وجوه به موجودی Platform شما می‌روند و به‌محض تکمیل انتقال آماده خرج‌اند.";
 
-/* Informational estimate of the Platform fee taken out of the fee reserve */
+/* Advisory estimate of the Platform fee deducted from the locked total */
 "Estimated Platform fee" = "کارمزد Platform برآوردی";
-
-/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
-"Fee reserve" = "ذخیره کارمزد";
-
-/* No comment provided by engineer. */
-"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "این وجوه به موجودی Platform شما می‌روند و به‌محض تکمیل انتقال آماده خرج‌اند. کارمزد Platform از ذخیره کارمزد برداشته می‌شود — هر مقداری که شبکه استفاده نکند نیز به موجودی Platform شما اضافه می‌شود.";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

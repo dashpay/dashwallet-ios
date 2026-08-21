@@ -457,79 +457,152 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 poolFeeCredits: 212_851_200))
     }
 
-    func testCoreToPlatformReserveCoversTheAdmissionFloor() {
-        // The admission floor for a one-output funding: processing base
-        // cost (50k duffs) + one remainder output at
-        // address_funds_transfer_output_cost (6M credits) = 56k duffs.
+    // MARK: Core → Platform quote-sized reserve policy
+    //
+    // Mock-quote tests of the pure reserve math. Quote loading/unavailable
+    // failing closed (Continue disabled, Max filling 0) is ViewModel state
+    // handled in `InternalTransferViewModel` and exercised by the testnet
+    // smoke while the unit-test target stays broken.
+
+    /// A quote whose fee is not a whole-duff multiple, with the real
+    /// one-output admission floor (56M credits).
+    private static let fundingQuote = CoreToPlatformFundingQuote(
+        estimatedFeeCredits: 15_432_100,
+        minimumRequiredLockCredits: 56_000_000)
+
+    func testCoreToPlatformReserveIsTheRoundedUpQuotedFee() {
+        // Amount large enough that the floor is already cleared: the
+        // reserve is the quoted fee estimate rounded UP to a whole duff.
         XCTAssertEqual(
-            CoreToPlatformAmountPolicy.minLockCostCredits,
-            CoreToShieldedAmountPolicy.assetLockBaseCostCredits + 6_000_000)
-        // The wallet funding reserve equals the floor, so any lock
-        // (amount ≥ 1 duff) strictly clears it by construction.
-        XCTAssertEqual(CoreToPlatformAmountPolicy.fundingReserveDuffs, 56_000)
+            CoreToPlatformAmountPolicy.reserveDuffs(
+                forAmountDuffs: 5_000_000,
+                quote: Self.fundingQuote),
+            15_433)
+        // An exact duff multiple must NOT gain a spurious +1.
         XCTAssertEqual(
-            CoreToPlatformAmountPolicy.fundingReserveDuffs * 1000,
-            CoreToPlatformAmountPolicy.minLockCostCredits)
+            CoreToPlatformAmountPolicy.reserveDuffs(
+                forAmountDuffs: 5_000_000,
+                quote: CoreToPlatformFundingQuote(
+                    estimatedFeeCredits: 15_000_000,
+                    minimumRequiredLockCredits: 56_000_000)),
+            15_000)
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: 5_000_000,
+                quote: Self.fundingQuote),
+            5_015_433)
     }
 
-    func testCoreToPlatformLockIsAmountPlusTheReserveDeterministically() {
-        // The lock is amount + reserve — DETERMINISTIC, independent of the
-        // display-only fee estimate (nothing formally upper-bounds the
-        // charged fee, so the estimate must never size the lock).
-        XCTAssertEqual(
-            CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: 5_000_000),
-            5_056_000)
-        // Micro boundary: even a 1-duff topup locks strictly above the
-        // admission floor, or Platform rejects the funding ST after the L1
-        // broadcast and the outpoint is stranded.
-        let microLock = CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: 1)
-        XCTAssertEqual(microLock, 56_001)
-        XCTAssertGreaterThan(
-            (microLock ?? 0) * 1000,
-            CoreToPlatformAmountPolicy.minLockCostCredits)
+    func testCoreToPlatformTinyAmountReserveTopsUpToTheAdmissionFloor() {
+        // 1-duff topup: the floor gap (56M − 1000 credits) dominates the
+        // fee estimate, so the whole lock still clears the floor — locking
+        // less would strand the outpoint (Platform rejects the funding ST
+        // only after the L1 broadcast).
+        let quote = Self.fundingQuote
+        let reserve = CoreToPlatformAmountPolicy.reserveDuffs(
+            forAmountDuffs: 1, quote: quote)
+        XCTAssertEqual(reserve, 55_999)
+        let lock = CoreToPlatformAmountPolicy.lockValueDuffs(
+            forAmountDuffs: 1, quote: quote)
+        XCTAssertEqual(lock, 56_000)
+        XCTAssertGreaterThanOrEqual(
+            (lock ?? 0) * 1000,
+            quote.minimumRequiredLockCredits)
+        // And the reserve still covers the fee estimate.
+        XCTAssertGreaterThanOrEqual(
+            (reserve ?? 0) * 1000,
+            quote.estimatedFeeCredits)
     }
 
     func testCoreToPlatformMaxAmountLockEqualsTheSpendable() {
         // Confirmation/execution consistency at Max: the amount Max fills
-        // (spendable − reserve) locks EXACTLY the spendable balance — the
-        // confirmed Total and the executed lock come from the same policy
-        // function, so they cannot diverge.
+        // (spendable − rounded-up fee) locks EXACTLY the spendable balance
+        // — the confirmed Total, the frozen submission lock, and the
+        // executed lock all come from `lockValueDuffs`, so they cannot
+        // diverge.
         let spendable: UInt64 = 4_043_550_440
-        let maxAmount = spendable - CoreToPlatformAmountPolicy.fundingReserveDuffs
+        let maxAmount = CoreToPlatformAmountPolicy.maxAmountDuffs(
+            spendableDuffs: spendable,
+            quote: Self.fundingQuote)
+        XCTAssertEqual(maxAmount, spendable - 15_433)
         XCTAssertEqual(
-            CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: maxAmount),
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: maxAmount,
+                quote: Self.fundingQuote),
             spendable)
+    }
+
+    func testCoreToPlatformMaxFailsClosedWhenTheBalanceCannotFund() {
+        // Fee alone exhausts the spendable balance.
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.maxAmountDuffs(
+                spendableDuffs: 15_433,
+                quote: Self.fundingQuote),
+            0)
+        // Even locking the entire spendable balance cannot clear the
+        // admission floor — shrinking the amount only widens the gap, so
+        // no amount works.
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.maxAmountDuffs(
+                spendableDuffs: 55_999,
+                quote: Self.fundingQuote),
+            0)
+        // Exactly at the floor: fundable.
+        XCTAssertEqual(
+            CoreToPlatformAmountPolicy.maxAmountDuffs(
+                spendableDuffs: 56_000,
+                quote: Self.fundingQuote),
+            56_000 - 15_433)
     }
 
     func testCoreToPlatformMaxHeldBackExcludesTheFundingReserve() {
         // The held-back notice describes what STAYS in Core after the Max
-        // lock executes. The funding reserve leaves Core inside the lock,
-        // so it must never be counted as held back.
-        let reserve = CoreToPlatformAmountPolicy.fundingReserveDuffs
+        // lock executes. The reserve leaves Core inside the lock, so it
+        // must never be counted as held back.
+        let spendable: UInt64 = 4_043_550_440
+        let maxAmount = CoreToPlatformAmountPolicy.maxAmountDuffs(
+            spendableDuffs: spendable,
+            quote: Self.fundingQuote)
 
         // Whole balance spendable: Max locks all of it — nothing stays in
-        // Core, so no notice (a "0.00056 DASH is held back" line here
-        // would falsely report the reserve as staying behind).
-        let spendable: UInt64 = 4_043_550_440
+        // Core, so no notice.
         XCTAssertNil(
             CoreToPlatformAmountPolicy.maxHeldBackDuffs(
                 coreBalanceDuffs: spendable,
-                maxAmountDuffs: spendable - reserve))
+                maxAmountDuffs: maxAmount,
+                quote: Self.fundingQuote))
 
         // With unconfirmed coins on top of the spendable envelope, the
-        // held-back value is exactly those coins — the reserve does not
-        // leak into it.
+        // held-back value is exactly those coins.
         let unconfirmed: UInt64 = 123_456
         XCTAssertEqual(
             CoreToPlatformAmountPolicy.maxHeldBackDuffs(
                 coreBalanceDuffs: spendable + unconfirmed,
-                maxAmountDuffs: spendable - reserve),
+                maxAmountDuffs: maxAmount,
+                quote: Self.fundingQuote),
             unconfirmed)
     }
 
     func testCoreToPlatformLockValueFailsClosedOnOverflow() {
+        // amount × 1000 credits overflows.
         XCTAssertNil(
-            CoreToPlatformAmountPolicy.lockValueDuffs(forAmountDuffs: UInt64.max))
+            CoreToPlatformAmountPolicy.reserveDuffs(
+                forAmountDuffs: UInt64.max,
+                quote: Self.fundingQuote))
+        XCTAssertNil(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: UInt64.max,
+                quote: Self.fundingQuote))
+        // The largest amount whose credits fit still resolves (amount +
+        // reserve cannot overflow once amount × 1000 fits — the checked
+        // add in `lockValueDuffs` is defensive).
+        let nearMax = UInt64.max / 1000
+        XCTAssertNotNil(
+            CoreToPlatformAmountPolicy.lockValueDuffs(
+                forAmountDuffs: nearMax,
+                quote: CoreToPlatformFundingQuote(
+                    estimatedFeeCredits: UInt64.max,
+                    minimumRequiredLockCredits: 0)))
     }
 
     func testShieldedSweepChoosesPrefixWithLargestNetPayout() {

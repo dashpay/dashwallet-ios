@@ -1703,6 +1703,9 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Commencer à utiliser CrowdNode";
 
+/* Core to Platform fee quote request in progress */
+"Getting the network fee quote…" = "Obtention du devis des frais de réseau…";
+
 /* No comment provided by engineer. */
 "Gift card" = "Carte-cadeau";
 
@@ -4857,6 +4860,9 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "L'endroit le plus privé où conserver vos Dash";
 
+/* Core to Platform fee quote unavailable */
+"The network fee quote is unavailable. Check your connection and try again." = "Le devis des frais de réseau n'est pas disponible. Vérifiez votre connexion et réessayez.";
+
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "L'entrée de portefeuille enregistrée n'a pas de réseau — impossible de programmer une resynchronisation.";
 
@@ -4917,14 +4923,8 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Ces fonds sont transférés vers votre solde Platform et seront dépensables dès que le transfert sera terminé.";
 
-/* Informational estimate of the Platform fee taken out of the fee reserve */
+/* Advisory estimate of the Platform fee deducted from the locked total */
 "Estimated Platform fee" = "Frais Platform estimés";
-
-/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
-"Fee reserve" = "Réserve de frais";
-
-/* No comment provided by engineer. */
-"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Ces fonds sont transférés vers votre solde Platform et seront dépensables dès que le transfert sera terminé. Les frais Platform sont prélevés sur la réserve de frais — tout ce que le réseau n'utilise pas est également crédité sur votre solde Platform.";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

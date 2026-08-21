@@ -1703,6 +1703,9 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "开始使用CrowdNode";
 
+/* Core to Platform fee quote request in progress */
+"Getting the network fee quote…" = "正在获取网络手续费报价…";
+
 /* No comment provided by engineer. */
 "Gift card" = "礼品卡";
 
@@ -4857,6 +4860,9 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "存放您的 Dash 最私密的地方";
 
+/* Core to Platform fee quote unavailable */
+"The network fee quote is unavailable. Check your connection and try again." = "网络手续费报价不可用。请检查网络连接后重试。";
+
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "已保存的钱包记录没有网络——无法准备重新同步。";
 
@@ -4917,14 +4923,8 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "这些资金将转入您的 Platform 余额，转账完成后即可使用。";
 
-/* Informational estimate of the Platform fee taken out of the fee reserve */
+/* Advisory estimate of the Platform fee deducted from the locked total */
 "Estimated Platform fee" = "预计 Platform 手续费";
-
-/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
-"Fee reserve" = "手续费预留";
-
-/* No comment provided by engineer. */
-"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "这些资金将转入您的 Platform 余额，转账完成后即可使用。 Platform 手续费将从手续费预留中扣除 — 网络未使用的部分也会记入您的 Platform 余额。";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

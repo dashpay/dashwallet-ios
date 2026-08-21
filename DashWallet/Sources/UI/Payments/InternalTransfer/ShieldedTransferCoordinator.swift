@@ -263,6 +263,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case authCancelled
         case authFailed
         case shieldedPoolFeeUnavailable
+        case fundingQuoteUnavailable
         case platformShieldCapacityChanged(maxShieldableCredits: UInt64?)
         case shieldedSweepWaiting(UInt64)
         case shieldedSweepChanged
@@ -293,6 +294,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return NSLocalizedString(
                     "There was an error, please try again later",
                     comment: "Core to Shielded pool fee estimate unavailable")
+            case .fundingQuoteUnavailable:
+                return InternalTransferViewModel.coreToPlatformQuoteUnavailableMessage
             case .platformShieldCapacityChanged(let maxShieldableCredits):
                 guard let maxShieldableCredits else {
                     return NSLocalizedString(
@@ -1017,27 +1020,28 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// that lock via `resumeFundPlatform` instead of stranding it.
     ///
     /// Fee-on-top: the funding ST's fee is deducted from the locked value
-    /// (the remainder recipient absorbs `lock − fee`), so the lock carries
-    /// `CoreToPlatformAmountPolicy.fundingReserveDuffs` on top of
-    /// `recipientAmountDuffs` — a deterministic wallet funding reserve the
-    /// fee is taken from. The Platform balance is credited with
-    /// `lock − actual fee`; the reserve has covered the fee in every
-    /// scenario tested so far, but that is a wallet policy, not a protocol
-    /// guarantee. Deterministic on purpose: the same policy sizes the
-    /// confirm sheet's Total, so the executed lock can never differ from
-    /// what the user confirmed.
-    func performFundPlatform(recipientAmountDuffs: UInt64) async {
+    /// (the remainder recipient absorbs `lock − fee`), so `lockValueDuffs`
+    /// carries a quote-sized funding reserve on top of
+    /// `recipientAmountDuffs` — sized by `CoreToPlatformAmountPolicy` from
+    /// the live `getAddressFundingFeeQuote` and FROZEN into the confirmed
+    /// submission by the ViewModel. This coordinator executes that frozen
+    /// value verbatim and never recomputes it, so the Total the user
+    /// confirmed is exactly the lock executed. The Platform balance is
+    /// credited with `lock − actual fee`; the quote is advisory, not a
+    /// guaranteed upper bound of that fee.
+    func performFundPlatform(recipientAmountDuffs: UInt64, lockValueDuffs: UInt64?) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
 
-        // The single fee-on-top point, mirroring `performAssetLock`. Fails
-        // closed — a zero amount or overflow must never submit an un-inflated
-        // lock (which could not cover its own processing cost).
+        // Fail closed — a zero amount, a missing/overflowed frozen lock, or
+        // a lock that doesn't carry the amount plus a nonzero reserve must
+        // never submit an un-inflated lock (which could not cover its own
+        // processing cost).
         guard recipientAmountDuffs > 0,
-              let lockValueDuffs = CoreToPlatformAmountPolicy.lockValueDuffs(
-                  forAmountDuffs: recipientAmountDuffs)
+              let lockValueDuffs,
+              lockValueDuffs > recipientAmountDuffs
         else {
-            handleFailure(CoordinatorError.shieldedPoolFeeUnavailable)
+            handleFailure(CoordinatorError.fundingQuoteUnavailable)
             return
         }
         Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route recipient=\(recipientAmountDuffs) lock=\(lockValueDuffs)")

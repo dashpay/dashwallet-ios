@@ -1703,6 +1703,9 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Pagsisimula sa CrowdNode";
 
+/* Core to Platform fee quote request in progress */
+"Getting the network fee quote…" = "Kinukuha ang quote ng bayarin sa network…";
+
 /* No comment provided by engineer. */
 "Gift card" = "Gift card";
 
@@ -4857,6 +4860,9 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Ang pinakapribadong lugar para itago ang iyong Dash";
 
+/* Core to Platform fee quote unavailable */
+"The network fee quote is unavailable. Check your connection and try again." = "Hindi available ang quote ng bayarin sa network. Suriin ang iyong koneksyon at subukang muli.";
+
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Walang network ang naka-save na wallet record — hindi maihahanda ang resync.";
 
@@ -4917,14 +4923,8 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Napupunta ang pondong ito sa iyong balanse sa Platform at handa nang gastusin sa oras na matapos ang paglilipat.";
 
-/* Informational estimate of the Platform fee taken out of the fee reserve */
+/* Advisory estimate of the Platform fee deducted from the locked total */
 "Estimated Platform fee" = "Tinatayang bayarin sa Platform";
-
-/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
-"Fee reserve" = "Reserba sa bayarin";
-
-/* No comment provided by engineer. */
-"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Napupunta ang pondong ito sa iyong balanse sa Platform at handa nang gastusin sa oras na matapos ang paglilipat. Ang bayarin sa Platform ay kinukuha mula sa reserba sa bayarin — anumang hindi magamit ng network ay maikekredito rin sa iyong Platform balance.";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

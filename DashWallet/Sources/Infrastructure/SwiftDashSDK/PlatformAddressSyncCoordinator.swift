@@ -608,6 +608,30 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         return (addressWallet, container, recipient, target.accountIndex)
     }
 
+    /// Live, state-aware fee quote for the canonical Core → Platform topup
+    /// (`getAddressFundingFeeQuote` on a node): 0 address inputs, 1
+    /// remainder output at the wallet's own next receive address — the same
+    /// recipient `fundFromCore` resolves. Network call; throws on any
+    /// failure (no offline fallback — the caller decides how to fail
+    /// closed). The quote is advisory planning data from a single node, not
+    /// a proven upper bound of the charged fee.
+    public func quoteCoreToPlatformFundingFee(
+        userFeeIncrease: UInt16
+    ) async throws -> ManagedPlatformAddressWallet.AddressFundingFeeQuote {
+        let (addressWallet, _, recipient, _) = try resolveFundEnvironment()
+        // Serialized `PlatformAddress` in the byte format the node's address
+        // APIs use (rs-dpp `PlatformAddress::to_bytes`, bincode standard):
+        // one variant byte (0 = P2PKH, the only type `resolveFundEnvironment`
+        // admits) followed by the 20-byte hash.
+        let serializedAddress = Data([recipient.addressType]) + recipient.hash
+        let quote = try await addressWallet.quoteFundingFee(
+            recipientAddress: serializedAddress,
+            userFeeIncrease: userFeeIncrease)
+        Self.logger.info(
+            "🛰️ PLATFORM-FUND :: fee quote est=\(quote.estimatedFeeCredits) minLock=\(quote.minimumRequiredLockCredits) height=\(quote.stateHeight) ufi=\(userFeeIncrease)")
+        return quote
+    }
+
     /// Full local wipe of the platform-address sync state — the Sync Info
     /// screen's "Clear" button. Ported from the SwiftExampleApp
     /// `PlatformBalanceSyncService.clearLocalState` contract:

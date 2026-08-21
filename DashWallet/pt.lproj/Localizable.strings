@@ -1703,6 +1703,9 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "Introdução ao CrowdNode";
 
+/* Core to Platform fee quote request in progress */
+"Getting the network fee quote…" = "Obtendo a cotação da taxa de rede…";
+
 /* No comment provided by engineer. */
 "Gift card" = "Vale-presente";
 
@@ -4857,6 +4860,9 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "O lugar mais privado para guardar seus Dash";
 
+/* Core to Platform fee quote unavailable */
+"The network fee quote is unavailable. Check your connection and try again." = "A cotação da taxa de rede não está disponível. Verifique sua conexão e tente novamente.";
+
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "O registro de carteira salvo não tem rede — não é possível preparar uma ressincronização.";
 
@@ -4917,14 +4923,8 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Estes fundos vão para o seu saldo da Platform e ficam prontos para gastar assim que a transferência for concluída.";
 
-/* Informational estimate of the Platform fee taken out of the fee reserve */
+/* Advisory estimate of the Platform fee deducted from the locked total */
 "Estimated Platform fee" = "Taxa de Platform estimada";
-
-/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
-"Fee reserve" = "Reserva de taxa";
-
-/* No comment provided by engineer. */
-"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Estes fundos vão para o seu saldo da Platform e ficam prontos para gastar assim que a transferência for concluída. A taxa de Platform é retirada da reserva de taxa — o que a rede não usar também é creditado no seu saldo Platform.";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";

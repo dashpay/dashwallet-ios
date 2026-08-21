@@ -1703,6 +1703,9 @@
 /* CrowdNode */
 "Getting started with CrowdNode" = "CrowdNode'a başlayın";
 
+/* Core to Platform fee quote request in progress */
+"Getting the network fee quote…" = "Ağ ücreti teklifi alınıyor…";
+
 /* No comment provided by engineer. */
 "Gift card" = "Hediye Kartı";
 
@@ -4857,6 +4860,9 @@
 /* Balance info sheet */
 "The most private place to hold your Dash" = "Dash'lerinizi tutmak için en özel yer";
 
+/* Core to Platform fee quote unavailable */
+"The network fee quote is unavailable. Check your connection and try again." = "Ağ ücreti teklifi kullanılamıyor. Bağlantınızı kontrol edip tekrar deneyin.";
+
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Kayıtlı cüzdan satırının ağı yok — yeniden eşitleme hazırlanamaz.";
 
@@ -4917,14 +4923,8 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "Bu fonlar Platform bakiyenize geçer ve transfer tamamlanır tamamlanmaz harcanmaya hazır olur.";
 
-/* Informational estimate of the Platform fee taken out of the fee reserve */
+/* Advisory estimate of the Platform fee deducted from the locked total */
 "Estimated Platform fee" = "Tahmini Platform ücreti";
-
-/* The Core→Platform funding reserve the fee is taken from; the unused part is credited to the Platform balance */
-"Fee reserve" = "Ücret rezervi";
-
-/* No comment provided by engineer. */
-"These funds move to your Platform balance and are ready to spend as soon as the transfer completes. The Platform fee is taken out of the fee reserve — whatever the network doesn't use is credited to your Platform balance too." = "Bu fonlar Platform bakiyenize geçer ve transfer tamamlanır tamamlanmaz harcanmaya hazır olur. Platform ücreti, ücret rezervinden alınır — ağın kullanmadığı miktar da Platform bakiyenize eklenir.";
 
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
