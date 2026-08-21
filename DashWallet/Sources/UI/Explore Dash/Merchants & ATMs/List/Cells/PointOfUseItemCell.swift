@@ -46,10 +46,13 @@ class PointOfUseItemCell: UITableViewCell {
     func update(with pointOfUse: ExplorePointOfUse) {
         nameLabel.text = pointOfUse.name
 
+        let logoPlaceholder = MerchantLogoPlaceholder.image(merchantName: pointOfUse.name,
+                                                            size: CGSize(width: 36, height: 36),
+                                                            cornerRadius: 8)
         if let urlString = pointOfUse.logoLocation, let url = URL(string: urlString) {
-            logoImageView.sd_setImage(with: url)
+            logoImageView.sd_setImage(with: url, placeholderImage: logoPlaceholder)
         } else {
-            logoImageView.image = UIImage(named: pointOfUse.emptyLogoImageName)
+            logoImageView.image = logoPlaceholder
         }
     }
 

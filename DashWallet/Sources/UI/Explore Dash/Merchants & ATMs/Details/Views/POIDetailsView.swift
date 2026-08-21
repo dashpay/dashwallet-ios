@@ -119,9 +119,7 @@ struct POIDetailsView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                 } else {
-                    Image(merchant.emptyLogoImageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
+                    MerchantLogoPlaceholder(merchantName: merchant.title ?? "", usableFraction: 0.84)
                 }
             }
             .frame(width: 50, height: 50)

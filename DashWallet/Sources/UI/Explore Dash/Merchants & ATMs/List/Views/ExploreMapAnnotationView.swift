@@ -64,10 +64,13 @@ final class ExploreMapAnnotationView: MKAnnotationView {
     }
 
     public func update(with pointOfUse: ExplorePointOfUse) {
+        let logoPlaceholder = MerchantLogoPlaceholder.image(merchantName: pointOfUse.name,
+                                                            size: CGSize(width: 36, height: 36),
+                                                            cornerRadius: 18)
         if let str = pointOfUse.logoLocation, let url = URL(string: str) {
-            imageView.sd_setImage(with: url, completed: nil)
+            imageView.sd_setImage(with: url, placeholderImage: logoPlaceholder, completed: nil)
         } else {
-            imageView.image = UIImage(named: pointOfUse.emptyLogoImageName)
+            imageView.image = logoPlaceholder
         }
     }
 
