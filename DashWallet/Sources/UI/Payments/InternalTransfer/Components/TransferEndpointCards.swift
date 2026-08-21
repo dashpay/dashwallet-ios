@@ -36,19 +36,6 @@ struct TransferEndpointCards: View {
     /// turns the rows above it into the source picker.
     var receiveInto: ChainNetwork?
 
-    /// Standalone screen: which endpoint's balance picker is presented as the
-    /// bottom sheet. `nil` = none — the form shows just the two selected
-    /// endpoint cards, never all six rows at once. Presentation state only; the
-    /// selection itself lives in the view model.
-    @State private var endpointPicker: EndpointGroup?
-
-    private enum EndpointGroup: String, Identifiable {
-        case from
-        case to
-
-        var id: String { rawValue }
-    }
-
     @ViewBuilder
     var body: some View {
         if let source = sendFrom {
@@ -93,19 +80,45 @@ struct TransferEndpointCards: View {
         }
     }
 
+    /// Standalone screen: the design system's `ConverterCard`, the same pair of
+    /// rows the Coinbase transfer screen uses, with the swap badge on the seam.
     private var swappableCards: some View {
-        VStack(spacing: 12) {
-            collapsedEndpointCard(viewModel.source, caption: NSLocalizedString("From", comment: "")) {
-                endpointPicker = .from
-            }
-            collapsedEndpointCard(viewModel.resolvedSendTarget, caption: NSLocalizedString("To", comment: "")) {
-                endpointPicker = .to
-            }
+        DashUIKit.ConverterCard(
+            fromItem: converterItem(viewModel.source, caption: NSLocalizedString("From", comment: "")),
+            toItem: converterItem(viewModel.resolvedSendTarget, caption: NSLocalizedString("To", comment: "")),
+            onSwap: { viewModel.swapStandaloneEndpoints() })
+    }
+
+    /// `ConverterCard` puts the name on the bold line and the caption under it,
+    /// the reverse of the picker rows — the badge on the seam is what says
+    /// which way the transfer runs.
+    private func converterItem(_ network: ChainNetwork, caption: String) -> DashUIKit.ConverterCardItem {
+        DashUIKit.ConverterCardItem(
+            id: network,
+            icon: converterIcon(network),
+            title: network.balanceName,
+            subtitle: caption,
+            dashBalance: Int64(balanceDuffs(network)))
+    }
+
+    /// Catalog assets rather than the picker rows' SF Symbols: `ConverterCard`
+    /// draws the icon plain at 30pt, with no tinted circle behind it to carry
+    /// the colour.
+    private func converterIcon(_ network: ChainNetwork) -> DashIconSource {
+        switch network {
+        case .core: return DashIcon.Menu.dashLogoSquare.source
+        case .platform: return DashIcon.Features.platform.source
+        case .shielded: return DashIcon.Features.shield.source
         }
-        .sheet(item: $endpointPicker) { group in
-            endpointPickerSheet(for: group)
-                .presentationDetents([.height(400)])
-                .presentationDragIndicator(.visible)
+    }
+
+    /// Every balance as duffs, which is what `ConverterCardItem` renders.
+    /// Platform and Shielded are held in credits — 1000 per duff.
+    private func balanceDuffs(_ network: ChainNetwork) -> UInt64 {
+        switch network {
+        case .core: return viewModel.coreBalanceDuffs
+        case .platform: return viewModel.platformCredits / 1000
+        case .shielded: return viewModel.shieldedBalance / 1000
         }
     }
 
@@ -122,23 +135,6 @@ struct TransferEndpointCards: View {
             selected: false,
             showsRadio: false,
             action: {})
-    }
-
-    private func collapsedEndpointCard(
-        _ network: ChainNetwork,
-        caption: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        let display = networkDisplay(network)
-        return TransferSourceRow(
-            iconSystemName: display.icon,
-            caption: caption,
-            title: display.title,
-            balanceTrailing: TransferSourceRow.dashBalanceTrailing(display.balance),
-            selected: false,
-            showsRadio: false,
-            showsChevron: true,
-            action: action)
     }
 
     private func selectionGroup(
@@ -159,44 +155,6 @@ struct TransferEndpointCards: View {
                     action: { onSelect(network) })
             }
         }
-    }
-
-    // MARK: - Picker sheet
-
-    /// Bottom-sheet balance picker for one endpoint, sized to slide over
-    /// the keypad area. Every pick applies and dismisses — picking the
-    /// balance already on the opposite side moves that side to its default
-    /// (the view model keeps the endpoints distinct).
-    private func endpointPickerSheet(for group: EndpointGroup) -> some View {
-        let isFrom = group == .from
-        return VStack(alignment: .leading, spacing: 16) {
-            Text(isFrom
-                ? NSLocalizedString("Transfer from", comment: "Internal transfer source picker title")
-                : NSLocalizedString("Transfer to", comment: "Internal transfer destination picker title"))
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.dash.primaryText)
-
-            selectionGroup(
-                caption: isFrom
-                    ? NSLocalizedString("From", comment: "")
-                    : NSLocalizedString("To", comment: ""),
-                networks: ChainNetwork.allCases,
-                selected: isFrom ? viewModel.source : viewModel.resolvedSendTarget,
-                onSelect: { network in
-                    if isFrom {
-                        viewModel.selectStandaloneSource(network)
-                    } else {
-                        viewModel.selectStandaloneTarget(network)
-                    }
-                    endpointPicker = nil
-                })
-
-            Spacer(minLength: 0)
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 24)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.dash.primaryBackground)
     }
 
     // MARK: - Helpers

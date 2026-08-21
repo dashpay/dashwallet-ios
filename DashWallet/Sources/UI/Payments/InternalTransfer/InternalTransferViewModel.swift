@@ -401,6 +401,16 @@ final class InternalTransferViewModel: ObservableObject {
         source = Self.sanitizedSource(into: network, proposed: source)
     }
 
+    /// Standalone screen: exchange the two endpoints. Assigned directly rather
+    /// than through `selectStandaloneSource`/`Target` — those sanitise the
+    /// opposite side away from a collision, and a swap can't collide.
+    func swapStandaloneEndpoints() {
+        let newSource = resolvedSendTarget
+        let newTarget = source
+        source = newSource
+        sendTarget = newTarget
+    }
+
     func selectSendTarget(_ network: ChainNetwork) {
         let from = sendSource ?? source
         sendTarget = Self.sanitizedDestination(from: from, proposed: network)
