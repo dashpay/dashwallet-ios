@@ -42,6 +42,40 @@ extension View {
     }
 }
 
+extension View {
+    /// Overlays a `DashUIKit.Toast` for as long as `isVisible` holds.
+    ///
+    /// The sibling above is for a moment that has already passed and needs a
+    /// timer to clear it; this one is for a condition that clears itself — a
+    /// sync finishing, a connection returning.
+    func conditionToast(
+        isVisible: Bool,
+        style: ToastStyle,
+        message: String
+    ) -> some View {
+        modifier(ConditionToastModifier(isVisible: isVisible, style: style, message: message))
+    }
+}
+
+private struct ConditionToastModifier: ViewModifier {
+    let isVisible: Bool
+    let style: ToastStyle
+    let message: String
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(alignment: .bottom) {
+                if isVisible {
+                    DashUIKit.Toast(style: style, message: message)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 16)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.easeInOut(duration: 0.3), value: isVisible)
+    }
+}
+
 private struct TransientToastModifier: ViewModifier {
     @Binding var isPresented: Bool
     let style: ToastStyle

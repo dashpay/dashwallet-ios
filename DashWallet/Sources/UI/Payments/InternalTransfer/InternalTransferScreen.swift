@@ -85,16 +85,6 @@ struct InternalTransferScreen: View {
                         receiveInto: receiveInto)
                         .padding(.horizontal, 20)
 
-                    if viewModel.isBlockedBySync {
-                        SyncGateNote()
-                            .padding(.horizontal, 20)
-                    }
-
-                    if let message = viewModel.amountValidationMessage {
-                        TransferAmountValidationNote(message: message)
-                            .padding(.horizontal, 20)
-                    }
-
                     if viewModel.canContinue {
                         TransferPreview(amountFormatted: viewModel.dashAmountFormatted)
                             .padding(.horizontal, 20)
@@ -107,6 +97,14 @@ struct InternalTransferScreen: View {
             keyboardSection
         }
         .background(Color.dash.primaryBackground)
+        // Over the keypad rather than inline above it: the gate is about the
+        // whole screen being unusable, not about the amount that was typed.
+        .conditionToast(
+            isVisible: viewModel.isBlockedBySync,
+            style: .loading,
+            message: NSLocalizedString(
+                "Wait until the chain is fully synced to make transfers",
+                comment: "Transfer blocked during a restored wallet's initial sync"))
         .sheet(item: $confirmation) { submission in
             InternalTransferConfirmSheet(
                 route: submission.route,
@@ -157,7 +155,8 @@ struct InternalTransferScreen: View {
             onMax: { viewModel.fillMaxFromWallet() },
             onSwap: toggleAmountUnit,
             onCurrencyTap: toggleAmountUnit,
-            onSelectInputType: selectAmountCurrency
+            onSelectInputType: selectAmountCurrency,
+            errorMessage: viewModel.amountValidationMessage
         )
     }
 
@@ -298,7 +297,8 @@ private func transferScreenSample(
     sendFrom: ChainNetwork? = nil,
     receiveInto: ChainNetwork? = nil,
     showsHeader: Bool = true,
-    isChainSynced: Bool = true
+    isChainSynced: Bool = true,
+    isResyncingWallet: Bool = false
 ) -> some View {
     InternalTransferScreen(
         viewModel: .makeForPreview(
@@ -307,7 +307,8 @@ private func transferScreenSample(
             sendFrom: sendFrom,
             receiveInto: receiveInto,
             amountText: amountText,
-            isChainSynced: isChainSynced),
+            isChainSynced: isChainSynced,
+            isResyncingWallet: isResyncingWallet),
         showsHeader: showsHeader,
         receiveInto: receiveInto,
         sendFrom: sendFrom)
@@ -332,10 +333,33 @@ private func transferScreenSample(
     transferScreenSample(amountText: "9.5")
 }
 
-/// A restored wallet still syncing blocks the Core-funded routes only.
+/// The gate needs BOTH halves — the restore marker and an unfinished sync.
+/// With only one it never appears, which is what this preview used to show.
 @available(iOS 17, *)
 #Preview("Sync gate") {
+    transferScreenSample(
+        amountText: "0.5",
+        isChainSynced: false,
+        isResyncingWallet: true)
+}
+
+/// Same unfinished sync, but the wallet was not restored — nothing is blocked,
+/// and Continue stays live.
+@available(iOS 17, *)
+#Preview("Syncing · not restored") {
     transferScreenSample(amountText: "0.5", isChainSynced: false)
+}
+
+/// The gate covers the Core-funded routes only: a shielded source transfers
+/// during the same sync.
+@available(iOS 17, *)
+#Preview("Sync gate · shielded source") {
+    transferScreenSample(
+        source: .shielded,
+        target: .core,
+        amountText: "0.1",
+        isChainSynced: false,
+        isResyncingWallet: true)
 }
 
 /// Send-sheet embedding: source pinned, host draws its own title.

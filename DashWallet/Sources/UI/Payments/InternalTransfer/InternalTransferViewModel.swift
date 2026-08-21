@@ -140,15 +140,13 @@ enum TransferSpendAmountPolicy {
         return message(balanceName: balanceName, spendableDuffs: spendableDuffs)
     }
 
+    /// Short on purpose: it is shown in the amount row, in the slot the
+    /// converted figure occupies. Which balance fell short and by how much is
+    /// already on screen — the From card carries both.
     private static func message(balanceName: String, spendableDuffs: UInt64) -> String {
-        let formattedSpendable =
-            "\(spendableDuffs.formattedDashAmountWithoutCurrencySymbol) DASH"
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "Insufficient %1$@ balance. Available to send: %2$@",
-                comment: "Transfer amount exceeds the source balance"),
-            balanceName,
-            formattedSpendable)
+        NSLocalizedString(
+            "Insufficient balance",
+            comment: "Transfer amount exceeds the source balance")
     }
 }
 
@@ -579,6 +577,9 @@ final class InternalTransferViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     #if DEBUG
+    /// Stands in for `DWGlobalOptions.isResyncingWallet` in a canvas.
+    private var previewIsResyncingWallet: Bool?
+
     /// True only for `makeForPreview` instances. They never registered with the
     /// sync monitor, so `deinit` must not reach for that singleton to
     /// unregister — building it inside a preview process starts reachability
@@ -654,7 +655,8 @@ final class InternalTransferViewModel: ObservableObject {
         previewCoreDuffs: UInt64,
         previewPlatformCredits: UInt64,
         previewShieldedCredits: UInt64,
-        previewIsChainSynced: Bool
+        previewIsChainSynced: Bool,
+        previewIsResyncingWallet: Bool
     ) {
         isPreviewInstance = true
         source = previewSource
@@ -670,6 +672,7 @@ final class InternalTransferViewModel: ObservableObject {
         platformCredits = previewPlatformCredits
         shieldedBalance = previewShieldedCredits
         isChainSynced = previewIsChainSynced
+        self.previewIsResyncingWallet = previewIsResyncingWallet
     }
 
     /// Preview view model with stubbed balances.
@@ -691,7 +694,8 @@ final class InternalTransferViewModel: ObservableObject {
         coreDuffs: UInt64 = 245_000_000,
         platformCredits: UInt64 = 120_000_000_000,
         shieldedCredits: UInt64 = 78_500_000_000,
-        isChainSynced: Bool = true
+        isChainSynced: Bool = true,
+        isResyncingWallet: Bool = false
     ) -> InternalTransferViewModel {
         InternalTransferViewModel(
             previewSource: source,
@@ -702,7 +706,8 @@ final class InternalTransferViewModel: ObservableObject {
             previewCoreDuffs: coreDuffs,
             previewPlatformCredits: platformCredits,
             previewShieldedCredits: shieldedCredits,
-            previewIsChainSynced: isChainSynced)
+            previewIsChainSynced: isChainSynced,
+            previewIsResyncingWallet: isResyncingWallet)
     }
     #endif
 
@@ -756,11 +761,23 @@ final class InternalTransferViewModel: ObservableObject {
         switch route {
         case .coreToShielded, .coreToPlatform:
             return WalletSendService.isBlockedByInitialRestoreSync(
-                isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingWallet,
+                isResyncingWallet: isResyncingWallet,
                 isChainSynced: isChainSynced)
         default:
             return false
         }
+    }
+
+    /// The restore marker, read live so the gate lifts as soon as it clears.
+    ///
+    /// A preview can override it: the real one lives in `NSUserDefaults` and is
+    /// false in a canvas, so a sync-gate preview could otherwise never show the
+    /// gate — the gate needs a restored wallet AND an unfinished sync.
+    private var isResyncingWallet: Bool {
+        #if DEBUG
+        if let previewIsResyncingWallet { return previewIsResyncingWallet }
+        #endif
+        return DWGlobalOptions.sharedInstance().isResyncingWallet
     }
 
     /// Inline, user-facing explanation for an amount rejected before Confirm.
