@@ -95,8 +95,11 @@ struct DashSpendConfirmationDialog: View {
                                     .scaledToFit()
                             } placeholder: {
                                 // Rounded-rect clip (below), so the text may fill almost the
-                                // whole box — same fraction as the other rounded-rect sites.
-                                MerchantLogoPlaceholder(merchantName: merchantName, usableFraction: 0.84)
+                                // whole box. Initials rather than the full name — at 20pt the
+                                // name style hits the 6pt font floor and clips.
+                                MerchantLogoPlaceholder(merchantName: merchantName,
+                                                        style: .initials,
+                                                        usableFraction: 0.84)
                             }
                             .transition(.fade(duration: 0.3))
                             .frame(width: 20, height: 20)
