@@ -16,6 +16,20 @@
 			<string>%ld 사용됨</string>
 		</dict>
 	</dict>
+	<key>%d ATM(s) in %@</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@atms@</string>
+		<key>atms</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d ATMs in %@</string>
+		</dict>
+	</dict>
 	<key>%d merchant(s) in %@</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
