@@ -621,20 +621,24 @@ extension TxDetailModel {
     /// parent transactions those inputs spend, which is exactly when the fee
     /// becomes computable (and is how Android's dashj, through its
     /// input-to-known-transaction connection, gets one).
-    private var localFeeDuffs: UInt64 {
+    ///
+    /// Optional on purpose: a fee of zero is a fact about the transaction,
+    /// and conflating it with "we could not work the fee out" is what turns
+    /// an answer into a shrug.
+    private var localFeeDuffs: UInt64? {
         if hasFee { return transaction.feeUsed }
-        return computedRawFee ?? 0
+        return computedRawFee
     }
 
     func fee(with font: UIFont, tintColor: UIColor) -> DWTitleDetailItem {
         let title = NSLocalizedString("Network fee", comment: "")
-        let feeValue = localFeeDuffs != 0 ? localFeeDuffs : (explorerFeeDuffs ?? 0)
+        let feeValue = localFeeDuffs ?? explorerFeeDuffs
 
         // Nothing local and nothing from the explorer (yet, or at all): the
         // sender spent outputs of transactions this wallet has never seen, so
         // their values — and with them the fee — are not recoverable here.
         // Say whose fee it was instead of printing a fabricated zero.
-        if feeValue == 0, direction == .received {
+        if feeValue == nil, direction == .received {
             let detail = NSLocalizedString("Paid by sender", comment: "Network fee on a received transaction")
             return DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         }
@@ -642,7 +646,7 @@ extension TxDetailModel {
         // Always DASH, never duffs: the Dash formatter carries all 8 fraction
         // digits, so a 226-duff fee reads as 0.00000226 rather than rounding
         // to zero — and every amount on this screen is then in one unit.
-        let detail = NSAttributedString.dashAttributedString(for: feeValue, tintColor: tintColor, font: font)
+        let detail = NSAttributedString.dashAttributedString(for: feeValue ?? 0, tintColor: tintColor, font: font)
 
         return DWTitleDetailCellModel(style: .default, title: title, attributedDetail: detail)
     }
@@ -659,14 +663,13 @@ extension TxDetailModel {
     /// second call. `completion` runs only when a fee actually arrived, so a
     /// failed lookup rebuilds nothing.
     func resolveExplorerFee(completion: @escaping () -> Void) {
-        guard direction == .received, localFeeDuffs == 0, explorerFeeDuffs == nil,
+        guard direction == .received, localFeeDuffs == nil, explorerFeeDuffs == nil,
               let network = WalletEnvironment.network else { return }
         let displayTxid = transactionId
         Task {
             guard let result = await InsightExplorerAPI.transaction(displayTxid: displayTxid, network: network),
-                  result.statusCode == 200,
-                  let duffs = InsightExplorerAPI.feeDuffs(fromTransactionBody: result.body),
-                  duffs > 0 else { return }
+                  result.statusCode == 200, let body = result.body,
+                  let duffs = InsightExplorerAPI.feeDuffs(fromTransactionBody: body) else { return }
             await MainActor.run {
                 self.explorerFeeDuffs = duffs
                 completion()
