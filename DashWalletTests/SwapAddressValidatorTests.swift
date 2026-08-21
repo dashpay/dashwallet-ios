@@ -122,14 +122,16 @@ class SwapAddressValidatorTests: XCTestCase {
     // list). Previously a pasted Dash address slipped through the permissive `default` branch for
     // loosely-validated chains, the swap was created, then failed on-chain ("Conversion failed").
 
-    /// Real mainnet Dash addresses: P2PKH (`X…`) and P2SH (`7…`).
-    private let dashP2PKHAddress = "XdRgFCC6HZ2gU4wR3zK9m1nZ6vL8pQ7YtA"
-    private let dashP2SHAddress = "7YtBvBMSEYstWetqTFn5Au4m4GFg7xJaN2"
+    /// Real mainnet Dash addresses, Base58Check-valid down to the checksum: P2PKH (version byte
+    /// 76, always `X…`) and P2SH (version byte 16, always `7…`).
+    private let dashP2PKHAddress = "Xrt6xwqYD4PQWbwwnJ9e2ejR1KX94b9EZe"
+    private let dashP2SHAddress = "7U4ufNc6Mp3LKe7AfSPkvr67ZVwyFWueeq"
 
     private let zecCoin = SwapCryptoCurrency(id: "zec", code: "ZEC", name: "Zcash", swapAsset: "ZEC.ZEC", chain: "ZEC")
     private let xrpCoin = SwapCryptoCurrency(id: "xrp", code: "XRP", name: "XRP", swapAsset: "XRP.XRP", chain: "XRP")
     private let tronCoin = SwapCryptoCurrency(id: "trx", code: "TRX", name: "Tron", swapAsset: "TRON.TRX", chain: "TRON")
     private let solCoin = SwapCryptoCurrency(id: "sol", code: "SOL", name: "Solana", swapAsset: "SOL.SOL", chain: "SOL")
+    private let dashCoin = SwapCryptoCurrency(id: "dash", code: "DASH", name: "Dash", swapAsset: "DASH.DASH", chain: "DASH")
 
     func testDashAddress_rejectedForDefaultBranchChains() {
         // These chains hit the permissive `default` branch — the source of the original bug.
@@ -141,6 +143,16 @@ class SwapAddressValidatorTests: XCTestCase {
             XCTAssertFalse(SwapAddressValidator.isValid(address: dashP2SHAddress, for: coin),
                            "Dash P2SH address must be rejected for \(coin.code)")
         }
+    }
+
+    func testDashChain_stillAcceptsDashAddresses() {
+        // The guard is scoped to non-DASH destinations. DASH is filtered out of the sell coin list
+        // today, so this path is unreachable from the UI — the assertion exists to keep the
+        // `chain != "DASH"` bypass from being dropped as dead code in a later refactor.
+        XCTAssertTrue(SwapAddressValidator.isValid(address: dashP2PKHAddress, for: dashCoin),
+                      "A Dash P2PKH address must stay valid when the destination chain is DASH")
+        XCTAssertTrue(SwapAddressValidator.isValid(address: dashP2SHAddress, for: dashCoin),
+                      "A Dash P2SH address must stay valid when the destination chain is DASH")
     }
 
     func testSolana_acceptsRealAddress_rejectsDashAddress() {
