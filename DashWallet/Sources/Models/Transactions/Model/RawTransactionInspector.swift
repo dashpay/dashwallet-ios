@@ -107,6 +107,21 @@ enum RawTransactionInspector {
         return try? container.mainContext.fetch(descriptor).first
     }
 
+    /// Value of a spent outpoint read from the parent transaction's own
+    /// stored bytes. This is dashj's "connect the input to a known
+    /// transaction" step: the wallet keeps whole transactions, so an input
+    /// spending an output that is not ours — a counterparty paying us back
+    /// with coins we sent them, say — still has a knowable value, and with it
+    /// a computable fee. Nil when we don't hold the parent, which is the
+    /// ordinary case for a payment from someone we've never paid.
+    @MainActor
+    private static func parentOutputValue(prevTxid: Data, vout: UInt32) -> UInt64? {
+        guard let row = fetchRow(txidWire: prevTxid), !row.transactionData.isEmpty,
+              let parsed = try? ParsedRawTransaction(data: row.transactionData),
+              Int(vout) < parsed.outputs.count else { return nil }
+        return parsed.outputs[Int(vout)].valueDuffs
+    }
+
     @MainActor
     private static func details(from row: PersistentTransaction) -> RawTransactionDetails? {
         let data = row.transactionData
@@ -123,7 +138,7 @@ enum RawTransactionInspector {
             decodedInputs = decoded.inputs
         }
 
-        // Wallet-owned spent TXOs, keyed by outpoint — the only source of
+        // Wallet-owned spent TXOs, keyed by outpoint — the first source of
         // input values (the raw tx carries none).
         var ownedByOutpoint: [Data: PersistentTxo] = [:]
         for txo in row.inputs {
@@ -142,7 +157,8 @@ enum RawTransactionInspector {
                 scriptSig: input.scriptSig,
                 sequence: input.sequence,
                 address: owned?.address.isEmpty == false ? owned?.address : decodedAddress,
-                amountDuffs: owned?.amount,
+                amountDuffs: owned?.amount
+                    ?? Self.parentOutputValue(prevTxid: input.prevTxid, vout: input.prevVout),
                 isCoinbase: isCoinbase)
         }
 
