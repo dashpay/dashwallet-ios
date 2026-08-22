@@ -98,8 +98,9 @@ final class MasternodesViewModel: ObservableObject {
 
 /// Display formatting for the aggregation snapshot, following the SDK's
 /// `PersistentMasternode` conventions: txids render in block-explorer
-/// (reversed) hex, key hashes in forward order.
-private extension PlatformMasternode {
+/// (reversed) hex, key hashes in forward order. Internal: the evonode
+/// withdrawal screens reuse `displayTitle`.
+extension PlatformMasternode {
     var typeName: String {
         isEvonode
             ? NSLocalizedString("Evonode", comment: "")
@@ -270,11 +271,12 @@ private struct MasternodeListRow: View {
 
 // MARK: - MasternodeDetailScreen
 
-/// Read-only detail for one aggregated masternode, mirroring the
-/// SwiftExampleApp's `MasternodeDetailView`: overview, registration, keys,
-/// key ownership, collateral, revocation, and (evonodes) a read-only
-/// claimable Platform-credits balance. Claiming stays out — the withdraw
-/// FFI is a deliberate stub upstream.
+/// Detail for one aggregated masternode, mirroring the SwiftExampleApp's
+/// `MasternodeDetailView`: overview, registration, keys, key ownership,
+/// collateral, revocation, and (evonodes) the claimable Platform-credits
+/// balance with a Withdraw entry point when this wallet holds a key that
+/// can claim it (owner key → payout address only; payout/transfer key →
+/// any destination). The claim itself lives in `EvonodeWithdrawalScreen`.
 struct MasternodeDetailScreen: View {
     let masternode: PlatformMasternode
     let ownerOwnership: String
@@ -286,6 +288,12 @@ struct MasternodeDetailScreen: View {
     @State private var claimableCredits: UInt64?
     @State private var balanceLoading = false
     @State private var balanceError: String?
+
+    /// Which withdrawal signing keys this wallet holds for the evonode
+    /// (SDK preflight, local + seedless). `nil` until resolved or when the
+    /// preflight failed (`withdrawalKeysError`).
+    @State private var withdrawalKeys: MasternodeWithdrawalKeys?
+    @State private var withdrawalKeysError: String?
 
     var body: some View {
         List {
@@ -381,8 +389,9 @@ struct MasternodeDetailScreen: View {
             }
 
             // Platform credits accrue on the masternode's Platform identity
-            // (evonodes only). Read-only display; claiming is not offered —
-            // the owner-key withdrawal FFI is a stub upstream.
+            // (evonodes only). Withdraw is offered when the wallet holds the
+            // owner key or the payout (transfer) key — see
+            // `EvonodeWithdrawalScreen` for the key rules.
             if masternode.isEvonode {
                 Section(NSLocalizedString("Claimable balance", comment: "Masternodes")) {
                     if balanceLoading {
@@ -410,6 +419,8 @@ struct MasternodeDetailScreen: View {
                         Label(NSLocalizedString("Refresh", comment: ""), systemImage: "arrow.clockwise")
                     }
                     .disabled(balanceLoading)
+
+                    withdrawRows
                 }
             }
         }
@@ -417,8 +428,70 @@ struct MasternodeDetailScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             if masternode.isEvonode {
+                loadWithdrawalKeys()
                 await fetchClaimableBalance()
             }
+        }
+    }
+
+    /// Withdraw entry point + the one-line reason it is / isn't available.
+    /// Shown only once the balance is known and positive.
+    @ViewBuilder
+    private var withdrawRows: some View {
+        if let credits = claimableCredits, credits > 0 {
+            if let keys = withdrawalKeys, keys.canWithdraw {
+                NavigationLink {
+                    EvonodeWithdrawalScreen(
+                        masternode: masternode,
+                        keys: keys,
+                        claimableCredits: credits,
+                        onWithdrawn: { remaining in claimableCredits = remaining })
+                } label: {
+                    Label(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"), systemImage: "arrow.down.circle")
+                        .foregroundColor(Color.dash.blue)
+                }
+
+                Text(keys.canChooseDestination
+                    ? NSLocalizedString(
+                        "This wallet holds the payout address key, so you can withdraw to any address.",
+                        comment: "Evonode withdrawal")
+                    : NSLocalizedString(
+                        "This wallet holds the owner key, so withdrawals go to the registered payout address.",
+                        comment: "Evonode withdrawal"))
+                    .font(.caption)
+                    .foregroundColor(Color.dash.secondaryText)
+            } else if withdrawalKeys != nil {
+                Text(NSLocalizedString(
+                    "This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here.",
+                    comment: "Evonode withdrawal"))
+                    .font(.caption)
+                    .foregroundColor(Color.dash.secondaryText)
+            } else if let error = withdrawalKeysError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundColor(Color.dash.secondaryText)
+            }
+        }
+    }
+
+    /// Resolve which withdrawal keys this wallet holds — local and seedless
+    /// (account-xpub derive-and-compare + address-pool lookup in Rust).
+    private func loadWithdrawalKeys() {
+        guard let manager = SwiftDashSDKHost.shared.manager,
+              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
+            withdrawalKeysError = NSLocalizedString("Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
+            return
+        }
+        do {
+            withdrawalKeys = try manager.masternodeWithdrawalKeys(
+                walletId: walletId,
+                proTxHash: masternode.proTxHash)
+            withdrawalKeysError = nil
+        } catch {
+            withdrawalKeys = nil
+            withdrawalKeysError = NSLocalizedString(
+                "Couldn't check which keys of this evonode are in the wallet.",
+                comment: "Evonode withdrawal")
         }
     }
 
