@@ -896,6 +896,9 @@
 /* Username marketplace: masternode vote tally for one contest row */
 "%d votes" = "%d votes";
 
+/* Recovery phrase length */
+"12 words is the standard. 24 words is longer to write down and restore, but harder to guess." = "12 words is the standard. 24 words is longer to write down and restore, but harder to guess.";
+
 /* Username marketplace: unresolvable transfer recipient */
 "No identity owns that username." = "No identity owns that username.";
 
@@ -3550,6 +3553,9 @@
 /* No comment provided by engineer. */
 "Recovery Phrase" = "Recovery Phrase";
 
+/* Recovery phrase length */
+"Recovery phrase length" = "Recovery phrase length";
+
 /* No comment provided by engineer. */
 "Recovery phrase doesn't match" = "Recovery phrase doesn't match";
 
@@ -5119,7 +5125,7 @@
 "Would you like to switch to \"%@\"? You can always switch back later." = "Would you like to switch to \"%@\"? You can always switch back later.";
 
 /* Wallets */
-"Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
+"Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds." = "Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.";
 
 /* No comment provided by engineer. */
 "XpEBa5... or BIP21 URI" = "XpEBa5... or BIP21 URI";

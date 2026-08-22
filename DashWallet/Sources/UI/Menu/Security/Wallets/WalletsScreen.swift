@@ -517,7 +517,7 @@ private struct RemoveWalletSheet: View {
 // MARK: - Add Wallet sheet
 
 /// "Add Wallet" flow: a chooser between creating a brand-new wallet (generate a
-/// 12-word phrase, show it, require a written-down confirmation) and importing
+/// 12- or 24-word phrase, show it, require a written-down confirmation) and importing
 /// one from an existing recovery phrase. Both paths add the wallet additively
 /// via `WalletsViewModel.addWallet` and switch to it on success. All SDK work
 /// (generate / validate / add / switch) lives in the ViewModel; this view only
@@ -635,14 +635,16 @@ private struct AddWalletSheet: View {
 
 // MARK: - Create wallet step
 
-/// Generates a 12-word phrase, shows it in a grid, and requires an explicit
-/// "I've written it down" confirmation before adding the wallet.
+/// Generates a 12- or 24-word phrase (user's pick; switching regenerates), shows
+/// it in a grid, and requires an explicit "I've written it down" confirmation
+/// before adding the wallet.
 private struct CreateWalletView: View {
     @ObservedObject var viewModel: WalletsViewModel
     let onFinished: () -> Void
 
     @State private var mnemonic: String? = nil
     @State private var confirmedWrittenDown = false
+    @State private var phraseLength: RecoveryPhraseLength = .default
 
     private var words: [String] {
         mnemonic.map { $0.split(separator: " ").map(String.init) } ?? []
@@ -651,9 +653,14 @@ private struct CreateWalletView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                Text(NSLocalizedString(
-                    "Write down these 12 words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.",
-                    comment: "Wallets"))
+                RecoveryPhraseLengthPicker(selection: $phraseLength)
+                    .disabled(viewModel.addInProgress || viewModel.switchInProgress)
+
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.",
+                        comment: "Wallets"),
+                    phraseLength.rawValue))
                     .font(.subheadline)
                     .foregroundColor(.dash.secondaryText)
 
@@ -685,8 +692,18 @@ private struct CreateWalletView: View {
             .padding(20)
         }
         .onAppear {
-            if mnemonic == nil { mnemonic = viewModel.generateMnemonic() }
+            if mnemonic == nil { regenerate() }
         }
+        .onChange(of: phraseLength) { _, _ in
+            // Nothing is persisted until "Create Wallet", so a new length simply
+            // means a new phrase — and the written-down confirmation is void.
+            regenerate()
+        }
+    }
+
+    private func regenerate() {
+        mnemonic = viewModel.generateMnemonic(length: phraseLength)
+        confirmedWrittenDown = false
     }
 
     private var phraseGrid: some View {
