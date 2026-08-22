@@ -904,6 +904,8 @@
 		75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
 		75F9D1822FE0A00100C0D001 /* ShortcutItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9D1812FE0A00100C0D001 /* ShortcutItemView.swift */; };
 		75F9D1832FE0A00100C0D001 /* ShortcutItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9D1812FE0A00100C0D001 /* ShortcutItemView.swift */; };
+		5AEEB0012F9C000000000009 /* NodesShortcutIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000008 /* NodesShortcutIcon.swift */; };
+		5AEEB0012F9C00000000000A /* NodesShortcutIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000008 /* NodesShortcutIcon.swift */; };
 		75FEC6AF2CE0C58A00F87B48 /* VerifyIdentityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FEC6AE2CE0C58A00F87B48 /* VerifyIdentityScreen.swift */; };
 		75FEC6B32CE0C71700F87B48 /* DWUsernamePendingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FEC6B22CE0C71700F87B48 /* DWUsernamePendingViewController.m */; };
 		75FFD6B82BF47BA20032879E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6B72BF47BA20032879E /* HomeViewController.swift */; };
@@ -1923,6 +1925,12 @@
 		8F0D34E5B93E7D2EB9062394 /* ContestedNamesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1426BD13E794C788646055 /* ContestedNamesService.swift */; };
 		F5D223F887ABBFCEB478816F /* MasternodeVoterRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D89828EC913714251D0B58 /* MasternodeVoterRegistry.swift */; };
 		5A5F8C183D2C037FB350ACC9 /* MasternodeVoteCaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AEFB2398EDA01C69E5A8F1 /* MasternodeVoteCaster.swift */; };
+		5AEEB0012F9C000000000002 /* EvonodeEpochBlocksService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000001 /* EvonodeEpochBlocksService.swift */; };
+		5AEEB0012F9C000000000003 /* EvonodeEpochBlocksService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000001 /* EvonodeEpochBlocksService.swift */; };
+		5AEEB0012F9C000000000006 /* EvonodeEpochBlocksMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000005 /* EvonodeEpochBlocksMonitor.swift */; };
+		5AEEB0012F9C000000000007 /* EvonodeEpochBlocksMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000005 /* EvonodeEpochBlocksMonitor.swift */; };
+		5AEEB0012F9C00000000000C /* EvonodeProposalActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C00000000000B /* EvonodeProposalActivity.swift */; };
+		5AEEB0012F9C00000000000D /* EvonodeProposalActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C00000000000B /* EvonodeProposalActivity.swift */; };
 		12118430106B8A5EBB2FBC60 /* UsernameVotingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */; };
 		F34816414D829A45E0762757 /* ContestDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */; };
 		AD24D88215A4E51186112B34 /* CastVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */; };
@@ -3000,6 +3008,7 @@
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
 		75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Coinbase.swift"; sourceTree = "<group>"; };
 		75F9D1812FE0A00100C0D001 /* ShortcutItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutItemView.swift; sourceTree = "<group>"; };
+		5AEEB0012F9C000000000008 /* NodesShortcutIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodesShortcutIcon.swift; sourceTree = "<group>"; };
 		75FEC6AE2CE0C58A00F87B48 /* VerifyIdentityScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdentityScreen.swift; sourceTree = "<group>"; };
 		75FEC6B12CE0C71700F87B48 /* DWUsernamePendingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernamePendingViewController.h; sourceTree = "<group>"; };
 		75FEC6B22CE0C71700F87B48 /* DWUsernamePendingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernamePendingViewController.m; sourceTree = "<group>"; };
@@ -3661,6 +3670,9 @@
 		FC1426BD13E794C788646055 /* ContestedNamesService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContestedNamesService.swift; sourceTree = "<group>"; };
 		15D89828EC913714251D0B58 /* MasternodeVoterRegistry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodeVoterRegistry.swift; sourceTree = "<group>"; };
 		23AEFB2398EDA01C69E5A8F1 /* MasternodeVoteCaster.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodeVoteCaster.swift; sourceTree = "<group>"; };
+		5AEEB0012F9C000000000001 /* EvonodeEpochBlocksService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeEpochBlocksService.swift; sourceTree = "<group>"; };
+		5AEEB0012F9C000000000005 /* EvonodeEpochBlocksMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeEpochBlocksMonitor.swift; sourceTree = "<group>"; };
+		5AEEB0012F9C00000000000B /* EvonodeProposalActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeProposalActivity.swift; sourceTree = "<group>"; };
 		33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameVotingScreen.swift; sourceTree = "<group>"; };
 		6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContestDetailScreen.swift; sourceTree = "<group>"; };
 		FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CastVoteSheet.swift; sourceTree = "<group>"; };
@@ -3752,6 +3764,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5AEEB0012F9C000000000004 /* Masternodes */ = {
+			isa = PBXGroup;
+			children = (
+				5AEEB0012F9C000000000001 /* EvonodeEpochBlocksService.swift */,
+				5AEEB0012F9C000000000005 /* EvonodeEpochBlocksMonitor.swift */,
+				5AEEB0012F9C00000000000B /* EvonodeProposalActivity.swift */,
+			);
+			path = Masternodes;
+			sourceTree = "<group>";
+		};
 		5AEDE0012F9B000000000007 /* Masternode Withdrawal */ = {
 			isa = PBXGroup;
 			children = (
@@ -4326,6 +4348,7 @@
 				75B3C1B12E36100100CAFE04 /* ShortcutCustomizeBannerView.swift */,
 				C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */,
 				75F9D1812FE0A00100C0D001 /* ShortcutItemView.swift */,
+				5AEEB0012F9C000000000008 /* NodesShortcutIcon.swift */,
 				75B3C1A12E36100100CAFE01 /* ShortcutSelectionView.swift */,
 				2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */,
 				2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */,
@@ -7135,6 +7158,7 @@
 			isa = PBXGroup;
 			children = (
 				2A85F872C9D04B3BF9C2FFF3 /* Voting */,
+				5AEEB0012F9C000000000004 /* Masternodes */,
 				A11E57A70004C0DE0004B004 /* Invitations */,
 				33FB75FCD21FC8C62840E6FD /* SwiftDashSDKKeyMigrator.swift */,
 				E3CA14DC8416012B813B5E2C /* SwiftDashSDKPhraseRepairer.swift */,
@@ -9452,6 +9476,9 @@
 				F34816414D829A45E0762757 /* ContestDetailScreen.swift in Sources */,
 				12118430106B8A5EBB2FBC60 /* UsernameVotingScreen.swift in Sources */,
 				5A5F8C183D2C037FB350ACC9 /* MasternodeVoteCaster.swift in Sources */,
+				5AEEB0012F9C000000000002 /* EvonodeEpochBlocksService.swift in Sources */,
+				5AEEB0012F9C000000000006 /* EvonodeEpochBlocksMonitor.swift in Sources */,
+				5AEEB0012F9C00000000000C /* EvonodeProposalActivity.swift in Sources */,
 				F5D223F887ABBFCEB478816F /* MasternodeVoterRegistry.swift in Sources */,
 				8F0D34E5B93E7D2EB9062394 /* ContestedNamesService.swift in Sources */,
 				2AB3416223A81E8B004E37A7 /* DWReceiveModelStub.m in Sources */,
@@ -9962,6 +9989,7 @@
 				75B3C1B22E36100100CAFE05 /* ShortcutCustomizeBannerView.swift in Sources */,
 				C1A0B2C3D4E5F60718293A02 /* ShortcutsBarView.swift in Sources */,
 				75F9D1822FE0A00100C0D001 /* ShortcutItemView.swift in Sources */,
+				5AEEB0012F9C000000000009 /* NodesShortcutIcon.swift in Sources */,
 				75B3C1A22E36100100CAFE02 /* ShortcutSelectionView.swift in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
 				47AE8BF028C1306000490F5E /* AtmItemCell.swift in Sources */,
@@ -10327,6 +10355,9 @@
 				D0C564276BD8B9770F0E0499 /* ContestDetailScreen.swift in Sources */,
 				25C2103A3D2448AB40AB8485 /* UsernameVotingScreen.swift in Sources */,
 				F29CC1CE29F3544F9E2F9BE7 /* MasternodeVoteCaster.swift in Sources */,
+				5AEEB0012F9C000000000003 /* EvonodeEpochBlocksService.swift in Sources */,
+				5AEEB0012F9C000000000007 /* EvonodeEpochBlocksMonitor.swift in Sources */,
+				5AEEB0012F9C00000000000D /* EvonodeProposalActivity.swift in Sources */,
 				EB88594208EAD0E9E1FA752F /* MasternodeVoterRegistry.swift in Sources */,
 				BCB10EF569912077058577E4 /* ContestedNamesService.swift in Sources */,
 				5EAD111330A0000000A1B201 /* MayaAmountFormatter.swift in Sources */,
@@ -10928,6 +10959,7 @@
 				75B3C1B32E36100100CAFE06 /* ShortcutCustomizeBannerView.swift in Sources */,
 				C1A0B2C3D4E5F60718293A03 /* ShortcutsBarView.swift in Sources */,
 				75F9D1832FE0A00100C0D001 /* ShortcutItemView.swift in Sources */,
+				5AEEB0012F9C00000000000A /* NodesShortcutIcon.swift in Sources */,
 				75B3C1A32E36100100CAFE03 /* ShortcutSelectionView.swift in Sources */,
 				516C63E52FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */,
 				516C63E92FE9BE0A00DD6BC3 /* AboutDashViewModel.swift in Sources */,

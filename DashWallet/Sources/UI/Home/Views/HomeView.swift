@@ -31,6 +31,8 @@ protocol HomeViewDelegate: AnyObject {
     /// The mirror for the balance rows' send (out) arrows: the send sheet
     /// (Send ↔ Internal) pinned to `network` as the source.
     func homeViewShowSend(network: ChainNetwork)
+    /// Opens the wallet's masternode list (the Nodes shortcut).
+    func homeViewShowMasternodes()
     /// Scroll-derived chrome: false at the top of the feed (bar hidden,
     /// balance header owns the space), true once the user scrolls down.
     func homeViewDidChangeTopBarVisibility(shouldShow: Bool)
