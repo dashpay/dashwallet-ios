@@ -48,6 +48,15 @@ final class MasternodesViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] blocks in self?.epochBlocks = blocks }
             .store(in: &cancellables)
+        // The list and its ownership indexes change on the same events the
+        // monitor reacts to (sync done, wallet / network switch) — reload
+        // them while the screen stays visible.
+        epochBlocksMonitor.$contextVersion
+            .dropFirst()
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.load() }
+            .store(in: &cancellables)
     }
 
     /// Registrations still on the network — active, PoSe-banned, or (before

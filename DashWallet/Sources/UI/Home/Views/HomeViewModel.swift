@@ -1517,6 +1517,7 @@ extension HomeViewModel {
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 let canSwitchWallet = MainActor.assumeIsolated { WalletsViewModel.switchableWalletCount > 1 }
+                let hasEvonodes = MainActor.assumeIsolated { !EvonodeEpochBlocksMonitor.activeEvonodeProTxHashes().isEmpty }
                 let items = customShortcuts.compactMap { number -> ShortcutAction? in
                     guard var type = ShortcutActionType(rawValue: number.intValue) else { return nil }
                     // A faucet shortcut saved on testnet degrades to Spend
@@ -1539,6 +1540,13 @@ extension HomeViewModel {
                     let dashDEXAvailable = !isTestnet && SwapKitConstants.isConfigured
                     if type == .dashDEX && !dashDEXAvailable {
                         type = .spend
+                    }
+                    // A saved Nodes shortcut degrades to Spend (faucet on
+                    // testnet) while the active wallet runs no evonodes — e.g.
+                    // after a wallet switch; the saved config is untouched, so
+                    // it returns with an evonode wallet.
+                    if type == .nodes && !hasEvonodes {
+                        type = isTestnet ? .getTestDash : .spend
                     }
                     return ShortcutAction(type: type)
                 }
@@ -1605,13 +1613,6 @@ extension HomeViewModel {
         }
 
         DispatchQueue.main.async {
-            // Evonode owners get the Nodes shortcut (epoch day / blocks
-            // proposed) in the last default slot; everyone else keeps
-            // Spend / the faucet. Custom bars are never touched.
-            if !mutableItems.isEmpty,
-               !EvonodeEpochBlocksMonitor.activeEvonodeProTxHashes().isEmpty {
-                mutableItems[mutableItems.count - 1] = ShortcutAction(type: .nodes)
-            }
             self.shortcutItems = mutableItems
         }
     }

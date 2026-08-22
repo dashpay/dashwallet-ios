@@ -48,7 +48,8 @@ enum ShortcutActionType: Int {
     case switchWallet
     case dashDEX
     /// Evonode owners: epoch day + blocks proposed this epoch, opens the
-    /// masternode list. Offered only while the wallet has active evonodes.
+    /// masternode list. Opt-in only — offered in the customization picker
+    /// while the wallet has active evonodes, never placed by default.
     case nodes
 }
 

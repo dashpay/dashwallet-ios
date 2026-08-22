@@ -51,6 +51,12 @@ final class EvonodeEpochBlocksMonitor: ObservableObject {
     /// nothing has been fetched yet.
     @Published private(set) var blocks: EvonodeEpochBlocks?
 
+    /// Bumped on every context-changing trigger the monitor reacts to (sync
+    /// reaching done, active-wallet / network switch). Screens that show
+    /// the masternode list observe it to reload the list itself — the
+    /// aggregation changes on exactly those events.
+    @Published private(set) var contextVersion: UInt64 = 0
+
     /// Don't re-scan more often than this on routine triggers after a
     /// successful fetch…
     static let refreshInterval: TimeInterval = 5 * 60
@@ -99,7 +105,11 @@ final class EvonodeEpochBlocksMonitor: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 guard state == .syncDone else { return }
-                Task { @MainActor [weak self] in self?.refresh(force: true) }
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    self.contextVersion &+= 1
+                    self.refresh(force: true)
+                }
             }
             .store(in: &cancellables)
 
@@ -149,6 +159,7 @@ final class EvonodeEpochBlocksMonitor: ObservableObject {
     /// running scan stop paging, and queue a forced scan behind it.
     func reset() {
         generation &+= 1
+        contextVersion &+= 1
         blocks = nil
         lastAttempt = nil
         lastFetchFailed = false
