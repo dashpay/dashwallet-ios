@@ -11,7 +11,9 @@ import DashUIKit
 /// rewrite the amount already presented for confirmation.
 private struct InternalTransferConfirmation: Identifiable {
     let id = UUID()
-    let route: InternalTransferRoute
+    /// Balance-to-balance route; `nil` exactly when one of the identity
+    /// transfers below is set.
+    let route: InternalTransferRoute?
     let dashDuffs: Int64
     let amountDuffsUnsigned: UInt64
     let creditsAmount: UInt64
@@ -20,6 +22,12 @@ private struct InternalTransferConfirmation: Identifiable {
     let isFullPlatformWithdrawal: Bool
     let isFullShieldedSweep: Bool
     let platformShieldAmountWasMax: Bool
+    /// Identity-destination submission: the top-up the confirm sheet runs
+    /// instead of a route.
+    let identityTopUp: IdentityTopUpTransfer?
+    /// Identity-source submission: the withdrawal the confirm sheet runs
+    /// instead of a route. Mutually exclusive with `identityTopUp`.
+    let identityWithdrawal: IdentityWithdrawalTransfer?
 }
 
 struct InternalTransferScreen: View {
@@ -116,6 +124,8 @@ struct InternalTransferScreen: View {
                 isFullPlatformWithdrawal: submission.isFullPlatformWithdrawal,
                 isFullShieldedSweep: submission.isFullShieldedSweep,
                 platformShieldAmountWasMax: submission.platformShieldAmountWasMax,
+                identityTopUp: submission.identityTopUp,
+                identityWithdrawal: submission.identityWithdrawal,
                 onCancel: { confirmation = nil },
                 onCompleted: {
                     confirmation = nil
@@ -152,7 +162,18 @@ struct InternalTransferScreen: View {
             isPrimarySelected: isDashInputSelected,
             currencyCodes: amountCurrencyCodes,
             selectedCurrencyCode: selectedAmountCurrencyCode,
-            onMax: { viewModel.fillMaxFromWallet() },
+            // No Max toward Identity: `route` is a stale balance pair while
+            // the destination overlay is on, so `fillMaxFromWallet` has no
+            // ceiling to compute — and emptying a whole balance into credits
+            // is not an action to invite. The profile sheet's top-up offers
+            // none either. Max FROM the identity is a different matter: the
+            // fee reserve is a fixed bound, so that branch does resolve.
+            //
+            // TODO(identity-max): price a top-up ceiling per funding source
+            // and offer Max here too.
+            onMax: viewModel.isIdentityDestination
+                ? nil
+                : { viewModel.fillMaxFromWallet() },
             onSwap: toggleAmountUnit,
             onCurrencyTap: toggleAmountUnit,
             onSelectInputType: selectAmountCurrency,
@@ -175,8 +196,13 @@ struct InternalTransferScreen: View {
 
     private func presentConfirmation() {
         guard viewModel.canContinue else { return }
+        // Either identity side: no route describes it — the sheet runs the
+        // identity transfer captured here instead.
+        let identityTopUp = viewModel.identityTopUpTransfer
+        let identityWithdrawal = viewModel.identityWithdrawalTransfer
+        let isIdentityTransfer = identityTopUp != nil || identityWithdrawal != nil
         confirmation = InternalTransferConfirmation(
-            route: viewModel.route,
+            route: isIdentityTransfer ? nil : viewModel.route,
             dashDuffs: viewModel.dashDuffs,
             amountDuffsUnsigned: viewModel.dashDuffsUnsigned,
             creditsAmount: viewModel.creditsPreview,
@@ -184,7 +210,9 @@ struct InternalTransferScreen: View {
             withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
             isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
             isFullShieldedSweep: viewModel.isFullShieldedSweep,
-            platformShieldAmountWasMax: viewModel.platformShieldAmountWasMax)
+            platformShieldAmountWasMax: viewModel.platformShieldAmountWasMax,
+            identityTopUp: identityTopUp,
+            identityWithdrawal: identityWithdrawal)
     }
 
     // MARK: - From / To cards
@@ -293,6 +321,7 @@ struct InternalTransferScreen: View {
 private func transferScreenSample(
     source: ChainNetwork = .core,
     target: ChainNetwork = .platform,
+    identityDestination: Bool = false,
     amountText: String = "0",
     sendFrom: ChainNetwork? = nil,
     receiveInto: ChainNetwork? = nil,
@@ -306,6 +335,7 @@ private func transferScreenSample(
             target: target,
             sendFrom: sendFrom,
             receiveInto: receiveInto,
+            identityDestination: identityDestination,
             amountText: amountText,
             isChainSynced: isChainSynced,
             isResyncingWallet: isResyncingWallet),
@@ -331,6 +361,21 @@ private func transferScreenSample(
 @available(iOS 17, *)
 #Preview("Standalone · over balance") {
     transferScreenSample(amountText: "9.5")
+}
+
+/// Identity destination: the To card pins the identity (no swap badge, no
+/// Max), and a valid amount enables Continue — the Core source needs no SDK
+/// fee estimate.
+@available(iOS 17, *)
+#Preview("Standalone · to Identity") {
+    transferScreenSample(identityDestination: true, amountText: "0.05")
+}
+
+/// Below the top-up executor's 0.01 DASH floor — the inline note names the
+/// minimum and Continue stays disabled.
+@available(iOS 17, *)
+#Preview("To Identity · below minimum") {
+    transferScreenSample(identityDestination: true, amountText: "0.005")
 }
 
 /// The gate needs BOTH halves — the restore marker and an unfinished sync.

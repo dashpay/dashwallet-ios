@@ -43,6 +43,67 @@ enum InternalTransferRoute: Equatable {
     }
 }
 
+/// Where an internal transfer delivers. The FROM side is a `ChainNetwork`
+/// balance; the DashPay identity's credit balance is additionally reachable
+/// as a destination. Identity credits are the fuel for Platform state
+/// transitions, not a fourth spendable balance, so `ChainNetwork` and
+/// `InternalTransferRoute` never learn about it — an identity transfer is
+/// executed by the identity top-up, not by a balance-to-balance route.
+enum TransferDestination: Equatable, Hashable {
+    case balance(ChainNetwork)
+    case identity
+}
+
+/// Where an internal transfer draws from. The mirror of `TransferDestination`
+/// — the identity's credit balance is spendable as well as fundable, through
+/// its own state transition rather than through an `InternalTransferRoute`.
+enum TransferSource: Equatable, Hashable {
+    case balance(ChainNetwork)
+    case identity
+}
+
+/// Where identity credits can land in ONE state transition.
+///
+/// Shielded has no case on purpose: nothing moves credits from an identity
+/// straight into the Orchard pool. Reaching it means withdrawing here first
+/// and shielding after, which is two user-visible transfers, not this one.
+enum IdentityWithdrawalTarget: CaseIterable, Equatable, Hashable {
+    /// IdentityCreditWithdrawal → the wallet's own Core receive address.
+    case transparent
+    /// Credit transfer → the wallet's own Platform receive address.
+    case platform
+
+    /// `nil` for `.shielded`, the balance no single transition reaches.
+    init?(_ network: ChainNetwork) {
+        switch network {
+        case .core: self = .transparent
+        case .platform: self = .platform
+        case .shielded: return nil
+        }
+    }
+
+    var network: ChainNetwork {
+        switch self {
+        case .transparent: return .core
+        case .platform: return .platform
+        }
+    }
+}
+
+/// Confirm-sheet input for the Identity destination: the identity being
+/// topped up and the balance the top-up spends.
+struct IdentityTopUpTransfer: Equatable {
+    let identityId: Data
+    let source: ChainNetwork
+}
+
+/// Confirm-sheet input for the Identity source: the identity being drawn
+/// down and where its credits land.
+struct IdentityWithdrawalTransfer: Equatable {
+    let identityId: Data
+    let target: IdentityWithdrawalTarget
+}
+
 /// Shared Type-18 amount boundary for Core → Shielded transfers.
 ///
 /// The pool fee rides ON TOP of the typed amount: the app locks
@@ -346,6 +407,45 @@ final class InternalTransferViewModel: ObservableObject {
         didSet { guard oldValue != receiveSource else { return }; routeDidChange() }
     }
 
+    /// True while the standalone destination is the DashPay identity rather
+    /// than a balance. An overlay on the balance-route state: `source` stays
+    /// the spendable FROM balance, `route` keeps meaning balance-to-balance
+    /// and is not consulted while this is set — validation, Continue and
+    /// execution go through the identity top-up path instead. Standalone
+    /// only; the send/receive-pinned variants stay balance-to-balance.
+    @Published private(set) var isIdentityDestination = false {
+        didSet { guard oldValue != isIdentityDestination else { return }; routeDidChange() }
+    }
+
+    /// Standalone screen: the FROM side is the identity's credit balance
+    /// rather than `source`. Mutually exclusive with `isIdentityDestination`
+    /// — an identity cannot fund itself. While set, `route` is a stale
+    /// balance pair and only `identityWithdrawalTransfer` describes the
+    /// transfer, exactly as with the destination overlay.
+    @Published private(set) var isIdentitySource = false {
+        didSet { guard oldValue != isIdentitySource else { return }; routeDidChange() }
+    }
+
+    /// The 32-byte id of the identity a transfer would top up, loaded when
+    /// the Identity destination is selected. `nil` when the wallet has no
+    /// registered identity — affordability then fails closed with an
+    /// explanatory message instead of offering a transfer with nowhere to go.
+    @Published private(set) var identityId: Data?
+
+    /// The identity's own credit balance for the destination card (credits,
+    /// 1000 per duff) — the persisted row's value, same read the profile
+    /// sheet renders.
+    @Published private(set) var identityBalanceCredits: UInt64 = 0
+
+    /// Ceiling (duffs) for an identity top-up funded from the Platform
+    /// balance, per the executor's own planner
+    /// (`PlatformPaymentIdentityFundingPolicy.maxFundableDuffs`). `nil`
+    /// while the candidates are unread — affordability fails closed. Cached
+    /// because reading candidates is a SwiftData fetch: refreshed on
+    /// destination changes and Platform balance publications, not per
+    /// keystroke.
+    @Published private(set) var platformIdentityFundableDuffs: UInt64?
+
     /// Live result of `preflightWithdrawal()` for the Platform → Core route:
     /// whether a full-balance withdrawal can fund, its net payout, and the
     /// reserved fee. `nil` while unknown (loading/failed) — affordability
@@ -401,10 +501,143 @@ final class InternalTransferViewModel: ObservableObject {
         source = Self.sanitizedSource(into: network, proposed: source)
     }
 
+    /// Destination-typed standalone pick: a balance keeps the pre-existing
+    /// endpoint behavior; Identity overlays it without moving the source —
+    /// every balance is a valid FROM for a top-up, so there is nothing to
+    /// sanitise away from.
+    func selectStandaloneDestination(_ destination: TransferDestination) {
+        switch destination {
+        case .balance(let network):
+            isIdentityDestination = false
+            // With the identity on the FROM side, `source` is not in play and
+            // `selectStandaloneTarget`'s collision sanitising would move a
+            // balance the transfer never touches.
+            if isIdentitySource {
+                sendTarget = network
+            } else {
+                selectStandaloneTarget(network)
+            }
+        case .identity:
+            // An identity cannot fund itself: taking the TO side releases
+            // the FROM side back to a balance.
+            isIdentitySource = false
+            isIdentityDestination = true
+            refreshIdentitySnapshot()
+        }
+    }
+
+    /// Source-typed standalone pick, the mirror of
+    /// `selectStandaloneDestination`. Identity releases the destination back
+    /// to a balance and moves it off Shielded, which no single transition
+    /// reaches from an identity.
+    func selectStandaloneSource(_ source: TransferSource) {
+        switch source {
+        case .balance(let network):
+            isIdentitySource = false
+            if isIdentityDestination {
+                // Top-up mode: every balance is a valid funding source, and
+                // the TO side is the identity, so there is no collision to
+                // sanitise.
+                self.source = network
+            } else {
+                selectStandaloneSource(network)
+            }
+        case .identity:
+            isIdentityDestination = false
+            isIdentitySource = true
+            sendTarget = Self.sanitizedWithdrawalTarget(sendTarget)
+            refreshIdentitySnapshot()
+        }
+    }
+
+    /// The standalone destination as the screen and the confirm flow see it.
+    ///
+    /// With the identity as the source it is `resolvedWithdrawalTarget`, not
+    /// `resolvedSendTarget`: the latter sanitises against `source`, which is
+    /// a stale balance while the overlay is on, and would name a target the
+    /// transfer does not use.
+    var destination: TransferDestination {
+        if isIdentityDestination { return .identity }
+        if isIdentitySource { return .balance(resolvedWithdrawalTarget.network) }
+        return .balance(resolvedSendTarget)
+    }
+
+    /// The standalone source as the screen and the confirm flow see it.
+    var transferSource: TransferSource {
+        isIdentitySource ? .identity : .balance(source)
+    }
+
+    /// The TO selection while the identity is the source: `sendTarget`
+    /// guarded onto a balance a withdrawal can actually reach.
+    var resolvedWithdrawalTarget: IdentityWithdrawalTarget {
+        IdentityWithdrawalTarget(Self.sanitizedWithdrawalTarget(sendTarget)) ?? .transparent
+    }
+
+    /// Shielded is unreachable from an identity, so it falls back to
+    /// Transparent — the target a withdrawal always supports.
+    private static func sanitizedWithdrawalTarget(_ proposed: ChainNetwork) -> ChainNetwork {
+        IdentityWithdrawalTarget(proposed) == nil ? .core : proposed
+    }
+
+    /// Confirm-flow input for the Identity source. `nil` unless the source
+    /// is Identity AND an identity exists (`canContinue` has already refused
+    /// the transfer otherwise).
+    var identityWithdrawalTransfer: IdentityWithdrawalTransfer? {
+        guard isIdentitySource, let identityId else { return nil }
+        return IdentityWithdrawalTransfer(
+            identityId: identityId,
+            target: resolvedWithdrawalTarget)
+    }
+
+    /// Confirm-sheet input for the Identity destination. `nil` unless the
+    /// destination is Identity AND an identity exists (`canContinue` has
+    /// already refused the transfer otherwise).
+    var identityTopUpTransfer: IdentityTopUpTransfer? {
+        guard isIdentityDestination, let identityId else { return nil }
+        return IdentityTopUpTransfer(identityId: identityId, source: source)
+    }
+
+    /// Whether the two endpoints can trade places.
+    ///
+    /// False for exactly one pair: Shielded → Identity. Its reverse would be
+    /// Identity → Shielded, which no single transition performs, so the
+    /// screen shows the static arrow instead of a swap the tap could not
+    /// honour. Every other pair reverses into a transfer that exists.
+    var canSwapEndpoints: Bool {
+        if isIdentitySource { return true }
+        if isIdentityDestination { return IdentityWithdrawalTarget(source) != nil }
+        return true
+    }
+
     /// Standalone screen: exchange the two endpoints. Assigned directly rather
     /// than through `selectStandaloneSource`/`Target` — those sanitise the
     /// opposite side away from a collision, and a swap can't collide.
     func swapStandaloneEndpoints() {
+        guard canSwapEndpoints else { return }
+
+        if isIdentitySource {
+            // Withdrawal → top-up: the target balance becomes the funding
+            // source. Read the target before clearing the overlay, since
+            // `resolvedWithdrawalTarget` is only meaningful while it is on.
+            let fundingSource = resolvedWithdrawalTarget.network
+            isIdentitySource = false
+            isIdentityDestination = true
+            source = fundingSource
+            refreshIdentitySnapshot()
+            return
+        }
+
+        if isIdentityDestination {
+            // Top-up → withdrawal: the funding balance becomes the payout
+            // target. `canSwapEndpoints` has already ruled out Shielded.
+            let payoutTarget = source
+            isIdentityDestination = false
+            isIdentitySource = true
+            sendTarget = Self.sanitizedWithdrawalTarget(payoutTarget)
+            refreshIdentitySnapshot()
+            return
+        }
+
         let newSource = resolvedSendTarget
         let newTarget = source
         source = newSource
@@ -493,12 +726,25 @@ final class InternalTransferViewModel: ObservableObject {
 
     /// Refreshes route-dependent async state. Both Platform-funded routes use
     /// SDK preflights so their UI amount always matches the builder's real
-    /// input-selection envelope.
+    /// input-selection envelope. While the destination is Identity, `route`
+    /// is a stale balance pair, so the route preflights stay down and the
+    /// identity ceiling refreshes instead.
     private func routeDidChange() {
         clearMaxSelection()
         refreshShieldedSpendCeiling()
+        refreshIdentityPlatformCeiling()
 
-        if route == .platformToCore {
+        // With the identity as the source, no balance route is active at all:
+        // `route` is a stale pair, so every route preflight stays down.
+        guard !isIdentitySource else {
+            withdrawalPreflightTask?.cancel()
+            withdrawalPreflightTask = nil
+            withdrawalPreflight = nil
+            cancelPlatformShieldPreflight()
+            return
+        }
+
+        if !isIdentityDestination, route == .platformToCore {
             startWithdrawalPreflightIfNeeded()
         } else {
             withdrawalPreflightTask?.cancel()
@@ -506,11 +752,47 @@ final class InternalTransferViewModel: ObservableObject {
             withdrawalPreflight = nil
         }
 
-        if route == .platformToShielded {
+        if !isIdentityDestination, route == .platformToShielded {
             refreshPlatformShieldPreflight()
         } else {
             cancelPlatformShieldPreflight()
         }
+    }
+
+    /// Loads the identity the Identity destination would top up, plus its
+    /// displayed credit balance. A missing identity is left `nil` — the
+    /// amount validation names that state.
+    private func refreshIdentitySnapshot() {
+        #if DEBUG
+        if isPreviewInstance { return }
+        #endif
+        identityId = DWCurrentUserIdentityInfo.shared.identityId
+        if let identityId, let container = SwiftDashSDKHost.shared.modelContainer {
+            identityBalanceCredits = UsernameMarketplaceService.identityBalanceCredits(
+                identityId: identityId,
+                container: container)
+        } else {
+            identityBalanceCredits = 0
+        }
+    }
+
+    /// Recomputes `platformIdentityFundableDuffs` from the persisted
+    /// Platform-address candidates. Only meaningful while the Identity
+    /// destination spends the Platform balance; `nil` otherwise.
+    private func refreshIdentityPlatformCeiling() {
+        #if DEBUG
+        if isPreviewInstance { return }
+        #endif
+        guard isIdentityDestination, source == .platform else {
+            platformIdentityFundableDuffs = nil
+            return
+        }
+        guard let candidates = try? PlatformPaymentIdentityFundingPolicy.currentCandidates() else {
+            platformIdentityFundableDuffs = nil
+            return
+        }
+        platformIdentityFundableDuffs =
+            PlatformPaymentIdentityFundingPolicy.maxFundableDuffs(candidates: candidates)
     }
 
     /// Net payout of the full-balance (Max) Platform → Core withdrawal, in
@@ -632,7 +914,11 @@ final class InternalTransferViewModel: ObservableObject {
                     PlatformShieldAmountPolicy.awaitingPlatformResync(
                         current: self.awaitingPlatformShieldResync,
                         after: .balancePublished)
-                if self.route == .platformToShielded {
+                if self.isIdentityDestination {
+                    // A fresh Platform snapshot moves the identity top-up's
+                    // planner ceiling, not the route preflights.
+                    self.refreshIdentityPlatformCeiling()
+                } else if self.route == .platformToShielded {
                     self.refreshPlatformShieldPreflight(after: .balancePublished)
                 }
             }
@@ -646,6 +932,11 @@ final class InternalTransferViewModel: ObservableObject {
                 self?.refreshShieldedSpendCeiling()
             }
             .store(in: &cancellables)
+
+        // Eager, not deferred to the first Identity pick: the destination
+        // picker lists the identity's balance alongside the other three, so
+        // the number has to be there before the destination is selected.
+        refreshIdentitySnapshot()
     }
 
     #if DEBUG
@@ -661,6 +952,9 @@ final class InternalTransferViewModel: ObservableObject {
         previewTarget: ChainNetwork,
         previewSendFrom: ChainNetwork?,
         previewReceiveInto: ChainNetwork?,
+        previewIdentityDestination: Bool,
+        previewIdentitySource: Bool,
+        previewIdentityCredits: UInt64,
         previewAmountText: String,
         previewCoreDuffs: UInt64,
         previewPlatformCredits: UInt64,
@@ -683,6 +977,22 @@ final class InternalTransferViewModel: ObservableObject {
         shieldedBalance = previewShieldedCredits
         isChainSynced = previewIsChainSynced
         self.previewIsResyncingWallet = previewIsResyncingWallet
+        if previewIdentityDestination {
+            isIdentityDestination = true
+            identityId = Data(repeating: 0x07, count: 32)
+            identityBalanceCredits = previewIdentityCredits
+            // Stands in for the planner ceiling the real instance derives
+            // from the persisted Platform-address candidates.
+            platformIdentityFundableDuffs = previewPlatformCredits / 1000
+        }
+        if previewIdentitySource {
+            isIdentitySource = true
+            identityId = Data(repeating: 0x07, count: 32)
+            identityBalanceCredits = previewIdentityCredits
+            // Shielded is unreachable from an identity, so a preview asking
+            // for it would render a target the real screen never allows.
+            sendTarget = Self.sanitizedWithdrawalTarget(previewTarget)
+        }
     }
 
     /// Preview view model with stubbed balances.
@@ -700,6 +1010,9 @@ final class InternalTransferViewModel: ObservableObject {
         target: ChainNetwork = .platform,
         sendFrom: ChainNetwork? = nil,
         receiveInto: ChainNetwork? = nil,
+        identityDestination: Bool = false,
+        identitySource: Bool = false,
+        identityCredits: UInt64 = 25_000_000_000,
         amountText: String = "0",
         coreDuffs: UInt64 = 245_000_000,
         platformCredits: UInt64 = 120_000_000_000,
@@ -712,6 +1025,9 @@ final class InternalTransferViewModel: ObservableObject {
             previewTarget: target,
             previewSendFrom: sendFrom,
             previewReceiveInto: receiveInto,
+            previewIdentityDestination: identityDestination,
+            previewIdentitySource: identitySource,
+            previewIdentityCredits: identityCredits,
             previewAmountText: amountText,
             previewCoreDuffs: coreDuffs,
             previewPlatformCredits: platformCredits,
@@ -730,10 +1046,21 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
+    /// Fee kind of the shielded spend the CURRENT selection would execute.
+    /// The Identity destination's shielded funding starts with an unshield to
+    /// the wallet's own Platform address, so it prices exactly like the
+    /// Shielded → Platform route.
+    private var activeShieldedFeeKind: PlatformWalletManager.ShieldedFeeKind? {
+        if isIdentityDestination {
+            return source == .shielded ? .unshield : nil
+        }
+        return shieldedFeeKind(for: route)
+    }
+
     /// Recomputes `shieldedSpendCeilingCredits` from the current note set.
     /// Cached rather than computed per keystroke — it reads SwiftData.
     private func refreshShieldedSpendCeiling() {
-        guard let feeKind = shieldedFeeKind(for: route) else {
+        guard let feeKind = activeShieldedFeeKind else {
             shieldedSpendCeilingCredits = nil
             return
         }
@@ -766,16 +1093,25 @@ final class InternalTransferViewModel: ObservableObject {
     /// currently-selected source bucket. Each route has its own balance
     /// envelope — asset-lock spends BIP44 duffs, transparent shield spends
     /// DIP-17 credits.
-    /// Only Core-funded routes during a restored wallet's first sync block.
+    /// Only Core-funded transfers during a restored wallet's first sync
+    /// block — including an identity top-up spending the Core balance,
+    /// which is the same asset-lock L1 spend.
     var isBlockedBySync: Bool {
-        switch route {
-        case .coreToShielded, .coreToPlatform:
-            return WalletSendService.isBlockedByInitialRestoreSync(
-                isResyncingWallet: isResyncingWallet,
-                isChainSynced: isChainSynced)
-        default:
-            return false
+        let spendsCore: Bool
+        if isIdentitySource {
+            // Credits leave the identity; the payout is produced by the
+            // network, not by an L1 spend of this wallet's UTXOs, so the
+            // restore gate has nothing to protect here.
+            spendsCore = false
+        } else if isIdentityDestination {
+            spendsCore = source == .core
+        } else {
+            spendsCore = route.source == .core
         }
+        guard spendsCore else { return false }
+        return WalletSendService.isBlockedByInitialRestoreSync(
+            isResyncingWallet: isResyncingWallet,
+            isChainSynced: isChainSynced)
     }
 
     /// The restore marker, read live so the gate lifts as soon as it clears.
@@ -796,6 +1132,9 @@ final class InternalTransferViewModel: ObservableObject {
     var amountValidationMessage: String? {
         if let maxNotice { return maxNotice }
         guard dashDuffsUnsigned > 0 else { return nil }
+
+        if isIdentitySource { return identityWithdrawalValidationMessage }
+        if isIdentityDestination { return identityAmountValidationMessage }
 
         // The Core → Shielded pool fee rides on top of the amount, so there
         // is no route minimum — but without the estimate the lock value
@@ -860,31 +1199,7 @@ final class InternalTransferViewModel: ObservableObject {
             // A Max sweep is planned against the real note set rather than the
             // amount+reserve envelope, so it is affordable by construction.
             if isFullShieldedSweep { return nil }
-            // The ceiling is priced from the notes that would actually be
-            // spent, so it supersedes the flat reserve — which always charges
-            // a full-size bundle and would reject amounts a one- or two-note
-            // spend can afford.
-            if let ceiling = shieldedSpendCeilingCredits {
-                if creditsPreview > shieldedBalance {
-                    // Simply more than the wallet holds: name that, rather than
-                    // blaming note fragmentation.
-                    return TransferSpendAmountPolicy.insufficientBalanceMessage(
-                        balanceName: balanceName,
-                        requestedDuffs: creditsPreview / 1000,
-                        spendableDuffs: ceiling / 1000)
-                }
-                return creditsPreview > ceiling ? Self.shieldedCeilingMessage(ceiling) : nil
-            }
-            // Ceiling unavailable (notes reconciling): fall back to the flat
-            // worst-case reserve.
-            guard let reserve = feeReserveCredits else {
-                return Self.feeEstimateUnavailableMessage
-            }
-            return TransferSpendAmountPolicy.insufficientBalanceMessage(
-                balanceName: balanceName,
-                requestedCredits: creditsPreview,
-                balanceCredits: shieldedBalance,
-                feeReserveCredits: reserve)
+            return shieldedSpendValidationMessage(reserveCredits: feeReserveCredits)
 
         case .platformToCore:
             // Stay quiet while the preflight is still resolving: Continue is
@@ -919,6 +1234,126 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
+    /// The shielded-pool "doesn't fit" line shared by the Shielded → balance
+    /// routes and the Identity destination (whose funding starts with the
+    /// same unshield): balance overrun first, then the note-priced ceiling,
+    /// then the flat worst-case reserve as the fallback while notes are
+    /// reconciling. `nil` when the amount fits.
+    private func shieldedSpendValidationMessage(reserveCredits: UInt64?) -> String? {
+        let balanceName = ChainNetwork.shielded.balanceName
+        // The ceiling is priced from the notes that would actually be
+        // spent, so it supersedes the flat reserve — which always charges
+        // a full-size bundle and would reject amounts a one- or two-note
+        // spend can afford.
+        if let ceiling = shieldedSpendCeilingCredits {
+            if creditsPreview > shieldedBalance {
+                // Simply more than the wallet holds: name that, rather than
+                // blaming note fragmentation.
+                return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                    balanceName: balanceName,
+                    requestedDuffs: creditsPreview / 1000,
+                    spendableDuffs: ceiling / 1000)
+            }
+            return creditsPreview > ceiling ? Self.shieldedCeilingMessage(ceiling) : nil
+        }
+        guard let reserve = reserveCredits else {
+            return Self.feeEstimateUnavailableMessage
+        }
+        return TransferSpendAmountPolicy.insufficientBalanceMessage(
+            balanceName: balanceName,
+            requestedCredits: creditsPreview,
+            balanceCredits: shieldedBalance,
+            feeReserveCredits: reserve)
+    }
+
+    /// Amount-affordability of a shielded-pool spend, mirroring
+    /// `shieldedSpendValidationMessage` gate for gate.
+    private func canAffordShieldedSpend(reserveCredits: UInt64?) -> Bool {
+        if let ceiling = shieldedSpendCeilingCredits {
+            return creditsPreview <= ceiling
+        }
+        guard let reserve = reserveCredits else { return false }
+        return shieldedBalance >= reserve
+            && creditsPreview <= shieldedBalance - reserve
+    }
+
+    /// The Identity destination's inline rejection, mirroring
+    /// `canContinueToIdentity` gate for gate so a disabled Continue is never
+    /// unexplained: no identity, below the top-up floor, or over the
+    /// source's envelope.
+    private var identityAmountValidationMessage: String? {
+        guard identityId != nil else { return Self.noIdentityMessage }
+        if dashDuffsUnsigned < IdentityTopUpViewModel.customMinimumDuffs {
+            return Self.identityMinimumMessage
+        }
+        switch source {
+        case .core:
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: source.balanceName,
+                requestedDuffs: dashDuffsUnsigned,
+                spendableDuffs: coreSpendableDuffs)
+        case .platform:
+            guard let ceiling = platformIdentityFundableDuffs else {
+                return Self.feeEstimateUnavailableMessage
+            }
+            return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: source.balanceName,
+                requestedDuffs: dashDuffsUnsigned,
+                spendableDuffs: ceiling)
+        case .shielded:
+            return shieldedSpendValidationMessage(reserveCredits: feeReserveCredits)
+        }
+    }
+
+    /// The Identity source's inline rejection, mirroring
+    /// `canContinueFromIdentity` gate for gate: no identity, below the
+    /// consensus withdrawal floor, or over what the credit balance can send
+    /// once the fee reserve is held back.
+    private var identityWithdrawalValidationMessage: String? {
+        guard identityId != nil else { return Self.noIdentityToWithdrawFromMessage }
+        if resolvedWithdrawalTarget == .transparent,
+           creditsPreview < IdentityWithdrawViewModel.minimumWithdrawalCredits {
+            return Self.identityWithdrawalMinimumMessage
+        }
+        let spendable = IdentityWithdrawViewModel.spendableCredits(
+            balanceCredits: identityBalanceCredits)
+        guard creditsPreview > spendable else { return nil }
+        return TransferSpendAmountPolicy.insufficientBalanceMessage(
+            balanceName: Self.identityBalanceName,
+            requestedDuffs: creditsPreview / 1000,
+            spendableDuffs: spendable / 1000)
+    }
+
+    private static let noIdentityMessage = NSLocalizedString(
+        "You need a DashPay identity before you can top up its balance.",
+        comment: "Identity transfer destination without a registered identity")
+
+    private static let noIdentityToWithdrawFromMessage = NSLocalizedString(
+        "You need a DashPay identity before you can move credits out of it.",
+        comment: "Identity transfer source without a registered identity")
+
+    /// The consensus floor, not a product choice: below it the withdrawal's
+    /// Core output would be dust and the network rejects the transition.
+    private static let identityWithdrawalMinimumMessage = String.localizedStringWithFormat(
+        NSLocalizedString(
+            "Enter at least %@ DASH",
+            comment: "Identity top-up sheet — custom amount below the floor"),
+        (IdentityWithdrawViewModel.minimumWithdrawalCredits / 1000).dashAmount
+            .formattedDashAmountWithoutCurrencySymbol)
+
+    /// Card-length name for the identity's credit balance, matching how
+    /// `ChainNetwork.balanceName` labels the other three.
+    static let identityBalanceName = NSLocalizedString("Identity", comment: "Payments")
+
+    /// Same floor (and nearly the same wording) as the top-up sheet's custom
+    /// amount field — both feed `IdentityTopUpViewModel.topUp`.
+    private static let identityMinimumMessage = String.localizedStringWithFormat(
+        NSLocalizedString(
+            "Enter at least %@ DASH",
+            comment: "Identity top-up sheet — custom amount below the floor"),
+        IdentityTopUpViewModel.customMinimumDuffs.dashAmount
+            .formattedDashAmountWithoutCurrencySymbol)
+
     private static let feeEstimateUnavailableMessage = NSLocalizedString(
         "There was an error, please try again later",
         comment: "Internal transfer fee estimate unavailable")
@@ -929,6 +1364,8 @@ final class InternalTransferViewModel: ObservableObject {
         // otherwise the credit routes would submit a nonzero amount while the
         // UI shows 0.
         guard dashDuffsUnsigned > 0, !isBlockedBySync else { return false }
+        if isIdentitySource { return canContinueFromIdentity }
+        if isIdentityDestination { return canContinueToIdentity }
         switch route {
         case .coreToShielded:
             // Fee-on-top: the lock value is amount + pool fee, so the balance
@@ -957,13 +1394,8 @@ final class InternalTransferViewModel: ObservableObject {
             }
             // Unshield/withdraw: the SDK debits amount + fee from the shielded
             // pool (recipient receives the full amount), so the balance must
-            // cover amount + fee. Fail closed if the reserve is unavailable.
-            if let ceiling = shieldedSpendCeilingCredits {
-                return creditsPreview <= ceiling
-            }
-            guard let reserve = feeReserveCredits else { return false }
-            return shieldedBalance >= reserve
-                && creditsPreview <= shieldedBalance - reserve
+            // cover amount + fee. Fails closed if the reserve is unavailable.
+            return canAffordShieldedSpend(reserveCredits: feeReserveCredits)
         case .platformToCore:
             // Either the exact full-balance net payout (Max → AUTO path over
             // every address), or a partial amount within the single-input
@@ -975,12 +1407,77 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
+    /// Continue gate for the Identity destination. Each funding source
+    /// carries the envelope its executor really enforces:
+    /// - Core: an asset lock that carves its processing fee from the locked
+    ///   value — bounded by the fee-aware spendable balance, exactly like
+    ///   Core → Platform.
+    /// - Platform: the executor's own planner ceiling
+    ///   (`platformIdentityFundableDuffs`); `nil` fails closed.
+    /// - Shielded: the funding's first step is an unshield with its fee on
+    ///   top, so the Shielded → Platform envelope applies verbatim.
+    /// The floor is the top-up executor's own minimum; the executor's plan
+    /// remains the final authority at Confirm and surfaces its own error.
+    /// Continue gate for the Identity source: an identity exists, the amount
+    /// clears the consensus withdrawal floor (transparent payouts only), and
+    /// it fits under the credit balance less the fee reserve the transition
+    /// is charged on top. The executor's own failure remains the final
+    /// authority at Confirm.
+    private var canContinueFromIdentity: Bool {
+        guard identityId != nil else { return false }
+        if resolvedWithdrawalTarget == .transparent,
+           creditsPreview < IdentityWithdrawViewModel.minimumWithdrawalCredits {
+            return false
+        }
+        return creditsPreview <= IdentityWithdrawViewModel.spendableCredits(
+            balanceCredits: identityBalanceCredits)
+    }
+
+    private var canContinueToIdentity: Bool {
+        guard identityId != nil,
+              dashDuffsUnsigned >= IdentityTopUpViewModel.customMinimumDuffs
+        else { return false }
+        switch source {
+        case .core:
+            return dashDuffsUnsigned <= coreSpendableDuffs
+        case .platform:
+            guard let ceiling = platformIdentityFundableDuffs else { return false }
+            return dashDuffsUnsigned <= ceiling
+        case .shielded:
+            return canAffordShieldedSpend(reserveCredits: feeReserveCredits)
+        }
+    }
+
     /// Fee/selection headroom (credits) the SDK requires ON TOP of the amount
     /// for the active route, used by `canContinue` and Max. `nil` means the
     /// requirement is currently unavailable for a fee-reserved route → callers
     /// fail closed (block). A literal `0` (the asset-lock route) is NOT `nil` —
     /// that route reserves nothing from the source balance.
     private var feeReserveCredits: UInt64? {
+        if isIdentitySource {
+            // Charged to the identity on top of the amount, and unpriced by
+            // the SDK — the conservative reserve is what bounds the spend.
+            return IdentityWithdrawViewModel.feeHeadroomCredits
+        }
+        if isIdentityDestination {
+            switch source {
+            case .core:
+                // Asset lock — the processing fee is carved from the locked
+                // value, nothing is reserved from the source balance.
+                return 0
+            case .platform:
+                // Governed by the funding planner's own headroom, already
+                // folded into `platformIdentityFundableDuffs`.
+                return nil
+            case .shielded:
+                // The funding unshield's fee scales with the spent notes —
+                // reserve the worst case, same as the Shielded → Platform
+                // route below.
+                return try? PlatformWalletManager.estimateShieldedFee(
+                    kind: .unshield,
+                    numActions: ShieldedActionBudget.maxActionsPerTransition)
+            }
+        }
         switch route {
         case .coreToShielded, .coreToPlatform:
             // Core→Shielded's pool fee is duff-denominated and enforced in
@@ -1087,6 +1584,14 @@ final class InternalTransferViewModel: ObservableObject {
         Self.cardBalanceString(duffs: shieldedBalance / 1000)
     }
 
+    /// Formatted identity credit balance as DASH for the destination picker's
+    /// Identity row (max 5 fraction digits). Reads zero until
+    /// `refreshIdentitySnapshot` has run, which `init` does eagerly so the row
+    /// is right before the destination is ever selected.
+    var identityBalanceFormatted: String {
+        Self.cardBalanceString(duffs: identityBalanceCredits / 1000)
+    }
+
     /// Active fiat currency code (e.g. "THB") — the amount row's second
     /// unit pill label.
     var fiatCurrencyCode: String {
@@ -1114,6 +1619,10 @@ final class InternalTransferViewModel: ObservableObject {
     /// Source-aware Max fill. Keeps the same unit semantics — DASH or fiat —
     /// but draws the upper bound from whichever bucket the user picked.
     func fillMaxFromWallet() {
+        if isIdentitySource {
+            fillIdentityWithdrawalMax()
+            return
+        }
         if route == .platformToShielded {
             fillPlatformShieldMax()
             return
@@ -1205,6 +1714,39 @@ final class InternalTransferViewModel: ObservableObject {
         isApplyingMax = true
         defer { isApplyingMax = false }
         applyMaxAmountText(sourceDuffs)
+    }
+
+    /// Identity Max: the credit balance less the fee reserve the transition
+    /// is charged on top. Unlike the balance routes there is no preflight to
+    /// wait on — the reserve is a fixed bound — so this always resolves.
+    private func fillIdentityWithdrawalMax() {
+        clearMaxSelection()
+        let spendable = IdentityWithdrawViewModel.spendableCredits(
+            balanceCredits: identityBalanceCredits)
+        if spendable == 0 {
+            maxNotice = Self.feeReserveExceedsIdentityBalanceMessage
+        } else {
+            // The card shows the whole credit balance, so a Max that lands
+            // below it reads as a bug unless the reserve is accounted for.
+            maxNotice = Self.identityHeldBackMessage(
+                identityBalanceCredits - spendable)
+        }
+
+        isApplyingMax = true
+        defer { isApplyingMax = false }
+        applyMaxAmountText(spendable / 1000)
+    }
+
+    private static let feeReserveExceedsIdentityBalanceMessage = NSLocalizedString(
+        "Your Identity balance is too low to cover the transfer fee.",
+        comment: "Identity withdrawal — balance below the fee reserve")
+
+    private static func identityHeldBackMessage(_ heldBackCredits: UInt64) -> String {
+        String.localizedStringWithFormat(
+            NSLocalizedString(
+                "%@ DASH is held back to cover the transfer fee.",
+                comment: "Identity withdrawal — Max reserve note"),
+            (heldBackCredits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
     }
 
     /// Platform Max is asynchronous because only the Rust wallet knows which

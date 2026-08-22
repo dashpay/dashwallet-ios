@@ -1198,6 +1198,8 @@
 		C017200000000000000EA3 /* ShieldedSubmittedUnconfirmedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000EA1 /* ShieldedSubmittedUnconfirmedView.swift */; };
 		C017200000000000000FA2 /* InternalTransferSummaryFigures.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000FA1 /* InternalTransferSummaryFigures.swift */; };
 		C017200000000000000FA3 /* InternalTransferSummaryFigures.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000FA1 /* InternalTransferSummaryFigures.swift */; };
+		C017200000000000000FB2 /* IdentityWithdrawViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000FB1 /* IdentityWithdrawViewModel.swift */; };
+		C017200000000000000FB3 /* IdentityWithdrawViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000FB1 /* IdentityWithdrawViewModel.swift */; };
 		C6344885F1E0A6C04D3D8437 /* InternalTransferConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */; };
 		C8D0B892715B6C46126FBE3A /* SendScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F454341FADB260861FE05EB4 /* SendScreenViewController.swift */; };
 		C909614D29EFF7D600002D82 /* WalletKeysOverviewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909614C29EFF7D600002D82 /* WalletKeysOverviewModel.swift */; };
@@ -2054,6 +2056,7 @@
 		C017200000000000000DA1 /* ShieldedTransferStepList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedTransferStepList.swift; sourceTree = "<group>"; };
 		C017200000000000000EA1 /* ShieldedSubmittedUnconfirmedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedSubmittedUnconfirmedView.swift; sourceTree = "<group>"; };
 		C017200000000000000FA1 /* InternalTransferSummaryFigures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferSummaryFigures.swift; sourceTree = "<group>"; };
+		C017200000000000000FB1 /* IdentityWithdrawViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityWithdrawViewModel.swift; sourceTree = "<group>"; };
 		05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferConfirmSheet.swift; sourceTree = "<group>"; };
 		067B8024942F1481CD9B9CC1 /* PaymentNetworkResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentNetworkResolver.swift; sourceTree = "<group>"; };
 		0755F840BCC1E0754D807B04 /* libPods-TodayExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TodayExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3838,6 +3841,7 @@
 				F57DA9DBE5AAF88B3727E148 /* InternalTransferHostingController.swift */,
 				05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */,
 				C017200000000000000FA1 /* InternalTransferSummaryFigures.swift */,
+				C017200000000000000FB1 /* IdentityWithdrawViewModel.swift */,
 			);
 			path = InternalTransfer;
 			sourceTree = "<group>";
@@ -10297,6 +10301,7 @@
 				7C93319817E9E574070A504D /* InternalTransferHostingController.swift in Sources */,
 				C6344885F1E0A6C04D3D8437 /* InternalTransferConfirmSheet.swift in Sources */,
 				C017200000000000000FA2 /* InternalTransferSummaryFigures.swift in Sources */,
+				C017200000000000000FB2 /* IdentityWithdrawViewModel.swift in Sources */,
 				C017200000000000000EA2 /* ShieldedSubmittedUnconfirmedView.swift in Sources */,
 				C017200000000000000DA2 /* ShieldedTransferStepList.swift in Sources */,
 				C017200000000000000CA2 /* ShieldedRecoverySheet.swift in Sources */,
@@ -11324,6 +11329,7 @@
 				428C56F90F533CF0DD6774F1 /* InternalTransferHostingController.swift in Sources */,
 				E2D0F4AD56B92356C871F568 /* InternalTransferConfirmSheet.swift in Sources */,
 				C017200000000000000FA3 /* InternalTransferSummaryFigures.swift in Sources */,
+				C017200000000000000FB3 /* IdentityWithdrawViewModel.swift in Sources */,
 				C017200000000000000EA3 /* ShieldedSubmittedUnconfirmedView.swift in Sources */,
 				C017200000000000000DA3 /* ShieldedTransferStepList.swift in Sources */,
 				C017200000000000000CA3 /* ShieldedRecoverySheet.swift in Sources */,

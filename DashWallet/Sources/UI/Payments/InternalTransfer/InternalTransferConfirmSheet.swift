@@ -8,13 +8,14 @@ import DashUIKit
 import SwiftDashSDK
 
 /// Confirmation half-sheet shown when the user taps `Continue` on the
-/// Internal transfer screen. Body swaps based on the embedded
-/// `ShieldedTransferCoordinator.phase`:
-///   - `.idle`           → summary card + Cancel/Confirm buttons.
-///   - in-flight phases  → step checklist (Signing / Locking / Proving /
-///                         Broadcasting). Drag-dismiss is disabled.
-///   - `.success`        → green check + amount + Done.
-///   - `.failed(msg)`    → summary card with red error + Try again / Close.
+/// Internal transfer screen. Body swaps based on the display phase both
+/// executors reduce to:
+///   - idle          → summary card + Cancel/Confirm buttons.
+///   - in-flight     → the route checklist (Signing / Locking / Proving /
+///                     Broadcasting), or the identity top-up's step line.
+///                     Drag-dismiss is disabled.
+///   - success       → green check + amount + Done.
+///   - failed(msg)   → summary card with red error + Try again / Close.
 ///
 /// Confirm executes `route` via the coordinator:
 ///   - `.coreToShielded`     → `performAssetLock(recipientAmountDuffs:)`
@@ -23,9 +24,15 @@ import SwiftDashSDK
 ///   - `.shieldedToPlatform` → `performUnshield(amountCredits:)`
 ///   - `.coreToPlatform`     → `performFundPlatform(amountDuffs:)`
 ///   - `.platformToCore`     → `performPlatformWithdrawAll()` (full balance)
+/// …or, when one of the identity inputs is set, runs that executor instead —
+/// neither identity side has a balance-to-balance route:
+///   - `identityTopUp`      → `IdentityTopUpViewModel.topUp(identityId:amountDuffs:source:)`
+///   - `identityWithdrawal` → `IdentityWithdrawViewModel.withdraw(identityId:amountCredits:target:)`
 struct InternalTransferConfirmSheet: View {
 
-    let route: InternalTransferRoute
+    /// Balance-to-balance route to execute; `nil` exactly when one of the
+    /// identity inputs is set.
+    let route: InternalTransferRoute?
     let dashDuffs: Int64
     let amountDuffsUnsigned: UInt64
     let creditsAmount: UInt64
@@ -43,12 +50,67 @@ struct InternalTransferConfirmSheet: View {
     /// Frozen with the submitted amount so a capacity refresh can update only
     /// a value the user explicitly derived via Platform Shield Max.
     var platformShieldAmountWasMax: Bool = false
+    /// Identity-destination mode: Confirm runs the identity top-up from
+    /// `identityTopUp.source` instead of a route executor, and the summary
+    /// prices from the top-up policy. Mutually exclusive with `route`.
+    var identityTopUp: IdentityTopUpTransfer? = nil
+    /// Identity-source mode: Confirm runs the withdrawal to
+    /// `identityWithdrawal.target`. Mutually exclusive with both `route` and
+    /// `identityTopUp`.
+    var identityWithdrawal: IdentityWithdrawalTransfer? = nil
     var onCancel: () -> Void
     var onCompleted: () -> Void
     var onPlatformShieldCapacityChanged: (UInt64?, Bool) -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
+    @StateObject private var identityTopUpViewModel = IdentityTopUpViewModel()
+    @StateObject private var identityWithdrawViewModel = IdentityWithdrawViewModel()
     @State private var handledPlatformShieldCapacityChange = false
+
+    /// Whether Confirm runs an identity transfer rather than a balance
+    /// route. Exactly one of the three inputs is ever set.
+    private var isIdentityTransfer: Bool {
+        identityTopUp != nil || identityWithdrawal != nil
+    }
+
+    /// The identity transfers' shared lifecycle, kept apart from the
+    /// coordinator's phases — neither executor reports typed stages, only a
+    /// text step (the top-up) or nothing at all (the withdrawal).
+    private enum IdentityPhase: Equatable {
+        case idle
+        case processing
+        case success
+        case failed(String)
+    }
+
+    @State private var identityPhase: IdentityPhase = .idle
+
+    /// Chrome-level phase both executors reduce to; `detailsBody` renders
+    /// from this so the route coordinator and the identity top-up share one
+    /// layout.
+    private enum DisplayPhase: Equatable {
+        case idle
+        case inFlight
+        case failed(String)
+    }
+
+    private var displayPhase: DisplayPhase {
+        if isIdentityTransfer {
+            switch identityPhase {
+            case .processing: return .inFlight
+            case .failed(let message): return .failed(message)
+            case .idle, .success: return .idle
+            }
+        }
+        switch coordinator.phase {
+        case .signing, .locking, .proving, .broadcasting:
+            return .inFlight
+        case .failed(let message):
+            return .failed(message)
+        default:
+            return .idle
+        }
+    }
 
     var body: some View {
         // Grabber, title and background come from the design system rather
@@ -58,13 +120,21 @@ struct InternalTransferConfirmSheet: View {
             title: NSLocalizedString("Confirm", comment: ""),
             showBackButton: .constant(false)
         ) {
-            switch coordinator.phase {
-            case .success:
-                successBody
-            case .submittedUnconfirmed:
-                ShieldedSubmittedUnconfirmedView(onDone: onCompleted)
-            default:
-                detailsBody
+            if isIdentityTransfer {
+                if identityPhase == .success {
+                    successBody
+                } else {
+                    detailsBody
+                }
+            } else {
+                switch coordinator.phase {
+                case .success:
+                    successBody
+                case .submittedUnconfirmed:
+                    ShieldedSubmittedUnconfirmedView(onDone: onCompleted)
+                default:
+                    detailsBody
+                }
             }
         }
         .interactiveDismissDisabled(isInFlight)
@@ -74,12 +144,7 @@ struct InternalTransferConfirmSheet: View {
     }
 
     private var isInFlight: Bool {
-        switch coordinator.phase {
-        case .signing, .locking, .proving, .broadcasting:
-            return true
-        default:
-            return false
-        }
+        displayPhase == .inFlight
     }
 
     // MARK: - Idle / in-flight / failed body
@@ -100,7 +165,7 @@ struct InternalTransferConfirmSheet: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
 
-            if case let .failed(message) = coordinator.phase {
+            if case let .failed(message) = displayPhase {
                 Text(message)
                     .font(.system(size: 13))
                     .foregroundColor(.red)
@@ -108,16 +173,14 @@ struct InternalTransferConfirmSheet: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 12)
             } else {
-                TransferPrivacyTip(
-                    route: route,
-                    isFullWithdrawal: isFullPlatformWithdrawal)
+                privacyTip
                     .padding(.horizontal, 20)
                     .padding(.top, 12)
             }
 
             Spacer(minLength: 12)
 
-            switch coordinator.phase {
+            switch displayPhase {
             case .idle:
                 ButtonsGroup(
                     orientation: .horizontal,
@@ -140,16 +203,51 @@ struct InternalTransferConfirmSheet: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
 
-            case .signing, .locking, .proving, .broadcasting:
-                progressChecklist
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 24)
-
-            case .success, .submittedUnconfirmed:
-                // Handled by `successBody` / `ShieldedSubmittedUnconfirmedView`.
-                EmptyView()
+            case .inFlight:
+                progressSection
             }
         }
+    }
+
+    @ViewBuilder
+    private var privacyTip: some View {
+        if let identityTopUp {
+            TransferPrivacyTip(context: .identityTopUp(from: identityTopUp.source))
+        } else if let identityWithdrawal {
+            TransferPrivacyTip(context: .identityWithdrawal(to: identityWithdrawal.target))
+        } else if let route {
+            TransferPrivacyTip(context: .route(route, isFullWithdrawal: isFullPlatformWithdrawal))
+        }
+    }
+
+    @ViewBuilder
+    private var progressSection: some View {
+        if isIdentityTransfer {
+            identityProgress
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+        } else {
+            progressChecklist
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
+        }
+    }
+
+    /// The identity top-up reports its progress as a text step (the shielded
+    /// funding's two steps), not typed stages — a spinner plus that line
+    /// stands in for the route checklist. The withdrawal is a single
+    /// transition with no steps to name, so it shows the spinner alone.
+    private var identityProgress: some View {
+        VStack(spacing: 10) {
+            SwiftUI.ProgressView()
+            if let step = identityTopUpViewModel.stepLabel {
+                Text(step)
+                    .font(.system(size: 13))
+                    .foregroundColor(.dash.secondaryText)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Success body
@@ -203,13 +301,25 @@ struct InternalTransferConfirmSheet: View {
     /// shows no number it cannot stand behind.
 
     private var networkFeeString: String {
-        InternalTransferSummaryFigures.networkFeeFiat(
+        if let identityTopUp {
+            return InternalTransferSummaryFigures.identityTopUpFeeFiat(
+                source: identityTopUp.source) ?? "—"
+        }
+        if identityWithdrawal != nil {
+            return InternalTransferSummaryFigures.identityWithdrawalFeeFiat ?? "—"
+        }
+        guard let route else { return "—" }
+        return InternalTransferSummaryFigures.networkFeeFiat(
             route: route,
             withdrawalFeeCredits: withdrawalFeeCredits) ?? "—"
     }
 
     private var totalString: String {
-        InternalTransferSummaryFigures.totalLeavingSource(
+        if isIdentityTransfer {
+            return InternalTransferSummaryFigures.identityTopUpTotal(dashDuffs: dashDuffs)
+        }
+        guard let route else { return "—" }
+        return InternalTransferSummaryFigures.totalLeavingSource(
             route: route,
             dashDuffs: dashDuffs,
             amountDuffsUnsigned: amountDuffsUnsigned) ?? "—"
@@ -239,14 +349,29 @@ struct InternalTransferConfirmSheet: View {
         .cornerRadius(12)
     }
 
-    /// From/To endpoint names for the summary card, straight off the route.
+    /// From/To endpoint names for the summary card: straight off the route,
+    /// or the funding source + the identity for a top-up.
     private var fromLabel: String {
-        InternalTransferSummaryFigures.balanceName(
+        if let identityTopUp {
+            return InternalTransferSummaryFigures.balanceName(identityTopUp.source)
+        }
+        if identityWithdrawal != nil {
+            return InternalTransferSummaryFigures.identityEndpointName
+        }
+        guard let route else { return "—" }
+        return InternalTransferSummaryFigures.balanceName(
             InternalTransferSummaryFigures.endpoints(of: route).from)
     }
 
     private var toLabel: String {
-        InternalTransferSummaryFigures.balanceName(
+        if identityTopUp != nil {
+            return InternalTransferSummaryFigures.identityEndpointName
+        }
+        if let identityWithdrawal {
+            return InternalTransferSummaryFigures.balanceName(identityWithdrawal.target.network)
+        }
+        guard let route else { return "—" }
+        return InternalTransferSummaryFigures.balanceName(
             InternalTransferSummaryFigures.endpoints(of: route).to)
     }
 
@@ -290,6 +415,8 @@ struct InternalTransferConfirmSheet: View {
     }
 
     private var progressSteps: [ShieldedTransferStepList.Step] {
+        // Identity modes render `identityProgress` instead of the checklist.
+        guard let route else { return [] }
         var steps: [ShieldedTransferStepList.Step] = [
             .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing)
         ]
@@ -311,6 +438,15 @@ struct InternalTransferConfirmSheet: View {
     // MARK: - Actions
 
     private func confirm() {
+        if let identityTopUp {
+            confirmIdentityTopUp(identityTopUp)
+            return
+        }
+        if let identityWithdrawal {
+            confirmIdentityWithdrawal(identityWithdrawal)
+            return
+        }
+        guard let route else { return }
         Task {
             switch route {
             case .coreToShielded:
@@ -336,7 +472,60 @@ struct InternalTransferConfirmSheet: View {
         }
     }
 
+    /// Runs the top-up, reducing its outcome to a phase: a returned balance
+    /// is success, an error message is failure, and a backed-out PIN prompt
+    /// returns to the summary. Retrying a failure re-runs the whole top-up —
+    /// the same semantics as the profile sheet's top-up flow.
+    private func confirmIdentityTopUp(_ topUp: IdentityTopUpTransfer) {
+        Task {
+            identityPhase = .processing
+            let newBalance = await identityTopUpViewModel.topUp(
+                identityId: topUp.identityId,
+                amountDuffs: amountDuffsUnsigned,
+                source: .init(spending: topUp.source))
+            if newBalance != nil {
+                identityPhase = .success
+            } else if let message = identityTopUpViewModel.errorMessage {
+                identityTopUpViewModel.errorMessage = nil
+                identityPhase = .failed(message)
+            } else {
+                identityPhase = .idle
+            }
+        }
+    }
+
+    /// Runs the withdrawal, reducing its outcome to the same phase the
+    /// top-up uses: success, an error message, or a backed-out PIN prompt
+    /// that returns to the summary.
+    private func confirmIdentityWithdrawal(_ withdrawal: IdentityWithdrawalTransfer) {
+        Task {
+            identityPhase = .processing
+            let succeeded = await identityWithdrawViewModel.withdraw(
+                identityId: withdrawal.identityId,
+                amountCredits: creditsAmount,
+                target: withdrawal.target)
+            if succeeded {
+                identityPhase = .success
+            } else if let message = identityWithdrawViewModel.errorMessage {
+                identityWithdrawViewModel.errorMessage = nil
+                identityPhase = .failed(message)
+            } else {
+                identityPhase = .idle
+            }
+        }
+    }
+
     private func tryAgain() {
+        if let identityTopUp {
+            identityPhase = .idle
+            confirmIdentityTopUp(identityTopUp)
+            return
+        }
+        if let identityWithdrawal {
+            identityPhase = .idle
+            confirmIdentityWithdrawal(identityWithdrawal)
+            return
+        }
         // If the just-failed asset-lock attempt (Core→Shielded or
         // Core→Platform) already committed a lock, RESUME that exact outpoint
         // instead of building a second lock (which strands the first).
@@ -388,11 +577,13 @@ struct InternalTransferConfirmSheet: View {
 /// those return `nil` and the rows render "—". `.coreToPlatform` prices from a
 /// constant, so it is the route to use when the fee row itself matters.
 private func confirmSheetSample(
-    route: InternalTransferRoute,
+    route: InternalTransferRoute?,
     dash: Decimal = 0.5,
     withdrawalFeeCredits: UInt64? = nil,
     isFullPlatformWithdrawal: Bool = false,
-    isFullShieldedSweep: Bool = false
+    isFullShieldedSweep: Bool = false,
+    identityTopUp: IdentityTopUpTransfer? = nil,
+    identityWithdrawal: IdentityWithdrawalTransfer? = nil
 ) -> some View {
     let duffs = Int64(truncating: NSDecimalNumber(decimal: dash * 100_000_000))
     return InternalTransferConfirmSheet(
@@ -405,9 +596,22 @@ private func confirmSheetSample(
         isFullPlatformWithdrawal: isFullPlatformWithdrawal,
         isFullShieldedSweep: isFullShieldedSweep,
         platformShieldAmountWasMax: false,
+        identityTopUp: identityTopUp,
+        identityWithdrawal: identityWithdrawal,
         onCancel: {},
         onCompleted: {},
         onPlatformShieldCapacityChanged: { _, _ in })
+}
+
+/// Identity destination funded from `source`. Without a wallet the shielded
+/// funding's fee row renders "—"; the transparent-side sources price from
+/// the observed transition-fee constant, so their fee row shows a number.
+private func identityConfirmSheetSample(source: ChainNetwork) -> some View {
+    confirmSheetSample(
+        route: nil,
+        identityTopUp: IdentityTopUpTransfer(
+            identityId: Data(repeating: 0x07, count: 32),
+            source: source))
 }
 
 @available(iOS 17, *)
@@ -433,6 +637,38 @@ private func confirmSheetSample(
         route: .platformToCore,
         withdrawalFeeCredits: 1_240_000,
         isFullPlatformWithdrawal: true)
+}
+
+/// Identity destination from the Transparent balance — the linkability
+/// warning replaces the route privacy tip and To reads "Identity".
+@available(iOS 17, *)
+#Preview("→ Identity · from Transparent") {
+    identityConfirmSheetSample(source: .core)
+}
+
+@available(iOS 17, *)
+#Preview("→ Identity · from Shielded") {
+    identityConfirmSheetSample(source: .shielded)
+}
+
+private func withdrawalConfirmSheetSample(target: IdentityWithdrawalTarget) -> some View {
+    confirmSheetSample(
+        route: nil,
+        identityWithdrawal: IdentityWithdrawalTransfer(
+            identityId: Data(repeating: 0x07, count: 32),
+            target: target))
+}
+
+/// Identity source: From reads "Identity" and the fee row is the em dash —
+/// neither withdrawal transition has an SDK fee estimate to print.
+@available(iOS 17, *)
+#Preview("Identity → · Transparent") {
+    withdrawalConfirmSheetSample(target: .transparent)
+}
+
+@available(iOS 17, *)
+#Preview("Identity → · Platform") {
+    withdrawalConfirmSheetSample(target: .platform)
 }
 
 @available(iOS 17, *)

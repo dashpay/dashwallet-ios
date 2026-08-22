@@ -244,8 +244,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     /// Internal card → the transfer form, on this controller's own navigation
     /// stack so the user stays inside the payments tab.
-    private func pushInternalTransfer(to target: ChainNetwork) {
-        let controller = InternalTransferHostingController(transferTo: target)
+    private func pushInternalTransfer(to destination: TransferDestination) {
+        let controller = InternalTransferHostingController(transferTo: destination)
         pushWithoutTabBar(controller)
     }
 

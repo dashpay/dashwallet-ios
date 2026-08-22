@@ -37,7 +37,7 @@ struct PaymentsLandingScreen: View {
     var onSendContinue: () -> Void = {}
     /// A destination picked on the Internal tab's card — the host pushes the
     /// transfer form with that balance preselected as the To endpoint.
-    var onInternalTransfer: (ChainNetwork) -> Void = { _ in }
+    var onInternalTransfer: (TransferDestination) -> Void = { _ in }
     /// "Send to address" on the Send tab's card — the host pushes the send
     /// form. (Its sibling row routes through `onScanQR`.)
     var onSendToAddress: () -> Void = {}

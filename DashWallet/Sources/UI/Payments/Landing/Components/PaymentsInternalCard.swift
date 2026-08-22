@@ -21,10 +21,10 @@ import DashUIKit
 /// The Internal tab's opening step: where a transfer can go, picked before any
 /// amount is typed.
 ///
-/// Reports the balance rather than acting on it — the host owns navigation, and
-/// this only knows which destinations exist.
+/// Reports the destination rather than acting on it — the host owns
+/// navigation, and this only knows which destinations exist.
 struct PaymentsInternalCard: View {
-    var onSelect: (ChainNetwork) -> Void
+    var onSelect: (TransferDestination) -> Void
 
     var body: some View {
         PaymentsActionCard(
@@ -32,22 +32,17 @@ struct PaymentsInternalCard: View {
             PaymentsActionRow(
                 iconSystemName: DashIcon.Features.shield.rawValue,
                 title: ChainNetwork.shielded.balanceName,
-                action: { onSelect(.shielded) })
+                action: { onSelect(.balance(.shielded)) })
 
-            // Identity credits are topped up through the identity flow
-            // (`topUpIdentityWithFunding`), not the transfer engine —
-            // `ChainNetwork` has no case for them. Listed but inert until
-            // that route exists here.
             PaymentsActionRow(
                 iconSystemName: DashIcon.Features.identity.rawValue,
                 title: NSLocalizedString("Identity", comment: "Payments"),
-                isEnabled: false,
-                action: {})
+                action: { onSelect(.identity) })
 
             PaymentsActionRow(
                 iconSystemName: DashIcon.Features.platform.rawValue,
                 title: ChainNetwork.platform.balanceName,
-                action: { onSelect(.platform) })
+                action: { onSelect(.balance(.platform)) })
         }
     }
 }
@@ -71,8 +66,6 @@ private func internalCardSample() -> some View {
         .preferredColorScheme(.dark)
 }
 
-/// The disabled Identity row and the two live ones must stay visibly different
-/// at large sizes, where the dimming is the only cue left.
 @available(iOS 17, *)
 #Preview("Large type") {
     internalCardSample()

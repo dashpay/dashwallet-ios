@@ -22,15 +22,20 @@ final class InternalTransferHostingController: UIViewController {
         viewModel.amountText = "\(prefillDashAmount)"
     }
 
-    /// Opens the form with `target` already selected as the To endpoint —
+    /// Opens the form with `destination` already selected as the To endpoint —
     /// the payments landing's Internal card picks where a transfer is headed
     /// before any amount is typed.
     ///
-    /// Preselected, not pinned: both cards stay pickers, and the view model
-    /// moves the From side off `target` if that is where it currently sits.
-    convenience init(transferTo target: ChainNetwork) {
+    /// A balance destination is preselected, not pinned: the view model moves
+    /// the From side off it if that is where it currently sits, the From row
+    /// opens the source picker, and the swap badge can still exchange the
+    /// two. Identity fixes the To card instead — the source side does not
+    /// offer identity (the app implements identity top-up but not withdrawal
+    /// yet), so there is nothing to swap into; the From row still picks among
+    /// all three balances.
+    convenience init(transferTo destination: TransferDestination) {
         self.init(nibName: nil, bundle: nil)
-        viewModel.selectStandaloneTarget(target)
+        viewModel.selectStandaloneDestination(destination)
     }
 
     private lazy var hostingController: UIHostingController<InternalTransferScreen> = {
