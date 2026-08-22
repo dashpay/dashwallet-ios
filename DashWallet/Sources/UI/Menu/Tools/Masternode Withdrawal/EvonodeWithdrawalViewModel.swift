@@ -86,7 +86,9 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
     @Published var amountText: String = "0" {
         didSet { maxAmountCredits = nil }
     }
-    @Published var unit: Unit = .dash
+    /// Typing unit. Change it through `setUnit(_:)`, which re-expresses the
+    /// typed amount in the new unit so its meaning is preserved.
+    @Published private(set) var unit: Unit = .dash
     /// Destination address. Starts at the registered payout address; only
     /// editable when `canChooseDestination`.
     @Published var destinationText: String
@@ -246,6 +248,31 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
 
     var canContinue: Bool {
         signingKey != nil && amountIsValid && destinationIsValid && phase == .idle
+    }
+
+    /// Switch the typing unit, converting the displayed amount so the DASH
+    /// amount the user meant doesn't change (a typed "1" DASH becomes its
+    /// fiat figure, not "1" fiat). A pinned Max stays pinned to the exact
+    /// credit amount and is only re-rendered in the new unit.
+    func setUnit(_ newUnit: Unit) {
+        guard newUnit != unit else { return }
+        let pinned = maxAmountCredits
+        let dash = parsedDashAmount
+        unit = newUnit
+        if dash > 0 {
+            switch newUnit {
+            case .dash:
+                amountText = Self.formatTyped(dash, fractionDigits: 8)
+            case .fiat:
+                let fiat = (try? CurrencyExchanger.shared.convertDash(amount: dash, to: App.fiatCurrency)) ?? 0
+                amountText = Self.formatTyped(fiat, fractionDigits: 2)
+            }
+        } else {
+            amountText = "0"
+        }
+        // `amountText.didSet` cleared the pin — restore it: Max means the
+        // exact credit figure regardless of how it is displayed.
+        maxAmountCredits = pinned
     }
 
     func fillMax() {

@@ -126,7 +126,7 @@ struct EvonodeWithdrawalScreen: View {
             onSwap: toggleUnit,
             onCurrencyTap: toggleUnit,
             onSelectInputType: { code in
-                viewModel.unit = code.caseInsensitiveCompare("DASH") == .orderedSame ? .dash : .fiat
+                viewModel.setUnit(code.caseInsensitiveCompare("DASH") == .orderedSame ? .dash : .fiat)
             }
         )
     }
@@ -171,7 +171,7 @@ struct EvonodeWithdrawalScreen: View {
     }
 
     private func toggleUnit() {
-        viewModel.unit = viewModel.unit == .dash ? .fiat : .dash
+        viewModel.setUnit(viewModel.unit == .dash ? .fiat : .dash)
     }
 
     private var keypadBinding: Binding<String> {

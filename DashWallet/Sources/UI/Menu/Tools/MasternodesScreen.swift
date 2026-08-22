@@ -279,6 +279,116 @@ private struct MasternodeListRow: View {
     }
 }
 
+// MARK: - MasternodeDetailViewModel
+
+/// SDK-backed state for one masternode's detail screen: the evonode's
+/// claimable Platform balance and the withdrawal-key preflight. Owns every
+/// SDK call so `MasternodeDetailScreen` only renders and forwards actions.
+@MainActor
+final class MasternodeDetailViewModel: ObservableObject {
+    let masternode: PlatformMasternode
+    /// Owner-key index from the list's address join, handed to the SDK
+    /// preflight / claim as a verified hint (see `loadWithdrawalKeys`).
+    let ownerKeyIndexHint: UInt32?
+
+    /// Evonode claimable balance = the masternode identity's credit
+    /// balance (identity id == display-order proTxHash). `nil` until
+    /// fetched / when the identity isn't found / while an unconfirmed claim
+    /// is being reconciled.
+    @Published private(set) var claimableCredits: UInt64?
+    @Published private(set) var balanceLoading = false
+    @Published private(set) var balanceError: String?
+
+    /// Which withdrawal signing keys this wallet holds for the evonode
+    /// (SDK preflight, local + seedless). `nil` until resolved or when the
+    /// preflight failed (`withdrawalKeysError`).
+    @Published private(set) var withdrawalKeys: MasternodeWithdrawalKeys?
+    @Published private(set) var withdrawalKeysError: String?
+
+    init(masternode: PlatformMasternode, ownerKeyIndexHint: UInt32?) {
+        self.masternode = masternode
+        self.ownerKeyIndexHint = ownerKeyIndexHint
+    }
+
+    /// Evonodes only: resolve the withdrawal keys, then fetch the balance.
+    func load() async {
+        guard masternode.isEvonode else { return }
+        loadWithdrawalKeys()
+        await fetchClaimableBalance()
+    }
+
+    /// The claim was accepted; Platform proved `remaining` as the new balance.
+    func applyWithdrawn(remainingCredits remaining: UInt64) {
+        claimableCredits = remaining
+    }
+
+    /// The claim's outcome is ambiguous (broadcast accepted, result
+    /// unconfirmed). Drop the stale balance SYNCHRONOUSLY — which hides
+    /// Withdraw — before the re-read, so a second claim can't be started on
+    /// a figure that may no longer exist; the re-read is the reconciliation.
+    func reconcileAfterUnconfirmedOutcome() {
+        claimableCredits = nil
+        Task { await fetchClaimableBalance() }
+    }
+
+    /// Resolve which withdrawal keys this wallet holds — local and seedless
+    /// (account-xpub derive-and-compare + address-pool lookup in Rust). The
+    /// list's owner index is passed as a hint that Rust verifies by
+    /// derivation, so an owner key above the default scan window (restored
+    /// wallet, empty in-memory pool) still resolves.
+    private func loadWithdrawalKeys() {
+        guard let manager = SwiftDashSDKHost.shared.manager,
+              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
+            withdrawalKeysError = NSLocalizedString("Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
+            return
+        }
+        do {
+            withdrawalKeys = try manager.masternodeWithdrawalKeys(
+                walletId: walletId,
+                proTxHash: masternode.proTxHash,
+                ownerKeyIndexHint: ownerKeyIndexHint)
+            withdrawalKeysError = nil
+        } catch {
+            withdrawalKeys = nil
+            withdrawalKeysError = NSLocalizedString(
+                "Couldn't check which keys of this evonode are in the wallet.",
+                comment: "Evonode withdrawal")
+        }
+    }
+
+    /// Fetch the masternode identity's credit balance. The identity id IS
+    /// the proTxHash in display (reversed) byte order; the stored bytes are
+    /// raw wire order, so reverse before keying the fetch. The FFI call is
+    /// blocking — run it off the main actor.
+    func fetchClaimableBalance() async {
+        guard let sdk = SwiftDashSDKHost.shared.sdk else {
+            balanceError = NSLocalizedString("Platform SDK not ready", comment: "Masternodes")
+            return
+        }
+        let identityId = Data(masternode.proTxHash.reversed())
+        balanceLoading = true
+        balanceError = nil
+        do {
+            let credits = try await Task.detached(priority: .userInitiated) {
+                try sdk.identities.getBalance(id: identityId)
+            }.value
+            claimableCredits = credits
+        } catch {
+            claimableCredits = nil
+            // Distinguish "no identity registered" from a transport failure
+            // so the copy isn't misleading on a transient network error.
+            let message = error.localizedDescription.lowercased()
+            if message.contains("not found") || message.contains("no identity")
+                || message.contains("does not exist") {
+                balanceError = NSLocalizedString("This masternode has no Platform identity yet.", comment: "Masternodes")
+            } else {
+                balanceError = NSLocalizedString("Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
+            }
+        }
+        balanceLoading = false
+    }
+}
+
 // MARK: - MasternodeDetailScreen
 
 /// Detail for one aggregated masternode, mirroring the SwiftExampleApp's
@@ -291,22 +401,21 @@ struct MasternodeDetailScreen: View {
     let masternode: PlatformMasternode
     let ownerOwnership: String
     let votingOwnership: String
-    /// Owner-key index from the list's address join, handed to the SDK
-    /// preflight / claim as a verified hint (see `loadWithdrawalKeys`).
-    var ownerKeyIndexHint: UInt32? = nil
+    @StateObject private var viewModel: MasternodeDetailViewModel
 
-    /// Evonode claimable balance = the masternode identity's credit
-    /// balance (identity id == display-order proTxHash). `nil` until
-    /// fetched / when the identity isn't found.
-    @State private var claimableCredits: UInt64?
-    @State private var balanceLoading = false
-    @State private var balanceError: String?
-
-    /// Which withdrawal signing keys this wallet holds for the evonode
-    /// (SDK preflight, local + seedless). `nil` until resolved or when the
-    /// preflight failed (`withdrawalKeysError`).
-    @State private var withdrawalKeys: MasternodeWithdrawalKeys?
-    @State private var withdrawalKeysError: String?
+    init(
+        masternode: PlatformMasternode,
+        ownerOwnership: String,
+        votingOwnership: String,
+        ownerKeyIndexHint: UInt32? = nil
+    ) {
+        self.masternode = masternode
+        self.ownerOwnership = ownerOwnership
+        self.votingOwnership = votingOwnership
+        _viewModel = StateObject(wrappedValue: MasternodeDetailViewModel(
+            masternode: masternode,
+            ownerKeyIndexHint: ownerKeyIndexHint))
+    }
 
     var body: some View {
         List {
@@ -407,7 +516,7 @@ struct MasternodeDetailScreen: View {
             // `EvonodeWithdrawalScreen` for the key rules.
             if masternode.isEvonode {
                 Section(NSLocalizedString("Claimable balance", comment: "Masternodes")) {
-                    if balanceLoading {
+                    if viewModel.balanceLoading {
                         HStack(spacing: 8) {
                             // Explicitly SwiftUI's — the app declares its own
                             // `ProgressView` UIKit class that shadows it here.
@@ -415,23 +524,23 @@ struct MasternodeDetailScreen: View {
                             Text(NSLocalizedString("Fetching…", comment: "Masternodes"))
                                 .foregroundColor(Color.dash.secondaryText)
                         }
-                    } else if let credits = claimableCredits {
+                    } else if let credits = viewModel.claimableCredits {
                         MasternodeDetailRow(
                             label: NSLocalizedString("Credits", comment: "Masternodes"),
                             value: "\(credits)")
                         MasternodeDetailRow(label: "≈ DASH", value: Self.creditsAsDash(credits))
-                    } else if let error = balanceError {
+                    } else if let error = viewModel.balanceError {
                         Text(error)
                             .font(.caption)
                             .foregroundColor(Color.dash.secondaryText)
                     }
 
                     Button {
-                        Task { await fetchClaimableBalance() }
+                        Task { await viewModel.fetchClaimableBalance() }
                     } label: {
                         Label(NSLocalizedString("Refresh", comment: ""), systemImage: "arrow.clockwise")
                     }
-                    .disabled(balanceLoading)
+                    .disabled(viewModel.balanceLoading)
 
                     withdrawRows
                 }
@@ -440,10 +549,7 @@ struct MasternodeDetailScreen: View {
         .navigationTitle(masternode.displayTitle)
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            if masternode.isEvonode {
-                loadWithdrawalKeys()
-                await fetchClaimableBalance()
-            }
+            await viewModel.load()
         }
     }
 
@@ -451,19 +557,19 @@ struct MasternodeDetailScreen: View {
     /// Shown only once the balance is known and positive.
     @ViewBuilder
     private var withdrawRows: some View {
-        if let credits = claimableCredits, credits > 0 {
-            if let keys = withdrawalKeys, keys.canWithdraw {
+        if let credits = viewModel.claimableCredits, credits > 0 {
+            if let keys = viewModel.withdrawalKeys, keys.canWithdraw {
                 NavigationLink {
                     EvonodeWithdrawalScreen(
                         masternode: masternode,
                         keys: keys,
                         claimableCredits: credits,
-                        ownerKeyIndexHint: ownerKeyIndexHint,
-                        onWithdrawn: { remaining in claimableCredits = remaining },
+                        ownerKeyIndexHint: viewModel.ownerKeyIndexHint,
+                        onWithdrawn: { remaining in
+                            viewModel.applyWithdrawn(remainingCredits: remaining)
+                        },
                         onOutcomeUnconfirmed: {
-                            // The claim may have executed: re-read the
-                            // balance — that read is the reconciliation.
-                            Task { await fetchClaimableBalance() }
+                            viewModel.reconcileAfterUnconfirmedOutcome()
                         })
                 } label: {
                     Label(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"), systemImage: "arrow.down.circle")
@@ -479,76 +585,18 @@ struct MasternodeDetailScreen: View {
                         comment: "Evonode withdrawal"))
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)
-            } else if withdrawalKeys != nil {
+            } else if viewModel.withdrawalKeys != nil {
                 Text(NSLocalizedString(
                     "This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here.",
                     comment: "Evonode withdrawal"))
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)
-            } else if let error = withdrawalKeysError {
+            } else if let error = viewModel.withdrawalKeysError {
                 Text(error)
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)
             }
         }
-    }
-
-    /// Resolve which withdrawal keys this wallet holds — local and seedless
-    /// (account-xpub derive-and-compare + address-pool lookup in Rust). The
-    /// list's owner index is passed as a hint that Rust verifies by
-    /// derivation, so an owner key above the default scan window (restored
-    /// wallet, empty in-memory pool) still resolves.
-    private func loadWithdrawalKeys() {
-        guard let manager = SwiftDashSDKHost.shared.manager,
-              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
-            withdrawalKeysError = NSLocalizedString("Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
-            return
-        }
-        do {
-            withdrawalKeys = try manager.masternodeWithdrawalKeys(
-                walletId: walletId,
-                proTxHash: masternode.proTxHash,
-                ownerKeyIndexHint: ownerKeyIndexHint)
-            withdrawalKeysError = nil
-        } catch {
-            withdrawalKeys = nil
-            withdrawalKeysError = NSLocalizedString(
-                "Couldn't check which keys of this evonode are in the wallet.",
-                comment: "Evonode withdrawal")
-        }
-    }
-
-    /// Fetch the masternode identity's credit balance. The identity id IS
-    /// the proTxHash in display (reversed) byte order; the stored bytes are
-    /// raw wire order, so reverse before keying the fetch. The FFI call is
-    /// blocking — run it off the main actor.
-    @MainActor
-    private func fetchClaimableBalance() async {
-        guard let sdk = SwiftDashSDKHost.shared.sdk else {
-            balanceError = NSLocalizedString("Platform SDK not ready", comment: "Masternodes")
-            return
-        }
-        let identityId = Data(masternode.proTxHash.reversed())
-        balanceLoading = true
-        balanceError = nil
-        do {
-            let credits = try await Task.detached(priority: .userInitiated) {
-                try sdk.identities.getBalance(id: identityId)
-            }.value
-            claimableCredits = credits
-        } catch {
-            claimableCredits = nil
-            // Distinguish "no identity registered" from a transport failure
-            // so the copy isn't misleading on a transient network error.
-            let message = error.localizedDescription.lowercased()
-            if message.contains("not found") || message.contains("no identity")
-                || message.contains("does not exist") {
-                balanceError = NSLocalizedString("This masternode has no Platform identity yet.", comment: "Masternodes")
-            } else {
-                balanceError = NSLocalizedString("Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
-            }
-        }
-        balanceLoading = false
     }
 
     /// 1 DASH = 100,000,000,000 credits.
