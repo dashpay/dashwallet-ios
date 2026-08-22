@@ -493,12 +493,10 @@ extension MainTabbarController: HomeViewControllerDelegate {
         }
     }
 
-    /// The "Send to Address" shortcut skips the payments landing: straight
-    /// to the send screen, with the address field prefilled when the
-    /// clipboard holds a valid Core/Platform address.
+    /// The "Send to Address" shortcut skips the payments landing and opens
+    /// the send screen directly.
     private func presentSendToAddressScreen() {
         let controller = SendScreenViewController()
-        controller.prefillsFromClipboard = true
         let navigationController = BaseNavigationController(rootViewController: controller)
         navigationController.isNavigationBarHidden = true
         navigationController.modalPresentationStyle = .fullScreen

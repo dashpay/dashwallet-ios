@@ -6,7 +6,6 @@
 import Combine
 import Foundation
 import SwiftDashSDK
-import UIKit
 
 @MainActor
 final class SendViewModel: ObservableObject {
@@ -88,8 +87,6 @@ final class SendViewModel: ObservableObject {
             }
         }
     }
-    @Published private(set) var clipboardSuggestion: ClipboardSuggestion? = nil
-
     // Balances — same feeds as `InternalTransferViewModel` (BIP44 duffs,
     // DIP-17 credits, Orchard credits).
     @Published private(set) var coreBalanceDuffs: UInt64 = 0
@@ -141,18 +138,7 @@ final class SendViewModel: ObservableObject {
         if let pinnedSource {
             source = pinnedSource
         }
-        refreshClipboardSuggestion()
         SyncingActivityMonitor.shared.add(observer: self)
-
-        NotificationCenter.default.publisher(for: UIPasteboard.changedNotification)
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.refreshClipboardSuggestion() }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.refreshClipboardSuggestion() }
-            .store(in: &cancellables)
 
         coreBalanceDuffs = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         platformCredits = PlatformAddressSyncCoordinator.shared.platformBalance
@@ -342,35 +328,17 @@ final class SendViewModel: ObservableObject {
 
     // MARK: - Clipboard
 
-    struct ClipboardSuggestion: Equatable {
-        let address: String
-        let kind: DestinationKind
-    }
-
-    func refreshClipboardSuggestion() {
-        guard let raw = UIPasteboard.general.string else {
-            clipboardSuggestion = nil
-            return
-        }
-        clipboardSuggestion = Self.detect(in: raw)
-    }
-
-    func useClipboardSuggestion() {
-        guard let suggestion = clipboardSuggestion else { return }
-        addressText = suggestion.address
-    }
-
-    private static func detect(in raw: String) -> ClipboardSuggestion? {
-        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.isEmpty { return nil }
-
-        for candidate in trimmed.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
-            let word = String(candidate)
-            if let kind = classify(word) {
-                return ClipboardSuggestion(address: word, kind: kind)
+    func usePastedStrings(_ strings: [String]) {
+        for string in strings {
+            let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+            for candidate in trimmed.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
+                let address = String(candidate)
+                if Self.classify(address) != nil {
+                    addressText = address
+                    return
+                }
             }
         }
-        return nil
     }
 
     /// Scanned QR → address text. The classifier decides what it is; a

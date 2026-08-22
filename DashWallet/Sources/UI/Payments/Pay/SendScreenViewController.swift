@@ -10,11 +10,6 @@ import UIKit
 @objc(DWSendScreenViewController)
 final class SendScreenViewController: DWBasePayViewController {
 
-    /// Set by the "Send to Address" shortcut entry: on load, a valid address
-    /// on the clipboard is applied to the address field directly — the same
-    /// action as tapping the clipboard suggestion chip.
-    var prefillsFromClipboard = false
-
     /// Scan-routing prefill (`DWBasePayViewController`'s ObjC scan handler):
     /// a scanned bech32m Platform/Shielded destination opens this screen
     /// with the address (and BIP21 amount, when present) applied on load.
@@ -60,9 +55,6 @@ final class SendScreenViewController: DWBasePayViewController {
         ])
         hostingController.didMove(toParent: self)
 
-        if prefillsFromClipboard {
-            sendViewModel.useClipboardSuggestion()
-        }
         if let prefillAddress {
             sendViewModel.addressText = prefillAddress
             if prefillAmountDuffs > 0 {
