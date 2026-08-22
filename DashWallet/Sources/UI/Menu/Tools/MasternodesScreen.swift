@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import DashUIKit
 import SwiftDashSDK
 import SwiftUI
@@ -39,9 +40,39 @@ final class MasternodesViewModel: ObservableObject {
 
     private let epochBlocksProvider: EvonodeEpochBlocksProviding
     private var epochBlocksTask: Task<Void, Never>?
+    /// Owner of `epochBlocksTask` (see `HomeViewModel`): a superseded fetch
+    /// must not clear or publish over its replacement.
+    private var epochBlocksGeneration: UInt64 = 0
+    private var cancellables = Set<AnyCancellable>()
+    private let syncModel = SyncModelImpl()
 
     init(epochBlocksProvider: EvonodeEpochBlocksProviding = EvonodeEpochBlocksService()) {
         self.epochBlocksProvider = epochBlocksProvider
+        observeRefreshTriggers()
+    }
+
+    /// Same refresh events as the home card: sync reaching done (the
+    /// aggregation is complete then), the app returning to the foreground,
+    /// and a wallet / network switch — each reloads the list and the
+    /// epoch tallies for the current wallet, cancelling stale work.
+    private func observeRefreshTriggers() {
+        syncModel.$state
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                guard state == .syncDone else { return }
+                Task { @MainActor [weak self] in self?.load() }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .merge(with: NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification))
+            .merge(with: NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange))
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in self?.load() }
+            }
+            .store(in: &cancellables)
     }
 
     /// Registrations still on the network — active, PoSe-banned, or (before
@@ -92,16 +123,28 @@ final class MasternodesViewModel: ObservableObject {
     }
 
     private func loadEpochBlocks() {
+        epochBlocksTask?.cancel()
+        epochBlocksTask = nil
+        epochBlocksGeneration &+= 1
         let owned = Set(masternodes
             .filter { $0.isEvonode && MasternodeStatus(rawValue: $0.status) != .retired }
             .map(\.proTxHash))
-        guard !owned.isEmpty, epochBlocksTask == nil else { return }
+        guard !owned.isEmpty else {
+            epochBlocks = nil
+            return
+        }
         let provider = epochBlocksProvider
+        let generation = epochBlocksGeneration
         epochBlocksTask = Task { [weak self] in
-            defer { self?.epochBlocksTask = nil }
-            if let blocks = try? await provider.fetch(ownedProTxHashes: owned), !Task.isCancelled {
-                self?.epochBlocks = blocks
+            defer {
+                if let self, self.epochBlocksGeneration == generation {
+                    self.epochBlocksTask = nil
+                }
             }
+            // Transient failures keep the previous tallies; the next trigger retries.
+            guard let blocks = try? await provider.fetch(ownedProTxHashes: owned),
+                  let self, !Task.isCancelled, self.epochBlocksGeneration == generation else { return }
+            self.epochBlocks = blocks
         }
     }
 
@@ -316,6 +359,12 @@ private struct MasternodeListRow: View {
     /// Blocks proposed this epoch (evonodes, once fetched).
     var epochBlocks: UInt64? = nil
 
+    private static let countFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        return formatter
+    }()
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
@@ -334,7 +383,7 @@ private struct MasternodeListRow: View {
                         ? NSLocalizedString("1 block proposed this epoch", comment: "Evonode epoch blocks card")
                         : String(
                             format: NSLocalizedString("%@ blocks proposed this epoch", comment: "Evonode epoch blocks card"),
-                            "\(epochBlocks)"))
+                            Self.countFormatter.string(from: NSNumber(value: epochBlocks)) ?? "\(epochBlocks)"))
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
                 }

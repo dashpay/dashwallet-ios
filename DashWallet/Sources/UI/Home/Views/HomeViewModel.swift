@@ -212,10 +212,18 @@ class HomeViewModel: ObservableObject {
     @Published private(set) var evonodeEpochBlocks: EvonodeEpochBlocks?
     private let evonodeEpochBlocksProvider: EvonodeEpochBlocksProviding
     private var evonodeEpochBlocksTask: Task<Void, Never>?
+    /// Identity of the fetch that owns `evonodeEpochBlocksTask`: a cancelled,
+    /// still-unwinding fetch must not clear (or publish over) its successor.
+    private var evonodeEpochBlocksGeneration: UInt64 = 0
     private var evonodeEpochBlocksLastAttempt: Date?
     /// Don't re-scan the epoch's proposer list more often than this on
-    /// routine triggers (appear / foreground). Explicit triggers force it.
+    /// routine triggers (appear / foreground) after a successful fetch.
+    /// Explicit triggers force it.
     private static let evonodeEpochBlocksRefreshInterval: TimeInterval = 5 * 60
+    /// …but after a FAILED fetch (Platform not reachable yet at launch, etc.)
+    /// let the next routine trigger retry much sooner.
+    private static let evonodeEpochBlocksRetryInterval: TimeInterval = 30
+    private var evonodeEpochBlocksLastFetchFailed = false
     
     private var reclassifyTransactionsActivatedAt: Date {
         get { DWGlobalOptions.sharedInstance().dateReclassifyYourTransactionsFlowActivated ?? Date() }
@@ -292,6 +300,7 @@ class HomeViewModel: ObservableObject {
                     guard let self else { return }
                     self.evonodeEpochBlocksTask?.cancel()
                     self.evonodeEpochBlocksTask = nil
+                    self.evonodeEpochBlocksGeneration &+= 1
                     self.evonodeEpochBlocks = nil
                     self.evonodeEpochBlocksLastAttempt = nil
                     self.refreshEvonodeEpochBlocks(force: true)
@@ -320,26 +329,46 @@ class HomeViewModel: ObservableObject {
     func refreshEvonodeEpochBlocks(force: Bool = false) {
         guard !isPreviewMode else { return }
         if evonodeEpochBlocksTask != nil { return }
+        let minInterval = evonodeEpochBlocksLastFetchFailed
+            ? Self.evonodeEpochBlocksRetryInterval
+            : Self.evonodeEpochBlocksRefreshInterval
         if !force, let last = evonodeEpochBlocksLastAttempt,
-           Date().timeIntervalSince(last) < Self.evonodeEpochBlocksRefreshInterval {
+           Date().timeIntervalSince(last) < minInterval {
             return
         }
         let owned = activeEvonodeProTxHashes()
         guard !owned.isEmpty else {
+            if evonodeEpochBlocks != nil {
+                DWLogger.log("HomeViewModel: evonode epoch blocks — no active evonodes in the wallet aggregation, hiding card")
+            }
             evonodeEpochBlocks = nil
             return
         }
+        DWLogger.log("HomeViewModel: evonode epoch blocks — fetching for \(owned.count) evonode(s), force=\(force)")
         evonodeEpochBlocksLastAttempt = Date()
         let provider = evonodeEpochBlocksProvider
+        evonodeEpochBlocksGeneration &+= 1
+        let generation = evonodeEpochBlocksGeneration
         evonodeEpochBlocksTask = Task { [weak self] in
-            defer { self?.evonodeEpochBlocksTask = nil }
+            defer {
+                // Only the fetch that still owns the slot may clear it — a
+                // superseded (cancelled) one unwinding late must not erase
+                // its replacement and let two scans run at once.
+                if let self, self.evonodeEpochBlocksGeneration == generation {
+                    self.evonodeEpochBlocksTask = nil
+                }
+            }
             do {
                 let blocks = try await provider.fetch(ownedProTxHashes: owned)
-                guard !Task.isCancelled else { return }
-                self?.evonodeEpochBlocks = blocks
+                guard let self, !Task.isCancelled, self.evonodeEpochBlocksGeneration == generation else { return }
+                self.evonodeEpochBlocks = blocks
+                self.evonodeEpochBlocksLastFetchFailed = false
+                DWLogger.log("HomeViewModel: evonode epoch blocks — \(blocks.totalBlocks) block(s) this epoch (epoch \(blocks.epochIndex.map(String.init) ?? "?"))")
             } catch {
                 // Keep the last good value on a transient failure; the next
-                // trigger retries. Nothing to show if there never was one.
+                // trigger retries (sooner, via the retry interval). Nothing to
+                // show if there never was one.
+                self?.evonodeEpochBlocksLastFetchFailed = true
                 DWLogger.log("HomeViewModel: evonode epoch blocks fetch failed: \(error)")
             }
         }

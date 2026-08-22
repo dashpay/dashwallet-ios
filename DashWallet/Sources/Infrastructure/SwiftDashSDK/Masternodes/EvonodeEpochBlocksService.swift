@@ -74,11 +74,15 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
     enum ServiceError: LocalizedError {
         case sdkUnavailable
         case malformedEntry
+        /// The proposer list was still paging at `maxPages` — the scan is
+        /// incomplete, so no tally is returned (callers keep their last value).
+        case pageLimitReached
 
         var errorDescription: String? {
             switch self {
             case .sdkUnavailable: return "Platform SDK not ready"
             case .malformedEntry: return "Unexpected proposer tally format"
+            case .pageLimitReached: return "Proposer list too long to scan"
             }
         }
     }
@@ -97,6 +101,11 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
     init() {}
 
     func fetch(ownedProTxHashes: Set<Data>) async throws -> EvonodeEpochBlocks {
+        // Nothing to tally ⇒ nothing to ask the network: a wallet without
+        // evonodes must issue no query at all.
+        guard !ownedProTxHashes.isEmpty else {
+            return EvonodeEpochBlocks(epochIndex: nil, epochStart: nil, blocksByProTxHash: [:], fetchedAt: Date())
+        }
         guard let sdk = await SwiftDashSDKHost.shared.sdk else {
             throw ServiceError.sdkUnavailable
         }
@@ -119,7 +128,7 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
             var startAfter: String?
             var pages = 0
             var scanned = 0
-            while pages < Self.maxPages {
+            while true {
                 // epoch 0 ⇒ "current epoch" in the bridge.
                 let page = try await sdk.getEvonodesProposedEpochBlocksByRange(
                     epoch: 0,
@@ -129,25 +138,20 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
                 pages += 1
                 scanned += page.count
                 for entry in page {
-                    guard let hex = entry["pro_tx_hash"] as? String,
-                          let hash = Data(hexString: hex) else {
-                        throw ServiceError.malformedEntry
-                    }
-                    let count: UInt64
-                    if let number = entry["count"] as? NSNumber {
-                        count = number.uint64Value
-                    } else if let text = entry["count"] as? String, let parsed = UInt64(text) {
-                        count = parsed
-                    } else {
-                        throw ServiceError.malformedEntry
-                    }
+                    let (hash, count) = try Self.parseTally(entry)
                     if let mine = lookup[hash] {
                         tallies[mine] = count
                     }
                 }
+                // A short page is the end of the list. A full page means there
+                // may be more — and a scan that is still paging at the guard
+                // is incomplete, so it must not be reported as a tally.
                 guard page.count >= Self.pageSize,
                       let last = page.last?["pro_tx_hash"] as? String else {
                     break
+                }
+                guard pages < Self.maxPages else {
+                    throw ServiceError.pageLimitReached
                 }
                 startAfter = last
             }
@@ -168,13 +172,34 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
                 Self.logger.info("🏛️ EVONODE-BLOCKS :: current epoch lookup failed: \(String(describing: error), privacy: .public)")
             }
 
-            Self.logger.info("🏛️ EVONODE-BLOCKS :: scanned \(scanned) proposers over \(pages) page(s); \(owned.count) owned evonode(s), epoch \(epochIndex.map(String.init) ?? "?", privacy: .public)")
+            let epochLabel = epochIndex.map(String.init) ?? "?"
+            Self.logger.info(
+                "🏛️ EVONODE-BLOCKS :: scanned \(scanned) proposers over \(pages) page(s); \(owned.count) owned evonode(s), epoch \(epochLabel, privacy: .public)")
             return EvonodeEpochBlocks(
                 epochIndex: epochIndex,
                 epochStart: epochStart,
                 blocksByProTxHash: tallies,
                 fetchedAt: Date())
         }.value
+    }
+}
+
+// MARK: - Tally parsing
+
+private extension EvonodeEpochBlocksService {
+    /// One `{"pro_tx_hash": hex, "count": n}` bridge entry → (hash, count).
+    static func parseTally(_ entry: [String: Any]) throws -> (Data, UInt64) {
+        guard let hex = entry["pro_tx_hash"] as? String,
+              let hash = Data(hexString: hex) else {
+            throw ServiceError.malformedEntry
+        }
+        if let number = entry["count"] as? NSNumber {
+            return (hash, number.uint64Value)
+        }
+        if let text = entry["count"] as? String, let parsed = UInt64(text) {
+            return (hash, parsed)
+        }
+        throw ServiceError.malformedEntry
     }
 }
 
