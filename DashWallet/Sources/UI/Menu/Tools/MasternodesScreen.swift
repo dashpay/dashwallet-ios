@@ -81,6 +81,15 @@ final class MasternodesViewModel: ObservableObject {
                        accountType: 9)
     }
 
+    /// In-wallet `ProviderOwnerKeys` index of the masternode's owner key
+    /// (from the address join), or `nil`. Passed to the SDK withdrawal
+    /// preflight as a VERIFIED hint so restored wallets whose in-memory
+    /// pool has no watermark still resolve owner keys above the default
+    /// scan window.
+    func ownerKeyIndex(for masternode: PlatformMasternode) -> UInt32? {
+        masternode.ownerAddress.flatMap { ownerIndexByAddress[$0] }
+    }
+
     func votingOwnership(for masternode: PlatformMasternode) -> String {
         ownershipLabel(index: masternode.votingAddress.flatMap { votingIndexByAddress[$0] },
                        accountType: 8)
@@ -232,7 +241,8 @@ struct MasternodesScreen: View {
             MasternodeDetailScreen(
                 masternode: masternode,
                 ownerOwnership: viewModel.ownerOwnership(for: masternode),
-                votingOwnership: viewModel.votingOwnership(for: masternode))
+                votingOwnership: viewModel.votingOwnership(for: masternode),
+                ownerKeyIndexHint: viewModel.ownerKeyIndex(for: masternode))
         } label: {
             MasternodeListRow(masternode: masternode)
         }
@@ -281,6 +291,9 @@ struct MasternodeDetailScreen: View {
     let masternode: PlatformMasternode
     let ownerOwnership: String
     let votingOwnership: String
+    /// Owner-key index from the list's address join, handed to the SDK
+    /// preflight / claim as a verified hint (see `loadWithdrawalKeys`).
+    var ownerKeyIndexHint: UInt32? = nil
 
     /// Evonode claimable balance = the masternode identity's credit
     /// balance (identity id == display-order proTxHash). `nil` until
@@ -445,7 +458,13 @@ struct MasternodeDetailScreen: View {
                         masternode: masternode,
                         keys: keys,
                         claimableCredits: credits,
-                        onWithdrawn: { remaining in claimableCredits = remaining })
+                        ownerKeyIndexHint: ownerKeyIndexHint,
+                        onWithdrawn: { remaining in claimableCredits = remaining },
+                        onOutcomeUnconfirmed: {
+                            // The claim may have executed: re-read the
+                            // balance — that read is the reconciliation.
+                            Task { await fetchClaimableBalance() }
+                        })
                 } label: {
                     Label(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"), systemImage: "arrow.down.circle")
                         .foregroundColor(Color.dash.blue)
@@ -475,7 +494,10 @@ struct MasternodeDetailScreen: View {
     }
 
     /// Resolve which withdrawal keys this wallet holds — local and seedless
-    /// (account-xpub derive-and-compare + address-pool lookup in Rust).
+    /// (account-xpub derive-and-compare + address-pool lookup in Rust). The
+    /// list's owner index is passed as a hint that Rust verifies by
+    /// derivation, so an owner key above the default scan window (restored
+    /// wallet, empty in-memory pool) still resolves.
     private func loadWithdrawalKeys() {
         guard let manager = SwiftDashSDKHost.shared.manager,
               let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
@@ -485,7 +507,8 @@ struct MasternodeDetailScreen: View {
         do {
             withdrawalKeys = try manager.masternodeWithdrawalKeys(
                 walletId: walletId,
-                proTxHash: masternode.proTxHash)
+                proTxHash: masternode.proTxHash,
+                ownerKeyIndexHint: ownerKeyIndexHint)
             withdrawalKeysError = nil
         } catch {
             withdrawalKeys = nil

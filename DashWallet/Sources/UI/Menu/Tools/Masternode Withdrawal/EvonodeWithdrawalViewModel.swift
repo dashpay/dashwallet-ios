@@ -47,6 +47,12 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
         /// The claim was accepted; `remainingCredits` is the identity's new
         /// claimable balance as proven by Platform.
         case success(remainingCredits: UInt64)
+        /// The claim was broadcast but its result could not be confirmed
+        /// (`PlatformWalletError.masternodeWithdrawalUnconfirmed`). It may
+        /// have executed and the identity nonce was consumed — never
+        /// re-submit from this state; the detail screen re-reads the balance.
+        case submittedUnconfirmed(String)
+        /// Definitive failure — nothing executed; safe to try again.
         case failed(String)
     }
 
@@ -72,6 +78,9 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
     let masternode: PlatformMasternode
     let keys: MasternodeWithdrawalKeys
     let claimableCredits: UInt64
+    /// Owner-key index from the masternode list's address join; forwarded
+    /// to the SDK, which verifies it by derivation before using it.
+    let ownerKeyIndexHint: UInt32?
 
     /// Raw keypad text in `unit` (locale separator allowed; "0" = empty).
     @Published var amountText: String = "0" {
@@ -87,10 +96,16 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
     /// rather than a re-parsed (display-rounded) figure. Cleared on any edit.
     @Published private(set) var maxAmountCredits: UInt64?
 
-    init(masternode: PlatformMasternode, keys: MasternodeWithdrawalKeys, claimableCredits: UInt64) {
+    init(
+        masternode: PlatformMasternode,
+        keys: MasternodeWithdrawalKeys,
+        claimableCredits: UInt64,
+        ownerKeyIndexHint: UInt32? = nil
+    ) {
         self.masternode = masternode
         self.keys = keys
         self.claimableCredits = claimableCredits
+        self.ownerKeyIndexHint = ownerKeyIndexHint
         destinationText = keys.payoutAddress ?? ""
     }
 
@@ -284,7 +299,10 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
 
     /// Auth gate, then the claim. Never broadcasts without the user passing
     /// the PIN / biometric prompt. On success `phase` carries the remaining
-    /// claimable balance Platform proved after the withdrawal.
+    /// claimable balance Platform proved after the withdrawal. An ambiguous
+    /// outcome (broadcast accepted, result unconfirmed) lands in
+    /// `.submittedUnconfirmed` — a terminal state here: the nonce was
+    /// consumed, so a retry could withdraw twice.
     func submit() async {
         guard canContinue, let signingKey else { return }
         guard let manager = SwiftDashSDKHost.shared.manager,
@@ -321,16 +339,22 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
                 proTxHash: masternode.proTxHash,
                 amountCredits: credits,
                 signingKey: signingKey,
-                destinationAddress: destination)
+                destinationAddress: destination,
+                ownerKeyIndexHint: ownerKeyIndexHint)
             Self.logger.info("🏛️ EVONODE :: withdrawal accepted, remaining \(remaining) credits")
             phase = .success(remainingCredits: remaining)
+        } catch PlatformWalletError.masternodeWithdrawalUnconfirmed(let detail) {
+            Self.logger.error("🏛️ EVONODE :: withdrawal outcome unconfirmed: \(detail, privacy: .public)")
+            phase = .submittedUnconfirmed(detail)
         } catch {
             Self.logger.error("🏛️ EVONODE :: withdrawal failed: \(String(describing: error), privacy: .public)")
             phase = .failed(error.localizedDescription)
         }
     }
 
-    /// Back to the editable state after a failure (the form keeps its values).
+    /// Back to the editable state after a DEFINITIVE failure (the form keeps
+    /// its values). `.submittedUnconfirmed` is deliberately not resettable —
+    /// the user must leave and re-read the balance first.
     func resetAfterFailure() {
         if case .failed = phase {
             phase = .idle

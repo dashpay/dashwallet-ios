@@ -35,6 +35,10 @@ struct EvonodeWithdrawalScreen: View {
     /// Fired after a successful claim with the identity's remaining
     /// claimable balance, so the detail screen can update without refetching.
     private let onWithdrawn: (UInt64) -> Void
+    /// Fired when the claim was submitted but its result could not be
+    /// confirmed — the detail screen must re-read the balance (the claim may
+    /// have executed) before any further attempt.
+    private let onOutcomeUnconfirmed: () -> Void
 
     @State private var showConfirmation = false
     @State private var showScanner = false
@@ -43,13 +47,17 @@ struct EvonodeWithdrawalScreen: View {
         masternode: PlatformMasternode,
         keys: MasternodeWithdrawalKeys,
         claimableCredits: UInt64,
-        onWithdrawn: @escaping (UInt64) -> Void
+        ownerKeyIndexHint: UInt32? = nil,
+        onWithdrawn: @escaping (UInt64) -> Void,
+        onOutcomeUnconfirmed: @escaping () -> Void
     ) {
         _viewModel = StateObject(wrappedValue: EvonodeWithdrawalViewModel(
             masternode: masternode,
             keys: keys,
-            claimableCredits: claimableCredits))
+            claimableCredits: claimableCredits,
+            ownerKeyIndexHint: ownerKeyIndexHint))
         self.onWithdrawn = onWithdrawn
+        self.onOutcomeUnconfirmed = onOutcomeUnconfirmed
     }
 
     var body: some View {
@@ -82,6 +90,11 @@ struct EvonodeWithdrawalScreen: View {
                 onCompleted: { remaining in
                     showConfirmation = false
                     onWithdrawn(remaining)
+                    dismiss()
+                },
+                onUnconfirmedAcknowledged: {
+                    showConfirmation = false
+                    onOutcomeUnconfirmed()
                     dismiss()
                 })
                 .presentationDetents([.large])
@@ -330,6 +343,9 @@ struct EvonodeWithdrawalConfirmSheet: View {
     @ObservedObject var viewModel: EvonodeWithdrawalViewModel
     let onCancel: () -> Void
     let onCompleted: (UInt64) -> Void
+    /// Close after an ambiguous outcome — leaves the flow so the balance can
+    /// be re-read; no retry is offered from that state.
+    let onUnconfirmedAcknowledged: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -345,14 +361,22 @@ struct EvonodeWithdrawalConfirmSheet: View {
                 .foregroundColor(.dash.primaryText)
                 .padding(.top, 20)
 
-            if case let .success(remaining) = viewModel.phase {
+            switch viewModel.phase {
+            case let .success(remaining):
                 successBody(remainingCredits: remaining)
-            } else {
+            case let .submittedUnconfirmed(detail):
+                unconfirmedBody(detail: detail)
+            default:
                 detailsBody
             }
         }
         .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(isInFlight)
+        .interactiveDismissDisabled(isInFlight || isUnconfirmed)
+    }
+
+    private var isUnconfirmed: Bool {
+        if case .submittedUnconfirmed = viewModel.phase { return true }
+        return false
     }
 
     private var isInFlight: Bool {
@@ -434,9 +458,54 @@ struct EvonodeWithdrawalConfirmSheet: View {
                 }
                 .padding(.bottom, 28)
 
-            case .success:
+            case .success, .submittedUnconfirmed:
                 EmptyView()
             }
+        }
+    }
+
+    /// Ambiguous outcome: broadcast accepted, result unconfirmed. The claim
+    /// may have gone through and the identity nonce was consumed, so no
+    /// "Try again" here — only Close, which makes the detail screen re-read
+    /// the balance.
+    private func unconfirmedBody(detail: String) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "clock.badge.exclamationmark")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 64, height: 64)
+                .foregroundColor(.orange)
+                .padding(.top, 24)
+
+            Text(NSLocalizedString("Result not confirmed", comment: "Evonode withdrawal"))
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundColor(.dash.primaryText)
+
+            Text(NSLocalizedString(
+                "The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first.",
+                comment: "Evonode withdrawal"))
+                .font(.system(size: 13))
+                .foregroundColor(.dash.secondaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+
+            Text(detail)
+                .font(.system(size: 11))
+                .foregroundColor(.dash.tertiaryText)
+                .multilineTextAlignment(.center)
+                .lineLimit(4)
+                .padding(.horizontal, 24)
+
+            Spacer(minLength: 12)
+
+            DashButton(
+                text: NSLocalizedString("Close", comment: ""),
+                style: .filled,
+                stretch: true,
+                action: onUnconfirmedAcknowledged)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
         }
     }
 

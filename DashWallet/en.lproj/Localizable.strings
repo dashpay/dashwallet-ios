@@ -5619,3 +5619,5 @@
 "This wallet holds the owner key, so withdrawals go to the registered payout address." = "This wallet holds the owner key, so withdrawals go to the registered payout address.";
 "This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here.";
 "Couldn't check which keys of this evonode are in the wallet." = "Couldn't check which keys of this evonode are in the wallet.";
+"Result not confirmed" = "Result not confirmed";
+"The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first.";
