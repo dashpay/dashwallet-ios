@@ -299,6 +299,58 @@ final class BaseAmountModelKeyboardInputTests: XCTestCase {
     }
 }
 
+// MARK: - HardwareNumericKeyboardInputTests
+
+final class HardwareNumericKeyboardInputTests: XCTestCase {
+    func testDigitsAppendAndDelete() {
+        let locale = Locale(identifier: "en_US")
+        var value = ""
+
+        value = HardwareNumericKeyboardInput.applying(.digit("1"), to: value, showDecimalSeparator: true, locale: locale)
+        value = HardwareNumericKeyboardInput.applying(.digit("2"), to: value, showDecimalSeparator: true, locale: locale)
+        XCTAssertEqual(value, "12")
+
+        value = HardwareNumericKeyboardInput.applying(.delete, to: value, showDecimalSeparator: true, locale: locale)
+        XCTAssertEqual(value, "1")
+        value = HardwareNumericKeyboardInput.applying(.delete, to: value, showDecimalSeparator: true, locale: locale)
+        value = HardwareNumericKeyboardInput.applying(.delete, to: value, showDecimalSeparator: true, locale: locale)
+        XCTAssertEqual(value, "")
+    }
+
+    func testDecimalUsesLocaleSeparatorAndIsAddedOnlyOnce() {
+        for (localeIdentifier, expected) in [("en_US", "1."), ("de_DE", "1,")] {
+            let locale = Locale(identifier: localeIdentifier)
+            var value = HardwareNumericKeyboardInput.applying(
+                .decimalSeparator,
+                to: "1",
+                showDecimalSeparator: true,
+                locale: locale
+            )
+            XCTAssertEqual(value, expected)
+
+            value = HardwareNumericKeyboardInput.applying(
+                .decimalSeparator,
+                to: value,
+                showDecimalSeparator: true,
+                locale: locale
+            )
+            XCTAssertEqual(value, expected)
+        }
+    }
+
+    func testDecimalIsIgnoredWhenHidden() {
+        XCTAssertEqual(
+            HardwareNumericKeyboardInput.applying(
+                .decimalSeparator,
+                to: "1",
+                showDecimalSeparator: false,
+                locale: Locale(identifier: "en_US")
+            ),
+            "1"
+        )
+    }
+}
+
 // MARK: - PastedAmountParserTests
 
 final class PastedAmountParserTests: XCTestCase {

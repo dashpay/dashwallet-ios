@@ -297,7 +297,7 @@ struct EvonodeWithdrawalScreen: View {
     // MARK: Keyboard
 
     private var keyboardSection: some View {
-        NumericKeyboardView(
+        HardwareNumericKeyboardView(
             value: keypadBinding,
             showDecimalSeparator: true,
             actionButtonText: NSLocalizedString("Continue", comment: ""),

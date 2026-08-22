@@ -98,7 +98,7 @@ struct TransferAmountView<ViewModel: TransferAmountViewModelProtocol>: View {
     // MARK: - Keyboard
 
     private var keyboard: some View {
-        DashUIKit.NumericKeyboardView(
+        HardwareNumericKeyboardView(
             value: Binding(
                 get: { viewModel.inputValue },
                 set: { viewModel.setInput($0) }

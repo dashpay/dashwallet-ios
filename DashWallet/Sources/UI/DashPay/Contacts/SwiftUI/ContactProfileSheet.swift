@@ -799,7 +799,7 @@ struct PayContactSheet: View {
             .font(.system(size: 12))
             .foregroundColor(.dash.tertiaryText)
 
-        NumericKeyboardView(
+        HardwareNumericKeyboardView(
             value: $amountText,
             showDecimalSeparator: true,
             actionButtonText: NSLocalizedString("Pay", comment: "DashPay Contacts"),
