@@ -117,6 +117,9 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        // Evonode epoch-blocks card: cheap no-op inside its refresh throttle.
+        viewModel.refreshEvonodeEpochBlocks()
+
         // Refresh the SDK's local DPNS-names cache from the blockchain
         // so the avatar/profile sheet/Edit Profile see legitimately-
         // owned names that weren't written by registerDpnsName in this
@@ -633,6 +636,12 @@ extension HomeViewController: HomeViewDelegate {
 
     func homeViewShowSend(network: ChainNetwork) {
         delegate?.showSendLanding(network: network)
+    }
+
+    func homeViewShowMasternodes() {
+        guard let navigation = navigationController,
+              navigation.topViewController === self else { return }
+        navigation.pushViewController(MasternodesScreen.hostingController(popFrom: navigation), animated: true)
     }
     
     #if DASHPAY

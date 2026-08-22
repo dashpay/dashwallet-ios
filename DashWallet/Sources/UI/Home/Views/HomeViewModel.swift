@@ -20,6 +20,7 @@ import Combine
 import CoreData
 import SwiftData
 import SwiftDashSDK
+import UIKit
 
 private let kBaseBalanceHeaderHeight: CGFloat = 100
 private let kTimeskewTolerance: TimeInterval = 3600 // 1 hour
@@ -200,6 +201,21 @@ class HomeViewModel: ObservableObject {
 #endif
     
     private lazy var syncModel = SyncModelImpl()
+
+    // MARK: Evonode epoch blocks
+
+    /// Blocks this wallet's evonodes have proposed in the current epoch, for
+    /// the home card. `nil` when the wallet has no active evonodes (card
+    /// hidden) or nothing has been fetched yet. Fetched through the
+    /// privacy-preserving range scan in `EvonodeEpochBlocksService` — the
+    /// wallet never names its own evonodes to DAPI.
+    @Published private(set) var evonodeEpochBlocks: EvonodeEpochBlocks?
+    private let evonodeEpochBlocksProvider: EvonodeEpochBlocksProviding
+    private var evonodeEpochBlocksTask: Task<Void, Never>?
+    private var evonodeEpochBlocksLastAttempt: Date?
+    /// Don't re-scan the epoch's proposer list more often than this on
+    /// routine triggers (appear / foreground). Explicit triggers force it.
+    private static let evonodeEpochBlocksRefreshInterval: TimeInterval = 5 * 60
     
     private var reclassifyTransactionsActivatedAt: Date {
         get { DWGlobalOptions.sharedInstance().dateReclassifyYourTransactionsFlowActivated ?? Date() }
@@ -216,8 +232,12 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    init(transactionSource: TransactionSource) {
+    init(
+        transactionSource: TransactionSource,
+        evonodeEpochBlocksProvider: EvonodeEpochBlocksProviding = EvonodeEpochBlocksService()
+    ) {
         self.transactionSource = transactionSource
+        self.evonodeEpochBlocksProvider = evonodeEpochBlocksProvider
         syncModel.networkStatusDidChange = { status in
             self.recalculateHeight()
         }
@@ -236,9 +256,93 @@ class HomeViewModel: ObservableObject {
         self.observeCoinJoinSweep()
         self.observeWallet()
         self.observeNetworkChange()
+        self.observeEvonodeEpochBlocksTriggers()
         #if DASHPAY
         self.observeDashPay()
         #endif
+    }
+
+    // MARK: - Evonode epoch blocks
+
+    /// Refresh triggers: sync reaching done (the masternode aggregation is
+    /// complete then), the app returning to the foreground, and a wallet or
+    /// network switch (which also drops the stale card immediately).
+    private func observeEvonodeEpochBlocksTriggers() {
+        syncModel.$state
+            .removeDuplicates()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                guard state == .syncDone else { return }
+                Task { @MainActor [weak self] in self?.refreshEvonodeEpochBlocks(force: true) }
+            }
+            .store(in: &cancellableBag)
+
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in self?.refreshEvonodeEpochBlocks() }
+            }
+            .store(in: &cancellableBag)
+
+        NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+            .merge(with: NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange))
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    self.evonodeEpochBlocksTask?.cancel()
+                    self.evonodeEpochBlocksTask = nil
+                    self.evonodeEpochBlocks = nil
+                    self.evonodeEpochBlocksLastAttempt = nil
+                    self.refreshEvonodeEpochBlocks(force: true)
+                }
+            }
+            .store(in: &cancellableBag)
+    }
+
+    /// The wallet's evonodes still on the network (not retired), by stored
+    /// proTxHash. Read from the Rust aggregation — local, no network.
+    @MainActor
+    private func activeEvonodeProTxHashes() -> Set<Data> {
+        guard let manager = SwiftDashSDKHost.shared.manager,
+              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return [] }
+        return Set(manager.masternodes(for: walletId)
+            .filter { $0.isEvonode && MasternodeStatus(rawValue: $0.status) != .retired }
+            .map(\.proTxHash))
+    }
+
+    /// Fetch (or re-fetch) the current-epoch proposal tallies for the
+    /// wallet's evonodes. Routine calls are throttled to
+    /// `evonodeEpochBlocksRefreshInterval`; `force` bypasses the throttle.
+    /// No-op while a fetch is in flight. A wallet without active evonodes
+    /// never queries at all and shows no card.
+    @MainActor
+    func refreshEvonodeEpochBlocks(force: Bool = false) {
+        guard !isPreviewMode else { return }
+        if evonodeEpochBlocksTask != nil { return }
+        if !force, let last = evonodeEpochBlocksLastAttempt,
+           Date().timeIntervalSince(last) < Self.evonodeEpochBlocksRefreshInterval {
+            return
+        }
+        let owned = activeEvonodeProTxHashes()
+        guard !owned.isEmpty else {
+            evonodeEpochBlocks = nil
+            return
+        }
+        evonodeEpochBlocksLastAttempt = Date()
+        let provider = evonodeEpochBlocksProvider
+        evonodeEpochBlocksTask = Task { [weak self] in
+            defer { self?.evonodeEpochBlocksTask = nil }
+            do {
+                let blocks = try await provider.fetch(ownedProTxHashes: owned)
+                guard !Task.isCancelled else { return }
+                self?.evonodeEpochBlocks = blocks
+            } catch {
+                // Keep the last good value on a transient failure; the next
+                // trigger retries. Nothing to show if there never was one.
+                DWLogger.log("HomeViewModel: evonode epoch blocks fetch failed: \(error)")
+            }
+        }
     }
 
     #if DEBUG
@@ -246,6 +350,7 @@ class HomeViewModel: ObservableObject {
     /// Skips wallet/sync/coinjoin wiring that depends on the Dash core runtime.
     private init(previewShortcuts: [ShortcutAction]) {
         self.transactionSource = HomeViewModelPreviewTransactionSource()
+        self.evonodeEpochBlocksProvider = EvonodeEpochBlocksService()
         self.isPreviewMode = true
         self.shortcutItems = previewShortcuts
     }

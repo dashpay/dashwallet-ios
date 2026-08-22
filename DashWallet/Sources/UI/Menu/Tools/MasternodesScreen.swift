@@ -32,6 +32,17 @@ import UIKit
 final class MasternodesViewModel: ObservableObject {
     @Published private(set) var masternodes: [PlatformMasternode] = []
     @Published private(set) var loaded = false
+    /// Current-epoch proposal tallies for the wallet's evonodes (privacy-
+    /// preserving range scan, see `EvonodeEpochBlocksService`). `nil` until
+    /// fetched / when there are no active evonodes.
+    @Published private(set) var epochBlocks: EvonodeEpochBlocks?
+
+    private let epochBlocksProvider: EvonodeEpochBlocksProviding
+    private var epochBlocksTask: Task<Void, Never>?
+
+    init(epochBlocksProvider: EvonodeEpochBlocksProviding = EvonodeEpochBlocksService()) {
+        self.epochBlocksProvider = epochBlocksProvider
+    }
 
     /// Registrations still on the network — active, PoSe-banned, or (before
     /// the list arrives) indeterminate. These stay expanded at the top: an
@@ -72,6 +83,26 @@ final class MasternodesViewModel: ObservableObject {
         votingIndexByAddress = MasternodeKeyUsage.indexByAddress(
             family: .voting,
             targets: Set(masternodes.compactMap(\.votingAddress)))
+        loadEpochBlocks()
+    }
+
+    /// Blocks proposed this epoch by `masternode`, once fetched (evonodes only).
+    func epochBlocks(for masternode: PlatformMasternode) -> UInt64? {
+        epochBlocks?.blocksByProTxHash[masternode.proTxHash]
+    }
+
+    private func loadEpochBlocks() {
+        let owned = Set(masternodes
+            .filter { $0.isEvonode && MasternodeStatus(rawValue: $0.status) != .retired }
+            .map(\.proTxHash))
+        guard !owned.isEmpty, epochBlocksTask == nil else { return }
+        let provider = epochBlocksProvider
+        epochBlocksTask = Task { [weak self] in
+            defer { self?.epochBlocksTask = nil }
+            if let blocks = try? await provider.fetch(ownedProTxHashes: owned), !Task.isCancelled {
+                self?.epochBlocks = blocks
+            }
+        }
     }
 
     /// Ownership subtitle for the owner key ("ProviderOwnerKeys #4" /
@@ -176,6 +207,33 @@ extension PlatformMasternode {
 struct MasternodesScreen: View {
     @StateObject private var viewModel = MasternodesViewModel()
 
+    /// The UIKit wrapper every entry point (Governance menu, home card) uses:
+    /// the SwiftUI list needs its own `NavigationStack` for row drill-downs,
+    /// so the back button is wired explicitly to pop the UIKit stack.
+    static func hostingController(popFrom navigation: UINavigationController) -> UIViewController {
+        let popRoot: () -> Void = { [weak navigation] in
+            _ = navigation?.popViewController(animated: true)
+        }
+        let hosting = UIHostingController(
+            rootView: AnyView(
+                NavigationStack {
+                    MasternodesScreen()
+                        .navigationTitle(NSLocalizedString("Masternodes", comment: "Masternodes"))
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button(action: popRoot) {
+                                    Image(systemName: "chevron.left")
+                                }
+                            }
+                        }
+                }
+            )
+        )
+        hosting.hidesBottomBarWhenPushed = true
+        return hosting
+    }
+
     /// Retired registrations are history — collapsed until asked for.
     @State private var isRetiredExpanded = false
 
@@ -244,7 +302,9 @@ struct MasternodesScreen: View {
                 votingOwnership: viewModel.votingOwnership(for: masternode),
                 ownerKeyIndexHint: viewModel.ownerKeyIndex(for: masternode))
         } label: {
-            MasternodeListRow(masternode: masternode)
+            MasternodeListRow(
+                masternode: masternode,
+                epochBlocks: masternode.isEvonode ? viewModel.epochBlocks(for: masternode) : nil)
         }
     }
 }
@@ -253,6 +313,8 @@ struct MasternodesScreen: View {
 
 private struct MasternodeListRow: View {
     let masternode: PlatformMasternode
+    /// Blocks proposed this epoch (evonodes, once fetched).
+    var epochBlocks: UInt64? = nil
 
     var body: some View {
         HStack {
@@ -263,6 +325,16 @@ private struct MasternodeListRow: View {
 
                 if let service = masternode.serviceAddress {
                     Text(service)
+                        .font(.caption)
+                        .foregroundColor(Color.dash.secondaryText)
+                }
+
+                if let epochBlocks {
+                    Text(epochBlocks == 1
+                        ? NSLocalizedString("1 block proposed this epoch", comment: "Evonode epoch blocks card")
+                        : String(
+                            format: NSLocalizedString("%@ blocks proposed this epoch", comment: "Evonode epoch blocks card"),
+                            "\(epochBlocks)"))
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
                 }
