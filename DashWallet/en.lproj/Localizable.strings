@@ -5625,3 +5625,5 @@
 "%@ blocks proposed this epoch" = "%@ blocks proposed this epoch";
 "Nodes" = "Nodes";
 "Nodes, epoch day %d, %@ blocks proposed this epoch" = "Nodes, epoch day %d, %@ blocks proposed this epoch";
+"an evonode has not proposed a block in 2 days" = "an evonode has not proposed a block in 2 days";
+"an evonode has no blocks this epoch" = "an evonode has no blocks this epoch";

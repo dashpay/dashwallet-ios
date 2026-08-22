@@ -57,6 +57,11 @@ final class EvonodeEpochBlocksMonitor: ObservableObject {
     /// aggregation changes on exactly those events.
     @Published private(set) var contextVersion: UInt64 = 0
 
+    /// Per-node proposal activity folded from every successful tally
+    /// (persisted per network) — what "hasn't proposed in 2 days" is judged
+    /// from, since Platform only reports per-epoch totals.
+    @Published private(set) var activity: EvonodeProposalActivity
+
     /// Don't re-scan more often than this on routine triggers after a
     /// successful fetch…
     static let refreshInterval: TimeInterval = 5 * 60
@@ -84,7 +89,14 @@ final class EvonodeEpochBlocksMonitor: ObservableObject {
         self.provider = provider
         self.ownedEvonodes = ownedEvonodes
         self.syncModel = syncModel
+        self.activity = Self.activityStore().load()
         observeTriggers()
+    }
+
+    /// Activity is kept per network: the same wallet runs different
+    /// masternodes on testnet and mainnet.
+    private static func activityStore() -> EvonodeProposalActivityStore {
+        EvonodeProposalActivityStore(network: WalletEnvironment.isTestnet ? "testnet" : "mainnet")
     }
 
     /// The wallet's evonodes still on the network (not retired), by stored
@@ -161,6 +173,7 @@ final class EvonodeEpochBlocksMonitor: ObservableObject {
         generation &+= 1
         contextVersion &+= 1
         blocks = nil
+        activity = Self.activityStore().load()
         lastAttempt = nil
         lastFetchFailed = false
         if let task {
@@ -183,6 +196,10 @@ final class EvonodeEpochBlocksMonitor: ObservableObject {
                 guard let self, self.generation == generation, !Task.isCancelled else { return }
                 self.blocks = blocks
                 self.lastFetchFailed = false
+                var activity = self.activity
+                activity.record(blocks)
+                self.activity = activity
+                Self.activityStore().save(activity)
                 DWLogger.log("EvonodeEpochBlocksMonitor: \(blocks.totalBlocks) block(s) this epoch (epoch \(blocks.epochIndex.map(String.init) ?? "?"))")
             } catch {
                 // A superseded / cancelled scan says nothing about the current
