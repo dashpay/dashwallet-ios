@@ -26,9 +26,8 @@ import SwiftDashSDK
 /// How many Platform blocks this wallet's evonodes have proposed in the
 /// current epoch, per node and in total.
 struct EvonodeEpochBlocks: Equatable {
-    /// Current epoch index, or `nil` when the epoch lookup failed (the
-    /// tallies are still for the current epoch — the range query is always
-    /// answered for "now").
+    /// The epoch the tallies are for (the current epoch at fetch time). `nil`
+    /// only for the empty "no evonodes" result.
     let epochIndex: UInt32?
     /// When the current epoch started, when known.
     let epochStart: Date?
@@ -77,12 +76,16 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
         /// The proposer list was still paging at `maxPages` — the scan is
         /// incomplete, so no tally is returned (callers keep their last value).
         case pageLimitReached
+        /// The current epoch could not be resolved, so no tally can be asked
+        /// for: the proof verifier requires an explicit epoch index.
+        case currentEpochUnavailable(String)
 
         var errorDescription: String? {
             switch self {
             case .sdkUnavailable: return "Platform SDK not ready"
             case .malformedEntry: return "Unexpected proposer tally format"
             case .pageLimitReached: return "Proposer list too long to scan"
+            case let .currentEpochUnavailable(reason): return "Current epoch unavailable: \(reason)"
             }
         }
     }
@@ -124,14 +127,21 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
         // The SDK query bridges block the calling thread (isolated Tokio
         // runtime per call) — keep them off the main actor.
         return try await Task.detached(priority: .utility) { () -> EvonodeEpochBlocks in
+            // The current epoch comes first, and is REQUIRED: proved proposer
+            // queries must name an explicit epoch (the proof verifier rejects
+            // "current"), and the bridge maps epoch 0 to "unspecified".
+            let (epochIndex, epochStart) = try await Self.currentEpoch(sdk)
+            guard epochIndex > 0 else {
+                throw ServiceError.currentEpochUnavailable("epoch 0 cannot be queried through the range bridge")
+            }
+
             var tallies: [Data: UInt64] = Dictionary(uniqueKeysWithValues: owned.map { ($0, 0) })
             var startAfter: String?
             var pages = 0
             var scanned = 0
             while true {
-                // epoch 0 ⇒ "current epoch" in the bridge.
                 let page = try await sdk.getEvonodesProposedEpochBlocksByRange(
-                    epoch: 0,
+                    epoch: epochIndex,
                     limit: UInt32(Self.pageSize),
                     startAfter: startAfter,
                     orderAscending: true)
@@ -156,31 +166,33 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
                 startAfter = last
             }
 
-            // Epoch label: best effort — the tallies are for the current epoch
-            // regardless, so a failure here only drops the number from the UI.
-            var epochIndex: UInt32?
-            var epochStart: Date?
-            do {
-                let epoch = try await sdk.getCurrentEpoch()
-                if let index = epoch["index"] as? NSNumber {
-                    epochIndex = index.uint32Value
-                }
-                if let startMs = epoch["first_block_time"] as? NSNumber, startMs.doubleValue > 0 {
-                    epochStart = Date(timeIntervalSince1970: startMs.doubleValue / 1000)
-                }
-            } catch {
-                Self.logger.info("🏛️ EVONODE-BLOCKS :: current epoch lookup failed: \(String(describing: error), privacy: .public)")
-            }
-
-            let epochLabel = epochIndex.map(String.init) ?? "?"
             Self.logger.info(
-                "🏛️ EVONODE-BLOCKS :: scanned \(scanned) proposers over \(pages) page(s); \(owned.count) owned evonode(s), epoch \(epochLabel, privacy: .public)")
+                "🏛️ EVONODE-BLOCKS :: scanned \(scanned) proposers over \(pages) page(s); \(owned.count) owned evonode(s), epoch \(epochIndex, privacy: .public)")
             return EvonodeEpochBlocks(
                 epochIndex: epochIndex,
                 epochStart: epochStart,
                 blocksByProTxHash: tallies,
                 fetchedAt: Date())
         }.value
+    }
+
+    /// The current (newest started) epoch — `SDK.getCurrentEpoch()` (the
+    /// proved two-query probe behind `dash_sdk_system_get_current_epoch`).
+    private static func currentEpoch(_ sdk: SDK) async throws -> (index: UInt32, start: Date?) {
+        let epoch: [String: Any]
+        do {
+            epoch = try await sdk.getCurrentEpoch()
+        } catch {
+            throw ServiceError.currentEpochUnavailable(String(describing: error))
+        }
+        guard let index = epoch["index"] as? NSNumber else {
+            throw ServiceError.currentEpochUnavailable("no index in the epoch record")
+        }
+        var start: Date?
+        if let startMs = epoch["first_block_time"] as? NSNumber, startMs.doubleValue > 0 {
+            start = Date(timeIntervalSince1970: startMs.doubleValue / 1000)
+        }
+        return (index.uint32Value, start)
     }
 }
 
