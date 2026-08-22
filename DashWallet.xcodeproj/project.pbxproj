@@ -904,6 +904,8 @@
 		75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
 		75F9D1822FE0A00100C0D001 /* ShortcutItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9D1812FE0A00100C0D001 /* ShortcutItemView.swift */; };
 		75F9D1832FE0A00100C0D001 /* ShortcutItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9D1812FE0A00100C0D001 /* ShortcutItemView.swift */; };
+		5AEEB0012F9C000000000009 /* NodesShortcutIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000008 /* NodesShortcutIcon.swift */; };
+		5AEEB0012F9C00000000000A /* NodesShortcutIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000008 /* NodesShortcutIcon.swift */; };
 		75FEC6AF2CE0C58A00F87B48 /* VerifyIdentityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FEC6AE2CE0C58A00F87B48 /* VerifyIdentityScreen.swift */; };
 		75FEC6B32CE0C71700F87B48 /* DWUsernamePendingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 75FEC6B22CE0C71700F87B48 /* DWUsernamePendingViewController.m */; };
 		75FFD6B82BF47BA20032879E /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75FFD6B72BF47BA20032879E /* HomeViewController.swift */; };
@@ -3004,6 +3006,7 @@
 		75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Uphold.swift"; sourceTree = "<group>"; };
 		75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IntegrationViewController+Coinbase.swift"; sourceTree = "<group>"; };
 		75F9D1812FE0A00100C0D001 /* ShortcutItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutItemView.swift; sourceTree = "<group>"; };
+		5AEEB0012F9C000000000008 /* NodesShortcutIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodesShortcutIcon.swift; sourceTree = "<group>"; };
 		75FEC6AE2CE0C58A00F87B48 /* VerifyIdentityScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyIdentityScreen.swift; sourceTree = "<group>"; };
 		75FEC6B12CE0C71700F87B48 /* DWUsernamePendingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWUsernamePendingViewController.h; sourceTree = "<group>"; };
 		75FEC6B22CE0C71700F87B48 /* DWUsernamePendingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWUsernamePendingViewController.m; sourceTree = "<group>"; };
@@ -4341,6 +4344,7 @@
 				75B3C1B12E36100100CAFE04 /* ShortcutCustomizeBannerView.swift */,
 				C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */,
 				75F9D1812FE0A00100C0D001 /* ShortcutItemView.swift */,
+				5AEEB0012F9C000000000008 /* NodesShortcutIcon.swift */,
 				75B3C1A12E36100100CAFE01 /* ShortcutSelectionView.swift */,
 				2A1AF6DC23C7681B00442AF5 /* DWShortcutCollectionViewCell~ipad.xib */,
 				2A1AF6DD23C7681B00442AF5 /* DWShortcutCollectionViewCell~iphone.xib */,
@@ -9980,6 +9984,7 @@
 				75B3C1B22E36100100CAFE05 /* ShortcutCustomizeBannerView.swift in Sources */,
 				C1A0B2C3D4E5F60718293A02 /* ShortcutsBarView.swift in Sources */,
 				75F9D1822FE0A00100C0D001 /* ShortcutItemView.swift in Sources */,
+				5AEEB0012F9C000000000009 /* NodesShortcutIcon.swift in Sources */,
 				75B3C1A22E36100100CAFE02 /* ShortcutSelectionView.swift in Sources */,
 				2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */,
 				47AE8BF028C1306000490F5E /* AtmItemCell.swift in Sources */,
@@ -10948,6 +10953,7 @@
 				75B3C1B32E36100100CAFE06 /* ShortcutCustomizeBannerView.swift in Sources */,
 				C1A0B2C3D4E5F60718293A03 /* ShortcutsBarView.swift in Sources */,
 				75F9D1832FE0A00100C0D001 /* ShortcutItemView.swift in Sources */,
+				5AEEB0012F9C00000000000A /* NodesShortcutIcon.swift in Sources */,
 				75B3C1A32E36100100CAFE03 /* ShortcutSelectionView.swift in Sources */,
 				516C63E52FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */,
 				516C63E92FE9BE0A00DD6BC3 /* AboutDashViewModel.swift in Sources */,

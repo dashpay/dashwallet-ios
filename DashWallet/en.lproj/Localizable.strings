@@ -5623,7 +5623,5 @@
 "The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first." = "The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first.";
 "1 block proposed this epoch" = "1 block proposed this epoch";
 "%@ blocks proposed this epoch" = "%@ blocks proposed this epoch";
-"Your evonode" = "Your evonode";
-"Your %d evonodes" = "Your %d evonodes";
-"Epoch %u" = "Epoch %u";
-"started %@" = "started %@";
+"Nodes" = "Nodes";
+"Nodes, epoch day %d, %@ blocks proposed this epoch" = "Nodes, epoch day %d, %@ blocks proposed this epoch";

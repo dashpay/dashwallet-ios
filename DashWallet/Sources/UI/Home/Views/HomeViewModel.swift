@@ -204,13 +204,10 @@ class HomeViewModel: ObservableObject {
 
     // MARK: Evonode epoch blocks
 
-    /// Blocks this wallet's evonodes have proposed in the current epoch, for
-    /// the home card. `nil` when the wallet has no active evonodes (card
-    /// hidden) or nothing has been fetched yet. Mirrors the shared
-    /// `EvonodeEpochBlocksMonitor`, which owns the refresh policy and the
-    /// privacy-preserving range scan (the wallet never names its own
-    /// evonodes to DAPI).
-    @Published private(set) var evonodeEpochBlocks: EvonodeEpochBlocks?
+    /// Shared refresh policy for "blocks my evonodes proposed this epoch"
+    /// (the Nodes shortcut icon reads it directly). Home only nudges it on
+    /// appear; the monitor owns throttling, sync/foreground/wallet triggers
+    /// and the privacy-preserving range scan.
     private let evonodeEpochBlocksMonitor: EvonodeEpochBlocksMonitor
     
     private var reclassifyTransactionsActivatedAt: Date {
@@ -252,22 +249,12 @@ class HomeViewModel: ObservableObject {
         self.observeCoinJoinSweep()
         self.observeWallet()
         self.observeNetworkChange()
-        // The monitor is main-actor isolated; this init runs on main.
-        MainActor.assumeIsolated { self.observeEvonodeEpochBlocks() }
         #if DASHPAY
         self.observeDashPay()
         #endif
     }
 
     // MARK: - Evonode epoch blocks
-
-    @MainActor
-    private func observeEvonodeEpochBlocks() {
-        evonodeEpochBlocksMonitor.$blocks
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] blocks in self?.evonodeEpochBlocks = blocks }
-            .store(in: &cancellableBag)
-    }
 
     /// Routine refresh trigger (screen appear): throttled by the monitor.
     @MainActor
@@ -1618,6 +1605,13 @@ extension HomeViewModel {
         }
 
         DispatchQueue.main.async {
+            // Evonode owners get the Nodes shortcut (epoch day / blocks
+            // proposed) in the last default slot; everyone else keeps
+            // Spend / the faucet. Custom bars are never touched.
+            if !mutableItems.isEmpty,
+               !EvonodeEpochBlocksMonitor.activeEvonodeProTxHashes().isEmpty {
+                mutableItems[mutableItems.count - 1] = ShortcutAction(type: .nodes)
+            }
             self.shortcutItems = mutableItems
         }
     }

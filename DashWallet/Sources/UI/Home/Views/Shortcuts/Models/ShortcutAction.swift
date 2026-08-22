@@ -47,6 +47,9 @@ enum ShortcutActionType: Int {
     case getTestDash
     case switchWallet
     case dashDEX
+    /// Evonode owners: epoch day + blocks proposed this epoch, opens the
+    /// masternode list. Offered only while the wallet has active evonodes.
+    case nodes
 }
 
 extension ShortcutActionType {
@@ -76,6 +79,10 @@ extension ShortcutActionType {
         }
         if WalletsViewModel.switchableWalletCount > 1 {
             actions.append(.switchWallet)
+        }
+        // Nodes only means something to a wallet that runs evonodes.
+        if !EvonodeEpochBlocksMonitor.activeEvonodeProTxHashes().isEmpty {
+            actions.append(.nodes)
         }
         return actions
     }
@@ -131,6 +138,10 @@ extension ShortcutActionType {
             return "shortcut_switchNetwork"
         case .dashDEX:
             return "shortcut-dash-dex"
+        case .nodes:
+            // Static stand-in (picker rows, UIKit paths); the shortcut bar
+            // renders the live `NodesShortcutIcon` instead.
+            return "masternode-keys"
         }
     }
 
@@ -194,6 +205,8 @@ extension ShortcutActionType {
             return NSLocalizedString("Switch Wallet", comment: "Translate it as short as possible! (24 symbols max)")
         case .dashDEX:
             return NSLocalizedString("Dash DEX", comment: "Translate it as short as possible! (24 symbols max)")
+        case .nodes:
+            return NSLocalizedString("Nodes", comment: "Shortcut")
         }
     }
 

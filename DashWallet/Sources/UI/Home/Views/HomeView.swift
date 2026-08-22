@@ -31,7 +31,7 @@ protocol HomeViewDelegate: AnyObject {
     /// The mirror for the balance rows' send (out) arrows: the send sheet
     /// (Send ↔ Internal) pinned to `network` as the source.
     func homeViewShowSend(network: ChainNetwork)
-    /// Opens the wallet's masternode list (the evonode epoch-blocks card).
+    /// Opens the wallet's masternode list (the Nodes shortcut).
     func homeViewShowMasternodes()
     /// Scroll-derived chrome: false at the top of the feed (bar hidden,
     /// balance header owns the space), true once the user scrolls down.
@@ -358,14 +358,6 @@ struct HomeViewContent<Content: View>: View {
                         .padding(.horizontal, 20)
                     }
                     #endif
-
-                    if let epochBlocks = viewModel.evonodeEpochBlocks {
-                        EvonodeEpochBlocksCard(blocks: epochBlocks) {
-                            delegate?.homeViewShowMasternodes()
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 4)
-                    }
 
                     if viewModel.txItems.isEmpty {
                         // An empty feed means "nothing yet" only once the first
@@ -1120,66 +1112,4 @@ extension Data: Identifiable {
     public var id: String {
         return self.base64EncodedString()
     }
-}
-
-// MARK: - EvonodeEpochBlocksCard
-
-/// Home-feed row: how many Platform blocks the wallet's evonodes have
-/// proposed in the current epoch. Tapping opens the masternode list.
-struct EvonodeEpochBlocksCard: View {
-    let blocks: EvonodeEpochBlocks
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            DashUIKit.MenuItem(
-                leadingIcon: .system("server.rack"),
-                title: title,
-                helpText: subtitle,
-                accessory: .none
-            )
-        }
-        .buttonStyle(.plain)
-        .background(Color.dash.secondaryBackground)
-        .cornerRadius(12)
-    }
-
-    private var title: String {
-        let count = blocks.totalBlocks
-        if count == 1 {
-            return NSLocalizedString("1 block proposed this epoch", comment: "Evonode epoch blocks card")
-        }
-        return String(
-            format: NSLocalizedString("%@ blocks proposed this epoch", comment: "Evonode epoch blocks card"),
-            Self.countFormatter.string(from: NSNumber(value: count)) ?? "\(count)")
-    }
-
-    private var subtitle: String {
-        let nodes = blocks.evonodeCount == 1
-            ? NSLocalizedString("Your evonode", comment: "Evonode epoch blocks card")
-            : String(
-                format: NSLocalizedString("Your %d evonodes", comment: "Evonode epoch blocks card"),
-                blocks.evonodeCount)
-        guard let epoch = blocks.epochIndex else { return nodes }
-        var text = nodes + " · " + String(
-            format: NSLocalizedString("Epoch %u", comment: "Evonode epoch blocks card"), epoch)
-        if let start = blocks.epochStart {
-            text += " · " + String(
-                format: NSLocalizedString("started %@", comment: "Evonode epoch blocks card: relative epoch start"),
-                Self.relativeFormatter.localizedString(for: start, relativeTo: Date()))
-        }
-        return text
-    }
-
-    private static let countFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        return formatter
-    }()
-
-    private static let relativeFormatter: RelativeDateTimeFormatter = {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
-        return formatter
-    }()
 }
