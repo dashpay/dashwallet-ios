@@ -221,7 +221,7 @@ struct EvonodeWithdrawalScreen: View {
                 }
 
                 Text(NSLocalizedString(
-                    "This wallet holds the evonode's payout address key, so the credits can be withdrawn to any Dash address.",
+                    "This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address.",
                     comment: "Evonode withdrawal"))
                     .font(.system(size: 13))
                     .foregroundColor(Color.dash.secondaryText)
@@ -279,7 +279,7 @@ struct EvonodeWithdrawalScreen: View {
                     .foregroundColor(Color.dash.primaryText)
                 Text(String(
                     format: NSLocalizedString(
-                        "Dash Platform converts the credits back to DASH and pays them out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it.",
+                        "Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it.",
                         comment: "Evonode withdrawal"),
                     viewModel.estimatedFeeDashFormatted))
                     .font(.system(size: 13))
@@ -562,7 +562,7 @@ struct EvonodeWithdrawalConfirmSheet: View {
             summaryRow(
                 label: NSLocalizedString("From", comment: ""),
                 value: String(
-                    format: NSLocalizedString("%@ · Platform credits", comment: "Evonode withdrawal"),
+                    format: NSLocalizedString("%@ · Platform balance", comment: "Evonode withdrawal"),
                     viewModel.masternode.displayTitle))
             divider
             summaryRow(

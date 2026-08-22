@@ -526,9 +526,8 @@ struct MasternodeDetailScreen: View {
                         }
                     } else if let credits = viewModel.claimableCredits {
                         MasternodeDetailRow(
-                            label: NSLocalizedString("Credits", comment: "Masternodes"),
-                            value: "\(credits)")
-                        MasternodeDetailRow(label: "≈ DASH", value: Self.creditsAsDash(credits))
+                            label: NSLocalizedString("Balance", comment: "Masternodes"),
+                            value: Self.creditsAsDash(credits))
                     } else if let error = viewModel.balanceError {
                         Text(error)
                             .font(.caption)

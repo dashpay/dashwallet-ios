@@ -5599,11 +5599,11 @@
 "Enter a Dash address" = "Enter a Dash address";
 "Use the payout address" = "Use the payout address";
 "This is the evonode's registered payout address." = "This is the evonode's registered payout address.";
-"This wallet holds the evonode's payout address key, so the credits can be withdrawn to any Dash address." = "This wallet holds the evonode's payout address key, so the credits can be withdrawn to any Dash address.";
+"This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address.";
 "Registered payout address" = "Registered payout address";
 "This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key.";
 "How it works" = "How it works";
-"Dash Platform converts the credits back to DASH and pays them out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform converts the credits back to DASH and pays them out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it.";
+"Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it." = "Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it.";
 "Confirm withdrawal" = "Confirm withdrawal";
 "Owner-key withdrawals are always paid to the registered payout address." = "Owner-key withdrawals are always paid to the registered payout address.";
 "Waiting for authorization…" = "Waiting for authorization…";
@@ -5611,7 +5611,7 @@
 "Withdrawal submitted" = "Withdrawal submitted";
 "Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes." = "Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes.";
 "Remaining claimable balance: %@ DASH" = "Remaining claimable balance: %@ DASH";
-"%@ · Platform credits" = "%@ · Platform credits";
+"%@ · Platform balance" = "%@ · Platform balance";
 "Signed with" = "Signed with";
 "Platform fee" = "Platform fee";
 "%@ (payout address)" = "%@ (payout address)";
