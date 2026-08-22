@@ -37,35 +37,9 @@ struct TransferEndpointCards: View {
     var receiveInto: ChainNetwork?
 
     /// Which endpoint the standalone card is currently picking, if any.
-    /// Presentation state only; the selection itself lives in the view model.
-    ///
-    /// One enum rather than two flags because both sheets hang off the same
-    /// view, where stacked `.sheet(isPresented:)` modifiers only honour the
-    /// outermost one.
-    private enum EndpointPicker: Int, Identifiable {
-        case source
-        case destination
-
-        var id: Int { rawValue }
-
-        var title: String {
-            switch self {
-            case .source:
-                return NSLocalizedString("Transfer from", comment: "Internal transfer source picker title")
-            case .destination:
-                return NSLocalizedString("Transfer to", comment: "Internal transfer destination picker title")
-            }
-        }
-
-        var caption: String {
-            switch self {
-            case .source: return NSLocalizedString("From", comment: "")
-            case .destination: return NSLocalizedString("To", comment: "")
-            }
-        }
-    }
-
-    @State private var picker: EndpointPicker?
+    /// Presentation state only — the options and the selection belong to
+    /// `TransferEndpointPicker` and the view model.
+    @State private var picker: TransferEndpointSide?
 
     @ViewBuilder
     var body: some View {
@@ -124,11 +98,14 @@ struct TransferEndpointCards: View {
             onSwap: viewModel.canSwapEndpoints
                 ? { viewModel.swapStandaloneEndpoints() }
                 : nil)
-            // No detent and no drag indicator here: `pickerSheet` returns a
+            // No detent and no drag indicator here: the picker is a
             // `BottomSheet.selfSizing`, which sets its own height detent and
             // draws its own grabber.
-            .sheet(item: $picker) { picker in
-                pickerSheet(picker)
+            .sheet(item: $picker) { side in
+                TransferEndpointPicker(
+                    viewModel: viewModel,
+                    side: side,
+                    onPicked: { picker = nil })
             }
     }
 
@@ -153,11 +130,12 @@ struct TransferEndpointCards: View {
     /// The identity's own credit balance, rendered in DASH like the balance
     /// rows — the same persisted number the profile sheet shows.
     private func identityConverterItem(onTap: @escaping () -> Void) -> DashUIKit.ConverterCardItem {
-        DashUIKit.ConverterCardItem(
+        let display = TransferEndpointDisplay.identity(in: viewModel)
+        return DashUIKit.ConverterCardItem(
             id: "identity",
-            icon: DashIcon.Features.identity.source,
-            title: InternalTransferViewModel.identityBalanceName,
-            dashBalance: Int64(viewModel.identityBalanceCredits / 1000),
+            icon: display.icon,
+            title: display.title,
+            dashBalance: display.dashBalance,
             onTap: onTap)
     }
 
@@ -171,45 +149,25 @@ struct TransferEndpointCards: View {
         _ network: ChainNetwork,
         onTap: (() -> Void)? = nil
     ) -> DashUIKit.ConverterCardItem {
-        DashUIKit.ConverterCardItem(
+        let display = TransferEndpointDisplay.network(network, in: viewModel)
+        return DashUIKit.ConverterCardItem(
             id: network,
-            icon: converterIcon(network),
-            title: network.balanceName,
-            dashBalance: Int64(balanceDuffs(network)),
+            icon: display.icon,
+            title: display.title,
+            dashBalance: display.dashBalance,
             onTap: onTap)
-    }
-
-    /// Catalog assets rather than the picker rows' SF Symbols: `ConverterCard`
-    /// draws the icon plain at 30pt, with no tinted circle behind it to carry
-    /// the colour.
-    private func converterIcon(_ network: ChainNetwork) -> DashIconSource {
-        switch network {
-        case .core: return DashIcon.Menu.dashLogoSquare.source
-        case .platform: return DashIcon.Features.platform.source
-        case .shielded: return DashIcon.Features.shield.source
-        }
-    }
-
-    /// Every balance as duffs, which is what `ConverterCardItem` renders.
-    /// Platform and Shielded are held in credits — 1000 per duff.
-    private func balanceDuffs(_ network: ChainNetwork) -> UInt64 {
-        switch network {
-        case .core: return viewModel.coreBalanceDuffs
-        case .platform: return viewModel.platformCredits / 1000
-        case .shielded: return viewModel.shieldedBalance / 1000
-        }
     }
 
     // MARK: - Cards
 
     /// Non-tappable pinned endpoint card (the fixed From of the send sheet).
     private func pinnedCard(_ network: ChainNetwork, caption: String) -> some View {
-        let display = networkDisplay(network)
+        let display = TransferEndpointDisplay.network(network, in: viewModel)
         return TransferSourceRow(
-            iconSystemName: display.icon,
+            iconSystemName: display.iconSystemName,
             caption: caption,
             title: display.title,
-            balanceTrailing: TransferSourceRow.dashBalanceTrailing(display.balance),
+            balanceTrailing: TransferSourceRow.dashBalanceTrailing(display.balanceText),
             selected: false,
             showsRadio: false,
             action: {})
@@ -223,157 +181,19 @@ struct TransferEndpointCards: View {
     ) -> some View {
         VStack(spacing: 8) {
             ForEach(networks, id: \.self) { network in
-                let display = networkDisplay(network)
+                let display = TransferEndpointDisplay.network(network, in: viewModel)
                 TransferSourceRow(
-                    iconSystemName: display.icon,
+                    iconSystemName: display.iconSystemName,
                     caption: caption,
                     title: display.title,
-                    balanceTrailing: TransferSourceRow.dashBalanceTrailing(display.balance),
+                    balanceTrailing: TransferSourceRow.dashBalanceTrailing(display.balanceText),
                     selected: selected == network,
                     action: { onSelect(network) })
             }
         }
     }
 
-    // MARK: - Endpoint picker sheets
-
-    /// Both pickers are the design system's `BottomSheet`, which draws the
-    /// grabber, the titled header and the close button. `selfSizing` measures
-    /// the rows instead of taking a detent, so the To side's two-row list
-    /// (identity as the source) is not padded out to the four-row height the
-    /// From side needs.
-    private func pickerSheet(_ picker: EndpointPicker) -> some View {
-        DashUIKit.BottomSheet.selfSizing(
-            title: picker.title,
-            showBackButton: .constant(false)
-        ) {
-            pickerRows {
-                switch picker {
-                case .source: sourceSelection
-                case .destination: destinationSelection
-                }
-            }
-        }
-    }
-
-    /// The From side: the three balances plus Identity. Every pick applies
-    /// and dismisses; picking one that collides with the To side moves THAT
-    /// side (the view model keeps the endpoints distinct and coherent).
-    private var sourceSelection: some View {
-        VStack(spacing: 8) {
-            ForEach(sourceOptions, id: \.self) { source in
-                sourceRow(source)
-            }
-        }
-    }
-
-    /// The To side: the three balances plus Identity, which the landing card
-    /// could reach but the screen itself could not. With the identity as the
-    /// source it narrows to Transparent and Platform — the two targets one
-    /// state transition reaches.
-    private var destinationSelection: some View {
-        VStack(spacing: 8) {
-            ForEach(destinationOptions, id: \.self) { destination in
-                destinationRow(destination)
-            }
-        }
-    }
-
-    /// Shared insets for both row lists.
-    ///
-    /// No title, no background and — importantly — no trailing `Spacer`: the
-    /// header above draws the first two, and `selfSizing` measures the
-    /// content's intrinsic height, which a greedy spacer would blow up to
-    /// whatever the sheet was offered.
-    private func pickerRows<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        content()
-            .padding(.horizontal, 20)
-            .padding(.top, 8)
-            .padding(.bottom, 24)
-    }
-
-    private var sourceOptions: [TransferSource] {
-        ChainNetwork.allCases.map(TransferSource.balance) + [.identity]
-    }
-
-    /// What the To side can be. With the identity as the source that is only
-    /// what one state transition reaches — Transparent and Platform — and
-    /// never the identity itself.
-    private var destinationOptions: [TransferDestination] {
-        if viewModel.isIdentitySource {
-            return IdentityWithdrawalTarget.allCases.map { .balance($0.network) }
-        }
-        return ChainNetwork.allCases.map(TransferDestination.balance) + [.identity]
-    }
-
-    private func sourceRow(_ source: TransferSource) -> some View {
-        let display = endpointDisplay(isIdentity: source == .identity, balance: sourceNetwork(source))
-        return TransferSourceRow(
-            iconSystemName: display.icon,
-            caption: EndpointPicker.source.caption,
-            title: display.title,
-            balanceTrailing: TransferSourceRow.dashBalanceTrailing(display.balance),
-            selected: viewModel.transferSource == source,
-            action: {
-                viewModel.selectStandaloneSource(source)
-                picker = nil
-            })
-    }
-
-    private func destinationRow(_ destination: TransferDestination) -> some View {
-        let display = endpointDisplay(
-            isIdentity: destination == .identity,
-            balance: destinationNetwork(destination))
-        return TransferSourceRow(
-            iconSystemName: display.icon,
-            caption: EndpointPicker.destination.caption,
-            title: display.title,
-            balanceTrailing: TransferSourceRow.dashBalanceTrailing(display.balance),
-            selected: viewModel.destination == destination,
-            action: {
-                viewModel.selectStandaloneDestination(destination)
-                picker = nil
-            })
-    }
-
-    private func sourceNetwork(_ source: TransferSource) -> ChainNetwork? {
-        if case .balance(let network) = source { return network }
-        return nil
-    }
-
-    private func destinationNetwork(_ destination: TransferDestination) -> ChainNetwork? {
-        if case .balance(let network) = destination { return network }
-        return nil
-    }
-
-    /// `networkDisplay` widened to the identity, which both sides can now be.
-    /// `balance == nil` means the identity row.
-    private func endpointDisplay(
-        isIdentity: Bool,
-        balance: ChainNetwork?
-    ) -> (icon: String, title: String, balance: String) {
-        guard !isIdentity, let balance else {
-            return ("person.crop.circle.fill",
-                    InternalTransferViewModel.identityBalanceName,
-                    viewModel.identityBalanceFormatted)
-        }
-        return networkDisplay(balance)
-    }
-
     // MARK: - Helpers
-
-    /// Icon / title / formatted balance for a balance row, one source of
-    /// truth for the pinned cards and picker rows.
-    private func networkDisplay(_ network: ChainNetwork) -> (icon: String, title: String, balance: String) {
-        switch network {
-        case .core:
-            return ("d.circle.fill", network.balanceName, viewModel.coreBalanceFormatted)
-        case .platform:
-            return ("creditcard.fill", network.balanceName, viewModel.platformCreditsFormatted)
-        case .shielded:
-            return ("shield.fill", network.balanceName, viewModel.shieldedBalanceFormatted)
-        }
-    }
 
     /// Pinned-sheet picker lists (the balance-row arrow sheets): the fixed
     /// endpoint's balance is left out entirely — only the standalone screen

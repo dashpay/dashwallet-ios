@@ -655,6 +655,8 @@
 		C0171F000000000000001C3 /* TransferPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001C1 /* TransferPreview.swift */; };
 		C0171F000000000000001D2 /* TransferEndpointCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001D1 /* TransferEndpointCards.swift */; };
 		C0171F000000000000001D3 /* TransferEndpointCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0171F000000000000001D1 /* TransferEndpointCards.swift */; };
+		C017200000000000000FC2 /* TransferEndpointPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000FC1 /* TransferEndpointPicker.swift */; };
+		C017200000000000000FC3 /* TransferEndpointPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000FC1 /* TransferEndpointPicker.swift */; };
 		59A140F3992CD2438ADC84CE /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */; };
 		5A1EC0FE2E29A10000000002 /* ShieldedActivityHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */; };
 		5A1EC0FE2E29A10000000003 /* ShieldedActivityHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1EC0FE2E29A10000000001 /* ShieldedActivityHistory.swift */; };
@@ -3096,6 +3098,7 @@
 		C0171F000000000000001B1 /* TransferAmountValidationNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountValidationNote.swift; sourceTree = "<group>"; };
 		C0171F000000000000001C1 /* TransferPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferPreview.swift; sourceTree = "<group>"; };
 		C0171F000000000000001D1 /* TransferEndpointCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferEndpointCards.swift; sourceTree = "<group>"; };
+		C017200000000000000FC1 /* TransferEndpointPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferEndpointPicker.swift; sourceTree = "<group>"; };
 		A876A874736D422F781F797F /* SwiftDashSDKReceiveAddressReader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKReceiveAddressReader.swift; sourceTree = "<group>"; };
 		AA00000028D9A3DB00223B77 /* BuySellPortalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalView.swift; sourceTree = "<group>"; };
 		AA0000032DUMMYID001234567 /* AddProviderToGiftCardsTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProviderToGiftCardsTable.swift; sourceTree = "<group>"; };
@@ -3814,6 +3817,7 @@
 				C0171F000000000000001B1 /* TransferAmountValidationNote.swift */,
 				C0171F000000000000001C1 /* TransferPreview.swift */,
 				C0171F000000000000001D1 /* TransferEndpointCards.swift */,
+				C017200000000000000FC1 /* TransferEndpointPicker.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -10298,6 +10302,7 @@
 				C0171F000000000000001B2 /* TransferAmountValidationNote.swift in Sources */,
 				C0171F000000000000001C2 /* TransferPreview.swift in Sources */,
 				C0171F000000000000001D2 /* TransferEndpointCards.swift in Sources */,
+				C017200000000000000FC2 /* TransferEndpointPicker.swift in Sources */,
 				7C93319817E9E574070A504D /* InternalTransferHostingController.swift in Sources */,
 				C6344885F1E0A6C04D3D8437 /* InternalTransferConfirmSheet.swift in Sources */,
 				C017200000000000000FA2 /* InternalTransferSummaryFigures.swift in Sources */,
@@ -11326,6 +11331,7 @@
 				C0171F000000000000001B3 /* TransferAmountValidationNote.swift in Sources */,
 				C0171F000000000000001C3 /* TransferPreview.swift in Sources */,
 				C0171F000000000000001D3 /* TransferEndpointCards.swift in Sources */,
+				C017200000000000000FC3 /* TransferEndpointPicker.swift in Sources */,
 				428C56F90F533CF0DD6774F1 /* InternalTransferHostingController.swift in Sources */,
 				E2D0F4AD56B92356C871F568 /* InternalTransferConfirmSheet.swift in Sources */,
 				C017200000000000000FA3 /* InternalTransferSummaryFigures.swift in Sources */,
