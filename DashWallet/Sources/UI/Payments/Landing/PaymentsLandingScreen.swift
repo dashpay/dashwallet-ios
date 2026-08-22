@@ -15,6 +15,7 @@ struct PaymentsLandingScreen: View {
     var onCopyAddress: () -> Void
     var onShareAddress: () -> Void
     var onSpecifyAmount: () -> Void
+    var onViewTransaction: (Data) -> Void
     var onScanQR: () -> Void
     /// The Internal tab's embedded transfer form. The full landing shows it
     /// un-pinned (free From + To pickers); the balance-row receive/send
@@ -95,6 +96,8 @@ struct PaymentsLandingScreen: View {
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
+        .animation(.spring(response: 0.45, dampingFraction: 0.82), value: viewModel.receipt?.id)
+        .sensoryFeedback(.success, trigger: viewModel.receipt?.id)
     }
 
     // MARK: - Header
@@ -170,20 +173,121 @@ struct PaymentsLandingScreen: View {
             ChainNetworkToggle(selection: $viewModel.network, options: ChainNetwork.allCases)
                 .padding(.horizontal, 20)
 
-            qrCard
+            if let receipt = viewModel.receipt {
+                receiptCard(receipt)
+                    .transition(.scale(scale: 0.94).combined(with: .opacity))
+            } else {
+                qrCard
+
+                HStack(spacing: 12) {
+                    Button(action: onShareAddress) {
+                        actionPill(title: NSLocalizedString("Share address", comment: ""))
+                    }
+                    .disabled(viewModel.currentAddress == nil)
+
+                    Button(action: onSpecifyAmount) {
+                        actionPill(title: NSLocalizedString("Specify amount", comment: ""))
+                    }
+                    .disabled(viewModel.currentAddress == nil || viewModel.network != .core)
+                }
+                .padding(.horizontal, 20)
+
+                if viewModel.isWatchingForReceipt {
+                    HStack(spacing: 8) {
+                        SwiftUI.ProgressView()
+                            .scaleEffect(0.8)
+                        Text(NSLocalizedString("Watching for a payment…", comment: "Receive screen activity"))
+                            .font(.caption)
+                            .foregroundColor(.dash.secondaryText)
+                    }
+                    .transition(.opacity)
+                }
+            }
+        }
+    }
+
+    private func receiptCard(_ receipt: ReceiveReceipt) -> some View {
+        VStack(spacing: 14) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 58, weight: .semibold))
+                .foregroundColor(.dash.green)
+
+            VStack(spacing: 5) {
+                Text(NSLocalizedString("Payment received", comment: "Receive success title"))
+                    .font(.title3.weight(.semibold))
+                    .foregroundColor(.dash.primaryText)
+                Text(receipt.amountDuffs.formattedDashAmount)
+                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .foregroundColor(.dash.primaryText)
+                Text(CurrencyExchanger.shared.fiatAmountString(for: receipt.amountDuffs.dashAmount))
+                    .font(.subheadline)
+                    .foregroundColor(.dash.secondaryText)
+            }
+
+            VStack(spacing: 8) {
+                receiptInfoRow(
+                    title: NSLocalizedString("Balance", comment: "Receive receipt rail"),
+                    value: receipt.rail.balanceName)
+                receiptInfoRow(
+                    title: NSLocalizedString("Status", comment: "Receive receipt status"),
+                    value: receipt.statusTitle)
+                receiptInfoRow(
+                    title: NSLocalizedString("Time", comment: "Receive receipt time"),
+                    value: receipt.receivedAt.formatted(date: .omitted, time: .shortened))
+                if let memo = receipt.memo, !memo.isEmpty {
+                    receiptInfoRow(
+                        title: NSLocalizedString("Memo", comment: "Receive receipt memo"),
+                        value: memo)
+                }
+            }
+            .padding(14)
+            .background(Color.dash.secondaryBackground)
+            .cornerRadius(14)
+
+            if viewModel.canViewTransaction, let transactionId = receipt.transactionId {
+                Button {
+                    onViewTransaction(transactionId)
+                } label: {
+                    Text(NSLocalizedString("View transaction", comment: "Receive receipt action"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.dash.blue)
+                }
+            }
 
             HStack(spacing: 12) {
-                Button(action: onShareAddress) {
-                    actionPill(title: NSLocalizedString("Share address", comment: ""))
+                Button(action: viewModel.receiveAnother) {
+                    actionPill(title: NSLocalizedString("Receive another", comment: "Receive receipt action"))
                 }
-                .disabled(viewModel.currentAddress == nil)
-
-                Button(action: onSpecifyAmount) {
-                    actionPill(title: NSLocalizedString("Specify amount", comment: ""))
+                Button(action: onClose) {
+                    Text(NSLocalizedString("Done", comment: "Receive receipt action"))
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.dash.whiteText)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.dash.blue)
+                        .cornerRadius(12)
                 }
-                .disabled(viewModel.currentAddress == nil || viewModel.network != .core)
             }
-            .padding(.horizontal, 20)
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.dash.primaryBackground)
+                .shadow(color: Color.dash.shadow, radius: 12, x: 0, y: 4))
+        .padding(.horizontal, 20)
+    }
+
+    private func receiptInfoRow(title: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.dash.secondaryText)
+            Spacer()
+            Text(value)
+                .font(.caption.weight(.medium))
+                .foregroundColor(.dash.primaryText)
+                .multilineTextAlignment(.trailing)
+                .lineLimit(2)
         }
     }
 
