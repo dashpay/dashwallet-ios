@@ -21,7 +21,7 @@
 	<key>%d ATM(s) in %@</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@atms@</string>
+		<string>%1$#@atms@</string>
 		<key>atms</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -29,9 +29,9 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%d ATM in %@</string>
+			<string>%1$d ATM in %2$@</string>
 			<key>other</key>
-			<string>%d ATMs in %@</string>
+			<string>%1$d ATMs in %2$@</string>
 		</dict>
 	</dict>
 	<key>%d merchant(s) in %@</key>
