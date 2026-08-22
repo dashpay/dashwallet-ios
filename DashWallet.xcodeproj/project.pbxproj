@@ -1925,6 +1925,8 @@
 		5A5F8C183D2C037FB350ACC9 /* MasternodeVoteCaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AEFB2398EDA01C69E5A8F1 /* MasternodeVoteCaster.swift */; };
 		5AEEB0012F9C000000000002 /* EvonodeEpochBlocksService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000001 /* EvonodeEpochBlocksService.swift */; };
 		5AEEB0012F9C000000000003 /* EvonodeEpochBlocksService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000001 /* EvonodeEpochBlocksService.swift */; };
+		5AEEB0012F9C000000000006 /* EvonodeEpochBlocksMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000005 /* EvonodeEpochBlocksMonitor.swift */; };
+		5AEEB0012F9C000000000007 /* EvonodeEpochBlocksMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C000000000005 /* EvonodeEpochBlocksMonitor.swift */; };
 		12118430106B8A5EBB2FBC60 /* UsernameVotingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */; };
 		F34816414D829A45E0762757 /* ContestDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */; };
 		AD24D88215A4E51186112B34 /* CastVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */; };
@@ -3664,6 +3666,7 @@
 		15D89828EC913714251D0B58 /* MasternodeVoterRegistry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodeVoterRegistry.swift; sourceTree = "<group>"; };
 		23AEFB2398EDA01C69E5A8F1 /* MasternodeVoteCaster.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodeVoteCaster.swift; sourceTree = "<group>"; };
 		5AEEB0012F9C000000000001 /* EvonodeEpochBlocksService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeEpochBlocksService.swift; sourceTree = "<group>"; };
+		5AEEB0012F9C000000000005 /* EvonodeEpochBlocksMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeEpochBlocksMonitor.swift; sourceTree = "<group>"; };
 		33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameVotingScreen.swift; sourceTree = "<group>"; };
 		6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContestDetailScreen.swift; sourceTree = "<group>"; };
 		FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CastVoteSheet.swift; sourceTree = "<group>"; };
@@ -3759,6 +3762,7 @@
 			isa = PBXGroup;
 			children = (
 				5AEEB0012F9C000000000001 /* EvonodeEpochBlocksService.swift */,
+				5AEEB0012F9C000000000005 /* EvonodeEpochBlocksMonitor.swift */,
 			);
 			path = Masternodes;
 			sourceTree = "<group>";
@@ -9465,6 +9469,7 @@
 				12118430106B8A5EBB2FBC60 /* UsernameVotingScreen.swift in Sources */,
 				5A5F8C183D2C037FB350ACC9 /* MasternodeVoteCaster.swift in Sources */,
 				5AEEB0012F9C000000000002 /* EvonodeEpochBlocksService.swift in Sources */,
+				5AEEB0012F9C000000000006 /* EvonodeEpochBlocksMonitor.swift in Sources */,
 				F5D223F887ABBFCEB478816F /* MasternodeVoterRegistry.swift in Sources */,
 				8F0D34E5B93E7D2EB9062394 /* ContestedNamesService.swift in Sources */,
 				2AB3416223A81E8B004E37A7 /* DWReceiveModelStub.m in Sources */,
@@ -10341,6 +10346,7 @@
 				25C2103A3D2448AB40AB8485 /* UsernameVotingScreen.swift in Sources */,
 				F29CC1CE29F3544F9E2F9BE7 /* MasternodeVoteCaster.swift in Sources */,
 				5AEEB0012F9C000000000003 /* EvonodeEpochBlocksService.swift in Sources */,
+				5AEEB0012F9C000000000007 /* EvonodeEpochBlocksMonitor.swift in Sources */,
 				EB88594208EAD0E9E1FA752F /* MasternodeVoterRegistry.swift in Sources */,
 				BCB10EF569912077058577E4 /* ContestedNamesService.swift in Sources */,
 				5EAD111330A0000000A1B201 /* MayaAmountFormatter.swift in Sources */,

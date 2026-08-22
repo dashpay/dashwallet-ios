@@ -206,24 +206,12 @@ class HomeViewModel: ObservableObject {
 
     /// Blocks this wallet's evonodes have proposed in the current epoch, for
     /// the home card. `nil` when the wallet has no active evonodes (card
-    /// hidden) or nothing has been fetched yet. Fetched through the
-    /// privacy-preserving range scan in `EvonodeEpochBlocksService` — the
-    /// wallet never names its own evonodes to DAPI.
+    /// hidden) or nothing has been fetched yet. Mirrors the shared
+    /// `EvonodeEpochBlocksMonitor`, which owns the refresh policy and the
+    /// privacy-preserving range scan (the wallet never names its own
+    /// evonodes to DAPI).
     @Published private(set) var evonodeEpochBlocks: EvonodeEpochBlocks?
-    private let evonodeEpochBlocksProvider: EvonodeEpochBlocksProviding
-    private var evonodeEpochBlocksTask: Task<Void, Never>?
-    /// Identity of the fetch that owns `evonodeEpochBlocksTask`: a cancelled,
-    /// still-unwinding fetch must not clear (or publish over) its successor.
-    private var evonodeEpochBlocksGeneration: UInt64 = 0
-    private var evonodeEpochBlocksLastAttempt: Date?
-    /// Don't re-scan the epoch's proposer list more often than this on
-    /// routine triggers (appear / foreground) after a successful fetch.
-    /// Explicit triggers force it.
-    private static let evonodeEpochBlocksRefreshInterval: TimeInterval = 5 * 60
-    /// …but after a FAILED fetch (Platform not reachable yet at launch, etc.)
-    /// let the next routine trigger retry much sooner.
-    private static let evonodeEpochBlocksRetryInterval: TimeInterval = 30
-    private var evonodeEpochBlocksLastFetchFailed = false
+    private let evonodeEpochBlocksMonitor: EvonodeEpochBlocksMonitor
     
     private var reclassifyTransactionsActivatedAt: Date {
         get { DWGlobalOptions.sharedInstance().dateReclassifyYourTransactionsFlowActivated ?? Date() }
@@ -242,10 +230,10 @@ class HomeViewModel: ObservableObject {
     
     init(
         transactionSource: TransactionSource,
-        evonodeEpochBlocksProvider: EvonodeEpochBlocksProviding = EvonodeEpochBlocksService()
+        evonodeEpochBlocksMonitor: EvonodeEpochBlocksMonitor = .shared
     ) {
         self.transactionSource = transactionSource
-        self.evonodeEpochBlocksProvider = evonodeEpochBlocksProvider
+        self.evonodeEpochBlocksMonitor = evonodeEpochBlocksMonitor
         syncModel.networkStatusDidChange = { status in
             self.recalculateHeight()
         }
@@ -264,7 +252,8 @@ class HomeViewModel: ObservableObject {
         self.observeCoinJoinSweep()
         self.observeWallet()
         self.observeNetworkChange()
-        self.observeEvonodeEpochBlocksTriggers()
+        // The monitor is main-actor isolated; this init runs on main.
+        MainActor.assumeIsolated { self.observeEvonodeEpochBlocks() }
         #if DASHPAY
         self.observeDashPay()
         #endif
@@ -272,106 +261,19 @@ class HomeViewModel: ObservableObject {
 
     // MARK: - Evonode epoch blocks
 
-    /// Refresh triggers: sync reaching done (the masternode aggregation is
-    /// complete then), the app returning to the foreground, and a wallet or
-    /// network switch (which also drops the stale card immediately).
-    private func observeEvonodeEpochBlocksTriggers() {
-        syncModel.$state
-            .removeDuplicates()
+    @MainActor
+    private func observeEvonodeEpochBlocks() {
+        evonodeEpochBlocksMonitor.$blocks
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] state in
-                guard state == .syncDone else { return }
-                Task { @MainActor [weak self] in self?.refreshEvonodeEpochBlocks(force: true) }
-            }
-            .store(in: &cancellableBag)
-
-        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                Task { @MainActor [weak self] in self?.refreshEvonodeEpochBlocks() }
-            }
-            .store(in: &cancellableBag)
-
-        NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
-            .merge(with: NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange))
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                Task { @MainActor [weak self] in
-                    guard let self else { return }
-                    self.evonodeEpochBlocksTask?.cancel()
-                    self.evonodeEpochBlocksTask = nil
-                    self.evonodeEpochBlocksGeneration &+= 1
-                    self.evonodeEpochBlocks = nil
-                    self.evonodeEpochBlocksLastAttempt = nil
-                    self.refreshEvonodeEpochBlocks(force: true)
-                }
-            }
+            .sink { [weak self] blocks in self?.evonodeEpochBlocks = blocks }
             .store(in: &cancellableBag)
     }
 
-    /// The wallet's evonodes still on the network (not retired), by stored
-    /// proTxHash. Read from the Rust aggregation — local, no network.
+    /// Routine refresh trigger (screen appear): throttled by the monitor.
     @MainActor
-    private func activeEvonodeProTxHashes() -> Set<Data> {
-        guard let manager = SwiftDashSDKHost.shared.manager,
-              let walletId = SwiftDashSDKHost.shared.wallet?.walletId else { return [] }
-        return Set(manager.masternodes(for: walletId)
-            .filter { $0.isEvonode && MasternodeStatus(rawValue: $0.status) != .retired }
-            .map(\.proTxHash))
-    }
-
-    /// Fetch (or re-fetch) the current-epoch proposal tallies for the
-    /// wallet's evonodes. Routine calls are throttled to
-    /// `evonodeEpochBlocksRefreshInterval`; `force` bypasses the throttle.
-    /// No-op while a fetch is in flight. A wallet without active evonodes
-    /// never queries at all and shows no card.
-    @MainActor
-    func refreshEvonodeEpochBlocks(force: Bool = false) {
+    func refreshEvonodeEpochBlocks() {
         guard !isPreviewMode else { return }
-        if evonodeEpochBlocksTask != nil { return }
-        let minInterval = evonodeEpochBlocksLastFetchFailed
-            ? Self.evonodeEpochBlocksRetryInterval
-            : Self.evonodeEpochBlocksRefreshInterval
-        if !force, let last = evonodeEpochBlocksLastAttempt,
-           Date().timeIntervalSince(last) < minInterval {
-            return
-        }
-        let owned = activeEvonodeProTxHashes()
-        guard !owned.isEmpty else {
-            if evonodeEpochBlocks != nil {
-                DWLogger.log("HomeViewModel: evonode epoch blocks — no active evonodes in the wallet aggregation, hiding card")
-            }
-            evonodeEpochBlocks = nil
-            return
-        }
-        DWLogger.log("HomeViewModel: evonode epoch blocks — fetching for \(owned.count) evonode(s), force=\(force)")
-        evonodeEpochBlocksLastAttempt = Date()
-        let provider = evonodeEpochBlocksProvider
-        evonodeEpochBlocksGeneration &+= 1
-        let generation = evonodeEpochBlocksGeneration
-        evonodeEpochBlocksTask = Task { [weak self] in
-            defer {
-                // Only the fetch that still owns the slot may clear it — a
-                // superseded (cancelled) one unwinding late must not erase
-                // its replacement and let two scans run at once.
-                if let self, self.evonodeEpochBlocksGeneration == generation {
-                    self.evonodeEpochBlocksTask = nil
-                }
-            }
-            do {
-                let blocks = try await provider.fetch(ownedProTxHashes: owned)
-                guard let self, !Task.isCancelled, self.evonodeEpochBlocksGeneration == generation else { return }
-                self.evonodeEpochBlocks = blocks
-                self.evonodeEpochBlocksLastFetchFailed = false
-                DWLogger.log("HomeViewModel: evonode epoch blocks — \(blocks.totalBlocks) block(s) this epoch (epoch \(blocks.epochIndex.map(String.init) ?? "?"))")
-            } catch {
-                // Keep the last good value on a transient failure; the next
-                // trigger retries (sooner, via the retry interval). Nothing to
-                // show if there never was one.
-                self?.evonodeEpochBlocksLastFetchFailed = true
-                DWLogger.log("HomeViewModel: evonode epoch blocks fetch failed: \(error)")
-            }
-        }
+        evonodeEpochBlocksMonitor.refresh()
     }
 
     #if DEBUG
@@ -379,7 +281,7 @@ class HomeViewModel: ObservableObject {
     /// Skips wallet/sync/coinjoin wiring that depends on the Dash core runtime.
     private init(previewShortcuts: [ShortcutAction]) {
         self.transactionSource = HomeViewModelPreviewTransactionSource()
-        self.evonodeEpochBlocksProvider = EvonodeEpochBlocksService()
+        self.evonodeEpochBlocksMonitor = .shared
         self.isPreviewMode = true
         self.shortcutItems = previewShortcuts
     }

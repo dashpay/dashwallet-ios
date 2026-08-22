@@ -33,45 +33,20 @@ import UIKit
 final class MasternodesViewModel: ObservableObject {
     @Published private(set) var masternodes: [PlatformMasternode] = []
     @Published private(set) var loaded = false
-    /// Current-epoch proposal tallies for the wallet's evonodes (privacy-
-    /// preserving range scan, see `EvonodeEpochBlocksService`). `nil` until
-    /// fetched / when there are no active evonodes.
+    /// Current-epoch proposal tallies for the wallet's evonodes, mirrored
+    /// from the shared `EvonodeEpochBlocksMonitor` (privacy-preserving range
+    /// scan, one refresh policy for every screen). `nil` until fetched /
+    /// when there are no active evonodes.
     @Published private(set) var epochBlocks: EvonodeEpochBlocks?
 
-    private let epochBlocksProvider: EvonodeEpochBlocksProviding
-    private var epochBlocksTask: Task<Void, Never>?
-    /// Owner of `epochBlocksTask` (see `HomeViewModel`): a superseded fetch
-    /// must not clear or publish over its replacement.
-    private var epochBlocksGeneration: UInt64 = 0
+    private let epochBlocksMonitor: EvonodeEpochBlocksMonitor
     private var cancellables = Set<AnyCancellable>()
-    private let syncModel = SyncModelImpl()
 
-    init(epochBlocksProvider: EvonodeEpochBlocksProviding = EvonodeEpochBlocksService()) {
-        self.epochBlocksProvider = epochBlocksProvider
-        observeRefreshTriggers()
-    }
-
-    /// Same refresh events as the home card: sync reaching done (the
-    /// aggregation is complete then), the app returning to the foreground,
-    /// and a wallet / network switch — each reloads the list and the
-    /// epoch tallies for the current wallet, cancelling stale work.
-    private func observeRefreshTriggers() {
-        syncModel.$state
-            .removeDuplicates()
+    init(epochBlocksMonitor: EvonodeEpochBlocksMonitor = .shared) {
+        self.epochBlocksMonitor = epochBlocksMonitor
+        epochBlocksMonitor.$blocks
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] state in
-                guard state == .syncDone else { return }
-                Task { @MainActor [weak self] in self?.load() }
-            }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
-            .merge(with: NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification))
-            .merge(with: NotificationCenter.default.publisher(for: NSNotification.Name.DWCurrentNetworkDidChange))
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                Task { @MainActor [weak self] in self?.load() }
-            }
+            .sink { [weak self] blocks in self?.epochBlocks = blocks }
             .store(in: &cancellables)
     }
 
@@ -114,38 +89,14 @@ final class MasternodesViewModel: ObservableObject {
         votingIndexByAddress = MasternodeKeyUsage.indexByAddress(
             family: .voting,
             targets: Set(masternodes.compactMap(\.votingAddress)))
-        loadEpochBlocks()
+        // Routine trigger (screen appear) — the monitor throttles, and reacts
+        // to sync-done / foreground / wallet / network changes on its own.
+        epochBlocksMonitor.refresh()
     }
 
     /// Blocks proposed this epoch by `masternode`, once fetched (evonodes only).
     func epochBlocks(for masternode: PlatformMasternode) -> UInt64? {
         epochBlocks?.blocksByProTxHash[masternode.proTxHash]
-    }
-
-    private func loadEpochBlocks() {
-        epochBlocksTask?.cancel()
-        epochBlocksTask = nil
-        epochBlocksGeneration &+= 1
-        let owned = Set(masternodes
-            .filter { $0.isEvonode && MasternodeStatus(rawValue: $0.status) != .retired }
-            .map(\.proTxHash))
-        guard !owned.isEmpty else {
-            epochBlocks = nil
-            return
-        }
-        let provider = epochBlocksProvider
-        let generation = epochBlocksGeneration
-        epochBlocksTask = Task { [weak self] in
-            defer {
-                if let self, self.epochBlocksGeneration == generation {
-                    self.epochBlocksTask = nil
-                }
-            }
-            // Transient failures keep the previous tallies; the next trigger retries.
-            guard let blocks = try? await provider.fetch(ownedProTxHashes: owned),
-                  let self, !Task.isCancelled, self.epochBlocksGeneration == generation else { return }
-            self.epochBlocks = blocks
-        }
     }
 
     /// Ownership subtitle for the owner key ("ProviderOwnerKeys #4" /

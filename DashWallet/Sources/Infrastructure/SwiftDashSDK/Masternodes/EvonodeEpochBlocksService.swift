@@ -125,55 +125,66 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
         let owned = ownedProTxHashes
 
         // The SDK query bridges block the calling thread (isolated Tokio
-        // runtime per call) — keep them off the main actor.
-        return try await Task.detached(priority: .utility) { () -> EvonodeEpochBlocks in
-            // The current epoch comes first, and is REQUIRED: proved proposer
-            // queries must name an explicit epoch (the proof verifier rejects
-            // "current"), and the bridge maps epoch 0 to "unspecified".
-            let (epochIndex, epochStart) = try await Self.currentEpoch(sdk)
-            guard epochIndex > 0 else {
-                throw ServiceError.currentEpochUnavailable("epoch 0 cannot be queried through the range bridge")
-            }
+        // runtime per call) — keep them off the main actor. A detached task
+        // doesn't inherit the caller's cancellation, so it is forwarded
+        // through `stop`: a cancelled caller stops the scan at the next page
+        // boundary (an in-flight FFI call can't be aborted) and gets
+        // `CancellationError` instead of a tally.
+        let stop = CancelFlag()
+        return try await withTaskCancellationHandler {
+            try await Task.detached(priority: .utility) { () -> EvonodeEpochBlocks in
+                // The current epoch comes first, and is REQUIRED: proved proposer
+                // queries must name an explicit epoch (the proof verifier rejects
+                // "current"), and the bridge maps epoch 0 to "unspecified".
+                let (epochIndex, epochStart) = try await Self.currentEpoch(sdk)
+                guard epochIndex > 0 else {
+                    throw ServiceError.currentEpochUnavailable("epoch 0 cannot be queried through the range bridge")
+                }
 
-            var tallies: [Data: UInt64] = Dictionary(uniqueKeysWithValues: owned.map { ($0, 0) })
-            var startAfter: String?
-            var pages = 0
-            var scanned = 0
-            while true {
-                let page = try await sdk.getEvonodesProposedEpochBlocksByRange(
-                    epoch: epochIndex,
-                    limit: UInt32(Self.pageSize),
-                    startAfter: startAfter,
-                    orderAscending: true)
-                pages += 1
-                scanned += page.count
-                for entry in page {
-                    let (hash, count) = try Self.parseTally(entry)
-                    if let mine = lookup[hash] {
-                        tallies[mine] = count
+                var tallies: [Data: UInt64] = Dictionary(uniqueKeysWithValues: owned.map { ($0, 0) })
+                var startAfter: String?
+                var pages = 0
+                var scanned = 0
+                while true {
+                    if stop.isSet { throw CancellationError() }
+                    let page = try await sdk.getEvonodesProposedEpochBlocksByRange(
+                        epoch: epochIndex,
+                        limit: UInt32(Self.pageSize),
+                        startAfter: startAfter,
+                        orderAscending: true)
+                    pages += 1
+                    scanned += page.count
+                    for entry in page {
+                        let (hash, count) = try Self.parseTally(entry)
+                        if let mine = lookup[hash] {
+                            tallies[mine] = count
+                        }
                     }
+                    // A short page is the end of the list. A full page means there
+                    // may be more — and a scan that is still paging at the guard
+                    // is incomplete, so it must not be reported as a tally.
+                    guard page.count >= Self.pageSize,
+                          let last = page.last?["pro_tx_hash"] as? String else {
+                        break
+                    }
+                    guard pages < Self.maxPages else {
+                        throw ServiceError.pageLimitReached
+                    }
+                    startAfter = last
                 }
-                // A short page is the end of the list. A full page means there
-                // may be more — and a scan that is still paging at the guard
-                // is incomplete, so it must not be reported as a tally.
-                guard page.count >= Self.pageSize,
-                      let last = page.last?["pro_tx_hash"] as? String else {
-                    break
-                }
-                guard pages < Self.maxPages else {
-                    throw ServiceError.pageLimitReached
-                }
-                startAfter = last
-            }
 
-            Self.logger.info(
-                "🏛️ EVONODE-BLOCKS :: scanned \(scanned) proposers over \(pages) page(s); \(owned.count) owned evonode(s), epoch \(epochIndex, privacy: .public)")
-            return EvonodeEpochBlocks(
-                epochIndex: epochIndex,
-                epochStart: epochStart,
-                blocksByProTxHash: tallies,
-                fetchedAt: Date())
-        }.value
+                Self.logger.info(
+                    "🏛️ EVONODE-BLOCKS :: scanned \(scanned) proposers over \(pages) page(s); \(owned.count) owned evonode(s), epoch \(epochIndex, privacy: .public)")
+                if stop.isSet { throw CancellationError() }
+                return EvonodeEpochBlocks(
+                    epochIndex: epochIndex,
+                    epochStart: epochStart,
+                    blocksByProTxHash: tallies,
+                    fetchedAt: Date())
+            }.value
+        } onCancel: {
+            stop.set()
+        }
     }
 
     /// The current (newest started) epoch — `SDK.getCurrentEpoch()` (the
@@ -205,13 +216,39 @@ private extension EvonodeEpochBlocksService {
               let hash = Data(hexString: hex) else {
             throw ServiceError.malformedEntry
         }
+        // Parse through the decimal text so a negative or fractional count is
+        // rejected (`uint64Value` would wrap it into a huge tally).
+        let text: String
         if let number = entry["count"] as? NSNumber {
-            return (hash, number.uint64Value)
+            text = number.stringValue
+        } else if let string = entry["count"] as? String {
+            text = string
+        } else {
+            throw ServiceError.malformedEntry
         }
-        if let text = entry["count"] as? String, let parsed = UInt64(text) {
-            return (hash, parsed)
+        guard let parsed = UInt64(text) else {
+            throw ServiceError.malformedEntry
         }
-        throw ServiceError.malformedEntry
+        return (hash, parsed)
+    }
+}
+
+// MARK: - CancelFlag
+
+/// One-way "stop" signal handed to the detached scan (which can't see the
+/// caller's task cancellation).
+private final class CancelFlag: @unchecked Sendable {
+    private let lock = NSLock()
+    private var cancelled = false
+
+    var isSet: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return cancelled
+    }
+
+    func set() {
+        lock.lock(); defer { lock.unlock() }
+        cancelled = true
     }
 }
 
