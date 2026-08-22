@@ -14,7 +14,7 @@ import DashUIKit
 
 struct SDKIdentityProfileSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var identityIdHex: String? = nil
+    @State private var identityIdBase58: String? = nil
     /// Owner's profile picture, read from the same identity snapshot the rest
     /// of the app renders from. nil → the deterministic initials placeholder.
     @State private var avatarURL: String?
@@ -165,9 +165,9 @@ struct SDKIdentityProfileSheet: View {
         VStack(alignment: .leading, spacing: 16) {
             infoRow(
                 title: NSLocalizedString("Identity ID", comment: "SDK identity profile sheet"),
-                value: identityIdHex ?? NSLocalizedString("Loading…", comment: ""),
+                value: identityIdBase58 ?? NSLocalizedString("Loading…", comment: ""),
                 monospaced: true,
-                copyable: identityIdHex != nil
+                copyable: identityIdBase58 != nil
             )
             identityBalanceRow
         }
@@ -336,8 +336,9 @@ struct SDKIdentityProfileSheet: View {
     /// Look up the persisted identity ID from SwiftData. Mirrors the
     /// fetch pattern in `DWIdentityRegistrationCoordinator.lookupExistingIdentityId`
     /// (PersistentIdentity scoped to the active wallet); we render the
-    /// 32-byte id as lowercase hex matching the existing coordinator
-    /// logs (`identityId.map { String(format: "%02x", $0) }.joined()`).
+    /// 32-byte id as base58, the form Platform explorers, the contacts
+    /// list (`ContactItem.identityIdBase58`) and the `dashpay://user` QR
+    /// payload all use. Coordinator logs still print hex.
     private func loadIdentityId() {
         guard
             let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
@@ -352,7 +353,7 @@ struct SDKIdentityProfileSheet: View {
         )
         descriptor.fetchLimit = 1
         if let identity = try? context.fetch(descriptor).first {
-            identityIdHex = identity.identityId.map { String(format: "%02x", $0) }.joined()
+            identityIdBase58 = identity.identityId.toBase58String()
             identitySeed = identity.identityId
             identityIdData = identity.identityId
             // Stored as the Int64 bit-pattern of the UInt64 credits (see
