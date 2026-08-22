@@ -84,6 +84,8 @@ jobs:
         env:
           APPLE_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
           APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          APPLE_DEVELOPMENT_CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPMENT_CERTIFICATE_BASE64 }}
+          APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD }}
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY_BASE64 }}
@@ -117,6 +119,23 @@ jobs:
               missing=1
             fi
           done
+
+          # The development certificate pair is optional, but must be set
+          # together. Without it, automatic signing mints a brand-new Apple
+          # Development certificate on every run (the runner keychain is
+          # ephemeral) until the team hits Apple's certificate limit and
+          # archiving fails with "Choose a certificate to revoke".
+          if [[ -n "${APPLE_DEVELOPMENT_CERTIFICATE_BASE64:-}" && -z "${APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD:-}" ]]; then
+            echo "::error::APPLE_DEVELOPMENT_CERTIFICATE_BASE64 is set but APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD is missing."
+            missing=1
+          fi
+          if [[ -z "${APPLE_DEVELOPMENT_CERTIFICATE_BASE64:-}" && -n "${APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD:-}" ]]; then
+            echo "::error::APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD is set but APPLE_DEVELOPMENT_CERTIFICATE_BASE64 is missing."
+            missing=1
+          fi
+          if [[ -z "${APPLE_DEVELOPMENT_CERTIFICATE_BASE64:-}" ]]; then
+            echo "::warning::APPLE_DEVELOPMENT_CERTIFICATE_BASE64 is not set. Automatic signing will create a new Apple Development certificate for this run, which eventually exhausts the team's certificate quota."
+          fi
 
           if [[ "$missing" -ne 0 ]]; then
             exit 1
@@ -410,10 +429,12 @@ jobs:
             DashWallet/Uphold-Info.plist \
             DashWallet/SwapKit-Info.plist
 
-      - name: Install Apple distribution certificate
+      - name: Install Apple signing certificates
         env:
           CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
           CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          DEVELOPMENT_CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPMENT_CERTIFICATE_BASE64 }}
+          DEVELOPMENT_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPMENT_CERTIFICATE_PASSWORD }}
         run: |
           set -euo pipefail
 
@@ -452,6 +473,23 @@ jobs:
             -t cert \
             -f pkcs12 \
             -k "$keychain_path"
+
+          # A persistent development certificate lets automatic signing sign
+          # the archive without minting a new Apple Development certificate
+          # on every run.
+          if [[ -n "${DEVELOPMENT_CERTIFICATE_BASE64:-}" ]]; then
+            development_certificate_path="$RUNNER_TEMP/apple-development.p12"
+            printf '%s' "$DEVELOPMENT_CERTIFICATE_BASE64" | base64 --decode -o "$development_certificate_path"
+            security import "$development_certificate_path" \
+              -P "$DEVELOPMENT_CERTIFICATE_PASSWORD" \
+              -T /usr/bin/codesign \
+              -T /usr/bin/security \
+              -t cert \
+              -f pkcs12 \
+              -k "$keychain_path"
+            rm -f "$development_certificate_path"
+          fi
+
           security set-key-partition-list \
             -S apple-tool:,apple:,codesign: \
             -s \
@@ -746,6 +784,7 @@ jobs:
             "${FASTLANE_API_KEY_PATH:-}" \
             "${ORIGINAL_KEYCHAINS_PATH:-}" \
             "$RUNNER_TEMP/apple-distribution.p12" \
+            "$RUNNER_TEMP/apple-development.p12" \
             DashWallet/GoogleService-Info.plist \
             DashWallet/Coinbase-Info.plist \
             DashWallet/Topper-Info.plist \
