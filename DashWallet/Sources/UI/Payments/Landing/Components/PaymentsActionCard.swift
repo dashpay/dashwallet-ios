@@ -65,6 +65,7 @@ struct PaymentsActionRow: View {
                 title: title,
                 accessory: .none
             )
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)

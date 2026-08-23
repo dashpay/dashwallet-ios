@@ -54,8 +54,15 @@ struct PaymentsLandingScreen: View {
     @State private var slidesForward = true
 
     private enum Layout {
-        /// Gap under the tab selector before the landing's own picker card.
-        static let pickerTopPadding: CGFloat = 20
+        /// Gap under the tab selector before the Receive tab's content. The
+        /// two picker cards get none: they are cards with their own inner
+        /// padding, and a gap above that read as a detached strip.
+        static let receiveTopPadding: CGFloat = 20
+        /// Side margin for the picker cards, so they line up with the tab
+        /// selector above them instead of running to the screen edges.
+        static let cardHorizontalPadding: CGFloat = 20
+        /// Gap under the (currently unreachable) header.
+        static let headerBottomPadding: CGFloat = 20
         /// Tighter for the balance-row sheets: the form they embed needs the
         /// vertical room for its amount row, endpoint cards and keypad.
         static let embeddedFormTopPadding: CGFloat = 12
@@ -200,7 +207,6 @@ struct PaymentsLandingScreen: View {
     private func pickerLayout<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
         VStack(spacing: 0) {
             content()
-                .padding(.top, Layout.pickerTopPadding)
             Spacer(minLength: 0)
         }
     }
@@ -223,6 +229,9 @@ struct PaymentsLandingScreen: View {
                     },
                     onShareAddress: onShareAddress,
                     onSpecifyAmount: onSpecifyAmount)
+                    // Its own insets are per-section rather than one wrapper,
+                    // so the gap under the selector stays here.
+                    .padding(.top, Layout.receiveTopPadding)
             }
 
         case .internalTransfer:
@@ -230,6 +239,7 @@ struct PaymentsLandingScreen: View {
             case .picker:
                 pickerLayout {
                     PaymentsInternalCard(onSelect: onInternalTransfer)
+                        .padding(.horizontal, Layout.cardHorizontalPadding)
                 }
 
             case let .sendingFrom(source):
@@ -256,6 +266,7 @@ struct PaymentsLandingScreen: View {
                     PaymentsSendCard(
                         onScanQR: onScanQR,
                         onSendToAddress: onSendToAddress)
+                        .padding(.horizontal, Layout.cardHorizontalPadding)
                 }
 
             case .sendingFrom:
@@ -281,7 +292,7 @@ struct PaymentsLandingScreen: View {
     private var header: some View {
         NavigationBar(
             leading: { NavigationBarElement.back.button(action: onClose) })
-            .padding(.bottom, Layout.pickerTopPadding)
+            .padding(.bottom, Layout.headerBottomPadding)
     }
 
 }
