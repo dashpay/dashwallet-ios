@@ -430,6 +430,17 @@ final class InternalTransferViewModel: ObservableObject {
     /// the Identity destination is selected. `nil` when the wallet has no
     /// registered identity — affordability then fails closed with an
     /// explanatory message instead of offering a transfer with nowhere to go.
+    /// Whether Platform and the identity are reachable endpoints at all.
+    ///
+    /// Advanced mode is what admits them; without it a transfer is Transparent
+    /// to Shielded and back, which is the pair an ordinary user is offered.
+    ///
+    /// Published rather than read at each use: the switch lives in Settings and
+    /// can be flipped while this screen is on display, and a view that read the
+    /// flag once would keep offering an endpoint the transfer can no longer
+    /// reach. `advancedModeDidChange` is the announcement it exists for.
+    @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+
     @Published private(set) var identityId: Data?
 
     /// The identity's own credit balance for the destination card (credits,
@@ -685,6 +696,43 @@ final class InternalTransferViewModel: ObservableObject {
             to: Self.sanitizedDestination(from: source, proposed: sendTarget))
     }
 
+    /// The balances a transfer may touch right now.
+    var availableNetworks: [ChainNetwork] {
+        isAdvancedMode ? ChainNetwork.allCases : [.core, .shielded]
+    }
+
+    /// The identity is a Platform surface, so it comes and goes with the rest
+    /// of them rather than having a rule of its own.
+    var offersIdentityEndpoints: Bool { isAdvancedMode }
+
+    /// Pull every endpoint back inside what the mode now allows.
+    ///
+    /// Only ever narrows. Turning the mode ON leaves the current pair alone —
+    /// it was already legal — while turning it OFF has to move a selection that
+    /// has just become unreachable, or the screen would sit on a route it is no
+    /// longer allowed to execute.
+    ///
+    /// The pinned variants (`sendSource`, `receiveTarget`) are deliberately not
+    /// touched: they are entered from a balance row that still exists, and
+    /// rewriting the endpoint the user tapped would be a different bug.
+    private func applyAdvancedMode() {
+        isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+        guard !isAdvancedMode else { return }
+
+        isIdentitySource = false
+        isIdentityDestination = false
+
+        if source == .platform {
+            source = .core
+        }
+        if sendTarget == .platform {
+            sendTarget = Self.defaultDestination(for: source)
+        }
+        if receiveSource == .platform {
+            receiveSource = .shielded
+        }
+    }
+
     private static func defaultDestination(for source: ChainNetwork) -> ChainNetwork {
         switch source {
         case .core, .platform:
@@ -889,6 +937,12 @@ final class InternalTransferViewModel: ObservableObject {
 
     init() {
         SyncingActivityMonitor.shared.add(observer: self)
+
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.applyAdvancedMode() }
+            .store(in: &cancellables)
+
         isChainSynced = SyncingActivityMonitor.shared.state == .syncDone
         coreBalanceDuffs = SwiftDashSDKWalletState.shared.balance?.total ?? 0
         coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()

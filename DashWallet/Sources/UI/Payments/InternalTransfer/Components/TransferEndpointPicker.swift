@@ -128,7 +128,8 @@ struct TransferEndpointPicker: View {
     /// To side moves THAT side — the view model keeps the endpoints distinct
     /// and coherent, so nothing is filtered out here.
     private var sourceOptions: [TransferSource] {
-        ChainNetwork.allCases.map(TransferSource.balance) + [.identity]
+        viewModel.availableNetworks.map(TransferSource.balance)
+            + (viewModel.offersIdentityEndpoints ? [.identity] : [])
     }
 
     /// The three balances plus Identity — which the payments landing card
@@ -146,7 +147,8 @@ struct TransferEndpointPicker: View {
         if viewModel.isIdentitySource {
             return IdentityWithdrawalTarget.allCases.map { .balance($0.network) }
         }
-        return ChainNetwork.allCases.map(TransferDestination.balance) + [.identity]
+        return viewModel.availableNetworks.map(TransferDestination.balance)
+            + (viewModel.offersIdentityEndpoints ? [.identity] : [])
     }
 
     // MARK: - Rows

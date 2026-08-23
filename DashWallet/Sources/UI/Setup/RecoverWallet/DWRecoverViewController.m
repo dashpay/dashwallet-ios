@@ -214,16 +214,16 @@ NS_ASSUME_NONNULL_BEGIN
                                                                                                         preferredStyle:UIAlertControllerStyleAlert];
                                                                        [failureAlert addAction:
                                                                                          [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                                                                                                                  style:UIAlertActionStyleCancel
-                                                                                                                handler:^(UIAlertAction *action) {
-                                                                                                                    [strongSelf.contentView activateTextView];
-                                                                                                                }]];
+                                                                                                                   style:UIAlertActionStyleCancel
+                                                                                                                 handler:^(UIAlertAction *action) {
+                                                                                                                     [strongSelf.contentView activateTextView];
+                                                                                                                 }]];
                                                                        [failureAlert addAction:
                                                                                          [UIAlertAction actionWithTitle:NSLocalizedString(@"Retry", nil)
-                                                                                                                  style:UIAlertActionStyleDefault
-                                                                                                                handler:^(UIAlertAction *action) {
-                                                                                                                    [strongSelf recoverContentViewPerformWipe:view];
-                                                                                                                }]];
+                                                                                                                   style:UIAlertActionStyleDefault
+                                                                                                                 handler:^(UIAlertAction *action) {
+                                                                                                                     [strongSelf recoverContentViewPerformWipe:view];
+                                                                                                                 }]];
                                                                        [strongSelf presentViewController:failureAlert animated:YES completion:nil];
                                                                        return;
                                                                    }

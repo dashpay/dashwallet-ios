@@ -189,11 +189,11 @@ struct TransferEndpointCards: View {
     /// endpoint's balance is left out entirely — only the standalone screen
     /// shows all three with same-balance taps rejected.
     private func availableTargets(for source: ChainNetwork) -> [ChainNetwork] {
-        ChainNetwork.allCases.filter { $0 != source }
+        viewModel.availableNetworks.filter { $0 != source }
     }
 
     private func availableSources(for target: ChainNetwork) -> [ChainNetwork] {
-        ChainNetwork.allCases.filter { $0 != target }
+        viewModel.availableNetworks.filter { $0 != target }
     }
 }
 

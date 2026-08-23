@@ -26,6 +26,11 @@ import DashUIKit
 struct PaymentsInternalCard: View {
     var onSelect: (TransferDestination) -> Void
 
+    /// False leaves only Shielded. Identity and Platform are what Advanced
+    /// mode admits, and offering a destination the transfer screen would then
+    /// refuse is worse than not offering it.
+    var showsAdvancedDestinations: Bool = true
+
     var body: some View {
         PaymentsActionCard(
             caption: NSLocalizedString("Internal transfer to/from", comment: "Payments")) {
@@ -34,15 +39,17 @@ struct PaymentsInternalCard: View {
                 title: ChainNetwork.shielded.balanceName,
                 action: { onSelect(.balance(.shielded)) })
 
-            PaymentsActionRow(
-                iconSystemName: DashIcon.Features.identity.rawValue,
-                title: NSLocalizedString("Identity", comment: "Payments"),
-                action: { onSelect(.identity) })
+            if showsAdvancedDestinations {
+                PaymentsActionRow(
+                    iconSystemName: DashIcon.Features.identity.rawValue,
+                    title: NSLocalizedString("Identity", comment: "Payments"),
+                    action: { onSelect(.identity) })
 
-            PaymentsActionRow(
-                iconSystemName: DashIcon.Features.platform.rawValue,
-                title: ChainNetwork.platform.balanceName,
-                action: { onSelect(.balance(.platform)) })
+                PaymentsActionRow(
+                    iconSystemName: DashIcon.Features.platform.rawValue,
+                    title: ChainNetwork.platform.balanceName,
+                    action: { onSelect(.balance(.platform)) })
+            }
         }
     }
 }
