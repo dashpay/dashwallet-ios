@@ -81,3 +81,46 @@ class DashWalletScreenshotsUITests: XCTestCase {
         element.tap()
     }
 }
+
+// MARK: - Advanced mode row
+
+/// The Advanced mode row is a `Button` that opens the explainer, wrapped around
+/// a `MenuItem` whose accessory is an interactive switch. Nesting a control
+/// inside a button is where a tap can end up answered twice, so this pins the
+/// split: the switch flips the setting and the sheet stays shut.
+///
+/// `SwitchView` is not a `Toggle` — it is a custom view carrying `.isButton`
+/// and an On/Off accessibility value — which is why the switch is found as a
+/// button descendant of the row rather than through `app.switches`.
+class AdvancedModeRowUITests: XCTestCase {
+
+    private var app: XCUIApplication!
+
+    override func setUp() {
+        super.setUp()
+        continueAfterFailure = false
+        app = XCUIApplication()
+    }
+
+    func testTappingTheSwitchDoesNotOpenTheExplainer() {
+        app.launch()
+
+        let row = app.descendants(matching: .any)["settings_row_advanced_mode"]
+        XCTAssert(row.waitForExistence(timeout: 15),
+                  "Advanced mode row not found — the Settings screen is not on display")
+
+        let toggle = row.buttons.firstMatch
+        XCTAssert(toggle.waitForExistence(timeout: 3),
+                  "No switch inside the Advanced mode row")
+
+        let before = toggle.value as? String
+        toggle.tap()
+
+        let sheet = app.descendants(matching: .any)["advanced_mode_info_sheet"]
+        XCTAssertFalse(sheet.waitForExistence(timeout: 2),
+                       "Tapping the switch opened the explainer — the row's button swallowed it")
+
+        XCTAssertNotEqual(toggle.value as? String, before,
+                          "The switch did not change state, so the tap never reached it")
+    }
+}

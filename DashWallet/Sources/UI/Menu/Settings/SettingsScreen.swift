@@ -130,9 +130,11 @@ struct SettingsScreen: View {
         if item.showToggle {
             if let infoAction = item.infoAction {
                 // The switch owns its own tap, so the rest of the row is free
-                // to answer the question the info glyph poses.
+                // to answer the question the info glyph poses. Named so a UI
+                // test can tap the switch alone and assert the sheet stays shut.
                 Button(action: infoAction) { content }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("settings_row_\(item.title.lowercased().replacingOccurrences(of: " ", with: "_"))")
             } else {
                 content
             }

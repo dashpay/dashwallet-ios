@@ -18,6 +18,56 @@
 import SwiftUI
 import DashUIKit
 
+// MARK: - AdvancedModeInfoSheetViewModel
+
+/// What the sheet says, so the sheet only draws it.
+///
+/// The content is fixed rather than fetched, which was the argument for leaving
+/// it inline — but "All new UI MUST be built in SwiftUI with a ViewModel" does
+/// not carve out static content, and the surfaces named here are the ones the
+/// mode gates: when that list changes, it changes in one place that is not a
+/// view body.
+@MainActor
+final class AdvancedModeInfoSheetViewModel: ObservableObject {
+
+    struct Feature: Identifiable {
+        let id = UUID()
+        let title: String
+        let description: String
+        let icon: DashIconSource
+        let iconColor: Color?
+    }
+
+    let title = NSLocalizedString("What is advanced mode?", comment: "Settings")
+    let subtitle = NSLocalizedString(
+        "It unlocks powerful features for managing your Dash across the network",
+        comment: "Settings")
+
+    let features: [Feature] = [
+        Feature(
+            title: NSLocalizedString("Shield", comment: "Settings: advanced mode"),
+            description: NSLocalizedString(
+                "Move Dash into a private, encrypted balance that can't be traced.",
+                comment: "Settings: advanced mode"),
+            icon: .custom("feature-shield-purple", bundle: .dashUIKit),
+            iconColor: nil),
+        Feature(
+            title: NSLocalizedString("Identity", comment: "Settings: advanced mode"),
+            description: NSLocalizedString(
+                "Fund your identity to create a username and use Dash Platform",
+                comment: "Settings: advanced mode"),
+            icon: .custom("feature-identity", bundle: .dashUIKit),
+            iconColor: Color.dash.purple),
+        Feature(
+            title: NSLocalizedString("Platform", comment: "Settings: advanced mode"),
+            description: NSLocalizedString(
+                "Keep credits to pay for on-chain actions and Platform apps",
+                comment: "Settings: advanced mode"),
+            icon: .custom("feature-platform-purple", bundle: .dashUIKit),
+            iconColor: nil),
+    ]
+}
+
 /// What Advanced mode does, shown when the settings row's info glyph is tapped.
 ///
 /// Self-sizing on purpose: the copy is expected to grow as the mode gains the
@@ -26,45 +76,50 @@ import DashUIKit
 /// here being re-tuned.
 struct AdvancedModeInfoSheet: View {
 
+    @StateObject private var viewModel = AdvancedModeInfoSheetViewModel()
+
     var body: some View {
         DashUIKit.BottomSheet.selfSizing(
             showBackButton: .constant(false)
         ) {
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(NSLocalizedString("What is advanced mode?", comment: "Settings"))
+                    Text(viewModel.title)
                         .dashFont(.title1)
                         .foregroundStyle(Color.dash.primaryText)
 
-                    Text(NSLocalizedString("It unlocks powerful features for managing your Dash across the network", comment: "Settings"))
+                    Text(viewModel.subtitle)
                         .dashFont(.body)
                         .foregroundStyle(Color.dash.secondaryText)
                 }
                 .padding(.bottom, 20)
 
                 VStack(alignment: .leading, spacing: 16) {
-                    SheetFeature(
-                        title: NSLocalizedString("Shield", comment: "Settings: advanced mode"),
-                        description: NSLocalizedString("Move Dash into a private, encrypted balance that can't be traced.", comment: "Settings: advanced mode"),
-                        icon: .custom("feature-shield-purple", bundle: .dashUIKit)
-                    )
-                    SheetFeature(
-                        title: NSLocalizedString("Identity", comment: "Settings: advanced mode"),
-                        description: NSLocalizedString("Fund your identity to create a username and use Dash Platform", comment: "Settings: advanced mode"),
-                        icon: .custom("feature-identity", bundle: .dashUIKit),
-                        iconColor: Color.dash.purple
-                    )
-                    SheetFeature(
-                        title: NSLocalizedString("Platform", comment: "Settings: advanced mode"),
-                        description: NSLocalizedString("Keep credits to pay for on-chain actions and Platform apps", comment: "Settings: advanced mode"),
-                        icon: .custom("feature-platform-purple", bundle: .dashUIKit)
-                    )
+                    ForEach(viewModel.features) { feature in
+                        if let iconColor = feature.iconColor {
+                            SheetFeature(
+                                title: feature.title,
+                                description: feature.description,
+                                icon: feature.icon,
+                                iconColor: iconColor
+                            )
+                        } else {
+                            SheetFeature(
+                                title: feature.title,
+                                description: feature.description,
+                                icon: feature.icon
+                            )
+                        }
+                    }
                 }
                 .padding(.top, 10)
             }
             .padding(.horizontal, 40)
             .padding(.vertical, 20)
         }
+        // Named so a UI test can assert it is NOT presented by a tap that lands
+        // on the row's switch.
+        .accessibilityIdentifier("advanced_mode_info_sheet")
     }
 }
 
