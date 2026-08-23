@@ -206,6 +206,10 @@
 		2A7A7BAE234770C900451078 /* DWCaptureSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BAD234770C900451078 /* DWCaptureSessionManager.m */; };
 		2A7A7BC92347E0D700451078 /* DWBaseFormTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BC82347E0D700451078 /* DWBaseFormTableViewCell.m */; };
 		2A7A7BD62348CB6600451078 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7BD52348CB6600451078 /* SettingsScreen.swift */; };
+		C0FA5E0000000000000000A2 /* AdvancedModeInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FA5E0000000000000000A1 /* AdvancedModeInfoSheet.swift */; };
+		C0FA5E0000000000000000A3 /* AdvancedModeInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FA5E0000000000000000A1 /* AdvancedModeInfoSheet.swift */; };
+		C0FA5E0000000000000000B2 /* SettingsAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FA5E0000000000000000B1 /* SettingsAlerts.swift */; };
+		C0FA5E0000000000000000B3 /* SettingsAlerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FA5E0000000000000000B1 /* SettingsAlerts.swift */; };
 		2A7A7C16234B763600451078 /* DWLocalCurrencyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */; };
 		2A7A7C1D234B771400451078 /* DWLocalCurrencyModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1C234B771400451078 /* DWLocalCurrencyModel.m */; };
 		2A7A7C20234B79B700451078 /* DWLocalCurrencyTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A7A7C1F234B79B700451078 /* DWLocalCurrencyTableViewCell.m */; };
@@ -588,8 +592,6 @@
 		51629A945A8CEF6EF50F9A4A /* DWIdentityKeyUpgrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74AAC8F08DF00D0070EE71C3 /* DWIdentityKeyUpgrader.swift */; };
 		51646C723006263C00BE3070 /* Uphold-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51646C713006263C00BE3070 /* Uphold-Info.plist */; };
 		51646C733006263C00BE3070 /* Uphold-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 51646C713006263C00BE3070 /* Uphold-Info.plist */; };
-		516983C22FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */; };
-		516983C32FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */; };
 		516C63E52FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */; };
 		516C63E62FE9BE0A00DD6BC3 /* AboutDashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */; };
 		516C63E82FE9BE0A00DD6BC3 /* AboutDashViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */; };
@@ -806,6 +808,8 @@
 		5AGOV0002F9A0000000000V2 /* GovernanceMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */; };
 		5AGOV0002F9A0000000000V3 /* GovernanceMenuViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */; };
 		7566F48A2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
+		AC71E0000000000000000002 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC71E0000000000000000001 /* ActivityView.swift */; };
+		AC71E0000000000000000003 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC71E0000000000000000001 /* ActivityView.swift */; };
 		7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4892BB6CAF2005238D2 /* MenuItem.swift */; };
 		7569D6832DE6DA6800768BFF /* ExploreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7569D6822DE6DA6800768BFF /* ExploreViewController.swift */; };
 		7569D6842DE6DA6800768BFF /* ExploreViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7569D6822DE6DA6800768BFF /* ExploreViewController.swift */; };
@@ -2366,6 +2370,8 @@
 		2A7A7BC72347E0D700451078 /* DWBaseFormTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseFormTableViewCell.h; sourceTree = "<group>"; };
 		2A7A7BC82347E0D700451078 /* DWBaseFormTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseFormTableViewCell.m; sourceTree = "<group>"; };
 		2A7A7BD52348CB6600451078 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
+		C0FA5E0000000000000000A1 /* AdvancedModeInfoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedModeInfoSheet.swift; sourceTree = "<group>"; };
+		C0FA5E0000000000000000B1 /* SettingsAlerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAlerts.swift; sourceTree = "<group>"; };
 		2A7A7C14234B763600451078 /* DWLocalCurrencyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyViewController.h; sourceTree = "<group>"; };
 		2A7A7C15234B763600451078 /* DWLocalCurrencyViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWLocalCurrencyViewController.m; sourceTree = "<group>"; };
 		2A7A7C1B234B771400451078 /* DWLocalCurrencyModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWLocalCurrencyModel.h; sourceTree = "<group>"; };
@@ -2860,7 +2866,6 @@
 		51530E6B2FD6EE1D00175308 /* AllMerchantLocationsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewController.swift; sourceTree = "<group>"; };
 		51530E6C2FD6EE1D00175308 /* AllMerchantLocationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllMerchantLocationsViewModel.swift; sourceTree = "<group>"; };
 		51646C713006263C00BE3070 /* Uphold-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Uphold-Info.plist"; sourceTree = "<group>"; };
-		516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XmarkIcon.swift; sourceTree = "<group>"; };
 		516C4047DB43CFFBB8ED541B /* Pods-DashWalletScreenshotsUITests.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testnet.xcconfig"; sourceTree = "<group>"; };
 		516C63E42FE9BE0A00DD6BC3 /* AboutDashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutDashView.swift; sourceTree = "<group>"; };
 		516C63E72FE9BE0A00DD6BC3 /* AboutDashViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutDashViewModel.swift; sourceTree = "<group>"; };
@@ -2982,6 +2987,7 @@
 		5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuScreen.swift; sourceTree = "<group>"; };
 		5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuViewModel.swift; sourceTree = "<group>"; };
 		7566F4892BB6CAF2005238D2 /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
+		AC71E0000000000000000001 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		7569D6822DE6DA6800768BFF /* ExploreViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreViewController.swift; sourceTree = "<group>"; };
 		7569D6852DE6DB1B00768BFF /* ExploreHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreHeaderView.swift; sourceTree = "<group>"; };
 		7569D6882DE6DB6700768BFF /* ExploreContentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreContentsView.swift; sourceTree = "<group>"; };
@@ -4915,10 +4921,20 @@
 			path = Security;
 			sourceTree = "<group>";
 		};
+		C0FA5E0000000000000000A0 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				C0FA5E0000000000000000A1 /* AdvancedModeInfoSheet.swift */,
+				C0FA5E0000000000000000B1 /* SettingsAlerts.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		2A7A7BD32348CB4F00451078 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
 				2A7A7C13234B761700451078 /* LocalCurrency */,
+				C0FA5E0000000000000000A0 /* Components */,
 				2A8F420A21BEE69E00858B91 /* About */,
 				2A7A7BD52348CB6600451078 /* SettingsScreen.swift */,
 				750CED5F2C94BFD7000FB837 /* SettingsMenuViewModel.swift */,
@@ -6815,7 +6831,6 @@
 			children = (
 				51F0D10330BF98BA00B27E11 /* ArrowDownIcon.swift */,
 				51F0D10030BF97A900B27E11 /* ExclamationIcon.swift */,
-				516983C12FCAEDEB00BA91A2 /* XmarkIcon.swift */,
 			);
 			path = Icons;
 			sourceTree = "<group>";
@@ -7010,6 +7025,7 @@
 				75EBAA082BB9791B004488E3 /* Icon.swift */,
 				AA0031012FD0000000000011 /* IconName+DashIconSource.swift */,
 				7566F4892BB6CAF2005238D2 /* MenuItem.swift */,
+				AC71E0000000000000000001 /* ActivityView.swift */,
 				75EBAA0B2BB9792F004488E3 /* FeatureTopText.swift */,
 				754C27CB2CC3C14F00BA7B9F /* FeatureSingleItem.swift */,
 				75EBAA0E2BB99036004488E3 /* TextIntro.swift */,
@@ -9650,6 +9666,8 @@
 				CNR0000052FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */,
 				CNR0000112FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */,
 				2A7A7BD62348CB6600451078 /* SettingsScreen.swift in Sources */,
+				C0FA5E0000000000000000A2 /* AdvancedModeInfoSheet.swift in Sources */,
+				C0FA5E0000000000000000B2 /* SettingsAlerts.swift in Sources */,
 				2A0C69DA2314727F001B8C90 /* UISpringTimingParameters+DWInit.m in Sources */,
 				47C661AD28F972BD00028A8D /* NumberKeyboardButton.swift in Sources */,
 				11AE3DD82997C599000856EE /* IsDefaultEmail.swift in Sources */,
@@ -10034,7 +10052,6 @@
 				47AE8C1A28C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift in Sources */,
 				754565CC2DAA52A000DA4E8E /* CTXSpendAPI.swift in Sources */,
 				51F0D10430BF98BA00B27E11 /* ArrowDownIcon.swift in Sources */,
-				516983C22FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */,
 				51F0D10130BF97A900B27E11 /* ExclamationIcon.swift in Sources */,
 				754565CE2DAA52A000DA4E8E /* CTXSpendRepository.swift in Sources */,
 				754565CF2DAA52A000DA4E8E /* CTXSpendEndpoint.swift in Sources */,
@@ -10199,6 +10216,7 @@
 				47A2E3A92972B15F0032A63B /* RatesProvider.swift in Sources */,
 				47A2A2E9293E612900938DB7 /* CBAuth.swift in Sources */,
 				7566F48A2BB6CAF2005238D2 /* MenuItem.swift in Sources */,
+				AC71E0000000000000000002 /* ActivityView.swift in Sources */,
 				0F6EDFD128C896BD000427E7 /* CoinbaseCreateAddressesRequest.swift in Sources */,
 				471A2605289ACD5C0056B7B2 /* AddressUserInfo.swift in Sources */,
 				51BA2EA02F0B2E0100A1B201 /* SwapPendingGate.swift in Sources */,
@@ -10560,6 +10578,8 @@
 				CNR0000062FF100000000001 /* CrowdNodeBalanceReminderBanner.swift in Sources */,
 				CNR0000122FF100000000001 /* CrowdNodeWithdrawalRouter.swift in Sources */,
 				C9D2C6B02A320AA000D15901 /* SettingsScreen.swift in Sources */,
+				C0FA5E0000000000000000A3 /* AdvancedModeInfoSheet.swift in Sources */,
+				C0FA5E0000000000000000B3 /* SettingsAlerts.swift in Sources */,
 				751B61C52ADFFD0700D1C2EF /* IntegrationViewController+Uphold.swift in Sources */,
 				C9D2C6B22A320AA000D15901 /* UISpringTimingParameters+DWInit.m in Sources */,
 				C9D2C6B62A320AA000D15901 /* NumberKeyboardButton.swift in Sources */,
@@ -10767,7 +10787,6 @@
 				C9D2C7392A320AA000D15901 /* CoinbaseAmount.swift in Sources */,
 				C9D2C73B2A320AA000D15901 /* SendAmountModel.swift in Sources */,
 				51F0D10530BF98BA00B27E11 /* ArrowDownIcon.swift in Sources */,
-				516983C32FCAEDEB00BA91A2 /* XmarkIcon.swift in Sources */,
 				51F0D10230BF97A900B27E11 /* ExclamationIcon.swift in Sources */,
 				75EBAA102BB99036004488E3 /* TextIntro.swift in Sources */,
 				RC00A0022FA0000000000001 /* TopIntro.swift in Sources */,
@@ -10806,6 +10825,7 @@
 				C943B32F2A408CED00AF23C5 /* DWSaveAlertViewController.m in Sources */,
 				C930784C2A6AD59700906E4B /* TitleValueCell.swift in Sources */,
 				7566F48B2BB6CAF2005238D2 /* MenuItem.swift in Sources */,
+				AC71E0000000000000000003 /* ActivityView.swift in Sources */,
 				C9D2C74F2A320AA000D15901 /* DWSeedPhraseRow.m in Sources */,
 				7531308E2B47EC910069C9B7 /* UpholdClient.swift in Sources */,
 				751C05D92D3BB6AA00475E52 /* CurrentUserProfileModel.swift in Sources */,
