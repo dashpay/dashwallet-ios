@@ -69,6 +69,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// Kept apart from `cancellables`: these live exactly as long as that sheet
     /// does, and are dropped with it rather than for the screen's lifetime.
     private var requestAmountObservers = Set<AnyCancellable>()
+    /// Live for as long as a receive step is pushed — the sheet is optional
+    /// within that, and the return has to happen with or without it.
+    private var receiveStepObservers = Set<AnyCancellable>()
     /// The Internal tab was activated before the landing finished appearing
     /// (e.g. it is the initial tab) — present the timing sheet from
     /// `viewDidAppear` instead of against a view that isn't on screen yet.
@@ -216,6 +219,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // same receive session (or start a fresh "Receive another" session).
         viewModel.setReceiptWatchingObscured(false)
         isPushingReceiveStep = false
+        receiveStepObservers.removeAll()
         viewModel.setReceiveSurfaceVisible(true)
         if timingSheetPendingAppearance {
             timingSheetPendingAppearance = false
@@ -258,7 +262,41 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         let specify = SpecifyAmountViewController.controller()
         specify.delegate = self
         isPushingReceiveStep = true
+        observeReceiptWhileOnReceiveStep()
         pushWithoutTabBar(specify)
+    }
+
+    /// Bring the user back to the receipt from wherever in the receive flow
+    /// they are standing.
+    ///
+    /// Armed by the push, not by the sheet: the sheet is optional — Specify
+    /// Amount can be sat on with nothing over it — and a receipt arriving there
+    /// used to leave the user one screen short of the thing they were waiting
+    /// for, with no way to know it had happened.
+    private func observeReceiptWhileOnReceiveStep() {
+        receiveStepObservers.removeAll()
+
+        viewModel.$receipt
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.receiveStepObservers.removeAll()
+
+                guard let sheet = self.requestAmountController else {
+                    self.returnToLandingFromReceiveStep()
+                    return
+                }
+                // The sheet first, then the step under it — dismissing and
+                // popping in the same turn runs the two animations over each
+                // other.
+                self.requestAmountObservers.removeAll()
+                self.requestAmountController = nil
+                sheet.dismiss(animated: true) { [weak self] in
+                    self?.returnToLandingFromReceiveStep()
+                }
+            }
+            .store(in: &receiveStepObservers)
     }
 
     /// The base class routes a scanned payment straight into the payment
@@ -320,21 +358,6 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             }
             .store(in: &requestAmountObservers)
 
-        viewModel.$receipt
-            .compactMap { $0 }
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                guard let self, let controller = self.requestAmountController else { return }
-                self.requestAmountObservers.removeAll()
-                self.requestAmountController = nil
-                // The sheet AND the step under it: the receipt is drawn on the
-                // landing, and stopping at Specify Amount would leave the user
-                // one screen short of the thing they were waiting for.
-                controller.dismiss(animated: true) { [weak self] in
-                    self?.returnToLandingFromReceiveStep()
-                }
-            }
-            .store(in: &requestAmountObservers)
     }
 
     /// Pop back to the landing from a pushed receive step, if that is where we
