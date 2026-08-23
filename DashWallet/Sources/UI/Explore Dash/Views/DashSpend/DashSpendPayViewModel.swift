@@ -306,9 +306,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
             giftCardNote = response.id
 
-            // CTX uses BIP70 payment request URLs
+            // CTX uses BIP70 payment request URLs. The acceptance verdict is not awaited: CTX
+            // acknowledges the signed transaction and starts fulfilling the order from it, so
+            // blocking the buyer for the SDK's 30 s acceptance window only delays the card that
+            // is already being issued (the email routinely arrived before the screen moved on).
             do {
-                txidWire = try await sendCoinsService.payWithDashUrl(url: url)
+                txidWire = try await sendCoinsService.payWithDashUrl(url: url, awaitAcceptance: false)
             } catch DashSpendError.paymentStatusUnknown(let unconfirmedTxIdWire, let reason) {
                 // The payment left the device and CTX holds the signed bytes; only the
                 // network's acceptance verdict is missing. Record the purchase against the

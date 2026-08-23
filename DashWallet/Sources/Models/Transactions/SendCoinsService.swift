@@ -77,7 +77,11 @@ public final class SendCoinsService: NSObject {
     ///
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention — the caller's metadata key).
-    func payWithDashUrl(url paymentUrlString: String) async throws -> Data {
+    /// - Parameter awaitAcceptance: `false` returns once the merchant has acknowledged the
+    ///   Payment and the broadcast is under way, without waiting out the SDK's network-acceptance
+    ///   window (30 s). The gift-card flow uses it: CTX fulfils the order from the bytes it just
+    ///   acknowledged, so the verdict decides nothing the buyer is standing by for.
+    func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true) async throws -> Data {
         guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r else {
             throw DashSpendError.paymentProcessingError("Invalid payment request")
         }
@@ -87,7 +91,8 @@ public final class SendCoinsService: NSObject {
         let result: SendResult
         do {
             result = try await service.confirmAndSendHeadless(
-                from: requestURL, scheme: uri.scheme, network: network, callbackScheme: uri.callbackScheme)
+                from: requestURL, scheme: uri.scheme, network: network,
+                callbackScheme: uri.callbackScheme, awaitAcceptance: awaitAcceptance)
         } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let reason) {
             // The coins are gone as far as the merchant is concerned — it already holds the
             // signed bytes and can broadcast them itself. Hand the caller the txid so the

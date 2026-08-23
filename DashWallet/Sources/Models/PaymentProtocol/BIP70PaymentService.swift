@@ -261,7 +261,15 @@ final class BIP70PaymentService {
     /// broadcast — build/sign failures and POST/ACK failures. Once broadcast is attempted the
     /// guard is never reset: the merchant holds the signed bytes and may broadcast them
     /// independently, so a retry would rebuild a conflicting spend of the same inputs.
-    func confirmAndSend(_ confirmation: Confirmation, now: Date = Date()) async throws -> SendResult {
+    /// - Parameter awaitAcceptance: `true` (the default) blocks until the SDK returns a
+    ///   network-acceptance verdict, so the caller can report a rejection. `false` returns as
+    ///   soon as the merchant has acknowledged the Payment and the broadcast has been handed
+    ///   to the SDK, leaving the verdict to resolve in the background — for flows (gift cards)
+    ///   where the merchant fulfils the order from its own copy of the signed bytes and the
+    ///   verdict changes nothing the user is waiting for.
+    func confirmAndSend(_ confirmation: Confirmation,
+                        now: Date = Date(),
+                        awaitAcceptance: Bool = true) async throws -> SendResult {
 
         // 1. Expiry re-check at send time (the user may have lingered on the confirm screen).
         try Self.assertNotExpired(confirmation.request.details.expires, now: now)
@@ -309,7 +317,24 @@ final class BIP70PaymentService {
         }
 
         // 6. Broadcast. From this point the guard is never reset — see the invariant above.
-        let txidHexDisplay = try await wallet.broadcast(prepared)
+        let txidHexDisplay: String
+        if awaitAcceptance {
+            txidHexDisplay = try await wallet.broadcast(prepared)
+        } else {
+            // The merchant already acknowledged the signed bytes, so the spend is committed
+            // whatever the network verdict turns out to be. Hand the broadcast off and report
+            // the app-computed txid now: the caller records the purchase against it and the
+            // verdict only decides what gets logged here.
+            txidHexDisplay = prepared.txHashDisplay.map { String(format: "%02x", $0) }.joined()
+            let wallet = self.wallet
+            Task.detached(priority: .userInitiated) {
+                do {
+                    _ = try await wallet.broadcast(prepared)
+                } catch {
+                    DWLogger.log("BIP70: background broadcast of \(txidHexDisplay) ended without acceptance: \(error)")
+                }
+            }
+        }
 
         let callbackURL = Self.makeCallbackURL(scheme: confirmation.callbackScheme,
                                                address: confirmation.primaryAddress,
@@ -328,11 +353,12 @@ final class BIP70PaymentService {
                                 scheme: String,
                                 network: PaymentNetwork,
                                 callbackScheme: String? = nil,
-                                now: Date = Date()) async throws -> SendResult {
+                                now: Date = Date(),
+                                awaitAcceptance: Bool = true) async throws -> SendResult {
         try await auth.authorize()
         let confirmation = try await prepareForConfirmation(from: requestURL, scheme: scheme,
                                                             network: network, callbackScheme: callbackScheme, now: now)
-        return try await confirmAndSend(confirmation, now: now)
+        return try await confirmAndSend(confirmation, now: now, awaitAcceptance: awaitAcceptance)
     }
 
     // MARK: Helpers
