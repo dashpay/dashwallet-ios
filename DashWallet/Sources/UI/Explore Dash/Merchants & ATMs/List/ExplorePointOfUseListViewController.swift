@@ -280,15 +280,11 @@ extension ExplorePointOfUseListViewController {
 
 extension ExplorePointOfUseListViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
-        print("🔍 LOCATION: GPS location changed to \(location.coordinate.latitude), \(location.coordinate.longitude)")
-
         // Set the map center first
         mapView.setCenter(location, animated: false)
-        print("🔍 LOCATION: Set map center to GPS location")
 
         // Clear search center to use actual GPS location
         model.searchCenterCoordinate = nil
-        print("🔍 LOCATION: Cleared searchCenterCoordinate - will use GPS")
 
         // Update the model's map bounds to match the new center
         if model.showMap {
@@ -299,12 +295,12 @@ extension ExplorePointOfUseListViewController: DWLocationObserver {
 
             let newBounds = mapView.mapBounds(with: radiusToUse)
             model.currentMapBounds = newBounds
-            print("🔍 LOCATION: Updated map bounds with radius \(radiusToUse)")
-        }
 
-        // If we're on the nearby tab and the model shows map, refresh the search with the new location
-        if currentSegment.tag == MerchantsListSegment.nearby.rawValue && model.showMap {
-            print("🔍 LOCATION: Fetching merchants for new GPS location")
+            // Refresh the search with the new location for every map-showing segment.
+            // This is what seeds the map when GPS gets its first fix after the screen
+            // is already visible (e.g. entering directly on the merchants All tab, or
+            // any ATM tab — the previous nearby-tag check matched only the ATM "Buy"
+            // segment by accident).
             model.fetch(query: nil)
         }
     }
