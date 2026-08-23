@@ -25,6 +25,11 @@ import DashUIKit
 /// and drawing a balance row lived in the same 200 lines. Which shape applies
 /// still follows from `sendFrom` / `receiveInto` alone, so the decision travels
 /// with the drawing rather than with the screen.
+///
+/// Every shape is the design system's `ConverterCard` over one picker sheet.
+/// The pinned variants used to be a hand-rolled row with its own radio list
+/// instead — a second visual language and a second way to choose the same
+/// endpoint, left behind when the standalone form moved to the card.
 struct TransferEndpointCards: View {
     @ObservedObject var viewModel: InternalTransferViewModel
 
@@ -41,8 +46,27 @@ struct TransferEndpointCards: View {
     /// `TransferEndpointPicker` and the view model.
     @State private var picker: TransferEndpointSide?
 
-    @ViewBuilder
     var body: some View {
+        layout
+            // One sheet for all three layouts: what changes between them is
+            // which endpoints it offers, not that it exists. No detent and no
+            // drag indicator here — the picker is a `BottomSheet.selfSizing`,
+            // which sets its own height detent and draws its own grabber.
+            .sheet(item: $picker) { side in
+                TransferEndpointPicker(
+                    viewModel: viewModel,
+                    side: side,
+                    options: pickerOptions,
+                    onPicked: { picker = nil })
+            }
+    }
+
+    // MARK: - Layouts
+
+    /// All three shapes are the design system's `ConverterCard` — they differ
+    /// only in which row carries a tap and whether the seam badge swaps.
+    @ViewBuilder
+    private var layout: some View {
         if let source = sendFrom {
             sendCards(source: source)
         } else if let target = receiveInto {
@@ -52,45 +76,35 @@ struct TransferEndpointCards: View {
         }
     }
 
-    // MARK: - Layouts
-
-    /// Send-sheet layout: the source stays pinned as the top card; the rows
-    /// below pick the destination among the other two balances. No swap
-    /// badge — the source is fixed by the tapped balance row.
-    @ViewBuilder
+    /// Send-sheet layout: the source is the fixed top row — the balance row
+    /// that opened this sheet chose it — and the bottom row picks the
+    /// destination among the other two balances. `onSwap: nil` leaves the
+    /// static arrow on the seam: with the source pinned there is nothing to
+    /// exchange, only a direction to state.
     private func sendCards(source: ChainNetwork) -> some View {
-        VStack(spacing: 12) {
-            pinnedCard(source, caption: NSLocalizedString("From", comment: ""))
-            selectionGroup(
-                caption: NSLocalizedString("To", comment: ""),
-                networks: availableTargets(for: source),
-                selected: viewModel.resolvedSendTarget,
-                onSelect: viewModel.selectSendTarget)
-        }
+        DashUIKit.ConverterCard(
+            fromItem: converterItem(source),
+            toItem: converterItem(
+                viewModel.resolvedSendTarget,
+                onTap: { picker = .destination }),
+            onSwap: nil)
     }
 
-    /// Receive-sheet layout: the destination stays pinned as the bottom
-    /// card; the rows above pick the source among the other two balances.
-    /// No swap badge — the destination is fixed by the tapped balance row.
-    @ViewBuilder
+    /// Receive-sheet layout: the mirror — the destination is the fixed bottom
+    /// row and the top one picks the source.
     private func receiveCards(target: ChainNetwork) -> some View {
-        VStack(spacing: 12) {
-            selectionGroup(
-                caption: NSLocalizedString("From", comment: ""),
-                networks: availableSources(for: target),
-                selected: viewModel.resolvedReceiveSource,
-                onSelect: viewModel.selectReceiveSource)
-
-            pinnedCard(target, caption: NSLocalizedString("To", comment: ""))
-        }
+        DashUIKit.ConverterCard(
+            fromItem: converterItem(
+                viewModel.resolvedReceiveSource,
+                onTap: { picker = .source }),
+            toItem: converterItem(target),
+            onSwap: nil)
     }
 
-    /// Standalone screen: the design system's `ConverterCard`, the same pair of
-    /// rows the Coinbase transfer screen uses, with the swap badge on the seam.
-    /// Both rows are tappable — each opens the picker for its own side, over
-    /// every endpoint that side accepts. The badge goes static (`onSwap: nil`)
-    /// only for the one pair whose reverse does not exist; the view model
-    /// owns that judgement.
+    /// Standalone screen: both rows are tappable — each opens the picker for
+    /// its own side, over every endpoint that side accepts. The badge goes
+    /// static (`onSwap: nil`) only for the one pair whose reverse does not
+    /// exist; the view model owns that judgement.
     private var swappableCards: some View {
         DashUIKit.ConverterCard(
             fromItem: fromItem,
@@ -98,15 +112,26 @@ struct TransferEndpointCards: View {
             onSwap: viewModel.canSwapEndpoints
                 ? { viewModel.swapStandaloneEndpoints() }
                 : nil)
-            // No detent and no drag indicator here: the picker is a
-            // `BottomSheet.selfSizing`, which sets its own height detent and
-            // draws its own grabber.
-            .sheet(item: $picker) { side in
-                TransferEndpointPicker(
-                    viewModel: viewModel,
-                    side: side,
-                    onPicked: { picker = nil })
-            }
+    }
+
+    /// What the picker offers, which is the one thing the three layouts
+    /// disagree on. A pinned sheet reaches no identity and never lists the
+    /// endpoint it has fixed, so it picks a plain balance through its own
+    /// side's setter.
+    private var pickerOptions: TransferEndpointPicker.Options {
+        if let source = sendFrom {
+            return .balances(
+                availableTargets(for: source),
+                selected: viewModel.resolvedSendTarget,
+                select: viewModel.selectSendTarget)
+        }
+        if let target = receiveInto {
+            return .balances(
+                availableSources(for: target),
+                selected: viewModel.resolvedReceiveSource,
+                select: viewModel.selectReceiveSource)
+        }
+        return .standalone
     }
 
     private var fromItem: DashUIKit.ConverterCardItem {
@@ -156,41 +181,6 @@ struct TransferEndpointCards: View {
             title: display.title,
             dashBalance: display.dashBalance,
             onTap: onTap)
-    }
-
-    // MARK: - Cards
-
-    /// Non-tappable pinned endpoint card (the fixed From of the send sheet).
-    private func pinnedCard(_ network: ChainNetwork, caption: String) -> some View {
-        let display = TransferEndpointDisplay.network(network, in: viewModel)
-        return TransferSourceRow(
-            iconSystemName: display.iconSystemName,
-            caption: caption,
-            title: display.title,
-            balanceTrailing: TransferSourceRow.dashBalanceTrailing(display.balanceText),
-            selected: false,
-            showsRadio: false,
-            action: {})
-    }
-
-    private func selectionGroup(
-        caption: String,
-        networks: [ChainNetwork],
-        selected: ChainNetwork,
-        onSelect: @escaping (ChainNetwork) -> Void
-    ) -> some View {
-        VStack(spacing: 8) {
-            ForEach(networks, id: \.self) { network in
-                let display = TransferEndpointDisplay.network(network, in: viewModel)
-                TransferSourceRow(
-                    iconSystemName: display.iconSystemName,
-                    caption: caption,
-                    title: display.title,
-                    balanceTrailing: TransferSourceRow.dashBalanceTrailing(display.balanceText),
-                    selected: selected == network,
-                    action: { onSelect(network) })
-            }
-        }
     }
 
     // MARK: - Helpers

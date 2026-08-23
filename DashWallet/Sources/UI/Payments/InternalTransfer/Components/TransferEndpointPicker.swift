@@ -50,9 +50,27 @@ enum TransferEndpointSide: Int, Identifiable {
 /// endpoint on both sides, but with the identity already on the FROM side the
 /// TO side narrows to what a single state transition reaches.
 struct TransferEndpointPicker: View {
+
+    /// Which endpoints the sheet offers, and how a pick is applied.
+    ///
+    /// The two cases are not a style choice: the standalone screen picks a
+    /// `TransferSource` / `TransferDestination` (identity included) through the
+    /// standalone setters, while a pinned sheet picks a plain balance through
+    /// the setter for its own side. One list, two vocabularies.
+    enum Options {
+        /// The standalone screen: every endpoint the side accepts.
+        case standalone
+        /// A pinned sheet (`sendFrom` / `receiveInto`): the balances that
+        /// remain once the fixed endpoint is out. No identity — neither pinned
+        /// variant can reach one.
+        case balances([ChainNetwork], selected: ChainNetwork, select: (ChainNetwork) -> Void)
+    }
+
     @ObservedObject var viewModel: InternalTransferViewModel
 
     let side: TransferEndpointSide
+
+    var options: Options = .standalone
 
     /// Called after a pick has been applied, for the host to dismiss. Every
     /// pick applies immediately — there is no confirm step in this sheet.
@@ -77,24 +95,31 @@ struct TransferEndpointPicker: View {
         }
     }
 
-    @ViewBuilder
     private var rows: some View {
-        switch side {
-        case .source:
-            VStack(spacing: 8) {
-                ForEach(sourceOptions, id: \.self) { source in
-                    sourceRow(source)
+        VStack(spacing: 8) {
+            switch options {
+            case .standalone:
+                switch side {
+                case .source:
+                    ForEach(sourceOptions, id: \.self) { source in
+                        sourceRow(source)
+                    }
+                case .destination:
+                    ForEach(destinationOptions, id: \.self) { destination in
+                        destinationRow(destination)
+                    }
+                }
+
+            case let .balances(networks, selected, select):
+                ForEach(networks, id: \.self) { network in
+                    row(
+                        display: display(network: network),
+                        selected: network == selected,
+                        action: { select(network) })
                 }
             }
-            .modifier(MenuViewModifier())
-        case .destination:
-            VStack(spacing: 8) {
-                ForEach(destinationOptions, id: \.self) { destination in
-                    destinationRow(destination)
-                }
-            }
-            .modifier(MenuViewModifier())
         }
+        .modifier(MenuViewModifier())
     }
 
     // MARK: - Options
@@ -194,9 +219,10 @@ private extension TransferDestination {
 @MainActor
 private func endpointPickerSample(
     _ side: TransferEndpointSide,
-    viewModel: InternalTransferViewModel
+    viewModel: InternalTransferViewModel,
+    options: TransferEndpointPicker.Options = .standalone
 ) -> some View {
-    TransferEndpointPicker(viewModel: viewModel, side: side, onPicked: {})
+    TransferEndpointPicker(viewModel: viewModel, side: side, options: options, onPicked: {})
 }
 
 /// Four rows: the three balances plus Identity, with the current source
@@ -230,6 +256,16 @@ private func endpointPickerSample(
             coreDuffs: 0,
             platformCredits: 0,
             shieldedCredits: 0))
+}
+
+/// The pinned send sheet's To list: two balances, no identity row, and the
+/// pinned From balance left out entirely.
+@available(iOS 17, *)
+#Preview("To · pinned send sheet") {
+    endpointPickerSample(
+        .destination,
+        viewModel: .makeForPreview(source: .core, target: .shielded, sendFrom: .core),
+        options: .balances([.platform, .shielded], selected: .shielded, select: { _ in }))
 }
 
 @available(iOS 17, *)

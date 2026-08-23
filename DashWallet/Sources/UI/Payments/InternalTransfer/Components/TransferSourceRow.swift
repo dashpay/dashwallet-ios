@@ -19,26 +19,21 @@ import SwiftUI
 import DashUIKit
 
 /// Everything the screen needs to draw one endpoint — the single source of
-/// truth behind the cards, the pinned rows, the send/receive picker groups
-/// and both endpoint picker sheets.
+/// truth behind every `ConverterCard` row and both endpoint picker sheets.
 ///
-/// Two icons and two balances because the consumers genuinely differ, not out
-/// of indecision: `TransferSourceRow` puts an SF Symbol inside a tinted circle
-/// and takes a preformatted string, while `MenuItem` / `ConverterCard` draw a
-/// flat 30pt catalog asset and format the duffs themselves.
+/// One icon and one balance, because every consumer is now a design-system
+/// component: `MenuItem` and `ConverterCard` both draw a flat 30pt catalog
+/// asset and format the duffs themselves. The second pair of fields existed
+/// for `TransferSourceRow`, which drew an SF Symbol in a tinted circle and
+/// took a preformatted string; nothing in this flow uses that row any more.
 ///
 /// `@MainActor` because every balance it reads is main-actor state on the
 /// view model.
 @MainActor
 struct TransferEndpointDisplay {
-    /// For `TransferSourceRow`, which tints it inside a circle.
-    let iconSystemName: String
-    /// For `MenuItem` / `ConverterCard`, which draw it flat at 30pt.
     let icon: DashIconSource
     let title: String
-    /// Preformatted, for `TransferSourceRow`.
-    let balanceText: String
-    /// Duffs, for the components that format the amount themselves.
+    /// Duffs — every consumer formats the amount itself.
     let dashBalance: Int64
 
     static func network(
@@ -48,35 +43,27 @@ struct TransferEndpointDisplay {
         switch network {
         case .core:
             return .init(
-                iconSystemName: "d.circle.fill",
                 icon: DashIcon.Menu.dashLogoSquare.source,
                 title: network.balanceName,
-                balanceText: viewModel.coreBalanceFormatted,
                 dashBalance: Int64(viewModel.coreBalanceDuffs))
         case .platform:
             // Platform and Shielded are held in credits — 1000 per duff.
             return .init(
-                iconSystemName: "creditcard.fill",
                 icon: DashIcon.Features.platform.source,
                 title: network.balanceName,
-                balanceText: viewModel.platformCreditsFormatted,
                 dashBalance: Int64(viewModel.platformCredits / 1000))
         case .shielded:
             return .init(
-                iconSystemName: "shield.fill",
                 icon: DashIcon.Features.shield.source,
                 title: network.balanceName,
-                balanceText: viewModel.shieldedBalanceFormatted,
                 dashBalance: Int64(viewModel.shieldedBalance / 1000))
         }
     }
 
     static func identity(in viewModel: InternalTransferViewModel) -> TransferEndpointDisplay {
         .init(
-            iconSystemName: "person.crop.circle.fill",
             icon: DashIcon.Features.identity.source,
             title: InternalTransferViewModel.identityBalanceName,
-            balanceText: viewModel.identityBalanceFormatted,
             dashBalance: Int64(viewModel.identityBalanceCredits / 1000))
     }
 }
