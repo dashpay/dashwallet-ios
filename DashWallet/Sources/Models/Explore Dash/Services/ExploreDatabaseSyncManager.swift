@@ -46,12 +46,16 @@ public class ExploreDatabaseSyncManager {
 
     private let storage = Storage.storage()
 
-    /// Resolved on every use rather than cached: the network can change inside a session, and a
+    /// The archive for `network`. Never cached: the network can change inside a session, and a
     /// stale reference would download the previous network's archive while the bookkeeping below
     /// stamps it with the current network — leaving the wrong merchants installed and the marker
     /// claiming otherwise, so the mismatch check never fires again.
-    private var storageRef: StorageReference {
-        let path = WalletEnvironment.isMainnet
+    ///
+    /// Resolved once per sync attempt and then carried through metadata *and* download: resolving
+    /// it twice would let a switch land between the two, pairing one network's size/checksum with
+    /// the other network's bytes.
+    private func storageReference(for network: String) -> StorageReference {
+        let path = network == mainnetName
             ? "gs://dash-wallet-firebase.appspot.com/explore/explore-v4.db"
             : "gs://dash-wallet-firebase.appspot.com/explore/explore-v4-testnet.db"
         return storage.reference(forURL: path)
@@ -59,6 +63,10 @@ public class ExploreDatabaseSyncManager {
 
     private var timer: Timer!
     private var networkObserver: NSObjectProtocol?
+    /// A network change that arrived while an attempt was in flight. That attempt is pinned to
+    /// the previous network, so dropping the request would leave its merchants installed until
+    /// the next launch — the exact failure this observer exists to prevent.
+    private var pendingResync = false
 
     private var databaseVersion: Double = 0
     private var lastSync: Double = 0
@@ -66,16 +74,32 @@ public class ExploreDatabaseSyncManager {
     var syncState: State
     var lastServerUpdateDate: Date { Date(timeIntervalSince1970: exploreDatabaseLastVersion) }
 
-    // Network-specific name for the downloaded archive only — the database itself always unzips to
-    // the single `explore.db`, so see `installedDatabaseNetwork` for the mainnet/testnet conflict.
-    private var networkSpecificFileName: String {
-        let isMainnet = WalletEnvironment.isMainnet
-        return isMainnet ? "explore-mainnet" : "explore-testnet"
+    private let mainnetName = "mainnet"
+
+    /// Name of the downloaded archive for `network` — the database itself always unzips to the
+    /// single `explore.db`, so see `installedDatabaseNetwork` for the mainnet/testnet conflict.
+    private func archiveFileName(for network: String) -> String {
+        network == mainnetName ? "explore-mainnet" : "explore-testnet"
+    }
+
+    private func versionKey(for network: String) -> String {
+        network == mainnetName ? "kExploreDatabaseLastVersion_Mainnet" : "kExploreDatabaseLastVersion_Testnet"
+    }
+
+    private func syncTimestampKey(for network: String) -> String {
+        network == mainnetName
+            ? "kExploreDatabaseLastSyncTimestampKey_Mainnet"
+            : "kExploreDatabaseLastSyncTimestampKey_Testnet"
+    }
+
+    private func installedVersion(for network: String) -> TimeInterval {
+        let value = UserDefaults.standard.double(forKey: versionKey(for: network))
+        return value == 0 ? bundleExploreDatabaseSyncTime : value
     }
 
     // Network the sync bookkeeping expects, from the SDK (DWEnvironment is frozen post-M6).
     private var currentNetworkName: String {
-        WalletEnvironment.isMainnet ? "mainnet" : "testnet"
+        WalletEnvironment.isMainnet ? mainnetName : "testnet"
     }
 
     // Network whose data currently sits in the shared explore.db (see comment on
@@ -90,16 +114,10 @@ public class ExploreDatabaseSyncManager {
     }
 
     public func start() {
-        syncIfNeeded()
-
-        // Try to sync every 24h
-        timer = Timer.scheduledTimer(withTimeInterval: 60*60*24, repeats: true) { [weak self] _ in
-            self?.syncIfNeeded()
-        }
-
         // Both networks share one `explore.db`, so a chain switch leaves the other network's
         // merchants on screen. Without this the mismatch is only noticed at the next launch (or
         // 24 h later), which is how a testnet wallet ended up browsing the mainnet catalogue.
+        // Registered before the first sync so a switch during startup is queued, not missed.
         networkObserver = NotificationCenter.default.addObserver(
             forName: NSNotification.Name.DWCurrentNetworkDidChange,
             object: nil,
@@ -107,56 +125,83 @@ public class ExploreDatabaseSyncManager {
         ) { [weak self] _ in
             self?.syncIfNeeded()
         }
+
+        syncIfNeeded()
+
+        // Try to sync every 24h
+        timer = Timer.scheduledTimer(withTimeInterval: 60*60*24, repeats: true) { [weak self] _ in
+            self?.syncIfNeeded()
+        }
+    }
+
+    /// End an attempt: publish its outcome and run the sync that was requested while it was busy.
+    private func settle(_ state: State) {
+        syncState = state
+
+        guard pendingResync else { return }
+        pendingResync = false
+        syncIfNeeded()
     }
 
     private func syncIfNeeded() {
-        // A network switch can land while the 24 h timer's (or launch's) download is still
-        // running; a second pass would race it over the same file on disk.
-        if case .syncing = syncState { return }
+        // An attempt already owns the file on disk and is pinned to the network it started on.
+        // Queue the request rather than racing it — `settle` runs it once this one finishes.
+        switch syncState {
+        case .fetchingInfo, .syncing:
+            pendingResync = true
+            return
+        default:
+            break
+        }
+
+        // Pinned for the whole attempt: metadata, bytes and bookkeeping must all describe the
+        // same network even if the user switches chains halfway through.
+        let network = currentNetworkName
+        let reference = storageReference(for: network)
 
         syncState = .fetchingInfo
 
-        storageRef.getMetadata { [weak self] metadata, _ in
+        reference.getMetadata { [weak self] metadata, _ in
             guard let wSelf = self else { return }
 
             guard let metadata else {
-                wSelf.syncState = .error(Date(), nil)
+                wSelf.settle(.error(Date(), nil))
                 return
             }
 
             guard let timestamp = metadata.customMetadata?[timestampKey],
                   let timeIntervalMillesecond = TimeInterval(timestamp) else {
-                wSelf.syncState = .error(Date(), nil)
+                wSelf.settle(.error(Date(), nil))
                 return
             }
 
             let timeInterval = timeIntervalMillesecond/1000
-            let installedVersion = wSelf.exploreDatabaseLastVersion
+            let installedVersion = wSelf.installedVersion(for: network)
             let localDatabaseExists = wSelf.hasLocalExploreDatabase()
 
             // If local DB is missing (e.g. removed due to schema mismatch), force download
             // regardless of saved version timestamp to avoid falling back to in-memory DB.
             if !localDatabaseExists {
                 DWLogger.log("ExploreDash: local explore.db missing, forcing cloud database download")
-                wSelf.downloadDatabase(metadata: metadata)
+                wSelf.downloadDatabase(metadata: metadata, from: reference, network: network)
                 return
             }
 
             // The file on disk may belong to the other network (the chain was switched since it was
             // downloaded). Its version is tracked under that network's key, so the check below would
             // read as up to date and leave us serving the wrong network's merchants.
-            if wSelf.installedDatabaseNetwork != wSelf.currentNetworkName {
-                DWLogger.log("ExploreDash: explore.db belongs to \(wSelf.installedDatabaseNetwork ?? "an unknown network"), current network is \(wSelf.currentNetworkName) — forcing download")
-                wSelf.downloadDatabase(metadata: metadata)
+            if wSelf.installedDatabaseNetwork != network {
+                DWLogger.log("ExploreDash: explore.db belongs to \(wSelf.installedDatabaseNetwork ?? "an unknown network"), current network is \(network) — forcing download")
+                wSelf.downloadDatabase(metadata: metadata, from: reference, network: network)
                 return
             }
 
             guard timeInterval > installedVersion else {
-                wSelf.syncState = .synced(Date())
+                wSelf.settle(.synced(Date()))
                 return
             }
 
-            wSelf.downloadDatabase(metadata: metadata)
+            wSelf.downloadDatabase(metadata: metadata, from: reference, network: network)
         }
     }
 
@@ -173,23 +218,23 @@ public class ExploreDatabaseSyncManager {
 }
 
 extension ExploreDatabaseSyncManager {
-    private func downloadDatabase(metadata: StorageMetadata) {
+    private func downloadDatabase(metadata: StorageMetadata, from reference: StorageReference, network: String) {
         guard let timestamp = metadata.customMetadata?[timestampKey],
               let checksum = metadata.customMetadata?[checksumKey],
               let timeIntervalMillesecond = TimeInterval(timestamp) else {
-            syncState = .error(Date(), nil)
+            settle(.error(Date(), nil))
             return
         }
 
         syncState = .syncing
-        let urlToSave = getDocumentsDirectory().appendingPathComponent("\(networkSpecificFileName)-\(timestamp).zip")
+        let urlToSave = getDocumentsDirectory().appendingPathComponent("\(archiveFileName(for: network))-\(timestamp).zip")
 
-        storageRef.getData(maxSize: metadata.size) { [weak self] data, error in
+        reference.getData(maxSize: metadata.size) { [weak self] data, error in
             let date = Date()
             let now = date.timeIntervalSince1970
 
             if let e = error {
-                self?.syncState = .error(date, e)
+                self?.settle(.error(date, e))
             } else {
                 try? data?.write(to: urlToSave)
                 
@@ -205,16 +250,22 @@ extension ExploreDatabaseSyncManager {
                         self?.removeDatabaseSidecars()
 
                         try await self?.unzipFile(at: urlToSave.path, password: checksum)
-                        self?.exploreDatabaseLastSyncTimestamp = now
-                        self?.exploreDatabaseLastVersion = timeIntervalMillesecond / 1000
-                        self?.installedDatabaseNetwork = self?.currentNetworkName
-                        self?.syncState = .synced(date)
+                        // Stamped with the network this attempt downloaded, never the one the
+                        // user may have switched to meanwhile — otherwise the marker certifies
+                        // the wrong archive and the mismatch check agrees with itself forever.
+                        if let wSelf = self {
+                            UserDefaults.standard.setValue(now, forKey: wSelf.syncTimestampKey(for: network))
+                            UserDefaults.standard.setValue(timeIntervalMillesecond / 1000,
+                                                           forKey: wSelf.versionKey(for: network))
+                            wSelf.installedDatabaseNetwork = network
+                        }
+                        await MainActor.run { [weak self] in self?.settle(.synced(date)) }
 
                         NotificationCenter.default.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
                         try? FileManager.default.removeItem(at: URL(fileURLWithPath: urlToSave.path))
                     } catch {
                         DWLogger.log("ExploreDash: failed to open DB archive: \(String(describing: error))")
-                        self?.syncState = .error(Date(), error)
+                        await MainActor.run { [weak self] in self?.settle(.error(Date(), error)) }
                     }
                 }
             }

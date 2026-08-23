@@ -323,8 +323,14 @@ final class BIP70PaymentService {
         }
 
         // 6. Broadcast. From this point the guard is never reset — see the invariant above.
+        // Skipping the verdict is only defensible because the merchant's acknowledgement already
+        // committed the spend. An unsigned request without a `payment_url` never posts a Payment,
+        // so nothing has committed anything and the broadcast outcome is the only signal there is.
+        // Reaching here with a payment URL means the ACK decoded — a failure would have thrown.
+        let acknowledged = confirmation.paymentURL != nil
+
         let txidHexDisplay: String
-        if awaitAcceptance {
+        if awaitAcceptance || !acknowledged {
             txidHexDisplay = try await wallet.broadcast(prepared)
         } else {
             // The merchant already acknowledged the signed bytes, so the spend is committed

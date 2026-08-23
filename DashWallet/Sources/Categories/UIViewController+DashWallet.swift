@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Intents
 import UIKit
 import MessageUI
 import SwiftDashSDK
@@ -199,9 +200,10 @@ extension UIViewController {
 }
 
 /// Carries the support destination into the share sheet used when `MFMailComposeViewController`
-/// is unavailable. `UIActivityViewController` exposes no recipient API, so the address travels
-/// as a `mailto:` URL for mail activities — which read the recipient and subject from it — and
-/// as plain text for every other handler, where it stays visible in the composed message.
+/// is unavailable. Recipients travel three ways, because no single one reaches every handler:
+/// `activityViewControllerShareRecipients(_:)` for extensions that read recipient metadata, a
+/// `mailto:` URL for mail activities that parse it, and plain text for everything else, where the
+/// address at least stays visible in the composed message.
 final class SupportRecipientActivityItem: NSObject, UIActivityItemSource {
     private let email: String
     private let subject: String
@@ -237,5 +239,19 @@ final class SupportRecipientActivityItem: NSObject, UIActivityItemSource {
         subjectForActivityType activityType: UIActivity.ActivityType?
     ) -> String {
         subject
+    }
+
+    /// Pre-fills the recipient in handlers that support it. The system calls this on the main
+    /// thread while presenting, so it stays a plain value construction.
+    func activityViewControllerShareRecipients(
+        _ activityViewController: UIActivityViewController
+    ) -> [INPerson] {
+        let handle = INPersonHandle(value: email, type: .emailAddress)
+        return [INPerson(personHandle: handle,
+                         nameComponents: nil,
+                         displayName: email,
+                         image: nil,
+                         contactIdentifier: nil,
+                         customIdentifier: nil)]
     }
 }
