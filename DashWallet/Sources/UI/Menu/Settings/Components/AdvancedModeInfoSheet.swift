@@ -43,7 +43,22 @@ struct AdvancedModeInfoSheet: View {
                 .padding(.bottom, 20)
 
                 VStack(alignment: .leading, spacing: 16) {
-
+                    SheetFeature(
+                        title: NSLocalizedString("Shield", comment: "Settings: advanced mode"),
+                        description: NSLocalizedString("Move Dash into a private, encrypted balance that can't be traced.", comment: "Settings: advanced mode"),
+                        icon: .custom("feature-shield-purple", bundle: .dashUIKit)
+                    )
+                    SheetFeature(
+                        title: NSLocalizedString("Identity", comment: "Settings: advanced mode"),
+                        description: NSLocalizedString("Fund your identity to create a username and use Dash Platform", comment: "Settings: advanced mode"),
+                        icon: .custom("feature-identity", bundle: .dashUIKit),
+                        iconColor: Color.dash.purple
+                    )
+                    SheetFeature(
+                        title: NSLocalizedString("Platform", comment: "Settings: advanced mode"),
+                        description: NSLocalizedString("Keep credits to pay for on-chain actions and Platform apps", comment: "Settings: advanced mode"),
+                        icon: .custom("feature-platform-purple", bundle: .dashUIKit)
+                    )
                 }
                 .padding(.top, 10)
             }
