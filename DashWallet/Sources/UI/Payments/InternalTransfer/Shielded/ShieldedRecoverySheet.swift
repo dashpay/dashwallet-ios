@@ -3,6 +3,7 @@
 //  DashWallet
 //
 
+import Combine
 import SwiftUI
 import DashUIKit
 import SwiftDashSDK
@@ -15,20 +16,137 @@ import SwiftDashSDK
 /// (re-auth → Orchard proof → ShieldFromAssetLock ST → consume), rather than
 /// building a second lock.
 ///
+// MARK: - AssetLockStatus
+
+/// `PersistentAssetLock.statusRaw`, named.
+///
+/// The recovery decision turns on these numbers, and spelling them as literals
+/// where that decision is made hid what a `4` or a `1...3` meant. The Rust side
+/// is the authority (`rs-platform-wallet-ffi/src/asset_lock_persistence.rs`);
+/// this mirrors it for the one reader that has to branch on it.
+///
+/// TODO(asset-lock-status): `TxDetailModel.lockStatusText` still maps the same
+/// raw values by hand — it should read this rather than repeat it.
+enum AssetLockStatus: Int {
+    case built = 0
+    case broadcast = 1
+    case instantSendLocked = 2
+    case chainLocked = 3
+    /// The shield transition consumed the lock — the transfer is finished.
+    case consumed = 4
+    /// Recovered from chain after a restore: final on Core, but whether it
+    /// completed on Platform cannot be authenticated.
+    case recoveredFromChain = 5
+}
+
+// MARK: - ShieldedRecoveryViewModel
+
+/// Everything the recovery sheet does, kept out of the sheet.
+///
+/// It holds the coordinator, asks the lookup what the lock's live status is,
+/// and runs the resume. The view reads `phase` and calls `finish()`.
+///
+/// TODO(shielded-recovery-service): the resume is still tied to this object's
+/// lifetime, and this object is tied to the sheet's. Dismissal is refused while
+/// a resume is in flight, which is what keeps it alive today, but the ownership
+/// `InternalTransferRunner` documents — a service the work outlives its
+/// presenter through — is the shape this should end up in.
+@MainActor
+final class ShieldedRecoveryViewModel: ObservableObject {
+
+    /// The coordinator's phase, republished: a nested `ObservableObject` does
+    /// not announce through its owner.
+    @Published private(set) var phase: ShieldedTransferCoordinator.Phase = .idle
+
+    /// "Finish now" found the lock already consumed — a background sync landed
+    /// the shield after the history row's snapshot was taken. Shows success
+    /// rather than paying for a proof that cannot land.
+    @Published private(set) var alreadyComplete = false
+
+    private let outPoint: (txidWire: Data, vout: UInt32)?
+    private let coordinator = ShieldedTransferCoordinator()
+    private var cancellables = Set<AnyCancellable>()
+
+    init(transaction: Transaction) {
+        outPoint = transaction.shieldedOutPoint.map { ($0.txidWire, $0.vout) }
+
+        coordinator.$phase
+            .receive(on: RunLoop.main)
+            .sink { [weak self] in self?.phase = $0 }
+            .store(in: &cancellables)
+    }
+
+    var isInFlight: Bool {
+        switch phase {
+        case .signing, .locking, .proving, .broadcasting: return true
+        default: return false
+        }
+    }
+
+    /// Resume the transfer, unless it turns out to be finished already.
+    ///
+    /// The live status is re-read first because the resume FFI builds the whole
+    /// Orchard proof before Platform reports the lock consumed — without this a
+    /// transfer that completed in the background would dead-end after ~30s of
+    /// work. Returns false when there is no outpoint to resume, which the sheet
+    /// answers by closing.
+    @discardableResult
+    func finish() -> Bool {
+        guard let outPoint else { return false }
+
+        Task { @MainActor in
+            ShieldedTxLookup.shared.refresh()
+
+            if Self.status(ofOutPoint: outPoint.txidWire) == .consumed {
+                alreadyComplete = true
+                return
+            }
+
+            // Every other status resumes: broadcast through chain-locked is
+            // still pending, `recoveredFromChain` is Core-final with the
+            // Platform side unknown, and a missing status means the refresh
+            // told us nothing. A local tombstone and a remote already-consumed
+            // report both land on unconfirmed rather than false success.
+            await coordinator.resumeAssetLock(
+                outPointTxidWire: outPoint.txidWire,
+                outPointVout: outPoint.vout)
+
+            // The shield consumed the lock; refresh so the history row flips
+            // pending → completed without waiting for the next sync pass.
+            if case .success = coordinator.phase {
+                ShieldedTxLookup.shared.refresh()
+            }
+        }
+        return true
+    }
+
+    /// The lookup is keyed by display-order txid; an outpoint carries wire
+    /// order, which is the reverse.
+    private static func status(ofOutPoint txidWire: Data) -> AssetLockStatus? {
+        let displayTxid = txidWire.reversed().map { String(format: "%02x", $0) }.joined()
+        guard let raw = ShieldedTxLookup.shared.info(forTxidHex: displayTxid)?.statusRaw else {
+            return nil
+        }
+        return AssetLockStatus(rawValue: raw)
+    }
+}
+
 /// Presented from the home tx list when the user taps a row flagged
-/// `Transaction.isPendingShieldedTransfer`. Owns its own coordinator so it is
-/// independent of any live confirm-sheet flow.
+/// `Transaction.isPendingShieldedTransfer`. Drawing only — the coordinator, the
+/// status lookup and the resume are `ShieldedRecoveryViewModel`'s, which keeps
+/// it independent of any live confirm-sheet flow.
 struct ShieldedRecoverySheet: View {
 
     let transaction: Transaction
     var onDismiss: () -> Void
 
-    @StateObject private var coordinator = ShieldedTransferCoordinator()
+    @StateObject private var viewModel: ShieldedRecoveryViewModel
 
-    /// Set when "Finish now" finds the lock already consumed (a background sync
-    /// landed the shield since the history row's snapshot was captured) — shows
-    /// the success state immediately instead of paying for a doomed ~30s proof.
-    @State private var alreadyComplete = false
+    init(transaction: Transaction, onDismiss: @escaping () -> Void) {
+        self.transaction = transaction
+        self.onDismiss = onDismiss
+        _viewModel = StateObject(wrappedValue: ShieldedRecoveryViewModel(transaction: transaction))
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -41,7 +159,7 @@ struct ShieldedRecoverySheet: View {
                 .foregroundColor(.dash.primaryText)
                 .padding(.top, 20)
 
-            switch coordinator.phase {
+            switch viewModel.phase {
             case .success:
                 successBody
             case .submittedUnconfirmed:
@@ -49,7 +167,7 @@ struct ShieldedRecoverySheet: View {
             case .signing, .locking, .proving, .broadcasting:
                 inFlightBody
             default:
-                if alreadyComplete {
+                if viewModel.alreadyComplete {
                     successBody
                 } else {
                     idleOrFailedBody
@@ -57,16 +175,7 @@ struct ShieldedRecoverySheet: View {
             }
         }
         .background(Color.dash.primaryBackground)
-        .interactiveDismissDisabled(isInFlight)
-    }
-
-    private var isInFlight: Bool {
-        switch coordinator.phase {
-        case .signing, .locking, .proving, .broadcasting:
-            return true
-        default:
-            return false
-        }
+        .interactiveDismissDisabled(viewModel.isInFlight)
     }
 
     // MARK: - Bodies
@@ -84,7 +193,7 @@ struct ShieldedRecoverySheet: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
 
-            if case let .failed(message) = coordinator.phase {
+            if case let .failed(message) = viewModel.phase {
                 Text(message)
                     .font(.system(size: 13))
                     .foregroundColor(.red)
@@ -114,7 +223,7 @@ struct ShieldedRecoverySheet: View {
             // skips `.locking` (the lock is already on-chain), so only
             // Authorizing → Generating proof → Broadcasting are shown.
             ShieldedTransferStepList(
-                currentPhase: coordinator.phase,
+                currentPhase: viewModel.phase,
                 steps: [
                     .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing),
                     .init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving),
@@ -207,39 +316,11 @@ struct ShieldedRecoverySheet: View {
         .cornerRadius(12)
     }
 
-    // MARK: - Action
-
     private func finish() {
-        guard let op = transaction.shieldedOutPoint else {
+        // No outpoint means nothing to resume — the row that opened this sheet
+        // has no tracked lock behind it.
+        if !viewModel.finish() {
             onDismiss()
-            return
-        }
-        Task { @MainActor in
-            // Re-check live status before paying for a ~30s Orchard proof: a
-            // background shielded sync may have consumed this lock since the
-            // history row's snapshot was captured. The resume FFI builds the
-            // full proof before Platform reports "already consumed", so without
-            // this guard a just-completed transfer would dead-end after ~30s.
-            ShieldedTxLookup.shared.refresh()
-            let displayTxid = op.txidWire.reversed().map { String(format: "%02x", $0) }.joined()
-            let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: displayTxid)?.statusRaw
-            if statusRaw == 4 {
-                // Already consumed by a background sync since the row snapshot was
-                // captured → it's done; show success without a doomed ~30s resume.
-                alreadyComplete = true
-                return
-            }
-            // statusRaw 1...3 (still pending), 5 (Core-final — consumption
-            // unknown), or nil/0 (status unavailable, e.g. a failed refresh):
-            // attempt the resume. Both a local Consumed tombstone and a remote
-            // already-consumed report map to unconfirmed rather than false success.
-            await coordinator.resumeAssetLock(outPointTxidWire: op.txidWire, outPointVout: op.vout)
-            // On success the shield ST consumed the lock; refresh the snapshot so
-            // the history row flips pending → completed even before the next
-            // scheduled shielded sync pass lands.
-            if case .success = coordinator.phase {
-                ShieldedTxLookup.shared.refresh()
-            }
         }
     }
 }
