@@ -45,9 +45,20 @@ public class ExploreDatabaseSyncManager {
     static let databaseWillBeUpdatedNotification = NSNotification.Name(rawValue: "databaseWillBeUpdatedNotification")
 
     private let storage = Storage.storage()
-    private let storageRef: StorageReference
+
+    /// Resolved on every use rather than cached: the network can change inside a session, and a
+    /// stale reference would download the previous network's archive while the bookkeeping below
+    /// stamps it with the current network — leaving the wrong merchants installed and the marker
+    /// claiming otherwise, so the mismatch check never fires again.
+    private var storageRef: StorageReference {
+        let path = WalletEnvironment.isMainnet
+            ? "gs://dash-wallet-firebase.appspot.com/explore/explore-v4.db"
+            : "gs://dash-wallet-firebase.appspot.com/explore/explore-v4-testnet.db"
+        return storage.reference(forURL: path)
+    }
 
     private var timer: Timer!
+    private var networkObserver: NSObjectProtocol?
 
     private var databaseVersion: Double = 0
     private var lastSync: Double = 0
@@ -76,17 +87,6 @@ public class ExploreDatabaseSyncManager {
 
     init() {
         syncState = .inititialing
-
-        // Initialize storageRef with computed database path
-        let databasePath: String
-        let isMainnet = WalletEnvironment.isMainnet
-        if isMainnet {
-            databasePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v4.db"
-        } else {
-            databasePath = "gs://dash-wallet-firebase.appspot.com/explore/explore-v4-testnet.db"
-        }
-
-        storageRef = storage.reference(forURL: databasePath)
     }
 
     public func start() {
@@ -96,9 +96,24 @@ public class ExploreDatabaseSyncManager {
         timer = Timer.scheduledTimer(withTimeInterval: 60*60*24, repeats: true) { [weak self] _ in
             self?.syncIfNeeded()
         }
+
+        // Both networks share one `explore.db`, so a chain switch leaves the other network's
+        // merchants on screen. Without this the mismatch is only noticed at the next launch (or
+        // 24 h later), which is how a testnet wallet ended up browsing the mainnet catalogue.
+        networkObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.DWCurrentNetworkDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.syncIfNeeded()
+        }
     }
 
     private func syncIfNeeded() {
+        // A network switch can land while the 24 h timer's (or launch's) download is still
+        // running; a second pass would race it over the same file on disk.
+        if case .syncing = syncState { return }
+
         syncState = .fetchingInfo
 
         storageRef.getMetadata { [weak self] metadata, _ in
@@ -148,6 +163,10 @@ public class ExploreDatabaseSyncManager {
     deinit {
         timer.invalidate()
         timer = nil
+
+        if let networkObserver {
+            NotificationCenter.default.removeObserver(networkObserver)
+        }
     }
 
     static let share = ExploreDatabaseSyncManager()
