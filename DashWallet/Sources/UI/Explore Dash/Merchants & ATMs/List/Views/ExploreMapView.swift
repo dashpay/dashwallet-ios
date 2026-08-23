@@ -172,8 +172,18 @@ class ExploreMapView: UIView {
     // Search radius in meters - defaults to 32km
     var searchRadius: Double = kDefaultRadius
 
+    /// The coordinate in the middle of the portion of the map NOT covered by the list
+    /// sheet (`contentInset.bottom`). The frame center is under the sheet whenever the
+    /// sheet is open, so search areas and reverse-geocoded titles anchor here instead.
+    /// Falls back to the frame center before layout or while the map is fully covered.
+    var visibleCenterCoordinate: CLLocationCoordinate2D {
+        let visibleHeight = bounds.height - contentInset.bottom
+        guard bounds.height > 0, visibleHeight > 0 else { return mapView.centerCoordinate }
+        return mapView.convert(CGPoint(x: bounds.midX, y: visibleHeight / 2), toCoordinateFrom: self)
+    }
+
     func mapBounds(with radius: Double) -> ExploreMapBounds {
-        .init(rect: MKCircle(center: centerCoordinate, radius: radius).boundingMapRect)
+        .init(rect: MKCircle(center: visibleCenterCoordinate, radius: radius).boundingMapRect)
     }
 
     private var shownMerchantsAnnotations: [MerchantAnnotation] = []
@@ -181,6 +191,7 @@ class ExploreMapView: UIView {
     private var hasSetInitialCenter = false
     private var isSettingInitialRegion = false
     private var desiredCenter: CLLocationCoordinate2D?
+    private var lastRequestedCenter: CLLocation?
     private var pendingMerchantsToShow: [ExplorePointOfUse]?
     private var regionStabilizationTimer: Timer?
 
@@ -275,15 +286,23 @@ class ExploreMapView: UIView {
     }
 
     public func setCenter(_ location: CLLocation, animated: Bool) {
-        print("🔍 MAP: setCenter called with \(location.coordinate.latitude), \(location.coordinate.longitude)")
         isSettingInitialRegion = true
-        desiredCenter = location.coordinate
+        lastRequestedCenter = location
         let miles: Double = centerRadius
         let scalingFactor: Double = abs(cos(2*Double.pi * location.coordinate.latitude/360.0))
 
         let span = MKCoordinateSpan(latitudeDelta: miles/69.0, longitudeDelta: miles/(scalingFactor*69.0))
 
-        let region: MKCoordinateRegion = .init(center: location.coordinate, span: span)
+        // The list sheet covers the bottom `contentInset.bottom` points of the map, so
+        // shift the frame center south until `location` lands in the middle of the
+        // visible strip instead of the middle of the (partially hidden) full frame.
+        var center = location.coordinate
+        if contentInset.bottom > 0, bounds.height > 0 {
+            center.latitude -= span.latitudeDelta * (contentInset.bottom / (2 * bounds.height))
+        }
+
+        desiredCenter = center
+        let region: MKCoordinateRegion = .init(center: center, span: span)
         mapView.setRegion(region, animated: animated)
         hasSetInitialCenter = true
 
@@ -333,6 +352,14 @@ class ExploreMapView: UIView {
         if let loc = mapView.userLocation.location {
             setCenter(loc, animated: true)
         }
+    }
+
+    /// Re-applies the last requested center honoring the current `contentInset`.
+    /// `setCenter` can run before the sheet's covering height is known (e.g. from
+    /// viewWillAppear, before layout) — call this once the inset is established.
+    public func recenterForCurrentInsets() {
+        guard let location = lastRequestedCenter else { return }
+        setCenter(location, animated: false)
     }
 
     public func setContentInsets(_ inset: UIEdgeInsets, animated: Bool) {
@@ -458,6 +485,11 @@ extension ExploreMapView: MKMapViewDelegate {
             }
             return
         }
+
+        // A region change outside setCenter's setup lock is user-driven (pan/zoom):
+        // stop treating the last programmatic center as current so a later
+        // recenterForCurrentInsets() can't yank the map away from where the user panned.
+        lastRequestedCenter = nil
 
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(_mapViewDidChangeVisibleRegion), object: nil)
         perform(#selector(_mapViewDidChangeVisibleRegion), with: nil, afterDelay: 1)

@@ -118,6 +118,10 @@ class ExplorePointOfUseListViewController: UIViewController {
         } completion: { [weak self] _ in
             self?.updateTableViewInsetsForCurrentSheetPosition()
             self?.updateShowMapButtonVisibility()
+            // The pre-reveal setCenter ran with no inset, centering the location in the
+            // full frame — most of which the sheet now covers. Re-center it within the
+            // visible strip.
+            self?.mapView.recenterForCurrentInsets()
         }
     }
 
@@ -355,9 +359,10 @@ extension ExplorePointOfUseListViewController {
         filterCell?.subtitle = subtitleForFilterCell()
 
         if DWLocationManager.shared.isAuthorized && currentSegment.showReversedLocation {
+            let visibleCenter = mapView.visibleCenterCoordinate
             DWLocationManager.shared
-                .reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude,
-                                                   longitude: mapView.centerCoordinate.longitude)) { [weak self] (location, _) in
+                .reverseGeocodeLocation(CLLocation(latitude: visibleCenter.latitude,
+                                                   longitude: visibleCenter.longitude)) { [weak self] (location, _) in
                     if self?.model.showMap ?? false {
                         self?.filterCell?.title = location
                     }
@@ -719,24 +724,19 @@ extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
             return
         }
 
-        print("🔍 MAP: Map region changed")
-        print("🔍 MAP: Center = \(mapView.centerCoordinate.latitude), \(mapView.centerCoordinate.longitude)")
-        print("🔍 MAP: Current radius = \(model.currentRadius) meters")
-
         refreshFilterCell()
 
         // Update the search radius on the map view to match current filter
         mapView.searchRadius = model.currentRadius
 
-        // Update the search center to the map center (not the device GPS location)
-        model.searchCenterCoordinate = mapView.centerCoordinate
+        // Update the search center to the center of the visible part of the map
+        // (not the device GPS location, and not the frame center hidden under the sheet)
+        model.searchCenterCoordinate = mapView.visibleCenterCoordinate
 
         // Get bounds based on the current filter radius and new center location
         let newBounds = mapView.mapBounds(with: model.currentRadius)
-        print("🔍 MAP: New bounds NE=(\(newBounds.neCoordinate.latitude), \(newBounds.neCoordinate.longitude)), SW=(\(newBounds.swCoordinate.latitude), \(newBounds.swCoordinate.longitude))")
 
         model.currentMapBounds = newBounds
-        print("🔍 MAP: Calling refreshItems()")
         model.refreshItems()
     }
 
