@@ -218,6 +218,11 @@ extension ConfirmPaymentViewController: UIAdaptivePresentationControllerDelegate
 private struct ConfirmPaymentSheet: View {
     @ObservedObject var state: ConfirmPaymentViewController.State
 
+    /// Every place a duff can occupy. A Core fee is a few hundred of them, and
+    /// the component's five-place default renders that as "0" — a confirmation
+    /// that names the wrong fee is worse than one that names a long number.
+    private static let dashFractionDigits = 8
+
     var onCancel: () -> Void
     var onConfirm: () -> Void
 
@@ -280,10 +285,12 @@ private struct ConfirmPaymentSheet: View {
     /// the assembly `ConfirmPaymentModel` already does.
     private func accessory(for item: DWTitleDetailItem) -> DashUIKit.MenuItemAccessory {
         if let fee = state.feeDuffs, item.title == NSLocalizedString("Network fee", comment: "") {
-            return .balance(dash: Int64(clamping: fee), sign: .none)
+            return .balance(dash: Int64(clamping: fee), sign: .none,
+                            maximumFractionDigits: Self.dashFractionDigits)
         }
         if let total = state.totalDuffs, item.title == NSLocalizedString("Total", comment: "") {
-            return .balance(dash: Int64(clamping: total), sign: .none)
+            return .balance(dash: Int64(clamping: total), sign: .none,
+                            maximumFractionDigits: Self.dashFractionDigits)
         }
         return .text(detail(of: item))
     }
