@@ -245,7 +245,9 @@ struct PaymentsLandingScreen: View {
             switch mode {
             case .picker:
                 pickerLayout {
-                    PaymentsInternalCard(onSelect: onInternalTransfer)
+                    PaymentsInternalCard(
+                        onSelect: onInternalTransfer,
+                        showsAdvancedDestinations: viewModel.isAdvancedMode)
                         .padding(.horizontal, Layout.cardHorizontalPadding)
                 }
 

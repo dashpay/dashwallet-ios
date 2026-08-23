@@ -109,6 +109,14 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// Which hero tabs this presentation offers. The full landing shows all
     /// three; the balance-row receive sheet narrows to Receive + Internal.
     let visibleTabs: [PaymentsLandingTab]
+    /// Mirrors `DWGlobalOptions.advancedModeEnabled` so the Internal card can
+    /// narrow to Shielded while the mode is off.
+    ///
+    /// Its own mirror rather than the transfer model's: that one is handed to
+    /// the screen as a plain `var`, so observing it here would mean re-rendering
+    /// the whole landing on every keystroke in the embedded amount field.
+    @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+
     @Published private(set) var coreAddress: String? = nil
     @Published private(set) var platformAddress: String? = nil
     @Published private(set) var shieldedAddress: String? = nil
@@ -155,6 +163,13 @@ final class PaymentsLandingViewModel: ObservableObject {
 
         reloadCoreAddress()
         reloadShieldedAddress()
+
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+            }
+            .store(in: &cancellables)
 
         PlatformAddressSyncCoordinator.shared.$derivedAddresses
             .receive(on: RunLoop.main)

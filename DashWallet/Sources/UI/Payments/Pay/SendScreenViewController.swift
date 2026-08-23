@@ -103,14 +103,18 @@ extension DWBasePayViewController {
     /// balance-row send sheet.
     func continueCore(address: String, amountDuffs: UInt64) {
         guard address.isValidDashAddressForCurrentNetwork else { return }
-        var uriString = "dash:\(address)"
-        if amountDuffs > 0 {
-            let dashAmount = InternalTransferViewModel.formatTyped(
-                amountDuffs.dashAmount, fractionDigits: 8)
-            uriString += "?amount=\(dashAmount)"
-        }
-        guard let url = URL(string: uriString) else { return }
-        performPay(to: url)
+        // A plain-address input, not a `dash:` URI through `performPay(to:)`.
+        // That route classifies a URI carrying a valid address as a DEEP LINK,
+        // and `DWPaymentProcessor` answers a deep link by asking for an amount
+        // — pushing the legacy `ProvideAmountViewController` on top of the
+        // amount step the user has just filled in, prefilled with the same
+        // number. Two amount screens, and the second one in the old design.
+        //
+        // Nothing here is a deep link: this flow already holds the address and
+        // the amount. `payToAddress:amount:` puts both on a `PlainAddress`
+        // input, which the processor takes straight to the confirmation with
+        // the real fee — the same place Platform and Shielded land.
+        performPay(toAddress: address, amount: amountDuffs)
     }
 
     /// Push the external-send SOURCE step (From picker) onto the current

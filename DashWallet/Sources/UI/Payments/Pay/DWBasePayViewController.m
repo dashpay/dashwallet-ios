@@ -93,6 +93,16 @@ NS_ASSUME_NONNULL_BEGIN
     [self processPaymentInput:paymentInput];
 }
 
+- (void)performPayToAddress:(NSString *)address amount:(uint64_t)amount {
+    DWPaymentInput *paymentInput = [[[DWPaymentInputBuilder alloc] init] payToAddress:address
+                                                                               amount:amount];
+    if (!paymentInput) {
+        return;
+    }
+
+    [self processPaymentInput:paymentInput];
+}
+
 - (void)processPaymentInput:(DWPaymentInput *)input {
     [self.paymentController performPaymentWith:input];
 }
