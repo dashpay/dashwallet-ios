@@ -86,8 +86,9 @@ final class BackupInfoViewController: BaseViewController {
     /// wallet (lazily, in `createNewWalletIfNeeded`). `.setup` is also used
     /// for the "back up existing wallet" entry points, where it's `false`.
     private var createsNewWallet = false
-    /// Phrase length picked on this screen; read when the wallet is created.
-    private var selectedPhraseLength: RecoveryPhraseLength = .default
+    /// Picker state (selection + locked-after-creation), observed by the hosted
+    /// SwiftUI picker; `selection` is read when the wallet is created.
+    private let phraseLengthModel = RecoveryPhraseLengthPickerModel()
     private var phraseLengthPickerHost: UIHostingController<RecoveryPhraseLengthPickerHost>?
 
     @objc
@@ -217,15 +218,12 @@ extension BackupInfoViewController {
 
     /// Onboarding only (`createsNewWallet`): lets the user pick 12 or 24 words
     /// before the phrase is generated. Hosted SwiftUI at the top of the button
-    /// stack; hidden once the wallet has been created, since the length can no
-    /// longer change.
+    /// stack, driven by `phraseLengthModel`; the host view is collapsed once
+    /// the model is locked (wallet created).
     private func installPhraseLengthPickerIfNeeded() {
         guard createsNewWallet, phraseLengthPickerHost == nil else { return }
 
-        let picker = RecoveryPhraseLengthPickerHost(initial: selectedPhraseLength) { [weak self] length in
-            self?.selectedPhraseLength = length
-        }
-        let host = UIHostingController(rootView: picker)
+        let host = UIHostingController(rootView: RecoveryPhraseLengthPickerHost(model: phraseLengthModel))
         host.view.backgroundColor = .clear
         host.sizingOptions = .intrinsicContentSize
         addChild(host)
@@ -241,8 +239,9 @@ extension BackupInfoViewController {
     /// persisted even if this runs again.
     private func createNewWalletIfNeeded() {
         guard createsNewWallet else { return }
-        seedPhraseModel.newWalletWordCount = UInt(selectedPhraseLength.rawValue)
+        seedPhraseModel.newWalletWordCount = UInt(phraseLengthModel.selection.rawValue)
         seedPhraseModel.getOrCreateNewWallet()
+        phraseLengthModel.isLocked = true
         phraseLengthPickerHost?.view.isHidden = true
     }
 

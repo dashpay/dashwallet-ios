@@ -83,22 +83,29 @@ struct RecoveryPhraseLengthPicker: View {
     }
 }
 
+// MARK: - RecoveryPhraseLengthPickerModel
+
+/// State of the onboarding phrase-length picker: the user's selection and
+/// whether it is still changeable. Owned by the UIKit host
+/// (`BackupInfoViewController`), which reads `selection` when it creates the
+/// wallet and sets `isLocked` right after — the wallet's length can't change
+/// once it exists, so the picker hides itself.
+@MainActor
+final class RecoveryPhraseLengthPickerModel: ObservableObject {
+    @Published var selection: RecoveryPhraseLength = .default
+    @Published var isLocked = false
+}
+
 // MARK: - RecoveryPhraseLengthPickerHost
 
-/// UIKit-hostable wrapper around `RecoveryPhraseLengthPicker`: owns the
-/// selection and reports every change to the hosting controller, which keeps
-/// the authoritative value (it's read at wallet-creation time, not bound).
+/// UIKit-hostable wrapper around `RecoveryPhraseLengthPicker`, driven by a
+/// `RecoveryPhraseLengthPickerModel`. Renders nothing once locked.
 struct RecoveryPhraseLengthPickerHost: View {
-    @State private var selection: RecoveryPhraseLength
-    private let onChange: (RecoveryPhraseLength) -> Void
-
-    init(initial: RecoveryPhraseLength, onChange: @escaping (RecoveryPhraseLength) -> Void) {
-        _selection = State(initialValue: initial)
-        self.onChange = onChange
-    }
+    @ObservedObject var model: RecoveryPhraseLengthPickerModel
 
     var body: some View {
-        RecoveryPhraseLengthPicker(selection: $selection)
-            .onChange(of: selection) { _, newValue in onChange(newValue) }
+        if !model.isLocked {
+            RecoveryPhraseLengthPicker(selection: $model.selection)
+        }
     }
 }
