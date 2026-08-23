@@ -194,222 +194,42 @@ class MerchantDAO: PointOfUseDAO {
                 .select(merchantTable[*])
                 .filter(queryFilter)
 
-            // For each merchant, we want to show only the closest location when userLocation is available
+            // Collapse the location rows to one row per merchant. When the user's location is
+            // known, SQLite picks the location closest to the user: in an aggregate query with a
+            // single MIN() in the result set, bare columns take their values from the row where
+            // the minimum occurs. The distance is an equirectangular approximation in meters —
+            // accurate enough for ranking and radius filtering at the app's search scales.
+            var hasDistanceColumn = false
+
             if let anchorLatitude = userLocation?.latitude, let anchorLongitude = userLocation?.longitude {
-                // Use a post-processing approach instead of complex SQL
-                // First get all matching locations, then filter to closest per merchant in Swift
+                let metersPerLatitudeDegree = 111_111.0
+                let metersPerLongitudeDegree = 111_111.0 * cos(anchorLatitude * .pi / 180)
+                let distanceSq =
+                    "((latitude - \(anchorLatitude)) * \(metersPerLatitudeDegree) * (latitude - \(anchorLatitude)) * \(metersPerLatitudeDegree) + " +
+                    "(longitude - \(anchorLongitude)) * \(metersPerLongitudeDegree) * (longitude - \(anchorLongitude)) * \(metersPerLongitudeDegree))"
 
-                // Execute the query to get all matching locations (without grouping)
-                let allLocationsQuery = query.limit(1000) // Increase limit to get more locations
+                query = merchantTable
+                    .select(merchantTable[*], Expression<Double?>(literal: "MIN(\(distanceSq)) AS minDistanceSq"))
+                    .filter(queryFilter)
+                hasDistanceColumn = true
 
-                do {
-                    var allItems: [ExplorePointOfUse] = try wSelf.connection.execute(query: allLocationsQuery)
-
-                    // Fetch gift card providers for each merchant that accepts gift cards
-                    #if PIGGYCARDS_ENABLED
-                    let excludePiggyCards = isPiggyCardsGeoRestricted()
-                    #endif
-                    for (index, item) in allItems.enumerated() {
-                        if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
-                            // Only fetch CTX providers when PiggyCards is disabled or user is in restricted region
-                            #if PIGGYCARDS_ENABLED
-                            let providersQuery: String
-                            if excludePiggyCards {
-                                providersQuery = """
-                                    SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
-                                    WHERE merchantId = '\(merchant.merchantId)' AND provider != 'PiggyCards'
-                                """
-                            } else {
-                                providersQuery = """
-                                    SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
-                                    WHERE merchantId = '\(merchant.merchantId)'
-                                """
-                            }
-                            #else
-                            let providersQuery = """
-                                SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
-                                WHERE merchantId = '\(merchant.merchantId)' AND provider = 'CTX'
-                            """
-                            #endif
-
-                            do {
-                                guard let db = wSelf.connection.db else {
-                                    continue
-                                }
-                                let rows = try db.prepare(providersQuery)
-                                var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
-                                var rowCount = 0
-
-                                for row in rows {
-                                    rowCount += 1
-                                    if let providerId = row[0] as? String,
-                                       let savingsPercentage = row[1] as? Int64,
-                                       let denominationsType = row[2] as? String {
-
-                                        providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
-                                            providerId: providerId,
-                                            savingsPercentage: Int(savingsPercentage),
-                                            denominationsType: denominationsType,
-                                            sourceId: wSelf.extractSourceId(from: row, at: 3)
-                                        ))
-                                    }
-                                }
-
-                                if !providers.isEmpty {
-                                    // Create updated merchant with providers
-                                    let updatedMerchant = ExplorePointOfUse.Merchant(
-                                        merchantId: merchant.merchantId,
-                                        paymentMethod: merchant.paymentMethod,
-                                        type: merchant.type,
-                                        deeplink: merchant.deeplink,
-                                        savingsBasisPoints: merchant.savingsBasisPoints,
-                                        denominationsType: merchant.denominationsType,
-                                        denominations: merchant.denominations,
-                                        redeemType: merchant.redeemType,
-                                        giftCardProviders: providers
-                                    )
-
-                                    // Create updated ExplorePointOfUse
-                                    let updatedItem = ExplorePointOfUse(
-                                        id: item.id,
-                                        name: item.name,
-                                        category: .merchant(updatedMerchant),
-                                        active: item.active,
-                                        city: item.city,
-                                        territory: item.territory,
-                                        address1: item.address1,
-                                        address2: item.address2,
-                                        address3: item.address3,
-                                        address4: item.address4,
-                                        latitude: item.latitude,
-                                        longitude: item.longitude,
-                                        website: item.website,
-                                        phone: item.phone,
-                                        logoLocation: item.logoLocation,
-                                        coverImage: item.coverImage,
-                                        source: item.source
-                                    )
-
-                                    allItems[index] = updatedItem
-                                }
-                            } catch {
-                                // Error fetching gift card providers
-                            }
-                        }
-                    }
-
-                    // Apply distance filtering if we have bounds (which indicates radius filtering is intended)
-                    // The bounds are created as a bounding rectangle around a circle, but we want true circular filtering
-                    if let bounds = bounds {
-                        // Calculate the radius from the bounds diagonal divided by √2
-                        // Since bounds are square around a circle, diagonal = 2 * radius
-                        let latDiff = bounds.neCoordinate.latitude - bounds.swCoordinate.latitude
-                        let lonDiff = bounds.neCoordinate.longitude - bounds.swCoordinate.longitude
-                        let boundsRadius = min(latDiff, lonDiff) * 111000 / 2 // Convert degrees to meters, divide by 2
-                        let filterRadius = boundsRadius
-
-                        // Filter items by actual circular distance from user location
-                        let userLocation = CLLocation(latitude: anchorLatitude, longitude: anchorLongitude)
-                        allItems = allItems.filter { item in
-                            guard let lat = item.latitude, let lon = item.longitude else { return false }
-                            let distance = userLocation.distance(from: CLLocation(latitude: lat, longitude: lon))
-                            return distance <= filterRadius
-                        }
-                    }
-
-                    // Group locations by merchant and find closest location for each merchant
-                    let userCoord = CLLocation(latitude: anchorLatitude, longitude: anchorLongitude)
-                    var merchantToClosestLocation: [String: ExplorePointOfUse] = [:]
-
-                    for item in allItems {
-                        guard let merchant = item.merchant else { continue }
-
-                        // Handle online merchants (no coordinates) separately
-                        if item.latitude == nil || item.longitude == nil {
-                            // Online merchants don't have coordinates, just include them once
-                            if merchantToClosestLocation[merchant.merchantId] == nil {
-                                merchantToClosestLocation[merchant.merchantId] = item
-                            }
-                            continue
-                        }
-
-                        let lat = item.latitude!
-                        let lon = item.longitude!
-                        let locationCoord = CLLocation(latitude: lat, longitude: lon)
-                        let distance = userCoord.distance(from: locationCoord)
-
-                        if let existingItem = merchantToClosestLocation[merchant.merchantId],
-                           let existingLat = existingItem.latitude,
-                           let existingLon = existingItem.longitude {
-                            let existingLocationCoord = CLLocation(latitude: existingLat, longitude: existingLon)
-                            let existingDistance = userCoord.distance(from: existingLocationCoord)
-
-                            if distance < existingDistance {
-                                merchantToClosestLocation[merchant.merchantId] = item
-                            }
-                        } else {
-                            merchantToClosestLocation[merchant.merchantId] = item
-                        }
-                    }
-
-
-                    // Convert back to array and apply sorting
-                    var items = Array(merchantToClosestLocation.values)
-
-                    if let sortBy = sortBy {
-                        switch sortBy {
-                        case .name:
-                            items.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
-                        case .distance:
-                            items.sort { item1, item2 in
-                                let dist1 = item1.latitude.flatMap { lat in item1.longitude.map { lon in userCoord.distance(from: CLLocation(latitude: lat, longitude: lon)) } } ?? Double.greatestFiniteMagnitude
-                                let dist2 = item2.latitude.flatMap { lat in item2.longitude.map { lon in userCoord.distance(from: CLLocation(latitude: lat, longitude: lon)) } } ?? Double.greatestFiniteMagnitude
-                                return dist1 < dist2
-                            }
-                        case .discount:
-                            items.sort { ($0.merchant?.savingsBasisPoints ?? 0) > ($1.merchant?.savingsBasisPoints ?? 0) }
-                        }
-                    } else {
-                        // Default to distance sorting when userLocation is available
-                        items.sort { item1, item2 in
-                            let dist1 = item1.latitude.flatMap { lat in item1.longitude.map { lon in userCoord.distance(from: CLLocation(latitude: lat, longitude: lon)) } } ?? Double.greatestFiniteMagnitude
-                            let dist2 = item2.latitude.flatMap { lat in item2.longitude.map { lon in userCoord.distance(from: CLLocation(latitude: lat, longitude: lon)) } } ?? Double.greatestFiniteMagnitude
-                            return dist1 < dist2
-                        }
-                    }
-
-                    // Apply pagination
-                    let startIndex = offset
-                    let endIndex = min(startIndex + pageLimit, items.count)
-                    let paginatedItems = startIndex < items.count ? Array(items[startIndex..<endIndex]) : []
-
-                    // Create pagination result
-                    let result = PaginationResult(items: paginatedItems, offset: offset)
-
-                    DispatchQueue.main.async {
-                        completion(.success(result))
-                    }
-                    return
-                } catch {
-                    DispatchQueue.main.async {
-                        completion(.failure(error))
-                    }
-                    return
+                if let bounds {
+                    // The WHERE clause only pre-filters with a generous rectangle; enforce the real
+                    // circular radius on each merchant's closest location here. Groups with a NULL
+                    // distance are online merchants without coordinates — keep them, the bounds
+                    // filter above already decided whether online rows belong in the result.
+                    let radius = wSelf.circularFilterRadius(for: bounds)
+                    let having = Expression<Bool>(literal: "(minDistanceSq IS NULL OR minDistanceSq <= \(radius * radius))")
+                    query = query.group([ExplorePointOfUse.merchantId], having: having)
+                } else {
+                    query = query.group([ExplorePointOfUse.merchantId])
                 }
             } else {
                 query = query.group([ExplorePointOfUse.merchantId])
             }
 
-            var distanceSorting = Expression<Bool>(value: true)
-
-            if let userLocation {
-                let anchorLatitude = userLocation.latitude
-                let anchorLongitude = userLocation.longitude
-
-                distanceSorting =
-                    Expression<Bool>(literal: "((latitude-\(anchorLatitude))*(latitude-\(anchorLatitude))) + ((longitude - \(anchorLongitude))*(longitude - \(anchorLongitude))) ASC")
-            }
-
+            // Closest locations first; merchants without coordinates (online) go last.
+            let distanceOrdering = Expression<Bool>(literal: "minDistanceSq IS NULL, minDistanceSq ASC")
             let nameOrdering = name.collate(.nocase).asc
             let discountOrdering = ExplorePointOfUse.savingPercentage.desc
 
@@ -418,17 +238,17 @@ class MerchantDAO: PointOfUseDAO {
                 case .name:
                     query = query.order(nameOrdering)
                 case .distance:
-                    if userLocation != nil {
-                        query = query.order([distanceSorting, nameOrdering])
+                    if hasDistanceColumn {
+                        query = query.order([distanceOrdering, nameOrdering])
                     } else {
                         query = query.order(nameOrdering)
                     }
                 case .discount:
                     query = query.order([discountOrdering, nameOrdering])
                 }
-            } else if userLocation != nil {
-                query = query.order([distanceSorting, nameOrdering])
             } else if bounds == nil && types.count == 3 {
+                // "All" tab default: online merchants first, then mixed, then physical — by name.
+                // The grouping above still represents each merchant by its closest location.
                 let typeOrdering = Expression<Void>(literal: """
                     CASE
                         WHEN type = 'online' THEN 1
@@ -439,6 +259,8 @@ class MerchantDAO: PointOfUseDAO {
                     """)
 
                 query = query.order([typeOrdering, nameOrdering])
+            } else if hasDistanceColumn {
+                query = query.order([distanceOrdering, nameOrdering])
             } else {
                 query = query.order(nameOrdering)
             }
