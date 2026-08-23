@@ -59,9 +59,12 @@ class HomeViewModel: ObservableObject {
     private var coinJoinTxSets: [String: CoinJoinMixingTxSet] = [:] // Grouped by date
     private var coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet() // Single combined "CoinJoin Withdrawals" group (app's sweep tx)
     private var metadataProviders: [MetadataProvider] = []
-    #if DEBUG
+    /// Set only by the `#if DEBUG` preview initializer, but declared
+    /// unconditionally: two `guard`s read it from ordinary code paths, so
+    /// hiding the property behind `DEBUG` left them referring to something
+    /// that does not exist in any configuration without it. False everywhere
+    /// else costs a Bool.
     var isPreviewMode: Bool = false
-    #endif
 
     /// Tracks whether initial data load has completed (Fix #2)
     private var hasCompletedInitialLoad: Bool = false
