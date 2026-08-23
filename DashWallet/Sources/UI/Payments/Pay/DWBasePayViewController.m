@@ -110,8 +110,31 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - DWTxDetailFullscreenViewControllerDelegate
 
 - (void)txDetailViewControllerDidFinishWithController:(SuccessTxDetailViewController *)controller {
-    // Nothing to do — the success screen dismisses itself; the legacy pay-to-contact
-    // follow-up that lived here is gone with the contact plumbing (Row #18).
+    // The success screen has already dismissed itself; what is left underneath
+    // is the send that produced it — an amount step, a source picker, an
+    // address field. Handing those back would offer to redo a payment that has
+    // just happened, so leave for the history, which is where the transaction
+    // now is.
+    //
+    // Presented as a modal there is something to dismiss; inside the payments
+    // tab there is not, and the way back is the stack plus the tab. The tab
+    // change waits for the pop — run together they animate over each other.
+    if (self.presentingViewController) {
+        [self dismissViewControllerAnimated:YES completion:nil];
+        return;
+    }
+
+    MainTabbarController *tabBarController =
+        [self.tabBarController isKindOfClass:MainTabbarController.class]
+            ? (MainTabbarController *)self.tabBarController
+            : nil;
+
+    [CATransaction begin];
+    [CATransaction setCompletionBlock:^{
+        [tabBarController showHome];
+    }];
+    [self.navigationController popToRootViewControllerAnimated:YES];
+    [CATransaction commit];
 }
 
 #pragma mark -  DWQRScanModelDelegate
