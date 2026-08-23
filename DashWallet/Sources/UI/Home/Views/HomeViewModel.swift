@@ -263,7 +263,9 @@ class HomeViewModel: ObservableObject {
     /// Routine refresh trigger (screen appear): throttled by the monitor.
     @MainActor
     func refreshEvonodeEpochBlocks() {
+        #if DEBUG
         guard !isPreviewMode else { return }
+        #endif
         evonodeEpochBlocksMonitor.refresh()
     }
 
