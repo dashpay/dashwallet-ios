@@ -80,3 +80,38 @@ struct DashAmount: View {
         return result
     }
 }
+
+/// Shared visual hierarchy for completed sends and attended receives. Keeping
+/// the success icon, amount renderer, typography, and spacing in one place
+/// prevents the two halves of a payment from drifting apart visually.
+struct PaymentSuccessHeader: View {
+    let title: String
+    let amountDuffs: Int64
+    let fiatText: String
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "checkmark.circle.fill")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 64, height: 64)
+                .foregroundColor(.green)
+                .padding(.top, 24)
+
+            Text(title)
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundColor(.dash.primaryText)
+
+            DashAmount(
+                amount: amountDuffs,
+                font: .title,
+                dashSymbolFactor: 0.7,
+                showDirection: false)
+
+            Text(fiatText)
+                .font(.subheadline)
+                .foregroundColor(.dash.secondaryText)
+        }
+    }
+}
