@@ -56,6 +56,14 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private static let shieldedBalanceTimingShownKey = "DWShieldedBalanceTimingShown"
 
     private var cancellables = Set<AnyCancellable>()
+    /// Set while the receive flow pushes one of its OWN steps.
+    ///
+    /// Specify Amount is not somewhere else — it is the next screen of the same
+    /// receive, and the address it is naming an amount for is the one the
+    /// session was armed on. Without this the landing's `viewWillDisappear`
+    /// suspends watching the moment that screen is pushed, so nothing is
+    /// detected while the user is on the very screen they are handing over.
+    private var isPushingReceiveStep = false
     /// The specify-amount sheet while it is up, so a receipt can dismiss it.
     private weak var requestAmountController: RequestAmountHostingController?
     /// Kept apart from `cancellables`: these live exactly as long as that sheet
@@ -207,6 +215,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // here as well so returning from transaction details can resume the
         // same receive session (or start a fresh "Receive another" session).
         viewModel.setReceiptWatchingObscured(false)
+        isPushingReceiveStep = false
         viewModel.setReceiveSurfaceVisible(true)
         if timingSheetPendingAppearance {
             timingSheetPendingAppearance = false
@@ -216,6 +225,10 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        // Stepping deeper into the receive flow is not leaving it. Everything
+        // else — a tab change, a dismissal, a pop — still puts the session to
+        // sleep.
+        guard !isPushingReceiveStep else { return }
         viewModel.setReceiveSurfaceVisible(false)
     }
 
@@ -244,6 +257,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private func pushSpecifyAmount() {
         let specify = SpecifyAmountViewController.controller()
         specify.delegate = self
+        isPushingReceiveStep = true
         pushWithoutTabBar(specify)
     }
 
@@ -313,9 +327,22 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
                 guard let self, let controller = self.requestAmountController else { return }
                 self.requestAmountObservers.removeAll()
                 self.requestAmountController = nil
-                controller.dismiss(animated: true)
+                // The sheet AND the step under it: the receipt is drawn on the
+                // landing, and stopping at Specify Amount would leave the user
+                // one screen short of the thing they were waiting for.
+                controller.dismiss(animated: true) { [weak self] in
+                    self?.returnToLandingFromReceiveStep()
+                }
             }
             .store(in: &requestAmountObservers)
+    }
+
+    /// Pop back to the landing from a pushed receive step, if that is where we
+    /// are. `isPushingReceiveStep` is the flag for exactly that state, and
+    /// `viewDidAppear` clears it on arrival.
+    private func returnToLandingFromReceiveStep() {
+        guard isPushingReceiveStep, navigationController?.topViewController !== self else { return }
+        navigationController?.popToViewController(self, animated: true)
     }
 
     private func pushSendToAddress() {
