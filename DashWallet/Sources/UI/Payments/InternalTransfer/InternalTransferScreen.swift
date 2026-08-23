@@ -96,6 +96,16 @@ struct InternalTransferScreen: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         amountRow
+                            // Its own height, not a share of the slack.
+                            // `EnterAmountView` draws the figure inside a
+                            // `maxHeight: .infinity` frame, so in a stack that
+                            // has room to give it is flexible — and a `Spacer`
+                            // does not beat it, it splits with it. That is why
+                            // the amount still drifted down the screen with the
+                            // spacer already in place: both were taking half
+                            // each. `fixedSize` proposes its ideal height and
+                            // leaves every remaining point to the spacer.
+                            .fixedSize(horizontal: false, vertical: true)
                             .padding(.horizontal, 20)
                             .padding(.top, showsHeader ? 10 : 0)
 
@@ -106,12 +116,10 @@ struct InternalTransferScreen: View {
                         )
                         .padding(.horizontal, 20)
 
-                        // Unconditional, and that matters: `.frame(minHeight:)`
-                        // below hands the stack the whole viewport, and
-                        // whatever is left over goes to the first greedy child.
-                        // `EnterAmountView`'s amount is `maxHeight: .infinity`,
-                        // so with nothing here to absorb the slack it swallowed
-                        // it and pushed the cards down onto the keypad.
+                        // Takes every point `.frame(minHeight:)` below hands
+                        // the stack beyond what the content needs — which is
+                        // what keeps the form at the top rather than floating
+                        // in the middle.
                         Spacer(minLength: 12)
 
                         if viewModel.canContinue {
