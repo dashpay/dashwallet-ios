@@ -11,6 +11,10 @@ struct PaymentsLandingScreen: View {
     @ObservedObject var viewModel: PaymentsLandingViewModel
 
     var onClose: () -> Void
+    /// Done on a receive receipt. Separate from `onClose`, which dismisses:
+    /// this landing is also the payments TAB's root, where nothing presented it
+    /// and dismissing is a no-op — which is why Done did nothing there.
+    var onDone: () -> Void
     var onCopyAddress: () -> Void
     var onShareAddress: () -> Void
     var onSpecifyAmount: () -> Void
@@ -236,7 +240,10 @@ struct PaymentsLandingScreen: View {
                     onShareAddress: onShareAddress,
                     onSpecifyAmount: onSpecifyAmount,
                     onViewTransaction: onViewTransaction,
-                    onDone: onClose
+                    onDone: {
+                        viewModel.finishReceiving()
+                        onDone()
+                    }
                 )
                 .padding(.horizontal, Layout.cardHorizontalPadding)
             }
@@ -335,6 +342,7 @@ private func landingSample(
             visibleTabs: visibleTabs,
             coreAddress: coreAddress),
         onClose: {},
+        onDone: {},
         onCopyAddress: {},
         onShareAddress: {},
         onSpecifyAmount: {},

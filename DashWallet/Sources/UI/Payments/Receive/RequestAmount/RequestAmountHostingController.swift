@@ -54,6 +54,8 @@ final class RequestAmountHostingController: UIViewController {
         @Published var username: String?
         /// Raised by a copy, cleared by `transientToast`'s own timer.
         @Published var copiedToastVisible = false
+        /// Driven by the presenter's attended receive session, when it has one.
+        @Published var isWatchingForReceipt = false
     }
 
     /// The content's natural height, as `BottomSheet(fillsHeight: false)`
@@ -173,6 +175,12 @@ final class RequestAmountHostingController: UIViewController {
         return UIHostingController(rootView: AnyView(sheet))
     }()
 
+    /// Reflect the presenter's attended receive session, so the sheet can say
+    /// it is still watching. Left alone by presenters that have no session.
+    func setWatchingForReceipt(_ watching: Bool) {
+        state.isWatchingForReceipt = watching
+    }
+
     /// Re-resolves the detent against the height that just came out of layout.
     /// Sub-point changes are ignored: the resolver rounds to the same detent
     /// anyway, and re-entering `animateChanges` on every measurement pass makes
@@ -291,6 +299,7 @@ private struct RequestAmountScreenContainer: View {
             qrCodeImage: state.qrCodeImage,
             paymentAddress: state.paymentAddress,
             username: state.username,
+            isWatchingForReceipt: state.isWatchingForReceipt,
             onCopyAddress: onCopyAddress,
             onCopyQRCode: onCopyQRCode,
             onCopyUsername: onCopyUsername,

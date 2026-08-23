@@ -26,6 +26,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         let screen = PaymentsLandingScreen(
             viewModel: viewModel,
             onClose: { [weak self] in self?.dismiss(animated: true) },
+            onDone: { [weak self] in self?.finishReceiving() },
             onCopyAddress: { [weak self] in self?.copyCurrentAddress() },
             onShareAddress: { [weak self] in self?.shareCurrentAddress() },
             onSpecifyAmount: { [weak self] in self?.pushSpecifyAmount() },
@@ -55,6 +56,11 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private static let shieldedBalanceTimingShownKey = "DWShieldedBalanceTimingShown"
 
     private var cancellables = Set<AnyCancellable>()
+    /// The specify-amount sheet while it is up, so a receipt can dismiss it.
+    private weak var requestAmountController: RequestAmountHostingController?
+    /// Kept apart from `cancellables`: these live exactly as long as that sheet
+    /// does, and are dropped with it rather than for the screen's lifetime.
+    private var requestAmountObservers = Set<AnyCancellable>()
     /// The Internal tab was activated before the landing finished appearing
     /// (e.g. it is the initial tab) — present the timing sheet from
     /// `viewDidAppear` instead of against a view that isn't on screen yet.
@@ -273,6 +279,45 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     /// Send card → the address-entry form. Pushed rather than embedded: the
     /// landing's Send tab is now the destination picker, not the form.
+    /// Where Done on a receive receipt goes.
+    ///
+    /// Presented as a sheet there is something to dismiss; as the payments
+    /// tab's root there is not — `dismiss` was a no-op, which is why the button
+    /// appeared dead. Leaving for the history is what finishing means there,
+    /// and it is where the receipt's transaction shows up.
+    private func finishReceiving() {
+        if presentingViewController != nil {
+            dismiss(animated: true)
+        } else {
+            (tabBarController as? MainTabbarController)?.showHome()
+        }
+    }
+
+    /// Mirror the session into the specify-amount sheet, and close that sheet
+    /// the moment a payment lands — the receipt is on the surface behind it,
+    /// and a QR for an amount just paid would be the stalest thing on screen.
+    private func observeReceiptWhileRequestingAmount(_ controller: RequestAmountHostingController) {
+        requestAmountObservers.removeAll()
+
+        viewModel.$isWatchingForReceipt
+            .receive(on: RunLoop.main)
+            .sink { [weak controller] watching in
+                controller?.setWatchingForReceipt(watching)
+            }
+            .store(in: &requestAmountObservers)
+
+        viewModel.$receipt
+            .compactMap { $0 }
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, let controller = self.requestAmountController else { return }
+                self.requestAmountObservers.removeAll()
+                self.requestAmountController = nil
+                controller.dismiss(animated: true)
+            }
+            .store(in: &requestAmountObservers)
+    }
+
     private func pushSendToAddress() {
         pushWithoutTabBar(SendScreenViewController())
     }
@@ -374,34 +419,49 @@ extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate 
         // is the redesigned path, and it sizes its own detent. The ObjC pair is
         // still what the legacy `ReceiveViewController` presents.
         //
-        // The attended receive session pauses while the sheet covers it, and
-        // resumes from whichever way it goes away: the delegate callback below
-        // for the amount landing, `presentationControllerDidDismiss` for a
-        // swipe.
-        viewModel.setReceiptWatchingObscured(true)
+        // The session keeps running behind THIS sheet, unlike every other one
+        // the landing presents.
+        //
+        // #1041 suspends watching whenever something covers the receive UI, and
+        // for the share sheet or transaction details that is right — the user
+        // is not presenting anything. This sheet is the opposite: a QR with the
+        // amount already in it, held up for someone to pay. Pausing detection
+        // on the handoff surface would pause it exactly where the feature is
+        // for. Nothing is lost either way — the session's baseline survives a
+        // suspend — but the sheet could not say it was watching, and could not
+        // get out of the way when the payment landed.
         let requestController = RequestAmountHostingController.present(
             from: self,
             model: DWReceiveModel(amount: amount),
             delegate: self)
-        requestController.presentationController?.delegate = self
+        requestAmountController = requestController
+        requestController.setWatchingForReceipt(viewModel.isWatchingForReceipt)
+        observeReceiptWhileRequestingAmount(requestController)
     }
 }
 
 // MARK: RequestAmountHostingControllerDelegate
 
 extension PaymentsLandingHostingController: RequestAmountHostingControllerDelegate {
+    /// The requested amount arrived, which this sheet notices through its own
+    /// balance-change observer. Getting out of the way is all that is left to
+    /// do: the attended receipt on the surface behind already says what landed,
+    /// with the rail, the status and the transaction.
+    ///
+    /// It used to pop the navigation stack and raise an info HUD as well. Both
+    /// were written for a landing that had been PUSHED — as the payments tab's
+    /// root there is nothing to pop, and that HUD went onto the navigation
+    /// controller's view, where it drew underneath the tab bar as an
+    /// unidentifiable smudge.
     func requestAmountHostingController(
         _ controller: RequestAmountHostingController,
         didReceiveAmountWithInfo info: String
     ) {
         controller.dismiss(animated: true) {
-            self.viewModel.setReceiptWatchingObscured(false)
-            self.navigationController?.popViewController(animated: true)
-
-            let popAnimationDuration = 300
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .milliseconds(popAnimationDuration)) {
-                self.navigationController?.view.dw_showInfoHUD(withText: info)
-            }
+            // No un-obscuring: this sheet never suspended the session. What
+            // does end here is the sheet's own mirroring of it.
+            self.requestAmountObservers.removeAll()
+            self.requestAmountController = nil
         }
     }
 }

@@ -129,7 +129,12 @@ struct PaymentsReceiveContent: View {
                     )
                 }
                 .frame(maxWidth: .infinity)
-                .padding(20)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+
+                watchingForPayment
+                    .padding(.top, 14)
+                    .padding(.bottom, 20)
             }
             .modifier(MenuViewModifier(innerPadding: 0))
 
@@ -148,20 +153,13 @@ struct PaymentsReceiveContent: View {
                 }
                 .buttonStyle(.plain)
             }
+        }
+    }
 
-            if viewModel.isWatchingForReceipt {
-                // Says the screen is doing something on the user's behalf
-                // while the address is on display, so a handoff does not feel
-                // like nothing is happening.
-                HStack(spacing: 8) {
-                    SwiftUI.ProgressView()
-                        .scaleEffect(0.8)
-                    Text(NSLocalizedString("Watching for a payment…", comment: "Receive screen activity"))
-                        .dashFont(.caption1)
-                        .foregroundColor(.dash.secondaryText)
-                }
-                .transition(.opacity)
-            }
+    @ViewBuilder
+    private var watchingForPayment: some View {
+        if viewModel.isWatchingForReceipt {
+            ReceiveWatchingIndicator()
         }
     }
 
@@ -283,6 +281,31 @@ private struct ReceiveReceiptCard: View {
                 .multilineTextAlignment(.trailing)
                 .lineLimit(2)
         }
+    }
+}
+
+// MARK: - ReceiveWatchingIndicator
+
+/// Says the screen is doing something on the user's behalf while an address is
+/// on display, so a handoff does not feel like nothing is happening.
+///
+/// Shared with the specify-amount sheet, which makes the same promise over a QR
+/// that carries the amount — the two must not drift into saying it differently.
+struct ReceiveWatchingIndicator: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            // `controlSize`, not `scaleEffect`: scaling resamples the spinner
+            // after it is drawn, which is what turned it into a crunchy
+            // asterisk. This asks UIKit for a small indicator and gets it drawn
+            // at that size.
+            SwiftUI.ProgressView()
+                .controlSize(.small)
+            Text(NSLocalizedString("Watching for a payment…", comment: "Receive screen activity"))
+                .dashFont(.caption1)
+                .foregroundColor(.dash.secondaryText)
+        }
+        .frame(maxWidth: .infinity)
+        .transition(.opacity)
     }
 }
 

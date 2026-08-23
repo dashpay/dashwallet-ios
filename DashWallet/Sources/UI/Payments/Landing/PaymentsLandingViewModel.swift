@@ -323,6 +323,16 @@ final class PaymentsLandingViewModel: ObservableObject {
         }
     }
 
+    /// The user is finished with this receipt and leaving. Unlike
+    /// `receiveAnother`, no new session is armed and no address is re-derived —
+    /// coming back should start from a clean receive screen rather than the
+    /// receipt of a payment already dealt with.
+    func finishReceiving() {
+        receipt = nil
+        invalidateReceiptSession()
+        reconcileReceiptWatching()
+    }
+
     func receiveAnother() {
         receipt = nil
         invalidateReceiptSession()

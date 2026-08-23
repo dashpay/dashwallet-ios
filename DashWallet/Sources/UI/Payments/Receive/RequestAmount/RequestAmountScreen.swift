@@ -39,6 +39,10 @@ struct RequestAmountScreen: View {
     /// DashPay only; `nil` everywhere else, and the row is dropped.
     var username: String? = nil
 
+    /// True while the attended receive session is live behind this sheet.
+    /// Default false so every other presenter of this screen is unchanged.
+    var isWatchingForReceipt: Bool = false
+
     var onCopyAddress: () -> Void
     var onCopyQRCode: () -> Void
     var onCopyUsername: () -> Void = {}
@@ -65,6 +69,13 @@ struct RequestAmountScreen: View {
             amount
             card
                 .padding(.horizontal, 20)
+
+            if isWatchingForReceipt {
+                // This sheet is the handoff surface — a QR with the amount
+                // already in it, held up for someone to pay — so the session
+                // keeps running behind it and says so.
+                ReceiveWatchingIndicator()
+            }
         }
         .frame(maxWidth: .infinity)
     }
