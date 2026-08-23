@@ -236,6 +236,10 @@ final class PaymentsLandingViewModel: ObservableObject {
         coreAddress = previewCoreAddress
         platformAddress = previewPlatformAddress
         shieldedAddress = previewShieldedAddress
+        // A preview has no host to route to and no transaction to route with,
+        // so the receipt's "View transaction" stays hidden rather than drawing
+        // a control that could not do anything.
+        allowsTransactionDetails = false
     }
 
     /// Preview view model. Pass `nil` for an address to preview that
