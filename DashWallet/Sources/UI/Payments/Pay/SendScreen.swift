@@ -830,27 +830,10 @@ struct SendConfirmSheet: View {
 
     private var successBody: some View {
         VStack(spacing: 16) {
-            Image(systemName: "checkmark.circle.fill")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 64, height: 64)
-                .foregroundColor(.green)
-                .padding(.top, 24)
-
-            Text(NSLocalizedString("Sent", comment: "Send confirm sheet"))
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundColor(.dash.primaryText)
-
-            DashAmount(
-                amount: dashDuffs,
-                font: .title,
-                dashSymbolFactor: 0.7,
-                showDirection: false)
-
-            Text(fiatText)
-                .font(.subheadline)
-                .foregroundColor(.dash.secondaryText)
+            PaymentSuccessHeader(
+                title: NSLocalizedString("Sent", comment: "Send confirm sheet"),
+                amountDuffs: dashDuffs,
+                fiatText: fiatText)
 
             Spacer(minLength: 12)
 

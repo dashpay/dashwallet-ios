@@ -57,7 +57,9 @@ struct PaymentsLandingScreen: View {
             switch viewModel.activeTab {
             case .receive:
                 receiveContent
-                Spacer()
+                if viewModel.receipt == nil {
+                    Spacer()
+                }
             case .internalTransfer:
                 if let sendFrom = transferSendFrom {
                     // Send sheet: the From card is pinned by the tapped
@@ -207,22 +209,12 @@ struct PaymentsLandingScreen: View {
     }
 
     private func receiptCard(_ receipt: ReceiveReceipt) -> some View {
-        VStack(spacing: 14) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 58, weight: .semibold))
-                .foregroundColor(.dash.green)
-
-            VStack(spacing: 5) {
-                Text(NSLocalizedString("Payment received", comment: "Receive success title"))
-                    .font(.title3.weight(.semibold))
-                    .foregroundColor(.dash.primaryText)
-                Text(receipt.amountDuffs.formattedDashAmount)
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
-                    .foregroundColor(.dash.primaryText)
-                Text(CurrencyExchanger.shared.fiatAmountString(for: receipt.amountDuffs.dashAmount))
-                    .font(.subheadline)
-                    .foregroundColor(.dash.secondaryText)
-            }
+        VStack(spacing: 16) {
+            PaymentSuccessHeader(
+                title: NSLocalizedString("Received", comment: "Receive success title"),
+                amountDuffs: Int64(clamping: receipt.amountDuffs),
+                fiatText: CurrencyExchanger.shared.fiatAmountString(
+                    for: receipt.amountDuffs.dashAmount))
 
             VStack(spacing: 8) {
                 receiptInfoRow(
@@ -243,6 +235,7 @@ struct PaymentsLandingScreen: View {
             .padding(14)
             .background(Color.dash.secondaryBackground)
             .cornerRadius(14)
+            .padding(.horizontal, 20)
 
             if viewModel.canViewTransaction, let transactionId = receipt.transactionId {
                 Button {
@@ -254,27 +247,19 @@ struct PaymentsLandingScreen: View {
                 }
             }
 
-            HStack(spacing: 12) {
-                Button(action: viewModel.receiveAnother) {
-                    actionPill(title: NSLocalizedString("Receive another", comment: "Receive receipt action"))
-                }
-                Button(action: onClose) {
-                    Text(NSLocalizedString("Done", comment: "Receive receipt action"))
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.dash.whiteText)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(Color.dash.blue)
-                        .cornerRadius(12)
-                }
-            }
+            Spacer(minLength: 12)
+
+            ButtonsGroup(
+                orientation: .horizontal,
+                size: .large,
+                positiveButtonText: NSLocalizedString("Done", comment: "Receive receipt action"),
+                positiveButtonAction: onClose,
+                negativeButtonText: NSLocalizedString("Receive another", comment: "Receive receipt action"),
+                negativeButtonAction: viewModel.receiveAnother)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
         }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.dash.primaryBackground)
-                .shadow(color: Color.dash.shadow, radius: 12, x: 0, y: 4))
-        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func receiptInfoRow(title: String, value: String) -> some View {
