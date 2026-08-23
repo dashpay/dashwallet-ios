@@ -76,6 +76,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             showSwitchWallet()
         case .dashDEX:
             dashDEXAction()
+        case .nodes:
+            homeViewShowMasternodes()
         }
     }
 

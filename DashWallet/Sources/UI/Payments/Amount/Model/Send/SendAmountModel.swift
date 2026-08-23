@@ -23,9 +23,14 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
     case insufficientFunds
     case syncingChain
     case networkUnavailable
+    /// "Max" had nothing to fill in, carrying the reason (empty balance,
+    /// funds still confirming, or a balance below the fee reserve). Built by
+    /// `InternalTransferViewModel.coreZeroMaxMessage`.
+    case maxUnavailable(String)
 
     var errorDescription: String? {
         switch self {
+        case .maxUnavailable(let message): return message
         case .insufficientFunds: return NSLocalizedString("Insufficient funds", comment: "Send screen")
         case .syncingChain: return NSLocalizedString("Wait until wallet is synced to complete the transaction",
                                                      comment: "Send screen")
@@ -38,6 +43,9 @@ enum SendAmountError: Error, ColorizedText, LocalizedError {
         case .insufficientFunds: return .systemRed
         case .syncingChain: return .secondaryLabel
         case .networkUnavailable: return .secondaryLabel
+        // Informational, not a failure the user caused — same weight as the
+        // syncing notice rather than the red insufficient-funds text.
+        case .maxUnavailable: return .secondaryLabel
         }
     }
 }
@@ -81,9 +89,22 @@ class SendAmountModel: BaseAmountModel {
         // leaves no room for the fee, so the send fails to build.
         let allAvailableFunds = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
 
-        if allAvailableFunds > 0 {
-            updateCurrentAmountObject(with: allAvailableFunds)
+        guard allAvailableFunds > 0 else {
+            // A Max that can't fill anything must say why. Silently ignoring
+            // the tap left the amount at 0 with no feedback, so an empty
+            // balance, funds that are still confirming, and a balance too
+            // small to also cover the fee were indistinguishable from a dead
+            // button. Same three states, same wording, as the internal
+            // transfer's Core Max.
+            let balance = SwiftDashSDKWalletState.shared.balance
+            error = SendAmountError.maxUnavailable(
+                InternalTransferViewModel.coreZeroMaxMessage(
+                    totalDuffs: balance?.total ?? 0,
+                    confirmedSpendableDuffs: balance?.spendable ?? 0))
+            return
         }
+
+        updateCurrentAmountObject(with: allAvailableFunds)
     }
 
     override func checkAmountForErrors() {
