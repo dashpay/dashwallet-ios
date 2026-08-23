@@ -33,9 +33,9 @@ private struct InternalTransferConfirmation: Identifiable {
 struct InternalTransferScreen: View {
     @ObservedObject var viewModel: InternalTransferViewModel
 
-    /// Invoked when the user finishes a successful transfer via the
-    /// confirm sheet's `Done` button. The hosting controller wires it
-    /// to `navigationController?.popViewController`.
+    /// Invoked once the confirm sheet has handed the transfer to the runner.
+    /// The transfer is still running — the hosting controller closes this
+    /// screen and returns to the history, where the outcome shows up.
     var onCompleted: () -> Void = {}
 
     /// False when embedded under a host that renders its own title
@@ -62,6 +62,13 @@ struct InternalTransferScreen: View {
 
     @State private var confirmation: InternalTransferConfirmation?
 
+    /// Set when Confirm handed the transfer off, consumed by the sheet's
+    /// `onDismiss`. Leaving the screen is what closes it, and doing that in the
+    /// same turn as `confirmation = nil` ran the sheet's dismissal and the
+    /// screen's own over each other — which is what read as being yanked out
+    /// the moment the PIN was accepted. One animation at a time instead.
+    @State private var leavesAfterConfirmation = false
+
     var body: some View {
         VStack(spacing: 0) {
             if let onBack {
@@ -85,20 +92,20 @@ struct InternalTransferScreen: View {
                 VStack(spacing: 16) {
                     amountRow
                         .padding(.horizontal, 20)
-                        .padding(.top, showsHeader ? 12 : 0)
+                        .padding(.top, showsHeader ? 10 : 0)
 
                     TransferEndpointCards(
                         viewModel: viewModel,
                         sendFrom: sendFrom,
-                        receiveInto: receiveInto)
-                        .padding(.horizontal, 20)
+                        receiveInto: receiveInto
+                    )
+                    .padding(.horizontal, 20)
 
                     if viewModel.canContinue {
                         TransferPreview(amountFormatted: viewModel.dashAmountFormatted)
                             .padding(.horizontal, 20)
                     }
                 }
-                .padding(.bottom, 12)
             }
             .scrollBounceBehavior(.basedOnSize)
 
@@ -113,7 +120,11 @@ struct InternalTransferScreen: View {
             message: NSLocalizedString(
                 "Wait until the chain is fully synced to make transfers",
                 comment: "Transfer blocked during a restored wallet's initial sync"))
-        .sheet(item: $confirmation) { submission in
+        .sheet(item: $confirmation, onDismiss: {
+            guard leavesAfterConfirmation else { return }
+            leavesAfterConfirmation = false
+            onCompleted()
+        }) { submission in
             InternalTransferConfirmSheet(
                 route: submission.route,
                 dashDuffs: submission.dashDuffs,
@@ -127,9 +138,9 @@ struct InternalTransferScreen: View {
                 identityTopUp: submission.identityTopUp,
                 identityWithdrawal: submission.identityWithdrawal,
                 onCancel: { confirmation = nil },
-                onCompleted: {
+                onSubmitted: {
+                    leavesAfterConfirmation = true
                     confirmation = nil
-                    onCompleted()
                 },
                 onPlatformShieldCapacityChanged: { maxCredits, amountWasMax in
                     confirmation = nil
@@ -137,8 +148,9 @@ struct InternalTransferScreen: View {
                         maxShieldableCredits: maxCredits,
                         submittedAmountWasMax: amountWasMax)
                 })
-                .presentationDetents([.large])
-                .presentationDragIndicator(.hidden)
+                // No detent here: the sheet is `BottomSheet.selfSizing`, which
+                // sets its own from the measured content, and draws its own
+                // grabber.
         }
     }
 

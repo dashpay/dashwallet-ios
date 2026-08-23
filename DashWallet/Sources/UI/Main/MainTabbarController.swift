@@ -399,6 +399,13 @@ extension MainTabbarController {
 
 // MARK: - Public
 extension MainTabbarController {
+    /// Switch to the history. Used by flows that finish somewhere else and
+    /// want the user to land where their transaction shows up.
+    @objc
+    public func showHome() {
+        selectedIndex = MainTabbarTabs.home.rawValue
+    }
+
     @objc
     public func performScanQRCodeAction() {
         dismiss(animated: false, completion: nil)

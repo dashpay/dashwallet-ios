@@ -40,11 +40,13 @@ final class InternalTransferHostingController: UIViewController {
 
     private lazy var hostingController: UIHostingController<InternalTransferScreen> = {
         var screen = InternalTransferScreen(viewModel: viewModel) { [weak self] in
-            // After a successful transfer the user taps "Done" inside the
-            // confirm sheet; the screen forwards that to us so we can
-            // leave — pop when pushed (landing / readiness flows), dismiss
-            // if some future presenter shows this standalone as a sheet.
-            self?.leave()
+            // Confirm hands the transfer to `InternalTransferRunner`; the
+            // screen waits for the confirm sheet to finish closing and then
+            // calls this, so it fires while the transfer is still running.
+            // Leave for the history, where the outcome shows up: the home tab
+            // when this was pushed inside the tab bar, otherwise just pop or
+            // dismiss whatever presented us.
+            self?.leaveForHistory()
         }
         // Only when pushed: presented as a sheet there is nothing to go back
         // to, and the grabber is the way out.
@@ -54,12 +56,30 @@ final class InternalTransferHostingController: UIViewController {
         return UIHostingController(rootView: screen)
     }()
 
-    private func leave() {
+    private func leave(completion: (() -> Void)? = nil) {
         if let navigationController {
+            // `popViewController` takes no completion handler, so the pop's own
+            // CoreAnimation transaction carries one.
+            CATransaction.begin()
+            CATransaction.setCompletionBlock(completion)
             navigationController.popViewController(animated: true)
+            CATransaction.commit()
         } else {
-            dismiss(animated: true)
+            dismiss(animated: true, completion: completion)
         }
+    }
+
+    /// Back to where the transfer becomes visible. The runner announces the
+    /// outcome there, and — for the routes that write one — the history row
+    /// carries it.
+    ///
+    /// The tab change waits for the pop: run together, the stack slid back
+    /// while the tab swapped underneath it, and the two read as one jolt. Held
+    /// onto beforehand because popping detaches this controller, and
+    /// `tabBarController` is nil by the time the completion runs.
+    private func leaveForHistory() {
+        let tabBarController = tabBarController as? MainTabbarController
+        leave { tabBarController?.showHome() }
     }
 
     override func viewDidLoad() {
