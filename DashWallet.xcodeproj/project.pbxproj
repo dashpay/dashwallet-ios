@@ -620,6 +620,10 @@
 		5AEDE0012F9B000000000004 /* EvonodeWithdrawalViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEDE0012F9B000000000001 /* EvonodeWithdrawalViewModel.swift */; };
 		5AEDE0012F9B000000000005 /* EvonodeWithdrawalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEDE0012F9B000000000002 /* EvonodeWithdrawalScreen.swift */; };
 		5AEDE0012F9B000000000006 /* EvonodeWithdrawalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEDE0012F9B000000000002 /* EvonodeWithdrawalScreen.swift */; };
+		5AE5700E2F9C000000000003 /* EvonodeStatusViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE5700E2F9C000000000001 /* EvonodeStatusViewModel.swift */; };
+		5AE5700E2F9C000000000004 /* EvonodeStatusViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE5700E2F9C000000000001 /* EvonodeStatusViewModel.swift */; };
+		5AE5700E2F9C000000000005 /* EvonodeStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE5700E2F9C000000000002 /* EvonodeStatusScreen.swift */; };
+		5AE5700E2F9C000000000006 /* EvonodeStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE5700E2F9C000000000002 /* EvonodeStatusScreen.swift */; };
 		51BA2EA02F0B2E0100A1B201 /* SwapPendingGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BA2E9F2F0B2E0100A1B201 /* SwapPendingGate.swift */; };
 		51BA2EA12F0B2E0100A1B201 /* SwapPendingGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BA2E9F2F0B2E0100A1B201 /* SwapPendingGate.swift */; };
 		51F0D10130BF97A900B27E11 /* ExclamationIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51F0D10030BF97A900B27E11 /* ExclamationIcon.swift */; };
@@ -2815,6 +2819,8 @@
 		51AA00202F970020005A0020 /* MasternodesScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodesScreen.swift; sourceTree = "<group>"; };
 		5AEDE0012F9B000000000001 /* EvonodeWithdrawalViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeWithdrawalViewModel.swift; sourceTree = "<group>"; };
 		5AEDE0012F9B000000000002 /* EvonodeWithdrawalScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeWithdrawalScreen.swift; sourceTree = "<group>"; };
+		5AE5700E2F9C000000000001 /* EvonodeStatusViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeStatusViewModel.swift; sourceTree = "<group>"; };
+		5AE5700E2F9C000000000002 /* EvonodeStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeStatusScreen.swift; sourceTree = "<group>"; };
 		51BA2E9F2F0B2E0100A1B201 /* SwapPendingGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPendingGate.swift; sourceTree = "<group>"; };
 		51DFA7F72FA8A9DF001EDB3A /* DashStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashStepper.swift; sourceTree = "<group>"; };
 		51F0D10030BF97A900B27E11 /* ExclamationIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExclamationIcon.swift; sourceTree = "<group>"; };
@@ -3781,6 +3787,15 @@
 				5AEDE0012F9B000000000002 /* EvonodeWithdrawalScreen.swift */,
 			);
 			path = "Masternode Withdrawal";
+			sourceTree = "<group>";
+		};
+		5AE5700E2F9C000000000007 /* Evonode Status */ = {
+			isa = PBXGroup;
+			children = (
+				5AE5700E2F9C000000000001 /* EvonodeStatusViewModel.swift */,
+				5AE5700E2F9C000000000002 /* EvonodeStatusScreen.swift */,
+			);
+			path = "Evonode Status";
 			sourceTree = "<group>";
 		};
 		0529717581A09721B3115957 /* InternalTransfer */ = {
@@ -4826,6 +4841,7 @@
 				FB3FF0B0222641210059A9A5 /* Masternode Keys */,
 				51AA00202F970020005A0020 /* MasternodesScreen.swift */,
 				5AEDE0012F9B000000000007 /* Masternode Withdrawal */,
+				5AE5700E2F9C000000000007 /* Evonode Status */,
 				7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */,
 				RC00C0032FA0000000000001 /* CSVExportSheet.swift */,
 				752F81A82E323FD000ADA76D /* ToolsMenuViewModel.swift */,
@@ -10208,6 +10224,8 @@
 				51AA00222F970022005A0022 /* MasternodesScreen.swift in Sources */,
 				5AEDE0012F9B000000000004 /* EvonodeWithdrawalViewModel.swift in Sources */,
 				5AEDE0012F9B000000000006 /* EvonodeWithdrawalScreen.swift in Sources */,
+				5AE5700E2F9C000000000004 /* EvonodeStatusViewModel.swift in Sources */,
+				5AE5700E2F9C000000000006 /* EvonodeStatusScreen.swift in Sources */,
 				51AA00022F970002005A0002 /* SyncInfoMenuScreen.swift in Sources */,
 				51AA00052F970005005A0005 /* SyncInfoMenuViewModel.swift in Sources */,
 				51AA00082F970008005A0008 /* DashPaySyncInfoScreen.swift in Sources */,
@@ -11222,6 +11240,8 @@
 				51AA00212F970021005A0021 /* MasternodesScreen.swift in Sources */,
 				5AEDE0012F9B000000000003 /* EvonodeWithdrawalViewModel.swift in Sources */,
 				5AEDE0012F9B000000000005 /* EvonodeWithdrawalScreen.swift in Sources */,
+				5AE5700E2F9C000000000003 /* EvonodeStatusViewModel.swift in Sources */,
+				5AE5700E2F9C000000000005 /* EvonodeStatusScreen.swift in Sources */,
 				51AA00032F970003005A0003 /* SyncInfoMenuScreen.swift in Sources */,
 				51AA00062F970006005A0006 /* SyncInfoMenuViewModel.swift in Sources */,
 				51AA00092F970009005A0009 /* DashPaySyncInfoScreen.swift in Sources */,
