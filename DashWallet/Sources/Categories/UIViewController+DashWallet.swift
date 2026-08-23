@@ -137,7 +137,21 @@ extension UIViewController {
             present(mailComposer, animated: true)
         }
         else {
-            var activityItems: [Any] = logFiles
+            // No Apple Mail account configured (common when the customer lives in Gmail), so
+            // `MFMailComposeViewController` is unavailable and the logs go out through the share
+            // sheet instead. Lead with a mail item carrying the support address and subject:
+            // handlers that understand `mailto:` prefill the recipient from it, and the rest at
+            // least show the address in the composed body — the previous items were log files
+            // only, which is why reports arrived with an empty "To" field.
+            let email = Bundle.main.infoDictionary?["SupportEmail"] as? String ?? ""
+            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+            let subject = String(format: NSLocalizedString("iOS Dash Wallet: %@ Reported issue", comment: ""), version)
+
+            var activityItems: [Any] = []
+            if !email.isEmpty {
+                activityItems.append(SupportRecipientActivityItem(email: email, subject: subject))
+            }
+            activityItems.append(contentsOf: logFiles)
             if let sdkLogsZip {
                 activityItems.append(sdkLogsZip)
             }
@@ -181,5 +195,47 @@ extension UIViewController {
         }
 
         present(activityViewController, animated: true, completion: completion)
+    }
+}
+
+/// Carries the support destination into the share sheet used when `MFMailComposeViewController`
+/// is unavailable. `UIActivityViewController` exposes no recipient API, so the address travels
+/// as a `mailto:` URL for mail activities — which read the recipient and subject from it — and
+/// as plain text for every other handler, where it stays visible in the composed message.
+final class SupportRecipientActivityItem: NSObject, UIActivityItemSource {
+    private let email: String
+    private let subject: String
+
+    init(email: String, subject: String) {
+        self.email = email
+        self.subject = subject
+        super.init()
+    }
+
+    private var mailtoURL: URL? {
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = email
+        components.queryItems = [URLQueryItem(name: "subject", value: subject)]
+        return components.url
+    }
+
+    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+        mailtoURL ?? email
+    }
+
+    func activityViewController(
+        _ activityViewController: UIActivityViewController,
+        itemForActivityType activityType: UIActivity.ActivityType?
+    ) -> Any? {
+        guard let mailtoURL else { return email }
+        return activityType == .mail ? mailtoURL : email
+    }
+
+    func activityViewController(
+        _ activityViewController: UIActivityViewController,
+        subjectForActivityType activityType: UIActivity.ActivityType?
+    ) -> String {
+        subject
     }
 }
