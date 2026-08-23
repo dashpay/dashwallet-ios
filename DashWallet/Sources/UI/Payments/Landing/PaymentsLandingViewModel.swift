@@ -22,14 +22,6 @@ enum PaymentsLandingTab: String, CaseIterable, Identifiable {
         case .send: return NSLocalizedString("Send", comment: "")
         }
     }
-
-    var iconSystemName: String {
-        switch self {
-        case .receive: return "arrow.down"
-        case .internalTransfer: return "arrow.up.arrow.down"
-        case .send: return "arrow.up"
-        }
-    }
 }
 
 @MainActor

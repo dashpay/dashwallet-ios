@@ -40,7 +40,30 @@ struct PaymentsTabSelector: View {
             options: tabs,
             selection: $selection,
             label: { $0.title },
-            icon: { $0.iconSystemName })
+            icon: { tab, isSelected in tab.icon(isSelected: isSelected) })
+    }
+}
+
+/// The arrow a tab draws, in the direction's own colour when it is the selected
+/// tab and in grey when it is not.
+///
+/// Two files per tab rather than one tinted two ways: the colour lives in the
+/// artwork, and a coloured arrow dimmed to the unselected treatment would no
+/// longer match the grey label beside it.
+///
+/// Here rather than beside `title` on the tab itself: the enum lives in the
+/// view model, which has no business importing DashUIKit, and which arrow a tab
+/// shows is this selector's decision the same way the title is.
+private extension PaymentsLandingTab {
+    func icon(isSelected: Bool) -> DashIconSource {
+        switch self {
+        case .receive:
+            return (isSelected ? DashIcon.SegmentedControl.receive : .receiveDisabled).source
+        case .internalTransfer:
+            return (isSelected ? DashIcon.SegmentedControl.transfer : .transferDisabled).source
+        case .send:
+            return (isSelected ? DashIcon.SegmentedControl.send : .sendDisabled).source
+        }
     }
 }
 
