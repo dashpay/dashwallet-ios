@@ -21,9 +21,22 @@ import Foundation
 // MARK: - AllMerchantsDataProvider
 
 class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
+    /// The result set ignores bounds entirely, and userPoint only picks each merchant's
+    /// representative closest location — movement below this threshold can't meaningfully
+    /// change the outcome, so it isn't worth a full-catalog refetch. GPS updates arrive
+    /// every ~100m (DWLocationManager.distanceFilter), and each one refetches every
+    /// map-showing segment.
+    private static let significantMoveDistance: CLLocationDistance = 500
+
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        if lastQuery == query && !items.isEmpty && lastFilters == filters &&
+            !Self.movedSignificantly(from: lastUserPoint, to: userPoint) {
+            completion(.success(items))
+            return
+        }
+
         lastQuery = query
         lastUserPoint = userPoint
         lastBounds = bounds
@@ -33,6 +46,18 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
         // userPoint is still passed so each merchant is represented by its closest location.
         fetch(by: query, in: nil, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
             self?.handle(result: result, completion: completion)
+        }
+    }
+
+    private static func movedSignificantly(from old: CLLocationCoordinate2D?, to new: CLLocationCoordinate2D?) -> Bool {
+        switch (old, new) {
+        case (nil, nil):
+            return false
+        case (nil, .some), (.some, nil):
+            return true
+        case (.some(let old), .some(let new)):
+            return CLLocation(latitude: old.latitude, longitude: old.longitude)
+                .distance(from: CLLocation(latitude: new.latitude, longitude: new.longitude)) > significantMoveDistance
         }
     }
 

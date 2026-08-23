@@ -268,10 +268,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
             defaultSegmentIndex = MerchantsListSegment.online.rawValue
         }
 
-        // Set the current segment FIRST, then apply defaults based on that segment
-        model.currentSegment = model.segments[defaultSegmentIndex]
-
-        // Now set defaults based on the ACTUAL current segment
         let defaultSortBy: PointOfUseListFilters.SortBy = defaultSegmentIndex == MerchantsListSegment.nearby.rawValue ? .distance : .name
 
         var defaultPaymentTypes: [PointOfUseListFilters.SpendingOptions] = [.dash, .ctx]
@@ -287,8 +283,11 @@ class MerchantListViewController: ExplorePointOfUseListViewController, Navigatio
             denominationType: .both // Default to both fixed and flexible
         )
 
-        // Set filters but don't fetch yet - wait for map bounds to be set
-        model.filters = defaultFilters
+        // Store the default filters BEFORE making the segment current: switching segments
+        // triggers a fetch, and that fetch must already carry the filters — otherwise the
+        // first render shows unfiltered results while the UI claims the defaults are applied.
+        model.setFilters(defaultFilters, for: model.segments[defaultSegmentIndex])
+        model.currentSegment = model.segments[defaultSegmentIndex]
     }
 
     override func viewWillAppear(_ animated: Bool) {

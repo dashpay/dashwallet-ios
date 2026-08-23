@@ -136,11 +136,18 @@ final class PointOfUseListModel {
             return segmentFilters[currentSegment]
         }
         set {
-            if let newValue = newValue {
-                segmentFilters[currentSegment] = newValue
-            } else {
-                segmentFilters.removeValue(forKey: currentSegment)
-            }
+            setFilters(newValue, for: currentSegment)
+        }
+    }
+
+    /// Stores filters for a segment without fetching. Lets callers configure a segment's
+    /// filters before making it current, so the fetch triggered by the segment switch
+    /// already runs with them.
+    func setFilters(_ newFilters: PointOfUseListFilters?, for segment: PointOfUseListSegment) {
+        if let newFilters {
+            segmentFilters[segment] = newFilters
+        } else {
+            segmentFilters.removeValue(forKey: segment)
         }
     }
 
