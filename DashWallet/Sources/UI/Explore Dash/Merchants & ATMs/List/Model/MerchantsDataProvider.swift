@@ -29,17 +29,17 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
         lastBounds = bounds
         lastFilters = filters
 
-        // ALL TAB: Never filter by bounds or location - show ALL merchants regardless of location
-        // Don't pass userPoint to avoid the in-memory grouping path (which filters out online merchants)
-        fetch(by: query, in: nil, userPoint: nil, with: filters, offset: 0) { [weak self] result in
+        // ALL TAB: Never filter by bounds - show ALL merchants regardless of location.
+        // userPoint is still passed so each merchant is represented by its closest location.
+        fetch(by: query, in: nil, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
             self?.handle(result: result, completion: completion)
         }
     }
 
     override func nextPage(completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
-        // ALL TAB: Never filter by bounds or location - show ALL merchants
-        // Don't pass userPoint to avoid the in-memory grouping path
-        fetch(by: lastQuery, in: nil, userPoint: nil, with: lastFilters, offset: nextOffset) { [weak self] result in
+        // ALL TAB: Never filter by bounds - show ALL merchants regardless of location.
+        // userPoint is still passed so each merchant is represented by its closest location.
+        fetch(by: lastQuery, in: nil, userPoint: lastUserPoint, with: lastFilters, offset: nextOffset) { [weak self] result in
             self?.handle(result: result, completion: completion)
         }
     }
