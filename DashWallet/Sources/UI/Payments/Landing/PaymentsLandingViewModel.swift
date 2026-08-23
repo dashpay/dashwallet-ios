@@ -561,11 +561,10 @@ final class PaymentsLandingViewModel: ObservableObject {
                     $0.kind == .received &&
                         !session.shieldedActivityIds.contains($0.id)
                 }
-                .sorted {
+                .min {
                     if $0.date == $1.date { return $0.id < $1.id }
                     return $0.date < $1.date
                 }
-                .first
             if let received {
                 self.acceptReceipt(ReceiveReceipt(
                     id: received.id,

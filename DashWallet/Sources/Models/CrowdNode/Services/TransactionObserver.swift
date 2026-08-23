@@ -136,11 +136,12 @@ public final class TransactionObserver {
         guard let resolved = resolveHostHandles() else { return [] }
         let context = ModelContext(resolved.container)
         let walletId = resolved.walletId
-        let descriptor = FetchDescriptor<PersistentTransaction>(
+        var descriptor = FetchDescriptor<PersistentTransaction>(
             predicate: #Predicate {
                 $0.outputs.contains { $0.walletId == walletId } ||
                     $0.inputs.contains { $0.walletId == walletId }
             })
+        descriptor.propertiesToFetch = [\.txid]
         do {
             return Set(try context.fetch(descriptor).map(\.txid))
         } catch {
