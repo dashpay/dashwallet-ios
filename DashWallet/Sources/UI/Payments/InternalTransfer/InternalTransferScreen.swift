@@ -106,14 +106,20 @@ struct InternalTransferScreen: View {
                         )
                         .padding(.horizontal, 20)
 
-                        if viewModel.canContinue {
-                            // Centred in whatever is left between the cards and
-                            // the keypad: the pair of spacers splits the slack
-                            // evenly, and both collapse to their minimum once
-                            // the content already fills the viewport — so the
-                            // tight receive-sheet layout is unchanged.
-                            Spacer(minLength: 12)
+                        // Unconditional, and that matters: `.frame(minHeight:)`
+                        // below hands the stack the whole viewport, and
+                        // whatever is left over goes to the first greedy child.
+                        // `EnterAmountView`'s amount is `maxHeight: .infinity`,
+                        // so with nothing here to absorb the slack it swallowed
+                        // it and pushed the cards down onto the keypad.
+                        Spacer(minLength: 12)
 
+                        if viewModel.canContinue {
+                            // The second spacer is what centres the preview:
+                            // the pair splits the slack evenly. Both collapse
+                            // to their minimum once the content already fills
+                            // the viewport, so the tight receive-sheet layout
+                            // is unchanged.
                             TransferPreview(amountFormatted: viewModel.dashAmountFormatted)
                                 .padding(.horizontal, 20)
 
