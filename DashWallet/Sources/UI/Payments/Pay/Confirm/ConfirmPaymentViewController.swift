@@ -135,7 +135,12 @@ extension ConfirmPaymentViewController {
     private func reloadState() {
         state.items = model.items ?? []
         state.actionTitle = model.actionButtonTitle
-        state.mainAmount = model.mainAmountString
+        // Digits only. `mainAmountString` is `formattedDashAmount`, which spells
+        // the currency out — "DASH 0.02" — and the component draws the symbol.
+        state.mainAmount = model.dataSource.amountToDisplay.dashAmount
+            .formattedDashAmountWithoutCurrencySymbol
+        state.feeDuffs = model.dataSource.feeDuffs
+        state.totalDuffs = model.dataSource.totalDuffs
         state.supplementaryAmount = model.supplementaryAmountString
 
         if #available(iOS 16.0, *) {
@@ -181,6 +186,9 @@ extension ConfirmPaymentViewController {
     @MainActor
     fileprivate final class State: ObservableObject {
         @Published var items: [DWTitleDetailItem] = []
+        /// Present on the L1 payment path only; see `ConfirmPaymentDataSource`.
+        @Published var feeDuffs: UInt64?
+        @Published var totalDuffs: UInt64?
         @Published var actionTitle = ""
         @Published var mainAmount = ""
         @Published var supplementaryAmount = ""
@@ -221,7 +229,7 @@ private struct ConfirmPaymentSheet: View {
             DashUIKit.SwapAmountView(
                 amount: state.mainAmount,
                 secondaryText: state.supplementaryAmount,
-                showDashLogo: false)
+                showDashLogo: true)
                 .frame(maxWidth: .infinity)
                 .padding(.top, 14)
 
@@ -229,7 +237,7 @@ private struct ConfirmPaymentSheet: View {
                 ForEach(Array(state.items.enumerated()), id: \.offset) { _, item in
                     DashUIKit.MenuItem(
                         title: item.title ?? "",
-                        accessory: .text(detail(of: item)))
+                        accessory: accessory(for: item))
                 }
             }
             .modifier(MenuViewModifier())
@@ -260,13 +268,33 @@ private struct ConfirmPaymentSheet: View {
         .padding(.bottom, 20)
     }
 
-    /// The row's value as plain text.
+    /// How a row's value is drawn.
     ///
-    /// The model hands the fee and the total over pre-styled in an
-    /// `NSAttributedString`, built for the cell this sheet no longer uses. Its
-    /// string is taken and the styling dropped on purpose: `MenuItem` applies
-    /// the design system's own, which is the reason for drawing the row with it.
+    /// The two money rows go through `.balance`, which renders the amount with
+    /// the library's own Dash symbol. Their `attributedDetail` carries one too,
+    /// but as an image attachment — read back as plain text it disappears and
+    /// the row shows a bare number, which is what it did.
+    ///
+    /// Matched by title against the model's own strings: the items arrive as an
+    /// untyped list, and re-deriving the order here would be a second copy of
+    /// the assembly `ConfirmPaymentModel` already does.
+    private func accessory(for item: DWTitleDetailItem) -> DashUIKit.MenuItemAccessory {
+        if let fee = state.feeDuffs, item.title == NSLocalizedString("Network fee", comment: "") {
+            return .balance(dash: Int64(clamping: fee), sign: .none)
+        }
+        if let total = state.totalDuffs, item.title == NSLocalizedString("Total", comment: "") {
+            return .balance(dash: Int64(clamping: total), sign: .none)
+        }
+        return .text(detail(of: item))
+    }
+
+    /// The row's value as plain text, shortened when the model asked for one
+    /// truncated line — an address, which otherwise wraps and pushes the whole
+    /// row out of shape. `MenuItem` takes a string rather than a styled view, so
+    /// the shortening happens here instead of as a truncation mode.
     private func detail(of item: DWTitleDetailItem) -> String {
-        item.plainDetail ?? item.attributedDetail?.string ?? ""
+        let value = item.plainDetail ?? item.attributedDetail?.string ?? ""
+        guard item.style == .truncatedSingleLine, value.count > 24 else { return value }
+        return "\(value.prefix(12))…\(value.suffix(12))"
     }
 }
