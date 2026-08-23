@@ -101,7 +101,7 @@ struct PaymentsLandingScreen: View {
     }
 
     var body: some View {
-        VStack(alignment: .center, spacing: 0) {
+        VStack(alignment: .center, spacing: 20) {
             if showsHeader {
                 header
             }
@@ -111,6 +111,8 @@ struct PaymentsLandingScreen: View {
                 selection: tabSelection
             )
             .frame(height: 70)
+            .padding(.top, 20)
+            .padding(.horizontal, 16)
 
             // ZStack, not a plain sibling: during the slide both the outgoing
             // and incoming tab exist, and they have to share one slot instead
@@ -228,10 +230,12 @@ struct PaymentsLandingScreen: View {
                         showsCopiedToast = true
                     },
                     onShareAddress: onShareAddress,
-                    onSpecifyAmount: onSpecifyAmount)
-                    // Its own insets are per-section rather than one wrapper,
-                    // so the gap under the selector stays here.
-                    .padding(.top, Layout.receiveTopPadding)
+                    onSpecifyAmount: onSpecifyAmount
+                )
+                .padding(.horizontal, Layout.cardHorizontalPadding)
+                // Its own insets are per-section rather than one wrapper,
+                // so the gap under the selector stays here.
+//                .padding(.top, Layout.receiveTopPadding)
             }
 
         case .internalTransfer:
@@ -247,16 +251,18 @@ struct PaymentsLandingScreen: View {
                     viewModel: embeddedTransferViewModel,
                     onCompleted: onTransferCompleted,
                     showsHeader: false,
-                    sendFrom: source)
-                    .padding(.top, Layout.embeddedFormTopPadding)
+                    sendFrom: source
+                )
+                .padding(.top, Layout.embeddedFormTopPadding)
 
             case .receivingInto:
                 InternalTransferScreen(
                     viewModel: embeddedTransferViewModel,
                     onCompleted: onTransferCompleted,
                     showsHeader: false,
-                    receiveInto: viewModel.network)
-                    .padding(.top, Layout.embeddedFormTopPadding)
+                    receiveInto: viewModel.network
+                )
+                .padding(.top, Layout.embeddedFormTopPadding)
             }
 
         case .send:
@@ -265,8 +271,9 @@ struct PaymentsLandingScreen: View {
                 pickerLayout {
                     PaymentsSendCard(
                         onScanQR: onScanQR,
-                        onSendToAddress: onSendToAddress)
-                        .padding(.horizontal, Layout.cardHorizontalPadding)
+                        onSendToAddress: onSendToAddress
+                    )
+                    .padding(.horizontal, Layout.cardHorizontalPadding)
                 }
 
             case .sendingFrom:
@@ -275,8 +282,9 @@ struct PaymentsLandingScreen: View {
                     onClose: onClose,
                     onScanQR: onScanQR,
                     onContinue: onSendContinue,
-                    showsHeader: false)
-                    .padding(.top, Layout.embeddedFormTopPadding)
+                    showsHeader: false
+                )
+                .padding(.top, Layout.embeddedFormTopPadding)
             }
         }
     }

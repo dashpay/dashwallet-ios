@@ -69,3 +69,19 @@ final class PaymentsTabRootController: UIViewController {
         landing.didMove(toParent: self)
     }
 }
+
+// MARK: - NavigationBarDisplayable
+
+/// The payments tab has no navigation bar: the landing draws its own tab
+/// selector at the top and nothing above it.
+///
+/// `MainTabbarController` already sets `isNavigationBarHidden` on the
+/// navigation controller, but that only holds until the first appearance:
+/// `BaseNavigationController`'s `willShow` pass re-derives it per controller
+/// and falls back to SHOWING the bar for anything that does not declare
+/// otherwise. The bar it then put back carried no title and no back button, so
+/// it read as an unexplained ~44pt gap above the selector rather than as a bar.
+extension PaymentsTabRootController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
+}
