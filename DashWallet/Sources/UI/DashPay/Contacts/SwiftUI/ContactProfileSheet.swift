@@ -40,10 +40,15 @@ struct ContactProfileSheet: View {
     /// looked up from `resolvedByTxid` in the destination builder
     /// (`Transaction` itself isn't `Hashable`).
     @State private var selectedPaymentId: String? = nil
-    @State private var metaSavedToast = false
-    /// Contact settings (alias / note) stay collapsed until the user
-    /// taps the contact header; tapping again collapses them.
-    @State private var showContactSettings = false
+    /// Transient confirmation shown at the bottom of the sheet — a saved edit
+    /// or a copied identity id. One slot, so a second message replaces the
+    /// first instead of stacking.
+    @State private var toastMessage: String? = nil
+    /// Contact settings (alias / note) are part of what the sheet is for, so
+    /// they open with it; tapping the header still folds them away. They were
+    /// collapsed by default, which left an alias the user had already written
+    /// invisible on the one screen that shows everything about the contact.
+    @State private var showContactSettings = true
 
     private let service = SwiftDashSDKContactsService.shared
 
@@ -58,6 +63,12 @@ struct ContactProfileSheet: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         header
+                        // Sibling of `header` rather than part of it: the
+                        // header's tap toggles the contact-settings card, and
+                        // this row's tap copies.
+                        ContactIdentityIdView(
+                            identityId: contact.contactIdentityId,
+                            onCopy: { showToast(NSLocalizedString("Copied", comment: "")) })
                         if let message = contact.publicMessage, !message.isEmpty {
                             Text(message)
                                 .font(.system(size: 14))
@@ -138,8 +149,8 @@ struct ContactProfileSheet: View {
                 }
             }
             .overlay(alignment: .bottom) {
-                if metaSavedToast {
-                    Text(NSLocalizedString("Saved", comment: ""))
+                if let toastMessage {
+                    Text(toastMessage)
                         .font(.system(size: 13, weight: .medium))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
@@ -161,9 +172,12 @@ struct ContactProfileSheet: View {
             Text(contact.displayTitle)
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.dash.primaryText)
-            if let username = contact.username?.withoutDashSuffix,
-               !username.isEmpty,
-               username != contact.displayTitle {
+            // Shown even when it matches the title above. The title can be an
+            // owner-set alias or a profile display name, and both are free
+            // text — so "the name I gave them" and "the name they registered"
+            // looking identical is itself information, and hiding the username
+            // then left the user unable to tell which one they were reading.
+            if let username = contact.username?.withoutDashSuffix, !username.isEmpty {
                 Text(username)
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
@@ -362,6 +376,21 @@ struct ContactProfileSheet: View {
         .padding(.horizontal, 15)
     }
 
+    /// Show a confirmation and clear it after a beat. `@MainActor` because it
+    /// mutates published sheet state from callers on both the main actor and a
+    /// view's tap handler.
+    @MainActor
+    private func showToast(_ message: String) {
+        withAnimation { toastMessage = message }
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            // A later toast may have replaced this one; only retract our own.
+            if toastMessage == message {
+                withAnimation { toastMessage = nil }
+            }
+        }
+    }
+
     private var metaChanged: Bool {
         aliasText != (contact.alias ?? "") || noteText != (contact.note ?? "")
     }
@@ -377,9 +406,7 @@ struct ContactProfileSheet: View {
                     note: noteText.trimmingCharacters(in: .whitespaces),
                     hidden: isHidden,
                     for: contact.contactIdentityId)
-                withAnimation { metaSavedToast = true }
-                try? await Task.sleep(nanoseconds: 1_200_000_000)
-                withAnimation { metaSavedToast = false }
+                showToast(NSLocalizedString("Saved", comment: ""))
             } catch {
                 errorMessage = errorMessageIfNotCancelled(error)
             }
@@ -445,7 +472,7 @@ struct ContactProfileSheet: View {
 
     private var paymentsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("Payments", comment: "DashPay Contacts"))
+            Text(NSLocalizedString("Activity", comment: "DashPay Contacts"))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.dash.primaryText)
             // Legacy profile's info tooltip, inlined: only payments
@@ -454,14 +481,19 @@ struct ContactProfileSheet: View {
             Text(NSLocalizedString("Payments made directly to an address aren't retained here.", comment: "DashPay Contacts"))
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
-            if payments.isEmpty {
+            if activityEntries.isEmpty {
                 Text(NSLocalizedString("No payments with this contact yet", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                     .padding(.top, 2)
             } else {
-                ForEach(payments) { payment in
-                    paymentRow(payment)
+                ForEach(activityEntries) { entry in
+                    switch entry {
+                    case .payment(let payment):
+                        paymentRow(payment)
+                    case .request(let request):
+                        requestRow(request)
+                    }
                 }
             }
         }
@@ -472,6 +504,125 @@ struct ContactProfileSheet: View {
                 .fill(Color.dash.secondaryBackground))
         .padding(.horizontal, 15)
     }
+
+    // MARK: - Activity
+
+    /// A moment in the history with this contact. Payments are only part of it:
+    /// before the first one there is still the request that opened the channel,
+    /// and a profile that showed nothing until money moved read as empty for a
+    /// contact the user had just added.
+    private enum ActivityEntry: Identifiable {
+        case payment(SwiftDashSDKContactsService.ContactPayment)
+        case request(RequestEvent)
+
+        var date: Date {
+            switch self {
+            case .payment(let payment): payment.date
+            case .request(let request): request.date
+            }
+        }
+
+        var id: String {
+            switch self {
+            case .payment(let payment): "payment-\(payment.id)"
+            case .request(let request): "request-\(request.id)"
+            }
+        }
+    }
+
+    /// A contact-request milestone, derived from the pair's own timestamps
+    /// rather than a feed: `incomingCreatedAt` / `outgoingCreatedAt` are the two
+    /// halves of a DashPay friendship, so the earlier is the request and — once
+    /// established — the later is the reply that completed it.
+    private struct RequestEvent: Identifiable {
+        enum Kind {
+            case theyAsked
+            case weAsked
+            case theyAccepted
+            case weAccepted
+        }
+
+        let kind: Kind
+        let date: Date
+        var id: String { "\(kind)-\(date.timeIntervalSince1970)" }
+    }
+
+    private var requestEvents: [RequestEvent] {
+        let incoming = contact.incomingCreatedAt
+        let outgoing = contact.outgoingCreatedAt
+
+        switch (incoming, outgoing) {
+        case let (incoming?, outgoing?):
+            // Both halves exist, so this pair is established. The older row is
+            // the original ask; the newer one is the acceptance, and which side
+            // accepted follows from which row is newer.
+            return incoming <= outgoing
+                ? [RequestEvent(kind: .theyAsked, date: incoming),
+                   RequestEvent(kind: .weAccepted, date: outgoing)]
+                : [RequestEvent(kind: .weAsked, date: outgoing),
+                   RequestEvent(kind: .theyAccepted, date: incoming)]
+        case let (incoming?, nil):
+            return [RequestEvent(kind: .theyAsked, date: incoming)]
+        case let (nil, outgoing?):
+            return [RequestEvent(kind: .weAsked, date: outgoing)]
+        case (nil, nil):
+            return []
+        }
+    }
+
+    private var activityEntries: [ActivityEntry] {
+        let entries = payments.map { ActivityEntry.payment($0) }
+            + requestEvents.map { ActivityEntry.request($0) }
+        return entries.sorted { $0.date > $1.date }
+    }
+
+    /// Wording matches the notifications screen key-for-key so the same event
+    /// reads the same in both places and shares one translation.
+    private func requestText(_ event: RequestEvent) -> String {
+        switch event.kind {
+        case .theyAsked:
+            String(
+                format: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"),
+                contact.displayTitle)
+        case .weAsked:
+            String(
+                format: NSLocalizedString("You sent a contact request to %@", comment: "DashPay Notifications"),
+                contact.displayTitle)
+        case .theyAccepted:
+            String(
+                format: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"),
+                contact.displayTitle)
+        case .weAccepted:
+            String(
+                format: NSLocalizedString("You added %@ as a contact", comment: "DashPay Notifications"),
+                contact.displayTitle)
+        }
+    }
+
+    private func requestRow(_ event: RequestEvent) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "person.crop.circle.badge.plus")
+                .foregroundColor(.dash.blue)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(requestText(event))
+                    .font(.system(size: 14))
+                    .foregroundColor(.dash.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(Self.activityDateFormatter.string(from: event.date))
+                    .font(.system(size: 11))
+                    .foregroundColor(.dash.secondaryText)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 6)
+    }
+
+    private static let activityDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
 
     /// One payment row. Tappable → the standard tx-detail screen when
     /// the on-chain transaction resolves in this wallet's store; a plain

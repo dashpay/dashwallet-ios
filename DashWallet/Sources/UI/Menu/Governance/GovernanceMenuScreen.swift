@@ -89,33 +89,11 @@ struct GovernanceMenuScreen: View {
         }
     }
 
-    /// Same hosting wrapper Tools used when this screen lived there: the
+    /// Shared hosting wrapper (`MasternodesScreen.hostingController`): the
     /// SwiftUI list needs its own `NavigationStack` for row drill-downs, so
     /// the back button is wired explicitly to pop the UIKit stack.
     private func showMasternodes() {
-        let navController = vc
-        let popRoot: () -> Void = { [weak navController] in
-            _ = navController?.popViewController(animated: true)
-        }
-
-        let hosting = UIHostingController(
-            rootView: AnyView(
-                NavigationStack {
-                    MasternodesScreen()
-                        .navigationTitle(NSLocalizedString("Masternodes", comment: "Masternodes"))
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                Button(action: popRoot) {
-                                    Image(systemName: "chevron.left")
-                                }
-                            }
-                        }
-                }
-            )
-        )
-        hosting.hidesBottomBarWhenPushed = true
-        vc.pushViewController(hosting, animated: true)
+        vc.pushViewController(MasternodesScreen.hostingController(popFrom: vc), animated: true)
     }
 
     #if DASHPAY
