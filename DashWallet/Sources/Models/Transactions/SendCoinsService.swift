@@ -93,6 +93,11 @@ public final class SendCoinsService: NSObject {
             result = try await service.confirmAndSendHeadless(
                 from: requestURL, scheme: uri.scheme, network: network,
                 callbackScheme: uri.callbackScheme, awaitAcceptance: awaitAcceptance)
+        } catch BIP70Error.paymentNotAcknowledged(let txHashDisplay, let reason) {
+            // The merchant may already hold the signed bytes; hand the caller the txid so the
+            // order is recorded rather than dropped on the floor.
+            throw DashSpendError.paymentNotAcknowledged(
+                txIdWire: Data(txHashDisplay.reversed()), reason: reason)
         } catch BIP70Error.broadcastOutcomeUnknown(let txHashDisplay, let reason) {
             // The coins are gone as far as the merchant is concerned — it already holds the
             // signed bytes and can broadcast them itself. Hand the caller the txid so the

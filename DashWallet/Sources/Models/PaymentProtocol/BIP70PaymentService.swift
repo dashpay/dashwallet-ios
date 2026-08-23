@@ -312,7 +312,13 @@ final class BIP70PaymentService {
                 ackMemo = ack.memo
             } catch {
                 confirmation.sendGuard.reset()
-                throw (error as? BIP70Error) ?? BIP70Error.ackRejected
+                // Carry the tx hash out with the failure. The caveat above is not hypothetical:
+                // losing the network between the POST and its response leaves the merchant
+                // holding the signed bytes, fulfilling the order and broadcasting them, while
+                // the caller has nothing to record the purchase against.
+                throw BIP70Error.paymentNotAcknowledged(
+                    txHashDisplay: prepared.txHashDisplay,
+                    reason: (error as? BIP70Error)?.errorDescription ?? error.localizedDescription)
             }
         }
 

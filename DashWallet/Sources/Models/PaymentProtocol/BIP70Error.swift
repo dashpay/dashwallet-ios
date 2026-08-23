@@ -39,6 +39,11 @@ enum BIP70Error: Error, Equatable {
     case authCancelled
     /// A second send was attempted on a `Confirmation` that has already been (or is being) sent.
     case alreadySent
+    /// The Payment was posted but no acknowledgement came back. The merchant may or may not
+    /// have received the signed bytes — BIP70 cannot tell those apart — so this carries the
+    /// app-computed display-order tx hash: if the merchant did receive them it can broadcast
+    /// independently, and the caller needs a handle on the spend it may have just made.
+    case paymentNotAcknowledged(txHashDisplay: Data, reason: String)
     /// The transaction was submitted but the network returned no positive acceptance verdict
     /// within the SDK's wait window. The bytes may already be propagating — and the merchant
     /// holds a copy it can broadcast itself — so this is deliberately distinct from a
@@ -64,6 +69,7 @@ extension BIP70Error: LocalizedError {
         case .walletNotReady: return "The wallet isn't ready yet. Please try again in a moment."
         case .authCancelled: return "Authentication was cancelled."
         case .alreadySent: return "This payment is already being processed."
+        case .paymentNotAcknowledged: return "The merchant did not confirm receiving the payment."
         case .broadcastOutcomeUnknown: return "Your payment was sent, but the network has not confirmed it yet."
         }
     }

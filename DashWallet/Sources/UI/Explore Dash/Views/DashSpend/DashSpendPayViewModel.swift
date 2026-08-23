@@ -312,6 +312,14 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // is already being issued (the email routinely arrived before the screen moved on).
             do {
                 txidWire = try await sendCoinsService.payWithDashUrl(url: url, awaitAcceptance: false)
+            } catch DashSpendError.paymentNotAcknowledged(let unacknowledgedTxIdWire, let reason) {
+                // Same loss, one step earlier: the network dropped between posting the payment
+                // and reading the acknowledgement. Record the order — CTX may be fulfilling it
+                // already — but keep the error, since we genuinely cannot say it was received.
+                DWLogger.log("Gift card payment unacknowledged, recording the order anyway: \(reason)")
+                recordPurchase(txidWire: unacknowledgedTxIdWire, giftCardNote: giftCardNote)
+                throw DashSpendError.paymentNotAcknowledged(
+                    txIdWire: unacknowledgedTxIdWire, reason: reason)
             } catch DashSpendError.paymentStatusUnknown(let unconfirmedTxIdWire, let reason) {
                 // The payment left the device and CTX holds the signed bytes; only the
                 // network's acceptance verdict is missing. Record the purchase against the
