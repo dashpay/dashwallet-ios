@@ -54,6 +54,9 @@ struct ObservedTransaction {
     /// (context ≥ 1) or carrying a block height (rows restored from chain
     /// data). SDK-side stand-in for DashSync's `account.transactionIsValid`.
     let isChainAccepted: Bool
+    /// SwiftDashSDK transaction context: 0=mempool, 1=InstantSend,
+    /// 2=in-block, 3=ChainLocked.
+    let context: UInt32
     /// Display wrapper; supplies direction/dashAmount with the existing
     /// FFI → TransactionDirection mapping (including the outgoing → moved
     /// fee-only promotion the top-up matcher relies on).
@@ -64,4 +67,28 @@ struct ObservedTransaction {
 
 protocol TransactionFilter {
     func matches(_ tx: ObservedTransaction) -> Bool
+}
+
+/// Matches an external incoming Core transaction that pays the exact address
+/// displayed by an attended Receive session. The SDK's direction classifier is
+/// authoritative here: internal payouts such as asset unlocks are `.moved`, so
+/// they cannot be mistaken for a new payment merely because they pay one of the
+/// wallet's addresses.
+struct ReceivedAtAddressTransactionFilter: TransactionFilter {
+    let address: String
+
+    func matches(_ tx: ObservedTransaction) -> Bool {
+        Self.matches(
+            direction: tx.direction,
+            ownOutputAddresses: tx.ownOutputAddresses,
+            address: address)
+    }
+
+    static func matches(
+        direction: TransactionDirection,
+        ownOutputAddresses: [String],
+        address: String
+    ) -> Bool {
+        direction == .received && ownOutputAddresses.contains(address)
+    }
 }

@@ -14,6 +14,10 @@ struct PaymentsLandingScreen: View {
     var onCopyAddress: () -> Void
     var onShareAddress: () -> Void
     var onSpecifyAmount: () -> Void
+    /// Opens the transaction behind a receive receipt. The host resolves the
+    /// txid and presents the details, and pauses the attended session while
+    /// they are up.
+    var onViewTransaction: (Data) -> Void
     var onScanQR: () -> Void
     /// The Internal tab's embedded transfer form. The full landing shows it
     /// un-pinned (free From + To pickers); the balance-row receive/send
@@ -54,10 +58,6 @@ struct PaymentsLandingScreen: View {
     @State private var slidesForward = true
 
     private enum Layout {
-        /// Gap under the tab selector before the Receive tab's content. The
-        /// two picker cards get none: they are cards with their own inner
-        /// padding, and a gap above that read as a detached strip.
-        static let receiveTopPadding: CGFloat = 20
         /// Side margin for the picker cards, so they line up with the tab
         /// selector above them instead of running to the screen edges.
         static let cardHorizontalPadding: CGFloat = 20
@@ -134,6 +134,10 @@ struct PaymentsLandingScreen: View {
         // modifier has no nil overload.
         .gesture(tabSwipe, including: isPickerMode ? .all : .subviews)
         .navigationBarHidden(true)
+        // Keyed on the receipt's id, not on the receipt: a second payment
+        // arriving replaces the card rather than cross-fading into itself.
+        .animation(.spring(response: 0.45, dampingFraction: 0.82), value: viewModel.receipt?.id)
+        .sensoryFeedback(.success, trigger: viewModel.receipt?.id)
         .transientToast(
             isPresented: $showsCopiedToast,
             style: .copied,
@@ -230,12 +234,11 @@ struct PaymentsLandingScreen: View {
                         showsCopiedToast = true
                     },
                     onShareAddress: onShareAddress,
-                    onSpecifyAmount: onSpecifyAmount
+                    onSpecifyAmount: onSpecifyAmount,
+                    onViewTransaction: onViewTransaction,
+                    onDone: onClose
                 )
                 .padding(.horizontal, Layout.cardHorizontalPadding)
-                // Its own insets are per-section rather than one wrapper,
-                // so the gap under the selector stays here.
-//                .padding(.top, Layout.receiveTopPadding)
             }
 
         case .internalTransfer:
@@ -333,6 +336,7 @@ private func landingSample(
         onCopyAddress: {},
         onShareAddress: {},
         onSpecifyAmount: {},
+        onViewTransaction: { _ in },
         onScanQR: {},
         embeddedTransferViewModel: .makeForPreview(amountText: transferAmount),
         transferSendFrom: transferSendFrom,

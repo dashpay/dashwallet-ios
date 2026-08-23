@@ -161,12 +161,16 @@ extension UIViewController {
         activityItems: [Any],
         sourceView: UIView? = nil,
         sourceRect: CGRect? = nil,
-        completion: (() -> Void)? = nil
+        completion: (() -> Void)? = nil,
+        dismissal: (() -> Void)? = nil
     ) {
         let activityViewController = UIActivityViewController(
             activityItems: activityItems,
             applicationActivities: nil
         )
+        activityViewController.completionWithItemsHandler = { _, _, _, _ in
+            dismissal?()
+        }
 
         if let popover = activityViewController.popoverPresentationController {
             let anchor = sourceView ?? view!
