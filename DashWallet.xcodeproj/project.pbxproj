@@ -1200,6 +1200,16 @@
 		C017200000000000000EA3 /* ShieldedSubmittedUnconfirmedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000EA1 /* ShieldedSubmittedUnconfirmedView.swift */; };
 		C017200000000000000FA2 /* InternalTransferSummaryFigures.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000FA1 /* InternalTransferSummaryFigures.swift */; };
 		C017200000000000000FA3 /* InternalTransferSummaryFigures.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000FA1 /* InternalTransferSummaryFigures.swift */; };
+		C017200000000000001102 /* TransferConfirmSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000001101 /* TransferConfirmSummary.swift */; };
+		C017200000000000001103 /* TransferConfirmSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000001101 /* TransferConfirmSummary.swift */; };
+		C017200000000000001142 /* InternalTransferConfirmViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000001141 /* InternalTransferConfirmViewModel.swift */; };
+		C017200000000000001143 /* InternalTransferConfirmViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000001141 /* InternalTransferConfirmViewModel.swift */; };
+		C017200000000000001152 /* InternalTransferRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000001151 /* InternalTransferRunner.swift */; };
+		C017200000000000001153 /* InternalTransferRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000001151 /* InternalTransferRunner.swift */; };
+		C017200000000000001162 /* InternalTransferToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000001161 /* InternalTransferToastModifier.swift */; };
+		C017200000000000001163 /* InternalTransferToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000001161 /* InternalTransferToastModifier.swift */; };
+		C017200000000000001112 /* TransferSummaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000001111 /* TransferSummaryCard.swift */; };
+		C017200000000000001113 /* TransferSummaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000001111 /* TransferSummaryCard.swift */; };
 		C017200000000000000FB2 /* IdentityWithdrawViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000FB1 /* IdentityWithdrawViewModel.swift */; };
 		C017200000000000000FB3 /* IdentityWithdrawViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000FB1 /* IdentityWithdrawViewModel.swift */; };
 		C6344885F1E0A6C04D3D8437 /* InternalTransferConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */; };
@@ -2058,6 +2068,11 @@
 		C017200000000000000DA1 /* ShieldedTransferStepList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedTransferStepList.swift; sourceTree = "<group>"; };
 		C017200000000000000EA1 /* ShieldedSubmittedUnconfirmedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedSubmittedUnconfirmedView.swift; sourceTree = "<group>"; };
 		C017200000000000000FA1 /* InternalTransferSummaryFigures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferSummaryFigures.swift; sourceTree = "<group>"; };
+		C017200000000000001101 /* TransferConfirmSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferConfirmSummary.swift; sourceTree = "<group>"; };
+		C017200000000000001141 /* InternalTransferConfirmViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferConfirmViewModel.swift; sourceTree = "<group>"; };
+		C017200000000000001151 /* InternalTransferRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferRunner.swift; sourceTree = "<group>"; };
+		C017200000000000001161 /* InternalTransferToastModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferToastModifier.swift; sourceTree = "<group>"; };
+		C017200000000000001111 /* TransferSummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferSummaryCard.swift; sourceTree = "<group>"; };
 		C017200000000000000FB1 /* IdentityWithdrawViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityWithdrawViewModel.swift; sourceTree = "<group>"; };
 		05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferConfirmSheet.swift; sourceTree = "<group>"; };
 		067B8024942F1481CD9B9CC1 /* PaymentNetworkResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentNetworkResolver.swift; sourceTree = "<group>"; };
@@ -3822,6 +3837,20 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		C0172000000000000011000 /* Confirm */ = {
+			isa = PBXGroup;
+			children = (
+				05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */,
+				C017200000000000000FA1 /* InternalTransferSummaryFigures.swift */,
+				C017200000000000001101 /* TransferConfirmSummary.swift */,
+				C017200000000000001141 /* InternalTransferConfirmViewModel.swift */,
+				C017200000000000001151 /* InternalTransferRunner.swift */,
+				C017200000000000001161 /* InternalTransferToastModifier.swift */,
+				C017200000000000001111 /* TransferSummaryCard.swift */,
+			);
+			path = Confirm;
+			sourceTree = "<group>";
+		};
 		C0172000000000000010000 /* Shielded */ = {
 			isa = PBXGroup;
 			children = (
@@ -3837,14 +3866,13 @@
 		0529717581A09721B3115957 /* InternalTransfer */ = {
 			isa = PBXGroup;
 			children = (
+				C0172000000000000011000 /* Confirm */,
 				C0172000000000000010000 /* Shielded */,
 				C0171F000000000000000000 /* Components */,
 				67FCD2ED5EDFD68CDE1FE7CC /* TransferTimingSheet.swift */,
 				7249AC40404B20F2AEE590F1 /* InternalTransferViewModel.swift */,
 				A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */,
 				F57DA9DBE5AAF88B3727E148 /* InternalTransferHostingController.swift */,
-				05723F61BFF76C3BB9EF3CDC /* InternalTransferConfirmSheet.swift */,
-				C017200000000000000FA1 /* InternalTransferSummaryFigures.swift */,
 				C017200000000000000FB1 /* IdentityWithdrawViewModel.swift */,
 			);
 			path = InternalTransfer;
@@ -10306,6 +10334,11 @@
 				7C93319817E9E574070A504D /* InternalTransferHostingController.swift in Sources */,
 				C6344885F1E0A6C04D3D8437 /* InternalTransferConfirmSheet.swift in Sources */,
 				C017200000000000000FA2 /* InternalTransferSummaryFigures.swift in Sources */,
+				C017200000000000001102 /* TransferConfirmSummary.swift in Sources */,
+				C017200000000000001142 /* InternalTransferConfirmViewModel.swift in Sources */,
+				C017200000000000001152 /* InternalTransferRunner.swift in Sources */,
+				C017200000000000001162 /* InternalTransferToastModifier.swift in Sources */,
+				C017200000000000001112 /* TransferSummaryCard.swift in Sources */,
 				C017200000000000000FB2 /* IdentityWithdrawViewModel.swift in Sources */,
 				C017200000000000000EA2 /* ShieldedSubmittedUnconfirmedView.swift in Sources */,
 				C017200000000000000DA2 /* ShieldedTransferStepList.swift in Sources */,
@@ -11335,6 +11368,11 @@
 				428C56F90F533CF0DD6774F1 /* InternalTransferHostingController.swift in Sources */,
 				E2D0F4AD56B92356C871F568 /* InternalTransferConfirmSheet.swift in Sources */,
 				C017200000000000000FA3 /* InternalTransferSummaryFigures.swift in Sources */,
+				C017200000000000001103 /* TransferConfirmSummary.swift in Sources */,
+				C017200000000000001143 /* InternalTransferConfirmViewModel.swift in Sources */,
+				C017200000000000001153 /* InternalTransferRunner.swift in Sources */,
+				C017200000000000001163 /* InternalTransferToastModifier.swift in Sources */,
+				C017200000000000001113 /* TransferSummaryCard.swift in Sources */,
 				C017200000000000000FB3 /* IdentityWithdrawViewModel.swift in Sources */,
 				C017200000000000000EA3 /* ShieldedSubmittedUnconfirmedView.swift in Sources */,
 				C017200000000000000DA3 /* ShieldedTransferStepList.swift in Sources */,
