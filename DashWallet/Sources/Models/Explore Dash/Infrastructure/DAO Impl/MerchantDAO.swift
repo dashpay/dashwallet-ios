@@ -91,8 +91,11 @@ class MerchantDAO: PointOfUseDAO {
             // Collapse the location rows to one row per merchant. When the user's location is
             // known, SQLite picks the location closest to the user: in an aggregate query with a
             // single MIN() in the result set, bare columns take their values from the row where
-            // the minimum occurs. The distance is an equirectangular approximation in meters —
-            // accurate enough for ranking and radius filtering at the app's search scales.
+            // the minimum occurs. WARNING: that guarantee requires exactly ONE aggregate function
+            // in the query — adding another (e.g. a COUNT(*) location counter) silently reverts
+            // bare columns to arbitrary rows per merchant. The distance is an equirectangular
+            // approximation in meters — accurate enough for ranking and radius filtering at the
+            // app's search scales.
             var hasDistanceColumn = false
 
             if let anchorLatitude = userLocation?.latitude, let anchorLongitude = userLocation?.longitude {
