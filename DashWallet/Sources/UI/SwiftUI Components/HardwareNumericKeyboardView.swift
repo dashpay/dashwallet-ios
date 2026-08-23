@@ -43,11 +43,25 @@ enum HardwareNumericKeyboardInput {
             return String(value.dropLast())
         }
     }
+
+    /// Both "." and "," map to the decimal separator: European numpads emit ","
+    /// for the decimal key, and the keypad has no grouping-separator concept.
+    static func key(for character: Character) -> HardwareNumericKeyboardKey? {
+        if character == "." || character == "," {
+            return .decimalSeparator
+        }
+        if let digit = character.wholeNumberValue, (0 ... 9).contains(digit) {
+            return .digit(String(digit))
+        }
+        return nil
+    }
 }
 
 /// DashUIKit's numeric keypad is made of buttons and therefore has no text
 /// responder for a connected keyboard. This wrapper keeps the visible keypad
-/// unchanged while installing a responder for physical-keyboard input.
+/// unchanged while installing a hidden text responder for physical-keyboard
+/// input — the same hidden-text-field pattern the PIN (`DWPinField`), 2FA
+/// (`TwoFactorAuthViewController`), and legacy amount screens already use.
 struct HardwareNumericKeyboardView: View {
     @Binding private var value: String
     private let showDecimalSeparator: Bool
@@ -94,7 +108,11 @@ struct HardwareNumericKeyboardView: View {
                 value: $value,
                 showDecimalSeparator: showDecimalSeparator,
                 locale: locale,
-                inputEnabled: !inProgress
+                inputEnabled: !inProgress,
+                // Mirror the visible action button's gate, which DashUIKit
+                // computes as `!value.isEmpty && actionEnabled`.
+                returnEnabled: !value.isEmpty && actionEnabled && !inProgress,
+                onReturn: actionHandler
             )
             .frame(width: 1, height: 1)
             .accessibilityHidden(true)
@@ -107,80 +125,144 @@ private struct HardwareNumericKeyboardResponder: UIViewRepresentable {
     let showDecimalSeparator: Bool
     let locale: Locale
     let inputEnabled: Bool
+    let returnEnabled: Bool
+    let onReturn: () -> Void
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(value: $value)
+    func makeUIView(context: Context) -> HardwareNumericKeyboardTextField {
+        let field = HardwareNumericKeyboardTextField()
+        configure(field)
+        return field
     }
 
-    func makeUIView(context: Context) -> HardwareNumericKeyboardResponderView {
-        let view = HardwareNumericKeyboardResponderView()
-        configure(view, coordinator: context.coordinator)
-        return view
+    func updateUIView(_ field: HardwareNumericKeyboardTextField, context: Context) {
+        configure(field)
     }
 
-    func updateUIView(_ view: HardwareNumericKeyboardResponderView, context: Context) {
-        context.coordinator.value = $value
-        configure(view, coordinator: context.coordinator)
-    }
-
-    private func configure(_ view: HardwareNumericKeyboardResponderView, coordinator: Coordinator) {
-        view.inputEnabled = inputEnabled
-        view.onKey = { [weak coordinator] key in
-            guard let coordinator else { return }
-            coordinator.value.wrappedValue = HardwareNumericKeyboardInput.applying(
+    private func configure(_ field: HardwareNumericKeyboardTextField) {
+        field.inputEnabled = inputEnabled
+        field.onKey = { key in
+            value = HardwareNumericKeyboardInput.applying(
                 key,
-                to: coordinator.value.wrappedValue,
+                to: value,
                 showDecimalSeparator: showDecimalSeparator,
                 locale: locale
             )
         }
+        field.onReturn = returnEnabled ? onReturn : nil
+    }
+}
+
+/// Hidden `UITextField` whose `UIKeyInput` overrides forward hardware keys to
+/// the keypad's value instead of the field's own text. An empty `inputView`
+/// suppresses the software keyboard (as in `TwoFactorAuthViewController`).
+final class HardwareNumericKeyboardTextField: UITextField, UITextFieldDelegate {
+    var inputEnabled = true
+    var onKey: ((HardwareNumericKeyboardKey) -> Void)?
+    var onReturn: (() -> Void)?
+
+    /// The field's text stays pinned to this zero-width sentinel so `hasText`
+    /// is always true and UIKit keeps routing hardware Backspace to
+    /// `deleteBackward()` even when the keypad's logical value is empty.
+    private static let sentinel = "\u{200B}"
+
+    private var editingObservers: [NSObjectProtocol] = []
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        text = Self.sentinel
+        inputView = UIView()
+        autocorrectionType = .no
+        spellCheckingType = .no
+        tintColor = .clear
+        textColor = .clear
+        backgroundColor = .clear
+        inputAssistantItem.leadingBarButtonGroups = []
+        inputAssistantItem.trailingBarButtonGroups = []
+        delegate = self
     }
 
-    final class Coordinator {
-        var value: Binding<String>
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
-        init(value: Binding<String>) {
-            self.value = value
+    deinit {
+        editingObservers.forEach(NotificationCenter.default.removeObserver)
+    }
+
+    // MARK: - UIKeyInput
+
+    override func insertText(_ text: String) {
+        guard inputEnabled else { return }
+        for character in text {
+            if character == "\n" || character == "\r" {
+                onReturn?()
+            } else if let key = HardwareNumericKeyboardInput.key(for: character) {
+                onKey?(key)
+            }
+        }
+    }
+
+    override func deleteBackward() {
+        guard inputEnabled else { return }
+        onKey?(.delete)
+    }
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        onReturn?()
+        return false
+    }
+
+    // MARK: - First responder management
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+
+        editingObservers.forEach(NotificationCenter.default.removeObserver)
+        editingObservers = []
+        guard window != nil else { return }
+
+        claimFirstResponderIfIdle()
+
+        // A sheet or alert with a text field (currency-picker search, PIN
+        // prompt) steals first responder while this view stays in the window,
+        // so `didMoveToWindow` alone would leave hardware input dead after
+        // dismissal. Reclaim whenever any other editor ends editing.
+        for name in [UITextField.textDidEndEditingNotification, UITextView.textDidEndEditingNotification] {
+            editingObservers.append(NotificationCenter.default.addObserver(
+                forName: name, object: nil, queue: .main
+            ) { [weak self] notification in
+                guard let self, (notification.object as? UIView) !== self else { return }
+                self.claimFirstResponderIfIdle()
+            })
+        }
+    }
+
+    private func claimFirstResponderIfIdle() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.window != nil, !self.isFirstResponder else { return }
+            // Don't yank focus from a text input the user is actively editing
+            // (e.g. the contact Alias field beneath a Pay sheet).
+            if let current = UIResponder.currentFirstResponder, current !== self, current is UITextInput {
+                return
+            }
+            self.becomeFirstResponder()
         }
     }
 }
 
-private final class HardwareNumericKeyboardResponderView: UIView {
-    var inputEnabled = true
-    var onKey: ((HardwareNumericKeyboardKey) -> Void)?
-
-    override var canBecomeFirstResponder: Bool { true }
-
-    override var keyCommands: [UIKeyCommand]? {
-        let inputs = (0 ... 9).map(String.init) + [".", ","]
-        var commands = inputs.map {
-            UIKeyCommand(input: $0, modifierFlags: [], action: #selector(handleKeyCommand(_:)))
-        }
-        commands.append(UIKeyCommand(input: UIKeyCommand.inputDelete, modifierFlags: [], action: #selector(handleKeyCommand(_:))))
-        return commands
+private extension UIResponder {
+    private enum FirstResponderProbe {
+        static weak var current: UIResponder?
     }
 
-    override func didMoveToWindow() {
-        super.didMoveToWindow()
-        guard window != nil else { return }
-        DispatchQueue.main.async { [weak self] in
-            self?.becomeFirstResponder()
-        }
+    static var currentFirstResponder: UIResponder? {
+        FirstResponderProbe.current = nil
+        UIApplication.shared.sendAction(#selector(captureFirstResponder), to: nil, from: nil, for: nil)
+        return FirstResponderProbe.current
     }
 
-    @objc private func handleKeyCommand(_ command: UIKeyCommand) {
-        guard let input = command.input else { return }
-
-        guard inputEnabled else { return }
-        switch input {
-        case UIKeyCommand.inputDelete:
-            onKey?(.delete)
-        case ".", ",":
-            onKey?(.decimalSeparator)
-        default:
-            if input.count == 1, input.first?.isNumber == true {
-                onKey?(.digit(input))
-            }
-        }
+    @objc private func captureFirstResponder() {
+        FirstResponderProbe.current = self
     }
 }

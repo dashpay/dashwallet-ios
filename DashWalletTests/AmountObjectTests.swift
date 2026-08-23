@@ -349,6 +349,16 @@ final class HardwareNumericKeyboardInputTests: XCTestCase {
             "1"
         )
     }
+
+    func testCharacterMapping() {
+        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: "0"), .digit("0"))
+        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: "9"), .digit("9"))
+        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: "."), .decimalSeparator)
+        XCTAssertEqual(HardwareNumericKeyboardInput.key(for: ","), .decimalSeparator)
+        XCTAssertNil(HardwareNumericKeyboardInput.key(for: "a"))
+        XCTAssertNil(HardwareNumericKeyboardInput.key(for: "-"))
+        XCTAssertNil(HardwareNumericKeyboardInput.key(for: " "))
+    }
 }
 
 // MARK: - PastedAmountParserTests
