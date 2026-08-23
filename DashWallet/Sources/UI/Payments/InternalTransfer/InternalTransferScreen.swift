@@ -88,26 +88,45 @@ struct InternalTransferScreen: View {
             // eat ~110pt the standalone layout has to spare. When the
             // content fits (standalone), this behaves like the old
             // fixed layout: top-aligned content, keypad pinned below.
-            ScrollView {
-                VStack(spacing: 16) {
-                    amountRow
-                        .padding(.horizontal, 20)
-                        .padding(.top, showsHeader ? 10 : 0)
-
-                    TransferEndpointCards(
-                        viewModel: viewModel,
-                        sendFrom: sendFrom,
-                        receiveInto: receiveInto
-                    )
-                    .padding(.horizontal, 20)
-
-                    if viewModel.canContinue {
-                        TransferPreview(amountFormatted: viewModel.dashAmountFormatted)
+            //
+            // The reader is what gives that content a viewport height to fill,
+            // so the preview can sit in the middle of the free space below the
+            // cards instead of hanging off them.
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(spacing: 16) {
+                        amountRow
                             .padding(.horizontal, 20)
+                            .padding(.top, showsHeader ? 10 : 0)
+
+                        TransferEndpointCards(
+                            viewModel: viewModel,
+                            sendFrom: sendFrom,
+                            receiveInto: receiveInto
+                        )
+                        .padding(.horizontal, 20)
+
+                        if viewModel.canContinue {
+                            // Centred in whatever is left between the cards and
+                            // the keypad: the pair of spacers splits the slack
+                            // evenly, and both collapse to their minimum once
+                            // the content already fills the viewport — so the
+                            // tight receive-sheet layout is unchanged.
+                            Spacer(minLength: 12)
+
+                            TransferPreview(amountFormatted: viewModel.dashAmountFormatted)
+                                .padding(.horizontal, 20)
+
+                            Spacer(minLength: 12)
+                        }
                     }
+                    // Fill the viewport so those spacers have slack to divide.
+                    // Taller content is unaffected: it exceeds the minimum and
+                    // scrolls exactly as before.
+                    .frame(minHeight: proxy.size.height, alignment: .top)
                 }
+                .scrollBounceBehavior(.basedOnSize)
             }
-            .scrollBounceBehavior(.basedOnSize)
 
             keyboardSection
         }
