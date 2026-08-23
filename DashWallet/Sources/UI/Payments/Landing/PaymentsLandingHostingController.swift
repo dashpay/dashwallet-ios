@@ -363,9 +363,23 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// Pop back to the landing from a pushed receive step, if that is where we
     /// are. `isPushingReceiveStep` is the flag for exactly that state, and
     /// `viewDidAppear` clears it on arrival.
+    ///
+    /// The pop targets the STACK MEMBER holding this controller, not this
+    /// controller. In the payments tab the landing is a child of
+    /// `PaymentsTabRootController`, which is what the navigation stack
+    /// actually contains; presented, it is the navigation controller's own
+    /// root. Popping to `self` therefore named a controller that is not in the
+    /// stack at all, and UIKit had nothing to pop to — the sheet closed and
+    /// nothing else moved.
     private func returnToLandingFromReceiveStep() {
-        guard isPushingReceiveStep, navigationController?.topViewController !== self else { return }
-        navigationController?.popToViewController(self, animated: true)
+        guard isPushingReceiveStep, let navigationController else { return }
+
+        let host = navigationController.viewControllers.first { controller in
+            controller === self || controller.children.contains { $0 === self }
+        }
+        guard let host, navigationController.topViewController !== host else { return }
+
+        navigationController.popToViewController(host, animated: true)
     }
 
     private func pushSendToAddress() {
