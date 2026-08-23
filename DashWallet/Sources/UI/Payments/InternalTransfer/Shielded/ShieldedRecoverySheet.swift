@@ -244,12 +244,6 @@ struct ShieldedRecoverySheet: View {
     }
 }
 
-/// Vertical step checklist shared by the shielded transfer confirm sheet and
-/// the recovery sheet. Each `Step` maps to the
-/// `ShieldedTransferCoordinator.Phase` it represents; the row's
-/// done/active/pending state is derived from where the current phase sits in
-/// the canonical ordering (signing → locking → proving → broadcasting →
-
 #if DEBUG
 
 /// The sheet owns its coordinator and `phase` is `private(set)`, so a preview

@@ -26,8 +26,12 @@ extension View {
     /// holds; this one is for a moment that has already passed — a copy, a
     /// save — where nothing will turn the flag off but time.
     ///
-    /// Re-triggering while a toast is on screen restarts the countdown rather
-    /// than stacking, because the timer is keyed on `isPresented`.
+    /// One toast at a time: the timer is keyed on `isPresented`, so a second
+    /// trigger while one is already up does NOT extend it. Setting a `true`
+    /// flag to `true` is not a change, so there is no event to restart on — the
+    /// second message rides out whatever is left of the first one's countdown.
+    /// A caller that needs each message timed in full has to lower the flag
+    /// between them.
     func transientToast(
         isPresented: Binding<Bool>,
         style: ToastStyle,
@@ -100,9 +104,9 @@ private struct TransientToastModifier: ViewModifier {
             .task(id: isPresented) {
                 guard isPresented else { return }
                 try? await Task.sleep(for: .seconds(duration))
-                // Cancelled when the flag flips or the view goes away, so a
-                // re-trigger restarts the countdown instead of being cut
-                // short by the previous one.
+                // Cancelled when the flag flips or the view goes away. It does
+                // not restart on a repeat of the same value — see the note on
+                // `transientToast`.
                 guard !Task.isCancelled else { return }
                 isPresented = false
             }

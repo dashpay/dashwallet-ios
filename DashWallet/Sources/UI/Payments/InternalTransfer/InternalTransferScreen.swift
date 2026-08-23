@@ -254,36 +254,6 @@ struct InternalTransferScreen: View {
 
     // MARK: - From / To cards
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // MARK: - Helpers
 
     private var isDashInputSelected: Bool {
@@ -480,7 +450,3 @@ private func transferScreenSample(
 }
 
 #endif
-
-
-
-

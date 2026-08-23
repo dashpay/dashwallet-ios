@@ -129,6 +129,19 @@ struct RequestAmountScreen: View {
                         value: username,
                         action: onCopyUsername)
                 }
+
+                // The host wires `onShare` to the share sheet; without a
+                // control bound to it the requested payment could be copied
+                // but never sent to anyone.
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Share", comment: "Receive screen"),
+                    isEnabled: hasAddress,
+                    fillsWidth: true,
+                    size: .medium,
+                    style: .tintedGray,
+                    action: onShare
+                )
+                .padding(.bottom, 6)
             }
             .padding(.horizontal, Layout.contentInset)
             .padding(.top, 40)

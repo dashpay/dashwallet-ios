@@ -50,7 +50,17 @@ private struct InternalTransferToastModifier: ViewModifier {
             .animation(.easeInOut(duration: 0.3), value: runner.notice)
             .task(id: runner.notice) {
                 guard runner.notice != nil else { return }
-                try? await Task.sleep(for: .seconds(Self.duration))
+
+                // A notice raised while this screen was away has already spent
+                // its life unseen — announcing it now would date-stamp an old
+                // outcome as current. Anything still inside its window is fair
+                // to show, for the rest of that window.
+                let age = runner.noticeRaisedAt.map { Date().timeIntervalSince($0) } ?? 0
+                guard age < Self.duration else {
+                    runner.notice = nil
+                    return
+                }
+                try? await Task.sleep(for: .seconds(Self.duration - age))
                 // Cancelled when the notice changes or the view goes away, so
                 // a later one restarts the countdown instead of being cut
                 // short by the previous one.

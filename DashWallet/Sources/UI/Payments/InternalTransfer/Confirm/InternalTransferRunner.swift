@@ -96,7 +96,17 @@ final class InternalTransferRunner: ObservableObject {
     /// outcome arrives with nothing of the transfer's own left on screen —
     /// this is how it reaches the surface the user actually landed on.
     /// Cleared by that surface once shown.
-    @Published var notice: Notice?
+    @Published var notice: Notice? {
+        didSet { noticeRaisedAt = notice == nil ? nil : Date() }
+    }
+
+    /// When the current notice was raised.
+    ///
+    /// The toast lives on `HomeView`, and a notice raised while the user is
+    /// elsewhere stays set until something clears it. Without a timestamp the
+    /// next appearance of that screen would announce an outcome from an
+    /// arbitrary time ago as if it had just happened.
+    private(set) var noticeRaisedAt: Date?
 
     /// The things worth saying, in the order they can happen.
     enum Notice: Equatable {
@@ -118,6 +128,9 @@ final class InternalTransferRunner: ObservableObject {
     private let authorizer = DWIdentityAuthorizer()
     private var cancellables = Set<AnyCancellable>()
     private var request: InternalTransferRequest?
+    /// Held across the authorization gate, which is the window `phase` cannot
+    /// cover: it is still `.idle` while the PIN prompt is up.
+    private var isAwaitingAuthorization = false
 
     private init() {
         coordinator.$phase
@@ -145,10 +158,18 @@ final class InternalTransferRunner: ObservableObject {
     /// prompt on whatever screen they landed on. `preauthorized` below is what
     /// keeps that inner gate from asking a second time.
     func start(_ request: InternalTransferRequest) async -> StartOutcome {
-        guard phase != .inFlight else {
+        guard phase != .inFlight, !isAwaitingAuthorization else {
             notice = .busy
             return .busy
         }
+
+        // Claimed BEFORE the gate, not after. `phase` only becomes `.inFlight`
+        // once an executor is running, and the PIN prompt sits in between —
+        // three entry points build a transfer screen against this one shared
+        // runner, so a second Confirm during that window passed the phase guard
+        // and would have started a second transfer behind the first prompt.
+        isAwaitingAuthorization = true
+        defer { isAwaitingAuthorization = false }
 
         do {
             try await authorizer.authorize()
