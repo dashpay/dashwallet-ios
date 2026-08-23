@@ -79,116 +79,10 @@ class MerchantDAO: PointOfUseDAO {
 
             let merchantTable = Table("merchant")
             let name = ExplorePointOfUse.name
-            let typeColumn = ExplorePointOfUse.type
-            let paymentMethodColumn = ExplorePointOfUse.paymentMethod
-            let territoryColumn = ExplorePointOfUse.territory
-
-            var queryFilter = Expression<Bool>(value: true)
-
-            // Add query
-            if let query {
-                queryFilter = queryFilter && name.like("%\(query)%")
-            }
-
-            queryFilter = queryFilter && types.map { $0.rawValue }.contains(typeColumn) // Add types
-
-            // Add payment methods
-            if let methods = paymentMethods {
-                var tempMethods: [ExplorePointOfUse.Merchant.PaymentMethod] = []
-
-                if methods.contains(PointOfUseListFilters.SpendingOptions.dash) {
-                    tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.dash)
-                }
-
-                let hasCTX = methods.contains(PointOfUseListFilters.SpendingOptions.ctx)
-                #if PIGGYCARDS_ENABLED
-                let hasPiggy = methods.contains(PointOfUseListFilters.SpendingOptions.piggyCards)
-                #else
-                let hasPiggy = false
-                #endif
-
-                if hasCTX || hasPiggy {
-                    tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.giftCard)
-                }
-
-                queryFilter = queryFilter && tempMethods.map { $0.rawValue }.contains(paymentMethodColumn)
-
-                // If only specific gift card providers are selected (not both), add merchantId filter
-                if !methods.contains(PointOfUseListFilters.SpendingOptions.dash) && (hasCTX != hasPiggy) {
-                    var providerList: [String] = []
-                    if hasCTX {
-                        providerList.append("'CTX'")
-                    }
-                    #if PIGGYCARDS_ENABLED
-                    if hasPiggy {
-                        providerList.append("'PiggyCards'")
-                    }
-                    #endif
-                    
-                    let providerString = providerList.joined(separator: ", ")
-                    queryFilter = queryFilter && Expression<Bool>(literal: "merchantId IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider IN (\(providerString)))")
-                }
-            }
-            
-            // Filter out URL-based redemption merchants (not supported)
-            // Using literal expression to handle cases where redeemType column might not exist
-            queryFilter = queryFilter && Expression<Bool>(literal: "(redeemType IS NULL OR redeemType != 'url')")
-
-            // Filter out PiggyCards-only merchants when:
-            // 1. PIGGYCARDS_ENABLED is not defined, OR
-            // 2. PIGGYCARDS_ENABLED is defined but user is in a restricted region (Russia or Cuba)
-            #if PIGGYCARDS_ENABLED
-            if isPiggyCardsGeoRestricted() {
-                queryFilter = queryFilter && Expression<Bool>(literal: "merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider = 'PiggyCards' AND merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider != 'PiggyCards'))")
-            }
-            #else
-            queryFilter = queryFilter && Expression<Bool>(literal: "merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider = 'PiggyCards' AND merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider != 'PiggyCards'))")
-            #endif
-            
-            // Add denomination type filter (only applies to gift card merchants)
-            if let denominationType = denominationType {
-                switch denominationType {
-                case .fixed:
-                    // Include all dash merchants OR gift card merchants with "fixed" denomination
-                    queryFilter = queryFilter && (paymentMethodColumn == "dash" || Expression<Bool>(literal: "denominationsType = 'fixed'"))
-                case .flexible:
-                    // Include all dash merchants OR gift card merchants with "min-max" denomination
-                    queryFilter = queryFilter && (paymentMethodColumn == "dash" || Expression<Bool>(literal: "denominationsType = 'min-max'"))
-                case .both:
-                    // No additional filter needed - include all
-                    break
-                }
-            }
-
-            if let territory {
-                queryFilter = queryFilter && territoryColumn.like(territory)
-            } else if let bounds {
-                // Make the rectangular bounds more generous to ensure we don't exclude locations
-                // that should be within the circular radius. Add 50% buffer to each dimension.
-                let latBuffer = (bounds.neCoordinate.latitude - bounds.swCoordinate.latitude) * 0.5
-                let lonBuffer = (bounds.neCoordinate.longitude - bounds.swCoordinate.longitude) * 0.5
-
-                let expandedSWLat = bounds.swCoordinate.latitude - latBuffer
-                let expandedNELat = bounds.neCoordinate.latitude + latBuffer
-                let expandedSWLon = bounds.swCoordinate.longitude - lonBuffer
-                let expandedNELon = bounds.neCoordinate.longitude + lonBuffer
-
-                // Build the bounds filter for physical locations
-                let physicalBoundsFilter = Expression<Bool>(literal: "latitude > \(expandedSWLat)") &&
-                    Expression<Bool>(literal: "latitude < \(expandedNELat)") &&
-                    Expression<Bool>(literal: "longitude > \(expandedSWLon)") &&
-                    Expression<Bool>(literal: "longitude < \(expandedNELon)")
-
-                // If we're querying for online merchants (e.g., "All" tab), include them regardless of bounds
-                // Online merchants don't have physical locations so they shouldn't be filtered by bounds
-                if types.contains(.online) {
-                    let boundsFilter = physicalBoundsFilter || Expression<Bool>(literal: "type = 'online'")
-                    queryFilter = queryFilter && boundsFilter
-                } else {
-                    // For nearby tab (physical only), just use the bounds filter
-                    queryFilter = queryFilter && physicalBoundsFilter
-                }
-            }
+            let queryFilter = wSelf.merchantQueryFilter(query: query, bounds: bounds, types: types,
+                                                        paymentMethods: paymentMethods,
+                                                        denominationType: denominationType,
+                                                        territory: territory)
 
             var query = merchantTable
                 .select(merchantTable[*])
@@ -269,101 +163,8 @@ class MerchantDAO: PointOfUseDAO {
 
             do {
                 var items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
-                
-                // Fetch gift card providers for each merchant that accepts gift cards
-                #if PIGGYCARDS_ENABLED
-                let excludePiggyCards = isPiggyCardsGeoRestricted()
-                #endif
-                for (index, item) in items.enumerated() {
-                    if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
-                        // Only fetch CTX providers when PiggyCards is disabled or user is in restricted region
-                        #if PIGGYCARDS_ENABLED
-                        let providersQuery: String
-                        if excludePiggyCards {
-                            providersQuery = """
-                                SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
-                                WHERE merchantId = '\(merchant.merchantId)' AND provider != 'PiggyCards'
-                            """
-                        } else {
-                            providersQuery = """
-                                SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
-                                WHERE merchantId = '\(merchant.merchantId)'
-                            """
-                        }
-                        #else
-                        let providersQuery = """
-                            SELECT provider, savingsPercentage, denominationsType FROM gift_card_providers
-                            WHERE merchantId = '\(merchant.merchantId)' AND provider = 'CTX'
-                        """
-                        #endif
 
-                        do {
-                            guard let db = wSelf.connection.db else {
-                                continue
-                            }
-
-                            let rows = try db.prepare(providersQuery)
-                            var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
-                            var rowCount = 0
-
-                            for row in rows {
-                                rowCount += 1
-                                if let providerId = row[0] as? String,
-                                   let savingsPercentage = row[1] as? Int64,
-                                   let denominationsType = row[2] as? String {
-
-                                    providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
-                                        providerId: providerId,
-                                        savingsPercentage: Int(savingsPercentage),
-                                        denominationsType: denominationsType,
-                                        sourceId: wSelf.extractSourceId(from: row, at: 3)
-                                    ))
-                                }
-                            }
-
-
-                            if !providers.isEmpty {
-                                // Create updated merchant with providers
-                                let updatedMerchant = ExplorePointOfUse.Merchant(
-                                    merchantId: merchant.merchantId,
-                                    paymentMethod: merchant.paymentMethod,
-                                    type: merchant.type,
-                                    deeplink: merchant.deeplink,
-                                    savingsBasisPoints: merchant.savingsBasisPoints,
-                                    denominationsType: merchant.denominationsType,
-                                    denominations: merchant.denominations,
-                                    redeemType: merchant.redeemType,
-                                    giftCardProviders: providers
-                                )
-                                
-                                // Create updated ExplorePointOfUse
-                                let updatedItem = ExplorePointOfUse(
-                                    id: item.id,
-                                    name: item.name,
-                                    category: .merchant(updatedMerchant),
-                                    active: item.active,
-                                    city: item.city,
-                                    territory: item.territory,
-                                    address1: item.address1,
-                                    address2: item.address2,
-                                    address3: item.address3,
-                                    address4: item.address4,
-                                    latitude: item.latitude,
-                                    longitude: item.longitude,
-                                    website: item.website,
-                                    phone: item.phone,
-                                    logoLocation: item.logoLocation,
-                                    coverImage: item.coverImage,
-                                    source: item.source
-                                )
-                                
-                                items[index] = updatedItem
-                            }
-                        } catch {
-                            // If we can't fetch providers, just continue with empty providers
-                        }
-                    }
-                }
+                items = wSelf.enrichedWithGiftCardProviders(items)
 
                 completion(.success(PaginationResult(items: items, offset: offset)))
             } catch {
@@ -371,6 +172,238 @@ class MerchantDAO: PointOfUseDAO {
                 completion(.failure(error))
             }
         }
+    }
+
+    /// Builds the shared WHERE clause for merchant queries: name search, merchant types,
+    /// payment/provider filters, redeemType/PiggyCards exclusions, denomination type and
+    /// the territory-or-bounds region filter.
+    private func merchantQueryFilter(query: String?,
+                                     bounds: ExploreMapBounds?,
+                                     types: [ExplorePointOfUse.Merchant.`Type`],
+                                     paymentMethods: [PointOfUseListFilters.SpendingOptions]?,
+                                     denominationType: PointOfUseListFilters.DenominationType?,
+                                     territory: Territory?) -> Expression<Bool> {
+        let name = ExplorePointOfUse.name
+        let typeColumn = ExplorePointOfUse.type
+        let paymentMethodColumn = ExplorePointOfUse.paymentMethod
+        let territoryColumn = ExplorePointOfUse.territory
+
+        var queryFilter = Expression<Bool>(value: true)
+
+        // Add query
+        if let query {
+            queryFilter = queryFilter && name.like("%\(query)%")
+        }
+
+        queryFilter = queryFilter && types.map { $0.rawValue }.contains(typeColumn) // Add types
+
+        // Add payment methods
+        if let methods = paymentMethods {
+            var tempMethods: [ExplorePointOfUse.Merchant.PaymentMethod] = []
+
+            if methods.contains(PointOfUseListFilters.SpendingOptions.dash) {
+                tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.dash)
+            }
+
+            let hasCTX = methods.contains(PointOfUseListFilters.SpendingOptions.ctx)
+            #if PIGGYCARDS_ENABLED
+            let hasPiggy = methods.contains(PointOfUseListFilters.SpendingOptions.piggyCards)
+            #else
+            let hasPiggy = false
+            #endif
+
+            if hasCTX || hasPiggy {
+                tempMethods.append(ExplorePointOfUse.Merchant.PaymentMethod.giftCard)
+            }
+
+            queryFilter = queryFilter && tempMethods.map { $0.rawValue }.contains(paymentMethodColumn)
+
+            // If only specific gift card providers are selected (not both), add merchantId filter
+            if !methods.contains(PointOfUseListFilters.SpendingOptions.dash) && (hasCTX != hasPiggy) {
+                var providerList: [String] = []
+                if hasCTX {
+                    providerList.append("'CTX'")
+                }
+                #if PIGGYCARDS_ENABLED
+                if hasPiggy {
+                    providerList.append("'PiggyCards'")
+                }
+                #endif
+
+                let providerString = providerList.joined(separator: ", ")
+                queryFilter = queryFilter && Expression<Bool>(literal: "merchantId IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider IN (\(providerString)))")
+            }
+        }
+
+        // Filter out URL-based redemption merchants (not supported)
+        // Using literal expression to handle cases where redeemType column might not exist
+        queryFilter = queryFilter && Expression<Bool>(literal: "(redeemType IS NULL OR redeemType != 'url')")
+
+        // Filter out PiggyCards-only merchants when:
+        // 1. PIGGYCARDS_ENABLED is not defined, OR
+        // 2. PIGGYCARDS_ENABLED is defined but user is in a restricted region (Russia or Cuba)
+        #if PIGGYCARDS_ENABLED
+        if isPiggyCardsGeoRestricted() {
+            queryFilter = queryFilter && Expression<Bool>(literal: "merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider = 'PiggyCards' AND merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider != 'PiggyCards'))")
+        }
+        #else
+        queryFilter = queryFilter && Expression<Bool>(literal: "merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider = 'PiggyCards' AND merchantId NOT IN (SELECT DISTINCT merchantId FROM gift_card_providers WHERE provider != 'PiggyCards'))")
+        #endif
+
+        // Add denomination type filter (only applies to gift card merchants)
+        if let denominationType = denominationType {
+            switch denominationType {
+            case .fixed:
+                // Include all dash merchants OR gift card merchants with "fixed" denomination
+                queryFilter = queryFilter && (paymentMethodColumn == "dash" || Expression<Bool>(literal: "denominationsType = 'fixed'"))
+            case .flexible:
+                // Include all dash merchants OR gift card merchants with "min-max" denomination
+                queryFilter = queryFilter && (paymentMethodColumn == "dash" || Expression<Bool>(literal: "denominationsType = 'min-max'"))
+            case .both:
+                // No additional filter needed - include all
+                break
+            }
+        }
+
+        if let territory {
+            queryFilter = queryFilter && territoryColumn.like(territory)
+        } else if let bounds {
+            // Make the rectangular bounds more generous to ensure we don't exclude locations
+            // that should be within the circular radius. Add 50% buffer to each dimension.
+            let latBuffer = (bounds.neCoordinate.latitude - bounds.swCoordinate.latitude) * 0.5
+            let lonBuffer = (bounds.neCoordinate.longitude - bounds.swCoordinate.longitude) * 0.5
+
+            let expandedSWLat = bounds.swCoordinate.latitude - latBuffer
+            let expandedNELat = bounds.neCoordinate.latitude + latBuffer
+            let expandedSWLon = bounds.swCoordinate.longitude - lonBuffer
+            let expandedNELon = bounds.neCoordinate.longitude + lonBuffer
+
+            // Build the bounds filter for physical locations
+            let physicalBoundsFilter = Expression<Bool>(literal: "latitude > \(expandedSWLat)") &&
+                Expression<Bool>(literal: "latitude < \(expandedNELat)") &&
+                Expression<Bool>(literal: "longitude > \(expandedSWLon)") &&
+                Expression<Bool>(literal: "longitude < \(expandedNELon)")
+
+            // If we're querying for online merchants (e.g., "All" tab), include them regardless of bounds
+            // Online merchants don't have physical locations so they shouldn't be filtered by bounds
+            if types.contains(.online) {
+                let boundsFilter = physicalBoundsFilter || Expression<Bool>(literal: "type = 'online'")
+                queryFilter = queryFilter && boundsFilter
+            } else {
+                // For nearby tab (physical only), just use the bounds filter
+                queryFilter = queryFilter && physicalBoundsFilter
+            }
+        }
+
+        return queryFilter
+    }
+
+    /// Attaches gift card provider info to every gift-card merchant in `items`.
+    private func enrichedWithGiftCardProviders(_ items: [ExplorePointOfUse]) -> [ExplorePointOfUse] {
+        var items = items
+
+        #if PIGGYCARDS_ENABLED
+        let excludePiggyCards = isPiggyCardsGeoRestricted()
+        #endif
+        for (index, item) in items.enumerated() {
+            if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
+                // Filter out PiggyCards providers when user is in restricted region
+                #if PIGGYCARDS_ENABLED
+                let providersQuery: String
+                if excludePiggyCards {
+                    providersQuery = """
+                        SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
+                        WHERE merchantId = ? AND provider != 'PiggyCards'
+                    """
+                } else {
+                    providersQuery = """
+                        SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
+                        WHERE merchantId = ?
+                    """
+                }
+                #else
+                let providersQuery = """
+                    SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
+                    WHERE merchantId = ? AND provider = 'CTX'
+                """
+                #endif
+
+                do {
+                    guard let db = self.connection.db else {
+                        print("Error: Database connection is nil for merchant \(merchant.merchantId)")
+                        continue
+                    }
+
+                    let statement = try db.prepare(providersQuery, merchant.merchantId)
+                    var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
+                    var rowCount = 0
+
+                    for row in statement {
+                        rowCount += 1
+                        // Access columns by index
+                        let providerId = row[0] as? String
+                        let savingsPercentage = row[1] as? Int64
+                        let denominationsType = row[2] as? String
+
+                        if let providerId = providerId,
+                           let savingsPercentage = savingsPercentage,
+                           let denominationsType = denominationsType {
+
+                            providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
+                                providerId: providerId,
+                                savingsPercentage: Int(savingsPercentage),
+                                denominationsType: denominationsType,
+                                sourceId: self.extractSourceId(from: row, at: 3)
+                            ))
+                        }
+                    }
+
+
+                    if !providers.isEmpty {
+                        // Create updated merchant with providers
+                        let updatedMerchant = ExplorePointOfUse.Merchant(
+                            merchantId: merchant.merchantId,
+                            paymentMethod: merchant.paymentMethod,
+                            type: merchant.type,
+                            deeplink: merchant.deeplink,
+                            savingsBasisPoints: merchant.savingsBasisPoints,
+                            denominationsType: merchant.denominationsType,
+                            denominations: merchant.denominations,
+                            redeemType: merchant.redeemType,
+                            giftCardProviders: providers
+                        )
+
+                        // Create updated ExplorePointOfUse
+                        let updatedItem = ExplorePointOfUse(
+                            id: item.id,
+                            name: item.name,
+                            category: .merchant(updatedMerchant),
+                            active: item.active,
+                            city: item.city,
+                            territory: item.territory,
+                            address1: item.address1,
+                            address2: item.address2,
+                            address3: item.address3,
+                            address4: item.address4,
+                            latitude: item.latitude,
+                            longitude: item.longitude,
+                            website: item.website,
+                            phone: item.phone,
+                            logoLocation: item.logoLocation,
+                            coverImage: item.coverImage,
+                            source: item.source
+                        )
+
+                        items[index] = updatedItem
+                    }
+                } catch {
+                    // If we can't fetch providers, just continue with empty providers
+                    print("Error fetching gift card providers for merchant \(merchant.merchantId): \(error)")
+                }
+            }
+        }
+
+        return items
     }
 }
 
@@ -495,109 +528,51 @@ extension MerchantDAO {
                     }
                 }
 
-                // Fetch gift card provider information for gift card merchants
-                #if PIGGYCARDS_ENABLED
-                let excludePiggyCards = isPiggyCardsGeoRestricted()
-                #endif
-                for (index, item) in items.enumerated() {
-                    if let merchant = item.merchant, merchant.paymentMethod == .giftCard {
-                        // Filter out PiggyCards providers when user is in restricted region
-                        #if PIGGYCARDS_ENABLED
-                        let providersQuery: String
-                        if excludePiggyCards {
-                            providersQuery = """
-                                SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
-                                WHERE merchantId = ? AND provider != 'PiggyCards'
-                            """
-                        } else {
-                            providersQuery = """
-                                SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
-                                WHERE merchantId = ?
-                            """
-                        }
-                        #else
-                        let providersQuery = """
-                            SELECT provider, savingsPercentage, denominationsType, sourceId FROM gift_card_providers
-                            WHERE merchantId = ? AND provider = 'CTX'
-                        """
-                        #endif
-
-                        do {
-                            guard let db = wSelf.connection.db else {
-                                print("Error: Database connection is nil for merchant \(merchant.merchantId)")
-                                continue
-                            }
-
-                            let statement = try db.prepare(providersQuery, merchant.merchantId)
-                            var providers: [ExplorePointOfUse.Merchant.GiftCardProviderInfo] = []
-                            var rowCount = 0
-
-                            for row in statement {
-                                rowCount += 1
-                                // Access columns by index
-                                let providerId = row[0] as? String
-                                let savingsPercentage = row[1] as? Int64
-                                let denominationsType = row[2] as? String
-
-                                if let providerId = providerId,
-                                   let savingsPercentage = savingsPercentage,
-                                   let denominationsType = denominationsType {
-
-                                    providers.append(ExplorePointOfUse.Merchant.GiftCardProviderInfo(
-                                        providerId: providerId,
-                                        savingsPercentage: Int(savingsPercentage),
-                                        denominationsType: denominationsType,
-                                        sourceId: wSelf.extractSourceId(from: row, at: 3)
-                                    ))
-                                }
-                            }
-
-
-                            if !providers.isEmpty {
-                                // Create updated merchant with providers
-                                let updatedMerchant = ExplorePointOfUse.Merchant(
-                                    merchantId: merchant.merchantId,
-                                    paymentMethod: merchant.paymentMethod,
-                                    type: merchant.type,
-                                    deeplink: merchant.deeplink,
-                                    savingsBasisPoints: merchant.savingsBasisPoints,
-                                    denominationsType: merchant.denominationsType,
-                                    denominations: merchant.denominations,
-                                    redeemType: merchant.redeemType,
-                                    giftCardProviders: providers
-                                )
-
-                                // Create updated ExplorePointOfUse
-                                let updatedItem = ExplorePointOfUse(
-                                    id: item.id,
-                                    name: item.name,
-                                    category: .merchant(updatedMerchant),
-                                    active: item.active,
-                                    city: item.city,
-                                    territory: item.territory,
-                                    address1: item.address1,
-                                    address2: item.address2,
-                                    address3: item.address3,
-                                    address4: item.address4,
-                                    latitude: item.latitude,
-                                    longitude: item.longitude,
-                                    website: item.website,
-                                    phone: item.phone,
-                                    logoLocation: item.logoLocation,
-                                    coverImage: item.coverImage,
-                                    source: item.source
-                                )
-
-                                items[index] = updatedItem
-                            }
-                        } catch {
-                            // If we can't fetch providers, just continue with empty providers
-                            print("Error fetching gift card providers for merchant \(merchant.merchantId): \(error)")
-                        }
-                    }
-                }
+                items = wSelf.enrichedWithGiftCardProviders(items)
 
                 completion(.success(PaginationResult(items: items, offset: offset)))
+            } catch {
+                print(error)
+                completion(.failure(error))
+            }
+        }
+    }
+
+    /// Feeds the map: every physical location inside `bounds`, closest `limit` to `center`
+    /// first — mirroring Android, where the map shows individual locations while the list
+    /// shows one row per merchant.
+    func physicalLocations(in bounds: ExploreMapBounds,
+                           center: CLLocationCoordinate2D,
+                           paymentMethods: [PointOfUseListFilters.SpendingOptions]?,
+                           denominationType: PointOfUseListFilters.DenominationType?,
+                           limit: Int = 100,
+                           completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+        serialQueue.async { [weak self] in
+            guard let wSelf = self else { return }
+
+            let merchantTable = Table("merchant")
+            let queryFilter = wSelf.merchantQueryFilter(query: nil, bounds: bounds,
+                                                        types: [.physical, .onlineAndPhysical],
+                                                        paymentMethods: paymentMethods,
+                                                        denominationType: denominationType,
+                                                        territory: nil)
+
+            let metersPerLatitudeDegree = 111_111.0
+            let metersPerLongitudeDegree = 111_111.0 * cos(center.latitude * .pi / 180)
+            let distanceSq =
+                "((latitude - \(center.latitude)) * \(metersPerLatitudeDegree) * (latitude - \(center.latitude)) * \(metersPerLatitudeDegree) + " +
+                "(longitude - \(center.longitude)) * \(metersPerLongitudeDegree) * (longitude - \(center.longitude)) * \(metersPerLongitudeDegree))"
+
+            let query = merchantTable
+                .select(merchantTable[*])
+                .filter(queryFilter)
+                .order([Expression<Bool>(literal: "\(distanceSq) ASC")])
+                .limit(limit)
+
+            do {
+                var items: [ExplorePointOfUse] = try wSelf.connection.execute(query: query)
+                items = wSelf.enrichedWithGiftCardProviders(items)
+                completion(.success(items))
             } catch {
                 print(error)
                 completion(.failure(error))
