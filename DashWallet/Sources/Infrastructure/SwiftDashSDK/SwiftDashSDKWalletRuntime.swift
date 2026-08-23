@@ -50,6 +50,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     private static let seedMigratorDeferredKeys = [
         "swiftSDKKeyMigration.v1.deferredMultiWallet",
         "swiftSDKKeyMigration.v1.deferredUnknownChain",
+        "swiftSDKKeyMigration.v1.deferredFailure",
     ]
     private static let seedMigratorWaitTimeout: TimeInterval = 30.0
     private static let seedMigratorPollInterval: TimeInterval = 0.1
@@ -305,6 +306,15 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
             await fullReset(lastError: nil, forWipe: false)
 
+            // A reinstall clears the selected-network UserDefaults key but
+            // preserves SDK mnemonics. If every stored wallet belongs to the
+            // other supported network, select that network instead of replaying
+            // its seed through the current manager.
+            if trigger == .walletMaterialChanged,
+               selectSolePersistedNetworkIfNeeded(currentNetwork: network) {
+                return
+            }
+
             // Gate on SDK presence, not DashSync's hasAWallet (C6-A): the
             // runtime consumes the SDK wallet, and every SDK-wallet writer
             // re-triggers a refresh (the creator's and migrator's
@@ -368,6 +378,20 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             "🧭 RUNTIME :: active-wallet change reason=\(reason, privacy: .public) wallet=\(walletId, privacy: .public)")
     }
 
+    private func selectSolePersistedNetworkIfNeeded(currentNetwork: Network) -> Bool {
+        guard let storedNetworks = try? SwiftDashSDKHost.persistedSDKWalletNetworks(),
+              !storedNetworks.contains(currentNetwork),
+              storedNetworks.count == 1,
+              let storedNetwork = storedNetworks.first else {
+            return false
+        }
+
+        let kind: WalletEnvironment.NetworkKind = storedNetwork == .mainnet ? .mainnet : .testnet
+        Self.logger.info(
+            "🧭 RUNTIME :: selecting sole persisted wallet network \(storedNetwork.networkName, privacy: .public)")
+        return WalletEnvironment.switchToNetwork(kind)
+    }
+
     private func shouldSkipRefresh(for network: Network, trigger: RefreshTrigger) -> Bool {
         switch trigger {
         case .walletMaterialChanged, .walletDidChange:
@@ -406,6 +430,18 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             return true
         }
 
+        // A persisted SDK wallet is runnable material regardless of the
+        // migrator's state. Gating on the sentinel here stranded users who
+        // restored a wallet while the migrator kept failing without a
+        // terminal flag: every refresh waited the full timeout, gave up,
+        // and left the runtime stopped — main UI with an empty Wallets
+        // screen and refused imports. A late successful migration still
+        // lands through `handleWalletMaterialChanged`.
+        if WalletEnvironment.hasSDKWallet {
+            Self.logger.info("🧭 RUNTIME :: SDK wallet already persisted; not blocking on key migrator")
+            return true
+        }
+
         let deadline = Date().addingTimeInterval(Self.seedMigratorWaitTimeout)
         let sleepNanos = UInt64(Self.seedMigratorPollInterval * 1_000_000_000)
         while defaults.string(forKey: Self.seedMigratorDoneKey) == nil {
@@ -432,6 +468,14 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             queue: nil
         ) { _ in
             Task { @MainActor in
+                // The home screen's funds are three published mirrors: the core
+                // balance plus BLAST's Platform and Shielded totals. `refresh`
+                // clears all three, but only once the serial lifecycle queue
+                // reaches `fullReset` — behind the seed-migrator wait and the
+                // BLAST/SPV stops. Silence and zero them here so the previously
+                // selected network's balances never render as the new one's.
+                SwiftDashSDKSPVCoordinator.shared.prepareForNetworkSwitch()
+                PlatformAddressSyncCoordinator.shared.prepareForNetworkSwitch()
                 Self.shared.enqueueRefresh(trigger: .networkDidChange)
             }
         }

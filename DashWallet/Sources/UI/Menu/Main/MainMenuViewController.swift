@@ -152,6 +152,7 @@ struct MainMenuScreen: View {
     @ObservedObject private var viewModel: MainMenuViewModel
     @State private var openSettings: Bool = false
     @State private var showTools: Bool = false
+    @State private var showGovernance: Bool = false
     @State private var showSyncInfo: Bool = false
     @State private var showWallets: Bool = false
     @State private var showIdentities: Bool = false
@@ -214,28 +215,20 @@ struct MainMenuScreen: View {
     var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
-                TopIntro(title: NSLocalizedString("More", comment: ""))
-                    .padding(.leading, 20)
-                    .padding(.trailing, 60)
-                    .padding(.top, 10)
-                    .padding(.bottom, 20)
-
                 #if DASHPAY
                 if viewModel.showJoinDashpay {
-                    JoinDashPayView(
+                    JoinDashPayMenuItem(
                         viewModel: joinDPViewModel,
+                        // The row replaced a card with two buttons, so it
+                        // needs a handler covering both — see
+                        // `handleJoinDashPayRowTap`.
                         onTap: { state in
-                            handleJoinDashPayTap(state: state)
+                            handleJoinDashPayRowTap(state: state)
                         },
-                        onActionButton: { state in
-                            handleJoinDashPayAction(state: state)
-                        },
-                        onDismissButton: { state in
-                            joinDPViewModel.markAsDismissed()
-                            viewModel.refreshJoinDashPayBanner()
-                        }
+                        isSyncing: viewModel.isSyncing
                     )
-                    .padding(.horizontal, 18)
+                    .padding(.vertical, 20)
+                    .padding(.horizontal, 20)
                 }
                 #endif
                 
@@ -337,6 +330,13 @@ struct MainMenuScreen: View {
             ) {
                 EmptyView()
             }
+
+            NavigationLink(
+                destination: GovernanceMenuScreen(vc: vc),
+                isActive: $showGovernance
+            ) {
+                EmptyView()
+            }
             
             NavigationLink(
                 destination: SyncInfoMenuScreen(vc: vc),
@@ -403,14 +403,47 @@ struct MainMenuScreen: View {
         case .registered:
             editProfile()
         case .voting:
-            showRequestDetails()
+            showUsernameRequestStatus()
         case .none:
             handleJoinButtonAction()
         default:
             break
         }
     }
+
+    /// The DashPay row is tappable while a contested submission is being voted
+    /// on; this is where it goes. Reached only in the `.voting` state, which
+    /// `JoinDashPayViewModel` derives from
+    /// `DWContestedNameStatusService.pendingLabel`.
+    private func showUsernameRequestStatus() {
+        guard let label = DWContestedNameStatusService.shared.pendingLabel else { return }
+        let screen = UsernameRequestStatusScreen(
+            viewModel: UsernameRequestStatusViewModel(label: label))
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
+    }
     
+    /// Where a tap on the DashPay menu row goes. The row replaced a card with
+    /// two buttons, so it has to cover what both of them did — it is not the
+    /// old action button under a new name.
+    ///
+    /// In particular `.callToAction` must NOT reach `editProfile()`: that
+    /// method guards on an existing identity and returns silently for exactly
+    /// the users this state describes, which read on screen as a dead row.
+    private func handleJoinDashPayRowTap(state: JoinDashPayState) {
+        switch state {
+        case .none, .callToAction, .blocked, .failed, .contested:
+            // Not registered (or the attempt failed): open the join flow,
+            // which also carries the "Have an invitation?" entry.
+            handleJoinButtonAction()
+        case .approved, .registered:
+            editProfile()
+        case .voting:
+            showUsernameRequestStatus()
+        }
+    }
+
     private func handleJoinDashPayAction(state: JoinDashPayState) {
         switch state {
         case .blocked, .failed, .contested:
@@ -423,21 +456,16 @@ struct MainMenuScreen: View {
     }
     
     private func handleJoinButtonAction() {
-        let shouldShowDashPayInfo = !UsernamePrefs.shared.joinDashPayInfoShown
-
-        if shouldShowDashPayInfo {
-            UsernamePrefs.shared.joinDashPayInfoShown = true
-            showDashPayInfo = true
-        } else {
-            joinDashPay()
-        }
+        // Always open the info dialog — same reason as HomeView: it is the
+        // only surface carrying "Have an invitation?", and the one-shot latch
+        // hid the redeem path for good from anyone who had already tapped
+        // Upgrade before their invitation arrived.
+        showDashPayInfo = true
     }
     #endif
     
     private func handleNavigation(_ destination: MainMenuNavigationDestination?) {
         switch destination {
-        case .buySellPortal:
-            showBuySellPortal()
         case .explore:
             showExplore()
         case .syncInfo:
@@ -454,10 +482,8 @@ struct MainMenuScreen: View {
             showTools = true
         case .support:
             onContactSupport()
-        #if DASHPAY
-        case .voting:
-            showVoting()
-        #endif
+        case .governance:
+            showGovernance = true
         case .none:
             return
         }
@@ -470,12 +496,6 @@ struct MainMenuScreen: View {
     
     // MARK: - Navigation Methods
     
-    private func showBuySellPortal() {
-        let controller = BuySellPortalViewController.controller()
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
-    }
-
     private func showExplore() {
         let screen = ExploreMenuScreen(
             vc: vc,
@@ -492,12 +512,6 @@ struct MainMenuScreen: View {
 
 
     #if DASHPAY
-    private func showVoting() {
-        let controller = UsernameVotingViewController.controller()
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
-    }
-    
     private func editProfile() {
         // Gate on the strict SDK-side identity check so the editor
         // never opens against a missing identity — Save would fail
@@ -509,12 +523,6 @@ struct MainMenuScreen: View {
         let navigation = BaseNavigationController(rootViewController: controller)
         navigation.modalPresentationStyle = .fullScreen
         vc.present(navigation, animated: true)
-    }
-    
-    private func showRequestDetails() {
-        let controller = RequestDetailsViewController.controller()
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
     }
     
     #if DASHPAY
@@ -549,13 +557,25 @@ struct MainMenuScreen: View {
             onProceed: {
                 readinessNavigationController?.dismiss(animated: true) {
                     guard let menuNavigationController else { return }
+                    // Coming from the readiness interstitial: the shielded
+                    // question was answered there (checklist or the explicit
+                    // transparent escape), so the form skips the teaser.
                     Self.pushCreateUsernameForm(
                         on: menuNavigationController,
-                        dashPayModel: dashPayModel)
+                        dashPayModel: dashPayModel,
+                        suppressShieldedHint: true)
                 }
             },
             onClose: {
                 readinessNavigationController?.dismiss(animated: true)
+            },
+            onClaimInvitation: {
+                readinessNavigationController?.dismiss(animated: true) {
+                    guard let menuNavigationController else { return }
+                    ClaimInvitationFlow.pushRedeemScreen(
+                        on: menuNavigationController,
+                        dashPayModel: dashPayModel)
+                }
             })
         let hosting = UIHostingController(rootView: screen)
         hosting.view.backgroundColor = UIColor.dw_background()
@@ -572,13 +592,15 @@ struct MainMenuScreen: View {
 
     private static func pushCreateUsernameForm(
         on navigationController: UINavigationController,
-        dashPayModel: DWDashPayProtocol
+        dashPayModel: DWDashPayProtocol,
+        suppressShieldedHint: Bool = false
     ) {
         let controller = CreateUsernameViewController(
             dashPayModel: dashPayModel,
             invitationURL: nil,
             definedUsername: nil
         )
+        controller.suppressShieldedHint = suppressShieldedHint
         controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak navigationController] result in
             let message = result 

@@ -40,10 +40,15 @@ struct ContactProfileSheet: View {
     /// looked up from `resolvedByTxid` in the destination builder
     /// (`Transaction` itself isn't `Hashable`).
     @State private var selectedPaymentId: String? = nil
-    @State private var metaSavedToast = false
-    /// Contact settings (alias / note) stay collapsed until the user
-    /// taps the contact header; tapping again collapses them.
-    @State private var showContactSettings = false
+    /// Transient confirmation shown at the bottom of the sheet — a saved edit
+    /// or a copied identity id. One slot, so a second message replaces the
+    /// first instead of stacking.
+    @State private var toastMessage: String? = nil
+    /// Contact settings (alias / note) are part of what the sheet is for, so
+    /// they open with it; tapping the header still folds them away. They were
+    /// collapsed by default, which left an alias the user had already written
+    /// invisible on the one screen that shows everything about the contact.
+    @State private var showContactSettings = true
 
     private let service = SwiftDashSDKContactsService.shared
 
@@ -58,6 +63,12 @@ struct ContactProfileSheet: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         header
+                        // Sibling of `header` rather than part of it: the
+                        // header's tap toggles the contact-settings card, and
+                        // this row's tap copies.
+                        ContactIdentityIdView(
+                            identityId: contact.contactIdentityId,
+                            onCopy: { showToast(NSLocalizedString("Copied", comment: "")) })
                         if let message = contact.publicMessage, !message.isEmpty {
                             Text(message)
                                 .font(.system(size: 14))
@@ -138,8 +149,8 @@ struct ContactProfileSheet: View {
                 }
             }
             .overlay(alignment: .bottom) {
-                if metaSavedToast {
-                    Text(NSLocalizedString("Saved", comment: ""))
+                if let toastMessage {
+                    Text(toastMessage)
                         .font(.system(size: 13, weight: .medium))
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
@@ -161,9 +172,12 @@ struct ContactProfileSheet: View {
             Text(contact.displayTitle)
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.dash.primaryText)
-            if let username = contact.username?.withoutDashSuffix,
-               !username.isEmpty,
-               username != contact.displayTitle {
+            // Shown even when it matches the title above. The title can be an
+            // owner-set alias or a profile display name, and both are free
+            // text — so "the name I gave them" and "the name they registered"
+            // looking identical is itself information, and hiding the username
+            // then left the user unable to tell which one they were reading.
+            if let username = contact.username?.withoutDashSuffix, !username.isEmpty {
                 Text(username)
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
@@ -254,23 +268,33 @@ struct ContactProfileSheet: View {
                         .zIndex(-1)
                 }
 
-                // Android Button.Primary.Blue: full-width filled pay CTA.
-                Button {
-                    showingPaySheet = true
-                } label: {
-                    Label(
-                        NSLocalizedString("Pay", comment: "DashPay Contacts"),
-                        systemImage: "arrow.up.circle.fill")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Color.dash.whiteText)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 46)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.dash.blue))
+                // Being established means the contact requests are
+                // mutual; it does NOT mean we can pay. Paying needs the
+                // DIP-15 external account built from the counterparty's
+                // encrypted xpub, and when the SDK has permanently
+                // failed to build it, every Pay tap ends in a failure
+                // the user can do nothing about. Say so instead.
+                if contact.paymentChannelBroken {
+                    paymentChannelBrokenNotice
+                } else {
+                    // Android Button.Primary.Blue: full-width filled pay CTA.
+                    Button {
+                        showingPaySheet = true
+                    } label: {
+                        Label(
+                            NSLocalizedString("Pay", comment: "DashPay Contacts"),
+                            systemImage: "arrow.up.circle.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Color.dash.whiteText)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 46)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(Color.dash.blue))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 32)
                 }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 32)
 
                 paymentsSection
 
@@ -352,6 +376,21 @@ struct ContactProfileSheet: View {
         .padding(.horizontal, 15)
     }
 
+    /// Show a confirmation and clear it after a beat. `@MainActor` because it
+    /// mutates published sheet state from callers on both the main actor and a
+    /// view's tap handler.
+    @MainActor
+    private func showToast(_ message: String) {
+        withAnimation { toastMessage = message }
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            // A later toast may have replaced this one; only retract our own.
+            if toastMessage == message {
+                withAnimation { toastMessage = nil }
+            }
+        }
+    }
+
     private var metaChanged: Bool {
         aliasText != (contact.alias ?? "") || noteText != (contact.note ?? "")
     }
@@ -367,9 +406,7 @@ struct ContactProfileSheet: View {
                     note: noteText.trimmingCharacters(in: .whitespaces),
                     hidden: isHidden,
                     for: contact.contactIdentityId)
-                withAnimation { metaSavedToast = true }
-                try? await Task.sleep(nanoseconds: 1_200_000_000)
-                withAnimation { metaSavedToast = false }
+                showToast(NSLocalizedString("Saved", comment: ""))
             } catch {
                 errorMessage = errorMessageIfNotCancelled(error)
             }
@@ -400,11 +437,42 @@ struct ContactProfileSheet: View {
         return error.localizedDescription
     }
 
+    /// Shown in place of the Pay CTA when the contact's payment
+    /// channel is permanently broken.
+    ///
+    /// Deliberately actionable rather than an error: the flag only
+    /// clears when the CONTACT sends a fresh request, so telling the
+    /// user what to ask for is the only thing that can fix it. A
+    /// disabled-looking button with no explanation would leave them
+    /// tapping and reading a Rust diagnostic instead.
+    private var paymentChannelBrokenNotice: some View {
+        VStack(spacing: 6) {
+            Label(
+                NSLocalizedString("Payments unavailable", comment: "DashPay Contacts"),
+                systemImage: "exclamationmark.triangle.fill")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.dashGolden)
+            Text(NSLocalizedString(
+                "This contact's payment details couldn't be set up. Ask them to send you a new contact request.",
+                comment: "DashPay Contacts"))
+                .font(.system(size: 13))
+                .foregroundColor(.dash.secondaryText)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.dash.secondaryBackground))
+        .padding(.horizontal, 32)
+    }
+
     // MARK: Payments between us — history card
 
     private var paymentsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("Payments", comment: "DashPay Contacts"))
+            Text(NSLocalizedString("Activity", comment: "DashPay Contacts"))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.dash.primaryText)
             // Legacy profile's info tooltip, inlined: only payments
@@ -413,14 +481,19 @@ struct ContactProfileSheet: View {
             Text(NSLocalizedString("Payments made directly to an address aren't retained here.", comment: "DashPay Contacts"))
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
-            if payments.isEmpty {
+            if activityEntries.isEmpty {
                 Text(NSLocalizedString("No payments with this contact yet", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                     .padding(.top, 2)
             } else {
-                ForEach(payments) { payment in
-                    paymentRow(payment)
+                ForEach(activityEntries) { entry in
+                    switch entry {
+                    case .payment(let payment):
+                        paymentRow(payment)
+                    case .request(let request):
+                        requestRow(request)
+                    }
                 }
             }
         }
@@ -431,6 +504,125 @@ struct ContactProfileSheet: View {
                 .fill(Color.dash.secondaryBackground))
         .padding(.horizontal, 15)
     }
+
+    // MARK: - Activity
+
+    /// A moment in the history with this contact. Payments are only part of it:
+    /// before the first one there is still the request that opened the channel,
+    /// and a profile that showed nothing until money moved read as empty for a
+    /// contact the user had just added.
+    private enum ActivityEntry: Identifiable {
+        case payment(SwiftDashSDKContactsService.ContactPayment)
+        case request(RequestEvent)
+
+        var date: Date {
+            switch self {
+            case .payment(let payment): payment.date
+            case .request(let request): request.date
+            }
+        }
+
+        var id: String {
+            switch self {
+            case .payment(let payment): "payment-\(payment.id)"
+            case .request(let request): "request-\(request.id)"
+            }
+        }
+    }
+
+    /// A contact-request milestone, derived from the pair's own timestamps
+    /// rather than a feed: `incomingCreatedAt` / `outgoingCreatedAt` are the two
+    /// halves of a DashPay friendship, so the earlier is the request and — once
+    /// established — the later is the reply that completed it.
+    private struct RequestEvent: Identifiable {
+        enum Kind {
+            case theyAsked
+            case weAsked
+            case theyAccepted
+            case weAccepted
+        }
+
+        let kind: Kind
+        let date: Date
+        var id: String { "\(kind)-\(date.timeIntervalSince1970)" }
+    }
+
+    private var requestEvents: [RequestEvent] {
+        let incoming = contact.incomingCreatedAt
+        let outgoing = contact.outgoingCreatedAt
+
+        switch (incoming, outgoing) {
+        case let (incoming?, outgoing?):
+            // Both halves exist, so this pair is established. The older row is
+            // the original ask; the newer one is the acceptance, and which side
+            // accepted follows from which row is newer.
+            return incoming <= outgoing
+                ? [RequestEvent(kind: .theyAsked, date: incoming),
+                   RequestEvent(kind: .weAccepted, date: outgoing)]
+                : [RequestEvent(kind: .weAsked, date: outgoing),
+                   RequestEvent(kind: .theyAccepted, date: incoming)]
+        case let (incoming?, nil):
+            return [RequestEvent(kind: .theyAsked, date: incoming)]
+        case let (nil, outgoing?):
+            return [RequestEvent(kind: .weAsked, date: outgoing)]
+        case (nil, nil):
+            return []
+        }
+    }
+
+    private var activityEntries: [ActivityEntry] {
+        let entries = payments.map { ActivityEntry.payment($0) }
+            + requestEvents.map { ActivityEntry.request($0) }
+        return entries.sorted { $0.date > $1.date }
+    }
+
+    /// Wording matches the notifications screen key-for-key so the same event
+    /// reads the same in both places and shares one translation.
+    private func requestText(_ event: RequestEvent) -> String {
+        switch event.kind {
+        case .theyAsked:
+            String(
+                format: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"),
+                contact.displayTitle)
+        case .weAsked:
+            String(
+                format: NSLocalizedString("You sent a contact request to %@", comment: "DashPay Notifications"),
+                contact.displayTitle)
+        case .theyAccepted:
+            String(
+                format: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"),
+                contact.displayTitle)
+        case .weAccepted:
+            String(
+                format: NSLocalizedString("You added %@ as a contact", comment: "DashPay Notifications"),
+                contact.displayTitle)
+        }
+    }
+
+    private func requestRow(_ event: RequestEvent) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "person.crop.circle.badge.plus")
+                .foregroundColor(.dash.blue)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(requestText(event))
+                    .font(.system(size: 14))
+                    .foregroundColor(.dash.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(Self.activityDateFormatter.string(from: event.date))
+                    .font(.system(size: 11))
+                    .foregroundColor(.dash.secondaryText)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 6)
+    }
+
+    private static let activityDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
 
     /// One payment row. Tappable → the standard tx-detail screen when
     /// the on-chain transaction resolves in this wallet's store; a plain
@@ -532,8 +724,14 @@ struct PayContactSheet: View {
     @State private var sentTxid: Data? = nil
     /// Exact network fee (duffs) of the broadcast transaction.
     @State private var sentFeeDuffs: UInt64? = nil
+    /// Duffs actually broadcast, captured at send time.
+    ///
+    /// The confirmation must state what was paid, not what was typed. Echoing
+    /// `amountText` back made any gap between the two — a locale separator, a
+    /// stray character, precision the parser drops — render as a truthful-looking
+    /// "sent" line for an amount that never left the wallet.
+    @State private var sentAmountDuffs: UInt64?
     @State private var errorMessage: String? = nil
-    @FocusState private var amountFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -568,22 +766,27 @@ struct PayContactSheet: View {
                 Text(errorMessage ?? "")
             }
         }
-        .presentationDetents([.medium])
+        // The sheet carries its own keypad now, so it needs the room the
+        // system keyboard used to occupy.
+        .presentationDetents([.large])
     }
 
     @ViewBuilder
     private var form: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            TextField("0", text: $amountText)
-                .keyboardType(.decimalPad)
-                .font(.system(size: 40, weight: .semibold))
-                .multilineTextAlignment(.trailing)
-                .focused($amountFocused)
-                .onAppear { amountFocused = true }
-            Text("DASH")
-                .font(.system(size: 17, weight: .bold))
-                .foregroundColor(.dash.secondaryText)
-        }
+        // The shared amount surface every other send screen uses, over the
+        // app's own keypad. A raw `TextField` + `.decimalPad` accepted whatever
+        // the system keyboard allowed — a bare separator, a locale comma, more
+        // precision than DASH has — and left validation to the parser, so the
+        // typed text and the amount actually sent could disagree.
+        EnterAmountView(
+            primaryAmount: amountText.isEmpty ? "0" : amountText,
+            secondaryAmount: fiatAmountText,
+            primaryCurrency: .dash,
+            secondaryCurrency: .fiat(App.fiatCurrency),
+            isPrimarySelected: true,
+            isCurrencySelectorHidden: true,
+            onMax: { amountText = Self.dashString(duffs: maxSendable) }
+        )
         .padding(.top, 12)
 
         Text(String(
@@ -596,25 +799,23 @@ struct PayContactSheet: View {
             .font(.system(size: 12))
             .foregroundColor(.dash.tertiaryText)
 
-        if isSending {
-            SwiftUI.ProgressView()
-                .padding(.top, 8)
-        } else {
-            Button {
-                pay()
-            } label: {
-                Text(NSLocalizedString("Pay", comment: "DashPay Contacts"))
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color.dash.whiteText)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 46)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(parsedDuffs == nil ? Color.dash.gray300 : Color.dash.blue))
-            }
-            .buttonStyle(.plain)
-            .disabled(parsedDuffs == nil)
-        }
+        NumericKeyboardView(
+            value: $amountText,
+            showDecimalSeparator: true,
+            actionButtonText: NSLocalizedString("Pay", comment: "DashPay Contacts"),
+            actionEnabled: parsedDuffs != nil,
+            inProgress: isSending,
+            actionHandler: { pay() }
+        )
+        .padding(.top, 8)
+    }
+
+    /// Fiat equivalent of what is typed, for the secondary line. Empty while
+    /// the amount is unparseable or rates have not arrived.
+    private var fiatAmountText: String {
+        guard let duffs = parsedDuffs else { return "" }
+        let dash = Decimal(duffs) / Decimal(100_000_000)
+        return CurrencyExchanger.shared.fiatAmountString(for: dash)
     }
 
     private func success(txid: Data) -> some View {
@@ -627,7 +828,8 @@ struct PayContactSheet: View {
                 .foregroundColor(.dash.primaryText)
             Text(String(
                 format: NSLocalizedString("%@ DASH sent to %@", comment: "DashPay Contacts"),
-                amountText, contact.displayTitle))
+                sentAmountDuffs.map { Self.dashString(duffs: $0) } ?? amountText,
+                contact.displayTitle))
                 .font(.system(size: 14))
                 .foregroundColor(.dash.secondaryText)
             if let fee = sentFeeDuffs {
@@ -683,6 +885,7 @@ struct PayContactSheet: View {
                     amount: duffs)
                 sentTxid = txid
                 sentFeeDuffs = feeDuffs
+                sentAmountDuffs = duffs
                 // Project the freshly recorded Sent entry to SwiftData
                 // right away — the entry lives only in Rust memory
                 // until a projection runs, and an app kill before one

@@ -166,6 +166,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)recoverContentViewPerformWipe:(DWRecoverContentView *)view {
+    BOOL isSupportWipe = self.action == DWRecoverAction_SupportWipe;
     UIAlertControllerStyle style = IS_IPAD ? UIAlertControllerStyleAlert : UIAlertControllerStyleActionSheet;
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
                                                                    message:nil
@@ -176,10 +177,16 @@ NS_ASSUME_NONNULL_BEGIN
                                                              [self.contentView activateTextView];
                                                          }];
     [alert addAction:cancelAction];
-    UIAlertAction *wipeAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Wipe", nil)
+    NSString *destructiveTitle = isSupportWipe
+                                     ? NSLocalizedString(@"Delete All", nil)
+                                     : NSLocalizedString(@"Wipe", nil);
+    UIAlertAction *wipeAction = [UIAlertAction actionWithTitle:destructiveTitle
                                                          style:UIAlertActionStyleDestructive
                                                        handler:^(UIAlertAction *action) {
-                                                           [self.view dw_showProgressHUDWithMessage:NSLocalizedString(@"Deleting Wallet…", nil)];
+                                                           NSString *progressMessage = isSupportWipe
+                                                                                           ? NSLocalizedString(@"Deleting All Wallets…", nil)
+                                                                                           : NSLocalizedString(@"Deleting Wallet…", nil);
+                                                           [self.view dw_showProgressHUDWithMessage:progressMessage];
                                                            [self.model wipeWallet];
                                                            __weak typeof(self) weakSelf = self;
                                                            [DWSwiftDashSDKWalletWiper
@@ -194,11 +201,33 @@ NS_ASSUME_NONNULL_BEGIN
                                                                        return;
                                                                    }
 
-                                                                   [strongSelf
-                                                                       showAlertWithTitle:NSLocalizedString(@"Couldn’t Delete Wallet", nil)
-                                                                                  message:NSLocalizedString(
-                                                                                              @"The wallet is still stored on this device. Please try again.",
-                                                                                              nil)];
+                                                                   NSString *failureTitle = isSupportWipe
+                                                                                                ? NSLocalizedString(@"Couldn’t Delete All Wallets", nil)
+                                                                                                : NSLocalizedString(@"Couldn’t Delete Wallet", nil);
+                                                                   NSString *failureMessage = isSupportWipe
+                                                                                                  ? NSLocalizedString(@"Not all wallets could be deleted. Please try again.", nil)
+                                                                                                  : NSLocalizedString(@"The wallet is still stored on this device. Please try again.", nil);
+                                                                   if (isSupportWipe) {
+                                                                       UIAlertController *failureAlert =
+                                                                           [UIAlertController alertControllerWithTitle:failureTitle
+                                                                                                               message:failureMessage
+                                                                                                        preferredStyle:UIAlertControllerStyleAlert];
+                                                                       [failureAlert addAction:
+                                                                                         [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
+                                                                                                                   style:UIAlertActionStyleCancel
+                                                                                                                 handler:^(UIAlertAction *action) {
+                                                                                                                     [strongSelf.contentView activateTextView];
+                                                                                                                 }]];
+                                                                       [failureAlert addAction:
+                                                                                         [UIAlertAction actionWithTitle:NSLocalizedString(@"Retry", nil)
+                                                                                                                   style:UIAlertActionStyleDefault
+                                                                                                                 handler:^(UIAlertAction *action) {
+                                                                                                                     [strongSelf recoverContentViewPerformWipe:view];
+                                                                                                                 }]];
+                                                                       [strongSelf presentViewController:failureAlert animated:YES completion:nil];
+                                                                       return;
+                                                                   }
+                                                                   [strongSelf showAlertWithTitle:failureTitle message:failureMessage];
                                                                }];
                                                        }];
     [alert addAction:wipeAction];
@@ -207,9 +236,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)recoverContentViewWipeNotAllowed:(DWRecoverContentView *)view {
     NSString *title = NSLocalizedString(@"This wallet is not empty or sync has not finished, you may not wipe it without the recovery phrase", nil);
-    NSString *message = [NSString stringWithFormat:
-                                      NSLocalizedString(@"If you still would like to wipe it please input: \"%@\"", nil),
-                                      self.model.wipeAcceptPhrase];
+    NSString *message = NSLocalizedString(@"Enter the recovery phrase to continue.", nil);
     [self showAlertWithTitle:title message:message];
 }
 
@@ -218,8 +245,20 @@ NS_ASSUME_NONNULL_BEGIN
     [self showAlertWithTitle:nil message:message];
 }
 
+- (void)recoverContentViewWipeBlockedByMultipleWallets:(DWRecoverContentView *)view {
+    NSString *title = NSLocalizedString(@"Multiple wallets are stored on this device", nil);
+    NSString *message = NSLocalizedString(@"A single wallet's recovery phrase cannot authorize deleting multiple different wallets.", nil);
+    [self showAlertWithTitle:title message:message];
+}
+
+- (void)recoverContentViewWipeShortcutUnavailableOnTestnet:(DWRecoverContentView *)view {
+    NSString *title = NSLocalizedString(@"The \"wipe\" shortcut is not available on testnet", nil);
+    NSString *message = NSLocalizedString(@"A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue.", nil);
+    [self showAlertWithTitle:title message:message];
+}
+
 - (void)recoverContentView:(DWRecoverContentView *)view phraseDidChange:(NSString *)phrase {
-    BOOL isPhraseValid = [phrase wordsCount] >= 10;
+    BOOL isPhraseValid = [phrase wordsCount] >= 10 || [self.model isWipeAcceptancePhrase:phrase];
     [self.actionButton setEnabled:isPhraseValid];
 }
 
@@ -240,6 +279,12 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Private
 
 - (void)setupView {
+    self.model = [[DWRecoverModel alloc] initWithAction:self.action];
+
+    // ResetPin mode proves ownership before (re)setting the PIN; when no PIN
+    // record exists (partial keychain restore, interrupted setup) there is
+    // nothing to "reset", so the copy says "set".
+    const BOOL hasPinSet = self.model.hasPinSet;
     switch (self.action) {
         case DWRecoverAction_Recover:
             self.title = NSLocalizedString(@"Recover Wallet", nil);
@@ -248,11 +293,14 @@ NS_ASSUME_NONNULL_BEGIN
             self.title = NSLocalizedString(@"Wipe Wallet", nil);
             break;
         case DWRecoverAction_ResetPin:
-            self.title = NSLocalizedString(@"Reset PIN", nil);
+            self.title = hasPinSet
+                             ? NSLocalizedString(@"Reset PIN", nil)
+                             : NSLocalizedString(@"Set PIN", nil);
+            break;
+        case DWRecoverAction_SupportWipe:
+            self.title = NSLocalizedString(@"Wipe All Wallets", nil);
             break;
     }
-
-    self.model = [[DWRecoverModel alloc] initWithAction:self.action];
 
     self.actionButton.enabled = NO;
 
@@ -260,9 +308,14 @@ NS_ASSUME_NONNULL_BEGIN
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     contentView.model = self.model;
     contentView.delegate = self;
-    contentView.title = (self.action == DWRecoverAction_ResetPin)
-                            ? NSLocalizedString(@"Enter your recovery phrase to reset your PIN", nil)
-                            : NSLocalizedString(@"Enter Recovery Phrase", nil);
+    if (self.action == DWRecoverAction_ResetPin) {
+        contentView.title = hasPinSet
+                                ? NSLocalizedString(@"Enter your recovery phrase to reset your PIN", nil)
+                                : NSLocalizedString(@"Enter your recovery phrase to set a new PIN", nil);
+    }
+    else {
+        contentView.title = NSLocalizedString(@"Enter Recovery Phrase", nil);
+    }
     [self.scrollView addSubview:contentView];
     self.contentView = contentView;
 

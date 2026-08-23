@@ -195,11 +195,42 @@ extension CrowdNode {
             return
         }
 
+        // Read the count ONCE, before the scans, and memoize that same value
+        // below. Reading it again afterwards would record rows the scans never
+        // inspected — a save landing mid-restore would make the next call skip
+        // a scan that still owes work on those rows.
+        let txCountBeforeScans = TransactionObserver.persistedTransactionCount()
+
+        // A previous pass — this launch or an earlier one; the memo persists
+        // per wallet in CrowdNodeDefaults — already scanned this exact history
+        // and found no account; without new rows it would reach the same
+        // conclusion. The restore's own guard is `signUpState > .notStarted`,
+        // which a wallet that never signed up never reaches, so without this
+        // memo every caller (launch sync-done, each entry into the CrowdNode
+        // portal) re-runs the full history scan and blocks the main thread
+        // for seconds apiece. A signup can still turn up later when a
+        // restored seed syncs its history in, which is why the memo is keyed
+        // to the row count rather than latching: new rows persisted → miss →
+        // the scan runs again.
+        if let scanned = prefs.fruitlessRestoreTxCount, txCountBeforeScans == scanned {
+            return
+        }
+
         DWLogger.log("restoring CrowdNode state")
         signUpState = SignUpState.notStarted
         validatePrefs()
 
-        if tryRestoreSignUp() {
+        // One snapshot serves the whole restore. The signup reconstruction and
+        // the linked-account confirmation lookup consume the same window —
+        // floored at 2022 because CrowdNode protocol traffic cannot predate
+        // CrowdNode — and each running the identical fetch is what doubled the
+        // multi-second scan on large wallets. No fetchLimit: a signup can sit
+        // anywhere in the post-2022 history, so a newest-first cap would drop
+        // real accounts.
+        let observed = TransactionObserver
+            .fetchObserved(firstSeenAtOrAfter: FullCrowdNodeSignUpTxSet.januaryFirst2022Epoch)
+
+        if tryRestoreSignUp(observed) {
             refreshWithdrawalLimits()
             refreshFees()
             restoreCreatedOnlineAccount(accountAddress)
@@ -208,7 +239,7 @@ extension CrowdNode {
 
         var onlineState = prefs.savedOnlineAccountState
 
-        if let address = getOnlineAccountAddress(state: onlineState) {
+        if let address = getOnlineAccountAddress(state: onlineState, observed: observed) {
             prefs.accountAddress = address
 
             if onlineState == .none {
@@ -232,14 +263,21 @@ extension CrowdNode {
             }
         } else {
             DWLogger.log("CrowdNode: account not found")
+            // Nothing found by either the signup scan or the online-account
+            // lookup, so this whole pass was a no-op — memoize it against the
+            // history the scans actually saw, not the store's count now. A nil
+            // count means the SDK container wasn't up and the scans were
+            // vacuous: nothing to memoize, and don't clobber a prior launch's
+            // valid memo with it.
+            if let txCountBeforeScans {
+                prefs.fruitlessRestoreTxCount = txCountBeforeScans
+            }
         }
     }
 
-    private func tryRestoreSignUp() -> Bool {
+    private func tryRestoreSignUp(_ observed: [ObservedTransaction]) -> Bool {
         let fullSet = FullCrowdNodeSignUpTxSet()
-        TransactionObserver
-            .fetchObserved(firstSeenAtOrAfter: FullCrowdNodeSignUpTxSet.januaryFirst2022Epoch)
-            .forEach { fullSet.tryInclude($0) }
+        observed.forEach { fullSet.tryInclude($0) }
 
         if let welcomeResponse = fullSet.welcomeToApiResponse {
             precondition(welcomeResponse.toAddress != nil)
@@ -331,6 +369,8 @@ extension CrowdNode {
         primaryAddress = nil
         apiError = nil
         balance = 0
+        // resetUserDefaults() also clears the persisted fruitless-restore memo,
+        // so a network change or alien-address teardown always rescans.
         prefs.resetUserDefaults()
     }
 
@@ -364,6 +404,13 @@ extension CrowdNode {
         apiError = nil
         balance = 0
         isOnlineStateRestored = false
+        // The active wallet has already changed here (and invalidateCache()
+        // above dropped the stale per-wallet resolution), so this clears the
+        // NEW wallet's persisted memo: the row count is store-global while the
+        // scan is wallet-scoped, so a memo recorded against a different
+        // wallet-mix of the store can't be trusted after a switch — force a
+        // real scan for this wallet.
+        prefs.fruitlessRestoreTxCount = nil
         restoreState()
     }
     
@@ -996,12 +1043,12 @@ extension CrowdNode {
         return TransactionObserver.fetchObserved().contains { filter.matches($0) }
     }
 
-    private func getOnlineAccountAddress(state: OnlineAccountState) -> String? {
+    private func getOnlineAccountAddress(state: OnlineAccountState, observed: [ObservedTransaction]) -> String? {
         let savedAddress = prefs.accountAddress
 
         if savedAddress != nil && state != .none {
             return savedAddress
-        } else if let confirmationTx = getApiAddressConfirmationTx(),
+        } else if let confirmationTx = getApiAddressConfirmationTx(in: observed),
                   let apiAddress = confirmationTx.ownOutputAddresses.first {
             prefs.accountAddress = apiAddress
             signUpState = .linkedOnline
@@ -1013,10 +1060,11 @@ extension CrowdNode {
         return nil
     }
 
-    private func getApiAddressConfirmationTx() -> ObservedTransaction? {
+    /// `observed` is `restoreState()`'s shared snapshot of the post-2022
+    /// history — this lookup runs against it rather than fetching its own.
+    private func getApiAddressConfirmationTx(in observed: [ObservedTransaction]) -> ObservedTransaction? {
         let filter = CoinsToAddressTxFilter(coins: CrowdNode.apiConfirmationDashAmount, address: nil) // account address is unknown at this point
         let forwardedConfirmationFilter = CrowdNodeAPIConfirmationTxForwarded()
-        let observed = TransactionObserver.fetchObserved()
 
         // There might be several matching transactions. The real one is the
         // one whose destination CrowdNode forwarded from.

@@ -220,6 +220,10 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 alias: rows.compactMap(\.contactAlias).first(where: { !$0.isEmpty }),
                 note: rows.compactMap(\.contactNote).first(where: { !$0.isEmpty }),
                 isHidden: rows.contains(where: \.contactHidden),
+                // The persister mirrors the flag onto both direction
+                // rows, so either carrying it means the channel is
+                // broken.
+                paymentChannelBroken: rows.contains(where: \.paymentChannelBroken),
                 avatarURL: profile?.avatarUrl,
                 publicMessage: profile?.publicMessage,
                 createdAt: Date(timeIntervalSince1970: TimeInterval(newestMillis) / 1000),
@@ -242,12 +246,13 @@ final class SwiftDashSDKContactsService: ObservableObject {
         Self.logger.info("👥 CONTACTS :: snapshot rebuilt — \(established.count, privacy: .public) established, \(incoming.count, privacy: .public) incoming, \(outgoing.count, privacy: .public) outgoing")
         NotificationCenter.default.post(name: Self.contactsDidChangeNotification, object: nil)
 
+        backfillMissingUsernames(established + incoming + outgoing)
+
         // Keep the payment-history rows flowing without any screen
         // open: the projection is app-pulled (see
         // refreshPaymentsProjection), so ride the snapshot refresh at
         // most once a minute.
         if Date().timeIntervalSince(lastPaymentsProjection) > 60 {
-            lastPaymentsProjection = Date()
             refreshPaymentsProjection()
         }
     }
@@ -267,8 +272,14 @@ final class SwiftDashSDKContactsService: ObservableObject {
         guard let manager = SwiftDashSDKHost.shared.manager,
               let wallet = SwiftDashSDKHost.shared.wallet,
               let ownerId = DWCurrentUserIdentityInfo.shared.identityId else {
+            // No identity yet: nothing was pulled, so leave the piggyback
+            // throttle unarmed. Arming it here spent the launch's first
+            // window on a call that returned immediately — the identity
+            // typically lands seconds later, and the next chance to project
+            // its payments was then a minute away.
             return
         }
+        lastPaymentsProjection = Date()
         do {
             let payments = try manager.refreshDashPayPayments(
                 walletId: wallet.walletId,
@@ -487,6 +498,22 @@ final class SwiftDashSDKContactsService: ObservableObject {
         }
     }
 
+    /// Exact DPNS resolution on Platform: the identity id currently
+    /// owning `username` ("alice" or "alice.dash"), or nil when the
+    /// name is unregistered. Unlike `searchUsernames` this is not a
+    /// capped prefix page, so it's the right primitive for verifying a
+    /// scanned QR's username↔identity claim.
+    func resolveUsername(_ username: String) async throws -> Data? {
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            throw ServiceError.noWallet
+        }
+        do {
+            return try await wallet.resolveDpnsName(username)
+        } catch {
+            throw ServiceError.sdk(error)
+        }
+    }
+
     /// Look up an already-materialized `ContactItem` for `identityId`
     /// across the established / incoming / outgoing snapshots. Used by
     /// the add-contact preview to show a contact's real profile fields
@@ -534,17 +561,43 @@ final class SwiftDashSDKContactsService: ObservableObject {
         let descriptor = FetchDescriptor<PersistentDashpayPayment>(
             predicate: PersistentDashpayPayment.predicate(
                 ownerIdentityId: ownerId,
-                counterpartyIdentityId: contactId),
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
+                counterpartyIdentityId: contactId))
         let rows = (try? modelContainer.mainContext.fetch(descriptor)) ?? []
+
+        // When the payment happened, from the transaction itself.
+        //
+        // `PersistentDashpayPayment.createdAt` is row bookkeeping — its own
+        // model says "not payment dates" — and it only looked like the payment
+        // date because a live send writes the row as it happens. A payment
+        // reconstructed after a restore is written today, so every recovered
+        // row rendered with today's date while the tx-detail screen, which
+        // reads the transaction, showed the real one.
+        var blockTimeByTxid: [Data: UInt32] = [:]
+        if let transactions = try? modelContainer.mainContext.fetch(
+            FetchDescriptor<PersistentTransaction>()) {
+            for tx in transactions where tx.blockTimestamp > 0 {
+                blockTimeByTxid[tx.txid] = tx.blockTimestamp
+            }
+        }
+
         return rows.map { row in
             let dash = Decimal(row.amountDuffs) / Decimal(100_000_000)
+            // `PersistentDashpayPayment.txid` is display-order hex; the
+            // transaction table is keyed by the wire-order bytes.
+            let wireTxid = Data(hex: row.txid).map { Data($0.reversed()) }
+            // Unconfirmed (or not-yet-synced) transactions have no block time;
+            // the row's own timestamp is the best available answer there, and
+            // for a live send it is the right one.
+            let date = wireTxid
+                .flatMap { blockTimeByTxid[$0] }
+                .map { Date(timeIntervalSince1970: TimeInterval($0)) }
+                ?? row.createdAt
             return ContactPayment(
                 txid: row.txid,
                 amountDuffs: row.amountDuffs,
                 direction: row.direction,
                 memo: row.memo,
-                date: row.createdAt,
+                date: date,
                 // Current-rate conversion (parity with the legacy
                 // profile, which showed the live fiat equivalent, not a
                 // historical one). Returns a "Fetching rates…" string
@@ -553,6 +606,10 @@ final class SwiftDashSDKContactsService: ObservableObject {
                     ? CurrencyExchanger.shared.fiatAmountString(for: dash)
                     : nil)
         }
+        // Sort on the payment date, not the row's insert order: reconstructed
+        // rows are all written within the same second, so insert order says
+        // nothing about which payment came first.
+        .sorted { $0.date > $1.date }
     }
 
     /// Write the owner-private contact metadata (alias / note / hidden)
@@ -642,10 +699,49 @@ final class SwiftDashSDKContactsService: ObservableObject {
         return result
     }
 
-    /// Reverse DPNS lookup (identity → label) for incoming-request
-    /// senders, where we only learn the identity ID from the synced
-    /// row. On success the label is cached in the hint store, so the
-    /// next `refresh()` renders it without another network hop.
+    /// Contacts whose reverse lookup is already running, so a `refresh()`
+    /// triggered by one completing does not restart the others.
+    private var usernameBackfillInFlight: Set<Data> = []
+
+    /// Resolve the DPNS label for every contact that has none yet.
+    ///
+    /// `username` is otherwise only populated at add time (from the username
+    /// search) or by the list view's `.onAppear` on the incoming and outgoing
+    /// sections. Established contacts had neither: `ContactsScreen`'s "My
+    /// Contacts" section never called `resolveUsernameIfNeeded`, and a restored
+    /// wallet has no add-time hint because the add happened on the previous
+    /// install. `ContactItem.displayTitle` then fell through to its last
+    /// resort and rendered the contact as `89fd6ddb…` permanently (BUG-27).
+    ///
+    /// Doing it here rather than in the view fixes every surface at once — the
+    /// list, the profile sheet opened straight from a payment, and the
+    /// notifications screen — and does not depend on which row happened to
+    /// scroll into view.
+    ///
+    /// Cost is bounded: `resolveUsername` returns the cached hint without a
+    /// network call once resolved, so this is one lookup per contact per
+    /// install, and contacts that already have a name are skipped entirely.
+    private func backfillMissingUsernames(_ items: [ContactItem]) {
+        let targets = items
+            .filter { $0.username == nil }
+            .map(\.contactIdentityId)
+            .filter { !usernameBackfillInFlight.contains($0) }
+        guard !targets.isEmpty else { return }
+
+        usernameBackfillInFlight.formUnion(targets)
+        Task { @MainActor [weak self] in
+            defer { self?.usernameBackfillInFlight.subtract(targets) }
+            for contactId in targets {
+                _ = await self?.resolveUsername(for: contactId)
+            }
+        }
+    }
+
+    /// Reverse DPNS lookup (identity → label) for any contact we know only by
+    /// identity id — incoming-request senders, and established contacts whose
+    /// add-time hint is gone (a restored wallet). On success the label is
+    /// cached in the hint store, so the next `refresh()` renders it without
+    /// another network hop.
     func resolveUsername(for contactId: Data) async -> String? {
         if let cached = usernameHint(for: contactId) {
             return cached
@@ -668,6 +764,97 @@ final class SwiftDashSDKContactsService: ObservableObject {
 
     // MARK: - Internals
 
+    /// How many of the DIP-15 contact-request keys (an enabled ECDSA
+    /// ENCRYPTION and DECRYPTION key — required on BOTH sides of the ECDH;
+    /// without them, other users' clients find no recipient key and can't
+    /// send requests to this identity) the wallet's main identity is
+    /// missing: 0 (fully enabled), 1, or 2. Drives the Contacts tab's
+    /// "Enable DashPay" affordance and its fee estimate. Local-store read
+    /// only — `enableDashPay()` re-checks Platform's authoritative key set
+    /// before broadcasting anything.
+    func missingDashPayKeyCount() -> Int {
+        guard let modelContainer = SwiftDashSDKHost.shared.modelContainer,
+              let ownerId = DWCurrentUserIdentityInfo.shared.identityId else {
+            return 0
+        }
+        var descriptor = FetchDescriptor<PersistentIdentity>(
+            predicate: #Predicate { $0.identityId == ownerId })
+        descriptor.fetchLimit = 1
+        guard let identity = (try? modelContainer.mainContext.fetch(descriptor))?.first else {
+            return 0
+        }
+        func hasEnabledECDSAKey(purposeRaw: String) -> Bool {
+            identity.publicKeys.contains { key in
+                key.purpose == purposeRaw
+                    && key.keyTypeEnum == .ecdsaSecp256k1
+                    && !key.isDisabled
+            }
+        }
+        var missing = 0
+        if !hasEnabledECDSAKey(purposeRaw: String(KeyPurpose.encryption.rawValue)) { missing += 1 }
+        if !hasEnabledECDSAKey(purposeRaw: String(KeyPurpose.decryption.rawValue)) { missing += 1 }
+        return missing
+    }
+
+    /// Identity ids whose DIP-15 pair Platform has confirmed enabled this
+    /// session. Platform never silently removes keys (they can only be
+    /// explicitly disabled), so one confirmation spares a network query on
+    /// every subsequent tab load.
+    private var platformConfirmedDashPayIdentities: Set<Data> = []
+
+    /// Authoritative Platform-side count of the missing DIP-15 keys for
+    /// `ownerId`. The local SwiftData key rows lag when the pair was added
+    /// from another device — `missingDashPayKeyCount()` alone would keep
+    /// showing the "Enable DashPay" intro for an identity that is already
+    /// enabled. Takes the identity explicitly so a caller can bind the
+    /// result to the identity it captured before awaiting (a wallet switch
+    /// mid-flight must not apply one identity's answer to another).
+    /// Returns nil when the query can't run (no SDK / network error);
+    /// callers keep the local answer then.
+    func missingDashPayKeyCountOnPlatform(identityId ownerId: Data) async -> Int? {
+        guard let sdk = SwiftDashSDKHost.shared.sdk else {
+            return nil
+        }
+        if platformConfirmedDashPayIdentities.contains(ownerId) { return 0 }
+        do {
+            let keysById = try await sdk.identityGetKeys(identityId: ownerId.toBase58String())
+            let missing = DWIdentityKeyUpgrader.missingDashPayPurposes(inPlatformKeysById: keysById).count
+            if missing == 0 {
+                platformConfirmedDashPayIdentities.insert(ownerId)
+            }
+            return missing
+        } catch {
+            Self.logger.error("👥 CONTACTS :: platform DashPay-key re-check failed: \(String(describing: error), privacy: .public)")
+            return nil
+        }
+    }
+
+    /// Estimated network fee for the enable-DashPay IdentityUpdate, in
+    /// duffs (1 duff = 1000 credits): the platform fee schedule's
+    /// `identity_update` minimum (100,000 credits) plus
+    /// `identity_key_in_creation_cost` (6,500,000 credits) per added key —
+    /// rs-platform-version `state_transition_min_fees` v1. The actual fee
+    /// is computed at execution and deducted from the identity's credit
+    /// balance; the confirm sheet labels this as an estimate.
+    static func enableDashPayEstimatedFeeDuffs(missingKeyCount: Int) -> UInt64 {
+        (100_000 + UInt64(max(missingKeyCount, 1)) * 6_500_000) / 1000
+    }
+
+    /// PIN-gated "Enable DashPay": one IdentityUpdate adding whichever of
+    /// the ENCRYPTION/DECRYPTION pair the identity is missing on Platform
+    /// (`DWIdentityKeyUpgrader` — the same lazy repair the contact actions
+    /// run). No-op returning false when Platform already has both keys.
+    func enableDashPay() async throws -> Bool {
+        let (wallet, modelContainer, ownerId) = try requireContext()
+        try await authorize()
+        let upgraded = try await ensureOwnDashPayKeys(
+            wallet: wallet,
+            ownerId: ownerId,
+            modelContainer: modelContainer)
+        Self.logger.info("👥 CONTACTS :: enable DashPay finished (broadcast=\(upgraded, privacy: .public))")
+        return upgraded
+    }
+
     private func requireContext() throws -> (ManagedPlatformWallet, ModelContainer, Data) {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             throw ServiceError.noWallet
@@ -688,12 +875,15 @@ final class SwiftDashSDKContactsService: ObservableObject {
     /// `acceptContactRequest` need our own enabled ECDSA ENCRYPTION
     /// key for DIP-15 ECDH. No-op once both keys exist; called after
     /// the PIN gate so any IdentityUpdate is covered by the same user
-    /// approval as the contact action it unblocks.
+    /// approval as the contact action it unblocks. Returns true when
+    /// an IdentityUpdate was broadcast (the explicit Enable DashPay
+    /// flow surfaces this; the contact actions ignore it).
+    @discardableResult
     private func ensureOwnDashPayKeys(
         wallet: ManagedPlatformWallet,
         ownerId: Data,
         modelContainer: ModelContainer
-    ) async throws {
+    ) async throws -> Bool {
         guard let sdk = SwiftDashSDKHost.shared.sdk,
               let network = SwiftDashSDKHost.shared.runningNetwork else {
             throw ServiceError.noWallet
@@ -708,6 +898,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
             if upgraded {
                 Self.logger.info("👥 CONTACTS :: identity upgraded with DashPay keys before contact action")
             }
+            return upgraded
         } catch {
             Self.logger.error("👥 CONTACTS :: DashPay key upgrade failed: \(String(describing: error), privacy: .public)")
             throw ServiceError.sdk(error)
@@ -735,24 +926,52 @@ final class SwiftDashSDKContactsService: ObservableObject {
     // label is display metadata, not wallet state, so UserDefaults is
     // the honest backing.
 
-    private func hintKey(for contactId: Data) -> String? {
+    /// Key prefix shared by every hint of the current (owner, network) pair.
+    /// Resolved once per batch so a caller reading many contacts does not
+    /// re-read the identity snapshot per contact.
+    private static func hintKeyPrefix() -> String? {
         guard let ownerId = DWCurrentUserIdentityInfo.shared.identityId,
               let network = SwiftDashSDKHost.shared.runningNetwork else {
             return nil
         }
         let ownerHex = ownerId.map { String(format: "%02x", $0) }.joined()
-        let contactHex = contactId.map { String(format: "%02x", $0) }.joined()
-        return "dw.contacts.dpnsHint.\(network.rawValue).\(ownerHex).\(contactHex)"
+        return "dw.contacts.dpnsHint.\(network.rawValue).\(ownerHex)."
+    }
+
+    private static func hintKey(for contactId: Data) -> String? {
+        guard let prefix = hintKeyPrefix() else { return nil }
+        return prefix + contactId.map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// DPNS labels for `contactIds`, keyed by contact identity id.
+    ///
+    /// `static` on purpose. `DashPayPaymentTxLookup` needs the same labels the
+    /// contacts snapshot uses, but it must not reach `SwiftDashSDKContactsService`
+    /// **`.shared`** to get them: `init()` ends in `refresh()`, which calls
+    /// `DashPayPaymentTxLookup.shared.refresh()`, so touching `.shared` from
+    /// there re-enters the singleton's own `swift_once` and traps
+    /// (`EXC_BREAKPOINT` reported on the `static let shared` line). Nothing
+    /// here reads instance state, so there is no reason to route through it.
+    static func usernameHints(for contactIds: some Sequence<Data>) -> [Data: String] {
+        guard let prefix = hintKeyPrefix() else { return [:] }
+        var out: [Data: String] = [:]
+        for contactId in contactIds where out[contactId] == nil {
+            let key = prefix + contactId.map { String(format: "%02x", $0) }.joined()
+            if let value = UserDefaults.standard.string(forKey: key), !value.isEmpty {
+                out[contactId] = value
+            }
+        }
+        return out
     }
 
     private func usernameHint(for contactId: Data) -> String? {
-        guard let key = hintKey(for: contactId) else { return nil }
+        guard let key = Self.hintKey(for: contactId) else { return nil }
         let value = UserDefaults.standard.string(forKey: key)
         return (value?.isEmpty == false) ? value : nil
     }
 
     private func setUsernameHint(_ label: String, for contactId: Data) {
-        guard let key = hintKey(for: contactId) else { return }
+        guard let key = Self.hintKey(for: contactId) else { return }
         UserDefaults.standard.set(label, forKey: key)
     }
 }
@@ -787,7 +1006,7 @@ final class ContactsNotificationsBridge: NSObject {
 final class DashPayPaymentTxLookup {
     static let shared = DashPayPaymentTxLookup()
 
-    struct PaymentInfo: Sendable {
+    struct PaymentInfo: Sendable, Equatable {
         let amountDuffs: UInt64
         /// True when the wallet's identity SENT this payment.
         let isOutgoing: Bool
@@ -801,10 +1020,21 @@ final class DashPayPaymentTxLookup {
         let counterpartyAlias: String?
         /// Counterparty's avatar URL, when their profile carries one.
         let counterpartyAvatarURL: String?
+        /// Counterparty's DPNS label, when one has been resolved. Most
+        /// contacts have no `dashpay.profile.displayName`, so without this
+        /// step the row had no name at all and rendered as "?" — while the
+        /// contacts list, which does consult DPNS, showed the username.
+        let counterpartyUsername: String?
 
         /// Row-title name: alias first (owner's own label for the contact),
-        /// then the profile display name. Matches `ContactItem.displayTitle`.
-        var titleName: String? { counterpartyAlias ?? counterpartyName }
+        /// then the profile display name, then the DPNS label — the first
+        /// three steps of `ContactItem.displayTitle`. It deliberately stops
+        /// there: `displayTitle`'s truncated-identity last resort is right for
+        /// a contact row that must render something, but a transaction row
+        /// falls back to its own generic title, which beats "Sent to 89fd6ddb…".
+        var titleName: String? {
+            counterpartyAlias ?? counterpartyName ?? counterpartyUsername
+        }
     }
 
     private let lock = NSLock()
@@ -849,6 +1079,11 @@ final class DashPayPaymentTxLookup {
                     aliasByContactId[request.contactIdentityId] = alias
                 }
             }
+            // DPNS labels, resolved in one batch — see `usernameHints`, which
+            // is static precisely so this cannot touch the contacts service
+            // singleton while that singleton is still initializing.
+            let usernameByContactId = SwiftDashSDKContactsService.usernameHints(
+                for: rows.lazy.filter { $0.amountDuffs > 0 }.map(\.counterpartyIdentityId))
             var map: [String: PaymentInfo] = [:]
             for row in rows where row.amountDuffs > 0 {
                 let profile = profileByContactId[row.counterpartyIdentityId]
@@ -858,7 +1093,9 @@ final class DashPayPaymentTxLookup {
                     counterpartyIdentityId: row.counterpartyIdentityId,
                     counterpartyName: profile?.name?.isEmpty == false ? profile?.name : nil,
                     counterpartyAlias: aliasByContactId[row.counterpartyIdentityId],
-                    counterpartyAvatarURL: profile?.avatarURL?.isEmpty == false ? profile?.avatarURL : nil)
+                    counterpartyAvatarURL: profile?.avatarURL?.isEmpty == false ? profile?.avatarURL : nil,
+                    counterpartyUsername: usernameByContactId[row.counterpartyIdentityId]?
+                        .withoutDashSuffix)
             }
             store(map)
         } catch {
@@ -866,9 +1103,33 @@ final class DashPayPaymentTxLookup {
         }
     }
 
+    /// Swap the snapshot in, and say so when it actually changed.
+    ///
+    /// The signal matters because nothing else carries it. The payment rows
+    /// behind this snapshot are written by an app-pulled projection, not by
+    /// the SDK persister, and they live in entities the transaction feed's
+    /// SwiftData-save filter ignores — so a feed already on screen kept
+    /// rendering rows with dash-spv's misread direction and no contact name
+    /// for the rest of the session. That was the whole of "DashPay
+    /// transactions only come back after a resync": the data was correct in
+    /// this cache, and nobody asked it again.
+    ///
+    /// Gated on a real change: the projection re-runs on a timer, and an
+    /// unconditional post would rebuild the whole history list every pass.
     private func store(_ map: [String: PaymentInfo]) {
         lock.lock()
+        let changed = infoByTxid != map
         infoByTxid = map
         lock.unlock()
+
+        guard changed else { return }
+        NotificationCenter.default.post(name: Self.didChangeNotification, object: nil)
     }
+}
+
+extension DashPayPaymentTxLookup {
+    /// Posted when the txid → DashPay-payment snapshot gained, lost, or
+    /// altered an entry. Consumers re-read `info(forTxidHex:)`.
+    static let didChangeNotification =
+        Notification.Name("DWDashPayPaymentTxLookupDidChange")
 }

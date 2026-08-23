@@ -33,9 +33,9 @@ class SwapTrackingServiceObjcWrapper: NSObject {
 /// Mirrors Android's `SwapTrackingService.kt`:
 /// - `start()` at app launch resumes all non-terminal orders.
 /// - Polls `/track` every 30 s for active orders.
-/// - NEAR fallback by `depositAddress` when hash lookup errors.
+/// - Tracks NEAR-routed sells by `depositAddress` and Maya-routed sells by tx hash.
 /// - Material-change-only writes (unconditional writes turn the ticker into a tight loop).
-/// - Ages out an order still unresolved after 24 h → `.failed`.
+/// - Ages out an order still unresolved after 24 h → `.expired`.
 final class SwapTrackingService {
     static let shared = SwapTrackingService()
 
@@ -213,7 +213,11 @@ final class SwapTrackingService {
     private func completedWalletTxHash(for order: SwapOrder) -> String? {
         // Read the wallet's transactions from SwiftDashSDK; DashSync's allTransactions is frozen
         // (empty) post-migration, so a buy's incoming DASH would never match.
-        let transactions = SwiftDashSDKWalletSource.fetchAll()
+        // The matcher only considers rows around the order's own time, so
+        // range the fetch by `firstSeen` instead of walking the wallet.
+        let transactions = SwiftDashSDKWalletSource
+            .fetchRecent(firstSeenSince: SwapBuyTransactionMatcher.fetchCutoff(for: order))?
+            .transactions ?? []
         return SwapBuyTransactionMatcher.walletTxHashHexString(for: order, in: transactions)
     }
 }

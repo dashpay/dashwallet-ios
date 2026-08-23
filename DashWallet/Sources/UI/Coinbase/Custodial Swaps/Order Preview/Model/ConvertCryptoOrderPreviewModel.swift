@@ -91,18 +91,22 @@ extension ConvertCryptoOrderPreviewModel {
         case .origin, .purchaseAmount:
             let formatter = NumberFormatter.cryptoFormatter(currencyCode: selectedAccount.info.currencyCode, exponent: selectedAccount.info.currency.exponent)
             formatter.minimumFractionDigits = 1
-            value = formatter.string(from: Decimal(string: order.inputAmount.amount)! as NSDecimalNumber) ?? "NaN"
+            guard let amount = Decimal(string: order.inputAmount.amount) else { return "—" }
+            value = formatter.string(from: amount as NSDecimalNumber) ?? "—"
         case .destination:
             let formatter = NumberFormatter.dashFormatter
-            value = formatter.string(from: Decimal(string: order.outputAmount.amount)! as NSDecimalNumber) ?? "NaN"
+            guard let amount = Decimal(string: order.outputAmount.amount) else { return "—" }
+            value = formatter.string(from: amount as NSDecimalNumber) ?? "—"
         case .feeAmount:
             value = order.fee.formattedFiatAmount
         case .totalAmount:
-            let total = Decimal(string: order.fee.amount)! + Decimal(string: order.displayInputAmount.amount)!
+            guard let fee = Decimal(string: order.fee.amount),
+                  let input = Decimal(string: order.displayInputAmount.amount) else { return "—" }
+            let total = fee + input
             let numberFormatter = NumberFormatter.fiatFormatter(currencyCode: order.unitPrice.targetToFiat.currency)
 
             guard let string = numberFormatter.string(from: total as NSNumber) else {
-                fatalError("Trying to convert non number string")
+                return "—"
             }
 
             value = string

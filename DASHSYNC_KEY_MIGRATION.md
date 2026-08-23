@@ -6,9 +6,12 @@ multi-wallet and active-wallet behavior.
 
 ## Deployment model and invariant
 
-The migrator ships in the same release as the final DashSync removal. It may
-read old DashSync state, but it must never mutate or delete the DashSync-owned
-keychain service `org.dashfoundation.dash`.
+The migrator ships in the same release as the final DashSync removal. Normal
+migration treats old DashSync state as read-only. Explicit production
+`Wallets -> Remove`, recovery wipe, and confirmed `Delete All` may delete only
+the affected `WALLET_MNEMONIC_KEY_*` accounts from the DashSync-owned keychain
+service `org.dashfoundation.dash`. They never delete the service, PIN, chain
+lists, or unrelated records.
 
 All new writes go to SDK-owned persistence:
 
@@ -16,7 +19,8 @@ All new writes go to SDK-owned persistence:
 - SwiftDashSDK `WalletStorage` for mnemonic bytes keyed by SDK wallet ID;
 - `WalletEnvironment` UserDefaults entries for the active wallet per network.
 
-DashSync mnemonic entries remain a read-only recovery/rollback source.
+DashSync mnemonic entries remain a recovery/rollback source until the user
+explicitly removes the corresponding wallet.
 
 ## Frozen DashSync keychain contract
 
@@ -91,10 +95,10 @@ work.
 ## Host recovery behavior
 
 If SwiftData wallet rows are missing but SDK-owned mnemonic entries remain,
-`SwiftDashSDKHost.recoverPersistedWallet` recreates managed wallets from every
-valid stored mnemonic. Wallet creation is idempotent by SDK wallet ID. Because
-mnemonics are network-agnostic while wallet IDs can be network-specific, the
-host re-stores the mnemonic under the created ID when needed.
+`SwiftDashSDKHost.recoverPersistedWallet` recreates only wallets whose stored
+ID belongs to the runtime network. It never stores a mainnet mirror from a
+testnet ID or vice versa, and rejects a created ID that differs from the
+stored source ID.
 
 Create/import derives the deterministic SDK wallet ID, stores and verifies the
 SDK-owned mnemonic under that ID, and only then creates the live managed
@@ -115,8 +119,47 @@ state belonging to a wallet already deleted successfully may be cleared with
 that wallet during a partially successful attempt.
 
 Every wipe entry point waits for the same explicit result before navigating or
-creating a replacement wallet. The frozen DashSync mnemonic keychain service
-`org.dashfoundation.dash` remains read-only and is never deleted by app wipe.
+creating a replacement wallet. Production recovery removes only the legacy
+mnemonic accounts matching its single authorized SDK seed; confirmed Delete
+All removes every legacy mnemonic account. Both run before SDK deletion, and a
+cleanup failure aborts the SDK wipe. Debug reset and screenshot replacement
+preserve legacy data. The app never deletes the whole
+`org.dashfoundation.dash` service.
+
+Per-wallet Remove deletes matching legacy mnemonic accounts, then the
+deterministic mainnet and testnet SDK IDs for that seed, with the live network
+last. The old `CHAIN_WALLETS_KEY_*` lists may retain harmless orphan IDs: they
+contain no seed and the migrator only starts from mnemonic accounts.
+
+A Wallets-screen Remove may route into the global wipe only after Keychain
+ground truth proves every stored wallet ID belongs to the same recovery phrase
+as the target; the currently rendered row count is not an authoritative
+last-wallet check. Enumeration or any individual mnemonic-read failure denies
+that route. A sole rendered wallet whose removal cannot route to the reset
+flow is refused up front with an explanation, rather than walked into a
+per-wallet removal that must fail (per-wallet removal always leaves a wallet
+to switch to, enforced independently of the active-wallet registry).
+
+Recovery-phrase authorization on the recover-screen wipe path is set-wide: the
+typed phrase must match every stored mnemonic, and any unreadable entry (or an
+enumeration failure) denies authorization outright — a partially readable
+Keychain never authorizes. Multiple network-scoped IDs for the same phrase are
+allowed. A phrase that matches some but not all stored wallets is refused with
+copy that says so (it is not reported as a phrase mismatch). The plain `wipe`
+shortcut is allowed only with exactly one stored wallet ID and only while the
+active network is mainnet, because the published balance is scoped to the
+active wallet/network and cannot prove a mainnet balance while running on
+testnet. The support acknowledgement is accepted only by the separate Support
+Wipe path. Forgot-PIN recovery stays non-destructive and may prove ownership
+with any one stored wallet phrase.
+
+Every call to `DWSwiftDashSDKWalletWiper` supplies an explicit authorization
+reason. Ordinary recovery-screen wipes use `.recoveryFlow`; Support Wipe uses
+`.confirmedDeleteAll`; screenshot-triggered replacement uses
+`.screenshotReplacement`; and the dev-only reset uses `.debugReset`.
+Post-reinstall and lock-screen Delete All warnings deliberately omit an SDK-only
+count because the operation may also remove legacy-only seeds. Any new wipe
+entry point must collect one of these authorizations before invoking the wiper.
 
 ## Acceptance criteria
 
@@ -127,9 +170,15 @@ creating a replacement wallet. The frozen DashSync mnemonic keychain service
 - create/import/recovery use the same host boundary;
 - create/import persist and verify the mnemonic before the wallet becomes live;
 - network switch mirrors only the active wallet while the legacy shim exists;
+- a hidden or unrestorable second wallet cannot make a row-level Remove route
+  into the global wipe;
+- one wallet's recovery phrase cannot authorize a global wipe while a distinct
+  wallet is stored, and active-network zero balance cannot authorize one while
+  any additional wallet ID is stored or while the active network is testnet;
 - a successful wipe deletes all SDK-owned mnemonic/managed-wallet/active-wallet
   state, while a failed wipe reports failure without an app-side seed deletion;
-- no migration code deletes `org.dashfoundation.dash` entries;
+- normal migration never deletes legacy entries; explicit production Remove
+  and Delete All delete only the intended legacy mnemonic accounts;
 - both app schemes build and upgrade/multi-wallet/wipe runtime smokes pass.
 
 ## Source files

@@ -36,16 +36,21 @@ enum ClaimInvitationFlow {
         completionHandler: ((Bool) -> Void)? = nil
     ) {
         guard let navigation else { return }
-        let screen = ClaimInvitationScreen(initialLink: initialLink) { [weak navigation] uri in
-            guard let navigation else { return }
-            let controller = CreateUsernameViewController(
-                dashPayModel: dashPayModel,
-                invitationURL: URL(string: uri),
-                definedUsername: definedUsername)
-            controller.hidesBottomBarWhenPushed = true
-            controller.completionHandler = completionHandler
-            navigation.pushViewController(controller, animated: true)
-        }
+        let screen = ClaimInvitationScreen(
+            initialLink: initialLink,
+            onBack: { [weak navigation] in
+                navigation?.popViewController(animated: true)
+            },
+            onContinue: { [weak navigation] uri in
+                guard let navigation else { return }
+                let controller = CreateUsernameViewController(
+                    dashPayModel: dashPayModel,
+                    invitationURL: URL(string: uri),
+                    definedUsername: definedUsername)
+                controller.hidesBottomBarWhenPushed = true
+                controller.completionHandler = completionHandler
+                navigation.pushViewController(controller, animated: true)
+            })
         let hosting = UIHostingController(rootView: screen)
         hosting.view.backgroundColor = UIColor.dw_secondaryBackground()
         hosting.hidesBottomBarWhenPushed = true
@@ -66,6 +71,10 @@ final class ClaimInvitationViewModel: ObservableObject {
         /// This wallet already has a DashPay identity — claiming would
         /// register a second one, which dashwallet doesn't support.
         case alreadyRegistered
+        /// The voucher behind the link has already funded an identity.
+        /// Only reachable after the network check on Continue; structural
+        /// parsing cannot see it.
+        case alreadyClaimed
     }
 
     @Published var input: String = ""
@@ -73,14 +82,30 @@ final class ClaimInvitationViewModel: ObservableObject {
     @Published private(set) var normalizedURI: String? = nil
     /// The inviter's DPNS username (`du`) when the link carries one.
     @Published private(set) var inviterUsername: String? = nil
+    /// The Continue-time network check is in flight.
+    @Published private(set) var isChecking = false
 
     private let service: DWInvitationServicing
+    /// Owns the Continue-time round trip so it can be cancelled when the screen
+    /// or its input moves on. Without an owner the task ran to completion and
+    /// acted on a URI the user had already replaced or navigated away from.
+    private var claimCheckTask: Task<Void, Never>?
 
     init(service: DWInvitationServicing = DWInvitationService.shared) {
         self.service = service
     }
 
+    /// Abandon an in-flight claim check — the input changed, the user went
+    /// Back, or the screen disappeared.
+    func cancelClaimCheck() {
+        claimCheckTask?.cancel()
+        claimCheckTask = nil
+        isChecking = false
+    }
+
     func evaluate() {
+        // A new input invalidates any answer still in flight for the old one.
+        cancelClaimCheck()
         guard !service.hasLocalIdentity else {
             state = .alreadyRegistered
             normalizedURI = nil
@@ -106,6 +131,35 @@ final class ClaimInvitationViewModel: ObservableObject {
         inviterUsername = preview.hasInviter ? preview.inviterUsername : nil
         state = .valid
     }
+
+    /// Ask Platform whether the voucher is still unspent, then hand the URI on.
+    ///
+    /// Deliberately here rather than in `evaluate()`: this costs a network
+    /// round trip and would otherwise fire on every keystroke of a pasted
+    /// link. An undetermined answer proceeds — the claim itself is the
+    /// authority, and a network hiccup must not block a good invitation.
+    func continueIfUnclaimed(_ proceed: @escaping (String) -> Void) {
+        guard let uri = normalizedURI, !isChecking else { return }
+        isChecking = true
+        claimCheckTask = Task { [weak self] in
+            guard let self else { return }
+            let claimed = await self.service.isVoucherAlreadyClaimed(uri: uri)
+
+            // The round trip outlives the state it was started from: the user
+            // can edit the field, go Back, or leave the screen while it is in
+            // flight. Acting on a stale answer would mark an unrelated link as
+            // claimed, or push the claim flow for a URI already replaced.
+            guard !Task.isCancelled, self.normalizedURI == uri else { return }
+
+            self.isChecking = false
+            self.claimCheckTask = nil
+            if claimed == true {
+                self.state = .alreadyClaimed
+                return
+            }
+            proceed(uri)
+        }
+    }
 }
 
 struct ClaimInvitationScreen: View {
@@ -115,11 +169,53 @@ struct ClaimInvitationScreen: View {
 
     /// Prefill from a deep link; nil for the manual paste/scan entry.
     let initialLink: String?
+    /// Dismisses the screen.
+    ///
+    /// A pushed `UIHostingController` carries the app-wide
+    /// `NavigationBarDisplayable` conformance that hides both the bar and its
+    /// back button, so a SwiftUI screen has to draw its own — this one shipped
+    /// without any way back.
+    var onBack: () -> Void
     /// Called with the normalized invitation URI when the user
     /// continues to the username form.
     var onContinue: (String) -> Void
 
     var body: some View {
+        VStack(spacing: 0) {
+            NavigationBar(leading: {
+                NavigationBarElement.back.button {
+                    viewModel.cancelClaimCheck()
+                    onBack()
+                }
+            })
+
+            content
+        }
+        .sheet(isPresented: $showScanner) {
+            GenericQRScannerView(
+                onQRCodeScanned: { value in
+                    viewModel.input = value
+                    showScanner = false
+                },
+                onCancel: { showScanner = false })
+        }
+        .onAppear {
+            if let initialLink, viewModel.input.isEmpty {
+                viewModel.input = initialLink
+            } else {
+                isInputFocused = true
+            }
+            viewModel.evaluate()
+        }
+        .onChange(of: viewModel.input) { _ in
+            viewModel.evaluate()
+        }
+        .onDisappear {
+            viewModel.cancelClaimCheck()
+        }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(NSLocalizedString("Claim your invitation", comment: "DashPay Invitations"))
                 .foregroundColor(.dash.primaryText)
@@ -162,34 +258,15 @@ struct ClaimInvitationScreen: View {
 
             DashButton(
                 text: NSLocalizedString("Continue", comment: ""),
-                isEnabled: viewModel.state == .valid
+                isEnabled: viewModel.state == .valid && !viewModel.isChecking,
+                isLoading: viewModel.isChecking
             ) {
-                guard let uri = viewModel.normalizedURI else { return }
-                onContinue(uri)
+                viewModel.continueIfUnclaimed(onContinue)
             }
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .sheet(isPresented: $showScanner) {
-            GenericQRScannerView(
-                onQRCodeScanned: { value in
-                    viewModel.input = value
-                    showScanner = false
-                },
-                onCancel: { showScanner = false })
-        }
-        .onAppear {
-            if let initialLink, viewModel.input.isEmpty {
-                viewModel.input = initialLink
-            } else {
-                isInputFocused = true
-            }
-            viewModel.evaluate()
-        }
-        .onChange(of: viewModel.input) { _ in
-            viewModel.evaluate()
-        }
     }
 
     @ViewBuilder
@@ -204,6 +281,15 @@ struct ClaimInvitationScreen: View {
                 systemImage: "xmark.octagon")
                 .font(.subheadline)
                 .foregroundColor(.red)
+
+        case .alreadyClaimed:
+            Label(
+                NSLocalizedString(
+                    "This invitation has already been used. Ask the sender for a new one.",
+                    comment: "DashPay Invitations"),
+                systemImage: "envelope.badge.shield.half.filled")
+                .font(.subheadline)
+                .foregroundColor(.orange)
 
         case .alreadyRegistered:
             Label(

@@ -72,8 +72,8 @@ the frozen upgrade-time mnemonic import contract.
 - **Sends**: every spend goes through `WalletSendService` (standard) or `SwiftDashSDKTransactionSender` (selected-input / sweep). Never call `CoreTransactionBuilder` from UI code. `prepare*` never broadcasts; broadcast happens only on explicit confirm.
 - **Mnemonic ownership**: stored as plain keychain bytes via SwiftDashSDK `WalletStorage` (the iOS keychain is the security boundary — there is no PIN-encryption layer). Creation/import/migration route through `SwiftDashSDKHost`; deletion routes through `SwiftDashSDKWalletWiper`. The migrator supports multiple wallets and never deletes DashSync-owned `org.dashfoundation.dash` entries. Don't add ad-hoc `WalletStorage()` readers or choose the first mnemonic — resolve the active wallet through `SwiftDashSDKHost` / `WalletEnvironment.activeWalletId(for:)`.
 - **CrowdNode release posture**: temporarily suspend/hide CrowdNode for the migration release. Its implementation is already app/SDK-owned, so it does not block DashSync teardown and must not regain a DashSync fallback.
-- **Platform release pin**: `local/tx-decode-plus-v4.1-dev-dashwallet` is temporary development integration only. Upstream all required changes and make the final migration/release build consume platform `v4.1-dev`.
-- **TestNet by design (temporary)**: fresh installs deliberately default to testnet in ALL build configurations while mainnet Platform DAPI is unreachable in the current SDK build (`WalletEnvironment.networkKind`'s missing-key default; owner decision 2026-07-03). Do not "fix" this; revisit before any release branch.
+- **Platform release pin**: temporary local integration branches are development-only. Upstream all required changes and make the final migration/release build consume platform `v4.2-dev` (or an explicitly selected release SHA/tag).
+- **Mainnet is the fresh-install default**: `WalletEnvironment.networkKind` returns `.mainnet` when `CURRENT_CHAIN_TYPE_KEY` is absent, in ALL build configurations; testnet requires an explicit in-app switch, which writes the key. (This reverses the temporary testnet default of 2026-07-03, taken while mainnet Platform DAPI was unreachable — revisited by the owner 2026-08-07.) An install that never used the switcher moves to mainnet on its next launch. When touching this, verify mainnet Platform DAPI is actually reachable in the SDK build being shipped.
 
 ## UI Development — SwiftUI-First (Mandatory)
 
@@ -143,9 +143,24 @@ post_install do |installer|
 end
 ```
 
-### Localization files are UTF-16LE
-iOS `*.lproj/Localizable.strings` files are UTF-16 little-endian, so plain `grep` fails ("Binary file matches"). Convert before searching:
+### Localization file encoding differs by target — check before converting
+Encoding is **not** uniform across the repo, so never assume:
+
+- **`DashWallet/*.lproj/Localizable.strings` and `Localizable.stringsdict` (main app) — UTF-8, no BOM.** All 43 locales, both file types. Plain `grep` works. Do **not** run `iconv` on these and do **not** "restore" them to UTF-16 — that would break the plain-text tooling (bartycrouch, `plutil`, review diffs) the repo relies on.
+  ```bash
+  grep '"Spend"' DashWallet/de.lproj/Localizable.strings
+  ```
+- **`WatchApp/*.lproj/Interface.strings` — UTF-16LE with BOM** for 40 of 43 locales (`en`, `zh-Hans`, `zh-Hant-TW` are UTF-8). These are the files where `grep` reports "Binary file matches". They are storyboard-derived, so the keys are ObjectIDs rather than English text:
+  ```bash
+  iconv -f UTF-16LE -t UTF-8 WatchApp/de.lproj/Interface.strings | grep '.title'
+  ```
+
+Check first rather than trusting this list — and note `file` reports pure-ASCII UTF-8 as `us-ascii`, which is still UTF-8:
 ```bash
-iconv -f UTF-16LE -t UTF-8 DashWallet/de.lproj/Localizable.strings | grep '"Spend"'
+head -c 4 DashWallet/de.lproj/Localizable.strings | xxd   # 2f2a 204e -> "/* N" = UTF-8
+head -c 4 WatchApp/de.lproj/Interface.strings     | xxd   # fffe ...  = UTF-16LE BOM
 ```
-Translations sync via Transifex: `tx push -s` (push source) / `tx pull -a` (pull all). Let Xcode and BartyCrouch manage the files; keep them UTF-16LE.
+
+Translations sync via Transifex: `tx push -s` (push source) / `tx pull -a` (pull all). Let Xcode and BartyCrouch manage the files, and keep each file in whatever encoding it already has.
+
+A Transifex pull can hand back UTF-16 or BOM-prefixed catalogs. `./scripts/convert_strings_to_utf8.sh` normalises them back — it is scoped to `DashWallet/*.lproj` on purpose and is idempotent, so it leaves already-correct files byte-identical. Keep that scope: a bare `find . -name '*.strings'` would also rewrite the UTF-16LE WatchApp catalogs and anything under `Pods/`.

@@ -80,7 +80,10 @@ extension ExplorePointOfUse {
 
         let merchantId: String
         let paymentMethod: PaymentMethod
-        let type: `Type`
+        /// `nil` when the synced database carries a `type` this build doesn't
+        /// know — a category added server-side, or a NULL. Unknown stays
+        /// unknown rather than being mapped onto one of the three cases.
+        let type: `Type`?
         let deeplink: String?
         let savingsBasisPoints: Int // in basis points 1 = 0.001%
         let denominationsType: String?
@@ -88,7 +91,7 @@ extension ExplorePointOfUse {
         let redeemType: String?
         let giftCardProviders: [GiftCardProviderInfo]
         
-        init(merchantId: String, paymentMethod: PaymentMethod, type: `Type`, deeplink: String?, savingsBasisPoints: Int, denominationsType: String?, denominations: [Int] = [], redeemType: String?, giftCardProviders: [GiftCardProviderInfo] = []) {
+        init(merchantId: String, paymentMethod: PaymentMethod, type: `Type`?, deeplink: String?, savingsBasisPoints: Int, denominationsType: String?, denominations: [Int] = [], redeemType: String?, giftCardProviders: [GiftCardProviderInfo] = []) {
             self.merchantId = merchantId
             self.paymentMethod = paymentMethod
             self.type = type
@@ -162,7 +165,9 @@ extension ExplorePointOfUse {
         }
 
         let manufacturer: String
-        let type: `Type`
+        /// `nil` when the row carries no `type` at all; a non-empty but
+        /// unrecognized value still resolves through `Type.init(rawValue:)`.
+        let type: `Type`?
     }
 }
 
@@ -247,13 +252,21 @@ extension ExplorePointOfUse: RowDecodable {
     static let redeemType = Expression<String?>("redeemType")
 
     init(row: Row) {
-        let name = row[ExplorePointOfUse.name]
+        // The explore database is generated server-side and none of its text
+        // columns are declared NOT NULL, so every column here can arrive as
+        // NULL. SQLite.swift's subscript for a non-optional `Expression` is
+        // `try! get(column)`, which aborts the process on NULL (and on a
+        // column the synced schema no longer carries) — `try? row.get` is the
+        // same read without that trap, and is what this initializer already
+        // used for `phone`, `logoLocation` and `coverImage`.
+        let name = (try? row.get(ExplorePointOfUse.name)) ?? ""
 
         let id = row[ExplorePointOfUse.id]
-        let active = row[ExplorePointOfUse.active]
+        // `active` is `INTEGER DEFAULT 1` in the schema; absent means active.
+        let active = (try? row.get(ExplorePointOfUse.active)) ?? true
 
         let city = row[ExplorePointOfUse.city]
-        let territory = row[ExplorePointOfUse.territory]
+        let territory = try? row.get(ExplorePointOfUse.territory)
         let address1 = row[ExplorePointOfUse.address1]
         let address2 = row[ExplorePointOfUse.address2]
         let address3 = row[ExplorePointOfUse.address3]
@@ -273,20 +286,23 @@ extension ExplorePointOfUse: RowDecodable {
         let phone: String? = try? row.get(ExplorePointOfUse.phone)?.digits
         let logoLocation: String? = try? row.get(ExplorePointOfUse.logoLocation)
         let coverImage: String? = try? row.get(ExplorePointOfUse.coverImage)
-        let source: String? = row[ExplorePointOfUse.source]
+        let source: String? = try? row.get(ExplorePointOfUse.source)
 
         let category: Category
         if let paymentMethodRaw = try? row.get(ExplorePointOfUse.paymentMethod) {
-            let merchantId = row[ExplorePointOfUse.merchantId]
-            let type: Merchant.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
+            let merchantId = (try? row.get(ExplorePointOfUse.merchantId)) ?? ""
+            // Written through an annotated binding: spelled out in full,
+            // `Merchant.`Type`` parses as the metatype and `.init(rawValue:)`
+            // doesn't resolve against it.
+            let type: Merchant.`Type`? = (try? row.get(ExplorePointOfUse.type)).flatMap { .init(rawValue: $0) }
             let deeplink = row[ExplorePointOfUse.deeplink]
-            let savingsPercentage = row[ExplorePointOfUse.savingPercentage]
+            let savingsPercentage = (try? row.get(ExplorePointOfUse.savingPercentage)) ?? 0
             let denominationsType = row[ExplorePointOfUse.denominationsType]
             let redeemType = row[ExplorePointOfUse.redeemType]
             category = .merchant(Merchant(merchantId: merchantId, paymentMethod: Merchant.PaymentMethod(rawValue: paymentMethodRaw)!,
                                           type: type, deeplink: deeplink, savingsBasisPoints: savingsPercentage, denominationsType: denominationsType, denominations: [], redeemType: redeemType, giftCardProviders: []))
         } else if let manufacturer = try? row.get(ExplorePointOfUse.manufacturer) {
-            let type: Atm.`Type`! = .init(rawValue: row[ExplorePointOfUse.type])
+            let type: Atm.`Type`? = (try? row.get(ExplorePointOfUse.type)).flatMap { .init(rawValue: $0) }
             category = .atm(Atm(manufacturer: manufacturer, type: type))
         } else {
             category = .unknown

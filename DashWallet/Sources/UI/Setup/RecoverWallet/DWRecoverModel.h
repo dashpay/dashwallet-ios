@@ -33,8 +33,13 @@ extern NSInteger const DW_PHRASE_MULTIPLE;
 
 - (BOOL)hasWallet;
 
-// `isWalletEmpty`, `canWipeWithPhrase:`, `cleanupPhrase:`, `normalizePhrase:`,
-// `wordIsLocal:`, `wordIsValid:` are provided by the Swift extension
+/// Whether a PIN record exists in the keychain. In ResetPin mode the screen's
+/// copy depends on it: an existing PIN is "reset", a missing record (partial
+/// keychain restore, interrupted setup) is "set".
+- (BOOL)hasPinSet;
+
+// `isWalletEmpty`, wipe/reset-PIN phrase authorization, and mnemonic helpers
+// are provided by the Swift extension
 // `DWRecoverModel+Mnemonic.swift` (SwiftDashSDK) and reach Obj-C callers
 // through the generated `dashwallet-Swift.h`.
 

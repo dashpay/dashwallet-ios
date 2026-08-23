@@ -232,7 +232,16 @@ class ExchangeAddressProvider {
                 return networkAddress
             }
 
-            // No address for this network — create one via POST
+            // No address for this network. Only ask Uphold to mint one for a network its
+            // address endpoint actually accepts — otherwise this is a guaranteed HTTP 400
+            // ("network: This value is not valid") on every tap.
+            guard Self.upholdAddressableNetworks.contains(network) else {
+                DWLogger.log(
+                    "Maya Uphold: card \(matchingCard.id) has no '\(network)' address and Uphold "
+                        + "cannot create one for that network — treating as unavailable")
+                return nil
+            }
+
             DWLogger.log("Maya Uphold: No '\(network)' address on card \(matchingCard.id), creating one")
             if let address = await createUpholdAddress(cardId: matchingCard.id, network: network) {
                 Self.upholdAddressCache[context.cacheKey] = address
@@ -242,6 +251,13 @@ class ExchangeAddressProvider {
         }
 
         // Step 2: No card exists — create card then address
+        guard Self.upholdAddressableNetworks.contains(network) else {
+            DWLogger.log(
+                "Maya Uphold: no card for \(context.currencyCode) and Uphold cannot create a "
+                    + "'\(network)' address — treating as unavailable")
+            return nil
+        }
+
         DWLogger.log("Maya Uphold: No card for \(context.currencyCode), creating card and address")
         if let cardId = await createUpholdCard(currency: context.currencyCode) {
             if let address = await createUpholdAddress(cardId: cardId, network: network) {
@@ -252,6 +268,24 @@ class ExchangeAddressProvider {
 
         return nil
     }
+
+    /// Networks Uphold's `POST /me/cards/:id/addresses` endpoint accepts, per its documentation
+    /// (https://github.com/uphold/docs/blob/master/_cards.md).
+    ///
+    /// `upholdNetwork(for:)` maps a Maya chain onto Uphold's naming, but naming a network is not
+    /// the same as Uphold being able to mint an address on it — requesting e.g. `arbitrum` is
+    /// rejected with `{"code":"validation_failed","errors":{"network":[{"code":"invalid"}]}}`.
+    /// An address that already exists on the card is still used regardless of this set; the gate
+    /// only governs whether we ask Uphold to create a new one.
+    private static let upholdAddressableNetworks: Set<String> = [
+        "bitcoin",
+        "bitcoin-cash",
+        "bitcoin-gold",
+        "dash",
+        "ethereum",
+        "litecoin",
+        "xrp-ledger",
+    ]
 
     /// Maps the selected Maya chain to the Uphold network name used during address creation.
     private func upholdNetwork(for context: ExchangeAddressLookupContext) -> String {
@@ -279,6 +313,17 @@ class ExchangeAddressProvider {
     // MARK: - Uphold API Helpers
 
     /// Fetches all cards from the Uphold API, including non-Dash crypto cards.
+    /// Uphold answers 401 once the access token expires, but the token stays in the keychain, so
+    /// `DWUpholdClient.isAuthorized` keeps reporting YES. `EnterAddressViewModel` uses exactly
+    /// that flag to tell "this coin isn't supported" (`.notAvailable`) from "your session ended"
+    /// (`.loggedOut`) — so without this the expired case shows "Not available" and the user is
+    /// never offered the re-login that would actually fix it.
+    private func invalidateSessionIfRejected(_ statusCode: Int) {
+        guard statusCode == 401 else { return }
+        DWLogger.log("Maya Uphold: session rejected (HTTP 401) — clearing the stored token")
+        DWUpholdClient.sharedInstance().invalidateRejectedSession()
+    }
+
     private func fetchUpholdCards() async -> [UpholdCard] {
         guard let token = getUpholdAccessToken() else {
             DWLogger.log("Maya Uphold: No access token available for fetching cards")
@@ -300,6 +345,7 @@ class ExchangeAddressProvider {
             guard (200...299).contains(statusCode) else {
                 let responseBody = String(data: data, encoding: .utf8) ?? "<non-utf8>"
                 DWLogger.log("Maya Uphold: Fetch cards failed (HTTP \(statusCode)): \(responseBody)")
+                invalidateSessionIfRejected(statusCode)
                 return []
             }
 
@@ -333,6 +379,7 @@ class ExchangeAddressProvider {
                   (200...299).contains(httpResponse.statusCode) else {
                 let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
                 DWLogger.log("Maya Uphold: Create card failed with status \(statusCode) for \(currency)")
+                invalidateSessionIfRejected(statusCode)
                 return nil
             }
             let card = try JSONDecoder().decode(UpholdCard.self, from: data)
@@ -377,6 +424,7 @@ class ExchangeAddressProvider {
             // Log the full response for debugging
             let responseBody = String(data: data, encoding: .utf8) ?? "<non-utf8>"
             DWLogger.log("Maya Uphold: Address creation failed (HTTP \(statusCode)). Response: \(responseBody)")
+            invalidateSessionIfRejected(statusCode)
             return nil
         } catch {
             DWLogger.log("Maya Uphold: Failed to create address on card \(cardId): \(error)")

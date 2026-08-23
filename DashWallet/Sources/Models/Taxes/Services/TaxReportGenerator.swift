@@ -130,8 +130,13 @@ enum TaxReportGenerator {
         case .dateAndTime:
             return DWDateFormatter.sharedInstance.iso8601String(from: transaction.date)
         case .txType:
-            let taxCategoryString = userInfo?.taxCategoryString() ?? transaction.defaultTaxCategoryString()
-            return taxCategoryString
+            // Same rule as Taxes.taxCategory(for:): a stored .unknown means
+            // the row was never classified, so it must not shadow the
+            // transaction-derived default.
+            if let stored = userInfo?.taxCategory, stored != .unknown {
+                return stored.stringValue
+            }
+            return transaction.defaultTaxCategoryString()
         case .sentQuantity:
             let fee = transactionDirection == .sent ? transaction.feeUsed : 0
             guard transaction.dashAmount != UInt64.max else { return "" }

@@ -117,6 +117,9 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        // Evonode epoch-blocks card: cheap no-op inside its refresh throttle.
+        viewModel.refreshEvonodeEpochBlocks()
+
         // Refresh the SDK's local DPNS-names cache from the blockchain
         // so the avatar/profile sheet/Edit Profile see legitimately-
         // owned names that weren't written by registerDpnsName in this
@@ -202,8 +205,13 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     @objc func notificationAction() {
         // Notifications are backed by the SwiftDashSDK contacts service.
-        let controller = UIHostingController(rootView: NotificationsScreen())
-        navigationController?.pushViewController(controller, animated: true)
+        guard let navigation = navigationController,
+              navigation.topViewController === self else { return }
+        let screen = NotificationsScreen(onBack: { [weak navigation] in
+            navigation?.popViewController(animated: true)
+        })
+        let controller = UIHostingController(rootView: screen)
+        navigation.pushViewController(controller, animated: true)
     }
 
     @objc func profileAction() {
@@ -523,7 +531,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             textBlock1: String(format: NSLocalizedString("You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.", comment: "CoinJoin"), amount),
             positiveButtonText: NSLocalizedString("Move funds", comment: "CoinJoin"),
             positiveButtonAction: {
-                DWLogger.log("CJTEST HomeViewController: sweep invoked from Home popup (\(amount))")
+                DWLogger.log("HomeViewController: sweep invoked from Home popup (\(amount))")
                 self.viewModel.showCoinJoinSweepDialog = false
                 Task { @MainActor in
                     // The post-sync popup (ModalDialog) is mid-dismissal here —
@@ -556,7 +564,9 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             },
             negativeButtonText: NSLocalizedString("Later", comment: "CoinJoin"),
             negativeButtonAction: {
-                self.viewModel.showCoinJoinSweepDialog = false
+                // Persisted: stops the per-launch re-prompt until new mixed
+                // coins arrive; the Tools/Settings row stays available.
+                self.viewModel.deferCoinJoinSweep()
             }
         )
     }
@@ -600,7 +610,9 @@ extension HomeViewController: HomeViewDelegate {
 
     func homeViewShowSyncingStatus() {
         let controller = SyncingAlertViewController()
-        present(controller, animated: true, completion: nil)
+        // Own the popup at the tab-container level so its dimming view also
+        // blocks tab changes while Home's presentation hierarchy is active.
+        (tabBarController ?? self).present(controller, animated: true, completion: nil)
     }
 
     func homeViewDidChangeTopBarVisibility(shouldShow: Bool) {
@@ -625,6 +637,12 @@ extension HomeViewController: HomeViewDelegate {
     func homeViewShowSend(network: ChainNetwork) {
         delegate?.showSendLanding(network: network)
     }
+
+    func homeViewShowMasternodes() {
+        guard let navigation = navigationController,
+              navigation.topViewController === self else { return }
+        navigation.pushViewController(MasternodesScreen.hostingController(popFrom: navigation), animated: true)
+    }
     
     #if DASHPAY
     func homeView(_ homeView: HomeView, didUpdateProfileWithUnreadNotifications unreadNotifications: UInt) {
@@ -637,6 +655,10 @@ extension HomeViewController: HomeViewDelegate {
 
     func homeViewEditProfile() {
         profileAction()
+    }
+
+    func homeViewShowNotifications() {
+        notificationAction()
     }
     #endif
 }

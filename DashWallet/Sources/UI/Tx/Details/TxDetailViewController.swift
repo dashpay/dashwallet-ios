@@ -107,11 +107,14 @@ class TXDetailViewController: BaseTxDetailsViewController {
 
     var dataSource: UITableViewDiffableDataSource<Section, Item>! = nil
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
+    /// Single-flight guard for the stuck-lock retry action.
+    private var isRetryingAssetLock = false
 
     enum Section: CaseIterable {
         case header
         case info
         case taxCategory
+        case recovery
         case rawTransaction
         case explorer
         case swapExplorer
@@ -128,6 +131,8 @@ class TXDetailViewController: BaseTxDetailsViewController {
         case date(DWTitleDetailItem)
         case taxCategory(DWTitleDetailItem)
         case shieldedInfo(DWTitleDetailItem)
+        case rebroadcast(String)
+        case removeUnconfirmed
         case viewTransaction
         case copyRawTransaction
         case explorer
@@ -150,6 +155,8 @@ class TXDetailViewController: BaseTxDetailsViewController {
             case .date(let item): return ["Date"] + Self.identity(of: [item])
             case .taxCategory(let item): return ["TaxCategory"] + Self.identity(of: [item])
             case .shieldedInfo(let item): return ["ShieldedInfo"] + Self.identity(of: [item])
+            case .rebroadcast(let title): return ["Rebroadcast", title]
+            case .removeUnconfirmed: return ["RemoveUnconfirmed"]
             case .viewTransaction: return ["ViewTransaction"]
             case .copyRawTransaction: return ["CopyRawTransaction"]
             case .explorer: return ["Explorer"]
@@ -252,6 +259,110 @@ extension TXDetailViewController {
         present(hostingController, animated: true)
     }
 
+    /// Retry the stuck asset-lock transfer on its EXISTING outpoint —
+    /// `AssetLockRecoveryService` drives the SDK resume path
+    /// (rebroadcast if needed, IS/CL wait, Platform submit). The await
+    /// spans the whole recovery, so the HUD honestly covers a
+    /// several-minute worst case rather than claiming early success.
+    private func retryStuckAssetLock() {
+        guard !isRetryingAssetLock, let retry = model.stuckAssetLockRetry else { return }
+        isRetryingAssetLock = true
+        let txidWire = model.transaction.txHashData
+        view.dw_showProgressHUD(withMessage: NSLocalizedString("Retrying transfer…", comment: "Asset-lock retry in progress"))
+        Task { [weak self] in
+            defer {
+                self?.isRetryingAssetLock = false
+                self?.view.dw_hideProgressHUD()
+            }
+            do {
+                try await AssetLockRecoveryService().retry(
+                    fundingTypeRaw: retry.fundingTypeRaw,
+                    txidWire: txidWire,
+                    vout: retry.vout)
+                self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"))
+            } catch DWIdentityAuthorizer.AuthError.cancelled {
+                // Backing out of the PIN prompt is not an error state.
+            } catch {
+                self?.presentRetryFailure(error)
+            }
+            // Re-derive the rows either way — even a failed retry can
+            // have advanced the lock (e.g. broadcast landed, Platform
+            // submit didn't), and the status row should say so.
+            self?.reloadDataSource()
+        }
+    }
+
+    private func presentRetryFailure(_ error: Error) {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Couldn't complete the transfer", comment: "Asset-lock retry failed"),
+            message: error.localizedDescription,
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+        present(alert, animated: true)
+    }
+
+    /// Spell out exactly what removal does before anything is touched:
+    /// a block-explorer check first, local-only deletion, and the
+    /// rescan safety net that restores the transaction if the explorer
+    /// was wrong.
+    private func confirmRemoveUnconfirmed() {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Remove this transaction?", comment: "Remove never-accepted transaction: confirmation title"),
+            message: NSLocalizedString("The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network.", comment: "Remove never-accepted transaction: confirmation body"),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(
+            title: NSLocalizedString("Remove Transaction", comment: "Remove never-accepted transaction: destructive confirm button"),
+            style: .destructive) { [weak self] _ in
+                self?.performRemoveUnconfirmed()
+            })
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func performRemoveUnconfirmed() {
+        guard !isRetryingAssetLock else { return }
+        isRetryingAssetLock = true
+        let txidWire = model.transaction.txHashData
+        view.dw_showProgressHUD(withMessage: NSLocalizedString("Removing transaction…", comment: "Remove never-accepted transaction: progress"))
+        Task { [weak self] in
+            defer {
+                self?.isRetryingAssetLock = false
+                self?.view.dw_hideProgressHUD()
+            }
+            do {
+                let rescanArmed = try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
+                // Never claim the rescan safety net ran when it didn't —
+                // point at the manual Rescan Filters action instead.
+                self?.view.dw_showInfoHUD(withText: rescanArmed
+                    ? NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success")
+                    : NSLocalizedString("Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm"))
+                // The row this sheet describes no longer exists.
+                self?.closeAction()
+            } catch UnconfirmedTransactionRemover.RemovalError.transactionOnChain {
+                self?.presentRemovalRefused()
+            } catch {
+                let alert = UIAlertController(
+                    title: NSLocalizedString("Couldn't remove the transaction", comment: "Remove never-accepted transaction: failure title"),
+                    message: error.localizedDescription,
+                    preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+                self?.present(alert, animated: true)
+            }
+        }
+    }
+
+    /// The explorer knows the transaction, either from the mempool or a
+    /// block. Removal is refused until the local wallet catches up.
+    private func presentRemovalRefused() {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Transaction is known to the network", comment: "Remove never-accepted transaction: refused because the explorer found it"),
+            message: NSLocalizedString("A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block.", comment: "Remove never-accepted transaction: refusal body"),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+        present(alert, animated: true)
+        reloadDataSource()
+    }
+
     /// Copies the serialized transaction hex. A missing row (bytes not
     /// stored on this device) reports itself rather than copying nothing.
     private func copyRawTransaction() {
@@ -296,6 +407,18 @@ extension TXDetailViewController {
                     let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailTaxCategoryCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailTaxCategoryCell
                     cell.update(with: item)
+                    return cell
+
+                case .recovery:
+                    let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.reuseIdentifier,
+                                                             for: indexPath) as! TxDetailActionCell
+                    if case .rebroadcast(let title) = item {
+                        cell.titleLabel.text = title
+                        cell.titleLabel.textColor = .dw_label()
+                    } else if item == .removeUnconfirmed {
+                        cell.titleLabel.text = NSLocalizedString("Remove if Not on Network", comment: "Delete a never-accepted transaction from local wallet state")
+                        cell.titleLabel.textColor = .systemRed
+                    }
                     return cell
 
                 case .rawTransaction:
@@ -374,6 +497,23 @@ extension TXDetailViewController {
 
         currentSnapshot.appendItems([.date(date)], toSection: .info)
         currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
+        // A funding asset lock parked mid-transfer gets a retry action.
+        // The section is inserted (not pre-appended) so the empty state
+        // adds no phantom section spacing.
+        if let retry = model.stuckAssetLockRetry {
+            currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
+            currentSnapshot.appendItems([.rebroadcast(retry.actionTitle)], toSection: .recovery)
+            if retry.supportsRemoval {
+                currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
+            }
+        } else if model.supportsUnconfirmedRemoval {
+            // Any other transaction stuck in mempool context (a
+            // network-dropped classic send — e.g. a stalled CoinJoin sweep
+            // chunk) gets the removal action alone: there is no retry
+            // route for it, but deleting the local row frees its inputs.
+            currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
+            currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
+        }
         currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
         currentSnapshot.appendItems([.explorer], toSection: .explorer)
         if let swapLink = model.swapExplorerLink {
@@ -398,6 +538,12 @@ extension TXDetailViewController {
             model.toggleTaxCategoryOnCurrentTransaction()
             reloadDataSource()
             break
+        case .recovery:
+            if dataSource.itemIdentifier(for: indexPath) == .removeUnconfirmed {
+                confirmRemoveUnconfirmed()
+            } else {
+                retryStuckAssetLock()
+            }
         case .rawTransaction:
             if let item = dataSource.itemIdentifier(for: indexPath) {
                 switch item {

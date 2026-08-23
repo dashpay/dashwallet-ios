@@ -28,6 +28,32 @@ import Foundation
 import SwiftData
 import SwiftDashSDK
 
+/// Immutable projection of one `PersistentPublicKey`, captured at reload
+/// time (same no-live-`@Model` contract as `IdentityRowModel`). Feeds the
+/// identity detail's Public Keys page.
+struct IdentityKeyRowModel: Identifiable {
+    let keyId: Int32
+    /// Human name of the DPP purpose/level/type, or the raw stored value
+    /// when it doesn't map to a known enum case (future variants render
+    /// honestly instead of being hidden).
+    let purposeText: String
+    let securityLevelText: String
+    let keyTypeText: String
+    let readOnly: Bool
+    let isDisabled: Bool
+    /// The key material as stored (33-byte compressed point, 48-byte BLS
+    /// pubkey, or a 20-byte hash for the *Hash160 types).
+    let publicKeyHex: String
+    /// Base58 contract ids this key is bound to; empty when unbounded.
+    let contractBoundIds: [String]
+    /// Document-type name for a `.singleContractDocumentType` bound.
+    let contractBoundDocumentType: String?
+    /// DIP-9 derivation path breadcrumb, when persisted.
+    let derivationPath: String?
+
+    var id: Int32 { keyId }
+}
+
 /// Immutable per-row projection of a `PersistentIdentity`, captured at
 /// reload time so the view never holds live `@Model` references.
 struct IdentityRowModel: Identifiable {
@@ -54,13 +80,25 @@ struct IdentityRowModel: Identifiable {
     /// active wallet, so the detail page needs this to offer it.
     let walletId: Data?
     let identityIndex: UInt32
-    let publicKeyCount: Int
+    /// The identity's public keys, ordered by key id (detail page list;
+    /// its count drives the summary row).
+    let publicKeys: [IdentityKeyRowModel]
     /// Every DPNS label owned by this identity (detail sheet list).
     let dpnsNames: [String]
+    /// The label the identity currently displays: the stored
+    /// `mainDpnsName` pick when set, else the same fallback the title
+    /// uses (`dpnsName` → first owned label). Drives the selection
+    /// indicator on the detail page's Usernames card. Nil when the
+    /// identity owns no names.
+    let displayedDpnsName: String?
     /// Contested label submitted by this wallet but not owned yet.
     /// Kept separate from `dpnsNames` so every identities surface can
     /// render it explicitly as voting rather than as a confirmed name.
     let pendingContestedName: String?
+    /// Best-known close time of that contest — the submission-time estimate
+    /// until Platform's `ContestVoteState.endTime` replaces it. nil only when
+    /// there is no pending submission for this identity.
+    let pendingVotingEndTime: Date?
     /// True when this identity is the wallet's resolved MAIN identity —
     /// the one `DWCurrentUserIdentityInfo` reads, i.e. the owner of
     /// DashPay mode (username, avatar, contacts). Resolution = stored
@@ -125,10 +163,61 @@ final class IdentitiesViewModel: ObservableObject {
         reload()
     }
 
+    /// Persist `name` as the identity's main DPNS name — the label every
+    /// display surface prefers (`alias → mainDpnsName → dpnsName → first
+    /// owned label`). When the identity is the wallet's main identity,
+    /// drive the same reconcile cascade `setMainIdentity` uses so the
+    /// app-wide username mirror and live DashPay surfaces re-render with
+    /// the new pick immediately.
+    func setMainName(_ name: String, for row: IdentityRowModel) {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+            errorMessage = NSLocalizedString("Wallet is not ready", comment: "Identities")
+            return
+        }
+        // Only an owned (non-pending) label can be displayed.
+        guard row.dpnsNames.contains(where: { DWContestedNameStatusService.labelsMatch($0, name) }) else {
+            return
+        }
+        PersistentIdentity.updateMainDpnsName(
+            in: container.mainContext,
+            identityId: row.identityId,
+            mainDpnsName: name)
+        try? container.mainContext.save()
+        if row.isMainIdentity {
+            _ = DWCurrentUserIdentityInfo.shared.reconcileRecoveredIdentity()
+        }
+        reload()
+    }
+
     /// One-shot Platform refresh, pull-to-refresh style: re-fetch each
     /// identity's balance, and backfill a DPNS name for rows that have
     /// none (silent — not every identity has a name). Mirrors the example
     /// app's `IdentityRow.refreshBalance`, batched over the whole list.
+    /// Re-fetch one wallet-owned identity from Platform — public keys
+    /// included — via the Rust load pipeline, then rebuild the rows. The
+    /// persisted key rows lag keys added on another device; this is the
+    /// user-facing "refresh my identity's keys" action (Identities →
+    /// detail → Public keys). Only identities of the ACTIVE wallet can be
+    /// reloaded: `loadIdentity(atIndex:)` probes the active wallet's DIP-9
+    /// tree. The wallet linkage is the gate — deliberately NOT `isLocal`,
+    /// which persisted rows have been observed to carry as false for the
+    /// wallet's own identity. Returns false for other wallets' rows.
+    @discardableResult
+    func refreshIdentityKeys(for row: IdentityRowModel) async -> Bool {
+        guard let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId,
+              row.walletId == activeWalletId else {
+            DWLogger.log("IdentitiesViewModel: key refresh skipped — identity \(row.idBase58) is not the active wallet's (walletId=\(row.walletId?.hexEncodedString() ?? "nil"))")
+            return false
+        }
+        #if DASHPAY
+        await DWIdentityReloader.reload(identityIndex: row.identityIndex)
+        reload()
+        return true
+        #else
+        return false
+        #endif
+    }
+
     func refreshFromNetwork() async {
         guard !isRefreshing else { return }
         guard let sdk = SwiftDashSDKHost.shared.sdk,
@@ -140,7 +229,11 @@ final class IdentitiesViewModel: ObservableObject {
         }
 
         var failures = 0
-        for row in rows where !row.isLocal {
+        // Refresh every row — the old `!row.isLocal` filter dates from
+        // when the flag was misread as an on-network badge; under the
+        // real semantics (mine-or-tracked) it would skip exactly the
+        // wallet's own identities.
+        for row in rows {
             do {
                 let fetched = try await sdk.identityGet(identityId: row.idBase58)
                 if let balance = Self.uint64(from: fetched["balance"]) {
@@ -232,7 +325,16 @@ final class IdentitiesViewModel: ObservableObject {
             guard let candidate, let pendingLabel else { return false }
             return DWContestedNameStatusService.labelsMatch(candidate, pendingLabel)
         }
-        let allNames = identity.dpnsNames.map(\.label)
+        // Sold / transferred-away labels stay in the cache as rows with
+        // `isOwned == false` (their trade history remains browsable) —
+        // they are no longer this identity's names and must not appear
+        // in the picker or count toward "has a name".
+        let allNames = identity.dpnsNames.filter(\.isOwned).map(\.label)
+        let departedLabels = identity.dpnsNames.filter { !$0.isOwned }.map(\.label)
+        let isSoldAway: (String?) -> Bool = { candidate in
+            guard let candidate else { return false }
+            return departedLabels.contains { DWContestedNameStatusService.labelsMatch($0, candidate) }
+        }
         let pendingBelongsToIdentity = pendingLabel != nil && (
             isPending(identity.mainDpnsName)
                 || isPending(identity.dpnsName)
@@ -240,16 +342,19 @@ final class IdentitiesViewModel: ObservableObject {
         )
         let ownedNames = allNames.filter { !isPending($0) }
         let alias = identity.alias?.nonEmptyString
-        let mainName = isPending(identity.mainDpnsName)
+        // The display-pick scalars can outlive a sale of the picked name;
+        // a KNOWN-departed label falls through to the next candidate.
+        // (Scalars are still trusted while the label cache is empty —
+        // they double as the hydration fallback.)
+        let mainName = isPending(identity.mainDpnsName) || isSoldAway(identity.mainDpnsName)
             ? nil
             : identity.mainDpnsName?.nonEmptyString
-        let preferredName = isPending(identity.dpnsName)
+        let preferredName = isPending(identity.dpnsName) || isSoldAway(identity.dpnsName)
             ? nil
             : identity.dpnsName?.nonEmptyString
+        let displayedName = mainName ?? preferredName ?? ownedNames.first
         let title = alias
-            ?? mainName
-            ?? preferredName
-            ?? ownedNames.first
+            ?? displayedName
             ?? (pendingBelongsToIdentity ? pendingLabel : nil)
             ?? (String(identity.identityIdString.prefix(12)) + "...")
         let hasName = alias != nil || mainName != nil || preferredName != nil || !ownedNames.isEmpty
@@ -269,10 +374,33 @@ final class IdentitiesViewModel: ObservableObject {
             walletName: identity.wallet?.label.nonEmptyString,
             walletId: identity.wallet?.walletId,
             identityIndex: identity.identityIndex,
-            publicKeyCount: identity.publicKeys.count,
+            publicKeys: identity.publicKeys
+                .sorted { $0.keyId < $1.keyId }
+                .map(keyRowModel(for:)),
             dpnsNames: ownedNames,
+            displayedDpnsName: displayedName,
             pendingContestedName: pendingBelongsToIdentity ? pendingLabel : nil,
+            pendingVotingEndTime: pendingBelongsToIdentity
+                ? DWContestedNameStatusService.shared.pendingVotingEndTime
+                : nil,
             isMainIdentity: mainIdentityId != nil && identity.identityId == mainIdentityId)
+    }
+
+    /// Project one persisted identity key for display. The stored
+    /// purpose/level/type are raw-value strings; unmapped values (future
+    /// DPP variants) render as the raw value rather than being hidden.
+    private static func keyRowModel(for key: PersistentPublicKey) -> IdentityKeyRowModel {
+        IdentityKeyRowModel(
+            keyId: key.keyId,
+            purposeText: key.purposeEnum?.description ?? key.purpose,
+            securityLevelText: key.securityLevelEnum?.description ?? key.securityLevel,
+            keyTypeText: key.keyTypeEnum?.name ?? key.keyType,
+            readOnly: key.readOnly,
+            isDisabled: key.isDisabled,
+            publicKeyHex: key.publicKeyData.map { String(format: "%02x", $0) }.joined(),
+            contractBoundIds: (key.contractBounds ?? []).map { $0.toBase58String() },
+            contractBoundDocumentType: key.contractBoundsDocumentTypeName,
+            derivationPath: key.identityDerivationPath)
     }
 
     private static func uint64(from value: Any?) -> UInt64? {

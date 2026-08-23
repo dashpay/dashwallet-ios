@@ -282,11 +282,14 @@ private struct IdentityRowView: View {
                     icon: "server.rack",
                     color: .indigo)
             }
-            if row.isLocal {
+            // `isLocal` = mine-or-tracked: wallet-derived identities
+            // are always local, manual adds too. Badge only the rare
+            // incidental rows (observed identities nobody tracks).
+            if !row.isLocal {
                 IdentityBadge(
-                    text: NSLocalizedString("Local Only", comment: "Identities"),
-                    icon: "location",
-                    color: .orange)
+                    text: NSLocalizedString("Observed", comment: "Identities"),
+                    icon: "eye",
+                    color: .gray)
             }
             if row.pendingContestedName != nil {
                 IdentityBadge(
@@ -350,6 +353,13 @@ struct IdentityDetailScreen: View {
             && row.walletId == SwiftDashSDKHost.shared.wallet?.walletId
     }
 
+    /// Live projection of this identity from the shared view model —
+    /// `row` is the push-time capture, so name-pick changes (which
+    /// reload the view model) re-render through this instead.
+    private var currentRow: IdentityRowModel {
+        viewModel.rows.first(where: { $0.identityId == row.identityId }) ?? row
+    }
+
     var body: some View {
         ZStack {
             Color.dash.primaryBackground.ignoresSafeArea()
@@ -364,7 +374,7 @@ struct IdentityDetailScreen: View {
                         if row.pendingContestedName != nil {
                             pendingNameCard
                         }
-                        if !row.dpnsNames.isEmpty {
+                        if !currentRow.dpnsNames.isEmpty {
                             namesCard
                         }
                         mainIdentityCard
@@ -418,7 +428,7 @@ struct IdentityDetailScreen: View {
             .padding(.top, 10)
 
             HStack(spacing: 6) {
-                Text(row.title)
+                Text(currentRow.title)
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
@@ -523,12 +533,16 @@ struct IdentityDetailScreen: View {
             detailRow(
                 label: NSLocalizedString("Type", comment: "Identities"),
                 value: typeName)
-            divider
-            detailRow(
-                label: NSLocalizedString("Status", comment: ""),
-                value: row.isLocal
-                    ? NSLocalizedString("Local Only", comment: "Identities")
-                    : NSLocalizedString("On Network", comment: "Identities"))
+            // A Status row only for the rare incidental case — every
+            // wallet identity is local, so an always-on "Local" row
+            // would be noise; the Wallet row below already names the
+            // owner when there is one.
+            if !row.isLocal {
+                divider
+                detailRow(
+                    label: NSLocalizedString("Status", comment: ""),
+                    value: NSLocalizedString("Observed", comment: "Identities"))
+            }
             if let walletName = row.walletName {
                 divider
                 detailRow(
@@ -540,23 +554,74 @@ struct IdentityDetailScreen: View {
                 label: NSLocalizedString("Identity index", comment: "Identities"),
                 value: "#\(row.identityIndex)")
             divider
-            detailRow(
-                label: NSLocalizedString("Public keys", comment: "Identities"),
-                value: "\(row.publicKeyCount)")
+            Button(action: showPublicKeys) {
+                HStack {
+                    Text(NSLocalizedString("Public keys", comment: "Identities"))
+                        .font(.system(size: 14))
+                        .foregroundColor(.dash.secondaryText)
+                    Spacer()
+                    Text("\(currentRow.publicKeys.count)")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.dash.primaryText)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.dash.secondaryText)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(currentRow.publicKeys.isEmpty)
         }
         .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
     }
 
+    /// Push the identity's public-keys page (same push pattern as the
+    /// list → detail navigation).
+    private func showPublicKeys() {
+        let controller = UIHostingController(
+            rootView: IdentityPublicKeysScreen(row: row, vc: vc, viewModel: viewModel))
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
+    }
+
+    /// Owned DPNS names as a radio-style picker: the checked row is the
+    /// name the identity displays everywhere (`mainDpnsName` pick, with
+    /// the same fallback the row title uses); tapping another row
+    /// persists it via `IdentitiesViewModel.setMainName`.
     private var namesCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString("Usernames", comment: "Identities"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
-            ForEach(row.dpnsNames, id: \.self) { name in
-                Text(name)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.dash.primaryText)
+            ForEach(currentRow.dpnsNames, id: \.self) { name in
+                let isDisplayed = currentRow.displayedDpnsName.map {
+                    DWContestedNameStatusService.labelsMatch(name, $0)
+                } ?? false
+                Button(action: { viewModel.setMainName(name, for: currentRow) }) {
+                    HStack {
+                        Text(name)
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.dash.primaryText)
+                        Spacer()
+                        Image(systemName: isDisplayed ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 18))
+                            .foregroundColor(isDisplayed ? .dash.blue : Color.dash.gray300.opacity(0.6))
+                    }
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(isDisplayed ? [.isSelected] : [])
+            }
+            if currentRow.dpnsNames.count > 1 {
+                Text(NSLocalizedString(
+                    "Select the username to display for this identity.",
+                    comment: "Identities"))
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -579,6 +644,17 @@ struct IdentityDetailScreen: View {
                     text: NSLocalizedString("Voting", comment: "Usernames"),
                     icon: "clock",
                     color: .orange)
+            }
+            // A "Voting" badge with no end time leaves the user with nothing
+            // to act on. The deadline is known from submission onward — an
+            // estimate first, Platform's own `endTime` once it indexes the
+            // contest — so show it here too.
+            if let endTime = row.pendingVotingEndTime {
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString("Voting ends around %@", comment: "Usernames"),
+                    DWDateFormatter.sharedInstance.dateAndTime(from: endTime)))
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -622,6 +698,229 @@ struct IdentityDetailScreen: View {
         copied = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             copied = false
+        }
+    }
+}
+
+// MARK: - IdentityPublicKeysScreen
+
+/// The identity's DPP public keys (pushed from the detail's "Public keys"
+/// row): one card per key with its id, purpose, security level, key type,
+/// state badges, and the copyable key material. Read-only — key management
+/// happens on Platform, not here.
+struct IdentityPublicKeysScreen: View {
+    let row: IdentityRowModel
+    let vc: UINavigationController
+    @ObservedObject var viewModel: IdentitiesViewModel
+
+    /// Key id whose Copy button just fired (transient checkmark).
+    @State private var copiedKeyId: Int32?
+    /// Drives the refresh button's spinner/disabled state.
+    @State private var isReloadingKeys = false
+
+    /// Live projection of this identity from the shared view model —
+    /// `row` is the push-time capture; a keys refresh reloads the view
+    /// model and re-renders through this (same pattern as the detail).
+    private var currentRow: IdentityRowModel {
+        viewModel.rows.first(where: { $0.identityId == row.identityId }) ?? row
+    }
+
+    /// Refreshing probes the active wallet's DIP-9 tree, so only its own
+    /// identities can be reloaded; the affordance hides otherwise. Gated
+    /// on the wallet linkage, NOT `isLocal` — persisted rows have been
+    /// observed carrying `isLocal == false` for the wallet's own identity.
+    private var canRefresh: Bool {
+        row.walletId != nil && row.walletId == SwiftDashSDKHost.shared.wallet?.walletId
+    }
+
+    private func refreshKeys() async {
+        guard !isReloadingKeys else { return }
+        isReloadingKeys = true
+        defer { isReloadingKeys = false }
+        await viewModel.refreshIdentityKeys(for: currentRow)
+    }
+
+    var body: some View {
+        ZStack {
+            Color.dash.primaryBackground.ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 0) {
+                header
+
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach(currentRow.publicKeys) { key in
+                            keyCard(key)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .padding(.bottom, 24)
+                }
+                .refreshable { await refreshKeys() }
+            }
+        }
+        .navigationBarHidden(true)
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Button {
+                    vc.popViewController(animated: true)
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(Color.dash.primaryText)
+                        .frame(width: 36, height: 36)
+                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
+                }
+                Spacer()
+                if canRefresh {
+                    Button {
+                        Task { await refreshKeys() }
+                    } label: {
+                        Group {
+                            if isReloadingKeys {
+                                SwiftUI.ProgressView()
+                            } else {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color.dash.primaryText)
+                            }
+                        }
+                        .frame(width: 36, height: 36)
+                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
+                    }
+                    .disabled(isReloadingKeys)
+                    .accessibilityLabel(Text(NSLocalizedString("Refresh keys from Platform", comment: "Identities: re-fetch this identity's public keys")))
+                }
+            }
+            .padding(.horizontal, 5)
+            .padding(.top, 10)
+
+            Text(NSLocalizedString("Public keys", comment: "Identities"))
+                .font(.title)
+                .fontWeight(.bold)
+                .foregroundColor(.dash.primaryText)
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+
+            Text(row.title)
+                .font(.system(size: 14))
+                .foregroundColor(.dash.secondaryText)
+                .padding(.horizontal, 20)
+                .padding(.top, 2)
+                .padding(.bottom, 12)
+        }
+    }
+
+    private func keyCard(_ key: IdentityKeyRowModel) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString("Key #%d", comment: "Identities: one identity public key, by its DPP key id"),
+                    key.keyId))
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.dash.primaryText)
+                Spacer()
+                if key.isDisabled {
+                    IdentityBadge(
+                        text: NSLocalizedString("Disabled", comment: "Identities: this identity key was disabled on Platform"),
+                        icon: "nosign",
+                        color: .red)
+                } else if key.readOnly {
+                    IdentityBadge(
+                        text: NSLocalizedString("Read-only", comment: "Identities: key visible to the wallet but not usable for signing"),
+                        icon: "eye",
+                        color: .orange)
+                }
+            }
+
+            VStack(spacing: 0) {
+                attributeRow(
+                    label: NSLocalizedString("Purpose", comment: "Identities: what a public key is used for"),
+                    value: key.purposeText)
+                attributeRow(
+                    label: NSLocalizedString("Security level", comment: "Identities: DPP security level of a public key"),
+                    value: key.securityLevelText)
+                attributeRow(
+                    label: NSLocalizedString("Type", comment: "Identities"),
+                    value: key.keyTypeText)
+            }
+
+            Text(NSLocalizedString("Key data", comment: "Identities: the public key bytes"))
+                .font(.caption)
+                .foregroundColor(.dash.secondaryText)
+            Text(key.publicKeyHex)
+                .font(.system(.footnote, design: .monospaced))
+                .foregroundColor(.dash.primaryText)
+                .textSelection(.enabled)
+
+            Button {
+                copy(key)
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: copiedKeyId == key.keyId ? "checkmark" : "doc.on.doc")
+                    Text(copiedKeyId == key.keyId
+                        ? NSLocalizedString("Copied", comment: "")
+                        : NSLocalizedString("Copy", comment: ""))
+                }
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.dash.blue)
+            }
+
+            if !key.contractBoundIds.isEmpty {
+                Text(key.contractBoundDocumentType == nil
+                    ? NSLocalizedString("Bound to contract", comment: "Identities: this key only signs for one data contract")
+                    : String.localizedStringWithFormat(
+                        NSLocalizedString("Bound to contract, document type “%@”", comment: "Identities: this key only signs one document type of one data contract"),
+                        key.contractBoundDocumentType ?? ""))
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
+                ForEach(key.contractBoundIds, id: \.self) { contractId in
+                    Text(contractId)
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundColor(.dash.secondaryText)
+                        .textSelection(.enabled)
+                }
+            }
+
+            if let path = key.derivationPath {
+                Text(NSLocalizedString("Derivation path", comment: "Identities: BIP-32 style derivation path of this key"))
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
+                Text(path)
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundColor(.dash.secondaryText)
+                    .textSelection(.enabled)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color.dash.secondaryBackground)
+        .cornerRadius(12)
+    }
+
+    private func attributeRow(label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 14))
+                .foregroundColor(.dash.secondaryText)
+            Spacer()
+            Text(value)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.dash.primaryText)
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(.vertical, 6)
+    }
+
+    private func copy(_ key: IdentityKeyRowModel) {
+        UIPasteboard.general.string = key.publicKeyHex
+        copiedKeyId = key.keyId
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            if copiedKeyId == key.keyId { copiedKeyId = nil }
         }
     }
 }

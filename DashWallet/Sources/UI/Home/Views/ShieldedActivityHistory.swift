@@ -76,7 +76,22 @@ struct ShieldedActivityItem: Identifiable {
     /// Exact fee in duffs, when the entry recorded one.
     let feeDuffs: UInt64?
     let blockHeight: UInt64?
+    /// Sort/grouping key. `Date.distantPast` when `hasKnownDate == false`
+    /// so unknown-age entries sink to the oldest end of the history —
+    /// only ever rendered through the `hasKnownDate` gate.
     let date: Date
+    /// False for SDK rows with `createdAtMs == 0` — the sentinel the
+    /// scan-derived (restored) entries carry because chain data holds no
+    /// per-note block time and the scan clock must not masquerade as
+    /// one. Render the date as unknown, never as the epoch.
+    let hasKnownDate: Bool
+    /// Chain-order key: the smallest commitment-tree position among the
+    /// entry's own received notes. Tree positions are exact append-only
+    /// chain order, so this sequences the unknown-date restored entries
+    /// (whose `date` is all `.distantPast`) identically on every device.
+    /// Nil on live-recorded entries (which order by their real date) and
+    /// on rows persisted before the SDK carried the field.
+    let minNotePosition: UInt64?
     /// Decoded UTF-8 text memo, when the 36-byte Dash memo is kind-1 text.
     let memoText: String?
     /// Created identity id (hex) for `identityCreate` entries.
@@ -123,7 +138,11 @@ struct ShieldedActivityItem: Identifiable {
         amountDuffs = (amountCreditsOverride ?? row.amount) / 1000
         feeDuffs = row.hasFee ? row.fee / 1000 : nil
         blockHeight = row.hasBlockHeight ? row.blockHeight : nil
-        date = Date(timeIntervalSince1970: Double(row.createdAtMs) / 1000.0)
+        hasKnownDate = row.createdAtMs > 0
+        date = hasKnownDate
+            ? Date(timeIntervalSince1970: Double(row.createdAtMs) / 1000.0)
+            : .distantPast
+        minNotePosition = row.hasMinNotePosition ? row.minNotePosition : nil
         memoText = Self.decodeTextMemo(row.memo)
         createdIdentityIdHex = effectiveKind == .identityCreate && row.identityId.count == 32
             ? row.identityId.map { String(format: "%02x", $0) }.joined()
@@ -162,7 +181,7 @@ struct ShieldedActivityItem: Identifiable {
         switch kind {
         case .shield, .shieldFromAssetLock:
             return NSLocalizedString("Platform → Shielded", comment: "Transfer of own funds from the Platform balance into the private shielded balance")
-        case .unshield, .withdrawal:
+        case .unshield, .withdrawal, .sent:
             if isExternalDestination {
                 // External destination: show where the money went,
                 // shortened to row-pill size (the detail sheet carries
@@ -172,10 +191,16 @@ struct ShieldedActivityItem: Identifiable {
                 }
                 return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
             }
-            return kind == .unshield
-                ? NSLocalizedString("Shielded → Platform", comment: "Transfer of own funds from the private shielded balance to the Platform balance")
-                : NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
-        case .received, .sent, .identityCreate, .shieldedSpend:
+            switch kind {
+            case .unshield:
+                return NSLocalizedString("Shielded → Platform", comment: "Transfer of own funds from the private shielded balance to the Platform balance")
+            case .withdrawal:
+                return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+            default:
+                // A Sent row whose recipient couldn't be decoded.
+                return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
+            }
+        case .received, .identityCreate, .shieldedSpend:
             return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
         }
     }
@@ -223,7 +248,8 @@ struct ShieldedActivityItem: Identifiable {
     /// user's own balances on both sides (a guarantee — see the fetch
     /// doc); an external unshield/withdrawal names the destination
     /// address (or an honest "External address" when the counterparty
-    /// script couldn't be decoded).
+    /// script couldn't be decoded); a Sent entry names its decoded
+    /// recipient and stays route-less when the counterparty didn't decode.
     var internalMoveRoute: (source: String, destination: String)? {
         let platform = NSLocalizedString("Your Platform balance", comment: "Shielded activity: source/destination of an internal move")
         let shielded = NSLocalizedString("Your Shielded balance", comment: "Shielded activity: source/destination of an internal move")
@@ -237,7 +263,13 @@ struct ShieldedActivityItem: Identifiable {
                 return (shielded, destinationAddress ?? fallback)
             }
             return kind == .unshield ? (shielded, platform) : (shielded, transparent)
-        case .received, .sent, .identityCreate, .shieldedSpend: return nil
+        case .sent:
+            // Only when the recipient address decoded — a bare Sent row
+            // (no counterparty recovered) keeps the sheet route-less
+            // rather than claiming a destination we don't know.
+            guard let destinationAddress else { return nil }
+            return (shielded, destinationAddress)
+        case .received, .identityCreate, .shieldedSpend: return nil
         }
     }
 
@@ -262,7 +294,8 @@ struct ShieldedActivityItem: Identifiable {
     }
 
     var shortTimeString: String {
-        DWDateFormatter.sharedInstance.timeOnly(from: date)
+        guard hasKnownDate else { return "" }
+        return DWDateFormatter.sharedInstance.timeOnly(from: date)
     }
 
     /// Decode the 36-byte Dash memo when it is kind-1 UTF-8 text:
@@ -365,7 +398,9 @@ struct ShieldedActivityDetailsView: View {
                 }
                 infoRow(
                     NSLocalizedString("Date", comment: ""),
-                    DWDateFormatter.sharedInstance.longString(from: item.date))
+                    item.hasKnownDate
+                        ? DWDateFormatter.sharedInstance.longString(from: item.date)
+                        : NSLocalizedString("Unknown", comment: "Restored shielded operation whose original date is not recoverable"))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 6)

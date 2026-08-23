@@ -31,6 +31,8 @@ protocol HomeViewDelegate: AnyObject {
     /// The mirror for the balance rows' send (out) arrows: the send sheet
     /// (Send ↔ Internal) pinned to `network` as the source.
     func homeViewShowSend(network: ChainNetwork)
+    /// Opens the wallet's masternode list (the Nodes shortcut).
+    func homeViewShowMasternodes()
     /// Scroll-derived chrome: false at the top of the feed (bar hidden,
     /// balance header owns the space), true once the user scrolls down.
     func homeViewDidChangeTopBarVisibility(shouldShow: Bool)
@@ -40,6 +42,8 @@ protocol HomeViewDelegate: AnyObject {
     func homeViewRequestUsername()
     func homeViewClaimInvitation()
     func homeViewEditProfile()
+    /// Opens the notifications list (header nav-bar bell).
+    func homeViewShowNotifications()
 #endif
 }
 
@@ -199,6 +203,25 @@ private struct HomeScrollOffsetKey: PreferenceKey {
     }
 }
 
+/// Total scrollable-content height, measured off the same sentinel as
+/// `HomeScrollOffsetKey` — feeds the short-feed reveal fallback.
+private struct HomeContentHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+/// The `ScrollView`'s own viewport height — compared against
+/// `HomeContentHeightKey` to detect a feed too short to cross
+/// `kTopBarShowThreshold` by scrolling.
+private struct HomeViewportHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 struct HomeViewContent<Content: View>: View {
     @State private var selectedTxDataItem: TransactionListDataItem? = nil
     @State private var showFilterDialog: Bool = false
@@ -210,6 +233,18 @@ struct HomeViewContent<Content: View>: View {
     /// Balance whose explainer sheet is up (tap on a breakdown row's body).
     @State private var balanceInfoNetwork: ChainNetwork? = nil
 
+    #if DASHPAY
+    /// Persistent username-row state (SB-11) — read from the same
+    /// app-owned identity snapshot the nav-bar avatar uses. Nil username
+    /// hides the row (no identity registered).
+    @State private var currentUsername: String? = nil
+    @State private var currentAvatarURL: String? = nil
+    @State private var currentIdentitySeed: Data = Data()
+    /// Drives the header bell's unread state. Read from the same contacts
+    /// bridge that feeds the UIKit nav-bar bell, refreshed on the contacts
+    /// snapshot-change notification so an incoming request lights it live.
+    @State private var currentHasNotifications: Bool = false
+    #endif
 
     @ObservedObject var viewModel: HomeViewModel
     @ObservedObject private var balanceModel = BalanceModel()
@@ -227,6 +262,12 @@ struct HomeViewContent<Content: View>: View {
     private let topOverscrollSize: CGFloat = 1000 // Fixed value for top overscroll area
 
     @State private var isTopBarShown = false
+    /// Measured scrollable-content height vs. the ScrollView's own viewport
+    /// height — a short feed can never scroll `kTopBarShowThreshold` pt, so
+    /// without this the nav-bar avatar/username row would be permanently
+    /// stranded behind an unreachable reveal gesture.
+    @State private var scrollContentHeight: CGFloat = 0
+    @State private var scrollViewportHeight: CGFloat = 0
 
     var body: some View {
         ZStack {
@@ -236,6 +277,10 @@ struct HomeViewContent<Content: View>: View {
                     .padding(EdgeInsets(top: -topOverscrollSize, leading: 0, bottom: 0, trailing: 0))
 
                 LazyVStack(pinnedViews: [.sectionHeaders]) {
+                    // The header nav bar (username · Dash logo · notifications)
+                    // lives inside HomeBalanceView so the registered-username
+                    // entry point (SB-11) sits in the always-visible balance
+                    // header — reachable without scrolling the feed.
                     HomeBalanceView(
                         viewModel: balanceModel,
                         onLongPress: {
@@ -249,7 +294,13 @@ struct HomeViewContent<Content: View>: View {
                         },
                         onInfo: { network in
                             balanceInfoNetwork = network
-                        })
+                        },
+                        username: navUsername,
+                        avatarURL: navAvatarURL,
+                        identitySeed: navIdentitySeed,
+                        hasUnreadNotifications: navHasUnreadNotifications,
+                        onProfileTap: { openProfileFromNav() },
+                        onNotificationsTap: { openNotificationsFromNav() })
                     .frame(maxWidth: .infinity)
                     .background(Color.navigationBarColor)
                     .padding(.top, 5)
@@ -270,45 +321,72 @@ struct HomeViewContent<Content: View>: View {
                             .frame(height: viewModel.headerHeight)
                     }
                     
+                    SyncingHeaderView(onFilterTap: {
+                        showFilterDialog = true
+                    }, onSyncTap: {
+                        delegate?.homeViewShowSyncingStatus()
+                    })
+
                     #if DASHPAY
                     if viewModel.showJoinDashpay {
-                        JoinDashPayView(
+                        JoinDashPayMenuItem(
                             viewModel: joinDPViewModel,
-                            onTap: { _ in },
-                            onActionButton: { state in
+                            // The row is the action now — this is what the
+                            // Upgrade/Edit/Retry button used to do.
+                            onTap: { state in
                                 if state == .approved {
                                     delegate?.homeViewEditProfile()
                                     joinDPViewModel.markAsDismissed()
                                     viewModel.checkJoinDashPay()
                                 } else {
                                     // TODO: ? MOCK_DASHPAY if failed, maybe need to call model?.dashPayModel.retry()
-                                    if viewModel.shouldShowDashPayInfo {
-                                        UsernamePrefs.shared.joinDashPayInfoShown = true
-                                        self.shouldShowJoinDashPayInfo = true
-                                    } else {
-                                        delegate?.homeViewRequestUsername()
-                                    }
+                                    // Always open the info dialog. It carries the
+                                    // only "Have an invitation?" entry in the app,
+                                    // so latching it to the first-ever tap left an
+                                    // invited user with no way to reach the redeem
+                                    // path once they had dismissed it — which is
+                                    // every user whose invitation arrived after
+                                    // they first looked at DashPay.
+                                    self.shouldShowJoinDashPayInfo = true
                                 }
-                            }, onDismissButton: { _ in
+                            }, onDismiss: { _ in
                                 joinDPViewModel.markAsDismissed()
                                 viewModel.checkJoinDashPay()
-                            }
-                        ).padding(.horizontal, 14)
-                         .padding(.bottom, 4)
+                            },
+                            isSyncing: viewModel.isSyncing
+                        )
+                        .padding(.horizontal, 20)
                     }
                     #endif
-                    
-                    SyncingHeaderView(onFilterTap: {
-                        showFilterDialog = true
-                    }, onSyncTap: {
-                        delegate?.homeViewShowSyncingStatus()
-                    })
-                    
+
                     if viewModel.txItems.isEmpty {
-                        Text(NSLocalizedString("There are no transactions to display", comment: ""))
-                            .font(.caption)
-                            .foregroundColor(Color.primary.opacity(0.5))
+                        // An empty feed means "nothing yet" only once the first
+                        // load has finished; before that it just means the
+                        // reload is still running, so show progress rather than
+                        // telling the user they have no transactions.
+                        if viewModel.hasLoadedInitialTxItems {
+                            // With unloaded history remaining, an empty window
+                            // (e.g. a filter matching nothing loaded yet) is
+                            // not "no transactions" — the tail sentinel below
+                            // renders and keeps paging instead.
+                            if !viewModel.canLoadMoreHistory {
+                                Text(NSLocalizedString("There are no transactions to display", comment: ""))
+                                    .font(.caption)
+                                    .foregroundColor(Color.primary.opacity(0.5))
+                                    .padding(.top, 20)
+                            }
+                        } else {
+                            HStack(spacing: 10) {
+                                SwiftUI.ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle())
+
+                                Text(NSLocalizedString("Loading transactions", comment: "Home"))
+                                    .font(.caption)
+                                    .foregroundColor(Color.primary.opacity(0.5))
+                            }
+                            .frame(maxWidth: .infinity)
                             .padding(.top, 20)
+                        }
                     } else {
                         ForEach(viewModel.txItems) { group in
                             Section(header: SectionHeader(key: group.id, date: group.date)
@@ -328,6 +406,30 @@ struct HomeViewContent<Content: View>: View {
                             }
                         }
                     }
+
+                    // Tail sentinel: reaching it pages the next day-completed
+                    // slice of history in. Its identity is keyed on the page
+                    // stamp so `onAppear` re-fires while it stays visible
+                    // (auto-continues when a page adds no visible rows under
+                    // the active filter). Outside the empty/non-empty branch
+                    // on purpose: a filter can hide every loaded row, and the
+                    // empty state must still be able to page deeper.
+                    if viewModel.canLoadMoreHistory {
+                        HStack(spacing: 10) {
+                            SwiftUI.ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+
+                            Text(NSLocalizedString("Loading more transactions", comment: "Home"))
+                                .font(.caption)
+                                .foregroundColor(Color.primary.opacity(0.5))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .id(viewModel.historyPageStamp)
+                        .onAppear {
+                            viewModel.loadMoreHistory()
+                        }
+                    }
                 }
                 .padding(EdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0))
                 // Scroll sentinel as a background so it adds no layout
@@ -337,14 +439,40 @@ struct HomeViewContent<Content: View>: View {
                 // the user scrolls down; drives the collapsing top bar.
                 .background(
                     GeometryReader { proxy in
-                        Color.clear.preference(
-                            key: HomeScrollOffsetKey.self,
-                            value: proxy.frame(in: .named("homeScroll")).minY)
+                        Color.clear
+                            .preference(
+                                key: HomeScrollOffsetKey.self,
+                                value: proxy.frame(in: .named("homeScroll")).minY)
+                            .preference(key: HomeContentHeightKey.self, value: proxy.size.height)
                     }
                 )
             }
             .coordinateSpace(name: "homeScroll")
+            .background(
+                GeometryReader { proxy in
+                    Color.clear.preference(key: HomeViewportHeightKey.self, value: proxy.size.height)
+                }
+            )
+            .onPreferenceChange(HomeContentHeightKey.self) { scrollContentHeight = $0 }
+            .onPreferenceChange(HomeViewportHeightKey.self) { scrollViewportHeight = $0 }
             .onPreferenceChange(HomeScrollOffsetKey.self) { minY in
+                // A feed shorter than the viewport can never be scrolled
+                // `kTopBarShowThreshold` pt, so the reveal gesture below
+                // would never fire — keep the bar shown so the avatar/
+                // username row stays reachable instead of stranded.
+                // `scrollViewportHeight == 0` means the viewport hasn't
+                // reported its size yet (first layout pass) — wait for a
+                // real measurement rather than flash the bar on a feed
+                // that's actually long enough to scroll normally.
+                if scrollViewportHeight > 0,
+                   scrollContentHeight - scrollViewportHeight < kTopBarShowThreshold {
+                    if !isTopBarShown {
+                        isTopBarShown = true
+                        delegate?.homeViewDidChangeTopBarVisibility(shouldShow: true)
+                    }
+                    return
+                }
+
                 // minY == 0 at rest; more negative the further down the
                 // user has scrolled.
                 let scrolled = -minY
@@ -369,6 +497,18 @@ struct HomeViewContent<Content: View>: View {
             ShieldedRecoverySheet(transaction: tx) {
                 pendingShieldedRecovery = nil
             }
+        }
+        .sheet(
+            isPresented: $viewModel.showCoinJoinMoveFundsSheet,
+            // Any dismissal (close button or swipe) counts as "Later": persist
+            // it so the prompt stops re-arming every launch. After a completed
+            // move the recorded balance is moot — the leftover is gone.
+            onDismiss: { viewModel.deferCoinJoinSweep() }
+        ) {
+            CoinJoinMoveFundsSheet(amountDuffs: viewModel.coinJoinSweepAmountDuffs) {
+                viewModel.showCoinJoinMoveFundsSheet = false
+            }
+            .presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showFilterDialog) {
             let dialog = TransactionFilterDialog(
@@ -413,13 +553,86 @@ struct HomeViewContent<Content: View>: View {
             viewModel.checkJoinDashPay()
         }
         #endif
+        #if DASHPAY
+        .onReceive(NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)) { _ in
+            refreshUsernameRow()
+        }
+        // Live-refresh the header bell when the contacts snapshot changes
+        // (a new incoming request / established contact), so unread lights
+        // up without leaving Home.
+        .onReceive(NotificationCenter.default.publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification)) { _ in
+            refreshUsernameRow()
+        }
+        #endif
         .onAppear {
             viewModel.checkTimeSkew()
             #if DASHPAY
             viewModel.checkJoinDashPay()
             joinDPViewModel.checkUsername()
+            refreshUsernameRow()
             #endif
         }
+    }
+
+    #if DASHPAY
+    /// Refresh the persistent username row from the app-owned identity
+    /// snapshot — the same source `HomeViewController.refreshIdentityAvatar()`
+    /// reads for the nav-bar avatar, so both surfaces always agree.
+    private func refreshUsernameRow() {
+        let info = DWCurrentUserIdentityInfo.shared
+        currentUsername = info.hasIdentity ? info.username : nil
+        currentAvatarURL = info.avatarURL
+        currentIdentitySeed = info.identityId ?? Data()
+        currentHasNotifications = SwiftDashSDKContactsService.shared.unreadNotificationCount > 0
+    }
+    #endif
+
+    // Non-`#if`-gated bridges so the (config-agnostic) HomeBalanceView call
+    // site stays clean: the header nav-bar inputs and actions resolve to the
+    // DashPay identity state when compiled with DASHPAY, and to inert
+    // defaults otherwise.
+    private var navUsername: String? {
+        #if DASHPAY
+        return currentUsername
+        #else
+        return nil
+        #endif
+    }
+
+    private var navAvatarURL: String? {
+        #if DASHPAY
+        return currentAvatarURL
+        #else
+        return nil
+        #endif
+    }
+
+    private var navIdentitySeed: Data {
+        #if DASHPAY
+        return currentIdentitySeed
+        #else
+        return Data()
+        #endif
+    }
+
+    private var navHasUnreadNotifications: Bool {
+        #if DASHPAY
+        return currentHasNotifications
+        #else
+        return false
+        #endif
+    }
+
+    private func openProfileFromNav() {
+        #if DASHPAY
+        delegate?.homeViewEditProfile()
+        #endif
+    }
+
+    private func openNotificationsFromNav() {
+        #if DASHPAY
+        delegate?.homeViewShowNotifications()
+        #endif
     }
 
     @ViewBuilder
@@ -434,11 +647,16 @@ struct HomeViewContent<Content: View>: View {
                     .padding(.leading, 15)
                 
                 Spacer()
-                
-                Text(DWDateFormatter.sharedInstance.dayOfWeek(from: date))
-                    .font(.footnote)
-                    .foregroundStyle(Color.dash.tertiaryText)
-                    .padding(.trailing, 15)
+
+                // The unknown-date group (restored shielded history with no
+                // recoverable date) carries the `.distantPast` sentinel — a
+                // weekday for it would be fabricated.
+                if date != .distantPast {
+                    Text(DWDateFormatter.sharedInstance.dayOfWeek(from: date))
+                        .font(.footnote)
+                        .foregroundStyle(Color.dash.tertiaryText)
+                        .padding(.trailing, 15)
+                }
             }
             .padding(.bottom, 6)
         }
@@ -493,6 +711,9 @@ struct HomeViewContent<Content: View>: View {
     private func transferRouteDetails(txItem: Transaction) -> String? {
         switch txItem.internalTransferRoute {
         case .coreToShielded:
+            if txItem.isCoinJoinFundedTransfer {
+                return NSLocalizedString("CoinJoin → Shielded", comment: "Transfer of own mixed funds into the private shielded balance")
+            }
             return NSLocalizedString("Transparent → Shielded", comment: "Transfer of own funds into the private shielded balance")
         case .shieldedToCore:
             return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
@@ -543,7 +764,8 @@ struct HomeViewContent<Content: View>: View {
                 title: NSLocalizedString("Mixing Transactions", comment: "CoinJoin"),
                 subtitle: firstTx?.shortTimeString ?? "",
                 dashAmount: set.amount,
-                amountSign: .none
+                amountSign: .none,
+                amountAccessorySystemImage: "arrow.triangle.2.circlepath"
             )
             .onTapGesture { self.selectedTxDataItem = txDataItem }
             .frame(height: 80)
@@ -566,6 +788,9 @@ struct HomeViewContent<Content: View>: View {
             // Service/merchant metadata wins over the route pair — such rows
             // are external payments, not transfers of own funds.
             let routeSymbols = metadata == nil ? transferRouteSymbols(txItem: txItem) : nil
+            // Same precedence for the amount treatment: only a metadata-less
+            // internal move drops the +/- sign for the circulating-arrows glyph.
+            let isInternalAmount = metadata == nil && txItem.internalTransferRoute != nil
             // A DashPay contact payment shows the counterparty's avatar
             // (profile image, or the deterministic initial placeholder the
             // contacts screens use).
@@ -592,9 +817,11 @@ struct HomeViewContent<Content: View>: View {
                 subtitle: txItem.shortTimeString,
                 details: txItem.isPendingShieldedTransfer
                     ? NSLocalizedString("Pending — tap to finish", comment: "InternalTransfer recovery")
-                    : txItem.isPendingIdentityFunding
+                    : txItem.isPendingIdentityRegistration
                         ? NSLocalizedString("Pending — tap to finish", comment: "DashPay registration recovery")
-                    : txItem.isPendingPlatformFunding
+                    // A pending top-up has nothing to "finish" in another
+                    // flow — it recovers from the tx detail sheet.
+                    : txItem.isPendingIdentityFunding || txItem.isPendingPlatformFunding
                         ? NSLocalizedString("Pending", comment: "")
                         : (metadata?.details?.isEmpty == false
                             ? metadata?.details
@@ -602,7 +829,10 @@ struct HomeViewContent<Content: View>: View {
                             // counterparty's actual name underneath.
                             : transferRouteDetails(txItem: txItem) ?? txItem.dashPayPaymentDetailsName),
                 dashAmount: txItem.signedDashAmount,
-                amountSign: .always,
+                // Internal moves carry no direction: no +/- sign, a
+                // circulating-arrows glyph qualifies the amount instead.
+                amountSign: isInternalAmount ? .none : .always,
+                amountAccessorySystemImage: isInternalAmount ? "arrow.triangle.2.circlepath" : nil,
                 fiat: txItem.fiatAmount,
                 trailingStatusText: txItem.state == .locked ? NSLocalizedString("Locked", comment: "Transaction state: coinbase reward locked until 100 confirmations") : nil
             ) {
@@ -610,7 +840,7 @@ struct HomeViewContent<Content: View>: View {
                 // instead of the read-only detail/gift-card sheets.
                 if txItem.isPendingShieldedTransfer {
                     self.pendingShieldedRecovery = txItem
-                } else if txItem.isPendingIdentityFunding {
+                } else if txItem.isPendingIdentityRegistration {
                     #if DASHPAY
                     delegate?.homeViewRequestUsername()
                     #else
@@ -634,6 +864,7 @@ struct HomeViewContent<Content: View>: View {
                 details: item.detailsText,
                 dashAmount: item.signedDashAmount,
                 amountSign: item.showsDirectionSign ? .always : .none,
+                amountAccessorySystemImage: item.showsDirectionSign ? nil : "arrow.triangle.2.circlepath",
                 fiat: item.fiatAmount,
                 trailingStatusText: item.trailingStatusText
             ) {

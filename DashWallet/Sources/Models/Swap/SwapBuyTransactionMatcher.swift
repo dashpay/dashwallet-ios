@@ -35,6 +35,18 @@ enum SwapBuyTransactionMatcher {
     /// still far tighter than the address + amount checks, which do the real disambiguation.
     private static let timestampSlack: TimeInterval = 2 * 60 * 60
 
+    /// The `firstSeen` fetch cutoff for matching `order`: order time minus
+    /// `timestampSlack` (the matcher's own below-order-time allowance on the
+    /// display date) minus a day for the firstSeen-vs-display-date skew
+    /// (block timestamps trail the wall clock; restores re-stamp old rows).
+    /// Callers hand this to `SwiftDashSDKWalletSource.fetchRecent(firstSeenSince:)`
+    /// so the matcher's candidate pool is a ranged index scan, not the
+    /// wallet's full history.
+    static func fetchCutoff(for order: SwapOrder) -> Date {
+        let orderTimestamp = TimeInterval(order.timestamp) / 1000.0
+        return Date(timeIntervalSince1970: max(0, orderTimestamp - timestampSlack - 24 * 60 * 60))
+    }
+
     static func matchedTransaction(
         for order: SwapOrder,
         in transactions: [Transaction]

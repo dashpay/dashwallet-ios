@@ -25,43 +25,71 @@ enum PinPromptPresenter {
 
         return await withCheckedContinuation { continuation in
             var didResume = false
-            func resume(_ result: PinPromptResult, dismiss host: UIViewController?) {
+            var hostRef: UIViewController?
+            func resume(_ result: PinPromptResult) {
                 guard !didResume else { return }
                 didResume = true
-                if let host {
-                    host.dismiss(animated: true) { continuation.resume(returning: result) }
+                // Dismiss the modal WE presented, addressed directly. Never
+                // route the dismissal through the original anchor: flows
+                // like the marketplace sheets dismiss themselves right after
+                // starting the gate, and a deallocated anchor used to leave
+                // the PIN card frozen on screen after a successful entry.
+                if let hostRef, hostRef.presentingViewController != nil {
+                    hostRef.dismiss(animated: true) { continuation.resume(returning: result) }
                 } else {
                     continuation.resume(returning: result)
                 }
             }
 
-            let viewModel = PinPromptViewModel(service: service) { [weak anchor] result in
-                // Capture the hosting controller lazily: the closure fires
-                // after presentation, so `anchor.presentedViewController` is
-                // the modal we put up.
-                resume(result, dismiss: anchor?.presentedViewController)
+            let viewModel = PinPromptViewModel(service: service) { result in
+                resume(result)
             }
             let host = UIHostingController(rootView: PinPromptView(viewModel: viewModel))
+            hostRef = host
             host.modalPresentationStyle = .overFullScreen
             host.modalTransitionStyle = .crossDissolve
             // Transparent so the SwiftUI dimmed backdrop is the only overlay
             // and the send screen stays visible behind the card.
             host.view.backgroundColor = .clear
-            anchor.present(host, animated: true)
 
-            // UIKit can reject a presentation without calling a completion
-            // handler (for example when a SwiftUI sheet is being replaced).
-            // Do not leak the continuation and leave AuthenticationGate
-            // waiting for its watchdog in that case.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                guard !didResume else { return }
-                guard host.presentingViewController != nil,
-                      host.viewIfLoaded?.window != nil else {
-                    NSLog("🔐 PINPROMPT :: presentation rejected — resolving .failed")
-                    resume(.failed, dismiss: nil)
-                    return
+            // A presentation can land AFTER the gate already resolved
+            // (UIKit queues it behind an in-flight sheet dismissal). Tear
+            // the late modal down from the presentation completion, or it
+            // sits orphaned on screen swallowing PIN digits forever.
+            func present(from presenter: UIViewController) {
+                presenter.present(host, animated: true) {
+                    if didResume {
+                        host.dismiss(animated: false)
+                    }
                 }
             }
+            present(from: anchor)
+
+            // UIKit can reject a presentation without calling a completion
+            // handler (for example when a SwiftUI sheet is being replaced —
+            // exactly what happens when the flow that asked for this gate
+            // dismissed its own sheet as it started). Verify the modal
+            // actually landed; re-anchor once on the post-dismissal top
+            // controller before giving up, and never leak the continuation.
+            func verifyPresented(retriesLeft: Int) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    guard !didResume else { return }
+                    if host.presentingViewController != nil, host.viewIfLoaded?.window != nil {
+                        return
+                    }
+                    guard retriesLeft > 0,
+                          host.presentingViewController == nil,
+                          let retryAnchor = topPresentedController() else {
+                        NSLog("🔐 PINPROMPT :: presentation rejected — resolving .failed")
+                        resume(.failed)
+                        return
+                    }
+                    NSLog("🔐 PINPROMPT :: presentation rejected — retrying on a fresh anchor")
+                    present(from: retryAnchor)
+                    verifyPresented(retriesLeft: retriesLeft - 1)
+                }
+            }
+            verifyPresented(retriesLeft: 1)
         }
     }
 

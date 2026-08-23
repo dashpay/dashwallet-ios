@@ -104,7 +104,8 @@ final class App {
         TransactionMetadataDAOImpl.shared.deleteAll()
         AddressUserInfoDAOImpl.shared.deleteAll()
     #if DASHPAY
-        UsernameRequestsDAOImpl.shared.deleteAll()
+        // Which of your masternodes voted on what is wallet-scoped history.
+        VoteHistoryDAOImpl.shared.deleteAll()
     #endif
 
         _fiatCurrency = nil

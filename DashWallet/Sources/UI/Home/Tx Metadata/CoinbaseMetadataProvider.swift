@@ -35,10 +35,18 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
 
     let metadataUpdated = PassthroughSubject<Data, Never>()
 
+    /// Single-flight guard for `refreshMetadata()` — both fields guarded by
+    /// `metadataQueue`. Every trigger (SwiftData save, wallet switch, DAO
+    /// change) funnels through `requestRefresh()`; requests landing while a
+    /// refresh runs collapse into one trailing rerun. Without this,
+    /// save-storms during initial sync queue unbounded concurrent refreshes
+    /// (this pegged 7 cores and 4.6GB after a mainnet recovery back when
+    /// each refresh also fetched the full wallet snapshot).
+    private var refreshInFlight = false
+    private var refreshQueued = false
+
     private init() {
-        Task {
-            await refreshMetadata()
-        }
+        requestRefresh()
 
         metadataDao.$lastChange
             .receive(on: DispatchQueue.main)
@@ -46,10 +54,8 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
                 guard let self, let change = change else { return }
 
                 switch change {
-                case .created(let metadata), .updated(let metadata, _):
-                    Task {
-                        await self.refreshMetadata()
-                    }
+                case .created, .updated:
+                    self.requestRefresh()
 
                 case .deleted(let metadata):
                     metadataQueue.sync {
@@ -74,9 +80,7 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
             .receive(on: DispatchQueue.main)
             .throttle(for: .seconds(1), scheduler: DispatchQueue.main, latest: true)
             .sink { [weak self] _ in
-                Task {
-                    await self?.refreshMetadata()
-                }
+                self?.requestRefresh()
             }
             .store(in: &cancellableBag)
 
@@ -84,19 +88,56 @@ final class CoinbaseMetadataProvider: MetadataProvider, @unchecked Sendable {
             for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                Task {
-                    await self?.refreshMetadata()
-                }
+                self?.requestRefresh()
             }
             .store(in: &cancellableBag)
     }
 
+    /// Coalescing entry point for all refresh triggers — see the guard
+    /// fields' doc for why triggers must not spawn refreshes directly.
+    private func requestRefresh() {
+        let shouldStart: Bool = metadataQueue.sync {
+            if refreshInFlight {
+                refreshQueued = true
+                return false
+            }
+            refreshInFlight = true
+            return true
+        }
+        guard shouldStart else { return }
+        Task { [weak self] in
+            guard let self else { return }
+            var runAgain = true
+            while runAgain {
+                await self.refreshMetadata()
+                runAgain = self.metadataQueue.sync {
+                    if self.refreshQueued {
+                        self.refreshQueued = false
+                        return true
+                    }
+                    self.refreshInFlight = false
+                    return false
+                }
+            }
+        }
+    }
+
     private func refreshMetadata() async {
         let coinbaseMetadata = metadataDao.all().filter { $0.service == ServiceName.coinbase.rawValue }
-        let current = Self.resolveMetadata(
-            storedMetadata: coinbaseMetadata,
-            walletSnapshot: CoinbaseWalletTransactionSnapshot.current(),
-            icon: coinbaseIcon())
+        // Resolve against only the rows the stored metadata points at —
+        // point lookups on the txid index. With no stored Coinbase metadata
+        // (most wallets, and every save tick during initial sync) the
+        // refresh doesn't touch the transaction store at all.
+        let current: [Data: TxRowMetadata]
+        if coinbaseMetadata.isEmpty {
+            current = [:]
+        } else {
+            current = Self.resolveMetadata(
+                storedMetadata: coinbaseMetadata,
+                walletSnapshot: CoinbaseWalletTransactionSnapshot.matching(
+                    txids: Set(coinbaseMetadata.map(\.txHash))),
+                icon: coinbaseIcon())
+        }
 
         metadataQueue.async { [weak self] in
             guard let self else { return }

@@ -101,10 +101,10 @@ class TxDetailModel: NSObject {
 
     func toggleTaxCategoryOnCurrentTransaction() {
         if txTaxCategory == .unknown {
-            txTaxCategory = transaction.direction.defaultTaxCategory
+            txTaxCategory = transaction.defaultTaxCategory
         }
 
-        txTaxCategory = txTaxCategory.nextTaxCategory
+        txTaxCategory = nextTaxCategory(after: txTaxCategory)
         let txHash = transaction.txHashData
 
         var txUserInfo = transaction.userInfo ?? TransactionMetadata(txHash: txHash, taxCategory: txTaxCategory)
@@ -112,6 +112,30 @@ class TxDetailModel: NSObject {
 
         // TODO: Move it to Domain layer
         TransactionMetadataDAOImpl.shared.update(dto: txUserInfo)
+    }
+
+    /// The category a tap on the Tax Category row moves to. Regular
+    /// transactions keep the two-state direction pair (Income ↔ Transfer In,
+    /// Expense ↔ Transfer Out); an internal transfer cycles through its
+    /// direction pair plus the Internal Transfer default, so a reclassified
+    /// transfer can be put back.
+    private func nextTaxCategory(after category: TxMetadataTaxCategory) -> TxMetadataTaxCategory {
+        guard transaction.internalTransferRoute != nil else {
+            // A stored Internal Transfer on a transaction no longer detected
+            // as one steps back to its direction default.
+            return category == .internalTransfer
+                ? transaction.direction.defaultTaxCategory
+                : category.nextTaxCategory
+        }
+        // Only the Shielded → Core payout leg is `.received`; every other
+        // route is an outgoing/moved leg.
+        let cycle: [TxMetadataTaxCategory] = transaction.direction == .received
+            ? [.internalTransfer, .transferIn, .income]
+            : [.internalTransfer, .transferOut, .expense]
+        guard let index = cycle.firstIndex(of: category) else {
+            return .internalTransfer
+        }
+        return cycle[(index + 1) % cycle.count]
     }
 
     func copyTransactionIdToPasteboard() -> Bool {
@@ -399,8 +423,11 @@ extension TxDetailModel {
         let transparent = NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
         let shielded = NSLocalizedString("Shielded balance", comment: "")
         if transaction.isShieldedTransfer {
+            let source = transaction.isCoinJoinFundedTransfer
+                ? NSLocalizedString("CoinJoin balance", comment: "The wallet's mixed (CoinJoin) funds as the source of an internal transfer")
+                : transparent
             var rows: [DWTitleDetailItem] = [
-                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: transparent),
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: source),
                 DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: shielded),
             ]
             if let status = shieldedStatusText {
@@ -457,7 +484,8 @@ extension TxDetailModel {
     /// User-facing name of the funding asset lock's live status
     /// (`PersistentAssetLock.statusRaw` via `ShieldedTxLookup`): 0/1 =
     /// built/broadcast, 2/3 = IS/CL-locked awaiting the shield transition,
-    /// 4 = consumed (transfer complete). Nil when the lookup has no entry.
+    /// 4 = consumed (transfer complete), 5 = recovered from chain after a
+    /// restore. Nil when the lookup has no entry.
     private var shieldedStatusText: String? {
         guard let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: transactionId)?.statusRaw else {
             return nil
@@ -475,9 +503,68 @@ extension TxDetailModel {
             return NSLocalizedString("Funds locked — finishing transfer", comment: "Shielded transfer status")
         case 4:
             return NSLocalizedString("Completed", comment: "Shielded transfer status")
+        case 5:
+            // RecoveredFromChain: the lock is final on Core, but whether it
+            // completed on Platform is unknown after a restore or an
+            // unauthenticated already-consumed report. Claiming neither
+            // "Pending" nor "Completed" is deliberate.
+            return NSLocalizedString("Completion unknown", comment: "Status of a chain-locked asset lock whose Platform-side consumption cannot be authenticated")
         default:
             return nil
         }
+    }
+
+    // MARK: Stuck asset-lock retry
+
+    struct StuckAssetLockRetry {
+        let fundingTypeRaw: Int
+        let statusRaw: Int
+        let vout: UInt32
+
+        /// Button title matching what actually remains: an unlocked
+        /// transaction is re-broadcast; a locked one only needs the
+        /// Platform side finished.
+        var actionTitle: String {
+            statusRaw <= 1
+                ? NSLocalizedString("Rebroadcast", comment: "Retry a stuck balance transfer whose transaction never confirmed")
+                : NSLocalizedString("Complete Transfer", comment: "Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished")
+        }
+
+        /// Local removal is offered only while the network has shown no
+        /// acceptance at all (built/broadcast). An IS/CL-locked lock is
+        /// proven on-chain — removing it locally could only corrupt state.
+        var supportsRemoval: Bool { statusRaw <= 1 }
+    }
+
+    /// True when the "Remove if Not on Network" action applies outside
+    /// the asset-lock retry route: the local store still has this
+    /// transaction in mempool context (`.processing` — never IS-locked,
+    /// never mined), which is exactly the state a network-dropped send
+    /// (e.g. a stalled CoinJoin sweep chunk) is stuck in.
+    /// `UnconfirmedTransactionRemover` re-verifies the local state and
+    /// checks a block explorer before touching anything.
+    var supportsUnconfirmedRemoval: Bool {
+        transaction.state == .processing
+    }
+
+    /// Non-nil when this transaction is a funding asset lock parked in a
+    /// non-terminal state (built/broadcast/IS-locked/CL-locked but never
+    /// consumed) on a route `AssetLockRecoveryService` can retry. Status
+    /// 4 (consumed) and 5 (restored, completion unknown) never qualify:
+    /// 4 is done, and a restored lock has no tracked local state to
+    /// resume from.
+    var stuckAssetLockRetry: StuckAssetLockRetry? {
+        let info = transaction.identityFundingLockInfo
+            ?? transaction.platformFundingLockInfo
+            ?? ShieldedTxLookup.shared.info(forTxidHex: transactionId)
+        guard let info,
+              (0...3).contains(info.statusRaw),
+              AssetLockRecoveryService.supportsRetry(fundingTypeRaw: info.fundingTypeRaw)
+        else { return nil }
+        return StuckAssetLockRetry(
+            fundingTypeRaw: info.fundingTypeRaw,
+            statusRaw: info.statusRaw,
+            vout: info.vout)
     }
 
     /// Below this (0.0001 DASH) a fee renders as plain duffs — the

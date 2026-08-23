@@ -19,7 +19,6 @@ import SwiftUI
 import Combine
 
 enum MainMenuNavigationDestination {
-    case buySellPortal
     case explore
     case syncInfo
     case wallets
@@ -28,9 +27,7 @@ enum MainMenuNavigationDestination {
     case settings
     case tools
     case support
-    #if DASHPAY
-    case voting
-    #endif
+    case governance
 }
 
 protocol MainMenuViewModelDelegate: AnyObject {
@@ -53,6 +50,7 @@ class MainMenuViewModel: ObservableObject {
     let dashPayModel: DWDashPayProtocol?
     let userProfileModel: CurrentUserProfileModel?
     @Published private(set) var showJoinDashpay: Bool = false
+    @Published private(set) var isSyncing: Bool = false
     #endif
 
     weak var delegate: MainMenuViewModelDelegate?
@@ -69,6 +67,10 @@ class MainMenuViewModel: ObservableObject {
         userProfileModel?.$showJoinDashpay
             .receive(on: DispatchQueue.main)
             .assign(to: &$showJoinDashpay)
+
+        userProfileModel?.$isSyncing
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$isSyncing)
     }
 
     func refreshJoinDashPayBanner() {
@@ -84,15 +86,6 @@ class MainMenuViewModel: ObservableObject {
     
     func buildMenuSections() {
         var allItems: [MenuItemModel] = []
-        
-        // Buy & Sell Dash
-        allItems.append(MenuItemModel(
-            title: NSLocalizedString("Buy & Sell Dash", comment: ""),
-            icon: .custom("image.buy.and.sell", maxHeight: 30),
-            action: { [weak self] in
-                self?.handleBuySellDash()
-            }
-        ))
         
         // Explore
         allItems.append(MenuItemModel(
@@ -166,36 +159,22 @@ class MainMenuViewModel: ObservableObject {
             }
         ))
         
-        #if DASHPAY
-        // Voting
-        if VotingPrefs.shared.votingEnabled {
-            allItems.append(MenuItemModel(
-                title: NSLocalizedString("Voting", comment: ""),
-                icon: .custom("menu_voting", maxHeight: 30),
-                action: { [weak self] in
-                    self?.navigationDestination = .voting
-                }
-            ))
-        }
-        #endif
+        // Governance — Masternodes plus (on DashPay builds, when enabled)
+        // username Voting. Not DashPay-gated: Masternodes is a Core-side
+        // surface that every build configuration can reach.
+        allItems.append(MenuItemModel(
+            title: NSLocalizedString("Governance", comment: "Governance"),
+            icon: .custom("menu_voting", maxHeight: 30),
+            action: { [weak self] in
+                self?.navigationDestination = .governance
+            }
+        ))
         
         self.items = allItems
     }
     
     // MARK: - Actions
 
-    private func handleBuySellDash() {
-        AuthenticationService.shared.authenticate(
-            withPrompt: nil,
-            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-            alertIfLockout: true
-        ) { [weak self] authenticated, usedBiometrics, cancelled in
-            if authenticated {
-                self?.navigationDestination = .buySellPortal
-            }
-        }
-    }
-    
     func resetNavigation() {
         navigationDestination = nil
     }

@@ -154,6 +154,16 @@ static CGFloat ActionButtonsHeight(void) {
 - (IBAction)forgotPinButtonAction:(UIButton *)sender {
     [self.model stopCheckingAuthState];
 
+    // No PIN record at all (partial keychain restore, interrupted setup):
+    // there is nothing to forget and no fail counter can ever advance, so go
+    // straight to the ownership proof. The phrase gate stays mandatory — the
+    // PIN is the spending protection, so a missing record must not become a
+    // free takeover of the wallet.
+    if (!self.model.hasPinSet) {
+        [self presentPinResetRecovery];
+        return;
+    }
+
     // Everyday forgot-PIN: prove ownership with the recovery phrase, then set a
     // new PIN and keep the wallet (app-owned DWRecoverViewController in
     // ResetPin mode). Only past the wipe threshold do we also offer a wipe —
@@ -169,7 +179,7 @@ static CGFloat ActionButtonsHeight(void) {
                                                 handler:^(UIAlertAction *action) {
                                                     [self presentPinResetRecovery];
                                                 }]];
-        [sheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Wipe wallet", nil)
+        [sheet addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Wipe All Wallets", nil)
                                                   style:UIAlertActionStyleDestructive
                                                 handler:^(UIAlertAction *action) {
                                                     [self confirmWipeWallet];
@@ -194,7 +204,10 @@ static CGFloat ActionButtonsHeight(void) {
         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                                                       target:self
                                                       action:@selector(forgotPinRecoveryCancelAction:)];
-    controller.navigationItem.leftBarButtonItem = cancelButton;
+    // This controller is the root of a modal navigation stack. Our shared
+    // navigation controller clears left-side items for root controllers (to
+    // suppress a back button), so keep the modal escape action on the right.
+    controller.navigationItem.rightBarButtonItem = cancelButton;
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
@@ -210,21 +223,36 @@ static CGFloat ActionButtonsHeight(void) {
 }
 
 - (void)confirmWipeWallet {
-    UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:NSLocalizedString(@"Wipe wallet", nil)
-                         message:NSLocalizedString(@"This will erase this wallet from this device. You can only restore it with your recovery phrase.", nil)
-                  preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", nil)
-                                              style:UIAlertActionStyleCancel
-                                            handler:^(UIAlertAction *action) {
-                                                [self.model startCheckingAuthState];
-                                            }]];
-    [alert addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Wipe wallet", nil)
-                                              style:UIAlertActionStyleDestructive
-                                            handler:^(UIAlertAction *action) {
-                                                [self.delegate lockScreenViewControllerDidWipe:self];
-                                            }]];
-    [self presentViewController:alert animated:YES completion:nil];
+    __weak typeof(self) weakSelf = self;
+    [DWWalletDeleteAllConfirmationCoordinator
+        presentFrom:self
+        cancelHandler:^{
+            typeof(self) strongSelf = weakSelf;
+            [strongSelf.model startCheckingAuthState];
+        }
+        deleteAllHandler:^{
+            typeof(self) strongSelf = weakSelf;
+            if (strongSelf == nil) {
+                return;
+            }
+            [strongSelf presentSupportWipeRecovery];
+        }];
+}
+
+- (void)presentSupportWipeRecovery {
+    DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
+    controller.action = DWRecoverAction_SupportWipe;
+    controller.delegate = self;
+    UIBarButtonItem *cancelButton =
+        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                                                      target:self
+                                                      action:@selector(forgotPinRecoveryCancelAction:)];
+    controller.navigationItem.rightBarButtonItem = cancelButton;
+
+    DWNavigationController *navigationController =
+        [[DWNavigationController alloc] initWithRootViewController:controller];
+    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:navigationController animated:YES completion:nil];
 }
 
 #pragma mark - DWRecoverViewControllerDelegate
@@ -239,10 +267,16 @@ static CGFloat ActionButtonsHeight(void) {
 }
 
 - (void)recoverViewControllerDidWipe:(DWRecoverViewController *)controller {
-    // Unreachable in ResetPin mode (wipe is offered by the lock screen's own
-    // action sheet, not this screen). Implemented for protocol conformance; if
-    // it ever fires, fail loud in debug and recover safely in release.
-    NSAssert(NO, @"ResetPin recovery never wipes; wipe is the lock screen's own path");
+    if (controller.action == DWRecoverAction_SupportWipe) {
+        [self dismissViewControllerAnimated:YES
+                                 completion:^{
+                                     [self.delegate lockScreenViewControllerDidWipe:self];
+                                 }];
+        return;
+    }
+
+    // ResetPin verifies ownership but never deletes wallet data.
+    NSAssert(NO, @"ResetPin recovery never wipes");
     [self dismissViewControllerAnimated:YES
                              completion:^{
                                  [self.model startCheckingAuthState];
@@ -262,8 +296,12 @@ static CGFloat ActionButtonsHeight(void) {
 #pragma mark - DWSetPinViewControllerDelegate
 
 - (void)presentSetNewPin {
+    // Forgot-PIN changes an existing PIN; the no-PIN-record path sets the
+    // first one — same screen, honest title.
+    const DWSetPinIntent intent =
+        self.model.hasPinSet ? DWSetPinIntent_ChangePin : DWSetPinIntent_SetPin;
     DWSetPinViewController *controller =
-        [DWSetPinViewController controllerWithIntent:DWSetPinIntent_ChangePin];
+        [DWSetPinViewController controllerWithIntent:intent];
     controller.delegate = self;
 
     DWNavigationController *navigationController =
@@ -280,8 +318,10 @@ static CGFloat ActionButtonsHeight(void) {
 }
 
 - (void)setPinViewControllerDidCancel:(DWSetPinViewController *)controller {
-    // Phrase was proven but the user backed out of setting a new PIN; the old
-    // PIN still works, so return to the lock screen.
+    // Phrase was proven but the user backed out of setting a new PIN — return
+    // to the lock screen in whatever state the keychain is in: the old PIN
+    // still works on the forgot-PIN path, and the no-PIN-record path re-renders
+    // its Set PIN routing.
     [self dismissViewControllerAnimated:YES
                              completion:^{
                                  [self.model startCheckingAuthState];
@@ -316,6 +356,25 @@ static CGFloat ActionButtonsHeight(void) {
                    authenticated:(BOOL)authenticated
                    shouldLockout:(BOOL)shouldLockout
                  attemptsMessage:(nullable NSString *)attemptsMessage {
+    // A wallet without a PIN record (partial keychain restore, interrupted
+    // setup) can never satisfy "Enter PIN" — every entry would fail as a
+    // store error, permanently locking the user out. Present the honest
+    // state instead and route to the phrase-gated Set PIN flow. This wins
+    // over a stale lockout counter too: with no PIN there is nothing to
+    // brute-force, and setting the new PIN zeroes the counters.
+    if (!model.hasPinSet) {
+        self.keyboarView.isEnabled = NO;
+        self.scanToPayButton.enabled = NO;
+        [self hideLoginButtonIfNeeded];
+        [self.pinInputView setTitleText:NSLocalizedString(@"PIN Not Set", nil)];
+        // Keep this to one action phrase: the pin-input container is centered
+        // without a width cap (LockScreen.storyboard), so an overlong single
+        // line renders past the screen edges instead of wrapping.
+        [self.pinInputView setAttemptsText:nil
+                                 errorText:NSLocalizedString(@"Verify your recovery phrase to set a new PIN.", nil)];
+        return;
+    }
+
     self.keyboarView.isEnabled = shouldContinueAuthentication;
     self.scanToPayButton.enabled = shouldContinueAuthentication;
 
@@ -391,7 +450,14 @@ static CGFloat ActionButtonsHeight(void) {
     self.pinInputView.delegate = self;
     [self.pinInputView configureWithKeyboard:self.keyboarView];
 
-    [self.forgotPinButton setTitle:NSLocalizedString(@"Forgot PIN?", nil) forState:UIControlStateNormal];
+    // The button is the single escape hatch in both states; with no PIN
+    // record "Forgot PIN?" would be a lie — nothing was forgotten. A PIN
+    // set while this screen is alive immediately unlocks (delegate), so the
+    // title never needs to flip back.
+    NSString *escapeTitle = self.model.hasPinSet
+                                ? NSLocalizedString(@"Forgot PIN?", nil)
+                                : NSLocalizedString(@"Set PIN", nil);
+    [self.forgotPinButton setTitle:escapeTitle forState:UIControlStateNormal];
 
     self.quickReceiveButton.title = NSLocalizedString(@"Quick Receive", nil);
     self.quickReceiveButton.image = [UIImage imageNamed:@"icon_lock_receive"];
@@ -428,6 +494,13 @@ static CGFloat ActionButtonsHeight(void) {
 }
 
 - (void)performBiometricAuthentication {
+    // No biometric unlock while no PIN record exists: it would bypass the
+    // missing PIN into a wallet where every downstream auth gate (spend,
+    // change-PIN) is unsatisfiable. The Set PIN route repairs the state first.
+    if (!self.model.hasPinSet) {
+        return;
+    }
+
     if (self.model.isBiometricAuthenticationAllowed) {
         [self.model authenticateUsingBiometricsOnlyCompletion:^(BOOL authenticated) {
             if (authenticated) {
@@ -441,7 +514,7 @@ static CGFloat ActionButtonsHeight(void) {
 }
 
 - (void)hideLoginButtonIfNeeded {
-    self.loginButton.hidden = !self.model.isBiometricAuthenticationAllowed;
+    self.loginButton.hidden = !self.model.hasPinSet || !self.model.isBiometricAuthenticationAllowed;
 }
 
 @end

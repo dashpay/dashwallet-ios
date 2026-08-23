@@ -130,7 +130,7 @@ class SelectCoinViewModel: ObservableObject {
 
             let fiatCurrency = App.fiatCurrency
             let formatter = makePriceFormatter(for: fiatCurrency)
-            let networkLabels = normalizedNetworkLabels(await swapProvider.networkLabels(for: pools))
+            let networkLabels = await swapProvider.networkLabels(for: pools)
             let haltedAssets = await swapProvider.haltedAssets(from: inboundAddresses, pools: pools)
             let items = makeCoinItems(
                 pools: pools,
@@ -197,13 +197,6 @@ class SelectCoinViewModel: ObservableObject {
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
         return formatter
-    }
-
-    private func normalizedNetworkLabels(_ labels: [String: String]) -> [String: String] {
-        // Both Buy and Sell now route exclusively through NEAR intents (mayaOnly coins are
-        // hidden and the quote layer forces NEAR), so a "Multiple networks" label is never
-        // accurate — a both-routable coin effectively resolves to a single provider (NEAR).
-        return labels.mapValues { $0 == RouteProvider.multiple.shortLabel ? RouteProvider.near.shortLabel : $0 }
     }
 
     // MARK: - Private: Chain label

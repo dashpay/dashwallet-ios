@@ -1,6 +1,8 @@
 /* No comment provided by engineer. */
 " " = " ";
 
+" or " = " یا ";
+
 /* CrowdNode */
 " Privacy Policy " = " Privacy Policy ";
 
@@ -16,11 +18,20 @@
 /* Dash DEX / dex_error_blacklisted */
 "%@ can't be swapped at the moment." = "%@ can't be swapped at the moment.";
 
+/* DashPay Invitations */
+"%@ couldn't be found on the Dash network to send them a contact request." = "‏%@ در شبکه دش پیدا نشد تا بتوان برایش درخواست تماس فرستاد.";
+
+/* Usernames */
+"%@ Dash available" = "‏%@ دش در دسترس";
+
 /* DashPay Contacts */
 "%@ DASH sent to %@" = "%1$@ DASH sent to %2$@";
 
 /* Maya/SwapKit order preview */
 "%@ fee" = "%@ fee";
+
+/* No comment provided by engineer. */
+"%@ has accepted your contact request" = "‏%@ درخواست تماس شما را پذیرفت";
 
 /* Dash DEX */
 "%@ has received your transaction and is processing the swap." = "%@ has received your transaction and is processing the swap.";
@@ -49,6 +60,12 @@
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
 
+/* Raw transaction inspector */
+"%d bytes" = "‏%d بایت";
+
+/* Network fee in duffs (1 DASH = 100,000,000 duffs) */
+"%d duffs" = "‏%d duffs";
+
 /* Voting - multiple keys warning */
 "%d votes will be cast as you have multiple voting keys stored in the wallet" = "%dرای در نظر گرفته می شود چون چند کلید رای‌دهی در کیف پول‌تان دارید";
 
@@ -60,6 +77,9 @@
 
 /* Voting */
 "%ld duplicates" = "%ld duplicates";
+
+/* Usernames */
+"%ld of %ld deposits" = "‏%ld از %ld واریز";
 
 /* Voting */
 "%ld requests" = "%ld requests";
@@ -136,6 +156,9 @@
 /* No comment provided by engineer. */
 "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?" = "\"%@\" is not a recovery phrase word. Would you like to try to recover the correct word that should be in its place?";
 
+/* Balance info sheet */
+"A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames." = "موجودی اعتباری روی Dash Platform که برای پرداخت‌های آنی میان نشانی‌های Platform و برای قابلیت‌هایی مانند نام کاربری به کار می‌رود.";
+
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue.";
 
@@ -154,8 +177,15 @@
 /* No comment provided by engineer. */
 "About" = "اطلاعات بیشتر";
 
+/* DashPay FAQ title */
+"About DashPay" = "درباره DashPay";
+
 /* No comment provided by engineer. */
 "About me" = "درباره م";
+
+"Abstain" = "رأی ممتنع";
+
+"Abstain on “%@”" = "درباره «%@» ممتنع بمان";
 
 /* No comment provided by engineer. */
 "Accept" = "قبول";
@@ -178,17 +208,41 @@
 /* CrowdNode */
 "Account Recovery" = "بازیابی حساب";
 
+/* Masternode status */
+"Active" = "فعال";
+
+/* No comment provided by engineer. */
+"Activity" = "فعالیت";
+
+/* Balance info sheet */
+"Activity is public but not easy to trace" = "فعالیت عمومی است اما ردگیری آن آسان نیست";
+
 /* No comment provided by engineer. */
 "Add" = "اضافه کردن";
 
+/* DashPay Invitations */
+"Add %@ as a contact" = "افزودن %@ به‌عنوان مخاطب";
+
 /* DashPay Contacts */
 "Add %@ as a contact to pay them directly by username and keep a shared history of your payments." = "Add %@ as a contact to pay them directly by username and keep a shared history of your payments.";
+
+/* Add <username> as your contact... */
+"Add %@ as your contact to Pay Directly to Username and Retain Mutual Transaction History" = "‏%@ را به‌عنوان مخاطب اضافه کنید تا مستقیماً به نام کاربری پرداخت کنید و تاریخچه تراکنش‌های مشترک را نگه دارید";
+
+/* Usernames */
+"Add %@ Dash to your Shielded balance and let it rest a few hours to register without linking your username to your other funds." = "‏%@ دش به موجودی محافظت‌شده خود بیفزایید و بگذارید چند ساعت بماند تا ثبت‌نام، نام کاربری‌تان را به دیگر دارایی‌هایتان پیوند ندهد.";
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "یک تماس جدید اضافه کنید";
 
 /* Wallets */
 "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase." = "Add another wallet to this device. You can create a brand-new wallet or restore one from its recovery phrase.";
+
+/* Usernames */
+"Add at least %@ Dash to your Shielded balance" = "دست‌کم %@ دش به موجودی محافظت‌شده خود بیفزایید";
+
+/* Usernames */
+"Add to your Shielded balance now and register your username privately a few hours later" = "همین حالا موجودی محافظت‌شده را شارژ کنید و چند ساعت بعد نام کاربری‌تان را به‌صورت خصوصی ثبت کنید";
 
 /* Wallets */
 "Add Wallet" = "Add Wallet";
@@ -227,6 +281,10 @@
 /* No comment provided by engineer. */
 "All" = "همه";
 
+"All nodes at once" = "همه گره‌ها یکجا";
+
+"All of your masternodes have voted on this username. To change a vote, vote again from the contender you now prefer." = "همه مسترنودهای شما به این نام کاربری رأی داده‌اند. برای تغییر رأی، به داوطلبی که اکنون ترجیح می‌دهید دوباره رأی دهید.";
+
 /* CSV Export */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
 
@@ -244,6 +302,9 @@
 
 /* ZenLedger */
 "Allow sending all transactions from Dash Wallet to Zenledger?" = "اجازه ارسال همه تراکنش‌‌ها از دش والت به ذن‌لجر را می‌دهید؟ ";
+
+/* Balance info sheet */
+"Almost instantaneous to sync balances" = "همزمان‌سازی موجودی‌ها تقریباً آنی است";
 
 /* DashPay Contacts */
 "Already a contact" = "Already a contact";
@@ -266,8 +327,14 @@
 /* Maya */
 "Amount too small to cover fees" = "Amount too small to cover fees";
 
+/* Balance info sheet */
+"Amounts and addresses are public on the blockchain" = "مبالغ و نشانی‌ها روی بلاک‌چین عمومی هستند";
+
 /* No comment provided by engineer. */
 "An error occurred" = "An error occurred";
+
+/* DashPay FAQ */
+"An Ethereum account is one reusable address: your entire balance and payment history sit publicly under it, and a name (like an ENS domain) typically points straight at that address for anyone to resolve. DashPay is the opposite shape — the name resolves to an identity, not a payment address, and actual payment addresses stay inside encrypted contact exchanges, fresh for each contact." = "حساب اتریوم یک نشانی قابل‌استفاده مکرر است: کل موجودی و تاریخچه پرداخت‌های شما به‌صورت عمومی زیر آن قرار دارد و یک نام (مانند دامنه ENS) معمولاً مستقیماً به همان نشانی اشاره می‌کند تا هر کسی بتواند آن را بازگشایی کند. DashPay درست برعکس است — نام به یک هویت بازگشایی می‌شود نه به نشانی پرداخت، و نشانی‌های پرداخت واقعی درون تبادل‌های رمزگذاری‌شده با مخاطبان می‌مانند و برای هر مخاطب تازه‌اند.";
 
 /* No comment provided by engineer. */
 "An intuitive and familiar experience across all your devices" = "تجربه‌ای ساده و آشنا روی همه دستگاه‌ها";
@@ -280,6 +347,9 @@
 
 /* Usernames */
 "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved" = "Any username that has a number 2-9, is more than 20 characters or that has a hyphen will be automatically approved";
+
+/* Balance info sheet */
+"Anyone who knows an address can view its history" = "هر کسی که یک نشانی را بداند می‌تواند تاریخچه‌اش را ببیند";
 
 /* AboutDash */
 "App version" = "App version";
@@ -296,6 +366,10 @@
 /* No comment provided by engineer. */
 "Apply" = "اعمال";
 
+"Approve" = "تأیید";
+
+"Approving a specific request can only be done one username at a time." = "تأیید یک درخواست مشخص تنها برای یک نام کاربری در هر بار ممکن است.";
+
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
 
@@ -310,6 +384,9 @@
 
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
+
+/* Raw transaction inspector */
+"As text" = "به‌صورت متن";
 
 /* DashSpend */
 "at" = "در";
@@ -329,10 +406,14 @@
 /* DashSpend/Maya */
 "Authentication cancelled" = "Authentication cancelled";
 
+"Authentication cancelled. Your vote was not cast." = "احراز هویت لغو شد. رأی شما ثبت نشد.";
+
 /* DashPay
    DashPay identity registration
    InternalTransfer */
 "Authentication failed" = "Authentication failed";
+
+"Authentication failed. Your vote was not cast." = "احراز هویت ناموفق بود. رأی شما ثبت نشد.";
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "Authentication is unvailable";
@@ -354,6 +435,8 @@
 
 /* DashPay Contacts */
 "Available: %@ DASH" = "Available: %@ DASH";
+
+"Award “%@” to this contender" = "«%@» را به این داوطلب بده";
 
 /* Dash DEX */
 "Back home" = "Back home";
@@ -386,10 +469,16 @@
 "Balance" = "موجودی";
 
 /* CrowdNode */
+"Balance after" = "موجودی پس از آن";
+
+/* CrowdNode */
 "Balance On CrowdNode" = "Balance On CrowdNode";
 
 /* CrowdNode */
 "Balance: " = "Balance: ";
+
+/* Balance info sheet */
+"Balances and transfers are not publicly visible" = "موجودی‌ها و انتقال‌ها به‌صورت عمومی دیده نمی‌شوند";
 
 /* Coinbase/Payment Methods */
 "Bank Account" = "Bank Account";
@@ -418,6 +507,9 @@
 /* No comment provided by engineer. */
 "Biometrics Access Required" = "Biometrics Access Required";
 
+/* SPV diagnostics */
+"Birth height saved — the raised scan floor applies from the next launch." = "ارتفاع آغاز ذخیره شد — کف پویش بالا رفته از اجرای بعدی اعمال می‌شود.";
+
 /* Voting */
 "Block" = "بلاک";
 
@@ -433,11 +525,22 @@
 /* Voting */
 "Blocked '%@' username" = "Blocked '%@' username";
 
+/* Identities: this key only signs for one data contract */
+"Bound to contract" = "مقیدشده به قرارداد";
+
+/* Identities: this key only signs one document type of one data contract */
+"Bound to contract, document type “%@”" = "مقیدشده به قرارداد، نوع سند «%@»";
+
 /* No comment provided by engineer. */
 "Broadcasting" = "Broadcasting";
 
+"Browsing only" = "فقط مرور";
+
 /* InternalTransfer recovery */
 "Building the privacy proof can take up to a minute. Keep the app open." = "Building the privacy proof can take up to a minute. Keep the app open.";
+
+/* Log export */
+"Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files" = "گزارش‌های تشخیصی اخیر را در یک فایل zip جمع می‌کند تا با AirDrop یا ایمیل بفرستید یا در «فایل‌ها» ذخیره کنید";
 
 /* Buy
    buy */
@@ -518,8 +621,13 @@
 /* DashSpend */
 "Cashier instructions" = "Cashier instructions";
 
+"Cast vote" = "ثبت رأی";
+
 /* DashSpend */
 "Challenge" = "Challenge";
+
+/* SPV sync */
+"Change peers" = "تغییر همتاها";
 
 /* No comment provided by engineer. */
 "Change PIN" = "تغییر پین کد";
@@ -536,14 +644,30 @@
 /* Dash DEX */
 "Checking amount…" = "Checking amount…";
 
+"Checking…" = "در حال بررسی…";
+
+"Choice" = "انتخاب";
+
 /* Choose your Dash username */
 "Choose your" = "Choose your";
 
 /* No comment provided by engineer. */
 "Choose Your Username" = "نام کاربری‌تان را انتخاب کنید";
 
+/* DashPay Invitations */
+"Claim your invitation" = "دعوتنامه‌تان را دریافت کنید";
+
+/* No comment provided by engineer. */
+"Claimable balance" = "موجودی قابل دریافت";
+
 /* No comment provided by engineer. */
 "Claimed" = "پذیرفته‌شده";
+
+/* SPV diagnostics */
+"Clear & resync" = "پاک‌سازی و همزمان‌سازی مجدد";
+
+/* SPV diagnostics */
+"Clear chain data and resync?" = "داده‌های زنجیره پاک و دوباره همزمان‌سازی شود؟";
 
 /* Maya */
 "Clipboard" = "Clipboard";
@@ -560,8 +684,13 @@
 /* No comment provided by engineer. */
 "Close App" = "Close App";
 
+"Closing" = "در حال بسته شدن";
+
 /* Dash Portal */
 "Coinbase" = "کوین‌بیس";
+
+/* Raw transaction inspector */
+"Coinbase (new coins)" = "Coinbase (سکه‌های جدید)";
 
 /* Coinbase Two Factor Auth */
 "Coinbase 2FA code" = "کد 2FA کوین‌بیس";
@@ -573,7 +702,19 @@
 "CoinJoin is no longer supported" = "CoinJoin is no longer supported";
 
 /* CoinJoin */
+"CoinJoin is no longer supported — choose where to move your mixed coins." = "‏CoinJoin دیگر پشتیبانی نمی‌شود — انتخاب کنید سکه‌های ترکیب‌شده‌تان کجا منتقل شوند.";
+
+/* CoinJoin */
 "CoinJoin Withdrawals" = "CoinJoin Withdrawals";
+
+/* Masternodes */
+"Collateral" = "وثیقه";
+
+/* DashPay intro: feature title */
+"Coming soon" = "به‌زودی";
+
+/* Shielded transfer status */
+"Completed" = "تکمیل شد";
 
 /* No comment provided by engineer. */
 "Confirm" = "تائید";
@@ -587,6 +728,11 @@
 /* No comment provided by engineer. */
 "Confirm Platform Send" = "Confirm Platform Send";
 
+/* SPV diagnostics */
+"Confirmed" = "تأییدشده";
+
+"Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. The running session keeps its old scan floor — quit and reopen the app to start." = "تأیید، ارتفاع آغاز %u را ذخیره می‌کند و در اجرای بعدی برنامه داده‌های زنجیره این شبکه را پاک کرده، دوباره دانلود می‌کند و فیلترها را از آن ارتفاع بازپویش می‌کند. نشست جاری کف پویش قبلی خود را نگه می‌دارد — برنامه را ببندید و دوباره باز کنید تا آغاز شود.";
+
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "کیف‌های پول‌تان را به پلتفرم ذن‌لجر متصل کنید. اطلاعات بیشتر و آغاز به کار با تراکنش‌هایتان در دش والت";
 
@@ -597,6 +743,9 @@
 /* CrowdNode */
 "Connected Dash address" = "اتصال به نشانی دش برقرار است";
 
+/* SPV sync */
+"Connected peers" = "همتاهای متصل";
+
 /* About screen tech info: SPV state */
 "connecting" = "connecting";
 
@@ -605,6 +754,9 @@
 
 /* DashSpend */
 "Connection Error" = "Connection Error";
+
+/* Balance info sheet section */
+"Cons" = "معایب";
 
 /* DashSpend */
 "Contact %@ Support" = "Contact %@ Support";
@@ -616,6 +768,9 @@
 /* Maya */
 "Contact Maya Support" = "Contact Maya Support";
 
+/* DashPay Invitations */
+"Contact request failed" = "درخواست تماس ناموفق بود";
+
 /* DashPay */
 "Contact request not found" = "Contact request not found";
 
@@ -624,6 +779,12 @@
 
 /* DashPay Contacts */
 "Contact request sent" = "Contact request sent";
+
+/* DashPay Contacts: success card after sending a request */
+"Contact request sent to %@" = "درخواست تماس برای %@ فرستاده شد";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "درخواست‌های تماس";
 
 /* DashPay Contacts */
 "Contact Requests (%d)" = "Contact Requests (%d)";
@@ -637,11 +798,16 @@
 /* No comment provided by engineer. */
 "Contacts" = "تماس‌ها";
 
+"Contender %@" = "داوطلب %@";
+
 /* Usernames */
 "Contested name" = "Contested name";
 
 /* No comment provided by engineer. */
 "Continue" = "ادامه";
+
+/* DashPay Invitations */
+"Continue to pick your username. The invitation pays the registration fee." = "ادامه دهید تا نام کاربری‌تان را انتخاب کنید. دعوتنامه هزینه ثبت را می‌پردازد.";
 
 /* Maya */
 "Conversion failed" = "Conversion failed";
@@ -670,6 +836,9 @@
 /* No comment provided by engineer. */
 "Copy Invitation Link" = "کپی لینک دعوتنامه";
 
+/* Raw transaction inspector */
+"Copy Raw Transaction" = "کپی تراکنش خام";
+
 /* No comment provided by engineer. */
 "Copy text" = "Copy text";
 
@@ -682,6 +851,9 @@
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Could not automatically recover missing or incorrect words";
 
+/* Log export */
+"Could not create the log archive: %@" = "ساخت بایگانی گزارش‌ها ممکن نشد: %@";
+
 /* No comment provided by engineer. */
 "Could not find exchange rate." = " نرخ‌های تبدیل پیدا نشد.";
 
@@ -691,6 +863,9 @@
 /* SwapKit */
 "Could not load Buy Dash options — please check your connection and try again" = "Could not load Buy Dash options — please check your connection and try again";
 
+/* Identities */
+"Could not refresh %d identities" = "به‌روزرسانی %d هویت ممکن نشد";
+
 /* Wallets */
 "Could not rename this wallet." = "Could not rename this wallet.";
 
@@ -699,6 +874,9 @@
 
 /* InternalTransfer */
 "Could not resolve a destination wallet address" = "Could not resolve a destination wallet address";
+
+/* Masternodes */
+"Couldn't fetch the balance (network error). Try Refresh." = "دریافت موجودی ممکن نشد (خطای شبکه). به‌روزرسانی را امتحان کنید.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
@@ -749,8 +927,14 @@
 /* Usernames */
 "Create your username" = "نام کاربری‌تان را ایجاد کنید";
 
+/* No comment provided by engineer. */
+"Create your Username, find friends & family with their usernames and add them to your contacts" = "نام کاربری‌تان را بسازید، دوستان و خانواده را با نام کاربری‌شان بیابید و به مخاطبانتان بیفزایید";
+
 /* Coinbase/Payment Methods */
 "Credit Card" = "کارت اعتباری";
+
+/* Masternodes */
+"Credits" = "اعتبارها";
 
 /* Translate it as short as possible! (24 symbols max) */
 "CrowdNode" = "CrowdNode";
@@ -828,11 +1012,23 @@
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Dash payments can't be less than %@";
 
+"Dash Platform has not indexed this contest yet. Vote counts appear here once it does." = "‏Dash Platform هنوز این رقابت را نمایه نکرده است. شمارش رأی‌ها پس از آن اینجا نمایان می‌شود.";
+
+"Dash Platform is not connected yet. Wait for syncing to finish and try again." = "‏Dash Platform هنوز متصل نشده است. تا پایان همزمان‌سازی صبر کنید و دوباره تلاش کنید.";
+
+/* Send confirm sheet */
+"Dash sent to a wrong address can't be recovered. Make sure the address is exactly the one you intend to pay." = "دشی که به نشانی اشتباه فرستاده شود بازیابی‌پذیر نیست. مطمئن شوید نشانی دقیقاً همانی است که قصد پرداخت به آن را دارید.";
+
+"Dash stores usernames in a look-alike-safe form, so the stored name can differ from what each person typed." = "دش نام‌های کاربری را به شکلی مقاوم در برابر شباهت ظاهری ذخیره می‌کند، پس نام ذخیره‌شده ممکن است با آنچه هر کس تایپ کرده متفاوت باشد.";
+
 /* No comment provided by engineer. */
 "Dash username" = "Dash username";
 
 /* DashSpend confirmation */
 "Dash Wallet" = "دش والت";
+
+/* CoinJoin */
+"Dash Wallet balance" = "موجودی کیف پول دش";
 
 /* AboutDash */
 "Dash Wallet is an open sourced app forked from Bitcoin Wallet" = "Dash Wallet is an open sourced app forked from Bitcoin Wallet";
@@ -840,8 +1036,20 @@
 /* Buy Dash */
 "Dash Wallet on this device" = "دش والت روی این دستگاه";
 
+/* DashPay */
+"DashPay" = "DashPay";
+
+/* DashPay: title of the enable success sheet */
+"DashPay enabled" = "‏DashPay فعال شد";
+
 /* No comment provided by engineer. */
 "DashPay Invitation" = "DashPay Invitation";
+
+/* DashPay FAQ */
+"DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses." = "‏DashPay تجربه پرداخت اجتماعی دش است که روی Dash Platform ساخته شده. یک نام کاربری ثبت می‌کنید، کاربران دیگر را به‌عنوان مخاطب می‌افزایید و با نام به آنها پرداخت می‌کنید — دیگر خبری از کپی کردن نشانی نیست.";
+
+/* DashPay intro: pitch paragraph */
+"DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person." = "‏DashPay نشانی‌های بلند و نامفهوم را با نام کاربری جایگزین می‌کند. دوستان را به‌عنوان مخاطب بیفزایید، به یک نام پول بفرستید و هر پرداخت را بر اساس شخص مرتب نگه دارید.";
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "DashPay Upgrade Fee";
@@ -860,6 +1068,8 @@
 
 /* Voting */
 "Date: Old to new" = "Date: Old to new";
+
+"Deadline unknown" = "مهلت نامعلوم";
 
 /* DashSpend */
 "Decrease quantity" = "Decrease quantity";
@@ -895,6 +1105,9 @@
 /* CrowdNode */
 "Deposit sent" = "ارسال واریز";
 
+/* Identities: BIP-32 style derivation path of this key */
+"Derivation path" = "مسیر اشتقاق";
+
 /* No comment provided by engineer. */
 "Destination" = "Destination";
 
@@ -906,6 +1119,9 @@
 
 /* No comment provided by engineer. */
 "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device." = "DEVICE SECURITY COMPROMISED\nAny 'jailbreak' app can access any other app's keychain data (and steal your Dash). Wipe this wallet immediately and restore on a secure device.";
+
+/* Identities: this identity key was disabled on Platform */
+"Disabled" = "غیرفعال";
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "قطع اتصال به حساب کوین‌بیس";
@@ -938,11 +1154,17 @@
 /* No comment provided by engineer. */
 "Done" = "انجام شد";
 
+/* Usernames */
+"Done — your balance has rested long enough" = "انجام شد — موجودی شما به اندازه کافی مانده است";
+
 /* DashSpend */
 "Double tap to change quantity" = "Double tap to change quantity";
 
 /* SegmentedControl */
 "Double tap to select" = "Double tap to select";
+
+/* Send confirm sheet */
+"Double-check the address" = "نشانی را دوباره بررسی کنید";
 
 /* Edit profile — usernames list section header
    SDK identity profile sheet — usernames list */
@@ -966,6 +1188,10 @@
 /* No comment provided by engineer. */
 "Each invitation will be funded with this amount so that the receiver can quickly create their username on the Dash Network" = "برای هر دعوت، مبلغی اختصاص می‌یابد تا دریافت‌کننده بتواند نام کاربری‌اش را در شبکه دش ایجاد کتد.";
 
+"Each masternode has one live vote per contest. You can change it later, but Dash Platform allows only 5 votes in total per masternode per contest." = "هر مسترنود در هر رقابت یک رأی معتبر دارد. می‌توانید بعداً آن را تغییر دهید، اما Dash Platform در هر رقابت تنها ۵ رأی در مجموع برای هر مسترنود اجازه می‌دهد.";
+
+"Each tap votes with one more node, so you choose how many to link together." = "هر ضربه یک گره دیگر را به رأی‌گیری می‌افزاید، پس خودتان انتخاب می‌کنید چند تا را به هم پیوند دهید.";
+
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "قدیمی‌تر";
 
@@ -974,6 +1200,9 @@
 
 /* No comment provided by engineer. */
 "Easily stake Dash and earn passive income with a few simple clicks." = "با چند کلیک ساده، به راحتی دش را سپرده‌گذاری کرده و درآمدی جانبی برای خودتان ایجاد کنید. ";
+
+/* SPV diagnostics */
+"Edit birth height" = "ویرایش ارتفاع آغاز";
 
 /* No comment provided by engineer. */
 "Edit Profile" = "ویرایش پروفایل";
@@ -990,11 +1219,22 @@
 /* CrowdNode */
 "Email" = "ایمیل";
 
+/* DashPay: confirm button of the Enable DashPay sheet */
+"Enable" = "فعال‌سازی";
+
+/* DashPay: add the identity keys other users need to send contact requests */
+"Enable DashPay" = "فعال‌سازی DashPay";
+
 /* No comment provided by engineer. */
 "Enable Face ID" = "Enable Face ID";
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "Enable Touch ID";
+
+/* DashPay FAQ */
+"Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "فعال‌سازی DashPay یک کارمزد شبکه کوچک و یک‌باره دارد که از موجودی اعتباری هویت شما پرداخت می‌شود. برآورد دقیق پیش از تأیید نشان داده می‌شود. فرستادن درخواست تماس و پرداخت، کارمزدهای معمول شبکه را دارد.";
+
+"Ending soonest" = "زودتر از همه پایان می‌یابد";
 
 /* Swap */
 "Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work." = "Enter a valid %1$@ address. %2$@ here is on %3$@, so an Ethereum (0x…) address won’t work.";
@@ -1056,6 +1296,17 @@
 /* No comment provided by engineer. */
 "Error updating your profile" = "Error updating your profile";
 
+/* DashPay: fee line of the Enable DashPay confirmation */
+"Estimated network fee" = "کارمزد شبکه برآوردی";
+
+"Every node votes together. Faster, but it publicly links your masternodes to each other." = "همه گره‌ها با هم رأی می‌دهند. سریع‌تر است، اما مسترنودهای شما را به‌صورت عمومی به هم پیوند می‌زند.";
+
+/* SPV sync peer type */
+"Evonode" = "Evonode";
+
+/* Masternode keys */
+"Evonode Operator keys" = "کلیدهای اپراتور Evonode";
+
 /* Maya */
 "Exchange rate not available" = "Exchange rate not available";
 
@@ -1074,11 +1325,20 @@
 /* No comment provided by engineer. */
 "Export CSV" = "Export CSV";
 
+/* Log export */
+"Export Logs" = "برون‌بری گزارش‌ها";
+
 /* Extended public key (BIP44) */
 "Extended public key (BIP44)" = "Extended public key (BIP44)";
 
 /* No comment provided by engineer. */
+"External address" = "نشانی بیرونی";
+
+/* No comment provided by engineer. */
 "Face ID limit" = "Face ID limit";
+
+/* No comment provided by engineer. */
+"Failed" = "ناموفق";
 
 /* No comment provided by engineer. */
 "Failed to load barcode" = "Failed to load barcode";
@@ -1113,11 +1373,17 @@
 /* Balance */
 "Fetching rates…" = "Fetching rates…";
 
+/* Masternodes */
+"Fetching…" = "در حال دریافت…";
+
 /* Coinbase/Payment Methods */
 "Fiat Account" = "Fiat Account";
 
 /* No comment provided by engineer. */
 "Filter" = "فیلتر";
+
+/* SPV sync phase */
+"Filter headers" = "سرآیندهای فیلتر";
 
 /* No comment provided by engineer. */
 "Filter transactions" = "Filter transactions";
@@ -1137,11 +1403,17 @@
 /* DashPay Contacts */
 "Find a user and add them to your contacts." = "Find a user and add them to your contacts.";
 
+/* No comment provided by engineer. */
+"Find a user on the Dash Network" = "کاربری را در شبکه دش بیابید";
+
 /* Explore Dash */
 "Find ATMs where you can buy or sell Dash" = "Find ATMs where you can buy or sell Dash";
 
 /* No comment provided by engineer. */
 "Find ATMs where you can buy or sell Dash." = "Find ATMs where you can buy or sell Dash.";
+
+/* Identities */
+"Find identities" = "یافتن هویت‌ها";
 
 /* Explore Dash */
 "Find merchants that accept Dash payments" = "Find merchants that accept Dash payments";
@@ -1191,6 +1463,12 @@
 /* No comment provided by engineer. */
 "Forgot PIN?" = "پین کد را فراموش کردید؟";
 
+/* Identities */
+"Found %d new identities" = "‏%d هویت جدید پیدا شد";
+
+/* Identities */
+"Found 1 new identity" = "۱ هویت جدید پیدا شد";
+
 /* No comment provided by engineer. */
 "Found missing word:\n%@" = "Found missing word:\n%@";
 
@@ -1239,6 +1517,18 @@
 /* SPV diagnostics */
 "Full rescan (from 0) — slow" = "Full rescan (from 0) — slow";
 
+/* Usernames */
+"Fund your username from your Shielded balance. Add funds a few hours ahead — the short rest keeps your username unlinkable to your other Dash." = "نام کاربری‌تان را از موجودی محافظت‌شده تأمین کنید. چند ساعت پیش‌تر وجه را بیفزایید — این توقف کوتاه، نام کاربری‌تان را از دیگر دش‌هایتان غیرقابل‌پیوند نگه می‌دارد.";
+
+/* Usernames */
+"Funded from your Shielded balance — your username can't be linked to your other Dash." = "از موجودی محافظت‌شده تأمین شد — نام کاربری‌تان به دیگر دش‌هایتان پیوند نمی‌خورد.";
+
+/* Shielded transfer status */
+"Funds locked — finishing transfer" = "وجوه قفل شد — در حال تکمیل انتقال";
+
+/* CoinJoin */
+"Funds moved" = "وجوه منتقل شد";
+
 /* CrowdNode */
 "Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "با سپرده‌گذاری در مسترنودهای دش، حتی به میزان ۰.۵ دش، پاداش دریافت کنید. ";
 
@@ -1253,6 +1543,9 @@
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "دریافت قیمت تخمینی";
+
+/* Usernames */
+"Get ready to join DashPay" = "برای پیوستن به DashPay آماده شوید";
 
 /* CrowdNode */
 "Get Rewards Instantly" = "دریافت آنی پاداش";
@@ -1303,16 +1596,35 @@
 "Google Pay" = "Google Pay";
 
 /* No comment provided by engineer. */
+"Got it" = "متوجه شدم";
+
+/* Governance */
+"Governance" = "حاکمیت";
+
+/* No comment provided by engineer. */
 "Grant GPS permissions so we can show you locations near you." = "دریافت اجازه استفاده از جی‌پی‌اس به منظور نمایش موقعیت‌های نزدیک به شما";
 
 /* Voting */
 "Has blocked votes" = "Has blocked votes";
+
+/* Username has requested to be your friend */
+"has requested to be your friend" = "درخواست کرده دوست شما باشد";
+
+/* DashPay Invitations */
+"Have an invitation?" = "دعوتنامه دارید؟";
 
 /* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "کنترل بیشتری روی کیف پول‌تان داشته باشید و آن را بر اساس نیازهایتان، تغییر دهید. ";
 
 /* No comment provided by engineer. */
 "header #%d of %d" = "header #%1$d of %2$d";
+
+/* SPV sync phase */
+"Headers" = "سرآیندها";
+
+/* DashPay Contacts */
+/* Masternodes */
+"Height %u" = "ارتفاع %u";
 
 /* CrowdNode */
 "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device";
@@ -1332,6 +1644,9 @@
 /* Voting */
 "High to low" = "زیاد به کم";
 
+/* Balance info sheet */
+"Higher fees around 7 cents (still lower than other blockchains offering similar privacy)" = "کارمزدهای بالاتر حدود ۷ سنت (باز هم کمتر از بلاک‌چین‌های دیگر با حریم خصوصی مشابه)";
+
 /* No comment provided by engineer. */
 "History" = "سابقه";
 
@@ -1343,6 +1658,15 @@
 
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "چگونه تست دش دریافت کنم؟ ";
+
+/* DashPay FAQ */
+"How does this compare to Bitcoin in terms of privacy?" = "از نظر حریم خصوصی در مقایسه با بیت‌کوین چگونه است؟";
+
+/* DashPay FAQ */
+"How does this compare to Ethereum Accounts in terms of privacy?" = "از نظر حریم خصوصی در مقایسه با حساب‌های اتریوم چگونه است؟";
+
+/* DashPay FAQ */
+"How private is DashPay?" = "‏DashPay چقدر خصوصی است؟";
 
 /* CrowdNode */
 "How to confirm your API Dash address" = "چطور نشانی ای‌پی‌آی دش‌تان را تائید کنید";
@@ -1380,14 +1704,29 @@
 /* No comment provided by engineer. */
 "I wrote it down" = "عبارت بازیابی را نوشتم";
 
+/* Identities */
+"Identities" = "هویت‌ها";
+
 /* Voting */
 "Identity" = "هویت";
+
+/* Destination of an identity funding asset lock */
+"Identity credits" = "اعتبارهای هویت";
 
 /* SDK identity profile sheet */
 "Identity ID" = "Identity ID";
 
+/* Identities */
+"Identity index" = "نمایه هویت";
+
+/* Asset lock funding a DashPay identity registration */
+"Identity registration" = "ثبت هویت";
+
 /* DashPay */
 "Identity registration already in progress" = "Identity registration already in progress";
+
+/* Asset lock topping up a DashPay identity's credits */
+"Identity top-up" = "شارژ هویت";
 
 /* About screen tech info: SPV state */
 "idle" = "idle";
@@ -1462,6 +1801,10 @@
 "In the payment section of your checkout, select \"gift card\" and enter your card number and pin." = "In the payment section of your checkout, select \"gift card\" and enter your card number and pin.";
 
 /* No comment provided by engineer. */
+/* Masternode status */
+"Inactive" = "غیرفعال";
+
+/* No comment provided by engineer. */
 "Income" = "درآمد";
 
 /* DashSpend */
@@ -1472,6 +1815,15 @@
 
 /* Buy Sell Portal */
 "Initializing" = "Initializing";
+
+/* Raw transaction inspector */
+"Input %d" = "ورودی %d";
+
+/* Raw transaction inspector */
+"Input %d — outpoint" = "ورودی %d — outpoint";
+
+/* Raw transaction inspector */
+"Inputs (%d)" = "ورودی‌ها (%d)";
 
 /* No comment provided by engineer. */
 "Insufficient funds" = "موجودی ناکافی";
@@ -1548,6 +1900,9 @@
 /* No comment provided by engineer. */
 "Invitation Fee" = "کارمزد دعوت";
 
+/* DashPay Invitations */
+"Invitation from %@" = "دعوتنامه از %@";
+
 /* No comment provided by engineer. */
 "Invitation used by" = "دعوتنامه‌های استفاده شده توسط";
 
@@ -1556,6 +1911,9 @@
 
 /* No comment provided by engineer. */
 "Invite" = "دعوت";
+
+/* No comment provided by engineer. */
+"Invite Someone to join the Dash Network" = "کسی را به شبکه دش دعوت کنید";
 
 /* No comment provided by engineer. */
 "Invite your family, find your friends by searching their usernames" = "با جستجوی نام‌های کاربری، دوستان‌تان را بیابید و اعضای خانواده‌تان را دعوت کنید.";
@@ -1568,6 +1926,9 @@
 
 /* No comment provided by engineer. */
 "Invite your friends and family to join the Dash Network." = "دوستان و اعضای خانواده‌تان را به شبکه دش دعوت کنید";
+
+/* No comment provided by engineer. */
+"Invite your friends and family to the Dash Network" = "دوستان و خانواده‌تان را به شبکه دش دعوت کنید";
 
 /* No comment provided by engineer. */
 "iOS Dash Wallet: %@ Reported issue" = "iOS Dash Wallet: %@ Reported issue";
@@ -1608,14 +1969,30 @@
 /* CrowdNode */
 "Joining the pool" = "پیوستن به مجموعه";
 
+/* CoinJoin */
+"Keep these coins private. Network and privacy fees apply." = "این سکه‌ها را خصوصی نگه دارید. کارمزد شبکه و کارمزد حریم خصوصی اعمال می‌شود.";
+
 /* No comment provided by engineer. */
 "Keep Wallet" = "Keep Wallet";
 
 /* Usernames */
 "Keep your passphrase safe" = "عبارت بازیابی را در جایی امن نگه دارید.";
 
+/* Identities: one identity public key, by its DPP key id */
+"Key #%d" = "کلید #%d";
+
+/* Identities: the public key bytes */
+"Key data" = "داده کلید";
+
+/* No comment provided by engineer. */
+/* Masternodes */
+"Key ownership" = "مالکیت کلید";
+
 /* No comment provided by engineer. */
 "Keypair" = "Keypair";
+
+/* Masternodes */
+"Keys" = "کلیدها";
 
 /* Explore Dash */
 "Last device sync" = "Last device sync";
@@ -1633,8 +2010,13 @@
 /* CoinJoin */
 "Later" = "Later";
 
+"Leading" = "پیشتاز";
+
 /* Maya */
 "Learn more" = "Learn more";
+
+/* DashPay intro: opens the FAQ */
+"Learn More" = "بیشتر بدانید";
 
 /* Info Screen */
 "Learn More..." = "Learn More...";
@@ -1693,6 +2075,9 @@
 /* Dash DEX */
 "Loading rates…" = "Loading rates…";
 
+/* Home */
+"Loading transactions" = "در حال بارگذاری تراکنش‌ها";
+
 /* Maya */
 "Loading..." = "Loading...";
 
@@ -1702,17 +2087,31 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Local Currency" = "واحد پول محلی";
 
+/* Identities */
+"Local Only" = "فقط محلی";
+
 /* No comment provided by engineer. */
 "Local requested amount: %@" = "Local requested amount: %@";
 
 /* Explore Dash/Merchants/Filters */
 "Location" = "موقعیت";
 
+"Lock" = "قفل";
+
+"Lock the name" = "قفل کردن نام";
+
+"Lock “%@” so nobody gets it" = "«%@» را قفل کن تا هیچ‌کس آن را نگیرد";
+
 /* No comment provided by engineer. */
 "Locked" = "قفل‌شده";
 
+"Locked — nobody receives this username" = "قفل‌شده — هیچ‌کس این نام کاربری را نمی‌گیرد";
+
 /* No comment provided by engineer. */
 "Locking funds" = "Locking funds";
+
+/* Raw transaction inspector */
+"Locktime" = "Locktime";
 
 /* Log in */
 "Log in" = "ورود به حساب";
@@ -1762,8 +2161,14 @@
 /* adjective, security level */
 "Low" = "پائین";
 
+/* Balance info sheet */
+"Low fees for everyday spending" = "کارمزد کم برای خرج روزمره";
+
 /* Voting */
 "Low to high" = "م به زیاد";
+
+/* Identities — the wallet's main identity */
+"Main" = "اصلی";
 
 /* No comment provided by engineer. */
 "Mainnet" = "Mainnet";
@@ -1784,7 +2189,14 @@
 "Masternode IP address" = "آی‌پی‌ آدرس مسترنود";
 
 /* Masternode keys */
+/* Tools menu */
+"Masternode Keychain" = "جاکلیدی مسترنود";
+
+/* Masternode keys */
 "Masternode keys" = "کلیدهای مسترنود";
+
+/* SPV sync phase */
+"Masternode list" = "فهرست مسترنودها";
 
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "masternode list #%1$d of %2$d";
@@ -1807,8 +2219,21 @@
 /* No comment provided by engineer. */
 "Masternode Update" = "به‌روزرسانی مسترند";
 
+"Masternode votes" = "رأی‌های مسترنود";
+
 /* Voting */
 "Masternode Voting Key" = "کلید رای‌گیری مسترنود";
+
+/* Tools menu */
+"Masternodes" = "مسترنودها";
+
+/* Masternodes */
+"Masternodes and evonodes registered with this wallet's keys will appear here after the wallet syncs." = "مسترنودها و evonodeهایی که با کلیدهای این کیف پول ثبت شده‌اند پس از همزمان‌سازی کیف پول اینجا نمایان می‌شوند.";
+
+/* Masternodes */
+"Masternodes and evonodes using this wallet's keys" = "مسترنودها و evonodeهایی که از کلیدهای این کیف پول استفاده می‌کنند";
+
+"Masternodes vote on names more than one person requested. You will be notified when voting ends." = "مسترنودها به نام‌هایی رأی می‌دهند که بیش از یک نفر خواسته است. پس از پایان رأی‌گیری به شما اطلاع داده می‌شود.";
 
 /* Contracted variant of 'Maximum' word */
 "Max" = "حداکثر";
@@ -1847,6 +2272,9 @@
 /* DashSpend */
 "Min: %@" = "Min: %@";
 
+/* Usernames */
+"Minimum met" = "حداقل تأمین شد";
+
 /* Transaction type: coinbase/masternode mining reward */
 "Mining Reward" = "Mining Reward";
 
@@ -1866,6 +2294,13 @@
 "More Control" = "مدیریت بیشتر";
 
 /* No comment provided by engineer. */
+"More Suggestions" = "پیشنهادهای بیشتر";
+
+"Most lock votes" = "بیشترین رأی قفل";
+
+"Most votes" = "بیشترین رأی";
+
+/* No comment provided by engineer. */
 "Move and Zoom your photo to find the perfect fit" = "حرکت دهید و روی عکس‌تان زوم کنید تا بهترین حالت را بیابید";
 
 /* CoinJoin */
@@ -1873,6 +2308,9 @@
 
 /* CoinJoin */
 "Move funds" = "Move funds";
+
+/* CoinJoin */
+"Move to your regular spendable balance." = "به موجودی عادی قابل‌خرج منتقل کنید.";
 
 /* CoinJoin */
 "Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported." = "Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported.";
@@ -1885,6 +2323,9 @@
 
 /* No comment provided by engineer. */
 "Moved to Address" = "Moved to Address";
+
+/* CoinJoin */
+"Moving funds" = "در حال انتقال وجوه";
 
 /* DashSpend */
 "Multiple" = "Multiple";
@@ -1904,6 +2345,9 @@
 /* No comment provided by engineer. */
 "Name" = "نام";
 
+/* DashPay FAQ */
+"Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers." = "سرویس‌های نام مانند Unstoppable Domains یک نام خوانا را به یک نشانی عمومی ثابت روی زنجیره نگاشت می‌کنند. هر کسی می‌تواند آن نام را بازگشایی کند و همه پرداخت‌هایی را که تا کنون به آن انجام شده ببیند. نام کاربری DashPay هرگز به‌صورت عمومی به نشانی پرداخت بازگشایی نمی‌شود — نشانی‌ها فقط درون تبادل رمزگذاری‌شده با هر مخاطب فاش می‌شوند، بنابراین نام و پول شما برای ناظران بیرونی بی‌ارتباط می‌ماند.";
+
 /* Swap route provider
    Swap route provider short */
 "NEAR" = "NEAR";
@@ -1913,6 +2357,8 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Need help? ";
+
+"Needs attention" = "نیازمند توجه";
 
 /* No comment provided by engineer. */
 "Network" = "Network";
@@ -1972,8 +2418,14 @@
 /* SwapKit */
 "No deposit address returned by SwapKit" = "No deposit address returned by SwapKit";
 
+/* Log export */
+"No diagnostic logs were found on this device. Logs are written from the next launch onward." = "هیچ گزارش تشخیصی روی این دستگاه پیدا نشد. گزارش‌ها از اجرای بعدی نوشته می‌شوند.";
+
 /* No comment provided by engineer. */
 "No funded Platform address has enough balance to cover this amount plus fees." = "No funded Platform address has enough balance to cover this amount plus fees.";
+
+/* Identities */
+"No Identities" = "بدون هویت";
 
 /* No connection */
 "No internet connection" = "No internet connection";
@@ -1982,7 +2434,22 @@
 "No locations found." = "No locations found.";
 
 /* local currency empty state */
+/* Masternodes */
+"No masternodes yet" = "هنوز مسترنودی نیست";
+
+/* local currency empty state */
 "No matches for \"%@\"" = "No matches for \"%@\"";
+
+"No matching contests" = "رقابت منطبقی نیست";
+
+/* Identities */
+"No new identities were found for this wallet" = "هویت جدیدی برای این کیف پول پیدا نشد";
+
+"No open contest matches that search." = "هیچ رقابت بازی با این جستجو منطبق نیست.";
+
+"No open contest matches that search. Names are stored in a normalized form, so “alice” is listed as “a11ce”." = "هیچ رقابت بازی با این جستجو منطبق نیست. نام‌ها به شکل هنجارشده ذخیره می‌شوند، پس «alice» به‌صورت «a11ce» فهرست می‌شود.";
+
+"No open contests" = "رقابت بازی نیست";
 
 /* Coinbase/Buy Dash */
 "No payment methods" = "No payment methods";
@@ -1993,11 +2460,19 @@
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
 
+/* SPV diagnostics */
+"No persisted wallet row found for the bound wallet." = "برای کیف پول مرتبط، ردیف ذخیره‌شده‌ای پیدا نشد.";
+
+/* DashPay */
+"No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing." = "هنوز نشانی Platform برای ثبت محافظت‌شده جایگزین در دسترس نیست. پس از پایان همزمان‌سازی کیف پول دوباره تلاش کنید.";
+
 /* Explore Dash/Merchants/Filters */
 "No Results Found" = "هیچ نتیجه‌ای یافت نشد";
 
 /* SwapKit */
 "No route available" = "No route available";
+
+"No usernames are being contested right now. Contests open when two or more people request the same name." = "هم‌اکنون هیچ نام کاربری‌ای مورد رقابت نیست. رقابت زمانی باز می‌شود که دو نفر یا بیشتر یک نام را بخواهند.";
 
 /* DashPay Contacts */
 "No usernames found" = "No usernames found";
@@ -2007,6 +2482,16 @@
 
 /* Voting */
 "No votes left" = "هیچ رایی باقی نمانده است. ";
+
+"No votes were cast" = "هیچ رأیی ثبت نشد";
+
+"Nobody gets it" = "هیچ‌کس آن را نمی‌گیرد";
+
+/* SPV sync peer type */
+"Node" = "گره";
+
+/* Raw transaction inspector */
+"Non-standard" = "غیر استاندارد";
 
 /* adjective, security level */
 "None" = "هیچ کدام";
@@ -2026,11 +2511,36 @@
 /* Fiat amount */
 "Not available" = "در دسترس نیست";
 
+"Not available yet" = "هنوز در دسترس نیست";
+
+"Not cast" = "ثبت نشده";
+
+/* Masternodes */
+"Not checked yet" = "هنوز بررسی نشده";
+
 /* Location Service Status */
 "Not Determined" = "Not Determined";
 
 /* DashPay */
 "Not enough Platform credits to register an identity" = "Not enough Platform credits to register an identity";
+
+/* DashPay */
+"Not enough shielded balance to register an identity" = "موجودی محافظت‌شده برای ثبت هویت کافی نیست";
+
+/* No comment provided by engineer. */
+/* Masternodes */
+"Not in wallet history" = "در تاریخچه کیف پول نیست";
+
+"Not now" = "الان نه";
+
+/* Balance info sheet */
+"Not widely accepted by merchants" = "پذیرش گسترده‌ای نزد فروشندگان ندارد";
+
+/* Balance info sheet */
+"Not widely accepted by merchants yet" = "هنوز پذیرش گسترده‌ای نزد فروشندگان ندارد";
+
+/* Masternode keys */
+"Not yet used" = "هنوز استفاده نشده";
 
 /* DashPay Contacts */
 "Note" = "Note";
@@ -2050,8 +2560,19 @@
 /* Voting */
 "Old to new" = "از قدیم به جدید";
 
+/* DashPay FAQ */
+"On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves." = "در بیت‌کوین لایه نام وجود ندارد، پس مردم نشانی‌ها را آشکارا به اشتراک می‌گذارند و دوباره به کار می‌برند — همین‌که نشانی‌ای شناخته شود، هر چه تا کنون دریافت کرده به مالکش قابل پیوند است. در DashPay نام کاربری شما عمومی است اما هرگز به نشانی پرداخت اشاره نمی‌کند: نشانی‌ها به‌صورت خصوصی برای هر مخاطب تبادل می‌شوند و می‌چرخند، پس پرداخت با نام آشکار نمی‌کند پول شما کجا می‌رود. هر دو زنجیره شفاف‌اند، پس تحلیل زنجیره همچنان درباره خود سکه‌ها برقرار است.";
+
+/* Identities */
+"On Network" = "روی شبکه";
+
+/* Once <username> accepts your request... */
+"Once %@ accepts your request you can Pay Directly to Username" = "به‌محض اینکه %@ درخواستتان را بپذیرد می‌توانید مستقیماً به نام کاربری پرداخت کنید";
+
 /* Dash DEX / dex_receive_description */
 "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet" = "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet";
+
+"One node at a time" = "هر بار یک گره";
 
 /* Voting */
 "One vote left" = "فقط یک رای باقی مانده است. ";
@@ -2071,6 +2592,8 @@
 /* Voting */
 "Only duplicates" = "فقط تکراری‌ها";
 
+"Only masternodes and evonodes can vote on usernames. This wallet holds no active masternode voting keys." = "تنها مسترنودها و evonodeها می‌توانند به نام‌های کاربری رأی دهند. این کیف پول کلید رأی‌گیری مسترنود فعالی ندارد.";
+
 /* No comment provided by engineer. */
 "Only requests with links" = "فقط درخواست‌ها با لینگ";
 
@@ -2079,6 +2602,18 @@
 
 /* Voting */
 "Only with links" = "Only with links";
+
+/* Masternodes */
+"Operator" = "اپراتور";
+
+/* Masternode keys */
+"Operator keys" = "کلیدهای اپراتور";
+
+/* Masternodes */
+"Operator public key (BLS)" = "کلید عمومی اپراتور (BLS)";
+
+/* No comment provided by engineer. */
+"or" = "یا";
 
 /* Coinbase/Buy Dash/Confirm Order */
 "Order Preview" = "پیش‌نمایش سفارش";
@@ -2089,14 +2624,37 @@
 /* DashSpend */
 "Original Price" = "Original Price";
 
+"Other outcomes" = "نتایج دیگر";
+
+/* Masternodes */
+"Outpoint" = "Outpoint";
+
+/* Raw transaction inspector */
+"Output %d" = "خروجی %d";
+
+/* Raw transaction inspector */
+"Outputs (%d)" = "خروجی‌ها (%d)";
+
+/* Masternodes */
+"Owner" = "مالک";
+
 /* No comment provided by engineer. */
 "Owner Address" = "Owner Address";
+
+/* Masternodes */
+"Owner address" = "نشانی مالک";
+
+/* Masternodes */
+"Owner key hash" = "درهم‌سازی کلید مالک";
 
 /* Owner keys */
 "Owner keys" = "کلیدهای مالک";
 
 /* No comment provided by engineer. */
 "P2SH platform addresses aren't supported yet. Use a P2PKH recipient." = "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.";
+
+/* DashPay: fee source note of the Enable DashPay confirmation */
+"Paid from your identity's credit balance." = "از موجودی اعتباری هویت شما پرداخت می‌شود.";
 
 /* DashSpend */
 "Password" = "گذرواژه";
@@ -2106,6 +2664,9 @@
 
 /* Usernames */
 "Paste link here" = "Paste link here";
+
+/* DashPay Invitations */
+"Paste the invitation link you received, or scan its QR code. It funds your username registration." = "پیوند دعوتی را که دریافت کرده‌اید بچسبانید یا کد QR آن را اسکن کنید. هزینه ثبت نام کاربری‌تان را تأمین می‌کند.";
 
 /* No comment provided by engineer. */
 "Paste your image URL" = "نشانی اینترنتی را اینجا بچسبانید";
@@ -2118,6 +2679,12 @@
 
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "به شکلی ساده و سریع مبلغی را پرداخت یا دریافت کنید";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Pay Directly to Username" = "مستقیماً به نام کاربری پرداخت کنید";
+
+/* DashPay intro: headline */
+"Pay people, not addresses" = "به آدم‌ها پرداخت کنید، نه به نشانی‌ها";
 
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "Pay to usernames. No more alphanumeric addresses";
@@ -2146,6 +2713,9 @@
 /* 4 out of 4 in the Paying Animation */
 "Paying..." = "Paying...";
 
+/* Raw transaction inspector */
+"Payload hex" = "بار داده (hex)";
+
 /* Coinbase/Buy Dash */
 "Payment method" = "روش پرداخت";
 
@@ -2158,8 +2728,24 @@
 /* DashPay Contacts */
 "Payments" = "Payments";
 
+/* DashPay FAQ */
+"Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "پرداخت‌ها خصوصی هستند: نشانی‌هایی که با یک مخاطب تبادل می‌کنید درون بار رمزگذاری‌شده‌ای جابه‌جا می‌شوند که تنها شما دو نفر می‌توانید بخوانید و هرگز منتشر نمی‌شوند — پس پرداخت‌هایتان به‌سادگی به نام کاربری‌تان پیوند نمی‌خورد. با این حال اینها همچنان پرداخت‌های معمولی روی زنجیره‌ای شفاف‌اند: تحلیل پیشرفته زنجیره ممکن است اطلاعاتی را فاش کند. Shielded DashPay (به‌زودی) این شکاف را خواهد بست. خودِ درخواست‌های تماس در حال حاضر خصوصی نیستند: هر کسی می‌تواند ببیند دو هویت به هم متصل‌اند. درخواست‌های تماس خصوصی قابلیتی است که به‌زودی می‌آید. نام کاربری و نمایه شما نیز روی Dash Platform عمومی است.";
+
+/* Balance info sheet */
+"Payments confirm in seconds with InstantSend" = "پرداخت‌ها با InstantSend در چند ثانیه تأیید می‌شوند";
+
+/* No comment provided by engineer. */
+"Payments made directly to addresses won’t be retained in activity." = "پرداخت‌هایی که مستقیماً به نشانی‌ها انجام شوند در فعالیت نگهداری نمی‌شوند.";
+
 /* DashPay Contacts */
 "Payments made directly to an address aren't retained here." = "Payments made directly to an address aren't retained here.";
+
+/* DashPay intro: feature body */
+"Payments with each contact are grouped in one place, with names and profiles instead of raw transactions." = "پرداخت‌ها با هر مخاطب در یک جا گرد می‌آیند، با نام و نمایه به‌جای تراکنش‌های خام.";
+
+/* CrowdNode */
+/* Masternodes */
+"Payout address" = "نشانی پرداخت";
 
 /* CrowdNode */
 "Payout Options" = "گزینه‌های پاداش";
@@ -2206,11 +2792,31 @@
 /* Dash Platform chain */
 "Platform" = "Platform";
 
+/* Send screen destination type */
+"Platform address" = "نشانی Platform";
+
+/* The Dash Platform credits balance */
+"Platform balance" = "موجودی Platform";
+
 /* SDK identity profile sheet */
 "Platform Credits" = "Platform Credits";
 
+/* Masternodes */
+"Platform node" = "گره Platform";
+
+/* Masternode keys */
+"Platform Node ID" = "شناسه گره Platform";
+
 /* No comment provided by engineer. */
 "Platform Payment" = "Platform Payment";
+
+/* Masternodes */
+"Platform payments don't identify the sender. This payment was recorded when the wallet noticed the balance change — it may have arrived earlier." = "پرداخت‌های Platform فرستنده را مشخص نمی‌کنند. این پرداخت زمانی ثبت شد که کیف پول تغییر موجودی را دید — ممکن است پیش‌تر رسیده باشد.";
+
+"Platform SDK not ready" = "‏SDK پلتفرم آماده نیست";
+
+/* No comment provided by engineer. */
+"Platform sync is not running. Open Sync Info → Platform Sync Status to start it." = "همزمان‌سازی Platform در حال اجرا نیست. برای آغاز آن، اطلاعات همزمان‌سازی ← وضعیت همزمان‌سازی Platform را باز کنید.";
 
 /* No comment provided by engineer. */
 "Platform sync is not running. Open Tools → Platform Sync Status to start it." = "Platform sync is not running. Open Tools → Platform Sync Status to start it.";
@@ -2220,6 +2826,9 @@
 
 /* InternalTransfer */
 "Platform wallet manager unavailable" = "Platform wallet manager unavailable";
+
+/* Coinbase/Buy Dash */
+"Platform → Shielded" = "Platform ← محافظت‌شده";
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "Please add a payment method on Coinbase";
@@ -2299,6 +2908,9 @@
 /* No comment provided by engineer. */
 "Preview Invitation" = "مشاهده دعوتنامه";
 
+/* Masternode keys */
+"Previously used at: " = "پیش‌تر استفاده شده در: ";
+
 /* Stale rates */
 "Prices are at least 30 minutes old. Fiat values may be incorrect." = "قیمت‌ها متعلق به حداقل ۳۰ دقیقه یش است. قیمت‌های پول رسمی شاید درست نباشد. ";
 
@@ -2314,11 +2926,38 @@
 /* No comment provided by engineer. */
 "Privacy tip" = "Privacy tip";
 
+/* Usernames */
+"Private by design" = "خصوصی از پایه";
+
+/* DashPay FAQ */
+"Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon." = "درخواست‌های تماس خصوصی (تا اینکه با چه کسی در ارتباطید خصوصی بماند)، Shielded DashPay — پرداخت به مخاطبان از موجودی محافظت‌شده خصوصی‌تان — و پرداخت به کاربرانی که هنوز در مخاطبانتان نیستند، همگی به‌زودی می‌آیند.";
+
+/* DashPay FAQ */
+"Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, you will have the choice of having your friendship be public or private." = "درخواست‌های تماس خصوصی در دست توسعه‌اند و حدود شهریور–مهر ۱۴۰۵ (سپتامبر–اکتبر ۲۰۲۶) انتظار می‌روند. امروز خودِ درخواست عمومی است — هر کسی می‌تواند ببیند دو هویت به هم متصل‌اند، حتی اگر جزئیات پرداخت درون آن رمزگذاری شده باشد. پس از عرضه درخواست‌های تماس خصوصی، می‌توانید انتخاب کنید دوستی‌تان عمومی باشد یا خصوصی.";
+
+/* DashPay intro: coming-soon body */
+"Private contact requests, Shielded DashPay, and paying people who aren't contacts yet." = "درخواست‌های تماس خصوصی، Shielded DashPay و پرداخت به افرادی که هنوز مخاطب شما نیستند.";
+
 /* No comment provided by engineer. */
 "Private key" = "Private key";
 
 /* No comment provided by engineer. */
 "Private key could not be decoded: %@" = "Private key could not be decoded: %@";
+
+/* DashPay intro: feature body */
+"Private payment addresses are exchanged between you and your contacts. Only you and your contact know the recipient and sender of payments between yourselves." = "نشانی‌های پرداخت خصوصی میان شما و مخاطبانتان تبادل می‌شوند. تنها شما و مخاطبتان گیرنده و فرستنده پرداخت‌های میان خودتان را می‌دانید.";
+
+/* DashPay intro: feature title */
+"Private payments" = "پرداخت‌های خصوصی";
+
+/* Usernames */
+"Private registration" = "ثبت خصوصی";
+
+/* Platform → Transparent withdrawal */
+"Processing time" = "زمان پردازش";
+
+/* Balance info sheet section */
+"Pros" = "مزایا";
 
 /* CrowdNode Portal */
 "Protect your savings" = " از پس‌اندازهایتان محافظت کنید";
@@ -2329,6 +2968,18 @@
 /* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
 
+/* Masternodes */
+"Provider transactions" = "تراکنش‌های ارائه‌دهنده";
+
+/* Masternode keys */
+"Public key" = "کلید عمومی";
+
+/* Masternode keys */
+"Public key (legacy)" = "کلید عمومی (قدیمی)";
+
+/* Identities */
+"Public keys" = "کلیدهای عمومی";
+
 /* No comment provided by engineer. */
 "Public URL" = "نشانی اینترنتی عمومی";
 
@@ -2337,6 +2988,9 @@
 
 /* Alert title */
 "Purchase Failed" = "عملیات خرید ناموفق بود";
+
+/* Identities: what a public key is used for */
+"Purpose" = "هدف";
 
 /* DashSpend */
 "Quantity" = "Quantity";
@@ -2356,11 +3010,30 @@
 /* ex., Rate 1 US $ = 0.000009 Dash */
 "Rate: %@ = %@" = "Rate: %1$@ = %2$@";
 
+/* Raw transaction inspector */
+"Raw transaction" = "تراکنش خام";
+
+/* Raw transaction inspector */
+"Raw transaction unavailable" = "تراکنش خام در دسترس نیست";
+
+/* SPV diagnostics */
+"Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead." = "فیلترهای فشرده بلاک را از ارتفاع انتخابی برای یافتن تراکنش‌های این کیف پول دوباره بررسی می‌کند و آنها را دوباره دانلود و تطبیق می‌دهد. بازپویش‌ها به ارتفاع ساخت کیف پول و داده‌های زنجیره ذخیره‌شده محلی محدودند — برای بازیابی تاریخچه پایین‌تر از آن، به‌جای این کار ارتفاع آغاز کیف پول را کاهش دهید.";
+
 /* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet." = "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. This rediscovers any missed transactions but can take a while. Full rescan re-checks every filter since genesis and can take a long time on mainnet.";
 
 /* CrowdNode */
 "Read Withdrawal Policy" = "شرایط برداشت را بخوانید";
+
+/* Identities: key visible to the wallet but not usable for signing */
+"Read-only" = "فقط‌خواندنی";
+
+/* Usernames */
+"Ready around %@" = "حدود %@ آماده می‌شود";
+
+/* No comment provided by engineer. */
+/* Masternodes */
+"Reason" = "دلیل";
 
 /* No comment provided by engineer. */
 "Receive" = "دریافت";
@@ -2389,8 +3062,13 @@
 /* No comment provided by engineer. */
 "Received from" = "دریافت از";
 
+/* DashPay payment row — sender's display name */
+"Received from %@" = "دریافت‌شده از %@";
+
 /* CrowdNode */
 "Receiving rewards" = "دریافت پاداش";
+
+"Records your masternodes as having voted, without taking a side." = "مسترنودهای شما را به‌عنوان رأی‌داده ثبت می‌کند، بدون جانبداری.";
 
 /* No comment provided by engineer. */
 "Recover" = "Recover";
@@ -2411,6 +3089,10 @@
 "Recovery phrase must have 12, 15, 18, 21 or 24 words" = "Recovery phrase must have 12, 15, 18, 21 or 24 words";
 
 /* Maya */
+/* Masternodes */
+"Refresh" = "به‌روزرسانی";
+
+/* Maya */
 "Refresh quote" = "Refresh quote";
 
 /* Dash DEX / dex_refund_address_field_label */
@@ -2423,10 +3105,21 @@
 "Register?" = "Register?";
 
 /* No comment provided by engineer. */
+/* Masternodes */
+"Registered at" = "ثبت‌شده در";
+
+/* No comment provided by engineer. */
 "Registered from" = "Registered from";
 
 /* No comment provided by engineer. */
 "Registered Masternode" = "Registered Masternode";
+
+/* Usernames */
+"Registering privately takes at least %@ Dash in your Shielded balance plus a few hours of rest time — the next screens walk you through it." = "ثبت خصوصی دست‌کم %@ دش در موجودی محافظت‌شده و چند ساعت زمان توقف نیاز دارد — صفحه‌های بعدی شما را راهنمایی می‌کنند.";
+
+/* Usernames */
+/* Masternodes */
+"Registration" = "ثبت";
 
 /* Usernames */
 "Registration failed" = "Registration failed";
@@ -2473,6 +3166,8 @@
 /* Testnet faucet */
 "Requesting tDash…" = "Requesting tDash…";
 
+"Requesting this name" = "این نام را می‌خواهد";
+
 /* An action */
 "Rescan" = "اسکن دوباره";
 
@@ -2501,10 +3196,23 @@
 "Restore an existing wallet" = "Restore an existing wallet";
 
 /* Location Service Status */
+"Restored wallets can't always recover the operation type. This entry was reconstructed from on-chain note data." = "کیف پول‌های بازیابی‌شده همیشه نمی‌توانند نوع عملیات را بازیابی کنند. این مورد از داده‌های یادداشت روی زنجیره بازسازی شده است.";
+
+/* Location Service Status */
 "Restricted" = "Restricted";
 
 /* Usernames */
 "Results" = "نتایج";
+
+/* SPV diagnostics */
+"Resync armed from height %u — quit and reopen the app to start." = "همزمان‌سازی مجدد از ارتفاع %u آماده شد — برنامه را ببندید و دوباره باز کنید تا آغاز شود.";
+
+/* emphasized text in: Add <username> as your contact to Pay Directly to Username and Retain Mutual Transaction History */
+"Retain Mutual Transaction History" = "تاریخچه تراکنش‌های مشترک را نگه دارید";
+
+/* No comment provided by engineer. */
+/* Masternode status */
+"Retired" = "بازنشسته";
 
 /* No comment provided by engineer. */
 "Retry" = "تلاش دوباره";
@@ -2514,6 +3222,9 @@
 
 /* Voting */
 "Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
+
+/* Masternodes */
+"Revocation" = "ابطال";
 
 /* Transaction filter */
 "Rewards" = "Rewards";
@@ -2551,6 +3262,15 @@
 /* No comment provided by engineer. */
 "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret." = "Screenshots are visible to other apps and devices. Generate a new recovery phrase and keep it secret.";
 
+/* Raw transaction inspector */
+"Script" = "اسکریپت";
+
+/* Raw transaction inspector */
+"Script signature" = "امضای اسکریپت";
+
+/* Raw transaction inspector */
+"Script type" = "نوع اسکریپت";
+
 /* DashPay */
 "SDK is not initialized" = "SDK is not initialized";
 
@@ -2563,11 +3283,31 @@
 /* DashPay Contacts */
 "Search Contacts" = "Search Contacts";
 
+/* No comment provided by engineer. */
+"Search for a contact" = "جستجوی مخاطب";
+
+/* No comment provided by engineer. */
+"Search for a contact request" = "جستجوی درخواست تماس";
+
 /* DashPay Contacts */
 "Search for a User" = "Search for a User";
 
 /* No comment provided by engineer. */
+"Search for a User on the Dash Network" = "جستجوی کاربر در شبکه دش";
+
+/* No comment provided by engineer. */
+"Search for a username" = "جستجوی نام کاربری";
+
+/* Search results for \"John Doe\" */
+"Search results for \"" = "نتایج جستجو برای \"";
+
+/* No comment provided by engineer. */
 "Search territories" = "Search territories";
+
+"Search usernames" = "جستجوی نام‌های کاربری";
+
+/* No comment provided by engineer. */
+"Searching for username %@ on the Dash Network" = "در حال جستجوی نام کاربری %@ در شبکه دش";
 
 /* No comment provided by engineer. */
 "Secure Your Wallet" = "کیف پول‌تان را امن کنید";
@@ -2577,6 +3317,9 @@
 
 /* No comment provided by engineer. */
 "Security Level" = "سطح امنیتی";
+
+/* Identities: DPP security level of a public key */
+"Security level" = "سطح امنیت";
 
 /* DashSpend */
 "See card details" = "See card details";
@@ -2596,8 +3339,12 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "یک سرویس را برای خرید، فروش، تبدیل یا انتقال دش انتخاب کنید";
 
+"Select all" = "انتخاب همه";
+
 /* DashSpend denomination selection */
 "Select amount" = "مبلغ را انتخاب کنید";
+
+"Select at least one masternode to vote with." = "دست‌کم یک مسترنود برای رأی دادن انتخاب کنید.";
 
 /* Block explorer picker
    Block explorer selection title */
@@ -2620,6 +3367,8 @@
 
 /* Coinbase */
 "Select the coin" = "یک رمزارز انتخاب کنید";
+
+"Selecting fewer nodes reveals less about which masternodes you run." = "انتخاب گره‌های کمتر، کمتر آشکار می‌کند که چه مسترنودهایی را اداره می‌کنید.";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "خرید نهایی خودکار";
@@ -2661,6 +3410,12 @@
 /* No comment provided by engineer. */
 "Send to" = "ارسال به";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "ارسال به یک مخاطب";
+
+/* DashPay intro: feature body */
+"Send to a username you can actually remember and verify." = "به نام کاربری‌ای بفرستید که واقعاً بتوانید به یاد بسپارید و راستی‌آزمایی کنید.";
+
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "ارسال به نشانی";
 
@@ -2685,8 +3440,17 @@
 /* Dash DEX */
 "Send your %@ before the timer runs out. If you send after the address expires, your funds will be refunded — not converted." = "Send your %@ before the timer runs out. If you send after the address expires, your funds will be refunded — not converted.";
 
+/* DashPay: CTA of the enable success sheet */
+"Send your first contact request" = "نخستین درخواست تماس‌تان را بفرستید";
+
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "در حال ارسال";
+
+/* No comment provided by engineer. */
+"Sending Contact Request" = "در حال فرستادن درخواست تماس";
+
+/* No comment provided by engineer. */
+"Sending to" = "ارسال به";
 
 /* CrowdNode */
 "Sending to CrowdNode account" = "ارسال به حساب کراودنود";
@@ -2715,11 +3479,26 @@
 /* No comment provided by engineer. */
 "Sent to" = "ارسال شد به";
 
+/* DashPay payment row — recipient's display name */
+"Sent to %@" = "ارسال‌شده به %@";
+
 /* DashPay Contacts */
 "Sent you a request" = "Sent you a request";
 
+/* Raw transaction inspector */
+"Sequence" = "Sequence";
+
 /* DashSpend */
 "Server error occurred. Please try again later." = "Server error occurred. Please try again later.";
+
+/* Masternodes */
+"Service" = "سرویس";
+
+/* Identities */
+"Set as Main" = "تنظیم به‌عنوان اصلی";
+
+/* Identities */
+"Set as Main Identity" = "تنظیم به‌عنوان هویت اصلی";
 
 /* No comment provided by engineer. */
 "Set PIN" = "پین کد را تعیین کنید";
@@ -2742,8 +3521,14 @@
 /* Share key */
 "Share key" = "به اشتراک‌گذاری کلید";
 
+/* Usernames */
+"Shared privacy pool at minimum size" = "استخر حریم خصوصی مشترک در کمینه اندازه";
+
 /* No comment provided by engineer. */
 "Shielded" = "Shielded";
+
+/* Send screen destination type */
+"Shielded address" = "نشانی محافظت‌شده";
 
 /* InternalTransfer */
 "Shielded address is not bound for this wallet" = "Shielded address is not bound for this wallet";
@@ -2757,11 +3542,20 @@
 /* Transaction filter */
 "Shielded sent" = "Shielded sent";
 
+"Shielded Spend" = "خرج محافظت‌شده";
+
 /* Transfer of own funds into the private shielded balance */
 "Shielded transfer" = "Shielded transfer";
 
 /* A to-Shielded transfer whose asset lock is committed but the shield hasn't completed yet */
 "Shielded transfer (pending)" = "Shielded transfer (pending)";
+
+"Shielded wallet starting…" = "در حال راه‌اندازی کیف پول محافظت‌شده…";
+
+/* Transfer of own funds from the private shielded balance back to the transparent wallet */
+"Shielded → Platform" = "محافظت‌شده ← Platform";
+
+"Shielded → Transparent" = "محافظت‌شده ← شفاف";
 
 /* Explore Dash */
 "Show all locations" = "Show all locations";
@@ -2796,11 +3590,16 @@
 /* DashSpend */
 "Single" = "Single";
 
+/* Raw transaction inspector */
+"Size" = "اندازه";
+
 /* No comment provided by engineer. */
 "Skip" = "رد کردن";
 
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
+
+"Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen." = "شاید برخی از مسترنودهای شما در این فهرست نباشند — کیف پول نتوانست مجموعه کامل کلیدهای رأی‌گیری شما را بخواند. همزمان‌سازی را کامل کنید و این صفحه را دوباره باز کنید.";
 
 /* Usernames */
 "Some usernames can be blocked" = "برخی از نام‌های کاربری ممکن است بلاک شوند";
@@ -2814,6 +3613,9 @@
 /* No comment provided by engineer. */
 "Sort by" = "مرتب کردن بر اساس";
 
+/* No comment provided by engineer. */
+"Sort Contacts" = "مرتب‌سازی مخاطبان";
+
 /* Explore Dash/Filters */
 "Sorted by discount" = "Sorted by discount";
 
@@ -2822,6 +3624,9 @@
 
 /* Explore Dash/Filters */
 "Sorted by name" = "Sorted by name";
+
+/* Raw transaction inspector */
+"Special payload" = "بار داده ویژه";
 
 /* No comment provided by engineer. */
 "Specify Amount" = "مبلغ را مشخص کنید";
@@ -2844,12 +3649,20 @@
 /* No comment provided by engineer. */
 "Staking" = "سپرده‌گذاری";
 
+/* Usernames */
+"Starts after you add funds" = "پس از افزودن وجه آغاز می‌شود";
+
+/* Transaction details */
+"Status" = "وضعیت";
+
 /* Step 1 */
 "Step %ld" = "Step %ld";
 
 /* DashPay
    InternalTransfer */
 "Storage is not configured" = "Storage is not configured";
+
+"Stored as" = "ذخیره‌شده به‌صورت";
 
 /* Voting */
 "Submit" = "ثبت";
@@ -2926,6 +3739,12 @@
 /* Explore Dash */
 "Sync in progress… Results may not be complete." = "فرآیند همزمان‌سازی در جریان است...نتایج شاید کامل نباشد. ";
 
+/* No comment provided by engineer. */
+"Sync Info" = "اطلاعات همزمان‌سازی";
+
+/* SPV sync */
+"Sync too slow?" = "همزمان‌سازی خیلی کند است؟";
+
 /* About screen tech info: SPV state */
 "synced" = "synced";
 
@@ -2956,8 +3775,13 @@
 /* No comment provided by engineer. */
 "Take a Photo from Camera" = "Take a Photo from Camera";
 
+"Take no side" = "جانب هیچ‌کس را نگیر";
+
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "روی نشانی موجود در کلیپ‌برد لمس کنید تا چسبانده شود";
+
+/* Raw transaction inspector */
+"Tap to copy" = "برای کپی ضربه بزنید";
 
 /* No comment provided by engineer. */
 "Tap to hide balance" = "مخفی کردن موجودی";
@@ -2974,6 +3798,9 @@
 /* DashSpend */
 "Temporarily unavailable" = "به صورت موقت در دسترس نیست";
 
+/* Masternode keys - dashmate Ed25519 node key format */
+"Tenderdash node key (base64)" = "کلید گره Tenderdash (base64)";
+
 /* Terms & conditions */
 "Terms & conditions" = "Terms & conditions";
 
@@ -2985,6 +3812,9 @@
 
 /* No comment provided by engineer. */
 "Testnet" = "Testnet";
+
+/* Badge on the home balance while the wallet runs on testnet */
+"TESTNET" = "TESTNET";
 
 /* Wallets */
 "That is not this wallet's recovery phrase." = "That is not this wallet's recovery phrase.";
@@ -3000,6 +3830,15 @@
 
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "کد وارد شده درست نیست. لطفا دوباره آن را بررسی کرده و وارد کنید! ";
+
+/* Send confirm sheet */
+"The Dash arrives at the recipient's address after the network processes the withdrawal — this can take up to 10 minutes." = "پس از آنکه شبکه برداشت را پردازش کند دش به نشانی گیرنده می‌رسد — این کار می‌تواند تا ۱۰ دقیقه طول بکشد.";
+
+/* Send confirm sheet */
+"The Dash arrives at the recipient's address once the network processes the withdrawal." = "به‌محض اینکه شبکه برداشت را پردازش کند دش به نشانی گیرنده می‌رسد.";
+
+/* No comment provided by engineer. */
+"The Dash arrives in your Transparent balance once the network processes the withdrawal." = "به‌محض اینکه شبکه برداشت را پردازش کند دش به موجودی شفاف شما می‌رسد.";
 
 /* Usernames */
 "The Dash network has to vote to approve some usernames before they are created" = "The Dash network has to vote to approve some usernames before they are created";
@@ -3034,11 +3873,20 @@
 /* Usernames */
 "The link you send will be visible only to the network owners" = "لینکی که فرستادید فقط برای مالکان شبکه قابل مشاهده خواهد بود.";
 
+/* Identities */
+"The main identity can only be chosen from the active wallet" = "هویت اصلی را تنها می‌توان از کیف پول فعال انتخاب کرد";
+
 /* Dash DEX */
 "The maximum transaction amount is %@" = "The maximum transaction amount is %@";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "The minimum amount you can send is %@";
+
+/* Balance info sheet */
+"The most private place to hold your Dash" = "خصوصی‌ترین جا برای نگهداری دش‌های شما";
+
+/* SPV diagnostics */
+"The persisted wallet row has no network — cannot arm a resync." = "ردیف ذخیره‌شده کیف پول شبکه ندارد — نمی‌توان همزمان‌سازی مجدد را آماده کرد.";
 
 /* Dash DEX / dex_error_price_moved */
 "The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
@@ -3049,6 +3897,15 @@
 /* Dash DEX */
 "The refund address is required" = "The refund address is required";
 
+/* DashPay */
+"The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately." = "ثبت ارسال شد اما نتیجه‌اش تأیید نشد. یک دقیقه صبر کنید تا کیف پول همزمان شود، سپس دوباره تلاش کنید — بلافاصله دوباره ارسال نکنید.";
+
+/* Usernames */
+"The shared privacy pool is still growing (%ld of %ld deposits). Private registration unlocks once it reaches the minimum." = "استخر حریم خصوصی مشترک هنوز در حال رشد است (%1$ld از %2$ld واریز). ثبت خصوصی با رسیدن به حداقل باز می‌شود.";
+
+/* DashPay */
+"The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum." = "استخر حریم خصوصی مشترک هنوز در حال رشد است (%1$ld از %2$ld واریز). با رسیدن به حداقل دوباره تلاش کنید.";
+
 /* No comment provided by engineer. */
 "The transfer could take up to 10 minutes" = "The transfer could take up to 10 minutes";
 
@@ -3058,8 +3915,23 @@
 /* Usernames */
 "The username '%@' was blocked by the Dash Network. Please try again by requesting another username." = "The username '%@' was blocked by the Dash Network. Please try again by requesting another username.";
 
+/* SPV diagnostics */
+"The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Saving a height at or below the current one clears this network's chain data at the next launch and rescans from it." = "ارتفاع ساخت کیف پول — کف پویش فیلترها و بازپویش‌های «از زمان ساخت کیف پول». آن را برابر یا پایین‌تر از نخستین تأمین وجه کیف پول تنظیم کنید؛ درون‌ریزی‌ها به‌صورت پیش‌فرض روی mainnet از ۲۰۰۰۰۰ و روی testnet از ۰ استفاده می‌کنند. ذخیره ارتفاعی برابر یا کمتر از ارتفاع کنونی، داده‌های زنجیره این شبکه را در اجرای بعدی پاک می‌کند و از آنجا بازپویش می‌کند.";
+
+/* No comment provided by engineer. */
+"them (Fetching Info)" = "او (در حال دریافت اطلاعات)";
+
+/* No comment provided by engineer. */
+"There are no new notifications" = "اعلان جدیدی نیست";
+
 /* No comment provided by engineer. */
 "There are no transactions to display" = "هیچ تراکنشی برای نمایش وجود ندارد";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@" = "کاربری با نام %@ مطابقت ندارد";
+
+/* No comment provided by engineer. */
+"There are no users that match with the name %@ in your contacts" = "در مخاطبان شما کاربری با نام %@ مطابقت ندارد";
 
 /* ZenLedger */
 "There was an error when exporting your transaction history to ZenLedger" = "There was an error when exporting your transaction history to ZenLedger";
@@ -3071,10 +3943,16 @@
 "There was an error, please try again later" = "There was an error, please try again later";
 
 /* No comment provided by engineer. */
+"These funds move to your Platform balance and are ready to spend as soon as the transfer completes." = "این وجوه به موجودی Platform شما می‌روند و به‌محض تکمیل انتقال آماده خرج‌اند.";
+
+/* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 
 /* CrowdNode */
 "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device." = "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.";
+
+/* Send sheet source/destination mismatch */
+"This address can't be paid from your %@ balance" = "این نشانی را نمی‌توان از موجودی %@ شما پرداخت کرد";
 
 /* Dash DEX / dex_error_sanctioned */
 "This address can't be used for swaps." = "This address can't be used for swaps.";
@@ -3082,11 +3960,16 @@
 /* Dash DEX */
 "This address expires in 10 minutes" = "This address expires in 10 minutes";
 
+/* DashPay: body of the Enable DashPay confirmation */
+"This adds two keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event." = "این کار دو کلید به هویت شما می‌افزاید تا کاربران دیگر بتوانند برایتان درخواست تماس بفرستند و شما هم بتوانید درخواست‌های آنها را بپذیرید. این تنها یک بار رخ می‌دهد.";
+
 /* Dash DEX / dex_error_no_route */
 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount." = "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.";
 
 /* Dash DEX / dex_enter_amount_invalid */
 "This amount can't be swapped right now. Try a different amount, or try again shortly." = "This amount can't be swapped right now. Try a different amount, or try again shortly.";
+
+"This applies one choice to all %d selected usernames." = "این کار یک انتخاب را روی هر %d نام کاربری انتخاب‌شده اعمال می‌کند.";
 
 /* DashSpend */
 "This card works only in the United States." = "This card works only in the United States.";
@@ -3094,11 +3977,26 @@
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "این گام اضافه نشان می‌دهد واقعا خودتان قصد انجام این تراکنش را دارید. ";
 
+/* DashPay Invitations */
+"This invitation link is not valid." = "این پیوند دعوت معتبر نیست.";
+
+/* Send screen */
+"This is not a valid Dash address for this network" = "این یک نشانی معتبر دش برای این شبکه نیست";
+
+/* DashPay Invitations */
+"This is not a valid invitation link" = "این یک پیوند دعوت معتبر نیست";
+
 /* DashPay Contacts */
 "This is you" = "This is you";
 
+/* Identities */
+"This is your main identity" = "این هویت اصلی شماست";
+
 /* DashPay Contacts */
 "This is your own identity." = "This is your own identity.";
+
+/* Masternodes */
+"This masternode has no Platform identity yet." = "این مسترنود هنوز هویت Platform ندارد.";
 
 /* CTXSpend error */
 "This merchant is currently unavailable." = "This merchant is currently unavailable.";
@@ -3133,14 +4031,25 @@
 /* CrowdNode */
 "This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "این رقم نشانگر درصد بازدهی سالانه یک مسترنود منهای کارمزد ۱۵ درصدی کراودنود است. این نرخ بازگشت سرمایه تضمینی نیست و ممکن است بر اساس تعداد حاضران در کراودنود و قیمت دش پائین و بالا رود. ";
 
+"This still counts as your masternodes having voted in this contest." = "این همچنان به‌عنوان رأی دادن مسترنودهای شما در این رقابت به شمار می‌آید.";
+
 /* Dash DEX / dex_error_allowance */
 "This token needs approval before it can be swapped." = "This token needs approval before it can be swapped.";
+
+/* Raw transaction inspector */
+"This transaction's raw bytes are not stored on this device." = "بایت‌های خام این تراکنش روی این دستگاه ذخیره نشده‌اند.";
 
 /* InternalTransfer recovery */
 "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it." = "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.";
 
 /* DashPay Contacts */
 "This user hasn't set up the keys needed to receive contact requests yet." = "This user hasn't set up the keys needed to receive contact requests yet.";
+
+"This username went to someone else" = "این نام کاربری به شخص دیگری رسید";
+
+"This wallet could not derive the voting key for this node." = "این کیف پول نتوانست کلید رأی‌گیری این گره را اشتقاق دهد.";
+
+"This wallet holds no active masternode voting keys, so it cannot vote. Registered nodes appear under Tools → Masternodes." = "این کیف پول کلید رأی‌گیری مسترنود فعالی ندارد، پس نمی‌تواند رأی دهد. گره‌های ثبت‌شده در ابزارها ← مسترنودها نمایان می‌شوند.";
 
 /* Wallets */
 "This wallet is already on this device." = "This wallet is already on this device.";
@@ -3150,6 +4059,12 @@
 
 /* No comment provided by engineer. */
 "This will erase this wallet from this device. You can only restore it with your recovery phrase." = "This will erase this wallet from this device. You can only restore it with your recovery phrase.";
+
+/* Send confirm sheet */
+"This withdraws your entire Platform balance in one transfer. The Dash arrives at the recipient's address once the network processes the withdrawal." = "این کار کل موجودی Platform شما را در یک انتقال برداشت می‌کند. به‌محض اینکه شبکه برداشت را پردازش کند دش به نشانی گیرنده می‌رسد.";
+
+/* No comment provided by engineer. */
+"This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal." = "این کار کل موجودی Platform شما را در یک انتقال برداشت می‌کند. به‌محض اینکه شبکه برداشت را پردازش کند دش به موجودی شفاف شما می‌رسد.";
 
 /* Send Screen: to address */
 "to" = "به";
@@ -3190,8 +4105,14 @@
 /* CrowdNode */
 "Transaction History" = "سابقه تراکنش‌ها";
 
+/* Balance info sheet */
+"Transaction history isn't available" = "تاریخچه تراکنش‌ها در دسترس نیست";
+
 /* No comment provided by engineer. */
 "Transaction id" = "Transaction id";
+
+/* Raw transaction inspector */
+"Transaction ID" = "شناسه تراکنش";
 
 /* A verb, button title. */
 "Transfer" = "انتقال";
@@ -3219,8 +4140,14 @@
 /* No comment provided by engineer. */
 "Transfer In" = "Transfer In";
 
+/* Balance breakdown */
+"Transfer in" = "انتقال ورودی";
+
 /* No comment provided by engineer. */
 "Transfer Out" = "Transfer Out";
+
+/* Balance breakdown */
+"Transfer out" = "انتقال خروجی";
 
 /* No comment provided by engineer. */
 "Transfer submitted" = "Transfer submitted";
@@ -3230,6 +4157,30 @@
 
 /* No comment provided by engineer. */
 "Transfers take different times" = "Transfers take different times";
+
+/* Balance info sheet */
+"Transfers take longer — privacy proofs take time to build" = "انتقال‌ها بیشتر طول می‌کشند — ساخت اثبات‌های حریم خصوصی زمان می‌برد";
+
+/* Balance info sheet */
+"Transfers to other platform addresses and shielded addresses are instant and final" = "انتقال به دیگر نشانی‌های Platform و نشانی‌های محافظت‌شده آنی و نهایی است";
+
+/* Balance breakdown */
+"Transparent" = "شفاف";
+
+/* Send screen destination type */
+"Transparent address" = "نشانی شفاف";
+
+/* The transparent (Core) balance of the Dash Wallet */
+"Transparent balance" = "موجودی شفاف";
+
+/* Usernames */
+"Transparent funding publicly links your username to these funds." = "تأمین شفاف، نام کاربری‌تان را به‌صورت عمومی به این وجوه پیوند می‌زند.";
+
+/* Transfer of own funds into the Platform balance */
+"Transparent → Platform" = "شفاف ← Platform";
+
+/* Transfer of own funds into the private shielded balance */
+"Transparent → Shielded" = "شفاف ← محافظت‌شده";
 
 /* An action */
 "Try again" = "دوباره تلاش کنید";
@@ -3279,6 +4230,9 @@
 /* Dash DEX */
 "Unable to load rate data" = "Unable to load rate data";
 
+/* No comment provided by engineer. */
+"Unable to provide suggestions" = "ارائه پیشنهاد ممکن نیست";
+
 /* Swap */
 "Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
 
@@ -3312,6 +4266,12 @@
 /* Coinbase */
 "Unknown Balance" = "Unknown Balance";
 
+/* Raw transaction inspector */
+"Unknown special type %d" = "نوع ویژه ناشناخته %d";
+
+/* No comment provided by engineer. */
+"Unshielded" = "محافظت‌نشده";
+
 /* No comment provided by engineer. */
 "Unsupported URL" = "Unsupported URL";
 
@@ -3334,6 +4294,9 @@
 "Upgrade to DashPay" = "Upgrade to DashPay";
 
 /* No comment provided by engineer. */
+"Upgrade to Evolution" = "ارتقا به Evolution";
+
+/* No comment provided by engineer. */
 "Uphold" = "آپهولد";
 
 /* Uphold */
@@ -3353,6 +4316,18 @@
 
 /* Dash DEX */
 "URI" = "URI";
+
+/* Usernames */
+"Use transparent balance instead" = "به‌جای آن از موجودی شفاف استفاده کن";
+
+/* Masternode keys */
+"Used" = "استفاده‌شده";
+
+/* Masternode keys */
+"Used at: " = "استفاده‌شده در: ";
+
+/* No comment provided by engineer. */
+"User (Fetching Info)" = "کاربر (در حال دریافت اطلاعات)";
 
 /* Voting */
 "Username" = "نام کاربری";
@@ -3384,6 +4359,23 @@
 /* Usernames */
 "Username was successfully requested" = "Username was successfully requested";
 
+/* Identities */
+"Usernames" = "نام‌های کاربری";
+
+"Usernames are stored in a normalized form to prevent look-alike names, so this may differ from what each person typed." = "نام‌های کاربری برای جلوگیری از نام‌های شبیه‌به‌هم به شکل هنجارشده ذخیره می‌شوند، پس ممکن است با آنچه هر کس تایپ کرده متفاوت باشد.";
+
+/* DashPay intro: feature title */
+"Usernames, not addresses" = "نام کاربری، نه نشانی";
+
+/* No comment provided by engineer. */
+"Users that matches %@ who are currently not in your contacts" = "کاربرانی که با %@ مطابقت دارند و هم‌اکنون در مخاطبان شما نیستند";
+
+/* Balance info sheet */
+"Uses one of the most audited and tested zero-knowledge libraries (Orchard)" = "از یکی از بیشترین کتابخانه‌های دانش‌صفر ممیزی‌شده و آزموده‌شده (Orchard) استفاده می‌کند";
+
+/* DashPay Invitations */
+"Valid invitation" = "دعوتنامه معتبر";
+
 /* CrowdNode Portal */
 "Validating address…" = "در حال اعتبارسنجی نشانی...";
 
@@ -3399,6 +4391,9 @@
 /* CrowdNode Portal */
 "Verification Required" = "نیازمند تائید";
 
+/* Usernames */
+"Verified during registration" = "هنگام ثبت راستی‌آزمایی شد";
+
 /* No comment provided by engineer. */
 "Verified Successfully" = "با موفقیت تائید شد";
 
@@ -3411,11 +4406,20 @@
 /* Usernames */
 "Verify your identity" = "احراز هویت کنید";
 
+/* Raw transaction inspector */
+"Version" = "نسخه";
+
+/* Balance info sheet */
+"Very efficient with low fees" = "بسیار کارآمد با کارمزد کم";
+
 /* adjective, security level */
 "Very High" = "بسیار بالا";
 
 /* CrowdNode */
 "Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "یک مبلغ جزئی دش از کراودنود به این حساب فرستاده می‌شود تا از اینکه شما صاحب این نشانی هستید اطمینان حاصل شود. ";
+
+/* No comment provided by engineer. */
+"View All" = "مشاهده همه";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "View in Explorer";
@@ -3429,17 +4433,33 @@
 /* No comment provided by engineer. */
 "View Recovery Phrase" = "مشاهده عبارت بازیابی";
 
+/* Raw transaction inspector */
+"View Transaction" = "مشاهده تراکنش";
+
 /* No comment provided by engineer. */
 "View transaction details" = "View transaction details";
 
 /* Maya */
 "View transaction on MayaScan" = "View transaction on MayaScan";
 
+"Vote" = "رأی";
+
+"Vote cast" = "رأی ثبت شد";
+
 /* Voting */
 "Vote for All" = "رای‌دهی برای همه";
 
 /* Voting */
+"Vote on contested usernames" = "به نام‌های کاربری مورد رقابت رأی دهید";
+
+"Vote on several" = "رأی به چند مورد";
+
+/* Voting */
 "Vote to Approve" = "رای‌گیری برای تائید";
+
+"Vote with" = "رأی دادن با";
+
+"Votes that nobody should receive these usernames." = "رأی می‌دهد که هیچ‌کس این نام‌های کاربری را نگیرد.";
 
 /* Voting */
 "Votes: High to low" = "Votes: High to low";
@@ -3453,14 +4473,35 @@
 /* No comment provided by engineer. */
 "Voting Address" = "Voting Address";
 
+/* Voting keys */
+/* Masternodes */
+"Voting address" = "نشانی رأی‌گیری";
+
+"Voting ended with no winner" = "رأی‌گیری بدون برنده پایان یافت";
+
+"Voting ends" = "پایان رأی‌گیری";
+
 /* Voting */
 "Voting ends in %dd" = "Voting ends in %dd";
+
+"Voting in progress" = "رأی‌گیری در جریان است";
+
+"Voting in progress — lock votes are ahead" = "رأی‌گیری در جریان است — رأی‌های قفل جلوترند";
+
+"Voting in progress — you are ahead" = "رأی‌گیری در جریان است — شما جلوترید";
 
 /* Usernames */
 "Voting is only required in some cases" = "در برخی موارد، نیاز به رای‌گیری است";
 
+/* Masternodes */
+"Voting key hash" = "درهم‌سازی کلید رأی‌گیری";
+
 /* Voting keys */
 "Voting keys" = "کلیدهای رأی‌دهی";
+
+"Voting on this username has closed. The counts below are the last ones read." = "رأی‌گیری درباره این نام کاربری بسته شده است. شمارش‌های زیر آخرین مقادیر خوانده‌شده‌اند.";
+
+"Voting on “%@” has already closed. Refresh to see the result." = "رأی‌گیری درباره «%@» پیش‌تر بسته شده است. برای دیدن نتیجه به‌روزرسانی کنید.";
 
 /* CrowdNode */
 "Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
@@ -3474,11 +4515,16 @@
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "Wait until wallet is synced to complete the transaction";
 
+"Waiting for Dash Platform" = "در انتظار Dash Platform";
+
 /* Wallets — placeholder name with short id */
 "Wallet %@…" = "Wallet %@…";
 
 /* Enter Address Screen */
 "Wallet Address" = "نشانی کیف پول";
+
+/* SPV diagnostics */
+"Wallet birth height" = "ارتفاع آغاز کیف پول";
 
 /* No comment provided by engineer. */
 "Wallet disabled" = "کیف پول غیرفعال شد";
@@ -3552,14 +4598,34 @@
 /* No comment provided by engineer. */
 "Welcome to DashPay" = "به دش‌پی خوش آمدید";
 
+/* DashPay FAQ */
+"What about Unstoppable Domains and similar name services?" = "‏Unstoppable Domains و سرویس‌های نام مشابه چطور؟";
+
+/* DashPay FAQ */
+"What does it cost?" = "هزینه‌اش چقدر است؟";
+
+/* DashPay FAQ */
+"What is DashPay?" = "‏DashPay چیست؟";
+
 /* Usernames */
 "What is username voting?" = "رای‌گیری نام کاربری چیست؟";
+
+/* DashPay FAQ */
+"What's coming next?" = "بعد از این چه می‌آید؟";
+
+/* DashPay FAQ */
+"When will contact requests become private?" = "درخواست‌های تماس کِی خصوصی می‌شوند؟";
 
 /* No comment provided by engineer. */
 "Where to Spend" = "کجا خرج کنیم؟ ";
 
 /* No comment provided by engineer. */
 "Where to Spend?" = "کجا خرج کنیم؟ ";
+
+"Who is requesting this name" = "چه کسی این نام را می‌خواهد";
+
+/* DashPay FAQ */
+"Why do I need to enable it?" = "چرا باید آن را فعال کنم؟";
 
 /* Crowdnode */
 "Why do I see all these transactions?" = "چرا همه این تراکنش‌ها را می‌بینم؟ ";
@@ -3598,6 +4664,12 @@
 /* CrowdNode */
 "Withdrawal requested" = "درخواست برداشت صورت گرفته است";
 
+/* Full-balance Platform → Transparent withdrawal */
+"Withdraws the entire balance" = "کل موجودی را برداشت می‌کند";
+
+/* Balance info sheet */
+"Works with every Dash wallet, exchange, and merchant" = "با هر کیف پول، صرافی و فروشنده دش کار می‌کند";
+
 /* No comment provided by engineer. */
 "Would you like to accept the invitation?" = "Would you like to accept the invitation?";
 
@@ -3621,6 +4693,11 @@
 
 /* No comment provided by engineer. */
 "Yesterday" = "دیروز";
+
+"You" = "شما";
+
+/* No comment provided by engineer. */
+"You accepted the contact request from %@" = "شما درخواست تماس از %@ را پذیرفتید";
 
 /* DashPay Notifications */
 "You added %@ as a contact" = "You added %@ as a contact";
@@ -3670,6 +4747,9 @@
 /* Usernames */
 "You chose “%@” as your username." = "You chose “%@” as your username.";
 
+/* No comment provided by engineer. */
+"You do not have any contacts at the moment" = "در حال حاضر هیچ مخاطبی ندارید";
+
 /* DashSpend */
 "You do not have sufficient funds to complete this transaction" = "موجودی‌تان برای انجام این تراکنش، کافی نیست";
 
@@ -3678,6 +4758,9 @@
 
 /* Coinbase */
 "You exceeded the authorization limit on Coinbase." = "از حد تعریف‌شده در کوین‌بیس فراتر رفتید.";
+
+/* Usernames */
+"You have %@ Dash so far" = "تا کنون %@ دش دارید";
 
 /* Usernames */
 "You have %@ Dash.\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash.\nSome usernames cost up to %2$@ Dash.";
@@ -3748,6 +4831,9 @@
 /* DashPay Notifications */
 "You sent a contact request to %@" = "You sent a contact request to %@";
 
+/* No comment provided by engineer. */
+"You sent the contact request to %@" = "شما درخواست تماس را برای %@ فرستادید";
+
 /* CrowdNode */
 "You should have a positive balance on Dash Wallet" = "موجودی دش ولت شما باید مثبت باشد";
 
@@ -3774,6 +4860,11 @@
 
 /* No comment provided by engineer. */
 "You will transfer" = "You will transfer";
+
+"You won this username" = "این نام کاربری را بردید";
+
+/* DashPay: body of the enable success sheet */
+"You're all set. Other users can now send you contact requests — and you can send yours." = "همه چیز آماده است. کاربران دیگر حالا می‌توانند برایتان درخواست تماس بفرستند — و شما هم می‌توانید درخواست‌های خود را بفرستید.";
 
 /* DashPay Contacts */
 "You're already connected — you can pay each other directly by username." = "You're already connected — you can pay each other directly by username.";
@@ -3805,6 +4896,9 @@
 /* InternalTransfer recovery */
 "Your Dash is safe" = "Your Dash is safe";
 
+/* Identities */
+"Your Dash Platform identity appears here once you register a username." = "هویت Dash Platform شما به‌محض ثبت نام کاربری اینجا نمایان می‌شود.";
+
 /* Maya/SwapKit */
 "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds." = "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.";
 
@@ -3835,11 +4929,20 @@
 /* Email is only used for OTP */
 "Your email is only used to send a one-time password." = "ایمیل‌تان فقط برای ارسال گذرواژه یک‌بارمصرف استفاده می‌شود. ";
 
+/* DashPay intro: feature title */
+"Your history, organized" = "تاریخچه شما، مرتب‌شده";
+
+/* DashPay FAQ */
+"Your identity needs two extra keys so contact requests can be encrypted between you and other users. Enabling adds them with a single network transaction. This is a one time event." = "هویت شما به دو کلید اضافی نیاز دارد تا درخواست‌های تماس میان شما و کاربران دیگر رمزگذاری شود. فعال‌سازی آنها را با یک تراکنش شبکه می‌افزاید. این تنها یک بار رخ می‌دهد.";
+
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "Your invitation from %@ has been already claimed";
 
 /* No comment provided by engineer. */
 "Your invitation from %@ is not valid" = "Your invitation from %@ is not valid";
+
+/* DashPay Invitations */
+"Your invitation pays the registration fee for this username." = "دعوتنامه شما هزینه ثبت این نام کاربری را می‌پردازد.";
 
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, ATMs in the selected redius and improve search results." = "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.";
@@ -3847,8 +4950,20 @@
 /* No comment provided by engineer. */
 "Your location is used to show your position on the map, merchants in the selected redius and improve search results." = "Your location is used to show your position on the map, merchants in the selected redius and improve search results.";
 
+/* Balance info sheet */
+"Your main Dash balance on the Core blockchain — what you send and receive with other wallets, exchanges, and merchants." = "موجودی اصلی دش شما روی بلاک‌چین Core — همان چیزی که با کیف پول‌ها، صرافی‌ها و فروشندگان دیگر می‌فرستید و می‌گیرید.";
+
+/* CoinJoin */
+"Your mixed coins were moved to your Dash Wallet balance." = "سکه‌های ترکیب‌شده شما به موجودی کیف پول دش منتقل شد.";
+
+/* CoinJoin */
+"Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds." = "سکه‌های ترکیب‌شده شما به موجودی محافظت‌شده منتقل شد. برای بهترین حریم خصوصی، دست‌کم ۲ ساعت پیش از استفاده از این وجوه صبر کنید.";
+
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
+
+/* Maya/SwapKit */
+"Your Platform balance" = "موجودی Platform شما";
 
 /* Maya/SwapKit */
 "Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
@@ -3856,11 +4971,28 @@
 /* CrowdNode */
 "Your primary Dash address that you currently use for your CrowdNode account" = "نشانی اصلی دش شما که از آن در حال حاضر برای حساب کراودنود  استفاده می‌کنید. ";
 
+/* Balance info sheet */
+"Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "موجودی خصوصی شما. مبالغ و نشانی‌ها روی زنجیره رمزگذاری می‌شوند، پس دارایی‌ها و تاریخچه شما محرمانه می‌مانند.";
+
 /* Usernames */
 "Your request was cancelled" = "Your request was cancelled";
 
 /* DashSpend */
 "Your session expired" = "جلسه شما به اتمام رسید. ";
+
+/* Usernames */
+"Your Shielded balance" = "موجودی محافظت‌شده شما";
+
+"Your Shielded balance is almost ready — you can register privately around %@." = "موجودی محافظت‌شده شما تقریباً آماده است — حدود %@ می‌توانید به‌صورت خصوصی ثبت کنید.";
+
+/* Usernames */
+"Your Shielded balance is ready — register your username privately now" = "موجودی محافظت‌شده شما آماده است — همین حالا نام کاربری‌تان را خصوصی ثبت کنید";
+
+/* Usernames */
+"Your Shielded balance is resting — you can register privately around %@" = "موجودی محافظت‌شده شما در حال توقف است — حدود %@ می‌توانید به‌صورت خصوصی ثبت کنید";
+
+/* DashPay */
+"Your shielded balance is still maturing. It will be ready around %@." = "موجودی محافظت‌شده شما هنوز در حال رسیدن است. حدود %@ آماده می‌شود.";
 
 /* Dash DEX */
 "Your swap can NOT be processed without a refund address" = "Your swap can NOT be processed without a refund address";
@@ -3878,6 +5010,9 @@
 "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it." = "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.";
 
 /* No comment provided by engineer. */
+"Your Transparent balance" = "موجودی شفاف شما";
+
+/* No comment provided by engineer. */
 "Your username %@ has been successfully created on the Dash Network" = "Your username %@ has been successfully created on the Dash Network";
 
 /* No comment provided by engineer. */
@@ -3886,14 +5021,31 @@
 /* Usernames */
 "Your username has been successfully created" = "Your username has been successfully created";
 
+/* Usernames */
+"Your username is visible to everyone. Funding it from your Shielded balance — after letting the funds rest for a few hours — means no one can link your username to your other Dash." = "نام کاربری شما برای همه دیدنی است. تأمین آن از موجودی محافظت‌شده — پس از آنکه وجوه چند ساعت بمانند — یعنی هیچ‌کس نمی‌تواند نام کاربری‌تان را به دیگر دش‌هایتان پیوند دهد.";
+
+/* Identities */
+"Your username, profile, and contacts follow this identity." = "نام کاربری، نمایه و مخاطبان شما به این هویت وابسته‌اند.";
+
+/* Identities */
+"Your username, profile, and contacts will follow this identity." = "نام کاربری، نمایه و مخاطبان شما به این هویت وابسته خواهند بود.";
+
 /* No comment provided by engineer. */
 "Your vote was cancelled" = "رای‌تان لغو شد";
 
 /* Voting */
 "Your vote was submitted" = "رای‌تان ثبت شد";
 
+"Your votes" = "رأی‌های شما";
+
 /* No comment provided by engineer. */
 "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device." = "کیف پول‌تان اکنون امن است. هر گاه خواستید می‌توانید از این عبارت بازیابی برای بازگرداندن حساب‌تان روی دستگاهی دیگر استفاده کنید. ";
+
+/* Core send blocked until chain sync completes */
+"Your wallet is still syncing with the Dash network. Sending will be available once syncing completes." = "کیف پول شما هنوز با شبکه دش همزمان می‌شود. ارسال پس از پایان همزمان‌سازی در دسترس خواهد بود.";
+
+/* Core send blocked until chain sync completes */
+"Your wallet is still syncing. Sending from your Transparent balance will be available once syncing completes." = "کیف پول شما هنوز همزمان می‌شود. ارسال از موجودی شفاف پس از پایان همزمان‌سازی در دسترس خواهد بود.";
 
 /* No comment provided by engineer. */
 "ZenLedger" = "ذن‌لجر";
@@ -3901,5 +5053,13 @@
 /* Savings percentage */
 "~%.0f%%" = "~%.0f%%";
 
+/* DashPay: estimated network fee — DASH amount, then its local-currency equivalent */
+"~%@ DASH (≈ %@)" = "~%@ DASH (≈ %@)";
+
+"“%@” could not be read as a Dash username." = "«%@» به‌عنوان نام کاربری دش خوانده نشد.";
+
 /* Usernames */
 "“%@” has been registered." = "“%@” has been registered.";
+
+/* DashPay Invitations */
+"“%@” has been registered. Send a contact request to the person who invited you?" = "«%@» ثبت شد. برای کسی که شما را دعوت کرده درخواست تماس فرستاده شود؟";

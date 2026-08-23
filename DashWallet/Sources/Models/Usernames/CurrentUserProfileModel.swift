@@ -33,7 +33,11 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
     @objc private(set) var state: CurrentUserProfileModelState = .none
     @objc let updateModel: DWDPUpdateProfileModel
     @Published private(set) var showJoinDashpay: Bool = false
-    
+    /// Chain still catching up. The Join DashPay row stays visible throughout
+    /// (it is a standing menu entry) but presents itself as unavailable:
+    /// registration cannot be started until the chain is synced.
+    @Published private(set) var isSyncing: Bool = false
+
     override init() {
         updateModel = DWDPUpdateProfileModel()
         super.init()
@@ -41,7 +45,8 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
         model.$state
             .removeDuplicates()
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
+            .sink { [weak self] state in
+                self?.isSyncing = state != .syncDone
                 self?.updateShowJoinDashpay()
             }
             .store(in: &cancellableBag)
@@ -106,8 +111,20 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
         }
         showJoinDashpay = JoinDashPayBannerPolicy.shouldShow(
             contextReady: identityState.contextReady,
-            syncDone: model.state == .syncDone,
-            dismissed: UsernamePrefs.shared.joinDashPayDismissed,
+            // Not gated on sync. The More entry is a standing menu row, and
+            // gating it made it come and go depending on how far the chain
+            // had caught up — the row was simply absent for the whole of a
+            // long sync. Registration itself still needs a synced chain; the
+            // row reflects that in its own copy rather than by vanishing.
+            syncDone: true,
+            // Deliberately not `UsernamePrefs.shared.joinDashPayDismissed`.
+            // That flag is set by the close control, which exists only on
+            // Home — the More entry has no dismiss affordance at all. Reading
+            // it here meant one tap on Home's close permanently removed the
+            // menu entry too, with no way for the user to bring it back.
+            // On More the banner is a standing menu row: it disappears when
+            // the user actually has a username, not when they dismiss it.
+            dismissed: false,
             hasRegisteredUsername: hasUsername,
             hasRegistrationInProgress: hasPendingRecoveredName)
     }

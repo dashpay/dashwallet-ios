@@ -49,18 +49,7 @@ enum DWIdentityKeyUpgrader {
         // rows can lag — e.g. keys added from another device).
         let keysById = try await sdk.identityGetKeys(identityId: ownerId.toBase58String())
         let keys = keysById.values.compactMap { $0 as? [String: Any] }
-
-        func hasEnabledECDSAKey(purpose: Int) -> Bool {
-            keys.contains { key in
-                (key["purpose"] as? Int) == purpose
-                    && (key["type"] as? Int) == 0  // ECDSA_SECP256K1
-                    && (key["disabledAt"] == nil || key["disabledAt"] is NSNull)
-            }
-        }
-
-        var missingPurposes: [KeyPurpose] = []
-        if !hasEnabledECDSAKey(purpose: 1) { missingPurposes.append(.encryption) }
-        if !hasEnabledECDSAKey(purpose: 2) { missingPurposes.append(.decryption) }
+        let missingPurposes = Self.missingDashPayPurposes(inPlatformKeysById: keysById)
         guard !missingPurposes.isEmpty else { return false }
 
         Self.logger.info("🪪 KEY-UPGRADE :: identity missing \(missingPurposes.count, privacy: .public) DashPay key(s) — deriving + broadcasting IdentityUpdate")
@@ -100,6 +89,27 @@ enum DWIdentityKeyUpgrader {
         return true
     }
 
+    /// The DIP-15 purposes (ENCRYPTION / DECRYPTION) that lack an enabled
+    /// ECDSA_SECP256K1 key in a Platform `identityGetKeys` response. Shared
+    /// by the upgrade broadcast above and the Contacts tab's authoritative
+    /// "is Enable DashPay really needed?" re-check.
+    nonisolated static func missingDashPayPurposes(
+        inPlatformKeysById keysById: [String: Any]
+    ) -> [KeyPurpose] {
+        let keys = keysById.values.compactMap { $0 as? [String: Any] }
+        func hasEnabledECDSAKey(purpose: Int) -> Bool {
+            keys.contains { key in
+                (key["purpose"] as? Int) == purpose
+                    && (key["type"] as? Int) == 0  // ECDSA_SECP256K1
+                    && (key["disabledAt"] == nil || key["disabledAt"] is NSNull)
+            }
+        }
+        var missing: [KeyPurpose] = []
+        if !hasEnabledECDSAKey(purpose: 1) { missing.append(.encryption) }
+        if !hasEnabledECDSAKey(purpose: 2) { missing.append(.decryption) }
+        return missing
+    }
+
     private static func fetchIdentityRow(
         ownerId: Data,
         modelContainer: ModelContainer
@@ -109,5 +119,45 @@ enum DWIdentityKeyUpgrader {
             predicate: #Predicate { $0.identityId == ownerId })
         descriptor.fetchLimit = 1
         return (try? context.fetch(descriptor))?.first
+    }
+}
+
+/// Re-fetches an identity from Platform through the Rust load pipeline
+/// (`loadIdentity(atIndex:)`), folding the authoritative state — public
+/// keys included — back into the wallet and, via the persistence event
+/// channel, the local SwiftData rows. Backs the Storage Explorer's
+/// pull-to-refresh so keys added from another device become visible.
+///
+/// dashpay target only (same as the upgrader above).
+@MainActor
+enum DWIdentityReloader {
+
+    private static let logger = Logger(
+        subsystem: "org.dashfoundation.dash",
+        category: "swift-sdk-migration.identity-reloader")
+
+    /// Reload the identity persisted at `identityIndex`. Errors are logged,
+    /// not thrown — pull-to-refresh has no failure UI, and the stale local
+    /// rows remain an honest fallback.
+    static func reload(identityIndex: UInt32) async {
+        guard let wallet = SwiftDashSDKHost.shared.wallet else { return }
+        do {
+            let id = try await wallet.loadIdentity(atIndex: identityIndex)
+            Self.logger.info("🪪 RELOAD :: identity at index \(identityIndex, privacy: .public) reloaded (found=\(id != nil, privacy: .public))")
+        } catch {
+            Self.logger.error("🪪 RELOAD :: identity reload failed at index \(identityIndex, privacy: .public): \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Reload the current user's main identity, resolving its identity
+    /// index from the persisted row. No-op when no identity is registered.
+    static func reloadCurrentUserIdentity() async {
+        guard let modelContainer = SwiftDashSDKHost.shared.modelContainer,
+              let ownerId = DWCurrentUserIdentityInfo.shared.identityId else { return }
+        var descriptor = FetchDescriptor<PersistentIdentity>(
+            predicate: #Predicate { $0.identityId == ownerId })
+        descriptor.fetchLimit = 1
+        guard let row = (try? modelContainer.mainContext.fetch(descriptor))?.first else { return }
+        await reload(identityIndex: row.identityIndex)
     }
 }

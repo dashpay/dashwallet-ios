@@ -64,11 +64,30 @@ struct PlatformAddressActivityUnitPolicy {
         Int64(clamping: credits / creditsPerDuff)
     }
 
-    static func unshieldMatches(
+    /// A first observation is a complete baseline, including zero-balance
+    /// addresses. Omitting zeroes leaves an all-zero wallet looking perpetually
+    /// uninitialized and causes its first payment to be swallowed as seeding.
+    static func initialBaselineBalances(
+        addresses: [DerivedPlatformAddress]
+    ) -> [String: Int64] {
+        Dictionary(
+            addresses.map { ($0.address, duffs(fromCredits: $0.balance)) },
+            uniquingKeysWith: { _, latest in latest })
+    }
+
+    /// True when an observed balance increase is explainable by an own
+    /// unshield of `creditedAmountCredits`: the delta equals the credited
+    /// principal, or is SMALLER — an own follow-on spend (e.g. the
+    /// shielded identity top-up claims most of the landed credits before
+    /// the next sync observes the address) shrinks the net delta below
+    /// the principal, but the remainder is still the own operation's
+    /// residue, not an external payment.
+    static func unshieldCoversDelta(
         creditedAmountCredits: UInt64,
         observedDeltaDuffs: Int64
     ) -> Bool {
-        duffs(fromCredits: creditedAmountCredits) == observedDeltaDuffs
+        observedDeltaDuffs > 0
+            && observedDeltaDuffs <= duffs(fromCredits: creditedAmountCredits)
     }
 
     static func isOwnUnshieldCandidate(
@@ -79,14 +98,20 @@ struct PlatformAddressActivityUnitPolicy {
             && kindTag == ShieldedActivityItem.Kind.unshield.rawValue
     }
 
-    static func exactUnshieldMatches(
+    /// Same destination address AND the delta is covered by the credited
+    /// principal (see `unshieldCoversDelta`). Known blind spot, accepted:
+    /// an external payment landing on the SAME fresh address inside the
+    /// own-operation window with a delta ≤ the principal would be
+    /// suppressed too — the previous exact-match rule had the equivalent
+    /// blind spot for payments that exactly equalled the principal.
+    static func unshieldResidueMatches(
         destinationAddress: String,
         observedAddress: String,
         creditedAmountCredits: UInt64,
         observedDeltaDuffs: Int64
     ) -> Bool {
         destinationAddress == observedAddress
-            && unshieldMatches(
+            && unshieldCoversDelta(
                 creditedAmountCredits: creditedAmountCredits,
                 observedDeltaDuffs: observedDeltaDuffs)
     }
@@ -226,12 +251,48 @@ final class PlatformAddressActivityDAO {
             S.colObservedAt <- Date().timeIntervalSince1970))
     }
 
+    /// Stable append-only position for an attended receive-session snapshot.
+    /// Row IDs are used instead of wall-clock observation timestamps.
+    func latestActivityId(walletId: Data, networkRaw: Int64) -> Int64 {
+        typealias S = PlatformAddressActivitySchema
+        let query = S.activity
+            .select(S.colId)
+            .filter(S.colWalletId == walletId && S.colNetwork == networkRaw)
+            .order(S.colId.desc)
+            .limit(1)
+        return (try? db.pluck(query))?[S.colId] ?? 0
+    }
+
+    /// New activity for one frozen receive address, oldest first so a burst is
+    /// presented deterministically.
+    func activities(
+        walletId: Data,
+        networkRaw: Int64,
+        address: String,
+        afterId: Int64
+    ) -> [PlatformAddressActivityRecord] {
+        typealias S = PlatformAddressActivitySchema
+        let query = S.activity
+            .filter(
+                S.colWalletId == walletId &&
+                    S.colNetwork == networkRaw &&
+                    S.colAddress == address &&
+                    S.colId > afterId)
+            .order(S.colId.asc)
+        return records(for: query)
+    }
+
     /// All received-activity rows for the wallet+network, newest first.
     func activities(walletId: Data, networkRaw: Int64) -> [PlatformAddressActivityRecord] {
         typealias S = PlatformAddressActivitySchema
         let query = S.activity
             .filter(S.colWalletId == walletId && S.colNetwork == networkRaw)
             .order(S.colObservedAt.desc)
+        return records(for: query)
+    }
+
+    private func records(for query: Table) -> [PlatformAddressActivityRecord] {
+        typealias S = PlatformAddressActivitySchema
         guard let rows = try? db.prepare(query) else { return [] }
         return rows.map { row in
             PlatformAddressActivityRecord(
@@ -275,12 +336,12 @@ enum PlatformAddressActivityRecorder {
         // silently. Recording the whole standing balance as "received
         // today" would be fabricated history.
         guard !baseline.isEmpty else {
-            for entry in addresses where entry.balance > 0 {
+            for (address, balanceDuffs) in PlatformAddressActivityUnitPolicy
+                .initialBaselineBalances(addresses: addresses) {
                 dao.upsertBaseline(
                     walletId: walletId, networkRaw: networkRaw,
-                    address: entry.address,
-                    balanceDuffs: PlatformAddressActivityUnitPolicy.duffs(
-                        fromCredits: entry.balance))
+                    address: address,
+                    balanceDuffs: balanceDuffs)
             }
             return
         }
@@ -336,10 +397,13 @@ enum PlatformAddressActivityRecorder {
         }
     }
 
-    /// Exact match against an own internal unshield: same destination
-    /// address and credited principal. The unshield builder reserves the fee
-    /// in addition to `amount`; the Platform address receives `amount`
-    /// exactly, while the shielded pool is debited by amount + fee.
+    /// Match against an own internal unshield: same destination address,
+    /// with the observed delta covered by the credited principal (equal, or
+    /// smaller when an own follow-on spend — e.g. a shielded identity
+    /// top-up — consumed part of it before this sync). The unshield builder
+    /// reserves the fee in addition to `amount`; the Platform address
+    /// receives `amount` exactly, while the shielded pool is debited by
+    /// amount + fee.
     private static func matchesOwnUnshield(
         address: String,
         deltaDuffs: Int64,
@@ -363,7 +427,7 @@ enum PlatformAddressActivityRecorder {
                 row.counterparty,
                 asBech32m: true,
                 isTestnet: network != .mainnet)
-            if PlatformAddressActivityUnitPolicy.exactUnshieldMatches(
+            if PlatformAddressActivityUnitPolicy.unshieldResidueMatches(
                 destinationAddress: destination,
                 observedAddress: address,
                 creditedAmountCredits: row.amount,

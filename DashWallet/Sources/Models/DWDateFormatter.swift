@@ -74,6 +74,16 @@ class DWDateFormatter: NSObject {
         return longDateFormatter.string(from: date)
     }
 
+    /// Date and time together, for deadlines where the hour matters. A
+    /// contested-name vote closes ~90 minutes after submission on testnet, so
+    /// a bare date tells the user nothing about when to look again.
+    func dateAndTime(from date: Date) -> String {
+        String.localizedStringWithFormat(
+            NSLocalizedString("%1$@ at %2$@", comment: "A date followed by a time of day"),
+            dateOnly(from: date),
+            timeOnly(from: date))
+    }
+
     func iso8601String(from date: Date) -> String {
         return iso8601DateFormatter.string(from: date)
     }

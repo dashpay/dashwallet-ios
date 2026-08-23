@@ -15,17 +15,21 @@ struct PaymentsLandingScreen: View {
     var onCopyAddress: () -> Void
     var onShareAddress: () -> Void
     var onSpecifyAmount: () -> Void
+    var onViewTransaction: (Data) -> Void
     var onScanQR: () -> Void
-    var onShieldedBalance: () -> Void
-    /// When set, the Internal tab embeds the transfer form directly (the
-    /// same screen the balance-row arrows used to present standalone)
-    /// instead of the action-row list. Set by the receive and send sheets.
-    var embeddedTransferViewModel: InternalTransferViewModel? = nil
+    /// The Internal tab's embedded transfer form. The full landing shows it
+    /// un-pinned (free From + To pickers); the balance-row receive/send
+    /// sheets pin one endpoint via `transferReceivePinned`/`transferSendFrom`.
+    var embeddedTransferViewModel: InternalTransferViewModel
     var onTransferCompleted: () -> Void = {}
     /// Set by the balance-row send sheet: the embedded transfer form pins
     /// this balance as its From card (destination picked on the To rows),
     /// instead of the receive sheet's pinned-destination layout.
-    var transferSendFrom: ChainNetwork? = nil
+    var transferSendFrom: ChainNetwork?
+    /// True for the balance-row receive sheet: the transfer form pins the
+    /// receive toggle's balance as its To card (source picked on the From
+    /// rows). False (with `transferSendFrom` nil) = the free-form landing.
+    var transferReceivePinned: Bool = false
     /// The Send tab IS the external-send form — pinned to the tapped
     /// balance as source on the balance-row send sheet, un-pinned (full
     /// From picker) on the full landing.
@@ -40,8 +44,7 @@ struct PaymentsLandingScreen: View {
     var body: some View {
         // Tighter chrome when a tab embeds a full form (transfer or send) —
         // its amount + cards + keypad need most of the sheet.
-        let isEmbeddedForm = (viewModel.activeTab == .internalTransfer && embeddedTransferViewModel != nil)
-            || viewModel.activeTab == .send
+        let isEmbeddedForm = viewModel.activeTab != .receive
         VStack(alignment: .center, spacing: isEmbeddedForm ? 12 : 20) {
             if showsHeader {
                 header
@@ -54,34 +57,35 @@ struct PaymentsLandingScreen: View {
             switch viewModel.activeTab {
             case .receive:
                 receiveContent
-                Spacer()
-            case .internalTransfer:
-                if let transferViewModel = embeddedTransferViewModel {
-                    if let sendFrom = transferSendFrom {
-                        // Send sheet: the From card is pinned by the tapped
-                        // balance; the To rows pick the destination.
-                        InternalTransferScreen(
-                            viewModel: transferViewModel,
-                            onCompleted: onTransferCompleted,
-                            showsHeader: false,
-                            sendFrom: sendFrom)
-                    } else {
-                        InternalTransferScreen(
-                            viewModel: transferViewModel,
-                            onCompleted: onTransferCompleted,
-                            showsHeader: false,
-                            receiveInto: viewModel.network)
-                            // Keep the pinned route in lockstep with the receive
-                            // toggle, so the fixed To card and the executed
-                            // transfer can never disagree.
-                            .onAppear { transferViewModel.applyReceiveRoute(into: viewModel.network) }
-                            .onChange(of: viewModel.network) { network in
-                                transferViewModel.applyReceiveRoute(into: network)
-                            }
-                    }
-                } else {
-                    internalContent
+                if viewModel.receipt == nil {
                     Spacer()
+                }
+            case .internalTransfer:
+                if let sendFrom = transferSendFrom {
+                    // Send sheet: the From card is pinned by the tapped
+                    // balance; the To rows pick the destination.
+                    InternalTransferScreen(
+                        viewModel: embeddedTransferViewModel,
+                        onCompleted: onTransferCompleted,
+                        showsHeader: false,
+                        sendFrom: sendFrom)
+                } else if transferReceivePinned {
+                    // The hosting controller keeps the pinned route in
+                    // lockstep with the receive toggle (its `$network`
+                    // subscription), so the fixed To card and the executed
+                    // transfer can never disagree.
+                    InternalTransferScreen(
+                        viewModel: embeddedTransferViewModel,
+                        onCompleted: onTransferCompleted,
+                        showsHeader: false,
+                        receiveInto: viewModel.network)
+                } else {
+                    // Full landing: the transfer form itself, free From and
+                    // To pickers — no intermediate action-row step.
+                    InternalTransferScreen(
+                        viewModel: embeddedTransferViewModel,
+                        onCompleted: onTransferCompleted,
+                        showsHeader: false)
                 }
             case .send:
                 SendScreen(
@@ -94,6 +98,8 @@ struct PaymentsLandingScreen: View {
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
+        .animation(.spring(response: 0.45, dampingFraction: 0.82), value: viewModel.receipt?.id)
+        .sensoryFeedback(.success, trigger: viewModel.receipt?.id)
     }
 
     // MARK: - Header
@@ -169,20 +175,104 @@ struct PaymentsLandingScreen: View {
             ChainNetworkToggle(selection: $viewModel.network, options: ChainNetwork.allCases)
                 .padding(.horizontal, 20)
 
-            qrCard
+            if let receipt = viewModel.receipt {
+                receiptCard(receipt)
+                    .transition(.scale(scale: 0.94).combined(with: .opacity))
+            } else {
+                qrCard
 
-            HStack(spacing: 12) {
-                Button(action: onShareAddress) {
-                    actionPill(title: NSLocalizedString("Share address", comment: ""))
-                }
-                .disabled(viewModel.currentAddress == nil)
+                HStack(spacing: 12) {
+                    Button(action: onShareAddress) {
+                        actionPill(title: NSLocalizedString("Share address", comment: ""))
+                    }
+                    .disabled(viewModel.currentAddress == nil)
 
-                Button(action: onSpecifyAmount) {
-                    actionPill(title: NSLocalizedString("Specify amount", comment: ""))
+                    Button(action: onSpecifyAmount) {
+                        actionPill(title: NSLocalizedString("Specify amount", comment: ""))
+                    }
+                    .disabled(viewModel.currentAddress == nil || viewModel.network != .core)
                 }
-                .disabled(viewModel.currentAddress == nil || viewModel.network != .core)
+                .padding(.horizontal, 20)
+
+                if viewModel.isWatchingForReceipt {
+                    HStack(spacing: 8) {
+                        SwiftUI.ProgressView()
+                            .scaleEffect(0.8)
+                        Text(NSLocalizedString("Watching for a payment…", comment: "Receive screen activity"))
+                            .font(.caption)
+                            .foregroundColor(.dash.secondaryText)
+                    }
+                    .transition(.opacity)
+                }
             }
+        }
+    }
+
+    private func receiptCard(_ receipt: ReceiveReceipt) -> some View {
+        VStack(spacing: 16) {
+            PaymentSuccessHeader(
+                title: NSLocalizedString("Received", comment: "Receive success title"),
+                amountDuffs: Int64(clamping: receipt.amountDuffs),
+                fiatText: CurrencyExchanger.shared.fiatAmountString(
+                    for: receipt.amountDuffs.dashAmount))
+
+            VStack(spacing: 8) {
+                receiptInfoRow(
+                    title: NSLocalizedString("Balance", comment: "Receive receipt rail"),
+                    value: receipt.rail.balanceName)
+                receiptInfoRow(
+                    title: NSLocalizedString("Status", comment: "Receive receipt status"),
+                    value: receipt.statusTitle)
+                receiptInfoRow(
+                    title: NSLocalizedString("Time", comment: "Receive receipt time"),
+                    value: receipt.receivedAt.formatted(date: .omitted, time: .shortened))
+                if let memo = receipt.memo, !memo.isEmpty {
+                    receiptInfoRow(
+                        title: NSLocalizedString("Memo", comment: "Receive receipt memo"),
+                        value: memo)
+                }
+            }
+            .padding(14)
+            .background(Color.dash.secondaryBackground)
+            .cornerRadius(14)
             .padding(.horizontal, 20)
+
+            if viewModel.canViewTransaction, let transactionId = receipt.transactionId {
+                Button {
+                    onViewTransaction(transactionId)
+                } label: {
+                    Text(NSLocalizedString("View transaction", comment: "Receive receipt action"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.dash.blue)
+                }
+            }
+
+            Spacer(minLength: 12)
+
+            ButtonsGroup(
+                orientation: .horizontal,
+                size: .large,
+                positiveButtonText: NSLocalizedString("Done", comment: "Receive receipt action"),
+                positiveButtonAction: onClose,
+                negativeButtonText: NSLocalizedString("Receive another", comment: "Receive receipt action"),
+                negativeButtonAction: viewModel.receiveAnother)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func receiptInfoRow(title: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.dash.secondaryText)
+            Spacer()
+            Text(value)
+                .font(.caption.weight(.medium))
+                .foregroundColor(.dash.primaryText)
+                .multilineTextAlignment(.trailing)
+                .lineLimit(2)
         }
     }
 
@@ -241,47 +331,4 @@ struct PaymentsLandingScreen: View {
             .cornerRadius(12)
     }
 
-    // MARK: - Internal
-
-    private var internalContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("Internal transfer to/from", comment: ""))
-                .font(.caption)
-                .foregroundColor(Color.dash.secondaryText)
-                .padding(.horizontal, 20)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            actionRow(
-                iconSystemName: "shield.fill",
-                title: NSLocalizedString("Shielded balance", comment: ""),
-                action: onShieldedBalance)
-                .padding(.horizontal, 20)
-        }
-    }
-
-    // MARK: - Shared action row
-
-    private func actionRow(
-        iconSystemName: String,
-        title: String,
-        action: (() -> Void)?
-    ) -> some View {
-        Button(action: { action?() }) {
-            HStack(spacing: 12) {
-                Image(systemName: iconSystemName)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.blue)
-                    .frame(width: 24, height: 24)
-                Text(title)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.dash.primaryText)
-                Spacer()
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 14)
-            .background(Color.dash.secondaryBackground)
-            .cornerRadius(12)
-        }
-        .disabled(action == nil)
-    }
 }

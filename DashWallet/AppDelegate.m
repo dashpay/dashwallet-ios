@@ -115,7 +115,6 @@ NS_ASSUME_NONNULL_BEGIN
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
     [CoinbaseObjcWrapper start];
     [CrowdNodeObjcWrapper start];
-    [SwapTrackingServiceObjcWrapper start];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationTerminationRequestNotification:)
@@ -129,6 +128,12 @@ NS_ASSUME_NONNULL_BEGIN
     
     [[DWVersionManager sharedInstance] migrateUserDefaults];
     [[DWAuthenticationService shared] enableAuthenticationIfNeeded];
+#ifdef DEBUG
+    // QA fixture: fabricate the wallet-without-PIN keychain state (partial
+    // restore / interrupted setup) to exercise the lock screen's Set PIN
+    // routing. No-op unless QA_DROP_PIN_RECORDS=1 is in the environment.
+    [DWAuthenticationService debugDropPinRecordsIfRequested];
+#endif
 
     // Advance the PIN-lockout clock to the wall clock at every launch, so a
     // lockout keeps elapsing even fully offline (Bug #2 — DashSync's own
@@ -136,11 +141,25 @@ NS_ASSUME_NONNULL_BEGIN
     // continuously via HTTPClient).
     [[DWSecureTimeService shared] ratchetToWallClock];
 
-    [[DatabaseConnection shared] migrateIfNeededAndReturnError:nil];
+    NSError *databaseMigrationError = nil;
+    if (![[DatabaseConnection shared] migrateIfNeededAndReturnError:&databaseMigrationError]) {
+        DWLog(@"Database migration failed: %@", databaseMigrationError);
+    }
+
+    // After migrateIfNeeded: the tracking service reads `swap_orders` as soon as it starts,
+    // so on a fresh install it must not race the migration that creates the table.
+    [SwapTrackingServiceObjcWrapper start];
 
     // Kick off the SwiftDashSDK key migration and app-owned runtime early.
     // The runtime wallet is restored from app-owned Keychain state,
     // not from a SwiftData wallet store.
+#ifdef DEBUG
+    // QA fixture: fabricate DashSync's legacy keychain layout when either
+    // LEGACY_KEYCHAIN_MNEMONIC or LEGACY_KEYCHAIN_INVALID=1 is set in the
+    // environment (simulator upgrade-path testing). No-op otherwise;
+    // DEBUG builds only.
+    [DWSwiftDashSDKKeyMigrator debugInstallLegacyFixtureIfRequested];
+#endif
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
     [DWSwiftDashSDKWalletRuntime startObservingNetworkChanges];
     [DWSwiftDashSDKWalletRuntime startIfReady];

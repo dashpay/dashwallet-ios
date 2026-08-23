@@ -22,6 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger, DWSetPinIntent) {
     DWSetPinIntent_CreateNewWallet,
     DWSetPinIntent_ChangePin,
+    /// A wallet exists but no PIN record does (partial keychain restore,
+    /// interrupted setup) — there is no PIN to "change".
+    DWSetPinIntent_SetPin,
 };
 
 @class DWSetPinViewController;

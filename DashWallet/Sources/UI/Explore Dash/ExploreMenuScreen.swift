@@ -86,10 +86,26 @@ struct ExploreMenuScreen: View {
                 }
 
                 MenuItem(
+                    title: NSLocalizedString("Buy & Sell Dash", comment: ""),
+                    subtitle: NSLocalizedString("Select a service to buy, sell, convert and transfer Dash", comment: "Buy Sell Dash"),
+                    icon: .custom("image.buy.and.sell", maxHeight: 30),
+                    action: { showBuySellPortal() }
+                )
+                .frame(minHeight: 56)
+
+                MenuItem(
                     title: NSLocalizedString("Where to Spend?", comment: ""),
                     subtitle: NSLocalizedString("Find merchants that accept Dash payments", comment: ""),
                     icon: .custom("image-menu-merchant", maxHeight: 30),
                     action: { showWhereToSpend() }
+                )
+                .frame(minHeight: 56)
+
+                MenuItem(
+                    title: NSLocalizedString("Username Marketplace", comment: "Username marketplace"),
+                    subtitle: NSLocalizedString("Buy, sell and transfer DashPay usernames", comment: "Username marketplace: Explore row subtitle"),
+                    icon: .system("at.circle.fill"),
+                    action: { showUsernameMarketplace() }
                 )
                 .frame(minHeight: 56)
 
@@ -193,6 +209,29 @@ struct ExploreMenuScreen: View {
             onShowGiftCard(txId)
         }
         vc.pushViewController(merchantVC, animated: true)
+    }
+
+    /// Same auth gate the row carried in the More menu — the portal
+    /// exposes account-linked balances (Coinbase/Uphold), so it stays
+    /// behind PIN/biometrics wherever it is reached from.
+    private func showBuySellPortal() {
+        AuthenticationService.shared.authenticate(
+            withPrompt: nil,
+            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+            alertIfLockout: true
+        ) { authenticated, _, _ in
+            guard authenticated else { return }
+            let controller = BuySellPortalViewController.controller()
+            controller.hidesBottomBarWhenPushed = true
+            vc.pushViewController(controller, animated: true)
+        }
+    }
+
+    private func showUsernameMarketplace() {
+        let controller = UIHostingController(
+            rootView: UsernameMarketplaceScreen(vc: vc))
+        controller.hidesBottomBarWhenPushed = true
+        vc.pushViewController(controller, animated: true)
     }
 
     private func showAtms() {

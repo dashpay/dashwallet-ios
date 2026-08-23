@@ -246,10 +246,18 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
         XCTAssertEqual(
             PlatformAddressActivityUnitPolicy.duffs(fromCredits: creditedAmount),
             10_000_000)
-        XCTAssertTrue(PlatformAddressActivityUnitPolicy.unshieldMatches(
+        XCTAssertTrue(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
             creditedAmountCredits: creditedAmount,
             observedDeltaDuffs: 10_000_000))
-        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldMatches(
+        // Non-positive deltas are never own-operation residue.
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
+            creditedAmountCredits: creditedAmount,
+            observedDeltaDuffs: 0))
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
+            creditedAmountCredits: creditedAmount,
+            observedDeltaDuffs: -1))
+        // A credits-vs-duffs unit mixup must never pass as a match.
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldCoversDelta(
             creditedAmountCredits: creditedAmount,
             observedDeltaDuffs: Int64(creditedAmount)))
     }
@@ -270,31 +278,142 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
     }
 
     func testOwnUnshieldSuppressionDoesNotMatchAnExternalReceive() {
-        XCTAssertFalse(PlatformAddressActivityUnitPolicy.exactUnshieldMatches(
+        // Different address: never suppressed, whatever the amount.
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldResidueMatches(
             destinationAddress: "tdash1own",
             observedAddress: "tdash1external",
             creditedAmountCredits: 10_000_000_000,
             observedDeltaDuffs: 10_000_000))
-        XCTAssertFalse(PlatformAddressActivityUnitPolicy.exactUnshieldMatches(
+        // Same address, delta LARGER than the credited principal: more
+        // money arrived than the own unshield explains — not residue.
+        XCTAssertFalse(PlatformAddressActivityUnitPolicy.unshieldResidueMatches(
             destinationAddress: "tdash1own",
             observedAddress: "tdash1own",
             creditedAmountCredits: 10_000_000_000,
-            observedDeltaDuffs: 9_999_999))
+            observedDeltaDuffs: 10_000_001))
+    }
+
+    func testOwnUnshieldSuppressionCoversTopUpResidue() {
+        // Shielded identity top-up: unshield lands 0.05, the top-up claims
+        // most of it before the next sync, so the observed delta is the
+        // small remainder — still the own operation's residue.
+        XCTAssertTrue(PlatformAddressActivityUnitPolicy.unshieldResidueMatches(
+            destinationAddress: "tdash1own",
+            observedAddress: "tdash1own",
+            creditedAmountCredits: 5_000_000_000,
+            observedDeltaDuffs: 198_000))
+        // The full principal (no follow-on spend) still matches.
+        XCTAssertTrue(PlatformAddressActivityUnitPolicy.unshieldResidueMatches(
+            destinationAddress: "tdash1own",
+            observedAddress: "tdash1own",
+            creditedAmountCredits: 5_000_000_000,
+            observedDeltaDuffs: 5_000_000))
     }
 
     func testPlatformActivityUnitMigrationKeepsPrereleaseVersion() {
         XCTAssertEqual(NormalizePlatformAddressActivityUnits().version, 20260727140000)
     }
 
-    func testCoreToShieldedMinimumIsFirstWholeDuffStrictlyAbovePoolFee() {
+    func testPlatformActivityInitialBaselineIncludesZeroBalanceAddresses() {
+        let balances = PlatformAddressActivityUnitPolicy.initialBaselineBalances(addresses: [
+            DerivedPlatformAddress(
+                address: "tdash1zero",
+                accountIndex: 0,
+                addressIndex: 0,
+                isUsed: false,
+                balance: 0),
+            DerivedPlatformAddress(
+                address: "tdash1funded",
+                accountIndex: 0,
+                addressIndex: 1,
+                isUsed: true,
+                balance: 5_000),
+        ])
+
+        XCTAssertEqual(balances["tdash1zero"], 0)
+        XCTAssertEqual(balances["tdash1funded"], 5)
+    }
+
+    func testReceiveFilterAcceptsOnlySDKClassifiedExternalReceives() {
+        XCTAssertTrue(ReceivedAtAddressTransactionFilter.matches(
+            direction: .received,
+            ownOutputAddresses: ["yReceive"],
+            address: "yReceive"))
+        XCTAssertFalse(ReceivedAtAddressTransactionFilter.matches(
+            direction: .moved,
+            ownOutputAddresses: ["yReceive"],
+            address: "yReceive"))
+        XCTAssertFalse(ReceivedAtAddressTransactionFilter.matches(
+            direction: .received,
+            ownOutputAddresses: ["yDifferent"],
+            address: "yReceive"))
+    }
+
+    func testReceiveCoreContextMappingAndStatusNeverRegresses() {
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 0), .mempool)
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 1), .instantSend)
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 2), .inBlock)
+        XCTAssertEqual(ReceiveReceiptPolicy.coreStatus(context: 3), .chainLocked)
+        XCTAssertNil(ReceiveReceiptPolicy.coreStatus(context: 4))
         XCTAssertEqual(
-            CoreToShieldedAmountPolicy.minimumAmountDuffs(
+            ReceiveReceiptPolicy.strongestStatus(
+                current: .inBlock,
+                observed: .mempool),
+            .inBlock)
+    }
+
+    func testReceiveShieldedCooldownSkipIsNotProjected() {
+        XCTAssertFalse(ReceiveReceiptPolicy.shouldProjectShieldedResult(
+            success: true,
+            cooldownSkip: true))
+        XCTAssertFalse(ReceiveReceiptPolicy.shouldProjectShieldedResult(
+            success: false,
+            cooldownSkip: false))
+        XCTAssertTrue(ReceiveReceiptPolicy.shouldProjectShieldedResult(
+            success: true,
+            cooldownSkip: false))
+    }
+
+    func testAttendedPlatformRefreshRequiresRunningAvailableAccount() {
+        XCTAssertFalse(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: false,
+            availability: .available))
+        XCTAssertFalse(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: true,
+            availability: .unknown))
+        XCTAssertFalse(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: true,
+            availability: .unavailable))
+        XCTAssertTrue(ReceiveReceiptPolicy.canRefreshPlatform(
+            isRunning: true,
+            availability: .available))
+    }
+
+    func testCoreToShieldedPoolFeeDuffsRoundsUpToCoverTheCreditFee() {
+        // A 200-credit remainder rounds up to the next whole duff…
+        XCTAssertEqual(
+            CoreToShieldedAmountPolicy.poolFeeDuffs(poolFeeCredits: 212_851_200),
+            212_852)
+        // …while an exact duff multiple must NOT gain a spurious +1.
+        XCTAssertEqual(
+            CoreToShieldedAmountPolicy.poolFeeDuffs(poolFeeCredits: 212_851_000),
+            212_851)
+    }
+
+    func testCoreToShieldedLockValueIsAmountPlusRoundedUpFee() {
+        // Fee-on-top: the lock delivers the full typed amount to the pool.
+        XCTAssertEqual(
+            CoreToShieldedAmountPolicy.lockValueDuffs(
+                forAmountDuffs: 1_000_000,
                 poolFeeCredits: 212_851_200),
-            212_852)
-        XCTAssertEqual(
-            CoreToShieldedAmountPolicy.minimumAmountDuffs(
-                poolFeeCredits: 212_851_000),
-            212_852)
+            1_212_852)
+    }
+
+    func testCoreToShieldedLockValueFailsClosedOnOverflow() {
+        XCTAssertNil(
+            CoreToShieldedAmountPolicy.lockValueDuffs(
+                forAmountDuffs: UInt64.max,
+                poolFeeCredits: 212_851_200))
     }
 
     func testShieldedSweepChoosesPrefixWithLargestNetPayout() {
@@ -335,34 +454,257 @@ final class SwiftDashSDKCoreLifecycleTests: XCTestCase {
                 noteCount: 2))
     }
 
+    func testShieldedSweepStopsAtTheActionBudget() {
+        // The 20 KiB `max_state_transition_size` ceiling, not the 16-action
+        // consensus cap, is what bounds a bundle: a 7-action transition is
+        // ~21,699 B and DAPI rejects it. The planner must stop at the budget
+        // even when every further note would raise the payout.
+        let notes = Array(repeating: UInt64(1_000), count: 12)
+        let budget = ShieldedActionBudget.maxActionsPerTransition
+
+        let candidate = ShieldedSweepPlanner.bestCandidate(
+            noteValues: notes,
+            feeForActions: { _ in 100 })
+
+        XCTAssertEqual(candidate?.noteCount, budget)
+        XCTAssertEqual(candidate?.inputCredits, UInt64(budget) * 1_000)
+        XCTAssertEqual(candidate?.amountCredits, UInt64(budget) * 1_000 - 100)
+    }
+
+    func testShieldedSweepSkipsNotesWorthLessThanTheirAction() {
+        // A note below the marginal fee of the action that would spend it
+        // lowers the payout, so the planner must leave it. The 1-credit note
+        // here is exactly that case: taking it would cost 50 and gain 1.
+        let fees: [Int: UInt64] = [2: 100, 3: 150]
+
+        let candidate = ShieldedSweepPlanner.bestCandidate(
+            noteValues: [1_000, 500, 1],
+            feeForActions: { fees[$0] })
+
+        XCTAssertEqual(candidate?.noteCount, 2)
+        XCTAssertEqual(candidate?.inputCredits, 1_500)
+        XCTAssertEqual(candidate?.amountCredits, 1_400)
+
+        // And a follow-up sweep of that leftover pays out nothing, which is
+        // what tells the UI to stop inviting the user to retry.
+        XCTAssertNil(
+            ShieldedSweepPlanner.bestCandidate(
+                noteValues: [1],
+                feeForActions: { fees[$0] }))
+    }
+
     func testShieldedSpendableBalanceSubtractsFeeReserve() {
         XCTAssertEqual(
-            ShieldedSpendAmountPolicy.spendableCredits(
+            TransferSpendAmountPolicy.spendableCredits(
                 balanceCredits: 10_000_000_000,
                 feeReserveCredits: 2_000_000_000),
             8_000_000_000)
         XCTAssertEqual(
-            ShieldedSpendAmountPolicy.spendableCredits(
+            TransferSpendAmountPolicy.spendableCredits(
                 balanceCredits: 1_000_000_000,
                 feeReserveCredits: 2_000_000_000),
             0)
     }
 
+    func testPlatformShieldScreenshotRegressionUsesSDKSelectableCapacity() {
+        let capacity = PlatformShieldCapacity(
+            canShield: true,
+            accountBalanceCredits: 3_921_114_000,
+            usableBalanceCredits: 3_623_849_220,
+            feeReserveCredits: 1_000_000_000,
+            maxShieldableCredits: 2_623_849_220)
+
+        // Old aggregate-balance Max from the report must be rejected.
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 2_921_114_000,
+            capacity: capacity))
+        // The displayed Max is the SDK ceiling floored to whole duffs.
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.maximumDuffs(capacity: capacity),
+            2_623_849)
+        XCTAssertTrue(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 2_623_849_000,
+            capacity: capacity))
+    }
+
+    func testPlatformShieldRejectsOneDuffAboveDisplayedMax() {
+        let capacity = PlatformShieldCapacity(
+            canShield: true,
+            accountBalanceCredits: 3_921_114_000,
+            usableBalanceCredits: 3_623_849_220,
+            feeReserveCredits: 1_000_000_000,
+            maxShieldableCredits: 2_623_849_220)
+
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 2_623_850_000,
+            capacity: capacity))
+    }
+
+    func testPlatformShieldRejectsZeroAndUnshieldableCapacity() {
+        let unshieldable = PlatformShieldCapacity(
+            canShield: false,
+            accountBalanceCredits: 3_921_114_000,
+            usableBalanceCredits: 0,
+            feeReserveCredits: 1_000_000_000,
+            maxShieldableCredits: 0,
+            reason: "insufficient headroom")
+
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.maximumDuffs(capacity: unshieldable),
+            0)
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 1_000,
+            capacity: unshieldable))
+
+        let shieldable = PlatformShieldCapacity(
+            canShield: true,
+            accountBalanceCredits: 3_921_114_000,
+            usableBalanceCredits: 3_623_849_220,
+            feeReserveCredits: 1_000_000_000,
+            maxShieldableCredits: 2_623_849_220)
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 0,
+            capacity: shieldable))
+    }
+
+    func testPlatformShieldMaxFloorsSubDuffCredits() {
+        let capacity = PlatformShieldCapacity(
+            canShield: true,
+            accountBalanceCredits: 5_000,
+            usableBalanceCredits: 5_000,
+            feeReserveCredits: 1_000,
+            maxShieldableCredits: 3_999)
+
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.maximumDuffs(capacity: capacity),
+            3)
+    }
+
+    func testPlatformShieldHeldBackNoticeUsesDisplayedAggregateBalance() {
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.heldBackCredits(
+                displayedPlatformCredits: 4_500_000_000,
+                accountBalanceCredits: 3_921_114_000,
+                submittedDuffs: 2_623_849),
+            1_876_151_000)
+
+        // If the published aggregate briefly lags, do not understate the
+        // account-level remainder reported by the coherent SDK preflight.
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.heldBackCredits(
+                displayedPlatformCredits: 3_000_000_000,
+                accountBalanceCredits: 3_921_114_000,
+                submittedDuffs: 2_623_849),
+            1_297_265_000)
+    }
+
+    func testPlatformShieldHeldBackIsZeroForOverflowAndFullySubmittedBalance() {
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.heldBackCredits(
+                displayedPlatformCredits: 4_500_000_000,
+                accountBalanceCredits: 3_921_114_000,
+                submittedDuffs: UInt64.max),
+            0)
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.heldBackCredits(
+                displayedPlatformCredits: 2_623_849_000,
+                accountBalanceCredits: 2_623_849_000,
+                submittedDuffs: 2_623_849),
+            0)
+    }
+
+    func testPlatformShieldFailsClosedWithoutResolvedPreflight() {
+        XCTAssertFalse(PlatformShieldAmountPolicy.canSubmit(
+            requestedCredits: 1_000,
+            capacity: nil))
+    }
+
+    func testPlatformShieldStaleCacheWaitsForBalancePublication() {
+        XCTAssertFalse(PlatformShieldAmountPolicy.shouldRefreshPreflight(
+            after: .other,
+            awaitingPlatformResync: true))
+        XCTAssertTrue(PlatformShieldAmountPolicy.shouldRefreshPreflight(
+            after: .balancePublished,
+            awaitingPlatformResync: true))
+        XCTAssertTrue(PlatformShieldAmountPolicy.shouldRefreshPreflight(
+            after: .other,
+            awaitingPlatformResync: false))
+        XCTAssertTrue(PlatformShieldAmountPolicy.awaitingPlatformResync(
+            current: true,
+            after: .other))
+        XCTAssertFalse(PlatformShieldAmountPolicy.awaitingPlatformResync(
+            current: true,
+            after: .balancePublished))
+        XCTAssertTrue(PlatformShieldAmountPolicy.shouldStartManualResync(
+            awaitingPlatformResync: true,
+            retryInFlight: false))
+        XCTAssertFalse(PlatformShieldAmountPolicy.shouldStartManualResync(
+            awaitingPlatformResync: true,
+            retryInFlight: true))
+        XCTAssertFalse(PlatformShieldAmountPolicy.shouldStartManualResync(
+            awaitingPlatformResync: false,
+            retryInFlight: false))
+    }
+
+    func testPlatformShieldCapacityChangeUpdatesOnlyMaxDerivedAmount() {
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.amountAfterCapacityChange(
+                currentDuffs: 2_921_114,
+                wasMaxDerived: true,
+                maxShieldableCredits: 2_623_849_220),
+            2_623_849)
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.amountAfterCapacityChange(
+                currentDuffs: 2_700_000,
+                wasMaxDerived: false,
+                maxShieldableCredits: 2_623_849_220),
+            2_700_000)
+        // A typed insufficient-balance failure followed by a failed preflight
+        // must not invent a zero Max or silently alter the confirmed value.
+        XCTAssertEqual(
+            PlatformShieldAmountPolicy.amountAfterCapacityChange(
+                currentDuffs: 2_921_114,
+                wasMaxDerived: true,
+                maxShieldableCredits: nil),
+            2_921_114)
+    }
+
     func testShieldedInsufficientBalanceMessageUsesSpendableAmount() {
-        let message = ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+        let message = TransferSpendAmountPolicy.insufficientBalanceMessage(
+            balanceName: "Shielded",
             requestedCredits: 8_000_000_001,
             balanceCredits: 10_000_000_000,
             feeReserveCredits: 2_000_000_000)
 
         XCTAssertNotNil(message)
+        XCTAssertTrue(message?.contains("Shielded") == true)
         XCTAssertTrue(
             message?.contains("0.08 DASH") == true
                 || message?.contains("0,08 DASH") == true)
         XCTAssertNil(
-            ShieldedSpendAmountPolicy.insufficientBalanceMessage(
+            TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: "Shielded",
                 requestedCredits: 8_000_000_000,
                 balanceCredits: 10_000_000_000,
                 feeReserveCredits: 2_000_000_000))
+    }
+
+    func testDuffDenominatedInsufficientBalanceMessageNamesTheBalance() {
+        let message = TransferSpendAmountPolicy.insufficientBalanceMessage(
+            balanceName: "Transparent",
+            requestedDuffs: 50_000_000,
+            spendableDuffs: 40_000_000)
+
+        XCTAssertNotNil(message)
+        XCTAssertTrue(message?.contains("Transparent") == true)
+        XCTAssertTrue(
+            message?.contains("0.4 DASH") == true
+                || message?.contains("0,4 DASH") == true)
+        XCTAssertNil(
+            TransferSpendAmountPolicy.insufficientBalanceMessage(
+                balanceName: "Transparent",
+                requestedDuffs: 40_000_000,
+                spendableDuffs: 40_000_000))
     }
 
     func testUniqueWithdrawalAddressMatchesDespiteRestoreTimeAndAmountSkew() {

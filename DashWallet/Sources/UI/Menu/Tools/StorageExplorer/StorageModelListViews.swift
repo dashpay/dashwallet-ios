@@ -67,9 +67,56 @@ struct DataContractStorageListView: View {
 
 // MARK: - PersistentPublicKey
 
+#if DASHPAY
+/// Identity reloads for the Storage Explorer's pull-to-refresh — the
+/// SDK call stays out of the `View` structs per the SwiftUI guardrails.
+/// Shared by the Public Keys list (current-user reload) and the identity
+/// detail (per-record reload).
+@MainActor
+final class StorageIdentityReloadModel: ObservableObject {
+    /// Drives the toolbar refresh button's spinner/disabled state (the
+    /// pull-to-refresh gesture has its own built-in indicator).
+    @Published private(set) var isReloading = false
+
+    func reloadCurrentUserIdentity() async {
+        isReloading = true
+        defer { isReloading = false }
+        await DWIdentityReloader.reloadCurrentUserIdentity()
+    }
+
+    func reload(identityIndex: UInt32) async {
+        isReloading = true
+        defer { isReloading = false }
+        await DWIdentityReloader.reload(identityIndex: identityIndex)
+    }
+
+    /// Reload every identity of the ACTIVE wallet — the Public Keys list
+    /// spans identities, so refreshing only the current user's would leave
+    /// the others' keys stale. Scoped by the wallet linkage (NOT `isLocal`,
+    /// which persisted rows have been observed carrying as false for the
+    /// wallet's own identity): `loadIdentity(atIndex:)` probes the active
+    /// wallet's DIP-9 tree and cannot refresh other wallets' identities.
+    func reloadAllLocalIdentities() async {
+        isReloading = true
+        defer { isReloading = false }
+        guard let modelContainer = SwiftDashSDKHost.shared.modelContainer,
+              let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId else { return }
+        let rows = (try? modelContainer.mainContext.fetch(FetchDescriptor<PersistentIdentity>())) ?? []
+        let indexes = Set(rows.filter { $0.wallet?.walletId == activeWalletId }.map(\.identityIndex))
+        for index in indexes.sorted() {
+            await DWIdentityReloader.reload(identityIndex: index)
+        }
+    }
+}
+#endif
+
 struct PublicKeyStorageListView: View {
     @Query(sort: \PersistentPublicKey.createdAt, order: .reverse)
     private var records: [PersistentPublicKey]
+
+    #if DASHPAY
+    @StateObject private var reloadModel = StorageIdentityReloadModel()
+    #endif
 
     var body: some View {
         List(records) { record in
@@ -83,6 +130,28 @@ struct PublicKeyStorageListView: View {
         }
         .navigationTitle("Public Keys (\(records.count))")
         .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "key") } }
+        #if DASHPAY
+        // Pull-to-refresh re-fetches every wallet-owned identity from
+        // Platform so keys added on another device appear here — the
+        // list spans identities, not just the current user's. The toolbar
+        // button is the same action with a visible affordance.
+        .refreshable { await reloadModel.reloadAllLocalIdentities() }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task { await reloadModel.reloadAllLocalIdentities() }
+                } label: {
+                    if reloadModel.isReloading {
+                        SwiftUI.ProgressView()
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                }
+                .disabled(reloadModel.isReloading)
+                .accessibilityLabel(Text("Refresh from Platform"))
+            }
+        }
+        #endif
     }
 }
 

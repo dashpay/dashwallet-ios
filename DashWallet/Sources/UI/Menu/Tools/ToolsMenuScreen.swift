@@ -197,8 +197,6 @@ struct ToolsMenuScreen: View {
             showExtendedPublicKeys()
         case .masternodeKeys:
             showMasternodeKeys()
-        case .masternodes:
-            showMasternodes()
         case .csvExport:
             showCSVExportSheet = true
         case .connections:
@@ -273,39 +271,13 @@ struct ToolsMenuScreen: View {
         vc.pushViewController(controller, animated: true)
     }
 
-    private func showMasternodes() {
-        let navController = vc
-        let popRoot: () -> Void = { [weak navController] in
-            _ = navController?.popViewController(animated: true)
-        }
-
-        let hosting = UIHostingController(
-            rootView: AnyView(
-                NavigationStack {
-                    MasternodesScreen()
-                        .navigationTitle(NSLocalizedString("Masternodes", comment: ""))
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                Button(action: popRoot) {
-                                    Image(systemName: "chevron.left")
-                                }
-                            }
-                        }
-                }
-            )
-        )
-        hosting.hidesBottomBarWhenPushed = true
-        vc.pushViewController(hosting, animated: true)
-    }
-
     private func showConnections() {
         let screen = ConnectionsScreen(vc: vc)
         let controller = UIHostingController(rootView: screen)
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
-    
+
     private func handleCSVExport() {
         Task {
             do {

@@ -22,6 +22,19 @@ enum ChainNetwork: String, CaseIterable, Identifiable {
         case .shielded: return NSLocalizedString("Shielded", comment: "")
         }
     }
+
+    /// User-facing name of the BALANCE this chain holds. The home balance rows
+    /// and the transfer screens call the Core balance "Transparent"; `title`
+    /// stays the chain's own name for the Send/Receive segmented toggle. One
+    /// source of truth so a row label and its insufficient-funds message can't
+    /// name the same balance differently.
+    var balanceName: String {
+        switch self {
+        case .core: return NSLocalizedString("Transparent", comment: "Balance breakdown")
+        case .platform: return NSLocalizedString("Platform", comment: "Dash Platform chain")
+        case .shielded: return NSLocalizedString("Shielded", comment: "")
+        }
+    }
 }
 
 struct ChainNetworkToggle: View {

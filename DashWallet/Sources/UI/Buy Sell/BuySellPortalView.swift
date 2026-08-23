@@ -48,7 +48,8 @@ private struct MenuCardStyle: ViewModifier {
 struct BuySellPortalView: View {
     let showCoinbase: Bool
     /// Dash DEX (SwapKit) entry visibility, decided by the controller (mainnet + API key
-    /// configured). Dash DEX now runs on SwiftDashSDK via memo-less NEAR-intents routes.
+    /// configured). Dash DEX now runs on SwiftDashSDK with NEAR-preferred routing and
+    /// MAYACHAIN fallback where NEAR cannot route.
     let showSwapKit: Bool
 
     @ObservedObject var model: BuySellPortalModel
@@ -59,8 +60,7 @@ struct BuySellPortalView: View {
     var onMaya: () -> Void
     var onSwapKit: () -> Void
 
-    // Maya remains withheld: its swap path is inherently OP_RETURN (memo-based), which
-    // SwiftDashSDK cannot build. Dash DEX (SwapKit) replaces it via memo-less NEAR routing.
+    // The standalone Maya portal remains withheld. Maya returns only as a route inside Dash DEX.
     private var showsMaya: Bool { false }
 
     var body: some View {

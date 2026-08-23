@@ -166,13 +166,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)recoverWalletWithCurrentSeedPhrase {
     NSUInteger count = [self.textView.text wordsCount];
-    if (count < 10) {
+    NSString *rawPhrase = self.textView.text;
+    BOOL isSupportAcceptancePhrase = [self.model isWipeAcceptancePhrase:rawPhrase];
+    if (count < 10 && !isSupportAcceptancePhrase) {
         return;
     }
 
     @autoreleasepool { // @autoreleasepool ensures sensitive data will be deallocated immediately
         UITextView *textView = self.textView;
-        NSString *phrase = textView.text;
+        NSString *phrase = rawPhrase;
+
+        // The support acknowledgement is not a mnemonic. Recognize the raw
+        // localized sentence before cleanup strips punctuation (for example
+        // the comma in Polish) or the word validator rejects it.
+        if (isSupportAcceptancePhrase) {
+            [self wipeWithPhrase:phrase];
+            return;
+        }
 
         NSString *incorrectWord = nil;
         uint32_t incorrectWordCount = 0;
@@ -201,8 +211,10 @@ NS_ASSUME_NONNULL_BEGIN
             }
         }
 
-        if ([phrase isEqualToString:DW_WIPE] || [phrase isEqualToString:DW_WIPE_STRONG] ||
-            [[phrase lowercaseString] isEqualToString:[self.model.wipeAcceptPhrase lowercaseString]]) {
+        BOOL isRegularWipeShortcut =
+            self.model.action == DWRecoverAction_Wipe &&
+            ([phrase isEqualToString:DW_WIPE] || [phrase isEqualToString:DW_WIPE_STRONG]);
+        if (isRegularWipeShortcut) {
             [self wipeWithPhrase:phrase];
         }
         else if (incorrectWord && incorrectWordCount > 1) {
@@ -239,7 +251,7 @@ NS_ASSUME_NONNULL_BEGIN
         // wallet; anything else (including the wipe magic words) is a mismatch.
         // Isolated from the wipe machinery so no wallet is ever erased here.
         if (self.model.action == DWRecoverAction_ResetPin) {
-            if ([self.model canWipeWithPhrase:phrase]) {
+            if ([self.model canResetPinWithPhrase:phrase]) {
                 [self.delegate recoverContentViewDidVerifyPhraseForPinReset:self];
             }
             else {
@@ -248,20 +260,37 @@ NS_ASSUME_NONNULL_BEGIN
             return;
         }
 
-        if ([phrase isEqualToString:DW_WIPE]) {
+        if (self.model.action == DWRecoverAction_Wipe && [phrase isEqualToString:DW_WIPE]) {
             if ([self.model isWalletEmpty]) {
                 [self.delegate recoverContentViewPerformWipe:self];
+            }
+            else if ([self.model hasMultipleStoredWalletIds]) {
+                // The shortcut is refused because of the stored-wallet count,
+                // not balance/sync — the "not empty" copy would be false.
+                [self.delegate recoverContentViewWipeBlockedByMultipleWallets:self];
+            }
+            else if (![self.model plainWipeAllowedOnCurrentNetwork]) {
+                // Mainnet-only shortcut: a zero testnet balance can't prove
+                // the seed's mainnet balance is empty.
+                [self.delegate recoverContentViewWipeShortcutUnavailableOnTestnet:self];
             }
             else {
                 [self.delegate recoverContentViewWipeNotAllowed:self];
             }
         }
-        else if ([phrase isEqualToString:DW_WIPE_STRONG] || [phrase.lowercaseString isEqualToString:self.model.wipeAcceptPhrase.lowercaseString]) {
+        else if ((self.model.action == DWRecoverAction_Wipe && [phrase isEqualToString:DW_WIPE_STRONG]) ||
+                 [self.model isWipeAcceptancePhrase:phrase]) {
             [self.delegate recoverContentViewPerformWipe:self];
         }
         else {
             if ([self.model canWipeWithPhrase:phrase]) {
                 [self.delegate recoverContentViewPerformWipe:self];
+            }
+            else if ([self.model phraseMatchesAnyStoredWallet:phrase]) {
+                // The phrase does match a stored wallet — just not all of
+                // them, so the set-wide wipe authorization refused it. Saying
+                // "doesn't match" here would be false and alarming.
+                [self.delegate recoverContentViewWipeBlockedByMultipleWallets:self];
             }
             else if (phrase) {
                 [self.delegate recoverContentViewWipeNotAllowedPhraseMismatch:self];

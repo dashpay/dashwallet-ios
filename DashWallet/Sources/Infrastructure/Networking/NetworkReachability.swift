@@ -25,6 +25,11 @@ final class NetworkReachability: NSObject {
     @objc static let didChangeNotification =
         Notification.Name("org.dash.networking.reachability.change")
 
+    /// Path updates are background work and stay at `.utility`. Raising the
+    /// QoS here was an attempt to hide a priority inversion, but the inversion
+    /// came from `startMonitoring` blocking the main thread — and
+    /// `.userInitiated` still sits below the main thread's `.userInteractive`,
+    /// so it only narrowed the window. The wait itself is gone instead.
     private let queue = DispatchQueue(label: "org.dash.reachability", qos: .utility)
     private var monitor: NWPathMonitor?
     private let lock = NSLock()
@@ -36,6 +41,15 @@ final class NetworkReachability: NSObject {
     @objc var isMonitoring: Bool {
         lock.lock(); defer { lock.unlock() }
         return monitor != nil
+    }
+
+    /// True once a real path has been reported. Until then `isReachable`'s
+    /// `false` is a placeholder, not an answer — callers that would show
+    /// offline UI must consult this (or `networkStatus == .offline`) rather
+    /// than treating "not reachable" as "offline".
+    @objc var hasDeterminedReachability: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return hasReceivedFirstPath
     }
 
     @objc var isReachable: Bool {

@@ -125,8 +125,6 @@ final class WalletsViewModel: ObservableObject {
     /// Cheap visibility gate for the Switch Wallet shortcut (offered while > 1).
     static var switchableWalletCount: Int { switchableWallets().count }
 
-    var hasSingleWallet: Bool { rows.count <= 1 }
-
     // MARK: - Switch
 
     /// Switch the active wallet to `walletId`, showing a progress overlay while
@@ -264,12 +262,21 @@ final class WalletsViewModel: ObservableObject {
 
     // MARK: - Remove
 
-    /// Whether removing `walletId` requires routing to the full reset flow —
-    /// true only when it is the sole remaining wallet. The screen presents
-    /// `DWResetWalletInfoViewController` in that case (preserving today's
-    /// last-wallet reset semantics); otherwise it drives `removeWallet`.
+    /// Whether removing `walletId` may route to the GLOBAL reset flow. The
+    /// reset deletes every SDK mnemonic, including wallets that are not
+    /// loaded/rendered on the current network, so `rows.count` is not a safe
+    /// last-wallet test. Prove from Keychain ground truth that every stored
+    /// wallet id resolves to the same recovery phrase as the target. Any
+    /// enumeration/read failure returns false (fail closed).
     func removalRoutesToFullReset(walletId: Data) -> Bool {
-        rows.count <= 1
+        do {
+            let entries = try SwiftDashSDKHost.strictlyPersistedMnemonics()
+            guard let target = entries.first(where: { $0.walletId == walletId }) else { return false }
+            return SwiftDashSDKHost.allMnemonicsMatch(phrase: target.mnemonic, in: entries)
+        } catch {
+            Self.logger.error("last-wallet proof failed; refusing global reset: \(String(describing: error), privacy: .public)")
+            return false
+        }
     }
 
     /// Derive the walletId of `mnemonic` on the current network WITHOUT
@@ -293,28 +300,41 @@ final class WalletsViewModel: ObservableObject {
         }
     }
 
-    /// Remove `walletId` from this device (this device's copy only — funds stay
-    /// recoverable with the phrase). Precondition (enforced by the screen): the
-    /// recovery phrase was verified, and this is NOT the last wallet.
+    /// Remove the logical wallet represented by `walletId` from this device on
+    /// both supported networks. Precondition (enforced by the screen): the
+    /// recovery phrase was verified, and another wallet exists on this network
+    /// to switch to — also re-checked here, independent of the registry's
+    /// active id, so a stale registry can never let the only rendered wallet
+    /// be hard-deleted outside the reset flow.
     ///
     /// If `walletId` is the active wallet, auto-switch to any other wallet
     /// first (await the rebind) so the runtime never ends up bound to a
-    /// deleted wallet, then delete. Deletion reuses the wiper's promoted
-    /// per-wallet primitive (`SwiftDashSDKWalletWiper.deleteWalletFromSDK`) and
-    /// clears the per-network registry entry if it still names this wallet.
+    /// deleted wallet, then delete both deterministic network ids plus any
+    /// matching legacy DashSync mnemonic account.
     func removeWallet(walletId: Data) async {
         guard !addInProgress, !switchInProgress, !removeInProgress else { return }
         removeInProgress = true
         defer { removeInProgress = false }
 
+        guard let other = rows.first(where: { $0.walletId != walletId })?.walletId else {
+            // No other wallet on this network — per-wallet removal must leave
+            // a wallet to switch to. The screen refuses this case up front
+            // (`beginRemove`); this bail is defense in depth.
+            Self.logger.error("removeWallet: refusing to remove the only wallet on this network")
+            errorMessage = NSLocalizedString("Cannot remove the last wallet here.", comment: "Wallets")
+            return
+        }
+
+        let mnemonic: String
+        do {
+            mnemonic = try SwiftDashSDKHost.strictlyPersistedMnemonic(for: walletId)
+        } catch {
+            Self.logger.error("removeWallet mnemonic read failed: \(String(describing: error), privacy: .public)")
+            errorMessage = error.localizedDescription
+            return
+        }
+
         if walletId == activeWalletId() {
-            guard let other = rows.first(where: { $0.walletId != walletId })?.walletId else {
-                // No other wallet — the screen routes the last wallet to the
-                // full reset flow instead of calling this. Bail defensively.
-                Self.logger.error("removeWallet: refusing to remove the only wallet")
-                errorMessage = NSLocalizedString("Cannot remove the last wallet here.", comment: "Wallets")
-                return
-            }
             switchInProgress = true
             do {
                 try await SwiftDashSDKWalletRuntime.shared.switchWallet(to: other)
@@ -328,21 +348,13 @@ final class WalletsViewModel: ObservableObject {
         }
 
         do {
-            try SwiftDashSDKWalletWiper.deleteWalletFromSDK(walletId)
+            try await SwiftDashSDKWalletWiper.deleteLogicalWallet(
+                mnemonic: mnemonic)
         } catch {
             Self.logger.error("removeWallet failed: \(String(describing: error), privacy: .public)")
             errorMessage = error.localizedDescription
             reload()
             return
-        }
-
-        // Keep the registry honest: if the removed wallet is still recorded as
-        // active for either registry network, drop it so a stale id can't be
-        // resolved. The removed wallet is gone from `wallets` now.
-        for kind in [WalletEnvironment.NetworkKind.mainnet, .testnet] {
-            if WalletEnvironment.activeWalletId(for: kind) == walletId {
-                WalletEnvironment.setActiveWalletId(nil, for: kind)
-            }
         }
 
         reload()
@@ -351,7 +363,9 @@ final class WalletsViewModel: ObservableObject {
     // MARK: - Helpers
 
     private func activeWalletId() -> Data? {
-        WalletEnvironment.activeWalletId(for: WalletEnvironment.isTestnet ? .testnet : .mainnet)
+        SwiftDashSDKHost.shared.wallet?.walletId
+            ?? WalletEnvironment.activeWalletId(
+                for: WalletEnvironment.isTestnet ? .testnet : .mainnet)
     }
 
     /// Collapse a user-entered recovery phrase to canonical form: trim, then
@@ -382,7 +396,18 @@ final class WalletsViewModel: ObservableObject {
             .nonEmpty
     }
 
-    private static func fallbackName(for walletId: Data) -> String {
+    /// Best available name for a wallet id in the current network's store.
+    /// Recovery-phrase inventory also uses this for Keychain entries that are
+    /// not loaded into the current manager; those safely fall back to a short
+    /// id rather than being omitted from the chooser.
+    static func displayName(for walletId: Data) -> String {
+        let context = SwiftDashSDKHost.shared.modelContainer?.mainContext
+        let persisted = context.flatMap { fetchPersistentWallet(walletId: walletId, in: $0) }
+        let name = persisted?.name?.nonEmpty
+        return name ?? fallbackName(for: walletId)
+    }
+
+    nonisolated static func fallbackName(for walletId: Data) -> String {
         let prefix = walletId.prefix(4).map { String(format: "%02x", $0) }.joined()
         return String(
             format: NSLocalizedString("Wallet %@…", comment: "Wallets — placeholder name with short id"),

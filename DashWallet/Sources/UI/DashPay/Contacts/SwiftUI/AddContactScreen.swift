@@ -11,15 +11,58 @@
 //  subtitle, elevated rounded white search field, white card result
 //  rows on the gray background.
 //
+//  QR entry points ("My QR" / "Scan QR" buttons under the search
+//  field): scan another user's `dashpay://user` code — verified
+//  against Platform before the send-confirmation sheet opens — and
+//  show your own (`MyDashPayUserQRSheet`).
+//
 
 import SwiftDashSDK
 import SwiftUI
 import DashUIKit
 
+/// Identity + DPNS full name pair driving the send-confirmation sheet
+/// — built from a tapped search row, or from a scan verified via exact
+/// DPNS resolution (the SDK's `DpnsSearchResult` is not constructible
+/// app-side, and a capped prefix page must not gate a verified scan).
+struct ContactCandidate: Identifiable, Equatable {
+    let identityId: Data
+    let fullName: String
+    /// Unique per (name, identity) pair — a contested name shares
+    /// `fullName` across contenders.
+    var id: String { fullName + "|" + identityId.map { String(format: "%02x", $0) }.joined() }
+}
+
 struct AddContactScreen: View {
     @Environment(\.dismiss) private var dismiss
+    @FocusState private var isSearchFocused: Bool
 
-    @State private var query = ""
+    @State private var query: String
+
+    private enum Layout {
+        static let searchFieldHeight: CGFloat = 52
+        static let searchHeaderTopPadding: CGFloat = 12
+        static let searchHeaderHeight = searchFieldHeight + searchHeaderTopPadding
+    }
+
+    private enum ScrollTarget: Hashable {
+        case searchField
+    }
+
+    /// Contact action selected in the preview. The action is deliberately
+    /// deferred until the preview sheet's dismissal completes so the PIN
+    /// prompt is never presented from a controller that is disappearing.
+    private enum PendingPreviewAction {
+        case send(ContactCandidate)
+        case accept(ContactCandidate)
+    }
+
+    /// `initialQuery` prefills the search (the Contacts tab's network
+    /// teaser hands its text over); the search fires on appear so the
+    /// results are already loading when the sheet lands.
+    init(initialQuery: String = "") {
+        _query = State(initialValue: initialQuery)
+    }
     @State private var results: [DpnsSearchResult] = []
     @State private var isSearching = false
     @State private var searchTask: Task<Void, Never>? = nil
@@ -34,9 +77,21 @@ struct AddContactScreen: View {
     @State private var eligibilityInFlight: Set<Data> = []
     /// Tapped result shown in the preview sheet (the single
     /// send/accept confirmation surface).
-    @State private var previewTarget: DpnsSearchResult? = nil
+    @State private var previewTarget: ContactCandidate? = nil
+    @State private var pendingPreviewAction: PendingPreviewAction? = nil
     @State private var errorMessage: String? = nil
-    @State private var sentToast = false
+    /// Username of the recipient of a just-sent request — drives the
+    /// centered success card (nil = hidden).
+    @State private var sentToUsername: String?
+    @State private var showScanner = false
+    @State private var showMyQR = false
+    /// A scanned user QR is being verified against Platform (DPNS
+    /// lookup + identity id match) — drives the blocking spinner.
+    @State private var isVerifyingScan = false
+    /// The in-flight verification. Canceled by the next scan and on
+    /// screen dismissal so a stale lookup can never overwrite the
+    /// newer one's `previewTarget`/`errorMessage`/spinner state.
+    @State private var scanVerifyTask: Task<Void, Never>? = nil
 
     @ObservedObject private var service = SwiftDashSDKContactsService.shared
 
@@ -44,15 +99,49 @@ struct AddContactScreen: View {
         NavigationStack {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
-                VStack(spacing: 0) {
-                    header
-                    ContactsSearchField(
-                        placeholder: NSLocalizedString("Search by username", comment: "DashPay Contacts"),
-                        text: $query,
-                        height: 52)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 22)
-                    resultsList
+                GeometryReader { geometry in
+                    ScrollViewReader { scrollProxy in
+                        ScrollView {
+                            LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                                header
+
+                                Section {
+                                    LazyVStack(spacing: 0) {
+                                        qrButtonsRow
+                                            .padding(.horizontal, 24)
+                                            .padding(.top, 12)
+                                        resultsList
+                                    }
+                                    // Keep the search anchor reachable even before a
+                                    // short/empty result set has enough content to scroll.
+                                    .frame(
+                                        minHeight: max(0, geometry.size.height - Layout.searchHeaderHeight),
+                                        alignment: .top)
+                                } header: {
+                                    ContactsSearchField(
+                                        placeholder: NSLocalizedString("Search by username", comment: "DashPay Contacts"),
+                                        text: $query,
+                                        height: Layout.searchFieldHeight,
+                                        focus: $isSearchFocused)
+                                        .padding(.horizontal, 24)
+                                        .padding(.top, Layout.searchHeaderTopPadding)
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color.dash.primaryBackground)
+                                        .id(ScrollTarget.searchField)
+                                        .zIndex(1)
+                                }
+                            }
+                        }
+                        .onChange(of: isSearchFocused) { _, focused in
+                            guard focused else { return }
+                            Task { @MainActor in
+                                await Task.yield()
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    scrollProxy.scrollTo(ScrollTarget.searchField, anchor: .top)
+                                }
+                            }
+                        }
+                    }
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -62,8 +151,30 @@ struct AddContactScreen: View {
                         .foregroundColor(.dash.blue)
                 }
             }
+            .fullScreenCover(isPresented: $showScanner) {
+                GenericQRScannerView(
+                    onQRCodeScanned: { handleScannedCode($0) },
+                    onCancel: { showScanner = false })
+            }
+            .sheet(isPresented: $showMyQR) {
+                if let link = myUserLink {
+                    MyDashPayUserQRSheet(
+                        link: link,
+                        displayName: DWCurrentUserIdentityInfo.shared.displayName)
+                }
+            }
             .onChange(of: query) { _, _ in
                 scheduleSearch()
+            }
+            .onAppear {
+                if !trimmedQuery.isEmpty {
+                    scheduleSearch()
+                }
+            }
+            .onDisappear {
+                scanVerifyTask?.cancel()
+                scanVerifyTask = nil
+                isVerifyingScan = false
             }
             .alert(
                 NSLocalizedString("Error", comment: ""),
@@ -75,26 +186,90 @@ struct AddContactScreen: View {
             } message: {
                 Text(errorMessage ?? "")
             }
-            .sheet(item: $previewTarget) { target in
+            .sheet(
+                item: $previewTarget,
+                onDismiss: performPendingPreviewAction
+            ) { target in
                 AddContactPreviewSheet(
                     result: target,
-                    collision: collision(for: target),
+                    collision: collision(identityId: target.identityId),
                     contact: service.contactItem(for: target.identityId),
-                    onSend: { send(to: target) },
-                    onAccept: { accept(target) })
+                    onSend: { queuePreviewAction(.send(target)) },
+                    onAccept: { queuePreviewAction(.accept(target)) })
             }
-            .overlay(alignment: .bottom) {
-                if sentToast {
-                    Text(NSLocalizedString("Contact request sent", comment: "DashPay Contacts"))
-                        .font(.system(size: 13, weight: .medium))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(.thinMaterial, in: Capsule())
-                        .padding(.bottom, 24)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+            .overlay {
+                if isVerifyingScan {
+                    VStack(spacing: 12) {
+                        SwiftUI.ProgressView()
+                        Text(NSLocalizedString("Verifying user…", comment: "DashPay Contacts: spinner after scanning a user QR code"))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.dash.secondaryText)
+                    }
+                    .padding(24)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.dash.secondaryBackground)
+                            .shadow(color: Color.dash.shadow, radius: 24, x: 0, y: 8))
+                } else if let username = sentToUsername {
+                    VStack(spacing: 12) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 44))
+                            .foregroundColor(.dashGreen)
+                        Text(String(
+                            format: NSLocalizedString("Contact request sent to %@", comment: "DashPay Contacts: success card after sending a request"),
+                            username))
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.dash.primaryText)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(28)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .fill(Color.dash.secondaryBackground)
+                            .shadow(color: Color.dash.shadow, radius: 24, x: 0, y: 8))
+                    .padding(.horizontal, 40)
+                    .transition(.scale(scale: 0.9).combined(with: .opacity))
                 }
             }
         }
+    }
+
+    /// "My QR" + "Scan QR" side by side under the search field. "My
+    /// QR" needs an identity with a DPNS name (the QR encodes both),
+    /// so before that "Scan QR" spans the full width alone.
+    private var qrButtonsRow: some View {
+        HStack(spacing: 10) {
+            if myUserLink != nil {
+                qrActionButton(
+                    NSLocalizedString("My QR", comment: "DashPay Contacts: shows the user's own contact QR code"),
+                    systemImage: "qrcode") {
+                    showMyQR = true
+                }
+            }
+            qrActionButton(
+                NSLocalizedString("Scan QR", comment: ""),
+                systemImage: "qrcode.viewfinder") {
+                showScanner = true
+            }
+        }
+    }
+
+    private func qrActionButton(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 17, weight: .medium))
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+            }
+            .foregroundColor(.dash.blue)
+            .frame(maxWidth: .infinity)
+            .frame(height: 46)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color.dash.blue.opacity(0.1)))
+        }
+        .buttonStyle(.plain)
     }
 
     /// Android search screen header: icon, headline, subtitle.
@@ -116,35 +291,33 @@ struct AddContactScreen: View {
 
     @ViewBuilder
     private var resultsList: some View {
-        ScrollView {
-            LazyVStack(spacing: 6) {
-                if isSearching {
-                    SwiftUI.ProgressView()
-                        .padding(.top, 32)
-                } else if results.isEmpty && trimmedQuery.count >= 2 {
-                    Text(NSLocalizedString("No usernames found", comment: "DashPay Contacts"))
-                        .font(.system(size: 14))
-                        .foregroundColor(.dash.secondaryText)
-                        .padding(.top, 32)
-                } else if trimmedQuery.count < 2 && !trimmedQuery.isEmpty {
-                    Text(NSLocalizedString("Type at least 2 characters to search usernames", comment: "DashPay Contacts"))
-                        .font(.system(size: 14))
-                        .foregroundColor(.dash.secondaryText)
-                        .padding(.top, 32)
-                }
-                ForEach(results) { result in
-                    resultRow(result)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.dash.secondaryBackground))
-                        .contentShape(Rectangle())
-                        .onTapGesture { previewTarget = result }
-                        .onAppear { checkEligibilityIfNeeded(result) }
-                }
+        LazyVStack(spacing: 6) {
+            if isSearching {
+                SwiftUI.ProgressView()
+                    .padding(.top, 32)
+            } else if results.isEmpty && trimmedQuery.count >= 2 {
+                Text(NSLocalizedString("No usernames found", comment: "DashPay Contacts"))
+                    .font(.system(size: 14))
+                    .foregroundColor(.dash.secondaryText)
+                    .padding(.top, 32)
+            } else if trimmedQuery.count < 2 && !trimmedQuery.isEmpty {
+                Text(NSLocalizedString("Type at least 2 characters to search usernames", comment: "DashPay Contacts"))
+                    .font(.system(size: 14))
+                    .foregroundColor(.dash.secondaryText)
+                    .padding(.top, 32)
             }
-            .padding(.horizontal, 15)
-            .padding(.top, 16)
+            ForEach(results) { result in
+                resultRow(result)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(Color.dash.secondaryBackground))
+                    .contentShape(Rectangle())
+                    .onTapGesture { previewTarget = candidate(result) }
+                    .onAppear { checkEligibilityIfNeeded(id: result.identityId) }
+            }
         }
+        .padding(.horizontal, 15)
+        .padding(.top, 16)
     }
 
     // MARK: Rows
@@ -162,29 +335,34 @@ struct AddContactScreen: View {
         case missingDashPayKeys
     }
 
-    private func collision(for result: DpnsSearchResult) -> Collision {
+    private func collision(identityId: Data) -> Collision {
         if let ownId = DWCurrentUserIdentityInfo.shared.identityId,
-           ownId == result.identityId {
+           ownId == identityId {
             return .isSelf
         }
-        if service.contacts.contains(where: { $0.contactIdentityId == result.identityId }) {
+        if service.contacts.contains(where: { $0.contactIdentityId == identityId }) {
             return .established
         }
-        if service.outgoingRequests.contains(where: { $0.contactIdentityId == result.identityId }) {
+        if service.outgoingRequests.contains(where: { $0.contactIdentityId == identityId }) {
             return .alreadyRequested
         }
-        if service.incomingRequests.contains(where: { $0.contactIdentityId == result.identityId }) {
+        if service.incomingRequests.contains(where: { $0.contactIdentityId == identityId }) {
             return .theyAskedUs
         }
-        if eligibilityById[result.identityId] == false {
+        if eligibilityById[identityId] == false {
             return .missingDashPayKeys
         }
         return .none
     }
 
+    /// The sheet-driving candidate for a tapped search row.
+    private func candidate(_ result: DpnsSearchResult) -> ContactCandidate {
+        ContactCandidate(identityId: result.identityId, fullName: result.fullName)
+    }
+
     @ViewBuilder
     private func resultRow(_ result: DpnsSearchResult) -> some View {
-        let state = collision(for: result)
+        let state = collision(identityId: result.identityId)
         HStack(spacing: 10) {
             ContactAvatarView(
                 title: result.fullName,
@@ -228,7 +406,7 @@ struct AddContactScreen: View {
             switch state {
             case .none:
                 Button {
-                    previewTarget = result
+                    previewTarget = candidate(result)
                 } label: {
                     Image(systemName: "person.badge.plus")
                         .foregroundColor(.dash.blue)
@@ -240,7 +418,7 @@ struct AddContactScreen: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts"))
             case .theyAskedUs:
-                AcceptPillButton { accept(result) }
+                AcceptPillButton { accept(candidate(result)) }
             case .established:
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.dashGreen)
@@ -252,6 +430,74 @@ struct AddContactScreen: View {
             case .missingDashPayKeys:
                 Image(systemName: "lock.slash")
                     .foregroundColor(.dash.tertiaryText)
+            }
+        }
+    }
+
+    // MARK: My QR / scanning
+
+    /// The current user's scannable identity payload — nil until the
+    /// identity is registered AND owns a DPNS name (the QR encodes
+    /// both, so there is nothing honest to show before that).
+    private var myUserLink: DashPayUserLink? {
+        guard let identityId = DWCurrentUserIdentityInfo.shared.identityId,
+              let username = DWCurrentUserIdentityInfo.shared.username
+        else { return nil }
+        return DashPayUserLink(identityId: identityId, username: username.withoutDashSuffix)
+    }
+
+    /// Scanned QR → parse → verify against Platform → the same
+    /// send-confirmation sheet a search result tap opens. Verification
+    /// is an exact DPNS resolution (`resolveUsername`) that must return
+    /// the scanned identity id — not a capped prefix page that could
+    /// miss the identity, and never the QR's own unproven claim. The
+    /// search field is left untouched so no second (debounced) lookup
+    /// races this one.
+    ///
+    /// Every UI-state write happens on the main actor after a
+    /// cancellation check, and a new scan cancels the previous task
+    /// first, so a slow stale lookup can neither clear the newer
+    /// scan's spinner nor overwrite its result.
+    private func handleScannedCode(_ value: String) {
+        showScanner = false
+        // A new scan replaces the previous one wholesale — cancel its
+        // verification before even parsing, so an invalid code can't
+        // leave a stale lookup spinning behind the error alert and
+        // popping the prior QR's preview later.
+        scanVerifyTask?.cancel()
+        scanVerifyTask = nil
+        isVerifyingScan = false
+
+        guard let link = DashPayUserLink.parse(value) else {
+            errorMessage = NSLocalizedString("This isn't a DashPay user QR code.", comment: "DashPay Contacts: scanned QR is a payment/invitation/foreign code")
+            return
+        }
+        isVerifyingScan = true
+        scanVerifyTask = Task {
+            defer {
+                // A canceled task's replacement owns the spinner now.
+                if !Task.isCancelled {
+                    isVerifyingScan = false
+                }
+            }
+            do {
+                let ownerId = try await service.resolveUsername(link.username)
+                guard !Task.isCancelled else { return }
+                guard ownerId == link.identityId else {
+                    errorMessage = String(
+                        format: NSLocalizedString("%@ couldn't be verified on the Dash network. The QR code may be outdated.", comment: "DashPay Contacts: scanned username doesn't resolve to the scanned identity"),
+                        link.username)
+                    return
+                }
+                checkEligibilityIfNeeded(id: link.identityId)
+                previewTarget = ContactCandidate(
+                    identityId: link.identityId,
+                    // Search rows carry the ".dash"-suffixed full name;
+                    // keep the scan-sourced candidate consistent.
+                    fullName: link.username + ".dash")
+            } catch {
+                guard !Task.isCancelled else { return }
+                errorMessage = error.localizedDescription
             }
         }
     }
@@ -292,14 +538,14 @@ struct AddContactScreen: View {
         }
     }
 
-    /// Resolve whether one result can receive a contact request (DIP-15
-    /// needs the recipient's DashPay encryption + decryption keys), the
-    /// first time its row scrolls into view. Marks pre-DashPay
-    /// identities so the user sees "Can't receive contact requests"
-    /// instead of hitting the PIN gate and a network error. One query
-    /// per identity, deduped via `eligibilityInFlight`.
-    private func checkEligibilityIfNeeded(_ result: DpnsSearchResult) {
-        let id = result.identityId
+    /// Resolve whether one identity can receive a contact request
+    /// (DIP-15 needs the recipient's DashPay encryption + decryption
+    /// keys), the first time its row scrolls into view or its scan is
+    /// verified. Marks pre-DashPay identities so the user sees "Can't
+    /// receive contact requests" instead of hitting the PIN gate and a
+    /// network error. One query per identity, deduped via
+    /// `eligibilityInFlight`.
+    private func checkEligibilityIfNeeded(id: Data) {
         guard eligibilityById[id] == nil, !eligibilityInFlight.contains(id) else { return }
         eligibilityInFlight.insert(id)
         Task {
@@ -311,7 +557,44 @@ struct AddContactScreen: View {
 
     // MARK: Actions
 
-    private func send(to target: DpnsSearchResult) {
+    /// Closing one modal while presenting the PIN modal from it races
+    /// UIKit's presentation hierarchy. Drive dismissal through the owning
+    /// binding, then let the sheet's `onDismiss` start authentication only
+    /// after the transition has completed.
+    private func queuePreviewAction(_ action: PendingPreviewAction) {
+        guard pendingPreviewAction == nil else { return }
+        isSearchFocused = false
+        pendingPreviewAction = action
+        previewTarget = nil
+    }
+
+    private func performPendingPreviewAction() {
+        guard let action = pendingPreviewAction else { return }
+        // Consume first so a repeated dismissal callback cannot dispatch the
+        // same Platform action twice.
+        pendingPreviewAction = nil
+
+        switch action {
+        case .send(let target):
+            // The background contact sync or eligibility lookup may have
+            // changed the relationship while the preview was dismissing.
+            switch collision(identityId: target.identityId) {
+            case .none:
+                send(to: target)
+            case .missingDashPayKeys:
+                errorMessage = NSLocalizedString(
+                    "This user hasn't set up the keys needed to receive contact requests yet.",
+                    comment: "DashPay Contacts")
+            default:
+                return
+            }
+        case .accept(let target):
+            guard case .theyAskedUs = collision(identityId: target.identityId) else { return }
+            accept(target)
+        }
+    }
+
+    private func send(to target: ContactCandidate) {
         guard eligibilityById[target.identityId] != false else { return }
         guard !sendingIds.contains(target.identityId) else { return }
         sendingIds.insert(target.identityId)
@@ -321,9 +604,16 @@ struct AddContactScreen: View {
                 try await service.sendContactRequest(
                     to: target.identityId,
                     usernameHint: target.fullName)
-                withAnimation { sentToast = true }
-                try? await Task.sleep(nanoseconds: 1_500_000_000)
-                withAnimation { sentToast = false }
+                let username = target.fullName.withoutDashSuffix
+                withAnimation { sentToUsername = username }
+                try? await Task.sleep(nanoseconds: 2_500_000_000)
+                // Another send may have replaced the card in the
+                // meantime — only this recipient's own timer clears it.
+                withAnimation {
+                    if sentToUsername == username {
+                        sentToUsername = nil
+                    }
+                }
             } catch SwiftDashSDKContactsService.ServiceError.authCancelled {
                 // User backed out of the PIN prompt.
             } catch {
@@ -332,7 +622,7 @@ struct AddContactScreen: View {
         }
     }
 
-    private func accept(_ target: DpnsSearchResult) {
+    private func accept(_ target: ContactCandidate) {
         guard !sendingIds.contains(target.identityId) else { return }
         sendingIds.insert(target.identityId)
         Task {
@@ -363,7 +653,7 @@ struct AddContactScreen: View {
 /// fields appear once the identity is one of our contacts/requesters
 /// (`contact` non-nil). Nothing is fabricated when the data is absent.
 struct AddContactPreviewSheet: View {
-    let result: DpnsSearchResult
+    let result: ContactCandidate
     let collision: AddContactScreen.Collision
     /// The already-materialized contact row when this identity is known
     /// (established / incoming / outgoing); nil for a true stranger.
@@ -390,11 +680,17 @@ struct AddContactPreviewSheet: View {
                     Text(title)
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.dash.primaryText)
-                    if username != title {
-                        Text(username)
-                            .font(.system(size: 14))
-                            .foregroundColor(.dash.secondaryText)
-                    }
+                    // Kept even when it equals the title: the title may be an
+                    // alias for an already-known contact, and the registered
+                    // username is what the request is actually addressed to.
+                    Text(username)
+                        .font(.system(size: 14))
+                        .foregroundColor(.dash.secondaryText)
+                    // Before accepting a request or sending one, the id is the
+                    // only field that distinguishes two identities presenting
+                    // the same DPNS label.
+                    ContactIdentityIdView(identityId: result.identityId)
+                        .padding(.top, 2)
                     if let message = contact?.publicMessage, !message.isEmpty {
                         Text(message)
                             .font(.system(size: 14))
@@ -454,12 +750,10 @@ struct AddContactPreviewSheet: View {
         case .none:
             primaryButton(NSLocalizedString("Send Contact Request", comment: "DashPay Contacts"), color: .dash.blue) {
                 onSend()
-                dismiss()
             }
         case .theyAskedUs:
             primaryButton(NSLocalizedString("Accept", comment: "DashPay Contacts"), color: .dashGreen) {
                 onAccept()
-                dismiss()
             }
         case .alreadyRequested:
             statusLabel(NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts"), systemImage: "hourglass", color: .dashGolden)
@@ -492,5 +786,78 @@ struct AddContactPreviewSheet: View {
         .foregroundColor(color)
         .frame(maxWidth: .infinity)
         .frame(height: 48)
+    }
+}
+
+// MARK: - MyDashPayUserQRSheet
+
+/// "My QR" — the counterpart of the scan button: renders the current
+/// user's `DashPayUserLink` (identity id + preferred username) as a
+/// Dash-branded QR code (`QRCodeGenerator.dashStyledImage`) another
+/// Dash Wallet can scan to open the send-request confirmation for
+/// this user.
+struct MyDashPayUserQRSheet: View {
+    let link: DashPayUserLink
+    let displayName: String?
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var qrImage: UIImage?
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.dash.primaryBackground.ignoresSafeArea()
+                VStack(spacing: 6) {
+                    Text(displayName ?? link.username)
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundColor(.dash.primaryText)
+                        .padding(.top, 20)
+                    if displayName != nil {
+                        Text(link.username)
+                            .font(.system(size: 14))
+                            .foregroundColor(.dash.secondaryText)
+                    }
+                    Group {
+                        if let qrImage {
+                            Image(uiImage: qrImage)
+                                .resizable()
+                                .scaledToFit()
+                        } else {
+                            SwiftUI.ProgressView()
+                        }
+                    }
+                    .frame(width: 240, height: 240)
+                    .padding(20)
+                    // The branded QR draws Dash-blue modules on a
+                    // transparent background — keep the card white in
+                    // dark mode so camera scanners keep their contrast.
+                    .background(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(Color.white)
+                            .shadow(color: Color.dash.shadow, radius: 16, x: 0, y: 4))
+                    .padding(.top, 14)
+                    Text(NSLocalizedString("Let another Dash Wallet user scan this code to add you as a contact.", comment: "DashPay Contacts: caption under the user's own QR code"))
+                        .font(.system(size: 14))
+                        .foregroundColor(.dash.tertiaryText)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 32)
+                        .padding(.top, 14)
+                    Spacer()
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(NSLocalizedString("Close", comment: "")) { dismiss() }
+                        .foregroundColor(.dash.blue)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .onAppear {
+            if qrImage == nil {
+                qrImage = QRCodeGenerator.dashStyledImage(for: link.uriString, size: 240)
+            }
+        }
     }
 }

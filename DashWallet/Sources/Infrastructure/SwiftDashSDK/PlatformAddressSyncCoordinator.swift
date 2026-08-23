@@ -40,8 +40,9 @@ import UIKit
 struct ShieldedSyncFreshnessPolicy {
     static let watchdogInterval: TimeInterval = 15
     static let maximumFullScanAge: TimeInterval = 90
-    /// Matches the SDK's caught-up cooldown. Requesting a forced pass sooner
-    /// would only produce `cooldownSkip` and leave the external spend unseen.
+    /// The ordinary background loop observes the SDK's caught-up cooldown.
+    /// Explicit `syncShieldedNow()` requests use the SDK's `force=true` path
+    /// and bypass it; attended Receive sessions use that path independently.
     static let foregroundFreshnessGrace: TimeInterval = 30
 
     static func shouldRefreshForWatchdog(
@@ -119,6 +120,20 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     @Published public private(set) var isClearing: Bool = false
     @Published public private(set) var lastSyncTime: Date? = nil
     @Published public private(set) var lastError: String? = nil
+
+    /// Startup failure of `platformAddressWallet()`, held apart from
+    /// `lastError` because it outlives the events that clear it.
+    ///
+    /// The address wallet and the manager's Platform address sync fail
+    /// independently: the sync can complete successfully while this wallet is
+    /// missing, and every success clears `lastError`. Publishing the startup
+    /// failure only once would let the first successful pass erase it, leaving
+    /// the status screen reporting a healthy sync over address surfaces that
+    /// cannot work. Kept here and re-published wherever `lastError` is cleared
+    /// on success. Cleared by `clearDisplay()`, which runs on teardown, wipe
+    /// and network-switch preparation — every path that invalidates the wallet
+    /// this error was recorded against — and overwritten by the next start.
+    private var addressWalletStartupError: String?
     @Published private(set) var platformAccountAvailability: PlatformAccountAvailability = .unknown
 
     @Published public private(set) var platformBalance: UInt64 = 0
@@ -301,7 +316,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 try manager.startPlatformAddressSync()
             }
             isSyncing = true
-            lastError = nil
+            lastError = addressWalletStartupError
             try await manager.syncPlatformAddressNow()
         } catch {
             isSyncing = false
@@ -405,6 +420,26 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     }
 
     // MARK: - Core ↔ Platform balance movement
+
+    /// SDK-owned affordability preflight for Platform Payment → Shielded.
+    ///
+    /// The Platform balance shown by this coordinator is the sum of every
+    /// derived address, but the shield transition can only spend the suffix
+    /// selected by the Rust wallet. Keep that selection rule in the SDK and
+    /// expose its exact result to the internal-transfer UI instead of
+    /// reimplementing it from `derivedAddresses` here.
+    public func preflightShield(
+        paymentAccount: UInt32 = 0
+    ) async throws -> PlatformWalletManager.ShieldedShieldPreflight {
+        guard isRunning,
+              let manager = walletManager,
+              let walletId = wallet?.walletId
+        else { throw SendError.coordinatorNotReady }
+
+        return try await manager.shieldedShieldPreflight(
+            walletId: walletId,
+            paymentAccount: paymentAccount)
+    }
 
     /// Preflight of the full-balance Platform → Core withdrawal for the
     /// account holding the highest Platform address balance (the same
@@ -650,6 +685,39 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
     }
 
+    /// Cancel every subscription/task that writes the published mirrors. Pure
+    /// Swift-side teardown (no FFI call), so it is safe to run ahead of the
+    /// serialized stop — `performStop` and `prepareForNetworkSwitch` share it
+    /// rather than keeping two lists of cancellables in step by hand.
+    private func detachSyncSubscriptions() {
+        syncEventCancellable?.cancel()
+        syncEventCancellable = nil
+        syncStateCancellable?.cancel()
+        syncStateCancellable = nil
+        shieldedEventCancellable?.cancel()
+        shieldedEventCancellable = nil
+        shieldedForegroundCancellable?.cancel()
+        shieldedForegroundCancellable = nil
+        shieldedFreshnessTask?.cancel()
+        shieldedFreshnessTask = nil
+        shieldedRefreshGeneration &+= 1
+        shieldedRefreshTask?.cancel()
+        shieldedRefreshTask = nil
+        lastFullShieldedSyncAt = nil
+    }
+
+    /// Drop the outgoing network's Platform and Shielded balances the moment a
+    /// network switch is requested, ahead of the runtime's serialized stop.
+    ///
+    /// `performStop` only runs once the lifecycle queue reaches it, and BLAST /
+    /// shielded events from the previous network keep repainting the mirrors
+    /// until then — so the home screen would otherwise show the old network's
+    /// funds for the whole transition.
+    public func prepareForNetworkSwitch() {
+        detachSyncSubscriptions()
+        clearDisplay()
+    }
+
     /// Clear the UI counters/display without tearing down the sync loop.
     public func clearDisplay() {
         shieldedReconciliationTask?.cancel()
@@ -667,6 +735,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         lastSyncBlockTime = nil
         lastSyncTime = nil
         lastError = nil
+        addressWalletStartupError = nil
         syncCountSinceLaunch = 0
         totalTrunkQueries = 0
         totalBranchQueries = 0
@@ -711,20 +780,31 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         let accountAvailability = resolvePlatformAccountAvailability(
             walletId: resolvedWallet.walletId)
         let addressWallet: ManagedPlatformAddressWallet?
+        // Carried to the end rather than returned on: see below.
+        var addressWalletError: String?
         do {
             addressWallet = try resolvedWallet.platformAddressWallet()
         } catch {
+            addressWallet = nil
             if accountAvailability == .unavailable {
                 // A wallet can legitimately have Shielded state without a
                 // DIP-17 Platform Payment account. Keep the shared manager
                 // alive for Shielded/DashPay and expose a neutral UI state.
-                addressWallet = nil
                 Self.logger.info(
                     "🛰️ PLATFORM-ADDR :: no Platform Payment account; continuing without address wallet")
             } else {
+                // Report the failure, but do not abort the start. Shielded,
+                // the DashPay sync loop and identity recovery share the
+                // manager, not the address wallet, and returning here took all
+                // three down with it: a restored wallet that hit this on the
+                // one start it gets per session lost its identity — and with
+                // it every contact and all contact payment history — until the
+                // app was relaunched. `addressWallet` is already an optional
+                // the rest of this method handles (the branch above sets it to
+                // nil and continues), so the only difference here is that
+                // `lastError` explains why the address surfaces are empty.
                 Self.logger.error("🛰️ PLATFORM-ADDR :: platformAddressWallet() failed: \(String(describing: error), privacy: .public)")
-                lastError = "platformAddressWallet failed: \(error.localizedDescription)"
-                return
+                addressWalletError = "platformAddressWallet failed: \(error.localizedDescription)"
             }
         }
 
@@ -780,6 +860,21 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         } catch {
             Self.logger.error("👥 DASHPAY-SYNC :: startDashPaySync failed: \(String(describing: error), privacy: .public)")
         }
+
+        // Start the recurring DPNS username-marketplace sync (tracks the
+        // wallet identities' names with sale state, detects sold/
+        // transferred departures, refreshes seller balances). Same
+        // best-effort contract as the blocks above; the marketplace
+        // screen's pull-to-refresh (`syncDpnsMarketplace`) still works
+        // without the loop.
+        do {
+            if try !manager.isDpnsSyncRunning() {
+                try manager.startDpnsSync()
+            }
+            Self.logger.info("🏷️ DPNS-SYNC :: started for \(network.rawValue, privacy: .public)")
+        } catch {
+            Self.logger.error("🏷️ DPNS-SYNC :: startDpnsSync failed: \(String(describing: error), privacy: .public)")
+        }
 #endif
 
         self.sdk = SwiftDashSDKHost.shared.sdk
@@ -790,7 +885,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         self.platformAccountAvailability = accountAvailability
         self.runningNetwork = network
         self.isRunning = true
-        self.lastError = nil
+        self.addressWalletStartupError = addressWalletError
+        self.lastError = addressWalletError
 
         subscribeToManager(manager: manager, walletId: resolvedWallet.walletId)
         refreshDerivedAddresses()
@@ -805,11 +901,13 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
 #if DASHPAY
         // A restored seed can already own a Platform identity even though this
-        // install's SwiftData store is empty. Recover it as part of the
-        // serialized runtime start so the wallet handle cannot be torn down
-        // mid-FFI scan, and reconcile the DashPay tabs/banner in this session.
-        // The coordinator is best-effort and owns its error logging; identity
-        // recovery must never turn a healthy BLAST start into a sync failure.
+        // install's SwiftData store is empty. Recovery now runs as step 1 of
+        // `DashPayContactAddressReadiness`, ahead of Core SPV, because the
+        // contacts and contact accounts that depend on it have to exist before
+        // the first filter set is built. This call stays as the backstop for
+        // the orders that do not go through the SPV coordinator — a Platform
+        // sync re-arm, or an SPV start that failed — and is a no-op once the
+        // identity has been adopted.
         if let container = SwiftDashSDKHost.shared.modelContainer {
             await DWSameSeedIdentityRecoveryCoordinator.shared.recoverIfNeeded(
                 wallet: resolvedWallet,
@@ -847,20 +945,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             deletePersistedWalletIfAny()
         }
 
-        syncEventCancellable?.cancel()
-        syncEventCancellable = nil
-        syncStateCancellable?.cancel()
-        syncStateCancellable = nil
-        shieldedEventCancellable?.cancel()
-        shieldedEventCancellable = nil
-        shieldedForegroundCancellable?.cancel()
-        shieldedForegroundCancellable = nil
-        shieldedFreshnessTask?.cancel()
-        shieldedFreshnessTask = nil
-        shieldedRefreshGeneration &+= 1
-        shieldedRefreshTask?.cancel()
-        shieldedRefreshTask = nil
-        lastFullShieldedSyncAt = nil
+        detachSyncSubscriptions()
 
         if let manager = walletManager {
             do {
@@ -1062,7 +1147,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         requestShieldedRefresh(using: manager, reason: "stale watchdog")
     }
 
-    private func requestShieldedRefresh(
+    func requestShieldedRefresh(
         using manager: PlatformWalletManager,
         reason: String
     ) {
@@ -1172,7 +1257,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         guard let result = event.result(for: walletId) else { return }
 
         if result.success {
-            lastError = nil
+            // A healthy address-sync pass says nothing about the address
+            // wallet, which failed to resolve at start and stays broken.
+            lastError = addressWalletStartupError
             if result.checkpointHeight > 0 {
                 checkpointHeight = result.checkpointHeight
             }
@@ -1448,8 +1535,11 @@ final class ShieldedTxLookup {
     /// Snapshot value for one shielded funding tx: the locked amount plus the
     /// asset lock's current status and funding output index. `statusRaw`
     /// distinguishes a still-pending/stuck shield (1…3 — Broadcast/IS/CL) from
-    /// a consumed, successful one (4); `vout` + the txid form the outpoint a
-    /// recovery resume needs.
+    /// a consumed, successful one (4) and from a chain-final lock whose
+    /// Platform-side consumption is unknown (5 — RecoveredFromChain, either
+    /// reconstructed during restore or reconciled from an unauthenticated
+    /// already-consumed report; neither pending nor done); `vout` + the txid
+    /// form the outpoint a recovery resume needs.
     struct ShieldedLockInfo: Sendable {
         let amountDuffs: UInt64
         let statusRaw: Int
@@ -1528,8 +1618,9 @@ final class ShieldedTxLookup {
                 // outPointHex == "<txid display hex>:<vout>"; key on the txid,
                 // parse the vout after the colon. One shielded asset-lock row
                 // per funding txid in practice; if one ever recurs, prefer the
-                // higher statusRaw so a consumed (4) row wins over a stale
-                // pending (1…3) one.
+                // most informative status: consumed (4, consumption known)
+                // over recovered-from-chain (5, consumption unknown) over the
+                // live pending window (0…3).
                 guard let colon = row.outPointHex.firstIndex(of: ":") else { continue }
                 let txid = row.outPointHex[..<colon].lowercased()
                 // Skip rows whose vout doesn't parse rather than inventing vout 0 —
@@ -1540,9 +1631,11 @@ final class ShieldedTxLookup {
                     statusRaw: row.statusRaw,
                     vout: vout,
                     fundingTypeRaw: row.fundingTypeRaw)
-                if let existing = map[txid], existing.statusRaw >= info.statusRaw { continue }
+                func rank(_ statusRaw: Int) -> Int { statusRaw == 4 ? .max : statusRaw }
+                if let existing = map[txid], rank(existing.statusRaw) >= rank(info.statusRaw) { continue }
                 map[txid] = info
             }
+            logUnclassifiedAssetLocks(coveredTxids: Set(map.keys), context: container.mainContext)
             store(map)
             Self.logger.info("🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) funding tx(s) (shielded + platform)")
             // Diagnostic: if asset locks exist but none matched the shielded
@@ -1555,6 +1648,31 @@ final class ShieldedTxLookup {
         } catch {
             Self.logger.error("🛡️ SHIELD-TX :: refresh failed: \(String(describing: error), privacy: .public)")
         }
+    }
+
+    /// Coverage diagnostic. Every wallet-own asset-lock funding tx is
+    /// expected to have a store row: recorded live at build time, or —
+    /// after a wipe & recover — rewritten by the SDK's restore-scan
+    /// reconstruction (platform #4342; verified on a restored testnet
+    /// wallet 2026-08-09: 9/9 funding txs classified. The rows currently
+    /// arrive at `statusRaw` 1/3 rather than the intended 5 — an SDK-side
+    /// enrichment gap tracked for a platform follow-up).
+    /// An asset-lock tx with no row therefore indicates a reconstruction
+    /// gap (it renders "Internal Transfer — 0 DASH"); log it so a single
+    /// test run surfaces the txid. This replaced an app-side fallback that
+    /// re-parsed raw tx bytes into synthetic map entries — dead weight once
+    /// the SDK rows exist, since store-backed entries always beat it.
+    @MainActor
+    private func logUnclassifiedAssetLocks(coveredTxids: Set<String>, context: ModelContext) {
+        let assetLockKind = TransactionTypeKind.assetLock.rawValue
+        let descriptor = FetchDescriptor<PersistentTransaction>(
+            predicate: #Predicate { $0.transactionTypeKind == assetLockKind })
+        guard let rows = try? context.fetch(descriptor), !rows.isEmpty else { return }
+        let uncovered = rows
+            .map { Transaction.displayHex($0.txid).lowercased() }
+            .filter { !coveredTxids.contains($0) }
+        guard !uncovered.isEmpty else { return }
+        Self.logger.error("🛡️ SHIELD-TX :: \(uncovered.count, privacy: .public) asset-lock tx(s) have no PersistentAssetLock row (SDK reconstruction gap?): \(uncovered.joined(separator: ","), privacy: .public)")
     }
 
     private func store(_ map: [String: ShieldedLockInfo]) {

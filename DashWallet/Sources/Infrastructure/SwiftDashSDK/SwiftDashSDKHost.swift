@@ -112,6 +112,12 @@ final class SwiftDashSDKHost {
     private(set) var runningNetwork: Network?
     private let modelContainerCache = ProcessNetworkValueCache<ModelContainer>()
 
+    /// Watches for contact-crypto work that gets deferred *after* the
+    /// load-time unlock. See `unlockDashPayContactCrypto`. Replaced (and the
+    /// previous one cancelled) whenever a wallet is loaded, so only the active
+    /// wallet is watched.
+    private var contactCryptoDrainWatch: Task<Void, Never>?
+
     // MARK: - Process-wide SDK init guard
 
     private static var sdkInitialized = false
@@ -158,6 +164,51 @@ final class SwiftDashSDKHost {
         network == .mainnet ? 200_000 : 0
     }
 
+    // MARK: - Platform protocol version
+
+    /// The `DashSDKConfig.platform_version` to build the SDK with, per network.
+    ///
+    /// **Testnet stays pinned to 13.** Testnet Drive moved past v12 to v13,
+    /// whose validation set changed the shielded identity-create exit
+    /// denominations (v12/V8 `[0.1, 0.3, 0.5, 1.0]` → v13/V9 `[0.03, 0.1,
+    /// 0.25, 0.5, 1.0]`). Staying at v12 made the client build shielded
+    /// transitions against the old set, so a contested (0.25 DASH) shielded
+    /// username create failed client-side ("denomination 25000000000 is not a
+    /// member …") even though the server requires exactly 0.25. Pinning
+    /// explicitly also avoids a race where the shielded build runs before the
+    /// SDK has ratcheted to the network version. Bump this when the agreed
+    /// testnet protocol moves past v13.
+    ///
+    /// **Mainnet uses `0` — auto-detect.** The pin above was chosen for
+    /// testnet but applied to every network, which put the client two versions
+    /// ahead of mainnet. Platform v13 (`DRIVE_VERSION_V8`) switches the
+    /// compacted address-balance proof to the two-proof
+    /// `CompactedAddressBalanceProof` bincode envelope, while "nodes and
+    /// clients on v12 and below keep the legacy single GroveDB proof"
+    /// (rs-platform-version `version/v13.rs`). A v13 client therefore decodes
+    /// mainnet's legacy proof as the envelope, consumes the structure and
+    /// trips on the remainder:
+    ///
+    ///     proof: corrupted error: compacted address balance proof contains trailing bytes
+    ///
+    /// — observed 20× across three nodes on a mainnet device (2026-07-31),
+    /// with testnet clean, and it retries then gives up, so the Platform
+    /// address balance never populates there.
+    ///
+    /// `0` is what the SDK is designed for: it seeds at the per-network
+    /// `min_protocol_version` floor (mainnet 11, testnet 12) with auto-detect
+    /// on, ratcheting up as the network reports newer versions — "so this
+    /// picks the right wire without a Swift-side network→version map"
+    /// (`SDK.init(network:platformVersion:)`). A hard pin also disables
+    /// `refreshProtocolVersion()`, which is documented as a no-op while
+    /// pinned, so the client could never learn the network's real version.
+    ///
+    /// Devnet/regtest follow mainnet's auto-detect: no shielded-denomination
+    /// contract is pinned for them, and `makeRuntime` rejects regtest anyway.
+    static func platformVersion(for network: Network) -> UInt32 {
+        network == .testnet ? 13 : 0
+    }
+
     // MARK: - Wallet presence
 
     /// True when at least one SDK wallet mnemonic is persisted in
@@ -179,9 +230,11 @@ final class SwiftDashSDKHost {
 
     /// Every persisted SDK wallet mnemonic, keyed by its stored walletId —
     /// the same `WalletStorage` keychain surface `hasPersistedSDKWallet` reads.
-    /// Consumers: reinstall recovery (`start`'s `walletNotFound` retry) and
-    /// the wipe-with-phrase comparison. A keychain error reads as empty
-    /// (logged); an entry whose mnemonic can't be retrieved is skipped.
+    /// Consumers: reinstall recovery (`start`'s `walletNotFound` retry),
+    /// switchable-wallet discovery, and non-destructive phrase checks. A
+    /// keychain error reads as empty (logged); an entry whose mnemonic can't
+    /// be retrieved is skipped. Destructive authorization uses the strict
+    /// variant below.
     nonisolated static func persistedMnemonics() -> [(walletId: Data, mnemonic: String)] {
         do {
             let storage = WalletStorage()
@@ -194,6 +247,121 @@ final class SwiftDashSDKHost {
             logger.error("🪺 HOST :: mnemonic keychain enumeration failed: \(String(describing: error), privacy: .public)")
             return []
         }
+    }
+
+    /// Strict variant for destructive authorization. Unlike
+    /// `persistedMnemonics()`, this throws when enumeration OR any individual
+    /// mnemonic read fails, so callers cannot mistake a partially readable
+    /// Keychain for the complete wallet set.
+    nonisolated static func strictlyPersistedMnemonics() throws -> [(walletId: Data, mnemonic: String)] {
+        let storage = WalletStorage()
+        return try storage.listWalletIdsWithMnemonic().map { walletId in
+            let mnemonic = try storage.retrieveMnemonic(for: walletId)
+            return (walletId: walletId, mnemonic: mnemonic)
+        }
+    }
+
+    /// Networks represented by a strict SDK-owned Keychain inventory. Used
+    /// after reinstall to select a sole stored network without manufacturing
+    /// a network mirror from the same seed.
+    nonisolated static func persistedSDKWalletNetworks(
+        in entries: [(walletId: Data, mnemonic: String)]
+    ) throws -> Set<Network> {
+        try Set(entries.map { entry in
+            try SwiftDashSDKStoredWalletNetworkResolver.resolve(
+                walletId: entry.walletId,
+                mnemonic: entry.mnemonic
+            ).network
+        })
+    }
+
+    nonisolated static func persistedSDKWalletNetworks() throws -> Set<Network> {
+        try persistedSDKWalletNetworks(in: strictlyPersistedMnemonics())
+    }
+
+    /// Pure filtering used by reinstall recovery: a manager must only receive
+    /// entries whose deterministic id belongs to that manager's network.
+    nonisolated static func recoverablePersistedMnemonics(
+        _ entries: [(walletId: Data, mnemonic: String)],
+        for network: Network
+    ) -> [(walletId: Data, mnemonic: String)] {
+        entries.compactMap { entry in
+            let mnemonic = Mnemonic.normalizePhrase(entry.mnemonic)
+            guard Mnemonic.validate(mnemonic),
+                  let resolution = try? SwiftDashSDKStoredWalletNetworkResolver.resolve(
+                      walletId: entry.walletId,
+                      mnemonic: mnemonic),
+                  resolution.network == network else {
+                return nil
+            }
+            return (walletId: entry.walletId, mnemonic: mnemonic)
+        }
+    }
+
+    /// Strict exact-id read for flows that already selected a concrete wallet.
+    /// Unlike the legacy active-wallet reader, this never substitutes another
+    /// Keychain entry when the requested id is missing or unreadable.
+    nonisolated static func strictlyPersistedMnemonic(for walletId: Data) throws -> String {
+        try WalletStorage().retrieveMnemonic(for: walletId)
+    }
+
+    /// Count of persisted SDK wallet ids. Attributes-only Keychain
+    /// enumeration — no mnemonic secrets are read. Throws on enumeration
+    /// failure so destructive callers stay fail-closed.
+    nonisolated static func persistedWalletIdCount() throws -> Int {
+        try WalletStorage().listWalletIdsWithMnemonic().count
+    }
+
+    /// Number of logical wallets represented by the strict Keychain inventory.
+    /// The same recovery phrase may be stored under separate network-scoped
+    /// wallet ids; those entries count as one wallet in destructive UI copy.
+    /// Throws when enumeration or any mnemonic read fails so callers can fall
+    /// back to non-destructive retry/keep actions.
+    nonisolated static func distinctStoredWalletCount() throws -> Int {
+        distinctWalletCount(in: try strictlyPersistedMnemonics())
+    }
+
+    /// Pure logical-wallet count used after a strict inventory read. Separate
+    /// network-scoped ids carrying the same normalized phrase are one wallet.
+    nonisolated static func distinctWalletCount(
+        in entries: [(walletId: Data, mnemonic: String)]
+    ) -> Int {
+        let phrases = entries.map {
+            Mnemonic.normalizePhrase($0.mnemonic)
+        }
+        return Set(phrases).count
+    }
+
+    /// Set-wide destructive-authorization predicate: true only when `phrase`,
+    /// normalized, matches EVERY strictly readable stored mnemonic (multiple
+    /// network-scoped ids for one seed all carry the same phrase and match).
+    /// False for an empty normalized phrase or an empty wallet set —
+    /// `allSatisfy` on `[]` is vacuously true, and a walletless install must
+    /// never authorize a wipe. Throws when enumeration or any individual
+    /// mnemonic read fails. Consumers: `canWipeWithPhrase` and the
+    /// Wallets-screen reset routing.
+    nonisolated static func allStoredMnemonicsMatch(phrase: String) throws -> Bool {
+        try allMnemonicsMatch(phrase: phrase, in: strictlyPersistedMnemonics())
+    }
+
+    /// Core of `allStoredMnemonicsMatch(phrase:)` over pre-fetched `entries`,
+    /// for callers that already hold the strict enumeration (avoids a second
+    /// Keychain pass).
+    nonisolated static func allMnemonicsMatch(
+        phrase: String, in entries: [(walletId: Data, mnemonic: String)]) -> Bool {
+        let typed = Mnemonic.normalizePhrase(phrase)
+        guard !typed.isEmpty, !entries.isEmpty else { return false }
+        return entries.allSatisfy { Mnemonic.normalizePhrase($0.mnemonic) == typed }
+    }
+
+    /// Lenient any-match sibling for NON-destructive ownership checks
+    /// (forgot-PIN, honest-denial copy selection): true when `phrase` matches
+    /// at least one readable stored mnemonic; unreadable entries are skipped
+    /// (`persistedMnemonics()` semantics, errors logged there).
+    nonisolated static func anyStoredMnemonicMatches(phrase: String) -> Bool {
+        let typed = Mnemonic.normalizePhrase(phrase)
+        guard !typed.isEmpty else { return false }
+        return persistedMnemonics().contains { Mnemonic.normalizePhrase($0.mnemonic) == typed }
     }
 
     /// Throwaway key-wallet stack (manager + wallet) for path-based key
@@ -313,7 +481,10 @@ final class SwiftDashSDKHost {
     /// This is the fresh-install / recover path: it rebuilds the runtime from
     /// scratch (`buildRuntime` tears down any running manager), stores and
     /// verifies its mnemonic, creates the wallet, pins it active in the registry, and
-    /// publishes it as bound. Onboarding's first wallet uses this.
+    /// publishes it as bound. Onboarding's first wallet uses this and requests
+    /// an explicit representation on every supported network. Legacy DashSync
+    /// migration keeps the default network-scoped behavior so it can never
+    /// manufacture cross-network copies while replaying old key material.
     ///
     /// For adding a wallet ALONGSIDE existing ones without rebinding the
     /// active wallet, use `addWallet(mnemonic:isImported:)` instead — this path replaces
@@ -322,7 +493,8 @@ final class SwiftDashSDKHost {
     func createOrImportWallet(
         mnemonic: String,
         network: Network,
-        isImported: Bool
+        isImported: Bool,
+        provisionAcrossSupportedNetworks: Bool = false
     ) async throws -> ManagedPlatformWallet {
         guard !mnemonic.isEmpty, Mnemonic.validate(mnemonic) else {
             throw HostError.invalidMnemonic
@@ -346,6 +518,28 @@ final class SwiftDashSDKHost {
                 birthHeight: isImported
                     ? Self.importedWalletBirthHeight(for: handles.network)
                     : nil)
+
+            if provisionAcrossSupportedNetworks {
+                let persistedWalletIds = Set(try WalletStorage().listWalletIdsWithMnemonic())
+                let missingNetworks = try Self.missingWalletNetworks(
+                    mnemonic: mnemonic,
+                    persistedWalletIds: persistedWalletIds,
+                    currentNetwork: network)
+
+                for targetNetwork in missingNetworks where targetNetwork != network {
+                    let targetManager = try managerForStoredWalletOperation(
+                        network: targetNetwork)
+                    _ = try createAndPersist(
+                        mnemonic: mnemonic,
+                        manager: targetManager,
+                        network: targetNetwork,
+                        birthHeight: isImported
+                            ? Self.importedWalletBirthHeight(for: targetNetwork)
+                            : nil)
+                    Self.logger.info(
+                        "🪺 HOST :: provisioned onboarding wallet for \(targetNetwork.rawValue, privacy: .public)")
+                }
+            }
         } catch {
             // `createOrImportWallet` owns a freshly-built (not yet published)
             // runtime, so tear it down on failure. `createAndPersist` has
@@ -374,11 +568,41 @@ final class SwiftDashSDKHost {
         case alreadyExists(walletId: Data)
     }
 
+    /// Networks that still need a persisted representation for a logical
+    /// wallet, ordered so the running network is created first. Keeping this
+    /// decision pure makes the cross-network add behavior regression-testable
+    /// without constructing SDK managers.
+    nonisolated static func missingWalletNetworks(
+        mnemonic: String,
+        persistedWalletIds: Set<Data>,
+        currentNetwork: Network
+    ) throws -> [Network] {
+        let otherNetwork: Network
+        switch currentNetwork {
+        case .mainnet:
+            otherNetwork = .testnet
+        case .testnet:
+            otherNetwork = .mainnet
+        default:
+            throw HostError.unsupportedNetwork(currentNetwork)
+        }
+
+        let walletIds = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: mnemonic)
+        return [currentNetwork, otherNetwork].filter { network in
+            guard let walletId = walletIds[network] else { return false }
+            return !persistedWalletIds.contains(walletId)
+        }
+    }
+
     /// Add a wallet from `mnemonic` ADDITIVELY: create it in the already-running
-    /// manager and persist its mnemonic, WITHOUT tearing down the runtime,
-    /// touching the active-wallet registry, or rebinding the published active
-    /// wallet. The caller (Wallets screen "Add Wallet") switches to the new
-    /// wallet afterward via `SwiftDashSDKWalletRuntime.switchWallet`.
+    /// manager and persist its mnemonic, then materialize the same logical
+    /// wallet for the other supported network. This is explicit provisioning
+    /// at create/import time; reinstall recovery remains network-scoped and
+    /// must never manufacture a mirror from an arbitrary surviving entry.
+    /// Neither operation touches the active-wallet registries or rebinds the
+    /// published active wallet. The caller (Wallets screen "Add Wallet")
+    /// switches to the current-network wallet afterward via
+    /// `SwiftDashSDKWalletRuntime.switchWallet`.
     ///
     /// Requires a running host (a bound active wallet already exists — adding
     /// is only reachable from the Wallets screen). Returns `.alreadyExists`
@@ -391,6 +615,7 @@ final class SwiftDashSDKHost {
     /// uses the LIVE manager and does not publish or set-active.
     @discardableResult
     func addWallet(mnemonic: String, isImported: Bool) async throws -> AddWalletResult {
+        let mnemonic = Mnemonic.normalizePhrase(mnemonic)
         guard !mnemonic.isEmpty, Mnemonic.validate(mnemonic) else {
             throw HostError.invalidMnemonic
         }
@@ -400,29 +625,42 @@ final class SwiftDashSDKHost {
             throw HostError.walletNotFound(runningNetwork ?? .mainnet)
         }
 
-        // Idempotence guard: `createWallet` is keyed by the deterministic
-        // walletId, so adding an already-present wallet would no-op. Detect it
-        // from the persisted-mnemonic set (the switchable-wallet source of
-        // truth) and report `.alreadyExists` rather than a fabricated success.
-        let derivedId = try Wallet(mnemonic: mnemonic, network: network).id
-        if Self.persistedMnemonics().contains(where: { $0.walletId == derivedId }) {
-            Self.logger.info("🪺 HOST :: addWallet — walletId already persisted; not re-adding")
-            return .alreadyExists(walletId: derivedId)
+        let walletIds = try SwiftDashSDKStoredWalletNetworkResolver.walletIds(for: mnemonic)
+        guard let currentWalletId = walletIds[network] else {
+            throw HostError.unsupportedNetwork(network)
         }
 
-        let createdWallet = try createAndPersist(
+        let persistedWalletIds = Set(try WalletStorage().listWalletIdsWithMnemonic())
+        let networksToCreate = try Self.missingWalletNetworks(
             mnemonic: mnemonic,
-            manager: manager,
-            network: network,
-            // Same semantics as `createOrImportWallet`: imports scan
-            // from the network's import floor, freshly generated
-            // wallets from the tip.
-            birthHeight: isImported
-                ? Self.importedWalletBirthHeight(for: network)
-                : nil)
+            persistedWalletIds: persistedWalletIds,
+            currentNetwork: network)
+        let createsCurrentNetwork = networksToCreate.contains(network)
 
-        Self.logger.info("🪺 HOST :: added managed wallet for \(network.rawValue, privacy: .public) (additive)")
-        return .added(walletId: createdWallet.walletId)
+        for targetNetwork in networksToCreate {
+            let targetManager = targetNetwork == network
+                ? manager
+                : try managerForStoredWalletOperation(network: targetNetwork)
+            _ = try createAndPersist(
+                mnemonic: mnemonic,
+                manager: targetManager,
+                network: targetNetwork,
+                // Same semantics as `createOrImportWallet`: imports scan
+                // from each network's import floor, freshly generated
+                // wallets from that network's tip.
+                birthHeight: isImported
+                    ? Self.importedWalletBirthHeight(for: targetNetwork)
+                    : nil)
+            Self.logger.info(
+                "🪺 HOST :: added managed wallet for \(targetNetwork.rawValue, privacy: .public) (additive)")
+        }
+
+        if createsCurrentNetwork {
+            return .added(walletId: currentWalletId)
+        }
+
+        Self.logger.info("🪺 HOST :: current-network walletId already persisted; missing mirror repaired if needed")
+        return .alreadyExists(walletId: currentWalletId)
     }
 
     /// Derive the deterministic wallet id, persist and verify its mnemonic, then
@@ -550,25 +788,10 @@ final class SwiftDashSDKHost {
 
         let newSDK: SDK
         do {
-            // Pin Platform protocol version 13. Testnet Drive has moved past
-            // v12 to v13, whose validation set changed the shielded
-            // identity-create exit denominations (v12/V8 `[0.1, 0.3, 0.5,
-            // 1.0]` → v13/V9 `[0.03, 0.1, 0.25, 0.5, 1.0]`). Staying pinned at
-            // v12 made the client build shielded transitions against the old
-            // set, so a contested (0.25 DASH) shielded username create failed
-            // client-side ("denomination 25000000000 is not a member …") even
-            // though the server (v13) requires exactly 0.25. v13 is a superset
-            // of v12's shielded fee logic, so the reason v11→v12 was pinned
-            // (correct `ShieldFromAssetLock` / `Shield` fees) still holds.
-            // Pinning explicitly rather than the auto-detect default
-            // (`platformVersion: 0`, floor + ratchet) avoids a race where the
-            // shielded build runs before the SDK has ratcheted to the network
-            // version. The knob is `DashSDKConfig.platform_version`
-            // (dashpay/platform #3751); bump this when the agreed protocol
-            // moves past v13.
-            let pinnedPlatformVersion: UInt32 = 13
-            newSDK = try SDK(network: network, platformVersion: pinnedPlatformVersion)
-            Self.logger.info("🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public), pinned protocol v\(pinnedPlatformVersion, privacy: .public)")
+            let platformVersion = Self.platformVersion(for: network)
+            newSDK = try SDK(network: network, platformVersion: platformVersion)
+            Self.logger.info(
+                "🪺 HOST :: stage 1/4 SDK created for \(network.rawValue, privacy: .public), protocol \(platformVersion == 0 ? "auto-detect" : "pinned v\(platformVersion)", privacy: .public)")
         } catch {
             Self.logger.error("🪺 HOST :: SDK init failed: \(String(describing: error), privacy: .public)")
             throw HostError.sdkInitFailed(error)
@@ -611,6 +834,13 @@ final class SwiftDashSDKHost {
     /// second open of the same SQLite store and leaving the published runtime
     /// unchanged until the wipe commits.
     func managerForWipe(network: Network) throws -> PlatformWalletManager {
+        try managerForStoredWalletOperation(network: network)
+    }
+
+    /// Returns a manager over the network's persisted store without changing
+    /// the published runtime. Shared by full-device wipe and explicit
+    /// cross-network wallet provisioning.
+    private func managerForStoredWalletOperation(network: Network) throws -> PlatformWalletManager {
         if runningNetwork == network, let manager {
             return manager
         }
@@ -627,10 +857,124 @@ final class SwiftDashSDKHost {
         let restored = try manager.loadFromPersistor()
         if let resolved = resolveActiveWallet(in: manager, network: network) {
             Self.logger.info("🪺 HOST :: reusing persisted wallet; restored=\(restored.count, privacy: .public)")
+            // Off the load path. `PlatformWalletManager` is `@MainActor`, so
+            // the unlock's Keychain read and its two synchronous FFI calls run
+            // on the main thread whenever they run; scheduling them as their
+            // own main-actor turn at least keeps them out of wallet load,
+            // which is on the launch critical path.
+            Task { [weak self] in
+                self?.unlockDashPayContactCrypto(manager: manager, wallet: resolved)
+            }
             return resolved
         }
 
         throw HostError.walletNotFound(network)
+    }
+
+    /// Complete the contact crypto that `loadFromPersistor` had to defer.
+    ///
+    /// A persisted restore rehydrates the wallet external-signable — per-account
+    /// xpubs, no key material. The DashPay contact sweep needs a signer to ECDH
+    /// each contact's encrypted xpub into a `DashpayExternalAccount`, so with no
+    /// signer present it enqueues the build instead ("Deferred DashPay account
+    /// build") and re-enqueues it every sweep. Until something drains that queue
+    /// the wallet has no external accounts, which means no derived contact
+    /// addresses: sent-payment history cannot be reconstructed after a restore,
+    /// and the contact card stays on "No payments with this contact yet".
+    ///
+    /// `send_payment` drains the queue with its own signer, so the gap only
+    /// showed on wallets that had not sent to the contact since restoring.
+    /// This is the signer-backed drain the SDK documents on
+    /// `unlockWalletFromKeychain`; the drain itself re-fetches over the network
+    /// and runs detached, so the call returns immediately.
+    ///
+    /// Best-effort by design — a failure here must not fail wallet load. It
+    /// returns `false` for a genuine watch-only wallet (no stored mnemonic) and
+    /// throws only when the resolved seed does not bind to this wallet, which is
+    /// worth a log line but not a launch failure.
+    ///
+    /// Logged through `DWLogger` rather than `os_log` on purpose: this line has
+    /// to survive into the `app-logs/` group of a diagnostic export, and the
+    /// `os-log.txt` capture is not on this branch. It reports the three states
+    /// that tell apart the ways the drain can fail to happen — no stored
+    /// mnemonic for this wallet id (unlock no-ops), an empty queue (nothing was
+    /// deferred), and a seed that does not bind (throws).
+    private func unlockDashPayContactCrypto(
+        manager: PlatformWalletManager,
+        wallet: ManagedPlatformWallet
+    ) {
+        let walletId = wallet.walletId
+        let idTag = walletId.prefix(4).map { String(format: "%02x", $0) }.joined()
+        // Existence-only probe on the active wallet's own id — the same check
+        // `unlockWalletFromKeychain` makes internally, surfaced so a `false`
+        // return is distinguishable from "never called". No plaintext is read.
+        let hasMnemonic = WalletStorage().hasMnemonic(for: walletId)
+        let pending = (try? manager.pendingAccountBuildCount(for: walletId)).map(String.init) ?? "n/a"
+        do {
+            // Timed because it is main-thread work: the seed-binding verify is
+            // marker-cached, but a cache miss re-derives the BIP44 account-0
+            // xpub through the Keychain resolver. If a UI stall lines up with
+            // this line, that is the cost.
+            let started = CFAbsoluteTimeGetCurrent()
+            let unlocked = try manager.unlockWalletFromKeychain(wallet)
+            let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+            DWLogger.log(
+                "DashPay unlock: wallet=\(idTag) hasMnemonic=\(hasMnemonic) pendingAccountBuilds=\(pending) unlocked=\(unlocked) tookMs=\(ms)")
+        } catch {
+            DWLogger.log(
+                "DashPay unlock FAILED: wallet=\(idTag) hasMnemonic=\(hasMnemonic) pendingAccountBuilds=\(pending) error=\(String(describing: error))")
+        }
+
+        // A single unlock at load time is not enough: it schedules the drain
+        // only when the queue is already non-empty, and at this point it is
+        // empty — the contact sweep that defers the account builds has not run
+        // yet. Measured on a restored wallet: 0 pending at unlock, 4 pending
+        // 45s later, and nothing to drain them. So keep watching and unlock
+        // again once work appears. Re-unlocking is cheap — the seed-binding
+        // verify is marker-cached after the first success.
+        contactCryptoDrainWatch?.cancel()
+        contactCryptoDrainWatch = Task { [weak self] in
+            // Bounded: a queue that survives its drains is a failure to report,
+            // not something to retry forever.
+            var attemptsLeft = 5
+            var drained = false
+            for await statuses in manager.$dashPayUnlockStatus.values {
+                if Task.isCancelled || self == nil { return }
+                guard let status = statuses[walletId] else { continue }
+                if status.pendingAccountBuilds == 0, !status.draining {
+                    guard drained else { continue }
+                    // The contact accounts exist now. Sweep immediately rather
+                    // than waiting out the DashPay sync interval — that wait is
+                    // most of why a restored wallet showed an empty contact
+                    // card on first open and its history only on a later one.
+                    DWLogger.log("DashPay unlock: wallet=\(idTag) drain complete; syncing now")
+                    await SwiftDashSDKContactsService.shared.syncNow()
+                    return
+                }
+                guard status.pendingAccountBuilds > 0, !status.draining else { continue }
+                guard attemptsLeft > 0 else {
+                    DWLogger.log(
+                        "DashPay unlock: wallet=\(idTag) giving up with \(status.pendingAccountBuilds) pending account build(s)")
+                    return
+                }
+                attemptsLeft -= 1
+                do {
+                    let started = CFAbsoluteTimeGetCurrent()
+                    let unlocked = try manager.unlockWalletFromKeychain(wallet)
+                    let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
+                    DWLogger.log(
+                        "DashPay unlock: wallet=\(idTag) draining \(status.pendingAccountBuilds) deferred build(s); unlocked=\(unlocked) tookMs=\(ms)")
+                    drained = true
+                } catch {
+                    DWLogger.log(
+                        "DashPay unlock: wallet=\(idTag) re-unlock failed: \(String(describing: error))")
+                    return
+                }
+                // Let `draining` publish before the next element is considered,
+                // so one drain isn't counted as several attempts.
+                try? await Task.sleep(for: .seconds(5))
+            }
+        }
     }
 
     /// `WalletEnvironment.NetworkKind` for the SDK `Network` — the app-side
@@ -675,22 +1019,19 @@ final class SwiftDashSDKHost {
     /// `walletNotFound` retry: re-create wallet rows from the keychain
     /// mnemonics (`persistedMnemonics`). One attempt per entry, no retry loop —
     /// `createWallet` is idempotent by walletId (`Wallet(mnemonic:network:).id`),
-    /// so a re-run after a partial failure converges. The mnemonic is re-stored
-    /// under the created walletId when the stored key was derived for a
-    /// different network (mnemonics are network-agnostic; ids aren't).
+    /// so a re-run after a partial failure converges. Network-scoped ids are
+    /// never replayed through the other network's manager.
     /// Wipe race note: the wiper deletes mnemonics before `handleWalletWiped`,
     /// so a refresh racing a wipe finds an empty list here and fails the start
     /// — and the next refresh's `hasSDKWallet` gate stays closed.
     private func recoverPersistedWallet(handles: RuntimeHandles) -> ManagedPlatformWallet? {
-        let entries = Self.persistedMnemonics()
+        let inventory = Self.persistedMnemonics()
+        let entries = Self.recoverablePersistedMnemonics(
+            inventory,
+            for: handles.network)
         guard !entries.isEmpty else { return nil }
 
-        let storage = WalletStorage()
         for entry in entries {
-            guard Mnemonic.validate(entry.mnemonic) else {
-                Self.logger.error("🪺 HOST :: skipping keychain mnemonic for \(entry.walletId.prefix(4).map { String(format: "%02x", $0) }.joined(), privacy: .public)… — failed validation")
-                continue
-            }
             do {
                 let created = try handles.manager.createWallet(
                     mnemonic: entry.mnemonic,
@@ -708,7 +1049,8 @@ final class SwiftDashSDKHost {
                     // funds is not.
                     birthHeight: Self.importedWalletBirthHeight(for: handles.network))
                 if created.walletId != entry.walletId {
-                    try? storage.storeMnemonic(entry.mnemonic, for: created.walletId)
+                    try? handles.manager.deleteWallet(walletId: created.walletId)
+                    Self.logger.error("🪺 HOST :: recovered wallet id did not match its network-scoped Keychain id; discarded created wallet")
                 }
             } catch {
                 Self.logger.error("🪺 HOST :: keychain wallet recovery failed for one entry: \(String(describing: error), privacy: .public)")
@@ -716,7 +1058,7 @@ final class SwiftDashSDKHost {
         }
 
         guard let resolved = resolveActiveWallet(in: handles.manager, network: handles.network) else { return nil }
-        Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); entries=\(entries.count, privacy: .public)")
+        Self.logger.info("🪺 HOST :: recovered persisted wallet from keychain mnemonic(s); network=\(handles.network.networkName, privacy: .public) eligible=\(entries.count, privacy: .public) skipped=\(inventory.count - entries.count, privacy: .public)")
         return resolved
     }
 

@@ -109,7 +109,7 @@ extension CBAccount {
                      idem: UUID?) async throws -> (transaction: CoinbaseTransaction, walletId: Data) {
         // NOTE: Maybe better to get the address once and use it during the tx flow
         guard let destination = SwiftDashSDKReceiveAddressReader.receiveDestination() else {
-            fatalError("No wallet")
+            throw Coinbase.Error.unknownError
         }
 
         // TODO: disabled until Coinbase changes are clear

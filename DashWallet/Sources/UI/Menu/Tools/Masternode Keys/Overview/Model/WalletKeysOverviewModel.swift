@@ -66,10 +66,6 @@ struct MasternodeKeyUsage {
         let revoked: Bool
     }
 
-    /// Owner/Voting address-join scan window. Matches the SDK's
-    /// pre-derivation count (`PLATFORM_NODE_KEY_PREDERIVE_COUNT`).
-    private static let scanWindow: UInt32 = 20
-
     private let used: [MNKey: [UInt32: KeyUse]]
 
     private init(used: [MNKey: [UInt32: KeyUse]]) {
@@ -137,15 +133,56 @@ struct MasternodeKeyUsage {
                 }
                 useByAddress[address] = use
             }
-            guard !useByAddress.isEmpty,
-                  let deriver = MasternodeProviderKeyDeriver(key: key) else { continue }
-            for index in 0..<scanWindow {
-                guard let address = deriver.address(at: index),
-                      let use = useByAddress[address] else { continue }
+            for (address, index) in indexByAddress(family: key, targets: Set(useByAddress.keys)) {
+                guard let use = useByAddress[address] else { continue }
                 record(key, index, use)
             }
         }
 
         return MasternodeKeyUsage(used: used)
+    }
+
+    /// Base58 address → derived key index, for the two address-carrying key
+    /// families (owner / voting).
+    ///
+    /// The on-chain aggregation gives a masternode's owner and voting
+    /// *addresses*; turning those into "which of this wallet's derived keys is
+    /// that" means deriving each index and comparing. Shared by this type's
+    /// ownership resolution, the Masternodes screen's ownership labels, and
+    /// `MasternodeVoterRegistry`'s voting-key lookup — the same join must not
+    /// be reimplemented per call site.
+    ///
+    /// Walks the pool's full depth rather than a fixed window: SPV extends the
+    /// pool as ProRegTx/ProUpRegTx matches mark deeper indexes used, so a
+    /// capped scan would silently hide those masternodes. An unreadable pool
+    /// yields an empty range — no pool means no addresses to join against.
+    ///
+    /// Returns an empty map for key families with no on-chain address
+    /// (operator / evonode operator); Rust resolves those instead.
+    static func indexByAddress(family: MNKey, targets: Set<String>) -> [String: UInt32] {
+        resolveAddressIndexes(family: family, targets: targets).map
+    }
+
+    /// The address join plus whether it was made against the complete pool.
+    ///
+    /// `poolIsLive == false` means the derivation-wallet fallback answered,
+    /// and that pool is only gap-limit deep — so an address that is genuinely
+    /// ours but sits at a deeper index is simply not in `map`. Callers that
+    /// present the result as "these are all of them" must say so; a caller
+    /// that only labels known rows can ignore it.
+    static func resolveAddressIndexes(
+        family: MNKey,
+        targets: Set<String>
+    ) -> (map: [String: UInt32], poolIsLive: Bool) {
+        guard !targets.isEmpty,
+              let deriver = MasternodeProviderKeyDeriver(key: family) else { return ([:], true) }
+        var map: [String: UInt32] = [:]
+        let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? 0
+        for index in 0..<upperBound {
+            guard let address = deriver.address(at: index),
+                  targets.contains(address) else { continue }
+            map[address] = index
+        }
+        return (map, deriver.poolIsLive)
     }
 }

@@ -36,6 +36,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic, assign, getter=isBiometricAuthenticationAllowed) BOOL biometricAuthenticationAllowed;
 @property (readonly, nonatomic, assign) LABiometryType biometryType;
+/// Whether a PIN record exists in the keychain. NO means "Enter PIN" can
+/// never succeed (partial keychain restore, interrupted setup) — the lock
+/// screen must route to the phrase-gated Set PIN flow instead.
+@property (readonly, nonatomic, assign) BOOL hasPinSet;
 @property (nullable, nonatomic, weak) id<DWLockScreenModelDelegate> delegate;
 
 - (void)authenticateUsingBiometricsOnlyCompletion:(void (^)(BOOL authenticated))completion;

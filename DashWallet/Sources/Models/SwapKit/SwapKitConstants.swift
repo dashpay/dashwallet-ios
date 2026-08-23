@@ -24,8 +24,16 @@ enum SwapKitConstants {
     /// Default max slippage (percent) for quotes/swaps — mirrors Android
     /// `SwapKitConstants.DEFAULT_SLIPPAGE_PERCENT = 2`.
     static let defaultSlippagePercent = 2
-    /// SwapKit provider IDs for token-list classification (mirrors Android SwapKitConstants.kt).
-    static let providerMaya = "MAYACHAIN_STREAMING"
+    /// SwapKit provider IDs (mirrors Android SwapKitConstants.kt).
+    ///
+    /// MAYACHAIN and MAYACHAIN_STREAMING are **separate** SwapKit providers, not aliases:
+    /// streaming performs the swap over time for better price execution. Their `/tokens`
+    /// lists differ (31 vs 18 assets on 2026-08-03), so both are needed — classifying from
+    /// the streaming list alone hides Maya-routable assets such as `KUJI.KUJI` and `XRD.XRD`.
+    /// Quotes request both and let SwapKit's routing pick.
+    static let providerMayaChain = "MAYACHAIN"
+    static let providerMayaStreaming = "MAYACHAIN_STREAMING"
+    static let mayaProviders = [providerMayaChain, providerMayaStreaming]
     static let providerNear = "NEAR"
     /// routeId is valid 60s, cached ~5min (see SWAPKIT_PROTOCOL.md "Quote Lifecycle").
     static let routeFreshnessSeconds: TimeInterval = 60

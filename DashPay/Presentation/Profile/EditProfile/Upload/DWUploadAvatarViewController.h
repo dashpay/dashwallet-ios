@@ -35,6 +35,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithImage:(UIImage *)image;
 
+/// Abandon an in-flight upload without routing through the delegate. For the
+/// interactive-dismissal path, where the sheet is already gone and the
+/// presenter restores its own chrome.
+- (void)cancelUpload;
+
 - (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;

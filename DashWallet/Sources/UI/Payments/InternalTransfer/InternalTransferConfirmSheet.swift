@@ -17,7 +17,7 @@ import SwiftDashSDK
 ///   - `.failed(msg)`    → summary card with red error + Try again / Close.
 ///
 /// Confirm executes `route` via the coordinator:
-///   - `.coreToShielded`     → `performAssetLock(amountDuffs:)`
+///   - `.coreToShielded`     → `performAssetLock(recipientAmountDuffs:)`
 ///   - `.platformToShielded` → `performShield(amountCredits:)`
 ///   - `.shieldedToCore`     → `performWithdraw(amountCredits:)`
 ///   - `.shieldedToPlatform` → `performUnshield(amountCredits:)`
@@ -40,10 +40,15 @@ struct InternalTransferConfirmSheet: View {
     /// Shielded reverse routes only: execute the note-aware Max plan and
     /// revalidate it immediately before proving.
     var isFullShieldedSweep: Bool = false
+    /// Frozen with the submitted amount so a capacity refresh can update only
+    /// a value the user explicitly derived via Platform Shield Max.
+    var platformShieldAmountWasMax: Bool = false
     var onCancel: () -> Void
     var onCompleted: () -> Void
+    var onPlatformShieldCapacityChanged: (UInt64?, Bool) -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
+    @State private var handledPlatformShieldCapacityChange = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -67,6 +72,9 @@ struct InternalTransferConfirmSheet: View {
         }
         .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(isInFlight)
+        .onChange(of: coordinator.phase) { phase in
+            handlePlatformShieldCapacityChange(phase)
+        }
     }
 
     private var isInFlight: Bool {
@@ -203,12 +211,15 @@ struct InternalTransferConfirmSheet: View {
     private static let creditsPerDash: Decimal = 100_000_000_000
 
     /// Flat fee estimate (credits) for the active route, computed offline by
-    /// the SDK against the latest protocol version (so it matches the carved
-    /// fee). `nil` if the estimate is unavailable → the row shows "—".
+    /// the SDK against the latest protocol version (so it matches the fee the
+    /// SDK will charge). `nil` if the estimate is unavailable → the row
+    /// shows "—".
     private var networkFeeCredits: UInt64? {
         switch route {
         case .coreToShielded:
-            return CoreToShieldedAmountPolicy.poolFeeCredits
+            // The lock charges the fee rounded UP to a whole duff — display
+            // that, so Amount + Network fee equals Total exactly.
+            return CoreToShieldedAmountPolicy.currentPoolFeeDuffs.map { $0 * 1000 }
         case .platformToShielded:
             // Shield (Type 15): base shielded fee. Real metered storage is
             // extra and only knowable on-chain, so this is a lower bound.
@@ -237,6 +248,24 @@ struct InternalTransferConfirmSheet: View {
         return "~ " + CurrencyExchanger.shared.fiatAmountString(for: dash)
     }
 
+    /// What actually leaves the source balance. Core→Shielded charges the
+    /// pool fee on top of the amount (the executed lock value); every other
+    /// route's total is the amount itself. "—" when the fee estimate is
+    /// unavailable — `canContinue` fails closed before that can be confirmed,
+    /// but the row must never show the un-inflated number.
+    private var totalString: String {
+        guard route == .coreToShielded else {
+            return dashDuffs.formattedDashAmount
+        }
+        guard let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
+              let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
+                  forAmountDuffs: amountDuffsUnsigned,
+                  poolFeeCredits: poolFeeCredits),
+              let signedLockDuffs = Int64(exactly: lockDuffs)
+        else { return "—" }
+        return signedLockDuffs.formattedDashAmount
+    }
+
 
     // MARK: - Summary card
 
@@ -256,7 +285,7 @@ struct InternalTransferConfirmSheet: View {
             divider
             summaryRow(
                 label: NSLocalizedString("Total", comment: ""),
-                value: dashDuffs.formattedDashAmount)
+                value: totalString)
         }
         .background(Color.dash.secondaryBackground)
         .cornerRadius(12)
@@ -437,7 +466,7 @@ struct InternalTransferConfirmSheet: View {
         Task {
             switch route {
             case .coreToShielded:
-                await coordinator.performAssetLock(amountDuffs: amountDuffsUnsigned)
+                await coordinator.performAssetLock(recipientAmountDuffs: amountDuffsUnsigned)
             case .platformToShielded:
                 await coordinator.performShield(amountCredits: creditsAmount)
             case .shieldedToCore:
@@ -482,6 +511,21 @@ struct InternalTransferConfirmSheet: View {
         }
         coordinator.reset()
         confirm()
+    }
+
+    private func handlePlatformShieldCapacityChange(
+        _ phase: ShieldedTransferCoordinator.Phase
+    ) {
+        guard !handledPlatformShieldCapacityChange,
+              case .failed = phase,
+              let error = coordinator.lastFailure as? ShieldedTransferCoordinator.CoordinatorError,
+              case .platformShieldCapacityChanged(let maxShieldableCredits) = error
+        else { return }
+
+        handledPlatformShieldCapacityChange = true
+        onPlatformShieldCapacityChanged(
+            maxShieldableCredits,
+            platformShieldAmountWasMax)
     }
 }
 
@@ -707,9 +751,10 @@ struct ShieldedRecoverySheet: View {
                 alreadyComplete = true
                 return
             }
-            // statusRaw 1...3 (still pending), or nil/0 (status unavailable, e.g. a
-            // failed refresh): attempt the resume. A genuinely gone/consumed lock
-            // surfaces a real SDK error rather than a false "complete".
+            // statusRaw 1...3 (still pending), 5 (Core-final — consumption
+            // unknown), or nil/0 (status unavailable, e.g. a failed refresh):
+            // attempt the resume. Both a local Consumed tombstone and a remote
+            // already-consumed report map to unconfirmed rather than false success.
             await coordinator.resumeAssetLock(outPointTxidWire: op.txidWire, outPointVout: op.vout)
             // On success the shield ST consumed the lock; refresh the snapshot so
             // the history row flips pending → completed even before the next
@@ -735,13 +780,35 @@ struct ShieldedTransferStepList: View {
         var id: String { label }
     }
 
-    let currentPhase: ShieldedTransferCoordinator.Phase
-    let steps: [Step]
+    /// Pre-resolved (label, state) rows — both inits reduce to this.
+    private let rows: [(label: String, state: StepState)]
+
+    /// Phase-based rows: each step's done/active/pending state derives from
+    /// where `currentPhase` sits in the canonical ordering (see type doc).
+    init(currentPhase: ShieldedTransferCoordinator.Phase, steps: [Step]) {
+        rows = steps.map { step -> (label: String, state: StepState) in
+            (label: step.label, state: Self.state(for: step.phase, current: currentPhase))
+        }
+    }
+
+    /// Positional rows, for flows with stages the coordinator phases can't
+    /// express (e.g. the CoinJoin → Shielded flow's sweep leg): rows before
+    /// `currentIndex` are complete, the row at it active, the rest pending.
+    /// `nil` renders every row pending (idle/failed — the host sheet surfaces
+    /// the error separately); an index past the last row renders all complete.
+    init(labels: [String], currentIndex: Int?) {
+        rows = labels.enumerated().map { index, label -> (label: String, state: StepState) in
+            guard let current = currentIndex else { return (label: label, state: .pending) }
+            if index < current { return (label: label, state: .complete) }
+            if index == current { return (label: label, state: .active) }
+            return (label: label, state: .pending)
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            ForEach(steps) { step in
-                stepRow(label: step.label, state: state(for: step.phase))
+            ForEach(Array(rows.enumerated()), id: \.element.label) { _, row in
+                stepRow(label: row.label, state: row.state)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -753,11 +820,14 @@ struct ShieldedTransferStepList: View {
         case complete
     }
 
-    /// Where `phase` sits relative to `currentPhase`. The phase enum is ordered
+    /// Where `phase` sits relative to `current`. The phase enum is ordered
     /// .signing → .locking → .proving → .broadcasting → .success, so a numeric
     /// comparison drives the state.
-    private func state(for phase: ShieldedTransferCoordinator.Phase) -> StepState {
-        guard let currentIdx = Self.phaseIndex(currentPhase),
+    private static func state(
+        for phase: ShieldedTransferCoordinator.Phase,
+        current: ShieldedTransferCoordinator.Phase
+    ) -> StepState {
+        guard let currentIdx = Self.phaseIndex(current),
               let targetIdx = Self.phaseIndex(phase) else {
             return .pending
         }

@@ -35,13 +35,22 @@ struct JoinDashPayReadinessScreen: View {
     let onProceed: () -> Void
     /// Return to the screen that opened this interstitial.
     let onClose: () -> Void
+    /// Open the invitation-redeem flow.
+    ///
+    /// A voucher funds the registration outright, so none of the checklist
+    /// above applies to it. Until this existed the only way in was the
+    /// one-shot `JoinDashPayInfoDialog`, which sets
+    /// `UsernamePrefs.joinDashPayInfoShown` the first time it appears — so
+    /// anyone who had already dismissed it and *then* received an invitation
+    /// had no way to redeem it short of reinstalling.
+    let onClaimInvitation: () -> Void
 
     /// Suggested deposit headroom (0.003 DASH in credits) added to the
-    /// shortfall prefill: the Core→Shielded route carves the Platform
-    /// pool fee from the locked value. The current Type-18 fee is about
-    /// 0.003 DASH, so depositing less headroom can leave the resulting
-    /// note below the required denomination. Only a suggestion — the
-    /// gates re-evaluate on the notes that actually land.
+    /// shortfall prefill. The Core→Shielded route now charges its pool fee
+    /// on top of the typed amount (the recipient receives the full amount),
+    /// so this is a pure safety margin against balance drift between the
+    /// prefill and the deposit. Only a suggestion — the gates re-evaluate
+    /// on the notes that actually land.
     private static let fundingFeeHeadroomCredits: UInt64 = 300_000_000
 
     private var snapshot: ShieldedIdentityFundingReadiness.Snapshot? {
@@ -108,6 +117,18 @@ struct JoinDashPayReadinessScreen: View {
                 }
                 .padding(.top, 12)
             }
+
+            // Always offered: an invitation pays for the registration, so it
+            // is a way past this screen regardless of the checklist state.
+            // Tinted rather than filled — it is a real alternative to
+            // Continue, not a footnote, but Continue stays the primary action.
+            DashButton(
+                text: NSLocalizedString("Have an invitation?", comment: "DashPay Invitations"),
+                style: .tintedBlue
+            ) {
+                onClaimInvitation()
+            }
+            .padding(.top, 12)
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 20)

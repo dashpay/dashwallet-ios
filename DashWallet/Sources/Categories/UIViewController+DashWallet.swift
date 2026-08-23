@@ -141,11 +141,49 @@ extension UIViewController {
             if let sdkLogsZip {
                 activityItems.append(sdkLogsZip)
             }
-            let activityViewController = UIActivityViewController(
-                activityItems: activityItems,
-                applicationActivities: nil
-            )
-            present(activityViewController, animated: true)
+            dw_presentActivityViewController(activityItems: activityItems)
         }
+    }
+}
+
+extension UIViewController {
+    /// Presents a share sheet, supplying the anchor that iPad requires:
+    /// there `UIActivityViewController` is always presented as a popover, and
+    /// a popover with neither `sourceView` nor `barButtonItem` throws
+    /// `NSInvalidArgumentException` from `presentationTransitionWillBegin` —
+    /// a hard crash. iPhone never hits it because the sheet is modal there.
+    ///
+    /// Callers with a tapped control pass it as `sourceView` (plus its
+    /// `bounds` as `sourceRect`). Callers driven from SwiftUI have no UIKit
+    /// sender, so the default anchors an arrow-less popover at the centre of
+    /// this controller's view.
+    func dw_presentActivityViewController(
+        activityItems: [Any],
+        sourceView: UIView? = nil,
+        sourceRect: CGRect? = nil,
+        completion: (() -> Void)? = nil,
+        dismissal: (() -> Void)? = nil
+    ) {
+        let activityViewController = UIActivityViewController(
+            activityItems: activityItems,
+            applicationActivities: nil
+        )
+        activityViewController.completionWithItemsHandler = { _, _, _, _ in
+            dismissal?()
+        }
+
+        if let popover = activityViewController.popoverPresentationController {
+            let anchor = sourceView ?? view!
+            popover.sourceView = anchor
+
+            if let sourceRect {
+                popover.sourceRect = sourceRect
+            } else {
+                popover.sourceRect = CGRect(x: anchor.bounds.midX, y: anchor.bounds.midY, width: 0, height: 0)
+                popover.permittedArrowDirections = []
+            }
+        }
+
+        present(activityViewController, animated: true, completion: completion)
     }
 }

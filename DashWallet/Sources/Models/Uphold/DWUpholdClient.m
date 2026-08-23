@@ -340,6 +340,27 @@ static BOOL DWUpholdStatusRequiresOTP(UpholdAPIResponseStatus status) {
     [self performLogOutShouldNotifyObservers:YES];
 }
 
+- (void)invalidateRejectedSession {
+    if (!NSThread.isMainThread) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self invalidateRejectedSession];
+        });
+        return;
+    }
+
+    if (!self.accessToken) {
+        return;
+    }
+
+    // Skip the revoke call `performLogOutShouldNotifyObservers:` makes: Uphold has already
+    // rejected this token, so revoking it is a guaranteed second failure.
+    self.accessToken = nil;
+    self.lastAccessDate = nil;
+    [DWKeychainStore setData:nil forAccount:UPHOLD_ACCESS_TOKEN authenticated:YES];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:DWUpholdClientUserDidLogoutNotification object:nil];
+}
+
 #pragma mark - Private
 
 - (void)createDashCard:(void (^)(DWUpholdCardObject *_Nullable card))completion {

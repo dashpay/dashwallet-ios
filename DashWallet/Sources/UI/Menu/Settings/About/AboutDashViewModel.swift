@@ -27,9 +27,26 @@ final class AboutDashViewModel: ObservableObject {
     @Published private(set) var lastDeviceSync: String = ""
     @Published private(set) var lastDeviceUpdate: String = ""
 
+    /// Non-nil presents the hidden shake-gesture diagnostics alert, carrying
+    /// the tech-info snapshot taken when the shake landed.
+    @Published var techInfo: String?
+    /// True while the diagnostic-log archive is being staged + zipped.
+    /// Guards re-entry from a second shake.
+    @Published private(set) var isExportingLogs = false
+    /// Non-nil presents the share sheet with the finished zip.
+    @Published var exportedLogsURL: URL?
+    /// Non-nil presents the log-export failure alert.
+    @Published var logExportErrorMessage: String?
+
     let repositoryURL = "https://github.com/dashpay/dashwallet-ios"
 
     private var databaseObserver: NSObjectProtocol?
+    private var shakeObserver: NSObjectProtocol?
+
+    /// The ObjC About model still owns the tech-info status string
+    /// (`status`), which reads DashSync-era + SwiftDashSDK state through
+    /// `DWAboutModel+MasternodeSync`. Reused rather than reimplemented here.
+    private lazy var aboutModel = DWAboutModel()
 
     private static let syncDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -65,11 +82,28 @@ final class AboutDashViewModel: ObservableObject {
                 self?.reloadExploreState()
             }
         }
+
+        // Hidden support gesture: shaking the device on this screen shows a
+        // tech-info snapshot with copy / log-export actions. `DWWindow` posts
+        // the notification; the observer lived on the old
+        // `DWAboutViewController` and was dropped in the SwiftUI rewrite.
+        shakeObserver = NotificationCenter.default.addObserver(
+            forName: .DWDeviceDidShake,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.handleDeviceShake()
+            }
+        }
     }
 
     deinit {
         if let databaseObserver {
             NotificationCenter.default.removeObserver(databaseObserver)
+        }
+        if let shakeObserver {
+            NotificationCenter.default.removeObserver(shakeObserver)
         }
     }
 
@@ -81,6 +115,39 @@ final class AboutDashViewModel: ObservableObject {
             return
         }
         SKStoreReviewController.requestReview(in: scene)
+    }
+
+    // MARK: - Shake diagnostics
+
+    private func handleDeviceShake() {
+        // A second shake while the alert is up would only re-read the same
+        // state; keep the snapshot the user is looking at.
+        guard techInfo == nil else { return }
+        techInfo = aboutModel.status()
+    }
+
+    func copyTechInfo() {
+        UIPasteboard.general.string = aboutModel.status()
+    }
+
+    /// Zip the recent diagnostic logs (SwiftDashSDK sessions + app
+    /// CocoaLumberjack files) and hand the archive to the share sheet —
+    /// the same export the Tools menu offers.
+    func exportLogs() {
+        guard !isExportingLogs else { return }
+        isExportingLogs = true
+
+        Task { [weak self] in
+            let result = await DiagnosticLogExporter.exportArchive()
+            guard let self else { return }
+            self.isExportingLogs = false
+            switch result {
+            case .success(let url):
+                self.exportedLogsURL = url
+            case .failure(let error):
+                self.logExportErrorMessage = error.localizedDescription
+            }
+        }
     }
 
     // MARK: - Explore Dash state

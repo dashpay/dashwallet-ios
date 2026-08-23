@@ -15,7 +15,7 @@
 //  limitations under the License.
 //
 
-class TransactionGroup: Identifiable {
+struct TransactionGroup: Identifiable {
     let id: String
     let date: Date
     var items: [TransactionListDataItem]
@@ -68,6 +68,32 @@ extension TransactionListDataItem: Identifiable {
             return item.date
         case .platformActivity(let item):
             return item.date
+        }
+    }
+
+    /// False only for restored shielded entries whose original date is
+    /// not recoverable (SDK `createdAtMs == 0`); their `date` is the
+    /// `.distantPast` sort sentinel and must not be rendered or used as
+    /// a day-group key.
+    var hasKnownDate: Bool {
+        switch self {
+        case .shieldedActivity(let item):
+            return item.hasKnownDate
+        default:
+            return true
+        }
+    }
+
+    /// On-chain sequence key for items whose `date` is the shared
+    /// `.distantPast` sentinel: the restored shielded entries' smallest
+    /// note commitment-tree position (exact append-only chain order).
+    /// Nil everywhere else — dated items order by `date` alone.
+    var chainOrderKey: UInt64? {
+        switch self {
+        case .shieldedActivity(let item):
+            return item.minNotePosition
+        default:
+            return nil
         }
     }
 }

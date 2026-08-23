@@ -95,6 +95,50 @@ struct AboutDashView: View {
             }
         }
         .background(Color.dash.primaryBackground)
+        .alert(
+            "",
+            isPresented: Binding(
+                get: { viewModel.techInfo != nil },
+                set: { if !$0 { viewModel.techInfo = nil } }
+            ),
+            presenting: viewModel.techInfo
+        ) { _ in
+            Button(NSLocalizedString("Copy", comment: "")) {
+                viewModel.copyTechInfo()
+                viewModel.techInfo = nil
+            }
+            Button(NSLocalizedString("Copy Logs", comment: "Log export")) {
+                viewModel.techInfo = nil
+                viewModel.exportLogs()
+            }
+            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {
+                viewModel.techInfo = nil
+            }
+        } message: { techInfo in
+            Text(techInfo)
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { viewModel.exportedLogsURL != nil },
+                set: { if !$0 { viewModel.exportedLogsURL = nil } }
+            )
+        ) {
+            if let url = viewModel.exportedLogsURL {
+                ActivityView(activityItems: [url])
+            }
+        }
+        .alert(
+            NSLocalizedString("Export Logs", comment: "Log export"),
+            isPresented: Binding(
+                get: { viewModel.logExportErrorMessage != nil },
+                set: { if !$0 { viewModel.logExportErrorMessage = nil } }
+            ),
+            presenting: viewModel.logExportErrorMessage
+        ) { _ in
+            Button(NSLocalizedString("OK", comment: "")) { viewModel.logExportErrorMessage = nil }
+        } message: { message in
+            Text(message)
+        }
     }
 
     private var repositoryLink: some View {

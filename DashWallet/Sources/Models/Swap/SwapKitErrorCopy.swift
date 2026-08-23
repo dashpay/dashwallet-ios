@@ -22,6 +22,8 @@ import Foundation
 /// Maps raw SwapKit error code strings to user-facing messages.
 /// Mirrors Android's `SwapKitErrors.messageResFor`.
 enum SwapKitErrorCopy {
+    static let mayaMemoTooLongErrorCode = "mayaMemoTooLong"
+
     static func message(for rawError: String?, coin: SwapCryptoCurrency) -> String {
         let code = rawError?
             .components(separatedBy: ":")
@@ -31,6 +33,16 @@ enum SwapKitErrorCopy {
             ?? ""
 
         switch code {
+        case "mayamemotoolong":
+            // Two things drive the memo past the 80-byte OP_RETURN limit: the destination
+            // address, and the amount-dependent streaming-limit field. Measured on 2026-08-04,
+            // one ARB.YUM route to a fixed address ran 79 / 80 / 79 / 79 bytes at 0.1 / 1 / 10 /
+            // 50 DASH — so blaming the address alone would send the user to the wrong fix.
+            let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
+            return String(format: NSLocalizedString(
+                "This swap's Maya instruction doesn't fit in a Dash transaction. Try a different amount, or a shorter %@ address.",
+                comment: "Dash DEX / dex_error_maya_memo_too_long"
+            ), chainLabel)
         case "noroutesfound":
             return NSLocalizedString(
                 "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
@@ -92,6 +104,11 @@ enum SwapKitErrorCopy {
                 comment: "Dash DEX / dex_error_price_moved"
             )
         default:
+            // The generic copy is a dead end for diagnosis: the screen says only "something
+            // went wrong" and the raw code is dropped here, so a QA log export contains no
+            // trace of what actually failed. Record it — an unmapped code is either a new
+            // SwapKit error worth adding above, or a real defect.
+            DWLogger.log("SwapKit: unmapped swap error for \(coin.code) — raw: \(rawError ?? "<nil>")")
             return NSLocalizedString(
                 "Something went wrong setting up your swap. Please try again.",
                 comment: "Dash DEX / dex_error_generic"

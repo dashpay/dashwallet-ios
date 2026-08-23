@@ -53,6 +53,14 @@ extern NSString *const DWUpholdClientUserDidLogoutNotification;
 
 - (void)logOut;
 
+/// Drops a session Uphold has already rejected (HTTP 401), so `isAuthorized` stops reporting
+/// YES for a token the server will not accept. Unlike `logOut` this does not call the revoke
+/// endpoint — the token is already dead, and revoking it would just fail again.
+///
+/// Call it from the request layer on a 401 so the UI can offer re-authorization instead of
+/// reporting the feature as unavailable.
+- (void)invalidateRejectedSession;
+
 @end
 
 NS_ASSUME_NONNULL_END

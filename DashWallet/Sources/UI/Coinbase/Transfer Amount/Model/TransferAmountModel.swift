@@ -125,7 +125,7 @@ final class TransferAmountModel: CoinbaseAmountModel, CoinbaseTransactionSendabl
                 }
             } catch let error {
                 await MainActor.run {
-                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: error as! Coinbase.Error)
+                    self.delegate?.transferFromCoinbaseToWalletDidFail(with: error as? Coinbase.Error ?? .unknownError)
                 }
             }
         }

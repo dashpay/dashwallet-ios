@@ -66,6 +66,15 @@ struct SwiftDashSDKSPVStatusScreen: View {
     /// the current height is the only way to express that in this UI.
     @State private var pendingResyncConfirmHeight: UInt32?
 
+    /// Presents the drop-unconfirmed confirmation dialog.
+    @State private var showDropUnconfirmedConfirm = false
+    /// True while the bulk drop + runtime reload + rescan runs; disables
+    /// the button and shows its progress spinner.
+    @State private var isDroppingUnconfirmed = false
+    /// Result banner under the drop button; coloured via `dropResultIsError`.
+    @State private var dropResultMessage: String?
+    @State private var dropResultIsError = false
+
     init(vc: UINavigationController) {
         self.vc = vc
     }
@@ -108,6 +117,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     heightsCard
                     perPhaseCard
                     rescanFiltersCard
+                    dropUnconfirmedCard
                     connectedPeersCard
                     if let lastError = coordinator.lastError {
                         errorCard(message: lastError)
@@ -178,6 +188,23 @@ struct SwiftDashSDKSPVStatusScreen: View {
         } message: {
             Text(NSLocalizedString(
                 "The wallet's creation height — the floor for filter scans and \"From wallet creation\" rescans. Set it at or below the wallet's first funding; imports default to 200000 on mainnet and 0 on testnet. Saving a height at or below the current one clears this network's chain data at the next launch and rescans from it.",
+                comment: "SPV diagnostics"))
+        }
+        .confirmationDialog(
+            NSLocalizedString("Drop unconfirmed transactions?", comment: "SPV diagnostics"),
+            isPresented: $showDropUnconfirmedConfirm,
+            titleVisibility: .visible
+        ) {
+            Button(
+                NSLocalizedString("Drop & rescan", comment: "SPV diagnostics"),
+                role: .destructive
+            ) {
+                dropUnconfirmedAndRescan()
+            }
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+        } message: {
+            Text(NSLocalizedString(
+                "Deletes this wallet's unconfirmed transactions from this device only and frees the coins they tried to spend. The filter rescan restores any of them that is actually on the blockchain. Nothing is sent to the network.",
                 comment: "SPV diagnostics"))
         }
         .alert(
@@ -441,6 +468,66 @@ struct SwiftDashSDKSPVStatusScreen: View {
         .cornerRadius(12)
     }
 
+    private var dropUnconfirmedCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(NSLocalizedString("Unconfirmed Transactions", comment: "SPV diagnostics"))
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.dash.primaryText)
+
+            Text(NSLocalizedString(
+                "Drop this wallet's transactions still waiting for the network (never locked or mined) from this device, make the coins they tried to spend available again, and rescan recent filters. A dropped transaction that is actually on the blockchain comes back on its own during the rescan. Nothing is sent to the network.",
+                comment: "SPV diagnostics"))
+                .font(.system(size: 12))
+                .foregroundColor(Color.dash.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+
+            row(
+                title: NSLocalizedString("Unconfirmed now", comment: "SPV diagnostics"),
+                value: "\(UnconfirmedTransactionRemover.unconfirmedCount())")
+
+            Button(action: {
+                dropResultMessage = nil
+                showDropUnconfirmedConfirm = true
+            }) {
+                HStack(spacing: 8) {
+                    if isDroppingUnconfirmed {
+                        SwiftUI.ProgressView()
+                            .controlSize(.small)
+                    }
+                    Text(isDroppingUnconfirmed
+                        ? NSLocalizedString("Dropping…", comment: "SPV diagnostics")
+                        : NSLocalizedString("Drop Unconfirmed & Rescan", comment: "SPV diagnostics"))
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.dash.gray300.opacity(0.3))
+                .foregroundColor(rescanEnabled && !isDroppingUnconfirmed ? .red : .secondary)
+                .cornerRadius(8)
+            }
+            .disabled(!rescanEnabled || isDroppingUnconfirmed)
+
+            if !rescanEnabled {
+                Text(NSLocalizedString(
+                    "Available only while SPV is running with a wallet bound.",
+                    comment: "SPV diagnostics"))
+                    .font(.system(size: 12))
+                    .foregroundColor(Color.dash.secondaryText)
+            }
+
+            if let message = dropResultMessage {
+                Text(message)
+                    .font(.system(size: 12))
+                    .foregroundColor(dropResultIsError ? .red : .green)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color.dash.secondaryBackground)
+        .cornerRadius(12)
+    }
+
     private func errorCard(message: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Last Error")
@@ -687,6 +774,47 @@ extension SwiftDashSDKSPVStatusScreen {
             rescanResultIsError = true
             rescanResultMessage = error.localizedDescription
             Self.logger.error("🛰️ SPV-STATUS :: rescan filters failed: \(String(describing: error), privacy: .public)")
+        }
+    }
+
+    /// Run the bulk unconfirmed-transaction drop + rescan. The await
+    /// spans the persistence surgery, the runtime reload, and the rescan
+    /// arm, so the button's spinner honestly covers the whole operation.
+    func dropUnconfirmedAndRescan() {
+        guard !isDroppingUnconfirmed else { return }
+        isDroppingUnconfirmed = true
+        Task { @MainActor in
+            do {
+                let outcome = try await UnconfirmedTransactionRemover().dropAllUnconfirmedAndRescan()
+                if outcome.dropped == 0 {
+                    dropResultIsError = false
+                    dropResultMessage = NSLocalizedString(
+                        "No unconfirmed transactions to drop.",
+                        comment: "SPV diagnostics")
+                } else if outcome.rescanArmed {
+                    dropResultIsError = false
+                    dropResultMessage = String(
+                        format: NSLocalizedString(
+                            "Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row.",
+                            comment: "SPV diagnostics"),
+                        outcome.dropped)
+                } else {
+                    // The drop finished but the recovery rescan didn't
+                    // arm — flag it instead of claiming the safety net ran.
+                    dropResultIsError = true
+                    dropResultMessage = String(
+                        format: NSLocalizedString(
+                            "Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above.",
+                            comment: "SPV diagnostics"),
+                        outcome.dropped)
+                }
+                Self.logger.info("🛰️ SPV-STATUS :: bulk unconfirmed drop finished — \(outcome.dropped, privacy: .public) tx(s), rescanArmed=\(outcome.rescanArmed, privacy: .public)")
+            } catch {
+                dropResultIsError = true
+                dropResultMessage = error.localizedDescription
+                Self.logger.error("🛰️ SPV-STATUS :: bulk unconfirmed drop failed: \(String(describing: error), privacy: .public)")
+            }
+            isDroppingUnconfirmed = false
         }
     }
 

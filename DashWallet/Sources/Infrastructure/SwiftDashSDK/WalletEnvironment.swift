@@ -42,12 +42,12 @@ public final class WalletEnvironment: NSObject {
 
     private static let currentChainTypeKey = "CURRENT_CHAIN_TYPE_KEY"
 
-    /// The persisted network selection. A missing key means testnet, preserving
-    /// the app's migration-era default. Unknown raw values classify as
-    /// `.devnet` (unsupported).
+    /// The persisted network selection. A missing key means mainnet — testnet
+    /// is reached only through `switchToNetwork(_:)`, the key's sole writer.
+    /// Unknown raw values classify as `.devnet` (unsupported).
     public static var networkKind: NetworkKind {
         let defaults = UserDefaults.standard
-        guard defaults.object(forKey: currentChainTypeKey) != nil else { return .testnet }
+        guard defaults.object(forKey: currentChainTypeKey) != nil else { return .mainnet }
         return NetworkKind(rawValue: defaults.integer(forKey: currentChainTypeKey)) ?? .devnet
     }
 
