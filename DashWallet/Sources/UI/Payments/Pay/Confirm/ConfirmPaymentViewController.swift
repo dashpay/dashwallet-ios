@@ -225,13 +225,14 @@ private struct ConfirmPaymentSheet: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 14)
 
-            VStack(spacing: 12) {
+            VStack(spacing: 0) {
                 ForEach(Array(state.items.enumerated()), id: \.offset) { _, item in
-                    row(item)
+                    DashUIKit.MenuItem(
+                        title: item.title ?? "",
+                        accessory: .text(detail(of: item)))
                 }
             }
-            .padding(14)
-            .modifier(MenuViewModifier(innerPadding: 0))
+            .modifier(MenuViewModifier())
             .padding(.top, 20)
 
             HStack(spacing: 20) {
@@ -259,26 +260,13 @@ private struct ConfirmPaymentSheet: View {
         .padding(.bottom, 20)
     }
 
-    /// `attributedDetail` wins where the model built one — the fee and total
-    /// arrive pre-styled — and the plain string is the fallback.
-    @ViewBuilder
-    private func row(_ item: DWTitleDetailItem) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Text(item.title ?? "")
-                .dashFont(.subhead)
-                .foregroundColor(.dash.secondaryText)
-
-            Spacer(minLength: 12)
-
-            if let attributed = item.attributedDetail {
-                Text(AttributedString(attributed))
-                    .multilineTextAlignment(.trailing)
-            } else {
-                Text(item.plainDetail ?? "")
-                    .dashFont(.subheadMedium)
-                    .foregroundColor(.dash.primaryText)
-                    .multilineTextAlignment(.trailing)
-            }
-        }
+    /// The row's value as plain text.
+    ///
+    /// The model hands the fee and the total over pre-styled in an
+    /// `NSAttributedString`, built for the cell this sheet no longer uses. Its
+    /// string is taken and the styling dropped on purpose: `MenuItem` applies
+    /// the design system's own, which is the reason for drawing the row with it.
+    private func detail(of item: DWTitleDetailItem) -> String {
+        item.plainDetail ?? item.attributedDetail?.string ?? ""
     }
 }

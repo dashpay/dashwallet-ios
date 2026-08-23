@@ -35,12 +35,23 @@ struct TransferPrivacyTip: View {
 
     let context: Context
 
+    /// Dismissed for this presentation only. The sheet builds a fresh tip every
+    /// time it opens, so closing it is "not now" rather than "never again" —
+    /// nothing here writes a preference, and a tip that stayed gone would need
+    /// one.
+    @State private var isVisible = true
+
+    @ViewBuilder
     var body: some View {
-        DashUIKit.SystemMessageView(
-            title: title,
-            subtitle: message,
-            icon: icon
-        )
+        if isVisible {
+            DashUIKit.SystemMessageView(
+                title: title,
+                subtitle: message,
+                icon: icon,
+                backgroundColor: Color.dash.blueAlpha5,
+                onClose: { isVisible = false }
+            )
+        }
     }
 
     /// The tip is context-aware:
