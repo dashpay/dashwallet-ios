@@ -30,6 +30,15 @@ import SwiftDashSDK
 /// aggregation joined against the wallet's derived voting-key pool, so a node
 /// appears if and only if the wallet actually holds the key Platform will
 /// check the signature against.
+/// Where a votable node's voting private key lives.
+enum VotingKeySource: Hashable {
+    /// Derived from the wallet's `ProviderVotingKeys` account at this index.
+    case walletIndex(UInt32)
+    /// Attached by the user to a TRACKED masternode; the key text is in the
+    /// app's keychain vault.
+    case trackedVault
+}
+
 struct VoterNode: Identifiable, Hashable {
     /// The masternode's pro_tx_hash in raw wire byte order — the orientation
     /// `SDK.castContestedResourceVote` expects. Reverse it only for display
@@ -40,9 +49,8 @@ struct VoterNode: Identifiable, Hashable {
     let typeIndex: UInt32
     /// `ip:port`, when the registration carried one.
     let serviceAddress: String?
-    /// Index into the wallet's `ProviderVotingKeys` account that derives this
-    /// node's voting key.
-    let votingKeyIndex: UInt32
+    /// Where this node's voting private key comes from.
+    let keySource: VotingKeySource
 
     var id: Data { proTxHash }
 
@@ -145,7 +153,7 @@ final class MasternodeVoterRegistry {
                     isEvonode: masternode.isEvonode,
                     typeIndex: masternode.typeIndex,
                     serviceAddress: masternode.serviceAddress,
-                    votingKeyIndex: index)
+                    keySource: .walletIndex(index))
             }
 
         // Only a degraded pool read can hide a node we own; if every active
@@ -153,7 +161,31 @@ final class MasternodeVoterRegistry {
         let mayBeIncomplete = !resolution.poolIsLive && nodes.count < eligible.count
         Self.logger.info(
             "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations livePool=\(resolution.poolIsLive, privacy: .public)")
-        return Resolution(nodes: nodes, mayBeIncomplete: mayBeIncomplete)
+        let all = nodes + trackedVotableNodes(excluding: Set(nodes.map(\.proTxHash)))
+        return Resolution(nodes: all, mayBeIncomplete: mayBeIncomplete)
+    }
+
+    /// Tracked (wallet-independent) masternodes whose voting key the user
+    /// attached on this device — votable with that key. A node already
+    /// votable through the wallet is skipped (the derived key wins).
+    private func trackedVotableNodes(excluding walletHashes: Set<Data>) -> [VoterNode] {
+        guard let manager = SwiftDashSDKHost.shared.manager else { return [] }
+        let vault = TrackedMasternodeKeyVault()
+        return manager.trackedMasternodes()
+            .filter { node in
+                !walletHashes.contains(node.proTxHash)
+                    && !node.revoked
+                    && MasternodeStatus(rawValue: node.status) == .active
+                    && vault.attachedRoles(for: node.proTxHash).contains(.voting)
+            }
+            .map { node in
+                VoterNode(
+                    proTxHash: node.proTxHash,
+                    isEvonode: node.isEvonode,
+                    typeIndex: node.typeIndex,
+                    serviceAddress: node.serviceAddress,
+                    keySource: .trackedVault)
+            }
     }
 
     /// The 32-byte voting private key for `node`.
@@ -166,6 +198,13 @@ final class MasternodeVoterRegistry {
     ///   (wallet locked or not loaded) or the WIF fails to parse. Never
     ///   substitutes a placeholder.
     func votingPrivateKey(for node: VoterNode) -> Data? {
+        let index: UInt32
+        switch node.keySource {
+        case .trackedVault:
+            return trackedVotingPrivateKey(for: node)
+        case .walletIndex(let walletIndex):
+            index = walletIndex
+        }
         guard let deriver = MasternodeProviderKeyDeriver(key: .voting) else {
             Self.logger.error("🗳️ VOTING :: no provider-voting deriver available")
             return nil
@@ -179,12 +218,12 @@ final class MasternodeVoterRegistry {
         // to report that as "no voter identity exists", which is
         // indistinguishable from a node that was never registered.
         Self.logger.info(
-            "🗳️ VOTING :: signing with the key at pool index \(node.votingKeyIndex, privacy: .public) for \(deriver.address(at: node.votingKeyIndex) ?? "unknown address", privacy: .private)")
+            "🗳️ VOTING :: signing with the key at pool index \(index, privacy: .public) for \(deriver.address(at: index) ?? "unknown address", privacy: .private)")
 
-        guard let hex = deriver.privateKeyHex(at: node.votingKeyIndex),
+        guard let hex = deriver.privateKeyHex(at: index),
               let key = Data(hex: hex) else {
             Self.logger.error(
-                "🗳️ VOTING :: failed to derive voting key at index \(node.votingKeyIndex, privacy: .public)")
+                "🗳️ VOTING :: failed to derive voting key at index \(index, privacy: .public)")
             return nil
         }
         guard key.count == 32 else {
@@ -192,6 +231,24 @@ final class MasternodeVoterRegistry {
                 "🗳️ VOTING :: derived voting key has \(key.count, privacy: .public) bytes, expected 32")
             return nil
         }
+        return key
+    }
+
+    /// The 32-byte voting key of a tracked node, from the keychain vault
+    /// (WIF or hex, exactly as the user attached it). Same
+    /// authenticate-first contract as the derived path.
+    private func trackedVotingPrivateKey(for node: VoterNode) -> Data? {
+        let vault = TrackedMasternodeKeyVault()
+        guard let text = vault.key(for: node.proTxHash, role: .voting) else {
+            Self.logger.error("🗳️ VOTING :: tracked node has no voting key in the vault")
+            return nil
+        }
+        let key = WIFParser.parseWIF(text) ?? Data(hex: text)
+        guard let key, key.count == 32 else {
+            Self.logger.error("🗳️ VOTING :: the vaulted voting key is not a 32-byte WIF/hex key")
+            return nil
+        }
+        Self.logger.info("🗳️ VOTING :: signing with a tracked node's vaulted voting key")
         return key
     }
 }

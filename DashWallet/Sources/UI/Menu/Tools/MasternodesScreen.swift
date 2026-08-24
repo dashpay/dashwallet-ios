@@ -32,6 +32,10 @@ import UIKit
 @MainActor
 final class MasternodesViewModel: ObservableObject {
     @Published private(set) var masternodes: [PlatformMasternode] = []
+    /// Masternodes the user tracks independently of every wallet (SDK
+    /// registry; `source == .tracked`). A node that is also one of the
+    /// wallet's own is shown only in the wallet list.
+    @Published private(set) var trackedMasternodes: [PlatformMasternode] = []
     @Published private(set) var loaded = false
     /// Current-epoch proposal tallies for the wallet's evonodes, mirrored
     /// from the shared `EvonodeEpochBlocksMonitor` (privacy-preserving range
@@ -86,10 +90,14 @@ final class MasternodesViewModel: ObservableObject {
         guard let manager = SwiftDashSDKHost.shared.manager,
               let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
             masternodes = []
+            trackedMasternodes = []
             return
         }
         masternodes = manager.masternodes(for: walletId)
             .sorted { $0.orderIndex < $1.orderIndex }
+        let walletHashes = Set(masternodes.map(\.proTxHash))
+        trackedMasternodes = manager.trackedMasternodes()
+            .filter { !walletHashes.contains($0.proTxHash) }
         guard !masternodes.isEmpty else { return }
 
         ownerIndexByAddress = MasternodeKeyUsage.indexByAddress(
@@ -242,7 +250,7 @@ struct MasternodesScreen: View {
 
     var body: some View {
         List {
-            if viewModel.loaded && viewModel.masternodes.isEmpty {
+            if viewModel.loaded && viewModel.masternodes.isEmpty && viewModel.trackedMasternodes.isEmpty {
                 Section {
                     VStack(spacing: 12) {
                         Image(systemName: "server.rack")
@@ -256,6 +264,11 @@ struct MasternodesScreen: View {
                             .font(.caption)
                             .foregroundColor(Color.dash.secondaryText)
                             .multilineTextAlignment(.center)
+
+                        Text(NSLocalizedString("You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button.", comment: "Add masternode"))
+                            .font(.caption)
+                            .foregroundColor(Color.dash.secondaryText)
+                            .multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 20)
@@ -265,6 +278,14 @@ struct MasternodesScreen: View {
                     Section {
                         ForEach(viewModel.currentMasternodes, id: \.proTxHash) { masternode in
                             row(for: masternode)
+                        }
+                    }
+                }
+
+                if !viewModel.trackedMasternodes.isEmpty {
+                    Section(NSLocalizedString("Tracked", comment: "Tracked masternodes")) {
+                        ForEach(viewModel.trackedMasternodes, id: \.proTxHash) { masternode in
+                            trackedRow(for: masternode)
                         }
                     }
                 }
@@ -294,6 +315,28 @@ struct MasternodesScreen: View {
         }
         .onAppear {
             viewModel.load()
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationLink {
+                    AddMasternodeScreen(onTracked: { viewModel.load() })
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel(NSLocalizedString("Add masternode", comment: "Add masternode"))
+            }
+        }
+    }
+
+    private func trackedRow(for masternode: PlatformMasternode) -> some View {
+        NavigationLink {
+            TrackedMasternodeDetailScreen(
+                record: masternode,
+                onChanged: { viewModel.load() })
+        } label: {
+            MasternodeListRow(
+                masternode: masternode,
+                epochBlocks: masternode.isEvonode ? viewModel.epochBlocks(for: masternode) : nil)
         }
     }
 
@@ -328,7 +371,7 @@ private struct MasternodeListRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(masternode.displayTitle)
+                Text(masternode.label ?? masternode.displayTitle)
                     .font(.subheadline)
                     .fontWeight(.medium)
 
@@ -687,8 +730,9 @@ struct MasternodeDetailScreen: View {
 
 // MARK: - Rows
 
-/// Label + trailing value row.
-private struct MasternodeDetailRow: View {
+/// Label + trailing value row. Internal: the tracked-masternode screens
+/// reuse it.
+struct MasternodeDetailRow: View {
     let label: String
     let value: String
 
@@ -707,7 +751,8 @@ private struct MasternodeDetailRow: View {
 }
 
 /// Caption + monospaced, tap-to-copy value block for hashes / addresses.
-private struct MasternodeCopyRow: View {
+/// Internal: the tracked-masternode screens reuse it.
+struct MasternodeCopyRow: View {
     let label: String
     let value: String
     @State private var copied = false

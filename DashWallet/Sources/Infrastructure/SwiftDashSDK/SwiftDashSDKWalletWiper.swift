@@ -320,6 +320,14 @@ final class SwiftDashSDKWalletWiper: NSObject {
         logger.info(
             "wiped SwiftDashSDK wallets across mainnet/testnet in \(String(describing: elapsed), privacy: .public); authorization=\(authorization.logLabel, privacy: .public)")
 
+        // Reset-all also drops the user's TRACKED (wallet-independent)
+        // masternodes and their vaulted keys — they survive single-wallet
+        // deletion, not a full reset (owner decision 2026-08-24).
+        // Best-effort on the main actor; the wipe result doesn't gate on it.
+        Task { @MainActor in
+            TrackedMasternodeKeyVault.wipeAllTrackedState()
+        }
+
         // Tear down the app-owned runtime now that all wallet material is
         // gone. This stops BLAST/SPV, drops the host-owned manager/wallet, and
         // clears published wallet state. We do NOT delete public chain data;
