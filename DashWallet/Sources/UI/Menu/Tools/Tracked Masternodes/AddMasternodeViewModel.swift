@@ -201,8 +201,17 @@ final class AddMasternodeViewModel: ObservableObject {
     /// Re-verify every non-empty key field against the SDK's references
     /// (masternode list + tracked snapshot). Local; no network.
     func revalidateKeys() {
-        guard let manager = SwiftDashSDKHost.shared.manager,
-              let record = trackedRecord else { return }
+        guard let record = trackedRecord else { return }
+        guard let manager = SwiftDashSDKHost.shared.manager else {
+            // No SDK yet: nothing can be checked — mark every non-empty
+            // field "can't verify yet" so the badge (and the save caveat)
+            // never read as a silent pass.
+            keyStates = Dictionary(uniqueKeysWithValues: Self.formRoles.map { role in
+                let text = (keyInputs[role] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                return (role, text.isEmpty ? KeyFieldState.empty : .unverifiable)
+            })
+            return
+        }
         var states: [MasternodeKeyRole: KeyFieldState] = [:]
         for role in Self.formRoles {
             let text = (keyInputs[role] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)

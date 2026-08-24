@@ -123,7 +123,14 @@ final class MasternodeVoterRegistry {
 
         let eligible = manager.masternodes(for: walletId)
             .filter { !$0.revoked && MasternodeStatus(rawValue: $0.status) == .active }
-        guard !eligible.isEmpty else { return .empty }
+        // Tracked (wallet-independent) nodes vote too — resolve them
+        // BEFORE any early return, or a wallet with no masternodes of its
+        // own (the common case for tracking) could never vote.
+        let trackedNodes = trackedVotableNodes(
+            excluding: Set(eligible.map(\.proTxHash)))
+        guard !eligible.isEmpty else {
+            return Resolution(nodes: trackedNodes, mayBeIncomplete: false)
+        }
 
         let resolution = MasternodeKeyUsage.resolveAddressIndexes(
             family: .voting,
@@ -161,8 +168,10 @@ final class MasternodeVoterRegistry {
         let mayBeIncomplete = !resolution.poolIsLive && nodes.count < eligible.count
         Self.logger.info(
             "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations livePool=\(resolution.poolIsLive, privacy: .public)")
-        let all = nodes + trackedVotableNodes(excluding: Set(nodes.map(\.proTxHash)))
-        return Resolution(nodes: all, mayBeIncomplete: mayBeIncomplete)
+        // Exclusion is by the wallet's ELIGIBLE set (not just the votable
+        // subset): a wallet-registered node stays out of the tracked list
+        // even when its derived key didn't resolve.
+        return Resolution(nodes: nodes + trackedNodes, mayBeIncomplete: mayBeIncomplete)
     }
 
     /// Tracked (wallet-independent) masternodes whose voting key the user

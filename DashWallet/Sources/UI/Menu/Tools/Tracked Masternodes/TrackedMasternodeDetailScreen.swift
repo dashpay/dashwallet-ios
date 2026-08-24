@@ -119,6 +119,12 @@ final class TrackedMasternodeDetailViewModel: ObservableObject {
         try? manager.setTrackedMasternodeLabel(
             proTxHash: record.proTxHash,
             label: trimmed.isEmpty ? nil : trimmed)
+        // Re-read the record (local registry call) so the navigation title
+        // reflects the new label immediately, matching the list behind.
+        if let updated = manager.trackedMasternodes()
+            .first(where: { $0.proTxHash == record.proTxHash }) {
+            record = updated
+        }
     }
 
     /// Untrack: registry row + every vault key. The keys belong to the app,
@@ -143,6 +149,26 @@ final class TrackedMasternodeDetailViewModel: ObservableObject {
 
     // MARK: Withdraw
 
+    /// 1 DASH = 1e8 duffs × `EvonodeWithdrawalViewModel.creditsPerDuff`
+    /// credits = 1e11 credits — the Platform protocol constant, kept out
+    /// of the Views per the repo guardrails.
+    private static let creditsPerDash =
+        Decimal(100_000_000) * Decimal(EvonodeWithdrawalViewModel.creditsPerDuff)
+
+    static func creditsAsDash(_ credits: UInt64) -> String {
+        let dash = NSDecimalNumber(decimal: Decimal(credits) / creditsPerDash)
+        return String(format: "%.8f DASH", dash.doubleValue)
+    }
+
+    /// Formatted balance / withdrawable amounts for the Views.
+    var claimableBalanceText: String? {
+        claimableCredits.map(Self.creditsAsDash)
+    }
+
+    var maxWithdrawText: String {
+        Self.creditsAsDash(maxWithdrawCredits)
+    }
+
     /// Highest withdrawable amount: the balance minus the fee reserve the
     /// identity keeps back for the transition fee.
     var maxWithdrawCredits: UInt64 {
@@ -155,8 +181,12 @@ final class TrackedMasternodeDetailViewModel: ObservableObject {
     var withdrawAmountCredits: UInt64? {
         guard let dash = Decimal(string: withdrawAmountText.replacingOccurrences(of: ",", with: ".")),
               dash > 0 else { return nil }
-        let credits = NSDecimalNumber(decimal: dash * Decimal(100_000_000_000)).uint64Value
-        return credits
+        let credits = dash * Self.creditsPerDash
+        // `NSDecimalNumber.uint64Value` is undefined past UInt64.max — an
+        // absurd typed amount could WRAP to a small value that then passes
+        // the max-withdrawal check. Reject out-of-range input instead.
+        guard credits <= Decimal(UInt64.max) else { return nil }
+        return NSDecimalNumber(decimal: credits).uint64Value
     }
 
     var canSubmitWithdrawal: Bool {
@@ -389,10 +419,10 @@ struct TrackedMasternodeDetailScreen: View {
                         Text(NSLocalizedString("Fetching…", comment: "Masternodes"))
                             .foregroundColor(Color.dash.secondaryText)
                     }
-                } else if let credits = viewModel.claimableCredits {
+                } else if let balance = viewModel.claimableBalanceText {
                     MasternodeDetailRow(
                         label: NSLocalizedString("Balance", comment: "Masternodes"),
-                        value: String(format: "%.8f DASH", Double(credits) / 100_000_000_000.0))
+                        value: balance)
                 } else if let error = viewModel.balanceError {
                     Text(error)
                         .font(.caption)
@@ -488,7 +518,7 @@ private struct TrackedWithdrawalSheet: View {
                 Section {
                     MasternodeDetailRow(
                         label: NSLocalizedString("Available", comment: "Evonode withdrawal"),
-                        value: String(format: "%.8f DASH", Double(viewModel.maxWithdrawCredits) / 100_000_000_000.0))
+                        value: viewModel.maxWithdrawText)
                     TextField(
                         NSLocalizedString("Amount (DASH)", comment: "Evonode withdrawal"),
                         text: $viewModel.withdrawAmountText)
